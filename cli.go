@@ -3,45 +3,35 @@ package main
 import "os"
 
 func main() {
-	app := App{
+	App{
 		Name:        "math",
 		Description: "a simple command line math utility",
 		Commands: []Command{{
 			Name:        "add",
 			Description: "Add 2 and 2",
-			Action:      DoAdd,
+			Action: func(name string) {
+				println("2+2=", 2+2)
+			},
 		}, {
 			Name:        "subtract",
 			Description: "Subtract 2 and 2",
-			Action:      DoSubtract,
+			Action: func(name string) {
+				println("2-2=", 2-2)
+			},
 		}, {
 			Name:        "multiply",
 			Description: "Multiply 2 and 2",
-			Action:      DoMultiply,
+      Action: func(name string) {
+        println("2*2=", 2*2)
+      },
 		}, {
 			Name:        "divide",
 			Description: "Divide 2 and 2",
-			Action:      DoDivide,
+      Action: func(name string) {
+        println("2/2=", 2/2)
+      },
 		}},
-	}
-
-	app.Run(os.Args[1])
-}
-
-func DoAdd(name string) {
-	println("2+2=", 2+2)
-}
-
-func DoSubtract(name string) {
-	println("2-2=", 2-2)
-}
-
-func DoMultiply(name string) {
-	println("2*2=", 2*2)
-}
-
-func DoDivide(name string) {
-	println("2/2=", 2/2)
+	}.Run(os.Args[1])
 }
 
 type App struct {
