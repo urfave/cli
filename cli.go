@@ -21,15 +21,15 @@ func main() {
 		}, {
 			Name:        "multiply",
 			Description: "Multiply 2 and 2",
-      Action: func(name string) {
-        println("2*2=", 2*2)
-      },
+			Action: func(name string) {
+				println("2*2=", 2*2)
+			},
 		}, {
 			Name:        "divide",
 			Description: "Divide 2 and 2",
-      Action: func(name string) {
-        println("2/2=", 2/2)
-      },
+			Action: func(name string) {
+				println("2/2=", 2/2)
+			},
 		}},
 	}.Run(os.Args[1])
 }
