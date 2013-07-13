@@ -28,19 +28,19 @@ func main() {
 }
 
 func DoAdd(name string) {
-  println("2+2=", 2+2)
+	println("2+2=", 2+2)
 }
 
 func DoSubtract(name string) {
-  println("2-2=", 2-2)
+	println("2-2=", 2-2)
 }
 
 func DoMultiply(name string) {
-  println("2*2=", 2*2)
+	println("2*2=", 2*2)
 }
 
 func DoDivide(name string) {
-  println("2/2=", 2/2)
+	println("2/2=", 2/2)
 }
 
 type App struct {
@@ -58,9 +58,9 @@ type Command struct {
 type Action func(name string)
 
 func (a App) Run(command string) {
-  for _, c := range a.Commands {
-    if(c.Name == command) {
-      c.Action(command)
-    }
-  }
+	for _, c := range a.Commands {
+		if c.Name == command {
+			c.Action(command)
+		}
+	}
 }
