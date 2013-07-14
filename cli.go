@@ -17,7 +17,8 @@ type Command struct {
 
 type Action func(name string)
 
-func (a App) Run(command string) {
+func (a App) Run(args []string) {
+  command := args[1]
 	for _, c := range a.Commands {
 		if c.Name == command {
 			c.Action(command)
