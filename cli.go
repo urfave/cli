@@ -2,15 +2,15 @@ package cli
 
 type App struct {
 	Name     string
-	Summary  string
+	Usage    string
 	Action   Action
 	Commands []Command
 }
 
 type Command struct {
 	Name        string
-	Shortname   string
-	Summary     string
+	ShortName   string
+	Usage       string
 	Description string
 	Action      Action
 }
