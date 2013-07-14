@@ -1,31 +1,39 @@
 package cli
 
-type Application struct {
-	Name     string
-	Usage    string
-	Action   Action
-	Commands []Command
-}
+import "os"
 
-func (a *Application) Run(args []string) {
-  help := Command{
-    Name: "help",
-    Usage: "View help topics",
-    Action: func(name string) {
-      println("usage: " + a.Name + " [global-options] COMMAND [command-options]")
-    },
+// The name of the program. Defaults to os.Args[0]
+var Name = os.Args[0]
+
+// Description of the program.
+var Usage = ""
+
+// Version of the program
+var Version = "0.0.0"
+
+// List of commands to execute
+var Commands []Command = nil
+
+var DefaultAction = ShowHelp
+
+func Run(args []string) {
+  if len(args) > 1 {
+    command := args[1]
+    commands := CommandsWithDefaults()
+    for _, c := range commands {
+      if c.Name == command {
+        c.Action(command)
+        return
+      }
+    }
   }
 
-	command := args[1]
-	for _, c := range a.Commands {
-		if c.Name == command {
-			c.Action(command)
-      return
-		}
-	}
+	// Run default Action
+  DefaultAction("")
+}
 
-  // Run default action
-  help.Action("foo")
+func CommandsWithDefaults() []Command {
+	return append(append([]Command(nil), HelpCommand), Commands...)
 }
 
 type Command struct {
