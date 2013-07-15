@@ -11,7 +11,47 @@ Make sure you have the a working Go environment. [See the install instructions](
 
 To install cli.go, simply run:
 ```
-go get github.com/codegangsta/cli
+$ go get github.com/codegangsta/cli
+```
+
+Make sure your PATH includes to the `$GOPATH/bin` directory so your commands can be easily used:
+```
+export PATH=$PATH:$GOPATH/bin
+```
+
+## Example
+
+Being a programmer can be a lonely job. Thankfully by the power of automation that is not the case! Let's create a greeter app to fend off our demons of loneliness!
+
+``` go
+/* greet.go */
+package main
+
+import "os"
+import "github.com/codegangsta/cli"
+
+func main() {
+  cli.Name = "greet"
+  cli.Usage = "fight the loneliness!"
+  cli.Action = func(c cli.Context) {
+    println("Hello friend!")
+  }
+  
+  cli.Run(os.Args)
+}
+```
+
+Install our command to the `$GOPATH/bin` directory:
+
+```
+$ go install
+```
+
+Finally run our new command:
+
+```
+$ greet
+Hello friend!
 ```
 
 ## About
