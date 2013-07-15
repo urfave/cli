@@ -54,7 +54,7 @@ $ greet
 Hello friend!
 ```
 
-cli.go also generates some bitch-ass help text:
+cli.go also generates some bitchass help text:
 ```
 $ greet help
 NAME:
