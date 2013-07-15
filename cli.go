@@ -18,11 +18,10 @@ var DefaultAction = ShowHelp
 
 func Run(args []string) {
 	if len(args) > 1 {
-		command := args[1]
-		commands := CommandsWithDefaults()
-		for _, c := range commands {
-			if c.Name == command {
-				c.Action(command)
+		name := args[1]
+		for _, c := range append(Commands, HelpCommand) {
+			if c.Name == name {
+				c.Action(name)
 				return
 			}
 		}
@@ -30,10 +29,6 @@ func Run(args []string) {
 
 	// Run default Action
 	DefaultAction("")
-}
-
-func CommandsWithDefaults() []Command {
-	return append(append([]Command(nil), HelpCommand), Commands...)
 }
 
 type Command struct {
