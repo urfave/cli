@@ -40,3 +40,4 @@ type Command struct {
 }
 
 type Action func(name string)
+

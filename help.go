@@ -14,11 +14,14 @@ type HelpData struct {
 var HelpCommand = Command{
 	Name:      "help",
 	ShortName: "h",
-	Usage:     "View help topics",
-	Action:    ShowHelp,
+	Usage:     "Shows a list of commands or help for one command",
 }
 
-var ShowHelp = func(name string) {
+func init() {
+  HelpCommand.Action = ShowHelp
+}
+
+func ShowHelp(name string) {
 	helpTemplate := `NAME:
     {{.Name}} - {{.Usage}}
 
@@ -35,7 +38,7 @@ COMMANDS:
 	data := HelpData{
 		Name,
 		Usage,
-		Commands,
+		append(Commands, HelpCommand),
 		Version,
 	}
 
