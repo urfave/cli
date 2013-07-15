@@ -29,7 +29,7 @@ VERSION:
     {{.Version}}
 
 COMMANDS:
-    {{range .Commands}}{{.Name}}{{ "\t" }}{{.Usage}}
+    {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
     {{end}}
 `
 	data := HelpData{

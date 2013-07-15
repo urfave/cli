@@ -20,7 +20,7 @@ func Run(args []string) {
 	if len(args) > 1 {
 		name := args[1]
 		for _, c := range append(Commands, HelpCommand) {
-			if c.Name == name {
+			if c.Name == name || c.ShortName == name {
 				c.Action(name)
 				return
 			}
