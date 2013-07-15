@@ -54,5 +54,34 @@ $ greet
 Hello friend!
 ```
 
+cli.go also generates some bitch-ass help text:
+```
+$ greet help
+NAME:
+    greet - fight the loneliness!
+
+USAGE:
+    greet [global options] command [command options] [arguments...]
+
+VERSION:
+    0.0.0
+
+COMMANDS:
+    help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS
+    --version	Shows version information
+```
+
+### Arguments
+WIP
+
+### Flags
+WIP
+
+### Subcommands
+WIP
+
+
 ## About
 cli.go is written by none other than the [Code Gangsta](http://codegangsta.io)
