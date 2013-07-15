@@ -18,7 +18,7 @@ var HelpCommand = Command{
 }
 
 func init() {
-  HelpCommand.Action = ShowHelp
+	HelpCommand.Action = ShowHelp
 }
 
 func ShowHelp(name string) {
