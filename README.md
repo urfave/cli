@@ -1,3 +1,6 @@
+# Work in Progress
+This package is not in a releasable state. Stay tuned as I try to crank this API out in the next week or so.
+
 # cli.go
 cli.go is simple, fast, and fun package for building command line apps in Go. The goal is to enable developers to write fast and distributable command line applications in an expressive way.
 
