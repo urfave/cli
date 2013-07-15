@@ -6,7 +6,7 @@ import "os"
 var Name = os.Args[0]
 
 // Description of the program.
-var Usage = ""
+var Usage = "<No Description>"
 
 // Version of the program
 var Version = "0.0.0"
@@ -17,19 +17,19 @@ var Commands []Command = nil
 var DefaultAction = ShowHelp
 
 func Run(args []string) {
-  if len(args) > 1 {
-    command := args[1]
-    commands := CommandsWithDefaults()
-    for _, c := range commands {
-      if c.Name == command {
-        c.Action(command)
-        return
-      }
-    }
-  }
+	if len(args) > 1 {
+		command := args[1]
+		commands := CommandsWithDefaults()
+		for _, c := range commands {
+			if c.Name == command {
+				c.Action(command)
+				return
+			}
+		}
+	}
 
 	// Run default Action
-  DefaultAction("")
+	DefaultAction("")
 }
 
 func CommandsWithDefaults() []Command {
