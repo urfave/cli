@@ -13,3 +13,6 @@ To install cli.go, simply run:
 ```
 go get github.com/codegangsta/cli
 ```
+
+## About
+cli.go is written by none other than the [Code Gangsta](http://codegangsta.io)
