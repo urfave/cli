@@ -1,6 +1,7 @@
 package cli
 
 import "os"
+import "flag"
 
 // The name of the program. Defaults to os.Args[0]
 var Name = os.Args[0]
@@ -12,8 +13,11 @@ var Usage = "<No Description>"
 var Version = "0.0.0"
 
 // List of commands to execute
-var Commands []Command = nil
+var Commands []Command
 
+var Flags []Flag
+
+// The action to execute when no subcommands are specified
 var DefaultAction = ShowHelp
 
 func Run(args []string) {
@@ -37,6 +41,7 @@ type Command struct {
 	Usage       string
 	Description string
 	Action      Action
+  Flags       flag.FlagSet
 }
 
 type Action func(name string)
