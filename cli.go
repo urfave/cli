@@ -41,7 +41,7 @@ type Command struct {
 	Usage       string
 	Description string
 	Action      Handler
-  Flags       flag.FlagSet
+	Flags       flag.FlagSet
 }
 
 type Handler func(name string)
