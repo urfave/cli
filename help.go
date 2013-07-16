@@ -22,7 +22,7 @@ func init() {
 	HelpCommand.Action = ShowHelp
 }
 
-func ShowHelp(name string) {
+func ShowHelp(c Context) {
 	helpTemplate := `NAME:
     {{.Name}} - {{.Usage}}
 
@@ -44,7 +44,7 @@ GLOBAL OPTIONS
 		Usage,
 		Version,
 		append(Commands, HelpCommand),
-    Flags,
+		Flags,
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)

@@ -21,18 +21,19 @@ var Flags []Flag
 var Action = ShowHelp
 
 func Run(args []string) {
+	context := Context{}
 	if len(args) > 1 {
 		name := args[1]
 		for _, c := range append(Commands, HelpCommand) {
 			if c.Name == name || c.ShortName == name {
-				c.Action(name)
+				c.Action(context)
 				return
 			}
 		}
 	}
 
 	// Run default Action
-	Action("")
+	Action(context)
 }
 
 type Command struct {
@@ -44,4 +45,7 @@ type Command struct {
 	Flags       flag.FlagSet
 }
 
-type Handler func(name string)
+type Context struct {
+}
+
+type Handler func(context Context)
