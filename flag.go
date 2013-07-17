@@ -8,7 +8,6 @@ type Flag interface {
 
 type BoolFlag struct {
   Name string
-  Value bool
   Usage string
 }
 
