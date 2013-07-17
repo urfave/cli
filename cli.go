@@ -1,7 +1,7 @@
 package cli
 
+import "fmt"
 import "os"
-import "flag"
 
 // The name of the program. Defaults to os.Args[0]
 var Name = os.Args[0]
@@ -21,6 +21,10 @@ var Flags []Flag
 var Action = ShowHelp
 
 func Run(args []string) {
+
+  set := flagSet(Flags)
+  set.Parse(args[1:])
+
 	context := Context{}
 	if len(args) > 1 {
 		name := args[1]
@@ -42,7 +46,7 @@ type Command struct {
 	Usage       string
 	Description string
 	Action      Handler
-	Flags       flag.FlagSet
+	Flags       []Flag
 }
 
 type Context struct {
