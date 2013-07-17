@@ -1,6 +1,5 @@
 package cli
 
-import "fmt"
 import "os"
 
 // The name of the program. Defaults to os.Args[0]
