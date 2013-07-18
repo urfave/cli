@@ -22,7 +22,7 @@ func init() {
 	HelpCommand.Action = ShowHelp
 }
 
-func ShowHelp(c Context) {
+func ShowHelp(c *Context) {
 	helpTemplate := `NAME:
     {{.Name}} - {{.Usage}}
 

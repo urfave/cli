@@ -24,7 +24,7 @@ func Run(args []string) {
   set := flagSet(Flags)
   set.Parse(args[1:])
 
-	context := Context{}
+	context := NewContext(set)
 	if len(args) > 1 {
 		name := args[1]
 		for _, c := range append(Commands, HelpCommand) {
@@ -48,4 +48,4 @@ type Command struct {
 	Flags       []Flag
 }
 
-type Handler func(context Context)
+type Handler func(context *Context)
