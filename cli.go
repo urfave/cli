@@ -22,7 +22,11 @@ var Action = ShowHelp
 func Run(args []string) {
 
   set := flagSet(Flags)
-  set.Parse(args[1:])
+  err := set.Parse(args[1:])
+  if err != nil {
+    println(err)
+    return
+  }
 
 	context := NewContext(set)
 	if len(args) > 1 {
