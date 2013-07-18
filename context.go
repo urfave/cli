@@ -22,7 +22,7 @@ func (c *Context) IntFlag(name string) int {
 	if flag != nil {
 		val, err := strconv.Atoi(flag.Value.String())
 		if err != nil {
-      panic(err)
+			panic(err)
 		}
 		return val
 	} else {
@@ -35,7 +35,7 @@ func (c *Context) BoolFlag(name string) bool {
 	if flag != nil {
 		val, err := strconv.ParseBool(flag.Value.String())
 		if err != nil {
-      panic(err)
+			panic(err)
 		}
 		return val
 	} else {
@@ -48,10 +48,10 @@ func (c *Context) StringFlag(name string) string {
 	if flag != nil {
 		return flag.Value.String()
 	} else {
-    return ""
+		return ""
 	}
 }
 
 func (c *Context) Args() []string {
-  return c.flagSet.Args()
+	return c.flagSet.Args()
 }
