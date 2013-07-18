@@ -77,10 +77,32 @@ GLOBAL OPTIONS
 ```
 
 ### Arguments
-WIP
+You can lookup arguments by calling the `Args` function on cli.Context.
+
+``` go
+...
+cli.Action = func(c *cli.Context) {
+  println("Hello", c.Args()[0])
+}
+...
+```
 
 ### Flags
-WIP
+Setting and querying flags is simple.
+``` go
+...
+cli.Flags = []cli.Flag {
+  cli.StringFlag{"lang", "english", "language for the greeting"},
+}
+cli.Action = func(c *cli.Context) {
+  if c.String("lang") == "spanish" {
+    println("Hola", c.Args()[0])
+  } else {
+    println("Hello", c.Args()[0])
+  }
+}
+...
+```
 
 ### Subcommands
 WIP
