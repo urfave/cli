@@ -36,7 +36,7 @@ import "github.com/codegangsta/cli"
 func main() {
   cli.Name = "greet"
   cli.Usage = "fight the loneliness!"
-  cli.Action = func(c cli.Context) {
+  cli.Action = func(c *cli.Context) {
     println("Hello friend!")
   }
   
