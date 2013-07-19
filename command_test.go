@@ -1,11 +1,11 @@
 package cli
 
 import (
-  "testing"
+	"testing"
 )
 
 func Test_True(t *testing.T) {
-  expect(t, true, true)
+	expect(t, true, true)
 }
 
 func Test_Run(t *testing.T) {

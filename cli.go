@@ -21,8 +21,8 @@ var Action = ShowHelp
 
 func Run(args []string) {
 
-  set := flagSet(Flags)
-  set.Parse(args[1:])
+	set := flagSet(Flags)
+	set.Parse(args[1:])
 
 	context := NewContext(set)
 	if len(args) > 1 {
