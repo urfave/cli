@@ -1,27 +1,58 @@
 package cli
 
 import "fmt"
+import "flag"
 
 type Flag interface {
-  fmt.Stringer
+	fmt.Stringer
+	Apply(*flag.FlagSet)
+}
+
+func flagSet(flags []Flag) *flag.FlagSet {
+	set := flag.NewFlagSet(Name, flag.ExitOnError)
+	for _, f := range flags {
+		f.Apply(set)
+	}
+	return set
 }
 
 type BoolFlag struct {
-  Name string
-  Value bool
-  Usage string
-}
-
-type StringFlag struct {
-  Name string
-  Value string
-  Usage string
-}
-
-func (f StringFlag) String() string {
-  return fmt.Sprintf("--%v 'string'\t%v", f.Name, f.Usage)
+	Name  string
+	Usage string
 }
 
 func (f BoolFlag) String() string {
-  return fmt.Sprintf("--%v\t%v", f.Name, f.Usage)
+	return fmt.Sprintf("--%v\t%v", f.Name, f.Usage)
+}
+
+func (f BoolFlag) Apply(set *flag.FlagSet) {
+	set.Bool(f.Name, false, f.Usage)
+}
+
+type StringFlag struct {
+	Name  string
+	Value string
+	Usage string
+}
+
+func (f StringFlag) String() string {
+	return fmt.Sprintf("--%v '%v'\t%v", f.Name, f.Value, f.Usage)
+}
+
+func (f StringFlag) Apply(set *flag.FlagSet) {
+	set.String(f.Name, f.Value, f.Usage)
+}
+
+type IntFlag struct {
+	Name  string
+	Value int
+	Usage string
+}
+
+func (f IntFlag) String() string {
+	return fmt.Sprintf("--%v '%v'\t%v", f.Name, f.Value, f.Usage)
+}
+
+func (f IntFlag) Apply(set *flag.FlagSet) {
+	set.Int(f.Name, f.Value, f.Usage)
 }
