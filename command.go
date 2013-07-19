@@ -14,3 +14,7 @@ func (command Command) Run(c *Context) {
 	set.Parse(c.Args()[1:])
 	command.Action(NewContext(set, c.globalSet))
 }
+
+func (command Command) HasName(name string) bool {
+	return command.Name == name || command.ShortName == name
+}
