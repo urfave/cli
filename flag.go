@@ -36,7 +36,7 @@ func (f BoolFlag) Apply(set *flag.FlagSet) {
 }
 
 func flagSet(flags []Flag) *flag.FlagSet {
-  set := flag.NewFlagSet(Name, 0)
+  set := flag.NewFlagSet(Name, flag.ExitOnError)
   for _, f := range flags {
     f.Apply(set)
   }

@@ -17,7 +17,7 @@ func NewContext(flagSet *flag.FlagSet) *Context {
 	return &Context{flagSet}
 }
 
-func (c *Context) IntFlag(name string) int {
+func (c *Context) Int(name string) int {
 	flag := c.flagSet.Lookup(name)
 	if flag != nil {
 		val, err := strconv.Atoi(flag.Value.String())
@@ -30,7 +30,7 @@ func (c *Context) IntFlag(name string) int {
 	}
 }
 
-func (c *Context) BoolFlag(name string) bool {
+func (c *Context) Bool(name string) bool {
 	flag := c.flagSet.Lookup(name)
 	if flag != nil {
 		val, err := strconv.ParseBool(flag.Value.String())
@@ -43,7 +43,7 @@ func (c *Context) BoolFlag(name string) bool {
 	}
 }
 
-func (c *Context) StringFlag(name string) string {
+func (c *Context) String(name string) string {
 	flag := c.flagSet.Lookup(name)
 	if flag != nil {
 		return flag.Value.String()

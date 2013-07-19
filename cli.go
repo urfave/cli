@@ -22,11 +22,7 @@ var Action = ShowHelp
 func Run(args []string) {
 
   set := flagSet(Flags)
-  err := set.Parse(args[1:])
-  if err != nil {
-    println(err)
-    return
-  }
+  set.Parse(args[1:])
 
 	context := NewContext(set)
 	if len(args) > 1 {
@@ -41,15 +37,6 @@ func Run(args []string) {
 
 	// Run default Action
 	Action(context)
-}
-
-type Command struct {
-	Name        string
-	ShortName   string
-	Usage       string
-	Description string
-	Action      Handler
-	Flags       []Flag
 }
 
 type Handler func(context *Context)
