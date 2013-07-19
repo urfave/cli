@@ -33,6 +33,28 @@ func Test_FlagDefaults(t *testing.T) {
 	Run([]string{"command"})
 }
 
+func TestCommands(t *testing.T) {
+	Flags = []Flag{
+		StringFlag{"name", "jeremy", "a name to print"},
+	}
+	Commands = []Command{
+		{
+			Name: "print",
+			Flags: []Flag{
+				IntFlag{"age", 50, "the age of the person"},
+			},
+			Action: func(c *Context) {
+				expect(t, c.GlobalString("name"), "jordie")
+				expect(t, c.Int("age"), 21)
+			},
+		},
+	}
+	Action = func(c *Context) {
+		t.Error("default action should not be called")
+	}
+	Run([]string{"command", "--name", "jordie", "print", "--age", "21"})
+}
+
 /* Test Helpers */
 func expect(t *testing.T, a interface{}, b interface{}) {
 	if a != b {

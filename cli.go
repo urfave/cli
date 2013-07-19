@@ -19,17 +19,20 @@ var Flags []Flag
 // The action to execute when no subcommands are specified
 var Action = ShowHelp
 
-func Run(args []string) {
+func Run(arguments []string) {
 
 	set := flagSet(Flags)
-	set.Parse(args[1:])
+	set.Parse(arguments[1:])
 
 	context := NewContext(set, set)
-	if len(args) > 1 {
-		name := args[1]
+	args := context.Args()
+	if len(args) > 0 {
+		name := args[0]
 		for _, c := range append(Commands, HelpCommand) {
 			if c.Name == name || c.ShortName == name {
-				c.Action(context)
+				locals := flagSet(c.Flags)
+				locals.Parse(args[1:])
+				c.Action(NewContext(locals, set))
 				return
 			}
 		}
