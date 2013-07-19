@@ -28,14 +28,18 @@ func NewApp() *App {
 }
 
 func (a *App) Run(arguments []string) {
+	// parse flags
 	set := flagSet(a.Flags)
 	set.Parse(arguments[1:])
+
+	// append help to commands
+	a.Commands = append(a.Commands, HelpCommand)
 
 	context := NewContext(a, set, set)
 	args := context.Args()
 	if len(args) > 0 {
 		name := args[0]
-		for _, c := range append(a.Commands, HelpCommand) {
+		for _, c := range a.Commands {
 			if c.HasName(name) {
 				c.Run(context)
 				return

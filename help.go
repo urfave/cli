@@ -8,10 +8,7 @@ var HelpCommand = Command{
 	Name:      "help",
 	ShortName: "h",
 	Usage:     "Shows a list of commands or help for one command",
-}
-
-func init() {
-	HelpCommand.Action = ShowHelp
+	Action:    ShowHelp,
 }
 
 func ShowHelp(c *Context) {
