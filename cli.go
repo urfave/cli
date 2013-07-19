@@ -24,7 +24,7 @@ func Run(args []string) {
 	set := flagSet(Flags)
 	set.Parse(args[1:])
 
-	context := NewContext(set)
+	context := NewContext(set, set)
 	if len(args) > 1 {
 		name := args[1]
 		for _, c := range append(Commands, HelpCommand) {
