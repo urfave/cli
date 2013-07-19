@@ -23,7 +23,7 @@ func NewApp() *App {
 		Name:    os.Args[0],
 		Usage:   "A new cli application",
 		Version: "0.0.0",
-		Action:  ShowHelp,
+		Action:  helpCommand.Action,
 	}
 }
 
@@ -33,7 +33,7 @@ func (a *App) Run(arguments []string) {
 	set.Parse(arguments[1:])
 
 	// append help to commands
-	a.Commands = append(a.Commands, HelpCommand)
+	a.Commands = append(a.Commands, helpCommand)
 
 	context := NewContext(a, set, set)
 	args := context.Args()
