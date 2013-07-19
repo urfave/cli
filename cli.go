@@ -1,7 +1,6 @@
 package cli
 
 import "os"
-import "flag"
 
 // The name of the program. Defaults to os.Args[0]
 var Name = os.Args[0]
@@ -20,13 +19,18 @@ var Flags []Flag
 // The action to execute when no subcommands are specified
 var Action = ShowHelp
 
-func Run(args []string) {
-	context := Context{}
-	if len(args) > 1 {
-		name := args[1]
+func Run(arguments []string) {
+
+	set := flagSet(Flags)
+	set.Parse(arguments[1:])
+
+	context := NewContext(set, set)
+	args := context.Args()
+	if len(args) > 0 {
+		name := args[0]
 		for _, c := range append(Commands, HelpCommand) {
-			if c.Name == name || c.ShortName == name {
-				c.Action(context)
+			if c.HasName(name) {
+				c.Run(context)
 				return
 			}
 		}
@@ -36,16 +40,4 @@ func Run(args []string) {
 	Action(context)
 }
 
-type Command struct {
-	Name        string
-	ShortName   string
-	Usage       string
-	Description string
-	Action      Handler
-	Flags       flag.FlagSet
-}
-
-type Context struct {
-}
-
-type Handler func(context Context)
+type Handler func(context *Context)
