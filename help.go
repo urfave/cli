@@ -4,14 +4,6 @@ import "os"
 import "text/tabwriter"
 import "text/template"
 
-type HelpData struct {
-	Name     string
-	Usage    string
-	Version  string
-	Commands []Command
-	Flags    []Flag
-}
-
 var HelpCommand = Command{
 	Name:      "help",
 	ShortName: "h",
@@ -39,16 +31,9 @@ GLOBAL OPTIONS
     {{range .Flags}}{{.}}
     {{end}}
 `
-	data := HelpData{
-		Name,
-		Usage,
-		Version,
-		append(Commands, HelpCommand),
-		Flags,
-	}
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
 	t := template.Must(template.New("help").Parse(helpTemplate))
-	t.Execute(w, data)
+	t.Execute(w, c.App)
 	w.Flush()
 }

@@ -12,7 +12,7 @@ type Command struct {
 func (command Command) Run(c *Context) {
 	set := flagSet(command.Flags)
 	set.Parse(c.Args()[1:])
-	command.Action(NewContext(set, c.globalSet))
+	command.Action(NewContext(c.App, set, c.globalSet))
 }
 
 func (command Command) HasName(name string) bool {
