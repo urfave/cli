@@ -6,6 +6,7 @@ import (
 )
 
 func Test_SettingFlags(t *testing.T) {
+	msg := ""
 	app := NewApp()
 	app.Flags = []Flag{
 		StringFlag{"foo", "default", "a string flag"},
@@ -16,11 +17,14 @@ func Test_SettingFlags(t *testing.T) {
 		expect(t, c.String("foo"), "hello world")
 		expect(t, c.Int("bar"), 245)
 		expect(t, c.Bool("bat"), true)
+		msg = "foobar"
 	}
 	app.Run([]string{"command", "--foo", "hello world", "--bar", "245", "--bat"})
+	expect(t, msg, "foobar")
 }
 
 func Test_FlagDefaults(t *testing.T) {
+	msg := ""
 	app := NewApp()
 	app.Flags = []Flag{
 		StringFlag{"foo", "default", "a string flag"},
@@ -31,8 +35,10 @@ func Test_FlagDefaults(t *testing.T) {
 		expect(t, c.String("foo"), "default")
 		expect(t, c.Int("bar"), 42)
 		expect(t, c.Bool("bat"), false)
+		msg = "foobar"
 	}
 	app.Run([]string{"command"})
+	expect(t, msg, "foobar")
 }
 
 func TestCommands(t *testing.T) {
