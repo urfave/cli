@@ -10,12 +10,13 @@ import (
 // can be used to retrieve context-specific Args and
 // parsed command-line options.
 type Context struct {
+	App       *App
 	flagSet   *flag.FlagSet
 	globalSet *flag.FlagSet
 }
 
-func NewContext(set *flag.FlagSet, globalSet *flag.FlagSet) *Context {
-	return &Context{set, globalSet}
+func NewContext(app *App, set *flag.FlagSet, globalSet *flag.FlagSet) *Context {
+	return &Context{app, set, globalSet}
 }
 
 // Looks up the value of a local int flag, returns 0 if no int flag exists

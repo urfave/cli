@@ -9,7 +9,7 @@ type Flag interface {
 }
 
 func flagSet(flags []Flag) *flag.FlagSet {
-	set := flag.NewFlagSet(Name, flag.ExitOnError)
+	set := flag.NewFlagSet("cli", flag.ExitOnError)
 	for _, f := range flags {
 		f.Apply(set)
 	}
