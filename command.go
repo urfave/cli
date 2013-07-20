@@ -5,7 +5,7 @@ type Command struct {
 	ShortName   string
 	Usage       string
 	Description string
-	Action      Handler
+	Action      func(context *Context)
 	Flags       []Flag
 }
 

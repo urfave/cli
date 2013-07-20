@@ -13,9 +13,10 @@ type App struct {
 	Version string
 	// List of commands to execute
 	Commands []Command
-	Flags    []Flag
+	// List of flags to parse
+	Flags []Flag
 	// The action to execute when no subcommands are specified
-	Action Handler
+	Action func(context *Context)
 }
 
 func NewApp() *App {
