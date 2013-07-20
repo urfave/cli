@@ -1,8 +1,5 @@
 [![Build Status](https://travis-ci.org/codegangsta/cli.png?branch=master)](https://travis-ci.org/codegangsta/cli)
 
-# Work in Progress
-This package is not in a releasable state. Stay tuned as I try to crank this API out in the next week or so.
-
 # cli.go
 cli.go is simple, fast, and fun package for building command line apps in Go. The goal is to enable developers to write fast and distributable command line applications in an expressive way.
 
@@ -12,7 +9,7 @@ Command line apps are usually so tiny that there is absolutely no reason why you
 This is where cli.go comes into play. cli.go makes command line programming fun, organized, and expressive!
 
 ## Installation
-Make sure you have the a working Go environment. [See the install instructions](http://golang.org/doc/install.html).
+Make sure you have the a working Go environment (go 1.1 is *required*). [See the install instructions](http://golang.org/doc/install.html).
 
 To install cli.go, simply run:
 ```
@@ -36,13 +33,14 @@ import "os"
 import "github.com/codegangsta/cli"
 
 func main() {
-  cli.Name = "greet"
-  cli.Usage = "fight the loneliness!"
-  cli.Action = func(c *cli.Context) {
+  app = cli.NewApp()
+  app.Name = "greet"
+  app.Usage = "fight the loneliness!"
+  app.Action = func(c *cli.Context) {
     println("Hello friend!")
   }
   
-  cli.Run(os.Args)
+  app.Run(os.Args)
 }
 ```
 
