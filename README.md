@@ -144,6 +144,7 @@ app.Action = func(c *cli.Context) {
 
 Subcommands can be defined for a more git-like command line app.
 ```go
+...
 app.Commands = []cli.Command{
   {
     Name:      "add",
@@ -162,6 +163,7 @@ app.Commands = []cli.Command{
     },
   },
 }
+...
 ```
 
 ## About
