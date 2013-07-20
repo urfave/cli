@@ -12,28 +12,40 @@ var helpCommand = Command{
 	ShortName: "h",
 	Usage:     "Shows a list of commands or help for one command",
 	Action: func(c *Context) {
-		helpTemplate := `NAME:
-  {{.Name}} - {{.Usage}}
+		args := c.Args()
+		if len(args) > 0 {
+			showCommandHelp(c)
+		} else {
+			showAppHelp(c)
+		}
+	},
+}
+
+func showAppHelp(c *Context) {
+	helpTemplate := `NAME:
+   {{.Name}} - {{.Usage}}
 
 USAGE:
-  {{.Name}} [global options] command [command options] [arguments...]
+   {{.Name}} [global options] command [command options] [arguments...]
 
 VERSION:
-  {{.Version}}
+   {{.Version}}
 
 COMMANDS:
-  {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
-  {{end}}
+   {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
+   {{end}}
 GLOBAL OPTIONS:
-  {{range .Flags}}{{.}}
-  {{end}}
+   {{range .Flags}}{{.}}
+   {{end}}
 `
 
-		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-		t := template.Must(template.New("help").Parse(helpTemplate))
-		t.Execute(w, c.App)
-		w.Flush()
-	},
+	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
+	t := template.Must(template.New("help").Parse(helpTemplate))
+	t.Execute(w, c.App)
+	w.Flush()
+}
+
+func showCommandHelp(c *Context) {
 }
 
 func showVersion(c *Context) {
