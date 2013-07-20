@@ -28,14 +28,23 @@ func NewApp() *App {
 }
 
 func (a *App) Run(arguments []string) {
+	// append help to commands
+	a.Commands = append(a.Commands, helpCommand)
+	// append version to flags
+	a.Flags = append(a.Flags, BoolFlag{"version", "print the version"})
+
 	// parse flags
 	set := flagSet(a.Name, a.Flags)
 	set.Parse(arguments[1:])
 
-	// append help to commands
-	a.Commands = append(a.Commands, helpCommand)
-
 	context := NewContext(a, set, set)
+
+	// check version
+	if context.GlobalBool("version") {
+		showVersion(context)
+		return
+	}
+
 	args := context.Args()
 	if len(args) > 0 {
 		name := args[0]

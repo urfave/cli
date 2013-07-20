@@ -1,8 +1,11 @@
 package cli
 
-import "os"
-import "text/tabwriter"
-import "text/template"
+import (
+	"fmt"
+	"os"
+	"text/tabwriter"
+	"text/template"
+)
 
 var helpCommand = Command{
 	Name:      "help",
@@ -31,4 +34,8 @@ GLOBAL OPTIONS:
 		t.Execute(w, c.App)
 		w.Flush()
 	},
+}
+
+func showVersion(c *Context) {
+	fmt.Printf("%v version %v\n", c.App.Name, c.App.Version)
 }
