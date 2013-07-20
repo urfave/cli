@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/codegangsta/cli.png?branch=master)](https://travis-ci.org/codegangsta/cli)
+
 # Work in Progress
 This package is not in a releasable state. Stay tuned as I try to crank this API out in the next week or so.
 
