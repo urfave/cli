@@ -8,8 +8,8 @@ type Flag interface {
 	Apply(*flag.FlagSet)
 }
 
-func flagSet(flags []Flag) *flag.FlagSet {
-	set := flag.NewFlagSet("cli", flag.ExitOnError)
+func flagSet(name string, flags []Flag) *flag.FlagSet {
+	set := flag.NewFlagSet(name, flag.ExitOnError)
 	for _, f := range flags {
 		f.Apply(set)
 	}

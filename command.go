@@ -9,12 +9,12 @@ type Command struct {
 	Flags       []Flag
 }
 
-func (command Command) Run(c *Context) {
-	set := flagSet(command.Flags)
-	set.Parse(c.Args()[1:])
-	command.Action(NewContext(c.App, set, c.globalSet))
+func (c Command) Run(ctx *Context) {
+	set := flagSet(c.Name, c.Flags)
+	set.Parse(ctx.Args()[1:])
+	c.Action(NewContext(ctx.App, set, ctx.globalSet))
 }
 
-func (command Command) HasName(name string) bool {
-	return command.Name == name || command.ShortName == name
+func (c Command) HasName(name string) bool {
+	return c.Name == name || c.ShortName == name
 }

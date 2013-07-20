@@ -29,7 +29,7 @@ func NewApp() *App {
 
 func (a *App) Run(arguments []string) {
 	// parse flags
-	set := flagSet(a.Flags)
+	set := flagSet(a.Name, a.Flags)
 	set.Parse(arguments[1:])
 
 	// append help to commands
