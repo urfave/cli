@@ -21,6 +21,42 @@ Make sure your PATH includes to the `$GOPATH/bin` directory so your commands can
 export PATH=$PATH:$GOPATH/bin
 ```
 
+## Getting Started
+One of the philosophies behind cli.go is that an API should be playful and full of discovery. So a cli.go app can be as little as one line of code in `main()`. 
+
+``` go
+package main
+
+import "os"
+import "github.com/codegangsta/cli"
+
+func main() {
+  cli.NewApp().Run(os.Args)
+}
+```
+
+This app will run and show help text, but is not very useful. Let's give an action to execute and some help documentation:
+
+``` go
+package main
+
+import "os"
+import "github.com/codegangsta/cli"
+
+func main() {
+  app := cli.NewApp()
+  app.Name = "boom"
+  app.Usage = "make an explosive entrance"
+  app.Action = func(c *cli.Context) {
+    println("boom! I say!")
+  }
+  
+  app.Run(os.Args)
+}
+```
+
+Running this already gives you a ton of functionality, plus support for things like subcommands and flags, which are covered below.
+
 ## Example
 
 Being a programmer can be a lonely job. Thankfully by the power of automation that is not the case! Let's create a greeter app to fend off our demons of loneliness!
@@ -81,7 +117,7 @@ You can lookup arguments by calling the `Args` function on cli.Context.
 
 ``` go
 ...
-cli.Action = func(c *cli.Context) {
+app.Action = func(c *cli.Context) {
   println("Hello", c.Args()[0])
 }
 ...
@@ -91,10 +127,10 @@ cli.Action = func(c *cli.Context) {
 Setting and querying flags is simple.
 ``` go
 ...
-cli.Flags = []cli.Flag {
+app.Flags = []cli.Flag {
   cli.StringFlag{"lang", "english", "language for the greeting"},
 }
-cli.Action = func(c *cli.Context) {
+app.Action = func(c *cli.Context) {
   if c.String("lang") == "spanish" {
     println("Hola", c.Args()[0])
   } else {
@@ -105,6 +141,8 @@ cli.Action = func(c *cli.Context) {
 ```
 
 ### Subcommands
+
+Subcommands can be defined for a more git-like command line app.
 WIP
 
 
