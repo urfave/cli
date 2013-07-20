@@ -143,8 +143,26 @@ app.Action = func(c *cli.Context) {
 ### Subcommands
 
 Subcommands can be defined for a more git-like command line app.
-WIP
-
+```go
+app.Commands = []cli.Command{
+  {
+    Name:      "add",
+    ShortName: "a",
+    Usage:     "add a task to the list",
+    Action: func(c *cli.Context) {
+      println("added task: ", c.Args()[0])
+    },
+  },
+  {
+    Name:      "complete",
+    ShortName: "c",
+    Usage:     "complete a task on the list",
+    Action: func(c *cli.Context) {
+      println("completed task: ", c.Args()[0])
+    },
+  },
+}
+```
 
 ## About
 cli.go is written by none other than the [Code Gangsta](http://codegangsta.io)
