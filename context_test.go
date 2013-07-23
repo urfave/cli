@@ -3,7 +3,7 @@ package cli_test
 import (
 	"flag"
 	"testing"
-	"github.com/codegangsta/cli"
+  "github.com/codegangsta/cli"
 )
 
 func TestNewContext(t *testing.T) {

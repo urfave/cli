@@ -1,7 +1,7 @@
 package cli_test
 
 import (
-	"github.com/codegangsta/cli"
+  "github.com/codegangsta/cli"
 	"os"
 )
 
@@ -14,17 +14,17 @@ func Example() {
 			Name:      "add",
 			ShortName: "a",
 			Usage:     "add a task to the list",
-			Action: func(c *cli.Context) {
+			Action: cli.ContextAction{func(c *cli.Context) {
 				println("added task: ", c.Args()[0])
-			},
+			}},
 		},
 		{
 			Name:      "complete",
 			ShortName: "c",
 			Usage:     "complete a task on the list",
-			Action: func(c *cli.Context) {
+			Action: cli.ContextAction{func(c *cli.Context) {
 				println("completed task: ", c.Args()[0])
-			},
+			}},
 		},
 	}
 
