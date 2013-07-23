@@ -5,14 +5,18 @@ type Command struct {
 	ShortName   string
 	Usage       string
 	Description string
-	Action      func(context *Context)
+	Action      Action
 	Flags       []Flag
 }
 
 func (c Command) Run(ctx *Context) {
 	set := flagSet(c.Name, c.Flags)
 	set.Parse(ctx.Args()[1:])
-	c.Action(NewContext(ctx.App, set, ctx.globalSet))
+	c.Action.Execute(NewContext(ctx.App, set, ctx.globalSet))
+}
+
+func (c Command) SetAction(function interface{}) {
+  c.Action = ParseAction(function)
 }
 
 func (c Command) HasName(name string) bool {

@@ -16,7 +16,7 @@ type App struct {
 	// List of flags to parse
 	Flags []Flag
 	// The action to execute when no subcommands are specified
-	Action func(context *Context)
+	Action Action
 }
 
 func NewApp() *App {
@@ -58,5 +58,9 @@ func (a *App) Run(arguments []string) {
 	}
 
 	// Run default Action
-	a.Action(context)
+	a.Action.Execute(context)
+}
+
+func (a *App) SetAction(function interface{}) {
+  a.Action = ParseAction(function)
 }
