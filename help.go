@@ -48,14 +48,14 @@ var helpCommand = Command{
 	Name:      "help",
 	ShortName: "h",
 	Usage:     "Shows a list of commands or help for one command",
-	Action: func(c *Context) {
+	Action: ContextAction{func(c *Context) {
 		args := c.Args()
 		if len(args) > 0 {
 			showCommandHelp(c)
 		} else {
 			showAppHelp(c)
 		}
-	},
+	}},
 }
 
 func showAppHelp(c *Context) {
