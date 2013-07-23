@@ -131,6 +131,10 @@ app.Flags = []cli.Flag {
   cli.StringFlag{"lang", "english", "language for the greeting"},
 }
 app.Action = func(c *cli.Context) {
+  name := "someone"
+  if len(c.Args()) > 0 {
+    name = c.Args()[0]
+  }
   if c.String("lang") == "spanish" {
     println("Hola", c.Args()[0])
   } else {
