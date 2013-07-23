@@ -136,9 +136,9 @@ app.Action = func(c *cli.Context) {
     name = c.Args()[0]
   }
   if c.String("lang") == "spanish" {
-    println("Hola", c.Args()[0])
+    println("Hola", name)
   } else {
-    println("Hello", c.Args()[0])
+    println("Hello", name)
   }
 }
 ...
