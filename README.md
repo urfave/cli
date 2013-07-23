@@ -35,7 +35,20 @@ func main() {
 }
 ```
 
-This app will run and show help text, but is not very useful. Let's give an action to execute and some help documentation:
+This app will run and show help text, but is not very useful. Let's give an action to execute:
+
+``` go
+package main
+
+import "os"
+import "github.com/codegangsta/cli"
+
+func main() {
+  app := cli.NewApp().SetAction(func(){println("boom! I say!")}).Run(os.Args)
+}
+```
+
+and now let's add some help documentation:
 
 ``` go
 package main
@@ -47,9 +60,9 @@ func main() {
   app := cli.NewApp()
   app.Name = "boom"
   app.Usage = "make an explosive entrance"
-  app.Action = func(c *cli.Context) {
+  app.SetAction(func() {
     println("boom! I say!")
-  }
+  })
   
   app.Run(os.Args)
 }
@@ -60,6 +73,7 @@ Running this already gives you a ton of functionality, plus support for things l
 ## Example
 
 Being a programmer can be a lonely job. Thankfully by the power of automation that is not the case! Let's create a greeter app to fend off our demons of loneliness!
+This time, we will use the `cli.Context` argument to get information passed in to the CLI.
 
 ``` go
 /* greet.go */
@@ -72,9 +86,9 @@ func main() {
   app := cli.NewApp()
   app.Name = "greet"
   app.Usage = "fight the loneliness!"
-  app.Action = func(c *cli.Context) {
+  app.SetAction(func(c *cli.Context) {
     println("Hello friend!")
-  }
+  })
   
   app.Run(os.Args)
 }
@@ -117,9 +131,9 @@ You can lookup arguments by calling the `Args` function on cli.Context.
 
 ``` go
 ...
-app.Action = func(c *cli.Context) {
+app.SetAction(func(c *cli.Context) {
   println("Hello", c.Args()[0])
-}
+})
 ...
 ```
 
@@ -130,13 +144,13 @@ Setting and querying flags is simple.
 app.Flags = []cli.Flag {
   cli.StringFlag{"lang", "english", "language for the greeting"},
 }
-app.Action = func(c *cli.Context) {
+app.SetAction(func(c *cli.Context) {
   if c.String("lang") == "spanish" {
     println("Hola", c.Args()[0])
   } else {
     println("Hello", c.Args()[0])
   }
-}
+})
 ...
 ```
 
@@ -150,17 +164,17 @@ app.Commands = []cli.Command{
     Name:      "add",
     ShortName: "a",
     Usage:     "add a task to the list",
-    Action: func(c *cli.Context) {
+    Action: cli.ContextAction{func(c *cli.Context) {
       println("added task: ", c.Args()[0])
-    },
+    }},
   },
   {
     Name:      "complete",
     ShortName: "c",
     Usage:     "complete a task on the list",
-    Action: func(c *cli.Context) {
+    Action: cli.ContextAction{func(c *cli.Context) {
       println("completed task: ", c.Args()[0])
-    },
+    }},
   },
 }
 ...
