@@ -51,28 +51,34 @@ var helpCommand = Command{
 	Action: func(c *Context) {
 		args := c.Args()
 		if len(args) > 0 {
-			showCommandHelp(c)
+			ShowCommandHelp(c, args[0])
 		} else {
-			showAppHelp(c)
+			ShowAppHelp(c)
 		}
 	},
 }
 
-func showAppHelp(c *Context) {
+// Prints help for the App
+func ShowAppHelp(c *Context) {
 	printHelp(AppHelpTemplate, c.App)
 }
 
-func showCommandHelp(c *Context) {
-	name := c.Args()[0]
+// Prints help for the given command
+func ShowCommandHelp(c *Context, command string) {
 	for _, c := range c.App.Commands {
-		if c.HasName(name) {
+		if c.HasName(command) {
 			printHelp(CommandHelpTemplate, c)
 			return
 		}
 	}
 
-	fmt.Printf("No help topic for '%v'\n", name)
+	fmt.Printf("No help topic for '%v'\n", command)
 	os.Exit(1)
+}
+
+// Prints the version number of the App
+func ShowVersion(c *Context) {
+	fmt.Printf("%v version %v\n", c.App.Name, c.App.Version)
 }
 
 func printHelp(templ string, data interface{}) {
@@ -82,6 +88,16 @@ func printHelp(templ string, data interface{}) {
 	w.Flush()
 }
 
-func showVersion(c *Context) {
-	fmt.Printf("%v version %v\n", c.App.Name, c.App.Version)
+func checkVersion(c *Context) {
+	if c.GlobalBool("version") {
+		ShowVersion(c)
+		os.Exit(0)
+	}
+}
+
+func checkHelp(c *Context) {
+	if c.GlobalBool("h") || c.GlobalBool("help") {
+		ShowAppHelp(c)
+		os.Exit(0)
+	}
 }

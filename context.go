@@ -62,7 +62,7 @@ func (c *Context) lookupInt(name string, set *flag.FlagSet) int {
 		}
 		return val
 	}
-	
+
 	return 0
 }
 
@@ -71,7 +71,7 @@ func (c *Context) lookupString(name string, set *flag.FlagSet) string {
 	if f != nil {
 		return f.Value.String()
 	}
-	
+
 	return ""
 }
 
@@ -84,6 +84,6 @@ func (c *Context) lookupBool(name string, set *flag.FlagSet) bool {
 		}
 		return val
 	}
-	
+
 	return false
 }
