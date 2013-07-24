@@ -9,7 +9,7 @@ type Flag interface {
 }
 
 func flagSet(name string, flags []Flag) *flag.FlagSet {
-	set := flag.NewFlagSet(name, flag.ExitOnError)
+	set := flag.NewFlagSet(name, flag.ContinueOnError)
 	for _, f := range flags {
 		f.Apply(set)
 	}
@@ -55,4 +55,17 @@ func (f IntFlag) String() string {
 
 func (f IntFlag) Apply(set *flag.FlagSet) {
 	set.Int(f.Name, f.Value, f.Usage)
+}
+
+type helpFlag struct {
+	Usage string
+}
+
+func (f helpFlag) String() string {
+	return fmt.Sprintf("--help, -h\t%v", f.Usage)
+}
+
+func (f helpFlag) Apply(set *flag.FlagSet) {
+	set.Bool("h", false, f.Usage)
+	set.Bool("help", false, f.Usage)
 }
