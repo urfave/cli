@@ -101,3 +101,10 @@ func checkHelp(c *Context) {
 		os.Exit(0)
 	}
 }
+
+func checkCommandHelp(c *Context, name string) {
+	if c.Bool("h") || c.Bool("help") {
+		ShowCommandHelp(c, name)
+		os.Exit(0)
+	}
+}
