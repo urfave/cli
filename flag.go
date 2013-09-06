@@ -22,7 +22,7 @@ type BoolFlag struct {
 }
 
 func (f BoolFlag) String() string {
-	return fmt.Sprintf("--%v\t%v", f.Name, f.Usage)
+	return fmt.Sprintf("-%v\t%v", f.Name, f.Usage)
 }
 
 func (f BoolFlag) Apply(set *flag.FlagSet) {
