@@ -22,7 +22,7 @@ type BoolFlag struct {
 }
 
 func (f BoolFlag) String() string {
-	return fmt.Sprintf("--%v\t%v", f.Name, f.Usage)
+	return fmt.Sprintf("%s%v\t%v", prefixFor(f.Name), f.Name, f.Usage)
 }
 
 func (f BoolFlag) Apply(set *flag.FlagSet) {
@@ -36,7 +36,7 @@ type StringFlag struct {
 }
 
 func (f StringFlag) String() string {
-	return fmt.Sprintf("--%v '%v'\t%v", f.Name, f.Value, f.Usage)
+	return fmt.Sprintf("%s%v '%v'\t%v", prefixFor(f.Name), f.Name, f.Value, f.Usage)
 }
 
 func (f StringFlag) Apply(set *flag.FlagSet) {
@@ -50,7 +50,7 @@ type IntFlag struct {
 }
 
 func (f IntFlag) String() string {
-	return fmt.Sprintf("--%v '%v'\t%v", f.Name, f.Value, f.Usage)
+	return fmt.Sprintf("%s%v '%v'\t%v", prefixFor(f.Name), f.Name, f.Value, f.Usage)
 }
 
 func (f IntFlag) Apply(set *flag.FlagSet) {
@@ -68,4 +68,14 @@ func (f helpFlag) String() string {
 func (f helpFlag) Apply(set *flag.FlagSet) {
 	set.Bool("h", false, f.Usage)
 	set.Bool("help", false, f.Usage)
+}
+
+func prefixFor(name string) (prefix string) {
+	if len(name) == 1 {
+		prefix = "-"
+	} else {
+		prefix = "--"
+	}
+
+	return
 }
