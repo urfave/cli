@@ -62,3 +62,25 @@ func TestApp_Command(t *testing.T) {
 		expect(t, app.Command(test.name) != nil, test.expected)
 	}
 }
+
+func TestApp_CommandWithArgBeforeFlags(t *testing.T) {
+	var parsedOption, firstArg string
+
+	app := cli.NewApp()
+	command := cli.Command{
+		Name: "cmd",
+		Flags: []cli.Flag{
+			cli.StringFlag{"option", "", "some option"},
+		},
+		Action: func(c *cli.Context) {
+			parsedOption = c.String("option")
+			firstArg = c.Args()[0]
+		},
+	}
+	app.Commands = []cli.Command{command}
+
+	app.Run([]string{"", "cmd", "my-arg", "--option", "my-option"})
+
+	expect(t, parsedOption, "my-option")
+	expect(t, firstArg, "my-arg")
+}
