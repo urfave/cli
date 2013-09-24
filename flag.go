@@ -2,14 +2,11 @@ package cli
 
 import "fmt"
 import "flag"
+import "strconv"
 
 type Flag interface {
 	fmt.Stringer
 	Apply(*flag.FlagSet)
-}
-
-type SliceFlag interface {
-	Value() []string
 }
 
 func flagSet(name string, flags []Flag) *flag.FlagSet {
@@ -23,17 +20,17 @@ func flagSet(name string, flags []Flag) *flag.FlagSet {
 
 type StringSlice []string
 
-func (i *StringSlice) Set(value string) error {
-	*i = append(*i, value)
+func (f *StringSlice) Set(value string) error {
+	*f = append(*f, value)
 	return nil
 }
 
-func (i *StringSlice) String() string {
-	return fmt.Sprintf("%s", *i)
+func (f *StringSlice) String() string {
+	return fmt.Sprintf("%s", *f)
 }
 
-func (i *StringSlice) Value() []string {
-	return *i
+func (f *StringSlice) Value() []string {
+	return *f
 }
 
 type StringSliceFlag struct {
@@ -47,6 +44,41 @@ func (f StringSliceFlag) String() string {
 }
 
 func (f StringSliceFlag) Apply(set *flag.FlagSet) {
+	set.Var(f.Value, f.Name, f.Usage)
+}
+
+type IntSlice []int
+
+func (f *IntSlice) Set(value string) error {
+
+	tmp, err := strconv.Atoi(value)
+	if err != nil {
+		return err
+	} else {
+		*f = append(*f, tmp)
+	}
+	return nil
+}
+
+func (f *IntSlice) String() string {
+	return fmt.Sprintf("%d", *f)
+}
+
+func (f *IntSlice) Value() []int {
+	return *f
+}
+
+type IntSliceFlag struct {
+	Name  string
+	Value *IntSlice
+	Usage string
+}
+
+func (f IntSliceFlag) String() string {
+	return fmt.Sprintf("%s%v '%v'\t%v", prefixFor(f.Name), f.Name, "-"+f.Name+" option -"+f.Name+" option", f.Usage)
+}
+
+func (f IntSliceFlag) Apply(set *flag.FlagSet) {
 	set.Var(f.Value, f.Name, f.Usage)
 }
 

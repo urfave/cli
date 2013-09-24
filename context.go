@@ -34,8 +34,14 @@ func (c *Context) String(name string) string {
 	return c.lookupString(name, c.flagSet)
 }
 
-func (c *Context) StringSlice(name string) flag.Value {
+// Looks up the value of a local string slice flag, returns nil if no string slice flag exists
+func (c *Context) StringSlice(name string) []string {
 	return c.lookupStringSlice(name, c.flagSet)
+}
+
+// Looks up the value of a local int slice flag, returns nil if no int slice flag exists
+func (c *Context) IntSlice(name string) []int {
+	return c.lookupIntSlice(name, c.flagSet)
 }
 
 // Looks up the value of a global int flag, returns 0 if no int flag exists
@@ -51,6 +57,16 @@ func (c *Context) GlobalBool(name string) bool {
 // Looks up the value of a global string flag, returns "" if no string flag exists
 func (c *Context) GlobalString(name string) string {
 	return c.lookupString(name, c.globalSet)
+}
+
+// Looks up the value of a global string slice flag, returns nil if no string slice flag exists
+func (c *Context) GlobalStringSlice(name string) []string {
+	return c.lookupStringSlice(name, c.globalSet)
+}
+
+// Looks up the value of a global int slice flag, returns nil if no int slice flag exists
+func (c *Context) GlobalIntSlice(name string) []int {
+	return c.lookupIntSlice(name, c.globalSet)
 }
 
 func (c *Context) Args() []string {
@@ -79,10 +95,21 @@ func (c *Context) lookupString(name string, set *flag.FlagSet) string {
 	return ""
 }
 
-func (c *Context) lookupStringSlice(name string, set *flag.FlagSet) flag.Value {
+func (c *Context) lookupStringSlice(name string, set *flag.FlagSet) []string {
 	f := set.Lookup(name)
 	if f != nil {
-		return f.Value
+		return (f.Value.(*StringSlice)).Value()
+
+	}
+
+	return nil
+}
+
+func (c *Context) lookupIntSlice(name string, set *flag.FlagSet) []int {
+	f := set.Lookup(name)
+	if f != nil {
+		return (f.Value.(*IntSlice)).Value()
+
 	}
 
 	return nil
