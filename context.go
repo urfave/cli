@@ -34,6 +34,10 @@ func (c *Context) String(name string) string {
 	return c.lookupString(name, c.flagSet)
 }
 
+func (c *Context) StringSlice(name string) flag.Value {
+	return c.lookupStringSlice(name, c.flagSet)
+}
+
 // Looks up the value of a global int flag, returns 0 if no int flag exists
 func (c *Context) GlobalInt(name string) int {
 	return c.lookupInt(name, c.globalSet)
@@ -73,6 +77,15 @@ func (c *Context) lookupString(name string, set *flag.FlagSet) string {
 	}
 
 	return ""
+}
+
+func (c *Context) lookupStringSlice(name string, set *flag.FlagSet) flag.Value {
+	f := set.Lookup(name)
+	if f != nil {
+		return f.Value
+	}
+
+	return nil
 }
 
 func (c *Context) lookupBool(name string, set *flag.FlagSet) bool {
