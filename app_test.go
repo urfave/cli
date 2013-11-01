@@ -32,8 +32,10 @@ func TestApp_Run(t *testing.T) {
 		s = s + c.Args()[0]
 	}
 
-	app.Run([]string{"command", "foo"})
-	app.Run([]string{"command", "bar"})
+	err := app.Run([]string{"command", "foo"})
+	expect(t, err, nil)
+	err = app.Run([]string{"command", "bar"})
+	expect(t, err, nil)
 	expect(t, s, "foobar")
 }
 

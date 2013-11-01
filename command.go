@@ -3,7 +3,6 @@ package cli
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
 	"strings"
 )
 
@@ -24,7 +23,7 @@ type Command struct {
 }
 
 // Invokes the command given the context, parses ctx.Args() to generate command-specific flags
-func (c Command) Run(ctx *Context) {
+func (c Command) Run(ctx *Context) error {
 	// append help to flags
 	c.Flags = append(
 		c.Flags,
@@ -55,12 +54,15 @@ func (c Command) Run(ctx *Context) {
 		fmt.Println("Incorrect Usage.\n")
 		ShowCommandHelp(ctx, c.Name)
 		fmt.Println("")
-		os.Exit(1)
+		return err
 	}
 
 	context := NewContext(ctx.App, set, ctx.globalSet)
-	checkCommandHelp(context, c.Name)
+	if checkCommandHelp(context, c.Name) {
+		return nil
+	}
 	c.Action(context)
+	return nil
 }
 
 // Returns true if Command.Name or Command.ShortName matches given name

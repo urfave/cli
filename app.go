@@ -34,7 +34,7 @@ func NewApp() *App {
 }
 
 // Entry point to the cli app. Parses the arguments slice and routes to the proper flag/args combination
-func (a *App) Run(arguments []string) {
+func (a *App) Run(arguments []string) error {
 	// append help to commands
 	if a.Command(helpCommand.Name) == nil {
 		a.Commands = append(a.Commands, helpCommand)
@@ -54,24 +54,29 @@ func (a *App) Run(arguments []string) {
 		fmt.Println("Incorrect Usage.\n")
 		ShowAppHelp(context)
 		fmt.Println("")
-		os.Exit(1)
+		return err
 	}
 
-	checkHelp(context)
-	checkVersion(context)
+	if checkHelp(context) {
+		return nil
+	}
+
+	if checkVersion(context) {
+		return nil
+	}
 
 	args := context.Args()
 	if len(args) > 0 {
 		name := args[0]
 		c := a.Command(name)
 		if c != nil {
-			c.Run(context)
-			return
+			return c.Run(context)
 		}
 	}
 
 	// Run default Action
 	a.Action(context)
+	return nil
 }
 
 // Returns the named command on App. Returns nil if the command does not exist
