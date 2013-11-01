@@ -57,16 +57,20 @@ func (a *App) Run(arguments []string) error {
 		return err
 	}
 
-	checkHelp(context)
-	checkVersion(context)
+	if checkHelp(context) {
+		return nil
+	}
+
+	if checkVersion(context) {
+		return nil
+	}
 
 	args := context.Args()
 	if len(args) > 0 {
 		name := args[0]
 		c := a.Command(name)
 		if c != nil {
-			c.Run(context)
-			return nil
+			return c.Run(context)
 		}
 	}
 
