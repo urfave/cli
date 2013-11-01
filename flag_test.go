@@ -45,7 +45,6 @@ func TestStringFlagHelpOutput(t *testing.T) {
 	}
 }
 
-
 var intFlagTests = []struct {
 	name     string
 	expected string

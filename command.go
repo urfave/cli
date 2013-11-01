@@ -7,15 +7,23 @@ import (
 	"strings"
 )
 
+// Command is a subcommand for a cli.App.
 type Command struct {
-	Name        string
-	ShortName   string
-	Usage       string
+	// The name of the command
+	Name string
+	// short name of the command. Typically one character
+	ShortName string
+	// A short description of the usage of this command
+	Usage string
+	// A longer explaination of how the command works
 	Description string
-	Action      func(context *Context)
-	Flags       []Flag
+	// The function to call when this command is invoked
+	Action func(context *Context)
+	// List of flags to parse
+	Flags []Flag
 }
 
+// Invokes the command given the context, parses ctx.Args() to generate command-specific flags
 func (c Command) Run(ctx *Context) {
 	// append help to flags
 	c.Flags = append(
@@ -55,6 +63,7 @@ func (c Command) Run(ctx *Context) {
 	c.Action(context)
 }
 
+// Returns true if Command.Name or Command.ShortName matches given name
 func (c Command) HasName(name string) bool {
 	return c.Name == name || c.ShortName == name
 }

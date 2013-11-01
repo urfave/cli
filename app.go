@@ -6,6 +6,8 @@ import (
 	"os"
 )
 
+// App is the main structure of a cli application. It is recomended that
+// and app be created with the cli.NewApp() function
 type App struct {
 	// The name of the program. Defaults to os.Args[0]
 	Name string
@@ -21,6 +23,7 @@ type App struct {
 	Action func(context *Context)
 }
 
+// Creates a new cli Application with some reasonable defaults for Name, Usage, Version and Action.
 func NewApp() *App {
 	return &App{
 		Name:    os.Args[0],
@@ -30,6 +33,7 @@ func NewApp() *App {
 	}
 }
 
+// Entry point to the cli app. Parses the arguments slice and routes to the proper flag/args combination
 func (a *App) Run(arguments []string) {
 	// append help to commands
 	if a.Command(helpCommand.Name) == nil {
@@ -70,6 +74,7 @@ func (a *App) Run(arguments []string) {
 	a.Action(context)
 }
 
+// Returns the named command on App. Returns nil if the command does not exist
 func (a *App) Command(name string) *Command {
 	for _, c := range a.Commands {
 		if c.HasName(name) {

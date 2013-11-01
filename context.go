@@ -15,6 +15,7 @@ type Context struct {
 	globalSet *flag.FlagSet
 }
 
+// Creates a new context. For use in when invoking an App or Command action.
 func NewContext(app *App, set *flag.FlagSet, globalSet *flag.FlagSet) *Context {
 	return &Context{app, set, globalSet}
 }
@@ -69,6 +70,7 @@ func (c *Context) GlobalIntSlice(name string) []int {
 	return c.lookupIntSlice(name, c.globalSet)
 }
 
+// Returns the command line arguments associated with the context.
 func (c *Context) Args() []string {
 	return c.flagSet.Args()
 }
