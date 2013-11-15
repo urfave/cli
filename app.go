@@ -51,7 +51,7 @@ func (a *App) Run(arguments []string) error {
 	context := NewContext(a, set, set)
 
 	if err != nil {
-		fmt.Println("Incorrect Usage.\n")
+		fmt.Printf("Incorrect Usage.\n\n")
 		ShowAppHelp(context)
 		fmt.Println("")
 		return err
