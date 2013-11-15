@@ -51,7 +51,7 @@ func (c Command) Run(ctx *Context) error {
 	}
 
 	if err != nil {
-		fmt.Println("Incorrect Usage.\n")
+		fmt.Printf("Incorrect Usage.\n\n")
 		ShowCommandHelp(ctx, c.Name)
 		fmt.Println("")
 		return err
