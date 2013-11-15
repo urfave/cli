@@ -129,3 +129,17 @@ func (c *Context) lookupBool(name string, set *flag.FlagSet) bool {
 
 	return false
 }
+
+// Returns the nth argument, or just a blank string
+func (c *Context) GetArg(n int) string {
+	args := c.Args()
+	if len(args) < n {
+		return args[n]
+	}
+	return ""
+}
+
+// Returns the first argument, or just a blank string, for convenience
+func (c *Context) FirstArg() string {
+	return c.GetArg(0)
+}
