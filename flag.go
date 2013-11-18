@@ -3,6 +3,7 @@ package cli
 import "fmt"
 import "flag"
 import "strconv"
+import "strings"
 
 // Flag is a common interface related to parsing flags in cli.
 // For more advanced flag parsing techniques, it is recomended that
@@ -11,6 +12,7 @@ type Flag interface {
 	fmt.Stringer
 	// Apply Flag settings to the given flag set
 	Apply(*flag.FlagSet)
+	GetName() string
 }
 
 func flagSet(name string, flags []Flag) *flag.FlagSet {
@@ -48,7 +50,14 @@ func (f StringSliceFlag) String() string {
 }
 
 func (f StringSliceFlag) Apply(set *flag.FlagSet) {
-	set.Var(f.Value, f.Name, f.Usage)
+	parts := strings.Split(f.Name, ", ")
+	for _, name := range parts {
+		set.Var(f.Value, name, f.Usage)
+	}
+}
+
+func (f StringSliceFlag) GetName() string {
+	return f.Name
 }
 
 type IntSlice []int
@@ -83,7 +92,14 @@ func (f IntSliceFlag) String() string {
 }
 
 func (f IntSliceFlag) Apply(set *flag.FlagSet) {
-	set.Var(f.Value, f.Name, f.Usage)
+	parts := strings.Split(f.Name, ", ")
+	for _, name := range parts {
+		set.Var(f.Value, name, f.Usage)
+	}
+}
+
+func (f IntSliceFlag) GetName() string {
+	return f.Name
 }
 
 type BoolFlag struct {
@@ -96,7 +112,14 @@ func (f BoolFlag) String() string {
 }
 
 func (f BoolFlag) Apply(set *flag.FlagSet) {
-	set.Bool(f.Name, false, f.Usage)
+	parts := strings.Split(f.Name, ", ")
+	for _, name := range parts {
+		set.Bool(name, false, f.Usage)
+	}
+}
+
+func (f BoolFlag) GetName() string {
+	return f.Name
 }
 
 type StringFlag struct {
@@ -110,7 +133,14 @@ func (f StringFlag) String() string {
 }
 
 func (f StringFlag) Apply(set *flag.FlagSet) {
-	set.String(f.Name, f.Value, f.Usage)
+	parts := strings.Split(f.Name, ", ")
+	for _, name := range parts {
+		set.String(name, f.Value, f.Usage)
+	}
+}
+
+func (f StringFlag) GetName() string {
+	return f.Name
 }
 
 type IntFlag struct {
@@ -124,7 +154,14 @@ func (f IntFlag) String() string {
 }
 
 func (f IntFlag) Apply(set *flag.FlagSet) {
-	set.Int(f.Name, f.Value, f.Usage)
+	parts := strings.Split(f.Name, ", ")
+	for _, name := range parts {
+		set.Int(name, f.Value, f.Usage)
+	}
+}
+
+func (f IntFlag) GetName() string {
+	return f.Name
 }
 
 type helpFlag struct {
@@ -138,6 +175,10 @@ func (f helpFlag) String() string {
 func (f helpFlag) Apply(set *flag.FlagSet) {
 	set.Bool("h", false, f.Usage)
 	set.Bool("help", false, f.Usage)
+}
+
+func (f helpFlag) GetName() string {
+	return "help"
 }
 
 func prefixFor(name string) (prefix string) {

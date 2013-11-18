@@ -48,6 +48,7 @@ func (a *App) Run(arguments []string) error {
 	set := flagSet(a.Name, a.Flags)
 	set.SetOutput(ioutil.Discard)
 	err := set.Parse(arguments[1:])
+	normalizeFlags(a.Flags, set)
 	context := NewContext(a, set, set)
 
 	if err != nil {

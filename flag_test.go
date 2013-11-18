@@ -64,3 +64,70 @@ func TestIntFlagHelpOutput(t *testing.T) {
 		}
 	}
 }
+
+
+func TestParseMultiString(t *testing.T) {
+	(&cli.App{
+		Flags: []cli.Flag{
+			cli.StringFlag{Name: "serve, s"},
+		},
+		Action: func(ctx *cli.Context) {
+			if ctx.String("serve") != "10" {
+				t.Errorf("main name not set")
+			}
+			if ctx.String("s") != "10" {
+				t.Errorf("short name not set")
+			}
+		},
+	}).Run([]string{"run", "-s", "10"})
+
+	(&cli.App{
+		Flags: []cli.Flag{
+			cli.StringFlag{Name: "serve, s"},
+		},
+		Action: func(ctx *cli.Context) {
+			if ctx.String("serve") != "10" {
+				t.Errorf("main name not set")
+			}
+			if ctx.String("s") != "10" {
+				t.Errorf("short name not set")
+			}
+		},
+	}).Run([]string{"run", "--serve", "10"})
+}
+
+func TestParseMultiInt(t *testing.T) {
+	a := cli.App{
+		Flags: []cli.Flag{
+			cli.IntFlag{Name: "serve, s"},
+		},
+		Action: func(ctx *cli.Context) {
+			if ctx.Int("serve") != 10 {
+				t.Errorf("main name not set")
+			}
+			if ctx.Int("s") != 10 {
+				t.Errorf("short name not set")
+			}
+		},
+	}
+	a.Run([]string{"run", "--serve", "10"})
+}
+	
+func TestParseMultiBool(t *testing.T) {
+	a := cli.App{
+		Flags: []cli.Flag{
+			cli.BoolFlag{Name: "serve, s"},
+		},
+		Action: func(ctx *cli.Context) {
+			if ctx.Bool("serve") != true {
+				t.Errorf("main name not set")
+			}
+			if ctx.Bool("s") != true {
+				t.Errorf("short name not set")
+			}
+		},
+	}
+	a.Run([]string{"run", "--serve"})
+}
+	
+	
