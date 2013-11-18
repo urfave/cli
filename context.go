@@ -2,8 +2,8 @@ package cli
 
 import (
 	"flag"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 // Context is a type that is passed through to
