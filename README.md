@@ -147,6 +147,18 @@ app.Action = func(c *cli.Context) {
 ...
 ```
 
+#### Alternate Names
+
+You can set alternate (or short) names for flags by providing a comma-delimited list for the Name. e.g.
+
+``` go
+app.Flags = []cli.Flag {
+  cli.StringFlag{"lang, l", "english", "language for the greeting"},
+}
+```
+
+That flag can then be set with `--lang spanish` or `-l spanish`. Note that giving two different forms of the same flag in the same command invocation is an error.
+
 ### Subcommands
 
 Subcommands can be defined for a more git-like command line app.
