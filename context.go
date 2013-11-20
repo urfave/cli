@@ -2,6 +2,7 @@ package cli
 
 import (
 	"flag"
+	"errors"
 	"strconv"
 	"strings"
 )
@@ -131,24 +132,33 @@ func lookupBool(name string, set *flag.FlagSet) bool {
 	return false
 }
 
-func normalizeFlags(flags []Flag, set *flag.FlagSet) {
+func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
+	visited := make(map[string]bool)
+	set.Visit(func(f *flag.Flag) {
+		visited[f.Name] = true
+	})
 	for _, f := range flags {
-		parts := strings.Split(f.GetName(), ", ")
+		parts := strings.Split(f.GetName(), ",")
 		if len(parts) == 1 {
 			continue
 		}
 		var ff *flag.Flag
 		for _, name := range parts {
-			ff = set.Lookup(name)
-			if ff != nil && ff.Value.String() != "" {
-				break
+			name = strings.Trim(name, " ")
+			if visited[name] {
+				if ff != nil {
+					return errors.New("Cannot use two forms of the same flag: " + name + " " + ff.Name)
+				}
+				ff = set.Lookup(name)
 			}
 		}
 		if ff == nil {
 			continue
 		}
 		for _, name := range parts {
+			name = strings.Trim(name, " ")
 			set.Set(name, ff.Value.String())
 		}
 	}
+	return nil
 }

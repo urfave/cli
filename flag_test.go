@@ -80,7 +80,7 @@ func TestParseMultiString(t *testing.T) {
 		},
 	}).Run([]string{"run", "-s", "10"})
 
-	(&cli.App{
+	/*(&cli.App{
 		Flags: []cli.Flag{
 			cli.StringFlag{Name: "serve, s"},
 		},
@@ -93,6 +93,7 @@ func TestParseMultiString(t *testing.T) {
 			}
 		},
 	}).Run([]string{"run", "--serve", "10"})
+*/
 }
 
 func TestParseMultiInt(t *testing.T) {
@@ -109,7 +110,7 @@ func TestParseMultiInt(t *testing.T) {
 			}
 		},
 	}
-	a.Run([]string{"run", "--serve", "10"})
+	a.Run([]string{"run", "-s", "10"})
 }
 
 func TestParseMultiBool(t *testing.T) {
