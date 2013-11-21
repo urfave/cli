@@ -79,21 +79,6 @@ func TestParseMultiString(t *testing.T) {
 			}
 		},
 	}).Run([]string{"run", "-s", "10"})
-
-	/*(&cli.App{
-		Flags: []cli.Flag{
-			cli.StringFlag{Name: "serve, s"},
-		},
-		Action: func(ctx *cli.Context) {
-			if ctx.String("serve") != "10" {
-				t.Errorf("main name not set")
-			}
-			if ctx.String("s") != "10" {
-				t.Errorf("short name not set")
-			}
-		},
-	}).Run([]string{"run", "--serve", "10"})
-	*/
 }
 
 func TestParseMultiInt(t *testing.T) {
