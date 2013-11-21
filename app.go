@@ -42,7 +42,7 @@ func (a *App) Run(arguments []string) error {
 
 	//append version/help flags
 	a.appendFlag(BoolFlag{"version", "print the version"})
-	a.appendFlag(helpFlag{"show help"})
+	a.appendFlag(BoolFlag{"help, h", "show help"})
 
 	// parse flags
 	set := flagSet(a.Name, a.Flags)

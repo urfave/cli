@@ -27,7 +27,7 @@ func (c Command) Run(ctx *Context) error {
 	// append help to flags
 	c.Flags = append(
 		c.Flags,
-		helpFlag{"show help"},
+		BoolFlag{"help, h","show help"},
 	)
 
 	set := flagSet(c.Name, c.Flags)

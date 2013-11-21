@@ -12,7 +12,7 @@ type Flag interface {
 	fmt.Stringer
 	// Apply Flag settings to the given flag set
 	Apply(*flag.FlagSet)
-	GetName() string
+	getName() string
 }
 
 func flagSet(name string, flags []Flag) *flag.FlagSet {
@@ -63,7 +63,7 @@ func (f StringSliceFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f StringSliceFlag) GetName() string {
+func (f StringSliceFlag) getName() string {
 	return f.Name
 }
 
@@ -106,7 +106,7 @@ func (f IntSliceFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f IntSliceFlag) GetName() string {
+func (f IntSliceFlag) getName() string {
 	return f.Name
 }
 
@@ -125,7 +125,7 @@ func (f BoolFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f BoolFlag) GetName() string {
+func (f BoolFlag) getName() string {
 	return f.Name
 }
 
@@ -145,7 +145,7 @@ func (f StringFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f StringFlag) GetName() string {
+func (f StringFlag) getName() string {
 	return f.Name
 }
 
@@ -165,26 +165,8 @@ func (f IntFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f IntFlag) GetName() string {
+func (f IntFlag) getName() string {
 	return f.Name
-}
-
-type helpFlag struct {
-	Usage string
-}
-
-func (f helpFlag) String() string {
-	return fmt.Sprintf("%s\t%v", prefixedNames("help, h"), f.Usage)
-}
-
-func (f helpFlag) Apply(set *flag.FlagSet) {
-	eachName("help, h", func(name string) {
-		set.Bool(name, false, f.Usage)
-	})
-}
-
-func (f helpFlag) GetName() string {
-	return "help"
 }
 
 func prefixFor(name string) (prefix string) {
