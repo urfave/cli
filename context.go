@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"flag"
 	"errors"
+	"flag"
 	"strconv"
 	"strings"
 )

@@ -184,7 +184,7 @@ func prefixedNames(fullName string) (prefixed string) {
 	for i, name := range parts {
 		name = strings.Trim(name, " ")
 		prefixed += prefixFor(name) + name
-		if i < len(parts) - 1 {
+		if i < len(parts)-1 {
 			prefixed += ", "
 		}
 	}

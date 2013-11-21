@@ -93,7 +93,7 @@ func TestParseMultiString(t *testing.T) {
 			}
 		},
 	}).Run([]string{"run", "--serve", "10"})
-*/
+	*/
 }
 
 func TestParseMultiInt(t *testing.T) {
