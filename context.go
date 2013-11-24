@@ -15,6 +15,8 @@ type Context struct {
 	globalSet *flag.FlagSet
 }
 
+type Args []string
+
 // Creates a new context. For use in when invoking an App or Command action.
 func NewContext(app *App, set *flag.FlagSet, globalSet *flag.FlagSet) *Context {
 	return &Context{app, set, globalSet}
@@ -71,8 +73,9 @@ func (c *Context) GlobalIntSlice(name string) []int {
 }
 
 // Returns the command line arguments associated with the context.
-func (c *Context) Args() []string {
-	return c.flagSet.Args()
+func (c *Context) Args() Args {
+	args := Args(c.flagSet.Args())
+	return args
 }
 
 func (c *Context) lookupInt(name string, set *flag.FlagSet) int {
@@ -130,16 +133,29 @@ func (c *Context) lookupBool(name string, set *flag.FlagSet) bool {
 	return false
 }
 
-// Returns the nth argument, or just a blank string
-func (c *Context) GetArg(n int) string {
-	args := c.Args()
-	if len(args) < n {
-		return args[n]
+// Returns the nth argument, or else a blank string
+func (a Args) Get(n int) string {
+	if len(a) > n {
+		return a[n]
 	}
 	return ""
 }
 
-// Returns the first argument, or just a blank string, for convenience
-func (c *Context) FirstArg() string {
-	return c.GetArg(0)
+// Returns the first argument, or else a blank string
+func (a Args) First() string {
+	return a.Get(0)
+}
+
+// Return the rest of the arguments (not the first one)
+// or else an empty string slice
+func (a Args) Tail() []string {
+	if len(a) >= 2 {
+		return []string(a)[1:]
+	}
+	return []string{}
+}
+
+// Checks if there are any arguments present
+func (a Args) Present() bool {
+	return len(a) != 0
 }

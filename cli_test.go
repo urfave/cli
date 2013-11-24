@@ -15,7 +15,7 @@ func Example() {
 			ShortName: "a",
 			Usage:     "add a task to the list",
 			Action: func(c *cli.Context) {
-				println("added task: ", c.Args()[0])
+				println("added task: ", c.Args().First())
 			},
 		},
 		{
@@ -23,7 +23,7 @@ func Example() {
 			ShortName: "c",
 			Usage:     "complete a task on the list",
 			Action: func(c *cli.Context) {
-				println("completed task: ", c.Args()[0])
+				println("completed task: ", c.Args().First())
 			},
 		},
 	}

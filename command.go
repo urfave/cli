@@ -43,11 +43,12 @@ func (c Command) Run(ctx *Context) error {
 
 	var err error
 	if firstFlagIndex > -1 {
-		args := ctx.Args()[1:firstFlagIndex]
-		flags := ctx.Args()[firstFlagIndex:]
-		err = set.Parse(append(flags, args...))
+		args := ctx.Args()
+		regularArgs := args[1:firstFlagIndex]
+		flagArgs := args[firstFlagIndex:]
+		err = set.Parse(append(flagArgs, regularArgs...))
 	} else {
-		err = set.Parse(ctx.Args()[1:])
+		err = set.Parse(ctx.Args().Tail())
 	}
 
 	if err != nil {

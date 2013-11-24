@@ -76,8 +76,8 @@ var helpCommand = Command{
 	Usage:     "Shows a list of commands or help for one command",
 	Action: func(c *Context) {
 		args := c.Args()
-		if len(args) > 0 {
-			ShowCommandHelp(c, args[0])
+		if args.Present() {
+			ShowCommandHelp(c, args.First())
 		} else {
 			ShowAppHelp(c)
 		}

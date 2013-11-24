@@ -29,7 +29,7 @@ func TestApp_Run(t *testing.T) {
 
 	app := cli.NewApp()
 	app.Action = func(c *cli.Context) {
-		s = s + c.Args()[0]
+		s = s + c.Args().First()
 	}
 
 	err := app.Run([]string{"command", "foo"})
@@ -76,7 +76,7 @@ func TestApp_CommandWithArgBeforeFlags(t *testing.T) {
 		},
 		Action: func(c *cli.Context) {
 			parsedOption = c.String("option")
-			firstArg = c.Args()[0]
+			firstArg = c.Args().First()
 		},
 	}
 	app.Commands = []cli.Command{command}
@@ -103,7 +103,7 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 			parsedIntSlice = c.IntSlice("p")
 			parsedStringSlice = c.StringSlice("ip")
 			parsedOption = c.String("option")
-			firstArg = c.Args()[0]
+			firstArg = c.Args().First()
 		},
 	}
 	app.Commands = []cli.Command{command}

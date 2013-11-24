@@ -86,8 +86,8 @@ func (a *App) Run(arguments []string) error {
 	}
 
 	args := context.Args()
-	if len(args) > 0 {
-		name := args[0]
+	if args.Present() {
+		name := args.First()
 		c := a.Command(name)
 		if c != nil {
 			return c.Run(context)
