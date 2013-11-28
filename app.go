@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 )
 
 // App is the main structure of a cli application. It is recomended that
@@ -21,15 +22,34 @@ type App struct {
 	Flags []Flag
 	// The action to execute when no subcommands are specified
 	Action func(context *Context)
+	// Compilation date
+	Compiled time.Time
+	// Author
+	Author string
+	// Author e-mail
+	Email string
+}
+
+// Tries to find out when this binary was compiled.
+// Returns the current time if it fails to find it.
+func compileTime() time.Time {
+	info, err := os.Stat(os.Args[0])
+	if err != nil {
+		return time.Now()
+	}
+	return info.ModTime()
 }
 
 // Creates a new cli Application with some reasonable defaults for Name, Usage, Version and Action.
 func NewApp() *App {
 	return &App{
-		Name:    os.Args[0],
-		Usage:   "A new cli application",
-		Version: "0.0.0",
-		Action:  helpCommand.Action,
+		Name:     os.Args[0],
+		Usage:    "A new cli application",
+		Version:  "0.0.0",
+		Action:   helpCommand.Action,
+		Compiled: compileTime(),
+		Author:   "Author",
+		Email:    "unknown@email",
 	}
 }
 
@@ -59,8 +79,7 @@ func (a *App) Run(arguments []string) error {
 	context := NewContext(a, set, set)
 
 	if err != nil {
-		fmt.Println("Incorrect Usage.\n")
-		fmt.Println("")
+		fmt.Printf("Incorrect Usage.\n\n")
 		ShowAppHelp(context)
 		fmt.Println("")
 		return err
@@ -75,8 +94,8 @@ func (a *App) Run(arguments []string) error {
 	}
 
 	args := context.Args()
-	if len(args) > 0 {
-		name := args[0]
+	if args.Present() {
+		name := args.First()
 		c := a.Command(name)
 		if c != nil {
 			return c.Run(context)

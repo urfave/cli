@@ -50,8 +50,8 @@ var helpCommand = Command{
 	Usage:     "Shows a list of commands or help for one command",
 	Action: func(c *Context) {
 		args := c.Args()
-		if len(args) > 0 {
-			ShowCommandHelp(c, args[0])
+		if args.Present() {
+			ShowCommandHelp(c, args.First())
 		} else {
 			ShowAppHelp(c)
 		}
@@ -83,7 +83,10 @@ func ShowVersion(c *Context) {
 func printHelp(templ string, data interface{}) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
 	t := template.Must(template.New("help").Parse(templ))
-	t.Execute(w, data)
+	err := t.Execute(w, data)
+	if err != nil {
+		panic(err)
+	}
 	w.Flush()
 }
 
