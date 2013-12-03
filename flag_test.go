@@ -65,6 +65,26 @@ func TestIntFlagHelpOutput(t *testing.T) {
 	}
 }
 
+var float64FlagTests = []struct {
+	name     string
+	expected string
+}{
+	{"help", "--help '0'\t"},
+	{"h", "-h '0'\t"},
+}
+
+func TestFloat64FlagHelpOutput(t *testing.T) {
+
+	for _, test := range float64FlagTests {
+		flag := cli.Float64Flag{Name: test.name}
+		output := flag.String()
+
+		if output != test.expected {
+			t.Errorf("%s does not match %s", output, test.expected)
+		}
+	}
+}
+
 func TestParseMultiString(t *testing.T) {
 	(&cli.App{
 		Flags: []cli.Flag{

@@ -87,6 +87,21 @@ func TestApp_CommandWithArgBeforeFlags(t *testing.T) {
 	expect(t, firstArg, "my-arg")
 }
 
+func TestApp_Float64Flag(t *testing.T) {
+	var meters float64
+
+	app := cli.NewApp()
+	app.Flags = []cli.Flag{
+		cli.Float64Flag{Name: "height", Value: 1.5, Usage: "Set the height, in meters"},
+	}
+	app.Action = func(c *cli.Context) {
+		meters = c.Float64("height")
+	}
+
+	app.Run([]string{"", "--height", "1.93"})
+	expect(t, meters, 1.93)
+}
+
 func TestApp_ParseSliceFlags(t *testing.T) {
 	var parsedOption, firstArg string
 	var parsedIntSlice []int

@@ -169,6 +169,26 @@ func (f IntFlag) getName() string {
 	return f.Name
 }
 
+type Float64Flag struct {
+	Name  string
+	Value float64
+	Usage string
+}
+
+func (f Float64Flag) String() string {
+	return fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage)
+}
+
+func (f Float64Flag) Apply(set *flag.FlagSet) {
+	eachName(f.Name, func(name string) {
+		set.Float64(name, f.Value, f.Usage)
+	})
+}
+
+func (f Float64Flag) getName() string {
+	return f.Name
+}
+
 func prefixFor(name string) (prefix string) {
 	if len(name) == 1 {
 		prefix = "-"
