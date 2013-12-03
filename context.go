@@ -27,6 +27,10 @@ func (c *Context) Int(name string) int {
 	return lookupInt(name, c.flagSet)
 }
 
+func (c *Context) Float64(name string) float64 {
+	return lookupFloat64(name, c.flagSet)
+}
+
 // Looks up the value of a local bool flag, returns false if no bool flag exists
 func (c *Context) Bool(name string) bool {
 	return lookupBool(name, c.flagSet)
@@ -111,6 +115,19 @@ func lookupInt(name string, set *flag.FlagSet) int {
 	f := set.Lookup(name)
 	if f != nil {
 		val, err := strconv.Atoi(f.Value.String())
+		if err != nil {
+			return 0
+		}
+		return val
+	}
+
+	return 0
+}
+
+func lookupFloat64(name string, set *flag.FlagSet) float64 {
+	f := set.Lookup(name)
+	if f != nil {
+		val, err := strconv.ParseFloat(f.Value.String(), 64)
 		if err != nil {
 			return 0
 		}
