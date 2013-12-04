@@ -27,6 +27,7 @@ func (c *Context) Int(name string) int {
 	return lookupInt(name, c.flagSet)
 }
 
+// Looks up the value of a local float64 flag, returns 0 if no int flag exists
 func (c *Context) Float64(name string) float64 {
 	return lookupFloat64(name, c.flagSet)
 }
