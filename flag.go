@@ -1,9 +1,11 @@
 package cli
 
-import "fmt"
-import "flag"
-import "strconv"
-import "strings"
+import (
+	"flag"
+	"fmt"
+	"strconv"
+	"strings"
+)
 
 // Flag is a common interface related to parsing flags in cli.
 // For more advanced flag parsing techniques, it is recomended that
