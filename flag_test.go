@@ -134,3 +134,33 @@ func TestParseMultiBool(t *testing.T) {
 	}
 	a.Run([]string{"run", "--serve"})
 }
+
+func TestStringFlagWithoutDefaultValue(t *testing.T) {
+	flag := cli.StringFlag{Name: "help", Usage: "Show help", OmitDefaultValue: true}
+	output := flag.String()
+
+	if output != "--help \tShow help" {
+		t.Errorf("string without default value should omit default value")
+	}
+}
+
+func TestIntFlagWithoutDefaultValue(t *testing.T) {
+	flag := cli.IntFlag{Name: "help", Usage: "Prints number of help topics", OmitDefaultValue: true}
+	output := flag.String()
+	expected:= "--help \tPrints number of help topics"
+
+	if output != expected {
+		t.Errorf("expected '%s' to equal '%s", output, expected)
+	}
+}
+
+func TestFloatFlagWithoutDefaultValue(t *testing.T) {
+	flag := cli.Float64Flag{Name: "help", Usage: "Prints floating help topics", OmitDefaultValue: true}
+	output := flag.String()
+	expected:= "--help \tPrints floating help topics"
+
+	if output != expected {
+		t.Errorf("expected '%s' to equal '%s", output, expected)
+	}
+}
+
