@@ -15,11 +15,12 @@ type Context struct {
 	App       *App
 	flagSet   *flag.FlagSet
 	globalSet *flag.FlagSet
+	setFlags  map[string]bool
 }
 
 // Creates a new context. For use in when invoking an App or Command action.
 func NewContext(app *App, set *flag.FlagSet, globalSet *flag.FlagSet) *Context {
-	return &Context{app, set, globalSet}
+	return &Context{app, set, globalSet, nil}
 }
 
 // Looks up the value of a local int flag, returns 0 if no int flag exists
@@ -75,6 +76,17 @@ func (c *Context) GlobalStringSlice(name string) []string {
 // Looks up the value of a global int slice flag, returns nil if no int slice flag exists
 func (c *Context) GlobalIntSlice(name string) []int {
 	return lookupIntSlice(name, c.globalSet)
+}
+
+// Determines if the flag was actually set exists
+func (c *Context) IsSet(name string) bool {
+	if c.setFlags == nil {
+		c.setFlags = make(map[string]bool)
+		c.flagSet.Visit(func(f *flag.Flag) {
+			c.setFlags[f.Name] = true
+		})
+	}
+	return c.setFlags[name] == true
 }
 
 type Args []string

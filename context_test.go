@@ -45,3 +45,14 @@ func TestContext_Args(t *testing.T) {
 	expect(t, len(c.Args()), 2)
 	expect(t, c.Bool("myflag"), true)
 }
+
+func TestContext_IsSet(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Bool("myflag", false, "doc")
+	set.String("otherflag", "hello world", "doc")
+	c := cli.NewContext(nil, set, set)
+	set.Parse([]string{"--myflag", "bat", "baz"})
+	expect(t, c.IsSet("myflag"), true)
+	expect(t, c.IsSet("otherflag"), false)
+	expect(t, c.IsSet("bogusflag"), false)
+}
