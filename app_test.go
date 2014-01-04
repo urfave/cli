@@ -159,3 +159,69 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 		t.Errorf("%s does not match %s", parsedStringSlice, expectedStringSlice)
 	}
 }
+
+func TestApp_BeforeFunc(t *testing.T) {
+	beforeRun, subcommandRun := false, false
+	beforeError := fmt.Errorf("fail")
+	var err error
+
+	app := cli.NewApp()
+
+	app.Before = func(c *cli.Context) error {
+		beforeRun = true
+		s := c.String("opt")
+		if s == "fail" {
+			return beforeError
+		}
+
+		return nil
+	}
+
+	app.Commands = []cli.Command{
+		cli.Command{
+			Name: "sub",
+			Action: func(c *cli.Context) {
+				subcommandRun = true
+			},
+		},
+	}
+
+	app.Flags = []cli.Flag{
+		cli.StringFlag{Name: "opt"},
+	}
+
+	// run with the Before() func succeeding
+	err = app.Run([]string{"command", "--opt", "succeed", "sub"})
+
+	if err != nil {
+		t.Fatalf("Run error: %s", err)
+	}
+
+	if beforeRun == false {
+		t.Errorf("Before() not executed when expected")
+	}
+
+	if subcommandRun == false {
+		t.Errorf("Subcommand not executed when expected")
+	}
+
+	// reset
+	beforeRun, subcommandRun = false, false
+
+	// run with the Before() func failing
+	err = app.Run([]string{"command", "--opt", "fail", "sub"})
+
+	// should be the same error produced by the Before func
+	if err != beforeError {
+		t.Errorf("Run error expected, but not received")
+	}
+
+	if beforeRun == false {
+		t.Errorf("Before() not executed when expected")
+	}
+
+	if subcommandRun == true {
+		t.Errorf("Subcommand executed when NOT expected")
+	}
+
+}
