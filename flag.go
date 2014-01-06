@@ -135,10 +135,15 @@ type StringFlag struct {
 	Name  string
 	Value string
 	Usage string
+	OmitDefaultValue bool
 }
 
 func (f StringFlag) String() string {
-	return fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage)
+	if f.OmitDefaultValue {
+		return fmt.Sprintf("%s \t%v", prefixedNames(f.Name), f.Usage)
+	} else {
+		return fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage)
+	}
 }
 
 func (f StringFlag) Apply(set *flag.FlagSet) {
@@ -155,10 +160,15 @@ type IntFlag struct {
 	Name  string
 	Value int
 	Usage string
+	OmitDefaultValue bool
 }
 
 func (f IntFlag) String() string {
-	return fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage)
+	if f.OmitDefaultValue {
+		return fmt.Sprintf("%s \t%v", prefixedNames(f.Name), f.Usage)
+	} else {
+		return fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage)
+	}
 }
 
 func (f IntFlag) Apply(set *flag.FlagSet) {
@@ -175,10 +185,15 @@ type Float64Flag struct {
 	Name  string
 	Value float64
 	Usage string
+	OmitDefaultValue bool
 }
 
 func (f Float64Flag) String() string {
-	return fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage)
+	if f.OmitDefaultValue {
+		return fmt.Sprintf("%s \t%v", prefixedNames(f.Name), f.Usage)
+	} else {
+		return fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage)
+	}
 }
 
 func (f Float64Flag) Apply(set *flag.FlagSet) {
