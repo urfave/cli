@@ -176,7 +176,7 @@ app.Commands = []cli.Command{
     ShortName: "a",
     Usage:     "add a task to the list",
     Action: func(c *cli.Context) {
-      println("added task: ", c.FirstArg())
+      println("added task: ", c.Args().First())
     },
   },
   {
@@ -184,7 +184,7 @@ app.Commands = []cli.Command{
     ShortName: "c",
     Usage:     "complete a task on the list",
     Action: func(c *cli.Context) {
-      println("completed task: ", c.FirstArg())
+      println("completed task: ", c.Args().First())
     },
   },
 }
