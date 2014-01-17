@@ -25,7 +25,7 @@ export PATH=$PATH:$GOPATH/bin
 ```
 
 ## Getting Started
-One of the philosophies behind cli.go is that an API should be playful and full of discovery. So a cli.go app can be as little as one line of code in `main()`. 
+One of the philosophies behind cli.go is that an API should be playful and full of discovery. So a cli.go app can be as little as one line of code in `main()`.
 
 ``` go
 package main
@@ -57,7 +57,7 @@ func main() {
   app.Action = func(c *cli.Context) {
     println("boom! I say!")
   }
-  
+
   app.Run(os.Args)
 }
 ```
@@ -81,10 +81,15 @@ func main() {
   app := cli.NewApp()
   app.Name = "greet"
   app.Usage = "fight the loneliness!"
+  app.Author = "me"
+  app.CopyrightHolder = app.Author
+  app.Version = "0.0.1" // if ommited default is 0.0.0
+  app.Copyright = "1973-2014" // if ommited default is current year
+  app.License = "ASL-2 (Apache Software License version 2.0) <http://www.apache.org/licenses/LICENSE-2.0>"
+  app.Reporting = "Report bugs to me, if you find any :-) ..."
   app.Action = func(c *cli.Context) {
     println("Hello friend!")
   }
-  
   app.Run(os.Args)
 }
 ```
@@ -118,7 +123,18 @@ COMMANDS:
     help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS
-    --version	Shows version information
+   --version, -v print the version
+   --help, -h    show help
+
+AUTHOR:
+    Written by me.
+
+REPORTING BUGS:
+    Report bugs to me, if you find any :-) ...
+
+COPYRIGHT:
+    Copyright © 1973-2014 me
+    Licensed under the ASL-2 (Apache Software License version 2.0) <http://www.apache.org/licenses/LICENSE-2.0>
 ```
 
 ### Arguments

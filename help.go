@@ -25,6 +25,16 @@ COMMANDS:
 GLOBAL OPTIONS:
    {{range .Flags}}{{.}}
    {{end}}
+AUTHOR:
+    Written by {{.Author}}.
+
+REPORTING BUGS:
+    {{.Reporting}}
+
+COPYRIGHT:
+    Copyright © {{.Copyright}} {{.CopyrightHolder}}
+    Licensed under the {{.License}}
+
 `
 
 // The text template for the command help topic.
@@ -75,9 +85,13 @@ func ShowCommandHelp(c *Context, command string) {
 	fmt.Printf("No help topic for '%v'\n", command)
 }
 
-// Prints the version number of the App
+// Prints the available metadata about the App
 func ShowVersion(c *Context) {
 	fmt.Printf("%v version %v\n", c.App.Name, c.App.Version)
+	fmt.Printf("Copyright © %v %v\n", c.App.Copyright,
+		c.App.CopyrightHolder)
+	fmt.Printf("Licensed under the %v.\n", c.App.License)
+	fmt.Printf("Written by %v.\n", c.App.Author)
 }
 
 func printHelp(templ string, data interface{}) {

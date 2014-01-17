@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -29,8 +30,16 @@ type App struct {
 	Compiled time.Time
 	// Author
 	Author string
+	// may or may not be the same as the Author
+	CopyrightHolder string
 	// Author e-mail
 	Email string
+	// xxxx-201x
+	Copyright string
+	// License details
+	License string
+	// Project Upstream URL
+	Reporting string
 }
 
 // Tries to find out when this binary was compiled.
@@ -46,13 +55,17 @@ func compileTime() time.Time {
 // Creates a new cli Application with some reasonable defaults for Name, Usage, Version and Action.
 func NewApp() *App {
 	return &App{
-		Name:     os.Args[0],
-		Usage:    "A new cli application",
-		Version:  "0.0.0",
-		Action:   helpCommand.Action,
-		Compiled: compileTime(),
-		Author:   "Author",
-		Email:    "unknown@email",
+		Name:            os.Args[0],
+		Usage:           "A new cli application",
+		Version:         "0.0.0",
+		Action:          helpCommand.Action,
+		Compiled:        compileTime(),
+		Author:          "Author",
+		CopyrightHolder: "Author",
+		Email:           "unknown@email",
+		Copyright:       strconv.Itoa(compileTime().Year()),
+		License:         "unknow license",
+		Reporting:       "report bugs to me at...",
 	}
 }
 
