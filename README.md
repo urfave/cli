@@ -165,6 +165,27 @@ app.Flags = []cli.Flag {
 
 That flag can then be set with `--lang spanish` or `-l spanish`. Note that giving two different forms of the same flag in the same command invocation is an error.
 
+#### Boolean Flags
+
+You can also set boolean flags e.g.
+``` go
+app.Flags = []cli.Flag{
+    cli.BoolFlag{
+      Name:  "debug",
+      Usage: "enables debug mode",
+    },
+  }
+app.Action = func(c *cli.Context) {
+    if c.String("debug") == "true" {
+      DEBUG = true
+      log.Printf("DEBUG mode enabled.")
+    }
+  }
+
+```
+
+Any time an user invokes `--debug` the appropriate action will be run.
+
 ### Subcommands
 
 Subcommands can be defined for a more git-like command line app.
