@@ -82,10 +82,13 @@ func main() {
   app.Name = "greet"
   app.Usage = "fight the loneliness!"
   app.Author = "me"
-  app.CopyrightHolder = app.Author
+  // if ommited it defaults to app.Author
+  // app.CopyrightHolder = "The xpto Foundation"
   app.Version = "0.0.1" // if ommited default is 0.0.0
   app.Copyright = "1973-2014" // if ommited default is current year
+  // if .License omited nothing will be printed
   app.License = "ASL-2 (Apache Software License version 2.0) <http://www.apache.org/licenses/LICENSE-2.0>"
+  // if ommited nothig will be printed
   app.Reporting = "Report bugs to me, if you find any :-) ..."
   app.Action = func(c *cli.Context) {
     println("Hello friend!")

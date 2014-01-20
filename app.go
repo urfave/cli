@@ -61,11 +61,11 @@ func NewApp() *App {
 		Action:          helpCommand.Action,
 		Compiled:        compileTime(),
 		Author:          "Author",
-		CopyrightHolder: "Author",
+		CopyrightHolder: "",
 		Email:           "unknown@email",
 		Copyright:       strconv.Itoa(compileTime().Year()),
-		License:         "unknow license",
-		Reporting:       "report bugs to me at...",
+		License:         "",
+		Reporting:       "",
 	}
 }
 

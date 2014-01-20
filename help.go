@@ -27,14 +27,14 @@ GLOBAL OPTIONS:
    {{end}}
 AUTHOR:
     Written by {{.Author}}.
-
+{{if .Reporting}}
 REPORTING BUGS:
     {{.Reporting}}
-
+    {{end}}
 COPYRIGHT:
-    Copyright © {{.Copyright}} {{.CopyrightHolder}}
-    Licensed under the {{.License}}
-
+    Copyright © {{.Copyright}} {{if .CopyrightHolder}}{{.CopyrightHolder}}{{else}}{{.Author}}{{end}}
+    {{if .License}}Licensed under the {{.License}}
+{{end}}
 `
 
 // The text template for the command help topic.
@@ -88,10 +88,20 @@ func ShowCommandHelp(c *Context, command string) {
 // Prints the available metadata about the App
 func ShowVersion(c *Context) {
 	fmt.Printf("%v version %v\n", c.App.Name, c.App.Version)
-	fmt.Printf("Copyright © %v %v\n", c.App.Copyright,
-		c.App.CopyrightHolder)
-	fmt.Printf("Licensed under the %v.\n", c.App.License)
-	fmt.Printf("Written by %v.\n", c.App.Author)
+	if c.App.CopyrightHolder != "" {
+		fmt.Printf("Copyright © %v %v\n", c.App.Copyright,
+			c.App.CopyrightHolder)
+	} else {
+		fmt.Printf("Copyright © %v %v\n", c.App.Copyright,
+			c.App.Author)
+	}
+	if c.App.License != "" {
+		fmt.Printf("Licensed under the %v.\n", c.App.License)
+	}
+	// we assume it would be != from Author so we don't test it
+	if c.App.CopyrightHolder != "" {
+		fmt.Printf("Written by %v.\n", c.App.Author)
+	}
 }
 
 func printHelp(templ string, data interface{}) {
