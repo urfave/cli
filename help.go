@@ -45,13 +45,13 @@ var CommandHelpTemplate = `NAME:
 
 USAGE:
    command {{.Name}} [command options] [arguments...]
-
+{{if .Description}}
 DESCRIPTION:
    {{.Description}}
-
+{{end}}{{if .Flags}}
 OPTIONS:
    {{range .Flags}}{{.}}
-   {{end}}
+   {{end}}{{end}}
 `
 
 var helpCommand = Command{
