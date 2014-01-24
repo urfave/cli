@@ -20,6 +20,8 @@ type Command struct {
 	Action func(context *Context)
 	// List of flags to parse
 	Flags []Flag
+	// if True command won't be displayed on help
+	Hidden bool
 }
 
 // Invokes the command given the context, parses ctx.Args() to generate command-specific flags

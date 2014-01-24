@@ -20,8 +20,8 @@ VERSION:
    {{.Version}}
 
 COMMANDS:
-   {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
-   {{end}}
+   {{range .Commands}}{{if not .Hidden}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
+   {{end}}{{end}}
 GLOBAL OPTIONS:
    {{range .Flags}}{{.}}
    {{end}}
