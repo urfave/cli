@@ -225,3 +225,22 @@ func TestApp_BeforeFunc(t *testing.T) {
 	}
 
 }
+
+func TestAppHelpPrinter(t *testing.T) {
+	oldPrinter := cli.HelpPrinter
+	defer func() {
+		cli.HelpPrinter = oldPrinter
+	}()
+
+	var wasCalled = false
+	cli.HelpPrinter = func(template string, data interface{}) {
+		wasCalled = true
+	}
+
+	app := cli.NewApp()
+	app.Run([]string{"-h"})
+
+	if wasCalled == false {
+		t.Errorf("Help printer expected to be called, but was not")
+	}
+}

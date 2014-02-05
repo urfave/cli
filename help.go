@@ -69,8 +69,9 @@ var helpCommand = Command{
 }
 
 // Prints help for the App
+var HelpPrinter = printHelp
 func ShowAppHelp(c *Context) {
-	printHelp(AppHelpTemplate, c.App)
+	HelpPrinter(AppHelpTemplate, c.App)
 }
 
 // Prints help for the given command
