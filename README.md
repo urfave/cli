@@ -1,5 +1,9 @@
 [![Build Status](https://travis-ci.org/codegangsta/cli.png?branch=master)](https://travis-ci.org/codegangsta/cli)
 
+this is a patched version, with some additional features i found usefull, from [github.com/codegangsta/cli](github.com/codegangsta/cli). ideally those features will be merged upstream some day.
+
+---
+
 # cli.go
 cli.go is simple, fast, and fun package for building command line apps in Go. The goal is to enable developers to write fast and distributable command line applications in an expressive way.
 
@@ -54,11 +58,13 @@ func main() {
   app := cli.NewApp()
   app.Name = "boom"
   app.Usage = "make an explosive entrance"
-  app.Action = func(c *cli.Context) {
+  app.Action = func(c *cli.Context) (err error) {
     println("boom! I say!")
+    ...
+    return err
   }
 
-  app.Run(os.Args)
+  err := app.Run(os.Args)
 }
 ```
 
@@ -90,8 +96,10 @@ func main() {
   app.License = "ASL-2 (Apache Software License version 2.0) <http://www.apache.org/licenses/LICENSE-2.0>"
   // if ommited nothig will be printed
   app.Reporting = "Report bugs to me, if you find any :-) ..."
-  app.Action = func(c *cli.Context) {
+  app.Action = func(c *cli.Context) (err error) {
     println("Hello friend!")
+    ...
+    return err
   }
   app.Run(os.Args)
 }
@@ -145,8 +153,10 @@ You can lookup arguments by calling the `Args` function on cli.Context.
 
 ``` go
 ...
-app.Action = func(c *cli.Context) {
+app.Action = func(c *cli.Context) (err error) {
   println("Hello", c.Args()[0])
+  ...
+  return err
 }
 ...
 ```
@@ -158,7 +168,7 @@ Setting and querying flags is simple.
 app.Flags = []cli.Flag {
   cli.StringFlag{"lang", "english", "language for the greeting"},
 }
-app.Action = func(c *cli.Context) {
+app.Action = func(c *cli.Context) (err error){
   name := "someone"
   if len(c.Args()) > 0 {
     name = c.Args()[0]
@@ -170,6 +180,7 @@ app.Action = func(c *cli.Context) {
   }
 }
 ...
+return err
 ```
 
 #### Alternate Names
@@ -194,11 +205,13 @@ app.Flags = []cli.Flag{
       Usage: "enables debug mode",
     },
   }
-app.Action = func(c *cli.Context) {
+app.Action = func(c *cli.Context) (err error) {
     if c.String("debug") == "true" {
       DEBUG = true
       log.Printf("DEBUG mode enabled.")
     }
+    ...
+    return err
   }
 
 ```
@@ -215,16 +228,18 @@ app.Commands = []cli.Command{
     Name:      "add",
     ShortName: "a",
     Usage:     "add a task to the list",
-    Action: func(c *cli.Context) {
+    Action: func(c *cli.Context) (err error) {
       println("added task: ", c.Args().First())
+      return err
     },
   },
   {
     Name:      "complete",
     ShortName: "c",
     Usage:     "complete a task on the list",
-    Action: func(c *cli.Context) {
+    Action: func(c *cli.Context) (err error)  {
       println("completed task: ", c.Args().First())
+      return err
     },
   },
 }

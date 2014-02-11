@@ -58,18 +58,20 @@ var helpCommand = Command{
 	Name:      "help",
 	ShortName: "h",
 	Usage:     "Shows a list of commands or help for one command",
-	Action: func(c *Context) {
+	Action: func(c *Context) (err error) {
 		args := c.Args()
 		if args.Present() {
 			ShowCommandHelp(c, args.First())
 		} else {
 			ShowAppHelp(c)
 		}
+		return err
 	},
 }
 
 // Prints help for the App
 var HelpPrinter = printHelp
+
 func ShowAppHelp(c *Context) {
 	HelpPrinter(AppHelpTemplate, c.App)
 }

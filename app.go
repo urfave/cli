@@ -25,7 +25,7 @@ type App struct {
 	// If a non-nil error is returned, no subcommands are run
 	Before func(context *Context) error
 	// The action to execute when no subcommands are specified
-	Action func(context *Context)
+	Action func(context *Context) error
 	// Compilation date
 	Compiled time.Time
 	// Author
@@ -126,8 +126,7 @@ func (a *App) Run(arguments []string) error {
 	}
 
 	// Run default Action
-	a.Action(context)
-	return nil
+	return a.Action(context)
 }
 
 // Returns the named command on App. Returns nil if the command does not exist
