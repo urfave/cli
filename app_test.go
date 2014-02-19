@@ -24,6 +24,40 @@ func ExampleApp() {
 	// Hello Jeremy
 }
 
+func ExampleAppHelp() {
+	// set args for examples sake
+	os.Args = []string{"greet", "h", "describeit"}
+
+	app := cli.NewApp()
+	app.Name = "greet"
+	app.Flags = []cli.Flag{
+		cli.StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
+	}
+	app.Commands = []cli.Command{
+    {
+			Name: "describeit",
+			ShortName: "d",
+			Usage: "use it to see a description",
+			Description: "This is how we describe describeit the function",
+			Action: func(c *cli.Context) {
+        fmt.Printf("i like to describe things")
+      },
+		},
+	}
+	app.Run(os.Args)
+	// Output:
+  // NAME:
+  //    describeit - use it to see a description
+	//
+  // USAGE:
+  //    command describeit [command options] [arguments...]
+	//
+  // DESCRIPTION:
+  //    This is how we describe describeit the function
+  //
+  // OPTIONS:
+}
+
 func TestApp_Run(t *testing.T) {
 	s := ""
 
@@ -53,7 +87,7 @@ var commandAppTests = []struct {
 
 func TestApp_Command(t *testing.T) {
 	app := cli.NewApp()
-	fooCommand := cli.Command{Name: "foobar", ShortName: "f"}
+	fooCommand := cli.Command{Name: "foobar", ShortName: "f", Description: "Foobar is nuts",}
 	batCommand := cli.Command{Name: "batbaz", ShortName: "b"}
 	app.Commands = []cli.Command{
 		fooCommand,
@@ -121,6 +155,7 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 			firstArg = c.Args().First()
 		},
 	}
+
 	app.Commands = []cli.Command{command}
 
 	app.Run([]string{"", "cmd", "my-arg", "-p", "22", "-p", "80", "-ip", "8.8.8.8", "-ip", "8.8.4.4"})
