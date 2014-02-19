@@ -34,28 +34,28 @@ func ExampleAppHelp() {
 		cli.StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
 	}
 	app.Commands = []cli.Command{
-    {
+		{
 			Name: "describeit",
 			ShortName: "d",
 			Usage: "use it to see a description",
 			Description: "This is how we describe describeit the function",
 			Action: func(c *cli.Context) {
-        fmt.Printf("i like to describe things")
-      },
+				fmt.Printf("i like to describe things")
+			},
 		},
 	}
 	app.Run(os.Args)
 	// Output:
-  // NAME:
-  //    describeit - use it to see a description
+	// NAME:
+	//    describeit - use it to see a description
 	//
-  // USAGE:
-  //    command describeit [command options] [arguments...]
+	// USAGE:
+	//    command describeit [command options] [arguments...]
 	//
-  // DESCRIPTION:
-  //    This is how we describe describeit the function
-  //
-  // OPTIONS:
+	// DESCRIPTION:
+	//    This is how we describe describeit the function
+	//
+	// OPTIONS:
 }
 
 func TestApp_Run(t *testing.T) {
