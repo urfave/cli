@@ -87,7 +87,7 @@ var commandAppTests = []struct {
 
 func TestApp_Command(t *testing.T) {
 	app := cli.NewApp()
-	fooCommand := cli.Command{Name: "foobar", ShortName: "f", Description: "Foobar is nuts",}
+	fooCommand := cli.Command{Name: "foobar", ShortName: "f"}
 	batCommand := cli.Command{Name: "batbaz", ShortName: "b"}
 	app.Commands = []cli.Command{
 		fooCommand,
@@ -155,7 +155,6 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 			firstArg = c.Args().First()
 		},
 	}
-
 	app.Commands = []cli.Command{command}
 
 	app.Run([]string{"", "cmd", "my-arg", "-p", "22", "-p", "80", "-ip", "8.8.8.8", "-ip", "8.8.4.4"})
