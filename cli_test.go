@@ -1,8 +1,9 @@
 package cli_test
 
 import (
-	"github.com/codegangsta/cli"
 	"os"
+
+	"github.com/AntonioMeireles/cli"
 )
 
 func Example() {
@@ -14,16 +15,18 @@ func Example() {
 			Name:      "add",
 			ShortName: "a",
 			Usage:     "add a task to the list",
-			Action: func(c *cli.Context) {
+			Action: func(c *cli.Context) (err error) {
 				println("added task: ", c.Args().First())
+				return err
 			},
 		},
 		{
 			Name:      "complete",
 			ShortName: "c",
 			Usage:     "complete a task on the list",
-			Action: func(c *cli.Context) {
+			Action: func(c *cli.Context) (err error) {
 				println("completed task: ", c.Args().First())
+				return err
 			},
 		},
 	}

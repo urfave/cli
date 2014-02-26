@@ -5,8 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"."
-	//"github.com/codegangsta/cli"
+	"github.com/AntonioMeireles/cli"
 )
 
 func ExampleApp() {
@@ -38,12 +37,12 @@ func ExampleAppHelp() {
 	}
 	app.Commands = []cli.Command{
 		{
-			Name: "describeit",
-			ShortName: "d",
-			Usage: "use it to see a description",
+			Name:        "describeit",
+			ShortName:   "d",
+			Usage:       "use it to see a description",
 			Description: "This is how we describe describeit the function",
-			Action: func(c *cli.Context) {
-				fmt.Printf("i like to describe things")
+			Action: func(c *cli.Context) (err error) {
+				return err
 			},
 		},
 	}
@@ -58,7 +57,6 @@ func ExampleAppHelp() {
 	// DESCRIPTION:
 	//    This is how we describe describeit the function
 	//
-	// OPTIONS:
 }
 
 func TestApp_Run(t *testing.T) {
