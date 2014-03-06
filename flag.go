@@ -131,6 +131,25 @@ func (f BoolFlag) getName() string {
 	return f.Name
 }
 
+type BoolTFlag struct {
+	Name  string
+	Usage string
+}
+
+func (f BoolTFlag) String() string {
+	return fmt.Sprintf("%s\t%v", prefixedNames(f.Name), f.Usage)
+}
+
+func (f BoolTFlag) Apply(set *flag.FlagSet) {
+	eachName(f.Name, func(name string) {
+		set.Bool(name, true, f.Usage)
+	})
+}
+
+func (f BoolTFlag) getName() string {
+	return f.Name
+}
+
 type StringFlag struct {
 	Name  string
 	Value string
