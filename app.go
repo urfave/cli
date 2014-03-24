@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -24,13 +25,21 @@ type App struct {
 	// If a non-nil error is returned, no subcommands are run
 	Before func(context *Context) error
 	// The action to execute when no subcommands are specified
-	Action func(context *Context)
+	Action func(context *Context) error
 	// Compilation date
 	Compiled time.Time
 	// Author
 	Author string
+	// may or may not be the same as the Author
+	CopyrightHolder string
 	// Author e-mail
 	Email string
+	// xxxx-201x
+	Copyright string
+	// License details
+	License string
+	// Project Upstream URL
+	Reporting string
 }
 
 // Tries to find out when this binary was compiled.
@@ -46,13 +55,17 @@ func compileTime() time.Time {
 // Creates a new cli Application with some reasonable defaults for Name, Usage, Version and Action.
 func NewApp() *App {
 	return &App{
-		Name:     os.Args[0],
-		Usage:    "A new cli application",
-		Version:  "0.0.0",
-		Action:   helpCommand.Action,
-		Compiled: compileTime(),
-		Author:   "Author",
-		Email:    "unknown@email",
+		Name:            os.Args[0],
+		Usage:           "A new cli application",
+		Version:         "0.0.0",
+		Action:          helpCommand.Action,
+		Compiled:        compileTime(),
+		Author:          "Author",
+		CopyrightHolder: "",
+		Email:           "unknown@email",
+		Copyright:       strconv.Itoa(compileTime().Year()),
+		License:         "",
+		Reporting:       "",
 	}
 }
 
@@ -113,8 +126,7 @@ func (a *App) Run(arguments []string) error {
 	}
 
 	// Run default Action
-	a.Action(context)
-	return nil
+	return a.Action(context)
 }
 
 // Returns the named command on App. Returns nil if the command does not exist

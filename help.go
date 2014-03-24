@@ -20,11 +20,21 @@ VERSION:
    {{.Version}}
 
 COMMANDS:
-   {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
-   {{end}}
+   {{range .Commands}}{{if not .Hidden}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
+   {{end}}{{end}}
 GLOBAL OPTIONS:
    {{range .Flags}}{{.}}
    {{end}}
+AUTHOR:
+    Written by {{.Author}}.
+{{if .Reporting}}
+REPORTING BUGS:
+    {{.Reporting}}
+    {{end}}
+COPYRIGHT:
+    Copyright © {{.Copyright}} {{if .CopyrightHolder}}{{.CopyrightHolder}}{{else}}{{.Author}}{{end}}
+    {{if .License}}Licensed under the {{.License}}
+{{end}}
 `
 
 // The text template for the command help topic.
@@ -35,31 +45,33 @@ var CommandHelpTemplate = `NAME:
 
 USAGE:
    command {{.Name}} [command options] [arguments...]
-
+{{if .Description}}
 DESCRIPTION:
    {{.Description}}
-
+{{end}}{{if .Flags}}
 OPTIONS:
    {{range .Flags}}{{.}}
-   {{end}}
+   {{end}}{{end}}
 `
 
 var helpCommand = Command{
 	Name:      "help",
 	ShortName: "h",
 	Usage:     "Shows a list of commands or help for one command",
-	Action: func(c *Context) {
+	Action: func(c *Context) (err error) {
 		args := c.Args()
 		if args.Present() {
 			ShowCommandHelp(c, args.First())
 		} else {
 			ShowAppHelp(c)
 		}
+		return err
 	},
 }
 
 // Prints help for the App
 var HelpPrinter = printHelp
+
 func ShowAppHelp(c *Context) {
 	HelpPrinter(AppHelpTemplate, c.App)
 }
@@ -76,9 +88,23 @@ func ShowCommandHelp(c *Context, command string) {
 	fmt.Printf("No help topic for '%v'\n", command)
 }
 
-// Prints the version number of the App
+// Prints the available metadata about the App
 func ShowVersion(c *Context) {
 	fmt.Printf("%v version %v\n", c.App.Name, c.App.Version)
+	if c.App.CopyrightHolder != "" {
+		fmt.Printf("Copyright © %v %v\n", c.App.Copyright,
+			c.App.CopyrightHolder)
+	} else {
+		fmt.Printf("Copyright © %v %v\n", c.App.Copyright,
+			c.App.Author)
+	}
+	if c.App.License != "" {
+		fmt.Printf("Licensed under the %v.\n", c.App.License)
+	}
+	// we assume it would be != from Author so we don't test it
+	if c.App.CopyrightHolder != "" {
+		fmt.Printf("Written by %v.\n", c.App.Author)
+	}
 }
 
 func printHelp(templ string, data interface{}) {

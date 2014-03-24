@@ -1,5 +1,9 @@
 [![Build Status](https://travis-ci.org/codegangsta/cli.png?branch=master)](https://travis-ci.org/codegangsta/cli)
 
+this is a patched version, with some additional features i found usefull, from [github.com/codegangsta/cli](github.com/codegangsta/cli). ideally those features will be merged upstream some day.
+
+---
+
 # cli.go
 cli.go is simple, fast, and fun package for building command line apps in Go. The goal is to enable developers to write fast and distributable command line applications in an expressive way.
 
@@ -25,7 +29,7 @@ export PATH=$PATH:$GOPATH/bin
 ```
 
 ## Getting Started
-One of the philosophies behind cli.go is that an API should be playful and full of discovery. So a cli.go app can be as little as one line of code in `main()`. 
+One of the philosophies behind cli.go is that an API should be playful and full of discovery. So a cli.go app can be as little as one line of code in `main()`.
 
 ``` go
 package main
@@ -54,11 +58,13 @@ func main() {
   app := cli.NewApp()
   app.Name = "boom"
   app.Usage = "make an explosive entrance"
-  app.Action = func(c *cli.Context) {
+  app.Action = func(c *cli.Context) (err error) {
     println("boom! I say!")
+    ...
+    return err
   }
-  
-  app.Run(os.Args)
+
+  err := app.Run(os.Args)
 }
 ```
 
@@ -81,10 +87,20 @@ func main() {
   app := cli.NewApp()
   app.Name = "greet"
   app.Usage = "fight the loneliness!"
-  app.Action = func(c *cli.Context) {
+  app.Author = "me"
+  // if ommited it defaults to app.Author
+  // app.CopyrightHolder = "The xpto Foundation"
+  app.Version = "0.0.1" // if ommited default is 0.0.0
+  app.Copyright = "1973-2014" // if ommited default is current year
+  // if .License omited nothing will be printed
+  app.License = "ASL-2 (Apache Software License version 2.0) <http://www.apache.org/licenses/LICENSE-2.0>"
+  // if ommited nothig will be printed
+  app.Reporting = "Report bugs to me, if you find any :-) ..."
+  app.Action = func(c *cli.Context) (err error) {
     println("Hello friend!")
+    ...
+    return err
   }
-  
   app.Run(os.Args)
 }
 ```
@@ -118,7 +134,18 @@ COMMANDS:
     help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS
-    --version	Shows version information
+   --version, -v print the version
+   --help, -h    show help
+
+AUTHOR:
+    Written by me.
+
+REPORTING BUGS:
+    Report bugs to me, if you find any :-) ...
+
+COPYRIGHT:
+    Copyright © 1973-2014 me
+    Licensed under the ASL-2 (Apache Software License version 2.0) <http://www.apache.org/licenses/LICENSE-2.0>
 ```
 
 ### Arguments
@@ -126,8 +153,10 @@ You can lookup arguments by calling the `Args` function on cli.Context.
 
 ``` go
 ...
-app.Action = func(c *cli.Context) {
+app.Action = func(c *cli.Context) (err error) {
   println("Hello", c.Args()[0])
+  ...
+  return err
 }
 ...
 ```
@@ -139,7 +168,7 @@ Setting and querying flags is simple.
 app.Flags = []cli.Flag {
   cli.StringFlag{"lang", "english", "language for the greeting"},
 }
-app.Action = func(c *cli.Context) {
+app.Action = func(c *cli.Context) (err error){
   name := "someone"
   if len(c.Args()) > 0 {
     name = c.Args()[0]
@@ -151,6 +180,7 @@ app.Action = func(c *cli.Context) {
   }
 }
 ...
+return err
 ```
 
 #### Alternate Names
@@ -165,6 +195,29 @@ app.Flags = []cli.Flag {
 
 That flag can then be set with `--lang spanish` or `-l spanish`. Note that giving two different forms of the same flag in the same command invocation is an error.
 
+#### Boolean Flags
+
+You can also set boolean flags e.g.
+``` go
+app.Flags = []cli.Flag{
+    cli.BoolFlag{
+      Name:  "debug",
+      Usage: "enables debug mode",
+    },
+  }
+app.Action = func(c *cli.Context) (err error) {
+    if c.String("debug") == "true" {
+      DEBUG = true
+      log.Printf("DEBUG mode enabled.")
+    }
+    ...
+    return err
+  }
+
+```
+
+Any time an user invokes `--debug` the appropriate action will be run.
+
 ### Subcommands
 
 Subcommands can be defined for a more git-like command line app.
@@ -175,16 +228,18 @@ app.Commands = []cli.Command{
     Name:      "add",
     ShortName: "a",
     Usage:     "add a task to the list",
-    Action: func(c *cli.Context) {
+    Action: func(c *cli.Context) (err error) {
       println("added task: ", c.Args().First())
+      return err
     },
   },
   {
     Name:      "complete",
     ShortName: "c",
     Usage:     "complete a task on the list",
-    Action: func(c *cli.Context) {
+    Action: func(c *cli.Context) (err error)  {
       println("completed task: ", c.Args().First())
+      return err
     },
   },
 }

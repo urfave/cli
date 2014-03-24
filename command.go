@@ -17,9 +17,11 @@ type Command struct {
 	// A longer explaination of how the command works
 	Description string
 	// The function to call when this command is invoked
-	Action func(context *Context)
+	Action func(context *Context) error
 	// List of flags to parse
 	Flags []Flag
+	// if True command won't be displayed on help
+	Hidden bool
 }
 
 // Invokes the command given the context, parses ctx.Args() to generate command-specific flags
@@ -70,8 +72,7 @@ func (c Command) Run(ctx *Context) error {
 	if checkCommandHelp(context, c.Name) {
 		return nil
 	}
-	c.Action(context)
-	return nil
+	return c.Action(context)
 }
 
 // Returns true if Command.Name or Command.ShortName matches given name

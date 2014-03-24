@@ -1,7 +1,7 @@
 package cli_test
 
 import (
-	"github.com/codegangsta/cli"
+	"github.com/AntonioMeireles/cli"
 	"reflect"
 	"testing"
 )
@@ -91,13 +91,14 @@ func TestParseMultiString(t *testing.T) {
 		Flags: []cli.Flag{
 			cli.StringFlag{Name: "serve, s"},
 		},
-		Action: func(ctx *cli.Context) {
+		Action: func(ctx *cli.Context) (err error) {
 			if ctx.String("serve") != "10" {
 				t.Errorf("main name not set")
 			}
 			if ctx.String("s") != "10" {
 				t.Errorf("short name not set")
 			}
+			return err
 		},
 	}).Run([]string{"run", "-s", "10"})
 }
@@ -123,13 +124,14 @@ func TestParseMultiInt(t *testing.T) {
 		Flags: []cli.Flag{
 			cli.IntFlag{Name: "serve, s"},
 		},
-		Action: func(ctx *cli.Context) {
+		Action: func(ctx *cli.Context) (err error) {
 			if ctx.Int("serve") != 10 {
 				t.Errorf("main name not set")
 			}
 			if ctx.Int("s") != 10 {
 				t.Errorf("short name not set")
 			}
+			return err
 		},
 	}
 	a.Run([]string{"run", "-s", "10"})
@@ -140,13 +142,14 @@ func TestParseMultiBool(t *testing.T) {
 		Flags: []cli.Flag{
 			cli.BoolFlag{Name: "serve, s"},
 		},
-		Action: func(ctx *cli.Context) {
+		Action: func(ctx *cli.Context) (err error) {
 			if ctx.Bool("serve") != true {
 				t.Errorf("main name not set")
 			}
 			if ctx.Bool("s") != true {
 				t.Errorf("short name not set")
 			}
+			return err
 		},
 	}
 	a.Run([]string{"run", "--serve"})
