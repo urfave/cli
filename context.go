@@ -38,6 +38,11 @@ func (c *Context) Bool(name string) bool {
 	return lookupBool(name, c.flagSet)
 }
 
+// Looks up the value of a local boolT flag, returns false if no bool flag exists
+func (c *Context) BoolT(name string) bool {
+	return lookupBoolT(name, c.flagSet)
+}
+
 // Looks up the value of a local string flag, returns "" if no string flag exists
 func (c *Context) String(name string) string {
 	return lookupString(name, c.flagSet)
@@ -192,6 +197,28 @@ func lookupBool(name string, set *flag.FlagSet) bool {
 	return false
 }
 
+
+func lookupBoolT(name string, set *flag.FlagSet) bool {
+	f := set.Lookup(name)
+	if f != nil {
+		val, err := strconv.ParseBool(f.Value.String())
+		if err != nil {
+			return true
+		}
+		return val
+	}
+
+	return false
+}
+
+func copyFlag(name string, ff *flag.Flag, set *flag.FlagSet) {
+	switch ff.Value.(type) {
+	case *StringSlice:
+	default:
+		set.Set(name, ff.Value.String())
+	}
+}
+
 func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
 	visited := make(map[string]bool)
 	set.Visit(func(f *flag.Flag) {
@@ -217,7 +244,9 @@ func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
 		}
 		for _, name := range parts {
 			name = strings.Trim(name, " ")
-			set.Set(name, ff.Value.String())
+			if !visited[name] {
+				copyFlag(name, ff, set)
+			}
 		}
 	}
 	return nil
