@@ -13,6 +13,7 @@ import (
 // parsed command-line options.
 type Context struct {
 	App       *App
+	Command   Command
 	flagSet   *flag.FlagSet
 	globalSet *flag.FlagSet
 	setFlags  map[string]bool
@@ -20,7 +21,7 @@ type Context struct {
 
 // Creates a new context. For use in when invoking an App or Command action.
 func NewContext(app *App, set *flag.FlagSet, globalSet *flag.FlagSet) *Context {
-	return &Context{app, set, globalSet, nil}
+	return &Context{App: app, flagSet: set, globalSet: globalSet}
 }
 
 // Looks up the value of a local int flag, returns 0 if no int flag exists

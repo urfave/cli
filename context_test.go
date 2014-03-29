@@ -11,9 +11,12 @@ func TestNewContext(t *testing.T) {
 	set.Int("myflag", 12, "doc")
 	globalSet := flag.NewFlagSet("test", 0)
 	globalSet.Int("myflag", 42, "doc")
+	command := cli.Command{Name: "mycommand"}
 	c := cli.NewContext(nil, set, globalSet)
+	c.Command = command
 	expect(t, c.Int("myflag"), 12)
 	expect(t, c.GlobalInt("myflag"), 42)
+	expect(t, c.Command.Name, "mycommand")
 }
 
 func TestContext_Int(t *testing.T) {
