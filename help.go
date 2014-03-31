@@ -73,7 +73,11 @@ func ShowCommandHelp(c *Context, command string) {
 		}
 	}
 
-	fmt.Printf("No help topic for '%v'\n", command)
+	if c.App.CommandNotFound != nil {
+		c.App.CommandNotFound(c, command)
+	} else {
+		fmt.Printf("No help topic for '%v'\n", command)
+	}
 }
 
 // Prints the version number of the App
