@@ -20,6 +20,8 @@ type Command struct {
 	Action func(context *Context)
 	// List of flags to parse
 	Flags []Flag
+	// Boolean to determine if command is a subcommand
+	isSubcommand bool
 }
 
 // Invokes the command given the context, parses ctx.Args() to generate command-specific flags
@@ -51,6 +53,15 @@ func (c Command) Run(ctx *Context) error {
 		err = set.Parse(ctx.Args().Tail())
 	}
 
+	context := NewContext(ctx.App, set, ctx.globalSet)
+	if c.isSubcommand {
+		if err := set.Parse(ctx.Args()[1:]); err != nil {
+			fmt.Printf("Incorrect Usage.\n\n")
+		}
+		c.Action(context)
+		return nil
+	}
+
 	if err != nil {
 		fmt.Printf("Incorrect Usage.\n\n")
 		ShowCommandHelp(ctx, c.Name)
@@ -66,10 +77,11 @@ func (c Command) Run(ctx *Context) error {
 		fmt.Println("")
 		return nerr
 	}
-	context := NewContext(ctx.App, set, ctx.globalSet)
+
 	if checkCommandHelp(context, c.Name) {
 		return nil
 	}
+
 	c.Action(context)
 	return nil
 }
