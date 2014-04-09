@@ -51,7 +51,7 @@ var CommandHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
 USAGE:
-   command {{.Name}} [command options] [arguments...]
+   command {{.Name}} [command options] {{range .Args}}{{.}} {{end}}
 
 DESCRIPTION:
    {{.Description}}
@@ -92,11 +92,7 @@ func ShowSubcommandHelp(c *Context) {
 func ShowCommandHelp(ctx *Context, command string) {
 	for _, c := range ctx.App.Commands {
 		if c.HasName(command) {
-			if c.isSubcommand {
-				c.Run(ctx)
-			} else {
-				printHelp(CommandHelpTemplate, c)
-			}
+			printHelp(CommandHelpTemplate, c)
 			return
 		}
 	}

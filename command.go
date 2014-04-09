@@ -18,6 +18,8 @@ type Command struct {
 	Description string
 	// The function to call when this command is invoked
 	Action func(context *Context)
+	// List of positional arguments
+	Args []string
 	// List of flags to parse
 	Flags []Flag
 	// Boolean to determine if command is a subcommand
@@ -55,10 +57,7 @@ func (c Command) Run(ctx *Context) error {
 
 	context := NewContext(ctx.App, set, ctx.globalSet)
 	if c.isSubcommand {
-		if err := set.Parse(ctx.Args()[1:]); err != nil {
-			fmt.Printf("Incorrect Usage.\n\n")
-		}
-		c.Action(context)
+		c.Action(ctx)
 		return nil
 	}
 

@@ -127,12 +127,13 @@ func (a *App) AddSubcommand(command Command) *App {
 		isSubcommand: true,
 		Name:         fmt.Sprintf("%s %s", a.Name, command.Name),
 		Usage:        command.Usage,
-		Action:       helpCommand.Action,
+		Flags:        a.Flags,
+		Action:       command.Action,
 	}
 
 	command.isSubcommand = true
 	command.Action = func(c *Context) {
-		app.Run(append([]string{command.Name}, c.Args()...))
+		app.Run(c.Args())
 	}
 
 	a.Commands = append(a.Commands, command)
