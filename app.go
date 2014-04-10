@@ -26,8 +26,8 @@ type App struct {
 	// List of flags to parse
 	Flags []Flag
 
-	// An action to execute before any subcommands are run, but after the context is ready
-	// If a non-nil error is returned, no subcommands are run
+	// An action to execute before any subcommands are run, but after the context is ready.
+	// If a non-nil error is returned, no subcommands are run.
 	Before func(context *Context) error
 
 	// The action to execute when no subcommands are specified
@@ -43,7 +43,7 @@ type App struct {
 	Email string
 }
 
-// Tries to find out when this binary was compiled.
+// compileTime tries to find out when this binary was compiled.
 // Returns the current time if it fails to find it.
 func compileTime() time.Time {
 	info, err := os.Stat(os.Args[0])
@@ -53,8 +53,7 @@ func compileTime() time.Time {
 	return info.ModTime()
 }
 
-// Creates a new cli Application with some reasonable defaults for Name, Usage,
-// Version and Action.
+// NewApp creates a new cli Application with some reasonable defaults for Name, Usage, Version and Action.
 func NewApp() *App {
 	return &App{
 		Name:     os.Args[0],
@@ -67,14 +66,16 @@ func NewApp() *App {
 	}
 }
 
-// Entry point to the cli app. Parses the arguments slice and routes to the proper flag/args combination.
+// Run provides an entry point to the cli app.
+// It parses the slice of arguments and routes to the proper flag/args combination.
 func (a *App) Run(arguments []string) error {
+
 	// append help to commands
 	if a.Command(helpCommand.Name) == nil {
 		a.Commands = append(a.Commands, helpCommand)
 	}
 
-	//append version/help flags
+	// append version/help flags
 	a.appendFlag(BoolFlag{"version, v", "print the version"})
 	a.appendFlag(BoolFlag{"help, h", "show help"})
 
@@ -130,7 +131,7 @@ func (a *App) Run(arguments []string) error {
 	return nil
 }
 
-// Returns the named command on App. Returns nil if the command does not exist.
+// Command returns the named command on App. If the command does not exist, nil is returned.
 func (a *App) Command(name string) *Command {
 	for _, c := range a.Commands {
 		if c.HasName(name) {
@@ -140,7 +141,7 @@ func (a *App) Command(name string) *Command {
 	return nil
 }
 
-// Check for the presence of a flag.
+// hasFlag checks for the presence of a flag.
 func (a *App) hasFlag(flag Flag) bool {
 	for _, f := range a.Flags {
 		if flag == f {
@@ -150,7 +151,7 @@ func (a *App) hasFlag(flag Flag) bool {
 	return false
 }
 
-// Append a flag if it does not already exist.
+// appendFlag appends a flag if it does not already exist.
 func (a *App) appendFlag(flag Flag) {
 	if !a.hasFlag(flag) {
 		a.Flags = append(a.Flags, flag)

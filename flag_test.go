@@ -11,6 +11,7 @@ var (
 		{"help", "--help\t"},
 		{"h", "-h\t"},
 	}
+
 	stringFlagTests = []FlagTestString{
 		{"help", "--help ''\t"},
 		{"h", "-h ''\t"},

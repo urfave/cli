@@ -28,8 +28,8 @@ type Command struct {
 	Flags []Flag
 }
 
-// Invokes the command given the context.
-// Parses ctx.Args() to generate command-specific flags.
+// Run invokes the command, given the context.
+// It parses ctx.Args() to generate command-specific flags.
 func (c Command) Run(ctx *Context) error {
 
 	// append help to flags
@@ -83,7 +83,7 @@ func (c Command) Run(ctx *Context) error {
 	return nil
 }
 
-// Returns true if Command.Name or Command.ShortName matches the given name.
+// HasName returns true if Command.Name or Command.ShortName matches the given name.
 func (c Command) HasName(name string) bool {
 	return c.Name == name || c.ShortName == name
 }

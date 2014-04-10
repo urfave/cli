@@ -99,7 +99,7 @@ func prefixedNames(fullName string) (prefixed string) {
 	return
 }
 
-// StringSlice
+// --- StringSlice ---
 
 func (f *StringSlice) Set(value string) error {
 	*f = append(*f, value)
@@ -114,7 +114,7 @@ func (f *StringSlice) Value() []string {
 	return *f
 }
 
-// StringSliceFlag
+// --- StringSliceFlag ---
 
 func (f StringSliceFlag) String() string {
 	return fmt.Sprintf("%s%s %v\t`%v` %s", prefixFor(f.Name), f.Name, f.Value, "-"+f.Name+" option -"+f.Name+" option", f.Usage)
@@ -130,7 +130,7 @@ func (f StringSliceFlag) getName() string {
 	return f.Name
 }
 
-// IntSlice
+// --- IntSlice ---
 
 func (f *IntSlice) Set(value string) error {
 
@@ -151,7 +151,7 @@ func (f *IntSlice) Value() []int {
 	return *f
 }
 
-// IntSliceFlag
+// --- IntSliceFlag ---
 
 func (f IntSliceFlag) String() string {
 	firstName := strings.Trim(strings.Split(f.Name, ",")[0], " ")
@@ -169,7 +169,7 @@ func (f IntSliceFlag) getName() string {
 	return f.Name
 }
 
-// BoolFlag
+// --- BoolFlag ---
 
 func (f BoolFlag) String() string {
 	return fmt.Sprintf("%s\t%v", prefixedNames(f.Name), f.Usage)
@@ -185,7 +185,7 @@ func (f BoolFlag) getName() string {
 	return f.Name
 }
 
-// BoolTFlag
+// --- BoolTFlag ---
 
 func (f BoolTFlag) String() string {
 	return fmt.Sprintf("%s\t%v", prefixedNames(f.Name), f.Usage)
@@ -201,7 +201,7 @@ func (f BoolTFlag) getName() string {
 	return f.Name
 }
 
-// StringFlag
+// --- StringFlag ---
 
 func (f StringFlag) String() string {
 	return fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage)
@@ -217,7 +217,7 @@ func (f StringFlag) getName() string {
 	return f.Name
 }
 
-// IntFlag
+// --- IntFlag ---
 
 func (f IntFlag) String() string {
 	return fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage)
@@ -233,7 +233,7 @@ func (f IntFlag) getName() string {
 	return f.Name
 }
 
-// Float64Flag
+// --- Float64Flag ---
 
 func (f Float64Flag) String() string {
 	return fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage)

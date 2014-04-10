@@ -8,8 +8,8 @@ import (
 )
 
 // The text template for the Default help topic.
-// cli.go uses text/template to render templates. You can
-// render custom help text by setting this variable.
+// cli.go uses text/template to render templates.
+// You can render custom help text by setting this variable.
 var AppHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
@@ -28,8 +28,8 @@ GLOBAL OPTIONS:
 `
 
 // The text template for the command help topic.
-// cli.go uses text/template to render templates. You can
-// render custom help text by setting this variable.
+// cli.go uses text/template to render templates.
+// You can render custom help text by setting this variable.
 var CommandHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
@@ -63,11 +63,12 @@ var (
 	HelpPrinter = printHelp
 )
 
+// ShowAppHelp prints general help for the application.
 func ShowAppHelp(c *Context) {
 	HelpPrinter(AppHelpTemplate, c.App)
 }
 
-// Prints help for the given command
+// ShowCommandHelp prints help for the given command.
 func ShowCommandHelp(c *Context, command string) {
 	for _, c := range c.App.Commands {
 		if c.HasName(command) {
@@ -78,7 +79,7 @@ func ShowCommandHelp(c *Context, command string) {
 	fmt.Printf("No help topic for '%v'\n", command)
 }
 
-// Prints the version number of the App
+// ShowVersion prints the version number of the App.
 func ShowVersion(c *Context) {
 	fmt.Printf("%v version %v\n", c.App.Name, c.App.Version)
 }
