@@ -12,7 +12,7 @@ Command line apps are usually so tiny that there is absolutely no reason why you
 This is where cli.go comes into play. cli.go makes command line programming fun, organized, and expressive!
 
 ## Installation
-Make sure you have the a working Go environment (go 1.1 is *required*). [See the install instructions](http://golang.org/doc/install.html).
+Make sure you have a working Go environment (go 1.1 is *required*). [See the install instructions](http://golang.org/doc/install.html).
 
 To install cli.go, simply run:
 ```
@@ -153,6 +153,18 @@ app.Action = func(c *cli.Context) {
 ...
 ```
 
+#### Alternate Names
+
+You can set alternate (or short) names for flags by providing a comma-delimited list for the Name. e.g.
+
+``` go
+app.Flags = []cli.Flag {
+  cli.StringFlag{"lang, l", "english", "language for the greeting"},
+}
+```
+
+That flag can then be set with `--lang spanish` or `-l spanish`. Note that giving two different forms of the same flag in the same command invocation is an error.
+
 ### Subcommands
 
 Subcommands can be defined for a more git-like command line app.
@@ -164,7 +176,7 @@ app.Commands = []cli.Command{
     ShortName: "a",
     Usage:     "add a task to the list",
     Action: func(c *cli.Context) {
-      println("added task: ", c.FirstArg())
+      println("added task: ", c.Args().First())
     },
   },
   {
@@ -172,7 +184,7 @@ app.Commands = []cli.Command{
     ShortName: "c",
     Usage:     "complete a task on the list",
     Action: func(c *cli.Context) {
-      println("completed task: ", c.FirstArg())
+      println("completed task: ", c.Args().First())
     },
   },
 }
