@@ -24,6 +24,34 @@ func ExampleApp() {
 	// Hello Jeremy
 }
 
+func ExampleApp_CallSubcommand() {
+	// set args for examples sake
+	os.Args = []string{"say", "hello", "spanish", "--name", "Jeremy"}
+
+	app := cli.NewApp()
+	app.Name = "say"
+
+	hello := app.AddSubcommand(cli.Command{
+		Name:  "hello",
+		Usage: "AKA hi!",
+	})
+	hello.Commands = []cli.Command{
+		{
+			Name: "spanish",
+			Flags: []cli.Flag{
+				cli.StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
+			},
+			Action: func(c *cli.Context) {
+				fmt.Printf("Hola %v\n", c.String("name"))
+			},
+		},
+	}
+
+	app.Run(os.Args)
+	// Output:
+	// Hola Jeremy
+}
+
 func ExampleAppHelp() {
 	// set args for examples sake
 	os.Args = []string{"greet", "h", "describeit"}
@@ -35,9 +63,9 @@ func ExampleAppHelp() {
 	}
 	app.Commands = []cli.Command{
 		{
-			Name: "describeit",
-			ShortName: "d",
-			Usage: "use it to see a description",
+			Name:        "describeit",
+			ShortName:   "d",
+			Usage:       "use it to see a description",
 			Description: "This is how we describe describeit the function",
 			Action: func(c *cli.Context) {
 				fmt.Printf("i like to describe things")
@@ -54,6 +82,42 @@ func ExampleAppHelp() {
 	//
 	// DESCRIPTION:
 	//    This is how we describe describeit the function
+	//
+	// OPTIONS:
+}
+
+func ExampleAppHelp_Subcommand() {
+	// set args for examples sake
+	os.Args = []string{"say", "hello", "spanish", "-h"}
+
+	app := cli.NewApp()
+	app.Name = "say"
+
+	hello := app.AddSubcommand(cli.Command{
+		Name:  "hello",
+		Usage: "AKA hi!",
+	})
+	hello.Commands = []cli.Command{
+		{
+			Name:        "spanish",
+			Usage:       "language",
+			Description: "the language to translate",
+			Action: func(c *cli.Context) {
+				fmt.Printf("Hola %v\n", c.String("name"))
+			},
+		},
+	}
+
+	app.Run(os.Args)
+	// Output:
+	// NAME:
+	//    spanish - language
+	//
+	// USAGE:
+	//    command spanish [command options] [arguments...]
+	//
+	// DESCRIPTION:
+	//    the language to translate
 	//
 	// OPTIONS:
 }
@@ -97,6 +161,25 @@ func TestApp_Command(t *testing.T) {
 	for _, test := range commandAppTests {
 		expect(t, app.Command(test.name) != nil, test.expected)
 	}
+}
+
+func TestApp_Subcommand(t *testing.T) {
+	app := cli.NewApp()
+	fooCommand := app.AddSubcommand(cli.Command{Name: "foobar", ShortName: "f"})
+	batCommand := cli.Command{Name: "batbaz", ShortName: "b"}
+	fooCommand.Commands = []cli.Command{
+		batCommand,
+	}
+
+	expect(t, app.Command("foobar") != nil, true)
+	expect(t, app.Command("batbaz") != nil, false)
+	expect(t, app.Command("f") != nil, true)
+	expect(t, app.Command("b") != nil, false)
+
+	expect(t, fooCommand.Command("foobar") != nil, false)
+	expect(t, fooCommand.Command("batbaz") != nil, true)
+	expect(t, fooCommand.Command("f") != nil, false)
+	expect(t, fooCommand.Command("b") != nil, true)
 }
 
 func TestApp_CommandWithArgBeforeFlags(t *testing.T) {

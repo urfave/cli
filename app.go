@@ -31,6 +31,8 @@ type App struct {
 	Author string
 	// Author e-mail
 	Email string
+	// Is this a subcommand
+	isSubcommand bool
 }
 
 // Tries to find out when this binary was compiled.
@@ -64,7 +66,9 @@ func (a *App) Run(arguments []string) error {
 	}
 
 	//append version/help flags
-	a.appendFlag(BoolFlag{"version, v", "print the version"})
+	if !a.isSubcommand {
+		a.appendFlag(BoolFlag{"version, v", "print the version"})
+	}
 	a.appendFlag(BoolFlag{"help, h", "show help"})
 
 	// parse flags
@@ -115,6 +119,26 @@ func (a *App) Run(arguments []string) error {
 	// Run default Action
 	a.Action(context)
 	return nil
+}
+
+// Appends a new subcommand to the command list
+func (a *App) AddSubcommand(command Command) *App {
+	app := App{
+		isSubcommand: true,
+		Name:         fmt.Sprintf("%s %s", a.Name, command.Name),
+		Usage:        command.Usage,
+		Flags:        a.Flags,
+		Action:       command.Action,
+	}
+
+	command.isSubcommand = true
+	command.Action = func(c *Context) {
+		app.Run(c.Args())
+	}
+
+	a.Commands = append(a.Commands, command)
+
+	return &app
 }
 
 // Returns the named command on App. Returns nil if the command does not exist

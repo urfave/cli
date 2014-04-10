@@ -27,6 +27,23 @@ GLOBAL OPTIONS:
    {{end}}
 `
 
+// The text template for the Subcommands help topic.
+// cli.go uses text/template to render templates. You can
+// render custom help text by setting this variable.
+var SubcommandHelpTemplate = `NAME:
+   {{.Name}} - {{.Usage}}
+
+USAGE:
+   {{.Name}} [global options] command [command options] [arguments...]
+
+COMMANDS:
+   {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
+   {{end}}
+GLOBAL OPTIONS:
+   {{range .Flags}}{{.}}
+   {{end}}
+`
+
 // The text template for the command help topic.
 // cli.go uses text/template to render templates. You can
 // render custom help text by setting this variable.
@@ -52,6 +69,8 @@ var helpCommand = Command{
 		args := c.Args()
 		if args.Present() {
 			ShowCommandHelp(c, args.First())
+		} else if c.App.isSubcommand {
+			ShowSubcommandHelp(c)
 		} else {
 			ShowAppHelp(c)
 		}
@@ -60,13 +79,18 @@ var helpCommand = Command{
 
 // Prints help for the App
 var HelpPrinter = printHelp
+
 func ShowAppHelp(c *Context) {
 	HelpPrinter(AppHelpTemplate, c.App)
 }
 
+func ShowSubcommandHelp(c *Context) {
+	HelpPrinter(SubcommandHelpTemplate, c.App)
+}
+
 // Prints help for the given command
-func ShowCommandHelp(c *Context, command string) {
-	for _, c := range c.App.Commands {
+func ShowCommandHelp(ctx *Context, command string) {
+	for _, c := range ctx.App.Commands {
 		if c.HasName(command) {
 			printHelp(CommandHelpTemplate, c)
 			return
