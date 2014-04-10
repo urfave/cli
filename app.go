@@ -7,25 +7,38 @@ import (
 	"time"
 )
 
-// App is the main structure of a cli application. It is recomended that
-// and app be created with the cli.NewApp() function
+// App is the main structure of a cli application.
+// New App variables should be created with the cli.NewApp() function.
 type App struct {
-	// The name of the program. Defaults to os.Args[0]
+
+	// Name of the program. Defaults to os.Args[0]
 	Name string
+
 	// Description of the program.
 	Usage string
+
 	// Version of the program
 	Version string
+
 	// List of commands to execute
 	Commands []Command
+
 	// List of flags to parse
 	Flags []Flag
+
+	// An action to execute before any subcommands are run, but after the context is ready
+	// If a non-nil error is returned, no subcommands are run
+	Before func(context *Context) error
+
 	// The action to execute when no subcommands are specified
 	Action func(context *Context)
+
 	// Compilation date
 	Compiled time.Time
+
 	// Author
 	Author string
+
 	// Author e-mail
 	Email string
 }
@@ -40,7 +53,8 @@ func compileTime() time.Time {
 	return info.ModTime()
 }
 
-// Creates a new cli Application with some reasonable defaults for Name, Usage, Version and Action.
+// Creates a new cli Application with some reasonable defaults for Name, Usage,
+// Version and Action.
 func NewApp() *App {
 	return &App{
 		Name:     os.Args[0],
@@ -53,7 +67,7 @@ func NewApp() *App {
 	}
 }
 
-// Entry point to the cli app. Parses the arguments slice and routes to the proper flag/args combination
+// Entry point to the cli app. Parses the arguments slice and routes to the proper flag/args combination.
 func (a *App) Run(arguments []string) error {
 	// append help to commands
 	if a.Command(helpCommand.Name) == nil {
@@ -61,19 +75,28 @@ func (a *App) Run(arguments []string) error {
 	}
 
 	//append version/help flags
-	a.appendFlag(BoolFlag{"version", "print the version"})
-	a.appendFlag(helpFlag{"show help"})
+	a.appendFlag(BoolFlag{"version, v", "print the version"})
+	a.appendFlag(BoolFlag{"help, h", "show help"})
 
 	// parse flags
 	set := flagSet(a.Name, a.Flags)
 	set.SetOutput(ioutil.Discard)
 	err := set.Parse(arguments[1:])
+	nerr := normalizeFlags(a.Flags, set)
+	if nerr != nil {
+		fmt.Println(nerr)
+		context := NewContext(a, set, set)
+		ShowAppHelp(context)
+		fmt.Println()
+		return nerr
+	}
 	context := NewContext(a, set, set)
 
 	if err != nil {
-		fmt.Printf("Incorrect Usage.\n\n")
+		fmt.Println("Incorrect Usage.")
+		fmt.Println()
 		ShowAppHelp(context)
-		fmt.Println("")
+		fmt.Println()
 		return err
 	}
 
@@ -83,6 +106,13 @@ func (a *App) Run(arguments []string) error {
 
 	if checkVersion(context) {
 		return nil
+	}
+
+	if a.Before != nil {
+		err := a.Before(context)
+		if err != nil {
+			return err
+		}
 	}
 
 	args := context.Args()
@@ -96,30 +126,31 @@ func (a *App) Run(arguments []string) error {
 
 	// Run default Action
 	a.Action(context)
+
 	return nil
 }
 
-// Returns the named command on App. Returns nil if the command does not exist
+// Returns the named command on App. Returns nil if the command does not exist.
 func (a *App) Command(name string) *Command {
 	for _, c := range a.Commands {
 		if c.HasName(name) {
 			return &c
 		}
 	}
-
 	return nil
 }
 
+// Check for the presence of a flag.
 func (a *App) hasFlag(flag Flag) bool {
 	for _, f := range a.Flags {
 		if flag == f {
 			return true
 		}
 	}
-
 	return false
 }
 
+// Append a flag if it does not already exist.
 func (a *App) appendFlag(flag Flag) {
 	if !a.hasFlag(flag) {
 		a.Flags = append(a.Flags, flag)

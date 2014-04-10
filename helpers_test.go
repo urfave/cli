@@ -5,6 +5,17 @@ import (
 	"testing"
 )
 
+type (
+	FlagTestString struct {
+		name     string
+		expected string
+	}
+	FlagTestBool struct {
+		name     string
+		expected bool
+	}
+)
+
 /* Test Helpers */
 func expect(t *testing.T, a interface{}, b interface{}) {
 	if a != b {

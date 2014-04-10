@@ -44,23 +44,27 @@ OPTIONS:
    {{end}}
 `
 
-var helpCommand = Command{
-	Name:      "help",
-	ShortName: "h",
-	Usage:     "Shows a list of commands or help for one command",
-	Action: func(c *Context) {
-		args := c.Args()
-		if args.Present() {
-			ShowCommandHelp(c, args.First())
-		} else {
-			ShowAppHelp(c)
-		}
-	},
-}
+var (
+	helpCommand = Command{
+		Name:      "help",
+		ShortName: "h",
+		Usage:     "Shows a list of commands or help for one command",
+		Action: func(c *Context) {
+			args := c.Args()
+			if args.Present() {
+				ShowCommandHelp(c, args.First())
+			} else {
+				ShowAppHelp(c)
+			}
+		},
+	}
 
-// Prints help for the App
+	// Prints help for the App
+	HelpPrinter = printHelp
+)
+
 func ShowAppHelp(c *Context) {
-	printHelp(AppHelpTemplate, c.App)
+	HelpPrinter(AppHelpTemplate, c.App)
 }
 
 // Prints help for the given command
@@ -71,12 +75,11 @@ func ShowCommandHelp(c *Context, command string) {
 			return
 		}
 	}
-
 	fmt.Printf("No help topic for '%v'\n", command)
 }
 
 // Prints the version number of the App
-func ShowVersion(c *Context) {
+func printVersion(c *Context) {
 	fmt.Printf("%v version %v\n", c.App.Name, c.App.Version)
 }
 
@@ -92,10 +95,9 @@ func printHelp(templ string, data interface{}) {
 
 func checkVersion(c *Context) bool {
 	if c.GlobalBool("version") {
-		ShowVersion(c)
+		printVersion(c)
 		return true
 	}
-
 	return false
 }
 
@@ -104,7 +106,6 @@ func checkHelp(c *Context) bool {
 		ShowAppHelp(c)
 		return true
 	}
-
 	return false
 }
 
@@ -113,6 +114,5 @@ func checkCommandHelp(c *Context, name string) bool {
 		ShowCommandHelp(c, name)
 		return true
 	}
-
 	return false
 }

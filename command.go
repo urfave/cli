@@ -8,26 +8,34 @@ import (
 
 // Command is a subcommand for a cli.App.
 type Command struct {
-	// The name of the command
+
+	// Name of the command
 	Name string
-	// short name of the command. Typically one character
+
+	// Short (typically one character long) name of the command
 	ShortName string
-	// A short description of the usage of this command
+
+	// Short description of the usage of this command
 	Usage string
-	// A longer explaination of how the command works
+
+	// Longer explaination of how the command works
 	Description string
-	// The function to call when this command is invoked
+
+	// Function to call when this command is invoked
 	Action func(context *Context)
+
 	// List of flags to parse
 	Flags []Flag
 }
 
-// Invokes the command given the context, parses ctx.Args() to generate command-specific flags
+// Invokes the command given the context.
+// Parses ctx.Args() to generate command-specific flags.
 func (c Command) Run(ctx *Context) error {
+
 	// append help to flags
 	c.Flags = append(
 		c.Flags,
-		helpFlag{"show help"},
+		BoolFlag{"help, h", "show help"},
 	)
 
 	set := flagSet(c.Name, c.Flags)
@@ -52,12 +60,21 @@ func (c Command) Run(ctx *Context) error {
 	}
 
 	if err != nil {
-		fmt.Printf("Incorrect Usage.\n\n")
+		fmt.Println("Incorrect Usage.")
+		fmt.Println()
 		ShowCommandHelp(ctx, c.Name)
-		fmt.Println("")
+		fmt.Println()
 		return err
 	}
 
+	nerr := normalizeFlags(c.Flags, set)
+	if nerr != nil {
+		fmt.Println(nerr)
+		fmt.Println()
+		ShowCommandHelp(ctx, c.Name)
+		fmt.Println()
+		return nerr
+	}
 	context := NewContext(ctx.App, set, ctx.globalSet)
 	if checkCommandHelp(context, c.Name) {
 		return nil
@@ -66,7 +83,7 @@ func (c Command) Run(ctx *Context) error {
 	return nil
 }
 
-// Returns true if Command.Name or Command.ShortName matches given name
+// Returns true if Command.Name or Command.ShortName matches the given name.
 func (c Command) HasName(name string) bool {
 	return c.Name == name || c.ShortName == name
 }

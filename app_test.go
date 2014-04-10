@@ -24,6 +24,40 @@ func ExampleApp() {
 	// Hello Jeremy
 }
 
+func ExampleAppHelp() {
+	// set args for examples sake
+	os.Args = []string{"greet", "h", "describeit"}
+
+	app := cli.NewApp()
+	app.Name = "greet"
+	app.Flags = []cli.Flag{
+		cli.StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
+	}
+	app.Commands = []cli.Command{
+		{
+			Name:        "describeit",
+			ShortName:   "d",
+			Usage:       "use it to see a description",
+			Description: "This is how we describe describeit the function",
+			Action: func(c *cli.Context) {
+				fmt.Printf("i like to describe things")
+			},
+		},
+	}
+	app.Run(os.Args)
+	// Output:
+	// NAME:
+	//    describeit - use it to see a description
+	//
+	// USAGE:
+	//    command describeit [command options] [arguments...]
+	//
+	// DESCRIPTION:
+	//    This is how we describe describeit the function
+	//
+	// OPTIONS:
+}
+
 func TestApp_Run(t *testing.T) {
 	s := ""
 
@@ -39,10 +73,7 @@ func TestApp_Run(t *testing.T) {
 	expect(t, s, "foobar")
 }
 
-var commandAppTests = []struct {
-	name     string
-	expected bool
-}{
+var commandAppTests = []FlagTestBool{
 	{"foobar", true},
 	{"batbaz", true},
 	{"b", true},
@@ -85,6 +116,21 @@ func TestApp_CommandWithArgBeforeFlags(t *testing.T) {
 
 	expect(t, parsedOption, "my-option")
 	expect(t, firstArg, "my-arg")
+}
+
+func TestApp_Float64Flag(t *testing.T) {
+	var meters float64
+
+	app := cli.NewApp()
+	app.Flags = []cli.Flag{
+		cli.Float64Flag{Name: "height", Value: 1.5, Usage: "Set the height, in meters"},
+	}
+	app.Action = func(c *cli.Context) {
+		meters = c.Float64("height")
+	}
+
+	app.Run([]string{"", "--height", "1.93"})
+	expect(t, meters, 1.93)
 }
 
 func TestApp_ParseSliceFlags(t *testing.T) {
@@ -142,5 +188,90 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 
 	if !StrsEquals(parsedStringSlice, expectedStringSlice) {
 		t.Errorf("%s does not match %s", parsedStringSlice, expectedStringSlice)
+	}
+}
+
+func TestApp_BeforeFunc(t *testing.T) {
+	beforeRun, subcommandRun := false, false
+	beforeError := fmt.Errorf("fail")
+	var err error
+
+	app := cli.NewApp()
+
+	app.Before = func(c *cli.Context) error {
+		beforeRun = true
+		s := c.String("opt")
+		if s == "fail" {
+			return beforeError
+		}
+
+		return nil
+	}
+
+	app.Commands = []cli.Command{
+		cli.Command{
+			Name: "sub",
+			Action: func(c *cli.Context) {
+				subcommandRun = true
+			},
+		},
+	}
+
+	app.Flags = []cli.Flag{
+		cli.StringFlag{Name: "opt"},
+	}
+
+	// run with the Before() func succeeding
+	err = app.Run([]string{"command", "--opt", "succeed", "sub"})
+
+	if err != nil {
+		t.Fatalf("Run error: %s", err)
+	}
+
+	if beforeRun == false {
+		t.Errorf("Before() not executed when expected")
+	}
+
+	if subcommandRun == false {
+		t.Errorf("Subcommand not executed when expected")
+	}
+
+	// reset
+	beforeRun, subcommandRun = false, false
+
+	// run with the Before() func failing
+	err = app.Run([]string{"command", "--opt", "fail", "sub"})
+
+	// should be the same error produced by the Before func
+	if err != beforeError {
+		t.Errorf("Run error expected, but not received")
+	}
+
+	if beforeRun == false {
+		t.Errorf("Before() not executed when expected")
+	}
+
+	if subcommandRun == true {
+		t.Errorf("Subcommand executed when NOT expected")
+	}
+
+}
+
+func TestAppHelpPrinter(t *testing.T) {
+	oldPrinter := cli.HelpPrinter
+	defer func() {
+		cli.HelpPrinter = oldPrinter
+	}()
+
+	var wasCalled = false
+	cli.HelpPrinter = func(template string, data interface{}) {
+		wasCalled = true
+	}
+
+	app := cli.NewApp()
+	app.Run([]string{"-h"})
+
+	if wasCalled == false {
+		t.Errorf("Help printer expected to be called, but was not")
 	}
 }
