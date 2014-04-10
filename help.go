@@ -79,7 +79,7 @@ func ShowCommandHelp(c *Context, command string) {
 }
 
 // Prints the version number of the App
-func printVersion(c *Context) {
+func ShowVersion(c *Context) {
 	fmt.Printf("%v version %v\n", c.App.Name, c.App.Version)
 }
 
@@ -95,7 +95,7 @@ func printHelp(templ string, data interface{}) {
 
 func checkVersion(c *Context) bool {
 	if c.GlobalBool("version") {
-		printVersion(c)
+		ShowVersion(c)
 		return true
 	}
 	return false
