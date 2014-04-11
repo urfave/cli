@@ -157,7 +157,16 @@ type StringFlag struct {
 }
 
 func (f StringFlag) String() string {
-	return fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage)
+	var fmtString string
+	fmtString = "%s %v\t%v"
+
+	if len(f.Value) > 0 {
+		fmtString = "%s '%v'\t%v"
+	} else {
+		fmtString = "%s %v\t%v"
+	}
+
+	return fmt.Sprintf(fmtString, prefixedNames(f.Name), f.Value, f.Usage)
 }
 
 func (f StringFlag) Apply(set *flag.FlagSet) {

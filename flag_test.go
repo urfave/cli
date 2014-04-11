@@ -28,16 +28,19 @@ func TestBoolFlagHelpOutput(t *testing.T) {
 
 var stringFlagTests = []struct {
 	name     string
+	value    string
 	expected string
 }{
-	{"help", "--help ''\t"},
-	{"h", "-h ''\t"},
+	{"help", "", "--help \t"},
+	{"h", "", "-h \t"},
+	{"h", "", "-h \t"},
+	{"test", "Something", "--test 'Something'\t"},
 }
 
 func TestStringFlagHelpOutput(t *testing.T) {
 
 	for _, test := range stringFlagTests {
-		flag := cli.StringFlag{Name: test.name}
+		flag := cli.StringFlag{Name: test.name, Value: test.value}
 		output := flag.String()
 
 		if output != test.expected {
