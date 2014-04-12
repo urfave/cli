@@ -20,6 +20,10 @@ type App struct {
 	Commands []Command
 	// List of flags to parse
 	Flags []Flag
+	// Boolean to enable bash completion commands
+	EnableBashCompletion bool
+	// An action to execute when the bash-completion flag is set
+	BashComplete func(context *Context)
 	// An action to execute before any subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no subcommands are run
 	Before func(context *Context) error
@@ -46,13 +50,14 @@ func compileTime() time.Time {
 // Creates a new cli Application with some reasonable defaults for Name, Usage, Version and Action.
 func NewApp() *App {
 	return &App{
-		Name:     os.Args[0],
-		Usage:    "A new cli application",
-		Version:  "0.0.0",
-		Action:   helpCommand.Action,
-		Compiled: compileTime(),
-		Author:   "Author",
-		Email:    "unknown@email",
+		Name:         os.Args[0],
+		Usage:        "A new cli application",
+		Version:      "0.0.0",
+		BashComplete: DefaultAppComplete,
+		Action:       helpCommand.Action,
+		Compiled:     compileTime(),
+		Author:       "Author",
+		Email:        "unknown@email",
 	}
 }
 
@@ -64,7 +69,9 @@ func (a *App) Run(arguments []string) error {
 	}
 
 	//append version/help flags
-	a.appendFlag(BoolFlag{"generate-bash-completion", ""})
+	if a.EnableBashCompletion {
+		a.appendFlag(BashCompletionFlag)
+	}
 	a.appendFlag(BoolFlag{"version, v", "print the version"})
 	a.appendFlag(BoolFlag{"help, h", "show help"})
 

@@ -29,9 +29,12 @@ func (c Command) Run(ctx *Context) error {
 	// append help to flags
 	c.Flags = append(
 		c.Flags,
-		BoolFlag{"generate-bash-completion", ""},
 		BoolFlag{"help, h", "show help"},
 	)
+
+	if ctx.App.EnableBashCompletion {
+		c.Flags = append(c.Flags, BashCompletionFlag)
+	}
 
 	set := flagSet(c.Name, c.Flags)
 	set.SetOutput(ioutil.Discard)
