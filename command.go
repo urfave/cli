@@ -16,6 +16,8 @@ type Command struct {
 	Usage string
 	// A longer explaination of how the command works
 	Description string
+	// The function to call when checking for bash command completions
+	BashComplete func(context *Context)
 	// The function to call when this command is invoked
 	Action func(context *Context)
 	// List of flags to parse
@@ -29,6 +31,10 @@ func (c Command) Run(ctx *Context) error {
 		c.Flags,
 		BoolFlag{"help, h", "show help"},
 	)
+
+	if ctx.App.EnableBashCompletion {
+		c.Flags = append(c.Flags, BashCompletionFlag)
+	}
 
 	set := flagSet(c.Name, c.Flags)
 	set.SetOutput(ioutil.Discard)
@@ -67,6 +73,11 @@ func (c Command) Run(ctx *Context) error {
 		return nerr
 	}
 	context := NewContext(ctx.App, set, ctx.globalSet)
+
+	if checkCommandCompletions(context, c.Name) {
+		return nil
+	}
+
 	if checkCommandHelp(context, c.Name) {
 		return nil
 	}

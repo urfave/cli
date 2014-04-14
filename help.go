@@ -60,8 +60,19 @@ var helpCommand = Command{
 
 // Prints help for the App
 var HelpPrinter = printHelp
+
 func ShowAppHelp(c *Context) {
 	HelpPrinter(AppHelpTemplate, c.App)
+}
+
+// Prints the list of subcommands as the default app completion method
+func DefaultAppComplete(c *Context) {
+	for _, command := range c.App.Commands {
+		fmt.Println(command.Name)
+		if command.ShortName != "" {
+			fmt.Println(command.ShortName)
+		}
+	}
 }
 
 // Prints help for the given command
@@ -79,6 +90,22 @@ func ShowCommandHelp(c *Context, command string) {
 // Prints the version number of the App
 func ShowVersion(c *Context) {
 	fmt.Printf("%v version %v\n", c.App.Name, c.App.Version)
+}
+
+// Prints the lists of commands within a given context
+func ShowCompletions(c *Context) {
+	a := c.App
+	if a != nil && a.BashComplete != nil {
+		a.BashComplete(c)
+	}
+}
+
+// Prints the custom completions for a given command
+func ShowCommandCompletions(ctx *Context, command string) {
+	c := ctx.App.Command(command)
+	if c != nil && c.BashComplete != nil {
+		c.BashComplete(ctx)
+	}
 }
 
 func printHelp(templ string, data interface{}) {
@@ -112,6 +139,24 @@ func checkHelp(c *Context) bool {
 func checkCommandHelp(c *Context, name string) bool {
 	if c.Bool("h") || c.Bool("help") {
 		ShowCommandHelp(c, name)
+		return true
+	}
+
+	return false
+}
+
+func checkCompletions(c *Context) bool {
+	if c.GlobalBool(BashCompletionFlag.Name) && c.App.EnableBashCompletion {
+		ShowCompletions(c)
+		return true
+	}
+
+	return false
+}
+
+func checkCommandCompletions(c *Context, name string) bool {
+	if c.Bool(BashCompletionFlag.Name) && c.App.EnableBashCompletion {
+		ShowCommandCompletions(c, name)
 		return true
 	}
 

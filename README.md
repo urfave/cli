@@ -191,5 +191,46 @@ app.Commands = []cli.Command{
 ...
 ```
 
+### Bash Completion
+
+You can enable completion commands by setting the EnableBashCompletion
+flag on the App object.  By default, this setting will only auto-complete to
+show an app's subcommands, but you can write your own completion methods for
+the App or its subcommands.
+```go
+...
+var tasks = []string{"cook", "clean", "laundry", "eat", "sleep", "code"}
+app := cli.NewApp()
+app.EnableBashCompletion = true
+app.Commands = []cli.Command{
+  {
+    Name: "complete",
+    ShortName: "c",
+    Usage: "complete a task on the list",
+    Action: func(c *cli.Context) {
+       println("completed task: ", c.Args().First())
+    },
+    BashComplete: func(c *cli.Context) {
+      // This will complete if no args are passed
+      if len(c.Args()) > 0 {
+        return
+      }
+      for _, t := range tasks {
+        println(t)
+      }
+    },
+  }
+}
+...
+```
+
+#### To Enable
+
+Source the autocomplete/bash_autocomplete file in your .bashrc file while
+setting the PROG variable to the name of your program:
+
+`PROG=myprogram source /.../cli/autocomplete/bash_autocomplete`
+
+
 ## About
 cli.go is written by none other than the [Code Gangsta](http://codegangsta.io)
