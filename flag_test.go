@@ -176,10 +176,6 @@ func (p *Parser) String() string {
 	return fmt.Sprintf("%s,%s", p[0], p[1])
 }
 
-func (p *Parser) Value() interface{} {
-	return p
-}
-
 func TestParseGeneric(t *testing.T) {
 	a := cli.App{
 		Flags: []cli.Flag{

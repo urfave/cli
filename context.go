@@ -197,7 +197,7 @@ func lookupIntSlice(name string, set *flag.FlagSet) []int {
 func lookupGeneric(name string, set *flag.FlagSet) interface{} {
 	f := set.Lookup(name)
 	if f != nil {
-		return (f.Value.(Generic)).Value()
+		return f.Value
 	}
 	return nil
 }

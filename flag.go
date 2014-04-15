@@ -41,7 +41,6 @@ func eachName(longName string, fn func(string)) {
 type Generic interface {
 	Set(value string) error
 	String() string
-	Value() interface{}
 }
 
 // GenericFlag is the flag type for types implementing Generic
