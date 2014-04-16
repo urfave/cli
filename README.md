@@ -190,7 +190,7 @@ app.Commands = []cli.Command{
   {
     Name:      "template",
     ShortName: "r",
-    Usage: "options for task templates",
+    Usage:     "options for task templates",
     Subcommands: []cli.Command{
       {
         Name:  "add",
