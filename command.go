@@ -14,7 +14,7 @@ type Command struct {
 	ShortName string
 	// A short description of the usage of this command
 	Usage string
-	// A longer explaination of how the command works
+	// A longer explanation of how the command works
 	Description string
 	// The function to call when checking for bash command completions
 	BashComplete func(context *Context)
@@ -22,10 +22,16 @@ type Command struct {
 	Action func(context *Context)
 	// List of flags to parse
 	Flags []Flag
+	// List of child commands
+	Subcommands []Command
 }
 
 // Invokes the command given the context, parses ctx.Args() to generate command-specific flags
 func (c Command) Run(ctx *Context) error {
+	if len(c.Subcommands) > 0 {
+		return c.startApp(ctx)
+	}
+
 	// append help to flags
 	c.Flags = append(
 		c.Flags,
@@ -88,4 +94,35 @@ func (c Command) Run(ctx *Context) error {
 // Returns true if Command.Name or Command.ShortName matches given name
 func (c Command) HasName(name string) bool {
 	return c.Name == name || c.ShortName == name
+}
+
+func (c Command) startApp(ctx *Context) error {
+	app := NewApp()
+
+	// set the name and usage
+	app.Name = fmt.Sprintf("%s %s", ctx.App.Name, c.Name)
+	if c.Description != "" {
+		app.Usage = c.Description
+	} else {
+		app.Usage = c.Usage
+	}
+
+	// set the flags and commands
+	app.Commands = c.Subcommands
+	app.Flags = c.Flags
+
+	// bash completion
+	app.EnableBashCompletion = ctx.App.EnableBashCompletion
+	if c.BashComplete != nil {
+		app.BashComplete = c.BashComplete
+	}
+
+	// set the action
+	if c.Action != nil {
+		app.Action = c.Action
+	} else {
+		app.Action = helpSubcommand.Action
+	}
+
+	return app.RunAsSubcommand(ctx)
 }

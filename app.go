@@ -129,6 +129,62 @@ func (a *App) Run(arguments []string) error {
 	return nil
 }
 
+// Invokes the subcommand given the context, parses ctx.Args() to generate command-specific flags
+func (a *App) RunAsSubcommand(c *Context) error {
+	// append help to commands
+	if a.Command(helpCommand.Name) == nil {
+		a.Commands = append(a.Commands, helpCommand)
+	}
+
+	// append help flags
+	if a.EnableBashCompletion {
+		a.appendFlag(BashCompletionFlag)
+	}
+	a.appendFlag(BoolFlag{"help, h", "show help"})
+
+	// parse flags
+	set := flagSet(a.Name, a.Flags)
+	set.SetOutput(ioutil.Discard)
+	err := set.Parse(c.Args().Tail())
+	nerr := normalizeFlags(a.Flags, set)
+	context := NewContext(a, set, set)
+
+	if nerr != nil {
+		fmt.Println(nerr)
+		ShowSubcommandHelp(context)
+		fmt.Println("")
+		return nerr
+	}
+
+	if err != nil {
+		fmt.Printf("Incorrect Usage.\n\n")
+		ShowSubcommandHelp(context)
+		fmt.Println("")
+		return err
+	}
+
+	if checkCompletions(context) {
+		return nil
+	}
+
+	if checkSubcommandHelp(context) {
+		return nil
+	}
+
+	args := context.Args()
+	if args.Present() {
+		name := args.First()
+		c := a.Command(name)
+		if c != nil {
+			return c.Run(context)
+		}
+	}
+
+	// Run default Action
+	a.Action(context)
+	return nil
+}
+
 // Returns the named command on App. Returns nil if the command does not exist
 func (a *App) Command(name string) *Command {
 	for _, c := range a.Commands {
