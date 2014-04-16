@@ -56,7 +56,6 @@ USAGE:
 COMMANDS:
    {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
    {{end}}
-
 OPTIONS:
    {{range .Flags}}{{.}}
    {{end}}

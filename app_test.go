@@ -24,6 +24,39 @@ func ExampleApp() {
 	// Hello Jeremy
 }
 
+func ExampleAppSubcommand() {
+	// set args for examples sake
+	os.Args = []string{"say", "hi", "english", "--name", "Jeremy"}
+	app := cli.NewApp()
+	app.Name = "say"
+	app.Commands = []cli.Command{
+		{
+			Name:        "hello",
+			ShortName:   "hi",
+			Usage:       "use it to see a description",
+			Description: "This is how we describe hello the function",
+			Subcommands: []cli.Command{
+				{
+					Name:        "english",
+					ShortName:   "en",
+					Usage:       "sends a greeting in english",
+					Description: "greets someone in english",
+					Flags: []cli.Flag{
+						cli.StringFlag{"name", "Bob", "Name of the person to greet"},
+					},
+					Action: func(c *cli.Context) {
+						fmt.Println("Hello,", c.String("name"))
+					},
+				},
+			},
+		},
+	}
+
+	app.Run(os.Args)
+	// Output:
+	// Hello, Jeremy
+}
+
 func ExampleAppHelp() {
 	// set args for examples sake
 	os.Args = []string{"greet", "h", "describeit"}
