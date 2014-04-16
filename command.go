@@ -18,17 +18,20 @@ type Command struct {
 	Description string
 	// The function to call when checking for bash command completions
 	BashComplete func(context *Context)
+	// An action to execute before any sub-subcommands are run, but after the context is ready
+	// If a non-nil error is returned, no sub-subcommands are run
+	Before func(context *Context) error
 	// The function to call when this command is invoked
 	Action func(context *Context)
-	// List of flags to parse
-	Flags []Flag
 	// List of child commands
 	Subcommands []Command
+	// List of flags to parse
+	Flags []Flag
 }
 
 // Invokes the command given the context, parses ctx.Args() to generate command-specific flags
 func (c Command) Run(ctx *Context) error {
-	if len(c.Subcommands) > 0 {
+	if (c.Subcommands != nil && len(c.Subcommands) > 0) || c.Before != nil {
 		return c.startApp(ctx)
 	}
 
@@ -117,7 +120,8 @@ func (c Command) startApp(ctx *Context) error {
 		app.BashComplete = c.BashComplete
 	}
 
-	// set the action
+	// set the actions
+	app.Before = c.Before
 	if c.Action != nil {
 		app.Action = c.Action
 	} else {

@@ -171,6 +171,13 @@ func (a *App) RunAsSubcommand(c *Context) error {
 		return nil
 	}
 
+	if a.Before != nil {
+		err := a.Before(context)
+		if err != nil {
+			return err
+		}
+	}
+
 	args := context.Args()
 	if args.Present() {
 		name := args.First()
