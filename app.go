@@ -130,13 +130,15 @@ func (a *App) Run(arguments []string) error {
 }
 
 // Invokes the subcommand given the context, parses ctx.Args() to generate command-specific flags
-func (a *App) RunAsSubcommand(c *Context) error {
+func (a *App) RunAsSubcommand(ctx *Context) error {
 	// append help to commands
-	if a.Command(helpCommand.Name) == nil {
-		a.Commands = append(a.Commands, helpCommand)
+	if len(a.Commands) > 0 {
+		if a.Command(helpCommand.Name) == nil {
+			a.Commands = append(a.Commands, helpCommand)
+		}
 	}
 
-	// append help flags
+	// append flags
 	if a.EnableBashCompletion {
 		a.appendFlag(BashCompletionFlag)
 	}
@@ -145,13 +147,17 @@ func (a *App) RunAsSubcommand(c *Context) error {
 	// parse flags
 	set := flagSet(a.Name, a.Flags)
 	set.SetOutput(ioutil.Discard)
-	err := set.Parse(c.Args().Tail())
+	err := set.Parse(ctx.Args().Tail())
 	nerr := normalizeFlags(a.Flags, set)
 	context := NewContext(a, set, set)
 
 	if nerr != nil {
 		fmt.Println(nerr)
-		ShowSubcommandHelp(context)
+		if len(a.Commands) > 0 {
+			ShowSubcommandHelp(context)
+		} else {
+			ShowCommandHelp(ctx, context.Args().First())
+		}
 		fmt.Println("")
 		return nerr
 	}
@@ -159,7 +165,6 @@ func (a *App) RunAsSubcommand(c *Context) error {
 	if err != nil {
 		fmt.Printf("Incorrect Usage.\n\n")
 		ShowSubcommandHelp(context)
-		fmt.Println("")
 		return err
 	}
 
@@ -167,8 +172,14 @@ func (a *App) RunAsSubcommand(c *Context) error {
 		return nil
 	}
 
-	if checkSubcommandHelp(context) {
-		return nil
+	if len(a.Commands) > 0 {
+		if checkSubcommandHelp(context) {
+			return nil
+		}
+	} else {
+		if checkCommandHelp(ctx, context.Args().First()) {
+			return nil
+		}
 	}
 
 	if a.Before != nil {
@@ -188,7 +199,12 @@ func (a *App) RunAsSubcommand(c *Context) error {
 	}
 
 	// Run default Action
-	a.Action(context)
+	if len(a.Commands) > 0 {
+		a.Action(context)
+	} else {
+		a.Action(ctx)
+	}
+
 	return nil
 }
 

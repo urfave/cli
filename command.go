@@ -31,7 +31,8 @@ type Command struct {
 
 // Invokes the command given the context, parses ctx.Args() to generate command-specific flags
 func (c Command) Run(ctx *Context) error {
-	if (c.Subcommands != nil && len(c.Subcommands) > 0) || c.Before != nil {
+
+	if len(c.Subcommands) > 0 || c.Before != nil {
 		return c.startApp(ctx)
 	}
 
