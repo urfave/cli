@@ -59,7 +59,9 @@ type StringSliceFlag struct {
 }
 
 func (f StringSliceFlag) String() string {
-	return fmt.Sprintf("%s%s %v\t`%v` %s", prefixFor(f.Name), f.Name, f.Value, "-"+f.Name+" option -"+f.Name+" option", f.Usage)
+	firstName := strings.Trim(strings.Split(f.Name, ",")[0], " ")
+	pref := prefixFor(firstName)
+	return fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), pref+firstName+" option "+pref+firstName+" option", f.Usage)
 }
 
 func (f StringSliceFlag) Apply(set *flag.FlagSet) {
