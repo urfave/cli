@@ -27,6 +27,8 @@ type Command struct {
 	Subcommands []Command
 	// List of flags to parse
 	Flags []Flag
+	// Treat all flags as normal arguments if true
+	SkipFlagParsing bool
 }
 
 // Invokes the command given the context, parses ctx.Args() to generate command-specific flags
@@ -58,7 +60,7 @@ func (c Command) Run(ctx *Context) error {
 	}
 
 	var err error
-	if firstFlagIndex > -1 {
+	if firstFlagIndex > -1 && !c.SkipFlagParsing{
 		args := ctx.Args()
 		regularArgs := args[1:firstFlagIndex]
 		flagArgs := args[firstFlagIndex:]
