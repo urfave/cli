@@ -44,6 +44,23 @@ OPTIONS:
    {{end}}
 `
 
+// The text template for the subcommand help topic.
+// cli.go uses text/template to render templates. You can
+// render custom help text by setting this variable.
+var SubcommandHelpTemplate = `NAME:
+   {{.Name}} - {{.Usage}}
+
+USAGE:
+   {{.Name}} [global options] command [command options] [arguments...]
+
+COMMANDS:
+   {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
+   {{end}}
+OPTIONS:
+   {{range .Flags}}{{.}}
+   {{end}}
+`
+
 var helpCommand = Command{
 	Name:      "help",
 	ShortName: "h",
@@ -54,6 +71,20 @@ var helpCommand = Command{
 			ShowCommandHelp(c, args.First())
 		} else {
 			ShowAppHelp(c)
+		}
+	},
+}
+
+var helpSubcommand = Command{
+	Name:      "help",
+	ShortName: "h",
+	Usage:     "Shows a list of commands or help for one command",
+	Action: func(c *Context) {
+		args := c.Args()
+		if args.Present() {
+			ShowCommandHelp(c, args.First())
+		} else {
+			ShowSubcommandHelp(c)
 		}
 	},
 }
@@ -85,6 +116,11 @@ func ShowCommandHelp(c *Context, command string) {
 	}
 
 	fmt.Printf("No help topic for '%v'\n", command)
+}
+
+// Prints help for the given subcommand
+func ShowSubcommandHelp(c *Context) {
+	HelpPrinter(SubcommandHelpTemplate, c.App)
 }
 
 // Prints the version number of the App
@@ -139,6 +175,15 @@ func checkHelp(c *Context) bool {
 func checkCommandHelp(c *Context, name string) bool {
 	if c.Bool("h") || c.Bool("help") {
 		ShowCommandHelp(c, name)
+		return true
+	}
+
+	return false
+}
+
+func checkSubcommandHelp(c *Context) bool {
+	if c.GlobalBool("h") || c.GlobalBool("help") {
+		ShowSubcommandHelp(c)
 		return true
 	}
 
