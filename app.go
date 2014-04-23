@@ -29,6 +29,8 @@ type App struct {
 	Before func(context *Context) error
 	// The action to execute when no subcommands are specified
 	Action func(context *Context)
+	// Execute this function if the proper command cannot be found
+	CommandNotFound func(context *Context, command string)
 	// Compilation date
 	Compiled time.Time
 	// Author
