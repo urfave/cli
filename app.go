@@ -74,8 +74,8 @@ func (a *App) Run(arguments []string) error {
 	if a.EnableBashCompletion {
 		a.appendFlag(BashCompletionFlag)
 	}
-	a.appendFlag(BoolFlag{"version, v", "print the version"})
-	a.appendFlag(BoolFlag{"help, h", "show help"})
+	a.appendFlag(VersionFlag)
+	a.appendFlag(HelpFlag)
 
 	// parse flags
 	set := flagSet(a.Name, a.Flags)
@@ -144,7 +144,7 @@ func (a *App) RunAsSubcommand(ctx *Context) error {
 	if a.EnableBashCompletion {
 		a.appendFlag(BashCompletionFlag)
 	}
-	a.appendFlag(BoolFlag{"help, h", "show help"})
+	a.appendFlag(HelpFlag)
 
 	// parse flags
 	set := flagSet(a.Name, a.Flags)

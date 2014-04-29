@@ -10,6 +10,12 @@ import (
 // This flag enables bash-completion for all commands and subcommands
 var BashCompletionFlag = BoolFlag{"generate-bash-completion", ""}
 
+// This flag prints the version for the application
+var VersionFlag = BoolFlag{"version, v", "print the version"}
+
+// This flag prints the help for all commands and subcommands
+var HelpFlag = BoolFlag{"help, h", "show help"}
+
 // Flag is a common interface related to parsing flags in cli.
 // For more advanced flag parsing techniques, it is recomended that
 // this interface be implemented.
