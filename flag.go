@@ -7,22 +7,68 @@ import (
 	"strings"
 )
 
+type (
+
+	// Flag is a common interface related to parsing flags in cli.
+	// For more advanced flag parsing techniques, it is recomended that
+	// this interface be implemented.
+	Flag interface {
+		fmt.Stringer
+		// Apply Flag settings to the given flag set
+		Apply(*flag.FlagSet)
+		getName() string
+	}
+
+	StringSlice []string
+
+	StringSliceFlag struct {
+		Name  string
+		Value *StringSlice
+		Usage string
+	}
+
+	IntSlice []int
+
+	IntSliceFlag struct {
+		Name  string
+		Value *IntSlice
+		Usage string
+	}
+
+	BoolFlag struct {
+		Name  string
+		Usage string
+	}
+
+	// Same structure
+	BoolTFlag BoolFlag
+
+	StringFlag struct {
+		Name  string
+		Value string
+		Usage string
+	}
+
+	IntFlag struct {
+		Name  string
+		Value int
+		Usage string
+	}
+
+	Float64Flag struct {
+		Name  string
+		Value float64
+		Usage string
+	}
+)
+
 // This flag enables bash-completion for all commands and subcommands
 var BashCompletionFlag = BoolFlag{"generate-bash-completion", ""}
 
-// Flag is a common interface related to parsing flags in cli.
-// For more advanced flag parsing techniques, it is recomended that
-// this interface be implemented.
-type Flag interface {
-	fmt.Stringer
-	// Apply Flag settings to the given flag set
-	Apply(*flag.FlagSet)
-	getName() string
-}
+// Utility functions
 
 func flagSet(name string, flags []Flag) *flag.FlagSet {
 	set := flag.NewFlagSet(name, flag.ContinueOnError)
-
 	for _, f := range flags {
 		f.Apply(set)
 	}
@@ -37,7 +83,26 @@ func eachName(longName string, fn func(string)) {
 	}
 }
 
-type StringSlice []string
+func prefixFor(name string) string {
+	if len(name) == 1 {
+		return "-"
+	}
+	return "--"
+}
+
+func prefixedNames(fullName string) (prefixed string) {
+	parts := strings.Split(fullName, ",")
+	for i, name := range parts {
+		name = strings.Trim(name, " ")
+		prefixed += prefixFor(name) + name
+		if i < len(parts)-1 {
+			prefixed += ", "
+		}
+	}
+	return
+}
+
+// --- StringSlice ---
 
 func (f *StringSlice) Set(value string) error {
 	*f = append(*f, value)
@@ -52,11 +117,7 @@ func (f *StringSlice) Value() []string {
 	return *f
 }
 
-type StringSliceFlag struct {
-	Name  string
-	Value *StringSlice
-	Usage string
-}
+// --- StringSliceFlag ---
 
 func (f StringSliceFlag) String() string {
 	firstName := strings.Trim(strings.Split(f.Name, ",")[0], " ")
@@ -74,7 +135,7 @@ func (f StringSliceFlag) getName() string {
 	return f.Name
 }
 
-type IntSlice []int
+// --- IntSlice ---
 
 func (f *IntSlice) Set(value string) error {
 
@@ -95,11 +156,7 @@ func (f *IntSlice) Value() []int {
 	return *f
 }
 
-type IntSliceFlag struct {
-	Name  string
-	Value *IntSlice
-	Usage string
-}
+// --- IntSliceFlag ---
 
 func (f IntSliceFlag) String() string {
 	firstName := strings.Trim(strings.Split(f.Name, ",")[0], " ")
@@ -117,10 +174,7 @@ func (f IntSliceFlag) getName() string {
 	return f.Name
 }
 
-type BoolFlag struct {
-	Name  string
-	Usage string
-}
+// --- BoolFlag ---
 
 func (f BoolFlag) String() string {
 	return fmt.Sprintf("%s\t%v", prefixedNames(f.Name), f.Usage)
@@ -136,10 +190,7 @@ func (f BoolFlag) getName() string {
 	return f.Name
 }
 
-type BoolTFlag struct {
-	Name  string
-	Usage string
-}
+// --- BoolTFlag ---
 
 func (f BoolTFlag) String() string {
 	return fmt.Sprintf("%s\t%v", prefixedNames(f.Name), f.Usage)
@@ -155,11 +206,7 @@ func (f BoolTFlag) getName() string {
 	return f.Name
 }
 
-type StringFlag struct {
-	Name  string
-	Value string
-	Usage string
-}
+// --- StringFlag ---
 
 func (f StringFlag) String() string {
 	var fmtString string
@@ -184,11 +231,7 @@ func (f StringFlag) getName() string {
 	return f.Name
 }
 
-type IntFlag struct {
-	Name  string
-	Value int
-	Usage string
-}
+// --- IntFlag ---
 
 func (f IntFlag) String() string {
 	return fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage)
@@ -204,11 +247,7 @@ func (f IntFlag) getName() string {
 	return f.Name
 }
 
-type Float64Flag struct {
-	Name  string
-	Value float64
-	Usage string
-}
+// --- Float64Flag ---
 
 func (f Float64Flag) String() string {
 	return fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage)
@@ -222,26 +261,4 @@ func (f Float64Flag) Apply(set *flag.FlagSet) {
 
 func (f Float64Flag) getName() string {
 	return f.Name
-}
-
-func prefixFor(name string) (prefix string) {
-	if len(name) == 1 {
-		prefix = "-"
-	} else {
-		prefix = "--"
-	}
-
-	return
-}
-
-func prefixedNames(fullName string) (prefixed string) {
-	parts := strings.Split(fullName, ",")
-	for i, name := range parts {
-		name = strings.Trim(name, " ")
-		prefixed += prefixFor(name) + name
-		if i < len(parts)-1 {
-			prefixed += ", "
-		}
-	}
-	return
 }

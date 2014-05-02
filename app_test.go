@@ -42,7 +42,7 @@ func ExampleAppSubcommand() {
 					Usage:       "sends a greeting in english",
 					Description: "greets someone in english",
 					Flags: []cli.Flag{
-						cli.StringFlag{"name", "Bob", "Name of the person to greet"},
+						cli.StringFlag{Name: "name", Value: "Bob", Usage: "Name of the person to greet"},
 					},
 					Action: func(c *cli.Context) {
 						fmt.Println("Hello,", c.String("name"))
@@ -141,10 +141,7 @@ func TestApp_Run(t *testing.T) {
 	expect(t, s, "foobar")
 }
 
-var commandAppTests = []struct {
-	name     string
-	expected bool
-}{
+var commandAppTests = []FlagTestBool{
 	{"foobar", true},
 	{"batbaz", true},
 	{"b", true},

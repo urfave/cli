@@ -7,39 +7,52 @@ import (
 	"time"
 )
 
-// App is the main structure of a cli application. It is recomended that
-// and app be created with the cli.NewApp() function
+// App is the main structure of a cli application.
+// New App variables should be created with the cli.NewApp() function.
 type App struct {
-	// The name of the program. Defaults to os.Args[0]
+
+	// Name of the program. Defaults to os.Args[0]
 	Name string
+
 	// Description of the program.
 	Usage string
+
 	// Version of the program
 	Version string
+
 	// List of commands to execute
 	Commands []Command
+
 	// List of flags to parse
 	Flags []Flag
+
 	// Boolean to enable bash completion commands
 	EnableBashCompletion bool
+
 	// An action to execute when the bash-completion flag is set
 	BashComplete func(context *Context)
-	// An action to execute before any subcommands are run, but after the context is ready
-	// If a non-nil error is returned, no subcommands are run
+
+	// An action to execute before any subcommands are run, but after the context is ready.
+	// If a non-nil error is returned, no subcommands are run.
 	Before func(context *Context) error
+
 	// The action to execute when no subcommands are specified
 	Action func(context *Context)
+
 	// Execute this function if the proper command cannot be found
 	CommandNotFound func(context *Context, command string)
+
 	// Compilation date
 	Compiled time.Time
+
 	// Author
 	Author string
+
 	// Author e-mail
 	Email string
 }
 
-// Tries to find out when this binary was compiled.
+// compileTime tries to find out when this binary was compiled.
 // Returns the current time if it fails to find it.
 func compileTime() time.Time {
 	info, err := os.Stat(os.Args[0])
@@ -49,7 +62,7 @@ func compileTime() time.Time {
 	return info.ModTime()
 }
 
-// Creates a new cli Application with some reasonable defaults for Name, Usage, Version and Action.
+// NewApp creates a new cli Application with some reasonable defaults for Name, Usage, Version and Action.
 func NewApp() *App {
 	return &App{
 		Name:         os.Args[0],
@@ -63,14 +76,16 @@ func NewApp() *App {
 	}
 }
 
-// Entry point to the cli app. Parses the arguments slice and routes to the proper flag/args combination
+// Run provides an entry point to the cli app.
+// It parses the slice of arguments and routes to the proper flag/args combination.
 func (a *App) Run(arguments []string) error {
+
 	// append help to commands
 	if a.Command(helpCommand.Name) == nil {
 		a.Commands = append(a.Commands, helpCommand)
 	}
 
-	//append version/help flags
+	// append version/help flags
 	if a.EnableBashCompletion {
 		a.appendFlag(BashCompletionFlag)
 	}
@@ -86,15 +101,16 @@ func (a *App) Run(arguments []string) error {
 		fmt.Println(nerr)
 		context := NewContext(a, set, set)
 		ShowAppHelp(context)
-		fmt.Println("")
+		fmt.Println()
 		return nerr
 	}
 	context := NewContext(a, set, set)
 
 	if err != nil {
-		fmt.Printf("Incorrect Usage.\n\n")
+		fmt.Println("Incorrect Usage.")
+		fmt.Println()
 		ShowAppHelp(context)
-		fmt.Println("")
+		fmt.Println()
 		return err
 	}
 
@@ -128,6 +144,7 @@ func (a *App) Run(arguments []string) error {
 
 	// Run default Action
 	a.Action(context)
+
 	return nil
 }
 
@@ -210,27 +227,27 @@ func (a *App) RunAsSubcommand(ctx *Context) error {
 	return nil
 }
 
-// Returns the named command on App. Returns nil if the command does not exist
+// Command returns the named command on App. If the command does not exist, nil is returned.
 func (a *App) Command(name string) *Command {
 	for _, c := range a.Commands {
 		if c.HasName(name) {
 			return &c
 		}
 	}
-
 	return nil
 }
 
+// hasFlag checks for the presence of a flag.
 func (a *App) hasFlag(flag Flag) bool {
 	for _, f := range a.Flags {
 		if flag == f {
 			return true
 		}
 	}
-
 	return false
 }
 
+// appendFlag appends a flag if it does not already exist.
 func (a *App) appendFlag(flag Flag) {
 	if !a.hasFlag(flag) {
 		a.Flags = append(a.Flags, flag)
