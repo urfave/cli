@@ -6,16 +6,31 @@ import (
 	"testing"
 )
 
-var boolFlagTests = []struct {
-	name     string
-	expected string
-}{
-	{"help", "--help\t"},
-	{"h", "-h\t"},
-}
+var (
+	boolFlagTests = []FlagTest{
+		{"help", "--help\t"},
+		{"h", "-h\t"},
+	}
+
+	stringFlagTests = []FlagTestString{
+		{"help", "", "--help \t"},
+		{"h", "", "-h \t"},
+		{"h", "", "-h \t"},
+		{"test", "Something", "--test 'Something'\t"},
+	}
+
+	intFlagTests = []FlagTest{
+		{"help", "--help '0'\t"},
+		{"h", "-h '0'\t"},
+	}
+
+	float64FlagTests = []FlagTest{
+		{"help", "--help '0'\t"},
+		{"h", "-h '0'\t"},
+	}
+)
 
 func TestBoolFlagHelpOutput(t *testing.T) {
-
 	for _, test := range boolFlagTests {
 		flag := cli.BoolFlag{Name: test.name}
 		output := flag.String()
@@ -26,19 +41,7 @@ func TestBoolFlagHelpOutput(t *testing.T) {
 	}
 }
 
-var stringFlagTests = []struct {
-	name     string
-	value    string
-	expected string
-}{
-	{"help", "", "--help \t"},
-	{"h", "", "-h \t"},
-	{"h", "", "-h \t"},
-	{"test", "Something", "--test 'Something'\t"},
-}
-
 func TestStringFlagHelpOutput(t *testing.T) {
-
 	for _, test := range stringFlagTests {
 		flag := cli.StringFlag{Name: test.name, Value: test.value}
 		output := flag.String()
@@ -49,16 +52,7 @@ func TestStringFlagHelpOutput(t *testing.T) {
 	}
 }
 
-var intFlagTests = []struct {
-	name     string
-	expected string
-}{
-	{"help", "--help '0'\t"},
-	{"h", "-h '0'\t"},
-}
-
 func TestIntFlagHelpOutput(t *testing.T) {
-
 	for _, test := range intFlagTests {
 		flag := cli.IntFlag{Name: test.name}
 		output := flag.String()
@@ -69,16 +63,7 @@ func TestIntFlagHelpOutput(t *testing.T) {
 	}
 }
 
-var float64FlagTests = []struct {
-	name     string
-	expected string
-}{
-	{"help", "--help '0'\t"},
-	{"h", "-h '0'\t"},
-}
-
 func TestFloat64FlagHelpOutput(t *testing.T) {
-
 	for _, test := range float64FlagTests {
 		flag := cli.Float64Flag{Name: test.name}
 		output := flag.String()

@@ -8,8 +8,8 @@ import (
 )
 
 // The text template for the Default help topic.
-// cli.go uses text/template to render templates. You can
-// render custom help text by setting this variable.
+// cli.go uses text/template to render templates.
+// You can render custom help text by setting this variable.
 var AppHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
@@ -28,8 +28,8 @@ GLOBAL OPTIONS:
 `
 
 // The text template for the command help topic.
-// cli.go uses text/template to render templates. You can
-// render custom help text by setting this variable.
+// cli.go uses text/template to render templates.
+// You can render custom help text by setting this variable.
 var CommandHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
@@ -44,10 +44,12 @@ OPTIONS:
    {{end}}
 `
 
-// The text template for the subcommand help topic.
-// cli.go uses text/template to render templates. You can
-// render custom help text by setting this variable.
-var SubcommandHelpTemplate = `NAME:
+var (
+
+	// The text template for the subcommand help topic.
+	// cli.go uses text/template to render templates. You can
+	// render custom help text by setting this variable.
+	SubcommandHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
 USAGE:
@@ -61,42 +63,44 @@ OPTIONS:
    {{end}}
 `
 
-var helpCommand = Command{
-	Name:      "help",
-	ShortName: "h",
-	Usage:     "Shows a list of commands or help for one command",
-	Action: func(c *Context) {
-		args := c.Args()
-		if args.Present() {
-			ShowCommandHelp(c, args.First())
-		} else {
-			ShowAppHelp(c)
-		}
-	},
-}
+	helpCommand = Command{
+		Name:      "help",
+		ShortName: "h",
+		Usage:     "Shows a list of commands or help for one command",
+		Action: func(c *Context) {
+			args := c.Args()
+			if args.Present() {
+				ShowCommandHelp(c, args.First())
+			} else {
+				ShowAppHelp(c)
+			}
+		},
+	}
 
-var helpSubcommand = Command{
-	Name:      "help",
-	ShortName: "h",
-	Usage:     "Shows a list of commands or help for one command",
-	Action: func(c *Context) {
-		args := c.Args()
-		if args.Present() {
-			ShowCommandHelp(c, args.First())
-		} else {
-			ShowSubcommandHelp(c)
-		}
-	},
-}
+	helpSubcommand = Command{
+		Name:      "help",
+		ShortName: "h",
+		Usage:     "Shows a list of commands or help for one command",
+		Action: func(c *Context) {
+			args := c.Args()
+			if args.Present() {
+				ShowCommandHelp(c, args.First())
+			} else {
+				ShowSubcommandHelp(c)
+			}
+		},
+	}
 
-// Prints help for the App
-var HelpPrinter = printHelp
+	// Prints help for the App
+	HelpPrinter = printHelp
+)
 
+// ShowAppHelp prints general help for the application.
 func ShowAppHelp(c *Context) {
 	HelpPrinter(AppHelpTemplate, c.App)
 }
 
-// Prints the list of subcommands as the default app completion method
+// DefaultAppComplete prints the list of subcommands as the default app completion method
 func DefaultAppComplete(c *Context) {
 	for _, command := range c.App.Commands {
 		fmt.Println(command.Name)
@@ -106,7 +110,7 @@ func DefaultAppComplete(c *Context) {
 	}
 }
 
-// Prints help for the given command
+// ShowCommandHelp prints help for the given command.
 func ShowCommandHelp(c *Context, command string) {
 	for _, c := range c.App.Commands {
 		if c.HasName(command) {
@@ -127,12 +131,12 @@ func ShowSubcommandHelp(c *Context) {
 	HelpPrinter(SubcommandHelpTemplate, c.App)
 }
 
-// Prints the version number of the App
+// ShowVersion prints the version number of the App.
 func ShowVersion(c *Context) {
 	fmt.Printf("%v version %v\n", c.App.Name, c.App.Version)
 }
 
-// Prints the lists of commands within a given context
+// ShowCompletions prints the lists of commands within a given context
 func ShowCompletions(c *Context) {
 	a := c.App
 	if a != nil && a.BashComplete != nil {
@@ -140,7 +144,7 @@ func ShowCompletions(c *Context) {
 	}
 }
 
-// Prints the custom completions for a given command
+// ShowCommandCompletions prints the custom completions for a given command
 func ShowCommandCompletions(ctx *Context, command string) {
 	c := ctx.App.Command(command)
 	if c != nil && c.BashComplete != nil {
@@ -163,7 +167,6 @@ func checkVersion(c *Context) bool {
 		ShowVersion(c)
 		return true
 	}
-
 	return false
 }
 
@@ -172,7 +175,6 @@ func checkHelp(c *Context) bool {
 		ShowAppHelp(c)
 		return true
 	}
-
 	return false
 }
 
@@ -181,7 +183,6 @@ func checkCommandHelp(c *Context, name string) bool {
 		ShowCommandHelp(c, name)
 		return true
 	}
-
 	return false
 }
 
@@ -190,7 +191,6 @@ func checkSubcommandHelp(c *Context) bool {
 		ShowSubcommandHelp(c)
 		return true
 	}
-
 	return false
 }
 
@@ -199,7 +199,6 @@ func checkCompletions(c *Context) bool {
 		ShowCompletions(c)
 		return true
 	}
-
 	return false
 }
 
@@ -208,6 +207,5 @@ func checkCommandCompletions(c *Context, name string) bool {
 		ShowCommandCompletions(c, name)
 		return true
 	}
-
 	return false
 }
