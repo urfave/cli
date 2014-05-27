@@ -43,6 +43,33 @@ func eachName(longName string, fn func(string)) {
 	}
 }
 
+// Generic is a generic parseable type identified by a specific flag
+type Generic interface {
+	Set(value string) error
+	String() string
+}
+
+// GenericFlag is the flag type for types implementing Generic
+type GenericFlag struct {
+	Name  string
+	Value Generic
+	Usage string
+}
+
+func (f GenericFlag) String() string {
+	return fmt.Sprintf("%s%s %v\t`%v` %s", prefixFor(f.Name), f.Name, f.Value, "-"+f.Name+" option -"+f.Name+" option", f.Usage)
+}
+
+func (f GenericFlag) Apply(set *flag.FlagSet) {
+	eachName(f.Name, func(name string) {
+		set.Var(f.Value, name, f.Usage)
+	})
+}
+
+func (f GenericFlag) getName() string {
+	return f.Name
+}
+
 type StringSlice []string
 
 func (f *StringSlice) Set(value string) error {

@@ -2,7 +2,10 @@ package cli_test
 
 import (
 	"github.com/codegangsta/cli"
+
+	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -153,4 +156,39 @@ func TestParseMultiBool(t *testing.T) {
 		},
 	}
 	a.Run([]string{"run", "--serve"})
+}
+
+type Parser [2]string
+
+func (p *Parser) Set(value string) error {
+	parts := strings.Split(value, ",")
+	if len(parts) != 2 {
+		return fmt.Errorf("invalid format")
+	}
+
+	(*p)[0] = parts[0]
+	(*p)[1] = parts[1]
+
+	return nil
+}
+
+func (p *Parser) String() string {
+	return fmt.Sprintf("%s,%s", p[0], p[1])
+}
+
+func TestParseGeneric(t *testing.T) {
+	a := cli.App{
+		Flags: []cli.Flag{
+			cli.GenericFlag{Name: "serve, s", Value: &Parser{}},
+		},
+		Action: func(ctx *cli.Context) {
+			if !reflect.DeepEqual(ctx.Generic("serve"), &Parser{"10", "20"}) {
+				t.Errorf("main name not set")
+			}
+			if !reflect.DeepEqual(ctx.Generic("s"), &Parser{"10", "20"}) {
+				t.Errorf("short name not set")
+			}
+		},
+	}
+	a.Run([]string{"run", "-s", "10,20"})
 }
