@@ -110,7 +110,7 @@ func DefaultAppComplete(c *Context) {
 func ShowCommandHelp(c *Context, command string) {
 	for _, c := range c.App.Commands {
 		if c.HasName(command) {
-			printHelp(CommandHelpTemplate, c)
+			HelpPrinter(CommandHelpTemplate, c)
 			return
 		}
 	}
