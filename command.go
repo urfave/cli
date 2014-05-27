@@ -41,7 +41,7 @@ func (c Command) Run(ctx *Context) error {
 	// append help to flags
 	c.Flags = append(
 		c.Flags,
-		BoolFlag{"help, h", "show help"},
+		HelpFlag,
 	)
 
 	if ctx.App.EnableBashCompletion {
@@ -60,7 +60,7 @@ func (c Command) Run(ctx *Context) error {
 	}
 
 	var err error
-	if firstFlagIndex > -1 && !c.SkipFlagParsing{
+	if firstFlagIndex > -1 && !c.SkipFlagParsing {
 		args := ctx.Args()
 		regularArgs := args[1:firstFlagIndex]
 		flagArgs := args[firstFlagIndex:]
