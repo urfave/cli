@@ -2,8 +2,11 @@ package cli
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
+	"text/tabwriter"
+	"text/template"
 	"time"
 )
 
@@ -37,6 +40,8 @@ type App struct {
 	Author string
 	// Author e-mail
 	Email string
+	// Stdout writer to write output to
+	Stdout io.Writer
 }
 
 // Tries to find out when this binary was compiled.
@@ -60,11 +65,28 @@ func NewApp() *App {
 		Compiled:     compileTime(),
 		Author:       "Author",
 		Email:        "unknown@email",
+		Stdout:       os.Stdout,
 	}
 }
 
 // Entry point to the cli app. Parses the arguments slice and routes to the proper flag/args combination
 func (a *App) Run(arguments []string) error {
+	if HelpPrinter == nil {
+		defer func() {
+			HelpPrinter = nil
+		}()
+
+		HelpPrinter = func(templ string, data interface{}) {
+			w := tabwriter.NewWriter(a.Stdout, 0, 8, 1, '\t', 0)
+			t := template.Must(template.New("help").Parse(templ))
+			err := t.Execute(w, data)
+			if err != nil {
+				panic(err)
+			}
+			w.Flush()
+		}
+	}
+
 	// append help to commands
 	if a.Command(helpCommand.Name) == nil {
 		a.Commands = append(a.Commands, helpCommand)
@@ -83,18 +105,18 @@ func (a *App) Run(arguments []string) error {
 	err := set.Parse(arguments[1:])
 	nerr := normalizeFlags(a.Flags, set)
 	if nerr != nil {
-		fmt.Println(nerr)
+		io.WriteString(a.Stdout, fmt.Sprintln(nerr))
 		context := NewContext(a, set, set)
 		ShowAppHelp(context)
-		fmt.Println("")
+		io.WriteString(a.Stdout, fmt.Sprintln(""))
 		return nerr
 	}
 	context := NewContext(a, set, set)
 
 	if err != nil {
-		fmt.Printf("Incorrect Usage.\n\n")
+		io.WriteString(a.Stdout, fmt.Sprintf("Incorrect Usage.\n\n"))
 		ShowAppHelp(context)
-		fmt.Println("")
+		io.WriteString(a.Stdout, fmt.Sprintln(""))
 		return err
 	}
 
@@ -154,18 +176,18 @@ func (a *App) RunAsSubcommand(ctx *Context) error {
 	context := NewContext(a, set, set)
 
 	if nerr != nil {
-		fmt.Println(nerr)
+		io.WriteString(a.Stdout, fmt.Sprintln(nerr))
 		if len(a.Commands) > 0 {
 			ShowSubcommandHelp(context)
 		} else {
 			ShowCommandHelp(ctx, context.Args().First())
 		}
-		fmt.Println("")
+		io.WriteString(a.Stdout, fmt.Sprintln(""))
 		return nerr
 	}
 
 	if err != nil {
-		fmt.Printf("Incorrect Usage.\n\n")
+		io.WriteString(a.Stdout, fmt.Sprintf("Incorrect Usage.\n\n"))
 		ShowSubcommandHelp(context)
 		return err
 	}
