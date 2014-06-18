@@ -1,8 +1,8 @@
 package cli_test
 
 import (
-	"fmt"
 	"."
+	"fmt"
 	"os"
 	"testing"
 )
@@ -348,7 +348,7 @@ func TestAppHelpPrinter(t *testing.T) {
 }
 
 func TestAppVersionPrinter(t *testing.T) {
-    oldPrinter := cli.VersionPrinter
+	oldPrinter := cli.VersionPrinter
 	defer func() {
 		cli.VersionPrinter = oldPrinter
 	}()
@@ -359,8 +359,8 @@ func TestAppVersionPrinter(t *testing.T) {
 	}
 
 	app := cli.NewApp()
-    ctx := cli.NewContext(app, nil, nil)
-    cli.ShowVersion(ctx)
+	ctx := cli.NewContext(app, nil, nil)
+	cli.ShowVersion(ctx)
 
 	if wasCalled == false {
 		t.Errorf("Version printer expected to be called, but was not")

@@ -1,8 +1,8 @@
 package cli_test
 
 import (
-	"flag"
 	"."
+	"flag"
 	"testing"
 )
 
