@@ -1,7 +1,7 @@
 package cli_test
 
 import (
-	"github.com/codegangsta/cli"
+	"."
 
 	"fmt"
 	"reflect"
