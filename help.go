@@ -92,6 +92,9 @@ var helpSubcommand = Command{
 // Prints help for the App
 var HelpPrinter = printHelp
 
+// Prints version for the App
+var VersionPrinter = printVersion
+
 func ShowAppHelp(c *Context) {
 	HelpPrinter(AppHelpTemplate, c.App)
 }
@@ -129,6 +132,10 @@ func ShowSubcommandHelp(c *Context) {
 
 // Prints the version number of the App
 func ShowVersion(c *Context) {
+	VersionPrinter(c)
+}
+
+func printVersion(c *Context) {
 	fmt.Printf("%v version %v\n", c.App.Name, c.App.Version)
 }
 
