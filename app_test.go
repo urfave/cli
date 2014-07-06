@@ -2,9 +2,10 @@ package cli_test
 
 import (
 	"fmt"
-	"github.com/codegangsta/cli"
 	"os"
 	"testing"
+
+	"github.com/codegangsta/cli"
 )
 
 func ExampleApp() {
@@ -368,4 +369,33 @@ func TestAppCommandNotFound(t *testing.T) {
 
 	expect(t, beforeRun, true)
 	expect(t, subcommandRun, false)
+}
+
+func TestGlobalFlagsInSubcommands(t *testing.T) {
+	subcommandRun := false
+	app := cli.NewApp()
+
+	app.Flags = []cli.Flag{
+		cli.BoolFlag{Name: "debug, d", Usage: "Enable debugging"},
+	}
+
+	app.Commands = []cli.Command{
+		cli.Command{
+			Name: "foo",
+			Subcommands: []cli.Command{
+				{
+					Name: "bar",
+					Action: func(c *cli.Context) {
+						if c.GlobalBool("debug") {
+							subcommandRun = true
+						}
+					},
+				},
+			},
+		},
+	}
+
+	app.Run([]string{"command", "-d", "foo", "bar"})
+
+	expect(t, subcommandRun, true)
 }
