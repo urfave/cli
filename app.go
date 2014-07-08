@@ -151,7 +151,7 @@ func (a *App) RunAsSubcommand(ctx *Context) error {
 	set.SetOutput(ioutil.Discard)
 	err := set.Parse(ctx.Args().Tail())
 	nerr := normalizeFlags(a.Flags, set)
-	context := NewContext(a, set, set)
+	context := NewContext(a, set, ctx.globalSet)
 
 	if nerr != nil {
 		fmt.Println(nerr)
