@@ -137,7 +137,7 @@ Setting and querying flags is simple.
 ``` go
 ...
 app.Flags = []cli.Flag {
-  cli.StringFlag{"lang", "english", "language for the greeting"},
+  cli.StringFlag{Name: "lang", Value: "english", Usage: "language for the greeting"},
 }
 app.Action = func(c *cli.Context) {
   name := "someone"
@@ -159,7 +159,7 @@ You can set alternate (or short) names for flags by providing a comma-delimited 
 
 ``` go
 app.Flags = []cli.Flag {
-  cli.StringFlag{"lang, l", "english", "language for the greeting"},
+  cli.StringFlag{Name: "lang, l", Value: "english", Usage: "language for the greeting"},
 }
 ```
 
