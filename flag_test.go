@@ -71,10 +71,26 @@ var stringSliceFlagTests = []struct {
 	value    *cli.StringSlice
 	expected string
 }{
-	{"help", &cli.StringSlice{""}, "--help '--help option --help option'\t"},
-	{"h", &cli.StringSlice{""}, "-h '-h option -h option'\t"},
-	{"h", &cli.StringSlice{""}, "-h '-h option -h option'\t"},
-	{"test", &cli.StringSlice{"Something"}, "--test '--test option --test option'\t"},
+	{"help", func() *cli.StringSlice {
+		s := &cli.StringSlice{}
+		s.Set("")
+		return s
+	}(), "--help '--help option --help option'\t"},
+	{"h", func() *cli.StringSlice {
+		s := &cli.StringSlice{}
+		s.Set("")
+		return s
+	}(), "-h '-h option -h option'\t"},
+	{"h", func() *cli.StringSlice {
+		s := &cli.StringSlice{}
+		s.Set("")
+		return s
+	}(), "-h '-h option -h option'\t"},
+	{"test", func() *cli.StringSlice {
+		s := &cli.StringSlice{}
+		s.Set("Something")
+		return s
+	}(), "--test '--test option --test option'\t"},
 }
 
 func TestStringSliceFlagHelpOutput(t *testing.T) {
@@ -143,7 +159,11 @@ var intSliceFlagTests = []struct {
 	{"help", &cli.IntSlice{}, "--help '--help option --help option'\t"},
 	{"h", &cli.IntSlice{}, "-h '-h option -h option'\t"},
 	{"h", &cli.IntSlice{}, "-h '-h option -h option'\t"},
-	{"test", &cli.IntSlice{9}, "--test '--test option --test option'\t"},
+	{"test", func() *cli.IntSlice {
+		i := &cli.IntSlice{}
+		i.Set("9")
+		return i
+	}(), "--test '--test option --test option'\t"},
 }
 
 func TestIntSliceFlagHelpOutput(t *testing.T) {
