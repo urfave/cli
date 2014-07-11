@@ -43,7 +43,7 @@ func ExampleAppSubcommand() {
 					Usage:       "sends a greeting in english",
 					Description: "greets someone in english",
 					Flags: []cli.Flag{
-						cli.StringFlag{"name", "Bob", "Name of the person to greet"},
+						cli.StringFlag{Name: "name", Value: "Bob", Usage: "Name of the person to greet"},
 					},
 					Action: func(c *cli.Context) {
 						fmt.Println("Hello,", c.String("name"))
@@ -255,11 +255,11 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 	var expectedStringSlice = []string{"8.8.8.8", "8.8.4.4"}
 
 	if !IntsEquals(parsedIntSlice, expectedIntSlice) {
-		t.Errorf("%s does not match %s", parsedIntSlice, expectedIntSlice)
+		t.Errorf("%v does not match %v", parsedIntSlice, expectedIntSlice)
 	}
 
 	if !StrsEquals(parsedStringSlice, expectedStringSlice) {
-		t.Errorf("%s does not match %s", parsedStringSlice, expectedStringSlice)
+		t.Errorf("%v does not match %v", parsedStringSlice, expectedStringSlice)
 	}
 }
 
