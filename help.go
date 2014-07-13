@@ -51,7 +51,7 @@ var SubcommandHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
 USAGE:
-   {{.Name}} [global options] command{{ if .Flags }} [command options]{{ end }} [arguments...]
+   {{.Name}} command{{ if .Flags }} [command options]{{ end }} [arguments...]
 
 COMMANDS:
    {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
