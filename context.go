@@ -3,6 +3,7 @@ package cli
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -17,6 +18,12 @@ type Context struct {
 	flagSet   *flag.FlagSet
 	globalSet *flag.FlagSet
 	setFlags  map[string]bool
+}
+
+type Requires struct {
+	Atleast    int
+	Exactly    int
+	NoMoreThan int
 }
 
 // Creates a new context. For use in when invoking an App or Command action.
@@ -113,6 +120,23 @@ func (c *Context) Args() Args {
 	return args
 }
 
+// Returns an error if the context arguments do not satisfy the given requirements
+func (c *Context) Satisfies(req *Requires) error {
+	if req != nil {
+		argc := len(c.Args())
+		if req.Atleast > 0 || req.NoMoreThan > 0 {
+			if req.Atleast > argc {
+				return fmtRequiresError("atleast", req.Atleast)
+			} else if argc > req.NoMoreThan {
+				return fmtRequiresError("no more than", req.NoMoreThan)
+			}
+		} else if argc != req.Exactly {
+			return fmtRequiresError("exactly", req.Exactly)
+		}
+	}
+	return nil
+}
+
 // Returns the nth argument, or else a blank string
 func (a Args) Get(n int) string {
 	if len(a) > n {
@@ -138,6 +162,26 @@ func (a Args) Tail() []string {
 // Checks if there are any arguments present
 func (a Args) Present() bool {
 	return len(a) != 0
+}
+
+// Swaps arguments at the given indexes
+func (a Args) Swap(from, to int) error {
+	if from >= len(a) || to >= len(a) {
+		return errors.New("index out of range")
+	}
+	a[from], a[to] = a[to], a[from]
+	return nil
+}
+
+// Formats the requirement error
+func fmtRequiresError(str string, count int) error {
+	switch count {
+	case 0:
+		return fmt.Errorf("Command requires no arguments")
+	case 1:
+		return fmt.Errorf("Command requires %s 1 argument", str)
+	}
+	return fmt.Errorf("Command requires %s %d arguments", str, count)
 }
 
 func lookupInt(name string, set *flag.FlagSet) int {

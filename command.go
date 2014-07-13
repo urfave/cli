@@ -29,6 +29,10 @@ type Command struct {
 	Flags []Flag
 	// Treat all flags as normal arguments if true
 	SkipFlagParsing bool
+	// Boolean to hide built-in help command
+	HideHelp bool
+	// Command argument requirements
+	Requires *Requires
 }
 
 // Invokes the command given the context, parses ctx.Args() to generate command-specific flags
@@ -38,11 +42,13 @@ func (c Command) Run(ctx *Context) error {
 		return c.startApp(ctx)
 	}
 
-	// append help to flags
-	c.Flags = append(
-		c.Flags,
-		HelpFlag,
-	)
+	if !c.HideHelp {
+		// append help to flags
+		c.Flags = append(
+			c.Flags,
+			HelpFlag,
+		)
+	}
 
 	if ctx.App.EnableBashCompletion {
 		c.Flags = append(c.Flags, BashCompletionFlag)
@@ -86,6 +92,10 @@ func (c Command) Run(ctx *Context) error {
 	}
 	context := NewContext(ctx.App, set, ctx.globalSet)
 
+	if err := context.Satisfies(c.Requires); err != nil {
+		return err
+	}
+
 	if checkCommandCompletions(context, c.Name) {
 		return nil
 	}
@@ -117,6 +127,7 @@ func (c Command) startApp(ctx *Context) error {
 	// set the flags and commands
 	app.Commands = c.Subcommands
 	app.Flags = c.Flags
+	app.HideHelp = c.HideHelp
 
 	// bash completion
 	app.EnableBashCompletion = ctx.App.EnableBashCompletion

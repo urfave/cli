@@ -88,8 +88,6 @@ func ExampleAppHelp() {
 	//
 	// DESCRIPTION:
 	//    This is how we describe describeit the function
-	//
-	// OPTIONS:
 }
 
 func ExampleAppBashComplete() {
