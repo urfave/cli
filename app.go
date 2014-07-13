@@ -24,6 +24,8 @@ type App struct {
 	EnableBashCompletion bool
 	// Boolean to hide built-in help command
 	HideHelp bool
+	// Command argument requirements
+	Requires *Requires
 	// An action to execute when the bash-completion flag is set
 	BashComplete func(context *Context)
 	// An action to execute before any subcommands are run, but after the context is ready
@@ -112,6 +114,10 @@ func (a *App) Run(arguments []string) error {
 		return nil
 	}
 
+	if err := context.Satisfies(a.Requires); err != nil {
+		return err
+	}
+
 	if a.Before != nil {
 		err := a.Before(context)
 		if err != nil {
@@ -184,6 +190,10 @@ func (a *App) RunAsSubcommand(ctx *Context) error {
 		if checkCommandHelp(ctx, context.Args().First()) {
 			return nil
 		}
+	}
+
+	if err := context.Satisfies(a.Requires); err != nil {
+		return err
 	}
 
 	if a.Before != nil {
