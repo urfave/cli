@@ -136,7 +136,7 @@ func (a *App) Run(arguments []string) error {
 // Another entry point to the cli app, takes care of passing arguments and error handling
 func (a *App) RunAndExitOnError() {
 	if err := a.Run(os.Args); err != nil {
-		os.Stderr.WriteString(fmt.Sprintln(err))
+		os.Stderr.WriteString(fmt.Sprint(err))
 		os.Exit(1)
 	}
 }
