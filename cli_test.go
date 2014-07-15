@@ -1,8 +1,9 @@
 package cli_test
 
 import (
-	"github.com/codegangsta/cli"
 	"os"
+
+	"github.com/codegangsta/cli"
 )
 
 func Example() {

@@ -88,12 +88,10 @@ func ExampleAppHelp() {
 	//    describeit - use it to see a description
 	//
 	// USAGE:
-	//    command describeit [command options] [arguments...]
+	//    command describeit [arguments...]
 	//
 	// DESCRIPTION:
 	//    This is how we describe describeit the function
-	//
-	// OPTIONS:
 }
 
 func ExampleAppBashComplete() {
@@ -259,11 +257,11 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 	var expectedStringSlice = []string{"8.8.8.8", "8.8.4.4"}
 
 	if !IntsEquals(parsedIntSlice, expectedIntSlice) {
-		t.Errorf("%s does not match %s", parsedIntSlice, expectedIntSlice)
+		t.Errorf("%v does not match %v", parsedIntSlice, expectedIntSlice)
 	}
 
 	if !StrsEquals(parsedStringSlice, expectedStringSlice) {
-		t.Errorf("%s does not match %s", parsedStringSlice, expectedStringSlice)
+		t.Errorf("%v does not match %v", parsedStringSlice, expectedStringSlice)
 	}
 }
 
