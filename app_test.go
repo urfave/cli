@@ -84,12 +84,10 @@ func ExampleAppHelp() {
 	//    describeit - use it to see a description
 	//
 	// USAGE:
-	//    command describeit [command options] [arguments...]
+	//    command describeit [arguments...]
 	//
 	// DESCRIPTION:
 	//    This is how we describe describeit the function
-	//
-	// OPTIONS:
 }
 
 func ExampleAppBashComplete() {
