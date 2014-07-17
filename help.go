@@ -2,9 +2,7 @@ package cli
 
 import (
 	"fmt"
-	"os"
-	"text/tabwriter"
-	"text/template"
+	"io"
 )
 
 // The text template for the Default help topic.
@@ -90,7 +88,9 @@ var helpSubcommand = Command{
 }
 
 // Prints help for the App
-var HelpPrinter = printHelp
+type helpPrinter func(templ string, data interface{})
+
+var HelpPrinter helpPrinter = nil
 
 func ShowAppHelp(c *Context) {
 	HelpPrinter(AppHelpTemplate, c.App)
@@ -99,9 +99,9 @@ func ShowAppHelp(c *Context) {
 // Prints the list of subcommands as the default app completion method
 func DefaultAppComplete(c *Context) {
 	for _, command := range c.App.Commands {
-		fmt.Println(command.Name)
+		io.WriteString(c.App.Stdout, fmt.Sprintln(command.Name))
 		if command.ShortName != "" {
-			fmt.Println(command.ShortName)
+			io.WriteString(c.App.Stdout, fmt.Sprintln(command.ShortName))
 		}
 	}
 }
@@ -118,7 +118,7 @@ func ShowCommandHelp(c *Context, command string) {
 	if c.App.CommandNotFound != nil {
 		c.App.CommandNotFound(c, command)
 	} else {
-		fmt.Printf("No help topic for '%v'\n", command)
+		io.WriteString(c.App.Stdout, fmt.Sprintf("No help topic for '%v'\n", command))
 	}
 }
 
@@ -129,7 +129,7 @@ func ShowSubcommandHelp(c *Context) {
 
 // Prints the version number of the App
 func ShowVersion(c *Context) {
-	fmt.Printf("%v version %v\n", c.App.Name, c.App.Version)
+	io.WriteString(c.App.Stdout, fmt.Sprintf("%v version %v\n", c.App.Name, c.App.Version))
 }
 
 // Prints the lists of commands within a given context
@@ -146,16 +146,6 @@ func ShowCommandCompletions(ctx *Context, command string) {
 	if c != nil && c.BashComplete != nil {
 		c.BashComplete(ctx)
 	}
-}
-
-func printHelp(templ string, data interface{}) {
-	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	t := template.Must(template.New("help").Parse(templ))
-	err := t.Execute(w, data)
-	if err != nil {
-		panic(err)
-	}
-	w.Flush()
 }
 
 func checkVersion(c *Context) bool {

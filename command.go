@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"strings"
 )
@@ -74,18 +75,18 @@ func (c Command) Run(ctx *Context) error {
 	}
 
 	if err != nil {
-		fmt.Printf("Incorrect Usage.\n\n")
+		io.WriteString(ctx.App.Stdout, fmt.Sprintf("Incorrect Usage.\n\n"))
 		ShowCommandHelp(ctx, c.Name)
-		fmt.Println("")
+		io.WriteString(ctx.App.Stdout, fmt.Sprintln(""))
 		return err
 	}
 
 	nerr := normalizeFlags(c.Flags, set)
 	if nerr != nil {
-		fmt.Println(nerr)
-		fmt.Println("")
+		io.WriteString(ctx.App.Stdout, fmt.Sprintln(nerr))
+		io.WriteString(ctx.App.Stdout, fmt.Sprintln(""))
 		ShowCommandHelp(ctx, c.Name)
-		fmt.Println("")
+		io.WriteString(ctx.App.Stdout, fmt.Sprintln(""))
 		return nerr
 	}
 	context := NewContext(ctx.App, set, ctx.globalSet)

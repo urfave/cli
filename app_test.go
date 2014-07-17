@@ -261,6 +261,50 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 	}
 }
 
+func TestApp_DefaultStdout(t *testing.T) {
+	app := cli.NewApp()
+
+	if app.Stdout != os.Stdout {
+		t.Error("Default output writer not set.")
+	}
+}
+
+type fakeWriter struct {
+	written []byte
+}
+
+func (fw *fakeWriter) Write(p []byte) (n int, err error) {
+	if fw.written == nil {
+		fw.written = p
+	} else {
+		fw.written = append(fw.written, p...)
+	}
+
+	return len(p), nil
+}
+
+func (fw *fakeWriter) GetWritten() (b []byte) {
+	return fw.written
+}
+
+func TestApp_SetStdout(t *testing.T) {
+	mockWriter := &fakeWriter{}
+
+	app := cli.NewApp()
+	app.Name = "test"
+	app.Stdout = mockWriter
+
+	err := app.Run([]string{"help"})
+
+	if err != nil {
+		t.Fatalf("Run error: %s", err)
+	}
+
+	if len(mockWriter.written) == 0 {
+		t.Error("App did not write output to desired writer.")
+	}
+}
+
 func TestApp_BeforeFunc(t *testing.T) {
 	beforeRun, subcommandRun := false, false
 	beforeError := fmt.Errorf("fail")
