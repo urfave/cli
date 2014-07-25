@@ -151,6 +151,9 @@ func (a *App) RunAsSubcommand(ctx *Context) error {
 		}
 	}
 
+	// add the App's CommandNotFound
+	a.CommandNotFound = ctx.App.CommandNotFound
+
 	// append flags
 	if a.EnableBashCompletion {
 		a.appendFlag(BashCompletionFlag)
