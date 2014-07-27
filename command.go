@@ -31,6 +31,8 @@ type Command struct {
 	SkipFlagParsing bool
 	// Boolean to hide built-in help command
 	HideHelp bool
+	// Command argument requirements
+	Requires *Requires
 }
 
 // Invokes the command given the context, parses ctx.Args() to generate command-specific flags
@@ -97,6 +99,11 @@ func (c Command) Run(ctx *Context) error {
 	if checkCommandHelp(context, c.Name) {
 		return nil
 	}
+
+	if err := context.Satisfies(c.Requires); err != nil {
+		return err
+	}
+
 	context.Command = c
 	c.Action(context)
 	return nil

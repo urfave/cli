@@ -3,6 +3,7 @@ package cli
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -18,6 +19,8 @@ type Context struct {
 	globalSet *flag.FlagSet
 	setFlags  map[string]bool
 }
+
+type Requires []string
 
 // Creates a new context. For use in when invoking an App or Command action.
 func NewContext(app *App, set *flag.FlagSet, globalSet *flag.FlagSet) *Context {
@@ -113,6 +116,57 @@ func (c *Context) Args() Args {
 	return args
 }
 
+// Returns an error if the context arguments do not satisfy the given requirements
+func (c *Context) Satisfies(req *Requires) error {
+	if req != nil {
+		optional := 0
+		unlimited := false
+		clean_args := []string{}
+		for _, arg := range *req {
+			if strings.Contains(arg, "...") {
+				unlimited = true
+				arg = strings.Replace(arg, "...", "", -1) + "..."
+			}
+			if strings.Contains(arg, "?") {
+				optional++
+				arg = "[" + strings.Replace(arg, "?", "", -1) + "]"
+			} else {
+				arg = "<" + arg + ">"
+			}
+			clean_args = append(clean_args, arg)
+		}
+		exactly, nomore, atleast := 0, 0, 0
+		if optional == 0 && !unlimited {
+			exactly = len(*req)
+		} else {
+			atleast = len(*req) - optional
+			if !unlimited {
+				nomore = len(*req)
+			}
+		}
+
+		argc := len(c.Args())
+		err := ""
+
+		if atleast > 0 || nomore > 0 {
+			if atleast > argc {
+				err = fmtRequiresError("atleast", atleast)
+			} else if nomore > 0 && argc > nomore {
+				err = fmtRequiresError("no more than", nomore)
+			}
+		} else if argc != exactly {
+			err = fmtRequiresError("exactly", exactly)
+		}
+		if err != "" {
+			if len(clean_args) > 0 {
+				err += ": " + strings.Join(clean_args, " ")
+			}
+			return fmt.Errorf(err)
+		}
+	}
+	return nil
+}
+
 // Returns the nth argument, or else a blank string
 func (a Args) Get(n int) string {
 	if len(a) > n {
@@ -147,6 +201,17 @@ func (a Args) Swap(from, to int) error {
 	}
 	a[from], a[to] = a[to], a[from]
 	return nil
+}
+
+// Formats the requirement error
+func fmtRequiresError(str string, count int) string {
+	switch count {
+	case 0:
+		return "Command requires no arguments"
+	case 1:
+		return fmt.Sprintf("Command requires %s 1 argument", str)
+	}
+	return fmt.Sprintf("Command requires %s %d arguments", str, count)
 }
 
 func lookupInt(name string, set *flag.FlagSet) int {
