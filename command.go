@@ -118,6 +118,9 @@ func (c Command) startApp(ctx *Context) error {
 		app.Usage = c.Usage
 	}
 
+	// set CommandNotFound
+	app.CommandNotFound = ctx.App.CommandNotFound
+
 	// set the flags and commands
 	app.Commands = c.Subcommands
 	app.Flags = c.Flags
