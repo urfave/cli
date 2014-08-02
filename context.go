@@ -105,6 +105,18 @@ func (c *Context) IsSet(name string) bool {
 	return c.setFlags[name] == true
 }
 
+// Returns a slice of flag names used in this context.
+func (c *Context) FlagNames() (names []string) {
+	for _, flag := range c.Command.Flags {
+		name := strings.Split(flag.getName(), ",")[0]
+		if name == "help" {
+			continue
+		}
+		names = append(names, name)
+	}
+	return
+}
+
 type Args []string
 
 // Returns the command line arguments associated with the context.
