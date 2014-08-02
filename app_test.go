@@ -43,7 +43,11 @@ func ExampleAppSubcommand() {
 					Usage:       "sends a greeting in english",
 					Description: "greets someone in english",
 					Flags: []cli.Flag{
-						cli.StringFlag{Name: "name", Value: "Bob", Usage: "Name of the person to greet"},
+						cli.StringFlag{
+							Name:  "name",
+							Value: "Bob",
+							Usage: "Name of the person to greet",
+						},
 					},
 					Action: func(c *cli.Context) {
 						fmt.Println("Hello,", c.String("name"))
