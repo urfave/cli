@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // This flag enables bash-completion for all commands and subcommands
@@ -315,6 +316,36 @@ func (f IntFlag) Apply(set *flag.FlagSet) {
 }
 
 func (f IntFlag) getName() string {
+	return f.Name
+}
+
+type DurationFlag struct {
+	Name   string
+	Value  time.Duration
+	Usage  string
+	EnvVar string
+}
+
+func (f DurationFlag) String() string {
+	return withEnvHint(f.EnvVar, fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage))
+}
+
+func (f DurationFlag) Apply(set *flag.FlagSet) {
+	if f.EnvVar != "" {
+		if envVal := os.Getenv(f.EnvVar); envVal != "" {
+			envValDuration, err := time.ParseDuration(envVal)
+			if err == nil {
+				f.Value = envValDuration
+			}
+		}
+	}
+
+	eachName(f.Name, func(name string) {
+		set.Duration(name, f.Value, f.Usage)
+	})
+}
+
+func (f DurationFlag) getName() string {
 	return f.Name
 }
 

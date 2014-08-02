@@ -1,13 +1,13 @@
 package cli_test
 
 import (
-	"github.com/codegangsta/cli"
-
 	"fmt"
 	"os"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/codegangsta/cli"
 )
 
 var boolFlagTests = []struct {
@@ -143,6 +143,39 @@ func TestIntFlagWithEnvVarHelpOutput(t *testing.T) {
 	os.Setenv("APP_BAR", "2")
 	for _, test := range intFlagTests {
 		flag := cli.IntFlag{Name: test.name, EnvVar: "APP_BAR"}
+		output := flag.String()
+
+		if !strings.HasSuffix(output, " [$APP_BAR]") {
+			t.Errorf("%s does not end with [$APP_BAR]", output)
+		}
+	}
+}
+
+var durationFlagTests = []struct {
+	name     string
+	expected string
+}{
+	{"help", "--help '0'\t"},
+	{"h", "-h '0'\t"},
+}
+
+func TestDurationFlagHelpOutput(t *testing.T) {
+
+	for _, test := range durationFlagTests {
+		flag := cli.DurationFlag{Name: test.name}
+		output := flag.String()
+
+		if output != test.expected {
+			t.Errorf("%s does not match %s", output, test.expected)
+		}
+	}
+}
+
+func TestDurationFlagWithEnvVarHelpOutput(t *testing.T) {
+
+	os.Setenv("APP_BAR", "2h3m6s")
+	for _, test := range durationFlagTests {
+		flag := cli.DurationFlag{Name: test.name, EnvVar: "APP_BAR"}
 		output := flag.String()
 
 		if !strings.HasSuffix(output, " [$APP_BAR]") {
