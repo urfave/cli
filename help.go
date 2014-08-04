@@ -14,17 +14,21 @@ var AppHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
 USAGE:
-   {{.Name}} [global options] command [command options] [arguments...]
+   {{.Name}} {{if .Flags}}[global options] {{end}}command{{if .Flags}} [command options]{{end}} [arguments...]
 
 VERSION:
-   {{.Version}}
+   {{.Version}}{{if or .Author .Email}}
+
+AUTHOR:{{if .Author}}
+  {{.Author}}{{if .Email}} - <{{.Email}}>{{end}}{{else}}
+  {{.Email}}{{end}}{{end}}
 
 COMMANDS:
    {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
-   {{end}}
+   {{end}}{{if .Flags}}
 GLOBAL OPTIONS:
    {{range .Flags}}{{.}}
-   {{end}}
+   {{end}}{{end}}
 `
 
 // The text template for the command help topic.
@@ -34,14 +38,14 @@ var CommandHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
 USAGE:
-   command {{.Name}} [command options] [arguments...]
+   command {{.Name}}{{if .Flags}} [command options]{{end}} [arguments...]{{if .Description}}
 
 DESCRIPTION:
-   {{.Description}}
+   {{.Description}}{{end}}{{if .Flags}}
 
 OPTIONS:
    {{range .Flags}}{{.}}
-   {{end}}
+   {{end}}{{ end }}
 `
 
 // The text template for the subcommand help topic.
@@ -51,14 +55,14 @@ var SubcommandHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
 USAGE:
-   {{.Name}} [global options] command [command options] [arguments...]
+   {{.Name}} command{{if .Flags}} [command options]{{end}} [arguments...]
 
 COMMANDS:
    {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
-   {{end}}
+   {{end}}{{if .Flags}}
 OPTIONS:
    {{range .Flags}}{{.}}
-   {{end}}
+   {{end}}{{end}}
 `
 
 var helpCommand = Command{

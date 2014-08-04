@@ -137,7 +137,11 @@ Setting and querying flags is simple.
 ``` go
 ...
 app.Flags = []cli.Flag {
-  cli.StringFlag{"lang", "english", "language for the greeting"},
+  cli.StringFlag{
+    Name: "lang",
+    Value: "english",
+    Usage: "language for the greeting",
+  },
 }
 app.Action = func(c *cli.Context) {
   name := "someone"
@@ -159,7 +163,26 @@ You can set alternate (or short) names for flags by providing a comma-delimited 
 
 ``` go
 app.Flags = []cli.Flag {
-  cli.StringFlag{"lang, l", "english", "language for the greeting"},
+  cli.StringFlag{
+    Name: "lang, l",
+    Value: "english",
+    Usage: "language for the greeting",
+  },
+}
+```
+
+#### Values from the Environment
+
+You can also have the default value set from the environment via EnvVar.  e.g.
+
+``` go
+app.Flags = []cli.Flag {
+  cli.StringFlag{
+    Name: "lang, l",
+    Value: "english",
+    Usage: "language for the greeting",
+    EnvVar: "APP_LANG",
+  },
 }
 ```
 
@@ -252,6 +275,13 @@ setting the PROG variable to the name of your program:
 
 `PROG=myprogram source /.../cli/autocomplete/bash_autocomplete`
 
+
+## Contribution Guidelines
+Feel free to put up a pull request to fix a bug or maybe add a feature. I will give it a code review and make sure that it does not break backwards compatibility. If I or any other collaborators agree that it is in line with the vision of the project, we will work with you to get the code into a mergeable state and merge it into the master branch.
+
+If you are have contributed something significant to the project, I will most likely add you as a collaborator. As a collaborator you are given the ability to merge others pull requests. It is very important that new code does not break existing code, so be careful about what code you do choose to merge. If you have any questions feel free to link @codegangsta to the issue in question and we can review it together.
+
+If you feel like you have contributed to the project but have not yet been added as a collaborator, I probably forgot to add you. Hit @codegangsta up over email and we will get it figured out.
 
 ## About
 cli.go is written by none other than the [Code Gangsta](http://codegangsta.io)
