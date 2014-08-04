@@ -1,7 +1,6 @@
 package cli_test
 
 import (
-	"."
 	"fmt"
 	"os"
 	"testing"

@@ -1,9 +1,10 @@
 package cli_test
 
 import (
-	"."
 	"flag"
 	"testing"
+
+	"github.com/codegangsta/cli"
 )
 
 func TestCommandDoNotIgnoreFlags(t *testing.T) {
