@@ -33,6 +33,11 @@ type Command struct {
 	HideHelp bool
 }
 
+// long live to composition !
+type boolFlag interface {
+	IsBoolFlag() bool
+}
+
 // Invokes the command given the context, parses ctx.Args() to generate command-specific flags
 func (c Command) Run(ctx *Context) error {
 
@@ -55,20 +60,52 @@ func (c Command) Run(ctx *Context) error {
 	set := flagSet(c.Name, c.Flags)
 	set.SetOutput(ioutil.Discard)
 
-	firstFlagIndex := -1
-	for index, arg := range ctx.Args() {
-		if strings.HasPrefix(arg, "-") {
-			firstFlagIndex = index
-			break
-		}
-	}
-
 	var err error
-	if firstFlagIndex > -1 && !c.SkipFlagParsing {
-		args := ctx.Args()
-		regularArgs := args[1:firstFlagIndex]
-		flagArgs := args[firstFlagIndex:]
-		err = set.Parse(append(flagArgs, regularArgs...))
+	if !c.SkipFlagParsing {
+		flagArgs := []string{}
+		flagIdx := 0
+		boolF := true
+		for idx := 1; idx < len(ctx.Args()); idx++ {
+			val := ctx.Args()[idx]
+			if strings.HasPrefix(val, "-") {
+				boolF = true
+				flagArgs = append(flagArgs, "")
+				copy(flagArgs[flagIdx+1:], flagArgs[flagIdx:])
+				flagArgs[flagIdx] = val
+				flagIdx++
+				// uggly test for - and -- flags
+				if len(val) > 1 && strings.HasPrefix(val, "--") {
+					flag := set.Lookup(val[2:])
+					if flag == nil {
+						continue
+					}
+					fv, ok := flag.Value.(boolFlag)
+					if !ok || !fv.IsBoolFlag() {
+						boolF = false
+					}
+				} else {
+					flag := set.Lookup(val[1:])
+					if flag == nil {
+						continue
+					}
+					fv, ok := flag.Value.(boolFlag)
+					if !ok || !fv.IsBoolFlag() {
+						boolF = false
+					}
+				}
+			} else {
+				if !boolF {
+					flagArgs = append(flagArgs, "")
+					copy(flagArgs[flagIdx+1:], flagArgs[flagIdx:])
+					flagArgs[flagIdx] = val
+					flagIdx++
+				} else {
+					flagArgs = append(flagArgs, val)
+				}
+				boolF = true
+			}
+		}
+		err = set.Parse(flagArgs)
 	} else {
 		err = set.Parse(ctx.Args().Tail())
 	}
