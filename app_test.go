@@ -350,6 +350,26 @@ func TestAppHelpPrinter(t *testing.T) {
 	}
 }
 
+func TestAppVersionPrinter(t *testing.T) {
+	oldPrinter := cli.VersionPrinter
+	defer func() {
+		cli.VersionPrinter = oldPrinter
+	}()
+
+	var wasCalled = false
+	cli.VersionPrinter = func(c *cli.Context) {
+		wasCalled = true
+	}
+
+	app := cli.NewApp()
+	ctx := cli.NewContext(app, nil, nil)
+	cli.ShowVersion(ctx)
+
+	if wasCalled == false {
+		t.Errorf("Version printer expected to be called, but was not")
+	}
+}
+
 func TestAppCommandNotFound(t *testing.T) {
 	beforeRun, subcommandRun := false, false
 	app := cli.NewApp()
