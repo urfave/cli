@@ -33,7 +33,6 @@ type Command struct {
 	HideHelp bool
 }
 
-// long live to composition !
 type boolFlag interface {
 	IsBoolFlag() bool
 }
