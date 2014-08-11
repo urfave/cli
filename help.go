@@ -131,7 +131,7 @@ func ShowCommandHelp(c *Context, command string) {
 
 // Prints help for the given subcommand
 func ShowSubcommandHelp(c *Context) {
-	HelpPrinter(SubcommandHelpTemplate, c.App)
+	ShowCommandHelp(c, c.Command.Name)
 }
 
 // Prints the version number of the App
