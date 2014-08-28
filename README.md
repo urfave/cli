@@ -9,17 +9,17 @@ http://godoc.org/github.com/codegangsta/cli
 ## Overview
 Command line apps are usually so tiny that there is absolutely no reason why your code should *not* be self-documenting. Things like generating help text and parsing command flags/options should not hinder productivity when writing a command line app.
 
-This is where cli.go comes into play. cli.go makes command line programming fun, organized, and expressive!
+**This is where cli.go comes into play.** cli.go makes command line programming fun, organized, and expressive!
 
 ## Installation
 Make sure you have a working Go environment (go 1.1 is *required*). [See the install instructions](http://golang.org/doc/install.html).
 
-To install cli.go, simply run:
+To install `cli.go`, simply run:
 ```
 $ go get github.com/codegangsta/cli
 ```
 
-Make sure your PATH includes to the `$GOPATH/bin` directory so your commands can be easily used:
+Make sure your `PATH` includes to the `$GOPATH/bin` directory so your commands can be easily used:
 ```
 export PATH=$PATH:$GOPATH/bin
 ```
@@ -122,7 +122,7 @@ GLOBAL OPTIONS
 ```
 
 ### Arguments
-You can lookup arguments by calling the `Args` function on cli.Context.
+You can lookup arguments by calling the `Args` function on `cli.Context`.
 
 ``` go
 ...
@@ -159,7 +159,7 @@ app.Action = func(c *cli.Context) {
 
 #### Alternate Names
 
-You can set alternate (or short) names for flags by providing a comma-delimited list for the Name. e.g.
+You can set alternate (or short) names for flags by providing a comma-delimited list for the `Name`. e.g.
 
 ``` go
 app.Flags = []cli.Flag {
@@ -173,7 +173,7 @@ app.Flags = []cli.Flag {
 
 #### Values from the Environment
 
-You can also have the default value set from the environment via EnvVar.  e.g.
+You can also have the default value set from the environment via `EnvVar`.  e.g.
 
 ``` go
 app.Flags = []cli.Flag {
@@ -237,8 +237,8 @@ app.Commands = []cli.Command{
 
 ### Bash Completion
 
-You can enable completion commands by setting the EnableBashCompletion
-flag on the App object.  By default, this setting will only auto-complete to
+You can enable completion commands by setting the `EnableBashCompletion`
+flag on the `App` object.  By default, this setting will only auto-complete to
 show an app's subcommands, but you can write your own completion methods for
 the App or its subcommands.
 ```go
@@ -270,8 +270,8 @@ app.Commands = []cli.Command{
 
 #### To Enable
 
-Source the autocomplete/bash_autocomplete file in your .bashrc file while
-setting the PROG variable to the name of your program:
+Source the `autocomplete/bash_autocomplete` file in your `.bashrc` file while
+setting the `PROG` variable to the name of your program:
 
 `PROG=myprogram source /.../cli/autocomplete/bash_autocomplete`
 
