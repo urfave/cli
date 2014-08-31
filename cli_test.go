@@ -15,16 +15,18 @@ func Example() {
 			Name:      "add",
 			ShortName: "a",
 			Usage:     "add a task to the list",
-			Action: func(c *cli.Context) {
+			Action: func(c *cli.Context) error {
 				println("added task: ", c.Args().First())
+				return nil
 			},
 		},
 		{
 			Name:      "complete",
 			ShortName: "c",
 			Usage:     "complete a task on the list",
-			Action: func(c *cli.Context) {
+			Action: func(c *cli.Context) error {
 				println("completed task: ", c.Args().First())
+				return nil
 			},
 		},
 	}
@@ -54,8 +56,9 @@ func ExampleSubcommand() {
 							Usage: "Name of the person to greet",
 						},
 					},
-					Action: func(c *cli.Context) {
+					Action: func(c *cli.Context) error {
 						println("Hello, ", c.String("name"))
+						return nil
 					},
 				}, {
 					Name:      "spanish",
@@ -68,8 +71,9 @@ func ExampleSubcommand() {
 							Usage: "Surname of the person to greet",
 						},
 					},
-					Action: func(c *cli.Context) {
+					Action: func(c *cli.Context) error {
 						println("Hola, ", c.String("surname"))
+						return nil
 					},
 				}, {
 					Name:      "french",
@@ -82,16 +86,18 @@ func ExampleSubcommand() {
 							Usage: "Nickname of the person to greet",
 						},
 					},
-					Action: func(c *cli.Context) {
+					Action: func(c *cli.Context) error {
 						println("Bonjour, ", c.String("nickname"))
+						return nil
 					},
 				},
 			},
 		}, {
 			Name:  "bye",
 			Usage: "says goodbye",
-			Action: func(c *cli.Context) {
+			Action: func(c *cli.Context) error {
 				println("bye")
+				return nil
 			},
 		},
 	}

@@ -30,7 +30,7 @@ type App struct {
 	// If a non-nil error is returned, no subcommands are run
 	Before func(context *Context) error
 	// The action to execute when no subcommands are specified
-	Action func(context *Context)
+	Action func(context *Context) error
 	// Execute this function if the proper command cannot be found
 	CommandNotFound func(context *Context, command string)
 	// Compilation date
@@ -127,8 +127,7 @@ func (a *App) Run(arguments []string) error {
 	}
 
 	// Run default Action
-	a.Action(context)
-	return nil
+	return a.Action(context)
 }
 
 // Another entry point to the cli app, takes care of passing arguments and error handling

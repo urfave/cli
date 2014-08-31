@@ -17,8 +17,9 @@ func ExampleApp() {
 	app.Flags = []cli.Flag{
 		cli.StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
 	}
-	app.Action = func(c *cli.Context) {
+	app.Action = func(c *cli.Context) error {
 		fmt.Printf("Hello %v\n", c.String("name"))
+		return nil
 	}
 	app.Run(os.Args)
 	// Output:
@@ -49,8 +50,9 @@ func ExampleAppSubcommand() {
 							Usage: "Name of the person to greet",
 						},
 					},
-					Action: func(c *cli.Context) {
+					Action: func(c *cli.Context) error {
 						fmt.Println("Hello,", c.String("name"))
+						return nil
 					},
 				},
 			},
@@ -77,8 +79,9 @@ func ExampleAppHelp() {
 			ShortName:   "d",
 			Usage:       "use it to see a description",
 			Description: "This is how we describe describeit the function",
-			Action: func(c *cli.Context) {
+			Action: func(c *cli.Context) error {
 				fmt.Printf("i like to describe things")
+				return nil
 			},
 		},
 	}
@@ -107,15 +110,17 @@ func ExampleAppBashComplete() {
 			ShortName:   "d",
 			Usage:       "use it to see a description",
 			Description: "This is how we describe describeit the function",
-			Action: func(c *cli.Context) {
+			Action: func(c *cli.Context) error {
 				fmt.Printf("i like to describe things")
+				return nil
 			},
 		}, {
 			Name:        "next",
 			Usage:       "next example",
 			Description: "more stuff to see when generating bash completion",
-			Action: func(c *cli.Context) {
+			Action: func(c *cli.Context) error {
 				fmt.Printf("the next example")
+				return nil
 			},
 		},
 	}
@@ -133,8 +138,9 @@ func TestApp_Run(t *testing.T) {
 	s := ""
 
 	app := cli.NewApp()
-	app.Action = func(c *cli.Context) {
+	app.Action = func(c *cli.Context) error {
 		s = s + c.Args().First()
+		return nil
 	}
 
 	err := app.Run([]string{"command", "foo"})
@@ -179,9 +185,10 @@ func TestApp_CommandWithArgBeforeFlags(t *testing.T) {
 		Flags: []cli.Flag{
 			cli.StringFlag{Name: "option", Value: "", Usage: "some option"},
 		},
-		Action: func(c *cli.Context) {
+		Action: func(c *cli.Context) error {
 			parsedOption = c.String("option")
 			firstArg = c.Args().First()
+			return nil
 		},
 	}
 	app.Commands = []cli.Command{command}
@@ -199,8 +206,9 @@ func TestApp_Float64Flag(t *testing.T) {
 	app.Flags = []cli.Flag{
 		cli.Float64Flag{Name: "height", Value: 1.5, Usage: "Set the height, in meters"},
 	}
-	app.Action = func(c *cli.Context) {
+	app.Action = func(c *cli.Context) error {
 		meters = c.Float64("height")
+		return nil
 	}
 
 	app.Run([]string{"", "--height", "1.93"})
@@ -219,11 +227,12 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 			cli.IntSliceFlag{Name: "p", Value: &cli.IntSlice{}, Usage: "set one or more ip addr"},
 			cli.StringSliceFlag{Name: "ip", Value: &cli.StringSlice{}, Usage: "set one or more ports to open"},
 		},
-		Action: func(c *cli.Context) {
+		Action: func(c *cli.Context) error {
 			parsedIntSlice = c.IntSlice("p")
 			parsedStringSlice = c.StringSlice("ip")
 			parsedOption = c.String("option")
 			firstArg = c.Args().First()
+			return nil
 		},
 	}
 	app.Commands = []cli.Command{command}
@@ -285,8 +294,9 @@ func TestApp_BeforeFunc(t *testing.T) {
 	app.Commands = []cli.Command{
 		cli.Command{
 			Name: "sub",
-			Action: func(c *cli.Context) {
+			Action: func(c *cli.Context) error {
 				subcommandRun = true
+				return nil
 			},
 		},
 	}
@@ -381,8 +391,9 @@ func TestAppCommandNotFound(t *testing.T) {
 	app.Commands = []cli.Command{
 		cli.Command{
 			Name: "bar",
-			Action: func(c *cli.Context) {
+			Action: func(c *cli.Context) error {
 				subcommandRun = true
+				return nil
 			},
 		},
 	}
@@ -407,10 +418,11 @@ func TestGlobalFlagsInSubcommands(t *testing.T) {
 			Subcommands: []cli.Command{
 				{
 					Name: "bar",
-					Action: func(c *cli.Context) {
+					Action: func(c *cli.Context) error {
 						if c.GlobalBool("debug") {
 							subcommandRun = true
 						}
+						return nil
 					},
 				},
 			},

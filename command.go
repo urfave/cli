@@ -22,7 +22,7 @@ type Command struct {
 	// If a non-nil error is returned, no sub-subcommands are run
 	Before func(context *Context) error
 	// The function to call when this command is invoked
-	Action func(context *Context)
+	Action func(context *Context) error
 	// List of child commands
 	Subcommands []Command
 	// List of flags to parse
@@ -98,8 +98,7 @@ func (c Command) Run(ctx *Context) error {
 		return nil
 	}
 	context.Command = c
-	c.Action(context)
-	return nil
+	return c.Action(context)
 }
 
 // Returns true if Command.Name or Command.ShortName matches given name
