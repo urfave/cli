@@ -5,17 +5,16 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/tmtk75/cli"
 	osext "github.com/tmtk75/go-ext"
 )
 
 func help(args string, tt func(out string)) {
-	app := cli.NewApp()
-	app.Commands = []cli.Command{
-		cli.Command{
+	app := NewApp()
+	app.Commands = []Command{
+		Command{
 			Name:   "hi",
 			Args:   args,
-			Action: func(c *cli.Context) {},
+			Action: func(c *Context) {},
 		},
 	}
 	cap, _ := osext.PipeStdout()
@@ -45,14 +44,14 @@ func TestUsage(t *testing.T) {
 	})
 }
 
-func argv(args string, argv []string, tt func(c *cli.Context, out string)) {
-	app := cli.NewApp()
-	var ctx *cli.Context
-	app.Commands = []cli.Command{
-		cli.Command{
+func argv(args string, argv []string, tt func(c *Context, out string)) {
+	app := NewApp()
+	var ctx *Context
+	app.Commands = []Command{
+		Command{
 			Name: "hi",
 			Args: args,
-			Action: func(c *cli.Context) {
+			Action: func(c *Context) {
 				ctx = c
 			},
 		},
@@ -63,13 +62,13 @@ func argv(args string, argv []string, tt func(c *cli.Context, out string)) {
 }
 
 func TestArgFor(t *testing.T) {
-	argv("", []string{}, func(c *cli.Context, out string) {
+	argv("", []string{}, func(c *Context, out string) {
 		if !(out == "") {
 			t.Errorf("expect empty: %v", out)
 		}
 	})
 
-	argv("<tall>", []string{}, func(c *cli.Context, out string) {
+	argv("<tall>", []string{}, func(c *Context, out string) {
 		if !(out != "") {
 			t.Errorf("expect help: %v", out)
 		}
@@ -78,7 +77,7 @@ func TestArgFor(t *testing.T) {
 		}
 	})
 
-	argv("<name>", []string{"Lig"}, func(c *cli.Context, out string) {
+	argv("<name>", []string{"Lig"}, func(c *Context, out string) {
 		if !(out == "") {
 			t.Errorf("%v", out)
 		}
@@ -87,7 +86,7 @@ func TestArgFor(t *testing.T) {
 		}
 	})
 
-	argv("<age>", []string{""}, func(c *cli.Context, out string) {
+	argv("<age>", []string{""}, func(c *Context, out string) {
 		if !(out == "") {
 			t.Errorf("expect help: %v", out)
 		}
@@ -96,7 +95,7 @@ func TestArgFor(t *testing.T) {
 		}
 	})
 
-	argv("[path]", []string{""}, func(c *cli.Context, out string) {
+	argv("[path]", []string{""}, func(c *Context, out string) {
 		if !(out == "") {
 			t.Errorf("expect empty: %v", out)
 		}
@@ -105,7 +104,7 @@ func TestArgFor(t *testing.T) {
 		}
 	})
 
-	argv("[path]", []string{}, func(c *cli.Context, out string) {
+	argv("[path]", []string{}, func(c *Context, out string) {
 		if !(out == "") {
 			t.Errorf("expect empty: %v", out)
 		}
@@ -115,13 +114,13 @@ func TestArgFor(t *testing.T) {
 	})
 
 	// variation
-	argv("<path> [id]", []string{"a", "b"}, func(c *cli.Context, out string) {
+	argv("<path> [id]", []string{"a", "b"}, func(c *Context, out string) {
 		if path, b := c.ArgFor("path"); !(path == "a" && b) {
 			t.Errorf("expect a: %v, %v", path, b)
 		}
 	})
 
-	argv("[path] [id]", []string{}, func(c *cli.Context, out string) {
+	argv("[path] [id]", []string{}, func(c *Context, out string) {
 		if path, b := c.ArgFor("id"); !(path == "" && !b) {
 			t.Errorf("expect empty: %v, %v", path, b)
 		}
@@ -130,46 +129,46 @@ func TestArgFor(t *testing.T) {
 
 func TestValidateArgs(t *testing.T) {
 	// Valid
-	if v, err := cli.ValidateArgs(""); !(v != nil && err == nil) {
+	if v, err := ValidateArgs(""); !(v != nil && err == nil) {
 		t.Errorf("expect valid")
 	}
 
-	if v, err := cli.ValidateArgs("<name>"); !(v != nil && err == nil) {
+	if v, err := ValidateArgs("<name>"); !(v != nil && err == nil) {
 		t.Errorf("expect valid")
 	}
 
-	if v, err := cli.ValidateArgs("[name]"); !(v != nil && err == nil) {
+	if v, err := ValidateArgs("[name]"); !(v != nil && err == nil) {
 		t.Errorf("expect valid")
 	}
 
-	if v, err := cli.ValidateArgs("<name> [path]"); !(v != nil && err == nil) {
+	if v, err := ValidateArgs("<name> [path]"); !(v != nil && err == nil) {
 		t.Errorf("expect valid")
 	}
 
 	// Invalid
-	if v, err := cli.ValidateArgs("<path"); !(v == nil && err != nil) {
+	if v, err := ValidateArgs("<path"); !(v == nil && err != nil) {
 		t.Errorf("expect invalid, cannot parse")
 	}
 
-	if v, err := cli.ValidateArgs("[name] <path>"); !(v == nil && err != nil) {
+	if v, err := ValidateArgs("[name] <path>"); !(v == nil && err != nil) {
 		t.Errorf("expect invalid, optional order")
 	}
 
-	if v, err := cli.ValidateArgs("<name> [name]"); !(v == nil && err != nil) {
+	if v, err := ValidateArgs("<name> [name]"); !(v == nil && err != nil) {
 		t.Errorf("expect invalid, duplicated name")
 	}
 }
 
 func run(args string, argv []string) error {
-	app := cli.NewApp()
-	app.Commands = []cli.Command{
-		cli.Command{
-			Name:   "hi",
+	app := NewApp()
+	app.Commands = []Command{
+		Command{
+			Name:   "hello",
 			Args:   args,
-			Action: func(c *cli.Context) {},
+			Action: func(c *Context) {},
 		},
 	}
-	return app.Run(append([]string{"", "hi"}, argv...))
+	return app.Run(append([]string{"", "hello"}, argv...))
 }
 
 func TestValidArgs(t *testing.T) {
