@@ -3,6 +3,8 @@ package cli
 import (
 	"errors"
 	"flag"
+	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -126,6 +128,67 @@ func (c *Context) FlagNames() (names []string) {
 		names = append(names, name)
 	}
 	return
+}
+
+type ArgSpec struct {
+	n2i      map[string]int
+	Required int
+}
+
+func (s *ArgSpec) IndexOf(name string) int {
+	return s.n2i[name]
+}
+
+func ValidateArgs(args string) (*ArgSpec, error) {
+	as := &ArgSpec{n2i: make(map[string]int)}
+	if args == "" {
+		return as, nil
+	}
+	a := regexp.MustCompile("<[a-z]+>|\\[[a-z]+\\]").FindAllStringSubmatch(args, -1)
+	//fmt.Printf("---- %v\n", args)
+	//for i, p := range a {
+	//	fmt.Printf("%v:%v\n", i, p)
+	//}
+	if len(a) == 0 {
+		return nil, errors.New(fmt.Sprintf("parse error for Args: %v", args))
+	}
+
+	var opt bool
+	for i, sm := range a {
+		e := sm[0]
+		if e[0] == '<' {
+			as.Required++
+			if opt {
+				return nil, errors.New("invalid order")
+			}
+		}
+
+		n := e[1 : len(e)-1] // trim <> or []
+		if _, ok := as.n2i[n]; ok {
+			return nil, errors.New("duplication for arg name")
+		}
+		as.n2i[n] = i
+
+		if !opt && e[0] == '[' {
+			opt = true
+		}
+	}
+
+	return as, nil
+}
+
+// Returns the argument specified with a name
+func (c *Context) ArgFor(name string) (arg string, given bool) {
+	a, err := ValidateArgs(c.Command.Args)
+	if err != nil {
+		return "", false
+	}
+	i := a.IndexOf(name)
+	//fmt.Printf("%v, %v, %v\n", name, len(c.Args()), i)
+	if len(c.Args()) <= i {
+		return "", false
+	}
+	return c.Args().Get(i), true
 }
 
 type Args []string

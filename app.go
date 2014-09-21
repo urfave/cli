@@ -122,6 +122,10 @@ func (a *App) Run(arguments []string) error {
 		name := args.First()
 		c := a.Command(name)
 		if c != nil {
+			_, err := ValidateArgs(c.Args)
+			if err != nil {
+				return err
+			}
 			return c.Run(context)
 		}
 	}
