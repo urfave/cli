@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -122,6 +123,17 @@ func (a *App) Run(arguments []string) error {
 		name := args.First()
 		c := a.Command(name)
 		if c != nil {
+			s, err := ValidateArgs(c.Args)
+			if err != nil {
+				return err
+			}
+			if len(args)-1 < s.Required {
+				if len(args)-1 > 0 {
+					fmt.Printf("Insufficient Args.\n\n")
+				}
+				ShowCommandHelp(context, c.Name)
+				return errors.New("insufficient args")
+			}
 			return c.Run(context)
 		}
 	}

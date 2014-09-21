@@ -31,6 +31,8 @@ type Command struct {
 	SkipFlagParsing bool
 	// Boolean to hide built-in help command
 	HideHelp bool
+	// Args spec
+	Args string
 }
 
 // Invokes the command given the context, parses ctx.Args() to generate command-specific flags
