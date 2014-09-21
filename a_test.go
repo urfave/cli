@@ -5,41 +5,40 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/codegangsta/cli"
+	"github.com/tmtk75/cli"
 	osext "github.com/tmtk75/go-ext"
 )
 
-func help(args string, tt func(out []string, c *cli.Context)) {
-	cap, _ := osext.PipeStdout()
+func help(args string, tt func(out string)) {
 	app := cli.NewApp()
 	app.Commands = []cli.Command{
 		cli.Command{
-			Name: "hi",
-			Args: args,
-			Action: func(c *cli.Context) {
-				cli.ShowCommandHelp(c, "hi")
-				a := regexp.MustCompile("(?m)command (.*)").FindStringSubmatch(cap.Close())
-				tt(a, c)
-			},
+			Name:   "hi",
+			Args:   args,
+			Action: func(c *cli.Context) {},
 		},
 	}
+	cap, _ := osext.PipeStdout()
 	app.Run([]string{"", "hi"})
+	tt(cap.Close())
 }
 
 func TestUsage(t *testing.T) {
-	help("", func(a []string, c *cli.Context) {
-		if "hi " != a[1] {
-			t.Errorf("%v", a[1])
+	help("", func(out string) {
+		if !(out == "") {
+			t.Errorf("expect empty: %v", out)
 		}
 	})
 
-	help("<path>", func(a []string, c *cli.Context) {
+	help("<path>", func(out string) {
+		a := regexp.MustCompile("(?m)command (.*)").FindStringSubmatch(out)
 		if "hi <path>" != a[1] {
 			t.Errorf("%v", a[1])
 		}
 	})
 
-	help("<path> [name]", func(a []string, c *cli.Context) {
+	help("<path> [name]", func(out string) {
+		a := regexp.MustCompile("(?m)command (.*)").FindStringSubmatch(out)
 		if "hi <path> [name]" != a[1] {
 			t.Errorf("%v", a[1])
 		}
@@ -47,18 +46,20 @@ func TestUsage(t *testing.T) {
 }
 
 func argv(args string, argv []string, tt func(c *cli.Context, out string)) {
-	cap, _ := osext.PipeStdout()
 	app := cli.NewApp()
+	var ctx *cli.Context
 	app.Commands = []cli.Command{
 		cli.Command{
 			Name: "hi",
 			Args: args,
 			Action: func(c *cli.Context) {
-				tt(c, cap.Close())
+				ctx = c
 			},
 		},
 	}
+	cap, _ := osext.PipeStdout()
 	app.Run(append([]string{"", "hi"}, argv...))
+	tt(ctx, cap.Close())
 }
 
 func TestArgFor(t *testing.T) {
@@ -72,8 +73,8 @@ func TestArgFor(t *testing.T) {
 		if !(out != "") {
 			t.Errorf("expect help: %v", out)
 		}
-		if tall, b := c.ArgFor("tall"); !(tall == "" && !b) {
-			t.Errorf("expect empty: %v, %v", tall, b)
+		if !(c == nil) {
+			t.Errorf("expect nil: %v", c)
 		}
 	})
 
@@ -87,7 +88,7 @@ func TestArgFor(t *testing.T) {
 	})
 
 	argv("<age>", []string{""}, func(c *cli.Context, out string) {
-		if !(out != "") {
+		if !(out == "") {
 			t.Errorf("expect help: %v", out)
 		}
 		if age, b := c.ArgFor("age"); !(age == "" && b) {
@@ -176,7 +177,7 @@ func TestValidArgs(t *testing.T) {
 		t.Errorf("expect error: %v", err)
 	}
 
-	if err := run("<path>", []string{}); !(err != nil) {
+	if err := run("<path>", []string{}); !(err != nil && fmt.Sprintln(err) == "insufficient args\n") {
 		t.Errorf("expect help: %v", err)
 	}
 }

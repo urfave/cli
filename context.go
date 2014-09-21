@@ -144,7 +144,7 @@ func ValidateArgs(args string) (*ArgSpec, error) {
 	if args == "" {
 		return as, nil
 	}
-	a := regexp.MustCompile("<[a-z]+>|\\[[a-z]+\\]").FindAllStringSubmatch(args, -1)
+	a := regexp.MustCompile("<[a-zA-Z0-9-_]+>|\\[[a-zA-Z0-9-_]+\\]").FindAllStringSubmatch(args, -1)
 	//fmt.Printf("---- %v\n", args)
 	//for i, p := range a {
 	//	fmt.Printf("%v:%v\n", i, p)
