@@ -2,5 +2,6 @@ language: go
 go: 1.1
 
 script:
+- go get -u 
 - go vet ./...
 - go test -v ./...
