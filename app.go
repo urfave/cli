@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -122,6 +123,9 @@ func (a *App) Run(arguments []string) error {
 		name := args.First()
 		c := a.Command(name)
 		if c != nil {
+			if err := checkArgs(c, context); err != nil {
+				return err
+			}
 			return c.Run(context)
 		}
 	}
@@ -204,6 +208,9 @@ func (a *App) RunAsSubcommand(ctx *Context) error {
 		name := args.First()
 		c := a.Command(name)
 		if c != nil {
+			if err := checkArgs(c, context); err != nil {
+				return err
+			}
 			return c.Run(context)
 		}
 	}
@@ -215,6 +222,24 @@ func (a *App) RunAsSubcommand(ctx *Context) error {
 		a.Action(ctx)
 	}
 
+	return nil
+}
+
+func checkArgs(c *Command, ctx *Context) error {
+	s, err := validateArgs(c.Args)
+	if err != nil {
+		fmt.Println(fmt.Sprintf("Illegal Args. %v (Args: %v)\n", err, c.Args))
+		return err
+	}
+	l := len(ctx.Args()) - 1
+	if l < s.required {
+		if l > 0 {
+			fmt.Printf("Insufficient Args.\n\n")
+		}
+		ShowCommandHelp(ctx, c.Name)
+		fmt.Println()
+		return errors.New("insufficient args")
+	}
 	return nil
 }
 

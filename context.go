@@ -3,6 +3,8 @@ package cli
 import (
 	"errors"
 	"flag"
+	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -126,6 +128,72 @@ func (c *Context) FlagNames() (names []string) {
 		names = append(names, name)
 	}
 	return
+}
+
+type argSpec struct {
+	name2idx map[string]int
+	required int // count of required arguments
+}
+
+func (s *argSpec) indexOf(name string) int {
+	if v, ok := s.name2idx[name]; ok {
+		return v
+	}
+	return -1
+}
+
+// args is a pattern string for required or optionals arguments
+// e.g) "<name> [path]" in this case name is required and path is optional
+func validateArgs(args string) (*argSpec, error) {
+	as := &argSpec{name2idx: make(map[string]int)}
+	if args == "" {
+		return as, nil
+	}
+	a := regexp.MustCompile("<[a-zA-Z0-9-_]+>|\\[[a-zA-Z0-9-_]+\\]").FindAllStringSubmatch(args, -1)
+	if len(a) == 0 {
+		return nil, errors.New(fmt.Sprintf("parse error for Args: %v", args))
+	}
+
+	var opt bool
+	for i, sm := range a {
+		e := sm[0]
+		if e[0] == '<' {
+			as.required++
+			if opt {
+				return nil, errors.New("illegal order")
+			}
+		}
+
+		n := e[1 : len(e)-1] // trim <> or []
+		if _, ok := as.name2idx[n]; ok {
+			return nil, errors.New("duplicated name")
+		}
+		as.name2idx[n] = i
+
+		if !opt && e[0] == '[' {
+			opt = true
+		}
+	}
+
+	return as, nil
+}
+
+// Returns the argument value specified with a name.
+// given is false if the value is not given for optionals
+func (c *Context) ArgFor(name string) (arg string, given bool) {
+	a, err := validateArgs(c.Command.Args)
+	if err != nil {
+		return "", false
+	}
+	i := a.indexOf(name)
+	//fmt.Printf("%v, %v, %v\n", name, len(c.Args()), i)
+	if i == -1 {
+		return "", false
+	}
+	if len(c.Args()) <= i {
+		return "", false
+	}
+	return c.Args().Get(i), true
 }
 
 type Args []string
