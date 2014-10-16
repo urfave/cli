@@ -195,6 +195,96 @@ func TestValidArgs(t *testing.T) {
 	}
 
 	if err := run("<path>", []string{}); !(err != nil && fmt.Sprintln(err) == "insufficient args\n") {
-		t.Errorf("expect help: %v", err)
+		t.Errorf("expect error: %v", err)
 	}
+}
+
+func runWithFlags(args string, flags []Flag, argv []string) (*Context, error) {
+	app := NewApp()
+	var ctx *Context
+	app.Commands = []Command{
+		Command{
+			Name:  "hello",
+			Flags: flags,
+			Args:  args,
+			Action: func(c *Context) {
+				ctx = c
+			},
+		},
+	}
+	pipe, _ := osext.PipeStdout()
+	defer pipe.Close()
+	err := app.Run(append([]string{"", "hello"}, argv...))
+	return ctx, err
+}
+
+func TestValidArgsWithFlags(t *testing.T) {
+	func() {
+		flags := []Flag{}
+		c, err := runWithFlags("<path>", flags, []string{})
+		if !(err != nil && fmt.Sprintln(err) == "insufficient args\n") {
+			t.Errorf("expect error: %v", err)
+		}
+		if !(c == nil) {
+			t.Errorf("expect c is nil: %v", c)
+		}
+	}()
+
+	func() {
+		flags := []Flag{
+			StringFlag{Name: "foo", Value: "a"},
+			StringFlag{Name: "bar", Value: "b"},
+		}
+		c, err := runWithFlags("<path>", flags, []string{"--foo", "a", "--bar", "b"})
+
+		if !(err != nil && fmt.Sprintln(err) == "insufficient args\n") {
+			t.Errorf("expect error: %v", err)
+		}
+		if !(c == nil) {
+			t.Errorf("expect c is nil: %v", c)
+		}
+	}()
+
+	func() {
+		flags := []Flag{
+			StringFlag{Name: "foo", Value: "a"},
+			StringFlag{Name: "bar", Value: "b"},
+		}
+		c, err := runWithFlags("<path>", flags, []string{"--foo", "a", "--bar", "b", "/tmp"})
+
+		if !(err == nil) {
+			t.Errorf("expect err is nil: %v", err)
+		}
+		if !(c != nil) {
+			t.Errorf("expect c is nil: %v", c)
+		}
+	}()
+
+	func() {
+		flags := []Flag{
+			StringFlag{Name: "foo", Value: "a"},
+		}
+		c, err := runWithFlags("<path> <id>", flags, []string{"--foo", "a", "/tmp"})
+
+		if !(err != nil && fmt.Sprintln(err) == "insufficient args\n") {
+			t.Errorf("expect error: %v", err)
+		}
+		if !(c == nil) {
+			t.Errorf("expect c is nil: %v", c)
+		}
+	}()
+
+	func() {
+		flags := []Flag{
+			StringFlag{Name: "foo", Value: "a"},
+		}
+		c, err := runWithFlags("<path> <id>", flags, []string{"--foo", "a", "/tmp", "123"})
+
+		if !(err == nil) {
+			t.Errorf("expect err is nil: %v", err)
+		}
+		if !(c != nil) {
+			t.Errorf("expect c is nil: %v", c)
+		}
+	}()
 }
