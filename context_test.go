@@ -95,4 +95,5 @@ func TestContext_GlobalIsSet(t *testing.T) {
 	expect(t, c.GlobalIsSet("bogusflag"), false)
 	expect(t, c.GlobalIsSet("myflagGlobal"), true)
 	expect(t, c.GlobalIsSet("myflagGlobalUnset"), false)
+	expect(t, c.GlobalIsSet("bogusGlobal"), false)
 }
