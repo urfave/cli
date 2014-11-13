@@ -68,8 +68,9 @@ Running this already gives you a ton of functionality, plus support for things l
 
 Being a programmer can be a lonely job. Thankfully by the power of automation that is not the case! Let's create a greeter app to fend off our demons of loneliness!
 
+Start by creating a directory named `greet`, and within it, add a file, `greet.go` with the following code in it:
+
 ``` go
-/* greet.go */
 package main
 
 import (
@@ -84,7 +85,7 @@ func main() {
   app.Action = func(c *cli.Context) {
     println("Hello friend!")
   }
-  
+
   app.Run(os.Args)
 }
 ```
