@@ -396,7 +396,6 @@ func TestApp_AfterFunc(t *testing.T) {
 	}
 }
 
-
 func TestAppHelpPrinter(t *testing.T) {
 	oldPrinter := cli.HelpPrinter
 	defer func() {

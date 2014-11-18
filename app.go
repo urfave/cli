@@ -120,7 +120,11 @@ func (a *App) Run(arguments []string) (err error) {
 
 	if a.After != nil {
 		defer func() {
-			err = a.After(context)
+			aferr := a.After(context)
+			// check Action error to avoid shadowing
+			if err == nil {
+				err = aferr
+			}
 		}()
 	}
 
@@ -208,7 +212,11 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 
 	if a.After != nil {
 		defer func() {
-			err = a.After(context)
+			aferr := a.After(context)
+			// check Action error to avoid shadowing
+			if err == nil {
+				err = aferr
+			}
 		}()
 	}
 
