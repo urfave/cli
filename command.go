@@ -21,6 +21,9 @@ type Command struct {
 	// An action to execute before any sub-subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no sub-subcommands are run
 	Before func(context *Context) error
+	// An action to execute after any subcommands are run, but after the subcommand has finished
+	// It is run regardless of Because() result
+	After func(context *Context) error
 	// The function to call when this command is invoked
 	Action func(context *Context)
 	// List of child commands
@@ -36,7 +39,7 @@ type Command struct {
 // Invokes the command given the context, parses ctx.Args() to generate command-specific flags
 func (c Command) Run(ctx *Context) error {
 
-	if len(c.Subcommands) > 0 || c.Before != nil {
+	if len(c.Subcommands) > 0 || c.Before != nil || c.After != nil {
 		return c.startApp(ctx)
 	}
 
@@ -134,6 +137,7 @@ func (c Command) startApp(ctx *Context) error {
 
 	// set the actions
 	app.Before = c.Before
+	app.After = c.After
 	if c.Action != nil {
 		app.Action = c.Action
 	} else {
