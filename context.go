@@ -13,11 +13,12 @@ import (
 // can be used to retrieve context-specific Args and
 // parsed command-line options.
 type Context struct {
-	App       *App
-	Command   Command
-	flagSet   *flag.FlagSet
-	globalSet *flag.FlagSet
-	setFlags  map[string]bool
+	App            *App
+	Command        Command
+	flagSet        *flag.FlagSet
+	globalSet      *flag.FlagSet
+	setFlags       map[string]bool
+	globalSetFlags map[string]bool
 }
 
 // Creates a new context. For use in when invoking an App or Command action.
@@ -105,7 +106,7 @@ func (c *Context) GlobalGeneric(name string) interface{} {
 	return lookupGeneric(name, c.globalSet)
 }
 
-// Determines if the flag was actually set exists
+// Determines if the flag was actually set
 func (c *Context) IsSet(name string) bool {
 	if c.setFlags == nil {
 		c.setFlags = make(map[string]bool)
@@ -114,6 +115,17 @@ func (c *Context) IsSet(name string) bool {
 		})
 	}
 	return c.setFlags[name] == true
+}
+
+// Determines if the global flag was actually set
+func (c *Context) GlobalIsSet(name string) bool {
+	if c.globalSetFlags == nil {
+		c.globalSetFlags = make(map[string]bool)
+		c.globalSet.Visit(func(f *flag.Flag) {
+			c.globalSetFlags[f.Name] = true
+		})
+	}
+	return c.globalSetFlags[name] == true
 }
 
 // Returns a slice of flag names used in this context.
