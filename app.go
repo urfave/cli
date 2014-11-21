@@ -41,6 +41,8 @@ type App struct {
 	Author string
 	// Author e-mail
 	Email string
+	// Command argument requirements
+	Requires *Requires
 }
 
 // Tries to find out when this binary was compiled.
@@ -113,6 +115,10 @@ func (a *App) Run(arguments []string) error {
 
 	if checkVersion(context) {
 		return nil
+	}
+
+	if err := context.Satisfies(a.Requires); err != nil {
+		return err
 	}
 
 	if a.Before != nil {
@@ -195,6 +201,10 @@ func (a *App) RunAsSubcommand(ctx *Context) error {
 		if checkCommandHelp(ctx, context.Args().First()) {
 			return nil
 		}
+	}
+
+	if err := context.Satisfies(a.Requires); err != nil {
+		return err
 	}
 
 	if a.Before != nil {
