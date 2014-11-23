@@ -283,6 +283,3 @@ Feel free to put up a pull request to fix a bug or maybe add a feature. I will g
 If you are have contributed something significant to the project, I will most likely add you as a collaborator. As a collaborator you are given the ability to merge others pull requests. It is very important that new code does not break existing code, so be careful about what code you do choose to merge. If you have any questions feel free to link @codegangsta to the issue in question and we can review it together.
 
 If you feel like you have contributed to the project but have not yet been added as a collaborator, I probably forgot to add you. Hit @codegangsta up over email and we will get it figured out.
-
-## About
-cli.go is written by none other than the [Code Gangsta](http://codegangsta.io)
