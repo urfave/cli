@@ -140,6 +140,18 @@ func (c *Context) FlagNames() (names []string) {
 	return
 }
 
+// Returns a slice of global flag names used by the app.
+func (c *Context) GlobalFlagNames() (names []string) {
+	for _, flag := range c.App.Flags {
+		name := strings.Split(flag.getName(), ",")[0]
+		if name == "help" || name == "version" {
+			continue
+		}
+		names = append(names, name)
+	}
+	return
+}
+
 type Args []string
 
 // Returns the command line arguments associated with the context.
