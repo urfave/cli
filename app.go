@@ -128,6 +128,9 @@ func (a *App) Run(arguments []string) error {
 		name := args.First()
 		c := a.Command(name)
 		if c != nil {
+			if err := checkArgs(c, context); err != nil {
+				return err
+			}
 			return c.Run(context)
 		}
 	}
@@ -210,6 +213,9 @@ func (a *App) RunAsSubcommand(ctx *Context) error {
 		name := args.First()
 		c := a.Command(name)
 		if c != nil {
+			if err := checkArgs(c, context); err != nil {
+				return err
+			}
 			return c.Run(context)
 		}
 	}
