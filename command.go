@@ -71,18 +71,18 @@ func (c Command) Run(ctx *Context) error {
 	}
 
 	if err != nil {
-		io.WriteString(ctx.App.Stdout, fmt.Sprintf("Incorrect Usage.\n\n"))
+		io.WriteString(ctx.App.Writer, fmt.Sprintf("Incorrect Usage.\n\n"))
 		ShowCommandHelp(ctx, c.Name)
-		io.WriteString(ctx.App.Stdout, fmt.Sprintln(""))
+		io.WriteString(ctx.App.Writer, fmt.Sprintln(""))
 		return err
 	}
 
 	nerr := normalizeFlags(c.Flags, set)
 	if nerr != nil {
-		io.WriteString(ctx.App.Stdout, fmt.Sprintln(nerr))
-		io.WriteString(ctx.App.Stdout, fmt.Sprintln(""))
+		io.WriteString(ctx.App.Writer, fmt.Sprintln(nerr))
+		io.WriteString(ctx.App.Writer, fmt.Sprintln(""))
 		ShowCommandHelp(ctx, c.Name)
-		io.WriteString(ctx.App.Stdout, fmt.Sprintln(""))
+		io.WriteString(ctx.App.Writer, fmt.Sprintln(""))
 		return nerr
 	}
 	context := NewContext(ctx.App, set, ctx.globalSet)

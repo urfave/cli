@@ -99,9 +99,9 @@ func ShowAppHelp(c *Context) {
 // Prints the list of subcommands as the default app completion method
 func DefaultAppComplete(c *Context) {
 	for _, command := range c.App.Commands {
-		io.WriteString(c.App.Stdout, fmt.Sprintln(command.Name))
+		io.WriteString(c.App.Writer, fmt.Sprintln(command.Name))
 		if command.ShortName != "" {
-			io.WriteString(c.App.Stdout, fmt.Sprintln(command.ShortName))
+			io.WriteString(c.App.Writer, fmt.Sprintln(command.ShortName))
 		}
 	}
 }
@@ -118,7 +118,7 @@ func ShowCommandHelp(c *Context, command string) {
 	if c.App.CommandNotFound != nil {
 		c.App.CommandNotFound(c, command)
 	} else {
-		io.WriteString(c.App.Stdout, fmt.Sprintf("No help topic for '%v'\n", command))
+		io.WriteString(c.App.Writer, fmt.Sprintf("No help topic for '%v'\n", command))
 	}
 }
 
@@ -129,7 +129,7 @@ func ShowSubcommandHelp(c *Context) {
 
 // Prints the version number of the App
 func ShowVersion(c *Context) {
-	io.WriteString(c.App.Stdout, fmt.Sprintf("%v version %v\n", c.App.Name, c.App.Version))
+	io.WriteString(c.App.Writer, fmt.Sprintf("%v version %v\n", c.App.Name, c.App.Version))
 }
 
 // Prints the lists of commands within a given context

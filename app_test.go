@@ -265,7 +265,7 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 func TestApp_DefaultStdout(t *testing.T) {
 	app := cli.NewApp()
 
-	if app.Stdout != os.Stdout {
+	if app.Writer != os.Stdout {
 		t.Error("Default output writer not set.")
 	}
 }
@@ -293,7 +293,7 @@ func TestApp_SetStdout(t *testing.T) {
 
 	app := cli.NewApp()
 	app.Name = "test"
-	app.Stdout = mockWriter
+	app.Writer = mockWriter
 
 	err := app.Run([]string{"help"})
 
