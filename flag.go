@@ -70,7 +70,7 @@ type GenericFlag struct {
 }
 
 func (f GenericFlag) String() string {
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s%s %v\t`%v` %s", prefixFor(f.Name), f.Name, f.Value, "-"+f.Name+" option -"+f.Name+" option", f.Usage))
+	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s%s %v\t`%v` %s", prefixFor(f.Name), f.Name, f.Value, "-"+f.Name+" option -"+f.Name+" option", f.Usage))
 }
 
 func (f GenericFlag) Apply(set *flag.FlagSet) {
@@ -120,7 +120,7 @@ type StringSliceFlag struct {
 func (f StringSliceFlag) String() string {
 	firstName := strings.Trim(strings.Split(f.Name, ",")[0], " ")
 	pref := prefixFor(firstName)
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), pref+firstName+" option "+pref+firstName+" option", f.Usage))
+	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), pref+firstName+" option "+pref+firstName+" option", f.Usage))
 }
 
 func (f StringSliceFlag) Apply(set *flag.FlagSet) {
@@ -179,7 +179,7 @@ type IntSliceFlag struct {
 func (f IntSliceFlag) String() string {
 	firstName := strings.Trim(strings.Split(f.Name, ",")[0], " ")
 	pref := prefixFor(firstName)
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), pref+firstName+" option "+pref+firstName+" option", f.Usage))
+	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), pref+firstName+" option "+pref+firstName+" option", f.Usage))
 }
 
 func (f IntSliceFlag) Apply(set *flag.FlagSet) {
@@ -217,7 +217,7 @@ type BoolFlag struct {
 }
 
 func (f BoolFlag) String() string {
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s\t%v", prefixedNames(f.Name), f.Usage))
+	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s\t%v", prefixedNames(f.Name), f.Usage))
 }
 
 func (f BoolFlag) Apply(set *flag.FlagSet) {
@@ -252,7 +252,7 @@ type BoolTFlag struct {
 }
 
 func (f BoolTFlag) String() string {
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s\t%v", prefixedNames(f.Name), f.Usage))
+	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s\t%v", prefixedNames(f.Name), f.Usage))
 }
 
 func (f BoolTFlag) Apply(set *flag.FlagSet) {
@@ -297,7 +297,7 @@ func (f StringFlag) String() string {
 		fmtString = "%s %v\t%v"
 	}
 
-	return withEnvHint(f.EnvVar, fmt.Sprintf(fmtString, prefixedNames(f.Name), f.Value, f.Usage))
+	return withHints(f.EnvVar, f.Required, fmt.Sprintf(fmtString, prefixedNames(f.Name), f.Value, f.Usage))
 }
 
 func (f StringFlag) Apply(set *flag.FlagSet) {
@@ -329,7 +329,7 @@ type IntFlag struct {
 }
 
 func (f IntFlag) String() string {
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage))
+	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage))
 }
 
 func (f IntFlag) Apply(set *flag.FlagSet) {
@@ -364,7 +364,7 @@ type DurationFlag struct {
 }
 
 func (f DurationFlag) String() string {
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage))
+	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage))
 }
 
 func (f DurationFlag) Apply(set *flag.FlagSet) {
@@ -399,7 +399,7 @@ type Float64Flag struct {
 }
 
 func (f Float64Flag) String() string {
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage))
+	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage))
 }
 
 func (f Float64Flag) Apply(set *flag.FlagSet) {
@@ -453,4 +453,16 @@ func withEnvHint(envVar, str string) string {
 		envText = fmt.Sprintf(" [$%s]", envVar)
 	}
 	return str + envText
+}
+
+func withRequiredHint(isRequired bool, str string) string {
+	if isRequired {
+		return str + " (required)"
+	}
+
+	return str
+}
+
+func withHints(envVar string, isRequired bool, str string) string {
+	return withRequiredHint(isRequired, withEnvHint(envVar, str))
 }
