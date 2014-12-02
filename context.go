@@ -5,6 +5,7 @@ import (
 	"flag"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Context is a type that is passed through to
@@ -12,11 +13,12 @@ import (
 // can be used to retrieve context-specific Args and
 // parsed command-line options.
 type Context struct {
-	App       *App
-	Command   Command
-	flagSet   *flag.FlagSet
-	globalSet *flag.FlagSet
-	setFlags  map[string]bool
+	App            *App
+	Command        Command
+	flagSet        *flag.FlagSet
+	globalSet      *flag.FlagSet
+	setFlags       map[string]bool
+	globalSetFlags map[string]bool
 }
 
 // Creates a new context. For use in when invoking an App or Command action.
@@ -27,6 +29,11 @@ func NewContext(app *App, set *flag.FlagSet, globalSet *flag.FlagSet) *Context {
 // Looks up the value of a local int flag, returns 0 if no int flag exists
 func (c *Context) Int(name string) int {
 	return lookupInt(name, c.flagSet)
+}
+
+// Looks up the value of a local time.Duration flag, returns 0 if no time.Duration flag exists
+func (c *Context) Duration(name string) time.Duration {
+	return lookupDuration(name, c.flagSet)
 }
 
 // Looks up the value of a local float64 flag, returns 0 if no float64 flag exists
@@ -69,6 +76,11 @@ func (c *Context) GlobalInt(name string) int {
 	return lookupInt(name, c.globalSet)
 }
 
+// Looks up the value of a global time.Duration flag, returns 0 if no time.Duration flag exists
+func (c *Context) GlobalDuration(name string) time.Duration {
+	return lookupDuration(name, c.globalSet)
+}
+
 // Looks up the value of a global bool flag, returns false if no bool flag exists
 func (c *Context) GlobalBool(name string) bool {
 	return lookupBool(name, c.globalSet)
@@ -94,7 +106,7 @@ func (c *Context) GlobalGeneric(name string) interface{} {
 	return lookupGeneric(name, c.globalSet)
 }
 
-// Determines if the flag was actually set exists
+// Determines if the flag was actually set
 func (c *Context) IsSet(name string) bool {
 	if c.setFlags == nil {
 		c.setFlags = make(map[string]bool)
@@ -103,6 +115,41 @@ func (c *Context) IsSet(name string) bool {
 		})
 	}
 	return c.setFlags[name] == true
+}
+
+// Determines if the global flag was actually set
+func (c *Context) GlobalIsSet(name string) bool {
+	if c.globalSetFlags == nil {
+		c.globalSetFlags = make(map[string]bool)
+		c.globalSet.Visit(func(f *flag.Flag) {
+			c.globalSetFlags[f.Name] = true
+		})
+	}
+	return c.globalSetFlags[name] == true
+}
+
+// Returns a slice of flag names used in this context.
+func (c *Context) FlagNames() (names []string) {
+	for _, flag := range c.Command.Flags {
+		name := strings.Split(flag.getName(), ",")[0]
+		if name == "help" {
+			continue
+		}
+		names = append(names, name)
+	}
+	return
+}
+
+// Returns a slice of global flag names used by the app.
+func (c *Context) GlobalFlagNames() (names []string) {
+	for _, flag := range c.App.Flags {
+		name := strings.Split(flag.getName(), ",")[0]
+		if name == "help" || name == "version" {
+			continue
+		}
+		names = append(names, name)
+	}
+	return
 }
 
 type Args []string
@@ -140,6 +187,15 @@ func (a Args) Present() bool {
 	return len(a) != 0
 }
 
+// Swaps arguments at the given indexes
+func (a Args) Swap(from, to int) error {
+	if from >= len(a) || to >= len(a) {
+		return errors.New("index out of range")
+	}
+	a[from], a[to] = a[to], a[from]
+	return nil
+}
+
 func lookupInt(name string, set *flag.FlagSet) int {
 	f := set.Lookup(name)
 	if f != nil {
@@ -148,6 +204,18 @@ func lookupInt(name string, set *flag.FlagSet) int {
 			return 0
 		}
 		return val
+	}
+
+	return 0
+}
+
+func lookupDuration(name string, set *flag.FlagSet) time.Duration {
+	f := set.Lookup(name)
+	if f != nil {
+		val, err := time.ParseDuration(f.Value.String())
+		if err == nil {
+			return val
+		}
 	}
 
 	return 0

@@ -12,17 +12,21 @@ var AppHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
 USAGE:
-   {{.Name}} [global options] command [command options] [arguments...]
+   {{.Name}} {{if .Flags}}[global options] {{end}}command{{if .Flags}} [command options]{{end}} [arguments...]
 
 VERSION:
-   {{.Version}}
+   {{.Version}}{{if or .Author .Email}}
+
+AUTHOR:{{if .Author}}
+  {{.Author}}{{if .Email}} - <{{.Email}}>{{end}}{{else}}
+  {{.Email}}{{end}}{{end}}
 
 COMMANDS:
    {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
-   {{end}}
+   {{end}}{{if .Flags}}
 GLOBAL OPTIONS:
    {{range .Flags}}{{.}}
-   {{end}}
+   {{end}}{{end}}
 `
 
 // The text template for the command help topic.
@@ -32,14 +36,14 @@ var CommandHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
 USAGE:
-   command {{.Name}} [command options] [arguments...]
+   command {{.Name}}{{if .Flags}} [command options]{{end}} [arguments...]{{if .Description}}
 
 DESCRIPTION:
-   {{.Description}}
+   {{.Description}}{{end}}{{if .Flags}}
 
 OPTIONS:
    {{range .Flags}}{{.}}
-   {{end}}
+   {{end}}{{ end }}
 `
 
 // The text template for the subcommand help topic.
@@ -49,14 +53,14 @@ var SubcommandHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
 USAGE:
-   {{.Name}} [global options] command [command options] [arguments...]
+   {{.Name}} command{{if .Flags}} [command options]{{end}} [arguments...]
 
 COMMANDS:
    {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
-   {{end}}
+   {{end}}{{if .Flags}}
 OPTIONS:
    {{range .Flags}}{{.}}
-   {{end}}
+   {{end}}{{end}}
 `
 
 var helpCommand = Command{
@@ -91,6 +95,9 @@ var helpSubcommand = Command{
 type helpPrinter func(templ string, data interface{})
 
 var HelpPrinter helpPrinter = nil
+
+// Prints version for the App
+var VersionPrinter = printVersion
 
 func ShowAppHelp(c *Context) {
 	HelpPrinter(AppHelpTemplate, c.App)
@@ -129,6 +136,10 @@ func ShowSubcommandHelp(c *Context) {
 
 // Prints the version number of the App
 func ShowVersion(c *Context) {
+	VersionPrinter(c)
+}
+
+func printVersion(c *Context) {
 	io.WriteString(c.App.Writer, fmt.Sprintf("%v version %v\n", c.App.Name, c.App.Version))
 }
 
@@ -185,7 +196,7 @@ func checkSubcommandHelp(c *Context) bool {
 }
 
 func checkCompletions(c *Context) bool {
-	if c.GlobalBool(BashCompletionFlag.Name) && c.App.EnableBashCompletion {
+	if (c.GlobalBool(BashCompletionFlag.Name) || c.Bool(BashCompletionFlag.Name)) && c.App.EnableBashCompletion {
 		ShowCompletions(c)
 		return true
 	}

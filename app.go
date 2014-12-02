@@ -25,6 +25,10 @@ type App struct {
 	Flags []Flag
 	// Boolean to enable bash completion commands
 	EnableBashCompletion bool
+	// Boolean to hide built-in help command
+	HideHelp bool
+	// Boolean to hide built-in version flag
+	HideVersion bool
 	// An action to execute when the bash-completion flag is set
 	BashComplete func(context *Context)
 	// An action to execute before any subcommands are run, but after the context is ready
@@ -88,16 +92,19 @@ func (a *App) Run(arguments []string) error {
 	}
 
 	// append help to commands
-	if a.Command(helpCommand.Name) == nil {
+	if a.Command(helpCommand.Name) == nil && !a.HideHelp {
 		a.Commands = append(a.Commands, helpCommand)
+		a.appendFlag(HelpFlag)
 	}
 
 	//append version/help flags
 	if a.EnableBashCompletion {
 		a.appendFlag(BashCompletionFlag)
 	}
-	a.appendFlag(VersionFlag)
-	a.appendFlag(HelpFlag)
+
+	if !a.HideVersion {
+		a.appendFlag(VersionFlag)
+	}
 
 	// parse flags
 	set := flagSet(a.Name, a.Flags)
@@ -153,12 +160,21 @@ func (a *App) Run(arguments []string) error {
 	return nil
 }
 
+// Another entry point to the cli app, takes care of passing arguments and error handling
+func (a *App) RunAndExitOnError() {
+	if err := a.Run(os.Args); err != nil {
+		os.Stderr.WriteString(fmt.Sprintln(err))
+		os.Exit(1)
+	}
+}
+
 // Invokes the subcommand given the context, parses ctx.Args() to generate command-specific flags
 func (a *App) RunAsSubcommand(ctx *Context) error {
 	// append help to commands
 	if len(a.Commands) > 0 {
-		if a.Command(helpCommand.Name) == nil {
+		if a.Command(helpCommand.Name) == nil && !a.HideHelp {
 			a.Commands = append(a.Commands, helpCommand)
+			a.appendFlag(HelpFlag)
 		}
 	}
 
@@ -166,14 +182,13 @@ func (a *App) RunAsSubcommand(ctx *Context) error {
 	if a.EnableBashCompletion {
 		a.appendFlag(BashCompletionFlag)
 	}
-	a.appendFlag(HelpFlag)
 
 	// parse flags
 	set := flagSet(a.Name, a.Flags)
 	set.SetOutput(ioutil.Discard)
 	err := set.Parse(ctx.Args().Tail())
 	nerr := normalizeFlags(a.Flags, set)
-	context := NewContext(a, set, set)
+	context := NewContext(a, set, ctx.globalSet)
 
 	if nerr != nil {
 		io.WriteString(a.Writer, fmt.Sprintln(nerr))
