@@ -88,6 +88,16 @@ func (c Command) Run(ctx *Context) error {
 		fmt.Println("")
 		return nerr
 	}
+
+	cerr := checkRequiredFlags(c.Flags, set)
+	if cerr != nil {
+		fmt.Println(cerr)
+		fmt.Println("")
+		ShowCommandHelp(ctx, c.Name)
+		fmt.Println("")
+		return cerr
+	}
+
 	context := NewContext(ctx.App, set, ctx.globalSet)
 
 	if checkCommandCompletions(context, c.Name) {

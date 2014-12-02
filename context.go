@@ -3,6 +3,7 @@ package cli
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -332,6 +333,23 @@ func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
 			name = strings.Trim(name, " ")
 			if !visited[name] {
 				copyFlag(name, ff, set)
+			}
+		}
+	}
+	return nil
+}
+
+func checkRequiredFlags(flags []Flag, set *flag.FlagSet) error {
+	visited := make(map[string]bool)
+	set.Visit(func(f *flag.Flag) {
+		visited[f.Name] = true
+	})
+
+	for _, f := range flags {
+		if f.IsRequired() {
+			key := strings.Split(f.getName(), ",")[0]
+			if !visited[key] {
+				return fmt.Errorf("Required flag %s not set", f.getName())
 			}
 		}
 	}
