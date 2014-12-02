@@ -172,6 +172,8 @@ app.Flags = []cli.Flag {
 }
 ```
 
+That flag can then be set with `--lang spanish` or `-l spanish`. Note that giving two different forms of the same flag in the same command invocation is an error.
+
 #### Values from the Environment
 
 You can also have the default value set from the environment via `EnvVar`.  e.g.
@@ -187,7 +189,18 @@ app.Flags = []cli.Flag {
 }
 ```
 
-That flag can then be set with `--lang spanish` or `-l spanish`. Note that giving two different forms of the same flag in the same command invocation is an error.
+The `EnvVar` may also be given as a comma-delimited "cascade", where the first environment variable that resolves is used as the default.
+
+``` go
+app.Flags = []cli.Flag {
+  cli.StringFlag{
+    Name: "lang, l",
+    Value: "english",
+    Usage: "language for the greeting",
+    EnvVar: "LEGACY_COMPAT_LANG,APP_LANG,LANG",
+  },
+}
+```
 
 ### Subcommands
 
