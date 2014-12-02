@@ -1,6 +1,7 @@
 package cli_test
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"testing"
@@ -329,6 +330,22 @@ func TestApp_BeforeFunc(t *testing.T) {
 		t.Errorf("Subcommand executed when NOT expected")
 	}
 
+}
+
+func TestAppNoHelpFlag(t *testing.T) {
+	oldFlag := cli.HelpFlag
+	defer func() {
+		cli.HelpFlag = oldFlag
+	}()
+
+	cli.HelpFlag = cli.BoolFlag{}
+
+	app := cli.NewApp()
+	err := app.Run([]string{"test", "-h"})
+
+	if err != flag.ErrHelp {
+		t.Errorf("expected error about missing help flag, but got: %s (%T)", err, err)
+	}
 }
 
 func TestAppHelpPrinter(t *testing.T) {
