@@ -1,9 +1,6 @@
 package cli
 
-import (
-	"fmt"
-	"io"
-)
+import "fmt"
 
 // The text template for the Default help topic.
 // cli.go uses text/template to render templates. You can
@@ -106,9 +103,9 @@ func ShowAppHelp(c *Context) {
 // Prints the list of subcommands as the default app completion method
 func DefaultAppComplete(c *Context) {
 	for _, command := range c.App.Commands {
-		io.WriteString(c.App.Writer, fmt.Sprintln(command.Name))
+		fmt.Fprintln(c.App.Writer, command.Name)
 		if command.ShortName != "" {
-			io.WriteString(c.App.Writer, fmt.Sprintln(command.ShortName))
+			fmt.Fprintln(c.App.Writer, command.ShortName)
 		}
 	}
 }
@@ -125,7 +122,7 @@ func ShowCommandHelp(c *Context, command string) {
 	if c.App.CommandNotFound != nil {
 		c.App.CommandNotFound(c, command)
 	} else {
-		io.WriteString(c.App.Writer, fmt.Sprintf("No help topic for '%v'\n", command))
+		fmt.Fprintf(c.App.Writer, "No help topic for '%v'\n", command)
 	}
 }
 
@@ -140,7 +137,7 @@ func ShowVersion(c *Context) {
 }
 
 func printVersion(c *Context) {
-	io.WriteString(c.App.Writer, fmt.Sprintf("%v version %v\n", c.App.Name, c.App.Version))
+	fmt.Fprintf(c.App.Writer, "%v version %v\n", c.App.Name, c.App.Version)
 }
 
 // Prints the lists of commands within a given context
