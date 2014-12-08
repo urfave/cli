@@ -68,7 +68,7 @@ type GenericFlag struct {
 }
 
 func (f GenericFlag) String() string {
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s%s %v\t`%v` %s", prefixFor(f.Name), f.Name, f.Value, "-"+f.Name+" option -"+f.Name+" option", f.Usage))
+	return withEnvHint(f.EnvVar, fmt.Sprintf("%s%s %v\t%s", prefixFor(f.Name), f.Name, f.Value, f.Usage))
 }
 
 func (f GenericFlag) Apply(set *flag.FlagSet) {
