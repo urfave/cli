@@ -273,11 +273,11 @@ func TestApp_DefaultStdout(t *testing.T) {
 	}
 }
 
-type fakeWriter struct {
+type mockWriter struct {
 	written []byte
 }
 
-func (fw *fakeWriter) Write(p []byte) (n int, err error) {
+func (fw *mockWriter) Write(p []byte) (n int, err error) {
 	if fw.written == nil {
 		fw.written = p
 	} else {
@@ -287,16 +287,16 @@ func (fw *fakeWriter) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func (fw *fakeWriter) GetWritten() (b []byte) {
+func (fw *mockWriter) GetWritten() (b []byte) {
 	return fw.written
 }
 
 func TestApp_SetStdout(t *testing.T) {
-	mockWriter := &fakeWriter{}
+	w := &mockWriter{}
 
 	app := cli.NewApp()
 	app.Name = "test"
-	app.Writer = mockWriter
+	app.Writer = w
 
 	err := app.Run([]string{"help"})
 
@@ -304,7 +304,7 @@ func TestApp_SetStdout(t *testing.T) {
 		t.Fatalf("Run error: %s", err)
 	}
 
-	if len(mockWriter.written) == 0 {
+	if len(w.written) == 0 {
 		t.Error("App did not write output to desired writer.")
 	}
 }
