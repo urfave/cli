@@ -33,7 +33,7 @@ type Flag interface {
 	fmt.Stringer
 	// Apply Flag settings to the given flag set
 	Apply(*flag.FlagSet)
-	getName() string
+	GetName() string
 }
 
 func flagSet(name string, flags []Flag) *flag.FlagSet {
@@ -68,7 +68,7 @@ type GenericFlag struct {
 }
 
 func (f GenericFlag) String() string {
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s%s %v\t`%v` %s", prefixFor(f.Name), f.Name, f.Value, "-"+f.Name+" option -"+f.Name+" option", f.Usage))
+	return withEnvHint(f.EnvVar, fmt.Sprintf("%s%s %v\t%s", prefixFor(f.Name), f.Name, f.Value, f.Usage))
 }
 
 func (f GenericFlag) Apply(set *flag.FlagSet) {
@@ -88,7 +88,7 @@ func (f GenericFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f GenericFlag) getName() string {
+func (f GenericFlag) GetName() string {
 	return f.Name
 }
 
@@ -141,7 +141,7 @@ func (f StringSliceFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f StringSliceFlag) getName() string {
+func (f StringSliceFlag) GetName() string {
 	return f.Name
 }
 
@@ -203,7 +203,7 @@ func (f IntSliceFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f IntSliceFlag) getName() string {
+func (f IntSliceFlag) GetName() string {
 	return f.Name
 }
 
@@ -237,7 +237,7 @@ func (f BoolFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f BoolFlag) getName() string {
+func (f BoolFlag) GetName() string {
 	return f.Name
 }
 
@@ -271,7 +271,7 @@ func (f BoolTFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f BoolTFlag) getName() string {
+func (f BoolTFlag) GetName() string {
 	return f.Name
 }
 
@@ -311,7 +311,7 @@ func (f StringFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f StringFlag) getName() string {
+func (f StringFlag) GetName() string {
 	return f.Name
 }
 
@@ -345,7 +345,7 @@ func (f IntFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f IntFlag) getName() string {
+func (f IntFlag) GetName() string {
 	return f.Name
 }
 
@@ -379,7 +379,7 @@ func (f DurationFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f DurationFlag) getName() string {
+func (f DurationFlag) GetName() string {
 	return f.Name
 }
 
@@ -412,7 +412,7 @@ func (f Float64Flag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f Float64Flag) getName() string {
+func (f Float64Flag) GetName() string {
 	return f.Name
 }
 
