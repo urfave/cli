@@ -27,6 +27,10 @@ type App struct {
 	HideHelp bool
 	// Boolean to hide built-in version flag
 	HideVersion bool
+	// Display commands by category
+	CategorizedHelp bool
+	// Populate when displaying AppHelp
+	Categories map[string]Commands
 	// An action to execute when the bash-completion flag is set
 	BashComplete func(context *Context)
 	// An action to execute before any subcommands are run, but after the context is ready
@@ -80,6 +84,13 @@ func NewApp() *App {
 func (a *App) Run(arguments []string) (err error) {
 	if a.Author != "" || a.Email != "" {
 		a.Authors = append(a.Authors, Author{Name: a.Author, Email: a.Email})
+	}
+
+	if a.CategorizedHelp {
+		a.Categories = make(map[string]Commands)
+		for _, command := range a.Commands {
+			a.Categories[command.Category] = append(a.Categories[command.Category], command)
+		}
 	}
 
 	// append help to commands
