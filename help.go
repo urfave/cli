@@ -23,9 +23,12 @@ VERSION:
 AUTHOR(S):
    {{range .Authors}}{{ . }}{{end}}
    {{end}}{{if .Commands}}
-COMMANDS:
-   {{range .Commands}}{{join .Names ", "}}{{ "\t" }}{{.Usage}}
-   {{end}}{{end}}{{if .Flags}}
+COMMANDS:{{if .CategorizedHelp}}{{range $category, $commands := .Categories}}{{if $category}}
+  {{$category}}{{ ":" }}{{end}}{{range $commands}}
+    {{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}{{end}}
+{{end}}{{else}}{{range .Commands}}
+   {{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}{{end}}
+{{end}}{{end}}{{if .Flags}}
 GLOBAL OPTIONS:
    {{range .Flags}}{{.}}
    {{end}}{{end}}{{if .Copyright }}
@@ -43,6 +46,9 @@ var CommandHelpTemplate = `NAME:
 USAGE:
    {{.HelpName}}{{if .Flags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{if .Description}}
 
+{{if .Category}}CATEGORY:
+   {{.Category}}
+{{end}}
 DESCRIPTION:
    {{.Description}}{{end}}{{if .Flags}}
 
