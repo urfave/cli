@@ -40,7 +40,7 @@ func (c Command) Run(ctx *Context) error {
 		return c.startApp(ctx)
 	}
 
-	if !c.HideHelp {
+	if !c.HideHelp && (HelpFlag != BoolFlag{}) {
 		// append help to flags
 		c.Flags = append(
 			c.Flags,

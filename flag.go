@@ -21,6 +21,8 @@ var VersionFlag = BoolFlag{
 }
 
 // This flag prints the help for all commands and subcommands
+// Set to the zero value (BoolFlag{}) to disable flag -- keeps subcommand
+// unless HideHelp is set to true)
 var HelpFlag = BoolFlag{
 	Name:  "help, h",
 	Usage: "show help",
