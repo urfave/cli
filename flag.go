@@ -73,7 +73,7 @@ type GenericFlag struct {
 // help text to the user (uses the String() method of the generic flag to show
 // the value)
 func (f GenericFlag) String() string {
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s%s '%v'\t%v", prefixFor(f.Name), f.Name, f.Value, f.Usage))
+	return withEnvHint(f.EnvVar, fmt.Sprintf("%s%s \"%v\"\t%v", prefixFor(f.Name), f.Name, f.Value, f.Usage))
 }
 
 // Apply takes the flagset and calls Set on the generic flag with the value
@@ -124,7 +124,7 @@ type StringSliceFlag struct {
 func (f StringSliceFlag) String() string {
 	firstName := strings.Trim(strings.Split(f.Name, ",")[0], " ")
 	pref := prefixFor(firstName)
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), pref+firstName+" option "+pref+firstName+" option", f.Usage))
+	return withEnvHint(f.EnvVar, fmt.Sprintf("%s [%v]\t%v", prefixedNames(f.Name), pref+firstName+" option "+pref+firstName+" option", f.Usage))
 }
 
 func (f StringSliceFlag) Apply(set *flag.FlagSet) {
@@ -183,7 +183,7 @@ type IntSliceFlag struct {
 func (f IntSliceFlag) String() string {
 	firstName := strings.Trim(strings.Split(f.Name, ",")[0], " ")
 	pref := prefixFor(firstName)
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), pref+firstName+" option "+pref+firstName+" option", f.Usage))
+	return withEnvHint(f.EnvVar, fmt.Sprintf("%s [%v]\t%v", prefixedNames(f.Name), pref+firstName+" option "+pref+firstName+" option", f.Usage))
 }
 
 func (f IntSliceFlag) Apply(set *flag.FlagSet) {
@@ -294,7 +294,7 @@ func (f StringFlag) String() string {
 	fmtString = "%s %v\t%v"
 
 	if len(f.Value) > 0 {
-		fmtString = "%s '%v'\t%v"
+		fmtString = "%s \"%v\"\t%v"
 	} else {
 		fmtString = "%s %v\t%v"
 	}
@@ -330,7 +330,7 @@ type IntFlag struct {
 }
 
 func (f IntFlag) String() string {
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage))
+	return withEnvHint(f.EnvVar, fmt.Sprintf("%s \"%v\"\t%v", prefixedNames(f.Name), f.Value, f.Usage))
 }
 
 func (f IntFlag) Apply(set *flag.FlagSet) {
@@ -364,7 +364,7 @@ type DurationFlag struct {
 }
 
 func (f DurationFlag) String() string {
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage))
+	return withEnvHint(f.EnvVar, fmt.Sprintf("%s \"%v\"\t%v", prefixedNames(f.Name), f.Value, f.Usage))
 }
 
 func (f DurationFlag) Apply(set *flag.FlagSet) {
@@ -398,7 +398,7 @@ type Float64Flag struct {
 }
 
 func (f Float64Flag) String() string {
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage))
+	return withEnvHint(f.EnvVar, fmt.Sprintf("%s \"%v\"\t%v", prefixedNames(f.Name), f.Value, f.Usage))
 }
 
 func (f Float64Flag) Apply(set *flag.FlagSet) {
