@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"reflect"
 	"testing"
 
 	"github.com/codegangsta/cli"
@@ -481,4 +482,34 @@ func TestGlobalFlagsInSubcommands(t *testing.T) {
 	app.Run([]string{"command", "-d", "foo", "bar"})
 
 	expect(t, subcommandRun, true)
+}
+
+func TestApp_CommandWithBoolFlagAfterArgs(t *testing.T) {
+	var args []string
+
+	app := cli.NewApp()
+	command := cli.Command{
+		Name: "cmd",
+		Flags: []cli.Flag{
+			cli.IntSliceFlag{
+				Name:  "option",
+				Value: &cli.IntSlice{},
+				Usage: "",
+			},
+			cli.BoolFlag{
+				Name:  "f",
+				Usage: "foo",
+			},
+		},
+		Action: func(c *cli.Context) {
+			args = c.Args()
+		},
+	}
+	app.Commands = []cli.Command{command}
+	app.Run([]string{"", "cmd", "1", "--option", "2", "-f", "3"})
+
+	expect := []string{"1", "3"}
+	if !reflect.DeepEqual(args, expect) {
+		t.Errorf("Got %v (type %T) - expected %v (type %T)", args, args, expect, expect)
+	}
 }
