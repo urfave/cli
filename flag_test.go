@@ -262,15 +262,14 @@ var genericFlagTests = []struct {
 	value    cli.Generic
 	expected string
 }{
-	{"help", &Parser{}, "--help <nil>\t`-help option -help option` "},
-	{"h", &Parser{}, "-h <nil>\t`-h option -h option` "},
-	{"test", &Parser{}, "--test <nil>\t`-test option -test option` "},
+	{"test", &Parser{"abc", "def"}, "--test 'abc,def'\ttest flag"},
+	{"t", &Parser{"abc", "def"}, "-t 'abc,def'\ttest flag"},
 }
 
 func TestGenericFlagHelpOutput(t *testing.T) {
 
 	for _, test := range genericFlagTests {
-		flag := cli.GenericFlag{Name: test.name}
+		flag := cli.GenericFlag{Name: test.name, Value: test.value, Usage: "test flag"}
 		output := flag.String()
 
 		if output != test.expected {
