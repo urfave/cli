@@ -78,6 +78,7 @@ func NewApp() *App {
 
 // Entry point to the cli app. Parses the arguments slice and routes to the proper flag/args combination
 func (a *App) Run(arguments []string) error {
+	var err error
 	if HelpPrinter == nil {
 		defer func() {
 			HelpPrinter = nil
@@ -146,11 +147,10 @@ func (a *App) Run(arguments []string) error {
 
 	if a.After != nil {
 		defer func() {
-			aferr := a.After(context)
-			// check Action error to avoid shadowing
-			if err == nil {
-				err = aferr
-			}
+			// err is always nil here.
+			// There is a check to see if it is non-nil
+			// just few lines before.
+			err = a.After(context)
 		}()
 	}
 
@@ -184,7 +184,8 @@ func (a *App) RunAndExitOnError() {
 }
 
 // Invokes the subcommand given the context, parses ctx.Args() to generate command-specific flags
-func (a *App) RunAsSubcommand(ctx *Context) (err error) {
+func (a *App) RunAsSubcommand(ctx *Context) error {
+	var err error
 	// append help to commands
 	if len(a.Commands) > 0 {
 		if a.Command(helpCommand.Name) == nil && !a.HideHelp {
@@ -240,11 +241,10 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 
 	if a.After != nil {
 		defer func() {
-			aferr := a.After(context)
-			// check Action error to avoid shadowing
-			if err == nil {
-				err = aferr
-			}
+			// err is always nil here.
+			// There is a check to see if it is non-nil
+			// just few lines before.
+			err = a.After(context)
 		}()
 	}
 
