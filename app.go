@@ -2,8 +2,11 @@ package cli
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
+	"text/tabwriter"
+	"text/template"
 	"time"
 )
 
@@ -44,6 +47,8 @@ type App struct {
 	Author string
 	// Author e-mail
 	Email string
+	// Writer writer to write output to
+	Writer io.Writer
 }
 
 // Tries to find out when this binary was compiled.
@@ -65,15 +70,36 @@ func NewApp() *App {
 		BashComplete: DefaultAppComplete,
 		Action:       helpCommand.Action,
 		Compiled:     compileTime(),
+		Author:       "Author",
+		Email:        "unknown@email",
+		Writer:       os.Stdout,
 	}
 }
 
 // Entry point to the cli app. Parses the arguments slice and routes to the proper flag/args combination
-func (a *App) Run(arguments []string) (err error) {
+func (a *App) Run(arguments []string) error {
+	if HelpPrinter == nil {
+		defer func() {
+			HelpPrinter = nil
+		}()
+
+		HelpPrinter = func(templ string, data interface{}) {
+			w := tabwriter.NewWriter(a.Writer, 0, 8, 1, '\t', 0)
+			t := template.Must(template.New("help").Parse(templ))
+			err := t.Execute(w, data)
+			if err != nil {
+				panic(err)
+			}
+			w.Flush()
+		}
+	}
+
 	// append help to commands
 	if a.Command(helpCommand.Name) == nil && !a.HideHelp {
 		a.Commands = append(a.Commands, helpCommand)
-		a.appendFlag(HelpFlag)
+		if (HelpFlag != BoolFlag{}) {
+			a.appendFlag(HelpFlag)
+		}
 	}
 
 	//append version/help flags
@@ -91,18 +117,18 @@ func (a *App) Run(arguments []string) (err error) {
 	err = set.Parse(arguments[1:])
 	nerr := normalizeFlags(a.Flags, set)
 	if nerr != nil {
-		fmt.Println(nerr)
+		fmt.Fprintln(a.Writer, nerr)
 		context := NewContext(a, set, set)
 		ShowAppHelp(context)
-		fmt.Println("")
+		fmt.Fprintln(a.Writer)
 		return nerr
 	}
 	context := NewContext(a, set, set)
 
 	if err != nil {
-		fmt.Printf("Incorrect Usage.\n\n")
+		fmt.Fprintf(a.Writer, "Incorrect Usage.\n\n")
 		ShowAppHelp(context)
-		fmt.Println("")
+		fmt.Fprintln(a.Writer)
 		return err
 	}
 
@@ -152,7 +178,7 @@ func (a *App) Run(arguments []string) (err error) {
 // Another entry point to the cli app, takes care of passing arguments and error handling
 func (a *App) RunAndExitOnError() {
 	if err := a.Run(os.Args); err != nil {
-		os.Stderr.WriteString(fmt.Sprintln(err))
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
@@ -163,7 +189,9 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	if len(a.Commands) > 0 {
 		if a.Command(helpCommand.Name) == nil && !a.HideHelp {
 			a.Commands = append(a.Commands, helpCommand)
-			a.appendFlag(HelpFlag)
+			if (HelpFlag != BoolFlag{}) {
+				a.appendFlag(HelpFlag)
+			}
 		}
 	}
 
@@ -180,18 +208,18 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	context := NewContext(a, set, ctx.globalSet)
 
 	if nerr != nil {
-		fmt.Println(nerr)
+		fmt.Fprintln(a.Writer, nerr)
 		if len(a.Commands) > 0 {
 			ShowSubcommandHelp(context)
 		} else {
 			ShowCommandHelp(ctx, context.Args().First())
 		}
-		fmt.Println("")
+		fmt.Fprintln(a.Writer)
 		return nerr
 	}
 
 	if err != nil {
-		fmt.Printf("Incorrect Usage.\n\n")
+		fmt.Fprintf(a.Writer, "Incorrect Usage.\n\n")
 		ShowSubcommandHelp(context)
 		return err
 	}

@@ -1,6 +1,7 @@
 package cli_test
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"testing"
@@ -192,6 +193,50 @@ func TestApp_CommandWithArgBeforeFlags(t *testing.T) {
 	expect(t, firstArg, "my-arg")
 }
 
+func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
+	var parsedOption string
+	var args []string
+
+	app := cli.NewApp()
+	command := cli.Command{
+		Name: "cmd",
+		Flags: []cli.Flag{
+			cli.StringFlag{Name: "option", Value: "", Usage: "some option"},
+		},
+		Action: func(c *cli.Context) {
+			parsedOption = c.String("option")
+			args = c.Args()
+		},
+	}
+	app.Commands = []cli.Command{command}
+
+	app.Run([]string{"", "cmd", "my-arg", "--option", "my-option", "--", "--notARealFlag"})
+
+	expect(t, parsedOption, "my-option")
+	expect(t, args[0], "my-arg")
+	expect(t, args[1], "--")
+	expect(t, args[2], "--notARealFlag")
+}
+
+func TestApp_CommandWithNoFlagBeforeTerminator(t *testing.T) {
+	var args []string
+
+	app := cli.NewApp()
+	command := cli.Command{
+		Name: "cmd",
+		Action: func(c *cli.Context) {
+			args = c.Args()
+		},
+	}
+	app.Commands = []cli.Command{command}
+
+	app.Run([]string{"", "cmd", "my-arg", "--", "notAFlagAtAll"})
+
+	expect(t, args[0], "my-arg")
+	expect(t, args[1], "--")
+	expect(t, args[2], "notAFlagAtAll")
+}
+
 func TestApp_Float64Flag(t *testing.T) {
 	var meters float64
 
@@ -262,6 +307,50 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 
 	if !StrsEquals(parsedStringSlice, expectedStringSlice) {
 		t.Errorf("%v does not match %v", parsedStringSlice, expectedStringSlice)
+	}
+}
+
+func TestApp_DefaultStdout(t *testing.T) {
+	app := cli.NewApp()
+
+	if app.Writer != os.Stdout {
+		t.Error("Default output writer not set.")
+	}
+}
+
+type mockWriter struct {
+	written []byte
+}
+
+func (fw *mockWriter) Write(p []byte) (n int, err error) {
+	if fw.written == nil {
+		fw.written = p
+	} else {
+		fw.written = append(fw.written, p...)
+	}
+
+	return len(p), nil
+}
+
+func (fw *mockWriter) GetWritten() (b []byte) {
+	return fw.written
+}
+
+func TestApp_SetStdout(t *testing.T) {
+	w := &mockWriter{}
+
+	app := cli.NewApp()
+	app.Name = "test"
+	app.Writer = w
+
+	err := app.Run([]string{"help"})
+
+	if err != nil {
+		t.Fatalf("Run error: %s", err)
+	}
+
+	if len(w.written) == 0 {
+		t.Error("App did not write output to desired writer.")
 	}
 }
 
@@ -393,6 +482,22 @@ func TestApp_AfterFunc(t *testing.T) {
 
 	if subcommandRun == false {
 		t.Errorf("Subcommand not executed when expected")
+	}
+}
+
+func TestAppNoHelpFlag(t *testing.T) {
+	oldFlag := cli.HelpFlag
+	defer func() {
+		cli.HelpFlag = oldFlag
+	}()
+
+	cli.HelpFlag = cli.BoolFlag{}
+
+	app := cli.NewApp()
+	err := app.Run([]string{"test", "-h"})
+
+	if err != flag.ErrHelp {
+		t.Errorf("expected error about missing help flag, but got: %s (%T)", err, err)
 	}
 }
 
