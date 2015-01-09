@@ -77,8 +77,7 @@ func NewApp() *App {
 }
 
 // Entry point to the cli app. Parses the arguments slice and routes to the proper flag/args combination
-func (a *App) Run(arguments []string) error {
-	var err error
+func (a *App) Run(arguments []string) (err error) {
 	if HelpPrinter == nil {
 		defer func() {
 			HelpPrinter = nil
@@ -184,8 +183,7 @@ func (a *App) RunAndExitOnError() {
 }
 
 // Invokes the subcommand given the context, parses ctx.Args() to generate command-specific flags
-func (a *App) RunAsSubcommand(ctx *Context) error {
-	var err error
+func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	// append help to commands
 	if len(a.Commands) > 0 {
 		if a.Command(helpCommand.Name) == nil && !a.HideHelp {
