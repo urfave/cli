@@ -338,7 +338,7 @@ func (f IntFlag) Apply(set *flag.FlagSet) {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
 			if envVal := os.Getenv(envVar); envVal != "" {
-				envValInt, err := strconv.ParseUint(envVal, 10, 64)
+				envValInt, err := strconv.ParseInt(envVal, 10, 64)
 				if err == nil {
 					f.Value = int(envValInt)
 					break
