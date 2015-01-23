@@ -10,6 +10,8 @@ import (
 type Command struct {
 	// The name of the command
 	Name string
+	// Application name
+	AppName string
 	// short name of the command. Typically one character
 	ShortName string
 	// A short description of the usage of this command

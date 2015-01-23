@@ -33,7 +33,7 @@ var CommandHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
 USAGE:
-   command {{.Name}}{{if .Flags}} [command options]{{end}} [arguments...]{{if .Description}}
+   {{.AppName}} {{.Name}}{{if .Flags}} [command options]{{end}} [arguments...]{{if .Description}}
 
 DESCRIPTION:
    {{.Description}}{{end}}{{if .Flags}}
@@ -111,18 +111,19 @@ func DefaultAppComplete(c *Context) {
 }
 
 // Prints help for the given command
-func ShowCommandHelp(c *Context, command string) {
-	for _, c := range c.App.Commands {
+func ShowCommandHelp(context *Context, command string) {
+	for _, c := range context.App.Commands {
 		if c.HasName(command) {
+			c.AppName = context.App.Name
 			HelpPrinter(CommandHelpTemplate, c)
 			return
 		}
 	}
 
-	if c.App.CommandNotFound != nil {
-		c.App.CommandNotFound(c, command)
+	if context.App.CommandNotFound != nil {
+		context.App.CommandNotFound(context, command)
 	} else {
-		fmt.Fprintf(c.App.Writer, "No help topic for '%v'\n", command)
+		fmt.Fprintf(context.App.Writer, "No help topic for '%v'\n", command)
 	}
 }
 
