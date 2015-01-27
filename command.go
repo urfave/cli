@@ -40,6 +40,12 @@ func (c Command) Run(ctx *Context) error {
 		return c.startApp(ctx)
 	}
 
+	if c.Action == nil {
+		c.Action = func(_ *Context) {
+			ShowCommandHelp(ctx, c.Name)
+		}
+	}
+
 	if !c.HideHelp && (HelpFlag != BoolFlag{}) {
 		// append help to flags
 		c.Flags = append(
