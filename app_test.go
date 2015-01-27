@@ -1,6 +1,7 @@
 package cli_test
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"testing"
@@ -192,6 +193,50 @@ func TestApp_CommandWithArgBeforeFlags(t *testing.T) {
 	expect(t, firstArg, "my-arg")
 }
 
+func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
+	var parsedOption string
+	var args []string
+
+	app := cli.NewApp()
+	command := cli.Command{
+		Name: "cmd",
+		Flags: []cli.Flag{
+			cli.StringFlag{Name: "option", Value: "", Usage: "some option"},
+		},
+		Action: func(c *cli.Context) {
+			parsedOption = c.String("option")
+			args = c.Args()
+		},
+	}
+	app.Commands = []cli.Command{command}
+
+	app.Run([]string{"", "cmd", "my-arg", "--option", "my-option", "--", "--notARealFlag"})
+
+	expect(t, parsedOption, "my-option")
+	expect(t, args[0], "my-arg")
+	expect(t, args[1], "--")
+	expect(t, args[2], "--notARealFlag")
+}
+
+func TestApp_CommandWithNoFlagBeforeTerminator(t *testing.T) {
+	var args []string
+
+	app := cli.NewApp()
+	command := cli.Command{
+		Name: "cmd",
+		Action: func(c *cli.Context) {
+			args = c.Args()
+		},
+	}
+	app.Commands = []cli.Command{command}
+
+	app.Run([]string{"", "cmd", "my-arg", "--", "notAFlagAtAll"})
+
+	expect(t, args[0], "my-arg")
+	expect(t, args[1], "--")
+	expect(t, args[2], "notAFlagAtAll")
+}
+
 func TestApp_Float64Flag(t *testing.T) {
 	var meters float64
 
@@ -373,6 +418,22 @@ func TestApp_BeforeFunc(t *testing.T) {
 		t.Errorf("Subcommand executed when NOT expected")
 	}
 
+}
+
+func TestAppNoHelpFlag(t *testing.T) {
+	oldFlag := cli.HelpFlag
+	defer func() {
+		cli.HelpFlag = oldFlag
+	}()
+
+	cli.HelpFlag = cli.BoolFlag{}
+
+	app := cli.NewApp()
+	err := app.Run([]string{"test", "-h"})
+
+	if err != flag.ErrHelp {
+		t.Errorf("expected error about missing help flag, but got: %s (%T)", err, err)
+	}
 }
 
 func TestAppHelpPrinter(t *testing.T) {
