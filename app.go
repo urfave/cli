@@ -242,11 +242,7 @@ func (a *App) RunAsSubcommand(ctx *Context) error {
 	}
 
 	// Run default Action
-	if len(a.Commands) > 0 {
-		a.Action(context)
-	} else {
-		a.Action(ctx)
-	}
+	a.Action(context)
 
 	return nil
 }

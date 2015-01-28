@@ -193,6 +193,32 @@ func TestApp_CommandWithArgBeforeFlags(t *testing.T) {
 	expect(t, firstArg, "my-arg")
 }
 
+func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
+	var context *cli.Context
+
+	a := cli.NewApp()
+	a.Commands = []cli.Command{
+		{
+			Name: "foo",
+			Action: func(c *cli.Context) {
+				context = c
+			},
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "lang",
+					Value: "english",
+					Usage: "language for the greeting",
+				},
+			},
+			Before: func(_ *cli.Context) error { return nil },
+		},
+	}
+	a.Run([]string{"", "foo", "--lang", "spanish", "abcd"})
+
+	expect(t, context.Args().Get(0), "abcd")
+	expect(t, context.String("lang"), "spanish")
+}
+
 func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
 	var parsedOption string
 	var args []string
