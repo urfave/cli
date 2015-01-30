@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/paked/cli"
+	"github.com/codegangsta/cli"
 )
 
 func ExampleApp() {
