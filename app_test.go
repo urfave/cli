@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/codegangsta/cli"
+	"github.com/paked/cli"
 )
 
 func ExampleApp() {
@@ -21,6 +21,8 @@ func ExampleApp() {
 	app.Action = func(c *cli.Context) {
 		fmt.Printf("Hello %v\n", c.String("name"))
 	}
+	app.Authors = []cli.Author{{"Oliver Allen", "oliver@toyshop.com"}}
+
 	app.Run(os.Args)
 	// Output:
 	// Hello Jeremy
