@@ -22,8 +22,7 @@ COMMANDS:
    {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
    {{end}}{{if .Flags}}
 GLOBAL OPTIONS:
-   {{range .Flags}}{{.}}
-   {{end}}{{end}}
+{{range .Flags}}{{if not .IsHidden}}   {{.}}{{ "\n" }}{{end}}{{end}}{{end}}
 `
 
 // The text template for the command help topic.
@@ -39,8 +38,7 @@ DESCRIPTION:
    {{.Description}}{{end}}{{if .Flags}}
 
 OPTIONS:
-   {{range .Flags}}{{.}}
-   {{end}}{{ end }}
+{{range .Flags}}{{if not .IsHidden}}   {{.}}{{ "\n" }}{{end}}{{end}}{{end}}
 `
 
 // The text template for the subcommand help topic.
@@ -56,8 +54,7 @@ COMMANDS:
    {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
    {{end}}{{if .Flags}}
 OPTIONS:
-   {{range .Flags}}{{.}}
-   {{end}}{{end}}
+{{range .Flags}}{{if not .IsHidden}}   {{.}}{{ "\n" }}{{end}}{{end}}{{end}}
 `
 
 var helpCommand = Command{
