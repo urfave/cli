@@ -6,58 +6,58 @@ import "fmt"
 // cli.go uses text/template to render templates. You can
 // render custom help text by setting this variable.
 var AppHelpTemplate = `NAME:
-   {{.Name}} - {{.Usage}}
+    {{.Name}} - {{.Usage}}
 
 USAGE:
-   {{.Name}} {{if .Flags}}[global options] {{end}}command{{if .Flags}} [command options]{{end}} [arguments...]
+    {{.Name}} {{if .Flags}}[global options] {{end}}command{{if .Flags}} [command options]{{end}} [arguments...]
 
 VERSION:
-   {{.Version}}{{if or .Author .Email}}
+    {{.Version}}{{if or .Author .Email}}
 
 AUTHOR:{{if .Author}}
-  {{.Author}}{{if .Email}} - <{{.Email}}>{{end}}{{else}}
-  {{.Email}}{{end}}{{end}}
+    {{.Author}}{{if .Email}} - <{{.Email}}>{{end}}{{else}}
+    {{.Email}}{{end}}{{end}}
 
 COMMANDS:
-   {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
-   {{end}}{{if .Flags}}
+    {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
+    {{end}}{{if .Flags}}
 GLOBAL OPTIONS:
-   {{range .Flags}}{{.}}
-   {{end}}{{end}}
+    {{range .Flags}}{{.}}
+    {{end}}{{end}}
 `
 
 // The text template for the command help topic.
 // cli.go uses text/template to render templates. You can
 // render custom help text by setting this variable.
 var CommandHelpTemplate = `NAME:
-   {{.Name}} - {{.Usage}}
+    {{.Name}} - {{.Usage}}
 
 USAGE:
-   command {{.Name}}{{if .Flags}} [command options]{{end}} [arguments...]{{if .Description}}
+    command {{.Name}}{{if .Flags}} [command options]{{end}} [arguments...]{{if .Description}}
 
 DESCRIPTION:
-   {{.Description}}{{end}}{{if .Flags}}
+    {{.Description}}{{end}}{{if .Flags}}
 
 OPTIONS:
-   {{range .Flags}}{{.}}
-   {{end}}{{ end }}
+    {{range .Flags}}{{.}}
+    {{end}}{{ end }}
 `
 
 // The text template for the subcommand help topic.
 // cli.go uses text/template to render templates. You can
 // render custom help text by setting this variable.
 var SubcommandHelpTemplate = `NAME:
-   {{.Name}} - {{.Usage}}
+    {{.Name}} - {{.Usage}}
 
 USAGE:
-   {{.Name}} command{{if .Flags}} [command options]{{end}} [arguments...]
+    {{.Name}} command{{if .Flags}} [command options]{{end}} [arguments...]
 
 COMMANDS:
-   {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
-   {{end}}{{if .Flags}}
+    {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
+    {{end}}{{if .Flags}}
 OPTIONS:
-   {{range .Flags}}{{.}}
-   {{end}}{{end}}
+    {{range .Flags}}{{.}}
+    {{end}}{{end}}
 `
 
 var helpCommand = Command{
