@@ -35,7 +35,7 @@ type App struct {
 	// If a non-nil error is returned, no subcommands are run
 	Before func(context *Context) error
 	// An action to execute after any subcommands are run, but after the subcommand has finished
-	// It is run regardless of Because() result
+	// It is run even if Action() panics
 	After func(context *Context) error
 	// The action to execute when no subcommands are specified
 	Action func(context *Context)

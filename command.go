@@ -22,7 +22,7 @@ type Command struct {
 	// If a non-nil error is returned, no sub-subcommands are run
 	Before func(context *Context) error
 	// An action to execute after any subcommands are run, but after the subcommand has finished
-	// It is run regardless of Because() result
+	// It is run even if Action() panics
 	After func(context *Context) error
 	// The function to call when this command is invoked
 	Action func(context *Context)
