@@ -40,8 +40,12 @@ type App struct {
 	CommandNotFound func(context *Context, command string)
 	// Compilation date
 	Compiled time.Time
-	// Authors
+	// List of all authors who contributed
 	Authors []Author
+	// Name of Author (Note: Use App.Authors, this is deprecated)
+	Author string
+	// Email of Author (Note: Use App.Authors, this is deprecated)
+	Email string
 	// Writer writer to write output to
 	Writer io.Writer
 }
@@ -65,6 +69,8 @@ func NewApp() *App {
 		BashComplete: DefaultAppComplete,
 		Action:       helpCommand.Action,
 		Compiled:     compileTime(),
+		Author:       "Dr. James",
+		Email:        "who@gmail.com",
 		Authors:      []Author{{"Jim", "jim@corporate.com"}, {"Hank", "hank@indiepalace.com"}},
 		Writer:       os.Stdout,
 	}
@@ -72,6 +78,10 @@ func NewApp() *App {
 
 // Entry point to the cli app. Parses the arguments slice and routes to the proper flag/args combination
 func (a *App) Run(arguments []string) error {
+	if a.Author != "" && a.Author != "" {
+		a.Authors = append(a.Authors, Author{a.Author, a.Email})
+	}
+
 	if HelpPrinter == nil {
 		defer func() {
 			HelpPrinter = nil
@@ -281,7 +291,7 @@ type Author struct {
 func (a Author) String() string {
 	e := ""
 	if a.Email != "" {
-		e = " <" + a.Email + "> "
+		e = "<" + a.Email + "> "
 	}
 
 	return fmt.Sprintf("%v %v", a.Name, e)

@@ -14,7 +14,8 @@ USAGE:
 VERSION:
    {{.Version}}
 
-AUTHOR(S): {{range .Authors}} {{ . }}{{end}}
+AUTHOR(S): 
+	{{range .Authors}}{{ . }} {{end}}
 
 COMMANDS:
    {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
