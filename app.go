@@ -34,6 +34,9 @@ type App struct {
 	// An action to execute before any subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no subcommands are run
 	Before func(context *Context) error
+	// An action to execute after any subcommands are run, but after the subcommand has finished
+	// It is run regardless of Because() result
+	After func(context *Context) error
 	// The action to execute when no subcommands are specified
 	Action func(context *Context)
 	// Execute this function if the proper command cannot be found
@@ -74,7 +77,7 @@ func NewApp() *App {
 }
 
 // Entry point to the cli app. Parses the arguments slice and routes to the proper flag/args combination
-func (a *App) Run(arguments []string) error {
+func (a *App) Run(arguments []string) (err error) {
 	if HelpPrinter == nil {
 		defer func() {
 			HelpPrinter = nil
@@ -111,7 +114,7 @@ func (a *App) Run(arguments []string) error {
 	// parse flags
 	set := flagSet(a.Name, a.Flags)
 	set.SetOutput(ioutil.Discard)
-	err := set.Parse(arguments[1:])
+	err = set.Parse(arguments[1:])
 	nerr := normalizeFlags(a.Flags, set)
 	if nerr != nil {
 		fmt.Fprintln(a.Writer, nerr)
@@ -139,6 +142,15 @@ func (a *App) Run(arguments []string) error {
 
 	if checkVersion(context) {
 		return nil
+	}
+
+	if a.After != nil {
+		defer func() {
+			// err is always nil here.
+			// There is a check to see if it is non-nil
+			// just few lines before.
+			err = a.After(context)
+		}()
 	}
 
 	if a.Before != nil {
@@ -171,7 +183,7 @@ func (a *App) RunAndExitOnError() {
 }
 
 // Invokes the subcommand given the context, parses ctx.Args() to generate command-specific flags
-func (a *App) RunAsSubcommand(ctx *Context) error {
+func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	// append help to commands
 	if len(a.Commands) > 0 {
 		if a.Command(helpCommand.Name) == nil && !a.HideHelp {
@@ -190,7 +202,7 @@ func (a *App) RunAsSubcommand(ctx *Context) error {
 	// parse flags
 	set := flagSet(a.Name, a.Flags)
 	set.SetOutput(ioutil.Discard)
-	err := set.Parse(ctx.Args().Tail())
+	err = set.Parse(ctx.Args().Tail())
 	nerr := normalizeFlags(a.Flags, set)
 	context := NewContext(a, set, ctx.globalSet)
 
@@ -223,6 +235,15 @@ func (a *App) RunAsSubcommand(ctx *Context) error {
 		if checkCommandHelp(ctx, context.Args().First()) {
 			return nil
 		}
+	}
+
+	if a.After != nil {
+		defer func() {
+			// err is always nil here.
+			// There is a check to see if it is non-nil
+			// just few lines before.
+			err = a.After(context)
+		}()
 	}
 
 	if a.Before != nil {
