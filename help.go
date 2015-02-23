@@ -112,6 +112,12 @@ func DefaultAppComplete(c *Context) {
 
 // Prints help for the given command
 func ShowCommandHelp(c *Context, command string) {
+	// show the subcommand help for a command with subcommands
+	if command == "" {
+		HelpPrinter(SubcommandHelpTemplate, c.App)
+		return
+	}
+
 	for _, c := range c.App.Commands {
 		if c.HasName(command) {
 			HelpPrinter(CommandHelpTemplate, c)
