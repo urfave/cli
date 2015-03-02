@@ -21,6 +21,8 @@ var VersionFlag = BoolFlag{
 }
 
 // This flag prints the help for all commands and subcommands
+// Set to the zero value (BoolFlag{}) to disable flag -- keeps subcommand
+// unless HideHelp is set to true)
 var HelpFlag = BoolFlag{
 	Name:  "help, h",
 	Usage: "show help",
@@ -69,15 +71,24 @@ type GenericFlag struct {
 	Required bool
 }
 
+// String returns the string representation of the generic flag to display the
+// help text to the user (uses the String() method of the generic flag to show
+// the value)
 func (f GenericFlag) String() string {
-	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s%s %v\t`%v` %s", prefixFor(f.Name), f.Name, f.Value, "-"+f.Name+" option -"+f.Name+" option", f.Usage))
+	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s%s \"%v\"\t%v", prefixFor(f.Name), f.Name, f.Value, f.Usage))
 }
 
+// Apply takes the flagset and calls Set on the generic flag with the value
+// provided by the user for parsing by the flag
 func (f GenericFlag) Apply(set *flag.FlagSet) {
 	val := f.Value
 	if f.EnvVar != "" {
-		if envVal := os.Getenv(f.EnvVar); envVal != "" {
-			val.Set(envVal)
+		for _, envVar := range strings.Split(f.EnvVar, ",") {
+			envVar = strings.TrimSpace(envVar)
+			if envVal := os.Getenv(envVar); envVal != "" {
+				val.Set(envVal)
+				break
+			}
 		}
 	}
 
@@ -120,17 +131,22 @@ type StringSliceFlag struct {
 func (f StringSliceFlag) String() string {
 	firstName := strings.Trim(strings.Split(f.Name, ",")[0], " ")
 	pref := prefixFor(firstName)
-	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), pref+firstName+" option "+pref+firstName+" option", f.Usage))
+	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s [%v]\t%v", prefixedNames(f.Name), pref+firstName+" option "+pref+firstName+" option", f.Usage))
 }
 
 func (f StringSliceFlag) Apply(set *flag.FlagSet) {
 	if f.EnvVar != "" {
-		if envVal := os.Getenv(f.EnvVar); envVal != "" {
-			newVal := &StringSlice{}
-			for _, s := range strings.Split(envVal, ",") {
-				newVal.Set(s)
+		for _, envVar := range strings.Split(f.EnvVar, ",") {
+			envVar = strings.TrimSpace(envVar)
+			if envVal := os.Getenv(envVar); envVal != "" {
+				newVal := &StringSlice{}
+				for _, s := range strings.Split(envVal, ",") {
+					s = strings.TrimSpace(s)
+					newVal.Set(s)
+				}
+				f.Value = newVal
+				break
 			}
-			f.Value = newVal
 		}
 	}
 
@@ -179,20 +195,25 @@ type IntSliceFlag struct {
 func (f IntSliceFlag) String() string {
 	firstName := strings.Trim(strings.Split(f.Name, ",")[0], " ")
 	pref := prefixFor(firstName)
-	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), pref+firstName+" option "+pref+firstName+" option", f.Usage))
+	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s [%v]\t%v", prefixedNames(f.Name), pref+firstName+" option "+pref+firstName+" option", f.Usage))
 }
 
 func (f IntSliceFlag) Apply(set *flag.FlagSet) {
 	if f.EnvVar != "" {
-		if envVal := os.Getenv(f.EnvVar); envVal != "" {
-			newVal := &IntSlice{}
-			for _, s := range strings.Split(envVal, ",") {
-				err := newVal.Set(s)
-				if err != nil {
-					fmt.Fprintf(os.Stderr, err.Error())
+		for _, envVar := range strings.Split(f.EnvVar, ",") {
+			envVar = strings.TrimSpace(envVar)
+			if envVal := os.Getenv(envVar); envVal != "" {
+				newVal := &IntSlice{}
+				for _, s := range strings.Split(envVal, ",") {
+					s = strings.TrimSpace(s)
+					err := newVal.Set(s)
+					if err != nil {
+						fmt.Fprintf(os.Stderr, err.Error())
+					}
 				}
+				f.Value = newVal
+				break
 			}
-			f.Value = newVal
 		}
 	}
 
@@ -223,10 +244,14 @@ func (f BoolFlag) String() string {
 func (f BoolFlag) Apply(set *flag.FlagSet) {
 	val := false
 	if f.EnvVar != "" {
-		if envVal := os.Getenv(f.EnvVar); envVal != "" {
-			envValBool, err := strconv.ParseBool(envVal)
-			if err == nil {
-				val = envValBool
+		for _, envVar := range strings.Split(f.EnvVar, ",") {
+			envVar = strings.TrimSpace(envVar)
+			if envVal := os.Getenv(envVar); envVal != "" {
+				envValBool, err := strconv.ParseBool(envVal)
+				if err == nil {
+					val = envValBool
+				}
+				break
 			}
 		}
 	}
@@ -258,10 +283,14 @@ func (f BoolTFlag) String() string {
 func (f BoolTFlag) Apply(set *flag.FlagSet) {
 	val := true
 	if f.EnvVar != "" {
-		if envVal := os.Getenv(f.EnvVar); envVal != "" {
-			envValBool, err := strconv.ParseBool(envVal)
-			if err == nil {
-				val = envValBool
+		for _, envVar := range strings.Split(f.EnvVar, ",") {
+			envVar = strings.TrimSpace(envVar)
+			if envVal := os.Getenv(envVar); envVal != "" {
+				envValBool, err := strconv.ParseBool(envVal)
+				if err == nil {
+					val = envValBool
+					break
+				}
 			}
 		}
 	}
@@ -292,7 +321,7 @@ func (f StringFlag) String() string {
 	fmtString = "%s %v\t%v"
 
 	if len(f.Value) > 0 {
-		fmtString = "%s '%v'\t%v"
+		fmtString = "%s \"%v\"\t%v"
 	} else {
 		fmtString = "%s %v\t%v"
 	}
@@ -302,8 +331,12 @@ func (f StringFlag) String() string {
 
 func (f StringFlag) Apply(set *flag.FlagSet) {
 	if f.EnvVar != "" {
-		if envVal := os.Getenv(f.EnvVar); envVal != "" {
-			f.Value = envVal
+		for _, envVar := range strings.Split(f.EnvVar, ",") {
+			envVar = strings.TrimSpace(envVar)
+			if envVal := os.Getenv(envVar); envVal != "" {
+				f.Value = envVal
+				break
+			}
 		}
 	}
 
@@ -329,15 +362,19 @@ type IntFlag struct {
 }
 
 func (f IntFlag) String() string {
-	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage))
+	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s \"%v\"\t%v", prefixedNames(f.Name), f.Value, f.Usage))
 }
 
 func (f IntFlag) Apply(set *flag.FlagSet) {
 	if f.EnvVar != "" {
-		if envVal := os.Getenv(f.EnvVar); envVal != "" {
-			envValInt, err := strconv.ParseUint(envVal, 10, 64)
-			if err == nil {
-				f.Value = int(envValInt)
+		for _, envVar := range strings.Split(f.EnvVar, ",") {
+			envVar = strings.TrimSpace(envVar)
+			if envVal := os.Getenv(envVar); envVal != "" {
+				envValInt, err := strconv.ParseInt(envVal, 0, 64)
+				if err == nil {
+					f.Value = int(envValInt)
+					break
+				}
 			}
 		}
 	}
@@ -364,15 +401,19 @@ type DurationFlag struct {
 }
 
 func (f DurationFlag) String() string {
-	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage))
+	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s \"%v\"\t%v", prefixedNames(f.Name), f.Value, f.Usage))
 }
 
 func (f DurationFlag) Apply(set *flag.FlagSet) {
 	if f.EnvVar != "" {
-		if envVal := os.Getenv(f.EnvVar); envVal != "" {
-			envValDuration, err := time.ParseDuration(envVal)
-			if err == nil {
-				f.Value = envValDuration
+		for _, envVar := range strings.Split(f.EnvVar, ",") {
+			envVar = strings.TrimSpace(envVar)
+			if envVal := os.Getenv(envVar); envVal != "" {
+				envValDuration, err := time.ParseDuration(envVal)
+				if err == nil {
+					f.Value = envValDuration
+					break
+				}
 			}
 		}
 	}
@@ -399,15 +440,18 @@ type Float64Flag struct {
 }
 
 func (f Float64Flag) String() string {
-	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s '%v'\t%v", prefixedNames(f.Name), f.Value, f.Usage))
+	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s \"%v\"\t%v", prefixedNames(f.Name), f.Value, f.Usage))
 }
 
 func (f Float64Flag) Apply(set *flag.FlagSet) {
 	if f.EnvVar != "" {
-		if envVal := os.Getenv(f.EnvVar); envVal != "" {
-			envValFloat, err := strconv.ParseFloat(envVal, 10)
-			if err == nil {
-				f.Value = float64(envValFloat)
+		for _, envVar := range strings.Split(f.EnvVar, ",") {
+			envVar = strings.TrimSpace(envVar)
+			if envVal := os.Getenv(envVar); envVal != "" {
+				envValFloat, err := strconv.ParseFloat(envVal, 10)
+				if err == nil {
+					f.Value = float64(envValFloat)
+				}
 			}
 		}
 	}
@@ -450,7 +494,7 @@ func prefixedNames(fullName string) (prefixed string) {
 func withEnvHint(envVar, str string) string {
 	envText := ""
 	if envVar != "" {
-		envText = fmt.Sprintf(" [$%s]", envVar)
+		envText = fmt.Sprintf(" [$%s]", strings.Join(strings.Split(envVar, ","), ", $"))
 	}
 	return str + envText
 }

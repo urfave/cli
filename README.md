@@ -172,6 +172,8 @@ app.Flags = []cli.Flag {
 }
 ```
 
+That flag can then be set with `--lang spanish` or `-l spanish`. Note that giving two different forms of the same flag in the same command invocation is an error.
+
 #### Values from the Environment
 
 You can also have the default value set from the environment via `EnvVar`.  e.g.
@@ -187,7 +189,18 @@ app.Flags = []cli.Flag {
 }
 ```
 
-That flag can then be set with `--lang spanish` or `-l spanish`. Note that giving two different forms of the same flag in the same command invocation is an error.
+The `EnvVar` may also be given as a comma-delimited "cascade", where the first environment variable that resolves is used as the default.
+
+``` go
+app.Flags = []cli.Flag {
+  cli.StringFlag{
+    Name: "lang, l",
+    Value: "english",
+    Usage: "language for the greeting",
+    EnvVar: "LEGACY_COMPAT_LANG,APP_LANG,LANG",
+  },
+}
+```
 
 ### Subcommands
 
@@ -280,6 +293,6 @@ setting the `PROG` variable to the name of your program:
 ## Contribution Guidelines
 Feel free to put up a pull request to fix a bug or maybe add a feature. I will give it a code review and make sure that it does not break backwards compatibility. If I or any other collaborators agree that it is in line with the vision of the project, we will work with you to get the code into a mergeable state and merge it into the master branch.
 
-If you are have contributed something significant to the project, I will most likely add you as a collaborator. As a collaborator you are given the ability to merge others pull requests. It is very important that new code does not break existing code, so be careful about what code you do choose to merge. If you have any questions feel free to link @codegangsta to the issue in question and we can review it together.
+If you have contributed something significant to the project, I will most likely add you as a collaborator. As a collaborator you are given the ability to merge others pull requests. It is very important that new code does not break existing code, so be careful about what code you do choose to merge. If you have any questions feel free to link @codegangsta to the issue in question and we can review it together.
 
 If you feel like you have contributed to the project but have not yet been added as a collaborator, I probably forgot to add you. Hit @codegangsta up over email and we will get it figured out.
