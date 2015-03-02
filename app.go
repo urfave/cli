@@ -196,10 +196,8 @@ func (a *App) RunAsSubcommand(ctx *Context) error {
 		fmt.Println("")
 		if len(a.Commands) > 0 {
 			ShowSubcommandHelp(context)
-			fmt.Println("subcommands")
 		} else {
 			ShowCommandHelp(ctx, context.Args().First())
-			fmt.Println("commands")
 		}
 		fmt.Println("")
 		return cerr
