@@ -91,26 +91,26 @@ func (a *App) Run(arguments []string) error {
 
 	context := NewContext(a, set, set)
 
-	if nerr != nil {
-		fmt.Println(nerr)
+	// Define here so it closes over the above variables
+	showErrAndHelp := func(err error) {
+		fmt.Println(err)
 		fmt.Println("")
 		ShowAppHelp(context)
 		fmt.Println("")
+	}
+
+	if nerr != nil {
+		showErrAndHelp(nerr)
 		return nerr
 	}
 
 	if cerr != nil {
-		fmt.Println(cerr)
-		fmt.Println("")
-		ShowAppHelp(context)
-		fmt.Println("")
+		showErrAndHelp(cerr)
 		return cerr
 	}
 
 	if err != nil {
-		fmt.Printf("Incorrect Usage.\n\n")
-		ShowAppHelp(context)
-		fmt.Println("")
+		showErrAndHelp(fmt.Errorf("Incorrect Usage."))
 		return err
 	}
 
@@ -179,8 +179,9 @@ func (a *App) RunAsSubcommand(ctx *Context) error {
 
 	context := NewContext(a, set, ctx.globalSet)
 
-	if nerr != nil {
-		fmt.Println(nerr)
+	// Define here so it closes over the above variables
+	showErrAndHelp := func(err error) {
+		fmt.Println(err)
 		fmt.Println("")
 		if len(a.Commands) > 0 {
 			ShowSubcommandHelp(context)
@@ -188,20 +189,16 @@ func (a *App) RunAsSubcommand(ctx *Context) error {
 			ShowCommandHelp(ctx, context.Args().First())
 		}
 		fmt.Println("")
+
+	}
+
+	if nerr != nil {
+		showErrAndHelp(nerr)
 		return nerr
 	}
 
 	if cerr != nil {
-		fmt.Println(cerr)
-		fmt.Println("")
-		if len(a.Commands) > 0 {
-			ShowSubcommandHelp(context)
-			fmt.Println("subcommands")
-		} else {
-			ShowCommandHelp(ctx, context.Args().First())
-			fmt.Println("commands")
-		}
-		fmt.Println("")
+		showErrAndHelp(cerr)
 		return cerr
 	}
 

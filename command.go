@@ -73,28 +73,28 @@ func (c Command) Run(ctx *Context) error {
 		err = set.Parse(ctx.Args().Tail())
 	}
 
-	if err != nil {
-		fmt.Printf("Incorrect Usage.\n\n")
+	// Define here so it closes over the above variables
+	showErrAndHelp := func(err error) {
+		fmt.Println(err)
+		fmt.Println("")
 		ShowCommandHelp(ctx, c.Name)
 		fmt.Println("")
+	}
+
+	if err != nil {
+		showErrAndHelp(fmt.Errorf("Incorrect Usage."))
 		return err
 	}
 
 	nerr := normalizeFlags(c.Flags, set)
 	if nerr != nil {
-		fmt.Println(nerr)
-		fmt.Println("")
-		ShowCommandHelp(ctx, c.Name)
-		fmt.Println("")
+		showErrAndHelp(nerr)
 		return nerr
 	}
 
 	cerr := checkRequiredFlags(c.Flags, set)
 	if cerr != nil {
-		fmt.Println(cerr)
-		fmt.Println("")
-		ShowCommandHelp(ctx, c.Name)
-		fmt.Println("")
+		showErrAndHelp(cerr)
 		return cerr
 	}
 
