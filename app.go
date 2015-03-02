@@ -179,8 +179,9 @@ func (a *App) RunAsSubcommand(ctx *Context) error {
 
 	context := NewContext(a, set, ctx.globalSet)
 
-	if nerr != nil {
-		fmt.Println(nerr)
+	// Define here so it closes over the above variables
+	showErrAndHelp := func(err error) {
+		fmt.Println(err)
 		fmt.Println("")
 		if len(a.Commands) > 0 {
 			ShowSubcommandHelp(context)
@@ -188,18 +189,16 @@ func (a *App) RunAsSubcommand(ctx *Context) error {
 			ShowCommandHelp(ctx, context.Args().First())
 		}
 		fmt.Println("")
+
+	}
+
+	if nerr != nil {
+		showErrAndHelp(nerr)
 		return nerr
 	}
 
 	if cerr != nil {
-		fmt.Println(cerr)
-		fmt.Println("")
-		if len(a.Commands) > 0 {
-			ShowSubcommandHelp(context)
-		} else {
-			ShowCommandHelp(ctx, context.Args().First())
-		}
-		fmt.Println("")
+		showErrAndHelp(cerr)
 		return cerr
 	}
 
