@@ -91,26 +91,26 @@ func (a *App) Run(arguments []string) error {
 
 	context := NewContext(a, set, set)
 
-	if nerr != nil {
-		fmt.Println(nerr)
+	// Define here so it closes over the above variables
+	showErrAndHelp := func(err error) {
+		fmt.Println(err)
 		fmt.Println("")
 		ShowAppHelp(context)
 		fmt.Println("")
+	}
+
+	if nerr != nil {
+		showErrAndHelp(nerr)
 		return nerr
 	}
 
 	if cerr != nil {
-		fmt.Println(cerr)
-		fmt.Println("")
-		ShowAppHelp(context)
-		fmt.Println("")
+		showErrAndHelp(cerr)
 		return cerr
 	}
 
 	if err != nil {
-		fmt.Printf("Incorrect Usage.\n\n")
-		ShowAppHelp(context)
-		fmt.Println("")
+		showErrAndHelp(fmt.Errorf("Incorrect Usage."))
 		return err
 	}
 
