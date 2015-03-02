@@ -340,6 +340,13 @@ func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
 }
 
 func checkRequiredFlags(flags []Flag, set *flag.FlagSet) error {
+	// If the help flag is included then none of the other flags are required.
+	for _, f := range flags {
+		if f.getName() == "help" {
+			return nil
+		}
+	}
+
 	visited := make(map[string]bool)
 	set.Visit(func(f *flag.Flag) {
 		visited[f.Name] = true
