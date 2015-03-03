@@ -166,5 +166,8 @@ func (c Command) startApp(ctx *Context) error {
 		app.Action = helpSubcommand.Action
 	}
 
+	// set the writer to the original App's writer
+	app.Writer = ctx.App.Writer
+
 	return app.RunAsSubcommand(ctx)
 }
