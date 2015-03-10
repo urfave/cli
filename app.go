@@ -72,9 +72,6 @@ func NewApp() *App {
 		BashComplete: DefaultAppComplete,
 		Action:       helpCommand.Action,
 		Compiled:     compileTime(),
-		Author:       "Dr. James",
-		Email:        "who@gmail.com",
-		Authors:      []Author{{"Jim", "jim@corporate.com"}, {"Hank", "hank@indiepalace.com"}},
 		Writer:       os.Stdout,
 	}
 }
