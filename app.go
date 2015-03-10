@@ -72,16 +72,16 @@ func NewApp() *App {
 		BashComplete: DefaultAppComplete,
 		Action:       helpCommand.Action,
 		Compiled:     compileTime(),
-		Author:       "Dr. James",
-		Email:        "who@gmail.com",
-		Authors:      []Author{{"Jim", "jim@corporate.com"}, {"Hank", "hank@indiepalace.com"}},
+		Author:       "Example Author",
+		Email:        "who@example.com",
+		Authors:      []Author{{"Jim", "jim@example.com"}, {"Hank", "hank@example.com"}},
 		Writer:       os.Stdout,
 	}
 }
 
 // Entry point to the cli app. Parses the arguments slice and routes to the proper flag/args combination
 func (a *App) Run(arguments []string) (err error) {
-	if a.Author != "" && a.Author != "" {
+	if a.Author != "" && a.Author != "Example Author" {
 		a.Authors = append(a.Authors, Author{a.Author, a.Email})
 	}
 
