@@ -29,41 +29,24 @@ func ExampleApp() {
 	// Hello Jeremy
 }
 
-func ExampleAppSubcommand() {
+func ExampleAppCommands() {
 	// set args for examples sake
-	os.Args = []string{"say", "hi", "english", "--name", "Jeremy"}
-	app := cli.NewApp()
-	app.Name = "say"
-	app.Commands = []cli.Command{
-		{
-			Name:        "hello",
-			ShortName:   "hi",
-			Usage:       "use it to see a description",
-			Description: "This is how we describe hello the function",
-			Subcommands: []cli.Command{
-				{
-					Name:        "english",
-					ShortName:   "en",
-					Usage:       "sends a greeting in english",
-					Description: "greets someone in english",
-					Flags: []cli.Flag{
-						cli.StringFlag{
-							Name:  "name",
-							Value: "Bob",
-							Usage: "Name of the person to greet",
-						},
-					},
-					Action: func(c *cli.Context) {
-						fmt.Println("Hello,", c.String("name"))
-					},
-				},
-			},
-		},
-	}
+	os.Args = []string{"greet", "--name", "Jeremy"}
 
+	app := cli.NewApp()
+	app.Name = "greet"
+	app.Flags = []cli.Flag{
+		cli.StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
+	}
+	app.Action = func(c *cli.Context) {
+		fmt.Printf("Hello %v\n", c.String("name"))
+	}
+	app.Author = "Harrison"
+	app.Email = "harrison@lolwut.com"
+	app.Authors = []cli.Author{{"Oliver Allen", "oliver@toyshop.com"}}
 	app.Run(os.Args)
 	// Output:
-	// Hello, Jeremy
+	// Hello Jeremy
 }
 
 func ExampleAppHelp() {
@@ -78,7 +61,7 @@ func ExampleAppHelp() {
 	app.Commands = []cli.Command{
 		{
 			Name:        "describeit",
-			ShortName:   "d",
+			Aliases:     []string{"d"},
 			Usage:       "use it to see a description",
 			Description: "This is how we describe describeit the function",
 			Action: func(c *cli.Context) {
@@ -108,7 +91,7 @@ func ExampleAppBashComplete() {
 	app.Commands = []cli.Command{
 		{
 			Name:        "describeit",
-			ShortName:   "d",
+			Aliases:     []string{"d"},
 			Usage:       "use it to see a description",
 			Description: "This is how we describe describeit the function",
 			Action: func(c *cli.Context) {
@@ -162,8 +145,8 @@ var commandAppTests = []struct {
 
 func TestApp_Command(t *testing.T) {
 	app := cli.NewApp()
-	fooCommand := cli.Command{Name: "foobar", ShortName: "f"}
-	batCommand := cli.Command{Name: "batbaz", ShortName: "b"}
+	fooCommand := cli.Command{Name: "foobar", Aliases: []string{"f"}}
+	batCommand := cli.Command{Name: "batbaz", Aliases: []string{"b"}}
 	app.Commands = []cli.Command{
 		fooCommand,
 		batCommand,
