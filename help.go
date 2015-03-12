@@ -15,7 +15,7 @@ VERSION:
    {{.Version}}
 
 AUTHOR(S): 
-	{{range .Authors}}{{ . }} {{end}}
+   {{range .Authors}}{{ . }} {{end}}
 
 COMMANDS:
    {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
