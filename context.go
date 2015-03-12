@@ -122,6 +122,23 @@ func (c *Context) IsSet(name string) bool {
 	return c.setFlags[name] == true
 }
 
+// Determines if the help command was passed or if the flag was set.
+func (c *Context) IsHelp() bool {
+	if c.IsSet("help") || c.IsSet("h") {
+		return true
+	}
+
+	if c.Command.HideHelp == false {
+		for _, arg := range c.Args() {
+			if arg == "help" || arg == "h" {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 // Determines if the global flag was actually set
 func (c *Context) GlobalIsSet(name string) bool {
 	if c.globalSetFlags == nil {
