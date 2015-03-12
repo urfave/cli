@@ -18,7 +18,7 @@ AUTHOR(S):
 	{{range .Authors}}{{ . }} {{end}}
 
 COMMANDS:
-   {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
+   {{range .Commands}}{{if not .Hidden}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}{{end}}
    {{end}}{{if .Flags}}
 GLOBAL OPTIONS:
    {{range .Flags}}{{.}}
@@ -52,7 +52,7 @@ USAGE:
    {{.Name}} command{{if .Flags}} [command options]{{end}} [arguments...]
 
 COMMANDS:
-   {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
+   {{range .Commands}}{{if not .Hidden}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}{{end}}
    {{end}}{{if .Flags}}
 OPTIONS:
    {{range .Flags}}{{.}}
@@ -102,6 +102,9 @@ func ShowAppHelp(c *Context) {
 // Prints the list of subcommands as the default app completion method
 func DefaultAppComplete(c *Context) {
 	for _, command := range c.App.Commands {
+		if command.Hidden {
+			continue
+		}
 		fmt.Fprintln(c.App.Writer, command.Name)
 		if command.ShortName != "" {
 			fmt.Fprintln(c.App.Writer, command.ShortName)
