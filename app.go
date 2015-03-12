@@ -90,10 +90,7 @@ func (a *App) Run(arguments []string) (err error) {
 		HelpPrinter = func(templ string, data interface{}) {
 			w := tabwriter.NewWriter(a.Writer, 0, 8, 1, '\t', 0)
 			t := template.Must(template.New("help").Parse(templ))
-			err := t.Execute(w, data)
-			if err != nil {
-				panic(err)
-			}
+			t.Execute(w, data)
 			w.Flush()
 		}
 	}
