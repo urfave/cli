@@ -14,9 +14,9 @@ USAGE:
 VERSION:
    {{.Version}}
 
-AUTHOR(S): 
-   {{range .Authors}}{{ . }}
-   {{end}}
+AUTHOR(S):
+   {{range .Authors}}{{ . }} {{end}}
+
 COMMANDS:
    {{range .Commands}}{{join .Names ", "}}{{ "\t" }}{{.Usage}}
    {{end}}{{if .Flags}}
@@ -96,7 +96,15 @@ var HelpPrinter helpPrinter = nil
 var VersionPrinter = printVersion
 
 func ShowAppHelp(c *Context) {
-	HelpPrinter(AppHelpTemplate, c.App)
+	// Make a copy of c.App context
+	app := *c.App
+	app.Flags = make([]Flag, 0)
+	for _, flag := range c.App.Flags {
+		if flag.isNotHidden() {
+			app.Flags = append(app.Flags, flag)
+		}
+	}
+	HelpPrinter(AppHelpTemplate, app)
 }
 
 // Prints the list of subcommands as the default app completion method
@@ -112,13 +120,29 @@ func DefaultAppComplete(c *Context) {
 func ShowCommandHelp(c *Context, command string) {
 	// show the subcommand help for a command with subcommands
 	if command == "" {
-		HelpPrinter(SubcommandHelpTemplate, c.App)
+		// Make a copy of c.App context
+		app := *c.App
+		app.Flags = make([]Flag, 0)
+		for _, flag := range c.App.Flags {
+			if flag.isNotHidden() {
+				app.Flags = append(app.Flags, flag)
+			}
+		}
+		HelpPrinter(SubcommandHelpTemplate, app)
 		return
 	}
 
 	for _, c := range c.App.Commands {
 		if c.HasName(command) {
-			HelpPrinter(CommandHelpTemplate, c)
+			// Make a copy of command context
+			c0 := c
+			c0.Flags = make([]Flag, 0)
+			for _, flag := range c.Flags {
+				if flag.isNotHidden() {
+					c0.Flags = append(c0.Flags, flag)
+				}
+			}
+			HelpPrinter(CommandHelpTemplate, c0)
 			return
 		}
 	}
