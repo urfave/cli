@@ -114,7 +114,15 @@ var HelpPrinter helpPrinter = printHelp
 var VersionPrinter = printVersion
 
 func ShowAppHelp(c *Context) {
-	HelpPrinter(c.App.Writer, AppHelpTemplate, c.App)
+	// Make a copy of c.App context
+	app := *c.App
+	app.Flags = make([]Flag, 0)
+	for _, flag := range c.App.Flags {
+		if flag.isNotHidden() {
+			app.Flags = append(app.Flags, flag)
+		}
+	}
+	HelpPrinter(c.App.Writer, AppHelpTemplate, app)
 }
 
 // Prints the list of subcommands as the default app completion method
@@ -130,13 +138,29 @@ func DefaultAppComplete(c *Context) {
 func ShowCommandHelp(ctx *Context, command string) {
 	// show the subcommand help for a command with subcommands
 	if command == "" {
-		HelpPrinter(ctx.App.Writer, SubcommandHelpTemplate, ctx.App)
+		// Make a copy of c.App context
+		app := *c.App
+		app.Flags = make([]Flag, 0)
+		for _, flag := range c.App.Flags {
+			if flag.isNotHidden() {
+				app.Flags = append(app.Flags, flag)
+			}
+		}
+		HelpPrinter(ctx.App.Writer, SubcommandHelpTemplate, app)
 		return
 	}
 
 	for _, c := range ctx.App.Commands {
 		if c.HasName(command) {
-			HelpPrinter(ctx.App.Writer, CommandHelpTemplate, c)
+			// Make a copy of command context
+			c0 := c
+			c0.Flags = make([]Flag, 0)
+			for _, flag := range c.Flags {
+				if flag.isNotHidden() {
+					c0.Flags = append(c0.Flags, flag)
+				}
+			}
+			HelpPrinter(ctx.App.Writer, CommandHelpTemplate, c0)
 			return
 		}
 	}
