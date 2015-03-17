@@ -23,10 +23,47 @@ func ExampleApp() {
 	}
 	app.Author = "Harrison"
 	app.Email = "harrison@lolwut.com"
-	app.Authors = []cli.Author{{"Oliver Allen", "oliver@toyshop.com"}}
+	app.Authors = []cli.Author{cli.Author{Name: "Oliver Allen", Email: "oliver@toyshop.com"}}
 	app.Run(os.Args)
 	// Output:
 	// Hello Jeremy
+}
+
+func ExampleAppSubcommand() {
+	// set args for examples sake
+	os.Args = []string{"say", "hi", "english", "--name", "Jeremy"}
+	app := cli.NewApp()
+	app.Name = "say"
+	app.Commands = []cli.Command{
+		{
+			Name:        "hello",
+			Aliases:     []string{"hi"},
+			Usage:       "use it to see a description",
+			Description: "This is how we describe hello the function",
+			Subcommands: []cli.Command{
+				{
+					Name:        "english",
+					Aliases:     []string{"en"},
+					Usage:       "sends a greeting in english",
+					Description: "greets someone in english",
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "name",
+							Value: "Bob",
+							Usage: "Name of the person to greet",
+						},
+					},
+					Action: func(c *cli.Context) {
+						fmt.Println("Hello,", c.String("name"))
+					},
+				},
+			},
+		},
+	}
+
+	app.Run(os.Args)
+	// Output:
+	// Hello, Jeremy
 }
 
 func ExampleAppCommands() {
@@ -43,7 +80,6 @@ func ExampleAppCommands() {
 	}
 	app.Author = "Harrison"
 	app.Email = "harrison@lolwut.com"
-	app.Authors = []cli.Author{{"Oliver Allen", "oliver@toyshop.com"}}
 	app.Run(os.Args)
 	// Output:
 	// Hello Jeremy
