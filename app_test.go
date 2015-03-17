@@ -66,25 +66,6 @@ func ExampleAppSubcommand() {
 	// Hello, Jeremy
 }
 
-func ExampleAppCommands() {
-	// set args for examples sake
-	os.Args = []string{"greet", "--name", "Jeremy"}
-
-	app := cli.NewApp()
-	app.Name = "greet"
-	app.Flags = []cli.Flag{
-		cli.StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
-	}
-	app.Action = func(c *cli.Context) {
-		fmt.Printf("Hello %v\n", c.String("name"))
-	}
-	app.Author = "Harrison"
-	app.Email = "harrison@lolwut.com"
-	app.Run(os.Args)
-	// Output:
-	// Hello Jeremy
-}
-
 func ExampleAppHelp() {
 	// set args for examples sake
 	os.Args = []string{"greet", "h", "describeit"}
