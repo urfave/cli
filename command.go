@@ -32,8 +32,6 @@ type Command struct {
 	Subcommands []Command
 	// List of flags to parse
 	Flags []Flag
-	// Treat all flags as normal arguments if true
-	SkipFlagParsing bool
 	// Boolean to hide built-in help command
 	HideHelp bool
 }
@@ -60,6 +58,8 @@ func (c Command) Run(ctx *Context) error {
 	set := flagSet(c.Name, c.Flags)
 	set.SetOutput(ioutil.Discard)
 
+	var err error
+
 	firstFlagIndex := -1
 	terminatorIndex := -1
 	for index, arg := range ctx.Args() {
@@ -71,8 +71,7 @@ func (c Command) Run(ctx *Context) error {
 		}
 	}
 
-	var err error
-	if firstFlagIndex > -1 && !c.SkipFlagParsing {
+	if firstFlagIndex > -1 {
 		args := ctx.Args()
 		regularArgs := make([]string, len(args[1:firstFlagIndex]))
 		copy(regularArgs, args[1:firstFlagIndex])
