@@ -328,7 +328,7 @@ func (a Author) String() string {
 }
 
 func watchForShutdown(f func(*Context), context *Context) {
-	c := make(chan os.Signal, 1)
+	c := make(chan os.Signal, 2)
 	signal.Notify(c)
 	<-c
 	f(context)
