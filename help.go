@@ -12,11 +12,11 @@ USAGE:
    {{.Name}} {{if .Flags}}[global options] {{end}}command{{if .Flags}} [command options]{{end}} [arguments...]
 
 VERSION:
-   {{.Version}}
+   {{.Version}}{{if len .Authors}}
 
 AUTHOR(S): 
-   {{range .Authors}}{{ . }}
-   {{end}}
+   {{range .Authors}}{{ . }}{{end}}{{end}}
+
 COMMANDS:
    {{range .Commands}}{{join .Names ", "}}{{ "\t" }}{{.Usage}}
    {{end}}{{if .Flags}}
