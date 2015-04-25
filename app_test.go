@@ -89,10 +89,10 @@ func ExampleAppHelp() {
 	app.Run(os.Args)
 	// Output:
 	// NAME:
-	//    describeit - use it to see a description
+	//    greet describeit - use it to see a description
 	//
 	// USAGE:
-	//    command describeit [arguments...]
+	//    greet describeit [arguments...]
 	//
 	// DESCRIPTION:
 	//    This is how we describe describeit the function
