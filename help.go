@@ -14,7 +14,7 @@ USAGE:
 VERSION:
    {{.Version}}
 
-AUTHOR(S): 
+AUTHOR(S):
    {{range .Authors}}{{ . }}
    {{end}}
 COMMANDS:
@@ -32,7 +32,7 @@ var CommandHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
 USAGE:
-   command {{.Name}}{{if .Flags}} [command options]{{end}} [arguments...]{{if .Description}}
+   {{.Name}}{{if .Flags}} [command options]{{end}} [arguments...]{{if .Description}}
 
 DESCRIPTION:
    {{.Description}}{{end}}{{if .Flags}}
@@ -116,9 +116,10 @@ func ShowCommandHelp(c *Context, command string) {
 		return
 	}
 
-	for _, c := range c.App.Commands {
-		if c.HasName(command) {
-			HelpPrinter(CommandHelpTemplate, c)
+	for _, command_ := range c.App.Commands {
+		if command_.HasName(command) {
+			command_.Name = fmt.Sprintf("%s %s", c.App.Name, command_.Name)
+			HelpPrinter(CommandHelpTemplate, command_)
 			return
 		}
 	}
