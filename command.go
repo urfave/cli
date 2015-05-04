@@ -157,6 +157,7 @@ func (c Command) startApp(ctx *Context) error {
 	app.Commands = c.Subcommands
 	app.Flags = c.Flags
 	app.HideHelp = c.HideHelp
+	app.Writer = ctx.App.Writer
 
 	// bash completion
 	app.EnableBashCompletion = ctx.App.EnableBashCompletion
