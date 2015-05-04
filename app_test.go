@@ -1,10 +1,12 @@
 package cli_test
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/codegangsta/cli"
@@ -620,4 +622,59 @@ func TestGlobalFlagsInSubcommands(t *testing.T) {
 	app.Run([]string{"command", "-d", "foo", "bar"})
 
 	expect(t, subcommandRun, true)
+}
+
+func TestApp_CommandWithSubcommandHasHelpTopic(t *testing.T) {
+
+	var subcommandHelpTopics = [][]string{
+		{"command", "foo", "--help"},
+		{"command", "foo", "-h"},
+		{"command", "foo", "help"},
+	}
+
+	for _, flagSet := range subcommandHelpTopics {
+		t.Logf("==> checking with flags %v", flagSet)
+
+		app := cli.NewApp()
+		// capture the output of the app
+		buf := bytes.NewBuffer(nil)
+		app.Writer = buf
+
+		subCmdBar := cli.Command{
+			Name:  "bar",
+			Usage: "does bar things",
+		}
+		subCmdBaz := cli.Command{
+			Name:  "baz",
+			Usage: "does baz things",
+		}
+		cmd := cli.Command{
+			Name:        "foo",
+			Description: "descriptive wall of text about how it does foo things",
+			Subcommands: []cli.Command{subCmdBar, subCmdBaz},
+		}
+
+		app.Commands = []cli.Command{cmd}
+		err := app.Run(flagSet)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		output := buf.String()
+
+		if strings.Contains(output, "No help topic for") {
+			t.Fatalf("expect a help topic, got none: \n%q", output)
+		}
+
+		for _, shouldContain := range []string{
+			cmd.Name, cmd.Description,
+			subCmdBar.Name, subCmdBar.Usage,
+			subCmdBaz.Name, subCmdBaz.Usage,
+		} {
+			if !strings.Contains(output, shouldContain) {
+				t.Fatalf("want help to contain %q, did not: \n%q", shouldContain, output)
+			}
+		}
+	}
 }
