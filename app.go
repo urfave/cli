@@ -5,9 +5,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"strings"
-	"text/tabwriter"
-	"text/template"
 	"time"
 )
 
@@ -81,26 +78,6 @@ func NewApp() *App {
 func (a *App) Run(arguments []string) (err error) {
 	if a.Author != "" || a.Email != "" {
 		a.Authors = append(a.Authors, Author{Name: a.Author, Email: a.Email})
-	}
-
-	if HelpPrinter == nil {
-		defer func() {
-			HelpPrinter = nil
-		}()
-
-		HelpPrinter = func(templ string, data interface{}) {
-			funcMap := template.FuncMap{
-				"join": strings.Join,
-			}
-
-			w := tabwriter.NewWriter(a.Writer, 0, 8, 1, '\t', 0)
-			t := template.Must(template.New("help").Funcs(funcMap).Parse(templ))
-			err := t.Execute(w, data)
-			if err != nil {
-				panic(err)
-			}
-			w.Flush()
-		}
 	}
 
 	// append help to commands

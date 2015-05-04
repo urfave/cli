@@ -3,6 +3,7 @@ package cli_test
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"testing"
 
@@ -537,7 +538,7 @@ func TestAppHelpPrinter(t *testing.T) {
 	}()
 
 	var wasCalled = false
-	cli.HelpPrinter = func(template string, data interface{}) {
+	cli.HelpPrinter = func(w io.Writer, template string, data interface{}) {
 		wasCalled = true
 	}
 
