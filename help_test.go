@@ -7,7 +7,7 @@ import (
 	"github.com/codegangsta/cli"
 )
 
-func TestShowAppHelp(t *testing.T) {
+func Test_ShowAppHelp_NoAuthor(t *testing.T) {
 	output := new(bytes.Buffer)
 	app := cli.NewApp()
 	app.Writer = output
