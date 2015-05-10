@@ -289,6 +289,14 @@ setting the `PROG` variable to the name of your program:
 
 `PROG=myprogram source /.../cli/autocomplete/bash_autocomplete`
 
+#### To Distribute
+
+Copy and modify `autocomplete/bash_autocomplete` to use your program name
+rather than `$PROG` and have the user copy the file into
+`/etc/bash_completion.d/` (or automatically install it there if you are
+distributing a package). Alternatively you can just document that users should
+source the generic `autocomplete/bash_autocomplete` with `$PROG` set to your
+program name in their bash configuration.
 
 ## Contribution Guidelines
 Feel free to put up a pull request to fix a bug or maybe add a feature. I will give it a code review and make sure that it does not break backwards compatibility. If I or any other collaborators agree that it is in line with the vision of the project, we will work with you to get the code into a mergeable state and merge it into the master branch.
