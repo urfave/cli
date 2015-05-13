@@ -75,22 +75,22 @@ var stringSliceFlagTests = []struct {
 		s := &cli.StringSlice{}
 		s.Set("")
 		return s
-	}(), "--help [--help option --help option]\t"},
+	}(), "--help [--help ...]\t"},
 	{"h", func() *cli.StringSlice {
 		s := &cli.StringSlice{}
 		s.Set("")
 		return s
-	}(), "-h [-h option -h option]\t"},
+	}(), "-h [-h ...]\t"},
 	{"h", func() *cli.StringSlice {
 		s := &cli.StringSlice{}
 		s.Set("")
 		return s
-	}(), "-h [-h option -h option]\t"},
+	}(), "-h [-h ...]\t"},
 	{"test", func() *cli.StringSlice {
 		s := &cli.StringSlice{}
 		s.Set("Something")
 		return s
-	}(), "--test [--test option --test option]\t"},
+	}(), "--test [--test ...]\t"},
 }
 
 func TestStringSliceFlagHelpOutput(t *testing.T) {
