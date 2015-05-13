@@ -130,6 +130,13 @@ func (a *App) Run(arguments []string) (err error) {
 		return nil
 	}
 
+	if a.Before != nil {
+		err := a.Before(context)
+		if err != nil {
+			return err
+		}
+	}
+
 	if a.After != nil {
 		defer func() {
 			// err is always nil here.
@@ -137,13 +144,6 @@ func (a *App) Run(arguments []string) (err error) {
 			// just few lines before.
 			err = a.After(context)
 		}()
-	}
-
-	if a.Before != nil {
-		err := a.Before(context)
-		if err != nil {
-			return err
-		}
 	}
 
 	args := context.Args()
