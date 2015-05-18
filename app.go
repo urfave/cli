@@ -104,12 +104,12 @@ func (a *App) Run(arguments []string) (err error) {
 	nerr := normalizeFlags(a.Flags, set)
 	if nerr != nil {
 		fmt.Fprintln(a.Writer, nerr)
-		context := NewContext(a, set, set)
+		context := NewContext(a, set, nil)
 		ShowAppHelp(context)
 		fmt.Fprintln(a.Writer)
 		return nerr
 	}
-	context := NewContext(a, set, set)
+	context := NewContext(a, set, nil)
 
 	if err != nil {
 		fmt.Fprintf(a.Writer, "Incorrect Usage.\n\n")
@@ -190,7 +190,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	set.SetOutput(ioutil.Discard)
 	err = set.Parse(ctx.Args().Tail())
 	nerr := normalizeFlags(a.Flags, set)
-	context := NewContext(a, set, ctx.globalSet)
+	context := NewContext(a, set, ctx)
 
 	if nerr != nil {
 		fmt.Fprintln(a.Writer, nerr)

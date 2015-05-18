@@ -13,7 +13,7 @@ func TestCommandDoNotIgnoreFlags(t *testing.T) {
 	test := []string{"blah", "blah", "-break"}
 	set.Parse(test)
 
-	c := cli.NewContext(app, set, set)
+	c := cli.NewContext(app, set, nil)
 
 	command := cli.Command{
 		Name:        "test-cmd",
@@ -33,7 +33,7 @@ func TestCommandIgnoreFlags(t *testing.T) {
 	test := []string{"blah", "blah"}
 	set.Parse(test)
 
-	c := cli.NewContext(app, set, set)
+	c := cli.NewContext(app, set, nil)
 
 	command := cli.Command{
 		Name:            "test-cmd",

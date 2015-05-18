@@ -597,6 +597,7 @@ func TestAppCommandNotFound(t *testing.T) {
 
 func TestGlobalFlagsInSubcommands(t *testing.T) {
 	subcommandRun := false
+	parentFlag := false
 	app := cli.NewApp()
 
 	app.Flags = []cli.Flag{
@@ -606,6 +607,9 @@ func TestGlobalFlagsInSubcommands(t *testing.T) {
 	app.Commands = []cli.Command{
 		cli.Command{
 			Name: "foo",
+			Flags: []cli.Flag{
+				cli.BoolFlag{Name: "parent, p", Usage: "Parent flag"},
+			},
 			Subcommands: []cli.Command{
 				{
 					Name: "bar",
@@ -613,15 +617,19 @@ func TestGlobalFlagsInSubcommands(t *testing.T) {
 						if c.GlobalBool("debug") {
 							subcommandRun = true
 						}
+						if c.GlobalBool("parent") {
+							parentFlag = true
+						}
 					},
 				},
 			},
 		},
 	}
 
-	app.Run([]string{"command", "-d", "foo", "bar"})
+	app.Run([]string{"command", "-d", "foo", "-p", "bar"})
 
 	expect(t, subcommandRun, true)
+	expect(t, parentFlag, true)
 }
 
 func TestApp_Run_CommandWithSubcommandHasHelpTopic(t *testing.T) {

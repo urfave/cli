@@ -105,7 +105,7 @@ func (c Command) Run(ctx *Context) error {
 		fmt.Fprintln(ctx.App.Writer)
 		return nerr
 	}
-	context := NewContext(ctx.App, set, ctx.globalSet)
+	context := NewContext(ctx.App, set, ctx)
 
 	if checkCommandCompletions(context, c.Name) {
 		return nil
