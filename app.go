@@ -132,10 +132,14 @@ func (a *App) Run(arguments []string) (err error) {
 
 	if a.After != nil {
 		defer func() {
-			// err is always nil here.
-			// There is a check to see if it is non-nil
-			// just few lines before.
-			err = a.After(context)
+			afterErr := a.After(context)
+			if afterErr != nil {
+				if err != nil {
+					err = NewMultiError(err, afterErr)
+				} else {
+					err = afterErr
+				}
+			}
 		}()
 	}
 
@@ -225,10 +229,14 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 
 	if a.After != nil {
 		defer func() {
-			// err is always nil here.
-			// There is a check to see if it is non-nil
-			// just few lines before.
-			err = a.After(context)
+			afterErr := a.After(context)
+			if afterErr != nil {
+				if err != nil {
+					err = NewMultiError(err, afterErr)
+				} else {
+					err = afterErr
+				}
+			}
 		}()
 	}
 
