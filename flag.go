@@ -144,6 +144,9 @@ func (f StringSliceFlag) Apply(set *flag.FlagSet) {
 	}
 
 	eachName(f.Name, func(name string) {
+		if f.Value == nil {
+			f.Value = &StringSlice{}
+		}
 		set.Var(f.Value, name, f.Usage)
 	})
 }
@@ -206,6 +209,9 @@ func (f IntSliceFlag) Apply(set *flag.FlagSet) {
 	}
 
 	eachName(f.Name, func(name string) {
+		if f.Value == nil {
+			f.Value = &IntSlice{}
+		}
 		set.Var(f.Value, name, f.Usage)
 	})
 }
