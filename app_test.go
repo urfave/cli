@@ -717,3 +717,45 @@ func TestApp_Run_CommandWithSubcommandHasHelpTopic(t *testing.T) {
 		}
 	}
 }
+
+func TestApp_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
+	app := cli.NewApp()
+	app.Action = func(c *cli.Context) {}
+	app.Before = func(c *cli.Context) error { return fmt.Errorf("before error") }
+	app.After = func(c *cli.Context) error { return fmt.Errorf("after error") }
+
+	err := app.Run([]string{"foo"})
+	if err == nil {
+		t.Fatalf("expected to recieve error from Run, got none")
+	}
+
+	if !strings.Contains(err.Error(), "before error") {
+		t.Errorf("expected text of error from Before method, but got none in \"%v\"", err)
+	}
+	if !strings.Contains(err.Error(), "after error") {
+		t.Errorf("expected text of error from After method, but got none in \"%v\"", err)
+	}
+}
+
+func TestApp_Run_SubcommandDoesNotOverwriteErrorFromBefore(t *testing.T) {
+	app := cli.NewApp()
+	app.Commands = []cli.Command{
+		cli.Command{
+			Name:   "bar",
+			Before: func(c *cli.Context) error { return fmt.Errorf("before error") },
+			After:  func(c *cli.Context) error { return fmt.Errorf("after error") },
+		},
+	}
+
+	err := app.Run([]string{"foo", "bar"})
+	if err == nil {
+		t.Fatalf("expected to recieve error from Run, got none")
+	}
+
+	if !strings.Contains(err.Error(), "before error") {
+		t.Errorf("expected text of error from Before method, but got none in \"%v\"", err)
+	}
+	if !strings.Contains(err.Error(), "after error") {
+		t.Errorf("expected text of error from After method, but got none in \"%v\"", err)
+	}
+}
