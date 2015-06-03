@@ -158,6 +158,8 @@ app.Action = func(c *cli.Context) {
 ...
 ```
 
+See full list of flags at http://godoc.org/github.com/codegangsta/cli
+
 #### Alternate Names
 
 You can set alternate (or short) names for flags by providing a comma-delimited list for the `Name`. e.g.
