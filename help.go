@@ -181,7 +181,7 @@ func printHelp(out io.Writer, templ string, data interface{}) {
 }
 
 func checkVersion(c *Context) bool {
-	if c.GlobalBool("version") {
+	if c.GlobalBool("version") || c.GlobalBool("v") || c.Bool("version") || c.Bool("v") {
 		ShowVersion(c)
 		return true
 	}
@@ -190,7 +190,7 @@ func checkVersion(c *Context) bool {
 }
 
 func checkHelp(c *Context) bool {
-	if c.GlobalBool("h") || c.GlobalBool("help") {
+	if c.GlobalBool("h") || c.GlobalBool("help") || c.Bool("h") || c.Bool("help") {
 		ShowAppHelp(c)
 		return true
 	}
