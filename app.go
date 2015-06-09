@@ -43,6 +43,8 @@ type App struct {
 	Compiled time.Time
 	// List of all authors who contributed
 	Authors []Author
+	// Copyright of the binary if any
+	Copyright string
 	// Name of Author (Note: Use App.Authors, this is deprecated)
 	Author string
 	// Email of Author (Note: Use App.Authors, this is deprecated)

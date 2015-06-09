@@ -28,7 +28,10 @@ COMMANDS:
    {{end}}{{if .Flags}}
 GLOBAL OPTIONS:
    {{range .Flags}}{{.}}
-   {{end}}{{end}}
+   {{end}}{{end}}{{if .Copyright }}
+COPYRIGHT:
+   {{.Copyright}}{{end}}
+
 `
 
 // The text template for the command help topic.
