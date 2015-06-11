@@ -357,7 +357,7 @@ func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
 			name = strings.Trim(name, " ")
 			if visited[name] {
 				if ff != nil {
-					return errors.New("Cannot use two forms of the same flag: " + name + " " + ff.Name)
+					return errors.New("cannot use two forms of the same flag: " + name + " " + ff.Name)
 				}
 				ff = set.Lookup(name)
 			}
@@ -372,5 +372,30 @@ func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
 			}
 		}
 	}
+	return nil
+}
+
+func validateFlags(flags []Flag, set *flag.FlagSet) error {
+	visited := make(map[string]bool)
+	set.Visit(func(f *flag.Flag) {
+		visited[f.Name] = true
+	})
+
+	for _, flag := range flags {
+		found := false
+		nameParts := strings.Split(flag.getName(), ",")
+
+		for _, name := range nameParts {
+			name = strings.Trim(name, " ")
+			if found == false {
+				found = visited[name]
+			}
+		}
+
+		if flag.isRequired() && found == false {
+			return errors.New("could not locate required flag: -" + flag.getName())
+		}
+	}
+
 	return nil
 }
