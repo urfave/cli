@@ -9,7 +9,7 @@ import (
 )
 
 // App is the main structure of a cli application. It is recomended that
-// and app be created with the cli.NewApp() function
+// an app be created with the cli.NewApp() function
 type App struct {
 	// The name of the program. Defaults to os.Args[0]
 	Name string
