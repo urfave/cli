@@ -27,6 +27,32 @@ func TestCommandDoNotIgnoreFlags(t *testing.T) {
 	expect(t, err.Error(), "flag provided but not defined: -break")
 }
 
+func TestCommandRequiredFlagMissing(t *testing.T) {
+	app := cli.NewApp()
+	set := flag.NewFlagSet("test", 0)
+	test := []string{"blah", "blah"}
+	set.Parse(test)
+
+	c := cli.NewContext(app, set, nil)
+
+	command := cli.Command{
+		Name:        "test-cmd",
+		Aliases:     []string{"tc"},
+		Usage:       "this is for testing",
+		Description: "testing",
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:     "break",
+				Required: true,
+			},
+		},
+		Action: func(_ *cli.Context) {},
+	}
+	err := command.Run(c)
+
+	expect(t, err.Error(), "could not locate required flag: -break")
+}
+
 func TestCommandIgnoreFlags(t *testing.T) {
 	app := cli.NewApp()
 	set := flag.NewFlagSet("test", 0)

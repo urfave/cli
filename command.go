@@ -97,14 +97,22 @@ func (c Command) Run(ctx *Context) error {
 		return err
 	}
 
-	nerr := normalizeFlags(c.Flags, set)
-	if nerr != nil {
-		fmt.Fprintln(ctx.App.Writer, nerr)
+	if err = normalizeFlags(c.Flags, set); err != nil {
+		fmt.Fprintln(ctx.App.Writer, err)
 		fmt.Fprintln(ctx.App.Writer)
 		ShowCommandHelp(ctx, c.Name)
 		fmt.Fprintln(ctx.App.Writer)
-		return nerr
+		return err
 	}
+
+	if err = validateFlags(c.Flags, set); err != nil {
+		fmt.Fprintln(ctx.App.Writer, err)
+		fmt.Fprintln(ctx.App.Writer)
+		ShowCommandHelp(ctx, c.Name)
+		fmt.Fprintln(ctx.App.Writer)
+		return err
+	}
+
 	context := NewContext(ctx.App, set, ctx)
 
 	if checkCommandCompletions(context, c.Name) {

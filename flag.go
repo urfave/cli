@@ -36,6 +36,7 @@ type Flag interface {
 	// Apply Flag settings to the given flag set
 	Apply(*flag.FlagSet)
 	getName() string
+	isRequired() bool
 }
 
 func flagSet(name string, flags []Flag) *flag.FlagSet {
@@ -63,10 +64,11 @@ type Generic interface {
 
 // GenericFlag is the flag type for types implementing Generic
 type GenericFlag struct {
-	Name   string
-	Value  Generic
-	Usage  string
-	EnvVar string
+	Name     string
+	Value    Generic
+	Usage    string
+	EnvVar   string
+	Required bool
 }
 
 // String returns the string representation of the generic flag to display the
@@ -74,6 +76,10 @@ type GenericFlag struct {
 // the value)
 func (f GenericFlag) String() string {
 	return withEnvHint(f.EnvVar, fmt.Sprintf("%s%s \"%v\"\t%v", prefixFor(f.Name), f.Name, f.Value, f.Usage))
+}
+
+func (f GenericFlag) isRequired() bool {
+	return f.Required
 }
 
 // Apply takes the flagset and calls Set on the generic flag with the value
@@ -121,10 +127,11 @@ func (f *StringSlice) Value() []string {
 // StringSlice is a string flag that can be specified multiple times on the
 // command-line
 type StringSliceFlag struct {
-	Name   string
-	Value  *StringSlice
-	Usage  string
-	EnvVar string
+	Name     string
+	Value    *StringSlice
+	Usage    string
+	EnvVar   string
+	Required bool
 }
 
 // String returns the usage
@@ -132,6 +139,10 @@ func (f StringSliceFlag) String() string {
 	firstName := strings.Trim(strings.Split(f.Name, ",")[0], " ")
 	pref := prefixFor(firstName)
 	return withEnvHint(f.EnvVar, fmt.Sprintf("%s [%v]\t%v", prefixedNames(f.Name), pref+firstName+" option "+pref+firstName+" option", f.Usage))
+}
+
+func (f StringSliceFlag) isRequired() bool {
+	return f.Required
 }
 
 // Apply populates the flag given the flag set and environment
@@ -190,10 +201,11 @@ func (f *IntSlice) Value() []int {
 // IntSliceFlag is an int flag that can be specified multiple times on the
 // command-line
 type IntSliceFlag struct {
-	Name   string
-	Value  *IntSlice
-	Usage  string
-	EnvVar string
+	Name     string
+	Value    *IntSlice
+	Usage    string
+	EnvVar   string
+	Required bool
 }
 
 // String returns the usage
@@ -201,6 +213,10 @@ func (f IntSliceFlag) String() string {
 	firstName := strings.Trim(strings.Split(f.Name, ",")[0], " ")
 	pref := prefixFor(firstName)
 	return withEnvHint(f.EnvVar, fmt.Sprintf("%s [%v]\t%v", prefixedNames(f.Name), pref+firstName+" option "+pref+firstName+" option", f.Usage))
+}
+
+func (f IntSliceFlag) isRequired() bool {
+	return f.Required
 }
 
 // Apply populates the flag given the flag set and environment
@@ -237,14 +253,19 @@ func (f IntSliceFlag) getName() string {
 
 // BoolFlag is a switch that defaults to false
 type BoolFlag struct {
-	Name   string
-	Usage  string
-	EnvVar string
+	Name     string
+	Usage    string
+	EnvVar   string
+	Required bool
 }
 
 // String returns a readable representation of this value (for usage defaults)
 func (f BoolFlag) String() string {
 	return withEnvHint(f.EnvVar, fmt.Sprintf("%s\t%v", prefixedNames(f.Name), f.Usage))
+}
+
+func (f BoolFlag) isRequired() bool {
+	return f.Required
 }
 
 // Apply populates the flag given the flag set and environment
@@ -275,14 +296,19 @@ func (f BoolFlag) getName() string {
 // BoolTFlag this represents a boolean flag that is true by default, but can
 // still be set to false by --some-flag=false
 type BoolTFlag struct {
-	Name   string
-	Usage  string
-	EnvVar string
+	Name     string
+	Usage    string
+	EnvVar   string
+	Required bool
 }
 
 // String returns a readable representation of this value (for usage defaults)
 func (f BoolTFlag) String() string {
 	return withEnvHint(f.EnvVar, fmt.Sprintf("%s\t%v", prefixedNames(f.Name), f.Usage))
+}
+
+func (f BoolTFlag) isRequired() bool {
+	return f.Required
 }
 
 // Apply populates the flag given the flag set and environment
@@ -312,10 +338,11 @@ func (f BoolTFlag) getName() string {
 
 // StringFlag represents a flag that takes as string value
 type StringFlag struct {
-	Name   string
-	Value  string
-	Usage  string
-	EnvVar string
+	Name     string
+	Value    string
+	Usage    string
+	EnvVar   string
+	Required bool
 }
 
 // String returns the usage
@@ -330,6 +357,10 @@ func (f StringFlag) String() string {
 	}
 
 	return withEnvHint(f.EnvVar, fmt.Sprintf(fmtString, prefixedNames(f.Name), f.Value, f.Usage))
+}
+
+func (f StringFlag) isRequired() bool {
+	return f.Required
 }
 
 // Apply populates the flag given the flag set and environment
@@ -356,15 +387,20 @@ func (f StringFlag) getName() string {
 // IntFlag is a flag that takes an integer
 // Errors if the value provided cannot be parsed
 type IntFlag struct {
-	Name   string
-	Value  int
-	Usage  string
-	EnvVar string
+	Name     string
+	Value    int
+	Usage    string
+	EnvVar   string
+	Required bool
 }
 
 // String returns the usage
 func (f IntFlag) String() string {
 	return withEnvHint(f.EnvVar, fmt.Sprintf("%s \"%v\"\t%v", prefixedNames(f.Name), f.Value, f.Usage))
+}
+
+func (f IntFlag) isRequired() bool {
+	return f.Required
 }
 
 // Apply populates the flag given the flag set and environment
@@ -394,15 +430,20 @@ func (f IntFlag) getName() string {
 // DurationFlag is a flag that takes a duration specified in Go's duration
 // format: https://golang.org/pkg/time/#ParseDuration
 type DurationFlag struct {
-	Name   string
-	Value  time.Duration
-	Usage  string
-	EnvVar string
+	Name     string
+	Value    time.Duration
+	Usage    string
+	EnvVar   string
+	Required bool
 }
 
 // String returns a readable representation of this value (for usage defaults)
 func (f DurationFlag) String() string {
 	return withEnvHint(f.EnvVar, fmt.Sprintf("%s \"%v\"\t%v", prefixedNames(f.Name), f.Value, f.Usage))
+}
+
+func (f DurationFlag) isRequired() bool {
+	return f.Required
 }
 
 // Apply populates the flag given the flag set and environment
@@ -432,15 +473,20 @@ func (f DurationFlag) getName() string {
 // Float64Flag is a flag that takes an float value
 // Errors if the value provided cannot be parsed
 type Float64Flag struct {
-	Name   string
-	Value  float64
-	Usage  string
-	EnvVar string
+	Name     string
+	Value    float64
+	Usage    string
+	EnvVar   string
+	Required bool
 }
 
 // String returns the usage
 func (f Float64Flag) String() string {
 	return withEnvHint(f.EnvVar, fmt.Sprintf("%s \"%v\"\t%v", prefixedNames(f.Name), f.Value, f.Usage))
+}
+
+func (f Float64Flag) isRequired() bool {
+	return f.Required
 }
 
 // Apply populates the flag given the flag set and environment
