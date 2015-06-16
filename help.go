@@ -31,7 +31,6 @@ GLOBAL OPTIONS:
    {{end}}{{end}}{{if .Copyright }}
 COPYRIGHT:
    {{.Copyright}}{{end}}
-
 `
 
 // The text template for the command help topic.
