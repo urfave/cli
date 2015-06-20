@@ -180,6 +180,11 @@ func (c *Context) GlobalFlagNames() (names []string) {
 	return
 }
 
+// Returns the parent context, if any
+func (c *Context) Parent() *Context {
+	return c.parentContext
+}
+
 type Args []string
 
 // Returns the command line arguments associated with the context.
