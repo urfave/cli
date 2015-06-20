@@ -20,7 +20,7 @@ USAGE:
 VERSION:
    {{.Version}}
    {{end}}{{if len .Authors}}
-AUTHOR(S): 
+AUTHOR(S):
    {{range .Authors}}{{ . }}{{end}}
    {{end}}{{if .Commands}}
 COMMANDS:
@@ -38,10 +38,10 @@ COPYRIGHT:
 // cli.go uses text/template to render templates. You can
 // render custom help text by setting this variable.
 var CommandHelpTemplate = `NAME:
-   {{.Name}} - {{.Usage}}
+   {{.FullName}} - {{.Usage}}
 
 USAGE:
-   command {{.Name}}{{if .Flags}} [command options]{{end}} [arguments...]{{if .Description}}
+   command {{.FullName}}{{if .Flags}} [command options]{{end}} [arguments...]{{if .Description}}
 
 DESCRIPTION:
    {{.Description}}{{end}}{{if .Flags}}

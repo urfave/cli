@@ -735,6 +735,36 @@ func TestApp_Run_CommandWithSubcommandHasHelpTopic(t *testing.T) {
 	}
 }
 
+func TestApp_Run_SubcommandFullPath(t *testing.T) {
+	app := cli.NewApp()
+	buf := new(bytes.Buffer)
+	app.Writer = buf
+
+	subCmd := cli.Command{
+		Name:  "bar",
+		Usage: "does bar things",
+	}
+	cmd := cli.Command{
+		Name:        "foo",
+		Description: "foo commands",
+		Subcommands: []cli.Command{subCmd},
+	}
+	app.Commands = []cli.Command{cmd}
+
+	err := app.Run([]string{"command", "foo", "bar", "--help"})
+	if err != nil {
+		t.Error(err)
+	}
+
+	output := buf.String()
+	if !strings.Contains(output, "foo bar - does bar things") {
+		t.Errorf("expected full path to subcommand: %s", output)
+	}
+	if !strings.Contains(output, "command foo bar [arguments...]") {
+		t.Errorf("expected full path to subcommand: %s", output)
+	}
+}
+
 func TestApp_Run_Help(t *testing.T) {
 	var helpArguments = [][]string{{"boom", "--help"}, {"boom", "-h"}, {"boom", "help"}}
 
