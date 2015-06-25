@@ -21,14 +21,16 @@ VERSION:
    {{.Version}}{{end}}{{if len .Authors}}
 
 AUTHOR(S): 
-   {{range .Authors}}{{ . }}{{end}}{{end}}
+   {{range .Authors}}{{ . }}{{end}}{{end}}{{if .Commands}}
 
 COMMANDS:
    {{range .Commands}}{{join .Names ", "}}{{ "\t" }}{{.Usage}}
-   {{end}}{{if .Flags}}
+   {{end}}{{end}}{{if .Flags}}
+
 GLOBAL OPTIONS:
    {{range .Flags}}{{.}}
    {{end}}{{end}}{{if .Copyright }}
+
 COPYRIGHT:
    {{.Copyright}}{{end}}
 `
