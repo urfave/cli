@@ -15,24 +15,23 @@ var AppHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
 USAGE:
-   {{.Name}} {{if .Flags}}[global options] {{end}}command{{if .Flags}} [command options]{{end}} [arguments...]{{if len .Version}}
-
+   {{.Name}} {{if .Flags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} [arguments...]
+   {{if .Version}}
 VERSION:
-   {{.Version}}{{end}}{{if len .Authors}}
-
+   {{.Version}}
+   {{end}}{{if len .Authors}}
 AUTHOR(S): 
-   {{range .Authors}}{{ . }}{{end}}{{end}}{{if .Commands}}
-
+   {{range .Authors}}{{ . }}{{end}}
+   {{end}}{{if .Commands}}
 COMMANDS:
    {{range .Commands}}{{join .Names ", "}}{{ "\t" }}{{.Usage}}
    {{end}}{{end}}{{if .Flags}}
-
 GLOBAL OPTIONS:
    {{range .Flags}}{{.}}
    {{end}}{{end}}{{if .Copyright }}
-
 COPYRIGHT:
-   {{.Copyright}}{{end}}
+   {{.Copyright}}
+   {{end}}
 `
 
 // The text template for the command help topic.
