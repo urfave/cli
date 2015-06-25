@@ -15,10 +15,10 @@ var AppHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
 USAGE:
-   {{.Name}} {{if .Flags}}[global options] {{end}}command{{if .Flags}} [command options]{{end}} [arguments...]
+   {{.Name}} {{if .Flags}}[global options] {{end}}command{{if .Flags}} [command options]{{end}} [arguments...]{{if len .Version}}
 
 VERSION:
-   {{.Version}}{{if len .Authors}}
+   {{.Version}}{{end}}{{if len .Authors}}
 
 AUTHOR(S): 
    {{range .Authors}}{{ . }}{{end}}{{end}}
