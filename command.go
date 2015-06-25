@@ -91,9 +91,9 @@ func (c Command) Run(ctx *Context) error {
 	}
 
 	if err != nil {
-		fmt.Fprint(ctx.App.Writer, "Incorrect Usage.\n\n")
-		ShowCommandHelp(ctx, c.Name)
+		fmt.Fprintln(ctx.App.Writer, "Incorrect Usage.")
 		fmt.Fprintln(ctx.App.Writer)
+		ShowCommandHelp(ctx, c.Name)
 		return err
 	}
 
@@ -102,7 +102,6 @@ func (c Command) Run(ctx *Context) error {
 		fmt.Fprintln(ctx.App.Writer, nerr)
 		fmt.Fprintln(ctx.App.Writer)
 		ShowCommandHelp(ctx, c.Name)
-		fmt.Fprintln(ctx.App.Writer)
 		return nerr
 	}
 	context := NewContext(ctx.App, set, ctx)
