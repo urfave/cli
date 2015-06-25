@@ -26,6 +26,8 @@ func Test_ShowAppHelp_NoVersion(t *testing.T) {
 	app := cli.NewApp()
 	app.Writer = output
 
+	app.Version = ""
+
 	c := cli.NewContext(app, nil, nil)
 
 	cli.ShowAppHelp(c)
