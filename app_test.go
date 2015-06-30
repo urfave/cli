@@ -627,6 +627,23 @@ func TestAppCommandNotFound(t *testing.T) {
 	expect(t, subcommandRun, false)
 }
 
+func TestGlobalFlag(t *testing.T) {
+	var globalFlag string
+	var globalFlagSet bool
+	app := cli.NewApp()
+	app.Flags = []cli.Flag{
+		cli.StringFlag{Name: "global, g", Usage: "global"},
+	}
+	app.Action = func(c *cli.Context) {
+		globalFlag = c.GlobalString("global")
+		globalFlagSet = c.GlobalIsSet("global")
+	}
+	app.Run([]string{"command", "-g", "foo"})
+	expect(t, globalFlag, "foo")
+	expect(t, globalFlagSet, true)
+
+}
+
 func TestGlobalFlagsInSubcommands(t *testing.T) {
 	subcommandRun := false
 	parentFlag := false
