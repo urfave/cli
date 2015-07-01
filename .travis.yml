@@ -9,5 +9,6 @@ go:
 - 1.4.2
 
 script:
+- go get -u 
 - go vet ./...
 - go test -v ./...

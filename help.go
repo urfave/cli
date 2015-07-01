@@ -41,7 +41,7 @@ var CommandHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
 USAGE:
-   command {{.Name}}{{if .Flags}} [command options]{{end}} [arguments...]{{if .Description}}
+   command {{.Name}}{{if .Flags}} [command options]{{end}} {{.Args}}{{if .Description}}
 
 DESCRIPTION:
    {{.Description}}{{end}}{{if .Flags}}
