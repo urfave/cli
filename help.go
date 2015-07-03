@@ -22,6 +22,9 @@ VERSION:
    {{end}}{{if len .Authors}}
 AUTHOR(S): 
    {{range .Authors}}{{ . }}{{end}}
+   {{end}}{{if .Website}}
+WEBSITE:
+   {{.Website}}
    {{end}}{{if .Commands}}
 COMMANDS:
    {{range .Commands}}{{join .Names ", "}}{{ "\t" }}{{.Usage}}
