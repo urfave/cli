@@ -1,11 +1,9 @@
-package cli_test
+package cli
 
 import (
 	"flag"
 	"testing"
 	"time"
-
-	"github.com/codegangsta/cli"
 )
 
 func TestNewContext(t *testing.T) {
@@ -13,9 +11,9 @@ func TestNewContext(t *testing.T) {
 	set.Int("myflag", 12, "doc")
 	globalSet := flag.NewFlagSet("test", 0)
 	globalSet.Int("myflag", 42, "doc")
-	globalCtx := cli.NewContext(nil, globalSet, nil)
-	command := cli.Command{Name: "mycommand"}
-	c := cli.NewContext(nil, set, globalCtx)
+	globalCtx := NewContext(nil, globalSet, nil)
+	command := Command{Name: "mycommand"}
+	c := NewContext(nil, set, globalCtx)
 	c.Command = command
 	expect(t, c.Int("myflag"), 12)
 	expect(t, c.GlobalInt("myflag"), 42)
@@ -25,42 +23,42 @@ func TestNewContext(t *testing.T) {
 func TestContext_Int(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Int("myflag", 12, "doc")
-	c := cli.NewContext(nil, set, nil)
+	c := NewContext(nil, set, nil)
 	expect(t, c.Int("myflag"), 12)
 }
 
 func TestContext_Duration(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Duration("myflag", time.Duration(12*time.Second), "doc")
-	c := cli.NewContext(nil, set, nil)
+	c := NewContext(nil, set, nil)
 	expect(t, c.Duration("myflag"), time.Duration(12*time.Second))
 }
 
 func TestContext_String(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.String("myflag", "hello world", "doc")
-	c := cli.NewContext(nil, set, nil)
+	c := NewContext(nil, set, nil)
 	expect(t, c.String("myflag"), "hello world")
 }
 
 func TestContext_Bool(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("myflag", false, "doc")
-	c := cli.NewContext(nil, set, nil)
+	c := NewContext(nil, set, nil)
 	expect(t, c.Bool("myflag"), false)
 }
 
 func TestContext_BoolT(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("myflag", true, "doc")
-	c := cli.NewContext(nil, set, nil)
+	c := NewContext(nil, set, nil)
 	expect(t, c.BoolT("myflag"), true)
 }
 
 func TestContext_Args(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("myflag", false, "doc")
-	c := cli.NewContext(nil, set, nil)
+	c := NewContext(nil, set, nil)
 	set.Parse([]string{"--myflag", "bat", "baz"})
 	expect(t, len(c.Args()), 2)
 	expect(t, c.Bool("myflag"), true)
@@ -72,8 +70,8 @@ func TestContext_IsSet(t *testing.T) {
 	set.String("otherflag", "hello world", "doc")
 	globalSet := flag.NewFlagSet("test", 0)
 	globalSet.Bool("myflagGlobal", true, "doc")
-	globalCtx := cli.NewContext(nil, globalSet, nil)
-	c := cli.NewContext(nil, set, globalCtx)
+	globalCtx := NewContext(nil, globalSet, nil)
+	c := NewContext(nil, set, globalCtx)
 	set.Parse([]string{"--myflag", "bat", "baz"})
 	globalSet.Parse([]string{"--myflagGlobal", "bat", "baz"})
 	expect(t, c.IsSet("myflag"), true)
@@ -89,8 +87,8 @@ func TestContext_GlobalIsSet(t *testing.T) {
 	globalSet := flag.NewFlagSet("test", 0)
 	globalSet.Bool("myflagGlobal", true, "doc")
 	globalSet.Bool("myflagGlobalUnset", true, "doc")
-	globalCtx := cli.NewContext(nil, globalSet, nil)
-	c := cli.NewContext(nil, set, globalCtx)
+	globalCtx := NewContext(nil, globalSet, nil)
+	c := NewContext(nil, set, globalCtx)
 	set.Parse([]string{"--myflag", "bat", "baz"})
 	globalSet.Parse([]string{"--myflagGlobal", "bat", "baz"})
 	expect(t, c.GlobalIsSet("myflag"), false)
@@ -107,8 +105,8 @@ func TestContext_NumFlags(t *testing.T) {
 	set.String("otherflag", "hello world", "doc")
 	globalSet := flag.NewFlagSet("test", 0)
 	globalSet.Bool("myflagGlobal", true, "doc")
-	globalCtx := cli.NewContext(nil, globalSet, nil)
-	c := cli.NewContext(nil, set, globalCtx)
+	globalCtx := NewContext(nil, globalSet, nil)
+	c := NewContext(nil, set, globalCtx)
 	set.Parse([]string{"--myflag", "--otherflag=foo"})
 	globalSet.Parse([]string{"--myflagGlobal"})
 	expect(t, c.NumFlags(), 2)
