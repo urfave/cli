@@ -19,15 +19,15 @@ type Command struct {
 	// A longer explanation of how the command works
 	Description string
 	// The function to call when checking for bash command completions
-	BashComplete func(context *Context)
+	BashComplete BashCompleteFn
 	// An action to execute before any sub-subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no sub-subcommands are run
-	Before func(context *Context) error
+	Before BeforeFn
 	// An action to execute after any subcommands are run, but after the subcommand has finished
 	// It is run even if Action() panics
-	After func(context *Context) error
+	After AfterFn
 	// The function to call when this command is invoked
-	Action func(context *Context)
+	Action ActionFn
 	// List of child commands
 	Subcommands []Command
 	// List of flags to parse

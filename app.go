@@ -28,17 +28,17 @@ type App struct {
 	// Boolean to hide built-in version flag
 	HideVersion bool
 	// An action to execute when the bash-completion flag is set
-	BashComplete func(context *Context)
+	BashComplete BashCompleteFn
 	// An action to execute before any subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no subcommands are run
-	Before func(context *Context) error
+	Before BeforeFn
 	// An action to execute after any subcommands are run, but after the subcommand has finished
 	// It is run even if Action() panics
-	After func(context *Context) error
+	After AfterFn
 	// The action to execute when no subcommands are specified
-	Action func(context *Context)
+	Action ActionFn
 	// Execute this function if the proper command cannot be found
-	CommandNotFound func(context *Context, command string)
+	CommandNotFound CommandNotFoundFn
 	// Compilation date
 	Compiled time.Time
 	// List of all authors who contributed
