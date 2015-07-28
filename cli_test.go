@@ -15,16 +15,18 @@ func Example() {
 			Name:    "add",
 			Aliases: []string{"a"},
 			Usage:   "add a task to the list",
-			Action: func(c *cli.Context) {
+			Action: func(c *cli.Context) int {
 				println("added task: ", c.Args().First())
+				return 0
 			},
 		},
 		{
 			Name:    "complete",
 			Aliases: []string{"c"},
 			Usage:   "complete a task on the list",
-			Action: func(c *cli.Context) {
+			Action: func(c *cli.Context) int {
 				println("completed task: ", c.Args().First())
+				return 0
 			},
 		},
 	}
@@ -54,8 +56,9 @@ func ExampleSubcommand() {
 							Usage: "Name of the person to greet",
 						},
 					},
-					Action: func(c *cli.Context) {
+					Action: func(c *cli.Context) int {
 						println("Hello, ", c.String("name"))
+						return 0
 					},
 				}, {
 					Name:    "spanish",
@@ -68,8 +71,9 @@ func ExampleSubcommand() {
 							Usage: "Surname of the person to greet",
 						},
 					},
-					Action: func(c *cli.Context) {
+					Action: func(c *cli.Context) int {
 						println("Hola, ", c.String("surname"))
+						return 0
 					},
 				}, {
 					Name:    "french",
@@ -82,16 +86,18 @@ func ExampleSubcommand() {
 							Usage: "Nickname of the person to greet",
 						},
 					},
-					Action: func(c *cli.Context) {
+					Action: func(c *cli.Context) int {
 						println("Bonjour, ", c.String("nickname"))
+						return 0
 					},
 				},
 			},
 		}, {
 			Name:  "bye",
 			Usage: "says goodbye",
-			Action: func(c *cli.Context) {
+			Action: func(c *cli.Context) int {
 				println("bye")
+				return 0
 			},
 		},
 	}

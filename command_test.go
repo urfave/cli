@@ -20,9 +20,9 @@ func TestCommandDoNotIgnoreFlags(t *testing.T) {
 		Aliases:     []string{"tc"},
 		Usage:       "this is for testing",
 		Description: "testing",
-		Action:      func(_ *cli.Context) {},
+		Action:      func(_ *cli.Context) int { return 0 },
 	}
-	err := command.Run(c)
+	_, err := command.Run(c)
 
 	expect(t, err.Error(), "flag provided but not defined: -break")
 }
@@ -40,10 +40,10 @@ func TestCommandIgnoreFlags(t *testing.T) {
 		Aliases:         []string{"tc"},
 		Usage:           "this is for testing",
 		Description:     "testing",
-		Action:          func(_ *cli.Context) {},
+		Action:          func(_ *cli.Context) int { return 0 },
 		SkipFlagParsing: true,
 	}
-	err := command.Run(c)
+	_, err := command.Run(c)
 
 	expect(t, err, nil)
 }
