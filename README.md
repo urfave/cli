@@ -25,7 +25,7 @@ export PATH=$PATH:$GOPATH/bin
 ```
 
 ## Getting Started
-One of the philosophies behind cli.go is that an API should be playful and full of discovery. So a cli.go app can be as little as one line of code in `main()`. 
+One of the philosophies behind cli.go is that an API should be playful and full of discovery. So a cli.go app can be as little as one line of code in `main()`.
 
 ``` go
 package main
@@ -57,7 +57,7 @@ func main() {
   app.Action = func(c *cli.Context) {
     println("boom! I say!")
   }
-  
+
   app.Run(os.Args)
 }
 ```
@@ -249,6 +249,28 @@ app.Commands = []cli.Command{
   },
 }
 ...
+```
+
+### Exit code
+
+It is your responsability to call `os.Exit` with the exit code returned by
+`app.Run`
+
+```go
+package main
+
+import (
+  "os"
+  "github.com/codegangsta/cli"
+)
+
+func main() {
+  exitCode, err := cli.NewApp().Run(os.Args)
+  if err != nil {
+    log.Println(err)
+  }
+  os.Exit(exitCode)
+}
 ```
 
 ### Bash Completion

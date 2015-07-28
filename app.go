@@ -8,6 +8,11 @@ import (
 	"time"
 )
 
+var (
+	// Set to 125 which is the highest number not used in most shells
+	DefaultExitCode int = 0
+)
+
 // App is the main structure of a cli application. It is recomended that
 // an app be created with the cli.NewApp() function
 type App struct {
@@ -28,17 +33,17 @@ type App struct {
 	// Boolean to hide built-in version flag
 	HideVersion bool
 	// An action to execute when the bash-completion flag is set
-	BashComplete func(context *Context)
+	BashComplete BashCompleteFn
 	// An action to execute before any subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no subcommands are run
-	Before func(context *Context) error
+	Before BeforeFn
 	// An action to execute after any subcommands are run, but after the subcommand has finished
 	// It is run even if Action() panics
-	After func(context *Context) error
+	After AfterFn
 	// The action to execute when no subcommands are specified
-	Action func(context *Context)
+	Action ActionFn
 	// Execute this function if the proper command cannot be found
-	CommandNotFound func(context *Context, command string)
+	CommandNotFound CommandNotFoundFn
 	// Compilation date
 	Compiled time.Time
 	// List of all authors who contributed
@@ -77,7 +82,7 @@ func NewApp() *App {
 }
 
 // Entry point to the cli app. Parses the arguments slice and routes to the proper flag/args combination
-func (a *App) Run(arguments []string) (err error) {
+func (a *App) Run(arguments []string) (ec int, err error) {
 	if a.Author != "" || a.Email != "" {
 		a.Authors = append(a.Authors, Author{Name: a.Author, Email: a.Email})
 	}
@@ -108,7 +113,7 @@ func (a *App) Run(arguments []string) (err error) {
 		fmt.Fprintln(a.Writer, nerr)
 		context := NewContext(a, set, nil)
 		ShowAppHelp(context)
-		return nerr
+		return DefaultExitCode, nerr
 	}
 	context := NewContext(a, set, nil)
 
@@ -116,24 +121,24 @@ func (a *App) Run(arguments []string) (err error) {
 		fmt.Fprintln(a.Writer, "Incorrect Usage.")
 		fmt.Fprintln(a.Writer)
 		ShowAppHelp(context)
-		return err
+		return DefaultExitCode, err
 	}
 
 	if checkCompletions(context) {
-		return nil
+		return 0, nil
 	}
 
 	if checkHelp(context) {
-		return nil
+		return 0, nil
 	}
 
 	if checkVersion(context) {
-		return nil
+		return 0, nil
 	}
 
 	if a.After != nil {
 		defer func() {
-			afterErr := a.After(context)
+			afterEc, afterErr := a.After(context)
 			if afterErr != nil {
 				if err != nil {
 					err = NewMultiError(err, afterErr)
@@ -141,13 +146,14 @@ func (a *App) Run(arguments []string) (err error) {
 					err = afterErr
 				}
 			}
+			ec = afterEc
 		}()
 	}
 
 	if a.Before != nil {
-		err := a.Before(context)
+		ec, err = a.Before(context)
 		if err != nil {
-			return err
+			return ec, err
 		}
 	}
 
@@ -161,20 +167,19 @@ func (a *App) Run(arguments []string) (err error) {
 	}
 
 	// Run default Action
-	a.Action(context)
-	return nil
+	return a.Action(context), nil
 }
 
 // Another entry point to the cli app, takes care of passing arguments and error handling
 func (a *App) RunAndExitOnError() {
-	if err := a.Run(os.Args); err != nil {
+	if exitCode, err := a.Run(os.Args); err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		os.Exit(exitCode)
 	}
 }
 
 // Invokes the subcommand given the context, parses ctx.Args() to generate command-specific flags
-func (a *App) RunAsSubcommand(ctx *Context) (err error) {
+func (a *App) RunAsSubcommand(ctx *Context) (ec int, err error) {
 	// append help to commands
 	if len(a.Commands) > 0 {
 		if a.Command(helpCommand.Name) == nil && !a.HideHelp {
@@ -205,33 +210,33 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 		} else {
 			ShowCommandHelp(ctx, context.Args().First())
 		}
-		return nerr
+		return DefaultExitCode, nerr
 	}
 
 	if err != nil {
 		fmt.Fprintln(a.Writer, "Incorrect Usage.")
 		fmt.Fprintln(a.Writer)
 		ShowSubcommandHelp(context)
-		return err
+		return DefaultExitCode, err
 	}
 
 	if checkCompletions(context) {
-		return nil
+		return 0, nil
 	}
 
 	if len(a.Commands) > 0 {
 		if checkSubcommandHelp(context) {
-			return nil
+			return 0, nil
 		}
 	} else {
 		if checkCommandHelp(ctx, context.Args().First()) {
-			return nil
+			return 0, nil
 		}
 	}
 
 	if a.After != nil {
 		defer func() {
-			afterErr := a.After(context)
+			afterEc, afterErr := a.After(context)
 			if afterErr != nil {
 				if err != nil {
 					err = NewMultiError(err, afterErr)
@@ -239,13 +244,14 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 					err = afterErr
 				}
 			}
+			ec = afterEc
 		}()
 	}
 
 	if a.Before != nil {
-		err := a.Before(context)
+		ec, err = a.Before(context)
 		if err != nil {
-			return err
+			return ec, err
 		}
 	}
 
@@ -259,9 +265,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	}
 
 	// Run default Action
-	a.Action(context)
-
-	return nil
+	return a.Action(context), nil
 }
 
 // Returns the named command on App. Returns nil if the command does not exist
