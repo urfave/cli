@@ -15,6 +15,8 @@ type App struct {
 	Name string
 	// Description of the program.
 	Usage string
+	// Description of the program argument format.
+	ArgsUsage string
 	// Version of the program
 	Version string
 	// List of commands to execute
@@ -68,6 +70,7 @@ func NewApp() *App {
 	return &App{
 		Name:         os.Args[0],
 		Usage:        "A new cli application",
+		ArgsUsage:    "[arguments...]",
 		Version:      "0.0.0",
 		BashComplete: DefaultAppComplete,
 		Action:       helpCommand.Action,

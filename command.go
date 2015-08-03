@@ -18,6 +18,8 @@ type Command struct {
 	Usage string
 	// A longer explanation of how the command works
 	Description string
+	// A short description of the arguments of this command
+	ArgsUsage string
 	// The function to call when checking for bash command completions
 	BashComplete func(context *Context)
 	// An action to execute before any sub-subcommands are run, but after the context is ready
@@ -157,6 +159,9 @@ func (c Command) startApp(ctx *Context) error {
 		app.Usage = c.Description
 	} else {
 		app.Usage = c.Usage
+	}
+	if c.ArgsUsage == "" {
+		c.ArgsUsage = "[arguments...]"
 	}
 
 	// set CommandNotFound

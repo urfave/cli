@@ -15,7 +15,7 @@ var AppHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
 USAGE:
-   {{.Name}} {{if .Flags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} [arguments...]
+   {{.Name}} {{if .Flags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{.ArgsUsage}}
    {{if .Version}}
 VERSION:
    {{.Version}}
@@ -41,7 +41,7 @@ var CommandHelpTemplate = `NAME:
    {{.FullName}} - {{.Usage}}
 
 USAGE:
-   command {{.FullName}}{{if .Flags}} [command options]{{end}} [arguments...]{{if .Description}}
+   command {{.FullName}}{{if .Flags}} [command options]{{end}} {{.ArgsUsage}}{{if .Description}}
 
 DESCRIPTION:
    {{.Description}}{{end}}{{if .Flags}}
@@ -58,7 +58,7 @@ var SubcommandHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
 USAGE:
-   {{.Name}} command{{if .Flags}} [command options]{{end}} [arguments...]
+   {{.Name}} command{{if .Flags}} [command options]{{end}} {{.ArgsUsage}}
 
 COMMANDS:
    {{range .Commands}}{{join .Names ", "}}{{ "\t" }}{{.Usage}}
@@ -69,9 +69,10 @@ OPTIONS:
 `
 
 var helpCommand = Command{
-	Name:    "help",
-	Aliases: []string{"h"},
-	Usage:   "Shows a list of commands or help for one command",
+	Name:      "help",
+	Aliases:   []string{"h"},
+	Usage:     "Shows a list of commands or help for one command",
+	ArgsUsage: "[command]",
 	Action: func(c *Context) {
 		args := c.Args()
 		if args.Present() {
@@ -83,9 +84,10 @@ var helpCommand = Command{
 }
 
 var helpSubcommand = Command{
-	Name:    "help",
-	Aliases: []string{"h"},
-	Usage:   "Shows a list of commands or help for one command",
+	Name:      "help",
+	Aliases:   []string{"h"},
+	Usage:     "Shows a list of commands or help for one command",
+	ArgsUsage: "[command]",
 	Action: func(c *Context) {
 		args := c.Args()
 		if args.Present() {
