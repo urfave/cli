@@ -39,6 +39,9 @@ type Command struct {
 	// Boolean to hide built-in help command
 	HideHelp bool
 
+	// Name of parent command for help, defaults to app.Name and parent
+	// command.Name.
+	ParentName      string
 	commandNamePath []string
 }
 
@@ -196,6 +199,7 @@ func (c Command) startApp(ctx *Context) error {
 
 	var newCmds []Command
 	for _, cc := range app.Commands {
+		cc.ParentName = app.Name
 		cc.commandNamePath = []string{c.Name, cc.Name}
 		newCmds = append(newCmds, cc)
 	}
