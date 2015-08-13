@@ -89,7 +89,9 @@ func (a *App) Run(arguments []string) (err error) {
 
 	newCmds := []Command{}
 	for _, c := range a.Commands {
-		c.HelpName = fmt.Sprintf("%s %s", a.HelpName, c.Name)
+		if c.HelpName == "" {
+			c.HelpName = fmt.Sprintf("%s %s", a.HelpName, c.Name)
+		}
 		newCmds = append(newCmds, c)
 	}
 	a.Commands = newCmds
@@ -199,7 +201,9 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 
 	newCmds := []Command{}
 	for _, c := range a.Commands {
-		c.HelpName = fmt.Sprintf("%s %s", a.HelpName, c.Name)
+		if c.HelpName == "" {
+			c.HelpName = fmt.Sprintf("%s %s", a.HelpName, c.Name)
+		}
 		newCmds = append(newCmds, c)
 	}
 	a.Commands = newCmds
