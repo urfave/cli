@@ -90,10 +90,10 @@ func ExampleAppHelp() {
 	app.Run(os.Args)
 	// Output:
 	// NAME:
-	//    describeit - use it to see a description
+	//    greet describeit - use it to see a description
 	//
 	// USAGE:
-	//    command describeit [arguments...]
+	//    greet describeit [arguments...]
 	//
 	// DESCRIPTION:
 	//    This is how we describe describeit the function
@@ -737,7 +737,7 @@ func TestApp_Run_SubcommandFullPath(t *testing.T) {
 	app := NewApp()
 	buf := new(bytes.Buffer)
 	app.Writer = buf
-
+	app.Name = "command"
 	subCmd := Command{
 		Name:  "bar",
 		Usage: "does bar things",
@@ -755,7 +755,7 @@ func TestApp_Run_SubcommandFullPath(t *testing.T) {
 	}
 
 	output := buf.String()
-	if !strings.Contains(output, "foo bar - does bar things") {
+	if !strings.Contains(output, "command foo bar - does bar things") {
 		t.Errorf("expected full path to subcommand: %s", output)
 	}
 	if !strings.Contains(output, "command foo bar [arguments...]") {
