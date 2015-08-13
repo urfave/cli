@@ -763,6 +763,99 @@ func TestApp_Run_SubcommandFullPath(t *testing.T) {
 	}
 }
 
+func TestApp_Run_SubcommandHelpName(t *testing.T) {
+	app := NewApp()
+	buf := new(bytes.Buffer)
+	app.Writer = buf
+	app.Name = "command"
+	subCmd := Command{
+		Name:     "bar",
+		HelpName: "custom",
+		Usage:    "does bar things",
+	}
+	cmd := Command{
+		Name:        "foo",
+		Description: "foo commands",
+		Subcommands: []Command{subCmd},
+	}
+	app.Commands = []Command{cmd}
+
+	err := app.Run([]string{"command", "foo", "bar", "--help"})
+	if err != nil {
+		t.Error(err)
+	}
+
+	output := buf.String()
+	if !strings.Contains(output, "custom - does bar things") {
+		t.Errorf("expected HelpName for subcommand: %s", output)
+	}
+	if !strings.Contains(output, "custom [arguments...]") {
+		t.Errorf("expected HelpName to subcommand: %s", output)
+	}
+}
+
+func TestApp_Run_CommandHelpName(t *testing.T) {
+	app := NewApp()
+	buf := new(bytes.Buffer)
+	app.Writer = buf
+	app.Name = "command"
+	subCmd := Command{
+		Name:  "bar",
+		Usage: "does bar things",
+	}
+	cmd := Command{
+		Name:        "foo",
+		HelpName:    "custom",
+		Description: "foo commands",
+		Subcommands: []Command{subCmd},
+	}
+	app.Commands = []Command{cmd}
+
+	err := app.Run([]string{"command", "foo", "bar", "--help"})
+	if err != nil {
+		t.Error(err)
+	}
+
+	output := buf.String()
+	if !strings.Contains(output, "command foo bar - does bar things") {
+		t.Errorf("expected full path to subcommand: %s", output)
+	}
+	if !strings.Contains(output, "command foo bar [arguments...]") {
+		t.Errorf("expected full path to subcommand: %s", output)
+	}
+}
+
+func TestApp_Run_CommandSubcommandHelpName(t *testing.T) {
+	app := NewApp()
+	buf := new(bytes.Buffer)
+	app.Writer = buf
+	app.Name = "base"
+	subCmd := Command{
+		Name:     "bar",
+		HelpName: "custom",
+		Usage:    "does bar things",
+	}
+	cmd := Command{
+		Name:        "foo",
+		Description: "foo commands",
+		Subcommands: []Command{subCmd},
+	}
+	app.Commands = []Command{cmd}
+
+	err := app.Run([]string{"command", "foo", "--help"})
+	if err != nil {
+		t.Error(err)
+	}
+
+	output := buf.String()
+	if !strings.Contains(output, "base foo - foo commands") {
+		t.Errorf("expected full path to subcommand: %s", output)
+	}
+	if !strings.Contains(output, "base foo command [command options] [arguments...]") {
+		t.Errorf("expected full path to subcommand: %s", output)
+	}
+}
+
 func TestApp_Run_Help(t *testing.T) {
 	var helpArguments = [][]string{{"boom", "--help"}, {"boom", "-h"}, {"boom", "help"}}
 

@@ -39,7 +39,7 @@ type Command struct {
 	// Boolean to hide built-in help command
 	HideHelp bool
 
-	// Name of command for help, defaults to full command name
+	// Full name of command for help, defaults to full command name, including parent commands.
 	HelpName        string
 	commandNamePath []string
 }

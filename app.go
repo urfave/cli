@@ -13,7 +13,7 @@ import (
 type App struct {
 	// The name of the program. Defaults to os.Args[0]
 	Name string
-	// Name of command for help, defaults to Name
+	// Full name of command for help, defaults to Name
 	HelpName string
 	// Description of the program.
 	Usage string
