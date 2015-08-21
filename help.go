@@ -48,8 +48,7 @@ USAGE:
 
 {{if .Category}}CATEGORY:
    {{.Category}}
-{{end}}
-DESCRIPTION:
+{{end}}DESCRIPTION:
    {{.Description}}{{end}}{{if .Flags}}
 
 OPTIONS:
