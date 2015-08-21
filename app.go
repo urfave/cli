@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"sort"
 	"time"
 )
 
@@ -30,7 +31,7 @@ type App struct {
 	// Display commands by category
 	CategorizedHelp bool
 	// Populate when displaying AppHelp
-	Categories map[string]Commands
+	Categories CommandCategories
 	// An action to execute when the bash-completion flag is set
 	BashComplete func(context *Context)
 	// An action to execute before any subcommands are run, but after the context is ready
@@ -87,11 +88,12 @@ func (a *App) Run(arguments []string) (err error) {
 	}
 
 	if a.CategorizedHelp {
-		a.Categories = make(map[string]Commands)
+		a.Categories = CommandCategories{}
 		for _, command := range a.Commands {
-			a.Categories[command.Category] = append(a.Categories[command.Category], command)
+			a.Categories = a.Categories.AddCommand(command.Category, command)
 		}
 	}
+	sort.Sort(a.Categories)
 
 	// append help to commands
 	if a.Command(helpCommand.Name) == nil && !a.HideHelp {
