@@ -23,8 +23,8 @@ VERSION:
 AUTHOR(S):
    {{range .Authors}}{{ . }}{{end}}
    {{end}}{{if .Commands}}
-COMMANDS:{{if .CategorizedHelp}}{{range $category, $commands := .Categories}}{{if $category}}
-  {{$category}}{{ ":" }}{{end}}{{range $commands}}
+COMMANDS:{{if .CategorizedHelp}}{{range .Categories}}{{if .Name}}
+  {{.Name}}{{ ":" }}{{end}}{{range .Commands}}
     {{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}{{end}}
 {{end}}{{else}}{{range .Commands}}
    {{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}{{end}}
