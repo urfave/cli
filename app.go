@@ -23,8 +23,10 @@ type App struct {
 	Flags []Flag
 	// Boolean to enable bash completion commands
 	EnableBashCompletion bool
-	// Boolean to hide built-in help command
+	// Boolean to hide built-in help command and flag
 	HideHelp bool
+	// Boolean to disable the built-in help commnd
+	DisableHelpCommand bool
 	// Boolean to hide built-in version flag
 	HideVersion bool
 	// An action to execute when the bash-completion flag is set
@@ -83,11 +85,12 @@ func (a *App) Run(arguments []string) (err error) {
 	}
 
 	// append help to commands
-	if a.Command(helpCommand.Name) == nil && !a.HideHelp {
+	if a.Command(helpCommand.Name) == nil && !a.HideHelp && !a.DisableHelpCommand {
 		a.Commands = append(a.Commands, helpCommand)
-		if (HelpFlag != BoolFlag{}) {
-			a.appendFlag(HelpFlag)
-		}
+	}
+
+	if (!a.HideHelp && HelpFlag != BoolFlag{}) {
+		a.appendFlag(HelpFlag)
 	}
 
 	//append version/help flags
@@ -177,7 +180,7 @@ func (a *App) RunAndExitOnError() {
 func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	// append help to commands
 	if len(a.Commands) > 0 {
-		if a.Command(helpCommand.Name) == nil && !a.HideHelp {
+		if a.Command(helpCommand.Name) == nil && !a.HideHelp && !a.DisableHelpCommand {
 			a.Commands = append(a.Commands, helpCommand)
 		}
 	}

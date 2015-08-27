@@ -34,8 +34,10 @@ type Command struct {
 	Flags []Flag
 	// Treat all flags as normal arguments if true
 	SkipFlagParsing bool
-	// Boolean to hide built-in help command
+	// Boolean to hide built-in help command and Flag
 	HideHelp bool
+	// Boolean to disable the built-in help commnd
+	DisableHelpCommand bool
 
 	commandNamePath []string
 }
@@ -166,6 +168,7 @@ func (c Command) startApp(ctx *Context) error {
 	app.Commands = c.Subcommands
 	app.Flags = c.Flags
 	app.HideHelp = c.HideHelp
+	app.DisableHelpCommand = c.DisableHelpCommand
 
 	app.Version = ctx.App.Version
 	app.HideVersion = ctx.App.HideVersion
