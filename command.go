@@ -44,7 +44,7 @@ type Command struct {
 
 // Returns the full name of the command.
 // For subcommands this ensures that parent commands are part of the command path
-func (c Command) FullName() string {
+func (c *Command) FullName() string {
 	if c.commandNamePath == nil {
 		return c.Name
 	}
@@ -52,17 +52,14 @@ func (c Command) FullName() string {
 }
 
 // Invokes the command given the context, parses ctx.Args() to generate command-specific flags
-func (c Command) Run(ctx *Context) error {
+func (c *Command) Run(ctx *Context) error {
 	if len(c.Subcommands) > 0 || c.Before != nil || c.After != nil {
 		return c.startApp(ctx)
 	}
 
 	if !c.HideHelp && (HelpFlag != BoolFlag{}) {
 		// append help to flags
-		c.Flags = append(
-			c.Flags,
-			HelpFlag,
-		)
+		c.appendFlag(HelpFlag)
 	}
 
 	if ctx.App.EnableBashCompletion {
@@ -103,7 +100,7 @@ func (c Command) Run(ctx *Context) error {
 	}
 
 	if err != nil {
-		fmt.Fprintln(ctx.App.Writer, "Incorrect Usage.")
+		fmt.Fprintf(ctx.App.Writer, "Incorrect Usage.")
 		fmt.Fprintln(ctx.App.Writer)
 		ShowCommandHelp(ctx, c.Name)
 		return err
@@ -125,12 +122,12 @@ func (c Command) Run(ctx *Context) error {
 	if checkCommandHelp(context, c.Name) {
 		return nil
 	}
-	context.Command = c
+	context.Command = *c
 	c.Action(context)
 	return nil
 }
 
-func (c Command) Names() []string {
+func (c *Command) Names() []string {
 	names := []string{c.Name}
 
 	if c.ShortName != "" {
@@ -141,7 +138,7 @@ func (c Command) Names() []string {
 }
 
 // Returns true if Command.Name or Command.ShortName matches given name
-func (c Command) HasName(name string) bool {
+func (c *Command) HasName(name string) bool {
 	for _, n := range c.Names() {
 		if n == name {
 			return true
@@ -150,7 +147,23 @@ func (c Command) HasName(name string) bool {
 	return false
 }
 
-func (c Command) startApp(ctx *Context) error {
+func (c *Command) hasFlag(flag Flag) bool {
+	for _, f := range c.Flags {
+		if flag == f {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (c *Command) appendFlag(flag Flag) {
+	if !c.hasFlag(flag) {
+		c.Flags = append(c.Flags, flag)
+	}
+}
+
+func (c *Command) startApp(ctx *Context) error {
 	app := NewApp()
 
 	// set the name and usage

@@ -125,11 +125,9 @@ func ShowCommandHelp(ctx *Context, command string) {
 		return
 	}
 
-	for _, c := range ctx.App.Commands {
-		if c.HasName(command) {
-			HelpPrinter(ctx.App.Writer, CommandHelpTemplate, c)
-			return
-		}
+	if c := ctx.App.Command(command); c != nil {
+		HelpPrinter(ctx.App.Writer, CommandHelpTemplate, c)
+		return
 	}
 
 	if ctx.App.CommandNotFound != nil {

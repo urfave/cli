@@ -758,7 +758,7 @@ func TestApp_Run_SubcommandFullPath(t *testing.T) {
 	if !strings.Contains(output, "foo bar - does bar things") {
 		t.Errorf("expected full path to subcommand: %s", output)
 	}
-	if !strings.Contains(output, "command foo bar [arguments...]") {
+	if !strings.Contains(output, "command foo bar [command options] [arguments...]") {
 		t.Errorf("expected full path to subcommand: %s", output)
 	}
 }
