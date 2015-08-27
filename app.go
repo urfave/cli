@@ -179,10 +179,11 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	if len(a.Commands) > 0 {
 		if a.Command(helpCommand.Name) == nil && !a.HideHelp {
 			a.Commands = append(a.Commands, helpCommand)
-			if (HelpFlag != BoolFlag{}) {
-				a.appendFlag(HelpFlag)
-			}
 		}
+	}
+
+	if (!a.HideHelp && HelpFlag != BoolFlag{}) {
+		a.appendFlag(HelpFlag)
 	}
 
 	// append flags
@@ -216,6 +217,10 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	}
 
 	if checkCompletions(context) {
+		return nil
+	}
+
+	if checkHelp(context) {
 		return nil
 	}
 
