@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/codegangsta/cli.png?branch=master)](https://travis-ci.org/codegangsta/cli)
 
 # cli.go
-cli.go is simple, fast, and fun package for building command line apps in Go. The goal is to enable developers to write fast and distributable command line applications in an expressive way.
+`cli.go` is simple, fast, and fun package for building command line apps in Go. The goal is to enable developers to write fast and distributable command line applications in an expressive way.
 
 You can view the API docs here:
 http://godoc.org/github.com/codegangsta/cli
@@ -9,7 +9,7 @@ http://godoc.org/github.com/codegangsta/cli
 ## Overview
 Command line apps are usually so tiny that there is absolutely no reason why your code should *not* be self-documenting. Things like generating help text and parsing command flags/options should not hinder productivity when writing a command line app.
 
-**This is where cli.go comes into play.** cli.go makes command line programming fun, organized, and expressive!
+**This is where `cli.go` comes into play.** `cli.go` makes command line programming fun, organized, and expressive!
 
 ## Installation
 Make sure you have a working Go environment (go 1.1+ is *required*). [See the install instructions](http://golang.org/doc/install.html).
@@ -25,7 +25,7 @@ export PATH=$PATH:$GOPATH/bin
 ```
 
 ## Getting Started
-One of the philosophies behind cli.go is that an API should be playful and full of discovery. So a cli.go app can be as little as one line of code in `main()`. 
+One of the philosophies behind `cli.go` is that an API should be playful and full of discovery. So a `cli.go` app can be as little as one line of code in `main()`. 
 
 ``` go
 package main
@@ -103,7 +103,8 @@ $ greet
 Hello friend!
 ```
 
-cli.go also generates some bitchass help text:
+`cli.go` also generates some bitchass help text:
+
 ```
 $ greet help
 NAME:
