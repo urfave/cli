@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -821,6 +822,49 @@ func TestApp_Run_Version(t *testing.T) {
 		if !strings.Contains(output, "0.1.0") {
 			t.Errorf("want version to contain %q, did not: \n%q", "0.1.0", output)
 		}
+	}
+}
+
+func TestApp_Run_Categories(t *testing.T) {
+	app := NewApp()
+	app.Name = "categories"
+	app.CategorizedHelp = true
+	app.Commands = []Command{
+		Command{
+			Name:     "command1",
+			Category: "1",
+		},
+		Command{
+			Name:     "command2",
+			Category: "1",
+		},
+		Command{
+			Name:     "command3",
+			Category: "2",
+		},
+	}
+	buf := new(bytes.Buffer)
+	app.Writer = buf
+
+	app.Run([]string{"categories"})
+
+	expect := CommandCategories{
+		&CommandCategory{
+			Name: "1",
+			Commands: []Command{
+				app.Commands[0],
+				app.Commands[1],
+			},
+		},
+		&CommandCategory{
+			Name: "2",
+			Commands: []Command{
+				app.Commands[2],
+			},
+		},
+	}
+	if !reflect.DeepEqual(app.Categories(), expect) {
+		t.Fatalf("expected categories %#v, to equal %#v", app.Categories(), expect)
 	}
 }
 
