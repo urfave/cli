@@ -51,6 +51,8 @@ type App struct {
 	Email string
 	// Writer writer to write output to
 	Writer io.Writer
+	// The specific usage of arguments
+	ArgumentUsage string
 }
 
 // Tries to find out when this binary was compiled.
