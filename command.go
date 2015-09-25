@@ -102,6 +102,12 @@ func (c Command) Run(ctx *Context) error {
 		err = set.Parse(append(flagArgs, regularArgs...))
 	} else {
 		err = set.Parse(ctx.Args().Tail())
+
+		// Work around issue where if the first arg in ctx.Args.Tail()
+		// is a flag, set.Parse returns an error
+		if c.SkipFlagParsing {
+			err = nil
+		}
 	}
 
 	if err != nil {
