@@ -103,7 +103,7 @@ $ greet
 Hello friend!
 ```
 
-`cli.go` also generates some bitchass help text:
+`cli.go` also generates neat help text:
 
 ```
 $ greet help
