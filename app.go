@@ -123,11 +123,11 @@ func (a *App) Run(arguments []string) (err error) {
 		return nil
 	}
 
-	if checkHelp(context) {
+	if !a.HideHelp && checkHelp(context) {
 		return nil
 	}
 
-	if checkVersion(context) {
+	if !a.HideVersion && checkVersion(context) {
 		return nil
 	}
 
