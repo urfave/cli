@@ -28,7 +28,7 @@ func TestCommandDoNotIgnoreFlags(t *testing.T) {
 func TestCommandIgnoreFlags(t *testing.T) {
 	app := NewApp()
 	set := flag.NewFlagSet("test", 0)
-	test := []string{"blah", "blah"}
+	test := []string{"blah", "blah", "-break"}
 	set.Parse(test)
 
 	c := NewContext(app, set, nil)
