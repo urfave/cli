@@ -18,6 +18,8 @@ type Command struct {
 	Usage string
 	// A longer explanation of how the command works
 	Description string
+	// A short description of the arguments of this command
+	ArgsUsage string
 	// The function to call when checking for bash command completions
 	BashComplete func(context *Context)
 	// An action to execute before any sub-subcommands are run, but after the context is ready
@@ -37,6 +39,8 @@ type Command struct {
 	// Boolean to hide built-in help command
 	HideHelp bool
 
+	// Full name of command for help, defaults to full command name, including parent commands.
+	HelpName        string
 	commandNamePath []string
 }
 
@@ -153,6 +157,12 @@ func (c Command) startApp(ctx *Context) error {
 
 	// set the name and usage
 	app.Name = fmt.Sprintf("%s %s", ctx.App.Name, c.Name)
+	if c.HelpName == "" {
+		app.HelpName = c.HelpName
+	} else {
+		app.HelpName = fmt.Sprintf("%s %s", ctx.App.Name, c.Name)
+	}
+
 	if c.Description != "" {
 		app.Usage = c.Description
 	} else {
