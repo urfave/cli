@@ -86,27 +86,23 @@ func (c Command) Run(ctx *Context) error {
 	}
 
 	var err error
-	if firstFlagIndex > -1 && !c.SkipFlagParsing {
-		args := ctx.Args()
-		regularArgs := make([]string, len(args[1:firstFlagIndex]))
-		copy(regularArgs, args[1:firstFlagIndex])
+	if !c.SkipFlagParsing {
+		if firstFlagIndex > -1 {
+			args := ctx.Args()
+			regularArgs := make([]string, len(args[1:firstFlagIndex]))
+			copy(regularArgs, args[1:firstFlagIndex])
 
-		var flagArgs []string
-		if terminatorIndex > -1 {
-			flagArgs = args[firstFlagIndex:terminatorIndex]
-			regularArgs = append(regularArgs, args[terminatorIndex:]...)
+			var flagArgs []string
+			if terminatorIndex > -1 {
+				flagArgs = args[firstFlagIndex:terminatorIndex]
+				regularArgs = append(regularArgs, args[terminatorIndex:]...)
+			} else {
+				flagArgs = args[firstFlagIndex:]
+			}
+
+			err = set.Parse(append(flagArgs, regularArgs...))
 		} else {
-			flagArgs = args[firstFlagIndex:]
-		}
-
-		err = set.Parse(append(flagArgs, regularArgs...))
-	} else {
-		err = set.Parse(ctx.Args().Tail())
-
-		// Work around issue where if the first arg in ctx.Args.Tail()
-		// is a flag, set.Parse returns an error
-		if c.SkipFlagParsing {
-			err = nil
+			err = set.Parse(ctx.Args().Tail())
 		}
 	}
 
