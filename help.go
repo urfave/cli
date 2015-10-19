@@ -190,7 +190,6 @@ func checkVersion(c *Context) bool {
 	if VersionFlag.Name != "" {
 		eachName(VersionFlag.Name, func(name string) {
 			if c.GlobalBool(name) || c.Bool(name) {
-				ShowVersion(c)
 				found = true
 			}
 		})
@@ -203,7 +202,6 @@ func checkHelp(c *Context) bool {
 	if HelpFlag.Name != "" {
 		eachName(HelpFlag.Name, func(name string) {
 			if c.GlobalBool(name) || c.Bool(name) {
-				ShowAppHelp(c)
 				found = true
 			}
 		})
