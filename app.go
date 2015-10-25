@@ -17,6 +17,8 @@ type App struct {
 	HelpName string
 	// Description of the program.
 	Usage string
+	// Text to override the USAGE section of help
+	UsageText string
 	// Description of the program argument format.
 	ArgsUsage string
 	// Version of the program
@@ -73,6 +75,7 @@ func NewApp() *App {
 		Name:         os.Args[0],
 		HelpName:     os.Args[0],
 		Usage:        "A new cli application",
+		UsageText:    "",
 		Version:      "0.0.0",
 		BashComplete: DefaultAppComplete,
 		Action:       helpCommand.Action,
