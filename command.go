@@ -16,6 +16,8 @@ type Command struct {
 	Aliases []string
 	// A short description of the usage of this command
 	Usage string
+	// Custom text to show on USAGE section of help
+	UsageText string
 	// A longer explanation of how the command works
 	Description string
 	// A short description of the arguments of this command
