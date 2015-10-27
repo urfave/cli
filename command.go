@@ -70,19 +70,19 @@ func (c Command) Run(ctx *Context) error {
 	set := flagSet(c.Name, c.Flags)
 	set.SetOutput(ioutil.Discard)
 
-	firstFlagIndex := -1
-	terminatorIndex := -1
-	for index, arg := range ctx.Args() {
-		if arg == "--" {
-			terminatorIndex = index
-			break
-		} else if strings.HasPrefix(arg, "-") && firstFlagIndex == -1 {
-			firstFlagIndex = index
-		}
-	}
-
 	var err error
 	if !c.SkipFlagParsing {
+		firstFlagIndex := -1
+		terminatorIndex := -1
+		for index, arg := range ctx.Args() {
+			if arg == "--" {
+				terminatorIndex = index
+				break
+			} else if strings.HasPrefix(arg, "-") && firstFlagIndex == -1 {
+				firstFlagIndex = index
+			}
+		}
+
 		if firstFlagIndex > -1 {
 			args := ctx.Args()
 			regularArgs := make([]string, len(args[1:firstFlagIndex]))
@@ -99,6 +99,10 @@ func (c Command) Run(ctx *Context) error {
 			err = set.Parse(append(flagArgs, regularArgs...))
 		} else {
 			err = set.Parse(ctx.Args().Tail())
+		}
+	} else {
+		if c.SkipFlagParsing {
+			err = set.Parse(append([]string{"--"}, ctx.Args().Tail()...))
 		}
 	}
 
