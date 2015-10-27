@@ -64,6 +64,7 @@ func TestCommandIgnoreFlagsIncludingFirstArgument(t *testing.T) {
 		SkipFlagParsing: true,
 	}
 	err := command.Run(c)
-
 	expect(t, err, nil)
+
+	expect(t, []string(c.Args()), []string{"blah", "-break"})
 }
