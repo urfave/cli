@@ -111,3 +111,52 @@ func TestContext_NumFlags(t *testing.T) {
 	globalSet.Parse([]string{"--myflagGlobal"})
 	expect(t, c.NumFlags(), 2)
 }
+
+func TestContext_IsHelp(t *testing.T) {
+	var helpPassed bool
+
+	set := flag.NewFlagSet("test", 0)
+	set.Bool("help", true, "doc")
+	c := cli.NewContext(nil, set, set)
+	set.Parse([]string{"--help"})
+	expect(t, c.IsHelp(), true)
+
+	set = flag.NewFlagSet("test", 0)
+	set.Bool("h", true, "doc")
+	c = cli.NewContext(nil, set, set)
+	set.Parse([]string{"--h"})
+	expect(t, c.IsHelp(), true)
+
+	set = flag.NewFlagSet("test", 0)
+	set.Bool("someflag", true, "doc")
+	c = cli.NewContext(nil, set, set)
+	set.Parse([]string{"--someflag"})
+	expect(t, c.IsHelp(), false)
+
+	app := cli.NewApp()
+	command := cli.Command{
+		Name: "cmd",
+		Action: func(c *cli.Context) {
+			helpPassed = c.IsHelp()
+		},
+	}
+	app.Commands = []cli.Command{command}
+	app.Run([]string{"", "cmd", "help"})
+	expect(t, helpPassed, true)
+	app.Run([]string{"", "cmd", "argc"})
+	expect(t, helpPassed, false)
+
+	app = cli.NewApp()
+	command = cli.Command{
+		Name: "cmd",
+		HideHelp: true,
+		Action: func(c *cli.Context) {
+			helpPassed = c.IsHelp()
+		},
+	}
+	app.Commands = []cli.Command{command}
+	app.Run([]string{"", "cmd", "help"})
+	expect(t, helpPassed, false)
+	app.Run([]string{"", "cmd", "argc"})
+	expect(t, helpPassed, false)
+}
