@@ -305,6 +305,24 @@ func TestParseMultiString(t *testing.T) {
 	}).Run([]string{"run", "-s", "10"})
 }
 
+func TestParseDestinationString(t *testing.T) {
+	var dest string
+	a := App{
+		Flags: []Flag{
+			StringFlag{
+				Name:        "dest",
+				Destination: &dest,
+			},
+		},
+		Action: func(ctx *Context) {
+			if dest != "10" {
+				t.Errorf("expected destination String 10")
+			}
+		},
+	}
+	a.Run([]string{"run", "--dest", "10"})
+}
+
 func TestParseMultiStringFromEnv(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("APP_COUNT", "20")
@@ -410,6 +428,24 @@ func TestParseMultiInt(t *testing.T) {
 		},
 	}
 	a.Run([]string{"run", "-s", "10"})
+}
+
+func TestParseDestinationInt(t *testing.T) {
+	var dest int
+	a := App{
+		Flags: []Flag{
+			IntFlag{
+				Name:        "dest",
+				Destination: &dest,
+			},
+		},
+		Action: func(ctx *Context) {
+			if dest != 10 {
+				t.Errorf("expected destination Int 10")
+			}
+		},
+	}
+	a.Run([]string{"run", "--dest", "10"})
 }
 
 func TestParseMultiIntFromEnv(t *testing.T) {
@@ -521,6 +557,24 @@ func TestParseMultiFloat64(t *testing.T) {
 	a.Run([]string{"run", "-s", "10.2"})
 }
 
+func TestParseDestinationFloat64(t *testing.T) {
+	var dest float64
+	a := App{
+		Flags: []Flag{
+			Float64Flag{
+				Name:        "dest",
+				Destination: &dest,
+			},
+		},
+		Action: func(ctx *Context) {
+			if dest != 10.2 {
+				t.Errorf("expected destination Float64 10.2")
+			}
+		},
+	}
+	a.Run([]string{"run", "--dest", "10.2"})
+}
+
 func TestParseMultiFloat64FromEnv(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("APP_TIMEOUT_SECONDS", "15.5")
@@ -576,6 +630,24 @@ func TestParseMultiBool(t *testing.T) {
 	a.Run([]string{"run", "--serve"})
 }
 
+func TestParseDestinationBool(t *testing.T) {
+	var dest bool
+	a := App{
+		Flags: []Flag{
+			BoolFlag{
+				Name:        "dest",
+				Destination: &dest,
+			},
+		},
+		Action: func(ctx *Context) {
+			if dest != true {
+				t.Errorf("expected destination Bool true")
+			}
+		},
+	}
+	a.Run([]string{"run", "--dest"})
+}
+
 func TestParseMultiBoolFromEnv(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("APP_DEBUG", "1")
@@ -629,6 +701,24 @@ func TestParseMultiBoolT(t *testing.T) {
 		},
 	}
 	a.Run([]string{"run", "--serve"})
+}
+
+func TestParseDestinationBoolT(t *testing.T) {
+	var dest bool
+	a := App{
+		Flags: []Flag{
+			BoolTFlag{
+				Name:        "dest",
+				Destination: &dest,
+			},
+		},
+		Action: func(ctx *Context) {
+			if dest != true {
+				t.Errorf("expected destination BoolT true")
+			}
+		},
+	}
+	a.Run([]string{"run", "--dest"})
 }
 
 func TestParseMultiBoolTFromEnv(t *testing.T) {

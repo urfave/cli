@@ -280,9 +280,10 @@ func (f BoolFlag) getName() string {
 // BoolTFlag this represents a boolean flag that is true by default, but can
 // still be set to false by --some-flag=false
 type BoolTFlag struct {
-	Name   string
-	Usage  string
-	EnvVar string
+	Name        string
+	Usage       string
+	EnvVar      string
+	Destination *bool
 }
 
 // String returns a readable representation of this value (for usage defaults)
@@ -307,6 +308,10 @@ func (f BoolTFlag) Apply(set *flag.FlagSet) {
 	}
 
 	eachName(f.Name, func(name string) {
+		if f.Destination != nil {
+			set.BoolVar(f.Destination, name, val, f.Usage)
+			return
+		}
 		set.Bool(name, val, f.Usage)
 	})
 }
