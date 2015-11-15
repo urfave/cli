@@ -4,7 +4,7 @@ import (
 	"os"
 )
 
-func Example() {
+func Example_App_Run() {
 	app := NewApp()
 	app.Name = "todo"
 	app.Usage = "task list on the command line"
@@ -30,7 +30,7 @@ func Example() {
 	app.Run(os.Args)
 }
 
-func ExampleSubcommand() {
+func Example_App_Run_subcommand() {
 	app := NewApp()
 	app.Name = "say"
 	app.Commands = []Command{
