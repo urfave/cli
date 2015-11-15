@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func ExampleApp() {
+func ExampleApp_Run() {
 	// set args for examples sake
 	os.Args = []string{"greet", "--name", "Jeremy"}
 
@@ -30,7 +30,7 @@ func ExampleApp() {
 	// Hello Jeremy
 }
 
-func ExampleAppSubcommand() {
+func ExampleApp_Run_subcommand() {
 	// set args for examples sake
 	os.Args = []string{"say", "hi", "english", "--name", "Jeremy"}
 	app := NewApp()
@@ -67,7 +67,7 @@ func ExampleAppSubcommand() {
 	// Hello, Jeremy
 }
 
-func ExampleAppHelp() {
+func ExampleApp_Run_help() {
 	// set args for examples sake
 	os.Args = []string{"greet", "h", "describeit"}
 
@@ -99,7 +99,7 @@ func ExampleAppHelp() {
 	//    This is how we describe describeit the function
 }
 
-func ExampleAppBashComplete() {
+func ExampleApp_Run_bashComplete() {
 	// set args for examples sake
 	os.Args = []string{"greet", "--generate-bash-completion"}
 
