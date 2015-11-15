@@ -158,6 +158,32 @@ app.Action = func(c *cli.Context) {
 ...
 ```
 
+You can also set a destination variable for a flag, to which the content will be scanned.
+``` go
+...
+var language string
+app.Flags = []cli.Flag {
+  cli.StringFlag{
+    Name:        "lang",
+    Value:       "english",
+    Usage:       "language for the greeting",
+    Destination: &language,
+  },
+}
+app.Action = func(c *cli.Context) {
+  name := "someone"
+  if len(c.Args()) > 0 {
+    name = c.Args()[0]
+  }
+  if language == "spanish" {
+    println("Hola", name)
+  } else {
+    println("Hello", name)
+  }
+}
+...
+```
+
 See full list of flags at http://godoc.org/github.com/codegangsta/cli
 
 #### Alternate Names
