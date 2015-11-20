@@ -74,34 +74,40 @@ func (c Command) Run(ctx *Context) error {
 	set := flagSet(c.Name, c.Flags)
 	set.SetOutput(ioutil.Discard)
 
-	firstFlagIndex := -1
-	terminatorIndex := -1
-	for index, arg := range ctx.Args() {
-		if arg == "--" {
-			terminatorIndex = index
-			break
-		} else if strings.HasPrefix(arg, "-") && firstFlagIndex == -1 {
-			firstFlagIndex = index
-		}
-	}
-
 	var err error
-	if firstFlagIndex > -1 && !c.SkipFlagParsing {
-		args := ctx.Args()
-		regularArgs := make([]string, len(args[1:firstFlagIndex]))
-		copy(regularArgs, args[1:firstFlagIndex])
-
-		var flagArgs []string
-		if terminatorIndex > -1 {
-			flagArgs = args[firstFlagIndex:terminatorIndex]
-			regularArgs = append(regularArgs, args[terminatorIndex:]...)
-		} else {
-			flagArgs = args[firstFlagIndex:]
+	if !c.SkipFlagParsing {
+		firstFlagIndex := -1
+		terminatorIndex := -1
+		for index, arg := range ctx.Args() {
+			if arg == "--" {
+				terminatorIndex = index
+				break
+			} else if strings.HasPrefix(arg, "-") && firstFlagIndex == -1 {
+				firstFlagIndex = index
+			}
 		}
 
-		err = set.Parse(append(flagArgs, regularArgs...))
+		if firstFlagIndex > -1 {
+			args := ctx.Args()
+			regularArgs := make([]string, len(args[1:firstFlagIndex]))
+			copy(regularArgs, args[1:firstFlagIndex])
+
+			var flagArgs []string
+			if terminatorIndex > -1 {
+				flagArgs = args[firstFlagIndex:terminatorIndex]
+				regularArgs = append(regularArgs, args[terminatorIndex:]...)
+			} else {
+				flagArgs = args[firstFlagIndex:]
+			}
+
+			err = set.Parse(append(flagArgs, regularArgs...))
+		} else {
+			err = set.Parse(ctx.Args().Tail())
+		}
 	} else {
-		err = set.Parse(ctx.Args().Tail())
+		if c.SkipFlagParsing {
+			err = set.Parse(append([]string{"--"}, ctx.Args().Tail()...))
+		}
 	}
 
 	if err != nil {
