@@ -3,6 +3,7 @@ package cli
 import (
 	"errors"
 	"flag"
+	"io/ioutil"
 	"testing"
 )
 
@@ -20,6 +21,7 @@ func TestCommandFlagParsing(t *testing.T) {
 
 	for _, c := range cases {
 		app := NewApp()
+		app.Writer = ioutil.Discard
 		set := flag.NewFlagSet("test", 0)
 		set.Parse(c.testArgs)
 
