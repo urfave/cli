@@ -3,7 +3,6 @@ package cli
 import (
 	"errors"
 	"flag"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -15,149 +14,133 @@ import (
 type Context struct {
 	App            *App
 	Command        Command
-	flagSet        *flag.FlagSet
-	setFlags       map[string]bool
-	globalSetFlags map[string]bool
+	flagSetManager FlagSetManager
 	parentContext  *Context
 }
 
 // Creates a new context. For use in when invoking an App or Command action.
 func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
-	return &Context{App: app, flagSet: set, parentContext: parentCtx}
+	return &Context{App: app, flagSetManager: NewFlagSetManager(set), parentContext: parentCtx}
 }
 
 // Looks up the value of a local int flag, returns 0 if no int flag exists
 func (c *Context) Int(name string) int {
-	return lookupInt(name, c.flagSet)
+	return c.flagSetManager.Int(name)
 }
 
 // Looks up the value of a local time.Duration flag, returns 0 if no time.Duration flag exists
 func (c *Context) Duration(name string) time.Duration {
-	return lookupDuration(name, c.flagSet)
+	return c.flagSetManager.Duration(name)
 }
 
 // Looks up the value of a local float64 flag, returns 0 if no float64 flag exists
 func (c *Context) Float64(name string) float64 {
-	return lookupFloat64(name, c.flagSet)
+	return c.flagSetManager.Float64(name)
 }
 
 // Looks up the value of a local bool flag, returns false if no bool flag exists
 func (c *Context) Bool(name string) bool {
-	return lookupBool(name, c.flagSet)
+	return c.flagSetManager.Bool(name)
 }
 
 // Looks up the value of a local boolT flag, returns false if no bool flag exists
 func (c *Context) BoolT(name string) bool {
-	return lookupBoolT(name, c.flagSet)
+	return c.flagSetManager.BoolT(name)
 }
 
 // Looks up the value of a local string flag, returns "" if no string flag exists
 func (c *Context) String(name string) string {
-	return lookupString(name, c.flagSet)
+	return c.flagSetManager.String(name)
 }
 
 // Looks up the value of a local string slice flag, returns nil if no string slice flag exists
 func (c *Context) StringSlice(name string) []string {
-	return lookupStringSlice(name, c.flagSet)
+	return c.flagSetManager.StringSlice(name)
 }
 
 // Looks up the value of a local int slice flag, returns nil if no int slice flag exists
 func (c *Context) IntSlice(name string) []int {
-	return lookupIntSlice(name, c.flagSet)
+	return c.flagSetManager.IntSlice(name)
 }
 
 // Looks up the value of a local generic flag, returns nil if no generic flag exists
 func (c *Context) Generic(name string) interface{} {
-	return lookupGeneric(name, c.flagSet)
+	return c.flagSetManager.Generic(name)
 }
 
 // Looks up the value of a global int flag, returns 0 if no int flag exists
 func (c *Context) GlobalInt(name string) int {
-	if fs := lookupGlobalFlagSet(name, c); fs != nil {
-		return lookupInt(name, fs)
+	if fsm := lookupGlobalFlagSetManager(name, c); fsm != nil {
+		return fsm.Int(name)
 	}
 	return 0
 }
 
 // Looks up the value of a global time.Duration flag, returns 0 if no time.Duration flag exists
 func (c *Context) GlobalDuration(name string) time.Duration {
-	if fs := lookupGlobalFlagSet(name, c); fs != nil {
-		return lookupDuration(name, fs)
+	if fsm := lookupGlobalFlagSetManager(name, c); fsm != nil {
+		return fsm.Duration(name)
 	}
 	return 0
 }
 
 // Looks up the value of a global bool flag, returns false if no bool flag exists
 func (c *Context) GlobalBool(name string) bool {
-	if fs := lookupGlobalFlagSet(name, c); fs != nil {
-		return lookupBool(name, fs)
+	if fsm := lookupGlobalFlagSetManager(name, c); fsm != nil {
+		return fsm.Bool(name)
 	}
 	return false
 }
 
 // Looks up the value of a global string flag, returns "" if no string flag exists
 func (c *Context) GlobalString(name string) string {
-	if fs := lookupGlobalFlagSet(name, c); fs != nil {
-		return lookupString(name, fs)
+	if fsm := lookupGlobalFlagSetManager(name, c); fsm != nil {
+		return fsm.String(name)
 	}
 	return ""
 }
 
 // Looks up the value of a global string slice flag, returns nil if no string slice flag exists
 func (c *Context) GlobalStringSlice(name string) []string {
-	if fs := lookupGlobalFlagSet(name, c); fs != nil {
-		return lookupStringSlice(name, fs)
+	if fsm := lookupGlobalFlagSetManager(name, c); fsm != nil {
+		return fsm.StringSlice(name)
 	}
 	return nil
 }
 
 // Looks up the value of a global int slice flag, returns nil if no int slice flag exists
 func (c *Context) GlobalIntSlice(name string) []int {
-	if fs := lookupGlobalFlagSet(name, c); fs != nil {
-		return lookupIntSlice(name, fs)
+	if fsm := lookupGlobalFlagSetManager(name, c); fsm != nil {
+		return fsm.IntSlice(name)
 	}
 	return nil
 }
 
 // Looks up the value of a global generic flag, returns nil if no generic flag exists
 func (c *Context) GlobalGeneric(name string) interface{} {
-	if fs := lookupGlobalFlagSet(name, c); fs != nil {
-		return lookupGeneric(name, fs)
+	if fsm := lookupGlobalFlagSetManager(name, c); fsm != nil {
+		return fsm.Generic(name)
 	}
 	return nil
 }
 
 // Returns the number of flags set
 func (c *Context) NumFlags() int {
-	return c.flagSet.NFlag()
+	return c.flagSetManager.NumFlags()
 }
 
 // Determines if the flag was actually set
 func (c *Context) IsSet(name string) bool {
-	if c.setFlags == nil {
-		c.setFlags = make(map[string]bool)
-		c.flagSet.Visit(func(f *flag.Flag) {
-			c.setFlags[f.Name] = true
-		})
-	}
-	return c.setFlags[name] == true
+	return c.flagSetManager.IsSet(name)
 }
 
 // Determines if the global flag was actually set
 func (c *Context) GlobalIsSet(name string) bool {
-	if c.globalSetFlags == nil {
-		c.globalSetFlags = make(map[string]bool)
-		ctx := c
-		if ctx.parentContext != nil {
-			ctx = ctx.parentContext
-		}
-		for ; ctx != nil && c.globalSetFlags[name] == false; ctx = ctx.parentContext {
-			ctx.flagSet.Visit(func(f *flag.Flag) {
-				c.globalSetFlags[f.Name] = true
-			})
-		}
+	if fsm := lookupGlobalFlagSetManager(name, c); fsm != nil {
+		return fsm.IsSet(name)
 	}
-	return c.globalSetFlags[name]
+
+	return false
 }
 
 // Returns a slice of flag names used in this context.
@@ -193,8 +176,7 @@ type Args []string
 
 // Returns the command line arguments associated with the context.
 func (c *Context) Args() Args {
-	args := Args(c.flagSet.Args())
-	return args
+	return c.flagSetManager.Args()
 }
 
 // Returns the nth argument, or else a blank string
@@ -233,117 +215,16 @@ func (a Args) Swap(from, to int) error {
 	return nil
 }
 
-func lookupGlobalFlagSet(name string, ctx *Context) *flag.FlagSet {
+func lookupGlobalFlagSetManager(name string, ctx *Context) FlagSetManager {
 	if ctx.parentContext != nil {
 		ctx = ctx.parentContext
 	}
 	for ; ctx != nil; ctx = ctx.parentContext {
-		if f := ctx.flagSet.Lookup(name); f != nil {
-			return ctx.flagSet
+		if ctx.flagSetManager.HasFlag(name) {
+			return ctx.flagSetManager
 		}
 	}
 	return nil
-}
-
-func lookupInt(name string, set *flag.FlagSet) int {
-	f := set.Lookup(name)
-	if f != nil {
-		val, err := strconv.Atoi(f.Value.String())
-		if err != nil {
-			return 0
-		}
-		return val
-	}
-
-	return 0
-}
-
-func lookupDuration(name string, set *flag.FlagSet) time.Duration {
-	f := set.Lookup(name)
-	if f != nil {
-		val, err := time.ParseDuration(f.Value.String())
-		if err == nil {
-			return val
-		}
-	}
-
-	return 0
-}
-
-func lookupFloat64(name string, set *flag.FlagSet) float64 {
-	f := set.Lookup(name)
-	if f != nil {
-		val, err := strconv.ParseFloat(f.Value.String(), 64)
-		if err != nil {
-			return 0
-		}
-		return val
-	}
-
-	return 0
-}
-
-func lookupString(name string, set *flag.FlagSet) string {
-	f := set.Lookup(name)
-	if f != nil {
-		return f.Value.String()
-	}
-
-	return ""
-}
-
-func lookupStringSlice(name string, set *flag.FlagSet) []string {
-	f := set.Lookup(name)
-	if f != nil {
-		return (f.Value.(*StringSlice)).Value()
-
-	}
-
-	return nil
-}
-
-func lookupIntSlice(name string, set *flag.FlagSet) []int {
-	f := set.Lookup(name)
-	if f != nil {
-		return (f.Value.(*IntSlice)).Value()
-
-	}
-
-	return nil
-}
-
-func lookupGeneric(name string, set *flag.FlagSet) interface{} {
-	f := set.Lookup(name)
-	if f != nil {
-		return f.Value
-	}
-	return nil
-}
-
-func lookupBool(name string, set *flag.FlagSet) bool {
-	f := set.Lookup(name)
-	if f != nil {
-		val, err := strconv.ParseBool(f.Value.String())
-		if err != nil {
-			return false
-		}
-		return val
-	}
-
-	return false
-}
-
-func lookupBoolT(name string, set *flag.FlagSet) bool {
-	f := set.Lookup(name)
-	if f != nil {
-		val, err := strconv.ParseBool(f.Value.String())
-		if err != nil {
-			return true
-		}
-		return val
-	}
-
-	return false
 }
 
 func copyFlag(name string, ff *flag.Flag, set *flag.FlagSet) {
