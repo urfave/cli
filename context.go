@@ -14,58 +14,63 @@ import (
 type Context struct {
 	App            *App
 	Command        Command
-	flagSetManager FlagSetManager
+	flagSetWrapper FlagSetWrapper
 	parentContext  *Context
+}
+
+// Creates a new context using a FlagSetManager for redirection when invoking an App or Command action.
+func NewContextWithFlagSetManager(app *App, fsm FlagSetWrapper, parentCtx *Context) *Context {
+	return &Context{App: app, flagSetWrapper: fsm, parentContext: parentCtx}
 }
 
 // Creates a new context. For use in when invoking an App or Command action.
 func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
-	return &Context{App: app, flagSetManager: NewFlagSetManager(set), parentContext: parentCtx}
+	return &Context{App: app, flagSetWrapper: NewFlagSetWrapper(set), parentContext: parentCtx}
 }
 
 // Looks up the value of a local int flag, returns 0 if no int flag exists
 func (c *Context) Int(name string) int {
-	return c.flagSetManager.Int(name)
+	return c.flagSetWrapper.Int(name)
 }
 
 // Looks up the value of a local time.Duration flag, returns 0 if no time.Duration flag exists
 func (c *Context) Duration(name string) time.Duration {
-	return c.flagSetManager.Duration(name)
+	return c.flagSetWrapper.Duration(name)
 }
 
 // Looks up the value of a local float64 flag, returns 0 if no float64 flag exists
 func (c *Context) Float64(name string) float64 {
-	return c.flagSetManager.Float64(name)
+	return c.flagSetWrapper.Float64(name)
 }
 
 // Looks up the value of a local bool flag, returns false if no bool flag exists
 func (c *Context) Bool(name string) bool {
-	return c.flagSetManager.Bool(name)
+	return c.flagSetWrapper.Bool(name)
 }
 
 // Looks up the value of a local boolT flag, returns false if no bool flag exists
 func (c *Context) BoolT(name string) bool {
-	return c.flagSetManager.BoolT(name)
+	return c.flagSetWrapper.BoolT(name)
 }
 
 // Looks up the value of a local string flag, returns "" if no string flag exists
 func (c *Context) String(name string) string {
-	return c.flagSetManager.String(name)
+	return c.flagSetWrapper.String(name)
 }
 
 // Looks up the value of a local string slice flag, returns nil if no string slice flag exists
 func (c *Context) StringSlice(name string) []string {
-	return c.flagSetManager.StringSlice(name)
+	return c.flagSetWrapper.StringSlice(name)
 }
 
 // Looks up the value of a local int slice flag, returns nil if no int slice flag exists
 func (c *Context) IntSlice(name string) []int {
-	return c.flagSetManager.IntSlice(name)
+	return c.flagSetWrapper.IntSlice(name)
 }
 
 // Looks up the value of a local generic flag, returns nil if no generic flag exists
 func (c *Context) Generic(name string) interface{} {
-	return c.flagSetManager.Generic(name)
+	return c.flagSetWrapper.Generic(name)
 }
 
 // Looks up the value of a global int flag, returns 0 if no int flag exists
@@ -126,12 +131,12 @@ func (c *Context) GlobalGeneric(name string) interface{} {
 
 // Returns the number of flags set
 func (c *Context) NumFlags() int {
-	return c.flagSetManager.NumFlags()
+	return c.flagSetWrapper.NumFlags()
 }
 
 // Determines if the flag was actually set
 func (c *Context) IsSet(name string) bool {
-	return c.flagSetManager.IsSet(name)
+	return c.flagSetWrapper.IsSet(name)
 }
 
 // Determines if the global flag was actually set
@@ -146,7 +151,7 @@ func (c *Context) GlobalIsSet(name string) bool {
 // Returns a slice of flag names used in this context.
 func (c *Context) FlagNames() (names []string) {
 	for _, flag := range c.Command.Flags {
-		name := strings.Split(flag.getName(), ",")[0]
+		name := strings.Split(flag.GetName(), ",")[0]
 		if name == "help" {
 			continue
 		}
@@ -158,7 +163,7 @@ func (c *Context) FlagNames() (names []string) {
 // Returns a slice of global flag names used by the app.
 func (c *Context) GlobalFlagNames() (names []string) {
 	for _, flag := range c.App.Flags {
-		name := strings.Split(flag.getName(), ",")[0]
+		name := strings.Split(flag.GetName(), ",")[0]
 		if name == "help" || name == "version" {
 			continue
 		}
@@ -176,7 +181,7 @@ type Args []string
 
 // Returns the command line arguments associated with the context.
 func (c *Context) Args() Args {
-	return c.flagSetManager.Args()
+	return c.flagSetWrapper.Args()
 }
 
 // Returns the nth argument, or else a blank string
@@ -215,13 +220,13 @@ func (a Args) Swap(from, to int) error {
 	return nil
 }
 
-func lookupGlobalFlagSetManager(name string, ctx *Context) FlagSetManager {
+func lookupGlobalFlagSetManager(name string, ctx *Context) FlagSetWrapper {
 	if ctx.parentContext != nil {
 		ctx = ctx.parentContext
 	}
 	for ; ctx != nil; ctx = ctx.parentContext {
-		if ctx.flagSetManager.HasFlag(name) {
-			return ctx.flagSetManager
+		if ctx.flagSetWrapper.HasFlag(name) {
+			return ctx.flagSetWrapper
 		}
 	}
 	return nil
@@ -241,7 +246,7 @@ func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
 		visited[f.Name] = true
 	})
 	for _, f := range flags {
-		parts := strings.Split(f.getName(), ",")
+		parts := strings.Split(f.GetName(), ",")
 		if len(parts) == 1 {
 			continue
 		}

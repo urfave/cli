@@ -6,7 +6,10 @@ import (
 	"time"
 )
 
-type FlagSetManager interface {
+// FlagSetWrapper wraps the flag.FlagSet interface
+// to allow customization of how data is selected and returned
+// via the Context
+type FlagSetWrapper interface {
 	HasFlag(name string) bool
 	IsSet(name string) bool
 	NumFlags() int
@@ -22,21 +25,19 @@ type FlagSetManager interface {
 	BoolT(name string) bool
 }
 
-// Context is a type that is passed through to
-// each Handler action in a cli application. Context
-// can be used to retrieve context-specific Args and
-// parsed command-line options.
-type DefaultFlagSetManager struct {
+// DefaultFlagSetWrapper wraps the flag.FlagSet and provides
+// implemention of the FlagSetWrapper interface
+type DefaultFlagSetWrapper struct {
 	set      *flag.FlagSet
 	setFlags map[string]bool
 }
 
-func NewFlagSetManager(set *flag.FlagSet) FlagSetManager {
-	return &DefaultFlagSetManager{set: set}
+func NewFlagSetWrapper(set *flag.FlagSet) FlagSetWrapper {
+	return &DefaultFlagSetWrapper{set: set}
 }
 
 // Determines if the flag was actually set
-func (fsm *DefaultFlagSetManager) HasFlag(name string) bool {
+func (fsm *DefaultFlagSetWrapper) HasFlag(name string) bool {
 	if fsm.set.Lookup(name) != nil {
 		return true
 	}
@@ -44,7 +45,7 @@ func (fsm *DefaultFlagSetManager) HasFlag(name string) bool {
 }
 
 // Determines if the flag was actually set
-func (fsm *DefaultFlagSetManager) IsSet(name string) bool {
+func (fsm *DefaultFlagSetWrapper) IsSet(name string) bool {
 	if fsm.setFlags == nil {
 		fsm.setFlags = make(map[string]bool)
 		fsm.set.Visit(func(f *flag.Flag) {
@@ -55,17 +56,17 @@ func (fsm *DefaultFlagSetManager) IsSet(name string) bool {
 }
 
 // Returns the number of flags set
-func (fsm *DefaultFlagSetManager) NumFlags() int {
+func (fsm *DefaultFlagSetWrapper) NumFlags() int {
 	return fsm.set.NFlag()
 }
 
 // Returns the command line arguments associated with the context.
-func (fsm *DefaultFlagSetManager) Args() Args {
+func (fsm *DefaultFlagSetWrapper) Args() Args {
 	args := Args(fsm.set.Args())
 	return args
 }
 
-func (fsm *DefaultFlagSetManager) Int(name string) int {
+func (fsm *DefaultFlagSetWrapper) Int(name string) int {
 	f := fsm.set.Lookup(name)
 	if f != nil {
 		val, err := strconv.Atoi(f.Value.String())
@@ -78,7 +79,7 @@ func (fsm *DefaultFlagSetManager) Int(name string) int {
 	return 0
 }
 
-func (fsm *DefaultFlagSetManager) Duration(name string) time.Duration {
+func (fsm *DefaultFlagSetWrapper) Duration(name string) time.Duration {
 	f := fsm.set.Lookup(name)
 	if f != nil {
 		val, err := time.ParseDuration(f.Value.String())
@@ -90,7 +91,7 @@ func (fsm *DefaultFlagSetManager) Duration(name string) time.Duration {
 	return 0
 }
 
-func (fsm *DefaultFlagSetManager) Float64(name string) float64 {
+func (fsm *DefaultFlagSetWrapper) Float64(name string) float64 {
 	f := fsm.set.Lookup(name)
 	if f != nil {
 		val, err := strconv.ParseFloat(f.Value.String(), 64)
@@ -103,7 +104,7 @@ func (fsm *DefaultFlagSetManager) Float64(name string) float64 {
 	return 0
 }
 
-func (fsm *DefaultFlagSetManager) String(name string) string {
+func (fsm *DefaultFlagSetWrapper) String(name string) string {
 	f := fsm.set.Lookup(name)
 	if f != nil {
 		return f.Value.String()
@@ -112,7 +113,7 @@ func (fsm *DefaultFlagSetManager) String(name string) string {
 	return ""
 }
 
-func (fsm *DefaultFlagSetManager) StringSlice(name string) []string {
+func (fsm *DefaultFlagSetWrapper) StringSlice(name string) []string {
 	f := fsm.set.Lookup(name)
 	if f != nil {
 		return (f.Value.(*StringSlice)).Value()
@@ -122,7 +123,7 @@ func (fsm *DefaultFlagSetManager) StringSlice(name string) []string {
 	return nil
 }
 
-func (fsm *DefaultFlagSetManager) IntSlice(name string) []int {
+func (fsm *DefaultFlagSetWrapper) IntSlice(name string) []int {
 	f := fsm.set.Lookup(name)
 	if f != nil {
 		return (f.Value.(*IntSlice)).Value()
@@ -132,7 +133,7 @@ func (fsm *DefaultFlagSetManager) IntSlice(name string) []int {
 	return nil
 }
 
-func (fsm *DefaultFlagSetManager) Generic(name string) interface{} {
+func (fsm *DefaultFlagSetWrapper) Generic(name string) interface{} {
 	f := fsm.set.Lookup(name)
 	if f != nil {
 		return f.Value
@@ -140,7 +141,7 @@ func (fsm *DefaultFlagSetManager) Generic(name string) interface{} {
 	return nil
 }
 
-func (fsm *DefaultFlagSetManager) Bool(name string) bool {
+func (fsm *DefaultFlagSetWrapper) Bool(name string) bool {
 	f := fsm.set.Lookup(name)
 	if f != nil {
 		val, err := strconv.ParseBool(f.Value.String())
@@ -153,7 +154,7 @@ func (fsm *DefaultFlagSetManager) Bool(name string) bool {
 	return false
 }
 
-func (fsm *DefaultFlagSetManager) BoolT(name string) bool {
+func (fsm *DefaultFlagSetWrapper) BoolT(name string) bool {
 	f := fsm.set.Lookup(name)
 	if f != nil {
 		val, err := strconv.ParseBool(f.Value.String())
