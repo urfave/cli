@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"strings"
@@ -38,6 +39,8 @@ type Command struct {
 	SkipFlagParsing bool
 	// Boolean to hide built-in help command
 	HideHelp bool
+	// FlagSetWrapperBuilder allow customization of the pipeline for returning values from the Context.
+	FlagSetWrapperBuilder func(context *Context, set *flag.FlagSet, flags []Flag) (FlagSetWrapper, error)
 
 	// Full name of command for help, defaults to full command name, including parent commands.
 	HelpName        string
@@ -125,6 +128,16 @@ func (c Command) Run(ctx *Context) error {
 		return nerr
 	}
 	context := NewContext(ctx.App, set, ctx)
+	if c.FlagSetWrapperBuilder != nil {
+		fsm, err := c.FlagSetWrapperBuilder(context, set, c.Flags)
+		if err != nil {
+			fmt.Fprintln(ctx.App.Writer, err)
+			fmt.Fprintln(ctx.App.Writer)
+			return nerr
+		}
+
+		context = NewContextWithFlagSetManager(ctx.App, fsm, ctx)
+	}
 
 	if checkCommandCompletions(context, c.Name) {
 		return nil
