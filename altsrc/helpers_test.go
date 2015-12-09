@@ -1,4 +1,4 @@
-package inputfilesupport
+package altsrc
 
 import (
 	"reflect"

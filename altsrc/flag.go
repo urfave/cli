@@ -1,4 +1,4 @@
-package inputfilesupport
+package altsrc
 
 import (
 	"flag"
@@ -14,7 +14,53 @@ import (
 // allows a value to be set on the existing parsed flags.
 type FlagInputSourceExtension interface {
 	cli.Flag
-	ApplyInputSourceValue(context *cli.Context, isc InputSourceContext)
+	ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error
+}
+
+// ApplyInputSourceValues iterates over all provided flags and
+// executes ApplyInputSourceValue on flags implementing the
+// FlagInputSourceExtension interface to initialize these flags
+// to an alternate input source.
+func ApplyInputSourceValues(context *cli.Context, inputSourceContext InputSourceContext, flags []cli.Flag) error {
+	for _, f := range flags {
+		inputSourceExtendedFlag, isType := f.(FlagInputSourceExtension)
+		if isType {
+			err := inputSourceExtendedFlag.ApplyInputSourceValue(context, inputSourceContext)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// InitInputSource is used to to setup an InputSourceContext on a cli.Command Before method. It will create a new
+// input source based on the func provided. If there is no error it will then apply the new input source to any flags
+// that are supported by the input source
+func InitInputSource(flags []cli.Flag, createInputSource func() (InputSourceContext, error)) func(context *cli.Context) error {
+	return func(context *cli.Context) error {
+		inputSource, err := createInputSource()
+		if err != nil {
+			return fmt.Errorf("Unable to create input source: inner error: \n'%v'", err.Error())
+		}
+
+		return ApplyInputSourceValues(context, inputSource, flags)
+	}
+}
+
+// InitInputSourceWithContext is used to to setup an InputSourceContext on a cli.Command Before method. It will create a new
+// input source based on the func provided with potentially using existing cli.Context values to initialize itself. If there is
+// no error it will then apply the new input source to any flags that are supported by the input source
+func InitInputSourceWithContext(flags []cli.Flag, createInputSource func(context *cli.Context) (InputSourceContext, error)) func(context *cli.Context) error {
+	return func(context *cli.Context) error {
+		inputSource, err := createInputSource(context)
+		if err != nil {
+			return fmt.Errorf("Unable to create input source with context: inner error: \n'%v'", err.Error())
+		}
+
+		return ApplyInputSourceValues(context, inputSource, flags)
+	}
 }
 
 // GenericFlag is the flag type that wraps cli.GenericFlag to allow
@@ -30,10 +76,13 @@ func NewGenericFlag(flag cli.GenericFlag) *GenericFlag {
 }
 
 // ApplyInputSourceValue applies a generic value to the flagSet if required
-func (f *GenericFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) {
+func (f *GenericFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
 		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVar) {
-			value := isc.Generic(f.GenericFlag.Name)
+			value, err := isc.Generic(f.GenericFlag.Name)
+			if err != nil {
+				return err
+			}
 			if value != nil {
 				eachName(f.Name, func(name string) {
 					f.set.Set(f.Name, value.String())
@@ -41,6 +90,8 @@ func (f *GenericFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourc
 			}
 		}
 	}
+
+	return nil
 }
 
 // Apply saves the flagSet for later usage then calls
@@ -63,10 +114,13 @@ func NewStringSliceFlag(flag cli.StringSliceFlag) *StringSliceFlag {
 }
 
 // ApplyInputSourceValue applies a StringSlice value to the flagSet if required
-func (f *StringSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) {
+func (f *StringSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
 		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVar) {
-			value := isc.StringSlice(f.StringSliceFlag.Name)
+			value, err := isc.StringSlice(f.StringSliceFlag.Name)
+			if err != nil {
+				return err
+			}
 			if value != nil {
 				var sliceValue cli.StringSlice = value
 				eachName(f.Name, func(name string) {
@@ -78,6 +132,7 @@ func (f *StringSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputS
 			}
 		}
 	}
+	return nil
 }
 
 // Apply saves the flagSet for later usage then calls
@@ -100,10 +155,13 @@ func NewIntSliceFlag(flag cli.IntSliceFlag) *IntSliceFlag {
 }
 
 // ApplyInputSourceValue applies a IntSlice value if required
-func (f *IntSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) {
+func (f *IntSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
 		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVar) {
-			value := isc.IntSlice(f.IntSliceFlag.Name)
+			value, err := isc.IntSlice(f.IntSliceFlag.Name)
+			if err != nil {
+				return err
+			}
 			if value != nil {
 				var sliceValue cli.IntSlice = value
 				eachName(f.Name, func(name string) {
@@ -115,6 +173,7 @@ func (f *IntSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSour
 			}
 		}
 	}
+	return nil
 }
 
 // Apply saves the flagSet for later usage then calls
@@ -137,10 +196,13 @@ func NewBoolFlag(flag cli.BoolFlag) *BoolFlag {
 }
 
 // ApplyInputSourceValue applies a Bool value to the flagSet if required
-func (f *BoolFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) {
+func (f *BoolFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
 		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVar) {
-			value := isc.Bool(f.BoolFlag.Name)
+			value, err := isc.Bool(f.BoolFlag.Name)
+			if err != nil {
+				return err
+			}
 			if value {
 				eachName(f.Name, func(name string) {
 					f.set.Set(f.Name, strconv.FormatBool(value))
@@ -148,6 +210,7 @@ func (f *BoolFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceCo
 			}
 		}
 	}
+	return nil
 }
 
 // Apply saves the flagSet for later usage then calls
@@ -170,10 +233,13 @@ func NewBoolTFlag(flag cli.BoolTFlag) *BoolTFlag {
 }
 
 // ApplyInputSourceValue applies a BoolT value to the flagSet if required
-func (f *BoolTFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) {
+func (f *BoolTFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
 		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVar) {
-			value := isc.BoolT(f.BoolTFlag.Name)
+			value, err := isc.BoolT(f.BoolTFlag.Name)
+			if err != nil {
+				return err
+			}
 			if !value {
 				eachName(f.Name, func(name string) {
 					f.set.Set(f.Name, strconv.FormatBool(value))
@@ -181,6 +247,7 @@ func (f *BoolTFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceC
 			}
 		}
 	}
+	return nil
 }
 
 // Apply saves the flagSet for later usage then calls
@@ -204,10 +271,13 @@ func NewStringFlag(flag cli.StringFlag) *StringFlag {
 }
 
 // ApplyInputSourceValue applies a String value to the flagSet if required
-func (f *StringFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) {
+func (f *StringFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
 		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVar)) {
-			value := isc.String(f.StringFlag.Name)
+			value, err := isc.String(f.StringFlag.Name)
+			if err != nil {
+				return err
+			}
 			if value != "" {
 				eachName(f.Name, func(name string) {
 					f.set.Set(f.Name, value)
@@ -215,6 +285,7 @@ func (f *StringFlag) ApplyInputSourceValue(context *cli.Context, isc InputSource
 			}
 		}
 	}
+	return nil
 }
 
 // Apply saves the flagSet for later usage then calls
@@ -238,10 +309,13 @@ func NewIntFlag(flag cli.IntFlag) *IntFlag {
 }
 
 // ApplyInputSourceValue applies a int value to the flagSet if required
-func (f *IntFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) {
+func (f *IntFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
 		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVar)) {
-			value := isc.Int(f.IntFlag.Name)
+			value, err := isc.Int(f.IntFlag.Name)
+			if err != nil {
+				return err
+			}
 			if value > 0 {
 				eachName(f.Name, func(name string) {
 					f.set.Set(f.Name, strconv.FormatInt(int64(value), 10))
@@ -249,6 +323,7 @@ func (f *IntFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceCon
 			}
 		}
 	}
+	return nil
 }
 
 // Apply saves the flagSet for later usage then calls
@@ -271,10 +346,13 @@ func NewDurationFlag(flag cli.DurationFlag) *DurationFlag {
 }
 
 // ApplyInputSourceValue applies a Duration value to the flagSet if required
-func (f *DurationFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) {
+func (f *DurationFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
 		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVar)) {
-			value := isc.Duration(f.DurationFlag.Name)
+			value, err := isc.Duration(f.DurationFlag.Name)
+			if err != nil {
+				return err
+			}
 			if value > 0 {
 				eachName(f.Name, func(name string) {
 					f.set.Set(f.Name, value.String())
@@ -282,6 +360,7 @@ func (f *DurationFlag) ApplyInputSourceValue(context *cli.Context, isc InputSour
 			}
 		}
 	}
+	return nil
 }
 
 // Apply saves the flagSet for later usage then calls
@@ -305,10 +384,13 @@ func NewFloat64Flag(flag cli.Float64Flag) *Float64Flag {
 }
 
 // ApplyInputSourceValue applies a Float64 value to the flagSet if required
-func (f *Float64Flag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) {
+func (f *Float64Flag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
 		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVar)) {
-			value := isc.Float64(f.Float64Flag.Name)
+			value, err := isc.Float64(f.Float64Flag.Name)
+			if err != nil {
+				return err
+			}
 			if value > 0 {
 				floatStr := float64ToString(value)
 				eachName(f.Name, func(name string) {
@@ -317,6 +399,7 @@ func (f *Float64Flag) ApplyInputSourceValue(context *cli.Context, isc InputSourc
 			}
 		}
 	}
+	return nil
 }
 
 // Apply saves the flagSet for later usage then calls

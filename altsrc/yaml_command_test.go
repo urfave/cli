@@ -1,4 +1,9 @@
-package inputfilesupport
+// Disabling building of yaml support in cases where golang is 1.0 or 1.1
+// as the encoding library is not implemented or supported.
+
+// +build !go1,!go1.1
+
+package altsrc
 
 import (
 	"flag"
@@ -32,7 +37,7 @@ func TestCommandYamlFileTest(t *testing.T) {
 			NewIntFlag(cli.IntFlag{Name: "test"}),
 			cli.StringFlag{Name: "load"}},
 	}
-	command.Before = InitializeYaml("load", command.Flags)
+	command.Before = InitInputSourceWithContext(command.Flags, NewYamlSourceFromFlagFunc("load"))
 	err := command.Run(c)
 
 	expect(t, err, nil)
@@ -64,7 +69,7 @@ func TestCommandYamlFileTestGlobalEnvVarWins(t *testing.T) {
 			NewIntFlag(cli.IntFlag{Name: "test", EnvVar: "THE_TEST"}),
 			cli.StringFlag{Name: "load"}},
 	}
-	command.Before = InitializeYaml("load", command.Flags)
+	command.Before = InitInputSourceWithContext(command.Flags, NewYamlSourceFromFlagFunc("load"))
 
 	err := command.Run(c)
 
@@ -95,7 +100,7 @@ func TestCommandYamlFileTestSpecifiedFlagWins(t *testing.T) {
 			NewIntFlag(cli.IntFlag{Name: "test"}),
 			cli.StringFlag{Name: "load"}},
 	}
-	command.Before = InitializeYaml("load", command.Flags)
+	command.Before = InitInputSourceWithContext(command.Flags, NewYamlSourceFromFlagFunc("load"))
 
 	err := command.Run(c)
 
@@ -126,7 +131,7 @@ func TestCommandYamlFileTestDefaultValueFileWins(t *testing.T) {
 			NewIntFlag(cli.IntFlag{Name: "test", Value: 7}),
 			cli.StringFlag{Name: "load"}},
 	}
-	command.Before = InitializeYaml("load", command.Flags)
+	command.Before = InitInputSourceWithContext(command.Flags, NewYamlSourceFromFlagFunc("load"))
 
 	err := command.Run(c)
 
@@ -160,7 +165,7 @@ func TestCommandYamlFileFlagHasDefaultGlobalEnvYamlSetGlobalEnvWins(t *testing.T
 			NewIntFlag(cli.IntFlag{Name: "test", Value: 7, EnvVar: "THE_TEST"}),
 			cli.StringFlag{Name: "load"}},
 	}
-	command.Before = InitializeYaml("load", command.Flags)
+	command.Before = InitInputSourceWithContext(command.Flags, NewYamlSourceFromFlagFunc("load"))
 	err := command.Run(c)
 
 	expect(t, err, nil)

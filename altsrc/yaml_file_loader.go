@@ -1,4 +1,9 @@
-package inputfilesupport
+// Disabling building of yaml support in cases where golang is 1.0 or 1.1
+// as the encoding library is not implemented or supported.
+
+// +build !go1,!go1.1
+
+package altsrc
 
 import (
 	"fmt"
@@ -8,52 +13,32 @@ import (
 	"os"
 
 	"github.com/codegangsta/cli"
+
 	"gopkg.in/yaml.v2"
 )
 
-// LoadFlag is a default load flag used to get a inputFilePath for a yaml file
-var LoadFlag = cli.StringFlag{
-	Name:  "load",
-	Usage: "file path to a yaml file",
-}
-
-// InitializeYaml is used to initialize Before funcs for commands.
-func InitializeYaml(filePathFlagName string, flags []cli.Flag) func(context *cli.Context) error {
-	return func(context *cli.Context) error {
-		filePath := context.String(filePathFlagName)
-		ymlLoader := &YamlSourceLoader{FilePath: filePath}
-		yamlInputSource, err := ymlLoader.Load()
-		if err != nil {
-			return fmt.Errorf("Unable to load Yaml file '%s': inner error: \n'%v'", filePath, err.Error())
-		}
-
-		for _, f := range flags {
-			inputSourceExtendedFlag, isType := f.(FlagInputSourceExtension)
-			if isType {
-				inputSourceExtendedFlag.ApplyInputSourceValue(context, yamlInputSource)
-			}
-		}
-
-		return nil
-	}
-}
-
-// YamlSourceLoader can load yaml files and return a InputSourceContext
-// to be used for a parameter value
-type YamlSourceLoader struct {
+type yamlSourceContext struct {
 	FilePath string
 }
 
-// Load returns an input source if successful or an error if there is a failure
-// loading the yaml file
-func (ysl *YamlSourceLoader) Load() (InputSourceContext, error) {
+// NewYamlSourceFromFile creates a new Yaml InputSourceContext from a filepath.
+func NewYamlSourceFromFile(file string) (InputSourceContext, error) {
+	ymlLoader := &yamlSourceLoader{FilePath: file}
 	var results map[string]interface{}
 	err := readCommandYaml(ysl.FilePath, &results)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("Unable to load Yaml file '%s': inner error: \n'%v'", filePath, err.Error())
 	}
 
 	return &MapInputSource{valueMap: results}, nil
+}
+
+// NewYamlSourceFromFlagFunc creates a new Yaml InputSourceContext from a provided flag name and source context.
+func NewYamlSourceFromFlagFunc(flagFileName string) func(InputSourceContext, error) {
+	return func(context cli.Context) {
+		filePath := context.String(flagFileName)
+		return NewYamlSourceFromFile(filePath)
+	}
 }
 
 func readCommandYaml(filePath string, container interface{}) (err error) {
