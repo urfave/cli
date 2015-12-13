@@ -126,15 +126,15 @@ func (a *App) Run(arguments []string) (err error) {
 	}
 	context := NewContext(a, set, nil)
 
+	if checkCompletions(context) {
+		return nil
+	}
+
 	if err != nil {
 		fmt.Fprintln(a.Writer, "Incorrect Usage.")
 		fmt.Fprintln(a.Writer)
 		ShowAppHelp(context)
 		return err
-	}
-
-	if checkCompletions(context) {
-		return nil
 	}
 
 	if !a.HideHelp && checkHelp(context) {
@@ -233,15 +233,15 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 		return nerr
 	}
 
+	if checkCompletions(context) {
+		return nil
+	}
+
 	if err != nil {
 		fmt.Fprintln(a.Writer, "Incorrect Usage.")
 		fmt.Fprintln(a.Writer)
 		ShowSubcommandHelp(context)
 		return err
-	}
-
-	if checkCompletions(context) {
-		return nil
 	}
 
 	if len(a.Commands) > 0 {
