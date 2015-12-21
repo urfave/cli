@@ -5,13 +5,14 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path"
 	"time"
 )
 
 // App is the main structure of a cli application. It is recomended that
 // an app be created with the cli.NewApp() function
 type App struct {
-	// The name of the program. Defaults to os.Args[0]
+	// The name of the program. Defaults to path.Base(os.Args[0])
 	Name string
 	// Full name of command for help, defaults to Name
 	HelpName string
@@ -70,8 +71,8 @@ func compileTime() time.Time {
 // Creates a new cli Application with some reasonable defaults for Name, Usage, Version and Action.
 func NewApp() *App {
 	return &App{
-		Name:         os.Args[0],
-		HelpName:     os.Args[0],
+		Name:         path.Base(os.Args[0]),
+		HelpName:     path.Base(os.Args[0]),
 		Usage:        "A new cli application",
 		Version:      "0.0.0",
 		BashComplete: DefaultAppComplete,
