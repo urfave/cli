@@ -58,7 +58,7 @@ func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 
 	err := app.Run([]string{"foo", "bar"})
 	if err == nil {
-		t.Fatalf("expected to recieve error from Run, got none")
+		t.Fatalf("expected to receive error from Run, got none")
 	}
 
 	if !strings.Contains(err.Error(), "before error") {
