@@ -942,6 +942,11 @@ func TestApp_Run_SubcommandDoesNotOverwriteErrorFromBefore(t *testing.T) {
 	app := NewApp()
 	app.Commands = []Command{
 		Command{
+			Subcommands: []Command{
+				Command{
+					Name: "sub",
+				},
+			},
 			Name:   "bar",
 			Before: func(c *Context) error { return fmt.Errorf("before error") },
 			After:  func(c *Context) error { return fmt.Errorf("after error") },

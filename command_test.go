@@ -5,6 +5,8 @@ import (
 	"flag"
 	"io/ioutil"
 	"testing"
+	"fmt"
+	"strings"
 )
 
 func TestCommandFlagParsing(t *testing.T) {
@@ -41,5 +43,28 @@ func TestCommandFlagParsing(t *testing.T) {
 
 		expect(t, err, c.expectedErr)
 		expect(t, []string(context.Args()), c.testArgs)
+	}
+}
+
+func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
+	app := NewApp()
+	app.Commands = []Command{
+		Command{
+			Name:   "bar",
+			Before: func(c *Context) error { return fmt.Errorf("before error") },
+			After:  func(c *Context) error { return fmt.Errorf("after error") },
+		},
+	}
+
+	err := app.Run([]string{"foo", "bar"})
+	if err == nil {
+		t.Fatalf("expected to receive error from Run, got none")
+	}
+
+	if !strings.Contains(err.Error(), "before error") {
+		t.Errorf("expected text of error from Before method, but got none in \"%v\"", err)
+	}
+	if !strings.Contains(err.Error(), "after error") {
+		t.Errorf("expected text of error from After method, but got none in \"%v\"", err)
 	}
 }

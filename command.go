@@ -54,8 +54,8 @@ func (c Command) FullName() string {
 }
 
 // Invokes the command given the context, parses ctx.Args() to generate command-specific flags
-func (c Command) Run(ctx *Context) error {
-	if len(c.Subcommands) > 0 || c.Before != nil || c.After != nil {
+func (c Command) Run(ctx *Context) (err error) {
+	if len(c.Subcommands) > 0 {
 		return c.startApp(ctx)
 	}
 
@@ -74,7 +74,6 @@ func (c Command) Run(ctx *Context) error {
 	set := flagSet(c.Name, c.Flags)
 	set.SetOutput(ioutil.Discard)
 
-	var err error
 	if !c.SkipFlagParsing {
 		firstFlagIndex := -1
 		terminatorIndex := -1
@@ -133,6 +132,30 @@ func (c Command) Run(ctx *Context) error {
 	if checkCommandHelp(context, c.Name) {
 		return nil
 	}
+
+	if c.After != nil {
+		defer func() {
+			afterErr := c.After(context)
+			if afterErr != nil {
+				if err != nil {
+					err = NewMultiError(err, afterErr)
+				} else {
+					err = afterErr
+				}
+			}
+		}()
+	}
+
+	if c.Before != nil {
+		err := c.Before(context)
+		if err != nil {
+			fmt.Fprintln(ctx.App.Writer, err)
+			fmt.Fprintln(ctx.App.Writer)
+			ShowCommandHelp(ctx, c.Name)
+			return err
+		}
+	}
+
 	context.Command = c
 	c.Action(context)
 	return nil
