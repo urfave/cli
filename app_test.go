@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+"errors"
 )
 
 func ExampleApp_Run() {
@@ -963,5 +964,65 @@ func TestApp_Run_SubcommandDoesNotOverwriteErrorFromBefore(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "after error") {
 		t.Errorf("expected text of error from After method, but got none in \"%v\"", err)
+	}
+}
+
+func TestApp_OnUsageError_WithWrongFlagValue(t *testing.T) {
+	app := NewApp()
+	app.Flags = []Flag{
+		IntFlag{Name: "flag"},
+	}
+	app.OnUsageError = func(c *Context, err error, isSubcommand bool) error {
+		if isSubcommand {
+			t.Errorf("Expect no subcommand")
+		}
+		if !strings.HasPrefix(err.Error(), "invalid value \"wrong\"") {
+			t.Errorf("Expect an invalid value error, but got \"%v\"", err)
+		}
+		return errors.New("intercepted: " + err.Error())
+	}
+	app.Commands = []Command{
+		Command{
+			Name: "bar",
+		},
+	}
+
+	err := app.Run([]string{"foo", "--flag=wrong"})
+	if err == nil {
+		t.Fatalf("expected to receive error from Run, got none")
+	}
+
+	if !strings.HasPrefix(err.Error(), "intercepted: invalid value") {
+		t.Errorf("Expect an intercepted error, but got \"%v\"", err)
+	}
+}
+
+func TestApp_OnUsageError_WithWrongFlagValue_ForSubcommand(t *testing.T) {
+	app := NewApp()
+	app.Flags = []Flag{
+		IntFlag{Name: "flag"},
+	}
+	app.OnUsageError = func(c *Context, err error, isSubcommand bool) error {
+		if isSubcommand {
+			t.Errorf("Expect subcommand")
+		}
+		if !strings.HasPrefix(err.Error(), "invalid value \"wrong\"") {
+			t.Errorf("Expect an invalid value error, but got \"%v\"", err)
+		}
+		return errors.New("intercepted: " + err.Error())
+	}
+	app.Commands = []Command{
+		Command{
+			Name: "bar",
+		},
+	}
+
+	err := app.Run([]string{"foo", "--flag=wrong", "bar"})
+	if err == nil {
+		t.Fatalf("expected to receive error from Run, got none")
+	}
+
+	if !strings.HasPrefix(err.Error(), "intercepted: invalid value") {
+		t.Errorf("Expect an intercepted error, but got \"%v\"", err)
 	}
 }
