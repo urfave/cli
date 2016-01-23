@@ -44,9 +44,9 @@ type App struct {
 	Action func(context *Context)
 	// Execute this function if the proper command cannot be found
 	CommandNotFound func(context *Context, command string)
-	// Execute this function if an usage error occurs. This is useful for displaying customized usage error messages.
-	// This function is able to manipulate the original error in another.
-	// If this function is not set the "Incorrect usage" is displayed and the execution is interrupted.
+	// Execute this function, if an usage error occurs. This is useful for displaying customized usage error messages.
+	// This function is able to replace the original error messages.
+	// If this function is not set, the "Incorrect usage" is displayed and the execution is interrupted.
 	OnUsageError func(context *Context, err error, isSubcommand bool) error
 	// Compilation date
 	Compiled time.Time
