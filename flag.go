@@ -350,9 +350,8 @@ func (f StringFlag) FormatValueHelp() string {
 	s := f.Value
 	if len(s) == 0 {
 		return ""
-	} else {
-		return fmt.Sprintf("\"%s\"", s)
 	}
+	return fmt.Sprintf("\"%s\"", s)
 }
 
 // Apply populates the flag given the flag set and environment
