@@ -30,6 +30,10 @@ type Command struct {
 	After func(context *Context) error
 	// The function to call when this command is invoked
 	Action func(context *Context)
+	// Execute this function if an usage error occurs. This is useful for displaying customized usage error messages.
+	// This function is able to manipulate the original error in another.
+	// If this function is not set the "Incorrect usage" is displayed and the execution is interrupted.
+	OnUsageError func(context *Context, err error) error
 	// List of child commands
 	Subcommands []Command
 	// List of flags to parse
@@ -113,10 +117,15 @@ func (c Command) Run(ctx *Context) (err error) {
 	}
 
 	if err != nil {
-		fmt.Fprintln(ctx.App.Writer, "Incorrect Usage.")
-		fmt.Fprintln(ctx.App.Writer)
-		ShowCommandHelp(ctx, c.Name)
-		return err
+		if c.OnUsageError != nil {
+			err := c.OnUsageError(ctx, err)
+			return err
+		} else {
+			fmt.Fprintln(ctx.App.Writer, "Incorrect Usage.")
+			fmt.Fprintln(ctx.App.Writer)
+			ShowCommandHelp(ctx, c.Name)
+			return err
+		}
 	}
 
 	nerr := normalizeFlags(c.Flags, set)

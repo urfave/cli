@@ -44,6 +44,10 @@ type App struct {
 	Action func(context *Context)
 	// Execute this function if the proper command cannot be found
 	CommandNotFound func(context *Context, command string)
+	// Execute this function if an usage error occurs. This is useful for displaying customized usage error messages.
+	// This function is able to manipulate the original error in another.
+	// If this function is not set the "Incorrect usage" is displayed and the execution is interrupted.
+	OnUsageError func(context *Context, err error, isSubcommand bool) error
 	// Compilation date
 	Compiled time.Time
 	// List of all authors who contributed
@@ -131,9 +135,14 @@ func (a *App) Run(arguments []string) (err error) {
 	}
 
 	if err != nil {
-		fmt.Fprintf(a.Writer, "%s\n\n", "Incorrect Usage.")
-		ShowAppHelp(context)
-		return err
+		if a.OnUsageError != nil {
+			err := a.OnUsageError(context, err, false)
+			return err
+		} else {
+			fmt.Fprintf(a.Writer, "%s\n\n", "Incorrect Usage.")
+			ShowAppHelp(context)
+			return err
+		}
 	}
 
 	if !a.HideHelp && checkHelp(context) {
@@ -238,9 +247,14 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	}
 
 	if err != nil {
-		fmt.Fprintf(a.Writer, "%s\n\n", "Incorrect Usage.")
-		ShowSubcommandHelp(context)
-		return err
+		if a.OnUsageError != nil {
+			err = a.OnUsageError(context, err, true)
+			return err
+		} else {
+			fmt.Fprintf(a.Writer, "%s\n\n", "Incorrect Usage.")
+			ShowSubcommandHelp(context)
+			return err
+		}
 	}
 
 	if len(a.Commands) > 0 {
