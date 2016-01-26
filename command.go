@@ -81,6 +81,9 @@ func (c Command) Run(ctx *Context) (err error) {
 			if arg == "--" {
 				terminatorIndex = index
 				break
+			} else if arg == "-" {
+				// Do nothing. A dash alone is not really a flag.
+				continue
 			} else if strings.HasPrefix(arg, "-") && firstFlagIndex == -1 {
 				firstFlagIndex = index
 			}
