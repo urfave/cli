@@ -249,6 +249,24 @@ func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
 	expect(t, args[2], "--notARealFlag")
 }
 
+func TestApp_CommandWithDash(t *testing.T) {
+	var args []string
+
+	app := NewApp()
+	command := Command{
+		Name: "cmd",
+		Action: func(c *Context) {
+			args = c.Args()
+		},
+	}
+	app.Commands = []Command{command}
+
+	app.Run([]string{"", "cmd", "my-arg", "-"})
+
+	expect(t, args[0], "my-arg")
+	expect(t, args[1], "-")
+}
+
 func TestApp_CommandWithNoFlagBeforeTerminator(t *testing.T) {
 	var args []string
 
