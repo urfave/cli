@@ -119,21 +119,19 @@ func (a *App) Run(arguments []string) (err error) {
 	set.SetOutput(ioutil.Discard)
 	err = set.Parse(arguments[1:])
 	nerr := normalizeFlags(a.Flags, set)
+	context := NewContext(a, set, nil)
 	if nerr != nil {
 		fmt.Fprintln(a.Writer, nerr)
-		context := NewContext(a, set, nil)
 		ShowAppHelp(context)
 		return nerr
 	}
-	context := NewContext(a, set, nil)
 
 	if checkCompletions(context) {
 		return nil
 	}
 
 	if err != nil {
-		fmt.Fprintln(a.Writer, "Incorrect Usage.")
-		fmt.Fprintln(a.Writer)
+		fmt.Fprintf(a.Writer, "%s\n\n", "Incorrect Usage.")
 		ShowAppHelp(context)
 		return err
 	}
@@ -150,8 +148,7 @@ func (a *App) Run(arguments []string) (err error) {
 
 	if a.After != nil {
 		defer func() {
-			afterErr := a.After(context)
-			if afterErr != nil {
+			if afterErr := a.After(context); afterErr != nil {
 				if err != nil {
 					err = NewMultiError(err, afterErr)
 				} else {
@@ -162,10 +159,9 @@ func (a *App) Run(arguments []string) (err error) {
 	}
 
 	if a.Before != nil {
-		err := a.Before(context)
+		err = a.Before(context)
 		if err != nil {
-			fmt.Fprintln(a.Writer, err)
-			fmt.Fprintln(a.Writer)
+			fmt.Fprintf(a.Writer, "%v\n\n", err)
 			ShowAppHelp(context)
 			return err
 		}
@@ -242,8 +238,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	}
 
 	if err != nil {
-		fmt.Fprintln(a.Writer, "Incorrect Usage.")
-		fmt.Fprintln(a.Writer)
+		fmt.Fprintf(a.Writer, "%s\n\n", "Incorrect Usage.")
 		ShowSubcommandHelp(context)
 		return err
 	}
