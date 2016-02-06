@@ -192,7 +192,7 @@ func (c Command) startApp(ctx *Context) error {
 	if c.HelpName == "" {
 		app.HelpName = c.HelpName
 	} else {
-		app.HelpName = fmt.Sprintf("%s %s", ctx.App.Name, c.Name)
+		app.HelpName = app.Name
 	}
 
 	if c.Description != "" {
@@ -231,12 +231,9 @@ func (c Command) startApp(ctx *Context) error {
 		app.Action = helpSubcommand.Action
 	}
 
-	var newCmds []Command
-	for _, cc := range app.Commands {
-		cc.commandNamePath = []string{c.Name, cc.Name}
-		newCmds = append(newCmds, cc)
+	for index, cc := range app.Commands {
+		app.Commands[index].commandNamePath = []string{c.Name, cc.Name}
 	}
-	app.Commands = newCmds
 
 	return app.RunAsSubcommand(ctx)
 }

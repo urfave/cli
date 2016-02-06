@@ -3,10 +3,10 @@ package cli
 import (
 	"errors"
 	"flag"
-	"io/ioutil"
-	"testing"
 	"fmt"
+	"io/ioutil"
 	"strings"
+	"testing"
 )
 
 func TestCommandFlagParsing(t *testing.T) {
