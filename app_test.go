@@ -24,6 +24,7 @@ func ExampleApp_Run() {
 	app.Action = func(c *Context) {
 		fmt.Printf("Hello %v\n", c.String("name"))
 	}
+	app.UsageText = "app [first_arg] [second_arg]"
 	app.Author = "Harrison"
 	app.Email = "harrison@lolwut.com"
 	app.Authors = []Author{Author{Name: "Oliver Allen", Email: "oliver@toyshop.com"}}
