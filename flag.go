@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"runtime"
 )
 
 // This flag enables bash-completion for all commands and subcommands
@@ -35,7 +36,7 @@ type Flag interface {
 	fmt.Stringer
 	// Apply Flag settings to the given flag set
 	Apply(*flag.FlagSet)
-	getName() string
+	GetName() string
 }
 
 func flagSet(name string, flags []Flag) *flag.FlagSet {
@@ -73,7 +74,18 @@ type GenericFlag struct {
 // help text to the user (uses the String() method of the generic flag to show
 // the value)
 func (f GenericFlag) String() string {
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s%s \"%v\"\t%v", prefixFor(f.Name), f.Name, f.Value, f.Usage))
+	return withEnvHint(f.EnvVar, fmt.Sprintf("%s %v\t%v", prefixedNames(f.Name), f.FormatValueHelp(), f.Usage))
+}
+
+func (f GenericFlag) FormatValueHelp() string {
+	if f.Value == nil {
+		return ""
+	}
+	s := f.Value.String()
+	if len(s) == 0 {
+		return ""
+	}
+	return fmt.Sprintf("\"%s\"", s)
 }
 
 // Apply takes the flagset and calls Set on the generic flag with the value
@@ -95,7 +107,7 @@ func (f GenericFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f GenericFlag) getName() string {
+func (f GenericFlag) GetName() string {
 	return f.Name
 }
 
@@ -159,7 +171,7 @@ func (f StringSliceFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f StringSliceFlag) getName() string {
+func (f StringSliceFlag) GetName() string {
 	return f.Name
 }
 
@@ -231,7 +243,7 @@ func (f IntSliceFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f IntSliceFlag) getName() string {
+func (f IntSliceFlag) GetName() string {
 	return f.Name
 }
 
@@ -273,7 +285,7 @@ func (f BoolFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f BoolFlag) getName() string {
+func (f BoolFlag) GetName() string {
 	return f.Name
 }
 
@@ -316,7 +328,7 @@ func (f BoolTFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f BoolTFlag) getName() string {
+func (f BoolTFlag) GetName() string {
 	return f.Name
 }
 
@@ -331,16 +343,15 @@ type StringFlag struct {
 
 // String returns the usage
 func (f StringFlag) String() string {
-	var fmtString string
-	fmtString = "%s %v\t%v"
+	return withEnvHint(f.EnvVar, fmt.Sprintf("%s %v\t%v", prefixedNames(f.Name), f.FormatValueHelp(), f.Usage))
+}
 
-	if len(f.Value) > 0 {
-		fmtString = "%s \"%v\"\t%v"
-	} else {
-		fmtString = "%s %v\t%v"
+func (f StringFlag) FormatValueHelp() string {
+	s := f.Value
+	if len(s) == 0 {
+		return ""
 	}
-
-	return withEnvHint(f.EnvVar, fmt.Sprintf(fmtString, prefixedNames(f.Name), f.Value, f.Usage))
+	return fmt.Sprintf("\"%s\"", s)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -364,7 +375,7 @@ func (f StringFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f StringFlag) getName() string {
+func (f StringFlag) GetName() string {
 	return f.Name
 }
 
@@ -407,7 +418,7 @@ func (f IntFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f IntFlag) getName() string {
+func (f IntFlag) GetName() string {
 	return f.Name
 }
 
@@ -450,7 +461,7 @@ func (f DurationFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f DurationFlag) getName() string {
+func (f DurationFlag) GetName() string {
 	return f.Name
 }
 
@@ -492,7 +503,7 @@ func (f Float64Flag) Apply(set *flag.FlagSet) {
 	})
 }
 
-func (f Float64Flag) getName() string {
+func (f Float64Flag) GetName() string {
 	return f.Name
 }
 
@@ -521,7 +532,15 @@ func prefixedNames(fullName string) (prefixed string) {
 func withEnvHint(envVar, str string) string {
 	envText := ""
 	if envVar != "" {
-		envText = fmt.Sprintf(" [$%s]", strings.Join(strings.Split(envVar, ","), ", $"))
+		prefix := "$"
+		suffix := ""
+		sep := ", $"
+		if runtime.GOOS == "windows" {
+			prefix = "%"
+			suffix = "%"
+			sep = "%, %"
+		}
+		envText = fmt.Sprintf(" [%s%s%s]", prefix, strings.Join(strings.Split(envVar, ","), sep), suffix)
 	}
 	return str + envText
 }

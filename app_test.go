@@ -5,9 +5,11 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
+"errors"
 )
 
 func ExampleApp_Run() {
@@ -22,6 +24,7 @@ func ExampleApp_Run() {
 	app.Action = func(c *Context) {
 		fmt.Printf("Hello %v\n", c.String("name"))
 	}
+	app.UsageText = "app [first_arg] [second_arg]"
 	app.Author = "Harrison"
 	app.Email = "harrison@lolwut.com"
 	app.Authors = []Author{Author{Name: "Oliver Allen", Email: "oliver@toyshop.com"}}
@@ -246,6 +249,24 @@ func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
 	expect(t, args[0], "my-arg")
 	expect(t, args[1], "--")
 	expect(t, args[2], "--notARealFlag")
+}
+
+func TestApp_CommandWithDash(t *testing.T) {
+	var args []string
+
+	app := NewApp()
+	command := Command{
+		Name: "cmd",
+		Action: func(c *Context) {
+			args = c.Args()
+		},
+	}
+	app.Commands = []Command{command}
+
+	app.Run([]string{"", "cmd", "my-arg", "-"})
+
+	expect(t, args[0], "my-arg")
+	expect(t, args[1], "-")
 }
 
 func TestApp_CommandWithNoFlagBeforeTerminator(t *testing.T) {
@@ -556,6 +577,7 @@ func TestAppNoHelpFlag(t *testing.T) {
 	HelpFlag = BoolFlag{}
 
 	app := NewApp()
+	app.Writer = ioutil.Discard
 	err := app.Run([]string{"test", "-h"})
 
 	if err != flag.ErrHelp {
@@ -940,6 +962,11 @@ func TestApp_Run_SubcommandDoesNotOverwriteErrorFromBefore(t *testing.T) {
 	app := NewApp()
 	app.Commands = []Command{
 		Command{
+			Subcommands: []Command{
+				Command{
+					Name: "sub",
+				},
+			},
 			Name:   "bar",
 			Before: func(c *Context) error { return fmt.Errorf("before error") },
 			After:  func(c *Context) error { return fmt.Errorf("after error") },
@@ -956,5 +983,65 @@ func TestApp_Run_SubcommandDoesNotOverwriteErrorFromBefore(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "after error") {
 		t.Errorf("expected text of error from After method, but got none in \"%v\"", err)
+	}
+}
+
+func TestApp_OnUsageError_WithWrongFlagValue(t *testing.T) {
+	app := NewApp()
+	app.Flags = []Flag{
+		IntFlag{Name: "flag"},
+	}
+	app.OnUsageError = func(c *Context, err error, isSubcommand bool) error {
+		if isSubcommand {
+			t.Errorf("Expect no subcommand")
+		}
+		if !strings.HasPrefix(err.Error(), "invalid value \"wrong\"") {
+			t.Errorf("Expect an invalid value error, but got \"%v\"", err)
+		}
+		return errors.New("intercepted: " + err.Error())
+	}
+	app.Commands = []Command{
+		Command{
+			Name: "bar",
+		},
+	}
+
+	err := app.Run([]string{"foo", "--flag=wrong"})
+	if err == nil {
+		t.Fatalf("expected to receive error from Run, got none")
+	}
+
+	if !strings.HasPrefix(err.Error(), "intercepted: invalid value") {
+		t.Errorf("Expect an intercepted error, but got \"%v\"", err)
+	}
+}
+
+func TestApp_OnUsageError_WithWrongFlagValue_ForSubcommand(t *testing.T) {
+	app := NewApp()
+	app.Flags = []Flag{
+		IntFlag{Name: "flag"},
+	}
+	app.OnUsageError = func(c *Context, err error, isSubcommand bool) error {
+		if isSubcommand {
+			t.Errorf("Expect subcommand")
+		}
+		if !strings.HasPrefix(err.Error(), "invalid value \"wrong\"") {
+			t.Errorf("Expect an invalid value error, but got \"%v\"", err)
+		}
+		return errors.New("intercepted: " + err.Error())
+	}
+	app.Commands = []Command{
+		Command{
+			Name: "bar",
+		},
+	}
+
+	err := app.Run([]string{"foo", "--flag=wrong", "bar"})
+	if err == nil {
+		t.Fatalf("expected to receive error from Run, got none")
+	}
+
+	if !strings.HasPrefix(err.Error(), "intercepted: invalid value") {
+		t.Errorf("Expect an intercepted error, but got \"%v\"", err)
 	}
 }
