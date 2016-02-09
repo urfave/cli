@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// App is the main structure of a cli application. It is recomended that
+// App is the main structure of a cli application. It is recommended that
 // an app be created with the cli.NewApp() function
 type App struct {
 	// The name of the program. Defaults to path.Base(os.Args[0])

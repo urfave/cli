@@ -4,10 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
-	"runtime"
 )
 
 // This flag enables bash-completion for all commands and subcommands
@@ -30,7 +30,7 @@ var HelpFlag = BoolFlag{
 }
 
 // Flag is a common interface related to parsing flags in cli.
-// For more advanced flag parsing techniques, it is recomended that
+// For more advanced flag parsing techniques, it is recommended that
 // this interface be implemented.
 type Flag interface {
 	fmt.Stringer
