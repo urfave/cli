@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -9,7 +10,6 @@ import (
 	"os"
 	"strings"
 	"testing"
-"errors"
 )
 
 func ExampleApp_Run() {
@@ -947,7 +947,7 @@ func TestApp_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 
 	err := app.Run([]string{"foo"})
 	if err == nil {
-		t.Fatalf("expected to recieve error from Run, got none")
+		t.Fatalf("expected to receive error from Run, got none")
 	}
 
 	if !strings.Contains(err.Error(), "before error") {
@@ -975,7 +975,7 @@ func TestApp_Run_SubcommandDoesNotOverwriteErrorFromBefore(t *testing.T) {
 
 	err := app.Run([]string{"foo", "bar"})
 	if err == nil {
-		t.Fatalf("expected to recieve error from Run, got none")
+		t.Fatalf("expected to receive error from Run, got none")
 	}
 
 	if !strings.Contains(err.Error(), "before error") {
