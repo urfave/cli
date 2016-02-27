@@ -153,7 +153,7 @@ app.Flags = []cli.Flag {
 }
 app.Action = func(c *cli.Context) {
   name := "someone"
-  if len(c.Args()) > 0 {
+  if c.NArg() > 0 {
     name = c.Args()[0]
   }
   if c.String("lang") == "spanish" {
@@ -180,7 +180,7 @@ app.Flags = []cli.Flag {
 }
 app.Action = func(c *cli.Context) {
   name := "someone"
-  if len(c.Args()) > 0 {
+  if c.NArg() > 0 {
     name = c.Args()[0]
   }
   if language == "spanish" {
@@ -308,7 +308,7 @@ app.Commands = []cli.Command{
     },
     BashComplete: func(c *cli.Context) {
       // This will complete if no args are passed
-      if len(c.Args()) > 0 {
+      if c.NArg() > 0 {
         return
       }
       for _, t := range tasks {
