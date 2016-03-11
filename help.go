@@ -16,10 +16,10 @@ var AppHelpTemplate = `NAME:
 
 USAGE:
    {{if .UsageText}}{{.UsageText}}{{else}}{{.HelpName}} {{if .Flags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}
-   {{if .Version}}
+   {{if .Version}}{{if not .HideVersion}}
 VERSION:
    {{.Version}}
-   {{end}}{{if len .Authors}}
+   {{end}}{{end}}{{if len .Authors}}
 AUTHOR(S):
    {{range .Authors}}{{ . }}{{end}}
    {{end}}{{if .Commands}}
