@@ -23,19 +23,19 @@ type yamlSourceContext struct {
 
 // NewYamlSourceFromFile creates a new Yaml InputSourceContext from a filepath.
 func NewYamlSourceFromFile(file string) (InputSourceContext, error) {
-	ymlLoader := &yamlSourceLoader{FilePath: file}
+	ysc := &yamlSourceContext{FilePath: file}
 	var results map[string]interface{}
-	err := readCommandYaml(ysl.FilePath, &results)
+	err := readCommandYaml(ysc.FilePath, &results)
 	if err != nil {
-		return fmt.Errorf("Unable to load Yaml file '%s': inner error: \n'%v'", filePath, err.Error())
+		return nil, fmt.Errorf("Unable to load Yaml file '%s': inner error: \n'%v'", ysc.FilePath, err.Error())
 	}
 
 	return &MapInputSource{valueMap: results}, nil
 }
 
 // NewYamlSourceFromFlagFunc creates a new Yaml InputSourceContext from a provided flag name and source context.
-func NewYamlSourceFromFlagFunc(flagFileName string) func(InputSourceContext, error) {
-	return func(context cli.Context) {
+func NewYamlSourceFromFlagFunc(flagFileName string) func(context *cli.Context) (InputSourceContext, error) {
+	return func(context *cli.Context) (InputSourceContext, error) {
 		filePath := context.String(flagFileName)
 		return NewYamlSourceFromFile(filePath)
 	}
