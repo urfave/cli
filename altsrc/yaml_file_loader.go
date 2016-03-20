@@ -2,7 +2,6 @@
 // as the encoding library is not implemented or supported.
 
 // +build !go1,!go1.1
-
 package altsrc
 
 import (
