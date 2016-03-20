@@ -23,11 +23,9 @@ VERSION:
 AUTHOR(S):
    {{range .Authors}}{{ . }}{{end}}
    {{end}}{{if .Commands}}
-COMMANDS:{{if .CategorizedHelp}}{{range .Categories}}{{if .Name}}
+COMMANDS:{{range .Categories}}{{if .Name}}
   {{.Name}}{{ ":" }}{{end}}{{range .Commands}}
     {{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}{{end}}
-{{end}}{{else}}{{range .Commands}}
-   {{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}{{end}}
 {{end}}{{end}}{{if .Flags}}
 GLOBAL OPTIONS:
    {{range .Flags}}{{.}}
@@ -44,11 +42,12 @@ var CommandHelpTemplate = `NAME:
    {{.HelpName}} - {{.Usage}}
 
 USAGE:
-   {{.HelpName}}{{if .Flags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{if .Description}}
+   {{.HelpName}}{{if .Flags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{if .Category}}
 
-{{if .Category}}CATEGORY:
-   {{.Category}}
-{{end}}DESCRIPTION:
+CATEGORY:
+   {{.Category}}{{end}}{{if .Description}}
+
+DESCRIPTION:
    {{.Description}}{{end}}{{if .Flags}}
 
 OPTIONS:
@@ -65,9 +64,10 @@ var SubcommandHelpTemplate = `NAME:
 USAGE:
    {{.HelpName}} command{{if .Flags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}
 
-COMMANDS:
-   {{range .Commands}}{{join .Names ", "}}{{ "\t" }}{{.Usage}}
-   {{end}}{{if .Flags}}
+COMMANDS:{{range .Categories}}{{if .Name}}
+  {{.Name}}{{ ":" }}{{end}}{{range .Commands}}
+    {{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}{{end}}
+{{end}}{{if .Flags}}
 OPTIONS:
    {{range .Flags}}{{.}}
    {{end}}{{end}}

@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"io/ioutil"
+	"sort"
 	"strings"
 )
 
@@ -230,6 +231,13 @@ func (c Command) startApp(ctx *Context) error {
 	app.Author = ctx.App.Author
 	app.Email = ctx.App.Email
 	app.Writer = ctx.App.Writer
+
+	app.categories = CommandCategories{}
+	for _, command := range c.Subcommands {
+		app.categories = app.categories.AddCommand(command.Category, command)
+	}
+
+	sort.Sort(app.categories)
 
 	// bash completion
 	app.EnableBashCompletion = ctx.App.EnableBashCompletion

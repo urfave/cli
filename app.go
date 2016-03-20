@@ -35,8 +35,6 @@ type App struct {
 	HideHelp bool
 	// Boolean to hide built-in version flag
 	HideVersion bool
-	// Display commands by category
-	CategorizedHelp bool
 	// Populate on app startup, only gettable throught method Categories()
 	categories CommandCategories
 	// An action to execute when the bash-completion flag is set
@@ -100,14 +98,6 @@ func (a *App) Run(arguments []string) (err error) {
 		a.Authors = append(a.Authors, Author{Name: a.Author, Email: a.Email})
 	}
 
-	if a.CategorizedHelp {
-		a.categories = CommandCategories{}
-		for _, command := range a.Commands {
-			a.categories = a.categories.AddCommand(command.Category, command)
-		}
-	}
-	sort.Sort(a.categories)
-
 	newCmds := []Command{}
 	for _, c := range a.Commands {
 		if c.HelpName == "" {
@@ -116,6 +106,12 @@ func (a *App) Run(arguments []string) (err error) {
 		newCmds = append(newCmds, c)
 	}
 	a.Commands = newCmds
+
+	a.categories = CommandCategories{}
+	for _, command := range a.Commands {
+		a.categories = a.categories.AddCommand(command.Category, command)
+	}
+	sort.Sort(a.categories)
 
 	// append help to commands
 	if a.Command(helpCommand.Name) == nil && !a.HideHelp {

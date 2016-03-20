@@ -943,7 +943,6 @@ func TestApp_Run_Version(t *testing.T) {
 func TestApp_Run_Categories(t *testing.T) {
 	app := NewApp()
 	app.Name = "categories"
-	app.CategorizedHelp = true
 	app.Commands = []Command{
 		Command{
 			Name:     "command1",
@@ -980,6 +979,13 @@ func TestApp_Run_Categories(t *testing.T) {
 	}
 	if !reflect.DeepEqual(app.Categories(), expect) {
 		t.Fatalf("expected categories %#v, to equal %#v", app.Categories(), expect)
+	}
+
+	output := buf.String()
+	t.Logf("output: %q\n", buf.Bytes())
+
+	if !strings.Contains(output, "1:\n    command1") {
+		t.Errorf("want buffer to include category %q, did not: \n%q", "1:\n    command1", output)
 	}
 }
 
