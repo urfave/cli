@@ -35,6 +35,22 @@ func Test_ShowAppHelp_NoVersion(t *testing.T) {
 	}
 }
 
+func Test_ShowAppHelp_HideVersion(t *testing.T) {
+	output := new(bytes.Buffer)
+	app := NewApp()
+	app.Writer = output
+
+	app.HideVersion = true
+
+	c := NewContext(app, nil, nil)
+
+	ShowAppHelp(c)
+
+	if bytes.Index(output.Bytes(), []byte("VERSION:")) != -1 {
+		t.Errorf("expected\n%snot to include %s", output.String(), "VERSION:")
+	}
+}
+
 func Test_Help_Custom_Flags(t *testing.T) {
 	oldFlag := HelpFlag
 	defer func() {

@@ -32,7 +32,7 @@ type App struct {
 	EnableBashCompletion bool
 	// Boolean to hide built-in help command
 	HideHelp bool
-	// Boolean to hide built-in version flag
+	// Boolean to hide built-in version flag and the VERSION section of help
 	HideVersion bool
 	// An action to execute when the bash-completion flag is set
 	BashComplete func(context *Context)
