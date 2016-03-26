@@ -329,6 +329,45 @@ app.Commands = []cli.Command{
 ...
 ```
 
+### Subcommands categories
+
+For additional organization in apps that have many subcommands, you can
+associate a category for each command to group them together in the help
+output.
+
+E.g.
+
+```go
+...
+	app.Commands = []cli.Command{
+		{
+			Name: "noop",
+		},
+		{
+			Name:     "add",
+			Category: "template",
+		},
+		{
+			Name:     "remove",
+			Category: "template",
+		},
+	}
+...
+```
+
+Will include:
+
+```
+...
+COMMANDS:
+    noop
+
+  Template actions:
+    add
+    remove
+...
+```
+
 ### Bash Completion
 
 You can enable completion commands by setting the `EnableBashCompletion`

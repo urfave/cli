@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"sort"
 	"time"
 )
 
@@ -34,6 +35,8 @@ type App struct {
 	HideHelp bool
 	// Boolean to hide built-in version flag and the VERSION section of help
 	HideVersion bool
+	// Populate on app startup, only gettable throught method Categories()
+	categories CommandCategories
 	// An action to execute when the bash-completion flag is set
 	BashComplete func(context *Context)
 	// An action to execute before any subcommands are run, but after the context is ready
@@ -103,6 +106,12 @@ func (a *App) Run(arguments []string) (err error) {
 		newCmds = append(newCmds, c)
 	}
 	a.Commands = newCmds
+
+	a.categories = CommandCategories{}
+	for _, command := range a.Commands {
+		a.categories = a.categories.AddCommand(command.Category, command)
+	}
+	sort.Sort(a.categories)
 
 	// append help to commands
 	if a.Command(helpCommand.Name) == nil && !a.HideHelp {
@@ -314,6 +323,11 @@ func (a *App) Command(name string) *Command {
 	}
 
 	return nil
+}
+
+// Returnes the array containing all the categories with the commands they contain
+func (a *App) Categories() CommandCategories {
+	return a.categories
 }
 
 func (a *App) hasFlag(flag Flag) bool {

@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"io/ioutil"
+	"sort"
 	"strings"
 )
 
@@ -22,6 +23,8 @@ type Command struct {
 	Description string
 	// A short description of the arguments of this command
 	ArgsUsage string
+	// The category the command is part of
+	Category string
 	// The function to call when checking for bash command completions
 	BashComplete func(context *Context)
 	// An action to execute before any sub-subcommands are run, but after the context is ready
@@ -37,7 +40,7 @@ type Command struct {
 	// If this function is not set, the "Incorrect usage" is displayed and the execution is interrupted.
 	OnUsageError func(context *Context, err error) error
 	// List of child commands
-	Subcommands []Command
+	Subcommands Commands
 	// List of flags to parse
 	Flags []Flag
 	// Treat all flags as normal arguments if true
@@ -58,6 +61,8 @@ func (c Command) FullName() string {
 	}
 	return strings.Join(c.commandNamePath, " ")
 }
+
+type Commands []Command
 
 // Invokes the command given the context, parses ctx.Args() to generate command-specific flags
 func (c Command) Run(ctx *Context) (err error) {
@@ -226,6 +231,13 @@ func (c Command) startApp(ctx *Context) error {
 	app.Author = ctx.App.Author
 	app.Email = ctx.App.Email
 	app.Writer = ctx.App.Writer
+
+	app.categories = CommandCategories{}
+	for _, command := range c.Subcommands {
+		app.categories = app.categories.AddCommand(command.Category, command)
+	}
+
+	sort.Sort(app.categories)
 
 	// bash completion
 	app.EnableBashCompletion = ctx.App.EnableBashCompletion
