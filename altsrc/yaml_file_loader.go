@@ -78,7 +78,7 @@ func loadDataFrom(filePath string) ([]byte, error) {
 		if path, expandErr := tilde.Expand(filePath); expandErr == nil {
 			filePath = path
 		} else {
-			return nil, fmt.Errorf("Cannot read from file: '%s' because it failed to expand the file path.")
+			return nil, fmt.Errorf("Cannot read from file: '%s' because it failed to expand the file path.", path)
 		}
 		if _, notFoundFileErr := os.Stat(filePath); notFoundFileErr != nil {
 			return nil, fmt.Errorf("Cannot read from file: '%s' because it does not exist.", filePath)
