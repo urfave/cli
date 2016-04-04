@@ -14,6 +14,7 @@ import (
 
 	"github.com/codegangsta/cli"
 
+	"gopkg.in/mattes/go-expand-tilde.v1"
 	"gopkg.in/yaml.v2"
 )
 
@@ -74,6 +75,11 @@ func loadDataFrom(filePath string) ([]byte, error) {
 			return nil, fmt.Errorf("scheme of %s is unsupported", filePath)
 		}
 	} else if u.Path != "" { // i dont have a host, but I have a path. I am a local file.
+		if path, expandErr := tilde.Expand(filePath); expandErr == nil {
+			filePath = path
+		} else {
+			return nil, fmt.Errorf("Cannot read from file: '%s' because it failed to expand the file path.", path)
+		}
 		if _, notFoundFileErr := os.Stat(filePath); notFoundFileErr != nil {
 			return nil, fmt.Errorf("Cannot read from file: '%s' because it does not exist.", filePath)
 		}
