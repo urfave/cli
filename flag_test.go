@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"runtime"
 	"strings"
 	"testing"
-	"runtime"
 )
 
 var boolFlagTests = []struct {
@@ -64,7 +64,7 @@ func TestStringFlagWithEnvVarHelpOutput(t *testing.T) {
 			expectedSuffix = " [%APP_FOO%]"
 		}
 		if !strings.HasSuffix(output, expectedSuffix) {
-			t.Errorf("%s does not end with" + expectedSuffix, output)
+			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
 	}
 }
@@ -74,30 +74,14 @@ var stringSliceFlagTests = []struct {
 	value    *StringSlice
 	expected string
 }{
-	{"help", func() *StringSlice {
-		s := &StringSlice{}
-		s.Set("")
-		return s
-	}(), "--help [--help option --help option]\t"},
-	{"h", func() *StringSlice {
-		s := &StringSlice{}
-		s.Set("")
-		return s
-	}(), "-h [-h option -h option]\t"},
-	{"h", func() *StringSlice {
-		s := &StringSlice{}
-		s.Set("")
-		return s
-	}(), "-h [-h option -h option]\t"},
-	{"test", func() *StringSlice {
-		s := &StringSlice{}
-		s.Set("Something")
-		return s
-	}(), "--test [--test option --test option]\t"},
+	{"help", NewStringSlice(""), "--help [--help option --help option]\t"},
+	{"h", NewStringSlice(""), "-h [-h option -h option]\t"},
+	{"h", NewStringSlice(""), "-h [-h option -h option]\t"},
+	{"test", NewStringSlice("Something"), "--test [--test option --test option]\t"},
+	{"d, dee", NewStringSlice("Inka", "Dinka", "dooo"), "-d, --dee [-d option -d option]\t"},
 }
 
 func TestStringSliceFlagHelpOutput(t *testing.T) {
-
 	for _, test := range stringSliceFlagTests {
 		flag := StringSliceFlag{Name: test.name, Value: test.value}
 		output := flag.String()
@@ -120,7 +104,7 @@ func TestStringSliceFlagWithEnvVarHelpOutput(t *testing.T) {
 			expectedSuffix = " [%APP_QWWX%]"
 		}
 		if !strings.HasSuffix(output, expectedSuffix) {
-			t.Errorf("%q does not end with" + expectedSuffix, output)
+			t.Errorf("%q does not end with"+expectedSuffix, output)
 		}
 	}
 }
@@ -157,7 +141,7 @@ func TestIntFlagWithEnvVarHelpOutput(t *testing.T) {
 			expectedSuffix = " [%APP_BAR%]"
 		}
 		if !strings.HasSuffix(output, expectedSuffix) {
-			t.Errorf("%s does not end with" + expectedSuffix, output)
+			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
 	}
 }
@@ -194,7 +178,7 @@ func TestDurationFlagWithEnvVarHelpOutput(t *testing.T) {
 			expectedSuffix = " [%APP_BAR%]"
 		}
 		if !strings.HasSuffix(output, expectedSuffix) {
-			t.Errorf("%s does not end with" + expectedSuffix, output)
+			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
 	}
 }
@@ -207,11 +191,7 @@ var intSliceFlagTests = []struct {
 	{"help", &IntSlice{}, "--help [--help option --help option]\t"},
 	{"h", &IntSlice{}, "-h [-h option -h option]\t"},
 	{"h", &IntSlice{}, "-h [-h option -h option]\t"},
-	{"test", func() *IntSlice {
-		i := &IntSlice{}
-		i.Set("9")
-		return i
-	}(), "--test [--test option --test option]\t"},
+	{"test", NewIntSlice(9), "--test [--test option --test option]\t"},
 }
 
 func TestIntSliceFlagHelpOutput(t *testing.T) {
@@ -238,7 +218,7 @@ func TestIntSliceFlagWithEnvVarHelpOutput(t *testing.T) {
 			expectedSuffix = " [%APP_SMURF%]"
 		}
 		if !strings.HasSuffix(output, expectedSuffix) {
-			t.Errorf("%q does not end with" + expectedSuffix, output)
+			t.Errorf("%q does not end with"+expectedSuffix, output)
 		}
 	}
 }
@@ -275,7 +255,7 @@ func TestFloat64FlagWithEnvVarHelpOutput(t *testing.T) {
 			expectedSuffix = " [%APP_BAZ%]"
 		}
 		if !strings.HasSuffix(output, expectedSuffix) {
-			t.Errorf("%s does not end with" + expectedSuffix, output)
+			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
 	}
 }
@@ -313,7 +293,7 @@ func TestGenericFlagWithEnvVarHelpOutput(t *testing.T) {
 			expectedSuffix = " [%APP_ZAP%]"
 		}
 		if !strings.HasSuffix(output, expectedSuffix) {
-			t.Errorf("%s does not end with" + expectedSuffix, output)
+			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
 	}
 }
@@ -404,6 +384,38 @@ func TestParseMultiStringSlice(t *testing.T) {
 	}).Run([]string{"run", "-s", "10", "-s", "20"})
 }
 
+func TestParseMultiStringSliceWithDefaults(t *testing.T) {
+	(&App{
+		Flags: []Flag{
+			StringSliceFlag{Name: "serve, s", Value: NewStringSlice("9", "2")},
+		},
+		Action: func(ctx *Context) {
+			if !reflect.DeepEqual(ctx.StringSlice("serve"), []string{"10", "20"}) {
+				t.Errorf("main name not set: %v", ctx.StringSlice("serve"))
+			}
+			if !reflect.DeepEqual(ctx.StringSlice("s"), []string{"10", "20"}) {
+				t.Errorf("short name not set: %v", ctx.StringSlice("s"))
+			}
+		},
+	}).Run([]string{"run", "-s", "10", "-s", "20"})
+}
+
+func TestParseMultiStringSliceWithDefaultsUnset(t *testing.T) {
+	(&App{
+		Flags: []Flag{
+			StringSliceFlag{Name: "serve, s", Value: NewStringSlice("9", "2")},
+		},
+		Action: func(ctx *Context) {
+			if !reflect.DeepEqual(ctx.StringSlice("serve"), []string{"9", "2"}) {
+				t.Errorf("main name not set: %v", ctx.StringSlice("serve"))
+			}
+			if !reflect.DeepEqual(ctx.StringSlice("s"), []string{"9", "2"}) {
+				t.Errorf("short name not set: %v", ctx.StringSlice("s"))
+			}
+		},
+	}).Run([]string{"run"})
+}
+
 func TestParseMultiStringSliceFromEnv(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("APP_INTERVALS", "20,30,40")
@@ -423,6 +435,25 @@ func TestParseMultiStringSliceFromEnv(t *testing.T) {
 	}).Run([]string{"run"})
 }
 
+func TestParseMultiStringSliceFromEnvWithDefaults(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("APP_INTERVALS", "20,30,40")
+
+	(&App{
+		Flags: []Flag{
+			StringSliceFlag{Name: "intervals, i", Value: NewStringSlice("1", "2", "5"), EnvVar: "APP_INTERVALS"},
+		},
+		Action: func(ctx *Context) {
+			if !reflect.DeepEqual(ctx.StringSlice("intervals"), []string{"20", "30", "40"}) {
+				t.Errorf("main name not set from env")
+			}
+			if !reflect.DeepEqual(ctx.StringSlice("i"), []string{"20", "30", "40"}) {
+				t.Errorf("short name not set from env")
+			}
+		},
+	}).Run([]string{"run"})
+}
+
 func TestParseMultiStringSliceFromEnvCascade(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("APP_INTERVALS", "20,30,40")
@@ -430,6 +461,25 @@ func TestParseMultiStringSliceFromEnvCascade(t *testing.T) {
 	(&App{
 		Flags: []Flag{
 			StringSliceFlag{Name: "intervals, i", Value: &StringSlice{}, EnvVar: "COMPAT_INTERVALS,APP_INTERVALS"},
+		},
+		Action: func(ctx *Context) {
+			if !reflect.DeepEqual(ctx.StringSlice("intervals"), []string{"20", "30", "40"}) {
+				t.Errorf("main name not set from env")
+			}
+			if !reflect.DeepEqual(ctx.StringSlice("i"), []string{"20", "30", "40"}) {
+				t.Errorf("short name not set from env")
+			}
+		},
+	}).Run([]string{"run"})
+}
+
+func TestParseMultiStringSliceFromEnvCascadeWithDefaults(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("APP_INTERVALS", "20,30,40")
+
+	(&App{
+		Flags: []Flag{
+			StringSliceFlag{Name: "intervals, i", Value: NewStringSlice("1", "2", "5"), EnvVar: "COMPAT_INTERVALS,APP_INTERVALS"},
 		},
 		Action: func(ctx *Context) {
 			if !reflect.DeepEqual(ctx.StringSlice("intervals"), []string{"20", "30", "40"}) {
@@ -531,6 +581,38 @@ func TestParseMultiIntSlice(t *testing.T) {
 	}).Run([]string{"run", "-s", "10", "-s", "20"})
 }
 
+func TestParseMultiIntSliceWithDefaults(t *testing.T) {
+	(&App{
+		Flags: []Flag{
+			IntSliceFlag{Name: "serve, s", Value: NewIntSlice(9, 2)},
+		},
+		Action: func(ctx *Context) {
+			if !reflect.DeepEqual(ctx.IntSlice("serve"), []int{10, 20}) {
+				t.Errorf("main name not set")
+			}
+			if !reflect.DeepEqual(ctx.IntSlice("s"), []int{10, 20}) {
+				t.Errorf("short name not set")
+			}
+		},
+	}).Run([]string{"run", "-s", "10", "-s", "20"})
+}
+
+func TestParseMultiIntSliceWithDefaultsUnset(t *testing.T) {
+	(&App{
+		Flags: []Flag{
+			IntSliceFlag{Name: "serve, s", Value: NewIntSlice(9, 2)},
+		},
+		Action: func(ctx *Context) {
+			if !reflect.DeepEqual(ctx.IntSlice("serve"), []int{9, 2}) {
+				t.Errorf("main name not set")
+			}
+			if !reflect.DeepEqual(ctx.IntSlice("s"), []int{9, 2}) {
+				t.Errorf("short name not set")
+			}
+		},
+	}).Run([]string{"run"})
+}
+
 func TestParseMultiIntSliceFromEnv(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("APP_INTERVALS", "20,30,40")
@@ -538,6 +620,25 @@ func TestParseMultiIntSliceFromEnv(t *testing.T) {
 	(&App{
 		Flags: []Flag{
 			IntSliceFlag{Name: "intervals, i", Value: &IntSlice{}, EnvVar: "APP_INTERVALS"},
+		},
+		Action: func(ctx *Context) {
+			if !reflect.DeepEqual(ctx.IntSlice("intervals"), []int{20, 30, 40}) {
+				t.Errorf("main name not set from env")
+			}
+			if !reflect.DeepEqual(ctx.IntSlice("i"), []int{20, 30, 40}) {
+				t.Errorf("short name not set from env")
+			}
+		},
+	}).Run([]string{"run"})
+}
+
+func TestParseMultiIntSliceFromEnvWithDefaults(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("APP_INTERVALS", "20,30,40")
+
+	(&App{
+		Flags: []Flag{
+			IntSliceFlag{Name: "intervals, i", Value: NewIntSlice(1, 2, 5), EnvVar: "APP_INTERVALS"},
 		},
 		Action: func(ctx *Context) {
 			if !reflect.DeepEqual(ctx.IntSlice("intervals"), []int{20, 30, 40}) {
