@@ -165,7 +165,7 @@ func (f StringSliceFlag) Apply(set *flag.FlagSet) {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
 			if envVal := os.Getenv(envVar); envVal != "" {
-				newVal := &StringSlice{}
+				newVal := NewStringSlice()
 				for _, s := range strings.Split(envVal, ",") {
 					s = strings.TrimSpace(s)
 					newVal.Set(s)
@@ -177,7 +177,7 @@ func (f StringSliceFlag) Apply(set *flag.FlagSet) {
 	}
 
 	if f.Value == nil {
-		f.Value = &StringSlice{}
+		f.Value = NewStringSlice()
 	}
 
 	eachName(f.Name, func(name string) {
@@ -272,10 +272,11 @@ func (f IntSliceFlag) Apply(set *flag.FlagSet) {
 		}
 	}
 
+	if f.Value == nil {
+		f.Value = NewIntSlice()
+	}
+
 	eachName(f.Name, func(name string) {
-		if f.Value == nil {
-			f.Value = &IntSlice{}
-		}
 		set.Var(f.Value, name, f.Usage)
 	})
 }

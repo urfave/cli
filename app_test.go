@@ -313,8 +313,8 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 	command := Command{
 		Name: "cmd",
 		Flags: []Flag{
-			IntSliceFlag{Name: "p", Value: &IntSlice{}, Usage: "set one or more ip addr"},
-			StringSliceFlag{Name: "ip", Value: &StringSlice{}, Usage: "set one or more ports to open"},
+			IntSliceFlag{Name: "p", Value: NewIntSlice(), Usage: "set one or more ip addr"},
+			StringSliceFlag{Name: "ip", Value: NewStringSlice(), Usage: "set one or more ports to open"},
 		},
 		Action: func(c *Context) {
 			parsedIntSlice = c.IntSlice("p")

@@ -188,9 +188,9 @@ var intSliceFlagTests = []struct {
 	value    *IntSlice
 	expected string
 }{
-	{"help", &IntSlice{}, "--help [--help option --help option]\t"},
-	{"h", &IntSlice{}, "-h [-h option -h option]\t"},
-	{"h", &IntSlice{}, "-h [-h option -h option]\t"},
+	{"help", NewIntSlice(), "--help [--help option --help option]\t"},
+	{"h", NewIntSlice(), "-h [-h option -h option]\t"},
+	{"h", NewIntSlice(), "-h [-h option -h option]\t"},
 	{"test", NewIntSlice(9), "--test [--test option --test option]\t"},
 }
 
@@ -371,7 +371,7 @@ func TestParseMultiStringFromEnvCascade(t *testing.T) {
 func TestParseMultiStringSlice(t *testing.T) {
 	(&App{
 		Flags: []Flag{
-			StringSliceFlag{Name: "serve, s", Value: &StringSlice{}},
+			StringSliceFlag{Name: "serve, s", Value: NewStringSlice()},
 		},
 		Action: func(ctx *Context) {
 			if !reflect.DeepEqual(ctx.StringSlice("serve"), []string{"10", "20"}) {
@@ -422,7 +422,7 @@ func TestParseMultiStringSliceFromEnv(t *testing.T) {
 
 	(&App{
 		Flags: []Flag{
-			StringSliceFlag{Name: "intervals, i", Value: &StringSlice{}, EnvVar: "APP_INTERVALS"},
+			StringSliceFlag{Name: "intervals, i", Value: NewStringSlice(), EnvVar: "APP_INTERVALS"},
 		},
 		Action: func(ctx *Context) {
 			if !reflect.DeepEqual(ctx.StringSlice("intervals"), []string{"20", "30", "40"}) {
@@ -460,7 +460,7 @@ func TestParseMultiStringSliceFromEnvCascade(t *testing.T) {
 
 	(&App{
 		Flags: []Flag{
-			StringSliceFlag{Name: "intervals, i", Value: &StringSlice{}, EnvVar: "COMPAT_INTERVALS,APP_INTERVALS"},
+			StringSliceFlag{Name: "intervals, i", Value: NewStringSlice(), EnvVar: "COMPAT_INTERVALS,APP_INTERVALS"},
 		},
 		Action: func(ctx *Context) {
 			if !reflect.DeepEqual(ctx.StringSlice("intervals"), []string{"20", "30", "40"}) {
@@ -568,7 +568,7 @@ func TestParseMultiIntFromEnvCascade(t *testing.T) {
 func TestParseMultiIntSlice(t *testing.T) {
 	(&App{
 		Flags: []Flag{
-			IntSliceFlag{Name: "serve, s", Value: &IntSlice{}},
+			IntSliceFlag{Name: "serve, s", Value: NewIntSlice()},
 		},
 		Action: func(ctx *Context) {
 			if !reflect.DeepEqual(ctx.IntSlice("serve"), []int{10, 20}) {
@@ -619,7 +619,7 @@ func TestParseMultiIntSliceFromEnv(t *testing.T) {
 
 	(&App{
 		Flags: []Flag{
-			IntSliceFlag{Name: "intervals, i", Value: &IntSlice{}, EnvVar: "APP_INTERVALS"},
+			IntSliceFlag{Name: "intervals, i", Value: NewIntSlice(), EnvVar: "APP_INTERVALS"},
 		},
 		Action: func(ctx *Context) {
 			if !reflect.DeepEqual(ctx.IntSlice("intervals"), []int{20, 30, 40}) {
@@ -657,7 +657,7 @@ func TestParseMultiIntSliceFromEnvCascade(t *testing.T) {
 
 	(&App{
 		Flags: []Flag{
-			IntSliceFlag{Name: "intervals, i", Value: &IntSlice{}, EnvVar: "COMPAT_INTERVALS,APP_INTERVALS"},
+			IntSliceFlag{Name: "intervals, i", Value: NewIntSlice(), EnvVar: "COMPAT_INTERVALS,APP_INTERVALS"},
 		},
 		Action: func(ctx *Context) {
 			if !reflect.DeepEqual(ctx.IntSlice("intervals"), []int{20, 30, 40}) {
