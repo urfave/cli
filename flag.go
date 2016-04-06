@@ -258,7 +258,7 @@ func (f IntSliceFlag) Apply(set *flag.FlagSet) {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
 			if envVal := os.Getenv(envVar); envVal != "" {
-				newVal := &IntSlice{}
+				newVal := NewIntSlice()
 				for _, s := range strings.Split(envVal, ",") {
 					s = strings.TrimSpace(s)
 					err := newVal.Set(s)
