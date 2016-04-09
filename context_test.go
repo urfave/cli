@@ -119,3 +119,12 @@ func TestContext_NumFlags(t *testing.T) {
 	globalSet.Parse([]string{"--myflagGlobal"})
 	expect(t, c.NumFlags(), 2)
 }
+
+func TestContext_Set(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Int("int", 5, "an int")
+	c := cli.NewContext(nil, set, nil)
+
+	c.Set("int", "1")
+	expect(t, c.Int("int"), 1)
+}
