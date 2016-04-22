@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"runtime"
 	"strings"
 	"testing"
-	"runtime"
 )
 
 var boolFlagTests = []struct {
@@ -31,19 +31,21 @@ func TestBoolFlagHelpOutput(t *testing.T) {
 
 var stringFlagTests = []struct {
 	name     string
+	usage    string
 	value    string
 	expected string
 }{
-	{"help", "", "--help \t"},
-	{"h", "", "-h \t"},
-	{"h", "", "-h \t"},
-	{"test", "Something", "--test \"Something\"\t"},
+	{"help", "", "", "--help \t"},
+	{"h", "", "", "-h \t"},
+	{"h", "", "", "-h \t"},
+	{"test", "", "Something", "--test \"Something\"\t"},
+	{"config,c", "Load configuration from `FILE`", "", "--config FILE, -c FILE \tLoad configuration from FILE"},
 }
 
 func TestStringFlagHelpOutput(t *testing.T) {
 
 	for _, test := range stringFlagTests {
-		flag := StringFlag{Name: test.name, Value: test.value}
+		flag := StringFlag{Name: test.name, Usage: test.usage, Value: test.value}
 		output := flag.String()
 
 		if output != test.expected {
@@ -64,7 +66,7 @@ func TestStringFlagWithEnvVarHelpOutput(t *testing.T) {
 			expectedSuffix = " [%APP_FOO%]"
 		}
 		if !strings.HasSuffix(output, expectedSuffix) {
-			t.Errorf("%s does not end with" + expectedSuffix, output)
+			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
 	}
 }
@@ -120,7 +122,7 @@ func TestStringSliceFlagWithEnvVarHelpOutput(t *testing.T) {
 			expectedSuffix = " [%APP_QWWX%]"
 		}
 		if !strings.HasSuffix(output, expectedSuffix) {
-			t.Errorf("%q does not end with" + expectedSuffix, output)
+			t.Errorf("%q does not end with"+expectedSuffix, output)
 		}
 	}
 }
@@ -157,7 +159,7 @@ func TestIntFlagWithEnvVarHelpOutput(t *testing.T) {
 			expectedSuffix = " [%APP_BAR%]"
 		}
 		if !strings.HasSuffix(output, expectedSuffix) {
-			t.Errorf("%s does not end with" + expectedSuffix, output)
+			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
 	}
 }
@@ -194,7 +196,7 @@ func TestDurationFlagWithEnvVarHelpOutput(t *testing.T) {
 			expectedSuffix = " [%APP_BAR%]"
 		}
 		if !strings.HasSuffix(output, expectedSuffix) {
-			t.Errorf("%s does not end with" + expectedSuffix, output)
+			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
 	}
 }
@@ -238,7 +240,7 @@ func TestIntSliceFlagWithEnvVarHelpOutput(t *testing.T) {
 			expectedSuffix = " [%APP_SMURF%]"
 		}
 		if !strings.HasSuffix(output, expectedSuffix) {
-			t.Errorf("%q does not end with" + expectedSuffix, output)
+			t.Errorf("%q does not end with"+expectedSuffix, output)
 		}
 	}
 }
@@ -275,7 +277,7 @@ func TestFloat64FlagWithEnvVarHelpOutput(t *testing.T) {
 			expectedSuffix = " [%APP_BAZ%]"
 		}
 		if !strings.HasSuffix(output, expectedSuffix) {
-			t.Errorf("%s does not end with" + expectedSuffix, output)
+			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
 	}
 }
@@ -313,7 +315,7 @@ func TestGenericFlagWithEnvVarHelpOutput(t *testing.T) {
 			expectedSuffix = " [%APP_ZAP%]"
 		}
 		if !strings.HasSuffix(output, expectedSuffix) {
-			t.Errorf("%s does not end with" + expectedSuffix, output)
+			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
 	}
 }
