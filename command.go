@@ -26,19 +26,17 @@ type Command struct {
 	// The category the command is part of
 	Category string
 	// The function to call when checking for bash command completions
-	BashComplete BashCompleteFn
+	BashComplete BashCompleteFunc
 	// An action to execute before any sub-subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no sub-subcommands are run
-	Before BeforeFn
+	Before BeforeFunc
 	// An action to execute after any subcommands are run, but after the subcommand has finished
 	// It is run even if Action() panics
-	After AfterFn
+	After AfterFunc
 	// The function to call when this command is invoked
-	Action ActionFn
-	// Execute this function, if an usage error occurs. This is useful for displaying customized usage error messages.
-	// This function is able to replace the original error messages.
-	// If this function is not set, the "Incorrect usage" is displayed and the execution is interrupted.
-	OnUsageError func(context *Context, err error) error
+	Action ActionFunc
+	// Execute this function if a usage error occurs.
+	OnUsageError OnUsageErrorFunc
 	// List of child commands
 	Subcommands Commands
 	// List of flags to parse
@@ -125,7 +123,7 @@ func (c Command) Run(ctx *Context) (ec int, err error) {
 
 	if err != nil {
 		if c.OnUsageError != nil {
-			err := c.OnUsageError(ctx, err)
+			err := c.OnUsageError(ctx, err, false)
 			if err != nil {
 				return DefaultErrorExitCode, err
 			}

@@ -81,7 +81,7 @@ func TestCommand_OnUsageError_WithWrongFlagValue(t *testing.T) {
 			Flags: []Flag{
 				IntFlag{Name: "flag"},
 			},
-			OnUsageError: func(c *Context, err error) error {
+			OnUsageError: func(c *Context, err error, _ bool) error {
 				if !strings.HasPrefix(err.Error(), "invalid value \"wrong\"") {
 					t.Errorf("Expect an invalid value error, but got \"%v\"", err)
 				}

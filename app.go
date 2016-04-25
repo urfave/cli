@@ -47,21 +47,19 @@ type App struct {
 	// Populate on app startup, only gettable throught method Categories()
 	categories CommandCategories
 	// An action to execute when the bash-completion flag is set
-	BashComplete BashCompleteFn
+	BashComplete BashCompleteFunc
 	// An action to execute before any subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no subcommands are run
-	Before BeforeFn
+	Before BeforeFunc
 	// An action to execute after any subcommands are run, but after the subcommand has finished
 	// It is run even if Action() panics
-	After AfterFn
+	After AfterFunc
 	// The action to execute when no subcommands are specified
-	Action ActionFn
+	Action ActionFunc
 	// Execute this function if the proper command cannot be found
-	CommandNotFound CommandNotFoundFn
-	// Execute this function, if an usage error occurs. This is useful for displaying customized usage error messages.
-	// This function is able to replace the original error messages.
-	// If this function is not set, the "Incorrect usage" is displayed and the execution is interrupted.
-	OnUsageError func(context *Context, err error, isSubcommand bool) error
+	CommandNotFound CommandNotFoundFunc
+	// Execute this function if an usage error occurs
+	OnUsageError OnUsageErrorFunc
 	// Compilation date
 	Compiled time.Time
 	// List of all authors who contributed
