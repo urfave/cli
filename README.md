@@ -195,6 +195,27 @@ app.Action = func(c *cli.Context) {
 
 See full list of flags at http://godoc.org/github.com/codegangsta/cli
 
+#### Placeholder Values
+
+Sometimes it's useful to specify a flag's value within the usage string itself. Such placeholders are
+indicated with back quotes.
+
+For example this:
+```go
+cli.StringFlag{
+  Name:  "config, c",
+  Usage: "Load configuration from `FILE`",
+}
+```
+
+Will result in help output like:
+
+```
+--config FILE, -c FILE   Load configuration from FILE
+```
+
+Note that only the first placeholder is used. Subsequent back-quoted words will be left as-is. 
+
 #### Alternate Names
 
 You can set alternate (or short) names for flags by providing a comma-delimited list for the `Name`. e.g.
