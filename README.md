@@ -255,8 +255,8 @@ Initialization must also occur for these flags. Below is an example initializing
   command.Before = altsrc.InitInputSourceWithContext(command.Flags, NewYamlSourceFromFlagFunc("load"))
 ```
 
-The code above will use the "load" string as a flag name to get the file name of a yaml file from the cli.Context. 
-It will then use that file name to initialize the yaml input source for any flags that are defined on that command. 
+The code above will use the "load" string as a flag name to get the file name of a yaml file from the cli.Context.
+It will then use that file name to initialize the yaml input source for any flags that are defined on that command.
 As a note the "load" flag used would also have to be defined on the command flags in order for this code snipped to work.
 
 Currently only YAML files are supported but developers can add support for other input sources by implementing the
@@ -265,20 +265,20 @@ altsrc.InputSourceContext for their given sources.
 Here is a more complete sample of a command using YAML support:
 
 ``` go
-	command := &cli.Command{
-		Name:        "test-cmd",
-		Aliases:     []string{"tc"},
-		Usage:       "this is for testing",
-		Description: "testing",
-		Action: func(c *cli.Context) {
-			// Action to run
-		},
-		Flags: []cli.Flag{
-			NewIntFlag(cli.IntFlag{Name: "test"}),
-			cli.StringFlag{Name: "load"}},
-	}
-	command.Before = InitInputSourceWithContext(command.Flags, NewYamlSourceFromFlagFunc("load"))
-	err := command.Run(c)
+  command := &cli.Command{
+    Name:        "test-cmd",
+    Aliases:     []string{"tc"},
+    Usage:       "this is for testing",
+    Description: "testing",
+    Action: func(c *cli.Context) {
+      // Action to run
+    },
+    Flags: []cli.Flag{
+      NewIntFlag(cli.IntFlag{Name: "test"}),
+      cli.StringFlag{Name: "load"}},
+  }
+  command.Before = InitInputSourceWithContext(command.Flags, NewYamlSourceFromFlagFunc("load"))
+  err := command.Run(c)
 ```
 
 ### Subcommands
@@ -339,19 +339,19 @@ E.g.
 
 ```go
 ...
-	app.Commands = []cli.Command{
-		{
-			Name: "noop",
-		},
-		{
-			Name:     "add",
-			Category: "template",
-		},
-		{
-			Name:     "remove",
-			Category: "template",
-		},
-	}
+  app.Commands = []cli.Command{
+    {
+      Name: "noop",
+    },
+    {
+      Name:     "add",
+      Category: "template",
+    },
+    {
+      Name:     "remove",
+      Category: "template",
+    },
+  }
 ...
 ```
 
@@ -366,6 +366,28 @@ COMMANDS:
     add
     remove
 ...
+```
+
+### Exit code
+
+It is your responsibility to call `os.Exit` with the exit code returned by
+`app.Run`, e.g.:
+
+```go
+package main
+
+import (
+  "os"
+  "github.com/codegangsta/cli"
+)
+
+func main() {
+  exitCode, err := cli.NewApp().Run(os.Args)
+  if err != nil {
+    log.Println(err)
+  }
+  os.Exit(exitCode)
+}
 ```
 
 ### Bash Completion

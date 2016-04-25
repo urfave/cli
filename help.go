@@ -78,13 +78,14 @@ var helpCommand = Command{
 	Aliases:   []string{"h"},
 	Usage:     "Shows a list of commands or help for one command",
 	ArgsUsage: "[command]",
-	Action: func(c *Context) {
+	Action: func(c *Context) int {
 		args := c.Args()
 		if args.Present() {
 			ShowCommandHelp(c, args.First())
 		} else {
 			ShowAppHelp(c)
 		}
+		return 0
 	},
 }
 
@@ -93,13 +94,14 @@ var helpSubcommand = Command{
 	Aliases:   []string{"h"},
 	Usage:     "Shows a list of commands or help for one command",
 	ArgsUsage: "[command]",
-	Action: func(c *Context) {
+	Action: func(c *Context) int {
 		args := c.Args()
 		if args.Present() {
 			ShowCommandHelp(c, args.First())
 		} else {
 			ShowSubcommandHelp(c)
 		}
+		return 0
 	},
 }
 

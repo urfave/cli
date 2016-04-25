@@ -26,15 +26,15 @@ type Command struct {
 	// The category the command is part of
 	Category string
 	// The function to call when checking for bash command completions
-	BashComplete func(context *Context)
+	BashComplete BashCompleteFn
 	// An action to execute before any sub-subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no sub-subcommands are run
-	Before func(context *Context) error
-	// An action to execute after any subcommands are run, but before the subcommand has finished
+	Before BeforeFn
+	// An action to execute after any subcommands are run, but after the subcommand has finished
 	// It is run even if Action() panics
-	After func(context *Context) error
+	After AfterFn
 	// The function to call when this command is invoked
-	Action func(context *Context)
+	Action ActionFn
 	// Execute this function, if an usage error occurs. This is useful for displaying customized usage error messages.
 	// This function is able to replace the original error messages.
 	// If this function is not set, the "Incorrect usage" is displayed and the execution is interrupted.
@@ -65,7 +65,7 @@ func (c Command) FullName() string {
 type Commands []Command
 
 // Invokes the command given the context, parses ctx.Args() to generate command-specific flags
-func (c Command) Run(ctx *Context) (err error) {
+func (c Command) Run(ctx *Context) (ec int, err error) {
 	if len(c.Subcommands) > 0 {
 		return c.startApp(ctx)
 	}
@@ -126,12 +126,15 @@ func (c Command) Run(ctx *Context) (err error) {
 	if err != nil {
 		if c.OnUsageError != nil {
 			err := c.OnUsageError(ctx, err)
-			return err
+			if err != nil {
+				return DefaultErrorExitCode, err
+			}
+			return DefaultSuccessExitCode, err
 		} else {
 			fmt.Fprintln(ctx.App.Writer, "Incorrect Usage.")
 			fmt.Fprintln(ctx.App.Writer)
 			ShowCommandHelp(ctx, c.Name)
-			return err
+			return DefaultErrorExitCode, err
 		}
 	}
 
@@ -140,44 +143,47 @@ func (c Command) Run(ctx *Context) (err error) {
 		fmt.Fprintln(ctx.App.Writer, nerr)
 		fmt.Fprintln(ctx.App.Writer)
 		ShowCommandHelp(ctx, c.Name)
-		return nerr
+		return DefaultErrorExitCode, nerr
 	}
+
 	context := NewContext(ctx.App, set, ctx)
 
 	if checkCommandCompletions(context, c.Name) {
-		return nil
+		return DefaultSuccessExitCode, nil
 	}
 
 	if checkCommandHelp(context, c.Name) {
-		return nil
+		return DefaultSuccessExitCode, nil
 	}
 
 	if c.After != nil {
 		defer func() {
-			afterErr := c.After(context)
+			afterEc, afterErr := c.After(context)
 			if afterErr != nil {
 				if err != nil {
 					err = NewMultiError(err, afterErr)
 				} else {
 					err = afterErr
 				}
+
+				ec = afterEc
 			}
 		}()
 	}
 
 	if c.Before != nil {
-		err := c.Before(context)
+		ec, err = c.Before(context)
 		if err != nil {
 			fmt.Fprintln(ctx.App.Writer, err)
 			fmt.Fprintln(ctx.App.Writer)
 			ShowCommandHelp(ctx, c.Name)
-			return err
+			return ec, err
 		}
 	}
 
 	context.Command = c
-	c.Action(context)
-	return nil
+	ec = c.Action(context)
+	return ec, err
 }
 
 func (c Command) Names() []string {
@@ -200,7 +206,7 @@ func (c Command) HasName(name string) bool {
 	return false
 }
 
-func (c Command) startApp(ctx *Context) error {
+func (c Command) startApp(ctx *Context) (int, error) {
 	app := NewApp()
 
 	// set the name and usage
