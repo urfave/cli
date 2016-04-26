@@ -50,7 +50,9 @@ This app will run and show help text, but is not very useful. Let's give an acti
 package main
 
 import (
+  "fmt"
   "os"
+
   "github.com/codegangsta/cli"
 )
 
@@ -58,8 +60,9 @@ func main() {
   app := cli.NewApp()
   app.Name = "boom"
   app.Usage = "make an explosive entrance"
-  app.Action = func(c *cli.Context) {
-    println("boom! I say!")
+  app.Action = func(c *cli.Context) int {
+    fmt.Println("boom! I say!")
+    return 0
   }
 
   app.Run(os.Args)
@@ -78,7 +81,9 @@ Start by creating a directory named `greet`, and within it, add a file, `greet.g
 package main
 
 import (
+  "fmt"
   "os"
+
   "github.com/codegangsta/cli"
 )
 
@@ -86,8 +91,9 @@ func main() {
   app := cli.NewApp()
   app.Name = "greet"
   app.Usage = "fight the loneliness!"
-  app.Action = func(c *cli.Context) {
-    println("Hello friend!")
+  app.Action = func(c *cli.Context) int {
+    fmt.Println("Hello friend!")
+    return 0
   }
 
   app.Run(os.Args)
@@ -370,8 +376,9 @@ COMMANDS:
 
 ### Exit code
 
-It is your responsibility to call `os.Exit` with the exit code returned by
-`app.Run`, e.g.:
+Calling `App.Run` will not automatically call `os.Exit`, which means that by
+default the exit code will "fall through" to being `0`.  Proper exit code
+propagation is the responsibility of the code that calls `App.Run`, e.g.:
 
 ```go
 package main
@@ -382,10 +389,7 @@ import (
 )
 
 func main() {
-  exitCode, err := cli.NewApp().Run(os.Args)
-  if err != nil {
-    log.Println(err)
-  }
+  exitCode, _ := cli.NewApp().Run(os.Args)
   os.Exit(exitCode)
 }
 ```
