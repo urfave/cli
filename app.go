@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"time"
 )
@@ -55,7 +56,10 @@ type App struct {
 	// It is run even if Action() panics
 	After AfterFunc
 	// The action to execute when no subcommands are specified
-	Action ActionFunc
+	Action interface{}
+	// TODO: replace `Action: interface{}` with `Action: ActionFunc` once some kind
+	// of deprecation period has passed, maybe?
+
 	// Execute this function if the proper command cannot be found
 	CommandNotFound CommandNotFoundFunc
 	// Execute this function if an usage error occurs
@@ -179,8 +183,7 @@ func (a *App) Run(arguments []string) (err error) {
 
 	if a.After != nil {
 		defer func() {
-			afterErr := a.After(context)
-			if afterErr != nil {
+			if afterErr := a.After(context); afterErr != nil {
 				if err != nil {
 					err = NewMultiError(err, afterErr)
 				} else {
@@ -210,9 +213,11 @@ func (a *App) Run(arguments []string) (err error) {
 	}
 
 	// Run default Action
-	err = a.Action(context)
-	HandleExitCoder(err)
+	err = HandleAction(a.Action, context)
 
+	if err != nil {
+		HandleExitCoder(err)
+	}
 	return err
 }
 
@@ -318,7 +323,12 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	}
 
 	// Run default Action
-	return a.Action(context)
+	err = HandleAction(a.Action, context)
+
+	if err != nil {
+		HandleExitCoder(err)
+	}
+	return err
 }
 
 // Returns the named command on App. Returns nil if the command does not exist
@@ -367,4 +377,33 @@ func (a Author) String() string {
 	}
 
 	return fmt.Sprintf("%v %v", a.Name, e)
+}
+
+// HandleAction uses ✧✧✧reflection✧✧✧ to figure out if the given Action is an
+// ActionFunc, LegacyActionFunc, or some other invalid thing.  If it's an
+// ActionFunc or LegacyActionFunc, the func is run!
+func HandleAction(action interface{}, context *Context) error {
+	if reflect.TypeOf(action).Kind() != reflect.Func {
+		panic("given Action must be a func")
+	}
+
+	vals := reflect.ValueOf(action).Call([]reflect.Value{reflect.ValueOf(context)})
+
+	if len(vals) == 0 {
+		fmt.Fprintln(os.Stderr,
+			"DEPRECATED Action signature.  Must be `cli.ActionFunc`")
+		return nil
+	}
+
+	if len(vals) > 1 {
+		fmt.Fprintln(os.Stderr,
+			"ERROR invalid Action signature.  Must be `cli.ActionFunc`")
+		panic("given Action has invalid return signature")
+	}
+
+	if err, ok := reflect.ValueOf(vals[0]).Interface().(error); ok {
+		return err
+	}
+
+	return nil
 }

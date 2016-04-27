@@ -34,7 +34,10 @@ type Command struct {
 	// It is run even if Action() panics
 	After AfterFunc
 	// The function to call when this command is invoked
-	Action ActionFunc
+	Action interface{}
+	// TODO: replace `Action: interface{}` with `Action: ActionFunc` once some kind
+	// of deprecation period has passed, maybe?
+
 	// Execute this function if a usage error occurs.
 	OnUsageError OnUsageErrorFunc
 	// List of child commands
@@ -178,7 +181,8 @@ func (c Command) Run(ctx *Context) (err error) {
 	}
 
 	context.Command = c
-	err = c.Action(context)
+	err = HandleAction(c.Action, context)
+
 	if err != nil {
 		HandleExitCoder(err)
 	}
