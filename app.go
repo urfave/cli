@@ -212,6 +212,17 @@ func (a *App) Run(arguments []string) (err error) {
 	return err
 }
 
+// DEPRECATED: Another entry point to the cli app, takes care of passing arguments and error handling
+func (a *App) RunAndExitOnError() {
+	fmt.Fprintln(os.Stderr,
+		"DEPRECATED method `*cli.App.RunAndExitOnError`.  "+
+			"Use `*cli.App.Run` with an error type that fulfills `cli.ExitCoder`.")
+	if err := a.Run(os.Args); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
 // Invokes the subcommand given the context, parses ctx.Args() to generate command-specific flags
 func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	// append help to commands
