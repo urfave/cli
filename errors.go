@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -48,4 +49,12 @@ func (ee *ExitError) String() string {
 
 func (ee *ExitError) ExitCode() int {
 	return ee.exitCode
+}
+
+// HandleExitCoder checks if the error fulfills the ExitCoder interface, and if
+// so calls os.Exit with the given exit code.
+func HandleExitCoder(err error) {
+	if exitErr, ok := err.(ExitCoder); ok {
+		os.Exit(exitErr.ExitCode())
+	}
 }

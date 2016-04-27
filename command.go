@@ -3,7 +3,6 @@ package cli
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
 	"sort"
 	"strings"
 )
@@ -125,10 +124,7 @@ func (c Command) Run(ctx *Context) (err error) {
 	if err != nil {
 		if c.OnUsageError != nil {
 			err := c.OnUsageError(ctx, err, false)
-			if exitErr, ok := err.(ExitCoder); ok {
-				os.Exit(exitErr.ExitCode())
-				panic("unreachable")
-			}
+			HandleExitCoder(err)
 			return err
 		} else {
 			fmt.Fprintln(ctx.App.Writer, "Incorrect Usage.")
@@ -160,10 +156,7 @@ func (c Command) Run(ctx *Context) (err error) {
 		defer func() {
 			afterErr := c.After(context)
 			if afterErr != nil {
-				if exitErr, ok := afterErr.(ExitCoder); ok {
-					os.Exit(exitErr.ExitCode())
-					panic("unreachable")
-				}
+				HandleExitCoder(err)
 				if err != nil {
 					err = NewMultiError(err, afterErr)
 				} else {
@@ -179,10 +172,7 @@ func (c Command) Run(ctx *Context) (err error) {
 			fmt.Fprintln(ctx.App.Writer, err)
 			fmt.Fprintln(ctx.App.Writer)
 			ShowCommandHelp(ctx, c.Name)
-			if exitErr, ok := err.(ExitCoder); ok {
-				os.Exit(exitErr.ExitCode())
-				panic("unreachable")
-			}
+			HandleExitCoder(err)
 			return err
 		}
 	}
@@ -190,10 +180,7 @@ func (c Command) Run(ctx *Context) (err error) {
 	context.Command = c
 	err = c.Action(context)
 	if err != nil {
-		if exitErr, ok := err.(ExitCoder); ok {
-			os.Exit(exitErr.ExitCode())
-			panic("unreachable")
-		}
+		HandleExitCoder(err)
 	}
 	return err
 }
