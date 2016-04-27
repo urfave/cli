@@ -13,6 +13,10 @@ matrix:
   allow_failures:
     - go: tip
 
+before_script:
+- go get github.com/meatballhat/gfmxr/...
+
 script:
 - go vet ./...
 - go test -v ./...
+- gfmxr
