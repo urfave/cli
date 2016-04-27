@@ -223,7 +223,7 @@ Will result in help output like:
 --config FILE, -c FILE   Load configuration from FILE
 ```
 
-Note that only the first placeholder is used. Subsequent back-quoted words will be left as-is. 
+Note that only the first placeholder is used. Subsequent back-quoted words will be left as-is.
 
 #### Alternate Names
 
