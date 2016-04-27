@@ -66,11 +66,11 @@ func Test_Help_Custom_Flags(t *testing.T) {
 		Flags: []Flag{
 			BoolFlag{Name: "foo, h"},
 		},
-		Action: func(ctx *Context) int {
+		Action: func(ctx *Context) error {
 			if ctx.Bool("h") != true {
 				t.Errorf("custom help flag not set")
 			}
-			return 0
+			return nil
 		},
 	}
 	output := new(bytes.Buffer)
@@ -96,11 +96,11 @@ func Test_Version_Custom_Flags(t *testing.T) {
 		Flags: []Flag{
 			BoolFlag{Name: "foo, v"},
 		},
-		Action: func(ctx *Context) int {
+		Action: func(ctx *Context) error {
 			if ctx.Bool("v") != true {
 				t.Errorf("custom version flag not set")
 			}
-			return 0
+			return nil
 		},
 	}
 	output := new(bytes.Buffer)

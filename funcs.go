@@ -5,14 +5,14 @@ type BashCompleteFunc func(*Context)
 
 // An action to execute before any subcommands are run, but after the context is ready
 // If a non-nil error is returned, no subcommands are run
-type BeforeFunc func(*Context) (int, error)
+type BeforeFunc func(*Context) error
 
 // An action to execute after any subcommands are run, but after the subcommand has finished
 // It is run even if Action() panics
-type AfterFunc func(*Context) (int, error)
+type AfterFunc func(*Context) error
 
 // The action to execute when no subcommands are specified
-type ActionFunc func(*Context) int
+type ActionFunc func(*Context) error
 
 // Execute this function if the proper command cannot be found
 type CommandNotFoundFunc func(*Context, string)

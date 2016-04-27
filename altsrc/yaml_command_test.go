@@ -29,17 +29,17 @@ func TestCommandYamlFileTest(t *testing.T) {
 		Aliases:     []string{"tc"},
 		Usage:       "this is for testing",
 		Description: "testing",
-		Action: func(c *cli.Context) int {
+		Action: func(c *cli.Context) error {
 			val := c.Int("test")
 			expect(t, val, 15)
-			return 0
+			return nil
 		},
 		Flags: []cli.Flag{
 			NewIntFlag(cli.IntFlag{Name: "test"}),
 			cli.StringFlag{Name: "load"}},
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewYamlSourceFromFlagFunc("load"))
-	_, err := command.Run(c)
+	err := command.Run(c)
 
 	expect(t, err, nil)
 }
@@ -62,10 +62,10 @@ func TestCommandYamlFileTestGlobalEnvVarWins(t *testing.T) {
 		Aliases:     []string{"tc"},
 		Usage:       "this is for testing",
 		Description: "testing",
-		Action: func(c *cli.Context) int {
+		Action: func(c *cli.Context) error {
 			val := c.Int("test")
 			expect(t, val, 10)
-			return 0
+			return nil
 		},
 		Flags: []cli.Flag{
 			NewIntFlag(cli.IntFlag{Name: "test", EnvVar: "THE_TEST"}),
@@ -73,7 +73,7 @@ func TestCommandYamlFileTestGlobalEnvVarWins(t *testing.T) {
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewYamlSourceFromFlagFunc("load"))
 
-	_, err := command.Run(c)
+	err := command.Run(c)
 
 	expect(t, err, nil)
 }
@@ -94,10 +94,10 @@ func TestCommandYamlFileTestSpecifiedFlagWins(t *testing.T) {
 		Aliases:     []string{"tc"},
 		Usage:       "this is for testing",
 		Description: "testing",
-		Action: func(c *cli.Context) int {
+		Action: func(c *cli.Context) error {
 			val := c.Int("test")
 			expect(t, val, 7)
-			return 0
+			return nil
 		},
 		Flags: []cli.Flag{
 			NewIntFlag(cli.IntFlag{Name: "test"}),
@@ -105,7 +105,7 @@ func TestCommandYamlFileTestSpecifiedFlagWins(t *testing.T) {
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewYamlSourceFromFlagFunc("load"))
 
-	_, err := command.Run(c)
+	err := command.Run(c)
 
 	expect(t, err, nil)
 }
@@ -126,10 +126,10 @@ func TestCommandYamlFileTestDefaultValueFileWins(t *testing.T) {
 		Aliases:     []string{"tc"},
 		Usage:       "this is for testing",
 		Description: "testing",
-		Action: func(c *cli.Context) int {
+		Action: func(c *cli.Context) error {
 			val := c.Int("test")
 			expect(t, val, 15)
-			return 0
+			return nil
 		},
 		Flags: []cli.Flag{
 			NewIntFlag(cli.IntFlag{Name: "test", Value: 7}),
@@ -137,7 +137,7 @@ func TestCommandYamlFileTestDefaultValueFileWins(t *testing.T) {
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewYamlSourceFromFlagFunc("load"))
 
-	_, err := command.Run(c)
+	err := command.Run(c)
 
 	expect(t, err, nil)
 }
@@ -161,17 +161,17 @@ func TestCommandYamlFileFlagHasDefaultGlobalEnvYamlSetGlobalEnvWins(t *testing.T
 		Aliases:     []string{"tc"},
 		Usage:       "this is for testing",
 		Description: "testing",
-		Action: func(c *cli.Context) int {
+		Action: func(c *cli.Context) error {
 			val := c.Int("test")
 			expect(t, val, 11)
-			return 0
+			return nil
 		},
 		Flags: []cli.Flag{
 			NewIntFlag(cli.IntFlag{Name: "test", Value: 7, EnvVar: "THE_TEST"}),
 			cli.StringFlag{Name: "load"}},
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewYamlSourceFromFlagFunc("load"))
-	_, err := command.Run(c)
+	err := command.Run(c)
 
 	expect(t, err, nil)
 }

@@ -100,7 +100,7 @@ func NewApp() *App {
 }
 
 // Entry point to the cli app. Parses the arguments slice and routes to the proper flag/args combination
-func (a *App) Run(arguments []string) (ec int, err error) {
+func (a *App) Run(arguments []string) (err error) {
 	if a.Author != "" || a.Email != "" {
 		a.Authors = append(a.Authors, Author{Name: a.Author, Email: a.Email})
 	}
@@ -146,40 +146,43 @@ func (a *App) Run(arguments []string) (ec int, err error) {
 	if nerr != nil {
 		fmt.Fprintln(a.Writer, nerr)
 		ShowAppHelp(context)
-		return DefaultErrorExitCode, nerr
+		return nerr
 	}
 
 	if checkCompletions(context) {
-		return DefaultSuccessExitCode, nil
+		return nil
 	}
 
 	if err != nil {
 		if a.OnUsageError != nil {
 			err := a.OnUsageError(context, err, false)
 			if err != nil {
-				return DefaultErrorExitCode, err
+				if exitErr, ok := err.(ExitCoder); ok {
+					os.Exit(exitErr.ExitCode())
+					panic("unreachable")
+				}
 			}
-			return DefaultSuccessExitCode, err
+			return err
 		} else {
 			fmt.Fprintf(a.Writer, "%s\n\n", "Incorrect Usage.")
 			ShowAppHelp(context)
-			return DefaultErrorExitCode, err
+			return err
 		}
 	}
 
 	if !a.HideHelp && checkHelp(context) {
 		ShowAppHelp(context)
-		return DefaultSuccessExitCode, nil
+		return nil
 	}
 
 	if !a.HideVersion && checkVersion(context) {
 		ShowVersion(context)
-		return DefaultSuccessExitCode, nil
+		return nil
 	}
 
 	if a.After != nil {
 		defer func() {
-			afterEc, afterErr := a.After(context)
+			afterErr := a.After(context)
 			if afterErr != nil {
 				if err != nil {
 					err = NewMultiError(err, afterErr)
@@ -187,16 +190,21 @@ func (a *App) Run(arguments []string) (ec int, err error) {
 					err = afterErr
 				}
 			}
-			ec = afterEc
 		}()
 	}
 
 	if a.Before != nil {
-		ec, err = a.Before(context)
+		err = a.Before(context)
 		if err != nil {
 			fmt.Fprintf(a.Writer, "%v\n\n", err)
 			ShowAppHelp(context)
-			return ec, err
+
+			if exitErr, ok := err.(ExitCoder); ok {
+				os.Exit(exitErr.ExitCode())
+				panic("unreachable")
+			}
+
+			return err
 		}
 	}
 
@@ -210,19 +218,34 @@ func (a *App) Run(arguments []string) (ec int, err error) {
 	}
 
 	// Run default Action
-	return a.Action(context), nil
+	err = a.Action(context)
+
+	if exitErr, ok := err.(ExitCoder); ok {
+		os.Exit(exitErr.ExitCode())
+		panic("unreachable")
+	}
+
+	return err
 }
 
 // Another entry point to the cli app, takes care of passing arguments and error handling
 func (a *App) RunAndExitOnError() {
-	if exitCode, err := a.Run(os.Args); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(exitCode)
+	err := a.Run(os.Args)
+	if exitErr, ok := err.(ExitCoder); ok {
+		os.Exit(exitErr.ExitCode())
+		panic("unreachable")
 	}
+
+	if err != nil {
+		os.Exit(DefaultErrorExitCode)
+		panic("unreachable")
+	}
+
+	os.Exit(DefaultSuccessExitCode)
 }
 
 // Invokes the subcommand given the context, parses ctx.Args() to generate command-specific flags
-func (a *App) RunAsSubcommand(ctx *Context) (ec int, err error) {
+func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	// append help to commands
 	if len(a.Commands) > 0 {
 		if a.Command(helpCommand.Name) == nil && !a.HideHelp {
@@ -262,55 +285,63 @@ func (a *App) RunAsSubcommand(ctx *Context) (ec int, err error) {
 		} else {
 			ShowCommandHelp(ctx, context.Args().First())
 		}
-		return DefaultErrorExitCode, nerr
+		return nerr
 	}
 
 	if checkCompletions(context) {
-		return DefaultSuccessExitCode, nil
+		return nil
 	}
 
 	if err != nil {
 		if a.OnUsageError != nil {
 			err = a.OnUsageError(context, err, true)
-			if err != nil {
-				return DefaultErrorExitCode, err
+			if exitErr, ok := err.(ExitCoder); ok {
+				os.Exit(exitErr.ExitCode())
+				panic("unreachable")
 			}
-			return DefaultSuccessExitCode, err
+			return nil
 		} else {
 			fmt.Fprintf(a.Writer, "%s\n\n", "Incorrect Usage.")
 			ShowSubcommandHelp(context)
-			return DefaultErrorExitCode, err
+			return err
 		}
 	}
 
 	if len(a.Commands) > 0 {
 		if checkSubcommandHelp(context) {
-			return DefaultSuccessExitCode, nil
+			return nil
 		}
 	} else {
 		if checkCommandHelp(ctx, context.Args().First()) {
-			return DefaultSuccessExitCode, nil
+			return nil
 		}
 	}
 
 	if a.After != nil {
 		defer func() {
-			afterEc, afterErr := a.After(context)
+			afterErr := a.After(context)
 			if afterErr != nil {
+				if exitErr, ok := afterErr.(ExitCoder); ok {
+					os.Exit(exitErr.ExitCode())
+					panic("unreachable")
+				}
 				if err != nil {
 					err = NewMultiError(err, afterErr)
 				} else {
 					err = afterErr
 				}
 			}
-			ec = afterEc
 		}()
 	}
 
 	if a.Before != nil {
-		ec, err = a.Before(context)
+		err = a.Before(context)
 		if err != nil {
-			return ec, err
+			if exitErr, ok := err.(ExitCoder); ok {
+				os.Exit(exitErr.ExitCode())
+				panic("unreachable")
+			}
+			return err
 		}
 	}
 
@@ -324,7 +355,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (ec int, err error) {
 	}
 
 	// Run default Action
-	return a.Action(context), nil
+	return a.Action(context)
 }
 
 // Returns the named command on App. Returns nil if the command does not exist

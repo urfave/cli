@@ -39,13 +39,13 @@ func ApplyInputSourceValues(context *cli.Context, inputSourceContext InputSource
 // input source based on the func provided. If there is no error it will then apply the new input source to any flags
 // that are supported by the input source
 func InitInputSource(flags []cli.Flag, createInputSource func() (InputSourceContext, error)) cli.BeforeFunc {
-	return func(context *cli.Context) (int, error) {
+	return func(context *cli.Context) error {
 		inputSource, err := createInputSource()
 		if err != nil {
-			return cli.DefaultErrorExitCode, fmt.Errorf("Unable to create input source: inner error: \n'%v'", err.Error())
+			return fmt.Errorf("Unable to create input source: inner error: \n'%v'", err.Error())
 		}
 
-		return cli.DefaultSuccessExitCode, ApplyInputSourceValues(context, inputSource, flags)
+		return ApplyInputSourceValues(context, inputSource, flags)
 	}
 }
 
@@ -53,13 +53,13 @@ func InitInputSource(flags []cli.Flag, createInputSource func() (InputSourceCont
 // input source based on the func provided with potentially using existing cli.Context values to initialize itself. If there is
 // no error it will then apply the new input source to any flags that are supported by the input source
 func InitInputSourceWithContext(flags []cli.Flag, createInputSource func(context *cli.Context) (InputSourceContext, error)) cli.BeforeFunc {
-	return func(context *cli.Context) (int, error) {
+	return func(context *cli.Context) error {
 		inputSource, err := createInputSource(context)
 		if err != nil {
-			return cli.DefaultErrorExitCode, fmt.Errorf("Unable to create input source with context: inner error: \n'%v'", err.Error())
+			return fmt.Errorf("Unable to create input source with context: inner error: \n'%v'", err.Error())
 		}
 
-		return cli.DefaultSuccessExitCode, ApplyInputSourceValues(context, inputSource, flags)
+		return ApplyInputSourceValues(context, inputSource, flags)
 	}
 }
 

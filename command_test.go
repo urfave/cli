@@ -34,12 +34,12 @@ func TestCommandFlagParsing(t *testing.T) {
 			Aliases:     []string{"tc"},
 			Usage:       "this is for testing",
 			Description: "testing",
-			Action:      func(_ *Context) int { return 0 },
+			Action:      func(_ *Context) error { return nil },
 		}
 
 		command.SkipFlagParsing = c.skipFlagParsing
 
-		_, err := command.Run(context)
+		err := command.Run(context)
 
 		expect(t, err, c.expectedErr)
 		expect(t, []string(context.Args()), c.testArgs)
@@ -51,16 +51,16 @@ func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 	app.Commands = []Command{
 		Command{
 			Name: "bar",
-			Before: func(c *Context) (int, error) {
-				return 1, fmt.Errorf("before error")
+			Before: func(c *Context) error {
+				return fmt.Errorf("before error")
 			},
-			After: func(c *Context) (int, error) {
-				return 1, fmt.Errorf("after error")
+			After: func(c *Context) error {
+				return fmt.Errorf("after error")
 			},
 		},
 	}
 
-	_, err := app.Run([]string{"foo", "bar"})
+	err := app.Run([]string{"foo", "bar"})
 	if err == nil {
 		t.Fatalf("expected to receive error from Run, got none")
 	}
@@ -90,7 +90,7 @@ func TestCommand_OnUsageError_WithWrongFlagValue(t *testing.T) {
 		},
 	}
 
-	_, err := app.Run([]string{"foo", "bar", "--flag=wrong"})
+	err := app.Run([]string{"foo", "bar", "--flag=wrong"})
 	if err == nil {
 		t.Fatalf("expected to receive error from Run, got none")
 	}

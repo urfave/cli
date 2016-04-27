@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"sort"
 	"strings"
 )
@@ -63,7 +64,7 @@ func (c Command) FullName() string {
 type Commands []Command
 
 // Invokes the command given the context, parses ctx.Args() to generate command-specific flags
-func (c Command) Run(ctx *Context) (ec int, err error) {
+func (c Command) Run(ctx *Context) (err error) {
 	if len(c.Subcommands) > 0 {
 		return c.startApp(ctx)
 	}
@@ -124,15 +125,16 @@ func (c Command) Run(ctx *Context) (ec int, err error) {
 	if err != nil {
 		if c.OnUsageError != nil {
 			err := c.OnUsageError(ctx, err, false)
-			if err != nil {
-				return DefaultErrorExitCode, err
+			if exitErr, ok := err.(ExitCoder); ok {
+				os.Exit(exitErr.ExitCode())
+				panic("unreachable")
 			}
-			return DefaultSuccessExitCode, err
+			return err
 		} else {
 			fmt.Fprintln(ctx.App.Writer, "Incorrect Usage.")
 			fmt.Fprintln(ctx.App.Writer)
 			ShowCommandHelp(ctx, c.Name)
-			return DefaultErrorExitCode, err
+			return err
 		}
 	}
 
@@ -141,47 +143,59 @@ func (c Command) Run(ctx *Context) (ec int, err error) {
 		fmt.Fprintln(ctx.App.Writer, nerr)
 		fmt.Fprintln(ctx.App.Writer)
 		ShowCommandHelp(ctx, c.Name)
-		return DefaultErrorExitCode, nerr
+		return nerr
 	}
 
 	context := NewContext(ctx.App, set, ctx)
 
 	if checkCommandCompletions(context, c.Name) {
-		return DefaultSuccessExitCode, nil
+		return nil
 	}
 
 	if checkCommandHelp(context, c.Name) {
-		return DefaultSuccessExitCode, nil
+		return nil
 	}
 
 	if c.After != nil {
 		defer func() {
-			afterEc, afterErr := c.After(context)
+			afterErr := c.After(context)
 			if afterErr != nil {
+				if exitErr, ok := afterErr.(ExitCoder); ok {
+					os.Exit(exitErr.ExitCode())
+					panic("unreachable")
+				}
 				if err != nil {
 					err = NewMultiError(err, afterErr)
 				} else {
 					err = afterErr
 				}
-
-				ec = afterEc
 			}
 		}()
 	}
 
 	if c.Before != nil {
-		ec, err = c.Before(context)
+		err = c.Before(context)
 		if err != nil {
 			fmt.Fprintln(ctx.App.Writer, err)
 			fmt.Fprintln(ctx.App.Writer)
 			ShowCommandHelp(ctx, c.Name)
-			return ec, err
+			if exitErr, ok := err.(ExitCoder); ok {
+				os.Exit(exitErr.ExitCode())
+				panic("unreachable")
+			}
+			return err
 		}
 	}
 
 	context.Command = c
-	ec = c.Action(context)
-	return ec, err
+	err = c.Action(context)
+	if err != nil {
+		if exitErr, ok := err.(ExitCoder); ok {
+			os.Exit(exitErr.ExitCode())
+			panic("unreachable")
+		}
+	}
+	return err
 }
 
 func (c Command) Names() []string {
@@ -204,7 +218,7 @@ func (c Command) HasName(name string) bool {
 	return false
 }
 
-func (c Command) startApp(ctx *Context) (int, error) {
+func (c Command) startApp(ctx *Context) error {
 	app := NewApp()
 
 	// set the name and usage

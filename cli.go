@@ -19,6 +19,7 @@
 package cli
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -37,4 +38,32 @@ func (m MultiError) Error() string {
 	}
 
 	return strings.Join(errs, "\n")
+}
+
+type ExitCoder interface {
+	ExitCode() int
+}
+
+type ExitError struct {
+	exitCode int
+	message  string
+}
+
+func NewExitError(message string, exitCode int) *ExitError {
+	return &ExitError{
+		exitCode: exitCode,
+		message:  message,
+	}
+}
+
+func (ee *ExitError) Error() string {
+	return ee.message
+}
+
+func (ee *ExitError) String() string {
+	return fmt.Sprintf("%s exitcode=%v", ee.message, ee.exitCode)
+}
+
+func (ee *ExitError) ExitCode() int {
+	return ee.exitCode
 }
