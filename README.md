@@ -60,9 +60,9 @@ func main() {
   app := cli.NewApp()
   app.Name = "boom"
   app.Usage = "make an explosive entrance"
-  app.Action = func(c *cli.Context) int {
+  app.Action = func(c *cli.Context) error {
     fmt.Println("boom! I say!")
-    return 0
+    return nil
   }
 
   app.Run(os.Args)
@@ -91,9 +91,9 @@ func main() {
   app := cli.NewApp()
   app.Name = "greet"
   app.Usage = "fight the loneliness!"
-  app.Action = func(c *cli.Context) int {
+  app.Action = func(c *cli.Context) error {
     fmt.Println("Hello friend!")
-    return 0
+    return nil
   }
 
   app.Run(os.Args)
@@ -139,8 +139,9 @@ You can lookup arguments by calling the `Args` function on `cli.Context`.
 
 ``` go
 ...
-app.Action = func(c *cli.Context) {
+app.Action = func(c *cli.Context) error {
   println("Hello", c.Args()[0])
+  return nil
 }
 ...
 ```
@@ -158,7 +159,7 @@ app.Flags = []cli.Flag {
     Usage: "language for the greeting",
   },
 }
-app.Action = func(c *cli.Context) {
+app.Action = func(c *cli.Context) error {
   name := "someone"
   if c.NArg() > 0 {
     name = c.Args()[0]
@@ -168,6 +169,7 @@ app.Action = func(c *cli.Context) {
   } else {
     println("Hello", name)
   }
+  return nil
 }
 ...
 ```
@@ -185,7 +187,7 @@ app.Flags = []cli.Flag {
     Destination: &language,
   },
 }
-app.Action = func(c *cli.Context) {
+app.Action = func(c *cli.Context) error {
   name := "someone"
   if c.NArg() > 0 {
     name = c.Args()[0]
@@ -195,6 +197,7 @@ app.Action = func(c *cli.Context) {
   } else {
     println("Hello", name)
   }
+  return nil
 }
 ...
 ```
@@ -276,7 +279,7 @@ Here is a more complete sample of a command using YAML support:
     Aliases:     []string{"tc"},
     Usage:       "this is for testing",
     Description: "testing",
-    Action: func(c *cli.Context) {
+    Action: func(c *cli.Context) error {
       // Action to run
     },
     Flags: []cli.Flag{
