@@ -11,15 +11,6 @@ import (
 	"time"
 )
 
-var (
-	// DefaultSuccessExitCode is the default for use with os.Exit intended to
-	// indicate success
-	DefaultSuccessExitCode = 0
-	// DefaultErrorExitCode is the default for use with os.Exit intended to
-	// indicate an error
-	DefaultErrorExitCode = 1
-)
-
 // App is the main structure of a cli application. It is recommended that
 // an app be created with the cli.NewApp() function
 type App struct {
