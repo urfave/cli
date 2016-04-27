@@ -140,7 +140,7 @@ You can lookup arguments by calling the `Args` function on `cli.Context`.
 ``` go
 ...
 app.Action = func(c *cli.Context) error {
-  println("Hello", c.Args()[0])
+  fmt.Println("Hello", c.Args()[0])
   return nil
 }
 ...
@@ -165,9 +165,9 @@ app.Action = func(c *cli.Context) error {
     name = c.Args()[0]
   }
   if c.String("lang") == "spanish" {
-    println("Hola", name)
+    fmt.Println("Hola", name)
   } else {
-    println("Hello", name)
+    fmt.Println("Hello", name)
   }
   return nil
 }
@@ -193,9 +193,9 @@ app.Action = func(c *cli.Context) error {
     name = c.Args()[0]
   }
   if language == "spanish" {
-    println("Hola", name)
+    fmt.Println("Hola", name)
   } else {
-    println("Hello", name)
+    fmt.Println("Hello", name)
   }
   return nil
 }
@@ -323,7 +323,7 @@ app.Commands = []cli.Command{
     Aliases:     []string{"a"},
     Usage:     "add a task to the list",
     Action: func(c *cli.Context) {
-      println("added task: ", c.Args().First())
+      fmt.Println("added task: ", c.Args().First())
     },
   },
   {
@@ -331,7 +331,7 @@ app.Commands = []cli.Command{
     Aliases:     []string{"c"},
     Usage:     "complete a task on the list",
     Action: func(c *cli.Context) {
-      println("completed task: ", c.Args().First())
+      fmt.Println("completed task: ", c.Args().First())
     },
   },
   {
@@ -343,14 +343,14 @@ app.Commands = []cli.Command{
         Name:  "add",
         Usage: "add a new template",
         Action: func(c *cli.Context) {
-            println("new task template: ", c.Args().First())
+          fmt.Println("new task template: ", c.Args().First())
         },
       },
       {
         Name:  "remove",
         Usage: "remove an existing template",
         Action: func(c *cli.Context) {
-          println("removed task template: ", c.Args().First())
+          fmt.Println("removed task template: ", c.Args().First())
         },
       },
     },
@@ -401,20 +401,35 @@ COMMANDS:
 ### Exit code
 
 Calling `App.Run` will not automatically call `os.Exit`, which means that by
-default the exit code will "fall through" to being `0`.  Proper exit code
-propagation is the responsibility of the code that calls `App.Run`, e.g.:
+default the exit code will "fall through" to being `0`.  An explicit exit code
+may be set by returning a non-nil error that fulfills `cli.ExitCoder`, *or* a
+`cli.MultiError` that includes an error that fulfills `cli.ExitCoder`, e.g.:
 
-```go
+``` go
 package main
 
 import (
   "os"
+
   "github.com/codegangsta/cli"
 )
 
 func main() {
-  exitCode, _ := cli.NewApp().Run(os.Args)
-  os.Exit(exitCode)
+  app := cli.NewApp()
+  app.Flags = []cli.Flag{
+    cli.BoolTFlag{
+      Name:  "ginger-crouton",
+      Usage: "is it in the soup?",
+    },
+  }
+  app.Action = func(ctx *cli.Context) error {
+    if !ctx.Bool("ginger-crouton") {
+      return cli.NewExitError("it is not in the soup", 86)
+    }
+    return nil
+  }
+
+  app.Run(os.Args)
 }
 ```
 
@@ -436,7 +451,7 @@ app.Commands = []cli.Command{
     Aliases: []string{"c"},
     Usage: "complete a task on the list",
     Action: func(c *cli.Context) {
-       println("completed task: ", c.Args().First())
+       fmt.Println("completed task: ", c.Args().First())
     },
     BashComplete: func(c *cli.Context) {
       // This will complete if no args are passed
