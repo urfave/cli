@@ -26,8 +26,8 @@ produce a non-zero exit from `App.Run`
 `cli.App.RunAndExitOnError`, which should now be done by returning an error
 that fulfills `cli.ExitCoder` to `cli.App.Run`.
 - <a name="deprecated-cli-app-action-signature"></a> the legacy signature for
-`cli.App.Action` of `func(*cli.Context)`, which should now have a signature of
-`func(*cli.Context) error`, as defined by `cli.ActionFunc`.
+`cli.App.Action` of `func(*cli.Context)`, which should now have a return
+signature of `func(*cli.Context) error`, as defined by `cli.ActionFunc`.
 
 ## [1.14.0] - 2016-04-03 (backfilled 2016-04-25)
 ### Added
