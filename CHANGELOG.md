@@ -7,6 +7,15 @@
 ### Added
 - Support for placeholders in flag usage strings
 
+## [2.0.0]
+### Added
+- `NewStringSlice` and `NewIntSlice` for creating their related types
+
+### Removed
+- the ability to specify `&StringSlice{...string}` or `&IntSlice{...int}`.
+To migrate to the new API, you may choose to run [this helper
+(python) script](./cli-migrate-slice-types).
+
 ## [1.14.0] - 2016-04-03 (backfilled 2016-04-25)
 ### Added
 - Codebeat badge
@@ -220,6 +229,7 @@
 - Initial implementation.
 
 [Unreleased]: https://github.com/codegangsta/cli/compare/v1.14.0...HEAD
+[2.0.0]: https://github.com/codegangsta/cli/compare/v1.14.0...v2.0.0
 [1.14.0]: https://github.com/codegangsta/cli/compare/v1.13.0...v1.14.0
 [1.13.0]: https://github.com/codegangsta/cli/compare/v1.12.0...v1.13.0
 [1.12.0]: https://github.com/codegangsta/cli/compare/v1.11.1...v1.12.0
