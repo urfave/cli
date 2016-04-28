@@ -29,6 +29,9 @@ that fulfills `cli.ExitCoder` to `cli.App.Run`.
 `cli.App.Action` of `func(*cli.Context)`, which should now have a return
 signature of `func(*cli.Context) error`, as defined by `cli.ActionFunc`.
 
+### Fixed
+- Added missing `*cli.Context.GlobalFloat64` method
+
 ## [1.14.0] - 2016-04-03 (backfilled 2016-04-25)
 ### Added
 - Codebeat badge
