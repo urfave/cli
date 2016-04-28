@@ -146,3 +146,57 @@ func TestContext_NumFlags(t *testing.T) {
 	globalSet.Parse([]string{"--myflagGlobal"})
 	expect(t, c.NumFlags(), 2)
 }
+
+func TestContext_GlobalFlag(t *testing.T) {
+	var globalFlag string
+	var globalFlagSet bool
+	app := NewApp()
+	app.Flags = []Flag{
+		StringFlag{Name: "global, g", Usage: "global"},
+	}
+	app.Action = func(c *Context) {
+		globalFlag = c.GlobalString("global")
+		globalFlagSet = c.GlobalIsSet("global")
+	}
+	app.Run([]string{"command", "-g", "foo"})
+	expect(t, globalFlag, "foo")
+	expect(t, globalFlagSet, true)
+
+}
+
+func TestContext_GlobalFlagsInSubcommands(t *testing.T) {
+	subcommandRun := false
+	parentFlag := false
+	app := NewApp()
+
+	app.Flags = []Flag{
+		BoolFlag{Name: "debug, d", Usage: "Enable debugging"},
+	}
+
+	app.Commands = []Command{
+		Command{
+			Name: "foo",
+			Flags: []Flag{
+				BoolFlag{Name: "parent, p", Usage: "Parent flag"},
+			},
+			Subcommands: []Command{
+				{
+					Name: "bar",
+					Action: func(c *Context) {
+						if c.GlobalBool("debug") {
+							subcommandRun = true
+						}
+						if c.GlobalBool("parent") {
+							parentFlag = true
+						}
+					},
+				},
+			},
+		},
+	}
+
+	app.Run([]string{"command", "-d", "foo", "-p", "bar"})
+
+	expect(t, subcommandRun, true)
+	expect(t, parentFlag, true)
+}
