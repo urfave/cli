@@ -7,6 +7,9 @@
 ### Added
 - Support for placeholders in flag usage strings
 
+### Fixed
+- Added missing `*cli.Context.GlobalFloat64` method
+
 ## [1.14.0] - 2016-04-03 (backfilled 2016-04-25)
 ### Added
 - Codebeat badge
