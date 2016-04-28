@@ -11,6 +11,15 @@ import (
 	"time"
 )
 
+var (
+	errNonFuncAction = NewExitError("ERROR invalid Action type.  "+
+		"Must be a func of type `cli.ActionFunc`.  "+
+		"See https://github.com/codegangsta/cli/blob/master/CHANGELOG.md#deprecated-cli-app-action-signature", 2)
+	errInvalidActionSignature = NewExitError("ERROR invalid Action signature.  "+
+		"Must be `cli.ActionFunc`.  "+
+		"See https://github.com/codegangsta/cli/blob/master/CHANGELOG.md#deprecated-cli-app-action-signature", 2)
+)
+
 // App is the main structure of a cli application. It is recommended that
 // an app be created with the cli.NewApp() function
 type App struct {
@@ -215,8 +224,8 @@ func (a *App) Run(arguments []string) (err error) {
 // DEPRECATED: Another entry point to the cli app, takes care of passing arguments and error handling
 func (a *App) RunAndExitOnError() {
 	fmt.Fprintln(os.Stderr,
-		"DEPRECATED method `*cli.App.RunAndExitOnError`.  "+
-			"Use `*cli.App.Run` with an error type that fulfills `cli.ExitCoder`.")
+		"DEPRECATED cli.App.RunAndExitOnError.  "+
+			"See https://github.com/codegangsta/cli/blob/master/CHANGELOG.md#deprecated-cli-app-runandexitonerror")
 	if err := a.Run(os.Args); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -382,11 +391,12 @@ func (a Author) String() string {
 }
 
 // HandleAction uses ✧✧✧reflection✧✧✧ to figure out if the given Action is an
-// ActionFunc, LegacyActionFunc, or some other invalid thing.  If it's an
-// ActionFunc or LegacyActionFunc, the func is run!
+// ActionFunc, a func with the legacy signature for Action, or some other
+// invalid thing.  If it's an ActionFunc or a func with the legacy signature for
+// Action, the func is run!
 func HandleAction(action interface{}, context *Context) error {
 	if reflect.TypeOf(action).Kind() != reflect.Func {
-		panic("given Action must be a func")
+		return errNonFuncAction
 	}
 
 	vals := reflect.ValueOf(action).Call([]reflect.Value{reflect.ValueOf(context)})
@@ -398,9 +408,7 @@ func HandleAction(action interface{}, context *Context) error {
 	}
 
 	if len(vals) > 1 {
-		fmt.Fprintln(os.Stderr,
-			"ERROR invalid Action signature.  Must be `cli.ActionFunc`")
-		panic("given Action has invalid return signature")
+		return errInvalidActionSignature
 	}
 
 	if err, ok := reflect.ValueOf(vals[0]).Interface().(error); ok {
