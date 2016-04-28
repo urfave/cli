@@ -205,7 +205,7 @@ func (c Command) startApp(ctx *Context) error {
 
 	// set the name and usage
 	app.Name = fmt.Sprintf("%s %s", ctx.App.Name, c.Name)
-	if c.HelpName == "" {
+	if c.HelpName != "" {
 		app.HelpName = c.HelpName
 	} else {
 		app.HelpName = app.Name
