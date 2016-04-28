@@ -9,14 +9,18 @@ import (
 func TestNewContext(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Int("myflag", 12, "doc")
+	set.Float64("myflag64", float64(17), "doc")
 	globalSet := flag.NewFlagSet("test", 0)
 	globalSet.Int("myflag", 42, "doc")
+	globalSet.Float64("myflag64", float64(47), "doc")
 	globalCtx := NewContext(nil, globalSet, nil)
 	command := Command{Name: "mycommand"}
 	c := NewContext(nil, set, globalCtx)
 	c.Command = command
 	expect(t, c.Int("myflag"), 12)
+	expect(t, c.Float64("myflag64"), float64(17))
 	expect(t, c.GlobalInt("myflag"), 42)
+	expect(t, c.GlobalFloat64("myflag64"), float64(47))
 	expect(t, c.Command.Name, "mycommand")
 }
 
@@ -25,6 +29,29 @@ func TestContext_Int(t *testing.T) {
 	set.Int("myflag", 12, "doc")
 	c := NewContext(nil, set, nil)
 	expect(t, c.Int("myflag"), 12)
+}
+
+func TestContext_GlobalInt(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Int("myflag", 12, "doc")
+	c := NewContext(nil, set, nil)
+	expect(t, c.GlobalInt("myflag"), 12)
+	expect(t, c.GlobalInt("nope"), 0)
+}
+
+func TestContext_Float64(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Float64("myflag", float64(17), "doc")
+	c := NewContext(nil, set, nil)
+	expect(t, c.Float64("myflag"), float64(17))
+}
+
+func TestContext_GlobalFloat64(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Float64("myflag", float64(17), "doc")
+	c := NewContext(nil, set, nil)
+	expect(t, c.GlobalFloat64("myflag"), float64(17))
+	expect(t, c.GlobalFloat64("nope"), float64(0))
 }
 
 func TestContext_Duration(t *testing.T) {
@@ -118,4 +145,58 @@ func TestContext_NumFlags(t *testing.T) {
 	set.Parse([]string{"--myflag", "--otherflag=foo"})
 	globalSet.Parse([]string{"--myflagGlobal"})
 	expect(t, c.NumFlags(), 2)
+}
+
+func TestContext_GlobalFlag(t *testing.T) {
+	var globalFlag string
+	var globalFlagSet bool
+	app := NewApp()
+	app.Flags = []Flag{
+		StringFlag{Name: "global, g", Usage: "global"},
+	}
+	app.Action = func(c *Context) {
+		globalFlag = c.GlobalString("global")
+		globalFlagSet = c.GlobalIsSet("global")
+	}
+	app.Run([]string{"command", "-g", "foo"})
+	expect(t, globalFlag, "foo")
+	expect(t, globalFlagSet, true)
+
+}
+
+func TestContext_GlobalFlagsInSubcommands(t *testing.T) {
+	subcommandRun := false
+	parentFlag := false
+	app := NewApp()
+
+	app.Flags = []Flag{
+		BoolFlag{Name: "debug, d", Usage: "Enable debugging"},
+	}
+
+	app.Commands = []Command{
+		Command{
+			Name: "foo",
+			Flags: []Flag{
+				BoolFlag{Name: "parent, p", Usage: "Parent flag"},
+			},
+			Subcommands: []Command{
+				{
+					Name: "bar",
+					Action: func(c *Context) {
+						if c.GlobalBool("debug") {
+							subcommandRun = true
+						}
+						if c.GlobalBool("parent") {
+							parentFlag = true
+						}
+					},
+				},
+			},
+		},
+	}
+
+	app.Run([]string{"command", "-d", "foo", "-p", "bar"})
+
+	expect(t, subcommandRun, true)
+	expect(t, parentFlag, true)
 }

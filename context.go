@@ -79,6 +79,15 @@ func (c *Context) GlobalInt(name string) int {
 	return 0
 }
 
+// Looks up the value of a global float64 flag, returns float64(0) if no float64
+// flag exists
+func (c *Context) GlobalFloat64(name string) float64 {
+	if fs := lookupGlobalFlagSet(name, c); fs != nil {
+		return lookupFloat64(name, fs)
+	}
+	return float64(0)
+}
+
 // Looks up the value of a global time.Duration flag, returns 0 if no time.Duration flag exists
 func (c *Context) GlobalDuration(name string) time.Duration {
 	if fs := lookupGlobalFlagSet(name, c); fs != nil {

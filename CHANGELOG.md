@@ -7,6 +7,9 @@
 ### Added
 - Support for placeholders in flag usage strings
 
+### Fixed
+- Added missing `*cli.Context.GlobalFloat64` method
+
 ## [2.0.0]
 ### Added
 - `NewStringSlice` and `NewIntSlice` for creating their related types
