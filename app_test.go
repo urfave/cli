@@ -1115,3 +1115,75 @@ func TestApp_OnUsageError_WithWrongFlagValue_ForSubcommand(t *testing.T) {
 		t.Errorf("Expect an intercepted error, but got \"%v\"", err)
 	}
 }
+
+func TestHandleAction_WithNonFuncAction(t *testing.T) {
+	app := NewApp()
+	app.Action = 42
+	err := HandleAction(app.Action, NewContext(app, flagSet(app.Name, app.Flags), nil))
+
+	if err == nil {
+		t.Fatalf("expected to receive error from Run, got none")
+	}
+
+	exitErr, ok := err.(*ExitError)
+
+	if !ok {
+		t.Fatalf("expected to receive a *ExitError")
+	}
+
+	if !strings.HasPrefix(exitErr.Error(), "ERROR invalid Action type") {
+		t.Fatalf("expected an unknown Action error, but got: %v", exitErr.Error())
+	}
+
+	if exitErr.ExitCode() != 2 {
+		t.Fatalf("expected error exit code to be 2, but got: %v", exitErr.ExitCode())
+	}
+}
+
+func TestHandleAction_WithInvalidFuncSignature(t *testing.T) {
+	app := NewApp()
+	app.Action = func() string { return "" }
+	err := HandleAction(app.Action, NewContext(app, flagSet(app.Name, app.Flags), nil))
+
+	if err == nil {
+		t.Fatalf("expected to receive error from Run, got none")
+	}
+
+	exitErr, ok := err.(*ExitError)
+
+	if !ok {
+		t.Fatalf("expected to receive a *ExitError")
+	}
+
+	if !strings.HasPrefix(exitErr.Error(), "ERROR unknown Action error") {
+		t.Fatalf("expected an unknown Action error, but got: %v", exitErr.Error())
+	}
+
+	if exitErr.ExitCode() != 2 {
+		t.Fatalf("expected error exit code to be 2, but got: %v", exitErr.ExitCode())
+	}
+}
+
+func TestHandleAction_WithInvalidFuncReturnSignature(t *testing.T) {
+	app := NewApp()
+	app.Action = func(_ *Context) (int, error) { return 0, nil }
+	err := HandleAction(app.Action, NewContext(app, flagSet(app.Name, app.Flags), nil))
+
+	if err == nil {
+		t.Fatalf("expected to receive error from Run, got none")
+	}
+
+	exitErr, ok := err.(*ExitError)
+
+	if !ok {
+		t.Fatalf("expected to receive a *ExitError")
+	}
+
+	if !strings.HasPrefix(exitErr.Error(), "ERROR invalid Action signature") {
+		t.Fatalf("expected an invalid Action signature error, but got: %v", exitErr.Error())
+	}
+
+	if exitErr.ExitCode() != 2 {
+		t.Fatalf("expected error exit code to be 2, but got: %v", exitErr.ExitCode())
+	}
+}

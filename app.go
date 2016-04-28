@@ -12,12 +12,14 @@ import (
 )
 
 var (
+	appActionDeprecationURL = "https://github.com/codegangsta/cli/blob/master/CHANGELOG.md#deprecated-cli-app-action-signature"
+
 	errNonFuncAction = NewExitError("ERROR invalid Action type.  "+
 		"Must be a func of type `cli.ActionFunc`.  "+
-		"See https://github.com/codegangsta/cli/blob/master/CHANGELOG.md#deprecated-cli-app-action-signature", 2)
+		fmt.Sprintf("See %s", appActionDeprecationURL), 2)
 	errInvalidActionSignature = NewExitError("ERROR invalid Action signature.  "+
 		"Must be `cli.ActionFunc`.  "+
-		"See https://github.com/codegangsta/cli/blob/master/CHANGELOG.md#deprecated-cli-app-action-signature", 2)
+		fmt.Sprintf("See %s", appActionDeprecationURL), 2)
 )
 
 // App is the main structure of a cli application. It is recommended that
@@ -394,7 +396,18 @@ func (a Author) String() string {
 // ActionFunc, a func with the legacy signature for Action, or some other
 // invalid thing.  If it's an ActionFunc or a func with the legacy signature for
 // Action, the func is run!
-func HandleAction(action interface{}, context *Context) error {
+func HandleAction(action interface{}, context *Context) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			switch r.(type) {
+			case error:
+				err = r.(error)
+			default:
+				err = NewExitError(fmt.Sprintf("ERROR unknown Action error: %v. See %s", r, appActionDeprecationURL), 2)
+			}
+		}
+	}()
+
 	if reflect.TypeOf(action).Kind() != reflect.Func {
 		return errNonFuncAction
 	}
@@ -404,16 +417,16 @@ func HandleAction(action interface{}, context *Context) error {
 	if len(vals) == 0 {
 		fmt.Fprintln(os.Stderr,
 			"DEPRECATED Action signature.  Must be `cli.ActionFunc`")
-		return nil
+		return err
 	}
 
 	if len(vals) > 1 {
 		return errInvalidActionSignature
 	}
 
-	if err, ok := reflect.ValueOf(vals[0]).Interface().(error); ok {
-		return err
+	if retErr, ok := reflect.ValueOf(vals[0]).Interface().(error); ok {
+		return retErr
 	}
 
-	return nil
+	return err
 }
