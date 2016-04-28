@@ -31,19 +31,21 @@ func TestBoolFlagHelpOutput(t *testing.T) {
 
 var stringFlagTests = []struct {
 	name     string
+	usage    string
 	value    string
 	expected string
 }{
-	{"help", "", "--help \t"},
-	{"h", "", "-h \t"},
-	{"h", "", "-h \t"},
-	{"test", "Something", "--test \"Something\"\t"},
+	{"help", "", "", "--help \t"},
+	{"h", "", "", "-h \t"},
+	{"h", "", "", "-h \t"},
+	{"test", "", "Something", "--test \"Something\"\t"},
+	{"config,c", "Load configuration from `FILE`", "", "--config FILE, -c FILE \tLoad configuration from FILE"},
 }
 
 func TestStringFlagHelpOutput(t *testing.T) {
 
 	for _, test := range stringFlagTests {
-		flag := StringFlag{Name: test.name, Value: test.value}
+		flag := StringFlag{Name: test.name, Usage: test.usage, Value: test.value}
 		output := flag.String()
 
 		if output != test.expected {
