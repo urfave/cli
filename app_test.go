@@ -522,6 +522,30 @@ func TestApp_BeforeFunc(t *testing.T) {
 	if counts.SubCommand != 0 {
 		t.Errorf("Subcommand executed when NOT expected")
 	}
+
+	// reset
+	counts = &opCounts{}
+
+	afterError := errors.New("fail again")
+	app.After = func(_ *Context) error {
+		return afterError
+	}
+
+	// run with the Before() func failing, wrapped by After()
+	err = app.Run([]string{"command", "--opt", "fail", "sub"})
+
+	// should be the same error produced by the Before func
+	if _, ok := err.(MultiError); !ok {
+		t.Errorf("MultiError expected, but not received")
+	}
+
+	if counts.Before != 1 {
+		t.Errorf("Before() not executed when expected")
+	}
+
+	if counts.SubCommand != 0 {
+		t.Errorf("Subcommand executed when NOT expected")
+	}
 }
 
 func TestApp_AfterFunc(t *testing.T) {
@@ -735,9 +759,10 @@ func TestApp_OrderOfOperations(t *testing.T) {
 		},
 	}
 
-	app.Action = func(c *Context) {
+	app.Action = func(c *Context) error {
 		counts.Total++
 		counts.Action = counts.Total
+		return nil
 	}
 
 	_ = app.Run([]string{"command", "--nope"})

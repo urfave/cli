@@ -196,11 +196,12 @@ func (a *App) Run(arguments []string) (err error) {
 	}
 
 	if a.Before != nil {
-		err = a.Before(context)
-		if err != nil {
-			fmt.Fprintf(a.Writer, "%v\n\n", err)
+		beforeErr := a.Before(context)
+		if beforeErr != nil {
+			fmt.Fprintf(a.Writer, "%v\n\n", beforeErr)
 			ShowAppHelp(context)
-			HandleExitCoder(err)
+			HandleExitCoder(beforeErr)
+			err = beforeErr
 			return err
 		}
 	}
@@ -286,7 +287,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 		if a.OnUsageError != nil {
 			err = a.OnUsageError(context, err, true)
 			HandleExitCoder(err)
-			return nil
+			return err
 		} else {
 			fmt.Fprintf(a.Writer, "%s\n\n", "Incorrect Usage.")
 			ShowSubcommandHelp(context)
@@ -319,9 +320,10 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	}
 
 	if a.Before != nil {
-		err = a.Before(context)
-		if err != nil {
-			HandleExitCoder(err)
+		beforeErr := a.Before(context)
+		if beforeErr != nil {
+			HandleExitCoder(beforeErr)
+			err = beforeErr
 			return err
 		}
 	}
