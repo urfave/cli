@@ -296,7 +296,7 @@ func TestFloat64ApplyInputSourceMethodEnvVarSet(t *testing.T) {
 }
 
 func runTest(t *testing.T, test testApplyInputSource) *cli.Context {
-	inputSource := &MapInputSource{valueMap: map[string]interface{}{test.FlagName: test.MapValue}}
+	inputSource := &MapInputSource{valueMap: map[interface{}]interface{}{test.FlagName: test.MapValue}}
 	set := flag.NewFlagSet(test.FlagSetName, flag.ContinueOnError)
 	c := cli.NewContext(nil, set, nil)
 	if test.EnvVarName != "" && test.EnvVarValue != "" {
