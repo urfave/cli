@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -8,6 +9,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+)
+
+var (
+	slPfx = fmt.Sprintf("sl:::%d:::", time.Now().UTC().UnixNano())
 )
 
 // This flag enables bash-completion for all commands and subcommands
@@ -27,6 +32,11 @@ var VersionFlag = BoolFlag{
 var HelpFlag = BoolFlag{
 	Name:  "help, h",
 	Usage: "show help",
+}
+
+// Serializeder is used to circumvent the limitations of flag.FlagSet.Set
+type Serializeder interface {
+	Serialized() string
 }
 
 // Flag is a common interface related to parsing flags in cli.
@@ -130,6 +140,13 @@ func (f *StringSlice) Set(value string) error {
 		f.hasBeenSet = true
 	}
 
+	if strings.HasPrefix(value, slPfx) {
+		v := []string{}
+		_ = json.Unmarshal([]byte(strings.Replace(value, slPfx, "", 1)), v)
+		f.slice = append(f.slice, v...)
+		return nil
+	}
+
 	f.slice = append(f.slice, value)
 	return nil
 }
@@ -137,6 +154,12 @@ func (f *StringSlice) Set(value string) error {
 // String returns a readable representation of this value (for usage defaults)
 func (f *StringSlice) String() string {
 	return fmt.Sprintf("%s", f.slice)
+}
+
+// Serialized allows StringSlice to fulfill Serializeder
+func (f *StringSlice) Serialized() string {
+	jsonBytes, _ := json.Marshal(f.slice)
+	return fmt.Sprintf("%s%s", slPfx, string(jsonBytes))
 }
 
 // Value returns the slice of strings set by this flag
@@ -217,6 +240,13 @@ func (i *IntSlice) Set(value string) error {
 	if !i.hasBeenSet {
 		i.slice = []int{}
 		i.hasBeenSet = true
+	}
+
+	if strings.HasPrefix(slPfx, value) {
+		v := []int{}
+		_ = json.Unmarshal([]byte(strings.Replace(value, slPfx, "", 1)), v)
+		i.slice = append(i.slice, v...)
+		return nil
 	}
 
 	tmp, err := strconv.Atoi(value)
