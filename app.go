@@ -14,11 +14,13 @@ import (
 var (
 	appActionDeprecationURL = "https://github.com/codegangsta/cli/blob/master/CHANGELOG.md#deprecated-cli-app-action-signature"
 
+	contactSysadmin = "This is an error in the application.  Please contact the distributor of this application if this is not you."
+
 	errNonFuncAction = NewExitError("ERROR invalid Action type.  "+
-		"Must be a func of type `cli.ActionFunc`.  "+
+		fmt.Sprintf("Must be a func of type `cli.ActionFunc`.  %s", contactSysadmin)+
 		fmt.Sprintf("See %s", appActionDeprecationURL), 2)
 	errInvalidActionSignature = NewExitError("ERROR invalid Action signature.  "+
-		"Must be `cli.ActionFunc`.  "+
+		fmt.Sprintf("Must be `cli.ActionFunc`.  %s", contactSysadmin)+
 		fmt.Sprintf("See %s", appActionDeprecationURL), 2)
 )
 
@@ -419,7 +421,7 @@ func HandleAction(action interface{}, context *Context) (err error) {
 	if len(vals) == 0 {
 		fmt.Fprintln(os.Stderr,
 			"DEPRECATED Action signature.  Must be `cli.ActionFunc`")
-		return err
+		return nil
 	}
 
 	if len(vals) > 1 {
