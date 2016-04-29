@@ -43,7 +43,6 @@ var stringFlagTests = []struct {
 }
 
 func TestStringFlagHelpOutput(t *testing.T) {
-
 	for _, test := range stringFlagTests {
 		flag := StringFlag{Name: test.name, Usage: test.usage, Value: test.value}
 		output := flag.String()
@@ -376,11 +375,12 @@ func TestParseMultiStringSlice(t *testing.T) {
 			StringSliceFlag{Name: "serve, s", Value: NewStringSlice()},
 		},
 		Action: func(ctx *Context) {
-			if !reflect.DeepEqual(ctx.StringSlice("serve"), []string{"10", "20"}) {
-				t.Errorf("main name not set")
+			expected := []string{"10", "20"}
+			if !reflect.DeepEqual(ctx.StringSlice("serve"), expected) {
+				t.Errorf("main name not set: %v != %v", expected, ctx.StringSlice("serve"))
 			}
-			if !reflect.DeepEqual(ctx.StringSlice("s"), []string{"10", "20"}) {
-				t.Errorf("short name not set")
+			if !reflect.DeepEqual(ctx.StringSlice("s"), expected) {
+				t.Errorf("short name not set: %v != %v", expected, ctx.StringSlice("s"))
 			}
 		},
 	}).Run([]string{"run", "-s", "10", "-s", "20"})
@@ -392,11 +392,12 @@ func TestParseMultiStringSliceWithDefaults(t *testing.T) {
 			StringSliceFlag{Name: "serve, s", Value: NewStringSlice("9", "2")},
 		},
 		Action: func(ctx *Context) {
-			if !reflect.DeepEqual(ctx.StringSlice("serve"), []string{"10", "20"}) {
-				t.Errorf("main name not set: %v", ctx.StringSlice("serve"))
+			expected := []string{"10", "20"}
+			if !reflect.DeepEqual(ctx.StringSlice("serve"), expected) {
+				t.Errorf("main name not set: %v != %v", expected, ctx.StringSlice("serve"))
 			}
-			if !reflect.DeepEqual(ctx.StringSlice("s"), []string{"10", "20"}) {
-				t.Errorf("short name not set: %v", ctx.StringSlice("s"))
+			if !reflect.DeepEqual(ctx.StringSlice("s"), expected) {
+				t.Errorf("short name not set: %v != %v", expected, ctx.StringSlice("s"))
 			}
 		},
 	}).Run([]string{"run", "-s", "10", "-s", "20"})
@@ -959,4 +960,36 @@ func TestParseGenericFromEnvCascade(t *testing.T) {
 		},
 	}
 	a.Run([]string{"run"})
+}
+
+func TestStringSlice_Serialized_Set(t *testing.T) {
+	sl0 := NewStringSlice("a", "b")
+	ser0 := sl0.Serialized()
+
+	if len(ser0) < len(slPfx) {
+		t.Fatalf("serialized shorter than expected: %q", ser0)
+	}
+
+	sl1 := NewStringSlice("c", "d")
+	sl1.Set(ser0)
+
+	if sl0.String() != sl1.String() {
+		t.Fatalf("pre and post serialization do not match: %v != %v", sl0, sl1)
+	}
+}
+
+func TestIntSlice_Serialized_Set(t *testing.T) {
+	sl0 := NewIntSlice(1, 2)
+	ser0 := sl0.Serialized()
+
+	if len(ser0) < len(slPfx) {
+		t.Fatalf("serialized shorter than expected: %q", ser0)
+	}
+
+	sl1 := NewIntSlice(3, 4)
+	sl1.Set(ser0)
+
+	if sl0.String() != sl1.String() {
+		t.Fatalf("pre and post serialization do not match: %v != %v", sl0, sl1)
+	}
 }

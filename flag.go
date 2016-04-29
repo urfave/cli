@@ -141,9 +141,9 @@ func (f *StringSlice) Set(value string) error {
 	}
 
 	if strings.HasPrefix(value, slPfx) {
-		v := []string{}
-		_ = json.Unmarshal([]byte(strings.Replace(value, slPfx, "", 1)), v)
-		f.slice = append(f.slice, v...)
+		// Deserializing assumes overwrite
+		_ = json.Unmarshal([]byte(strings.Replace(value, slPfx, "", 1)), &f.slice)
+		f.hasBeenSet = true
 		return nil
 	}
 
@@ -242,10 +242,10 @@ func (i *IntSlice) Set(value string) error {
 		i.hasBeenSet = true
 	}
 
-	if strings.HasPrefix(slPfx, value) {
-		v := []int{}
-		_ = json.Unmarshal([]byte(strings.Replace(value, slPfx, "", 1)), v)
-		i.slice = append(i.slice, v...)
+	if strings.HasPrefix(value, slPfx) {
+		// Deserializing assumes overwrite
+		_ = json.Unmarshal([]byte(strings.Replace(value, slPfx, "", 1)), &i.slice)
+		i.hasBeenSet = true
 		return nil
 	}
 
@@ -261,6 +261,12 @@ func (i *IntSlice) Set(value string) error {
 // String returns a readable representation of this value (for usage defaults)
 func (i *IntSlice) String() string {
 	return fmt.Sprintf("%v", i.slice)
+}
+
+// Serialized allows IntSlice to fulfill Serializeder
+func (i *IntSlice) Serialized() string {
+	jsonBytes, _ := json.Marshal(i.slice)
+	return fmt.Sprintf("%s%s", slPfx, string(jsonBytes))
 }
 
 // Value returns the slice of ints set by this flag
