@@ -154,9 +154,10 @@ func TestContext_GlobalFlag(t *testing.T) {
 	app.Flags = []Flag{
 		StringFlag{Name: "global, g", Usage: "global"},
 	}
-	app.Action = func(c *Context) {
+	app.Action = func(c *Context) error {
 		globalFlag = c.GlobalString("global")
 		globalFlagSet = c.GlobalIsSet("global")
+		return nil
 	}
 	app.Run([]string{"command", "-g", "foo"})
 	expect(t, globalFlag, "foo")
@@ -182,13 +183,14 @@ func TestContext_GlobalFlagsInSubcommands(t *testing.T) {
 			Subcommands: []Command{
 				{
 					Name: "bar",
-					Action: func(c *Context) {
+					Action: func(c *Context) error {
 						if c.GlobalBool("debug") {
 							subcommandRun = true
 						}
 						if c.GlobalBool("parent") {
 							parentFlag = true
 						}
+						return nil
 					},
 				},
 			},
@@ -199,4 +201,32 @@ func TestContext_GlobalFlagsInSubcommands(t *testing.T) {
 
 	expect(t, subcommandRun, true)
 	expect(t, parentFlag, true)
+}
+
+func TestContext_Set(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Int("int", 5, "an int")
+	c := NewContext(nil, set, nil)
+
+	c.Set("int", "1")
+	expect(t, c.Int("int"), 1)
+}
+
+func TestContext_GlobalSet(t *testing.T) {
+	gSet := flag.NewFlagSet("test", 0)
+	gSet.Int("int", 5, "an int")
+
+	set := flag.NewFlagSet("sub", 0)
+	set.Int("int", 3, "an int")
+
+	pc := NewContext(nil, gSet, nil)
+	c := NewContext(nil, set, pc)
+
+	c.Set("int", "1")
+	expect(t, c.Int("int"), 1)
+	expect(t, c.GlobalInt("int"), 5)
+
+	c.GlobalSet("int", "1")
+	expect(t, c.Int("int"), 1)
+	expect(t, c.GlobalInt("int"), 1)
 }

@@ -26,8 +26,9 @@ func ExampleApp_Run() {
 	app.Flags = []Flag{
 		StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
 	}
-	app.Action = func(c *Context) {
+	app.Action = func(c *Context) error {
 		fmt.Printf("Hello %v\n", c.String("name"))
+		return nil
 	}
 	app.UsageText = "app [first_arg] [second_arg]"
 	app.Author = "Harrison"
@@ -62,8 +63,9 @@ func ExampleApp_Run_subcommand() {
 							Usage: "Name of the person to greet",
 						},
 					},
-					Action: func(c *Context) {
+					Action: func(c *Context) error {
 						fmt.Println("Hello,", c.String("name"))
+						return nil
 					},
 				},
 			},
@@ -90,8 +92,9 @@ func ExampleApp_Run_help() {
 			Aliases:     []string{"d"},
 			Usage:       "use it to see a description",
 			Description: "This is how we describe describeit the function",
-			Action: func(c *Context) {
+			Action: func(c *Context) error {
 				fmt.Printf("i like to describe things")
+				return nil
 			},
 		},
 	}
@@ -120,15 +123,17 @@ func ExampleApp_Run_bashComplete() {
 			Aliases:     []string{"d"},
 			Usage:       "use it to see a description",
 			Description: "This is how we describe describeit the function",
-			Action: func(c *Context) {
+			Action: func(c *Context) error {
 				fmt.Printf("i like to describe things")
+				return nil
 			},
 		}, {
 			Name:        "next",
 			Usage:       "next example",
 			Description: "more stuff to see when generating bash completion",
-			Action: func(c *Context) {
+			Action: func(c *Context) error {
 				fmt.Printf("the next example")
+				return nil
 			},
 		},
 	}
@@ -146,8 +151,9 @@ func TestApp_Run(t *testing.T) {
 	s := ""
 
 	app := NewApp()
-	app.Action = func(c *Context) {
+	app.Action = func(c *Context) error {
 		s = s + c.Args().First()
+		return nil
 	}
 
 	err := app.Run([]string{"command", "foo"})
@@ -192,9 +198,10 @@ func TestApp_CommandWithArgBeforeFlags(t *testing.T) {
 		Flags: []Flag{
 			StringFlag{Name: "option", Value: "", Usage: "some option"},
 		},
-		Action: func(c *Context) {
+		Action: func(c *Context) error {
 			parsedOption = c.String("option")
 			firstArg = c.Args().First()
+			return nil
 		},
 	}
 	app.Commands = []Command{command}
@@ -212,8 +219,9 @@ func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
 	a.Commands = []Command{
 		{
 			Name: "foo",
-			Action: func(c *Context) {
+			Action: func(c *Context) error {
 				context = c
+				return nil
 			},
 			Flags: []Flag{
 				StringFlag{
@@ -241,9 +249,10 @@ func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
 		Flags: []Flag{
 			StringFlag{Name: "option", Value: "", Usage: "some option"},
 		},
-		Action: func(c *Context) {
+		Action: func(c *Context) error {
 			parsedOption = c.String("option")
 			args = c.Args()
+			return nil
 		},
 	}
 	app.Commands = []Command{command}
@@ -262,8 +271,9 @@ func TestApp_CommandWithDash(t *testing.T) {
 	app := NewApp()
 	command := Command{
 		Name: "cmd",
-		Action: func(c *Context) {
+		Action: func(c *Context) error {
 			args = c.Args()
+			return nil
 		},
 	}
 	app.Commands = []Command{command}
@@ -280,8 +290,9 @@ func TestApp_CommandWithNoFlagBeforeTerminator(t *testing.T) {
 	app := NewApp()
 	command := Command{
 		Name: "cmd",
-		Action: func(c *Context) {
+		Action: func(c *Context) error {
 			args = c.Args()
+			return nil
 		},
 	}
 	app.Commands = []Command{command}
@@ -300,8 +311,9 @@ func TestApp_Float64Flag(t *testing.T) {
 	app.Flags = []Flag{
 		Float64Flag{Name: "height", Value: 1.5, Usage: "Set the height, in meters"},
 	}
-	app.Action = func(c *Context) {
+	app.Action = func(c *Context) error {
 		meters = c.Float64("height")
+		return nil
 	}
 
 	app.Run([]string{"", "--height", "1.93"})
@@ -320,11 +332,12 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 			IntSliceFlag{Name: "p", Value: NewIntSlice(), Usage: "set one or more ip addr"},
 			StringSliceFlag{Name: "ip", Value: NewStringSlice(), Usage: "set one or more ports to open"},
 		},
-		Action: func(c *Context) {
+		Action: func(c *Context) error {
 			parsedIntSlice = c.IntSlice("p")
 			parsedStringSlice = c.StringSlice("ip")
 			parsedOption = c.String("option")
 			firstArg = c.Args().First()
+			return nil
 		},
 	}
 	app.Commands = []Command{command}
@@ -377,9 +390,10 @@ func TestApp_ParseSliceFlagsWithMissingValue(t *testing.T) {
 			IntSliceFlag{Name: "a", Usage: "set numbers"},
 			StringSliceFlag{Name: "str", Usage: "set strings"},
 		},
-		Action: func(c *Context) {
+		Action: func(c *Context) error {
 			parsedIntSlice = c.IntSlice("a")
 			parsedStringSlice = c.StringSlice("str")
+			return nil
 		},
 	}
 	app.Commands = []Command{command}
@@ -463,9 +477,10 @@ func TestApp_BeforeFunc(t *testing.T) {
 	app.Commands = []Command{
 		Command{
 			Name: "sub",
-			Action: func(c *Context) {
+			Action: func(c *Context) error {
 				counts.Total++
 				counts.SubCommand = counts.Total
+				return nil
 			},
 		},
 	}
@@ -508,6 +523,29 @@ func TestApp_BeforeFunc(t *testing.T) {
 		t.Errorf("Subcommand executed when NOT expected")
 	}
 
+	// reset
+	counts = &opCounts{}
+
+	afterError := errors.New("fail again")
+	app.After = func(_ *Context) error {
+		return afterError
+	}
+
+	// run with the Before() func failing, wrapped by After()
+	err = app.Run([]string{"command", "--opt", "fail", "sub"})
+
+	// should be the same error produced by the Before func
+	if _, ok := err.(MultiError); !ok {
+		t.Errorf("MultiError expected, but not received")
+	}
+
+	if counts.Before != 1 {
+		t.Errorf("Before() not executed when expected")
+	}
+
+	if counts.SubCommand != 0 {
+		t.Errorf("Subcommand executed when NOT expected")
+	}
 }
 
 func TestApp_AfterFunc(t *testing.T) {
@@ -531,9 +569,10 @@ func TestApp_AfterFunc(t *testing.T) {
 	app.Commands = []Command{
 		Command{
 			Name: "sub",
-			Action: func(c *Context) {
+			Action: func(c *Context) error {
 				counts.Total++
 				counts.SubCommand = counts.Total
+				return nil
 			},
 		},
 	}
@@ -645,9 +684,10 @@ func TestApp_CommandNotFound(t *testing.T) {
 	app.Commands = []Command{
 		Command{
 			Name: "bar",
-			Action: func(c *Context) {
+			Action: func(c *Context) error {
 				counts.Total++
 				counts.SubCommand = counts.Total
+				return nil
 			},
 		},
 	}
@@ -670,6 +710,7 @@ func TestApp_OrderOfOperations(t *testing.T) {
 		counts.Total++
 		counts.BashComplete = counts.Total
 	}
+
 	app.OnUsageError = func(c *Context, err error, isSubcommand bool) error {
 		counts.Total++
 		counts.OnUsageError = counts.Total
@@ -710,16 +751,18 @@ func TestApp_OrderOfOperations(t *testing.T) {
 	app.Commands = []Command{
 		Command{
 			Name: "bar",
-			Action: func(c *Context) {
+			Action: func(c *Context) error {
 				counts.Total++
 				counts.SubCommand = counts.Total
+				return nil
 			},
 		},
 	}
 
-	app.Action = func(c *Context) {
+	app.Action = func(c *Context) error {
 		counts.Total++
 		counts.Action = counts.Total
+		return nil
 	}
 
 	_ = app.Run([]string{"command", "--nope"})
@@ -986,8 +1029,9 @@ func TestApp_Run_Help(t *testing.T) {
 		app.Name = "boom"
 		app.Usage = "make an explosive entrance"
 		app.Writer = buf
-		app.Action = func(c *Context) {
+		app.Action = func(c *Context) error {
 			buf.WriteString("boom I say!")
+			return nil
 		}
 
 		err := app.Run(args)
@@ -1017,8 +1061,9 @@ func TestApp_Run_Version(t *testing.T) {
 		app.Usage = "make an explosive entrance"
 		app.Version = "0.1.0"
 		app.Writer = buf
-		app.Action = func(c *Context) {
+		app.Action = func(c *Context) error {
 			buf.WriteString("boom I say!")
+			return nil
 		}
 
 		err := app.Run(args)
@@ -1086,7 +1131,7 @@ func TestApp_Run_Categories(t *testing.T) {
 
 func TestApp_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 	app := NewApp()
-	app.Action = func(c *Context) {}
+	app.Action = func(c *Context) error { return nil }
 	app.Before = func(c *Context) error { return fmt.Errorf("before error") }
 	app.After = func(c *Context) error { return fmt.Errorf("after error") }
 
@@ -1188,5 +1233,77 @@ func TestApp_OnUsageError_WithWrongFlagValue_ForSubcommand(t *testing.T) {
 
 	if !strings.HasPrefix(err.Error(), "intercepted: invalid value") {
 		t.Errorf("Expect an intercepted error, but got \"%v\"", err)
+	}
+}
+
+func TestHandleAction_WithNonFuncAction(t *testing.T) {
+	app := NewApp()
+	app.Action = 42
+	err := HandleAction(app.Action, NewContext(app, flagSet(app.Name, app.Flags), nil))
+
+	if err == nil {
+		t.Fatalf("expected to receive error from Run, got none")
+	}
+
+	exitErr, ok := err.(*ExitError)
+
+	if !ok {
+		t.Fatalf("expected to receive a *ExitError")
+	}
+
+	if !strings.HasPrefix(exitErr.Error(), "ERROR invalid Action type") {
+		t.Fatalf("expected an unknown Action error, but got: %v", exitErr.Error())
+	}
+
+	if exitErr.ExitCode() != 2 {
+		t.Fatalf("expected error exit code to be 2, but got: %v", exitErr.ExitCode())
+	}
+}
+
+func TestHandleAction_WithInvalidFuncSignature(t *testing.T) {
+	app := NewApp()
+	app.Action = func() string { return "" }
+	err := HandleAction(app.Action, NewContext(app, flagSet(app.Name, app.Flags), nil))
+
+	if err == nil {
+		t.Fatalf("expected to receive error from Run, got none")
+	}
+
+	exitErr, ok := err.(*ExitError)
+
+	if !ok {
+		t.Fatalf("expected to receive a *ExitError")
+	}
+
+	if !strings.HasPrefix(exitErr.Error(), "ERROR unknown Action error") {
+		t.Fatalf("expected an unknown Action error, but got: %v", exitErr.Error())
+	}
+
+	if exitErr.ExitCode() != 2 {
+		t.Fatalf("expected error exit code to be 2, but got: %v", exitErr.ExitCode())
+	}
+}
+
+func TestHandleAction_WithInvalidFuncReturnSignature(t *testing.T) {
+	app := NewApp()
+	app.Action = func(_ *Context) (int, error) { return 0, nil }
+	err := HandleAction(app.Action, NewContext(app, flagSet(app.Name, app.Flags), nil))
+
+	if err == nil {
+		t.Fatalf("expected to receive error from Run, got none")
+	}
+
+	exitErr, ok := err.(*ExitError)
+
+	if !ok {
+		t.Fatalf("expected to receive a *ExitError")
+	}
+
+	if !strings.HasPrefix(exitErr.Error(), "ERROR invalid Action signature") {
+		t.Fatalf("expected an invalid Action signature error, but got: %v", exitErr.Error())
+	}
+
+	if exitErr.ExitCode() != 2 {
+		t.Fatalf("expected error exit code to be 2, but got: %v", exitErr.ExitCode())
 	}
 }
