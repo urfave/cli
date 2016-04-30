@@ -141,6 +141,16 @@ func (c *Context) NumFlags() int {
 	return c.flagSet.NFlag()
 }
 
+// Set sets a context flag to a value.
+func (c *Context) Set(name, value string) error {
+	return c.flagSet.Set(name, value)
+}
+
+// GlobalSet sets a context flag to a value on the global flagset
+func (c *Context) GlobalSet(name, value string) error {
+	return globalContext(c).flagSet.Set(name, value)
+}
+
 // Determines if the flag was actually set
 func (c *Context) IsSet(name string) bool {
 	if c.setFlags == nil {
@@ -245,6 +255,19 @@ func (a Args) Swap(from, to int) error {
 	}
 	a[from], a[to] = a[to], a[from]
 	return nil
+}
+
+func globalContext(ctx *Context) *Context {
+	if ctx == nil {
+		return nil
+	}
+
+	for {
+		if ctx.parentContext == nil {
+			return ctx
+		}
+		ctx = ctx.parentContext
+	}
 }
 
 func lookupGlobalFlagSet(name string, ctx *Context) *flag.FlagSet {
