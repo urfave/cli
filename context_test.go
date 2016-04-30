@@ -211,3 +211,22 @@ func TestContext_Set(t *testing.T) {
 	c.Set("int", "1")
 	expect(t, c.Int("int"), 1)
 }
+
+func TestContext_GlobalSet(t *testing.T) {
+	gSet := flag.NewFlagSet("test", 0)
+	gSet.Int("int", 5, "an int")
+
+	set := flag.NewFlagSet("sub", 0)
+	set.Int("int", 3, "an int")
+
+	pc := NewContext(nil, gSet, nil)
+	c := NewContext(nil, set, pc)
+
+	c.Set("int", "1")
+	expect(t, c.Int("int"), 1)
+	expect(t, c.GlobalInt("int"), 5)
+
+	c.GlobalSet("int", "1")
+	expect(t, c.Int("int"), 1)
+	expect(t, c.GlobalInt("int"), 1)
+}
