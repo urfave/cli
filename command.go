@@ -26,19 +26,20 @@ type Command struct {
 	// The category the command is part of
 	Category string
 	// The function to call when checking for bash command completions
-	BashComplete func(context *Context)
+	BashComplete BashCompleteFunc
 	// An action to execute before any sub-subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no sub-subcommands are run
-	Before func(context *Context) error
-	// An action to execute after any subcommands are run, but before the subcommand has finished
+	Before BeforeFunc
+	// An action to execute after any subcommands are run, but after the subcommand has finished
 	// It is run even if Action() panics
-	After func(context *Context) error
+	After AfterFunc
 	// The function to call when this command is invoked
-	Action func(context *Context)
-	// Execute this function, if an usage error occurs. This is useful for displaying customized usage error messages.
-	// This function is able to replace the original error messages.
-	// If this function is not set, the "Incorrect usage" is displayed and the execution is interrupted.
-	OnUsageError func(context *Context, err error) error
+	Action interface{}
+	// TODO: replace `Action: interface{}` with `Action: ActionFunc` once some kind
+	// of deprecation period has passed, maybe?
+
+	// Execute this function if a usage error occurs.
+	OnUsageError OnUsageErrorFunc
 	// List of child commands
 	Subcommands Commands
 	// List of flags to parse
@@ -125,7 +126,8 @@ func (c Command) Run(ctx *Context) (err error) {
 
 	if err != nil {
 		if c.OnUsageError != nil {
-			err := c.OnUsageError(ctx, err)
+			err := c.OnUsageError(ctx, err, false)
+			HandleExitCoder(err)
 			return err
 		} else {
 			fmt.Fprintln(ctx.App.Writer, "Incorrect Usage.")
@@ -142,6 +144,7 @@ func (c Command) Run(ctx *Context) (err error) {
 		ShowCommandHelp(ctx, c.Name)
 		return nerr
 	}
+
 	context := NewContext(ctx.App, set, ctx)
 
 	if checkCommandCompletions(context, c.Name) {
@@ -156,6 +159,7 @@ func (c Command) Run(ctx *Context) (err error) {
 		defer func() {
 			afterErr := c.After(context)
 			if afterErr != nil {
+				HandleExitCoder(err)
 				if err != nil {
 					err = NewMultiError(err, afterErr)
 				} else {
@@ -166,18 +170,23 @@ func (c Command) Run(ctx *Context) (err error) {
 	}
 
 	if c.Before != nil {
-		err := c.Before(context)
+		err = c.Before(context)
 		if err != nil {
 			fmt.Fprintln(ctx.App.Writer, err)
 			fmt.Fprintln(ctx.App.Writer)
 			ShowCommandHelp(ctx, c.Name)
+			HandleExitCoder(err)
 			return err
 		}
 	}
 
 	context.Command = c
-	c.Action(context)
-	return nil
+	err = HandleAction(c.Action, context)
+
+	if err != nil {
+		HandleExitCoder(err)
+	}
+	return err
 }
 
 func (c Command) Names() []string {

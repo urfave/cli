@@ -7,6 +7,28 @@
 ### Added
 - Support for placeholders in flag usage strings
 
+### Changed
+- The `App.Action` and `Command.Action` now prefer a return signature of
+`func(*cli.Context) error`, as defined by `cli.ActionFunc`.  If a non-nil
+`error` is returned, there may be two outcomes:
+    - If the error fulfills `cli.ExitCoder`, then `os.Exit` will be called
+    automatically
+    - Else the error is bubbled up and returned from `App.Run`
+- Specifying an `Action` with the legacy return signature of
+`func(*cli.Context)` will produce a deprecation message to stderr
+- Specifying an `Action` that is not a `func` type will produce a non-zero exit
+from `App.Run`
+- Specifying an `Action` func that has an invalid (input) signature will
+produce a non-zero exit from `App.Run`
+
+### Deprecated
+- <a name="deprecated-cli-app-runandexitonerror"></a>
+`cli.App.RunAndExitOnError`, which should now be done by returning an error
+that fulfills `cli.ExitCoder` to `cli.App.Run`.
+- <a name="deprecated-cli-app-action-signature"></a> the legacy signature for
+`cli.App.Action` of `func(*cli.Context)`, which should now have a return
+signature of `func(*cli.Context) error`, as defined by `cli.ActionFunc`.
+
 ### Fixed
 - Added missing `*cli.Context.GlobalFloat64` method
 

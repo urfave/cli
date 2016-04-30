@@ -154,9 +154,10 @@ func TestContext_GlobalFlag(t *testing.T) {
 	app.Flags = []Flag{
 		StringFlag{Name: "global, g", Usage: "global"},
 	}
-	app.Action = func(c *Context) {
+	app.Action = func(c *Context) error {
 		globalFlag = c.GlobalString("global")
 		globalFlagSet = c.GlobalIsSet("global")
+		return nil
 	}
 	app.Run([]string{"command", "-g", "foo"})
 	expect(t, globalFlag, "foo")
@@ -182,13 +183,14 @@ func TestContext_GlobalFlagsInSubcommands(t *testing.T) {
 			Subcommands: []Command{
 				{
 					Name: "bar",
-					Action: func(c *Context) {
+					Action: func(c *Context) error {
 						if c.GlobalBool("debug") {
 							subcommandRun = true
 						}
 						if c.GlobalBool("parent") {
 							parentFlag = true
 						}
+						return nil
 					},
 				},
 			},
