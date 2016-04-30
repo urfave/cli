@@ -268,8 +268,6 @@ func globalContext(ctx *Context) *Context {
 		}
 		ctx = ctx.parentContext
 	}
-
-	return nil
 }
 
 func lookupGlobalFlagSet(name string, ctx *Context) *flag.FlagSet {
