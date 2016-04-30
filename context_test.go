@@ -202,3 +202,12 @@ func TestContext_GlobalFlagsInSubcommands(t *testing.T) {
 	expect(t, subcommandRun, true)
 	expect(t, parentFlag, true)
 }
+
+func TestContext_Set(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Int("int", 5, "an int")
+	c := NewContext(nil, set, nil)
+
+	c.Set("int", "1")
+	expect(t, c.Int("int"), 1)
+}

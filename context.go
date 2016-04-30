@@ -141,6 +141,11 @@ func (c *Context) NumFlags() int {
 	return c.flagSet.NFlag()
 }
 
+// Set sets a context flag to a value.
+func (c *Context) Set(name, value string) error {
+	return c.flagSet.Set(name, value)
+}
+
 // Determines if the flag was actually set
 func (c *Context) IsSet(name string) bool {
 	if c.setFlags == nil {
