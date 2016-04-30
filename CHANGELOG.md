@@ -10,6 +10,8 @@
 - `App.Metadata` map for arbitrary data/state management
 - `Set` and `GlobalSet` methods on `*cli.Context` for altering values after
 parsing.
+- Support for nested lookup of dot-delimited keys in structures loaded from
+YAML.
 
 ### Changed
 - The `App.Action` and `Command.Action` now prefer a return signature of
