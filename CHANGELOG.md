@@ -5,7 +5,9 @@
 ## [Unreleased]
 
 ### Added
+- This file!
 - Support for placeholders in flag usage strings
+- `App.Metadata` map for arbitrary data/state management
 
 ### Changed
 - The `App.Action` and `Command.Action` now prefer a return signature of
