@@ -80,6 +80,8 @@ type App struct {
 	Email string
 	// Writer writer to write output to
 	Writer io.Writer
+	// Other custom info
+	Metadata map[string]interface{}
 }
 
 // Tries to find out when this binary was compiled.

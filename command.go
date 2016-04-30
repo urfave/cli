@@ -211,7 +211,7 @@ func (c Command) HasName(name string) bool {
 
 func (c Command) startApp(ctx *Context) error {
 	app := NewApp()
-
+	app.Metadata = ctx.App.Metadata
 	// set the name and usage
 	app.Name = fmt.Sprintf("%s %s", ctx.App.Name, c.Name)
 	if c.HelpName == "" {
