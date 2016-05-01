@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"reflect"
 	"runtime"
 	"strconv"
 	"strings"
@@ -12,7 +13,8 @@ import (
 
 // This flag enables bash-completion for all commands and subcommands
 var BashCompletionFlag = BoolFlag{
-	Name: "generate-bash-completion",
+	Name:   "generate-bash-completion",
+	Hidden: true,
 }
 
 // This flag prints the version for the application
@@ -68,6 +70,7 @@ type GenericFlag struct {
 	Value  Generic
 	Usage  string
 	EnvVar string
+	Hidden bool
 }
 
 // String returns the string representation of the generic flag to display the
@@ -138,6 +141,7 @@ type StringSliceFlag struct {
 	Value  *StringSlice
 	Usage  string
 	EnvVar string
+	Hidden bool
 }
 
 // String returns the usage
@@ -208,6 +212,7 @@ type IntSliceFlag struct {
 	Value  *IntSlice
 	Usage  string
 	EnvVar string
+	Hidden bool
 }
 
 // String returns the usage
@@ -256,6 +261,7 @@ type BoolFlag struct {
 	Usage       string
 	EnvVar      string
 	Destination *bool
+	Hidden      bool
 }
 
 // String returns a readable representation of this value (for usage defaults)
@@ -300,6 +306,7 @@ type BoolTFlag struct {
 	Usage       string
 	EnvVar      string
 	Destination *bool
+	Hidden      bool
 }
 
 // String returns a readable representation of this value (for usage defaults)
@@ -344,6 +351,7 @@ type StringFlag struct {
 	Usage       string
 	EnvVar      string
 	Destination *string
+	Hidden      bool
 }
 
 // String returns the usage
@@ -393,6 +401,7 @@ type IntFlag struct {
 	Usage       string
 	EnvVar      string
 	Destination *int
+	Hidden      bool
 }
 
 // String returns the usage
@@ -437,6 +446,7 @@ type DurationFlag struct {
 	Usage       string
 	EnvVar      string
 	Destination *time.Duration
+	Hidden      bool
 }
 
 // String returns a readable representation of this value (for usage defaults)
@@ -481,6 +491,7 @@ type Float64Flag struct {
 	Usage       string
 	EnvVar      string
 	Destination *float64
+	Hidden      bool
 }
 
 // String returns the usage
@@ -514,6 +525,16 @@ func (f Float64Flag) Apply(set *flag.FlagSet) {
 
 func (f Float64Flag) GetName() string {
 	return f.Name
+}
+
+func visibleFlags(fl []Flag) []Flag {
+	visible := []Flag{}
+	for _, flag := range fl {
+		if !reflect.ValueOf(flag).FieldByName("Hidden").Bool() {
+			visible = append(visible, flag)
+		}
+	}
+	return visible
 }
 
 func prefixFor(name string) (prefix string) {

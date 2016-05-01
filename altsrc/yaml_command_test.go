@@ -97,9 +97,10 @@ func TestCommandYamlFileTestGlobalEnvVarWinsNested(t *testing.T) {
 		Aliases:     []string{"tc"},
 		Usage:       "this is for testing",
 		Description: "testing",
-		Action: func(c *cli.Context) {
+		Action: func(c *cli.Context) error {
 			val := c.Int("top.test")
 			expect(t, val, 10)
+			return nil
 		},
 		Flags: []cli.Flag{
 			NewIntFlag(cli.IntFlag{Name: "top.test", EnvVar: "THE_TEST"}),
@@ -161,9 +162,10 @@ func TestCommandYamlFileTestSpecifiedFlagWinsNested(t *testing.T) {
 		Aliases:     []string{"tc"},
 		Usage:       "this is for testing",
 		Description: "testing",
-		Action: func(c *cli.Context) {
+		Action: func(c *cli.Context) error {
 			val := c.Int("top.test")
 			expect(t, val, 7)
+			return nil
 		},
 		Flags: []cli.Flag{
 			NewIntFlag(cli.IntFlag{Name: "top.test"}),
@@ -225,9 +227,10 @@ func TestCommandYamlFileTestDefaultValueFileWinsNested(t *testing.T) {
 		Aliases:     []string{"tc"},
 		Usage:       "this is for testing",
 		Description: "testing",
-		Action: func(c *cli.Context) {
+		Action: func(c *cli.Context) error {
 			val := c.Int("top.test")
 			expect(t, val, 15)
+			return nil
 		},
 		Flags: []cli.Flag{
 			NewIntFlag(cli.IntFlag{Name: "top.test", Value: 7}),
@@ -294,9 +297,10 @@ func TestCommandYamlFileFlagHasDefaultGlobalEnvYamlSetGlobalEnvWinsNested(t *tes
 		Aliases:     []string{"tc"},
 		Usage:       "this is for testing",
 		Description: "testing",
-		Action: func(c *cli.Context) {
+		Action: func(c *cli.Context) error {
 			val := c.Int("top.test")
 			expect(t, val, 11)
+			return nil
 		},
 		Flags: []cli.Flag{
 			NewIntFlag(cli.IntFlag{Name: "top.test", Value: 7, EnvVar: "THE_TEST"}),

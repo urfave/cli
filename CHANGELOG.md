@@ -3,6 +3,12 @@
 **ATTN**: This project uses [semantic versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- `Hidden` field on all flag struct types to omit from generated help text
+
+### Changed
+- `BashCompletionFlag` (`--enable-bash-completion`) is now omitted from
+generated help text via the `Hidden` field
 
 ## [1.15.0] - 2016-04-30
 ### Added
