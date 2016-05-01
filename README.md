@@ -302,6 +302,7 @@ Here is a more complete sample of a command using YAML support:
     Description: "testing",
     Action: func(c *cli.Context) error {
       // Action to run
+      return nil
     },
     Flags: []cli.Flag{
       NewIntFlag(cli.IntFlag{Name: "test"}),
@@ -322,16 +323,18 @@ app.Commands = []cli.Command{
     Name:      "add",
     Aliases:     []string{"a"},
     Usage:     "add a task to the list",
-    Action: func(c *cli.Context) {
+    Action: func(c *cli.Context) error {
       fmt.Println("added task: ", c.Args().First())
+      return nil
     },
   },
   {
     Name:      "complete",
     Aliases:     []string{"c"},
     Usage:     "complete a task on the list",
-    Action: func(c *cli.Context) {
+    Action: func(c *cli.Context) error {
       fmt.Println("completed task: ", c.Args().First())
+      return nil
     },
   },
   {
@@ -342,15 +345,17 @@ app.Commands = []cli.Command{
       {
         Name:  "add",
         Usage: "add a new template",
-        Action: func(c *cli.Context) {
+        Action: func(c *cli.Context) error {
           fmt.Println("new task template: ", c.Args().First())
+          return nil
         },
       },
       {
         Name:  "remove",
         Usage: "remove an existing template",
-        Action: func(c *cli.Context) {
+        Action: func(c *cli.Context) error {
           fmt.Println("removed task template: ", c.Args().First())
+          return nil
         },
       },
     },
@@ -450,8 +455,9 @@ app.Commands = []cli.Command{
     Name:  "complete",
     Aliases: []string{"c"},
     Usage: "complete a task on the list",
-    Action: func(c *cli.Context) {
+    Action: func(c *cli.Context) error {
        fmt.Println("completed task: ", c.Args().First())
+       return nil
     },
     BashComplete: func(c *cli.Context) {
       // This will complete if no args are passed

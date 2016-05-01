@@ -366,6 +366,11 @@ func (a *App) Categories() CommandCategories {
 	return a.categories
 }
 
+// VisibleFlags returns a slice of the Flags with Hidden=false
+func (a *App) VisibleFlags() []Flag {
+	return visibleFlags(a.Flags)
+}
+
 func (a *App) hasFlag(flag Flag) bool {
 	for _, f := range a.Flags {
 		if flag == f {

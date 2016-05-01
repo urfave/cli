@@ -10,7 +10,7 @@
 //     app := cli.NewApp()
 //     app.Name = "greet"
 //     app.Usage = "say a greeting"
-//     app.Action = func(c *cli.Context) {
+//     app.Action = func(c *cli.Context) error {
 //       println("Greetings")
 //     }
 //

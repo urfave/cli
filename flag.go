@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"reflect"
 	"runtime"
 	"strconv"
 	"strings"
@@ -12,8 +13,8 @@ import (
 
 // This flag enables bash-completion for all commands and subcommands
 var BashCompletionFlag = BoolFlag{
-	Name: "generate-bash-completion",
-	Hide: true,
+	Name:   "generate-bash-completion",
+	Hidden: true,
 }
 
 // This flag prints the version for the application
@@ -38,7 +39,6 @@ type Flag interface {
 	// Apply Flag settings to the given flag set
 	Apply(*flag.FlagSet)
 	GetName() string
-	isNotHidden() bool
 }
 
 func flagSet(name string, flags []Flag) *flag.FlagSet {
@@ -70,7 +70,7 @@ type GenericFlag struct {
 	Value  Generic
 	Usage  string
 	EnvVar string
-	Hide   bool
+	Hidden bool
 }
 
 // String returns the string representation of the generic flag to display the
@@ -115,10 +115,6 @@ func (f GenericFlag) GetName() string {
 	return f.Name
 }
 
-func (f GenericFlag) isNotHidden() bool {
-	return !f.Hide
-}
-
 // StringSlice is an opaque type for []string to satisfy flag.Value
 type StringSlice []string
 
@@ -145,7 +141,7 @@ type StringSliceFlag struct {
 	Value  *StringSlice
 	Usage  string
 	EnvVar string
-	Hide   bool
+	Hidden bool
 }
 
 // String returns the usage
@@ -185,10 +181,6 @@ func (f StringSliceFlag) GetName() string {
 	return f.Name
 }
 
-func (f StringSliceFlag) isNotHidden() bool {
-	return !f.Hide
-}
-
 // StringSlice is an opaque type for []int to satisfy flag.Value
 type IntSlice []int
 
@@ -220,7 +212,7 @@ type IntSliceFlag struct {
 	Value  *IntSlice
 	Usage  string
 	EnvVar string
-	Hide   bool
+	Hidden bool
 }
 
 // String returns the usage
@@ -263,17 +255,13 @@ func (f IntSliceFlag) GetName() string {
 	return f.Name
 }
 
-func (f IntSliceFlag) isNotHidden() bool {
-	return !f.Hide
-}
-
 // BoolFlag is a switch that defaults to false
 type BoolFlag struct {
 	Name        string
 	Usage       string
 	EnvVar      string
 	Destination *bool
-	Hide        bool
+	Hidden      bool
 }
 
 // String returns a readable representation of this value (for usage defaults)
@@ -311,10 +299,6 @@ func (f BoolFlag) GetName() string {
 	return f.Name
 }
 
-func (f BoolFlag) isNotHidden() bool {
-	return !f.Hide
-}
-
 // BoolTFlag this represents a boolean flag that is true by default, but can
 // still be set to false by --some-flag=false
 type BoolTFlag struct {
@@ -322,7 +306,7 @@ type BoolTFlag struct {
 	Usage       string
 	EnvVar      string
 	Destination *bool
-	Hide        bool
+	Hidden      bool
 }
 
 // String returns a readable representation of this value (for usage defaults)
@@ -360,10 +344,6 @@ func (f BoolTFlag) GetName() string {
 	return f.Name
 }
 
-func (f BoolTFlag) isNotHidden() bool {
-	return !f.Hide
-}
-
 // StringFlag represents a flag that takes as string value
 type StringFlag struct {
 	Name        string
@@ -371,7 +351,7 @@ type StringFlag struct {
 	Usage       string
 	EnvVar      string
 	Destination *string
-	Hide        bool
+	Hidden      bool
 }
 
 // String returns the usage
@@ -413,10 +393,6 @@ func (f StringFlag) GetName() string {
 	return f.Name
 }
 
-func (f StringFlag) isNotHidden() bool {
-	return !f.Hide
-}
-
 // IntFlag is a flag that takes an integer
 // Errors if the value provided cannot be parsed
 type IntFlag struct {
@@ -425,7 +401,7 @@ type IntFlag struct {
 	Usage       string
 	EnvVar      string
 	Destination *int
-	Hide        bool
+	Hidden      bool
 }
 
 // String returns the usage
@@ -462,10 +438,6 @@ func (f IntFlag) GetName() string {
 	return f.Name
 }
 
-func (f IntFlag) isNotHidden() bool {
-	return !f.Hide
-}
-
 // DurationFlag is a flag that takes a duration specified in Go's duration
 // format: https://golang.org/pkg/time/#ParseDuration
 type DurationFlag struct {
@@ -474,7 +446,7 @@ type DurationFlag struct {
 	Usage       string
 	EnvVar      string
 	Destination *time.Duration
-	Hide        bool
+	Hidden      bool
 }
 
 // String returns a readable representation of this value (for usage defaults)
@@ -511,10 +483,6 @@ func (f DurationFlag) GetName() string {
 	return f.Name
 }
 
-func (f DurationFlag) isNotHidden() bool {
-	return !f.Hide
-}
-
 // Float64Flag is a flag that takes an float value
 // Errors if the value provided cannot be parsed
 type Float64Flag struct {
@@ -523,7 +491,7 @@ type Float64Flag struct {
 	Usage       string
 	EnvVar      string
 	Destination *float64
-	Hide        bool
+	Hidden      bool
 }
 
 // String returns the usage
@@ -559,8 +527,14 @@ func (f Float64Flag) GetName() string {
 	return f.Name
 }
 
-func (f Float64Flag) isNotHidden() bool {
-	return !f.Hide
+func visibleFlags(fl []Flag) []Flag {
+	visible := []Flag{}
+	for _, flag := range fl {
+		if !reflect.ValueOf(flag).FieldByName("Hidden").Bool() {
+			visible = append(visible, flag)
+		}
+	}
+	return visible
 }
 
 func prefixFor(name string) (prefix string) {
