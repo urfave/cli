@@ -496,6 +496,69 @@ Alternatively, you can just document that users should source the generic
 `autocomplete/bash_autocomplete` in their bash configuration with `$PROG` set
 to the name of their program (as above).
 
+### Generated Help Text Customization
+
+All of the help text generation may be customized, and at multiple levels.  The
+templates are exposed as variables `AppHelpTemplate`, `CommandHelpTemplate`, and
+`SubcommandHelpTemplate` which may be reassigned or augmented, and full override
+is possible by assigning a compatible func to the `cli.HelpPrinter` variable,
+e.g.:
+
+``` go
+package main
+
+import (
+  "fmt"
+  "io"
+  "os"
+
+  "github.com/codegangsta/cli"
+)
+
+func main() {
+  // EXAMPLE: Append to an existing template
+  cli.AppHelpTemplate = fmt.Sprintf(`%s
+
+WEBSITE: http://awesometown.example.com
+
+SUPPORT: support@awesometown.example.com
+
+`, cli.AppHelpTemplate)
+
+  // EXAMPLE: Override a template
+  cli.AppHelpTemplate = `NAME:
+   {{.Name}} - {{.Usage}}
+USAGE:
+   {{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command
+[command options]{{end}} {{if
+.ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}
+   {{if len .Authors}}
+AUTHOR(S):
+   {{range .Authors}}{{ . }}{{end}}
+   {{end}}{{if .Commands}}
+COMMANDS:
+{{range .Commands}}{{if not .HideHelp}}   {{join .Names ", "}}{{ "\t"
+}}{{.Usage}}{{ "\n" }}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
+GLOBAL OPTIONS:
+   {{range .VisibleFlags}}{{.}}
+   {{end}}{{end}}{{if .Copyright }}
+COPYRIGHT:
+   {{.Copyright}}
+   {{end}}{{if .Version}}
+VERSION:
+   {{.Version}}
+   {{end}}
+`
+
+  // EXAMPLE: Replace the `HelpPrinter` func
+  cli.HelpPrinter = func(w io.Writer, templ string, data interface{}) {
+    fmt.Println("Ha HA.  I pwnd the help!!1")
+  }
+
+  cli.NewApp().Run(os.Args)
+}
+```
+
 ## Contribution Guidelines
 
 Feel free to put up a pull request to fix a bug or maybe add a feature. I will give it a code review and make sure that it does not break backwards compatibility. If I or any other collaborators agree that it is in line with the vision of the project, we will work with you to get the code into a mergeable state and merge it into the master branch.
