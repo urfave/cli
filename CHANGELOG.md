@@ -10,6 +10,9 @@
 - `BashCompletionFlag` (`--enable-bash-completion`) is now omitted from
 generated help text via the `Hidden` field
 
+### Fixed
+- Generated help text for subcommands with no arguments
+
 ## [1.15.0] - 2016-04-30
 ### Added
 - This file!

@@ -1012,7 +1012,7 @@ func TestApp_Run_CommandSubcommandHelpName(t *testing.T) {
 	if !strings.Contains(output, "base foo - foo commands") {
 		t.Errorf("expected full path to subcommand: %s", output)
 	}
-	if !strings.Contains(output, "base foo command [command options] [arguments...]") {
+	if !strings.Contains(output, "base foo [global options] command [command options] [arguments...]") {
 		t.Errorf("expected full path to subcommand: %s", output)
 	}
 }

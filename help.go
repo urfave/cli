@@ -99,7 +99,7 @@ var helpSubcommand = Command{
 		if args.Present() {
 			ShowCommandHelp(c, args.First())
 		} else {
-			ShowSubcommandHelp(c)
+			ShowAppHelp(c)
 		}
 		return nil
 	},
