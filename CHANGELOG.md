@@ -9,6 +9,10 @@
 ### Changed
 - `Float64Flag`, `IntFlag`, and `DurationFlag` default values are no longer
 quoted in help text output.
+- All flag types now include `(default: {value})` strings following usage when a
+default value can be (reasonably) detected.
+- `IntSliceFlag` and `StringSliceFlag` usage strings are now more consistent
+with non-slice flag types
 
 ## [1.16.0] - 2016-05-02
 ### Added
