@@ -168,9 +168,7 @@ func (a *App) Run(arguments []string) (err error) {
 	if err != nil {
 		if a.OnUsageError != nil {
 			err := a.OnUsageError(context, err, false)
-			if err != nil {
-				HandleExitCoder(err)
-			}
+			HandleExitCoder(err)
 			return err
 		} else {
 			fmt.Fprintf(a.Writer, "%s\n\n", "Incorrect Usage.")
@@ -224,9 +222,7 @@ func (a *App) Run(arguments []string) (err error) {
 	// Run default Action
 	err = HandleAction(a.Action, context)
 
-	if err != nil {
-		HandleExitCoder(err)
-	}
+	HandleExitCoder(err)
 	return err
 }
 
@@ -237,7 +233,7 @@ func (a *App) RunAndExitOnError() {
 		contactSysadmin, runAndExitOnErrorDeprecationURL)
 	if err := a.Run(os.Args); err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		OsExiter(1)
 	}
 }
 
@@ -346,9 +342,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	// Run default Action
 	err = HandleAction(a.Action, context)
 
-	if err != nil {
-		HandleExitCoder(err)
-	}
+	HandleExitCoder(err)
 	return err
 }
 
@@ -438,7 +432,7 @@ func HandleAction(action interface{}, context *Context) (err error) {
 		return errInvalidActionSignature
 	}
 
-	if retErr, ok := reflect.ValueOf(vals[0].Interface()).Interface().(error); ok {
+	if retErr, ok := vals[0].Interface().(error); vals[0].IsValid() && ok {
 		return retErr
 	}
 

@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+var OsExiter = os.Exit
+
 type MultiError struct {
 	Errors []error
 }
@@ -26,6 +28,7 @@ func (m MultiError) Error() string {
 // ExitCoder is the interface checked by `App` and `Command` for a custom exit
 // code
 type ExitCoder interface {
+	error
 	ExitCode() int
 }
 
@@ -56,15 +59,20 @@ func (ee *ExitError) ExitCode() int {
 }
 
 // HandleExitCoder checks if the error fulfills the ExitCoder interface, and if
-// so prints the error to stderr (if it is non-empty) and calls os.Exit with the
+// so prints the error to stderr (if it is non-empty) and calls OsExiter with the
 // given exit code.  If the given error is a MultiError, then this func is
 // called on all members of the Errors slice.
 func HandleExitCoder(err error) {
+	if err == nil {
+		return
+	}
+
 	if exitErr, ok := err.(ExitCoder); ok {
 		if err.Error() != "" {
 			fmt.Fprintln(os.Stderr, err)
 		}
-		os.Exit(exitErr.ExitCode())
+		OsExiter(exitErr.ExitCode())
+		return
 	}
 
 	if multiErr, ok := err.(MultiError); ok {
