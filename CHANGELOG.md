@@ -3,12 +3,17 @@
 **ATTN**: This project uses [semantic versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [1.16.0] - 2016-05-02
 ### Added
 - `Hidden` field on all flag struct types to omit from generated help text
 
 ### Changed
 - `BashCompletionFlag` (`--enable-bash-completion`) is now omitted from
 generated help text via the `Hidden` field
+
+### Fixed
+- handling of error values in `HandleAction` and `HandleExitCoder`
 
 ## [1.15.0] - 2016-04-30
 ### Added
@@ -257,7 +262,8 @@ signature of `func(*cli.Context) error`, as defined by `cli.ActionFunc`.
 ### Added
 - Initial implementation.
 
-[Unreleased]: https://github.com/codegangsta/cli/compare/v1.15.0...HEAD
+[Unreleased]: https://github.com/codegangsta/cli/compare/v1.16.0...HEAD
+[1.16.0]: https://github.com/codegangsta/cli/compare/v1.15.0...v1.16.0
 [1.15.0]: https://github.com/codegangsta/cli/compare/v1.14.0...v1.15.0
 [1.14.0]: https://github.com/codegangsta/cli/compare/v1.13.0...v1.14.0
 [1.13.0]: https://github.com/codegangsta/cli/compare/v1.12.0...v1.13.0
