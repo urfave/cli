@@ -31,7 +31,7 @@ var HelpFlag = BoolFlag{
 	Usage: "show help",
 }
 
-var DefaultFlagStringFunc FlagStringFunc = flagStringer
+var FlagStringer FlagStringFunc = stringifyFlag
 
 // Flag is a common interface related to parsing flags in cli.
 // For more advanced flag parsing techniques, it is recommended that
@@ -79,7 +79,7 @@ type GenericFlag struct {
 // help text to the user (uses the String() method of the generic flag to show
 // the value)
 func (f GenericFlag) String() string {
-	return DefaultFlagStringFunc(f)
+	return FlagStringer(f)
 }
 
 func (f GenericFlag) FormatValueHelp() string {
@@ -147,7 +147,7 @@ type StringSliceFlag struct {
 
 // String returns the usage
 func (f StringSliceFlag) String() string {
-	return DefaultFlagStringFunc(f)
+	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -221,7 +221,7 @@ type IntSliceFlag struct {
 
 // String returns the usage
 func (f IntSliceFlag) String() string {
-	return DefaultFlagStringFunc(f)
+	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -273,7 +273,7 @@ type BoolFlag struct {
 
 // String returns a readable representation of this value (for usage defaults)
 func (f BoolFlag) String() string {
-	return DefaultFlagStringFunc(f)
+	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -317,7 +317,7 @@ type BoolTFlag struct {
 
 // String returns a readable representation of this value (for usage defaults)
 func (f BoolTFlag) String() string {
-	return DefaultFlagStringFunc(f)
+	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -361,7 +361,7 @@ type StringFlag struct {
 
 // String returns the usage
 func (f StringFlag) String() string {
-	return DefaultFlagStringFunc(f)
+	return FlagStringer(f)
 }
 
 func (f StringFlag) FormatValueHelp() string {
@@ -410,7 +410,7 @@ type IntFlag struct {
 
 // String returns the usage
 func (f IntFlag) String() string {
-	return DefaultFlagStringFunc(f)
+	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -454,7 +454,7 @@ type DurationFlag struct {
 
 // String returns a readable representation of this value (for usage defaults)
 func (f DurationFlag) String() string {
-	return DefaultFlagStringFunc(f)
+	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -498,7 +498,7 @@ type Float64Flag struct {
 
 // String returns the usage
 func (f Float64Flag) String() string {
-	return DefaultFlagStringFunc(f)
+	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -597,7 +597,7 @@ func withEnvHint(envVar, str string) string {
 	return str + envText
 }
 
-func flagStringer(f Flag) string {
+func stringifyFlag(f Flag) string {
 	fv := reflect.ValueOf(f)
 	placeholder, usage := unquoteUsage(fv.FieldByName("Usage").String())
 
