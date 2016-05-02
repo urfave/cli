@@ -645,24 +645,11 @@ func stringifySliceFlag(usage, name string, defaultVals []string) string {
 		placeholder = defaultPlaceholder
 	}
 
-	nameParts := []string{}
-	for _, part := range strings.Split(name, ",") {
-		nameParts = append(nameParts, strings.TrimSpace(part))
-	}
-
 	defaultVal := ""
 	if len(defaultVals) > 0 {
 		defaultVal = fmt.Sprintf(" (default: %s)", strings.Join(defaultVals, ", "))
 	}
 
 	usageWithDefault := strings.TrimSpace(fmt.Sprintf("%s%s", usage, defaultVal))
-
-	if len(nameParts) < 2 {
-		return fmt.Sprintf("%s%s %s\t%s", prefixFor(nameParts[0]), nameParts[0],
-			placeholder, usageWithDefault)
-	}
-
-	return fmt.Sprintf("%s%s %s, %s%s %s\t%s", prefixFor(nameParts[0]), nameParts[0],
-		placeholder, prefixFor(nameParts[1]), nameParts[1],
-		placeholder, usageWithDefault)
+	return fmt.Sprintf("%s\t%s", prefixedNames(name, placeholder), usageWithDefault)
 }
