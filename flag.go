@@ -581,35 +581,29 @@ func stringifyFlag(f Flag) string {
 	}
 
 	placeholder, usage := unquoteUsage(fv.FieldByName("Usage").String())
-	needsPlaceholder := false
 
+	needsPlaceholder := false
 	defaultValueString := ""
 	val := fv.FieldByName("Value")
 
-	valString := ""
 	if val.IsValid() {
 		needsPlaceholder = true
+		defaultValueString = fmt.Sprintf(" (default: %v)", val.Interface())
+
 		if val.Kind() == reflect.String && val.String() != "" {
-			valString = fmt.Sprintf("%q", val.String())
-		} else {
-			valString = fmt.Sprintf("%v", val.Interface())
+			defaultValueString = fmt.Sprintf(" (default: %q)", val.String())
 		}
 	}
 
-	if valString != "" {
-		defaultValueString = valString
+	if defaultValueString == " (default: )" {
+		defaultValueString = ""
 	}
 
 	if needsPlaceholder && placeholder == "" {
 		placeholder = defaultPlaceholder
 	}
 
-	formattedDefaultValueString := ""
-	if defaultValueString != "" {
-		formattedDefaultValueString = fmt.Sprintf(" (default: %v)", defaultValueString)
-	}
-
-	usageWithDefault := strings.TrimSpace(fmt.Sprintf("%s%s", usage, formattedDefaultValueString))
+	usageWithDefault := strings.TrimSpace(fmt.Sprintf("%s%s", usage, defaultValueString))
 
 	return withEnvHint(fv.FieldByName("EnvVar").String(),
 		fmt.Sprintf("%s\t%s", prefixedNames(fv.FieldByName("Name").String(), placeholder), usageWithDefault))
