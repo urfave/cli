@@ -3,21 +3,21 @@
 [![GoDoc](https://godoc.org/github.com/codegangsta/cli?status.svg)](https://godoc.org/github.com/codegangsta/cli)
 [![codebeat](https://codebeat.co/badges/0a8f30aa-f975-404b-b878-5fab3ae1cc5f)](https://codebeat.co/projects/github-com-codegangsta-cli)
 
-# cli.go
+# cli
 
-`cli.go` is simple, fast, and fun package for building command line apps in Go. The goal is to enable developers to write fast and distributable command line applications in an expressive way.
+cli is simple, fast, and fun package for building command line apps in Go. The goal is to enable developers to write fast and distributable command line applications in an expressive way.
 
 ## Overview
 
 Command line apps are usually so tiny that there is absolutely no reason why your code should *not* be self-documenting. Things like generating help text and parsing command flags/options should not hinder productivity when writing a command line app.
 
-**This is where `cli.go` comes into play.** `cli.go` makes command line programming fun, organized, and expressive!
+**This is where cli comes into play.** cli makes command line programming fun, organized, and expressive!
 
 ## Installation
 
 Make sure you have a working Go environment (go 1.1+ is *required*). [See the install instructions](http://golang.org/doc/install.html).
 
-To install `cli.go`, simply run:
+To install cli, simply run:
 ```
 $ go get github.com/codegangsta/cli
 ```
@@ -29,7 +29,7 @@ export PATH=$PATH:$GOPATH/bin
 
 ## Getting Started
 
-One of the philosophies behind `cli.go` is that an API should be playful and full of discovery. So a `cli.go` app can be as little as one line of code in `main()`.
+One of the philosophies behind cli is that an API should be playful and full of discovery. So a cli app can be as little as one line of code in `main()`.
 
 ``` go
 package main
@@ -113,7 +113,7 @@ $ greet
 Hello friend!
 ```
 
-`cli.go` also generates neat help text:
+cli also generates neat help text:
 
 ```
 $ greet help
