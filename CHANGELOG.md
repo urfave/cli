@@ -3,6 +3,12 @@
 **ATTN**: This project uses [semantic versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Pluggable flag-level help text rendering via `cli.DefaultFlagStringFunc`
+
+### Changed
+- `Float64Flag`, `IntFlag`, and `DurationFlag` default values are no longer
+quoted in help text output.
 
 ## [1.16.0] - 2016-05-02
 ### Added

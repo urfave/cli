@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 )
 
 var boolFlagTests = []struct {
@@ -18,13 +19,12 @@ var boolFlagTests = []struct {
 }
 
 func TestBoolFlagHelpOutput(t *testing.T) {
-
 	for _, test := range boolFlagTests {
 		flag := BoolFlag{Name: test.name}
 		output := flag.String()
 
 		if output != test.expected {
-			t.Errorf("%s does not match %s", output, test.expected)
+			t.Errorf("%q does not match %q", output, test.expected)
 		}
 	}
 }
@@ -35,11 +35,11 @@ var stringFlagTests = []struct {
 	value    string
 	expected string
 }{
-	{"help", "", "", "--help \t"},
-	{"h", "", "", "-h \t"},
-	{"h", "", "", "-h \t"},
+	{"help", "", "", "--help\t"},
+	{"h", "", "", "-h\t"},
+	{"h", "", "", "-h\t"},
 	{"test", "", "Something", "--test \"Something\"\t"},
-	{"config,c", "Load configuration from `FILE`", "", "--config FILE, -c FILE \tLoad configuration from FILE"},
+	{"config,c", "Load configuration from `FILE`", "", "--config FILE, -c FILE\tLoad configuration from FILE"},
 }
 
 func TestStringFlagHelpOutput(t *testing.T) {
@@ -49,7 +49,7 @@ func TestStringFlagHelpOutput(t *testing.T) {
 		output := flag.String()
 
 		if output != test.expected {
-			t.Errorf("%s does not match %s", output, test.expected)
+			t.Errorf("%q does not match %q", output, test.expected)
 		}
 	}
 }
@@ -131,8 +131,8 @@ var intFlagTests = []struct {
 	name     string
 	expected string
 }{
-	{"help", "--help \"0\"\t"},
-	{"h", "-h \"0\"\t"},
+	{"help", "--help 0\t"},
+	{"h", "-h 0\t"},
 }
 
 func TestIntFlagHelpOutput(t *testing.T) {
@@ -168,18 +168,17 @@ var durationFlagTests = []struct {
 	name     string
 	expected string
 }{
-	{"help", "--help \"0\"\t"},
-	{"h", "-h \"0\"\t"},
+	{"help", "--help 1s\t"},
+	{"h", "-h 1s\t"},
 }
 
 func TestDurationFlagHelpOutput(t *testing.T) {
-
 	for _, test := range durationFlagTests {
-		flag := DurationFlag{Name: test.name}
+		flag := DurationFlag{Name: test.name, Value: 1 * time.Second}
 		output := flag.String()
 
 		if output != test.expected {
-			t.Errorf("%s does not match %s", output, test.expected)
+			t.Errorf("%q does not match %q", output, test.expected)
 		}
 	}
 }
@@ -249,18 +248,17 @@ var float64FlagTests = []struct {
 	name     string
 	expected string
 }{
-	{"help", "--help \"0\"\t"},
-	{"h", "-h \"0\"\t"},
+	{"help", "--help 0.1\t"},
+	{"h", "-h 0.1\t"},
 }
 
 func TestFloat64FlagHelpOutput(t *testing.T) {
-
 	for _, test := range float64FlagTests {
-		flag := Float64Flag{Name: test.name}
+		flag := Float64Flag{Name: test.name, Value: float64(0.1)}
 		output := flag.String()
 
 		if output != test.expected {
-			t.Errorf("%s does not match %s", output, test.expected)
+			t.Errorf("%q does not match %q", output, test.expected)
 		}
 	}
 }
@@ -292,7 +290,6 @@ var genericFlagTests = []struct {
 }
 
 func TestGenericFlagHelpOutput(t *testing.T) {
-
 	for _, test := range genericFlagTests {
 		flag := GenericFlag{Name: test.name, Value: test.value, Usage: "test flag"}
 		output := flag.String()
