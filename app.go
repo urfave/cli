@@ -438,7 +438,7 @@ func HandleAction(action interface{}, context *Context) (err error) {
 		return errInvalidActionSignature
 	}
 
-	if retErr, ok := reflect.ValueOf(vals[0]).Interface().(error); ok {
+	if retErr, ok := reflect.ValueOf(vals[0].Interface()).Interface().(error); ok {
 		return retErr
 	}
 
