@@ -12,7 +12,9 @@ import (
 )
 
 var (
-	appActionDeprecationURL = "https://github.com/codegangsta/cli/blob/master/CHANGELOG.md#deprecated-cli-app-action-signature"
+	changeLogURL                    = "https://github.com/codegangsta/cli/blob/master/CHANGELOG.md"
+	appActionDeprecationURL         = fmt.Sprintf("%s#deprecated-cli-app-action-signature", changeLogURL)
+	runAndExitOnErrorDeprecationURL = fmt.Sprintf("%s#deprecated-cli-app-runandexitonerror", changeLogURL)
 
 	contactSysadmin = "This is an error in the application.  Please contact the distributor of this application if this is not you."
 
@@ -166,9 +168,7 @@ func (a *App) Run(arguments []string) (err error) {
 	if err != nil {
 		if a.OnUsageError != nil {
 			err := a.OnUsageError(context, err, false)
-			if err != nil {
-				HandleExitCoder(err)
-			}
+			HandleExitCoder(err)
 			return err
 		} else {
 			fmt.Fprintf(a.Writer, "%s\n\n", "Incorrect Usage.")
@@ -222,20 +222,18 @@ func (a *App) Run(arguments []string) (err error) {
 	// Run default Action
 	err = HandleAction(a.Action, context)
 
-	if err != nil {
-		HandleExitCoder(err)
-	}
+	HandleExitCoder(err)
 	return err
 }
 
 // DEPRECATED: Another entry point to the cli app, takes care of passing arguments and error handling
 func (a *App) RunAndExitOnError() {
-	fmt.Fprintln(os.Stderr,
-		"DEPRECATED cli.App.RunAndExitOnError.  "+
-			"See https://github.com/codegangsta/cli/blob/master/CHANGELOG.md#deprecated-cli-app-runandexitonerror")
+	fmt.Fprintf(os.Stderr,
+		"DEPRECATED cli.App.RunAndExitOnError.  %s  See %s\n",
+		contactSysadmin, runAndExitOnErrorDeprecationURL)
 	if err := a.Run(os.Args); err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		OsExiter(1)
 	}
 }
 
@@ -344,9 +342,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	// Run default Action
 	err = HandleAction(a.Action, context)
 
-	if err != nil {
-		HandleExitCoder(err)
-	}
+	HandleExitCoder(err)
 	return err
 }
 
@@ -364,6 +360,11 @@ func (a *App) Command(name string) *Command {
 // Returnes the array containing all the categories with the commands they contain
 func (a *App) Categories() CommandCategories {
 	return a.categories
+}
+
+// VisibleFlags returns a slice of the Flags with Hidden=false
+func (a *App) VisibleFlags() []Flag {
+	return visibleFlags(a.Flags)
 }
 
 func (a *App) hasFlag(flag Flag) bool {
@@ -421,8 +422,9 @@ func HandleAction(action interface{}, context *Context) (err error) {
 	vals := reflect.ValueOf(action).Call([]reflect.Value{reflect.ValueOf(context)})
 
 	if len(vals) == 0 {
-		fmt.Fprintln(os.Stderr,
-			"DEPRECATED Action signature.  Must be `cli.ActionFunc`")
+		fmt.Fprintf(os.Stderr,
+			"DEPRECATED Action signature.  Must be `cli.ActionFunc`.  %s  See %s\n",
+			contactSysadmin, appActionDeprecationURL)
 		return nil
 	}
 
@@ -430,7 +432,7 @@ func HandleAction(action interface{}, context *Context) (err error) {
 		return errInvalidActionSignature
 	}
 
-	if retErr, ok := reflect.ValueOf(vals[0]).Interface().(error); ok {
+	if retErr, ok := vals[0].Interface().(error); vals[0].IsValid() && ok {
 		return retErr
 	}
 

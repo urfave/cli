@@ -269,3 +269,8 @@ func (c Command) startApp(ctx *Context) error {
 
 	return app.RunAsSubcommand(ctx)
 }
+
+// VisibleFlags returns a slice of the Flags with Hidden=false
+func (c Command) VisibleFlags() []Flag {
+	return visibleFlags(c.Flags)
+}

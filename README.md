@@ -3,21 +3,21 @@
 [![GoDoc](https://godoc.org/github.com/codegangsta/cli?status.svg)](https://godoc.org/github.com/codegangsta/cli)
 [![codebeat](https://codebeat.co/badges/0a8f30aa-f975-404b-b878-5fab3ae1cc5f)](https://codebeat.co/projects/github-com-codegangsta-cli)
 
-# cli.go
+# cli
 
-`cli.go` is simple, fast, and fun package for building command line apps in Go. The goal is to enable developers to write fast and distributable command line applications in an expressive way.
+cli is a simple, fast, and fun package for building command line apps in Go. The goal is to enable developers to write fast and distributable command line applications in an expressive way.
 
 ## Overview
 
 Command line apps are usually so tiny that there is absolutely no reason why your code should *not* be self-documenting. Things like generating help text and parsing command flags/options should not hinder productivity when writing a command line app.
 
-**This is where `cli.go` comes into play.** `cli.go` makes command line programming fun, organized, and expressive!
+**This is where cli comes into play.** cli makes command line programming fun, organized, and expressive!
 
 ## Installation
 
 Make sure you have a working Go environment (go 1.1+ is *required*). [See the install instructions](http://golang.org/doc/install.html).
 
-To install `cli.go`, simply run:
+To install cli, simply run:
 ```
 $ go get github.com/codegangsta/cli
 ```
@@ -29,7 +29,7 @@ export PATH=$PATH:$GOPATH/bin
 
 ## Getting Started
 
-One of the philosophies behind `cli.go` is that an API should be playful and full of discovery. So a `cli.go` app can be as little as one line of code in `main()`.
+One of the philosophies behind cli is that an API should be playful and full of discovery. So a cli app can be as little as one line of code in `main()`.
 
 ``` go
 package main
@@ -113,7 +113,7 @@ $ greet
 Hello friend!
 ```
 
-`cli.go` also generates neat help text:
+cli also generates neat help text:
 
 ```
 $ greet help
@@ -302,6 +302,7 @@ Here is a more complete sample of a command using YAML support:
     Description: "testing",
     Action: func(c *cli.Context) error {
       // Action to run
+      return nil
     },
     Flags: []cli.Flag{
       NewIntFlag(cli.IntFlag{Name: "test"}),
@@ -322,16 +323,18 @@ app.Commands = []cli.Command{
     Name:      "add",
     Aliases:     []string{"a"},
     Usage:     "add a task to the list",
-    Action: func(c *cli.Context) {
+    Action: func(c *cli.Context) error {
       fmt.Println("added task: ", c.Args().First())
+      return nil
     },
   },
   {
     Name:      "complete",
     Aliases:     []string{"c"},
     Usage:     "complete a task on the list",
-    Action: func(c *cli.Context) {
+    Action: func(c *cli.Context) error {
       fmt.Println("completed task: ", c.Args().First())
+      return nil
     },
   },
   {
@@ -342,15 +345,17 @@ app.Commands = []cli.Command{
       {
         Name:  "add",
         Usage: "add a new template",
-        Action: func(c *cli.Context) {
+        Action: func(c *cli.Context) error {
           fmt.Println("new task template: ", c.Args().First())
+          return nil
         },
       },
       {
         Name:  "remove",
         Usage: "remove an existing template",
-        Action: func(c *cli.Context) {
+        Action: func(c *cli.Context) error {
           fmt.Println("removed task template: ", c.Args().First())
+          return nil
         },
       },
     },
@@ -450,8 +455,9 @@ app.Commands = []cli.Command{
     Name:  "complete",
     Aliases: []string{"c"},
     Usage: "complete a task on the list",
-    Action: func(c *cli.Context) {
+    Action: func(c *cli.Context) error {
        fmt.Println("completed task: ", c.Args().First())
+       return nil
     },
     BashComplete: func(c *cli.Context) {
       // This will complete if no args are passed
@@ -489,6 +495,69 @@ source /etc/bash_completion.d/<myprogram>
 Alternatively, you can just document that users should source the generic
 `autocomplete/bash_autocomplete` in their bash configuration with `$PROG` set
 to the name of their program (as above).
+
+### Generated Help Text Customization
+
+All of the help text generation may be customized, and at multiple levels.  The
+templates are exposed as variables `AppHelpTemplate`, `CommandHelpTemplate`, and
+`SubcommandHelpTemplate` which may be reassigned or augmented, and full override
+is possible by assigning a compatible func to the `cli.HelpPrinter` variable,
+e.g.:
+
+``` go
+package main
+
+import (
+  "fmt"
+  "io"
+  "os"
+
+  "github.com/codegangsta/cli"
+)
+
+func main() {
+  // EXAMPLE: Append to an existing template
+  cli.AppHelpTemplate = fmt.Sprintf(`%s
+
+WEBSITE: http://awesometown.example.com
+
+SUPPORT: support@awesometown.example.com
+
+`, cli.AppHelpTemplate)
+
+  // EXAMPLE: Override a template
+  cli.AppHelpTemplate = `NAME:
+   {{.Name}} - {{.Usage}}
+USAGE:
+   {{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command
+[command options]{{end}} {{if
+.ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}
+   {{if len .Authors}}
+AUTHOR(S):
+   {{range .Authors}}{{ . }}{{end}}
+   {{end}}{{if .Commands}}
+COMMANDS:
+{{range .Commands}}{{if not .HideHelp}}   {{join .Names ", "}}{{ "\t"
+}}{{.Usage}}{{ "\n" }}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
+GLOBAL OPTIONS:
+   {{range .VisibleFlags}}{{.}}
+   {{end}}{{end}}{{if .Copyright }}
+COPYRIGHT:
+   {{.Copyright}}
+   {{end}}{{if .Version}}
+VERSION:
+   {{.Version}}
+   {{end}}
+`
+
+  // EXAMPLE: Replace the `HelpPrinter` func
+  cli.HelpPrinter = func(w io.Writer, templ string, data interface{}) {
+    fmt.Println("Ha HA.  I pwnd the help!!1")
+  }
+
+  cli.NewApp().Run(os.Args)
+}
+```
 
 ## Contribution Guidelines
 

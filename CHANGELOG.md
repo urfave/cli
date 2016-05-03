@@ -2,14 +2,47 @@
 
 **ATTN**: This project uses [semantic versioning](http://semver.org/).
 
-## [Unreleased]
+## 2.0.0 - (unreleased 2.x series)
+### Added
+- `NewStringSlice` and `NewIntSlice` for creating their related types
 
+### Removed
+- the ability to specify `&StringSlice{...string}` or `&IntSlice{...int}`.
+To migrate to the new API, you may choose to run [this helper
+(python) script](./cli-migrate-slice-types).
+
+## [Unreleased] - (1.x series)
+### Added
+- Pluggable flag-level help text rendering via `cli.DefaultFlagStringFunc`
+
+### Changed
+- `Float64Flag`, `IntFlag`, and `DurationFlag` default values are no longer
+quoted in help text output.
+- All flag types now include `(default: {value})` strings following usage when a
+default value can be (reasonably) detected.
+- `IntSliceFlag` and `StringSliceFlag` usage strings are now more consistent
+with non-slice flag types
+
+## [1.16.0] - 2016-05-02
+### Added
+- `Hidden` field on all flag struct types to omit from generated help text
+
+### Changed
+- `BashCompletionFlag` (`--enable-bash-completion`) is now omitted from
+generated help text via the `Hidden` field
+
+### Fixed
+- handling of error values in `HandleAction` and `HandleExitCoder`
+
+## [1.15.0] - 2016-04-30
 ### Added
 - This file!
 - Support for placeholders in flag usage strings
 - `App.Metadata` map for arbitrary data/state management
 - `Set` and `GlobalSet` methods on `*cli.Context` for altering values after
 parsing.
+- Support for nested lookup of dot-delimited keys in structures loaded from
+YAML.
 
 ### Changed
 - The `App.Action` and `Command.Action` now prefer a return signature of
@@ -35,15 +68,6 @@ signature of `func(*cli.Context) error`, as defined by `cli.ActionFunc`.
 
 ### Fixed
 - Added missing `*cli.Context.GlobalFloat64` method
-
-## [2.0.0]
-### Added
-- `NewStringSlice` and `NewIntSlice` for creating their related types
-
-### Removed
-- the ability to specify `&StringSlice{...string}` or `&IntSlice{...int}`.
-To migrate to the new API, you may choose to run [this helper
-(python) script](./cli-migrate-slice-types).
 
 ## [1.14.0] - 2016-04-03 (backfilled 2016-04-25)
 ### Added
@@ -257,8 +281,9 @@ To migrate to the new API, you may choose to run [this helper
 ### Added
 - Initial implementation.
 
-[Unreleased]: https://github.com/codegangsta/cli/compare/v1.14.0...HEAD
-[2.0.0]: https://github.com/codegangsta/cli/compare/v1.14.0...v2.0.0
+[Unreleased]: https://github.com/codegangsta/cli/compare/v1.16.0...HEAD
+[1.16.0]: https://github.com/codegangsta/cli/compare/v1.15.0...v1.16.0
+[1.15.0]: https://github.com/codegangsta/cli/compare/v1.14.0...v1.15.0
 [1.14.0]: https://github.com/codegangsta/cli/compare/v1.13.0...v1.14.0
 [1.13.0]: https://github.com/codegangsta/cli/compare/v1.12.0...v1.13.0
 [1.12.0]: https://github.com/codegangsta/cli/compare/v1.11.1...v1.12.0

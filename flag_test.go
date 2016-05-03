@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 )
 
 var boolFlagTests = []struct {
@@ -18,13 +19,12 @@ var boolFlagTests = []struct {
 }
 
 func TestBoolFlagHelpOutput(t *testing.T) {
-
 	for _, test := range boolFlagTests {
 		flag := BoolFlag{Name: test.name}
 		output := flag.String()
 
 		if output != test.expected {
-			t.Errorf("%s does not match %s", output, test.expected)
+			t.Errorf("%q does not match %q", output, test.expected)
 		}
 	}
 }
@@ -35,11 +35,12 @@ var stringFlagTests = []struct {
 	value    string
 	expected string
 }{
-	{"help", "", "", "--help \t"},
-	{"h", "", "", "-h \t"},
-	{"h", "", "", "-h \t"},
-	{"test", "", "Something", "--test \"Something\"\t"},
-	{"config,c", "Load configuration from `FILE`", "", "--config FILE, -c FILE \tLoad configuration from FILE"},
+	{"foo", "", "", "--foo value\t"},
+	{"f", "", "", "-f value\t"},
+	{"f", "The total `foo` desired", "all", "-f foo\tThe total foo desired (default: \"all\")"},
+	{"test", "", "Something", "--test value\t(default: \"Something\")"},
+	{"config,c", "Load configuration from `FILE`", "", "--config FILE, -c FILE\tLoad configuration from FILE"},
+	{"config,c", "Load configuration from `CONFIG`", "config.json", "--config CONFIG, -c CONFIG\tLoad configuration from CONFIG (default: \"config.json\")"},
 }
 
 func TestStringFlagHelpOutput(t *testing.T) {
@@ -48,7 +49,7 @@ func TestStringFlagHelpOutput(t *testing.T) {
 		output := flag.String()
 
 		if output != test.expected {
-			t.Errorf("%s does not match %s", output, test.expected)
+			t.Errorf("%q does not match %q", output, test.expected)
 		}
 	}
 }
@@ -75,11 +76,11 @@ var stringSliceFlagTests = []struct {
 	value    *StringSlice
 	expected string
 }{
-	{"help", NewStringSlice(""), "--help [--help option --help option]\t"},
-	{"h", NewStringSlice(""), "-h [-h option -h option]\t"},
-	{"h", NewStringSlice(""), "-h [-h option -h option]\t"},
-	{"test", NewStringSlice("Something"), "--test [--test option --test option]\t"},
-	{"d, dee", NewStringSlice("Inka", "Dinka", "dooo"), "-d, --dee [-d option -d option]\t"},
+	{"foo", NewStringSlice(""), "--foo value\t"},
+	{"f", NewStringSlice(""), "-f value\t"},
+	{"f", NewStringSlice("Lipstick"), "-f value\t(default: \"Lipstick\")"},
+	{"test", NewStringSlice("Something"), "--test value\t(default: \"Something\")"},
+	{"d, dee", NewStringSlice("Inka", "Dinka", "dooo"), "-d value, --dee value\t(default: \"Inka\", \"Dinka\", \"dooo\")"},
 }
 
 func TestStringSliceFlagHelpOutput(t *testing.T) {
@@ -114,14 +115,13 @@ var intFlagTests = []struct {
 	name     string
 	expected string
 }{
-	{"help", "--help \"0\"\t"},
-	{"h", "-h \"0\"\t"},
+	{"hats", "--hats value\t(default: 9)"},
+	{"H", "-H value\t(default: 9)"},
 }
 
 func TestIntFlagHelpOutput(t *testing.T) {
-
 	for _, test := range intFlagTests {
-		flag := IntFlag{Name: test.name}
+		flag := IntFlag{Name: test.name, Value: 9}
 		output := flag.String()
 
 		if output != test.expected {
@@ -151,18 +151,17 @@ var durationFlagTests = []struct {
 	name     string
 	expected string
 }{
-	{"help", "--help \"0\"\t"},
-	{"h", "-h \"0\"\t"},
+	{"hooting", "--hooting value\t(default: 1s)"},
+	{"H", "-H value\t(default: 1s)"},
 }
 
 func TestDurationFlagHelpOutput(t *testing.T) {
-
 	for _, test := range durationFlagTests {
-		flag := DurationFlag{Name: test.name}
+		flag := DurationFlag{Name: test.name, Value: 1 * time.Second}
 		output := flag.String()
 
 		if output != test.expected {
-			t.Errorf("%s does not match %s", output, test.expected)
+			t.Errorf("%q does not match %q", output, test.expected)
 		}
 	}
 }
@@ -189,14 +188,12 @@ var intSliceFlagTests = []struct {
 	value    *IntSlice
 	expected string
 }{
-	{"help", NewIntSlice(), "--help [--help option --help option]\t"},
-	{"h", NewIntSlice(), "-h [-h option -h option]\t"},
-	{"h", NewIntSlice(), "-h [-h option -h option]\t"},
-	{"test", NewIntSlice(9), "--test [--test option --test option]\t"},
+	{"heads", NewIntSlice(), "--heads value\t"},
+	{"H", NewIntSlice(), "-H value\t"},
+	{"H, heads", NewIntSlice(9, 3), "-H value, --heads value\t(default: 9, 3)"},
 }
 
 func TestIntSliceFlagHelpOutput(t *testing.T) {
-
 	for _, test := range intSliceFlagTests {
 		flag := IntSliceFlag{Name: test.name, Value: test.value}
 		output := flag.String()
@@ -228,18 +225,17 @@ var float64FlagTests = []struct {
 	name     string
 	expected string
 }{
-	{"help", "--help \"0\"\t"},
-	{"h", "-h \"0\"\t"},
+	{"hooting", "--hooting value\t(default: 0.1)"},
+	{"H", "-H value\t(default: 0.1)"},
 }
 
 func TestFloat64FlagHelpOutput(t *testing.T) {
-
 	for _, test := range float64FlagTests {
-		flag := Float64Flag{Name: test.name}
+		flag := Float64Flag{Name: test.name, Value: float64(0.1)}
 		output := flag.String()
 
 		if output != test.expected {
-			t.Errorf("%s does not match %s", output, test.expected)
+			t.Errorf("%q does not match %q", output, test.expected)
 		}
 	}
 }
@@ -266,12 +262,11 @@ var genericFlagTests = []struct {
 	value    Generic
 	expected string
 }{
-	{"test", &Parser{"abc", "def"}, "--test \"abc,def\"\ttest flag"},
-	{"t", &Parser{"abc", "def"}, "-t \"abc,def\"\ttest flag"},
+	{"toads", &Parser{"abc", "def"}, "--toads value\ttest flag (default: abc,def)"},
+	{"t", &Parser{"abc", "def"}, "-t value\ttest flag (default: abc,def)"},
 }
 
 func TestGenericFlagHelpOutput(t *testing.T) {
-
 	for _, test := range genericFlagTests {
 		flag := GenericFlag{Name: test.name, Value: test.value, Usage: "test flag"}
 		output := flag.String()
