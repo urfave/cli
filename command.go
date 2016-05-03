@@ -46,6 +46,8 @@ type Command struct {
 	Flags []Flag
 	// Treat all flags as normal arguments if true
 	SkipFlagParsing bool
+	// Skip flag provided and not defined if true
+	SkipFlagNotDefined bool
 	// Boolean to hide built-in help command
 	HideHelp bool
 
@@ -125,6 +127,13 @@ func (c Command) Run(ctx *Context) (err error) {
 	}
 
 	if err != nil {
+		if !c.SkipFlagNotDefined || !strings.Contains(err.Error(), "flag provided but not defined") {
+			fmt.Fprint(ctx.App.Writer, "Incorrect Usage.\n\n")
+			ShowCommandHelp(ctx, c.Name)
+			fmt.Fprintln(ctx.App.Writer)
+			return err
+		}
+
 		if c.OnUsageError != nil {
 			err := c.OnUsageError(ctx, err, false)
 			HandleExitCoder(err)

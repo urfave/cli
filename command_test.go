@@ -99,3 +99,24 @@ func TestCommand_OnUsageError_WithWrongFlagValue(t *testing.T) {
 		t.Errorf("Expect an intercepted error, but got \"%v\"", err)
 	}
 }
+
+func TestCommandSkipFlags(t *testing.T) {
+	app := cli.NewApp()
+	set := flag.NewFlagSet("test", 0)
+	test := []string{"blah", "blah", "-break"}
+	set.Parse(test)
+
+	c := cli.NewContext(app, set, set)
+
+	command := cli.Command{
+		Name:               "test-cmd",
+		ShortName:          "tc",
+		Usage:              "this is for testing",
+		Description:        "testing",
+		Action:             func(_ *cli.Context) {},
+		SkipFlagNotDefined: true,
+	}
+	err := command.Run(c)
+
+	expect(t, err, nil)
+}

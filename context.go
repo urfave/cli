@@ -221,6 +221,12 @@ func (c *Context) NArg() int {
 	return len(c.Args())
 }
 
+// Returns the command line arguments.
+func (c *Context) GlobalArgs() Args {
+	args := Args(c.globalSet.Args())
+	return args
+}
+
 // Returns the nth argument, or else a blank string
 func (a Args) Get(n int) string {
 	if len(a) > n {
