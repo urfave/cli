@@ -25,7 +25,7 @@ AUTHOR(S):
    {{end}}{{if .Commands}}
 COMMANDS:{{range .Categories}}{{if .Name}}
   {{.Name}}{{ ":" }}{{end}}{{range .Commands}}
-    {{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}{{end}}
+    {{if not .Hidden}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}{{end}}{{end}}
 {{end}}{{end}}{{if .VisibleFlags}}
 GLOBAL OPTIONS:
    {{range .VisibleFlags}}{{.}}
@@ -66,7 +66,7 @@ USAGE:
 
 COMMANDS:{{range .Categories}}{{if .Name}}
   {{.Name}}{{ ":" }}{{end}}{{range .Commands}}
-    {{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}{{end}}
+    {{if not .Hidden}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}{{end}}{{end}}
 {{end}}{{if .VisibleFlags}}
 OPTIONS:
    {{range .VisibleFlags}}{{.}}
@@ -120,6 +120,9 @@ func ShowAppHelp(c *Context) {
 // Prints the list of subcommands as the default app completion method
 func DefaultAppComplete(c *Context) {
 	for _, command := range c.App.Commands {
+		if command.Hidden {
+			continue
+		}
 		for _, name := range command.Names() {
 			fmt.Fprintln(c.App.Writer, name)
 		}
