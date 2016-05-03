@@ -136,10 +136,10 @@ func TestShowAppHelp_HiddenCommand(t *testing.T) {
 	app.Run([]string{"app", "--help"})
 
 	if strings.Contains(output.String(), "secretfrob") {
-		t.Fatalf("expected output to exclude \"secretfrob\"; got: %q", output.String())
+		t.Errorf("expected output to exclude \"secretfrob\"; got: %q", output.String())
 	}
 
 	if !strings.Contains(output.String(), "frobbly") {
-		t.Fatalf("expected output to include \"frobbly\"; got: %q", output.String())
+		t.Errorf("expected output to include \"frobbly\"; got: %q", output.String())
 	}
 }
