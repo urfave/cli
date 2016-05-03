@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+const defaultPlaceholder = "value"
+
 // This flag enables bash-completion for all commands and subcommands
 var BashCompletionFlag = BoolFlag{
 	Name:   "generate-bash-completion",
@@ -30,6 +32,8 @@ var HelpFlag = BoolFlag{
 	Name:  "help, h",
 	Usage: "show help",
 }
+
+var FlagStringer FlagStringFunc = stringifyFlag
 
 // Flag is a common interface related to parsing flags in cli.
 // For more advanced flag parsing techniques, it is recommended that
@@ -77,19 +81,7 @@ type GenericFlag struct {
 // help text to the user (uses the String() method of the generic flag to show
 // the value)
 func (f GenericFlag) String() string {
-	placeholder, usage := unquoteUsage(f.Usage)
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s %v\t%v", prefixedNames(f.Name, placeholder), f.FormatValueHelp(), usage))
-}
-
-func (f GenericFlag) FormatValueHelp() string {
-	if f.Value == nil {
-		return ""
-	}
-	s := f.Value.String()
-	if len(s) == 0 {
-		return ""
-	}
-	return fmt.Sprintf("\"%s\"", s)
+	return FlagStringer(f)
 }
 
 // Apply takes the flagset and calls Set on the generic flag with the value
@@ -146,10 +138,7 @@ type StringSliceFlag struct {
 
 // String returns the usage
 func (f StringSliceFlag) String() string {
-	firstName := strings.Trim(strings.Split(f.Name, ",")[0], " ")
-	pref := prefixFor(firstName)
-	placeholder, usage := unquoteUsage(f.Usage)
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s [%v]\t%v", prefixedNames(f.Name, placeholder), pref+firstName+" option "+pref+firstName+" option", usage))
+	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -217,10 +206,7 @@ type IntSliceFlag struct {
 
 // String returns the usage
 func (f IntSliceFlag) String() string {
-	firstName := strings.Trim(strings.Split(f.Name, ",")[0], " ")
-	pref := prefixFor(firstName)
-	placeholder, usage := unquoteUsage(f.Usage)
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s [%v]\t%v", prefixedNames(f.Name, placeholder), pref+firstName+" option "+pref+firstName+" option", usage))
+	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -266,8 +252,7 @@ type BoolFlag struct {
 
 // String returns a readable representation of this value (for usage defaults)
 func (f BoolFlag) String() string {
-	placeholder, usage := unquoteUsage(f.Usage)
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s\t%v", prefixedNames(f.Name, placeholder), usage))
+	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -311,8 +296,7 @@ type BoolTFlag struct {
 
 // String returns a readable representation of this value (for usage defaults)
 func (f BoolTFlag) String() string {
-	placeholder, usage := unquoteUsage(f.Usage)
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s\t%v", prefixedNames(f.Name, placeholder), usage))
+	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -356,16 +340,7 @@ type StringFlag struct {
 
 // String returns the usage
 func (f StringFlag) String() string {
-	placeholder, usage := unquoteUsage(f.Usage)
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s %v\t%v", prefixedNames(f.Name, placeholder), f.FormatValueHelp(), usage))
-}
-
-func (f StringFlag) FormatValueHelp() string {
-	s := f.Value
-	if len(s) == 0 {
-		return ""
-	}
-	return fmt.Sprintf("\"%s\"", s)
+	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -406,8 +381,7 @@ type IntFlag struct {
 
 // String returns the usage
 func (f IntFlag) String() string {
-	placeholder, usage := unquoteUsage(f.Usage)
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s \"%v\"\t%v", prefixedNames(f.Name, placeholder), f.Value, usage))
+	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -451,8 +425,7 @@ type DurationFlag struct {
 
 // String returns a readable representation of this value (for usage defaults)
 func (f DurationFlag) String() string {
-	placeholder, usage := unquoteUsage(f.Usage)
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s \"%v\"\t%v", prefixedNames(f.Name, placeholder), f.Value, usage))
+	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -496,8 +469,7 @@ type Float64Flag struct {
 
 // String returns the usage
 func (f Float64Flag) String() string {
-	placeholder, usage := unquoteUsage(f.Usage)
-	return withEnvHint(f.EnvVar, fmt.Sprintf("%s \"%v\"\t%v", prefixedNames(f.Name, placeholder), f.Value, usage))
+	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -594,4 +566,84 @@ func withEnvHint(envVar, str string) string {
 		envText = fmt.Sprintf(" [%s%s%s]", prefix, strings.Join(strings.Split(envVar, ","), sep), suffix)
 	}
 	return str + envText
+}
+
+func stringifyFlag(f Flag) string {
+	fv := reflect.ValueOf(f)
+
+	switch f.(type) {
+	case IntSliceFlag:
+		return withEnvHint(fv.FieldByName("EnvVar").String(),
+			stringifyIntSliceFlag(f.(IntSliceFlag)))
+	case StringSliceFlag:
+		return withEnvHint(fv.FieldByName("EnvVar").String(),
+			stringifyStringSliceFlag(f.(StringSliceFlag)))
+	}
+
+	placeholder, usage := unquoteUsage(fv.FieldByName("Usage").String())
+
+	needsPlaceholder := false
+	defaultValueString := ""
+	val := fv.FieldByName("Value")
+
+	if val.IsValid() {
+		needsPlaceholder = true
+		defaultValueString = fmt.Sprintf(" (default: %v)", val.Interface())
+
+		if val.Kind() == reflect.String && val.String() != "" {
+			defaultValueString = fmt.Sprintf(" (default: %q)", val.String())
+		}
+	}
+
+	if defaultValueString == " (default: )" {
+		defaultValueString = ""
+	}
+
+	if needsPlaceholder && placeholder == "" {
+		placeholder = defaultPlaceholder
+	}
+
+	usageWithDefault := strings.TrimSpace(fmt.Sprintf("%s%s", usage, defaultValueString))
+
+	return withEnvHint(fv.FieldByName("EnvVar").String(),
+		fmt.Sprintf("%s\t%s", prefixedNames(fv.FieldByName("Name").String(), placeholder), usageWithDefault))
+}
+
+func stringifyIntSliceFlag(f IntSliceFlag) string {
+	defaultVals := []string{}
+	if f.Value != nil && len(f.Value.Value()) > 0 {
+		for _, i := range f.Value.Value() {
+			defaultVals = append(defaultVals, fmt.Sprintf("%d", i))
+		}
+	}
+
+	return stringifySliceFlag(f.Usage, f.Name, defaultVals)
+}
+
+func stringifyStringSliceFlag(f StringSliceFlag) string {
+	defaultVals := []string{}
+	if f.Value != nil && len(f.Value.Value()) > 0 {
+		for _, s := range f.Value.Value() {
+			if len(s) > 0 {
+				defaultVals = append(defaultVals, fmt.Sprintf("%q", s))
+			}
+		}
+	}
+
+	return stringifySliceFlag(f.Usage, f.Name, defaultVals)
+}
+
+func stringifySliceFlag(usage, name string, defaultVals []string) string {
+	placeholder, usage := unquoteUsage(usage)
+	if placeholder == "" {
+		placeholder = defaultPlaceholder
+	}
+
+	defaultVal := ""
+	if len(defaultVals) > 0 {
+		defaultVal = fmt.Sprintf(" (default: %s)", strings.Join(defaultVals, ", "))
+	}
+
+	usageWithDefault := strings.TrimSpace(fmt.Sprintf("%s%s", usage, defaultVal))
+	return fmt.Sprintf("%s\t%s", prefixedNames(name, placeholder), usageWithDefault)
 }

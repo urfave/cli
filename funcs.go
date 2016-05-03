@@ -22,3 +22,7 @@ type CommandNotFoundFunc func(*Context, string)
 // original error messages.  If this function is not set, the "Incorrect usage"
 // is displayed and the execution is interrupted.
 type OnUsageErrorFunc func(context *Context, err error, isSubcommand bool) error
+
+// FlagStringFunc is used by the help generation to display a flag, which is
+// expected to be a single line.
+type FlagStringFunc func(Flag) string
