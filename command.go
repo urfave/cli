@@ -7,6 +7,12 @@ import (
 	"strings"
 )
 
+const (
+	// Hacky hack string error shenanigans.
+	// See https://github.com/golang/go/blob/0104a31/src/flag/flag.go#L858
+	knownStdlibFlagNotDefinedErrPrefix = "flag provided but not defined: -"
+)
+
 // Command is a subcommand for a cli.App.
 type Command struct {
 	// The name of the command
@@ -127,18 +133,11 @@ func (c Command) Run(ctx *Context) (err error) {
 	}
 
 	if err != nil {
-		if !c.SkipFlagNotDefined || !strings.Contains(err.Error(), "flag provided but not defined") {
-			fmt.Fprint(ctx.App.Writer, "Incorrect Usage.\n\n")
-			ShowCommandHelp(ctx, c.Name)
-			fmt.Fprintln(ctx.App.Writer)
-			return err
-		}
-
 		if c.OnUsageError != nil {
 			err := c.OnUsageError(ctx, err, false)
 			HandleExitCoder(err)
 			return err
-		} else {
+		} else if c.isBreakableFlagParsingError(err) {
 			fmt.Fprintln(ctx.App.Writer, "Incorrect Usage.")
 			fmt.Fprintln(ctx.App.Writer)
 			ShowCommandHelp(ctx, c.Name)
@@ -282,4 +281,14 @@ func (c Command) startApp(ctx *Context) error {
 // VisibleFlags returns a slice of the Flags with Hidden=false
 func (c Command) VisibleFlags() []Flag {
 	return visibleFlags(c.Flags)
+}
+
+// isBreakableFlagParsingError attempts to isolate the hackiness that is needed
+// to suss out what stdlib `flag.Parse`'s error really means via string
+// comparison.
+func (c Command) isBreakableFlagParsingError(err error) bool {
+	if c.SkipFlagNotDefined && strings.HasPrefix(err.Error(), knownStdlibFlagNotDefinedErrPrefix) {
+		return false
+	}
+	return true
 }

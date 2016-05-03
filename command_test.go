@@ -100,20 +100,19 @@ func TestCommand_OnUsageError_WithWrongFlagValue(t *testing.T) {
 	}
 }
 
-func TestCommandSkipFlags(t *testing.T) {
-	app := cli.NewApp()
+func TestCommandRun_WithSkipFlagNotDefined(t *testing.T) {
+	app := NewApp()
 	set := flag.NewFlagSet("test", 0)
-	test := []string{"blah", "blah", "-break"}
-	set.Parse(test)
+	set.Parse([]string{"exe", "test-cmd", "-break"})
 
-	c := cli.NewContext(app, set, set)
+	c := NewContext(app, set, nil)
 
-	command := cli.Command{
+	command := Command{
 		Name:               "test-cmd",
 		ShortName:          "tc",
 		Usage:              "this is for testing",
 		Description:        "testing",
-		Action:             func(_ *cli.Context) {},
+		Action:             func(_ *Context) error { return nil },
 		SkipFlagNotDefined: true,
 	}
 	err := command.Run(c)

@@ -223,8 +223,7 @@ func (c *Context) NArg() int {
 
 // Returns the command line arguments.
 func (c *Context) GlobalArgs() Args {
-	args := Args(c.globalSet.Args())
-	return args
+	return Args(globalContext(c).Args())
 }
 
 // Returns the nth argument, or else a blank string
