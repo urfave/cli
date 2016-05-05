@@ -2,7 +2,16 @@
 
 **ATTN**: This project uses [semantic versioning](http://semver.org/).
 
-## [Unreleased]
+## 2.0.0 - (unreleased 2.x series)
+### Added
+- `NewStringSlice` and `NewIntSlice` for creating their related types
+
+### Removed
+- the ability to specify `&StringSlice{...string}` or `&IntSlice{...int}`.
+To migrate to the new API, you may choose to run [this helper
+(python) script](./cli-migrate-slice-types).
+
+## [Unreleased] - (1.x series)
 ### Added
 - Pluggable flag-level help text rendering via `cli.DefaultFlagStringFunc`
 
