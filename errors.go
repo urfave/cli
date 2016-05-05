@@ -8,6 +8,10 @@ import (
 
 var OsExiter = os.Exit
 
+// OutWriter is used to write output to the user. This can be anything
+// implementing the io.Writer interface and defaults to os.Stderr.
+var OutWriter = os.Stderr
+
 type MultiError struct {
 	Errors []error
 }
@@ -69,7 +73,7 @@ func HandleExitCoder(err error) {
 
 	if exitErr, ok := err.(ExitCoder); ok {
 		if err.Error() != "" {
-			fmt.Fprintln(os.Stderr, err)
+			fmt.Fprintln(OutWriter, err)
 		}
 		OsExiter(exitErr.ExitCode())
 		return
