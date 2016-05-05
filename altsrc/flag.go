@@ -122,7 +122,7 @@ func (f *StringSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputS
 				return err
 			}
 			if value != nil {
-				var sliceValue cli.StringSlice = value
+				var sliceValue cli.StringSlice = *(cli.NewStringSlice(value...))
 				eachName(f.Name, func(name string) {
 					underlyingFlag := f.set.Lookup(f.Name)
 					if underlyingFlag != nil {
@@ -163,7 +163,7 @@ func (f *IntSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSour
 				return err
 			}
 			if value != nil {
-				var sliceValue cli.IntSlice = value
+				var sliceValue cli.IntSlice = *(cli.NewIntSlice(value...))
 				eachName(f.Name, func(name string) {
 					underlyingFlag := f.set.Lookup(f.Name)
 					if underlyingFlag != nil {

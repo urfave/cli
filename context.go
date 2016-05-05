@@ -385,7 +385,8 @@ func lookupBoolT(name string, set *flag.FlagSet) bool {
 
 func copyFlag(name string, ff *flag.Flag, set *flag.FlagSet) {
 	switch ff.Value.(type) {
-	case *StringSlice:
+	case Serializeder:
+		set.Set(name, ff.Value.(Serializeder).Serialized())
 	default:
 		set.Set(name, ff.Value.String())
 	}

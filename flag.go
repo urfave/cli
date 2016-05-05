@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -12,6 +13,8 @@ import (
 )
 
 const defaultPlaceholder = "value"
+
+var slPfx = fmt.Sprintf("sl:::%d:::", time.Now().UTC().UnixNano())
 
 // This flag enables bash-completion for all commands and subcommands
 var BashCompletionFlag = BoolFlag{
@@ -34,6 +37,11 @@ var HelpFlag = BoolFlag{
 }
 
 var FlagStringer FlagStringFunc = stringifyFlag
+
+// Serializeder is used to circumvent the limitations of flag.FlagSet.Set
+type Serializeder interface {
+	Serialized() string
+}
 
 // Flag is a common interface related to parsing flags in cli.
 // For more advanced flag parsing techniques, it is recommended that
@@ -107,26 +115,52 @@ func (f GenericFlag) GetName() string {
 	return f.Name
 }
 
-// StringSlice is an opaque type for []string to satisfy flag.Value
-type StringSlice []string
+// StringSlice wraps a []string to satisfy flag.Value
+type StringSlice struct {
+	slice      []string
+	hasBeenSet bool
+}
+
+// NewStringSlice creates a *StringSlice with default values
+func NewStringSlice(defaults ...string) *StringSlice {
+	return &StringSlice{slice: append([]string{}, defaults...)}
+}
 
 // Set appends the string value to the list of values
 func (f *StringSlice) Set(value string) error {
-	*f = append(*f, value)
+	if !f.hasBeenSet {
+		f.slice = []string{}
+		f.hasBeenSet = true
+	}
+
+	if strings.HasPrefix(value, slPfx) {
+		// Deserializing assumes overwrite
+		_ = json.Unmarshal([]byte(strings.Replace(value, slPfx, "", 1)), &f.slice)
+		f.hasBeenSet = true
+		return nil
+	}
+
+	f.slice = append(f.slice, value)
 	return nil
 }
 
 // String returns a readable representation of this value (for usage defaults)
 func (f *StringSlice) String() string {
-	return fmt.Sprintf("%s", *f)
+	return fmt.Sprintf("%s", f.slice)
+}
+
+// Serialized allows StringSlice to fulfill Serializeder
+func (f *StringSlice) Serialized() string {
+	jsonBytes, _ := json.Marshal(f.slice)
+	return fmt.Sprintf("%s%s", slPfx, string(jsonBytes))
 }
 
 // Value returns the slice of strings set by this flag
 func (f *StringSlice) Value() []string {
-	return *f
+	return f.slice
 }
 
-// StringSlice is a string flag that can be specified multiple times on the
+// StringSliceFlag is a string flag that can be specified multiple times on the
 // command-line
 type StringSliceFlag struct {
 	Name   string
@@ -147,7 +181,7 @@ func (f StringSliceFlag) Apply(set *flag.FlagSet) {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
 			if envVal := os.Getenv(envVar); envVal != "" {
-				newVal := &StringSlice{}
+				newVal := NewStringSlice()
 				for _, s := range strings.Split(envVal, ",") {
 					s = strings.TrimSpace(s)
 					newVal.Set(s)
@@ -158,10 +192,11 @@ func (f StringSliceFlag) Apply(set *flag.FlagSet) {
 		}
 	}
 
+	if f.Value == nil {
+		f.Value = NewStringSlice()
+	}
+
 	eachName(f.Name, func(name string) {
-		if f.Value == nil {
-			f.Value = &StringSlice{}
-		}
 		set.Var(f.Value, name, f.Usage)
 	})
 }
@@ -170,28 +205,64 @@ func (f StringSliceFlag) GetName() string {
 	return f.Name
 }
 
-// StringSlice is an opaque type for []int to satisfy flag.Value
-type IntSlice []int
+// IntSlice wraps an []int to satisfy flag.Value
+type IntSlice struct {
+	slice      []int
+	hasBeenSet bool
+}
+
+// NewIntSlice makes an *IntSlice with default values
+func NewIntSlice(defaults ...int) *IntSlice {
+	return &IntSlice{slice: append([]int{}, defaults...)}
+}
+
+// SetInt directly adds an integer to the list of values
+func (i *IntSlice) SetInt(value int) {
+	if !i.hasBeenSet {
+		i.slice = []int{}
+		i.hasBeenSet = true
+	}
+
+	i.slice = append(i.slice, value)
+}
 
 // Set parses the value into an integer and appends it to the list of values
-func (f *IntSlice) Set(value string) error {
+func (i *IntSlice) Set(value string) error {
+	if !i.hasBeenSet {
+		i.slice = []int{}
+		i.hasBeenSet = true
+	}
+
+	if strings.HasPrefix(value, slPfx) {
+		// Deserializing assumes overwrite
+		_ = json.Unmarshal([]byte(strings.Replace(value, slPfx, "", 1)), &i.slice)
+		i.hasBeenSet = true
+		return nil
+	}
+
 	tmp, err := strconv.Atoi(value)
 	if err != nil {
 		return err
 	} else {
-		*f = append(*f, tmp)
+		i.slice = append(i.slice, tmp)
 	}
 	return nil
 }
 
 // String returns a readable representation of this value (for usage defaults)
-func (f *IntSlice) String() string {
-	return fmt.Sprintf("%d", *f)
+func (i *IntSlice) String() string {
+	return fmt.Sprintf("%v", i.slice)
+}
+
+// Serialized allows IntSlice to fulfill Serializeder
+func (i *IntSlice) Serialized() string {
+	jsonBytes, _ := json.Marshal(i.slice)
+	return fmt.Sprintf("%s%s", slPfx, string(jsonBytes))
 }
 
 // Value returns the slice of ints set by this flag
-func (f *IntSlice) Value() []int {
-	return *f
+func (i *IntSlice) Value() []int {
+	return i.slice
 }
 
 // IntSliceFlag is an int flag that can be specified multiple times on the
@@ -215,7 +286,7 @@ func (f IntSliceFlag) Apply(set *flag.FlagSet) {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
 			if envVal := os.Getenv(envVar); envVal != "" {
-				newVal := &IntSlice{}
+				newVal := NewIntSlice()
 				for _, s := range strings.Split(envVal, ",") {
 					s = strings.TrimSpace(s)
 					err := newVal.Set(s)
@@ -229,10 +300,11 @@ func (f IntSliceFlag) Apply(set *flag.FlagSet) {
 		}
 	}
 
+	if f.Value == nil {
+		f.Value = NewIntSlice()
+	}
+
 	eachName(f.Name, func(name string) {
-		if f.Value == nil {
-			f.Value = &IntSlice{}
-		}
 		set.Var(f.Value, name, f.Usage)
 	})
 }
