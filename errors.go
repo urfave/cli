@@ -2,15 +2,16 @@ package cli
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 )
 
 var OsExiter = os.Exit
 
-// OutWriter is used to write output to the user. This can be anything
+// ErrWriter is used to write errors to the user. This can be anything
 // implementing the io.Writer interface and defaults to os.Stderr.
-var OutWriter = os.Stderr
+var ErrWriter io.Writer = os.Stderr
 
 type MultiError struct {
 	Errors []error
@@ -73,7 +74,7 @@ func HandleExitCoder(err error) {
 
 	if exitErr, ok := err.(ExitCoder); ok {
 		if err.Error() != "" {
-			fmt.Fprintln(OutWriter, err)
+			fmt.Fprintln(ErrWriter, err)
 		}
 		OsExiter(exitErr.ExitCode())
 		return

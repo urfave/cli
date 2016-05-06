@@ -220,7 +220,7 @@ func (f IntSliceFlag) Apply(set *flag.FlagSet) {
 					s = strings.TrimSpace(s)
 					err := newVal.Set(s)
 					if err != nil {
-						fmt.Fprintf(OutWriter, err.Error())
+						fmt.Fprintf(ErrWriter, err.Error())
 					}
 				}
 				f.Value = newVal
