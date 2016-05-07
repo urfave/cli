@@ -82,6 +82,30 @@ func TestContext_BoolT(t *testing.T) {
 	expect(t, c.BoolT("myflag"), true)
 }
 
+func TestContext_GlobalBool(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+
+	globalSet := flag.NewFlagSet("test-global", 0)
+	globalSet.Bool("myflag", false, "doc")
+	globalCtx := NewContext(nil, globalSet, nil)
+
+	c := NewContext(nil, set, globalCtx)
+	expect(t, c.GlobalBool("myflag"), false)
+	expect(t, c.GlobalBool("nope"), false)
+}
+
+func TestContext_GlobalBoolT(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+
+	globalSet := flag.NewFlagSet("test-global", 0)
+	globalSet.Bool("myflag", true, "doc")
+	globalCtx := NewContext(nil, globalSet, nil)
+
+	c := NewContext(nil, set, globalCtx)
+	expect(t, c.GlobalBoolT("myflag"), true)
+	expect(t, c.GlobalBoolT("nope"), false)
+}
+
 func TestContext_Args(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("myflag", false, "doc")

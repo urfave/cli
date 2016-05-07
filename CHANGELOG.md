@@ -5,6 +5,7 @@
 ## [Unreleased]
 ### Added
 - Pluggable flag-level help text rendering via `cli.DefaultFlagStringFunc`
+- `context.GlobalBoolT` was added as an analogue to `context.GlobalBool`
 
 ### Changed
 - `Float64Flag`, `IntFlag`, and `DurationFlag` default values are no longer
