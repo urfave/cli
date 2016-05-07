@@ -217,6 +217,18 @@ func (a *App) Run(arguments []string) (err error) {
 		if c != nil {
 			return c.Run(context)
 		}
+
+		if len(a.Commands) != 1 && a.CommandNotFound == nil {
+			// If `len(a.Commands)` == 0, then this is not an app with commands; i.e. the
+			// only command is the default "help" command.
+			//
+			// And if `a.CommandNotFound` is set, then we should just let that handle the case
+			// of the missing command.
+			ShowAppHelp(context)
+			err = NewExitError("ERROR unknown Command error", 3)
+			HandleExitCoder(err)
+			return err
+		}
 	}
 
 	// Run default Action

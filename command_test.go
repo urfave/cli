@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 )
@@ -97,5 +98,44 @@ func TestCommand_OnUsageError_WithWrongFlagValue(t *testing.T) {
 
 	if !strings.HasPrefix(err.Error(), "intercepted: invalid value") {
 		t.Errorf("Expect an intercepted error, but got \"%v\"", err)
+	}
+}
+
+func TestCommand_OnUsageError_WithMissingCommand(t *testing.T) {
+	app := NewApp()
+	app.Commands = []Command{
+		Command{
+			Name: "bar",
+		},
+	}
+
+	var exitCode int
+	var called = true
+	OsExiter = func(rc int) {
+		exitCode = rc
+		called = true
+	}
+	defer func() { OsExiter = os.Exit }()
+
+	err := app.Run([]string{"blah", "foo"})
+	if err == nil {
+		t.Fatalf("expected error from app.Run(), but got nil")
+	}
+
+	exitErr, ok := err.(*ExitError)
+	if !ok {
+		t.Fatalf("expected ExitError from app.Run(), but instead got: %v", err.Error())
+	}
+
+	if !strings.HasPrefix(exitErr.Error(), "ERROR unknown Command") {
+		t.Fatalf("expected an unknown Command error, but got: %v", exitErr.Error())
+	}
+
+	if !called {
+		t.Fatalf("expected OsExiter to be called, but it wasn't")
+	}
+
+	if exitCode != 3 {
+		t.Fatalf("expected exit value = 3, got %d instead", exitCode)
 	}
 }
