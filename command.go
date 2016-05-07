@@ -86,42 +86,10 @@ func (c Command) Run(ctx *Context) (err error) {
 	set := flagSet(c.Name, c.Flags)
 	set.SetOutput(ioutil.Discard)
 
-	if !c.SkipFlagParsing {
-		firstFlagIndex := -1
-		terminatorIndex := -1
-		for index, arg := range ctx.Args() {
-			if arg == "--" {
-				terminatorIndex = index
-				break
-			} else if arg == "-" {
-				// Do nothing. A dash alone is not really a flag.
-				continue
-			} else if strings.HasPrefix(arg, "-") && firstFlagIndex == -1 {
-				firstFlagIndex = index
-			}
-		}
-
-		if firstFlagIndex > -1 {
-			args := ctx.Args()
-			regularArgs := make([]string, len(args[1:firstFlagIndex]))
-			copy(regularArgs, args[1:firstFlagIndex])
-
-			var flagArgs []string
-			if terminatorIndex > -1 {
-				flagArgs = args[firstFlagIndex:terminatorIndex]
-				regularArgs = append(regularArgs, args[terminatorIndex:]...)
-			} else {
-				flagArgs = args[firstFlagIndex:]
-			}
-
-			err = set.Parse(append(flagArgs, regularArgs...))
-		} else {
-			err = set.Parse(ctx.Args().Tail())
-		}
+	if c.SkipFlagParsing {
+		err = set.Parse(append([]string{"--"}, ctx.Args().Tail()...))
 	} else {
-		if c.SkipFlagParsing {
-			err = set.Parse(append([]string{"--"}, ctx.Args().Tail()...))
-		}
+		err = set.Parse(ctx.Args().Tail())
 	}
 
 	if err != nil {
