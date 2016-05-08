@@ -8,11 +8,15 @@
 
 ### Changed
 - `Float64Flag`, `IntFlag`, and `DurationFlag` default values are no longer
-quoted in help text output.
+  quoted in help text output.
 - All flag types now include `(default: {value})` strings following usage when a
-default value can be (reasonably) detected.
+  default value can be (reasonably) detected.
 - `IntSliceFlag` and `StringSliceFlag` usage strings are now more consistent
-with non-slice flag types
+  with non-slice flag types
+- Apps now exit with a code of 3 if an unknown subcommand is specified
+  (previously they printed "No help topic for...", but still exited 0. This
+  makes it easier to script around apps built using `cli` since they can trust
+  that a 0 exit code indicated a successful execution.
 
 ## [1.16.0] - 2016-05-02
 ### Added
