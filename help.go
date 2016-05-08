@@ -194,7 +194,7 @@ func printHelp(out io.Writer, templ string, data interface{}) {
 		// If the writer is closed, t.Execute will fail, and there's nothing
 		// we can do to recover.
 		if os.Getenv("CLI_TEMPLATE_ERROR_DEBUG") != "" {
-			fmt.Fprintf(os.Stderr, "CLI TEMPLATE ERROR: %#v\n", err)
+			fmt.Fprintf(ErrWriter, "CLI TEMPLATE ERROR: %#v\n", err)
 		}
 		return
 	}

@@ -2,6 +2,7 @@
 [![Build Status](https://travis-ci.org/codegangsta/cli.svg?branch=master)](https://travis-ci.org/codegangsta/cli)
 [![GoDoc](https://godoc.org/github.com/codegangsta/cli?status.svg)](https://godoc.org/github.com/codegangsta/cli)
 [![codebeat](https://codebeat.co/badges/0a8f30aa-f975-404b-b878-5fab3ae1cc5f)](https://codebeat.co/projects/github-com-codegangsta-cli)
+[![Go Report Card](https://goreportcard.com/badge/codegangsta/cli)](https://goreportcard.com/report/codegangsta/cli)
 
 # cli
 
@@ -46,6 +47,9 @@ func main() {
 
 This app will run and show help text, but is not very useful. Let's give an action to execute and some help documentation:
 
+<!-- {
+  "output": "boom! I say!"
+} -->
 ``` go
 package main
 
@@ -77,6 +81,9 @@ Being a programmer can be a lonely job. Thankfully by the power of automation th
 
 Start by creating a directory named `greet`, and within it, add a file, `greet.go` with the following code in it:
 
+<!-- {
+  "output": "Hello friend!"
+} -->
 ``` go
 package main
 
@@ -210,6 +217,7 @@ Sometimes it's useful to specify a flag's value within the usage string itself. 
 indicated with back quotes.
 
 For example this:
+
 ```go
 cli.StringFlag{
   Name:  "config, c",
@@ -504,6 +512,9 @@ templates are exposed as variables `AppHelpTemplate`, `CommandHelpTemplate`, and
 is possible by assigning a compatible func to the `cli.HelpPrinter` variable,
 e.g.:
 
+<!-- {
+  "output": "Ha HA.  I pwnd the help!!1"
+} -->
 ``` go
 package main
 
