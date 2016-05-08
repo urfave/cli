@@ -188,7 +188,7 @@ func printHelp(out io.Writer, templ string, data interface{}) {
 	err := t.Execute(w, data)
 	if err != nil {
 		// If the writer is closed, t.Execute will fail, and there's nothing
-		// we can do to recover. We could send this to os.Stderr if we need.
+		// we can do to recover. We could send this to ErrWriter if we need.
 		return
 	}
 	w.Flush()

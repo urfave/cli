@@ -82,6 +82,8 @@ type App struct {
 	Email string
 	// Writer writer to write output to
 	Writer io.Writer
+	// ErrWriter writes error output
+	ErrWriter io.Writer
 	// Other custom info
 	Metadata map[string]interface{}
 }
@@ -228,11 +230,11 @@ func (a *App) Run(arguments []string) (err error) {
 
 // DEPRECATED: Another entry point to the cli app, takes care of passing arguments and error handling
 func (a *App) RunAndExitOnError() {
-	fmt.Fprintf(os.Stderr,
+	fmt.Fprintf(a.errWriter(),
 		"DEPRECATED cli.App.RunAndExitOnError.  %s  See %s\n",
 		contactSysadmin, runAndExitOnErrorDeprecationURL)
 	if err := a.Run(os.Args); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintln(a.errWriter(), err)
 		OsExiter(1)
 	}
 }
@@ -377,6 +379,16 @@ func (a *App) hasFlag(flag Flag) bool {
 	return false
 }
 
+func (a *App) errWriter() io.Writer {
+
+	// When the app ErrWriter is nil use the package level one.
+	if a.ErrWriter == nil {
+		return ErrWriter
+	}
+
+	return a.ErrWriter
+}
+
 func (a *App) appendFlag(flag Flag) {
 	if !a.hasFlag(flag) {
 		a.Flags = append(a.Flags, flag)
@@ -422,7 +434,7 @@ func HandleAction(action interface{}, context *Context) (err error) {
 	vals := reflect.ValueOf(action).Call([]reflect.Value{reflect.ValueOf(context)})
 
 	if len(vals) == 0 {
-		fmt.Fprintf(os.Stderr,
+		fmt.Fprintf(ErrWriter,
 			"DEPRECATED Action signature.  Must be `cli.ActionFunc`.  %s  See %s\n",
 			contactSysadmin, appActionDeprecationURL)
 		return nil
