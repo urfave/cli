@@ -5,6 +5,8 @@
 ## [Unreleased]
 ### Added
 - Pluggable flag-level help text rendering via `cli.DefaultFlagStringFunc`
+- Support for hiding commands by setting `Hidden: true` -- this will hide the
+  commands in help output
 
 ### Changed
 - `Float64Flag`, `IntFlag`, and `DurationFlag` default values are no longer
