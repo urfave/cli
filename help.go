@@ -82,10 +82,10 @@ var helpCommand = Command{
 	Action: func(c *Context) error {
 		args := c.Args()
 		if args.Present() {
-			ShowCommandHelp(c, args.First())
-		} else {
-			ShowAppHelp(c)
+			return ShowCommandHelp(c, args.First())
 		}
+
+		ShowAppHelp(c)
 		return nil
 	},
 }
@@ -98,11 +98,10 @@ var helpSubcommand = Command{
 	Action: func(c *Context) error {
 		args := c.Args()
 		if args.Present() {
-			ShowCommandHelp(c, args.First())
-		} else {
-			ShowSubcommandHelp(c)
+			return ShowCommandHelp(c, args.First())
 		}
-		return nil
+
+		return ShowSubcommandHelp(c)
 	},
 }
 
@@ -131,30 +130,31 @@ func DefaultAppComplete(c *Context) {
 }
 
 // Prints help for the given command
-func ShowCommandHelp(ctx *Context, command string) {
+func ShowCommandHelp(ctx *Context, command string) error {
 	// show the subcommand help for a command with subcommands
 	if command == "" {
 		HelpPrinter(ctx.App.Writer, SubcommandHelpTemplate, ctx.App)
-		return
+		return nil
 	}
 
 	for _, c := range ctx.App.Commands {
 		if c.HasName(command) {
 			HelpPrinter(ctx.App.Writer, CommandHelpTemplate, c)
-			return
+			return nil
 		}
 	}
 
-	if ctx.App.CommandNotFound != nil {
-		ctx.App.CommandNotFound(ctx, command)
-	} else {
-		fmt.Fprintf(ctx.App.Writer, "No help topic for '%v'\n", command)
+	if ctx.App.CommandNotFound == nil {
+		return NewExitError(fmt.Sprintf("No help topic for '%v'", command), 3)
 	}
+
+	ctx.App.CommandNotFound(ctx, command)
+	return nil
 }
 
 // Prints help for the given subcommand
-func ShowSubcommandHelp(c *Context) {
-	ShowCommandHelp(c, c.Command.Name)
+func ShowSubcommandHelp(c *Context) error {
+	return ShowCommandHelp(c, c.Command.Name)
 }
 
 // Prints the version number of the App

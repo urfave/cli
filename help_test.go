@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"flag"
 	"strings"
 	"testing"
 )
@@ -109,6 +110,62 @@ func Test_Version_Custom_Flags(t *testing.T) {
 	app.Run([]string{"test", "-v"})
 	if output.Len() > 0 {
 		t.Errorf("unexpected output: %s", output.String())
+	}
+}
+
+func Test_helpCommand_Action_ErrorIfNoTopic(t *testing.T) {
+	app := NewApp()
+
+	set := flag.NewFlagSet("test", 0)
+	set.Parse([]string{"foo"})
+
+	c := NewContext(app, set, nil)
+
+	err := helpCommand.Action.(func(*Context) error)(c)
+
+	if err == nil {
+		t.Fatalf("expected error from helpCommand.Action(), but got nil")
+	}
+
+	exitErr, ok := err.(*ExitError)
+	if !ok {
+		t.Fatalf("expected ExitError from helpCommand.Action(), but instead got: %v", err.Error())
+	}
+
+	if !strings.HasPrefix(exitErr.Error(), "No help topic for") {
+		t.Fatalf("expected an unknown help topic error, but got: %v", exitErr.Error())
+	}
+
+	if exitErr.exitCode != 3 {
+		t.Fatalf("expected exit value = 3, got %d instead", exitErr.exitCode)
+	}
+}
+
+func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
+	app := NewApp()
+
+	set := flag.NewFlagSet("test", 0)
+	set.Parse([]string{"foo"})
+
+	c := NewContext(app, set, nil)
+
+	err := helpSubcommand.Action.(func(*Context) error)(c)
+
+	if err == nil {
+		t.Fatalf("expected error from helpCommand.Action(), but got nil")
+	}
+
+	exitErr, ok := err.(*ExitError)
+	if !ok {
+		t.Fatalf("expected ExitError from helpCommand.Action(), but instead got: %v", err.Error())
+	}
+
+	if !strings.HasPrefix(exitErr.Error(), "No help topic for") {
+		t.Fatalf("expected an unknown help topic error, but got: %v", exitErr.Error())
+	}
+
+	if exitErr.exitCode != 3 {
+		t.Fatalf("expected exit value = 3, got %d instead", exitErr.exitCode)
 	}
 }
 
