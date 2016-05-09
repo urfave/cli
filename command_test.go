@@ -15,10 +15,10 @@ func TestCommandFlagParsing(t *testing.T) {
 		skipFlagParsing bool
 		expectedErr     error
 	}{
-		{[]string{"blah", "blah", "-break"}, false, errors.New("flag provided but not defined: -break")}, // Test normal "not ignoring flags" flow
-		{[]string{"blah", "blah"}, true, nil},                                                            // Test SkipFlagParsing without any args that look like flags
-		{[]string{"blah", "-break"}, true, nil},                                                          // Test SkipFlagParsing with random flag arg
-		{[]string{"blah", "-help"}, true, nil},                                                           // Test SkipFlagParsing with "special" help flag arg
+		{[]string{"test-cmd", "-break", "blah", "blah"}, false, errors.New("flag provided but not defined: -break")}, // Test normal "not ignoring flags" flow
+		{[]string{"test-cmd", "blah", "blah"}, true, nil},                                                            // Test SkipFlagParsing without any args that look like flags
+		{[]string{"test-cmd", "-break", "blah"}, true, nil},                                                          // Test SkipFlagParsing with random flag arg
+		{[]string{"test-cmd", "-help", "blah"}, true, nil},                                                           // Test SkipFlagParsing with "special" help flag arg
 	}
 
 	for _, c := range cases {

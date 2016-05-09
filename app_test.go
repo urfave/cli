@@ -189,29 +189,6 @@ func TestApp_Command(t *testing.T) {
 	}
 }
 
-func TestApp_CommandWithArgBeforeFlags(t *testing.T) {
-	var parsedOption, firstArg string
-
-	app := NewApp()
-	command := Command{
-		Name: "cmd",
-		Flags: []Flag{
-			StringFlag{Name: "option", Value: "", Usage: "some option"},
-		},
-		Action: func(c *Context) error {
-			parsedOption = c.String("option")
-			firstArg = c.Args().First()
-			return nil
-		},
-	}
-	app.Commands = []Command{command}
-
-	app.Run([]string{"", "cmd", "my-arg", "--option", "my-option"})
-
-	expect(t, parsedOption, "my-option")
-	expect(t, firstArg, "my-arg")
-}
-
 func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
 	var context *Context
 
@@ -257,7 +234,7 @@ func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
 	}
 	app.Commands = []Command{command}
 
-	app.Run([]string{"", "cmd", "my-arg", "--option", "my-option", "--", "--notARealFlag"})
+	app.Run([]string{"", "cmd", "--option", "my-option", "my-arg", "--", "--notARealFlag"})
 
 	expect(t, parsedOption, "my-option")
 	expect(t, args[0], "my-arg")
@@ -342,7 +319,7 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 	}
 	app.Commands = []Command{command}
 
-	app.Run([]string{"", "cmd", "my-arg", "-p", "22", "-p", "80", "-ip", "8.8.8.8", "-ip", "8.8.4.4"})
+	app.Run([]string{"", "cmd", "-p", "22", "-p", "80", "-ip", "8.8.8.8", "-ip", "8.8.4.4", "my-arg"})
 
 	IntsEquals := func(a, b []int) bool {
 		if len(a) != len(b) {
@@ -398,7 +375,7 @@ func TestApp_ParseSliceFlagsWithMissingValue(t *testing.T) {
 	}
 	app.Commands = []Command{command}
 
-	app.Run([]string{"", "cmd", "my-arg", "-a", "2", "-str", "A"})
+	app.Run([]string{"", "cmd", "-a", "2", "-str", "A", "my-arg"})
 
 	var expectedIntSlice = []int{2}
 	var expectedStringSlice = []string{"A"}
