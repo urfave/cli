@@ -13,31 +13,49 @@ PACKAGE_NAME = os.environ.get(
 )
 
 
-def main():
-    _run('go vet ./...'.split())
+def main(sysargs=sys.argv[:]):
+    target = 'test'
+    if len(sysargs) > 1:
+        target = sysargs[1]
 
-    if check_output('go version'.split()).split()[2] >= 'go1.2':
-        coverprofiles = []
-        for subpackage in ['', 'altsrc']:
-            coverprofile = 'cli.coverprofile'
-            if subpackage != '':
-                coverprofile = '{}.coverprofile'.format(subpackage)
+    {
+        'vet': _vet,
+        'test': _test,
+        'gfmxr': _gfmxr
+    }[target]()
 
-            coverprofiles.append(coverprofile)
-
-            _run('go test -v'.split() + [
-                '-coverprofile={}'.format(coverprofile),
-                '{}/{}'.format(PACKAGE_NAME, subpackage)
-            ])
-
-        combined = _combine_coverprofiles(coverprofiles)
-        _run('go tool cover -func={}'.format(combined.name).split())
-        combined.close()
-    else:
-        _run('go test -v ./...'.split())
-
-    _run(['gfmxr', '-c', str(_gfmxr_count()), '-s', 'README.md'])
     return 0
+
+
+def _test():
+    if check_output('go version'.split()).split()[2] < 'go1.2':
+        _run('go test -v ./...'.split())
+        return
+
+    coverprofiles = []
+    for subpackage in ['', 'altsrc']:
+        coverprofile = 'cli.coverprofile'
+        if subpackage != '':
+            coverprofile = '{}.coverprofile'.format(subpackage)
+
+        coverprofiles.append(coverprofile)
+
+        _run('go test -v'.split() + [
+            '-coverprofile={}'.format(coverprofile),
+            '{}/{}'.format(PACKAGE_NAME, subpackage)
+        ])
+
+    combined = _combine_coverprofiles(coverprofiles)
+    _run('go tool cover -func={}'.format(combined.name).split())
+    combined.close()
+
+
+def _gfmxr():
+    _run(['gfmxr', '-c', str(_gfmxr_count()), '-s', 'README.md'])
+
+
+def _vet():
+    _run('go vet ./...'.split())
 
 
 def _run(command):

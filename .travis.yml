@@ -19,4 +19,6 @@ before_script:
 - go get github.com/meatballhat/gfmxr/...
 
 script:
-- ./runtests
+- ./runtests vet
+- ./runtests test
+- ./runtests gfmxr
