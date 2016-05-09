@@ -199,7 +199,7 @@ func TestContext_GlobalFlagsInSubcommands(t *testing.T) {
 	}
 
 	app.Commands = []Command{
-		Command{
+		{
 			Name: "foo",
 			Flags: []Flag{
 				BoolFlag{Name: "parent, p", Usage: "Parent flag"},
