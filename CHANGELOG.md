@@ -8,6 +8,7 @@
 - `context.GlobalBoolT` was added as an analogue to `context.GlobalBool`
 - Support for hiding commands by setting `Hidden: true` -- this will hide the
   commands in help output
+- `./runtests` test runner with coverage tracking by default
 
 ### Changed
 - `Float64Flag`, `IntFlag`, and `DurationFlag` default values are no longer
