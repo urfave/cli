@@ -132,12 +132,11 @@ func (c Command) Run(ctx *Context) (err error) {
 			err := c.OnUsageError(ctx, err, false)
 			HandleExitCoder(err)
 			return err
-		} else {
-			fmt.Fprintln(ctx.App.Writer, "Incorrect Usage.")
-			fmt.Fprintln(ctx.App.Writer)
-			ShowCommandHelp(ctx, c.Name)
-			return err
 		}
+		fmt.Fprintln(ctx.App.Writer, "Incorrect Usage.")
+		fmt.Fprintln(ctx.App.Writer)
+		ShowCommandHelp(ctx, c.Name)
+		return err
 	}
 
 	nerr := normalizeFlags(c.Flags, set)

@@ -182,9 +182,8 @@ func (f *IntSlice) Set(value string) error {
 	tmp, err := strconv.Atoi(value)
 	if err != nil {
 		return err
-	} else {
-		*f = append(*f, tmp)
 	}
+	*f = append(*f, tmp)
 	return nil
 }
 

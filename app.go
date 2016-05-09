@@ -189,11 +189,10 @@ func (a *App) Run(arguments []string) (err error) {
 			err := a.OnUsageError(context, err, false)
 			HandleExitCoder(err)
 			return err
-		} else {
-			fmt.Fprintf(a.Writer, "%s\n\n", "Incorrect Usage.")
-			ShowAppHelp(context)
-			return err
 		}
+		fmt.Fprintf(a.Writer, "%s\n\n", "Incorrect Usage.")
+		ShowAppHelp(context)
+		return err
 	}
 
 	if !a.HideHelp && checkHelp(context) {
@@ -310,11 +309,10 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 			err = a.OnUsageError(context, err, true)
 			HandleExitCoder(err)
 			return err
-		} else {
-			fmt.Fprintf(a.Writer, "%s\n\n", "Incorrect Usage.")
-			ShowSubcommandHelp(context)
-			return err
 		}
+		fmt.Fprintf(a.Writer, "%s\n\n", "Incorrect Usage.")
+		ShowSubcommandHelp(context)
+		return err
 	}
 
 	if len(a.Commands) > 0 {
