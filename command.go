@@ -48,6 +48,8 @@ type Command struct {
 	SkipFlagParsing bool
 	// Boolean to hide built-in help command
 	HideHelp bool
+	// Boolean to hide this command from help or completion
+	Hidden bool
 
 	// Full name of command for help, defaults to full command name, including parent commands.
 	HelpName        string

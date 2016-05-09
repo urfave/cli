@@ -168,3 +168,35 @@ func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 		t.Fatalf("expected exit value = 3, got %d instead", exitErr.exitCode)
 	}
 }
+
+func TestShowAppHelp_HiddenCommand(t *testing.T) {
+	app := &App{
+		Commands: []Command{
+			Command{
+				Name: "frobbly",
+				Action: func(ctx *Context) error {
+					return nil
+				},
+			},
+			Command{
+				Name:   "secretfrob",
+				Hidden: true,
+				Action: func(ctx *Context) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	output := &bytes.Buffer{}
+	app.Writer = output
+	app.Run([]string{"app", "--help"})
+
+	if strings.Contains(output.String(), "secretfrob") {
+		t.Errorf("expected output to exclude \"secretfrob\"; got: %q", output.String())
+	}
+
+	if !strings.Contains(output.String(), "frobbly") {
+		t.Errorf("expected output to include \"frobbly\"; got: %q", output.String())
+	}
+}
