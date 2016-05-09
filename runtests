@@ -42,7 +42,7 @@ def _test():
 
         _run('go test -v'.split() + [
             '-coverprofile={}'.format(coverprofile),
-            '{}/{}'.format(PACKAGE_NAME, subpackage)
+            ('{}/{}'.format(PACKAGE_NAME, subpackage)).rstrip('/')
         ])
 
     combined = _combine_coverprofiles(coverprofiles)
