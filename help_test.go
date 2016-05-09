@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 )
 
@@ -108,5 +109,37 @@ func Test_Version_Custom_Flags(t *testing.T) {
 	app.Run([]string{"test", "-v"})
 	if output.Len() > 0 {
 		t.Errorf("unexpected output: %s", output.String())
+	}
+}
+
+func TestShowAppHelp_HiddenCommand(t *testing.T) {
+	app := &App{
+		Commands: []Command{
+			Command{
+				Name: "frobbly",
+				Action: func(ctx *Context) error {
+					return nil
+				},
+			},
+			Command{
+				Name:   "secretfrob",
+				Hidden: true,
+				Action: func(ctx *Context) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	output := &bytes.Buffer{}
+	app.Writer = output
+	app.Run([]string{"app", "--help"})
+
+	if strings.Contains(output.String(), "secretfrob") {
+		t.Errorf("expected output to exclude \"secretfrob\"; got: %q", output.String())
+	}
+
+	if !strings.Contains(output.String(), "frobbly") {
+		t.Errorf("expected output to include \"frobbly\"; got: %q", output.String())
 	}
 }
