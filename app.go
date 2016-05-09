@@ -51,7 +51,7 @@ type App struct {
 	HideHelp bool
 	// Boolean to hide built-in version flag and the VERSION section of help
 	HideVersion bool
-	// Populate on app startup, only gettable throught method Categories()
+	// Populate on app startup, only gettable through method Categories()
 	categories CommandCategories
 	// An action to execute when the bash-completion flag is set
 	BashComplete BashCompleteFunc
