@@ -100,7 +100,8 @@ func compileTime() time.Time {
 	return info.ModTime()
 }
 
-// Creates a new cli Application with some reasonable defaults for Name, Usage, Version and Action.
+// NewApp creates a new cli Application with some reasonable defaults for Name,
+// Usage, Version and Action.
 func NewApp() *App {
 	return &App{
 		Name:         filepath.Base(os.Args[0]),
@@ -162,7 +163,8 @@ func (a *App) Setup() {
 	}
 }
 
-// Entry point to the cli app. Parses the arguments slice and routes to the proper flag/args combination
+// Run is the entry point to the cli app. Parses the arguments slice and routes
+// to the proper flag/args combination
 func (a *App) Run(arguments []string) (err error) {
 	a.Setup()
 
@@ -254,7 +256,8 @@ func (a *App) RunAndExitOnError() {
 	}
 }
 
-// Invokes the subcommand given the context, parses ctx.Args() to generate command-specific flags
+// RunAsSubcommand invokes the subcommand given the context, parses ctx.Args() to
+// generate command-specific flags
 func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	// append help to commands
 	if len(a.Commands) > 0 {
@@ -363,7 +366,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	return err
 }
 
-// Returns the named command on App. Returns nil if the command does not exist
+// Command returns the named command on App. Returns nil if the command does not exist
 func (a *App) Command(name string) *Command {
 	for _, c := range a.Commands {
 		if c.HasName(name) {

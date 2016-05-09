@@ -13,19 +13,19 @@ import (
 
 const defaultPlaceholder = "value"
 
-// This flag enables bash-completion for all commands and subcommands
+// BashCompletionFlag enables bash-completion for all commands and subcommands
 var BashCompletionFlag = BoolFlag{
 	Name:   "generate-bash-completion",
 	Hidden: true,
 }
 
-// This flag prints the version for the application
+// VersionFlag prints the version for the application
 var VersionFlag = BoolFlag{
 	Name:  "version, v",
 	Usage: "print the version",
 }
 
-// This flag prints the help for all commands and subcommands
+// HelpFlag prints the help for all commands and subcommands
 // Set to the zero value (BoolFlag{}) to disable flag -- keeps subcommand
 // unless HideHelp is set to true)
 var HelpFlag = BoolFlag{
@@ -33,6 +33,8 @@ var HelpFlag = BoolFlag{
 	Usage: "show help",
 }
 
+// FlagStringer converts a flag definition to a string. This is used by help
+// to display a flag.
 var FlagStringer FlagStringFunc = stringifyFlag
 
 // Flag is a common interface related to parsing flags in cli.
@@ -103,6 +105,7 @@ func (f GenericFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
+// GetName returns the name of a flag.
 func (f GenericFlag) GetName() string {
 	return f.Name
 }
@@ -126,7 +129,7 @@ func (f *StringSlice) Value() []string {
 	return *f
 }
 
-// StringSlice is a string flag that can be specified multiple times on the
+// StringSliceFlag is a string flag that can be specified multiple times on the
 // command-line
 type StringSliceFlag struct {
 	Name   string
@@ -166,11 +169,12 @@ func (f StringSliceFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
+// GetName returns the name of a flag.
 func (f StringSliceFlag) GetName() string {
 	return f.Name
 }
 
-// StringSlice is an opaque type for []int to satisfy flag.Value
+// IntSlice is an opaque type for []int to satisfy flag.Value
 type IntSlice []int
 
 // Set parses the value into an integer and appends it to the list of values
@@ -237,6 +241,7 @@ func (f IntSliceFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
+// GetName returns the name of the flag.
 func (f IntSliceFlag) GetName() string {
 	return f.Name
 }
@@ -280,6 +285,7 @@ func (f BoolFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
+// GetName returns the name of the flag.
 func (f BoolFlag) GetName() string {
 	return f.Name
 }
@@ -324,6 +330,7 @@ func (f BoolTFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
+// GetName returns the name of the flag.
 func (f BoolTFlag) GetName() string {
 	return f.Name
 }
@@ -364,6 +371,7 @@ func (f StringFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
+// GetName returns the name of the flag.
 func (f StringFlag) GetName() string {
 	return f.Name
 }
@@ -408,6 +416,7 @@ func (f IntFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
+// GetName returns the name of the flag.
 func (f IntFlag) GetName() string {
 	return f.Name
 }
@@ -452,6 +461,7 @@ func (f DurationFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
+// GetName returns the name of the flag.
 func (f DurationFlag) GetName() string {
 	return f.Name
 }
@@ -495,6 +505,7 @@ func (f Float64Flag) Apply(set *flag.FlagSet) {
 	})
 }
 
+// GetName returns the name of the flag.
 func (f Float64Flag) GetName() string {
 	return f.Name
 }
