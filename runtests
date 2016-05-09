@@ -5,7 +5,7 @@ import os
 import sys
 import tempfile
 
-from subprocess import check_call
+from subprocess import check_call, check_output
 
 
 PACKAGE_NAME = os.environ.get(
@@ -16,22 +16,25 @@ PACKAGE_NAME = os.environ.get(
 def main():
     _run('go vet ./...'.split())
 
-    coverprofiles = []
-    for subpackage in ['', 'altsrc']:
-        coverprofile = 'cli.coverprofile'
-        if subpackage != '':
-            coverprofile = '{}.coverprofile'.format(subpackage)
+    if check_output('go version'.split()).split()[2] >= 'go1.2':
+        coverprofiles = []
+        for subpackage in ['', 'altsrc']:
+            coverprofile = 'cli.coverprofile'
+            if subpackage != '':
+                coverprofile = '{}.coverprofile'.format(subpackage)
 
-        coverprofiles.append(coverprofile)
+            coverprofiles.append(coverprofile)
 
-        _run('go test -v'.split() + [
-            '-coverprofile={}'.format(coverprofile),
-            '{}/{}'.format(PACKAGE_NAME, subpackage)
-        ])
+            _run('go test -v'.split() + [
+                '-coverprofile={}'.format(coverprofile),
+                '{}/{}'.format(PACKAGE_NAME, subpackage)
+            ])
 
-    combined = _combine_coverprofiles(coverprofiles)
-    _run('go tool cover -func={}'.format(combined.name).split())
-    combined.close()
+        combined = _combine_coverprofiles(coverprofiles)
+        _run('go tool cover -func={}'.format(combined.name).split())
+        combined.close()
+    else:
+        _run('go test -v ./...'.split())
 
     _run(['gfmxr', '-c', str(_gfmxr_count()), '-s', 'README.md'])
     return 0
