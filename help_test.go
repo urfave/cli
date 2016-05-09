@@ -172,13 +172,13 @@ func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 func TestShowAppHelp_HiddenCommand(t *testing.T) {
 	app := &App{
 		Commands: []Command{
-			Command{
+			{
 				Name: "frobbly",
 				Action: func(ctx *Context) error {
 					return nil
 				},
 			},
-			Command{
+			{
 				Name:   "secretfrob",
 				Hidden: true,
 				Action: func(ctx *Context) error {

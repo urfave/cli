@@ -56,7 +56,7 @@ type Command struct {
 	commandNamePath []string
 }
 
-// Returns the full name of the command.
+// FullName returns the full name of the command.
 // For subcommands this ensures that parent commands are part of the command path
 func (c Command) FullName() string {
 	if c.commandNamePath == nil {
@@ -65,9 +65,10 @@ func (c Command) FullName() string {
 	return strings.Join(c.commandNamePath, " ")
 }
 
+// Commands is a slice of Command
 type Commands []Command
 
-// Invokes the command given the context, parses ctx.Args() to generate command-specific flags
+// Run invokes the command given the context, parses ctx.Args() to generate command-specific flags
 func (c Command) Run(ctx *Context) (err error) {
 	if len(c.Subcommands) > 0 {
 		return c.startApp(ctx)
@@ -131,12 +132,11 @@ func (c Command) Run(ctx *Context) (err error) {
 			err := c.OnUsageError(ctx, err, false)
 			HandleExitCoder(err)
 			return err
-		} else {
-			fmt.Fprintln(ctx.App.Writer, "Incorrect Usage.")
-			fmt.Fprintln(ctx.App.Writer)
-			ShowCommandHelp(ctx, c.Name)
-			return err
 		}
+		fmt.Fprintln(ctx.App.Writer, "Incorrect Usage.")
+		fmt.Fprintln(ctx.App.Writer)
+		ShowCommandHelp(ctx, c.Name)
+		return err
 	}
 
 	nerr := normalizeFlags(c.Flags, set)
@@ -191,6 +191,7 @@ func (c Command) Run(ctx *Context) (err error) {
 	return err
 }
 
+// Names returns the names including short names and aliases.
 func (c Command) Names() []string {
 	names := []string{c.Name}
 
@@ -201,7 +202,7 @@ func (c Command) Names() []string {
 	return append(names, c.Aliases...)
 }
 
-// Returns true if Command.Name or Command.ShortName matches given name
+// HasName returns true if Command.Name or Command.ShortName matches given name
 func (c Command) HasName(name string) bool {
 	for _, n := range c.Names() {
 		if n == name {

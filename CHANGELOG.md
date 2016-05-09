@@ -3,6 +3,8 @@
 **ATTN**: This project uses [semantic versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [1.17.0] - 2016-05-09
 ### Added
 - Pluggable flag-level help text rendering via `cli.DefaultFlagStringFunc`
 - `context.GlobalBoolT` was added as an analogue to `context.GlobalBool`
@@ -21,6 +23,8 @@
   (previously they printed "No help topic for...", but still exited 0. This
   makes it easier to script around apps built using `cli` since they can trust
   that a 0 exit code indicated a successful execution.
+- cleanups based on [Go Report Card
+  feedback](https://goreportcard.com/report/github.com/codegangsta/cli)
 
 ## [1.16.0] - 2016-05-02
 ### Added
@@ -280,7 +284,8 @@ signature of `func(*cli.Context) error`, as defined by `cli.ActionFunc`.
 ### Added
 - Initial implementation.
 
-[Unreleased]: https://github.com/codegangsta/cli/compare/v1.16.0...HEAD
+[Unreleased]: https://github.com/codegangsta/cli/compare/v1.17.0...HEAD
+[1.17.0]: https://github.com/codegangsta/cli/compare/v1.16.0...v1.17.0
 [1.16.0]: https://github.com/codegangsta/cli/compare/v1.15.0...v1.16.0
 [1.15.0]: https://github.com/codegangsta/cli/compare/v1.14.0...v1.15.0
 [1.14.0]: https://github.com/codegangsta/cli/compare/v1.13.0...v1.14.0
