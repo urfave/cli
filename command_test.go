@@ -49,7 +49,7 @@ func TestCommandFlagParsing(t *testing.T) {
 func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 	app := NewApp()
 	app.Commands = []Command{
-		Command{
+		{
 			Name: "bar",
 			Before: func(c *Context) error {
 				return fmt.Errorf("before error")
@@ -76,7 +76,7 @@ func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 func TestCommand_OnUsageError_WithWrongFlagValue(t *testing.T) {
 	app := NewApp()
 	app.Commands = []Command{
-		Command{
+		{
 			Name: "bar",
 			Flags: []Flag{
 				IntFlag{Name: "flag"},

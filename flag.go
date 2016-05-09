@@ -16,19 +16,19 @@ const defaultPlaceholder = "value"
 
 var slPfx = fmt.Sprintf("sl:::%d:::", time.Now().UTC().UnixNano())
 
-// This flag enables bash-completion for all commands and subcommands
+// BashCompletionFlag enables bash-completion for all commands and subcommands
 var BashCompletionFlag = BoolFlag{
 	Name:   "generate-bash-completion",
 	Hidden: true,
 }
 
-// This flag prints the version for the application
+// VersionFlag prints the version for the application
 var VersionFlag = BoolFlag{
 	Name:  "version, v",
 	Usage: "print the version",
 }
 
-// This flag prints the help for all commands and subcommands
+// HelpFlag prints the help for all commands and subcommands
 // Set to the zero value (BoolFlag{}) to disable flag -- keeps subcommand
 // unless HideHelp is set to true)
 var HelpFlag = BoolFlag{
@@ -36,6 +36,8 @@ var HelpFlag = BoolFlag{
 	Usage: "show help",
 }
 
+// FlagStringer converts a flag definition to a string. This is used by help
+// to display a flag.
 var FlagStringer FlagStringFunc = stringifyFlag
 
 // Serializeder is used to circumvent the limitations of flag.FlagSet.Set
@@ -111,6 +113,7 @@ func (f GenericFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
+// GetName returns the name of a flag.
 func (f GenericFlag) GetName() string {
 	return f.Name
 }
@@ -201,6 +204,7 @@ func (f StringSliceFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
+// GetName returns the name of a flag.
 func (f StringSliceFlag) GetName() string {
 	return f.Name
 }
@@ -243,9 +247,9 @@ func (i *IntSlice) Set(value string) error {
 	tmp, err := strconv.Atoi(value)
 	if err != nil {
 		return err
-	} else {
-		i.slice = append(i.slice, tmp)
 	}
+
+	i.slice = append(i.slice, tmp)
 	return nil
 }
 
@@ -309,6 +313,7 @@ func (f IntSliceFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
+// GetName returns the name of the flag.
 func (f IntSliceFlag) GetName() string {
 	return f.Name
 }
@@ -352,6 +357,7 @@ func (f BoolFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
+// GetName returns the name of the flag.
 func (f BoolFlag) GetName() string {
 	return f.Name
 }
@@ -396,6 +402,7 @@ func (f BoolTFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
+// GetName returns the name of the flag.
 func (f BoolTFlag) GetName() string {
 	return f.Name
 }
@@ -436,6 +443,7 @@ func (f StringFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
+// GetName returns the name of the flag.
 func (f StringFlag) GetName() string {
 	return f.Name
 }
@@ -480,6 +488,7 @@ func (f IntFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
+// GetName returns the name of the flag.
 func (f IntFlag) GetName() string {
 	return f.Name
 }
@@ -524,6 +533,7 @@ func (f DurationFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
+// GetName returns the name of the flag.
 func (f DurationFlag) GetName() string {
 	return f.Name
 }
@@ -567,6 +577,7 @@ func (f Float64Flag) Apply(set *flag.FlagSet) {
 	})
 }
 
+// GetName returns the name of the flag.
 func (f Float64Flag) GetName() string {
 	return f.Name
 }
