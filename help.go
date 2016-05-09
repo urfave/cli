@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"io"
+	"os"
 	"strings"
 	"text/tabwriter"
 	"text/template"
@@ -21,15 +22,15 @@ VERSION:
    {{.Version}}
    {{end}}{{end}}{{if len .Authors}}
 AUTHOR(S):
-   {{range .Authors}}{{ . }}{{end}}
-   {{end}}{{if .Commands}}
-COMMANDS:{{range .Categories}}{{if .Name}}
-  {{.Name}}{{ ":" }}{{end}}{{range .Commands}}
-    {{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}{{end}}
+   {{range .Authors}}{{.}}{{end}}
+   {{end}}{{if .VisibleCommands}}
+COMMANDS:{{range .VisibleCategories}}{{if .Name}}
+   {{.Name}}:{{end}}{{range .VisibleCommands}}
+     {{.Name}}{{with .ShortName}}, {{.}}{{end}}{{"\t"}}{{.Usage}}{{end}}
 {{end}}{{end}}{{if .VisibleFlags}}
 GLOBAL OPTIONS:
    {{range .VisibleFlags}}{{.}}
-   {{end}}{{end}}{{if .Copyright }}
+   {{end}}{{end}}{{if .Copyright}}
 COPYRIGHT:
    {{.Copyright}}
    {{end}}
@@ -52,7 +53,7 @@ DESCRIPTION:
 
 OPTIONS:
    {{range .VisibleFlags}}{{.}}
-   {{end}}{{ end }}
+   {{end}}{{end}}
 `
 
 // The text template for the subcommand help topic.
@@ -64,9 +65,9 @@ var SubcommandHelpTemplate = `NAME:
 USAGE:
    {{.HelpName}} command{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}
 
-COMMANDS:{{range .Categories}}{{if .Name}}
-  {{.Name}}{{ ":" }}{{end}}{{range .Commands}}
-    {{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}{{end}}
+COMMANDS:{{range .VisibleCategories}}{{if .Name}}
+   {{.Name}}:{{end}}{{range .VisibleCommands}}
+     {{.Name}}{{with .ShortName}}, {{.}}{{end}}{{"\t"}}{{.Usage}}{{end}}
 {{end}}{{if .VisibleFlags}}
 OPTIONS:
    {{range .VisibleFlags}}{{.}}
@@ -81,10 +82,10 @@ var helpCommand = Command{
 	Action: func(c *Context) error {
 		args := c.Args()
 		if args.Present() {
-			ShowCommandHelp(c, args.First())
-		} else {
-			ShowAppHelp(c)
+			return ShowCommandHelp(c, args.First())
 		}
+
+		ShowAppHelp(c)
 		return nil
 	},
 }
@@ -97,11 +98,10 @@ var helpSubcommand = Command{
 	Action: func(c *Context) error {
 		args := c.Args()
 		if args.Present() {
-			ShowCommandHelp(c, args.First())
-		} else {
-			ShowSubcommandHelp(c)
+			return ShowCommandHelp(c, args.First())
 		}
-		return nil
+
+		return ShowSubcommandHelp(c)
 	},
 }
 
@@ -120,6 +120,9 @@ func ShowAppHelp(c *Context) {
 // Prints the list of subcommands as the default app completion method
 func DefaultAppComplete(c *Context) {
 	for _, command := range c.App.Commands {
+		if command.Hidden {
+			continue
+		}
 		for _, name := range command.Names() {
 			fmt.Fprintln(c.App.Writer, name)
 		}
@@ -127,30 +130,31 @@ func DefaultAppComplete(c *Context) {
 }
 
 // Prints help for the given command
-func ShowCommandHelp(ctx *Context, command string) {
+func ShowCommandHelp(ctx *Context, command string) error {
 	// show the subcommand help for a command with subcommands
 	if command == "" {
 		HelpPrinter(ctx.App.Writer, SubcommandHelpTemplate, ctx.App)
-		return
+		return nil
 	}
 
 	for _, c := range ctx.App.Commands {
 		if c.HasName(command) {
 			HelpPrinter(ctx.App.Writer, CommandHelpTemplate, c)
-			return
+			return nil
 		}
 	}
 
-	if ctx.App.CommandNotFound != nil {
-		ctx.App.CommandNotFound(ctx, command)
-	} else {
-		fmt.Fprintf(ctx.App.Writer, "No help topic for '%v'\n", command)
+	if ctx.App.CommandNotFound == nil {
+		return NewExitError(fmt.Sprintf("No help topic for '%v'", command), 3)
 	}
+
+	ctx.App.CommandNotFound(ctx, command)
+	return nil
 }
 
 // Prints help for the given subcommand
-func ShowSubcommandHelp(c *Context) {
-	ShowCommandHelp(c, c.Command.Name)
+func ShowSubcommandHelp(c *Context) error {
+	return ShowCommandHelp(c, c.Command.Name)
 }
 
 // Prints the version number of the App
@@ -188,7 +192,10 @@ func printHelp(out io.Writer, templ string, data interface{}) {
 	err := t.Execute(w, data)
 	if err != nil {
 		// If the writer is closed, t.Execute will fail, and there's nothing
-		// we can do to recover. We could send this to os.Stderr if we need.
+		// we can do to recover.
+		if os.Getenv("CLI_TEMPLATE_ERROR_DEBUG") != "" {
+			fmt.Fprintf(ErrWriter, "CLI TEMPLATE ERROR: %#v\n", err)
+		}
 		return
 	}
 	w.Flush()

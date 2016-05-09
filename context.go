@@ -104,6 +104,14 @@ func (c *Context) GlobalBool(name string) bool {
 	return false
 }
 
+// Looks up the value of a global bool flag, returns true if no bool flag exists
+func (c *Context) GlobalBoolT(name string) bool {
+	if fs := lookupGlobalFlagSet(name, c); fs != nil {
+		return lookupBoolT(name, fs)
+	}
+	return false
+}
+
 // Looks up the value of a global string flag, returns "" if no string flag exists
 func (c *Context) GlobalString(name string) string {
 	if fs := lookupGlobalFlagSet(name, c); fs != nil {

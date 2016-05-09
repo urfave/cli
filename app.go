@@ -82,8 +82,12 @@ type App struct {
 	Email string
 	// Writer writer to write output to
 	Writer io.Writer
+	// ErrWriter writes error output
+	ErrWriter io.Writer
 	// Other custom info
 	Metadata map[string]interface{}
+
+	didSetup bool
 }
 
 // Tries to find out when this binary was compiled.
@@ -111,8 +115,16 @@ func NewApp() *App {
 	}
 }
 
-// Entry point to the cli app. Parses the arguments slice and routes to the proper flag/args combination
-func (a *App) Run(arguments []string) (err error) {
+// Setup runs initialization code to ensure all data structures are ready for
+// `Run` or inspection prior to `Run`.  It is internally called by `Run`, but
+// will return early if setup has already happened.
+func (a *App) Setup() {
+	if a.didSetup {
+		return
+	}
+
+	a.didSetup = true
+
 	if a.Author != "" || a.Email != "" {
 		a.Authors = append(a.Authors, Author{Name: a.Author, Email: a.Email})
 	}
@@ -148,6 +160,11 @@ func (a *App) Run(arguments []string) (err error) {
 	if !a.HideVersion {
 		a.appendFlag(VersionFlag)
 	}
+}
+
+// Entry point to the cli app. Parses the arguments slice and routes to the proper flag/args combination
+func (a *App) Run(arguments []string) (err error) {
+	a.Setup()
 
 	// parse flags
 	set := flagSet(a.Name, a.Flags)
@@ -228,11 +245,11 @@ func (a *App) Run(arguments []string) (err error) {
 
 // DEPRECATED: Another entry point to the cli app, takes care of passing arguments and error handling
 func (a *App) RunAndExitOnError() {
-	fmt.Fprintf(os.Stderr,
+	fmt.Fprintf(a.errWriter(),
 		"DEPRECATED cli.App.RunAndExitOnError.  %s  See %s\n",
 		contactSysadmin, runAndExitOnErrorDeprecationURL)
 	if err := a.Run(os.Args); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintln(a.errWriter(), err)
 		OsExiter(1)
 	}
 }
@@ -357,9 +374,39 @@ func (a *App) Command(name string) *Command {
 	return nil
 }
 
-// Returnes the array containing all the categories with the commands they contain
+// Categories returns a slice containing all the categories with the commands they contain
 func (a *App) Categories() CommandCategories {
 	return a.categories
+}
+
+// VisibleCategories returns a slice of categories and commands that are
+// Hidden=false
+func (a *App) VisibleCategories() []*CommandCategory {
+	ret := []*CommandCategory{}
+	for _, category := range a.categories {
+		if visible := func() *CommandCategory {
+			for _, command := range category.Commands {
+				if !command.Hidden {
+					return category
+				}
+			}
+			return nil
+		}(); visible != nil {
+			ret = append(ret, visible)
+		}
+	}
+	return ret
+}
+
+// VisibleCommands returns a slice of the Commands with Hidden=false
+func (a *App) VisibleCommands() []Command {
+	ret := []Command{}
+	for _, command := range a.Commands {
+		if !command.Hidden {
+			ret = append(ret, command)
+		}
+	}
+	return ret
 }
 
 // VisibleFlags returns a slice of the Flags with Hidden=false
@@ -375,6 +422,16 @@ func (a *App) hasFlag(flag Flag) bool {
 	}
 
 	return false
+}
+
+func (a *App) errWriter() io.Writer {
+
+	// When the app ErrWriter is nil use the package level one.
+	if a.ErrWriter == nil {
+		return ErrWriter
+	}
+
+	return a.ErrWriter
 }
 
 func (a *App) appendFlag(flag Flag) {
@@ -422,7 +479,7 @@ func HandleAction(action interface{}, context *Context) (err error) {
 	vals := reflect.ValueOf(action).Call([]reflect.Value{reflect.ValueOf(context)})
 
 	if len(vals) == 0 {
-		fmt.Fprintf(os.Stderr,
+		fmt.Fprintf(ErrWriter,
 			"DEPRECATED Action signature.  Must be `cli.ActionFunc`.  %s  See %s\n",
 			contactSysadmin, appActionDeprecationURL)
 		return nil

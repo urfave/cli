@@ -281,6 +281,48 @@ func TestApp_CommandWithNoFlagBeforeTerminator(t *testing.T) {
 	expect(t, args[2], "notAFlagAtAll")
 }
 
+func TestApp_VisibleCommands(t *testing.T) {
+	app := NewApp()
+	app.Commands = []Command{
+		Command{
+			Name:     "frob",
+			HelpName: "foo frob",
+			Action:   func(_ *Context) error { return nil },
+		},
+		Command{
+			Name:     "frib",
+			HelpName: "foo frib",
+			Hidden:   true,
+			Action:   func(_ *Context) error { return nil },
+		},
+	}
+
+	app.Setup()
+	expected := []Command{
+		app.Commands[0],
+		app.Commands[2], // help
+	}
+	actual := app.VisibleCommands()
+	expect(t, len(expected), len(actual))
+	for i, actualCommand := range actual {
+		expectedCommand := expected[i]
+
+		if expectedCommand.Action != nil {
+			// comparing func addresses is OK!
+			expect(t, fmt.Sprintf("%p", expectedCommand.Action), fmt.Sprintf("%p", actualCommand.Action))
+		}
+
+		// nil out funcs, as they cannot be compared
+		// (https://github.com/golang/go/issues/8554)
+		expectedCommand.Action = nil
+		actualCommand.Action = nil
+
+		if !reflect.DeepEqual(expectedCommand, actualCommand) {
+			t.Errorf("expected\n%#v\n!=\n%#v", expectedCommand, actualCommand)
+		}
+	}
+}
+
 func TestApp_Float64Flag(t *testing.T) {
 	var meters float64
 
@@ -1101,9 +1143,112 @@ func TestApp_Run_Categories(t *testing.T) {
 	output := buf.String()
 	t.Logf("output: %q\n", buf.Bytes())
 
-	if !strings.Contains(output, "1:\n    command1") {
-		t.Errorf("want buffer to include category %q, did not: \n%q", "1:\n    command1", output)
+	if !strings.Contains(output, "1:\n     command1") {
+		t.Errorf("want buffer to include category %q, did not: \n%q", "1:\n     command1", output)
 	}
+}
+
+func TestApp_VisibleCategories(t *testing.T) {
+	app := NewApp()
+	app.Name = "visible-categories"
+	app.Commands = []Command{
+		Command{
+			Name:     "command1",
+			Category: "1",
+			HelpName: "foo command1",
+			Hidden:   true,
+		},
+		Command{
+			Name:     "command2",
+			Category: "2",
+			HelpName: "foo command2",
+		},
+		Command{
+			Name:     "command3",
+			Category: "3",
+			HelpName: "foo command3",
+		},
+	}
+
+	expected := []*CommandCategory{
+		&CommandCategory{
+			Name: "2",
+			Commands: []Command{
+				app.Commands[1],
+			},
+		},
+		&CommandCategory{
+			Name: "3",
+			Commands: []Command{
+				app.Commands[2],
+			},
+		},
+	}
+
+	app.Setup()
+	expect(t, expected, app.VisibleCategories())
+
+	app = NewApp()
+	app.Name = "visible-categories"
+	app.Commands = []Command{
+		Command{
+			Name:     "command1",
+			Category: "1",
+			HelpName: "foo command1",
+			Hidden:   true,
+		},
+		Command{
+			Name:     "command2",
+			Category: "2",
+			HelpName: "foo command2",
+			Hidden:   true,
+		},
+		Command{
+			Name:     "command3",
+			Category: "3",
+			HelpName: "foo command3",
+		},
+	}
+
+	expected = []*CommandCategory{
+		&CommandCategory{
+			Name: "3",
+			Commands: []Command{
+				app.Commands[2],
+			},
+		},
+	}
+
+	app.Setup()
+	expect(t, expected, app.VisibleCategories())
+
+	app = NewApp()
+	app.Name = "visible-categories"
+	app.Commands = []Command{
+		Command{
+			Name:     "command1",
+			Category: "1",
+			HelpName: "foo command1",
+			Hidden:   true,
+		},
+		Command{
+			Name:     "command2",
+			Category: "2",
+			HelpName: "foo command2",
+			Hidden:   true,
+		},
+		Command{
+			Name:     "command3",
+			Category: "3",
+			HelpName: "foo command3",
+			Hidden:   true,
+		},
+	}
+
+	expected = []*CommandCategory{}
+
+	app.Setup()
+	expect(t, expected, app.VisibleCategories())
 }
 
 func TestApp_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
