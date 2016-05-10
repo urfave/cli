@@ -235,7 +235,7 @@ func TestShowSubcommandHelp_CommandAliases(t *testing.T) {
 	app.Run([]string{"foo", "help"})
 
 	if !strings.Contains(output.String(), "frobbly, fr, frob, bork") {
-		t.Errorf("expected output to include command name; got: %q", output.String())
+		t.Errorf("expected output to include all command aliases; got: %q", output.String())
 	}
 }
 
