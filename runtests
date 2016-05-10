@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
+import argparse
 import os
 import sys
 import tempfile
@@ -14,16 +15,19 @@ PACKAGE_NAME = os.environ.get(
 
 
 def main(sysargs=sys.argv[:]):
-    target = 'test'
-    if len(sysargs) > 1:
-        target = sysargs[1]
-
-    {
+    targets = {
         'vet': _vet,
         'test': _test,
         'gfmxr': _gfmxr
-    }[target]()
+    }
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        'target', nargs='?', choices=tuple(targets.keys()), default='test'
+    )
+    args = parser.parse_args(sysargs[1:])
+
+    targets[args.target]()
     return 0
 
 
