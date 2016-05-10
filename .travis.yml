@@ -1,4 +1,5 @@
 language: go
+
 sudo: false
 
 go:
@@ -8,16 +9,16 @@ go:
 - 1.4
 - 1.5.4
 - 1.6.2
-- tip
+- master
 
 matrix:
   allow_failures:
-    - go: tip
+  - go: master
 
 before_script:
 - go get github.com/meatballhat/gfmxr/...
 
 script:
-- go vet ./...
-- go test -v ./...
-- gfmxr -c $(grep -c 'package main' README.md) -s README.md
+- ./runtests vet
+- ./runtests test
+- ./runtests gfmxr
