@@ -1,8 +1,10 @@
-[![Coverage](http://gocover.io/_badge/github.com/codegangsta/cli?0)](http://gocover.io/github.com/codegangsta/cli)
 [![Build Status](https://travis-ci.org/codegangsta/cli.svg?branch=master)](https://travis-ci.org/codegangsta/cli)
 [![GoDoc](https://godoc.org/github.com/codegangsta/cli?status.svg)](https://godoc.org/github.com/codegangsta/cli)
 [![codebeat](https://codebeat.co/badges/0a8f30aa-f975-404b-b878-5fab3ae1cc5f)](https://codebeat.co/projects/github-com-codegangsta-cli)
 [![Go Report Card](https://goreportcard.com/badge/codegangsta/cli)](https://goreportcard.com/report/codegangsta/cli)
+[![top level coverage](http://gocover.io/_badge/github.com/codegangsta/cli?0 "top level coverage")](http://gocover.io/github.com/codegangsta/cli) /
+[![altsrc coverage](http://gocover.io/_badge/github.com/codegangsta/cli/altsrc?0 "altsrc coverage")](http://gocover.io/github.com/codegangsta/cli/altsrc)
+
 
 # cli
 
