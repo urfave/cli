@@ -45,6 +45,7 @@ type Flag interface {
 	// Apply Flag settings to the given flag set
 	Apply(*flag.FlagSet)
 	GetName() string
+	GetUsage() string
 }
 
 func flagSet(name string, flags []Flag) *flag.FlagSet {
@@ -109,6 +110,9 @@ func (f GenericFlag) Apply(set *flag.FlagSet) {
 func (f GenericFlag) GetName() string {
 	return f.Name
 }
+func (f GenericFlag) GetUsage() string {
+	return f.Usage
+}
 
 // StringSlice is an opaque type for []string to satisfy flag.Value
 type StringSlice []string
@@ -172,6 +176,9 @@ func (f StringSliceFlag) Apply(set *flag.FlagSet) {
 // GetName returns the name of a flag.
 func (f StringSliceFlag) GetName() string {
 	return f.Name
+}
+func (f StringSliceFlag) GetUsage() string {
+	return f.Usage
 }
 
 // IntSlice is an opaque type for []int to satisfy flag.Value
@@ -244,6 +251,9 @@ func (f IntSliceFlag) Apply(set *flag.FlagSet) {
 func (f IntSliceFlag) GetName() string {
 	return f.Name
 }
+func (f IntSliceFlag) GetUsage() string {
+	return f.Usage
+}
 
 // BoolFlag is a switch that defaults to false
 type BoolFlag struct {
@@ -287,6 +297,9 @@ func (f BoolFlag) Apply(set *flag.FlagSet) {
 // GetName returns the name of the flag.
 func (f BoolFlag) GetName() string {
 	return f.Name
+}
+func (f BoolFlag) GetUsage() string {
+	return f.Usage
 }
 
 // BoolTFlag this represents a boolean flag that is true by default, but can
@@ -333,6 +346,9 @@ func (f BoolTFlag) Apply(set *flag.FlagSet) {
 func (f BoolTFlag) GetName() string {
 	return f.Name
 }
+func (f BoolTFlag) GetUsage() string {
+	return f.Usage
+}
 
 // StringFlag represents a flag that takes as string value
 type StringFlag struct {
@@ -373,6 +389,9 @@ func (f StringFlag) Apply(set *flag.FlagSet) {
 // GetName returns the name of the flag.
 func (f StringFlag) GetName() string {
 	return f.Name
+}
+func (f StringFlag) GetUsage() string {
+	return f.Usage
 }
 
 // IntFlag is a flag that takes an integer
@@ -419,6 +438,9 @@ func (f IntFlag) Apply(set *flag.FlagSet) {
 func (f IntFlag) GetName() string {
 	return f.Name
 }
+func (f IntFlag) GetUsage() string {
+	return f.Usage
+}
 
 // DurationFlag is a flag that takes a duration specified in Go's duration
 // format: https://golang.org/pkg/time/#ParseDuration
@@ -464,6 +486,9 @@ func (f DurationFlag) Apply(set *flag.FlagSet) {
 func (f DurationFlag) GetName() string {
 	return f.Name
 }
+func (f DurationFlag) GetUsage() string {
+	return f.Usage
+}
 
 // Float64Flag is a flag that takes an float value
 // Errors if the value provided cannot be parsed
@@ -507,6 +532,9 @@ func (f Float64Flag) Apply(set *flag.FlagSet) {
 // GetName returns the name of the flag.
 func (f Float64Flag) GetName() string {
 	return f.Name
+}
+func (f Float64Flag) GetUsage() string {
+	return f.Usage
 }
 
 func visibleFlags(fl []Flag) []Flag {

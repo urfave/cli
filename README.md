@@ -571,6 +571,55 @@ VERSION:
   cli.NewApp().Run(os.Args)
 }
 ```
+### Hidden flags
+
+Sometimes its useful to have some flags that aren't displayed in the help
+output.
+
+```go
+package main
+
+import (
+        "fmt"
+        "os"
+
+        "github.com/codegangsta/cli"
+)
+
+func main() {
+        cli.CommandHelpTemplate = `Example help
+   {{.Name}} - {{.Usage}}
+USAGE:
+    {{.Name}}{{if .Flags}} [command options]{{end}}
+DESCRIPTION:
+   {{.Description}}{{if .Flags}}
+OPTIONS:
+   {{range .Flags}}{{if ne .GetUsage ""}}{{.}}
+   {{end}}{{end}}{{ end }}
+`
+        app := cli.NewApp()
+        app.Commands = []cli.Command{
+                {
+                        Name:        "hello",
+                        Usage:       "Do hello",
+                        Description: "Why hello there",
+                        Action:      func(c *cli.Context) { fmt.Println("Hello") },
+                        Flags: []cli.Flag{
+                                cli.BoolFlag{
+                                        Name:  "visible",
+                                        Usage: "A visible flag",
+                                },
+                                cli.BoolFlag{
+                                        Name: "hidden",
+                                        // By omitting Usage, we can filter them out
+                                },
+                        },
+                },
+        }
+
+        app.Run(os.Args)
+}
+```
 
 ## Contribution Guidelines
 
