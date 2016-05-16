@@ -51,6 +51,24 @@ import (
 ...
 ```
 
+### Pinning to the `v1` branch
+
+Similarly to the section above describing use of the `v2` branch, if one wants
+to avoid any unexpected compatibility pains once `v2` becomes `master`, then
+pinning to the `v1` branch is an acceptable option, e.g.:
+
+```
+$ go get gopkg.in/codegangsta/cli.v1
+```
+
+``` go
+...
+import (
+  "gopkg.in/codegangsta/cli.v1" // imports as package "cli"
+)
+...
+```
+
 ## Getting Started
 
 One of the philosophies behind cli is that an API should be playful and full of discovery. So a cli app can be as little as one line of code in `main()`.
