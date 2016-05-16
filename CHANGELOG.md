@@ -19,6 +19,11 @@
   for this reordering.
 
 ## [Unreleased] - (1.x series)
+### Added
+- `./runtests` test runner with coverage tracking by default
+
+### Fixed
+- Printing of command aliases in help text
 
 ## [1.17.0] - 2016-05-09
 ### Added
