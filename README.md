@@ -30,6 +30,27 @@ Make sure your `PATH` includes to the `$GOPATH/bin` directory so your commands c
 export PATH=$PATH:$GOPATH/bin
 ```
 
+### Using the `v2` branch
+
+There is currently a long-lived branch named `v2` that is intended to land as
+the new `master` branch once development there has settled down.  The current
+`master` branch (what will become `v1`) is being manually merged into `v2` on an
+irregular human schedule, but generally if one wants to "upgrade" to `v2` *now*
+and accept the volatility (read: "awesomeness") that comes along with that,
+please use whatever version pinning of your preference, such as via `gopkg.in`:
+
+```
+$ go get gopkg.in/codegangsta/cli.v2
+```
+
+``` go
+...
+import (
+  "gopkg.in/codegangsta/cli.v2" // imports as package "cli"
+)
+...
+```
+
 ## Getting Started
 
 One of the philosophies behind cli is that an API should be playful and full of discovery. So a cli app can be as little as one line of code in `main()`.
