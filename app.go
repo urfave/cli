@@ -6,24 +6,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"reflect"
 	"sort"
 	"time"
-)
-
-var (
-	changeLogURL                    = "https://github.com/codegangsta/cli/blob/master/CHANGELOG.md"
-	appActionDeprecationURL         = fmt.Sprintf("%s#deprecated-cli-app-action-signature", changeLogURL)
-	runAndExitOnErrorDeprecationURL = fmt.Sprintf("%s#deprecated-cli-app-runandexitonerror", changeLogURL)
-
-	contactSysadmin = "This is an error in the application.  Please contact the distributor of this application if this is not you."
-
-	errNonFuncAction = NewExitError("ERROR invalid Action type.  "+
-		fmt.Sprintf("Must be a func of type `cli.ActionFunc`.  %s", contactSysadmin)+
-		fmt.Sprintf("See %s", appActionDeprecationURL), 2)
-	errInvalidActionSignature = NewExitError("ERROR invalid Action signature.  "+
-		fmt.Sprintf("Must be `cli.ActionFunc`.  %s", contactSysadmin)+
-		fmt.Sprintf("See %s", appActionDeprecationURL), 2)
 )
 
 // App is the main structure of a cli application. It is recommended that
@@ -62,10 +46,7 @@ type App struct {
 	// It is run even if Action() panics
 	After AfterFunc
 	// The action to execute when no subcommands are specified
-	Action interface{}
-	// TODO: replace `Action: interface{}` with `Action: ActionFunc` once some kind
-	// of deprecation period has passed, maybe?
-
+	Action ActionFunc
 	// Execute this function if the proper command cannot be found
 	CommandNotFound CommandNotFoundFunc
 	// Execute this function if an usage error occurs
@@ -76,10 +57,6 @@ type App struct {
 	Authors []Author
 	// Copyright of the binary if any
 	Copyright string
-	// Name of Author (Note: Use App.Authors, this is deprecated)
-	Author string
-	// Email of Author (Note: Use App.Authors, this is deprecated)
-	Email string
 	// Writer writer to write output to
 	Writer io.Writer
 	// ErrWriter writes error output
@@ -125,10 +102,6 @@ func (a *App) Setup() {
 	}
 
 	a.didSetup = true
-
-	if a.Author != "" || a.Email != "" {
-		a.Authors = append(a.Authors, Author{Name: a.Author, Email: a.Email})
-	}
 
 	newCmds := []Command{}
 	for _, c := range a.Commands {
@@ -238,21 +211,10 @@ func (a *App) Run(arguments []string) (err error) {
 	}
 
 	// Run default Action
-	err = HandleAction(a.Action, context)
+	err = a.Action(context)
 
 	HandleExitCoder(err)
 	return err
-}
-
-// DEPRECATED: Another entry point to the cli app, takes care of passing arguments and error handling
-func (a *App) RunAndExitOnError() {
-	fmt.Fprintf(a.errWriter(),
-		"DEPRECATED cli.App.RunAndExitOnError.  %s  See %s\n",
-		contactSysadmin, runAndExitOnErrorDeprecationURL)
-	if err := a.Run(os.Args); err != nil {
-		fmt.Fprintln(a.errWriter(), err)
-		OsExiter(1)
-	}
 }
 
 // RunAsSubcommand invokes the subcommand given the context, parses ctx.Args() to
@@ -358,7 +320,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	}
 
 	// Run default Action
-	err = HandleAction(a.Action, context)
+	err = a.Action(context)
 
 	HandleExitCoder(err)
 	return err
@@ -455,44 +417,4 @@ func (a Author) String() string {
 	}
 
 	return fmt.Sprintf("%v %v", a.Name, e)
-}
-
-// HandleAction uses ✧✧✧reflection✧✧✧ to figure out if the given Action is an
-// ActionFunc, a func with the legacy signature for Action, or some other
-// invalid thing.  If it's an ActionFunc or a func with the legacy signature for
-// Action, the func is run!
-func HandleAction(action interface{}, context *Context) (err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			switch r.(type) {
-			case error:
-				err = r.(error)
-			default:
-				err = NewExitError(fmt.Sprintf("ERROR unknown Action error: %v. See %s", r, appActionDeprecationURL), 2)
-			}
-		}
-	}()
-
-	if reflect.TypeOf(action).Kind() != reflect.Func {
-		return errNonFuncAction
-	}
-
-	vals := reflect.ValueOf(action).Call([]reflect.Value{reflect.ValueOf(context)})
-
-	if len(vals) == 0 {
-		fmt.Fprintf(ErrWriter,
-			"DEPRECATED Action signature.  Must be `cli.ActionFunc`.  %s  See %s\n",
-			contactSysadmin, appActionDeprecationURL)
-		return nil
-	}
-
-	if len(vals) > 1 {
-		return errInvalidActionSignature
-	}
-
-	if retErr, ok := vals[0].Interface().(error); vals[0].IsValid() && ok {
-		return retErr
-	}
-
-	return err
 }
