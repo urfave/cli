@@ -137,11 +137,9 @@ func (c *Context) LocalFlagNames() []string {
 // its parent contexts.
 func (c *Context) FlagNames() []string {
 	names := []string{}
-
 	for _, ctx := range c.Lineage() {
 		ctx.flagSet.Visit(makeFlagNameVisitor(&names))
 	}
-
 	return names
 }
 
@@ -362,8 +360,17 @@ func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
 
 func makeFlagNameVisitor(names *[]string) func(*flag.Flag) {
 	return func(f *flag.Flag) {
-		name := strings.Split(f.Name, ",")[0]
-		if name != "help" && name != "version" {
+		nameParts := strings.Split(f.Name, ",")
+		name := strings.TrimSpace(nameParts[0])
+
+		for _, part := range nameParts {
+			part = strings.TrimSpace(part)
+			if len(part) > len(name) {
+				name = part
+			}
+		}
+
+		if name != "" {
 			(*names) = append(*names, name)
 		}
 	}
