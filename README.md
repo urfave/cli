@@ -34,7 +34,7 @@ export PATH=$PATH:$GOPATH/bin
 
 There is currently a long-lived branch named `v2` that is intended to land as
 the new `master` branch once development there has settled down.  The current
-`master` branch (current mirrored as `v1`) is being manually merged into `v2` on
+`master` branch (mirrored as `v1`) is being manually merged into `v2` on
 an irregular human-based schedule, but generally if one wants to "upgrade" to
 `v2` *now* and accept the volatility (read: "awesomeness") that comes along with
 that, please use whatever version pinning of your preference, such as via
