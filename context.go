@@ -13,12 +13,11 @@ import (
 // can be used to retrieve context-specific Args and
 // parsed command-line options.
 type Context struct {
-	App            *App
-	Command        Command
-	flagSet        *flag.FlagSet
-	setFlags       map[string]bool
-	globalSetFlags map[string]bool
-	parentContext  *Context
+	App     *App
+	Command Command
+
+	flagSet       *flag.FlagSet
+	parentContext *Context
 }
 
 // NewContext creates a new context. For use in when invoking an App or Command action.
@@ -117,7 +116,7 @@ func (c *Context) Set(name, value string) error {
 func (c *Context) IsSet(name string) bool {
 	if fs := lookupFlagSet(name, c); fs != nil {
 		isSet := false
-		c.flagSet.Visit(func(f *flag.Flag) {
+		fs.Visit(func(f *flag.Flag) {
 			if f.Name == name {
 				isSet = true
 			}
@@ -146,25 +145,13 @@ func (c *Context) FlagNames() []string {
 	return names
 }
 
-// Parent returns the parent context, if any
-func (c *Context) Parent() *Context {
-	return c.parentContext
-}
-
 // Lineage returns *this* context and all of its ancestor contexts in order from
 // child to parent
 func (c *Context) Lineage() []*Context {
 	lineage := []*Context{}
-	cur := c
 
-	for {
+	for cur := c; cur != nil; cur = cur.parentContext {
 		lineage = append(lineage, cur)
-
-		if cur.parentContext == nil {
-			break
-		}
-
-		cur = cur.parentContext
 	}
 
 	return lineage
@@ -218,19 +205,6 @@ func (a Args) Swap(from, to int) error {
 	}
 	a[from], a[to] = a[to], a[from]
 	return nil
-}
-
-func globalContext(ctx *Context) *Context {
-	if ctx == nil {
-		return nil
-	}
-
-	for {
-		if ctx.parentContext == nil {
-			return ctx
-		}
-		ctx = ctx.parentContext
-	}
 }
 
 func lookupFlagSet(name string, ctx *Context) *flag.FlagSet {
