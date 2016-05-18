@@ -7,6 +7,7 @@
 - `NewStringSlice` and `NewIntSlice` for creating their related types
 - `Context.Lineage` to get all contexts from current up to global
 - `Context.LocalFlagNames` to get the flag names from *only* the current context
+- `BoolFlag.Value` to handle both default-false and default-true
 
 ### Changed
 - `Context.FlagNames` now returns all flags in the context lineage
@@ -28,9 +29,7 @@
 - All `Context.Global*` methods, as the non-global versions now traverse up
   the context lineage automatically.
 - `Context.Parent` method, as this is now available via `Context.Lineage`
-
-### Fixed
-- `Context.BoolT` now returns `true` when not found
+- `BoolTFlag` and related code, as this is now available via `BoolFlag.Value`
 
 ## [Unreleased] - (1.x series)
 ### Added

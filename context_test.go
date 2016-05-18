@@ -58,13 +58,6 @@ func TestContext_Bool(t *testing.T) {
 	expect(t, c.Bool("myflag"), false)
 }
 
-func TestContext_BoolT(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Bool("myflag", true, "doc")
-	c := NewContext(nil, set, nil)
-	expect(t, c.BoolT("myflag"), true)
-}
-
 func TestContext_Args(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("myflag", false, "doc")
