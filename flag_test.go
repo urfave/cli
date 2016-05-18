@@ -391,7 +391,7 @@ func TestParseMultiStringSliceWithDefaults(t *testing.T) {
 		Flags: []Flag{
 			StringSliceFlag{Name: "serve, s", Value: NewStringSlice("9", "2")},
 		},
-		Action: func(ctx *Context) {
+		Action: func(ctx *Context) error {
 			expected := []string{"10", "20"}
 			if !reflect.DeepEqual(ctx.StringSlice("serve"), expected) {
 				t.Errorf("main name not set: %v != %v", expected, ctx.StringSlice("serve"))
@@ -399,6 +399,7 @@ func TestParseMultiStringSliceWithDefaults(t *testing.T) {
 			if !reflect.DeepEqual(ctx.StringSlice("s"), expected) {
 				t.Errorf("short name not set: %v != %v", expected, ctx.StringSlice("s"))
 			}
+			return nil
 		},
 	}).Run([]string{"run", "-s", "10", "-s", "20"})
 }
@@ -408,13 +409,14 @@ func TestParseMultiStringSliceWithDefaultsUnset(t *testing.T) {
 		Flags: []Flag{
 			StringSliceFlag{Name: "serve, s", Value: NewStringSlice("9", "2")},
 		},
-		Action: func(ctx *Context) {
+		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.StringSlice("serve"), []string{"9", "2"}) {
 				t.Errorf("main name not set: %v", ctx.StringSlice("serve"))
 			}
 			if !reflect.DeepEqual(ctx.StringSlice("s"), []string{"9", "2"}) {
 				t.Errorf("short name not set: %v", ctx.StringSlice("s"))
 			}
+			return nil
 		},
 	}).Run([]string{"run"})
 }
@@ -427,13 +429,14 @@ func TestParseMultiStringSliceFromEnv(t *testing.T) {
 		Flags: []Flag{
 			StringSliceFlag{Name: "intervals, i", Value: NewStringSlice(), EnvVar: "APP_INTERVALS"},
 		},
-		Action: func(ctx *Context) {
+		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.StringSlice("intervals"), []string{"20", "30", "40"}) {
 				t.Errorf("main name not set from env")
 			}
 			if !reflect.DeepEqual(ctx.StringSlice("i"), []string{"20", "30", "40"}) {
 				t.Errorf("short name not set from env")
 			}
+			return nil
 		},
 	}).Run([]string{"run"})
 }
@@ -466,13 +469,14 @@ func TestParseMultiStringSliceFromEnvCascade(t *testing.T) {
 		Flags: []Flag{
 			StringSliceFlag{Name: "intervals, i", Value: NewStringSlice(), EnvVar: "COMPAT_INTERVALS,APP_INTERVALS"},
 		},
-		Action: func(ctx *Context) {
+		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.StringSlice("intervals"), []string{"20", "30", "40"}) {
 				t.Errorf("main name not set from env")
 			}
 			if !reflect.DeepEqual(ctx.StringSlice("i"), []string{"20", "30", "40"}) {
 				t.Errorf("short name not set from env")
 			}
+			return nil
 		},
 	}).Run([]string{"run"})
 }
@@ -596,13 +600,14 @@ func TestParseMultiIntSliceWithDefaults(t *testing.T) {
 		Flags: []Flag{
 			IntSliceFlag{Name: "serve, s", Value: NewIntSlice(9, 2)},
 		},
-		Action: func(ctx *Context) {
+		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.IntSlice("serve"), []int{10, 20}) {
 				t.Errorf("main name not set")
 			}
 			if !reflect.DeepEqual(ctx.IntSlice("s"), []int{10, 20}) {
 				t.Errorf("short name not set")
 			}
+			return nil
 		},
 	}).Run([]string{"run", "-s", "10", "-s", "20"})
 }
@@ -612,13 +617,14 @@ func TestParseMultiIntSliceWithDefaultsUnset(t *testing.T) {
 		Flags: []Flag{
 			IntSliceFlag{Name: "serve, s", Value: NewIntSlice(9, 2)},
 		},
-		Action: func(ctx *Context) {
+		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.IntSlice("serve"), []int{9, 2}) {
 				t.Errorf("main name not set")
 			}
 			if !reflect.DeepEqual(ctx.IntSlice("s"), []int{9, 2}) {
 				t.Errorf("short name not set")
 			}
+			return nil
 		},
 	}).Run([]string{"run"})
 }
@@ -631,13 +637,14 @@ func TestParseMultiIntSliceFromEnv(t *testing.T) {
 		Flags: []Flag{
 			IntSliceFlag{Name: "intervals, i", Value: NewIntSlice(), EnvVar: "APP_INTERVALS"},
 		},
-		Action: func(ctx *Context) {
+		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.IntSlice("intervals"), []int{20, 30, 40}) {
 				t.Errorf("main name not set from env")
 			}
 			if !reflect.DeepEqual(ctx.IntSlice("i"), []int{20, 30, 40}) {
 				t.Errorf("short name not set from env")
 			}
+			return nil
 		},
 	}).Run([]string{"run"})
 }
