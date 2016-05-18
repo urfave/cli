@@ -843,6 +843,93 @@ func TestParseMultiBoolFromEnvCascade(t *testing.T) {
 	a.Run([]string{"run"})
 }
 
+func TestParseMultiBoolTrue(t *testing.T) {
+	a := App{
+		Flags: []Flag{
+			BoolFlag{Name: "implode, i", Value: true},
+		},
+		Action: func(ctx *Context) error {
+			if ctx.Bool("implode") {
+				t.Errorf("main name not set")
+			}
+			if ctx.Bool("i") {
+				t.Errorf("short name not set")
+			}
+			return nil
+		},
+	}
+	a.Run([]string{"run", "--implode=false"})
+}
+
+func TestParseDestinationBoolTrue(t *testing.T) {
+	dest := true
+
+	a := App{
+		Flags: []Flag{
+			BoolFlag{
+				Name:        "dest",
+				Value:       true,
+				Destination: &dest,
+			},
+		},
+		Action: func(ctx *Context) error {
+			if dest {
+				t.Errorf("expected destination Bool false")
+			}
+			return nil
+		},
+	}
+	a.Run([]string{"run", "--dest=false"})
+}
+
+func TestParseMultiBoolTrueFromEnv(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("APP_DEBUG", "0")
+	a := App{
+		Flags: []Flag{
+			BoolFlag{
+				Name:   "debug, d",
+				Value:  true,
+				EnvVar: "APP_DEBUG",
+			},
+		},
+		Action: func(ctx *Context) error {
+			if ctx.Bool("debug") {
+				t.Errorf("main name not set from env")
+			}
+			if ctx.Bool("d") {
+				t.Errorf("short name not set from env")
+			}
+			return nil
+		},
+	}
+	a.Run([]string{"run"})
+}
+
+func TestParseMultiBoolTrueFromEnvCascade(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("APP_DEBUG", "0")
+	a := App{
+		Flags: []Flag{
+			BoolFlag{
+				Name:   "debug, d",
+				Value:  true,
+				EnvVar: "COMPAT_DEBUG,APP_DEBUG",
+			},
+		},
+		Action: func(ctx *Context) error {
+			if ctx.Bool("debug") {
+				t.Errorf("main name not set from env")
+			}
+			if ctx.Bool("d") {
+				t.Errorf("short name not set from env")
+			}
+			return nil
+		},
+	}
+	a.Run([]string{"run"})
+}
+
 type Parser [2]string
 
 func (p *Parser) Set(value string) error {
