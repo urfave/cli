@@ -121,7 +121,7 @@ func Test_helpCommand_Action_ErrorIfNoTopic(t *testing.T) {
 
 	c := NewContext(app, set, nil)
 
-	err := helpCommand.Action.(func(*Context) error)(c)
+	err := helpCommand.Action(c)
 
 	if err == nil {
 		t.Fatalf("expected error from helpCommand.Action(), but got nil")
@@ -149,7 +149,7 @@ func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 
 	c := NewContext(app, set, nil)
 
-	err := helpSubcommand.Action.(func(*Context) error)(c)
+	err := helpSubcommand.Action(c)
 
 	if err == nil {
 		t.Fatalf("expected error from helpCommand.Action(), but got nil")

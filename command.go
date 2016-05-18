@@ -11,8 +11,6 @@ import (
 type Command struct {
 	// The name of the command
 	Name string
-	// short name of the command. Typically one character (deprecated, use `Aliases`)
-	ShortName string
 	// A list of aliases for the command
 	Aliases []string
 	// A short description of the usage of this command
@@ -34,10 +32,7 @@ type Command struct {
 	// It is run even if Action() panics
 	After AfterFunc
 	// The function to call when this command is invoked
-	Action interface{}
-	// TODO: replace `Action: interface{}` with `Action: ActionFunc` once some kind
-	// of deprecation period has passed, maybe?
-
+	Action ActionFunc
 	// Execute this function if a usage error occurs.
 	OnUsageError OnUsageErrorFunc
 	// List of child commands
@@ -151,7 +146,7 @@ func (c Command) Run(ctx *Context) (err error) {
 	}
 
 	context.Command = c
-	err = HandleAction(c.Action, context)
+	err = c.Action(context)
 
 	if err != nil {
 		HandleExitCoder(err)
@@ -162,15 +157,10 @@ func (c Command) Run(ctx *Context) (err error) {
 // Names returns the names including short names and aliases.
 func (c Command) Names() []string {
 	names := []string{c.Name}
-
-	if c.ShortName != "" {
-		names = append(names, c.ShortName)
-	}
-
 	return append(names, c.Aliases...)
 }
 
-// HasName returns true if Command.Name or Command.ShortName matches given name
+// HasName returns true if Command.Name matches given name
 func (c Command) HasName(name string) bool {
 	for _, n := range c.Names() {
 		if n == name {
@@ -208,8 +198,6 @@ func (c Command) startApp(ctx *Context) error {
 	app.Version = ctx.App.Version
 	app.HideVersion = ctx.App.HideVersion
 	app.Compiled = ctx.App.Compiled
-	app.Author = ctx.App.Author
-	app.Email = ctx.App.Email
 	app.Writer = ctx.App.Writer
 
 	app.categories = CommandCategories{}

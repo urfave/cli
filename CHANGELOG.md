@@ -23,6 +23,8 @@
   arguments](https://github.com/codegangsta/cli/issues/355) when the user
   attempted to mix flags and arguments. Given the trade-offs we removed support
   for this reordering.
+- adapter code for deprecated `Action` func signature
+- deprecated `App.Author`, `App.Email`, and `Command.ShortName` fields
 - All `Context.Global*` methods, as the non-global versions now traverse up
   the context lineage automatically.
 
