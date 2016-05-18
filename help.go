@@ -209,7 +209,7 @@ func checkVersion(c *Context) bool {
 	found := false
 	if VersionFlag.Name != "" {
 		eachName(VersionFlag.Name, func(name string) {
-			if c.GlobalBool(name) || c.Bool(name) {
+			if c.Bool(name) {
 				found = true
 			}
 		})
@@ -221,7 +221,7 @@ func checkHelp(c *Context) bool {
 	found := false
 	if HelpFlag.Name != "" {
 		eachName(HelpFlag.Name, func(name string) {
-			if c.GlobalBool(name) || c.Bool(name) {
+			if c.Bool(name) {
 				found = true
 			}
 		})
@@ -239,7 +239,7 @@ func checkCommandHelp(c *Context, name string) bool {
 }
 
 func checkSubcommandHelp(c *Context) bool {
-	if c.GlobalBool("h") || c.GlobalBool("help") {
+	if c.Bool("h") || c.Bool("help") {
 		ShowSubcommandHelp(c)
 		return true
 	}
@@ -248,7 +248,7 @@ func checkSubcommandHelp(c *Context) bool {
 }
 
 func checkCompletions(c *Context) bool {
-	if (c.GlobalBool(BashCompletionFlag.Name) || c.Bool(BashCompletionFlag.Name)) && c.App.EnableBashCompletion {
+	if c.Bool(BashCompletionFlag.Name) && c.App.EnableBashCompletion {
 		ShowCompletions(c)
 		return true
 	}

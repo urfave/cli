@@ -13,12 +13,11 @@ import (
 // can be used to retrieve context-specific Args and
 // parsed command-line options.
 type Context struct {
-	App            *App
-	Command        Command
-	flagSet        *flag.FlagSet
-	setFlags       map[string]bool
-	globalSetFlags map[string]bool
-	parentContext  *Context
+	App     *App
+	Command Command
+
+	flagSet       *flag.FlagSet
+	parentContext *Context
 }
 
 // NewContext creates a new context. For use in when invoking an App or Command action.
@@ -28,129 +27,76 @@ func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
 
 // Int looks up the value of a local int flag, returns 0 if no int flag exists
 func (c *Context) Int(name string) int {
-	return lookupInt(name, c.flagSet)
-}
-
-// Duration looks up the value of a local time.Duration flag, returns 0 if no
-// time.Duration flag exists
-func (c *Context) Duration(name string) time.Duration {
-	return lookupDuration(name, c.flagSet)
-}
-
-// Float64 looks up the value of a local float64 flag, returns 0 if no float64
-// flag exists
-func (c *Context) Float64(name string) float64 {
-	return lookupFloat64(name, c.flagSet)
-}
-
-// Bool looks up the value of a local bool flag, returns false if no bool flag exists
-func (c *Context) Bool(name string) bool {
-	return lookupBool(name, c.flagSet)
-}
-
-// BoolT looks up the value of a local boolT flag, returns false if no bool flag exists
-func (c *Context) BoolT(name string) bool {
-	return lookupBoolT(name, c.flagSet)
-}
-
-// String looks up the value of a local string flag, returns "" if no string flag exists
-func (c *Context) String(name string) string {
-	return lookupString(name, c.flagSet)
-}
-
-// StringSlice looks up the value of a local string slice flag, returns nil if no
-// string slice flag exists
-func (c *Context) StringSlice(name string) []string {
-	return lookupStringSlice(name, c.flagSet)
-}
-
-// IntSlice looks up the value of a local int slice flag, returns nil if no int
-// slice flag exists
-func (c *Context) IntSlice(name string) []int {
-	return lookupIntSlice(name, c.flagSet)
-}
-
-// Generic looks up the value of a local generic flag, returns nil if no generic
-// flag exists
-func (c *Context) Generic(name string) interface{} {
-	return lookupGeneric(name, c.flagSet)
-}
-
-// GlobalInt looks up the value of a global int flag, returns 0 if no int flag exists
-func (c *Context) GlobalInt(name string) int {
-	if fs := lookupGlobalFlagSet(name, c); fs != nil {
+	if fs := lookupFlagSet(name, c); fs != nil {
 		return lookupInt(name, fs)
 	}
 	return 0
 }
 
-// GlobalFloat64 looks up the value of a global float64 flag, returns float64(0)
-// if no float64 flag exists
-func (c *Context) GlobalFloat64(name string) float64 {
-	if fs := lookupGlobalFlagSet(name, c); fs != nil {
-		return lookupFloat64(name, fs)
-	}
-	return float64(0)
-}
-
-// GlobalDuration looks up the value of a global time.Duration flag, returns 0
-// if no time.Duration flag exists
-func (c *Context) GlobalDuration(name string) time.Duration {
-	if fs := lookupGlobalFlagSet(name, c); fs != nil {
+// Duration looks up the value of a local time.Duration flag, returns 0 if no
+// time.Duration flag exists
+func (c *Context) Duration(name string) time.Duration {
+	if fs := lookupFlagSet(name, c); fs != nil {
 		return lookupDuration(name, fs)
 	}
 	return 0
 }
 
-// GlobalBool looks up the value of a global bool flag, returns false if no bool
+// Float64 looks up the value of a local float64 flag, returns 0 if no float64
 // flag exists
-func (c *Context) GlobalBool(name string) bool {
-	if fs := lookupGlobalFlagSet(name, c); fs != nil {
+func (c *Context) Float64(name string) float64 {
+	if fs := lookupFlagSet(name, c); fs != nil {
+		return lookupFloat64(name, fs)
+	}
+	return 0
+}
+
+// Bool looks up the value of a local bool flag, returns false if no bool flag exists
+func (c *Context) Bool(name string) bool {
+	if fs := lookupFlagSet(name, c); fs != nil {
 		return lookupBool(name, fs)
 	}
 	return false
 }
 
-// GlobalBoolT looks up the value of a global bool flag, returns true if no bool
-// flag exists
-func (c *Context) GlobalBoolT(name string) bool {
-	if fs := lookupGlobalFlagSet(name, c); fs != nil {
+// BoolT looks up the value of a local boolT flag, returns false if no bool flag exists
+func (c *Context) BoolT(name string) bool {
+	if fs := lookupFlagSet(name, c); fs != nil {
 		return lookupBoolT(name, fs)
 	}
-	return false
+	return true
 }
 
-// GlobalString looks up the value of a global string flag, returns "" if no
-// string flag exists
-func (c *Context) GlobalString(name string) string {
-	if fs := lookupGlobalFlagSet(name, c); fs != nil {
+// String looks up the value of a local string flag, returns "" if no string flag exists
+func (c *Context) String(name string) string {
+	if fs := lookupFlagSet(name, c); fs != nil {
 		return lookupString(name, fs)
 	}
 	return ""
 }
 
-// GlobalStringSlice looks up the value of a global string slice flag, returns
-// nil if no string slice flag exists
-func (c *Context) GlobalStringSlice(name string) []string {
-	if fs := lookupGlobalFlagSet(name, c); fs != nil {
+// StringSlice looks up the value of a local string slice flag, returns nil if no
+// string slice flag exists
+func (c *Context) StringSlice(name string) []string {
+	if fs := lookupFlagSet(name, c); fs != nil {
 		return lookupStringSlice(name, fs)
 	}
 	return nil
 }
 
-// GlobalIntSlice looks up the value of a global int slice flag, returns nil if
-// no int slice flag exists
-func (c *Context) GlobalIntSlice(name string) []int {
-	if fs := lookupGlobalFlagSet(name, c); fs != nil {
+// IntSlice looks up the value of a local int slice flag, returns nil if no int
+// slice flag exists
+func (c *Context) IntSlice(name string) []int {
+	if fs := lookupFlagSet(name, c); fs != nil {
 		return lookupIntSlice(name, fs)
 	}
 	return nil
 }
 
-// GlobalGeneric looks up the value of a global generic flag, returns nil if no
-// generic flag exists
-func (c *Context) GlobalGeneric(name string) interface{} {
-	if fs := lookupGlobalFlagSet(name, c); fs != nil {
+// Generic looks up the value of a local generic flag, returns nil if no generic
+// flag exists
+func (c *Context) Generic(name string) interface{} {
+	if fs := lookupFlagSet(name, c); fs != nil {
 		return lookupGeneric(name, fs)
 	}
 	return nil
@@ -166,66 +112,47 @@ func (c *Context) Set(name, value string) error {
 	return c.flagSet.Set(name, value)
 }
 
-// GlobalSet sets a context flag to a value on the global flagset
-func (c *Context) GlobalSet(name, value string) error {
-	return globalContext(c).flagSet.Set(name, value)
-}
-
 // IsSet determines if the flag was actually set
 func (c *Context) IsSet(name string) bool {
-	if c.setFlags == nil {
-		c.setFlags = make(map[string]bool)
-		c.flagSet.Visit(func(f *flag.Flag) {
-			c.setFlags[f.Name] = true
+	if fs := lookupFlagSet(name, c); fs != nil {
+		isSet := false
+		fs.Visit(func(f *flag.Flag) {
+			if f.Name == name {
+				isSet = true
+			}
 		})
+		return isSet
 	}
-	return c.setFlags[name] == true
+	return false
 }
 
-// GlobalIsSet determines if the global flag was actually set
-func (c *Context) GlobalIsSet(name string) bool {
-	if c.globalSetFlags == nil {
-		c.globalSetFlags = make(map[string]bool)
-		ctx := c
-		if ctx.parentContext != nil {
-			ctx = ctx.parentContext
-		}
-		for ; ctx != nil && c.globalSetFlags[name] == false; ctx = ctx.parentContext {
-			ctx.flagSet.Visit(func(f *flag.Flag) {
-				c.globalSetFlags[f.Name] = true
-			})
-		}
-	}
-	return c.globalSetFlags[name]
+// LocalFlagNames returns a slice of flag names used in this context.
+func (c *Context) LocalFlagNames() []string {
+	names := []string{}
+	c.flagSet.Visit(makeFlagNameVisitor(&names))
+	return names
 }
 
-// FlagNames returns a slice of flag names used in this context.
-func (c *Context) FlagNames() (names []string) {
-	for _, flag := range c.Command.Flags {
-		name := strings.Split(flag.GetName(), ",")[0]
-		if name == "help" {
-			continue
-		}
-		names = append(names, name)
+// FlagNames returns a slice of flag names used by the this context and all of
+// its parent contexts.
+func (c *Context) FlagNames() []string {
+	names := []string{}
+	for _, ctx := range c.Lineage() {
+		ctx.flagSet.Visit(makeFlagNameVisitor(&names))
 	}
-	return
+	return names
 }
 
-// GlobalFlagNames returns a slice of global flag names used by the app.
-func (c *Context) GlobalFlagNames() (names []string) {
-	for _, flag := range c.App.Flags {
-		name := strings.Split(flag.GetName(), ",")[0]
-		if name == "help" || name == "version" {
-			continue
-		}
-		names = append(names, name)
-	}
-	return
-}
+// Lineage returns *this* context and all of its ancestor contexts in order from
+// child to parent
+func (c *Context) Lineage() []*Context {
+	lineage := []*Context{}
 
-// Parent returns the parent context, if any
-func (c *Context) Parent() *Context {
-	return c.parentContext
+	for cur := c; cur != nil; cur = cur.parentContext {
+		lineage = append(lineage, cur)
+	}
+
+	return lineage
 }
 
 // Args contains apps console arguments
@@ -278,28 +205,13 @@ func (a Args) Swap(from, to int) error {
 	return nil
 }
 
-func globalContext(ctx *Context) *Context {
-	if ctx == nil {
-		return nil
-	}
-
-	for {
-		if ctx.parentContext == nil {
-			return ctx
-		}
-		ctx = ctx.parentContext
-	}
-}
-
-func lookupGlobalFlagSet(name string, ctx *Context) *flag.FlagSet {
-	if ctx.parentContext != nil {
-		ctx = ctx.parentContext
-	}
-	for ; ctx != nil; ctx = ctx.parentContext {
-		if f := ctx.flagSet.Lookup(name); f != nil {
-			return ctx.flagSet
+func lookupFlagSet(name string, ctx *Context) *flag.FlagSet {
+	for _, c := range ctx.Lineage() {
+		if f := c.flagSet.Lookup(name); f != nil {
+			return c.flagSet
 		}
 	}
+
 	return nil
 }
 
@@ -401,7 +313,7 @@ func lookupBoolT(name string, set *flag.FlagSet) bool {
 		return val
 	}
 
-	return false
+	return true
 }
 
 func copyFlag(name string, ff *flag.Flag, set *flag.FlagSet) {
@@ -444,4 +356,22 @@ func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
 		}
 	}
 	return nil
+}
+
+func makeFlagNameVisitor(names *[]string) func(*flag.Flag) {
+	return func(f *flag.Flag) {
+		nameParts := strings.Split(f.Name, ",")
+		name := strings.TrimSpace(nameParts[0])
+
+		for _, part := range nameParts {
+			part = strings.TrimSpace(part)
+			if len(part) > len(name) {
+				name = part
+			}
+		}
+
+		if name != "" {
+			(*names) = append(*names, name)
+		}
+	}
 }
