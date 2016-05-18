@@ -27,6 +27,7 @@
 - deprecated `App.Author`, `App.Email`, and `Command.ShortName` fields
 - All `Context.Global*` methods, as the non-global versions now traverse up
   the context lineage automatically.
+- `Context.Parent` method, as this is now available via `Context.Lineage`
 
 ### Fixed
 - `Context.BoolT` now returns `true` when not found
