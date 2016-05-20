@@ -213,7 +213,7 @@ func (a *Args) Slice() []string {
 
 func makeFlagNameVisitor(names *[]string) func(Flag) {
 	return func(f Flag) {
-		nameParts := FlagNames(f)
+		nameParts := f.GetNames()
 		name := nameParts[0]
 
 		for _, part := range nameParts {

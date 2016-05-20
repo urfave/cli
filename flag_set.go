@@ -44,7 +44,7 @@ func NewFlagSet(name string, flags []Flag, args []string) *FlagSet {
 func (fs *FlagSet) apply() {
 	for _, f := range fs.Flags {
 		f.Apply(fs)
-		for _, name := range FlagNames(f) {
+		for _, name := range f.GetNames() {
 			fs.index[name] = f
 		}
 	}
@@ -264,7 +264,7 @@ func (fs *FlagSet) normalize() error {
 	})
 
 	for _, f := range fs.Flags {
-		parts := FlagNames(f)
+		parts := f.GetNames()
 		if len(parts) == 1 {
 			continue
 		}

@@ -11,7 +11,8 @@
 //     app.Name = "greet"
 //     app.Usage = "say a greeting"
 //     app.Action = func(c *cli.Context) error {
-//       println("Greetings")
+//       fmt.Println("Greetings")
+//       return nil
 //     }
 //
 //     app.Run(os.Args)
