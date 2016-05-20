@@ -1,11 +1,8 @@
 package altsrc
 
 import (
-	"flag"
 	"fmt"
-	"os"
 	"strconv"
-	"strings"
 
 	"github.com/codegangsta/cli"
 )
@@ -66,27 +63,27 @@ func InitInputSourceWithContext(flags []cli.Flag, createInputSource func(context
 // GenericFlag is the flag type that wraps cli.GenericFlag to allow
 // for other values to be specified
 type GenericFlag struct {
-	cli.GenericFlag
-	set *flag.FlagSet
+	*cli.GenericFlag
+	set *cli.FlagSet
 }
 
 // NewGenericFlag creates a new GenericFlag
-func NewGenericFlag(flag cli.GenericFlag) *GenericFlag {
+func NewGenericFlag(flag *cli.GenericFlag) *GenericFlag {
 	return &GenericFlag{GenericFlag: flag, set: nil}
 }
 
 // ApplyInputSourceValue applies a generic value to the flagSet if required
 func (f *GenericFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
-		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVar) {
+		if !context.IsSet(f.Name) {
 			value, err := isc.Generic(f.GenericFlag.Name)
 			if err != nil {
 				return err
 			}
 			if value != nil {
-				eachName(f.Name, func(name string) {
-					f.set.Set(f.Name, value.String())
-				})
+				for _, name := range cli.FlagNames(f) {
+					f.set.SetString(name, value.String())
+				}
 			}
 		}
 	}
@@ -96,7 +93,7 @@ func (f *GenericFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourc
 
 // Apply saves the flagSet for later usage then calls
 // the wrapped GenericFlag.Apply
-func (f *GenericFlag) Apply(set *flag.FlagSet) {
+func (f *GenericFlag) Apply(set *cli.FlagSet) {
 	f.set = set
 	f.GenericFlag.Apply(set)
 }
@@ -104,40 +101,48 @@ func (f *GenericFlag) Apply(set *flag.FlagSet) {
 // StringSliceFlag is the flag type that wraps cli.StringSliceFlag to allow
 // for other values to be specified
 type StringSliceFlag struct {
-	cli.StringSliceFlag
-	set *flag.FlagSet
+	*cli.StringSliceFlag
+	set *cli.FlagSet
 }
 
 // NewStringSliceFlag creates a new StringSliceFlag
-func NewStringSliceFlag(flag cli.StringSliceFlag) *StringSliceFlag {
+func NewStringSliceFlag(flag *cli.StringSliceFlag) *StringSliceFlag {
 	return &StringSliceFlag{StringSliceFlag: flag, set: nil}
 }
 
 // ApplyInputSourceValue applies a StringSlice value to the flagSet if required
 func (f *StringSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
-		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVar) {
-			value, err := isc.StringSlice(f.StringSliceFlag.Name)
-			if err != nil {
-				return err
-			}
-			if value != nil {
-				var sliceValue cli.StringSlice = *(cli.NewStringSlice(value...))
-				eachName(f.Name, func(name string) {
-					underlyingFlag := f.set.Lookup(f.Name)
-					if underlyingFlag != nil {
-						underlyingFlag.Value = &sliceValue
-					}
-				})
-			}
+	if f.set == nil {
+		return nil
+	}
+
+	if context.IsSet(f.Name) {
+		return nil
+	}
+
+	value, err := isc.StringSlice(f.StringSliceFlag.Name)
+	if err != nil {
+		return err
+	}
+
+	if value == nil {
+		return nil
+	}
+
+	var sliceValue cli.StringSlice = *(cli.NewStringSlice(value...))
+	for _, name := range cli.FlagNames(f) {
+		underlyingFlag := f.set.Lookup(name)
+		if underlyingFlag != nil {
+			f.set.SetString(name, sliceValue.Serialized())
 		}
 	}
+
 	return nil
 }
 
 // Apply saves the flagSet for later usage then calls
 // the wrapped StringSliceFlag.Apply
-func (f *StringSliceFlag) Apply(set *flag.FlagSet) {
+func (f *StringSliceFlag) Apply(set *cli.FlagSet) {
 	f.set = set
 	f.StringSliceFlag.Apply(set)
 }
@@ -145,40 +150,48 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) {
 // IntSliceFlag is the flag type that wraps cli.IntSliceFlag to allow
 // for other values to be specified
 type IntSliceFlag struct {
-	cli.IntSliceFlag
-	set *flag.FlagSet
+	*cli.IntSliceFlag
+	set *cli.FlagSet
 }
 
 // NewIntSliceFlag creates a new IntSliceFlag
-func NewIntSliceFlag(flag cli.IntSliceFlag) *IntSliceFlag {
+func NewIntSliceFlag(flag *cli.IntSliceFlag) *IntSliceFlag {
 	return &IntSliceFlag{IntSliceFlag: flag, set: nil}
 }
 
 // ApplyInputSourceValue applies a IntSlice value if required
 func (f *IntSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
-		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVar) {
-			value, err := isc.IntSlice(f.IntSliceFlag.Name)
-			if err != nil {
-				return err
-			}
-			if value != nil {
-				var sliceValue cli.IntSlice = *(cli.NewIntSlice(value...))
-				eachName(f.Name, func(name string) {
-					underlyingFlag := f.set.Lookup(f.Name)
-					if underlyingFlag != nil {
-						underlyingFlag.Value = &sliceValue
-					}
-				})
-			}
+	if f.set == nil {
+		return nil
+	}
+
+	if context.IsSet(f.Name) {
+		return nil
+	}
+
+	value, err := isc.IntSlice(f.IntSliceFlag.Name)
+	if err != nil {
+		return err
+	}
+
+	if value == nil {
+		return nil
+	}
+
+	var sliceValue cli.IntSlice = *(cli.NewIntSlice(value...))
+	for _, name := range cli.FlagNames(f) {
+		underlyingFlag := f.set.Lookup(name)
+		if underlyingFlag != nil {
+			f.set.SetString(name, sliceValue.Serialized())
 		}
 	}
+
 	return nil
 }
 
 // Apply saves the flagSet for later usage then calls
 // the wrapped IntSliceFlag.Apply
-func (f *IntSliceFlag) Apply(set *flag.FlagSet) {
+func (f *IntSliceFlag) Apply(set *cli.FlagSet) {
 	f.set = set
 	f.IntSliceFlag.Apply(set)
 }
@@ -186,27 +199,27 @@ func (f *IntSliceFlag) Apply(set *flag.FlagSet) {
 // BoolFlag is the flag type that wraps cli.BoolFlag to allow
 // for other values to be specified
 type BoolFlag struct {
-	cli.BoolFlag
-	set *flag.FlagSet
+	*cli.BoolFlag
+	set *cli.FlagSet
 }
 
 // NewBoolFlag creates a new BoolFlag
-func NewBoolFlag(flag cli.BoolFlag) *BoolFlag {
+func NewBoolFlag(flag *cli.BoolFlag) *BoolFlag {
 	return &BoolFlag{BoolFlag: flag, set: nil}
 }
 
 // ApplyInputSourceValue applies a Bool value to the flagSet if required
 func (f *BoolFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
-		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVar) {
+		if !context.IsSet(f.Name) {
 			value, err := isc.Bool(f.BoolFlag.Name)
 			if err != nil {
 				return err
 			}
 			if value {
-				eachName(f.Name, func(name string) {
-					f.set.Set(f.Name, strconv.FormatBool(value))
-				})
+				for _, name := range cli.FlagNames(f) {
+					f.set.SetString(name, strconv.FormatBool(value))
+				}
 			}
 		}
 	}
@@ -215,7 +228,7 @@ func (f *BoolFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceCo
 
 // Apply saves the flagSet for later usage then calls
 // the wrapped BoolFlag.Apply
-func (f *BoolFlag) Apply(set *flag.FlagSet) {
+func (f *BoolFlag) Apply(set *cli.FlagSet) {
 	f.set = set
 	f.BoolFlag.Apply(set)
 }
@@ -223,27 +236,27 @@ func (f *BoolFlag) Apply(set *flag.FlagSet) {
 // StringFlag is the flag type that wraps cli.StringFlag to allow
 // for other values to be specified
 type StringFlag struct {
-	cli.StringFlag
-	set *flag.FlagSet
+	*cli.StringFlag
+	set *cli.FlagSet
 }
 
 // NewStringFlag creates a new StringFlag
-func NewStringFlag(flag cli.StringFlag) *StringFlag {
+func NewStringFlag(flag *cli.StringFlag) *StringFlag {
 	return &StringFlag{StringFlag: flag, set: nil}
 }
 
 // ApplyInputSourceValue applies a String value to the flagSet if required
 func (f *StringFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
-		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVar)) {
+		if !context.IsSet(f.Name) {
 			value, err := isc.String(f.StringFlag.Name)
 			if err != nil {
 				return err
 			}
 			if value != "" {
-				eachName(f.Name, func(name string) {
-					f.set.Set(f.Name, value)
-				})
+				for _, name := range cli.FlagNames(f) {
+					f.set.SetString(name, value)
+				}
 			}
 		}
 	}
@@ -252,7 +265,7 @@ func (f *StringFlag) ApplyInputSourceValue(context *cli.Context, isc InputSource
 
 // Apply saves the flagSet for later usage then calls
 // the wrapped StringFlag.Apply
-func (f *StringFlag) Apply(set *flag.FlagSet) {
+func (f *StringFlag) Apply(set *cli.FlagSet) {
 	f.set = set
 
 	f.StringFlag.Apply(set)
@@ -261,27 +274,27 @@ func (f *StringFlag) Apply(set *flag.FlagSet) {
 // IntFlag is the flag type that wraps cli.IntFlag to allow
 // for other values to be specified
 type IntFlag struct {
-	cli.IntFlag
-	set *flag.FlagSet
+	*cli.IntFlag
+	set *cli.FlagSet
 }
 
 // NewIntFlag creates a new IntFlag
-func NewIntFlag(flag cli.IntFlag) *IntFlag {
+func NewIntFlag(flag *cli.IntFlag) *IntFlag {
 	return &IntFlag{IntFlag: flag, set: nil}
 }
 
 // ApplyInputSourceValue applies a int value to the flagSet if required
 func (f *IntFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
-		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVar)) {
+		if !context.IsSet(f.Name) {
 			value, err := isc.Int(f.IntFlag.Name)
 			if err != nil {
 				return err
 			}
 			if value > 0 {
-				eachName(f.Name, func(name string) {
-					f.set.Set(f.Name, strconv.FormatInt(int64(value), 10))
-				})
+				for _, name := range cli.FlagNames(f) {
+					f.set.SetString(name, strconv.FormatInt(int64(value), 10))
+				}
 			}
 		}
 	}
@@ -290,7 +303,7 @@ func (f *IntFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceCon
 
 // Apply saves the flagSet for later usage then calls
 // the wrapped IntFlag.Apply
-func (f *IntFlag) Apply(set *flag.FlagSet) {
+func (f *IntFlag) Apply(set *cli.FlagSet) {
 	f.set = set
 	f.IntFlag.Apply(set)
 }
@@ -298,27 +311,27 @@ func (f *IntFlag) Apply(set *flag.FlagSet) {
 // DurationFlag is the flag type that wraps cli.DurationFlag to allow
 // for other values to be specified
 type DurationFlag struct {
-	cli.DurationFlag
-	set *flag.FlagSet
+	*cli.DurationFlag
+	set *cli.FlagSet
 }
 
 // NewDurationFlag creates a new DurationFlag
-func NewDurationFlag(flag cli.DurationFlag) *DurationFlag {
+func NewDurationFlag(flag *cli.DurationFlag) *DurationFlag {
 	return &DurationFlag{DurationFlag: flag, set: nil}
 }
 
 // ApplyInputSourceValue applies a Duration value to the flagSet if required
 func (f *DurationFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
-		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVar)) {
+		if !context.IsSet(f.Name) {
 			value, err := isc.Duration(f.DurationFlag.Name)
 			if err != nil {
 				return err
 			}
 			if value > 0 {
-				eachName(f.Name, func(name string) {
-					f.set.Set(f.Name, value.String())
-				})
+				for _, name := range cli.FlagNames(f) {
+					f.set.SetString(name, value.String())
+				}
 			}
 		}
 	}
@@ -327,7 +340,7 @@ func (f *DurationFlag) ApplyInputSourceValue(context *cli.Context, isc InputSour
 
 // Apply saves the flagSet for later usage then calls
 // the wrapped DurationFlag.Apply
-func (f *DurationFlag) Apply(set *flag.FlagSet) {
+func (f *DurationFlag) Apply(set *cli.FlagSet) {
 	f.set = set
 
 	f.DurationFlag.Apply(set)
@@ -336,66 +349,49 @@ func (f *DurationFlag) Apply(set *flag.FlagSet) {
 // Float64Flag is the flag type that wraps cli.Float64Flag to allow
 // for other values to be specified
 type Float64Flag struct {
-	cli.Float64Flag
-	set *flag.FlagSet
+	*cli.Float64Flag
+	set *cli.FlagSet
 }
 
 // NewFloat64Flag creates a new Float64Flag
-func NewFloat64Flag(flag cli.Float64Flag) *Float64Flag {
+func NewFloat64Flag(flag *cli.Float64Flag) *Float64Flag {
 	return &Float64Flag{Float64Flag: flag, set: nil}
 }
 
 // ApplyInputSourceValue applies a Float64 value to the flagSet if required
 func (f *Float64Flag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
-		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVar)) {
-			value, err := isc.Float64(f.Float64Flag.Name)
-			if err != nil {
-				return err
-			}
-			if value > 0 {
-				floatStr := float64ToString(value)
-				eachName(f.Name, func(name string) {
-					f.set.Set(f.Name, floatStr)
-				})
-			}
-		}
+	if f.set == nil {
+		return nil
 	}
+
+	if context.IsSet(f.Name) {
+		return nil
+	}
+
+	value, err := isc.Float64(f.Float64Flag.Name)
+	if err != nil {
+		return err
+	}
+
+	if value <= 0 {
+		return nil
+	}
+
+	floatStr := float64ToString(value)
+	for _, name := range cli.FlagNames(f) {
+		f.set.SetString(name, floatStr)
+	}
+
 	return nil
 }
 
 // Apply saves the flagSet for later usage then calls
 // the wrapped Float64Flag.Apply
-func (f *Float64Flag) Apply(set *flag.FlagSet) {
+func (f *Float64Flag) Apply(set *cli.FlagSet) {
 	f.set = set
-
 	f.Float64Flag.Apply(set)
-}
-
-func isEnvVarSet(envVars string) bool {
-	for _, envVar := range strings.Split(envVars, ",") {
-		envVar = strings.TrimSpace(envVar)
-		if envVal := os.Getenv(envVar); envVal != "" {
-			// TODO: Can't use this for bools as
-			// set means that it was true or false based on
-			// Bool flag type, should work for other types
-			if len(envVal) > 0 {
-				return true
-			}
-		}
-	}
-
-	return false
 }
 
 func float64ToString(f float64) string {
 	return fmt.Sprintf("%v", f)
-}
-
-func eachName(longName string, fn func(string)) {
-	parts := strings.Split(longName, ",")
-	for _, name := range parts {
-		name = strings.Trim(name, " ")
-		fn(name)
-	}
 }

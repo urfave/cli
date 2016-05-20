@@ -3,7 +3,6 @@ package cli
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -26,7 +25,7 @@ type App struct {
 	// Version of the program
 	Version string
 	// List of commands to execute
-	Commands []Command
+	Commands []*Command
 	// List of flags to parse
 	Flags []Flag
 	// Boolean to enable bash completion commands
@@ -36,7 +35,7 @@ type App struct {
 	// Boolean to hide built-in version flag and the VERSION section of help
 	HideVersion bool
 	// Populate on app startup, only gettable through method Categories()
-	categories CommandCategories
+	categories *CommandCategories
 	// An action to execute when the bash-completion flag is set
 	BashComplete BashCompleteFunc
 	// An action to execute before any subcommands are run, but after the context is ready
@@ -54,7 +53,7 @@ type App struct {
 	// Compilation date
 	Compiled time.Time
 	// List of all authors who contributed
-	Authors []Author
+	Authors []*Author
 	// Copyright of the binary if any
 	Copyright string
 	// Writer writer to write output to
@@ -93,17 +92,18 @@ func NewApp() *App {
 	}
 }
 
-// Setup runs initialization code to ensure all data structures are ready for
-// `Run` or inspection prior to `Run`.  It is internally called by `Run`, but
-// will return early if setup has already happened.
-func (a *App) Setup() {
+func (a *App) setup() {
 	if a.didSetup {
 		return
 	}
 
 	a.didSetup = true
 
-	newCmds := []Command{}
+	if a.Writer == nil {
+		a.Writer = os.Stdout
+	}
+
+	newCmds := []*Command{}
 	for _, c := range a.Commands {
 		if c.HelpName == "" {
 			c.HelpName = fmt.Sprintf("%s %s", a.HelpName, c.Name)
@@ -112,7 +112,7 @@ func (a *App) Setup() {
 	}
 	a.Commands = newCmds
 
-	a.categories = CommandCategories{}
+	a.categories = NewCommandCategories()
 	for _, command := range a.Commands {
 		a.categories = a.categories.AddCommand(command.Category, command)
 	}
@@ -120,8 +120,9 @@ func (a *App) Setup() {
 
 	// append help to commands
 	if a.Command(helpCommand.Name) == nil && !a.HideHelp {
-		a.Commands = append(a.Commands, helpCommand)
-		if (HelpFlag != BoolFlag{}) {
+		a.appendCommand(helpCommand)
+
+		if HelpFlag != (&BoolFlag{}) {
 			a.appendFlag(HelpFlag)
 		}
 	}
@@ -139,18 +140,23 @@ func (a *App) Setup() {
 // Run is the entry point to the cli app. Parses the arguments slice and routes
 // to the proper flag/args combination
 func (a *App) Run(arguments []string) (err error) {
-	a.Setup()
+	a.setup()
 
 	// parse flags
-	set := flagSet(a.Name, a.Flags)
-	set.SetOutput(ioutil.Discard)
-	err = set.Parse(arguments[1:])
-	nerr := normalizeFlags(a.Flags, set)
+	set := NewFlagSet(a.Name, a.Flags, arguments[1:])
+	var fcErr error
+	err = set.Parse()
+	if _, ok := err.(*flagConflictError); ok {
+		err = nil
+		fcErr = err
+	}
+
 	context := NewContext(a, set, nil)
-	if nerr != nil {
-		fmt.Fprintln(a.Writer, nerr)
+
+	if fcErr != nil {
+		fmt.Fprintln(a.Writer, fcErr)
 		ShowAppHelp(context)
-		return nerr
+		return fcErr
 	}
 
 	if checkCompletions(context) {
@@ -223,14 +229,15 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	// append help to commands
 	if len(a.Commands) > 0 {
 		if a.Command(helpCommand.Name) == nil && !a.HideHelp {
-			a.Commands = append(a.Commands, helpCommand)
-			if (HelpFlag != BoolFlag{}) {
+			a.appendCommand(helpCommand)
+
+			if HelpFlag != (&BoolFlag{}) {
 				a.appendFlag(HelpFlag)
 			}
 		}
 	}
 
-	newCmds := []Command{}
+	newCmds := []*Command{}
 	for _, c := range a.Commands {
 		if c.HelpName == "" {
 			c.HelpName = fmt.Sprintf("%s %s", a.HelpName, c.Name)
@@ -245,21 +252,25 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	}
 
 	// parse flags
-	set := flagSet(a.Name, a.Flags)
-	set.SetOutput(ioutil.Discard)
-	err = set.Parse(ctx.Args().Tail())
-	nerr := normalizeFlags(a.Flags, set)
+	set := NewFlagSet(a.Name, a.Flags, ctx.Args().Tail())
+	var fcErr error
+	err = set.Parse()
+	if _, ok := err.(*flagConflictError); ok {
+		err = nil
+		fcErr = err
+	}
+
 	context := NewContext(a, set, ctx)
 
-	if nerr != nil {
-		fmt.Fprintln(a.Writer, nerr)
+	if fcErr != nil {
+		fmt.Fprintln(a.Writer, fcErr)
 		fmt.Fprintln(a.Writer)
 		if len(a.Commands) > 0 {
-			ShowSubcommandHelp(context)
+			ShowSubcommandHelp(ctx)
 		} else {
 			ShowCommandHelp(ctx, context.Args().First())
 		}
-		return nerr
+		return fcErr
 	}
 
 	if checkCompletions(context) {
@@ -330,7 +341,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 func (a *App) Command(name string) *Command {
 	for _, c := range a.Commands {
 		if c.HasName(name) {
-			return &c
+			return c
 		}
 	}
 
@@ -338,7 +349,7 @@ func (a *App) Command(name string) *Command {
 }
 
 // Categories returns a slice containing all the categories with the commands they contain
-func (a *App) Categories() CommandCategories {
+func (a *App) Categories() *CommandCategories {
 	return a.categories
 }
 
@@ -346,7 +357,7 @@ func (a *App) Categories() CommandCategories {
 // Hidden=false
 func (a *App) VisibleCategories() []*CommandCategory {
 	ret := []*CommandCategory{}
-	for _, category := range a.categories {
+	for _, category := range a.categories.Categories {
 		if visible := func() *CommandCategory {
 			for _, command := range category.Commands {
 				if !command.Hidden {
@@ -362,8 +373,8 @@ func (a *App) VisibleCategories() []*CommandCategory {
 }
 
 // VisibleCommands returns a slice of the Commands with Hidden=false
-func (a *App) VisibleCommands() []Command {
-	ret := []Command{}
+func (a *App) VisibleCommands() []*Command {
+	ret := []*Command{}
 	for _, command := range a.Commands {
 		if !command.Hidden {
 			ret = append(ret, command)
@@ -377,16 +388,6 @@ func (a *App) VisibleFlags() []Flag {
 	return visibleFlags(a.Flags)
 }
 
-func (a *App) hasFlag(flag Flag) bool {
-	for _, f := range a.Flags {
-		if flag == f {
-			return true
-		}
-	}
-
-	return false
-}
-
 func (a *App) errWriter() io.Writer {
 
 	// When the app ErrWriter is nil use the package level one.
@@ -397,9 +398,15 @@ func (a *App) errWriter() io.Writer {
 	return a.ErrWriter
 }
 
-func (a *App) appendFlag(flag Flag) {
-	if !a.hasFlag(flag) {
-		a.Flags = append(a.Flags, flag)
+func (a *App) appendFlag(fl Flag) {
+	if !hasFlag(a.Flags, fl) {
+		a.Flags = append(a.Flags, fl)
+	}
+}
+
+func (a *App) appendCommand(c *Command) {
+	if !hasCommand(a.Commands, c) {
+		a.Commands = append(a.Commands, c)
 	}
 }
 
@@ -410,7 +417,7 @@ type Author struct {
 }
 
 // String makes Author comply to the Stringer interface, to allow an easy print in the templating process
-func (a Author) String() string {
+func (a *Author) String() string {
 	e := ""
 	if a.Email != "" {
 		e = "<" + a.Email + "> "

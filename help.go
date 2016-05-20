@@ -74,7 +74,7 @@ OPTIONS:
    {{end}}{{end}}
 `
 
-var helpCommand = Command{
+var helpCommand = &Command{
 	Name:      "help",
 	Aliases:   []string{"h"},
 	Usage:     "Shows a list of commands or help for one command",
@@ -158,7 +158,15 @@ func ShowCommandHelp(ctx *Context, command string) error {
 
 // ShowSubcommandHelp prints help for the given subcommand
 func ShowSubcommandHelp(c *Context) error {
-	return ShowCommandHelp(c, c.Command.Name)
+	if c == nil {
+		return nil
+	}
+
+	if c.Command != nil {
+		return ShowCommandHelp(c, c.Command.Name)
+	}
+
+	return ShowCommandHelp(c, "")
 }
 
 // ShowVersion prints the version number of the App
@@ -208,11 +216,11 @@ func printHelp(out io.Writer, templ string, data interface{}) {
 func checkVersion(c *Context) bool {
 	found := false
 	if VersionFlag.Name != "" {
-		eachName(VersionFlag.Name, func(name string) {
+		for _, name := range FlagNames(VersionFlag) {
 			if c.Bool(name) {
 				found = true
 			}
-		})
+		}
 	}
 	return found
 }
@@ -220,11 +228,11 @@ func checkVersion(c *Context) bool {
 func checkHelp(c *Context) bool {
 	found := false
 	if HelpFlag.Name != "" {
-		eachName(HelpFlag.Name, func(name string) {
+		for _, name := range FlagNames(HelpFlag) {
 			if c.Bool(name) {
 				found = true
 			}
-		})
+		}
 	}
 	return found
 }

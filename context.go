@@ -2,9 +2,6 @@ package cli
 
 import (
 	"errors"
-	"flag"
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -14,21 +11,21 @@ import (
 // parsed command-line options.
 type Context struct {
 	App     *App
-	Command Command
+	Command *Command
 
-	flagSet       *flag.FlagSet
+	flagSet       *FlagSet
 	parentContext *Context
 }
 
 // NewContext creates a new context. For use in when invoking an App or Command action.
-func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
+func NewContext(app *App, set *FlagSet, parentCtx *Context) *Context {
 	return &Context{App: app, flagSet: set, parentContext: parentCtx}
 }
 
 // Int looks up the value of a local int flag, returns 0 if no int flag exists
 func (c *Context) Int(name string) int {
-	if fs := lookupFlagSet(name, c); fs != nil {
-		return lookupInt(name, fs)
+	if fs := c.lookupFlagSet(name); fs != nil {
+		return fs.GetInt(name)
 	}
 	return 0
 }
@@ -36,8 +33,8 @@ func (c *Context) Int(name string) int {
 // Duration looks up the value of a local time.Duration flag, returns 0 if no
 // time.Duration flag exists
 func (c *Context) Duration(name string) time.Duration {
-	if fs := lookupFlagSet(name, c); fs != nil {
-		return lookupDuration(name, fs)
+	if fs := c.lookupFlagSet(name); fs != nil {
+		return fs.GetDuration(name)
 	}
 	return 0
 }
@@ -45,24 +42,24 @@ func (c *Context) Duration(name string) time.Duration {
 // Float64 looks up the value of a local float64 flag, returns 0 if no float64
 // flag exists
 func (c *Context) Float64(name string) float64 {
-	if fs := lookupFlagSet(name, c); fs != nil {
-		return lookupFloat64(name, fs)
+	if fs := c.lookupFlagSet(name); fs != nil {
+		return fs.GetFloat64(name)
 	}
 	return 0
 }
 
 // Bool looks up the value of a local bool flag, returns false if no bool flag exists
 func (c *Context) Bool(name string) bool {
-	if fs := lookupFlagSet(name, c); fs != nil {
-		return lookupBool(name, fs)
+	if fs := c.lookupFlagSet(name); fs != nil {
+		return fs.GetBool(name)
 	}
 	return false
 }
 
 // String looks up the value of a local string flag, returns "" if no string flag exists
 func (c *Context) String(name string) string {
-	if fs := lookupFlagSet(name, c); fs != nil {
-		return lookupString(name, fs)
+	if fs := c.lookupFlagSet(name); fs != nil {
+		return fs.GetString(name)
 	}
 	return ""
 }
@@ -70,8 +67,8 @@ func (c *Context) String(name string) string {
 // StringSlice looks up the value of a local string slice flag, returns nil if no
 // string slice flag exists
 func (c *Context) StringSlice(name string) []string {
-	if fs := lookupFlagSet(name, c); fs != nil {
-		return lookupStringSlice(name, fs)
+	if fs := c.lookupFlagSet(name); fs != nil {
+		return fs.GetStringSlice(name)
 	}
 	return nil
 }
@@ -79,8 +76,8 @@ func (c *Context) StringSlice(name string) []string {
 // IntSlice looks up the value of a local int slice flag, returns nil if no int
 // slice flag exists
 func (c *Context) IntSlice(name string) []int {
-	if fs := lookupFlagSet(name, c); fs != nil {
-		return lookupIntSlice(name, fs)
+	if fs := c.lookupFlagSet(name); fs != nil {
+		return fs.GetIntSlice(name)
 	}
 	return nil
 }
@@ -88,32 +85,26 @@ func (c *Context) IntSlice(name string) []int {
 // Generic looks up the value of a local generic flag, returns nil if no generic
 // flag exists
 func (c *Context) Generic(name string) interface{} {
-	if fs := lookupFlagSet(name, c); fs != nil {
-		return lookupGeneric(name, fs)
+	if fs := c.lookupFlagSet(name); fs != nil {
+		return fs.GetGeneric(name)
 	}
 	return nil
 }
 
 // NumFlags returns the number of flags set
 func (c *Context) NumFlags() int {
-	return c.flagSet.NFlag()
+	return c.flagSet.NumFlags()
 }
 
-// Set sets a context flag to a value.
+// Set sets a context flag to a string value.
 func (c *Context) Set(name, value string) error {
-	return c.flagSet.Set(name, value)
+	return c.flagSet.SetString(name, value)
 }
 
 // IsSet determines if the flag was actually set
 func (c *Context) IsSet(name string) bool {
-	if fs := lookupFlagSet(name, c); fs != nil {
-		isSet := false
-		fs.Visit(func(f *flag.Flag) {
-			if f.Name == name {
-				isSet = true
-			}
-		})
-		return isSet
+	if fs := c.lookupFlagSet(name); fs != nil {
+		return fs.IsSet(name)
 	}
 	return false
 }
@@ -121,7 +112,7 @@ func (c *Context) IsSet(name string) bool {
 // LocalFlagNames returns a slice of flag names used in this context.
 func (c *Context) LocalFlagNames() []string {
 	names := []string{}
-	c.flagSet.Visit(makeFlagNameVisitor(&names))
+	c.flagSet.Each(makeFlagNameVisitor(&names))
 	return names
 }
 
@@ -130,7 +121,7 @@ func (c *Context) LocalFlagNames() []string {
 func (c *Context) FlagNames() []string {
 	names := []string{}
 	for _, ctx := range c.Lineage() {
-		ctx.flagSet.Visit(makeFlagNameVisitor(&names))
+		ctx.flagSet.Each(makeFlagNameVisitor(&names))
 	}
 	return names
 }
@@ -147,203 +138,85 @@ func (c *Context) Lineage() []*Context {
 	return lineage
 }
 
-// Args contains apps console arguments
-type Args []string
-
 // Args returns the command line arguments associated with the context.
-func (c *Context) Args() Args {
-	args := Args(c.flagSet.Args())
-	return args
+func (c *Context) Args() *Args {
+	return &Args{slice: c.flagSet.RemainingArgs()}
 }
 
-// NArg returns the number of the command line arguments.
-func (c *Context) NArg() int {
-	return len(c.Args())
+// NumArgs returns the number of the command line arguments.
+func (c *Context) NumArgs() int {
+	return c.Args().Len()
+}
+
+func (c *Context) lookupFlagSet(name string) *FlagSet {
+	for _, ctx := range c.Lineage() {
+		if f := ctx.flagSet.Lookup(name); f != nil {
+			return ctx.flagSet
+		}
+	}
+
+	return nil
+}
+
+// Args wraps a string slice with some convenience methods
+type Args struct {
+	slice []string
 }
 
 // Get returns the nth argument, or else a blank string
-func (a Args) Get(n int) string {
-	if len(a) > n {
-		return a[n]
+func (a *Args) Get(n int) string {
+	if a.Len() > n {
+		return a.slice[n]
 	}
 	return ""
 }
 
 // First returns the first argument, or else a blank string
-func (a Args) First() string {
+func (a *Args) First() string {
 	return a.Get(0)
 }
 
 // Tail returns the rest of the arguments (not the first one)
 // or else an empty string slice
-func (a Args) Tail() []string {
-	if len(a) >= 2 {
-		return []string(a)[1:]
+func (a *Args) Tail() []string {
+	if a.Len() >= 2 {
+		return a.slice[1:]
 	}
 	return []string{}
 }
 
 // Present checks if there are any arguments present
-func (a Args) Present() bool {
-	return len(a) != 0
+func (a *Args) Present() bool {
+	return a.Len() != 0
+}
+
+// Len returns the length of the wrapped slice
+func (a *Args) Len() int {
+	return len(a.slice)
 }
 
 // Swap swaps arguments at the given indexes
-func (a Args) Swap(from, to int) error {
-	if from >= len(a) || to >= len(a) {
+func (a *Args) Swap(from, to int) error {
+	if from >= len(a.slice) || to >= len(a.slice) {
 		return errors.New("index out of range")
 	}
-	a[from], a[to] = a[to], a[from]
+	a.slice[from], a.slice[to] = a.slice[to], a.slice[from]
 	return nil
 }
 
-func lookupFlagSet(name string, ctx *Context) *flag.FlagSet {
-	for _, c := range ctx.Lineage() {
-		if f := c.flagSet.Lookup(name); f != nil {
-			return c.flagSet
-		}
-	}
-
-	return nil
+// Slice returns a copy of the internal slice
+func (a *Args) Slice() []string {
+	ret := make([]string, len(a.slice))
+	copy(ret, a.slice)
+	return ret
 }
 
-func lookupInt(name string, set *flag.FlagSet) int {
-	f := set.Lookup(name)
-	if f != nil {
-		val, err := strconv.Atoi(f.Value.String())
-		if err != nil {
-			return 0
-		}
-		return val
-	}
-
-	return 0
-}
-
-func lookupDuration(name string, set *flag.FlagSet) time.Duration {
-	f := set.Lookup(name)
-	if f != nil {
-		val, err := time.ParseDuration(f.Value.String())
-		if err == nil {
-			return val
-		}
-	}
-
-	return 0
-}
-
-func lookupFloat64(name string, set *flag.FlagSet) float64 {
-	f := set.Lookup(name)
-	if f != nil {
-		val, err := strconv.ParseFloat(f.Value.String(), 64)
-		if err != nil {
-			return 0
-		}
-		return val
-	}
-
-	return 0
-}
-
-func lookupString(name string, set *flag.FlagSet) string {
-	f := set.Lookup(name)
-	if f != nil {
-		return f.Value.String()
-	}
-
-	return ""
-}
-
-func lookupStringSlice(name string, set *flag.FlagSet) []string {
-	f := set.Lookup(name)
-	if f != nil {
-		return (f.Value.(*StringSlice)).Value()
-
-	}
-
-	return nil
-}
-
-func lookupIntSlice(name string, set *flag.FlagSet) []int {
-	f := set.Lookup(name)
-	if f != nil {
-		return (f.Value.(*IntSlice)).Value()
-
-	}
-
-	return nil
-}
-
-func lookupGeneric(name string, set *flag.FlagSet) interface{} {
-	f := set.Lookup(name)
-	if f != nil {
-		return f.Value
-	}
-	return nil
-}
-
-func lookupBool(name string, set *flag.FlagSet) bool {
-	f := set.Lookup(name)
-	if f != nil {
-		val, err := strconv.ParseBool(f.Value.String())
-		if err != nil {
-			return false
-		}
-		return val
-	}
-
-	return false
-}
-
-func copyFlag(name string, ff *flag.Flag, set *flag.FlagSet) {
-	switch ff.Value.(type) {
-	case Serializeder:
-		set.Set(name, ff.Value.(Serializeder).Serialized())
-	default:
-		set.Set(name, ff.Value.String())
-	}
-}
-
-func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
-	visited := make(map[string]bool)
-	set.Visit(func(f *flag.Flag) {
-		visited[f.Name] = true
-	})
-	for _, f := range flags {
-		parts := strings.Split(f.GetName(), ",")
-		if len(parts) == 1 {
-			continue
-		}
-		var ff *flag.Flag
-		for _, name := range parts {
-			name = strings.Trim(name, " ")
-			if visited[name] {
-				if ff != nil {
-					return errors.New("Cannot use two forms of the same flag: " + name + " " + ff.Name)
-				}
-				ff = set.Lookup(name)
-			}
-		}
-		if ff == nil {
-			continue
-		}
-		for _, name := range parts {
-			name = strings.Trim(name, " ")
-			if !visited[name] {
-				copyFlag(name, ff, set)
-			}
-		}
-	}
-	return nil
-}
-
-func makeFlagNameVisitor(names *[]string) func(*flag.Flag) {
-	return func(f *flag.Flag) {
-		nameParts := strings.Split(f.Name, ",")
-		name := strings.TrimSpace(nameParts[0])
+func makeFlagNameVisitor(names *[]string) func(Flag) {
+	return func(f Flag) {
+		nameParts := FlagNames(f)
+		name := nameParts[0]
 
 		for _, part := range nameParts {
-			part = strings.TrimSpace(part)
 			if len(part) > len(name) {
 				name = part
 			}

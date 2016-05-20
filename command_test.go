@@ -2,7 +2,6 @@ package cli
 
 import (
 	"errors"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"strings"
@@ -24,8 +23,9 @@ func TestCommandFlagParsing(t *testing.T) {
 	for _, c := range cases {
 		app := NewApp()
 		app.Writer = ioutil.Discard
-		set := flag.NewFlagSet("test", 0)
-		set.Parse(c.testArgs)
+		set := NewFlagSet("test", nil, c.testArgs)
+		err := set.Parse()
+		expect(t, err, nil)
 
 		context := NewContext(app, set, nil)
 
@@ -39,16 +39,16 @@ func TestCommandFlagParsing(t *testing.T) {
 
 		command.SkipFlagParsing = c.skipFlagParsing
 
-		err := command.Run(context)
+		err = command.Run(context)
 
 		expect(t, err, c.expectedErr)
-		expect(t, []string(context.Args()), c.testArgs)
+		expect(t, context.Args().Slice(), c.testArgs)
 	}
 }
 
 func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 	app := NewApp()
-	app.Commands = []Command{
+	app.Commands = []*Command{
 		{
 			Name: "bar",
 			Before: func(c *Context) error {
@@ -75,11 +75,11 @@ func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 
 func TestCommand_OnUsageError_WithWrongFlagValue(t *testing.T) {
 	app := NewApp()
-	app.Commands = []Command{
+	app.Commands = []*Command{
 		{
 			Name: "bar",
 			Flags: []Flag{
-				IntFlag{Name: "flag"},
+				&IntFlag{Name: "flag"},
 			},
 			OnUsageError: func(c *Context, err error, _ bool) error {
 				if !strings.HasPrefix(err.Error(), "invalid value \"wrong\"") {

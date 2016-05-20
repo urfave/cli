@@ -262,8 +262,9 @@ For example this:
 
 ```go
 cli.StringFlag{
-  Name:  "config, c",
-  Usage: "Load configuration from `FILE`",
+  Name:    "config",
+  Aliases: []string{"c"},
+  Usage:   "Load configuration from `FILE`",
 }
 ```
 
@@ -282,9 +283,10 @@ You can set alternate (or short) names for flags by providing a comma-delimited 
 ``` go
 app.Flags = []cli.Flag {
   cli.StringFlag{
-    Name: "lang, l",
-    Value: "english",
-    Usage: "language for the greeting",
+    Name:    "lang",
+    Aliases: []string{"l"},
+    Value:   "english",
+    Usage:   "language for the greeting",
   },
 }
 ```
@@ -293,28 +295,30 @@ That flag can then be set with `--lang spanish` or `-l spanish`. Note that givin
 
 #### Values from the Environment
 
-You can also have the default value set from the environment via `EnvVar`.  e.g.
+You can also have the default value set from the environment via `EnvVars`.  e.g.
 
 ``` go
 app.Flags = []cli.Flag {
   cli.StringFlag{
-    Name: "lang, l",
-    Value: "english",
-    Usage: "language for the greeting",
-    EnvVar: "APP_LANG",
+    Name:    "lang",
+    Aliases: []string{"l"},
+    Value:   "english",
+    Usage:   "language for the greeting",
+    EnvVars: []string{"APP_LANG"},
   },
 }
 ```
 
-The `EnvVar` may also be given as a comma-delimited "cascade", where the first environment variable that resolves is used as the default.
+If `EnvVars` contains more than one string, the first environment variable that resolves is used as the default.
 
 ``` go
 app.Flags = []cli.Flag {
   cli.StringFlag{
-    Name: "lang, l",
-    Value: "english",
-    Usage: "language for the greeting",
-    EnvVar: "LEGACY_COMPAT_LANG,APP_LANG,LANG",
+    Name:    "lang",
+    Aliases: []string{"l"},
+    Value:   "english",
+    Usage:   "language for the greeting",
+    EnvVars: []string{"LEGACY_COMPAT_LANG", "APP_LANG", "LANG"},
   },
 }
 ```
@@ -326,7 +330,7 @@ There is a separate package altsrc that adds support for getting flag values fro
 In order to get values for a flag from an alternate input source the following code would be added to wrap an existing cli.Flag like below:
 
 ``` go
-  altsrc.NewIntFlag(cli.IntFlag{Name: "test"})
+  altsrc.NewIntFlag(&cli.IntFlag{Name: "test"})
 ```
 
 Initialization must also occur for these flags. Below is an example initializing getting data from a yaml file below.
@@ -355,8 +359,8 @@ Here is a more complete sample of a command using YAML support:
       return nil
     },
     Flags: []cli.Flag{
-      NewIntFlag(cli.IntFlag{Name: "test"}),
-      cli.StringFlag{Name: "load"}},
+      NewIntFlag(&cli.IntFlag{Name: "test"}),
+      &cli.StringFlag{Name: "load"}},
   }
   command.Before = InitInputSourceWithContext(command.Flags, NewYamlSourceFromFlagFunc("load"))
   err := command.Run(c)
@@ -368,10 +372,10 @@ Subcommands can be defined for a more git-like command line app.
 
 ```go
 ...
-app.Commands = []cli.Command{
+app.Commands = []*cli.Command{
   {
     Name:      "add",
-    Aliases:     []string{"a"},
+    Aliases:   []string{"a"},
     Usage:     "add a task to the list",
     Action: func(c *cli.Context) error {
       fmt.Println("added task: ", c.Args().First())
@@ -380,7 +384,7 @@ app.Commands = []cli.Command{
   },
   {
     Name:      "complete",
-    Aliases:     []string{"c"},
+    Aliases:   []string{"c"},
     Usage:     "complete a task on the list",
     Action: func(c *cli.Context) error {
       fmt.Println("completed task: ", c.Args().First())
@@ -389,9 +393,9 @@ app.Commands = []cli.Command{
   },
   {
     Name:      "template",
-    Aliases:     []string{"r"},
+    Aliases:   []string{"r"},
     Usage:     "options for task templates",
-    Subcommands: []cli.Command{
+    Subcommands: []*cli.Command{
       {
         Name:  "add",
         Usage: "add a new template",
@@ -424,7 +428,7 @@ E.g.
 
 ```go
 ...
-  app.Commands = []cli.Command{
+  app.Commands = []*cli.Command{
     {
       Name: "noop",
     },
@@ -472,7 +476,7 @@ import (
 func main() {
   app := cli.NewApp()
   app.Flags = []cli.Flag{
-    cli.BoolFlag{
+    &cli.BoolFlag{
       Name:  "ginger-crouton",
       Value: true,
       Usage: "is it in the soup?",
@@ -501,7 +505,7 @@ the App or its subcommands.
 var tasks = []string{"cook", "clean", "laundry", "eat", "sleep", "code"}
 app := cli.NewApp()
 app.EnableBashCompletion = true
-app.Commands = []cli.Command{
+app.Commands = []*cli.Command{
   {
     Name:  "complete",
     Aliases: []string{"c"},

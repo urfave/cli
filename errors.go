@@ -90,3 +90,23 @@ func HandleExitCoder(err error) {
 		}
 	}
 }
+
+// MissingFlagError is used to indicate when a flag lookup has failed because
+// there is no matching flag defined
+type MissingFlagError struct {
+	Name string
+}
+
+// Error returns the string message, fulfilling the interface required by
+// `error`
+func (mfe *MissingFlagError) Error() string {
+	return fmt.Sprintf("no such flag %q", mfe.Name)
+}
+
+type flagConflictError struct {
+	Name string
+}
+
+func (fce *flagConflictError) Error() string {
+	return fmt.Sprintf("flag name conflict detected for: %s", fce.Name)
+}

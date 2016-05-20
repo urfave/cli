@@ -1,92 +1,117 @@
 package cli
 
 import (
-	"flag"
 	"sort"
 	"testing"
 	"time"
 )
 
 func TestNewContext(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Int("myflag", 12, "doc")
-	set.Float64("myflag64", float64(17), "doc")
-	globalSet := flag.NewFlagSet("test", 0)
-	globalSet.Int("myflag", 42, "doc")
-	globalSet.Float64("myflag64", float64(47), "doc")
-	globalCtx := NewContext(nil, globalSet, nil)
-	command := Command{Name: "mycommand"}
-	c := NewContext(nil, set, globalCtx)
+	set := NewFlagSet("test", []Flag{
+		&IntFlag{
+			Name:  "myflag",
+			Value: 12,
+		},
+		&Float64Flag{
+			Name:  "myflag64",
+			Value: float64(17),
+		},
+	}, nil)
+
+	topSet := NewFlagSet("test", []Flag{
+		&IntFlag{
+			Name:  "myflag",
+			Value: 42,
+		},
+		&Float64Flag{
+			Name:  "myflag64",
+			Value: float64(47),
+		},
+	}, nil)
+
+	topCtx := NewContext(nil, topSet, nil)
+	command := &Command{Name: "mycommand"}
+	c := NewContext(nil, set, topCtx)
 	c.Command = command
+
 	expect(t, c.Int("myflag"), 12)
 	expect(t, c.Float64("myflag64"), float64(17))
 	expect(t, c.Command.Name, "mycommand")
 }
 
 func TestContext_Int(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Int("myflag", 12, "doc")
+	set := NewFlagSet("test",
+		[]Flag{&IntFlag{Name: "myflag", Value: 12}}, nil)
 	c := NewContext(nil, set, nil)
 	expect(t, c.Int("myflag"), 12)
 }
 
 func TestContext_Float64(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Float64("myflag", float64(17), "doc")
+	set := NewFlagSet("test",
+		[]Flag{&Float64Flag{Name: "myflag", Value: float64(17)}}, nil)
 	c := NewContext(nil, set, nil)
 	expect(t, c.Float64("myflag"), float64(17))
 }
 
 func TestContext_Duration(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Duration("myflag", time.Duration(12*time.Second), "doc")
+	set := NewFlagSet("test",
+		[]Flag{&DurationFlag{Name: "myflag", Value: time.Duration(12 * time.Second)}}, nil)
 	c := NewContext(nil, set, nil)
 	expect(t, c.Duration("myflag"), time.Duration(12*time.Second))
 }
 
 func TestContext_String(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.String("myflag", "hello world", "doc")
+	set := NewFlagSet("test",
+		[]Flag{&StringFlag{Name: "myflag", Value: "hello world"}}, nil)
 	c := NewContext(nil, set, nil)
 	expect(t, c.String("myflag"), "hello world")
 }
 
 func TestContext_Bool(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Bool("myflag", false, "doc")
+	set := NewFlagSet("test", []Flag{&BoolFlag{Name: "myflag"}}, nil)
 	c := NewContext(nil, set, nil)
 	expect(t, c.Bool("myflag"), false)
 }
 
 func TestContext_Args(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Bool("myflag", false, "doc")
+	set := NewFlagSet("test",
+		[]Flag{&BoolFlag{Name: "myflag"}},
+		[]string{"--myflag", "bat", "baz"})
+	err := set.Parse()
+	expect(t, err, nil)
+
 	c := NewContext(nil, set, nil)
-	set.Parse([]string{"--myflag", "bat", "baz"})
-	expect(t, len(c.Args()), 2)
+	expect(t, c.NumArgs(), 2)
 	expect(t, c.Bool("myflag"), true)
 }
 
-func TestContext_NArg(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Bool("myflag", false, "doc")
+func TestContext_NumArgs(t *testing.T) {
+	set := NewFlagSet("test",
+		[]Flag{&BoolFlag{Name: "myflag"}},
+		[]string{"--myflag", "bat", "baz"})
+	err := set.Parse()
+	expect(t, err, nil)
 	c := NewContext(nil, set, nil)
-	set.Parse([]string{"--myflag", "bat", "baz"})
-	expect(t, c.NArg(), 2)
+	expect(t, c.NumArgs(), 2)
 }
 
 func TestContext_IsSet(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Bool("one-flag", false, "doc")
-	set.Bool("two-flag", false, "doc")
-	set.String("three-flag", "hello world", "doc")
-	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.Bool("top-flag", true, "doc")
-	parentCtx := NewContext(nil, parentSet, nil)
-	ctx := NewContext(nil, set, parentCtx)
+	set := NewFlagSet("test", []Flag{
+		&BoolFlag{Name: "one-flag"},
+		&BoolFlag{Name: "two-flag"},
+		&StringFlag{Name: "three-flag", Value: "hello world"},
+	}, []string{"--one-flag", "--two-flag", "--three-flag", "frob"})
+	err := set.Parse()
+	expect(t, err, nil)
 
-	set.Parse([]string{"--one-flag", "--two-flag", "--three-flag", "frob"})
-	parentSet.Parse([]string{"--top-flag"})
+	parentSet := NewFlagSet("test",
+		[]Flag{
+			&BoolFlag{Name: "top-flag", Value: true},
+		}, []string{"--top-flag"})
+	err = parentSet.Parse()
+	expect(t, err, nil)
+
+	ctx := NewContext(nil, set, NewContext(nil, parentSet, nil))
 
 	expect(t, ctx.IsSet("one-flag"), true)
 	expect(t, ctx.IsSet("two-flag"), true)
@@ -96,21 +121,25 @@ func TestContext_IsSet(t *testing.T) {
 }
 
 func TestContext_NumFlags(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Bool("myflag", false, "doc")
-	set.String("otherflag", "hello world", "doc")
-	globalSet := flag.NewFlagSet("test", 0)
-	globalSet.Bool("myflagGlobal", true, "doc")
-	globalCtx := NewContext(nil, globalSet, nil)
-	c := NewContext(nil, set, globalCtx)
-	set.Parse([]string{"--myflag", "--otherflag=foo"})
-	globalSet.Parse([]string{"--myflagGlobal"})
+	set := NewFlagSet("test", []Flag{
+		&BoolFlag{Name: "myflag"},
+		&StringFlag{Name: "otherflag", Value: "hello world"},
+	}, []string{"--myflag", "--otherflag=foo"})
+	err := set.Parse()
+	expect(t, err, nil)
+
+	parentSet := NewFlagSet("test", []Flag{
+		&BoolFlag{Name: "myflagGlobal", Value: true},
+	}, []string{"--myflagGlobal"})
+	err = parentSet.Parse()
+	expect(t, err, nil)
+
+	c := NewContext(nil, set, NewContext(nil, parentSet, nil))
 	expect(t, c.NumFlags(), 2)
 }
 
 func TestContext_Set(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Int("int", 5, "an int")
+	set := NewFlagSet("test", []Flag{&IntFlag{Name: "int", Value: 5}}, nil)
 	c := NewContext(nil, set, nil)
 
 	c.Set("int", "1")
@@ -118,15 +147,20 @@ func TestContext_Set(t *testing.T) {
 }
 
 func TestContext_LocalFlagNames(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Bool("one-flag", false, "doc")
-	set.String("two-flag", "hello world", "doc")
-	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.Bool("top-flag", true, "doc")
-	parentCtx := NewContext(nil, parentSet, nil)
-	ctx := NewContext(nil, set, parentCtx)
-	set.Parse([]string{"--one-flag", "--two-flag=foo"})
-	parentSet.Parse([]string{"--top-flag"})
+	set := NewFlagSet("test", []Flag{
+		&BoolFlag{Name: "one-flag"},
+		&StringFlag{Name: "two-flag", Value: "hello world"},
+	}, []string{"--one-flag", "--two-flag=foo"})
+	err := set.Parse()
+	expect(t, err, nil)
+
+	parentSet := NewFlagSet("test", []Flag{
+		&BoolFlag{Name: "top-flag", Value: true},
+	}, []string{"--top-flag"})
+	err = parentSet.Parse()
+	expect(t, err, nil)
+
+	ctx := NewContext(nil, set, NewContext(nil, parentSet, nil))
 
 	actualFlags := ctx.LocalFlagNames()
 	sort.Strings(actualFlags)
@@ -135,15 +169,20 @@ func TestContext_LocalFlagNames(t *testing.T) {
 }
 
 func TestContext_FlagNames(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Bool("one-flag", false, "doc")
-	set.String("two-flag", "hello world", "doc")
-	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.Bool("top-flag", true, "doc")
-	parentCtx := NewContext(nil, parentSet, nil)
-	ctx := NewContext(nil, set, parentCtx)
-	set.Parse([]string{"--one-flag", "--two-flag=foo"})
-	parentSet.Parse([]string{"--top-flag"})
+	set := NewFlagSet("test", []Flag{
+		&BoolFlag{Name: "one-flag"},
+		&StringFlag{Name: "two-flag", Value: "hello world"},
+	}, []string{"--one-flag", "--two-flag=foo"})
+	err := set.Parse()
+	expect(t, err, nil)
+
+	parentSet := NewFlagSet("test", []Flag{
+		&BoolFlag{Name: "top-flag", Value: true},
+	}, []string{"--top-flag"})
+	err = parentSet.Parse()
+	expect(t, err, nil)
+
+	ctx := NewContext(nil, set, NewContext(nil, parentSet, nil))
 
 	actualFlags := ctx.FlagNames()
 	sort.Strings(actualFlags)
@@ -152,14 +191,20 @@ func TestContext_FlagNames(t *testing.T) {
 }
 
 func TestContext_Lineage(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Bool("local-flag", false, "doc")
-	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.Bool("top-flag", true, "doc")
+	set := NewFlagSet("test", []Flag{
+		&BoolFlag{Name: "local-flag"},
+	}, []string{"--local-flag"})
+	err := set.Parse()
+	expect(t, err, nil)
+
+	parentSet := NewFlagSet("test", []Flag{
+		&BoolFlag{Name: "top-flag", Value: true},
+	}, []string{"--top-flag"})
+	err = parentSet.Parse()
+	expect(t, err, nil)
+
 	parentCtx := NewContext(nil, parentSet, nil)
 	ctx := NewContext(nil, set, parentCtx)
-	set.Parse([]string{"--local-flag"})
-	parentSet.Parse([]string{"--top-flag"})
 
 	lineage := ctx.Lineage()
 	expect(t, len(lineage), 2)
@@ -168,22 +213,28 @@ func TestContext_Lineage(t *testing.T) {
 }
 
 func TestContext_lookupFlagSet(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Bool("local-flag", false, "doc")
-	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.Bool("top-flag", true, "doc")
+	set := NewFlagSet("test", []Flag{
+		&BoolFlag{Name: "local-flag"},
+	}, []string{"--local-flag"})
+	err := set.Parse()
+	expect(t, err, nil)
+
+	parentSet := NewFlagSet("test", []Flag{
+		&BoolFlag{Name: "top-flag", Value: true},
+	}, []string{"--top-flag"})
+	err = parentSet.Parse()
+	expect(t, err, nil)
+
 	parentCtx := NewContext(nil, parentSet, nil)
 	ctx := NewContext(nil, set, parentCtx)
-	set.Parse([]string{"--local-flag"})
-	parentSet.Parse([]string{"--top-flag"})
 
-	fs := lookupFlagSet("top-flag", ctx)
+	fs := ctx.lookupFlagSet("top-flag")
 	expect(t, fs, parentCtx.flagSet)
 
-	fs = lookupFlagSet("local-flag", ctx)
+	fs = ctx.lookupFlagSet("local-flag")
 	expect(t, fs, ctx.flagSet)
 
-	if fs := lookupFlagSet("frob", ctx); fs != nil {
+	if fs := ctx.lookupFlagSet("frob"); fs != nil {
 		t.Fail()
 	}
 }
