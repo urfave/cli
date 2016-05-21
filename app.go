@@ -122,7 +122,7 @@ func (a *App) setup() {
 	if a.Command(helpCommand.Name) == nil && !a.HideHelp {
 		a.appendCommand(helpCommand)
 
-		if HelpFlag != (&BoolFlag{}) {
+		if HelpFlag != nil {
 			a.appendFlag(HelpFlag)
 		}
 	}
@@ -231,7 +231,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 		if a.Command(helpCommand.Name) == nil && !a.HideHelp {
 			a.appendCommand(helpCommand)
 
-			if HelpFlag != (&BoolFlag{}) {
+			if HelpFlag != nil {
 				a.appendFlag(HelpFlag)
 			}
 		}

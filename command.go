@@ -65,7 +65,7 @@ func (c *Command) Run(ctx *Context) (err error) {
 		return c.startApp(ctx)
 	}
 
-	if !c.HideHelp && HelpFlag != (&BoolFlag{}) {
+	if !c.HideHelp && HelpFlag != nil {
 		// append help to flags
 		c.appendFlag(HelpFlag)
 	}
