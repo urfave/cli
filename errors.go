@@ -90,3 +90,11 @@ func HandleExitCoder(err error) {
 		}
 	}
 }
+
+type flagConflictError struct {
+	Name string
+}
+
+func (fce *flagConflictError) Error() string {
+	return fmt.Sprintf("flag name conflict detected for: %s", fce.Name)
+}

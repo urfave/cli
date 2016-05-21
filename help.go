@@ -10,7 +10,7 @@ import (
 )
 
 // AppHelpTemplate is the text template for the Default help topic.
-// cli.go uses text/template to render templates. You can
+// cli uses text/template to render templates. You can
 // render custom help text by setting this variable.
 var AppHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
@@ -37,7 +37,7 @@ COPYRIGHT:
 `
 
 // CommandHelpTemplate is the text template for the command help topic.
-// cli.go uses text/template to render templates. You can
+// cli uses text/template to render templates. You can
 // render custom help text by setting this variable.
 var CommandHelpTemplate = `NAME:
    {{.HelpName}} - {{.Usage}}
@@ -57,7 +57,7 @@ OPTIONS:
 `
 
 // SubcommandHelpTemplate is the text template for the subcommand help topic.
-// cli.go uses text/template to render templates. You can
+// cli uses text/template to render templates. You can
 // render custom help text by setting this variable.
 var SubcommandHelpTemplate = `NAME:
    {{.HelpName}} - {{.Usage}}
@@ -74,7 +74,7 @@ OPTIONS:
    {{end}}{{end}}
 `
 
-var helpCommand = Command{
+var helpCommand = &Command{
 	Name:      "help",
 	Aliases:   []string{"h"},
 	Usage:     "Shows a list of commands or help for one command",
@@ -105,16 +105,11 @@ var helpSubcommand = Command{
 	},
 }
 
-// Prints help for the App or Command
-type helpPrinter func(w io.Writer, templ string, data interface{})
-
-// HelpPrinter is a function that writes the help output. If not set a default
-// is used. The function signature is:
-// func(w io.Writer, templ string, data interface{})
-var HelpPrinter helpPrinter = printHelp
+// HelpPrinter is a function that writes the help output.
+var HelpPrinter HelpPrinterFunc = printHelp
 
 // VersionPrinter prints the version for the App
-var VersionPrinter = printVersion
+var VersionPrinter VersionPrinterFunc = printVersion
 
 // ShowAppHelp is an action that displays the help.
 func ShowAppHelp(c *Context) {
@@ -158,7 +153,15 @@ func ShowCommandHelp(ctx *Context, command string) error {
 
 // ShowSubcommandHelp prints help for the given subcommand
 func ShowSubcommandHelp(c *Context) error {
-	return ShowCommandHelp(c, c.Command.Name)
+	if c == nil {
+		return nil
+	}
+
+	if c.Command != nil {
+		return ShowCommandHelp(c, c.Command.Name)
+	}
+
+	return ShowCommandHelp(c, "")
 }
 
 // ShowVersion prints the version number of the App
@@ -208,11 +211,11 @@ func printHelp(out io.Writer, templ string, data interface{}) {
 func checkVersion(c *Context) bool {
 	found := false
 	if VersionFlag.Name != "" {
-		eachName(VersionFlag.Name, func(name string) {
+		for _, name := range VersionFlag.Names() {
 			if c.Bool(name) {
 				found = true
 			}
-		})
+		}
 	}
 	return found
 }
@@ -220,11 +223,11 @@ func checkVersion(c *Context) bool {
 func checkHelp(c *Context) bool {
 	found := false
 	if HelpFlag.Name != "" {
-		eachName(HelpFlag.Name, func(name string) {
+		for _, name := range HelpFlag.Names() {
 			if c.Bool(name) {
 				found = true
 			}
-		})
+		}
 	}
 	return found
 }
