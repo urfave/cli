@@ -33,7 +33,7 @@ def main(sysargs=sys.argv[:]):
 
 def _test():
     if check_output('go version'.split()).split()[2] < 'go1.2':
-        _run('go test -v ./...'.split())
+        _run('go test -v .'.split())
         return
 
     coverprofiles = []
