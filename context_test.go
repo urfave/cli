@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"os"
 	"sort"
 	"testing"
 	"time"
@@ -135,7 +136,26 @@ func TestContext_NumFlags(t *testing.T) {
 	expect(t, err, nil)
 
 	c := NewContext(nil, set, NewContext(nil, parentSet, nil))
-	expect(t, c.NumFlags(), 2)
+	expect(t, c.NumFlags(), 3)
+}
+
+func TestContext_NumFlagsWithEnvVars(t *testing.T) {
+	os.Setenv("MYFLAG", "true")
+	set := NewFlagSet("test", []Flag{
+		&BoolFlag{Name: "myflag", EnvVars: []string{"MYFLAG"}},
+		&StringFlag{Name: "otherflag", Value: "hello world"},
+	}, []string{"--otherflag=foo"})
+	err := set.Parse()
+	expect(t, err, nil)
+
+	parentSet := NewFlagSet("test", []Flag{
+		&BoolFlag{Name: "myflagGlobal", Value: true},
+	}, []string{"--myflagGlobal"})
+	err = parentSet.Parse()
+	expect(t, err, nil)
+
+	c := NewContext(nil, set, NewContext(nil, parentSet, nil))
+	expect(t, c.NumFlags(), 3)
 }
 
 func TestContext_Set(t *testing.T) {

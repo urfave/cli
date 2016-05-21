@@ -10,7 +10,7 @@ import (
 )
 
 // AppHelpTemplate is the text template for the Default help topic.
-// cli.go uses text/template to render templates. You can
+// cli uses text/template to render templates. You can
 // render custom help text by setting this variable.
 var AppHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
@@ -37,7 +37,7 @@ COPYRIGHT:
 `
 
 // CommandHelpTemplate is the text template for the command help topic.
-// cli.go uses text/template to render templates. You can
+// cli uses text/template to render templates. You can
 // render custom help text by setting this variable.
 var CommandHelpTemplate = `NAME:
    {{.HelpName}} - {{.Usage}}
@@ -57,7 +57,7 @@ OPTIONS:
 `
 
 // SubcommandHelpTemplate is the text template for the subcommand help topic.
-// cli.go uses text/template to render templates. You can
+// cli uses text/template to render templates. You can
 // render custom help text by setting this variable.
 var SubcommandHelpTemplate = `NAME:
    {{.HelpName}} - {{.Usage}}
@@ -105,16 +105,11 @@ var helpSubcommand = Command{
 	},
 }
 
-// Prints help for the App or Command
-type helpPrinter func(w io.Writer, templ string, data interface{})
-
-// HelpPrinter is a function that writes the help output. If not set a default
-// is used. The function signature is:
-// func(w io.Writer, templ string, data interface{})
-var HelpPrinter helpPrinter = printHelp
+// HelpPrinter is a function that writes the help output.
+var HelpPrinter HelpPrinterFunc = printHelp
 
 // VersionPrinter prints the version for the App
-var VersionPrinter = printVersion
+var VersionPrinter VersionPrinterFunc = printVersion
 
 // ShowAppHelp is an action that displays the help.
 func ShowAppHelp(c *Context) {
@@ -216,7 +211,7 @@ func printHelp(out io.Writer, templ string, data interface{}) {
 func checkVersion(c *Context) bool {
 	found := false
 	if VersionFlag.Name != "" {
-		for _, name := range VersionFlag.GetNames() {
+		for _, name := range VersionFlag.Names() {
 			if c.Bool(name) {
 				found = true
 			}
@@ -228,7 +223,7 @@ func checkVersion(c *Context) bool {
 func checkHelp(c *Context) bool {
 	found := false
 	if HelpFlag.Name != "" {
-		for _, name := range HelpFlag.GetNames() {
+		for _, name := range HelpFlag.Names() {
 			if c.Bool(name) {
 				found = true
 			}

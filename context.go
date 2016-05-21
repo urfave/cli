@@ -5,10 +5,9 @@ import (
 	"time"
 )
 
-// Context is a type that is passed through to
-// each Handler action in a cli application. Context
-// can be used to retrieve context-specific Args and
-// parsed command-line options.
+// Context is a type that is passed through to each action in a cli application.
+// Context can be used to retrieve context-specific Args and parsed command-line
+// options.
 type Context struct {
 	App     *App
 	Command *Command
@@ -93,7 +92,13 @@ func (c *Context) Generic(name string) interface{} {
 
 // NumFlags returns the number of flags set
 func (c *Context) NumFlags() int {
-	return c.flagSet.NumFlags()
+	n := 0
+	for _, name := range c.FlagNames() {
+		if c.IsSet(name) {
+			n++
+		}
+	}
+	return n
 }
 
 // Set sets a context flag to a string value.
@@ -213,7 +218,7 @@ func (a *Args) Slice() []string {
 
 func makeFlagNameVisitor(names *[]string) func(Flag) {
 	return func(f Flag) {
-		nameParts := f.GetNames()
+		nameParts := f.Names()
 		name := nameParts[0]
 
 		for _, part := range nameParts {

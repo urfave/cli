@@ -81,7 +81,7 @@ func (f *GenericFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourc
 				return err
 			}
 			if value != nil {
-				for _, name := range f.GetNames() {
+				for _, name := range f.Names() {
 					f.set.SetString(name, value.String())
 				}
 			}
@@ -130,7 +130,7 @@ func (f *StringSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputS
 	}
 
 	var sliceValue cli.StringSlice = *(cli.NewStringSlice(value...))
-	for _, name := range f.GetNames() {
+	for _, name := range f.Names() {
 		underlyingFlag := f.set.Lookup(name)
 		if underlyingFlag != nil {
 			f.set.SetString(name, sliceValue.Serialized())
@@ -179,7 +179,7 @@ func (f *IntSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSour
 	}
 
 	var sliceValue cli.IntSlice = *(cli.NewIntSlice(value...))
-	for _, name := range f.GetNames() {
+	for _, name := range f.Names() {
 		underlyingFlag := f.set.Lookup(name)
 		if underlyingFlag != nil {
 			f.set.SetString(name, sliceValue.Serialized())
@@ -217,7 +217,7 @@ func (f *BoolFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceCo
 				return err
 			}
 			if value {
-				for _, name := range f.GetNames() {
+				for _, name := range f.Names() {
 					f.set.SetString(name, strconv.FormatBool(value))
 				}
 			}
@@ -254,7 +254,7 @@ func (f *StringFlag) ApplyInputSourceValue(context *cli.Context, isc InputSource
 				return err
 			}
 			if value != "" {
-				for _, name := range f.GetNames() {
+				for _, name := range f.Names() {
 					f.set.SetString(name, value)
 				}
 			}
@@ -292,7 +292,7 @@ func (f *IntFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceCon
 				return err
 			}
 			if value > 0 {
-				for _, name := range f.GetNames() {
+				for _, name := range f.Names() {
 					f.set.SetString(name, strconv.FormatInt(int64(value), 10))
 				}
 			}
@@ -329,7 +329,7 @@ func (f *DurationFlag) ApplyInputSourceValue(context *cli.Context, isc InputSour
 				return err
 			}
 			if value > 0 {
-				for _, name := range f.GetNames() {
+				for _, name := range f.Names() {
 					f.set.SetString(name, value.String())
 				}
 			}
@@ -378,7 +378,7 @@ func (f *Float64Flag) ApplyInputSourceValue(context *cli.Context, isc InputSourc
 	}
 
 	floatStr := float64ToString(value)
-	for _, name := range f.GetNames() {
+	for _, name := range f.Names() {
 		f.set.SetString(name, floatStr)
 	}
 

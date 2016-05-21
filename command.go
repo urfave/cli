@@ -157,11 +157,11 @@ func (c *Command) Run(ctx *Context) (err error) {
 
 // Names returns the names including short names and aliases.
 func (c *Command) Names() []string {
-	names := []string{c.Name}
-	return append(names, c.Aliases...)
+	return append([]string{c.Name}, c.Aliases...)
 }
 
-// HasName returns true if Command.Name matches given name
+// HasName returns true if the given name matches the command name or one of its
+// aliases.
 func (c *Command) HasName(name string) bool {
 	for _, n := range c.Names() {
 		if n == name {

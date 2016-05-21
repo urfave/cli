@@ -1,11 +1,16 @@
 package cli
 
 import (
+	"errors"
 	"flag"
 	"io/ioutil"
 	"os"
 	"strconv"
 	"time"
+)
+
+var (
+	missingFlagErr = errors.New("missing flag")
 )
 
 type FlagSet struct {
@@ -44,7 +49,7 @@ func NewFlagSet(name string, flags []Flag, args []string) *FlagSet {
 func (fs *FlagSet) apply() {
 	for _, f := range fs.Flags {
 		f.Apply(fs)
-		for _, name := range f.GetNames() {
+		for _, name := range f.Names() {
 			fs.index[name] = f
 		}
 	}
@@ -61,10 +66,6 @@ func (fs *FlagSet) Parse() error {
 
 func (fs *FlagSet) RemainingArgs() []string {
 	return fs.s.Args()
-}
-
-func (fs *FlagSet) NumFlags() int {
-	return fs.s.NFlag()
 }
 
 func (fs *FlagSet) IsSet(name string) bool {
@@ -95,7 +96,7 @@ func (fs *FlagSet) IsSet(name string) bool {
 }
 
 func (fs *FlagSet) Each(f func(fl Flag)) {
-	fs.s.Visit(func(ff *flag.Flag) {
+	fs.s.VisitAll(func(ff *flag.Flag) {
 		cliFlag := fs.Lookup(ff.Name)
 		if cliFlag != nil {
 			f(cliFlag)
@@ -118,7 +119,7 @@ func (fs *FlagSet) getValue(name string) (flag.Value, error) {
 		}
 	}
 
-	return nil, &MissingFlagError{Name: name}
+	return nil, missingFlagErr
 }
 
 func (fs *FlagSet) GetInt(name string) int {
@@ -264,7 +265,7 @@ func (fs *FlagSet) normalize() error {
 	})
 
 	for _, f := range fs.Flags {
-		parts := f.GetNames()
+		parts := f.Names()
 		if len(parts) == 1 {
 			continue
 		}
@@ -303,7 +304,8 @@ func (fs *FlagSet) copyFlag(name string, ff *flag.Flag) {
 	}
 }
 
-// Serializeder is used to circumvent the limitations of flag.FlagSet.Set
+// Serializeder is fulfilled by *StringSlice and *IntSlice to circumvent the
+// limitations of flag.FlagSet.Set.
 type Serializeder interface {
 	Serialized() string
 }

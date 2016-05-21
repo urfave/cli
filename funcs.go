@@ -1,5 +1,7 @@
 package cli
 
+import "io"
+
 // BashCompleteFunc is an action to execute when the bash-completion flag is set
 type BashCompleteFunc func(*Context)
 
@@ -26,3 +28,9 @@ type OnUsageErrorFunc func(context *Context, err error, isSubcommand bool) error
 // FlagStringFunc is used by the help generation to display a flag, which is
 // expected to be a single line.
 type FlagStringFunc func(Flag) string
+
+// HelpPrinterFunc is used by the help generation as a top-level entry point.
+type HelpPrinterFunc func(out io.Writer, templ string, data interface{})
+
+// VersionPrinterFunc is used to print the version given a context.
+type VersionPrinterFunc func(context *Context)

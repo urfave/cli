@@ -28,9 +28,9 @@ var VersionFlag = &BoolFlag{
 	Usage:   "print the version",
 }
 
-// HelpFlag prints the help for all commands and subcommands
-// Set to the zero value (BoolFlag{}) to disable flag -- keeps subcommand
-// unless HideHelp is set to true)
+// HelpFlag prints the help for all commands and subcommands.
+// Set to the zero value (&BoolFlag{}) to disable the flag.  The subcommand
+// will still be added unless HideHelp is set to true.
 var HelpFlag = &BoolFlag{
 	Name:    "help",
 	Aliases: []string{"h"},
@@ -48,7 +48,7 @@ type Flag interface {
 	fmt.Stringer
 	// Apply Flag settings to the given flag set
 	Apply(*FlagSet)
-	GetNames() []string
+	Names() []string
 }
 
 // Generic is a generic parseable type identified by a specific flag
@@ -88,13 +88,13 @@ func (f *GenericFlag) Apply(set *FlagSet) {
 		}
 	}
 
-	for _, name := range f.GetNames() {
+	for _, name := range f.Names() {
 		set.DefGenericVar(f.Value, name, f.Usage)
 	}
 }
 
-// GetNames returns the names of a flag.
-func (f *GenericFlag) GetNames() []string {
+// Names returns the names of a flag.
+func (f *GenericFlag) Names() []string {
 	return append([]string{f.Name}, f.Aliases...)
 }
 
@@ -180,13 +180,13 @@ func (f *StringSliceFlag) Apply(set *FlagSet) {
 		f.Value = NewStringSlice()
 	}
 
-	for _, name := range f.GetNames() {
+	for _, name := range f.Names() {
 		set.DefStringSliceVar(f.Value, name, f.Usage)
 	}
 }
 
-// GetNames returns the name of a flag.
-func (f *StringSliceFlag) GetNames() []string {
+// Names returns the name of a flag.
+func (f *StringSliceFlag) Names() []string {
 	return append([]string{f.Name}, f.Aliases...)
 }
 
@@ -290,13 +290,13 @@ func (f *IntSliceFlag) Apply(set *FlagSet) {
 		f.Value = NewIntSlice()
 	}
 
-	for _, name := range f.GetNames() {
+	for _, name := range f.Names() {
 		set.DefIntSliceVar(f.Value, name, f.Usage)
 	}
 }
 
-// GetNames returns the name of the flag.
-func (f *IntSliceFlag) GetNames() []string {
+// Names returns the name of the flag.
+func (f *IntSliceFlag) Names() []string {
 	return append([]string{f.Name}, f.Aliases...)
 }
 
@@ -331,7 +331,7 @@ func (f *BoolFlag) Apply(set *FlagSet) {
 		}
 	}
 
-	for _, name := range f.GetNames() {
+	for _, name := range f.Names() {
 		if f.Destination != nil {
 			set.DefBoolVar(f.Destination, name, f.Value, f.Usage)
 			return
@@ -340,8 +340,8 @@ func (f *BoolFlag) Apply(set *FlagSet) {
 	}
 }
 
-// GetNames returns the name of the flag.
-func (f *BoolFlag) GetNames() []string {
+// Names returns the name of the flag.
+func (f *BoolFlag) Names() []string {
 	return append([]string{f.Name}, f.Aliases...)
 }
 
@@ -373,7 +373,7 @@ func (f *StringFlag) Apply(set *FlagSet) {
 		}
 	}
 
-	for _, name := range f.GetNames() {
+	for _, name := range f.Names() {
 		if f.Destination != nil {
 			set.DefStringVar(f.Destination, name, f.Value, f.Usage)
 			return
@@ -382,13 +382,13 @@ func (f *StringFlag) Apply(set *FlagSet) {
 	}
 }
 
-// GetNames returns the name of the flag.
-func (f *StringFlag) GetNames() []string {
+// Names returns the name of the flag.
+func (f *StringFlag) Names() []string {
 	return append([]string{f.Name}, f.Aliases...)
 }
 
-// IntFlag is a flag that takes an integer
-// Errors if the value provided cannot be parsed
+// IntFlag is a flag that takes an integer.
+// Errors if the value provided cannot be parsed.
 type IntFlag struct {
 	Name        string
 	Aliases     []string
@@ -419,7 +419,7 @@ func (f *IntFlag) Apply(set *FlagSet) {
 		}
 	}
 
-	for _, name := range f.GetNames() {
+	for _, name := range f.Names() {
 		if f.Destination != nil {
 			set.DefIntVar(f.Destination, name, f.Value, f.Usage)
 			return
@@ -428,8 +428,8 @@ func (f *IntFlag) Apply(set *FlagSet) {
 	}
 }
 
-// GetNames returns the name of the flag.
-func (f *IntFlag) GetNames() []string {
+// Names returns the name of the flag.
+func (f *IntFlag) Names() []string {
 	return append([]string{f.Name}, f.Aliases...)
 }
 
@@ -465,7 +465,7 @@ func (f *DurationFlag) Apply(set *FlagSet) {
 		}
 	}
 
-	for _, name := range f.GetNames() {
+	for _, name := range f.Names() {
 		if f.Destination != nil {
 			set.DefDurationVar(f.Destination, name, f.Value, f.Usage)
 			return
@@ -474,8 +474,8 @@ func (f *DurationFlag) Apply(set *FlagSet) {
 	}
 }
 
-// GetNames returns the name of the flag.
-func (f *DurationFlag) GetNames() []string {
+// Names returns the name of the flag.
+func (f *DurationFlag) Names() []string {
 	return append([]string{f.Name}, f.Aliases...)
 }
 
@@ -510,7 +510,7 @@ func (f *Float64Flag) Apply(set *FlagSet) {
 		}
 	}
 
-	for _, name := range f.GetNames() {
+	for _, name := range f.Names() {
 		if f.Destination != nil {
 			set.DefFloat64Var(f.Destination, name, f.Value, f.Usage)
 			return
@@ -519,8 +519,8 @@ func (f *Float64Flag) Apply(set *FlagSet) {
 	}
 }
 
-// GetNames returns the name of the flag.
-func (f *Float64Flag) GetNames() []string {
+// Names returns the name of the flag.
+func (f *Float64Flag) Names() []string {
 	return append([]string{f.Name}, f.Aliases...)
 }
 
@@ -664,7 +664,7 @@ func stringifyFlag(f Flag) string {
 	usageWithDefault := strings.TrimSpace(fmt.Sprintf("%s%s", usage, defaultValueString))
 
 	return withEnvHint(flagStringSliceField(f, "EnvVars"),
-		fmt.Sprintf("%s\t%s", prefixedNames(f.GetNames(), placeholder), usageWithDefault))
+		fmt.Sprintf("%s\t%s", prefixedNames(f.Names(), placeholder), usageWithDefault))
 }
 
 func stringifyIntSliceFlag(f *IntSliceFlag) string {
