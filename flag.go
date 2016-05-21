@@ -321,6 +321,7 @@ func (f IntSliceFlag) GetName() string {
 // BoolFlag is a switch that defaults to false
 type BoolFlag struct {
 	Name        string
+	Value       bool
 	Usage       string
 	EnvVar      string
 	Destination *bool
@@ -334,14 +335,13 @@ func (f BoolFlag) String() string {
 
 // Apply populates the flag given the flag set and environment
 func (f BoolFlag) Apply(set *flag.FlagSet) {
-	val := false
 	if f.EnvVar != "" {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
 			if envVal := os.Getenv(envVar); envVal != "" {
 				envValBool, err := strconv.ParseBool(envVal)
 				if err == nil {
-					val = envValBool
+					f.Value = envValBool
 				}
 				break
 			}
@@ -350,60 +350,15 @@ func (f BoolFlag) Apply(set *flag.FlagSet) {
 
 	eachName(f.Name, func(name string) {
 		if f.Destination != nil {
-			set.BoolVar(f.Destination, name, val, f.Usage)
+			set.BoolVar(f.Destination, name, f.Value, f.Usage)
 			return
 		}
-		set.Bool(name, val, f.Usage)
+		set.Bool(name, f.Value, f.Usage)
 	})
 }
 
 // GetName returns the name of the flag.
 func (f BoolFlag) GetName() string {
-	return f.Name
-}
-
-// BoolTFlag this represents a boolean flag that is true by default, but can
-// still be set to false by --some-flag=false
-type BoolTFlag struct {
-	Name        string
-	Usage       string
-	EnvVar      string
-	Destination *bool
-	Hidden      bool
-}
-
-// String returns a readable representation of this value (for usage defaults)
-func (f BoolTFlag) String() string {
-	return FlagStringer(f)
-}
-
-// Apply populates the flag given the flag set and environment
-func (f BoolTFlag) Apply(set *flag.FlagSet) {
-	val := true
-	if f.EnvVar != "" {
-		for _, envVar := range strings.Split(f.EnvVar, ",") {
-			envVar = strings.TrimSpace(envVar)
-			if envVal := os.Getenv(envVar); envVal != "" {
-				envValBool, err := strconv.ParseBool(envVal)
-				if err == nil {
-					val = envValBool
-					break
-				}
-			}
-		}
-	}
-
-	eachName(f.Name, func(name string) {
-		if f.Destination != nil {
-			set.BoolVar(f.Destination, name, val, f.Usage)
-			return
-		}
-		set.Bool(name, val, f.Usage)
-	})
-}
-
-// GetName returns the name of the flag.
-func (f BoolTFlag) GetName() string {
 	return f.Name
 }
 
@@ -669,7 +624,7 @@ func stringifyFlag(f Flag) string {
 	defaultValueString := ""
 	val := fv.FieldByName("Value")
 
-	if val.IsValid() {
+	if val.IsValid() && val.Kind() != reflect.Bool {
 		needsPlaceholder = true
 		defaultValueString = fmt.Sprintf(" (default: %v)", val.Interface())
 

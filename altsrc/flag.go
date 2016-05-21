@@ -220,44 +220,6 @@ func (f *BoolFlag) Apply(set *flag.FlagSet) {
 	f.BoolFlag.Apply(set)
 }
 
-// BoolTFlag is the flag type that wraps cli.BoolTFlag to allow
-// for other values to be specified
-type BoolTFlag struct {
-	cli.BoolTFlag
-	set *flag.FlagSet
-}
-
-// NewBoolTFlag creates a new BoolTFlag
-func NewBoolTFlag(flag cli.BoolTFlag) *BoolTFlag {
-	return &BoolTFlag{BoolTFlag: flag, set: nil}
-}
-
-// ApplyInputSourceValue applies a BoolT value to the flagSet if required
-func (f *BoolTFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
-		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVar) {
-			value, err := isc.BoolT(f.BoolTFlag.Name)
-			if err != nil {
-				return err
-			}
-			if !value {
-				eachName(f.Name, func(name string) {
-					f.set.Set(f.Name, strconv.FormatBool(value))
-				})
-			}
-		}
-	}
-	return nil
-}
-
-// Apply saves the flagSet for later usage then calls
-// the wrapped BoolTFlag.Apply
-func (f *BoolTFlag) Apply(set *flag.FlagSet) {
-	f.set = set
-
-	f.BoolTFlag.Apply(set)
-}
-
 // StringFlag is the flag type that wraps cli.StringFlag to allow
 // for other values to be specified
 type StringFlag struct {

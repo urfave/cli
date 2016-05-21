@@ -843,55 +843,61 @@ func TestParseMultiBoolFromEnvCascade(t *testing.T) {
 	a.Run([]string{"run"})
 }
 
-func TestParseMultiBoolT(t *testing.T) {
+func TestParseMultiBoolTrue(t *testing.T) {
 	a := App{
 		Flags: []Flag{
-			BoolTFlag{Name: "serve, s"},
+			BoolFlag{Name: "implode, i", Value: true},
 		},
 		Action: func(ctx *Context) error {
-			if ctx.BoolT("serve") != true {
+			if ctx.Bool("implode") {
 				t.Errorf("main name not set")
 			}
-			if ctx.BoolT("s") != true {
+			if ctx.Bool("i") {
 				t.Errorf("short name not set")
 			}
 			return nil
 		},
 	}
-	a.Run([]string{"run", "--serve"})
+	a.Run([]string{"run", "--implode=false"})
 }
 
-func TestParseDestinationBoolT(t *testing.T) {
-	var dest bool
+func TestParseDestinationBoolTrue(t *testing.T) {
+	dest := true
+
 	a := App{
 		Flags: []Flag{
-			BoolTFlag{
+			BoolFlag{
 				Name:        "dest",
+				Value:       true,
 				Destination: &dest,
 			},
 		},
 		Action: func(ctx *Context) error {
-			if dest != true {
-				t.Errorf("expected destination BoolT true")
+			if dest {
+				t.Errorf("expected destination Bool false")
 			}
 			return nil
 		},
 	}
-	a.Run([]string{"run", "--dest"})
+	a.Run([]string{"run", "--dest=false"})
 }
 
-func TestParseMultiBoolTFromEnv(t *testing.T) {
+func TestParseMultiBoolTrueFromEnv(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("APP_DEBUG", "0")
 	a := App{
 		Flags: []Flag{
-			BoolTFlag{Name: "debug, d", EnvVar: "APP_DEBUG"},
+			BoolFlag{
+				Name:   "debug, d",
+				Value:  true,
+				EnvVar: "APP_DEBUG",
+			},
 		},
 		Action: func(ctx *Context) error {
-			if ctx.BoolT("debug") != false {
+			if ctx.Bool("debug") {
 				t.Errorf("main name not set from env")
 			}
-			if ctx.BoolT("d") != false {
+			if ctx.Bool("d") {
 				t.Errorf("short name not set from env")
 			}
 			return nil
@@ -900,18 +906,22 @@ func TestParseMultiBoolTFromEnv(t *testing.T) {
 	a.Run([]string{"run"})
 }
 
-func TestParseMultiBoolTFromEnvCascade(t *testing.T) {
+func TestParseMultiBoolTrueFromEnvCascade(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("APP_DEBUG", "0")
 	a := App{
 		Flags: []Flag{
-			BoolTFlag{Name: "debug, d", EnvVar: "COMPAT_DEBUG,APP_DEBUG"},
+			BoolFlag{
+				Name:   "debug, d",
+				Value:  true,
+				EnvVar: "COMPAT_DEBUG,APP_DEBUG",
+			},
 		},
 		Action: func(ctx *Context) error {
-			if ctx.BoolT("debug") != false {
+			if ctx.Bool("debug") {
 				t.Errorf("main name not set from env")
 			}
-			if ctx.BoolT("d") != false {
+			if ctx.Bool("d") {
 				t.Errorf("short name not set from env")
 			}
 			return nil

@@ -472,8 +472,9 @@ import (
 func main() {
   app := cli.NewApp()
   app.Flags = []cli.Flag{
-    cli.BoolTFlag{
+    cli.BoolFlag{
       Name:  "ginger-crouton",
+      Value: true,
       Usage: "is it in the soup?",
     },
   }

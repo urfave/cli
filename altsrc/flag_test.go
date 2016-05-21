@@ -145,36 +145,6 @@ func TestBoolApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	expect(t, true, c.Bool("test"))
 }
 
-func TestBoolTApplyInputSourceMethodSet(t *testing.T) {
-	c := runTest(t, testApplyInputSource{
-		Flag:     NewBoolTFlag(cli.BoolTFlag{Name: "test"}),
-		FlagName: "test",
-		MapValue: false,
-	})
-	expect(t, false, c.BoolT("test"))
-}
-
-func TestBoolTApplyInputSourceMethodContextSet(t *testing.T) {
-	c := runTest(t, testApplyInputSource{
-		Flag:               NewBoolTFlag(cli.BoolTFlag{Name: "test"}),
-		FlagName:           "test",
-		MapValue:           true,
-		ContextValueString: "false",
-	})
-	expect(t, false, c.BoolT("test"))
-}
-
-func TestBoolTApplyInputSourceMethodEnvVarSet(t *testing.T) {
-	c := runTest(t, testApplyInputSource{
-		Flag:        NewBoolTFlag(cli.BoolTFlag{Name: "test", EnvVar: "TEST"}),
-		FlagName:    "test",
-		MapValue:    true,
-		EnvVarName:  "TEST",
-		EnvVarValue: "false",
-	})
-	expect(t, false, c.BoolT("test"))
-}
-
 func TestStringApplyInputSourceMethodSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
 		Flag:     NewStringFlag(cli.StringFlag{Name: "test"}),

@@ -215,28 +215,6 @@ func (fsm *MapInputSource) Bool(name string) (bool, error) {
 	return false, nil
 }
 
-// BoolT returns an bool from the map otherwise returns true
-func (fsm *MapInputSource) BoolT(name string) (bool, error) {
-	otherGenericValue, exists := fsm.valueMap[name]
-	if exists {
-		otherValue, isType := otherGenericValue.(bool)
-		if !isType {
-			return true, incorrectTypeForFlagError(name, "bool", otherGenericValue)
-		}
-		return otherValue, nil
-	}
-	nestedGenericValue, exists := nestedVal(name, fsm.valueMap)
-	if exists {
-		otherValue, isType := nestedGenericValue.(bool)
-		if !isType {
-			return true, incorrectTypeForFlagError(name, "bool", nestedGenericValue)
-		}
-		return otherValue, nil
-	}
-
-	return true, nil
-}
-
 func incorrectTypeForFlagError(name, expectedTypeName string, value interface{}) error {
 	valueType := reflect.TypeOf(value)
 	valueTypeName := ""

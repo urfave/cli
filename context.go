@@ -59,14 +59,6 @@ func (c *Context) Bool(name string) bool {
 	return false
 }
 
-// BoolT looks up the value of a local boolT flag, returns false if no bool flag exists
-func (c *Context) BoolT(name string) bool {
-	if fs := lookupFlagSet(name, c); fs != nil {
-		return lookupBoolT(name, fs)
-	}
-	return true
-}
-
 // String looks up the value of a local string flag, returns "" if no string flag exists
 func (c *Context) String(name string) string {
 	if fs := lookupFlagSet(name, c); fs != nil {
@@ -301,19 +293,6 @@ func lookupBool(name string, set *flag.FlagSet) bool {
 	}
 
 	return false
-}
-
-func lookupBoolT(name string, set *flag.FlagSet) bool {
-	f := set.Lookup(name)
-	if f != nil {
-		val, err := strconv.ParseBool(f.Value.String())
-		if err != nil {
-			return true
-		}
-		return val
-	}
-
-	return true
 }
 
 func copyFlag(name string, ff *flag.Flag, set *flag.FlagSet) {
