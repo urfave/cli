@@ -18,7 +18,10 @@ Command line apps are usually so tiny that there is absolutely no reason why you
 
 ## Installation
 
-Make sure you have a working Go environment (go 1.1+ is *required*). [See the install instructions](http://golang.org/doc/install.html).
+Make sure you have a working Go environment.  Go version 1.1+ is required for
+core cli, whereas use of the [`./altsrc`](./altsrc) input extensions requires Go
+version 1.2+. [See the install
+instructions](http://golang.org/doc/install.html).
 
 To install cli, simply run:
 ```
