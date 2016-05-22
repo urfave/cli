@@ -3,7 +3,7 @@ package altsrc
 import (
 	"time"
 
-	"github.com/codegangsta/cli"
+	"github.com/urfave/cli"
 )
 
 // InputSourceContext is an interface used to allow

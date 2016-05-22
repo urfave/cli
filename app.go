@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	changeLogURL                    = "https://github.com/codegangsta/cli/blob/master/CHANGELOG.md"
+	changeLogURL                    = "https://github.com/urfave/cli/blob/master/CHANGELOG.md"
 	appActionDeprecationURL         = fmt.Sprintf("%s#deprecated-cli-app-action-signature", changeLogURL)
 	runAndExitOnErrorDeprecationURL = fmt.Sprintf("%s#deprecated-cli-app-runandexitonerror", changeLogURL)
 
