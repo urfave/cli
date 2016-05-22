@@ -14,8 +14,8 @@ var boolFlagTests = []struct {
 	name     string
 	expected string
 }{
-	{"help", "--help\t"},
-	{"h", "-h\t"},
+	{"help", "--help\t(default: false)"},
+	{"h", "-h\t(default: false)"},
 }
 
 func TestBoolFlagHelpOutput(t *testing.T) {
