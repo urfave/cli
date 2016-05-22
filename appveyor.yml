@@ -10,8 +10,8 @@ install:
   - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
   - set NEW_BUILD_DIR_DEST=c:\gopath\src\github.com\urfave
   - mkdir %NEW_BUILD_DIR_DEST%
-  - move %APPVEYOR_BUILD_FOLDER% %NEW_BUILD_DIR_DEST%
-  - set APPVEYOR_BUILD_FOLDER=%NEW_BUILD_DIR%\cli
+  - xcopy /s %APPVEYOR_BUILD_FOLDER% %NEW_BUILD_DIR_DEST%\cli
+  - set APPVEYOR_BUILD_FOLDER=%NEW_BUILD_DIR_DEST%\cli
   - go version
   - go env
   - go get github.com/urfave/gfmxr/...
