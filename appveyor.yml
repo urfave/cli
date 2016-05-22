@@ -2,14 +2,25 @@ version: "{build}"
 
 os: Windows Server 2012 R2
 
+environment:
+  GOPATH: c:\gopath
+  GOVERSION: 1.6
+
 install:
+  - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
+  - set NEW_BUILD_DIR_DEST=c:\gopath\src\github.com\urfave
+  - mkdir %NEW_BUILD_DIR_DEST%
+  - move %APPVEYOR_BUILD_FOLDER% %NEW_BUILD_DIR_DEST%
+  - set APPVEYOR_BUILD_FOLDER=%NEW_BUILD_DIR%\cli
   - go version
   - go env
+  - go get github.com/urfave/gfmxr/...
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
-  - go vet ./...
-  - go test -v ./...
+  - ./runtests vet
+  - ./runtests test
+  - ./runtests gfmxr
 
 test: off
 
