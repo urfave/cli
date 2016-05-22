@@ -17,22 +17,22 @@ const defaultPlaceholder = "value"
 var slPfx = fmt.Sprintf("sl:::%d:::", time.Now().UTC().UnixNano())
 
 // BashCompletionFlag enables bash-completion for all commands and subcommands
-var BashCompletionFlag = BoolFlag{
+var BashCompletionFlag = &BoolFlag{
 	Name:   "generate-bash-completion",
 	Hidden: true,
 }
 
 // VersionFlag prints the version for the application
-var VersionFlag = BoolFlag{
+var VersionFlag = &BoolFlag{
 	Name:    "version",
 	Aliases: []string{"v"},
 	Usage:   "print the version",
 }
 
 // HelpFlag prints the help for all commands and subcommands.
-// Set to the zero value (BoolFlag{}) to disable the flag.  The subcommand
+// Set to nil to disable the flag.  The subcommand
 // will still be added unless HideHelp is set to true.
-var HelpFlag = BoolFlag{
+var HelpFlag = &BoolFlag{
 	Name:    "help",
 	Aliases: []string{"h"},
 	Usage:   "show help",
@@ -85,13 +85,13 @@ type GenericFlag struct {
 // String returns the string representation of the generic flag to display the
 // help text to the user (uses the String() method of the generic flag to show
 // the value)
-func (f GenericFlag) String() string {
+func (f *GenericFlag) String() string {
 	return FlagStringer(f)
 }
 
 // Apply takes the flagset and calls Set on the generic flag with the value
 // provided by the user for parsing by the flag
-func (f GenericFlag) Apply(set *flag.FlagSet) {
+func (f *GenericFlag) Apply(set *flag.FlagSet) {
 	val := f.Value
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
@@ -109,7 +109,7 @@ func (f GenericFlag) Apply(set *flag.FlagSet) {
 }
 
 // Names returns the names of a flag.
-func (f GenericFlag) Names() []string {
+func (f *GenericFlag) Names() []string {
 	return append([]string{f.Name}, f.Aliases...)
 }
 
@@ -170,12 +170,12 @@ type StringSliceFlag struct {
 }
 
 // String returns the usage
-func (f StringSliceFlag) String() string {
+func (f *StringSliceFlag) String() string {
 	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
-func (f StringSliceFlag) Apply(set *flag.FlagSet) {
+func (f *StringSliceFlag) Apply(set *flag.FlagSet) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
 			envVar = strings.TrimSpace(envVar)
@@ -201,7 +201,7 @@ func (f StringSliceFlag) Apply(set *flag.FlagSet) {
 }
 
 // Names returns the name of a flag.
-func (f StringSliceFlag) Names() []string {
+func (f *StringSliceFlag) Names() []string {
 	return append([]string{f.Name}, f.Aliases...)
 }
 
@@ -277,12 +277,12 @@ type IntSliceFlag struct {
 }
 
 // String returns the usage
-func (f IntSliceFlag) String() string {
+func (f *IntSliceFlag) String() string {
 	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
-func (f IntSliceFlag) Apply(set *flag.FlagSet) {
+func (f *IntSliceFlag) Apply(set *flag.FlagSet) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
 			envVar = strings.TrimSpace(envVar)
@@ -311,7 +311,7 @@ func (f IntSliceFlag) Apply(set *flag.FlagSet) {
 }
 
 // Names returns the name of the flag.
-func (f IntSliceFlag) Names() []string {
+func (f *IntSliceFlag) Names() []string {
 	return append([]string{f.Name}, f.Aliases...)
 }
 
@@ -327,12 +327,12 @@ type BoolFlag struct {
 }
 
 // String returns a readable representation of this value (for usage defaults)
-func (f BoolFlag) String() string {
+func (f *BoolFlag) String() string {
 	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
-func (f BoolFlag) Apply(set *flag.FlagSet) {
+func (f *BoolFlag) Apply(set *flag.FlagSet) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
 			envVar = strings.TrimSpace(envVar)
@@ -356,7 +356,7 @@ func (f BoolFlag) Apply(set *flag.FlagSet) {
 }
 
 // Names returns the name of the flag.
-func (f BoolFlag) Names() []string {
+func (f *BoolFlag) Names() []string {
 	return append([]string{f.Name}, f.Aliases...)
 }
 
@@ -372,12 +372,12 @@ type StringFlag struct {
 }
 
 // String returns the usage
-func (f StringFlag) String() string {
+func (f *StringFlag) String() string {
 	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
-func (f StringFlag) Apply(set *flag.FlagSet) {
+func (f *StringFlag) Apply(set *flag.FlagSet) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
 			envVar = strings.TrimSpace(envVar)
@@ -398,7 +398,7 @@ func (f StringFlag) Apply(set *flag.FlagSet) {
 }
 
 // Names returns the name of the flag.
-func (f StringFlag) Names() []string {
+func (f *StringFlag) Names() []string {
 	return append([]string{f.Name}, f.Aliases...)
 }
 
@@ -415,12 +415,12 @@ type IntFlag struct {
 }
 
 // String returns the usage
-func (f IntFlag) String() string {
+func (f *IntFlag) String() string {
 	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
-func (f IntFlag) Apply(set *flag.FlagSet) {
+func (f *IntFlag) Apply(set *flag.FlagSet) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
 			envVar = strings.TrimSpace(envVar)
@@ -444,7 +444,7 @@ func (f IntFlag) Apply(set *flag.FlagSet) {
 }
 
 // Names returns the name of the flag.
-func (f IntFlag) Names() []string {
+func (f *IntFlag) Names() []string {
 	return append([]string{f.Name}, f.Aliases...)
 }
 
@@ -461,12 +461,12 @@ type DurationFlag struct {
 }
 
 // String returns a readable representation of this value (for usage defaults)
-func (f DurationFlag) String() string {
+func (f *DurationFlag) String() string {
 	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
-func (f DurationFlag) Apply(set *flag.FlagSet) {
+func (f *DurationFlag) Apply(set *flag.FlagSet) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
 			envVar = strings.TrimSpace(envVar)
@@ -490,7 +490,7 @@ func (f DurationFlag) Apply(set *flag.FlagSet) {
 }
 
 // Names returns the name of the flag.
-func (f DurationFlag) Names() []string {
+func (f *DurationFlag) Names() []string {
 	return append([]string{f.Name}, f.Aliases...)
 }
 
@@ -507,12 +507,12 @@ type Float64Flag struct {
 }
 
 // String returns the usage
-func (f Float64Flag) String() string {
+func (f *Float64Flag) String() string {
 	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
-func (f Float64Flag) Apply(set *flag.FlagSet) {
+func (f *Float64Flag) Apply(set *flag.FlagSet) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
 			envVar = strings.TrimSpace(envVar)
@@ -535,14 +535,14 @@ func (f Float64Flag) Apply(set *flag.FlagSet) {
 }
 
 // Names returns the name of the flag.
-func (f Float64Flag) Names() []string {
+func (f *Float64Flag) Names() []string {
 	return append([]string{f.Name}, f.Aliases...)
 }
 
 func visibleFlags(fl []Flag) []Flag {
 	visible := []Flag{}
 	for _, flag := range fl {
-		if !reflect.ValueOf(flag).FieldByName("Hidden").Bool() {
+		if !flagValue(flag).FieldByName("Hidden").Bool() {
 			visible = append(visible, flag)
 		}
 	}
@@ -644,10 +644,10 @@ func stringifyFlag(f Flag) string {
 	fv := flagValue(f)
 
 	switch f.(type) {
-	case IntSliceFlag:
-		return withEnvHint(flagStringSliceField(f, "EnvVars"), stringifyIntSliceFlag(f.(IntSliceFlag)))
-	case StringSliceFlag:
-		return withEnvHint(flagStringSliceField(f, "EnvVars"), stringifyStringSliceFlag(f.(StringSliceFlag)))
+	case *IntSliceFlag:
+		return withEnvHint(flagStringSliceField(f, "EnvVars"), stringifyIntSliceFlag(f.(*IntSliceFlag)))
+	case *StringSliceFlag:
+		return withEnvHint(flagStringSliceField(f, "EnvVars"), stringifyStringSliceFlag(f.(*StringSliceFlag)))
 	}
 
 	placeholder, usage := unquoteUsage(fv.FieldByName("Usage").String())
@@ -679,7 +679,7 @@ func stringifyFlag(f Flag) string {
 		fmt.Sprintf("%s\t%s", prefixedNames(f.Names(), placeholder), usageWithDefault))
 }
 
-func stringifyIntSliceFlag(f IntSliceFlag) string {
+func stringifyIntSliceFlag(f *IntSliceFlag) string {
 	defaultVals := []string{}
 	if f.Value != nil && len(f.Value.Value()) > 0 {
 		for _, i := range f.Value.Value() {
@@ -690,7 +690,7 @@ func stringifyIntSliceFlag(f IntSliceFlag) string {
 	return stringifySliceFlag(f.Usage, append([]string{f.Name}, f.Aliases...), defaultVals)
 }
 
-func stringifyStringSliceFlag(f StringSliceFlag) string {
+func stringifyStringSliceFlag(f *StringSliceFlag) string {
 	defaultVals := []string{}
 	if f.Value != nil && len(f.Value.Value()) > 0 {
 		for _, s := range f.Value.Value() {
@@ -716,4 +716,14 @@ func stringifySliceFlag(usage string, names, defaultVals []string) string {
 
 	usageWithDefault := strings.TrimSpace(fmt.Sprintf("%s%s", usage, defaultVal))
 	return fmt.Sprintf("%s\t%s", prefixedNames(names, placeholder), usageWithDefault)
+}
+
+func hasFlag(flags []Flag, fl Flag) bool {
+	for _, existing := range flags {
+		if fl == existing {
+			return true
+		}
+	}
+
+	return false
 }

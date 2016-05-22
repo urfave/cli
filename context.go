@@ -14,7 +14,7 @@ import (
 // parsed command-line options.
 type Context struct {
 	App     *App
-	Command Command
+	Command *Command
 
 	flagSet       *flag.FlagSet
 	parentContext *Context
@@ -147,54 +147,67 @@ func (c *Context) Lineage() []*Context {
 	return lineage
 }
 
-// Args contains apps console arguments
-type Args []string
-
 // Args returns the command line arguments associated with the context.
-func (c *Context) Args() Args {
-	args := Args(c.flagSet.Args())
-	return args
+func (c *Context) Args() *Args {
+	return &Args{slice: c.flagSet.Args()}
 }
 
 // NArg returns the number of the command line arguments.
 func (c *Context) NArg() int {
-	return len(c.Args())
+	return c.Args().Len()
+}
+
+// Args wraps a string slice with some convenience methods
+type Args struct {
+	slice []string
 }
 
 // Get returns the nth argument, or else a blank string
-func (a Args) Get(n int) string {
-	if len(a) > n {
-		return a[n]
+func (a *Args) Get(n int) string {
+	if len(a.slice) > n {
+		return a.slice[n]
 	}
 	return ""
 }
 
 // First returns the first argument, or else a blank string
-func (a Args) First() string {
+func (a *Args) First() string {
 	return a.Get(0)
 }
 
 // Tail returns the rest of the arguments (not the first one)
 // or else an empty string slice
-func (a Args) Tail() []string {
-	if len(a) >= 2 {
-		return []string(a)[1:]
+func (a *Args) Tail() []string {
+	if a.Len() >= 2 {
+		return a.slice[1:]
 	}
 	return []string{}
 }
 
+// Len returns the length of the wrapped slice
+func (a *Args) Len() int {
+	return len(a.slice)
+}
+
 // Present checks if there are any arguments present
-func (a Args) Present() bool {
-	return len(a) != 0
+func (a *Args) Present() bool {
+	return a.Len() != 0
 }
 
 // Swap swaps arguments at the given indexes
-func (a Args) Swap(from, to int) error {
-	if from >= len(a) || to >= len(a) {
+func (a *Args) Swap(from, to int) error {
+	if from >= a.Len() || to >= a.Len() {
 		return errors.New("index out of range")
 	}
-	a[from], a[to] = a[to], a[from]
+	a.slice[from], a.slice[to] = a.slice[to], a.slice[from]
 	return nil
+}
+
+// Slice returns a copy of the internal slice
+func (a *Args) Slice() []string {
+	ret := make([]string, len(a.slice))
+	copy(ret, a.slice)
+	return ret
 }
 
 func lookupFlagSet(name string, ctx *Context) *flag.FlagSet {

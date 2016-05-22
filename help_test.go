@@ -59,7 +59,7 @@ func Test_Help_Custom_Flags(t *testing.T) {
 		HelpFlag = oldFlag
 	}()
 
-	HelpFlag = BoolFlag{
+	HelpFlag = &BoolFlag{
 		Name:    "help",
 		Aliases: []string{"x"},
 		Usage:   "show help",
@@ -67,7 +67,7 @@ func Test_Help_Custom_Flags(t *testing.T) {
 
 	app := App{
 		Flags: []Flag{
-			BoolFlag{Name: "foo", Aliases: []string{"h"}},
+			&BoolFlag{Name: "foo", Aliases: []string{"h"}},
 		},
 		Action: func(ctx *Context) error {
 			if ctx.Bool("h") != true {
@@ -90,7 +90,7 @@ func Test_Version_Custom_Flags(t *testing.T) {
 		VersionFlag = oldFlag
 	}()
 
-	VersionFlag = BoolFlag{
+	VersionFlag = &BoolFlag{
 		Name:    "version",
 		Aliases: []string{"V"},
 		Usage:   "show version",
@@ -98,7 +98,7 @@ func Test_Version_Custom_Flags(t *testing.T) {
 
 	app := App{
 		Flags: []Flag{
-			BoolFlag{Name: "foo", Aliases: []string{"v"}},
+			&BoolFlag{Name: "foo", Aliases: []string{"v"}},
 		},
 		Action: func(ctx *Context) error {
 			if ctx.Bool("v") != true {
@@ -173,7 +173,7 @@ func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 
 func TestShowAppHelp_CommandAliases(t *testing.T) {
 	app := &App{
-		Commands: []Command{
+		Commands: []*Command{
 			{
 				Name:    "frobbly",
 				Aliases: []string{"fr", "frob"},
@@ -195,7 +195,7 @@ func TestShowAppHelp_CommandAliases(t *testing.T) {
 
 func TestShowCommandHelp_CommandAliases(t *testing.T) {
 	app := &App{
-		Commands: []Command{
+		Commands: []*Command{
 			{
 				Name:    "frobbly",
 				Aliases: []string{"fr", "frob", "bork"},
@@ -221,7 +221,7 @@ func TestShowCommandHelp_CommandAliases(t *testing.T) {
 
 func TestShowSubcommandHelp_CommandAliases(t *testing.T) {
 	app := &App{
-		Commands: []Command{
+		Commands: []*Command{
 			{
 				Name:    "frobbly",
 				Aliases: []string{"fr", "frob", "bork"},
@@ -243,7 +243,7 @@ func TestShowSubcommandHelp_CommandAliases(t *testing.T) {
 
 func TestShowAppHelp_HiddenCommand(t *testing.T) {
 	app := &App{
-		Commands: []Command{
+		Commands: []*Command{
 			{
 				Name: "frobbly",
 				Action: func(ctx *Context) error {

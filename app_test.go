@@ -24,14 +24,14 @@ func ExampleApp_Run() {
 	app := NewApp()
 	app.Name = "greet"
 	app.Flags = []Flag{
-		StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
+		&StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
 	}
 	app.Action = func(c *Context) error {
 		fmt.Printf("Hello %v\n", c.String("name"))
 		return nil
 	}
 	app.UsageText = "app [first_arg] [second_arg]"
-	app.Authors = []Author{{Name: "Oliver Allen", Email: "oliver@toyshop.example.com"}}
+	app.Authors = []*Author{{Name: "Oliver Allen", Email: "oliver@toyshop.example.com"}}
 	app.Run(os.Args)
 	// Output:
 	// Hello Jeremy
@@ -42,20 +42,20 @@ func ExampleApp_Run_subcommand() {
 	os.Args = []string{"say", "hi", "english", "--name", "Jeremy"}
 	app := NewApp()
 	app.Name = "say"
-	app.Commands = []Command{
+	app.Commands = []*Command{
 		{
 			Name:        "hello",
 			Aliases:     []string{"hi"},
 			Usage:       "use it to see a description",
 			Description: "This is how we describe hello the function",
-			Subcommands: []Command{
+			Subcommands: []*Command{
 				{
 					Name:        "english",
 					Aliases:     []string{"en"},
 					Usage:       "sends a greeting in english",
 					Description: "greets someone in english",
 					Flags: []Flag{
-						StringFlag{
+						&StringFlag{
 							Name:  "name",
 							Value: "Bob",
 							Usage: "Name of the person to greet",
@@ -82,9 +82,9 @@ func ExampleApp_Run_help() {
 	app := NewApp()
 	app.Name = "greet"
 	app.Flags = []Flag{
-		StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
+		&StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
 	}
-	app.Commands = []Command{
+	app.Commands = []*Command{
 		{
 			Name:        "describeit",
 			Aliases:     []string{"d"},
@@ -115,7 +115,7 @@ func ExampleApp_Run_bashComplete() {
 	app := NewApp()
 	app.Name = "greet"
 	app.EnableBashCompletion = true
-	app.Commands = []Command{
+	app.Commands = []*Command{
 		{
 			Name:        "describeit",
 			Aliases:     []string{"d"},
@@ -175,9 +175,9 @@ var commandAppTests = []struct {
 
 func TestApp_Command(t *testing.T) {
 	app := NewApp()
-	fooCommand := Command{Name: "foobar", Aliases: []string{"f"}}
-	batCommand := Command{Name: "batbaz", Aliases: []string{"b"}}
-	app.Commands = []Command{
+	fooCommand := &Command{Name: "foobar", Aliases: []string{"f"}}
+	batCommand := &Command{Name: "batbaz", Aliases: []string{"b"}}
+	app.Commands = []*Command{
 		fooCommand,
 		batCommand,
 	}
@@ -191,7 +191,7 @@ func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
 	var context *Context
 
 	a := NewApp()
-	a.Commands = []Command{
+	a.Commands = []*Command{
 		{
 			Name: "foo",
 			Action: func(c *Context) error {
@@ -199,7 +199,7 @@ func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
 				return nil
 			},
 			Flags: []Flag{
-				StringFlag{
+				&StringFlag{
 					Name:  "lang",
 					Value: "english",
 					Usage: "language for the greeting",
@@ -216,13 +216,13 @@ func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
 
 func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
 	var parsedOption string
-	var args []string
+	var args *Args
 
 	app := NewApp()
-	command := Command{
+	command := &Command{
 		Name: "cmd",
 		Flags: []Flag{
-			StringFlag{Name: "option", Value: "", Usage: "some option"},
+			&StringFlag{Name: "option", Value: "", Usage: "some option"},
 		},
 		Action: func(c *Context) error {
 			parsedOption = c.String("option")
@@ -230,58 +230,58 @@ func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
 			return nil
 		},
 	}
-	app.Commands = []Command{command}
+	app.Commands = []*Command{command}
 
 	app.Run([]string{"", "cmd", "--option", "my-option", "my-arg", "--", "--notARealFlag"})
 
 	expect(t, parsedOption, "my-option")
-	expect(t, args[0], "my-arg")
-	expect(t, args[1], "--")
-	expect(t, args[2], "--notARealFlag")
+	expect(t, args.Get(0), "my-arg")
+	expect(t, args.Get(1), "--")
+	expect(t, args.Get(2), "--notARealFlag")
 }
 
 func TestApp_CommandWithDash(t *testing.T) {
-	var args []string
+	var args *Args
 
 	app := NewApp()
-	command := Command{
+	command := &Command{
 		Name: "cmd",
 		Action: func(c *Context) error {
 			args = c.Args()
 			return nil
 		},
 	}
-	app.Commands = []Command{command}
+	app.Commands = []*Command{command}
 
 	app.Run([]string{"", "cmd", "my-arg", "-"})
 
-	expect(t, args[0], "my-arg")
-	expect(t, args[1], "-")
+	expect(t, args.Get(0), "my-arg")
+	expect(t, args.Get(1), "-")
 }
 
 func TestApp_CommandWithNoFlagBeforeTerminator(t *testing.T) {
-	var args []string
+	var args *Args
 
 	app := NewApp()
-	command := Command{
+	command := &Command{
 		Name: "cmd",
 		Action: func(c *Context) error {
 			args = c.Args()
 			return nil
 		},
 	}
-	app.Commands = []Command{command}
+	app.Commands = []*Command{command}
 
 	app.Run([]string{"", "cmd", "my-arg", "--", "notAFlagAtAll"})
 
-	expect(t, args[0], "my-arg")
-	expect(t, args[1], "--")
-	expect(t, args[2], "notAFlagAtAll")
+	expect(t, args.Get(0), "my-arg")
+	expect(t, args.Get(1), "--")
+	expect(t, args.Get(2), "notAFlagAtAll")
 }
 
 func TestApp_VisibleCommands(t *testing.T) {
 	app := NewApp()
-	app.Commands = []Command{
+	app.Commands = []*Command{
 		{
 			Name:     "frob",
 			HelpName: "foo frob",
@@ -296,7 +296,7 @@ func TestApp_VisibleCommands(t *testing.T) {
 	}
 
 	app.Setup()
-	expected := []Command{
+	expected := []*Command{
 		app.Commands[0],
 		app.Commands[2], // help
 	}
@@ -310,14 +310,22 @@ func TestApp_VisibleCommands(t *testing.T) {
 			expect(t, fmt.Sprintf("%p", expectedCommand.Action), fmt.Sprintf("%p", actualCommand.Action))
 		}
 
-		// nil out funcs, as they cannot be compared
-		// (https://github.com/golang/go/issues/8554)
-		expectedCommand.Action = nil
-		actualCommand.Action = nil
+		func() {
+			// nil out funcs, as they cannot be compared
+			// (https://github.com/golang/go/issues/8554)
+			expectedAction := expectedCommand.Action
+			actualAction := actualCommand.Action
+			defer func() {
+				expectedCommand.Action = expectedAction
+				actualCommand.Action = actualAction
+			}()
+			expectedCommand.Action = nil
+			actualCommand.Action = nil
 
-		if !reflect.DeepEqual(expectedCommand, actualCommand) {
-			t.Errorf("expected\n%#v\n!=\n%#v", expectedCommand, actualCommand)
-		}
+			if !reflect.DeepEqual(expectedCommand, actualCommand) {
+				t.Errorf("expected\n%#v\n!=\n%#v", expectedCommand, actualCommand)
+			}
+		}()
 	}
 }
 
@@ -326,7 +334,7 @@ func TestApp_Float64Flag(t *testing.T) {
 
 	app := NewApp()
 	app.Flags = []Flag{
-		Float64Flag{Name: "height", Value: 1.5, Usage: "Set the height, in meters"},
+		&Float64Flag{Name: "height", Value: 1.5, Usage: "Set the height, in meters"},
 	}
 	app.Action = func(c *Context) error {
 		meters = c.Float64("height")
@@ -343,11 +351,11 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 	var parsedStringSlice []string
 
 	app := NewApp()
-	command := Command{
+	command := &Command{
 		Name: "cmd",
 		Flags: []Flag{
-			IntSliceFlag{Name: "p", Value: NewIntSlice(), Usage: "set one or more ip addr"},
-			StringSliceFlag{Name: "ip", Value: NewStringSlice(), Usage: "set one or more ports to open"},
+			&IntSliceFlag{Name: "p", Value: NewIntSlice(), Usage: "set one or more ip addr"},
+			&StringSliceFlag{Name: "ip", Value: NewStringSlice(), Usage: "set one or more ports to open"},
 		},
 		Action: func(c *Context) error {
 			parsedIntSlice = c.IntSlice("p")
@@ -357,7 +365,7 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 			return nil
 		},
 	}
-	app.Commands = []Command{command}
+	app.Commands = []*Command{command}
 
 	app.Run([]string{"", "cmd", "-p", "22", "-p", "80", "-ip", "8.8.8.8", "-ip", "8.8.4.4", "my-arg"})
 
@@ -401,11 +409,11 @@ func TestApp_ParseSliceFlagsWithMissingValue(t *testing.T) {
 	var parsedStringSlice []string
 
 	app := NewApp()
-	command := Command{
+	command := &Command{
 		Name: "cmd",
 		Flags: []Flag{
-			IntSliceFlag{Name: "a", Usage: "set numbers"},
-			StringSliceFlag{Name: "str", Usage: "set strings"},
+			&IntSliceFlag{Name: "a", Usage: "set numbers"},
+			&StringSliceFlag{Name: "str", Usage: "set strings"},
 		},
 		Action: func(c *Context) error {
 			parsedIntSlice = c.IntSlice("a")
@@ -413,7 +421,7 @@ func TestApp_ParseSliceFlagsWithMissingValue(t *testing.T) {
 			return nil
 		},
 	}
-	app.Commands = []Command{command}
+	app.Commands = []*Command{command}
 
 	app.Run([]string{"", "cmd", "-a", "2", "-str", "A", "my-arg"})
 
@@ -491,7 +499,7 @@ func TestApp_BeforeFunc(t *testing.T) {
 		return nil
 	}
 
-	app.Commands = []Command{
+	app.Commands = []*Command{
 		{
 			Name: "sub",
 			Action: func(c *Context) error {
@@ -503,7 +511,7 @@ func TestApp_BeforeFunc(t *testing.T) {
 	}
 
 	app.Flags = []Flag{
-		StringFlag{Name: "opt"},
+		&StringFlag{Name: "opt"},
 	}
 
 	// run with the Before() func succeeding
@@ -583,7 +591,7 @@ func TestApp_AfterFunc(t *testing.T) {
 		return nil
 	}
 
-	app.Commands = []Command{
+	app.Commands = []*Command{
 		{
 			Name: "sub",
 			Action: func(c *Context) error {
@@ -595,7 +603,7 @@ func TestApp_AfterFunc(t *testing.T) {
 	}
 
 	app.Flags = []Flag{
-		StringFlag{Name: "opt"},
+		&StringFlag{Name: "opt"},
 	}
 
 	// run with the After() func succeeding
@@ -639,7 +647,7 @@ func TestAppNoHelpFlag(t *testing.T) {
 		HelpFlag = oldFlag
 	}()
 
-	HelpFlag = BoolFlag{}
+	HelpFlag = nil
 
 	app := NewApp()
 	app.Writer = ioutil.Discard
@@ -698,7 +706,7 @@ func TestApp_CommandNotFound(t *testing.T) {
 		counts.CommandNotFound = counts.Total
 	}
 
-	app.Commands = []Command{
+	app.Commands = []*Command{
 		{
 			Name: "bar",
 			Action: func(c *Context) error {
@@ -765,7 +773,7 @@ func TestApp_OrderOfOperations(t *testing.T) {
 	}
 
 	app.After = afterNoError
-	app.Commands = []Command{
+	app.Commands = []*Command{
 		{
 			Name: "bar",
 			Action: func(c *Context) error {
@@ -871,21 +879,21 @@ func TestApp_Run_CommandWithSubcommandHasHelpTopic(t *testing.T) {
 		buf := new(bytes.Buffer)
 		app.Writer = buf
 
-		subCmdBar := Command{
+		subCmdBar := &Command{
 			Name:  "bar",
 			Usage: "does bar things",
 		}
-		subCmdBaz := Command{
+		subCmdBaz := &Command{
 			Name:  "baz",
 			Usage: "does baz things",
 		}
-		cmd := Command{
+		cmd := &Command{
 			Name:        "foo",
 			Description: "descriptive wall of text about how it does foo things",
-			Subcommands: []Command{subCmdBar, subCmdBaz},
+			Subcommands: []*Command{subCmdBar, subCmdBaz},
 		}
 
-		app.Commands = []Command{cmd}
+		app.Commands = []*Command{cmd}
 		err := app.Run(flagSet)
 
 		if err != nil {
@@ -916,16 +924,16 @@ func TestApp_Run_SubcommandFullPath(t *testing.T) {
 	buf := new(bytes.Buffer)
 	app.Writer = buf
 	app.Name = "command"
-	subCmd := Command{
+	subCmd := &Command{
 		Name:  "bar",
 		Usage: "does bar things",
 	}
-	cmd := Command{
+	cmd := &Command{
 		Name:        "foo",
 		Description: "foo commands",
-		Subcommands: []Command{subCmd},
+		Subcommands: []*Command{subCmd},
 	}
-	app.Commands = []Command{cmd}
+	app.Commands = []*Command{cmd}
 
 	err := app.Run([]string{"command", "foo", "bar", "--help"})
 	if err != nil {
@@ -933,11 +941,14 @@ func TestApp_Run_SubcommandFullPath(t *testing.T) {
 	}
 
 	output := buf.String()
-	if !strings.Contains(output, "command foo bar - does bar things") {
-		t.Errorf("expected full path to subcommand: %s", output)
+	expected := "command foo bar - does bar things"
+	if !strings.Contains(output, expected) {
+		t.Errorf("expected %q in output: %s", expected, output)
 	}
-	if !strings.Contains(output, "command foo bar [arguments...]") {
-		t.Errorf("expected full path to subcommand: %s", output)
+
+	expected = "command foo bar [command options] [arguments...]"
+	if !strings.Contains(output, expected) {
+		t.Errorf("expected %q in output: %s", expected, output)
 	}
 }
 
@@ -946,17 +957,17 @@ func TestApp_Run_SubcommandHelpName(t *testing.T) {
 	buf := new(bytes.Buffer)
 	app.Writer = buf
 	app.Name = "command"
-	subCmd := Command{
+	subCmd := &Command{
 		Name:     "bar",
 		HelpName: "custom",
 		Usage:    "does bar things",
 	}
-	cmd := Command{
+	cmd := &Command{
 		Name:        "foo",
 		Description: "foo commands",
-		Subcommands: []Command{subCmd},
+		Subcommands: []*Command{subCmd},
 	}
-	app.Commands = []Command{cmd}
+	app.Commands = []*Command{cmd}
 
 	err := app.Run([]string{"command", "foo", "bar", "--help"})
 	if err != nil {
@@ -964,11 +975,15 @@ func TestApp_Run_SubcommandHelpName(t *testing.T) {
 	}
 
 	output := buf.String()
-	if !strings.Contains(output, "custom - does bar things") {
-		t.Errorf("expected HelpName for subcommand: %s", output)
+
+	expected := "custom - does bar things"
+	if !strings.Contains(output, expected) {
+		t.Errorf("expected %q in output: %s", expected, output)
 	}
-	if !strings.Contains(output, "custom [arguments...]") {
-		t.Errorf("expected HelpName to subcommand: %s", output)
+
+	expected = "custom [command options] [arguments...]"
+	if !strings.Contains(output, expected) {
+		t.Errorf("expected %q in output: %s", expected, output)
 	}
 }
 
@@ -977,17 +992,17 @@ func TestApp_Run_CommandHelpName(t *testing.T) {
 	buf := new(bytes.Buffer)
 	app.Writer = buf
 	app.Name = "command"
-	subCmd := Command{
+	subCmd := &Command{
 		Name:  "bar",
 		Usage: "does bar things",
 	}
-	cmd := Command{
+	cmd := &Command{
 		Name:        "foo",
 		HelpName:    "custom",
 		Description: "foo commands",
-		Subcommands: []Command{subCmd},
+		Subcommands: []*Command{subCmd},
 	}
-	app.Commands = []Command{cmd}
+	app.Commands = []*Command{cmd}
 
 	err := app.Run([]string{"command", "foo", "bar", "--help"})
 	if err != nil {
@@ -995,11 +1010,15 @@ func TestApp_Run_CommandHelpName(t *testing.T) {
 	}
 
 	output := buf.String()
-	if !strings.Contains(output, "command foo bar - does bar things") {
-		t.Errorf("expected full path to subcommand: %s", output)
+
+	expected := "command foo bar - does bar things"
+	if !strings.Contains(output, expected) {
+		t.Errorf("expected %q in output: %s", expected, output)
 	}
-	if !strings.Contains(output, "command foo bar [arguments...]") {
-		t.Errorf("expected full path to subcommand: %s", output)
+
+	expected = "command foo bar [command options] [arguments...]"
+	if !strings.Contains(output, expected) {
+		t.Errorf("expected %q in output: %s", expected, output)
 	}
 }
 
@@ -1008,17 +1027,17 @@ func TestApp_Run_CommandSubcommandHelpName(t *testing.T) {
 	buf := new(bytes.Buffer)
 	app.Writer = buf
 	app.Name = "base"
-	subCmd := Command{
+	subCmd := &Command{
 		Name:     "bar",
 		HelpName: "custom",
 		Usage:    "does bar things",
 	}
-	cmd := Command{
+	cmd := &Command{
 		Name:        "foo",
 		Description: "foo commands",
-		Subcommands: []Command{subCmd},
+		Subcommands: []*Command{subCmd},
 	}
-	app.Commands = []Command{cmd}
+	app.Commands = []*Command{cmd}
 
 	err := app.Run([]string{"command", "foo", "--help"})
 	if err != nil {
@@ -1026,11 +1045,15 @@ func TestApp_Run_CommandSubcommandHelpName(t *testing.T) {
 	}
 
 	output := buf.String()
-	if !strings.Contains(output, "base foo - foo commands") {
-		t.Errorf("expected full path to subcommand: %s", output)
+
+	expected := "base foo - foo commands"
+	if !strings.Contains(output, expected) {
+		t.Errorf("expected %q in output: %q", expected, output)
 	}
-	if !strings.Contains(output, "base foo command [command options] [arguments...]") {
-		t.Errorf("expected full path to subcommand: %s", output)
+
+	expected = "base foo command [command options] [arguments...]"
+	if !strings.Contains(output, expected) {
+		t.Errorf("expected %q in output: %q", expected, output)
 	}
 }
 
@@ -1100,7 +1123,7 @@ func TestApp_Run_Version(t *testing.T) {
 func TestApp_Run_Categories(t *testing.T) {
 	app := NewApp()
 	app.Name = "categories"
-	app.Commands = []Command{
+	app.Commands = []*Command{
 		{
 			Name:     "command1",
 			Category: "1",
@@ -1119,18 +1142,20 @@ func TestApp_Run_Categories(t *testing.T) {
 
 	app.Run([]string{"categories"})
 
-	expect := CommandCategories{
-		&CommandCategory{
-			Name: "1",
-			Commands: []Command{
-				app.Commands[0],
-				app.Commands[1],
+	expect := &CommandCategories{
+		Categories: []*CommandCategory{
+			{
+				Name: "1",
+				Commands: []*Command{
+					app.Commands[0],
+					app.Commands[1],
+				},
 			},
-		},
-		&CommandCategory{
-			Name: "2",
-			Commands: []Command{
-				app.Commands[2],
+			{
+				Name: "2",
+				Commands: []*Command{
+					app.Commands[2],
+				},
 			},
 		},
 	}
@@ -1149,7 +1174,7 @@ func TestApp_Run_Categories(t *testing.T) {
 func TestApp_VisibleCategories(t *testing.T) {
 	app := NewApp()
 	app.Name = "visible-categories"
-	app.Commands = []Command{
+	app.Commands = []*Command{
 		{
 			Name:     "command1",
 			Category: "1",
@@ -1171,13 +1196,13 @@ func TestApp_VisibleCategories(t *testing.T) {
 	expected := []*CommandCategory{
 		{
 			Name: "2",
-			Commands: []Command{
+			Commands: []*Command{
 				app.Commands[1],
 			},
 		},
 		{
 			Name: "3",
-			Commands: []Command{
+			Commands: []*Command{
 				app.Commands[2],
 			},
 		},
@@ -1188,7 +1213,7 @@ func TestApp_VisibleCategories(t *testing.T) {
 
 	app = NewApp()
 	app.Name = "visible-categories"
-	app.Commands = []Command{
+	app.Commands = []*Command{
 		{
 			Name:     "command1",
 			Category: "1",
@@ -1211,7 +1236,7 @@ func TestApp_VisibleCategories(t *testing.T) {
 	expected = []*CommandCategory{
 		{
 			Name: "3",
-			Commands: []Command{
+			Commands: []*Command{
 				app.Commands[2],
 			},
 		},
@@ -1222,7 +1247,7 @@ func TestApp_VisibleCategories(t *testing.T) {
 
 	app = NewApp()
 	app.Name = "visible-categories"
-	app.Commands = []Command{
+	app.Commands = []*Command{
 		{
 			Name:     "command1",
 			Category: "1",
@@ -1270,9 +1295,9 @@ func TestApp_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 
 func TestApp_Run_SubcommandDoesNotOverwriteErrorFromBefore(t *testing.T) {
 	app := NewApp()
-	app.Commands = []Command{
+	app.Commands = []*Command{
 		{
-			Subcommands: []Command{
+			Subcommands: []*Command{
 				{
 					Name: "sub",
 				},
@@ -1299,7 +1324,7 @@ func TestApp_Run_SubcommandDoesNotOverwriteErrorFromBefore(t *testing.T) {
 func TestApp_OnUsageError_WithWrongFlagValue(t *testing.T) {
 	app := NewApp()
 	app.Flags = []Flag{
-		IntFlag{Name: "flag"},
+		&IntFlag{Name: "flag"},
 	}
 	app.OnUsageError = func(c *Context, err error, isSubcommand bool) error {
 		if isSubcommand {
@@ -1310,7 +1335,7 @@ func TestApp_OnUsageError_WithWrongFlagValue(t *testing.T) {
 		}
 		return errors.New("intercepted: " + err.Error())
 	}
-	app.Commands = []Command{
+	app.Commands = []*Command{
 		{
 			Name: "bar",
 		},
@@ -1329,7 +1354,7 @@ func TestApp_OnUsageError_WithWrongFlagValue(t *testing.T) {
 func TestApp_OnUsageError_WithWrongFlagValue_ForSubcommand(t *testing.T) {
 	app := NewApp()
 	app.Flags = []Flag{
-		IntFlag{Name: "flag"},
+		&IntFlag{Name: "flag"},
 	}
 	app.OnUsageError = func(c *Context, err error, isSubcommand bool) error {
 		if isSubcommand {
@@ -1340,7 +1365,7 @@ func TestApp_OnUsageError_WithWrongFlagValue_ForSubcommand(t *testing.T) {
 		}
 		return errors.New("intercepted: " + err.Error())
 	}
-	app.Commands = []Command{
+	app.Commands = []*Command{
 		{
 			Name: "bar",
 		},

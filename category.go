@@ -1,40 +1,48 @@
 package cli
 
 // CommandCategories is a slice of *CommandCategory.
-type CommandCategories []*CommandCategory
+type CommandCategories struct {
+	Categories []*CommandCategory
+}
+
+func NewCommandCategories() *CommandCategories {
+	return &CommandCategories{Categories: []*CommandCategory{}}
+}
 
 // CommandCategory is a category containing commands.
 type CommandCategory struct {
 	Name     string
-	Commands Commands
+	Commands []*Command
 }
 
-func (c CommandCategories) Less(i, j int) bool {
-	return c[i].Name < c[j].Name
+func (c *CommandCategories) Less(i, j int) bool {
+	return c.Categories[i].Name < c.Categories[j].Name
 }
 
-func (c CommandCategories) Len() int {
-	return len(c)
+func (c *CommandCategories) Len() int {
+	return len(c.Categories)
 }
 
-func (c CommandCategories) Swap(i, j int) {
-	c[i], c[j] = c[j], c[i]
+func (c *CommandCategories) Swap(i, j int) {
+	c.Categories[i], c.Categories[j] = c.Categories[j], c.Categories[i]
 }
 
 // AddCommand adds a command to a category.
-func (c CommandCategories) AddCommand(category string, command Command) CommandCategories {
-	for _, commandCategory := range c {
+func (c *CommandCategories) AddCommand(category string, command *Command) *CommandCategories {
+	for _, commandCategory := range c.Categories {
 		if commandCategory.Name == category {
 			commandCategory.Commands = append(commandCategory.Commands, command)
 			return c
 		}
 	}
-	return append(c, &CommandCategory{Name: category, Commands: []Command{command}})
+	c.Categories = append(c.Categories,
+		&CommandCategory{Name: category, Commands: []*Command{command}})
+	return c
 }
 
 // VisibleCommands returns a slice of the Commands with Hidden=false
-func (c *CommandCategory) VisibleCommands() []Command {
-	ret := []Command{}
+func (c *CommandCategory) VisibleCommands() []*Command {
+	ret := []*Command{}
 	for _, command := range c.Commands {
 		if !command.Hidden {
 			ret = append(ret, command)

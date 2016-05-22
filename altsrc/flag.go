@@ -62,15 +62,15 @@ func InitInputSourceWithContext(flags []cli.Flag, createInputSource func(context
 	}
 }
 
-// GenericFlag is the flag type that wraps cli.GenericFlag to allow
+// GenericFlag is the flag type that wraps *cli.GenericFlag to allow
 // for other values to be specified
 type GenericFlag struct {
-	cli.GenericFlag
+	*cli.GenericFlag
 	set *flag.FlagSet
 }
 
 // NewGenericFlag creates a new GenericFlag
-func NewGenericFlag(flag cli.GenericFlag) *GenericFlag {
+func NewGenericFlag(flag *cli.GenericFlag) *GenericFlag {
 	return &GenericFlag{GenericFlag: flag, set: nil}
 }
 
@@ -100,15 +100,15 @@ func (f *GenericFlag) Apply(set *flag.FlagSet) {
 	f.GenericFlag.Apply(set)
 }
 
-// StringSliceFlag is the flag type that wraps cli.StringSliceFlag to allow
+// StringSliceFlag is the flag type that wraps *cli.StringSliceFlag to allow
 // for other values to be specified
 type StringSliceFlag struct {
-	cli.StringSliceFlag
+	*cli.StringSliceFlag
 	set *flag.FlagSet
 }
 
 // NewStringSliceFlag creates a new StringSliceFlag
-func NewStringSliceFlag(flag cli.StringSliceFlag) *StringSliceFlag {
+func NewStringSliceFlag(flag *cli.StringSliceFlag) *StringSliceFlag {
 	return &StringSliceFlag{StringSliceFlag: flag, set: nil}
 }
 
@@ -141,15 +141,15 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) {
 	f.StringSliceFlag.Apply(set)
 }
 
-// IntSliceFlag is the flag type that wraps cli.IntSliceFlag to allow
+// IntSliceFlag is the flag type that wraps *cli.IntSliceFlag to allow
 // for other values to be specified
 type IntSliceFlag struct {
-	cli.IntSliceFlag
+	*cli.IntSliceFlag
 	set *flag.FlagSet
 }
 
 // NewIntSliceFlag creates a new IntSliceFlag
-func NewIntSliceFlag(flag cli.IntSliceFlag) *IntSliceFlag {
+func NewIntSliceFlag(flag *cli.IntSliceFlag) *IntSliceFlag {
 	return &IntSliceFlag{IntSliceFlag: flag, set: nil}
 }
 
@@ -182,15 +182,15 @@ func (f *IntSliceFlag) Apply(set *flag.FlagSet) {
 	f.IntSliceFlag.Apply(set)
 }
 
-// BoolFlag is the flag type that wraps cli.BoolFlag to allow
+// BoolFlag is the flag type that wraps *cli.BoolFlag to allow
 // for other values to be specified
 type BoolFlag struct {
-	cli.BoolFlag
+	*cli.BoolFlag
 	set *flag.FlagSet
 }
 
 // NewBoolFlag creates a new BoolFlag
-func NewBoolFlag(flag cli.BoolFlag) *BoolFlag {
+func NewBoolFlag(flag *cli.BoolFlag) *BoolFlag {
 	return &BoolFlag{BoolFlag: flag, set: nil}
 }
 
@@ -219,15 +219,15 @@ func (f *BoolFlag) Apply(set *flag.FlagSet) {
 	f.BoolFlag.Apply(set)
 }
 
-// StringFlag is the flag type that wraps cli.StringFlag to allow
+// StringFlag is the flag type that wraps *cli.StringFlag to allow
 // for other values to be specified
 type StringFlag struct {
-	cli.StringFlag
+	*cli.StringFlag
 	set *flag.FlagSet
 }
 
 // NewStringFlag creates a new StringFlag
-func NewStringFlag(flag cli.StringFlag) *StringFlag {
+func NewStringFlag(flag *cli.StringFlag) *StringFlag {
 	return &StringFlag{StringFlag: flag, set: nil}
 }
 
@@ -257,15 +257,15 @@ func (f *StringFlag) Apply(set *flag.FlagSet) {
 	f.StringFlag.Apply(set)
 }
 
-// IntFlag is the flag type that wraps cli.IntFlag to allow
+// IntFlag is the flag type that wraps *cli.IntFlag to allow
 // for other values to be specified
 type IntFlag struct {
-	cli.IntFlag
+	*cli.IntFlag
 	set *flag.FlagSet
 }
 
 // NewIntFlag creates a new IntFlag
-func NewIntFlag(flag cli.IntFlag) *IntFlag {
+func NewIntFlag(flag *cli.IntFlag) *IntFlag {
 	return &IntFlag{IntFlag: flag, set: nil}
 }
 
@@ -294,15 +294,15 @@ func (f *IntFlag) Apply(set *flag.FlagSet) {
 	f.IntFlag.Apply(set)
 }
 
-// DurationFlag is the flag type that wraps cli.DurationFlag to allow
+// DurationFlag is the flag type that wraps *cli.DurationFlag to allow
 // for other values to be specified
 type DurationFlag struct {
-	cli.DurationFlag
+	*cli.DurationFlag
 	set *flag.FlagSet
 }
 
 // NewDurationFlag creates a new DurationFlag
-func NewDurationFlag(flag cli.DurationFlag) *DurationFlag {
+func NewDurationFlag(flag *cli.DurationFlag) *DurationFlag {
 	return &DurationFlag{DurationFlag: flag, set: nil}
 }
 
@@ -332,15 +332,15 @@ func (f *DurationFlag) Apply(set *flag.FlagSet) {
 	f.DurationFlag.Apply(set)
 }
 
-// Float64Flag is the flag type that wraps cli.Float64Flag to allow
+// Float64Flag is the flag type that wraps *cli.Float64Flag to allow
 // for other values to be specified
 type Float64Flag struct {
-	cli.Float64Flag
+	*cli.Float64Flag
 	set *flag.FlagSet
 }
 
 // NewFloat64Flag creates a new Float64Flag
-func NewFloat64Flag(flag cli.Float64Flag) *Float64Flag {
+func NewFloat64Flag(flag *cli.Float64Flag) *Float64Flag {
 	return &Float64Flag{Float64Flag: flag, set: nil}
 }
 
