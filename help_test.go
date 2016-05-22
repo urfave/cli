@@ -60,13 +60,14 @@ func Test_Help_Custom_Flags(t *testing.T) {
 	}()
 
 	HelpFlag = BoolFlag{
-		Name:  "help, x",
-		Usage: "show help",
+		Name:    "help",
+		Aliases: []string{"x"},
+		Usage:   "show help",
 	}
 
 	app := App{
 		Flags: []Flag{
-			BoolFlag{Name: "foo, h"},
+			BoolFlag{Name: "foo", Aliases: []string{"h"}},
 		},
 		Action: func(ctx *Context) error {
 			if ctx.Bool("h") != true {
@@ -90,13 +91,14 @@ func Test_Version_Custom_Flags(t *testing.T) {
 	}()
 
 	VersionFlag = BoolFlag{
-		Name:  "version, V",
-		Usage: "show version",
+		Name:    "version",
+		Aliases: []string{"V"},
+		Usage:   "show version",
 	}
 
 	app := App{
 		Flags: []Flag{
-			BoolFlag{Name: "foo, v"},
+			BoolFlag{Name: "foo", Aliases: []string{"v"}},
 		},
 		Action: func(ctx *Context) error {
 			if ctx.Bool("v") != true {

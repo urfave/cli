@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/codegangsta/cli"
 )
@@ -78,15 +77,15 @@ func NewGenericFlag(flag cli.GenericFlag) *GenericFlag {
 // ApplyInputSourceValue applies a generic value to the flagSet if required
 func (f *GenericFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
-		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVar) {
+		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) {
 			value, err := isc.Generic(f.GenericFlag.Name)
 			if err != nil {
 				return err
 			}
 			if value != nil {
-				eachName(f.Name, func(name string) {
-					f.set.Set(f.Name, value.String())
-				})
+				for _, name := range f.Names() {
+					f.set.Set(name, value.String())
+				}
 			}
 		}
 	}
@@ -116,19 +115,19 @@ func NewStringSliceFlag(flag cli.StringSliceFlag) *StringSliceFlag {
 // ApplyInputSourceValue applies a StringSlice value to the flagSet if required
 func (f *StringSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
-		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVar) {
+		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) {
 			value, err := isc.StringSlice(f.StringSliceFlag.Name)
 			if err != nil {
 				return err
 			}
 			if value != nil {
 				var sliceValue cli.StringSlice = *(cli.NewStringSlice(value...))
-				eachName(f.Name, func(name string) {
-					underlyingFlag := f.set.Lookup(f.Name)
+				for _, name := range f.Names() {
+					underlyingFlag := f.set.Lookup(name)
 					if underlyingFlag != nil {
 						underlyingFlag.Value = &sliceValue
 					}
-				})
+				}
 			}
 		}
 	}
@@ -157,19 +156,19 @@ func NewIntSliceFlag(flag cli.IntSliceFlag) *IntSliceFlag {
 // ApplyInputSourceValue applies a IntSlice value if required
 func (f *IntSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
-		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVar) {
+		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) {
 			value, err := isc.IntSlice(f.IntSliceFlag.Name)
 			if err != nil {
 				return err
 			}
 			if value != nil {
 				var sliceValue cli.IntSlice = *(cli.NewIntSlice(value...))
-				eachName(f.Name, func(name string) {
-					underlyingFlag := f.set.Lookup(f.Name)
+				for _, name := range f.Names() {
+					underlyingFlag := f.set.Lookup(name)
 					if underlyingFlag != nil {
 						underlyingFlag.Value = &sliceValue
 					}
-				})
+				}
 			}
 		}
 	}
@@ -198,15 +197,15 @@ func NewBoolFlag(flag cli.BoolFlag) *BoolFlag {
 // ApplyInputSourceValue applies a Bool value to the flagSet if required
 func (f *BoolFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
-		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVar) {
+		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) {
 			value, err := isc.Bool(f.BoolFlag.Name)
 			if err != nil {
 				return err
 			}
 			if value {
-				eachName(f.Name, func(name string) {
-					f.set.Set(f.Name, strconv.FormatBool(value))
-				})
+				for _, name := range f.Names() {
+					f.set.Set(name, strconv.FormatBool(value))
+				}
 			}
 		}
 	}
@@ -235,15 +234,15 @@ func NewStringFlag(flag cli.StringFlag) *StringFlag {
 // ApplyInputSourceValue applies a String value to the flagSet if required
 func (f *StringFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
-		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVar)) {
+		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) {
 			value, err := isc.String(f.StringFlag.Name)
 			if err != nil {
 				return err
 			}
 			if value != "" {
-				eachName(f.Name, func(name string) {
-					f.set.Set(f.Name, value)
-				})
+				for _, name := range f.Names() {
+					f.set.Set(name, value)
+				}
 			}
 		}
 	}
@@ -273,15 +272,15 @@ func NewIntFlag(flag cli.IntFlag) *IntFlag {
 // ApplyInputSourceValue applies a int value to the flagSet if required
 func (f *IntFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
-		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVar)) {
+		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) {
 			value, err := isc.Int(f.IntFlag.Name)
 			if err != nil {
 				return err
 			}
 			if value > 0 {
-				eachName(f.Name, func(name string) {
-					f.set.Set(f.Name, strconv.FormatInt(int64(value), 10))
-				})
+				for _, name := range f.Names() {
+					f.set.Set(name, strconv.FormatInt(int64(value), 10))
+				}
 			}
 		}
 	}
@@ -310,15 +309,15 @@ func NewDurationFlag(flag cli.DurationFlag) *DurationFlag {
 // ApplyInputSourceValue applies a Duration value to the flagSet if required
 func (f *DurationFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
-		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVar)) {
+		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) {
 			value, err := isc.Duration(f.DurationFlag.Name)
 			if err != nil {
 				return err
 			}
 			if value > 0 {
-				eachName(f.Name, func(name string) {
-					f.set.Set(f.Name, value.String())
-				})
+				for _, name := range f.Names() {
+					f.set.Set(name, value.String())
+				}
 			}
 		}
 	}
@@ -348,16 +347,16 @@ func NewFloat64Flag(flag cli.Float64Flag) *Float64Flag {
 // ApplyInputSourceValue applies a Float64 value to the flagSet if required
 func (f *Float64Flag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
-		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVar)) {
+		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) {
 			value, err := isc.Float64(f.Float64Flag.Name)
 			if err != nil {
 				return err
 			}
 			if value > 0 {
 				floatStr := float64ToString(value)
-				eachName(f.Name, func(name string) {
-					f.set.Set(f.Name, floatStr)
-				})
+				for _, name := range f.Names() {
+					f.set.Set(name, floatStr)
+				}
 			}
 		}
 	}
@@ -372,9 +371,8 @@ func (f *Float64Flag) Apply(set *flag.FlagSet) {
 	f.Float64Flag.Apply(set)
 }
 
-func isEnvVarSet(envVars string) bool {
-	for _, envVar := range strings.Split(envVars, ",") {
-		envVar = strings.TrimSpace(envVar)
+func isEnvVarSet(envVars []string) bool {
+	for _, envVar := range envVars {
 		if envVal := os.Getenv(envVar); envVal != "" {
 			// TODO: Can't use this for bools as
 			// set means that it was true or false based on
@@ -390,12 +388,4 @@ func isEnvVarSet(envVars string) bool {
 
 func float64ToString(f float64) string {
 	return fmt.Sprintf("%v", f)
-}
-
-func eachName(longName string, fn func(string)) {
-	parts := strings.Split(longName, ",")
-	for _, name := range parts {
-		name = strings.Trim(name, " ")
-		fn(name)
-	}
 }

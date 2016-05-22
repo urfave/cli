@@ -208,11 +208,11 @@ func printHelp(out io.Writer, templ string, data interface{}) {
 func checkVersion(c *Context) bool {
 	found := false
 	if VersionFlag.Name != "" {
-		eachName(VersionFlag.Name, func(name string) {
+		for _, name := range VersionFlag.Names() {
 			if c.Bool(name) {
 				found = true
 			}
-		})
+		}
 	}
 	return found
 }
@@ -220,11 +220,11 @@ func checkVersion(c *Context) bool {
 func checkHelp(c *Context) bool {
 	found := false
 	if HelpFlag.Name != "" {
-		eachName(HelpFlag.Name, func(name string) {
+		for _, name := range HelpFlag.Names() {
 			if c.Bool(name) {
 				found = true
 			}
-		})
+		}
 	}
 	return found
 }

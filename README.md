@@ -265,8 +265,9 @@ For example this:
 
 ```go
 cli.StringFlag{
-  Name:  "config, c",
-  Usage: "Load configuration from `FILE`",
+  Name:    "config",
+  Aliases: []string{"c"},
+  Usage:   "Load configuration from `FILE`",
 }
 ```
 
@@ -285,9 +286,10 @@ You can set alternate (or short) names for flags by providing a comma-delimited 
 ``` go
 app.Flags = []cli.Flag {
   cli.StringFlag{
-    Name: "lang, l",
-    Value: "english",
-    Usage: "language for the greeting",
+    Name:    "lang",
+    Aliases: []string{"l"},
+    Value:   "english",
+    Usage:   "language for the greeting",
   },
 }
 ```
@@ -296,28 +298,30 @@ That flag can then be set with `--lang spanish` or `-l spanish`. Note that givin
 
 #### Values from the Environment
 
-You can also have the default value set from the environment via `EnvVar`.  e.g.
+You can also have the default value set from the environment via `EnvVars`.  e.g.
 
 ``` go
 app.Flags = []cli.Flag {
   cli.StringFlag{
-    Name: "lang, l",
-    Value: "english",
-    Usage: "language for the greeting",
-    EnvVar: "APP_LANG",
+    Name:    "lang",
+    Aliases: []string{"l"},
+    Value:   "english",
+    Usage:   "language for the greeting",
+    EnvVars: []string{"APP_LANG"},
   },
 }
 ```
 
-The `EnvVar` may also be given as a comma-delimited "cascade", where the first environment variable that resolves is used as the default.
+If `EnvVars` contains more than one string, the first environment variable that resolves is used as the default.
 
 ``` go
 app.Flags = []cli.Flag {
   cli.StringFlag{
-    Name: "lang, l",
-    Value: "english",
-    Usage: "language for the greeting",
-    EnvVar: "LEGACY_COMPAT_LANG,APP_LANG,LANG",
+    Name:    "lang",
+    Aliases: []string{"l"},
+    Value:   "english",
+    Usage:   "language for the greeting",
+    EnvVars: []string{"LEGACY_COMPAT_LANG", "APP_LANG", "LANG"},
   },
 }
 ```
