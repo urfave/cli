@@ -2,22 +2,20 @@ version: "{build}"
 
 os: Windows Server 2012 R2
 
+clone_folder: c:\gopath\src\github.com\urfave\cli
+
 environment:
   GOPATH: c:\gopath
   GOVERSION: 1.6
 
 install:
   - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
-  - set NEW_BUILD_DIR_DEST=c:\gopath\src\github.com\urfave
-  - mkdir %NEW_BUILD_DIR_DEST%
-  - xcopy /s %APPVEYOR_BUILD_FOLDER% %NEW_BUILD_DIR_DEST%\cli
-  - set APPVEYOR_BUILD_FOLDER=%NEW_BUILD_DIR_DEST%\cli
   - go version
   - go env
   - go get github.com/urfave/gfmxr/...
+  - go get -v -t ./...
 
 build_script:
-  - cd %APPVEYOR_BUILD_FOLDER%
   - ./runtests vet
   - ./runtests test
   - ./runtests gfmxr
