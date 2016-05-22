@@ -310,7 +310,7 @@ func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
 		visited[f.Name] = true
 	})
 	for _, f := range flags {
-		parts := strings.Split(f.GetName(), ",")
+		parts := f.Names()
 		if len(parts) == 1 {
 			continue
 		}

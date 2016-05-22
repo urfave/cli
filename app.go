@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"time"
 )
@@ -121,7 +122,7 @@ func (a *App) Setup() {
 	// append help to commands
 	if a.Command(helpCommand.Name) == nil && !a.HideHelp {
 		a.Commands = append(a.Commands, helpCommand)
-		if (HelpFlag != BoolFlag{}) {
+		if !reflect.DeepEqual(HelpFlag, BoolFlag{}) {
 			a.appendFlag(HelpFlag)
 		}
 	}
@@ -224,7 +225,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	if len(a.Commands) > 0 {
 		if a.Command(helpCommand.Name) == nil && !a.HideHelp {
 			a.Commands = append(a.Commands, helpCommand)
-			if (HelpFlag != BoolFlag{}) {
+			if !reflect.DeepEqual(HelpFlag, BoolFlag{}) {
 				a.appendFlag(HelpFlag)
 			}
 		}
@@ -379,7 +380,7 @@ func (a *App) VisibleFlags() []Flag {
 
 func (a *App) hasFlag(flag Flag) bool {
 	for _, f := range a.Flags {
-		if flag == f {
+		if reflect.DeepEqual(flag, f) {
 			return true
 		}
 	}

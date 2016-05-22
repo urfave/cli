@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"io/ioutil"
+	"reflect"
 	"sort"
 	"strings"
 )
@@ -69,7 +70,7 @@ func (c Command) Run(ctx *Context) (err error) {
 		return c.startApp(ctx)
 	}
 
-	if !c.HideHelp && (HelpFlag != BoolFlag{}) {
+	if !c.HideHelp && !reflect.DeepEqual(HelpFlag, BoolFlag{}) {
 		// append help to flags
 		c.Flags = append(
 			c.Flags,
