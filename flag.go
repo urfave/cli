@@ -717,13 +717,3 @@ func stringifySliceFlag(usage string, names, defaultVals []string) string {
 	usageWithDefault := strings.TrimSpace(fmt.Sprintf("%s%s", usage, defaultVal))
 	return fmt.Sprintf("%s\t%s", prefixedNames(names, placeholder), usageWithDefault)
 }
-
-func hasFlag(flags []Flag, fl Flag) bool {
-	for _, existing := range flags {
-		if fl == existing {
-			return true
-		}
-	}
-
-	return false
-}
