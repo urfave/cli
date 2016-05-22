@@ -12,7 +12,7 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/codegangsta/cli"
+	"github.com/urfave/cli"
 
 	"gopkg.in/yaml.v2"
 )
