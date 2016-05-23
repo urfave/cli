@@ -10,7 +10,7 @@ from subprocess import check_call, check_output
 
 
 PACKAGE_NAME = os.environ.get(
-    'CLI_PACKAGE_NAME', 'github.com/codegangsta/cli'
+    'CLI_PACKAGE_NAME', 'github.com/urfave/cli'
 )
 
 
