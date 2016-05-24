@@ -614,6 +614,10 @@ func flagNames(f Flag) []string {
 	aliases := flagStringSliceField(f, "Aliases")
 
 	for _, part := range append([]string{name}, aliases...) {
+		// v1 -> v2 migration warning zone:
+		// Strip off anything after the first found comma or space, which
+		// *hopefully* makes it a tiny bit more obvious that unexpected behavior is
+		// caused by using the v1 form of stringly typed "Name".
 		ret = append(ret, commaWhitespace.ReplaceAllString(part, ""))
 	}
 
