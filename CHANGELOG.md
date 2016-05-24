@@ -5,6 +5,8 @@
 ## [Unreleased]
 ### Added
 - `./runtests` test runner with coverage tracking by default
+- testing on OS X
+- testing on Windows
 
 ### Fixed
 - Printing of command aliases in help text
