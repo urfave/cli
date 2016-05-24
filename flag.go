@@ -104,7 +104,7 @@ func (f GenericFlag) Apply(set *flag.FlagSet) {
 	}
 
 	for _, name := range f.Names() {
-		set.Var(f.Value, name, f.Usage)
+		set.Var(val, name, f.Usage)
 	}
 }
 
@@ -349,7 +349,7 @@ func (f BoolFlag) Apply(set *flag.FlagSet) {
 	for _, name := range f.Names() {
 		if f.Destination != nil {
 			set.BoolVar(f.Destination, name, f.Value, f.Usage)
-			return
+			continue
 		}
 		set.Bool(name, f.Value, f.Usage)
 	}
@@ -391,7 +391,7 @@ func (f StringFlag) Apply(set *flag.FlagSet) {
 	for _, name := range f.Names() {
 		if f.Destination != nil {
 			set.StringVar(f.Destination, name, f.Value, f.Usage)
-			return
+			continue
 		}
 		set.String(name, f.Value, f.Usage)
 	}
@@ -437,7 +437,7 @@ func (f IntFlag) Apply(set *flag.FlagSet) {
 	for _, name := range f.Names() {
 		if f.Destination != nil {
 			set.IntVar(f.Destination, name, f.Value, f.Usage)
-			return
+			continue
 		}
 		set.Int(name, f.Value, f.Usage)
 	}
@@ -483,7 +483,7 @@ func (f DurationFlag) Apply(set *flag.FlagSet) {
 	for _, name := range f.Names() {
 		if f.Destination != nil {
 			set.DurationVar(f.Destination, name, f.Value, f.Usage)
-			return
+			continue
 		}
 		set.Duration(name, f.Value, f.Usage)
 	}
@@ -528,7 +528,7 @@ func (f Float64Flag) Apply(set *flag.FlagSet) {
 	for _, name := range f.Names() {
 		if f.Destination != nil {
 			set.Float64Var(f.Destination, name, f.Value, f.Usage)
-			return
+			continue
 		}
 		set.Float64(name, f.Value, f.Usage)
 	}
