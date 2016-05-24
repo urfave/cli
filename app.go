@@ -165,7 +165,7 @@ func (a *App) Run(arguments []string) (err error) {
 			HandleExitCoder(err)
 			return err
 		}
-		fmt.Fprintf(a.Writer, "%s\n\n", "Incorrect Usage.")
+		fmt.Fprintf(a.Writer, "Incorrect Usage: %s\n\n", err)
 		ShowAppHelp(context)
 		return err
 	}
@@ -275,7 +275,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 			HandleExitCoder(err)
 			return err
 		}
-		fmt.Fprintf(a.Writer, "%s\n\n", "Incorrect Usage.")
+		fmt.Fprintf(a.Writer, "Incorrect Usage: %s\n\n", err)
 		ShowSubcommandHelp(context)
 		return err
 	}
