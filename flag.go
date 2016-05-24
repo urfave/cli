@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -14,7 +15,11 @@ import (
 
 const defaultPlaceholder = "value"
 
-var slPfx = fmt.Sprintf("sl:::%d:::", time.Now().UTC().UnixNano())
+var (
+	slPfx = fmt.Sprintf("sl:::%d:::", time.Now().UTC().UnixNano())
+
+	commaWhitespace = regexp.MustCompile("[, ]+.*")
+)
 
 // BashCompletionFlag enables bash-completion for all commands and subcommands
 var BashCompletionFlag = BoolFlag{
@@ -95,7 +100,6 @@ func (f GenericFlag) Apply(set *flag.FlagSet) {
 	val := f.Value
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
-			envVar = strings.TrimSpace(envVar)
 			if envVal := os.Getenv(envVar); envVal != "" {
 				val.Set(envVal)
 				break
@@ -110,7 +114,7 @@ func (f GenericFlag) Apply(set *flag.FlagSet) {
 
 // Names returns the names of a flag.
 func (f GenericFlag) Names() []string {
-	return append([]string{f.Name}, f.Aliases...)
+	return flagNames(f)
 }
 
 // StringSlice wraps a []string to satisfy flag.Value
@@ -178,7 +182,6 @@ func (f StringSliceFlag) String() string {
 func (f StringSliceFlag) Apply(set *flag.FlagSet) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
-			envVar = strings.TrimSpace(envVar)
 			if envVal := os.Getenv(envVar); envVal != "" {
 				newVal := NewStringSlice()
 				for _, s := range strings.Split(envVal, ",") {
@@ -202,7 +205,7 @@ func (f StringSliceFlag) Apply(set *flag.FlagSet) {
 
 // Names returns the name of a flag.
 func (f StringSliceFlag) Names() []string {
-	return append([]string{f.Name}, f.Aliases...)
+	return flagNames(f)
 }
 
 // IntSlice wraps an []int to satisfy flag.Value
@@ -285,7 +288,6 @@ func (f IntSliceFlag) String() string {
 func (f IntSliceFlag) Apply(set *flag.FlagSet) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
-			envVar = strings.TrimSpace(envVar)
 			if envVal := os.Getenv(envVar); envVal != "" {
 				newVal := NewIntSlice()
 				for _, s := range strings.Split(envVal, ",") {
@@ -312,7 +314,7 @@ func (f IntSliceFlag) Apply(set *flag.FlagSet) {
 
 // Names returns the name of the flag.
 func (f IntSliceFlag) Names() []string {
-	return append([]string{f.Name}, f.Aliases...)
+	return flagNames(f)
 }
 
 // BoolFlag is a switch that defaults to false
@@ -335,7 +337,6 @@ func (f BoolFlag) String() string {
 func (f BoolFlag) Apply(set *flag.FlagSet) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
-			envVar = strings.TrimSpace(envVar)
 			if envVal := os.Getenv(envVar); envVal != "" {
 				envValBool, err := strconv.ParseBool(envVal)
 				if err == nil {
@@ -357,7 +358,7 @@ func (f BoolFlag) Apply(set *flag.FlagSet) {
 
 // Names returns the name of the flag.
 func (f BoolFlag) Names() []string {
-	return append([]string{f.Name}, f.Aliases...)
+	return flagNames(f)
 }
 
 // StringFlag represents a flag that takes as string value
@@ -380,7 +381,6 @@ func (f StringFlag) String() string {
 func (f StringFlag) Apply(set *flag.FlagSet) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
-			envVar = strings.TrimSpace(envVar)
 			if envVal := os.Getenv(envVar); envVal != "" {
 				f.Value = envVal
 				break
@@ -399,7 +399,7 @@ func (f StringFlag) Apply(set *flag.FlagSet) {
 
 // Names returns the name of the flag.
 func (f StringFlag) Names() []string {
-	return append([]string{f.Name}, f.Aliases...)
+	return flagNames(f)
 }
 
 // IntFlag is a flag that takes an integer
@@ -423,7 +423,6 @@ func (f IntFlag) String() string {
 func (f IntFlag) Apply(set *flag.FlagSet) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
-			envVar = strings.TrimSpace(envVar)
 			if envVal := os.Getenv(envVar); envVal != "" {
 				envValInt, err := strconv.ParseInt(envVal, 0, 64)
 				if err == nil {
@@ -445,7 +444,7 @@ func (f IntFlag) Apply(set *flag.FlagSet) {
 
 // Names returns the name of the flag.
 func (f IntFlag) Names() []string {
-	return append([]string{f.Name}, f.Aliases...)
+	return flagNames(f)
 }
 
 // DurationFlag is a flag that takes a duration specified in Go's duration
@@ -469,7 +468,6 @@ func (f DurationFlag) String() string {
 func (f DurationFlag) Apply(set *flag.FlagSet) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
-			envVar = strings.TrimSpace(envVar)
 			if envVal := os.Getenv(envVar); envVal != "" {
 				envValDuration, err := time.ParseDuration(envVal)
 				if err == nil {
@@ -491,7 +489,7 @@ func (f DurationFlag) Apply(set *flag.FlagSet) {
 
 // Names returns the name of the flag.
 func (f DurationFlag) Names() []string {
-	return append([]string{f.Name}, f.Aliases...)
+	return flagNames(f)
 }
 
 // Float64Flag is a flag that takes an float value
@@ -515,7 +513,6 @@ func (f Float64Flag) String() string {
 func (f Float64Flag) Apply(set *flag.FlagSet) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
-			envVar = strings.TrimSpace(envVar)
 			if envVal := os.Getenv(envVar); envVal != "" {
 				envValFloat, err := strconv.ParseFloat(envVal, 10)
 				if err == nil {
@@ -536,7 +533,7 @@ func (f Float64Flag) Apply(set *flag.FlagSet) {
 
 // Names returns the name of the flag.
 func (f Float64Flag) Names() []string {
-	return append([]string{f.Name}, f.Aliases...)
+	return flagNames(f)
 }
 
 func visibleFlags(fl []Flag) []Flag {
@@ -608,6 +605,19 @@ func withEnvHint(envVars []string, str string) string {
 		envText = fmt.Sprintf(" [%s%s%s]", prefix, strings.Join(envVars, sep), suffix)
 	}
 	return str + envText
+}
+
+func flagNames(f Flag) []string {
+	ret := []string{}
+
+	name := flagStringField(f, "Name")
+	aliases := flagStringSliceField(f, "Aliases")
+
+	for _, part := range append([]string{name}, aliases...) {
+		ret = append(ret, commaWhitespace.ReplaceAllString(part, ""))
+	}
+
+	return ret
 }
 
 func flagStringSliceField(f Flag, name string) []string {
