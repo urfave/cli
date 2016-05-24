@@ -115,7 +115,7 @@ func (a *App) Setup() {
 
 	a.categories = NewCommandCategories()
 	for _, command := range a.Commands {
-		a.categories = a.categories.AddCommand(command.Category, command)
+		a.categories.AddCommand(command.Category, command)
 	}
 	sort.Sort(a.categories)
 
@@ -349,12 +349,10 @@ func (a *App) Categories() *CommandCategories {
 // Hidden=false
 func (a *App) VisibleCategories() []*CommandCategory {
 	ret := []*CommandCategory{}
-	for _, category := range a.categories.Categories {
+	for _, category := range a.categories.Categories() {
 		if visible := func() *CommandCategory {
-			for _, command := range category.Commands {
-				if !command.Hidden {
-					return category
-				}
+			if len(category.VisibleCommands()) > 0 {
+				return category
 			}
 			return nil
 		}(); visible != nil {

@@ -1143,17 +1143,17 @@ func TestApp_Run_Categories(t *testing.T) {
 	app.Run([]string{"categories"})
 
 	expect := &CommandCategories{
-		Categories: []*CommandCategory{
+		slice: []*CommandCategory{
 			{
 				Name: "1",
-				Commands: []*Command{
+				commands: []*Command{
 					app.Commands[0],
 					app.Commands[1],
 				},
 			},
 			{
 				Name: "2",
-				Commands: []*Command{
+				commands: []*Command{
 					app.Commands[2],
 				},
 			},
@@ -1196,13 +1196,13 @@ func TestApp_VisibleCategories(t *testing.T) {
 	expected := []*CommandCategory{
 		{
 			Name: "2",
-			Commands: []*Command{
+			commands: []*Command{
 				app.Commands[1],
 			},
 		},
 		{
 			Name: "3",
-			Commands: []*Command{
+			commands: []*Command{
 				app.Commands[2],
 			},
 		},
@@ -1236,7 +1236,7 @@ func TestApp_VisibleCategories(t *testing.T) {
 	expected = []*CommandCategory{
 		{
 			Name: "3",
-			Commands: []*Command{
+			commands: []*Command{
 				app.Commands[2],
 			},
 		},

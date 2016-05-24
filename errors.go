@@ -16,18 +16,18 @@ var ErrWriter io.Writer = os.Stderr
 
 // MultiError is an error that wraps multiple errors.
 type MultiError struct {
-	Errors []error
+	errors []error
 }
 
 // NewMultiError creates a new MultiError. Pass in one or more errors.
 func NewMultiError(err ...error) MultiError {
-	return MultiError{Errors: err}
+	return MultiError{errors: err}
 }
 
 // Error implents the error interface.
 func (m MultiError) Error() string {
-	errs := make([]string, len(m.Errors))
-	for i, err := range m.Errors {
+	errs := make([]string, len(m.errors))
+	for i, err := range m.errors {
 		errs[i] = err.Error()
 	}
 
@@ -85,7 +85,7 @@ func HandleExitCoder(err error) {
 	}
 
 	if multiErr, ok := err.(MultiError); ok {
-		for _, merr := range multiErr.Errors {
+		for _, merr := range multiErr.errors {
 			HandleExitCoder(merr)
 		}
 	}

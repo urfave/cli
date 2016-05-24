@@ -195,7 +195,7 @@ func (c *Command) startApp(ctx *Context) error {
 
 	app.categories = NewCommandCategories()
 	for _, command := range c.Subcommands {
-		app.categories = app.categories.AddCommand(command.Category, command)
+		app.categories.AddCommand(command.Category, command)
 	}
 
 	sort.Sort(app.categories)
