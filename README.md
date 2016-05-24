@@ -38,6 +38,12 @@ Make sure your `PATH` includes to the `$GOPATH/bin` directory so your commands c
 export PATH=$PATH:$GOPATH/bin
 ```
 
+### Supported platforms
+
+cli is tested against multiple versions of Go on Linux, and against the latest
+released version of Go on OS X and Windows.  For full details, see
+[`./.travis.yml`](./.travis.yml) and [`./appveyor.yml`](./appveyor.yml).
+
 ### Using the `v2` branch
 
 There is currently a long-lived branch named `v2` that is intended to land as
