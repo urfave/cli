@@ -498,7 +498,7 @@ func main() {
   }
   app.Action = func(ctx *cli.Context) error {
     if !ctx.Bool("ginger-crouton") {
-      return cli.NewExitError("it is not in the soup", 86)
+      return cli.Exit("it is not in the soup", 86)
     }
     return nil
   }
