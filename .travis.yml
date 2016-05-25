@@ -24,7 +24,7 @@ matrix:
     - ./runtests test
 
 before_script:
-- go get github.com/meatballhat/gfmxr/...
+- go get github.com/urfave/gfmxr/...
 
 script:
 - ./runtests vet
