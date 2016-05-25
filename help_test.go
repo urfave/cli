@@ -129,9 +129,9 @@ func Test_helpCommand_Action_ErrorIfNoTopic(t *testing.T) {
 		t.Fatalf("expected error from helpCommand.Action(), but got nil")
 	}
 
-	exitErr, ok := err.(*ExitError)
+	exitErr, ok := err.(*exitError)
 	if !ok {
-		t.Fatalf("expected ExitError from helpCommand.Action(), but instead got: %v", err.Error())
+		t.Fatalf("expected *exitError from helpCommand.Action(), but instead got: %v", err.Error())
 	}
 
 	if !strings.HasPrefix(exitErr.Error(), "No help topic for") {
@@ -157,9 +157,9 @@ func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 		t.Fatalf("expected error from helpCommand.Action(), but got nil")
 	}
 
-	exitErr, ok := err.(*ExitError)
+	exitErr, ok := err.(*exitError)
 	if !ok {
-		t.Fatalf("expected ExitError from helpCommand.Action(), but instead got: %v", err.Error())
+		t.Fatalf("expected *exitError from helpCommand.Action(), but instead got: %v", err.Error())
 	}
 
 	if !strings.HasPrefix(exitErr.Error(), "No help topic for") {

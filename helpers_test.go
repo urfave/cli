@@ -12,6 +12,10 @@ var (
 	wd, _ = os.Getwd()
 )
 
+func init() {
+	os.Setenv("CLI_TEMPLATE_REPANIC", "1")
+}
+
 func expect(t *testing.T, a interface{}, b interface{}) {
 	_, fn, line, _ := runtime.Caller(1)
 	fn = strings.Replace(fn, wd+"/", "", -1)

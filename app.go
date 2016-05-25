@@ -36,8 +36,8 @@ type App struct {
 	HideHelp bool
 	// Boolean to hide built-in version flag and the VERSION section of help
 	HideVersion bool
-	// Populate on app startup, only gettable through method Categories()
-	categories *CommandCategories
+	// Categories contains the categorized commands and is populated on app startup
+	Categories CommandCategories
 	// An action to execute when the bash-completion flag is set
 	BashComplete BashCompleteFunc
 	// An action to execute before any subcommands are run, but after the context is ready
@@ -113,11 +113,11 @@ func (a *App) Setup() {
 	}
 	a.Commands = newCmds
 
-	a.categories = NewCommandCategories()
+	a.Categories = newCommandCategories()
 	for _, command := range a.Commands {
-		a.categories.AddCommand(command.Category, command)
+		a.Categories.AddCommand(command.Category, command)
 	}
-	sort.Sort(a.categories)
+	sort.Sort(a.Categories.(*commandCategories))
 
 	// append help to commands
 	if a.Command(helpCommand.Name) == nil && !a.HideHelp {
@@ -184,7 +184,7 @@ func (a *App) Run(arguments []string) (err error) {
 		defer func() {
 			if afterErr := a.After(context); afterErr != nil {
 				if err != nil {
-					err = NewMultiError(err, afterErr)
+					err = newMultiError(err, afterErr)
 				} else {
 					err = afterErr
 				}
@@ -296,7 +296,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 			if afterErr != nil {
 				HandleExitCoder(err)
 				if err != nil {
-					err = NewMultiError(err, afterErr)
+					err = newMultiError(err, afterErr)
 				} else {
 					err = afterErr
 				}
@@ -340,17 +340,12 @@ func (a *App) Command(name string) *Command {
 	return nil
 }
 
-// Categories returns a slice containing all the categories with the commands they contain
-func (a *App) Categories() *CommandCategories {
-	return a.categories
-}
-
 // VisibleCategories returns a slice of categories and commands that are
 // Hidden=false
-func (a *App) VisibleCategories() []*CommandCategory {
-	ret := []*CommandCategory{}
-	for _, category := range a.categories.Categories() {
-		if visible := func() *CommandCategory {
+func (a *App) VisibleCategories() []CommandCategory {
+	ret := []CommandCategory{}
+	for _, category := range a.Categories.Categories() {
+		if visible := func() CommandCategory {
 			if len(category.VisibleCommands()) > 0 {
 				return category
 			}

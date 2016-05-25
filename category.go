@@ -1,54 +1,80 @@
 package cli
 
-// CommandCategories wraps a slice of *CommandCategory.
-type CommandCategories struct {
-	slice []*CommandCategory
+type CommandCategories interface {
+	// AddCommand adds a command to a category, creating a new category if necessary.
+	AddCommand(category string, command *Command)
+	// Categories returns a copy of the category slice
+	Categories() []CommandCategory
 }
 
-func NewCommandCategories() *CommandCategories {
-	return &CommandCategories{slice: []*CommandCategory{}}
+type commandCategories []*commandCategory
+
+func newCommandCategories() CommandCategories {
+	ret := commandCategories([]*commandCategory{})
+	return &ret
 }
 
-func (c *CommandCategories) Less(i, j int) bool {
-	return c.slice[i].Name < c.slice[j].Name
+func (c *commandCategories) Less(i, j int) bool {
+	return (*c)[i].Name() < (*c)[j].Name()
 }
 
-func (c *CommandCategories) Len() int {
-	return len(c.slice)
+func (c *commandCategories) Len() int {
+	return len(*c)
 }
 
-func (c *CommandCategories) Swap(i, j int) {
-	c.slice[i], c.slice[j] = c.slice[j], c.slice[i]
+func (c *commandCategories) Swap(i, j int) {
+	(*c)[i], (*c)[j] = (*c)[j], (*c)[i]
 }
 
-// AddCommand adds a command to a category, creating a new category if necessary.
-func (c *CommandCategories) AddCommand(category string, command *Command) {
-	for _, commandCategory := range c.slice {
-		if commandCategory.Name == category {
+func (c *commandCategories) AddCommand(category string, command *Command) {
+	for _, commandCategory := range []*commandCategory(*c) {
+		if commandCategory.name == category {
 			commandCategory.commands = append(commandCategory.commands, command)
 			return
 		}
 	}
-	c.slice = append(c.slice,
-		&CommandCategory{Name: category, commands: []*Command{command}})
+	newVal := commandCategories(append(*c,
+		&commandCategory{name: category, commands: []*Command{command}}))
+	(*c) = newVal
 }
 
-// Categories returns a copy of the category slice
-func (c *CommandCategories) Categories() []*CommandCategory {
-	ret := make([]*CommandCategory, len(c.slice))
-	copy(ret, c.slice)
+func (c *commandCategories) Categories() []CommandCategory {
+	ret := []CommandCategory{}
+	for _, cat := range *c {
+		ret = append(ret, cat)
+	}
 	return ret
 }
 
 // CommandCategory is a category containing commands.
-type CommandCategory struct {
-	Name string
+type CommandCategory interface {
+	// Name returns the category name string
+	Name() string
+	// VisibleCommands returns a slice of the Commands with Hidden=false
+	VisibleCommands() []*Command
+}
 
+type commandCategory struct {
+	name     string
 	commands []*Command
 }
 
-// VisibleCommands returns a slice of the Commands with Hidden=false
-func (c *CommandCategory) VisibleCommands() []*Command {
+func newCommandCategory(name string) *commandCategory {
+	return &commandCategory{
+		name:     name,
+		commands: []*Command{},
+	}
+}
+
+func (c *commandCategory) Name() string {
+	return c.name
+}
+
+func (c *commandCategory) VisibleCommands() []*Command {
+	if c.commands == nil {
+		c.commands = []*Command{}
+	}
+
 	ret := []*Command{}
 	for _, command := range c.commands {
 		if !command.Hidden {

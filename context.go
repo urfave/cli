@@ -10,7 +10,7 @@ import (
 
 // Context is a type that is passed through to
 // each Handler action in a cli application. Context
-// can be used to retrieve context-specific Args and
+// can be used to retrieve context-specific args and
 // parsed command-line options.
 type Context struct {
 	App     *App
@@ -148,8 +148,9 @@ func (c *Context) Lineage() []*Context {
 }
 
 // Args returns the command line arguments associated with the context.
-func (c *Context) Args() *Args {
-	return &Args{slice: c.flagSet.Args()}
+func (c *Context) Args() Args {
+	ret := args(c.flagSet.Args())
+	return &ret
 }
 
 // NArg returns the number of the command line arguments.

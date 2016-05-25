@@ -216,7 +216,7 @@ func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
 
 func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
 	var parsedOption string
-	var args *Args
+	var args Args
 
 	app := NewApp()
 	command := &Command{
@@ -241,7 +241,7 @@ func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
 }
 
 func TestApp_CommandWithDash(t *testing.T) {
-	var args *Args
+	var args Args
 
 	app := NewApp()
 	command := &Command{
@@ -260,7 +260,7 @@ func TestApp_CommandWithDash(t *testing.T) {
 }
 
 func TestApp_CommandWithNoFlagBeforeTerminator(t *testing.T) {
-	var args *Args
+	var args Args
 
 	app := NewApp()
 	command := &Command{
@@ -1142,25 +1142,24 @@ func TestApp_Run_Categories(t *testing.T) {
 
 	app.Run([]string{"categories"})
 
-	expect := &CommandCategories{
-		slice: []*CommandCategory{
-			{
-				Name: "1",
-				commands: []*Command{
-					app.Commands[0],
-					app.Commands[1],
-				},
-			},
-			{
-				Name: "2",
-				commands: []*Command{
-					app.Commands[2],
-				},
+	expect := commandCategories([]*commandCategory{
+		{
+			name: "1",
+			commands: []*Command{
+				app.Commands[0],
+				app.Commands[1],
 			},
 		},
-	}
-	if !reflect.DeepEqual(app.Categories(), expect) {
-		t.Fatalf("expected categories %#v, to equal %#v", app.Categories(), expect)
+		{
+			name: "2",
+			commands: []*Command{
+				app.Commands[2],
+			},
+		},
+	})
+
+	if !reflect.DeepEqual(app.Categories, &expect) {
+		t.Fatalf("expected categories %#v, to equal %#v", app.Categories, &expect)
 	}
 
 	output := buf.String()
@@ -1193,15 +1192,15 @@ func TestApp_VisibleCategories(t *testing.T) {
 		},
 	}
 
-	expected := []*CommandCategory{
-		{
-			Name: "2",
+	expected := []CommandCategory{
+		&commandCategory{
+			name: "2",
 			commands: []*Command{
 				app.Commands[1],
 			},
 		},
-		{
-			Name: "3",
+		&commandCategory{
+			name: "3",
 			commands: []*Command{
 				app.Commands[2],
 			},
@@ -1233,9 +1232,9 @@ func TestApp_VisibleCategories(t *testing.T) {
 		},
 	}
 
-	expected = []*CommandCategory{
-		{
-			Name: "3",
+	expected = []CommandCategory{
+		&commandCategory{
+			name: "3",
 			commands: []*Command{
 				app.Commands[2],
 			},
@@ -1268,10 +1267,8 @@ func TestApp_VisibleCategories(t *testing.T) {
 		},
 	}
 
-	expected = []*CommandCategory{}
-
 	app.Setup()
-	expect(t, expected, app.VisibleCategories())
+	expect(t, []CommandCategory{}, app.VisibleCategories())
 }
 
 func TestApp_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {

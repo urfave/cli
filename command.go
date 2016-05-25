@@ -120,7 +120,7 @@ func (c *Command) Run(ctx *Context) (err error) {
 			if afterErr != nil {
 				HandleExitCoder(err)
 				if err != nil {
-					err = NewMultiError(err, afterErr)
+					err = newMultiError(err, afterErr)
 				} else {
 					err = afterErr
 				}
@@ -193,12 +193,12 @@ func (c *Command) startApp(ctx *Context) error {
 	app.Compiled = ctx.App.Compiled
 	app.Writer = ctx.App.Writer
 
-	app.categories = NewCommandCategories()
+	app.Categories = newCommandCategories()
 	for _, command := range c.Subcommands {
-		app.categories.AddCommand(command.Category, command)
+		app.Categories.AddCommand(command.Category, command)
 	}
 
-	sort.Sort(app.categories)
+	sort.Sort(app.Categories.(*commandCategories))
 
 	// bash completion
 	app.EnableBashCompletion = ctx.App.EnableBashCompletion
