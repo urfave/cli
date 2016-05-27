@@ -39,9 +39,9 @@ func (c *commandCategories) AddCommand(category string, command *Command) {
 }
 
 func (c *commandCategories) Categories() []CommandCategory {
-	ret := []CommandCategory{}
-	for _, cat := range *c {
-		ret = append(ret, cat)
+	ret := make([]CommandCategory, len(*c))
+	for i, cat := range *c {
+		ret[i] = cat
 	}
 	return ret
 }
