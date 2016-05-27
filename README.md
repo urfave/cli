@@ -9,7 +9,7 @@
 
 # cli
 
-**Notice:** This is the library formally known as
+**Notice:** This is the library formerly known as
 `github.com/codegangsta/cli` -- Github will automatically redirect requests
 to this repository, but we recommend updating your references for clarity.
 
