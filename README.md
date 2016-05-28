@@ -216,7 +216,7 @@ Setting and querying flags is simple.
 ``` go
 ...
 app.Flags = []cli.Flag {
-  cli.StringFlag{
+  &cli.StringFlag{
     Name: "lang",
     Value: "english",
     Usage: "language for the greeting",
@@ -243,7 +243,7 @@ You can also set a destination variable for a flag, to which the content will be
 ...
 var language string
 app.Flags = []cli.Flag {
-  cli.StringFlag{
+  &cli.StringFlag{
     Name:        "lang",
     Value:       "english",
     Usage:       "language for the greeting",
@@ -275,7 +275,7 @@ indicated with back quotes.
 For example this:
 
 ```go
-cli.StringFlag{
+&cli.StringFlag{
   Name:    "config",
   Aliases: []string{"c"},
   Usage:   "Load configuration from `FILE`",
@@ -296,7 +296,7 @@ You can set alternate (or short) names for flags by providing a comma-delimited 
 
 ``` go
 app.Flags = []cli.Flag {
-  cli.StringFlag{
+  &cli.StringFlag{
     Name:    "lang",
     Aliases: []string{"l"},
     Value:   "english",
@@ -313,7 +313,7 @@ You can also have the default value set from the environment via `EnvVars`.  e.g
 
 ``` go
 app.Flags = []cli.Flag {
-  cli.StringFlag{
+  &cli.StringFlag{
     Name:    "lang",
     Aliases: []string{"l"},
     Value:   "english",
@@ -327,7 +327,7 @@ If `EnvVars` contains more than one string, the first environment variable that 
 
 ``` go
 app.Flags = []cli.Flag {
-  cli.StringFlag{
+  &cli.StringFlag{
     Name:    "lang",
     Aliases: []string{"l"},
     Value:   "english",
@@ -344,7 +344,7 @@ There is a separate package altsrc that adds support for getting flag values fro
 In order to get values for a flag from an alternate input source the following code would be added to wrap an existing cli.Flag like below:
 
 ``` go
-  altsrc.NewIntFlag(cli.IntFlag{Name: "test"})
+  altsrc.NewIntFlag(&cli.IntFlag{Name: "test"})
 ```
 
 Initialization must also occur for these flags. Below is an example initializing getting data from a yaml file below.
@@ -373,8 +373,8 @@ Here is a more complete sample of a command using YAML support:
       return nil
     },
     Flags: []cli.Flag{
-      NewIntFlag(cli.IntFlag{Name: "test"}),
-      cli.StringFlag{Name: "load"}},
+      NewIntFlag(&cli.IntFlag{Name: "test"}),
+      &cli.StringFlag{Name: "load"}},
   }
   command.Before = InitInputSourceWithContext(command.Flags, NewYamlSourceFromFlagFunc("load"))
   err := command.Run(c)
@@ -386,7 +386,7 @@ Subcommands can be defined for a more git-like command line app.
 
 ```go
 ...
-app.Commands = []cli.Command{
+app.Commands = []*cli.Command{
   {
     Name:      "add",
     Aliases:     []string{"a"},
@@ -409,7 +409,7 @@ app.Commands = []cli.Command{
     Name:      "template",
     Aliases:     []string{"r"},
     Usage:     "options for task templates",
-    Subcommands: []cli.Command{
+    Subcommands: []*cli.Command{
       {
         Name:  "add",
         Usage: "add a new template",
@@ -442,7 +442,7 @@ E.g.
 
 ```go
 ...
-  app.Commands = []cli.Command{
+  app.Commands = []*cli.Command{
     {
       Name: "noop",
     },
@@ -490,7 +490,7 @@ import (
 func main() {
   app := cli.NewApp()
   app.Flags = []cli.Flag{
-    cli.BoolFlag{
+    &cli.BoolFlag{
       Name:  "ginger-crouton",
       Value: true,
       Usage: "is it in the soup?",
@@ -498,7 +498,7 @@ func main() {
   }
   app.Action = func(ctx *cli.Context) error {
     if !ctx.Bool("ginger-crouton") {
-      return cli.NewExitError("it is not in the soup", 86)
+      return cli.Exit("it is not in the soup", 86)
     }
     return nil
   }
@@ -519,7 +519,7 @@ the App or its subcommands.
 var tasks = []string{"cook", "clean", "laundry", "eat", "sleep", "code"}
 app := cli.NewApp()
 app.EnableBashCompletion = true
-app.Commands = []cli.Command{
+app.Commands = []*cli.Command{
   {
     Name:  "complete",
     Aliases: []string{"c"},

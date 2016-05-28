@@ -15,7 +15,7 @@ func TestNewContext(t *testing.T) {
 	globalSet.Int("myflag", 42, "doc")
 	globalSet.Float64("myflag64", float64(47), "doc")
 	globalCtx := NewContext(nil, globalSet, nil)
-	command := Command{Name: "mycommand"}
+	command := &Command{Name: "mycommand"}
 	c := NewContext(nil, set, globalCtx)
 	c.Command = command
 	expect(t, c.Int("myflag"), 12)
@@ -63,7 +63,7 @@ func TestContext_Args(t *testing.T) {
 	set.Bool("myflag", false, "doc")
 	c := NewContext(nil, set, nil)
 	set.Parse([]string{"--myflag", "bat", "baz"})
-	expect(t, len(c.Args()), 2)
+	expect(t, c.Args().Len(), 2)
 	expect(t, c.Bool("myflag"), true)
 }
 

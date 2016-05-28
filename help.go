@@ -74,7 +74,7 @@ OPTIONS:
    {{end}}{{end}}
 `
 
-var helpCommand = Command{
+var helpCommand = &Command{
 	Name:      "help",
 	Aliases:   []string{"h"},
 	Usage:     "Shows a list of commands or help for one command",
@@ -90,7 +90,7 @@ var helpCommand = Command{
 	},
 }
 
-var helpSubcommand = Command{
+var helpSubcommand = &Command{
 	Name:      "help",
 	Aliases:   []string{"h"},
 	Usage:     "Shows a list of commands or help for one command",
@@ -149,7 +149,7 @@ func ShowCommandHelp(ctx *Context, command string) error {
 	}
 
 	if ctx.App.CommandNotFound == nil {
-		return NewExitError(fmt.Sprintf("No help topic for '%v'", command), 3)
+		return Exit(fmt.Sprintf("No help topic for '%v'", command), 3)
 	}
 
 	ctx.App.CommandNotFound(ctx, command)
@@ -158,7 +158,15 @@ func ShowCommandHelp(ctx *Context, command string) error {
 
 // ShowSubcommandHelp prints help for the given subcommand
 func ShowSubcommandHelp(c *Context) error {
-	return ShowCommandHelp(c, c.Command.Name)
+	if c == nil {
+		return nil
+	}
+
+	if c.Command != nil {
+		return ShowCommandHelp(c, c.Command.Name)
+	}
+
+	return ShowCommandHelp(c, "")
 }
 
 // ShowVersion prints the version number of the App
@@ -193,15 +201,28 @@ func printHelp(out io.Writer, templ string, data interface{}) {
 
 	w := tabwriter.NewWriter(out, 0, 8, 1, '\t', 0)
 	t := template.Must(template.New("help").Funcs(funcMap).Parse(templ))
+
+	errDebug := os.Getenv("CLI_TEMPLATE_ERROR_DEBUG") != ""
+
+	defer func() {
+		if r := recover(); r != nil {
+			if errDebug {
+				fmt.Fprintf(ErrWriter, "CLI TEMPLATE PANIC: %#v\n", r)
+			}
+			if os.Getenv("CLI_TEMPLATE_REPANIC") != "" {
+				panic(r)
+			}
+		}
+	}()
+
 	err := t.Execute(w, data)
 	if err != nil {
-		// If the writer is closed, t.Execute will fail, and there's nothing
-		// we can do to recover.
-		if os.Getenv("CLI_TEMPLATE_ERROR_DEBUG") != "" {
+		if errDebug {
 			fmt.Fprintf(ErrWriter, "CLI TEMPLATE ERROR: %#v\n", err)
 		}
 		return
 	}
+
 	w.Flush()
 }
 
