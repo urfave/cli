@@ -10,7 +10,7 @@ from subprocess import check_call, check_output
 
 
 PACKAGE_NAME = os.environ.get(
-    'CLI_PACKAGE_NAME', 'github.com/codegangsta/cli'
+    'CLI_PACKAGE_NAME', 'github.com/urfave/cli'
 )
 
 
@@ -49,9 +49,9 @@ def _test():
             ('{}/{}'.format(PACKAGE_NAME, subpackage)).rstrip('/')
         ])
 
-    combined = _combine_coverprofiles(coverprofiles)
-    _run('go tool cover -func={}'.format(combined.name).split())
-    combined.close()
+    combined_name = _combine_coverprofiles(coverprofiles)
+    _run('go tool cover -func={}'.format(combined_name).split())
+    os.remove(combined_name)
 
 
 def _gfmxr():
@@ -78,7 +78,9 @@ def _is_go_runnable(line):
 
 
 def _combine_coverprofiles(coverprofiles):
-    combined = tempfile.NamedTemporaryFile(suffix='.coverprofile')
+    combined = tempfile.NamedTemporaryFile(
+        suffix='.coverprofile', delete=False
+    )
     combined.write('mode: set\n')
 
     for coverprofile in coverprofiles:
@@ -88,7 +90,9 @@ def _combine_coverprofiles(coverprofiles):
                     combined.write(line)
 
     combined.flush()
-    return combined
+    name = combined.name
+    combined.close()
+    return name
 
 
 if __name__ == '__main__':

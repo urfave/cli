@@ -10,11 +10,11 @@ import (
 
 // Context is a type that is passed through to
 // each Handler action in a cli application. Context
-// can be used to retrieve context-specific Args and
+// can be used to retrieve context-specific args and
 // parsed command-line options.
 type Context struct {
 	App     *App
-	Command Command
+	Command *Command
 
 	flagSet       *flag.FlagSet
 	parentContext *Context
@@ -147,54 +147,15 @@ func (c *Context) Lineage() []*Context {
 	return lineage
 }
 
-// Args contains apps console arguments
-type Args []string
-
 // Args returns the command line arguments associated with the context.
 func (c *Context) Args() Args {
-	args := Args(c.flagSet.Args())
-	return args
+	ret := args(c.flagSet.Args())
+	return &ret
 }
 
 // NArg returns the number of the command line arguments.
 func (c *Context) NArg() int {
-	return len(c.Args())
-}
-
-// Get returns the nth argument, or else a blank string
-func (a Args) Get(n int) string {
-	if len(a) > n {
-		return a[n]
-	}
-	return ""
-}
-
-// First returns the first argument, or else a blank string
-func (a Args) First() string {
-	return a.Get(0)
-}
-
-// Tail returns the rest of the arguments (not the first one)
-// or else an empty string slice
-func (a Args) Tail() []string {
-	if len(a) >= 2 {
-		return []string(a)[1:]
-	}
-	return []string{}
-}
-
-// Present checks if there are any arguments present
-func (a Args) Present() bool {
-	return len(a) != 0
-}
-
-// Swap swaps arguments at the given indexes
-func (a Args) Swap(from, to int) error {
-	if from >= len(a) || to >= len(a) {
-		return errors.New("index out of range")
-	}
-	a[from], a[to] = a[to], a[from]
-	return nil
+	return c.Args().Len()
 }
 
 func lookupFlagSet(name string, ctx *Context) *flag.FlagSet {
@@ -310,7 +271,7 @@ func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
 		visited[f.Name] = true
 	})
 	for _, f := range flags {
-		parts := strings.Split(f.GetName(), ",")
+		parts := f.Names()
 		if len(parts) == 1 {
 			continue
 		}

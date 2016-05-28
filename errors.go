@@ -15,23 +15,37 @@ var OsExiter = os.Exit
 var ErrWriter io.Writer = os.Stderr
 
 // MultiError is an error that wraps multiple errors.
-type MultiError struct {
-	Errors []error
+type MultiError interface {
+	error
+	// Errors returns a copy of the errors slice
+	Errors() []error
 }
 
 // NewMultiError creates a new MultiError. Pass in one or more errors.
-func NewMultiError(err ...error) MultiError {
-	return MultiError{Errors: err}
+func newMultiError(err ...error) MultiError {
+	ret := multiError(err)
+	return &ret
 }
 
-// Error implents the error interface.
-func (m MultiError) Error() string {
-	errs := make([]string, len(m.Errors))
-	for i, err := range m.Errors {
+type multiError []error
+
+// Error implements the error interface.
+func (m *multiError) Error() string {
+	errs := make([]string, len(*m))
+	for i, err := range *m {
 		errs[i] = err.Error()
 	}
 
 	return strings.Join(errs, "\n")
+}
+
+// Errors returns a copy of the errors slice
+func (m *multiError) Errors() []error {
+	errs := make([]error, len(*m))
+	for _, err := range *m {
+		errs = append(errs, err)
+	}
+	return errs
 }
 
 // ExitCoder is the interface checked by `App` and `Command` for a custom exit
@@ -41,29 +55,25 @@ type ExitCoder interface {
 	ExitCode() int
 }
 
-// ExitError fulfills both the builtin `error` interface and `ExitCoder`
-type ExitError struct {
+type exitError struct {
 	exitCode int
 	message  string
 }
 
-// NewExitError makes a new *ExitError
-func NewExitError(message string, exitCode int) *ExitError {
-	return &ExitError{
+// Exit wraps a message and exit code into an ExitCoder suitable for handling by
+// HandleExitCoder
+func Exit(message string, exitCode int) ExitCoder {
+	return &exitError{
 		exitCode: exitCode,
 		message:  message,
 	}
 }
 
-// Error returns the string message, fulfilling the interface required by
-// `error`
-func (ee *ExitError) Error() string {
+func (ee *exitError) Error() string {
 	return ee.message
 }
 
-// ExitCode returns the exit code, fulfilling the interface required by
-// `ExitCoder`
-func (ee *ExitError) ExitCode() int {
+func (ee *exitError) ExitCode() int {
 	return ee.exitCode
 }
 
@@ -85,7 +95,7 @@ func HandleExitCoder(err error) {
 	}
 
 	if multiErr, ok := err.(MultiError); ok {
-		for _, merr := range multiErr.Errors {
+		for _, merr := range multiErr.Errors() {
 			HandleExitCoder(merr)
 		}
 	}

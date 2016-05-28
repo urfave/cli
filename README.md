@@ -1,12 +1,17 @@
-[![Build Status](https://travis-ci.org/codegangsta/cli.svg?branch=master)](https://travis-ci.org/codegangsta/cli)
-[![GoDoc](https://godoc.org/github.com/codegangsta/cli?status.svg)](https://godoc.org/github.com/codegangsta/cli)
-[![codebeat](https://codebeat.co/badges/0a8f30aa-f975-404b-b878-5fab3ae1cc5f)](https://codebeat.co/projects/github-com-codegangsta-cli)
-[![Go Report Card](https://goreportcard.com/badge/codegangsta/cli)](https://goreportcard.com/report/codegangsta/cli)
-[![top level coverage](https://gocover.io/_badge/github.com/codegangsta/cli?0 "top level coverage")](http://gocover.io/github.com/codegangsta/cli) /
-[![altsrc coverage](https://gocover.io/_badge/github.com/codegangsta/cli/altsrc?0 "altsrc coverage")](http://gocover.io/github.com/codegangsta/cli/altsrc)
+[![Build Status](https://travis-ci.org/urfave/cli.svg?branch=master)](https://travis-ci.org/urfave/cli)
+[![Windows Build Status](https://ci.appveyor.com/api/projects/status/rtgk5xufi932pb2v?svg=true)](https://ci.appveyor.com/project/meatballhat/cli)
+[![GoDoc](https://godoc.org/github.com/urfave/cli?status.svg)](https://godoc.org/github.com/urfave/cli)
+[![codebeat](https://codebeat.co/badges/0a8f30aa-f975-404b-b878-5fab3ae1cc5f)](https://codebeat.co/projects/github-com-urfave-cli)
+[![Go Report Card](https://goreportcard.com/badge/urfave/cli)](https://goreportcard.com/report/urfave/cli)
+[![top level coverage](https://gocover.io/_badge/github.com/urfave/cli?0 "top level coverage")](http://gocover.io/github.com/urfave/cli) /
+[![altsrc coverage](https://gocover.io/_badge/github.com/urfave/cli/altsrc?0 "altsrc coverage")](http://gocover.io/github.com/urfave/cli/altsrc)
 
 
 # cli
+
+**Notice:** This is the library formally known as
+`github.com/codegangsta/cli` -- Github will automatically redirect requests
+to this repository, but we recommend updating your references for clarity.
 
 cli is a simple, fast, and fun package for building command line apps in Go. The goal is to enable developers to write fast and distributable command line applications in an expressive way.
 
@@ -25,13 +30,19 @@ instructions](http://golang.org/doc/install.html).
 
 To install cli, simply run:
 ```
-$ go get github.com/codegangsta/cli
+$ go get github.com/urfave/cli
 ```
 
 Make sure your `PATH` includes to the `$GOPATH/bin` directory so your commands can be easily used:
 ```
 export PATH=$PATH:$GOPATH/bin
 ```
+
+### Supported platforms
+
+cli is tested against multiple versions of Go on Linux, and against the latest
+released version of Go on OS X and Windows.  For full details, see
+[`./.travis.yml`](./.travis.yml) and [`./appveyor.yml`](./appveyor.yml).
 
 ### Using the `v2` branch
 
@@ -44,13 +55,13 @@ that, please use whatever version pinning of your preference, such as via
 `gopkg.in`:
 
 ```
-$ go get gopkg.in/codegangsta/cli.v2
+$ go get gopkg.in/urfave/cli.v2
 ```
 
 ``` go
 ...
 import (
-  "gopkg.in/codegangsta/cli.v2" // imports as package "cli"
+  "gopkg.in/urfave/cli.v2" // imports as package "cli"
 )
 ...
 ```
@@ -62,13 +73,13 @@ to avoid any unexpected compatibility pains once `v2` becomes `master`, then
 pinning to the `v1` branch is an acceptable option, e.g.:
 
 ```
-$ go get gopkg.in/codegangsta/cli.v1
+$ go get gopkg.in/urfave/cli.v1
 ```
 
 ``` go
 ...
 import (
-  "gopkg.in/codegangsta/cli.v1" // imports as package "cli"
+  "gopkg.in/urfave/cli.v1" // imports as package "cli"
 )
 ...
 ```
@@ -82,7 +93,7 @@ package main
 
 import (
   "os"
-  "github.com/codegangsta/cli"
+  "github.com/urfave/cli"
 )
 
 func main() {
@@ -102,7 +113,7 @@ import (
   "fmt"
   "os"
 
-  "github.com/codegangsta/cli"
+  "github.com/urfave/cli"
 )
 
 func main() {
@@ -136,7 +147,7 @@ import (
   "fmt"
   "os"
 
-  "github.com/codegangsta/cli"
+  "github.com/urfave/cli"
 )
 
 func main() {
@@ -205,7 +216,7 @@ Setting and querying flags is simple.
 ``` go
 ...
 app.Flags = []cli.Flag {
-  cli.StringFlag{
+  &cli.StringFlag{
     Name: "lang",
     Value: "english",
     Usage: "language for the greeting",
@@ -232,7 +243,7 @@ You can also set a destination variable for a flag, to which the content will be
 ...
 var language string
 app.Flags = []cli.Flag {
-  cli.StringFlag{
+  &cli.StringFlag{
     Name:        "lang",
     Value:       "english",
     Usage:       "language for the greeting",
@@ -254,7 +265,7 @@ app.Action = func(c *cli.Context) error {
 ...
 ```
 
-See full list of flags at http://godoc.org/github.com/codegangsta/cli
+See full list of flags at http://godoc.org/github.com/urfave/cli
 
 #### Placeholder Values
 
@@ -264,9 +275,10 @@ indicated with back quotes.
 For example this:
 
 ```go
-cli.StringFlag{
-  Name:  "config, c",
-  Usage: "Load configuration from `FILE`",
+&cli.StringFlag{
+  Name:    "config",
+  Aliases: []string{"c"},
+  Usage:   "Load configuration from `FILE`",
 }
 ```
 
@@ -284,10 +296,11 @@ You can set alternate (or short) names for flags by providing a comma-delimited 
 
 ``` go
 app.Flags = []cli.Flag {
-  cli.StringFlag{
-    Name: "lang, l",
-    Value: "english",
-    Usage: "language for the greeting",
+  &cli.StringFlag{
+    Name:    "lang",
+    Aliases: []string{"l"},
+    Value:   "english",
+    Usage:   "language for the greeting",
   },
 }
 ```
@@ -296,28 +309,30 @@ That flag can then be set with `--lang spanish` or `-l spanish`. Note that givin
 
 #### Values from the Environment
 
-You can also have the default value set from the environment via `EnvVar`.  e.g.
+You can also have the default value set from the environment via `EnvVars`.  e.g.
 
 ``` go
 app.Flags = []cli.Flag {
-  cli.StringFlag{
-    Name: "lang, l",
-    Value: "english",
-    Usage: "language for the greeting",
-    EnvVar: "APP_LANG",
+  &cli.StringFlag{
+    Name:    "lang",
+    Aliases: []string{"l"},
+    Value:   "english",
+    Usage:   "language for the greeting",
+    EnvVars: []string{"APP_LANG"},
   },
 }
 ```
 
-The `EnvVar` may also be given as a comma-delimited "cascade", where the first environment variable that resolves is used as the default.
+If `EnvVars` contains more than one string, the first environment variable that resolves is used as the default.
 
 ``` go
 app.Flags = []cli.Flag {
-  cli.StringFlag{
-    Name: "lang, l",
-    Value: "english",
-    Usage: "language for the greeting",
-    EnvVar: "LEGACY_COMPAT_LANG,APP_LANG,LANG",
+  &cli.StringFlag{
+    Name:    "lang",
+    Aliases: []string{"l"},
+    Value:   "english",
+    Usage:   "language for the greeting",
+    EnvVars: []string{"LEGACY_COMPAT_LANG", "APP_LANG", "LANG"},
   },
 }
 ```
@@ -329,7 +344,7 @@ There is a separate package altsrc that adds support for getting flag values fro
 In order to get values for a flag from an alternate input source the following code would be added to wrap an existing cli.Flag like below:
 
 ``` go
-  altsrc.NewIntFlag(cli.IntFlag{Name: "test"})
+  altsrc.NewIntFlag(&cli.IntFlag{Name: "test"})
 ```
 
 Initialization must also occur for these flags. Below is an example initializing getting data from a yaml file below.
@@ -358,8 +373,8 @@ Here is a more complete sample of a command using YAML support:
       return nil
     },
     Flags: []cli.Flag{
-      NewIntFlag(cli.IntFlag{Name: "test"}),
-      cli.StringFlag{Name: "load"}},
+      NewIntFlag(&cli.IntFlag{Name: "test"}),
+      &cli.StringFlag{Name: "load"}},
   }
   command.Before = InitInputSourceWithContext(command.Flags, NewYamlSourceFromFlagFunc("load"))
   err := command.Run(c)
@@ -371,7 +386,7 @@ Subcommands can be defined for a more git-like command line app.
 
 ```go
 ...
-app.Commands = []cli.Command{
+app.Commands = []*cli.Command{
   {
     Name:      "add",
     Aliases:     []string{"a"},
@@ -394,7 +409,7 @@ app.Commands = []cli.Command{
     Name:      "template",
     Aliases:     []string{"r"},
     Usage:     "options for task templates",
-    Subcommands: []cli.Command{
+    Subcommands: []*cli.Command{
       {
         Name:  "add",
         Usage: "add a new template",
@@ -427,7 +442,7 @@ E.g.
 
 ```go
 ...
-  app.Commands = []cli.Command{
+  app.Commands = []*cli.Command{
     {
       Name: "noop",
     },
@@ -469,13 +484,13 @@ package main
 import (
   "os"
 
-  "github.com/codegangsta/cli"
+  "github.com/urfave/cli"
 )
 
 func main() {
   app := cli.NewApp()
   app.Flags = []cli.Flag{
-    cli.BoolFlag{
+    &cli.BoolFlag{
       Name:  "ginger-crouton",
       Value: true,
       Usage: "is it in the soup?",
@@ -483,7 +498,7 @@ func main() {
   }
   app.Action = func(ctx *cli.Context) error {
     if !ctx.Bool("ginger-crouton") {
-      return cli.NewExitError("it is not in the soup", 86)
+      return cli.Exit("it is not in the soup", 86)
     }
     return nil
   }
@@ -504,7 +519,7 @@ the App or its subcommands.
 var tasks = []string{"cook", "clean", "laundry", "eat", "sleep", "code"}
 app := cli.NewApp()
 app.EnableBashCompletion = true
-app.Commands = []cli.Command{
+app.Commands = []*cli.Command{
   {
     Name:  "complete",
     Aliases: []string{"c"},
@@ -569,7 +584,7 @@ import (
   "io"
   "os"
 
-  "github.com/codegangsta/cli"
+  "github.com/urfave/cli"
 )
 
 func main() {
@@ -618,8 +633,16 @@ VERSION:
 
 ## Contribution Guidelines
 
-Feel free to put up a pull request to fix a bug or maybe add a feature. I will give it a code review and make sure that it does not break backwards compatibility. If I or any other collaborators agree that it is in line with the vision of the project, we will work with you to get the code into a mergeable state and merge it into the master branch.
+Feel free to put up a pull request to fix a bug or maybe add a feature. I will
+give it a code review and make sure that it does not break backwards
+compatibility. If I or any other collaborators agree that it is in line with
+the vision of the project, we will work with you to get the code into
+a mergeable state and merge it into the master branch.
 
-If you have contributed something significant to the project, I will most likely add you as a collaborator. As a collaborator you are given the ability to merge others pull requests. It is very important that new code does not break existing code, so be careful about what code you do choose to merge. If you have any questions feel free to link @codegangsta to the issue in question and we can review it together.
+If you have contributed something significant to the project, we will most
+likely add you as a collaborator. As a collaborator you are given the ability
+to merge others pull requests. It is very important that new code does not
+break existing code, so be careful about what code you do choose to merge.
 
-If you feel like you have contributed to the project but have not yet been added as a collaborator, I probably forgot to add you. Hit @codegangsta up over email and we will get it figured out.
+If you feel like you have contributed to the project but have not yet been
+added as a collaborator, we probably forgot to add you, please open an issue.
