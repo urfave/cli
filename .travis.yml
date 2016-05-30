@@ -32,7 +32,7 @@ before_script:
 - mkdir -p .extracted-examples
 - curl -sSL -o .extracted-examples/README.md
     'https://raw.githubusercontent.com/urfave/cli/v1/README.md'
-- cd .extracted-examples && gfmxr extract -o .
+- pushd .extracted-examples && gfmxr extract -o . ; popd
 
 script:
 - flake8 runtests cli-v1-to-v2
