@@ -9,18 +9,13 @@ import tempfile
 from subprocess import check_call, check_output
 
 
-PACKAGE_NAME = os.environ.get(
+_PACKAGE_NAME = os.environ.get(
     'CLI_PACKAGE_NAME', 'github.com/urfave/cli'
 )
+_TARGETS = {}
 
 
 def main(sysargs=sys.argv[:]):
-    targets = {
-        'vet': _vet,
-        'test': _test,
-        'gfmxr': _gfmxr
-    }
-
     parser = argparse.ArgumentParser()
     parser.add_argument(
         'target', nargs='?', choices=tuple(targets.keys()), default='test'
@@ -31,6 +26,12 @@ def main(sysargs=sys.argv[:]):
     return 0
 
 
+def _target(func):
+    _TARGETS[func.__name__.strip('_')] = func
+    return func
+
+
+@_target
 def _test():
     if check_output('go version'.split()).split()[2] < 'go1.2':
         _run('go test -v .'.split())
@@ -46,7 +47,7 @@ def _test():
 
         _run('go test -v'.split() + [
             '-coverprofile={}'.format(coverprofile),
-            ('{}/{}'.format(PACKAGE_NAME, subpackage)).rstrip('/')
+            ('{}/{}'.format(_PACKAGE_NAME, subpackage)).rstrip('/')
         ])
 
     combined_name = _combine_coverprofiles(coverprofiles)
@@ -54,12 +55,22 @@ def _test():
     os.remove(combined_name)
 
 
+@_target
 def _gfmxr():
     _run(['gfmxr', '-c', str(_gfmxr_count()), '-s', 'README.md'])
 
 
+@_target
 def _vet():
     _run('go vet ./...'.split())
+
+
+@_target
+def _migrator():
+    exe = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'cli-v1-to-v2'
+    )
+    run(['py.test', exe])
 
 
 def _run(command):

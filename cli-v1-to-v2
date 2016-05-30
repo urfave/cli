@@ -1,0 +1,235 @@
+#!/usr/bin/env python
+from __future__ import print_function, unicode_literals
+
+import argparse
+import logging
+import os
+import re
+import sys
+
+
+_DESCRIPTION = """\
+Migrate arbitrary `.go` sources (mostly) from the v1 to v2 API.
+"""
+_V2_IMPORT = '"gopkg.in/urfave/cli.v2"'
+_V1_IMPORT_RE = re.compile(
+    '"(?:github\\.com|gopkg\\.in)/(?:codegangsta|urfave)/cli(?:\\.v1|)"',
+)
+_SLICE_TYPE_RE = re.compile(
+    '&cli\\.(?P<type>IntSlice|StringSlice){(?P<args>[^}]*)}',
+    flags=re.DOTALL
+)
+_FLAG_LITERAL_RE = re.compile(
+    '(?P<prefix>[^&]?)cli\\.(?P<type>\\w+)Flag{',
+)
+_COMMAND_SLICE_RE = re.compile(
+    '(?P<prefix>\\[\\])cli\\.Command{',
+)
+_COMMAND_LITERAL_RE = re.compile(
+    '(?P<prefix>\\s+)cli\\.Command{',
+)
+
+_MIGRATORS = {}
+
+
+def main(sysargs=sys.argv[:]):
+    parser = argparse.ArgumentParser(
+        description=_DESCRIPTION,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('basedir', nargs='?', metavar='BASEDIR',
+                        type=os.path.abspath, default=os.getcwd())
+    parser.add_argument('-w', '--write', help='write changes back to file',
+                        action='store_true', default=False)
+    parser.add_argument('-q', '--quiet', help='quiet down the logging',
+                        action='store_true', default=False)
+    parser.add_argument('--selftest', help='run internal tests',
+                        action='store_true', default=False)
+
+    args = parser.parse_args(sysargs[1:])
+
+    if args.selftest:
+        logging.basicConfig(
+            level=logging.WARN,
+            format='selftest: %(message)s'
+        )
+        test_migrators()
+        return 0
+
+    logging.basicConfig(
+        level=(logging.FATAL if args.quiet else logging.INFO),
+        format='%(message)s'
+    )
+
+    for filepath in _find_candidate_files(args.basedir):
+        updated_source = _update_filepath(filepath)
+        if args.write:
+            logging.info('Updating %s', filepath)
+
+            with open(filepath, 'w') as outfile:
+                outfile.write(updated_source)
+        else:
+            logging.info('// Updated %s:', filepath)
+            print(updated_source)
+
+    return 0
+
+
+def _find_candidate_files(basedir):
+    for curdir, dirs, files in os.walk(basedir):
+        for i, dirname in enumerate(dirs[:]):
+            if dirname.startswith('.'):
+                dirs.pop(i)
+
+        for filename in files:
+            if not filename.endswith('.go'):
+                continue
+
+            filepath = os.path.join(curdir, filename)
+            if not os.access(filepath, os.R_OK | os.W_OK):
+                continue
+
+            yield filepath
+
+
+def _update_filepath(filepath):
+    with open(filepath) as infile:
+        return _update_source(infile.read())
+
+
+def _update_source(source):
+    for migrator, func in _MIGRATORS.items():
+        logging.info('Running %s migrator', migrator)
+        source = func(source)
+    return source
+
+
+def _migrator(func):
+    _MIGRATORS[func.__name__.replace('_migrate_', '')] = func
+    return func
+
+
+@_migrator
+def _migrate_command_slice(source):
+    return _COMMAND_SLICE_RE.sub(_command_slice_repl, source)
+
+
+def _command_slice_repl(match):
+    return '{}*cli.Command{{'.format(match.groupdict()['prefix'])
+
+
+@_migrator
+def _migrate_command_literal(source):
+    return _COMMAND_LITERAL_RE.sub(_command_literal_repl, source)
+
+
+def _command_literal_repl(match):
+    return '{}&cli.Command{{'.format(match.groupdict()['prefix'])
+
+
+@_migrator
+def _migrate_slice_types(source):
+    return _SLICE_TYPE_RE.sub(_slice_type_repl, source)
+
+
+def _slice_type_repl(match):
+    return 'cli.New{}({})'.format(
+        match.groupdict()['type'], match.groupdict()['args']
+    )
+
+
+@_migrator
+def _migrate_flag_literals(source):
+    return _FLAG_LITERAL_RE.sub(_flag_literal_repl, source)
+
+
+def _flag_literal_repl(match):
+    return '{}&cli.{}Flag{{'.format(
+        match.groupdict()['prefix'], match.groupdict()['type']
+    )
+
+
+@_migrator
+def _migrate_v1_imports(source):
+    return _V1_IMPORT_RE.sub(_V2_IMPORT, source)
+
+
+def test_migrators():
+    import difflib
+
+    for i, (source, expected) in enumerate(_MIGRATOR_TESTS):
+        actual = _update_source(source)
+        if expected != actual:
+            udiff = difflib.unified_diff(
+                expected.splitlines(), actual.splitlines(),
+                fromfile='a/source.go', tofile='b/source.go', lineterm=''
+            )
+            for line in udiff:
+                print(line)
+            raise AssertionError('migrated source does not match expected')
+        logging.warn('Test case %d/%d OK', i+1, len(_MIGRATOR_TESTS))
+
+
+_MIGRATOR_TESTS = (
+    ("""
+\t\t\t&cli.StringSlice{"a", "b", "c"},
+""", """
+\t\t\tcli.NewStringSlice("a", "b", "c"),
+"""),
+    ("""
+\t\tcli.IntFlag{
+\t\t\tName:  "yep",
+\t\t\tValue: 3,
+\t\t}
+""", """
+\t\t&cli.IntFlag{
+\t\t\tName:  "yep",
+\t\t\tValue: 3,
+\t\t}
+"""),
+    ("""
+\t\tapp.Commands = []cli.Command{
+\t\t\t{
+\t\t\t\tName: "whatebbs",
+\t\t\t},
+\t\t}
+""", """
+\t\tapp.Commands = []*cli.Command{
+\t\t\t{
+\t\t\t\tName: "whatebbs",
+\t\t\t},
+\t\t}
+"""),
+    ("""
+\t\tapp.Commands = []cli.Command{
+\t\t\tcli.Command{
+\t\t\t\tName: "whatebbs",
+\t\t\t},
+\t\t}
+""", """
+\t\tapp.Commands = []*cli.Command{
+\t\t\t&cli.Command{
+\t\t\t\tName: "whatebbs",
+\t\t\t},
+\t\t}
+"""),
+    ("""
+\t"github.com/codegangsta/cli"
+\t"github.com/urfave/cli"
+\t"gopkg.in/codegangsta/cli"
+\t"gopkg.in/codegangsta/cli.v1"
+\t"gopkg.in/urfave/cli"
+\t"gopkg.in/urfave/cli.v1"
+""", """
+\t"gopkg.in/urfave/cli.v2"
+\t"gopkg.in/urfave/cli.v2"
+\t"gopkg.in/urfave/cli.v2"
+\t"gopkg.in/urfave/cli.v2"
+\t"gopkg.in/urfave/cli.v2"
+\t"gopkg.in/urfave/cli.v2"
+"""
+    )
+)
+
+
+if __name__ == '__main__':
+    sys.exit(main())

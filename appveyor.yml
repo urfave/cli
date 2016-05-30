@@ -18,8 +18,10 @@ install:
 - go env
 - go get github.com/urfave/gfmxr/...
 - go get -v -t ./...
+- pip install flake8
 
 build_script:
+- flake8 runtests cli-v1-to-v2
 - python runtests vet
 - python runtests test
 - python runtests gfmxr
