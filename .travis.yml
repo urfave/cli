@@ -27,7 +27,7 @@ matrix:
 
 before_script:
 - go get github.com/urfave/gfmxr/...
-- pip install flake8
+- pip install --user flake8
 
 script:
 - flake8 runtests cli-v1-to-v2
