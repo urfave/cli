@@ -23,3 +23,4 @@ build_script:
 - python runtests vet
 - python runtests test
 - python runtests gfmxr
+- python cli-v1-to-v2 --selftest

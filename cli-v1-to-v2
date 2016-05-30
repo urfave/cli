@@ -36,7 +36,7 @@ def main(sysargs=sys.argv[:]):
     parser = argparse.ArgumentParser(
         description=_DESCRIPTION,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('path', nargs='+',
+    parser.add_argument('path', nargs='*',
                         type=os.path.abspath, default=os.getcwd())
     parser.add_argument('-w', '--write', help='write changes back to file',
                         action='store_true', default=False)
@@ -60,7 +60,11 @@ def main(sysargs=sys.argv[:]):
         format='%(message)s'
     )
 
-    for filepath in _find_candidate_files(args.path):
+    paths = args.path
+    if len(paths) == 0:
+        paths = ['.']
+
+    for filepath in _find_candidate_files(paths):
         updated_source = _update_filepath(filepath)
         if args.write:
             logging.info('Updating %s', filepath)
@@ -86,7 +90,7 @@ def _find_candidate_files(paths):
                     dirs.pop(i)
 
             for filename in files:
-                if not filename.endswith('.go'):
+                if not filename.decode('utf-8').endswith('.go'):
                     continue
 
                 filepath = os.path.join(curdir, filename)
