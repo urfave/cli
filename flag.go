@@ -670,8 +670,8 @@ func stringifyFlag(f Flag) string {
 	defaultValueString := ""
 	val := fv.FieldByName("Value")
 
-	if val.IsValid() && val.Kind() != reflect.Bool {
-		needsPlaceholder = true
+	if val.IsValid() {
+		needsPlaceholder = val.Kind() != reflect.Bool
 		defaultValueString = fmt.Sprintf(" (default: %v)", val.Interface())
 
 		if val.Kind() == reflect.String && val.String() != "" {
