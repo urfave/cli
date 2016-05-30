@@ -12,15 +12,12 @@ go:
 - 1.6.2
 - master
 
-env: PIP_INSTALL="pip install --user"
-
 matrix:
   allow_failures:
   - go: master
   include:
   - go: 1.6.2
     os: osx
-    env: PIP_INSTALL="sudo pip install"
   - go: 1.1.2
     install: go get -v .
     before_script: echo skipping gfmxr on $TRAVIS_GO_VERSION
@@ -30,7 +27,10 @@ matrix:
 
 before_script:
 - go get github.com/urfave/gfmxr/...
-- $PIP_INSTALL flake8
+- pip install --user flake8
+- if [ -d ~/Library/Python ] ; then
+    export PATH=$PATH:$(dirname $(find ~/Library/Python -name flake8)) ;
+  fi
 - mkdir -p .extracted-examples
 - curl -sSL -o .extracted-examples/README.md
     'https://raw.githubusercontent.com/urfave/cli/v1/README.md'
