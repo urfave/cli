@@ -88,7 +88,8 @@ def _migrations():
                 _run(['python', migration_script, '-w', gofile])
                 _run('go build -o tmp.out {}'.format(gofile).split())
     finally:
-        shutil.rmtree(tmpdir, ignore_errors=True)
+        if os.environ.get('NOCLEAN', '') == '':
+            shutil.rmtree(tmpdir, ignore_errors=True)
 
 
 def _run(command):
