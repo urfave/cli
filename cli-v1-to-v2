@@ -171,13 +171,14 @@ def _migrate_v1_imports(source):
 def _migrate_new_exit_error(source):
     return _EXIT_ERROR_RE.sub('cli.Exit', source)
 
+
 @_migrator
 def _migrate_bool_t_flag(source):
     return _BOOL_T_FLAG_RE.sub(_bool_t_flag_repl, source)
 
 
 def _bool_t_flag_repl(match):
-    return 'cli.BoolFlag{{Value: true, {}}}'.format(
+    return 'cli.BoolFlag{{Value: true,{}}}'.format(
         match.groupdict()['args']
     )
 
@@ -275,7 +276,7 @@ _MIGRATOR_TESTS = (
 \t\t\t\t&cli.StringFlag{
 \t\t\t\t\tName: "aha",
 \t\t\t\t},
-\t\t\t\t&cli.BoolFlag{Value: true, 
+\t\t\t\t&cli.BoolFlag{Value: true,
 \t\t\t\t\tName: "blurp",
 \t\t\t\t},
 \t\t\t}
