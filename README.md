@@ -66,6 +66,9 @@ import (
 ...
 ```
 
+**NOTE**: There is a [migrator (python) script](./cli-v1-to-v2) available to aid
+with the transition from the v1 to v2 API.
+
 ### Pinning to the `v1` branch
 
 Similarly to the section above describing use of the `v2` branch, if one wants

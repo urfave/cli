@@ -18,6 +18,7 @@ matrix:
   include:
   - go: 1.6.2
     os: osx
+    env: PATH=$HOME/.local/bin:$PATH
   - go: 1.1.2
     install: go get -v .
     before_script: echo skipping gfmxr on $TRAVIS_GO_VERSION
