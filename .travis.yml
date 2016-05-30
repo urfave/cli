@@ -29,6 +29,7 @@ matrix:
 before_script:
 - go get github.com/urfave/gfmxr/...
 - pip install --user flake8
+- find ~/.local -name flake8
 - mkdir -p .extracted-examples
 - curl -sSL -o .extracted-examples/README.md
     'https://raw.githubusercontent.com/urfave/cli/v1/README.md'
