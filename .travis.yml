@@ -29,6 +29,10 @@ matrix:
 before_script:
 - go get github.com/urfave/gfmxr/...
 - pip install --user flake8
+- mkdir -p .extracted-examples
+- curl -sSL -o .extracted-examples/README.md
+    'https://raw.githubusercontent.com/urfave/cli/v1/README.md'
+- cd .extracted-examples && gfmxr extract -o .
 
 script:
 - flake8 runtests cli-v1-to-v2
@@ -36,3 +40,9 @@ script:
 - ./runtests test
 - ./runtests gfmxr
 - ./cli-v1-to-v2 --selftest
+- for f in .extracted-examples/*.go ; do
+    ./cli-v1-to-v2 -w $f ;
+    go build -o .extracted-examples/example $f ;
+    ./cli-v1-to-v2 -w $f ;
+    go build -o .extracted-examples/example $f ;
+  done
