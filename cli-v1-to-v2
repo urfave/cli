@@ -226,8 +226,7 @@ _MIGRATOR_TESTS = (
 \t"gopkg.in/urfave/cli.v2"
 \t"gopkg.in/urfave/cli.v2"
 \t"gopkg.in/urfave/cli.v2"
-"""
-    )
+""")
 )
 
 

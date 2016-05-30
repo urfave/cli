@@ -18,11 +18,11 @@ _TARGETS = {}
 def main(sysargs=sys.argv[:]):
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        'target', nargs='?', choices=tuple(targets.keys()), default='test'
+        'target', nargs='?', choices=tuple(_TARGETS.keys()), default='test'
     )
     args = parser.parse_args(sysargs[1:])
 
-    targets[args.target]()
+    _TARGETS[args.target]()
     return 0
 
 
@@ -63,14 +63,6 @@ def _gfmxr():
 @_target
 def _vet():
     _run('go vet ./...'.split())
-
-
-@_target
-def _migrator():
-    exe = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cli-v1-to-v2'
-    )
-    run(['py.test', exe])
 
 
 def _run(command):
