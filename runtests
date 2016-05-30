@@ -2,7 +2,9 @@
 from __future__ import print_function
 
 import argparse
+import glob
 import os
+import shutil
 import sys
 import tempfile
 
@@ -63,6 +65,30 @@ def _gfmxr():
 @_target
 def _vet():
     _run('go vet ./...'.split())
+
+
+@_target
+def _migrations():
+    migration_script = os.path.abspath(
+        os.environ.get('V1TOV2', './cli-v1-to-v2')
+    )
+    v1_readme_url = os.environ.get(
+        'V1README',
+        'https://raw.githubusercontent.com/urfave/cli/v1/README.md'
+    )
+
+    tmpdir = tempfile.mkdtemp()
+    try:
+        os.chdir(tmpdir)
+        _run('curl -sSL -o README.md {}'.format(v1_readme_url).split())
+        _run('gfmxr extract -o .'.split())
+
+        for gofile in glob.glob('*.go'):
+            for i in (0, 1):
+                _run(['python', migration_script, '-w', gofile])
+                _run('go build -o tmp.out {}'.format(gofile).split())
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)
 
 
 def _run(command):
