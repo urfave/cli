@@ -19,16 +19,12 @@ _SLICE_TYPE_RE = re.compile(
     '&cli\\.(?P<type>IntSlice|StringSlice){(?P<args>[^}]*)}',
     flags=re.DOTALL
 )
-_FLAG_LITERAL_RE = re.compile(
-    '(?P<prefix>\\s+)cli\\.(?P<type>\\w+)Flag{',
-)
-_COMMAND_SLICE_RE = re.compile(
-    '(?P<prefix>\\[\\])cli\\.Command{',
-)
-_COMMAND_LITERAL_RE = re.compile(
-    '(?P<prefix>\\s+)cli\\.Command{',
-)
+_FLAG_LITERAL_RE = re.compile('(?P<prefix>\\s+)cli\\.(?P<type>\\w+)Flag{')
+_COMMAND_SLICE_RE = re.compile('(?P<prefix>\\[\\])cli\\.Command{')
+_COMMAND_LITERAL_RE = re.compile('(?P<prefix>\\s+)cli\\.Command{')
 _EXIT_ERROR_RE = re.compile('cli\\.NewExitError')
+_CONTEXT_ARGS_INDEX_RE = re.compile('\\.Args\\(\\)\\[(?P<index>\\d+)\\]')
+_ENVVAR_STRING_RE = re.compile('EnvVar:(?P<ws>\\s+)"(?P<string>[^"]+)"')
 _BOOL_T_FLAG_RE = re.compile(
     'cli\\.BoolTFlag{(?P<args>[^}]*)}',
     flags=re.DOTALL
@@ -183,6 +179,30 @@ def _bool_t_flag_repl(match):
     )
 
 
+@_migrator
+def _migrate_context_args_index(source):
+    return _CONTEXT_ARGS_INDEX_RE.sub(_context_args_index_repl, source)
+
+
+def _context_args_index_repl(match):
+    return '.Args().Get({})'.format(match.groupdict()['index'])
+
+
+@_migrator
+def _migrate_envvar_string(source):
+    return _ENVVAR_STRING_RE.sub(_envvar_string_repl, source)
+
+
+def _envvar_string_repl(match):
+    return 'EnvVars:{}[]string{{{}}}'.format(
+        match.groupdict()['ws'],
+        ', '.join([
+            '"{}"'.format(s) for s in
+            re.split('\\s*,\\s*', match.groupdict()['string'])
+        ])
+    )
+
+
 def test_migrators():
     import difflib
 
@@ -280,6 +300,36 @@ _MIGRATOR_TESTS = (
 \t\t\t\t\tName: "blurp",
 \t\t\t\t},
 \t\t\t}
+"""),
+    ("""
+\t\t\tAction = func(c *cli.Context) error {
+\t\t\t\tif c.Args()[4] == "meep" {
+\t\t\t\t\treturn nil
+\t\t\t\t}
+\t\t\t\treturn errors.New("mope")
+\t\t\t}
+""", """
+\t\t\tAction = func(c *cli.Context) error {
+\t\t\t\tif c.Args().Get(4) == "meep" {
+\t\t\t\t\treturn nil
+\t\t\t\t}
+\t\t\t\treturn errors.New("mope")
+\t\t\t}
+"""),
+    ("""
+\t\tapp.Flags = []cli.Flag{
+\t\t\tcli.StringFlag{
+\t\t\t\tName:   "toots",
+\t\t\t\tEnvVar: "TOOTS,TOOTERS",
+\t\t\t},
+\t\t}
+""", """
+\t\tapp.Flags = []cli.Flag{
+\t\t\t&cli.StringFlag{
+\t\t\t\tName:   "toots",
+\t\t\t\tEnvVars: []string{"TOOTS", "TOOTERS"},
+\t\t\t},
+\t\t}
 """)
 )
 
