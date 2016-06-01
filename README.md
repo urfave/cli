@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/urfave/cli.svg?branch=master)](https://travis-ci.org/urfave/cli)
-[![Windows Build Status](https://ci.appveyor.com/api/projects/status/rtgk5xufi932pb2v?svg=true)](https://ci.appveyor.com/project/meatballhat/cli)
+[![Windows Build Status](https://ci.appveyor.com/api/projects/status/rtgk5xufi932pb2v?svg=true)](https://ci.appveyor.com/project/urfave/cli)
 [![GoDoc](https://godoc.org/github.com/urfave/cli?status.svg)](https://godoc.org/github.com/urfave/cli)
 [![codebeat](https://codebeat.co/badges/0a8f30aa-f975-404b-b878-5fab3ae1cc5f)](https://codebeat.co/projects/github-com-urfave-cli)
 [![Go Report Card](https://goreportcard.com/badge/urfave/cli)](https://goreportcard.com/report/urfave/cli)
@@ -9,17 +9,23 @@
 
 # cli
 
-**Notice:** This is the library formally known as
+**Notice:** This is the library formerly known as
 `github.com/codegangsta/cli` -- Github will automatically redirect requests
 to this repository, but we recommend updating your references for clarity.
 
-cli is a simple, fast, and fun package for building command line apps in Go. The goal is to enable developers to write fast and distributable command line applications in an expressive way.
+cli is a simple, fast, and fun package for building command line apps in Go. The
+goal is to enable developers to write fast and distributable command line
+applications in an expressive way.
 
 ## Overview
 
-Command line apps are usually so tiny that there is absolutely no reason why your code should *not* be self-documenting. Things like generating help text and parsing command flags/options should not hinder productivity when writing a command line app.
+Command line apps are usually so tiny that there is absolutely no reason why
+your code should *not* be self-documenting. Things like generating help text and
+parsing command flags/options should not hinder productivity when writing a
+command line app.
 
-**This is where cli comes into play.** cli makes command line programming fun, organized, and expressive!
+**This is where cli comes into play.** cli makes command line programming fun,
+organized, and expressive!
 
 ## Installation
 
@@ -33,7 +39,8 @@ To install cli, simply run:
 $ go get github.com/urfave/cli
 ```
 
-Make sure your `PATH` includes to the `$GOPATH/bin` directory so your commands can be easily used:
+Make sure your `PATH` includes to the `$GOPATH/bin` directory so your commands
+can be easily used:
 ```
 export PATH=$PATH:$GOPATH/bin
 ```
@@ -86,13 +93,19 @@ import (
 
 ## Getting Started
 
-One of the philosophies behind cli is that an API should be playful and full of discovery. So a cli app can be as little as one line of code in `main()`.
+One of the philosophies behind cli is that an API should be playful and full of
+discovery. So a cli app can be as little as one line of code in `main()`.
 
+<!-- {
+  "args": ["&#45;&#45;help"],
+  "output": "A new cli application"
+} -->
 ``` go
 package main
 
 import (
   "os"
+
   "github.com/urfave/cli"
 )
 
@@ -101,7 +114,8 @@ func main() {
 }
 ```
 
-This app will run and show help text, but is not very useful. Let's give an action to execute and some help documentation:
+This app will run and show help text, but is not very useful. Let's give an
+action to execute and some help documentation:
 
 <!-- {
   "output": "boom! I say!"
@@ -129,13 +143,17 @@ func main() {
 }
 ```
 
-Running this already gives you a ton of functionality, plus support for things like subcommands and flags, which are covered below.
+Running this already gives you a ton of functionality, plus support for things
+like subcommands and flags, which are covered below.
 
-## Example
+## Examples
 
-Being a programmer can be a lonely job. Thankfully by the power of automation that is not the case! Let's create a greeter app to fend off our demons of loneliness!
+Being a programmer can be a lonely job. Thankfully by the power of automation
+that is not the case! Let's create a greeter app to fend off our demons of
+loneliness!
 
-Start by creating a directory named `greet`, and within it, add a file, `greet.go` with the following code in it:
+Start by creating a directory named `greet`, and within it, add a file,
+`greet.go` with the following code in it:
 
 <!-- {
   "output": "Hello friend!"
@@ -198,87 +216,159 @@ GLOBAL OPTIONS
 
 ### Arguments
 
-You can lookup arguments by calling the `Args` function on `cli.Context`.
+You can lookup arguments by calling the `Args` function on `cli.Context`, e.g.:
 
+<!-- {
+  "output": "Hello \""
+} -->
 ``` go
-...
-app.Action = func(c *cli.Context) error {
-  fmt.Println("Hello", c.Args()[0])
-  return nil
+package main
+
+import (
+  "fmt"
+  "os"
+
+  "github.com/urfave/cli"
+)
+
+func main() {
+  app := cli.NewApp()
+
+  app.Action = func(c *cli.Context) error {
+    fmt.Printf("Hello %q", c.Args().Get(0))
+    return nil
+  }
+
+  app.Run(os.Args)
 }
-...
 ```
 
 ### Flags
 
 Setting and querying flags is simple.
 
+<!-- {
+  "output": "Hello Nefertiti"
+} -->
 ``` go
-...
-app.Flags = []cli.Flag {
-  &cli.StringFlag{
-    Name: "lang",
-    Value: "english",
-    Usage: "language for the greeting",
-  },
-}
-app.Action = func(c *cli.Context) error {
-  name := "someone"
-  if c.NArg() > 0 {
-    name = c.Args()[0]
+package main
+
+import (
+  "fmt"
+  "os"
+
+  "github.com/urfave/cli"
+)
+
+func main() {
+  app := cli.NewApp()
+
+  app.Flags = []cli.Flag {
+    &cli.StringFlag{
+      Name: "lang",
+      Value: "english",
+      Usage: "language for the greeting",
+    },
   }
-  if c.String("lang") == "spanish" {
-    fmt.Println("Hola", name)
-  } else {
-    fmt.Println("Hello", name)
+
+  app.Action = func(c *cli.Context) error {
+    name := "Nefertiti"
+    if c.NArg() > 0 {
+      name = c.Args().Get(0)
+    }
+    if c.String("lang") == "spanish" {
+      fmt.Println("Hola", name)
+    } else {
+      fmt.Println("Hello", name)
+    }
+    return nil
   }
-  return nil
+
+  app.Run(os.Args)
 }
-...
 ```
 
-You can also set a destination variable for a flag, to which the content will be scanned.
+You can also set a destination variable for a flag, to which the content will be
+scanned.
 
+<!-- {
+  "output": "Hello someone"
+} -->
 ``` go
-...
-var language string
-app.Flags = []cli.Flag {
-  &cli.StringFlag{
-    Name:        "lang",
-    Value:       "english",
-    Usage:       "language for the greeting",
-    Destination: &language,
-  },
-}
-app.Action = func(c *cli.Context) error {
-  name := "someone"
-  if c.NArg() > 0 {
-    name = c.Args()[0]
+package main
+
+import (
+  "os"
+  "fmt"
+
+  "github.com/urfave/cli"
+)
+
+func main() {
+  var language string
+
+  app := cli.NewApp()
+
+  app.Flags = []cli.Flag {
+    &cli.StringFlag{
+      Name:        "lang",
+      Value:       "english",
+      Usage:       "language for the greeting",
+      Destination: &language,
+    },
   }
-  if language == "spanish" {
-    fmt.Println("Hola", name)
-  } else {
-    fmt.Println("Hello", name)
+
+  app.Action = func(c *cli.Context) error {
+    name := "someone"
+    if c.NArg() > 0 {
+      name = c.Args().Get(0)
+    }
+    if language == "spanish" {
+      fmt.Println("Hola", name)
+    } else {
+      fmt.Println("Hello", name)
+    }
+    return nil
   }
-  return nil
+
+  app.Run(os.Args)
 }
-...
 ```
 
 See full list of flags at http://godoc.org/github.com/urfave/cli
 
 #### Placeholder Values
 
-Sometimes it's useful to specify a flag's value within the usage string itself. Such placeholders are
-indicated with back quotes.
+Sometimes it's useful to specify a flag's value within the usage string itself.
+Such placeholders are indicated with back quotes.
 
 For example this:
 
+<!-- {
+  "args": ["&#45;&#45;help"],
+  "output": "&#45;&#45;config FILE, &#45;c FILE"
+} -->
 ```go
-&cli.StringFlag{
-  Name:    "config",
-  Aliases: []string{"c"},
-  Usage:   "Load configuration from `FILE`",
+package main
+
+import (
+  "os"
+
+  "github.com/urfave/cli"
+)
+
+func main() {
+  app := cli.NewApp()
+
+  app.Flags = []cli.Flag{
+    &cli.StringFlag{
+      Name:    "config",
+      Aliases: []string{"c"},
+      Usage:   "Load configuration from `FILE`",
+    },
+  }
+
+  app.Run(os.Args)
 }
 ```
 
@@ -288,148 +378,247 @@ Will result in help output like:
 --config FILE, -c FILE   Load configuration from FILE
 ```
 
-Note that only the first placeholder is used. Subsequent back-quoted words will be left as-is.
+Note that only the first placeholder is used. Subsequent back-quoted words will
+be left as-is.
 
 #### Alternate Names
 
-You can set alternate (or short) names for flags by providing a comma-delimited list for the `Name`. e.g.
+You can set alternate (or short) names for flags by providing a comma-delimited
+list for the `Name`. e.g.
 
+<!-- {
+  "args": ["&#45;&#45;help"],
+  "output": "&#45;&#45;lang value, &#45;l value.*language for the greeting.*default: \"english\""
+} -->
 ``` go
-app.Flags = []cli.Flag {
-  &cli.StringFlag{
-    Name:    "lang",
-    Aliases: []string{"l"},
-    Value:   "english",
-    Usage:   "language for the greeting",
-  },
+package main
+
+import (
+  "os"
+
+  "github.com/urfave/cli"
+)
+
+func main() {
+  app := cli.NewApp()
+
+  app.Flags = []cli.Flag {
+    &cli.StringFlag{
+      Name:    "lang",
+      Aliases: []string{"l"},
+      Value:   "english",
+      Usage:   "language for the greeting",
+    },
+  }
+
+  app.Run(os.Args)
 }
 ```
 
-That flag can then be set with `--lang spanish` or `-l spanish`. Note that giving two different forms of the same flag in the same command invocation is an error.
+That flag can then be set with `--lang spanish` or `-l spanish`. Note that
+giving two different forms of the same flag in the same command invocation is an
+error.
 
 #### Values from the Environment
 
 You can also have the default value set from the environment via `EnvVars`.  e.g.
 
+<!-- {
+  "args": ["&#45;&#45;help"],
+  "output": "language for the greeting.*APP_LANG"
+} -->
 ``` go
-app.Flags = []cli.Flag {
-  &cli.StringFlag{
-    Name:    "lang",
-    Aliases: []string{"l"},
-    Value:   "english",
-    Usage:   "language for the greeting",
-    EnvVars: []string{"APP_LANG"},
-  },
+package main
+
+import (
+  "os"
+
+  "github.com/urfave/cli"
+)
+
+func main() {
+  app := cli.NewApp()
+
+  app.Flags = []cli.Flag {
+    &cli.StringFlag{
+      Name:    "lang",
+      Aliases: []string{"l"},
+      Value:   "english",
+      Usage:   "language for the greeting",
+      EnvVars: []string{"APP_LANG"},
+    },
+  }
+
+  app.Run(os.Args)
 }
 ```
 
-If `EnvVars` contains more than one string, the first environment variable that resolves is used as the default.
+If `EnvVars` contains more than one string, the first environment variable that
+resolves is used as the default.
 
+<!-- {
+  "args": ["&#45;&#45;help"],
+  "output": "language for the greeting.*LEGACY_COMPAT_LANG.*APP_LANG.*LANG"
+} -->
 ``` go
-app.Flags = []cli.Flag {
-  &cli.StringFlag{
-    Name:    "lang",
-    Aliases: []string{"l"},
-    Value:   "english",
-    Usage:   "language for the greeting",
-    EnvVars: []string{"LEGACY_COMPAT_LANG", "APP_LANG", "LANG"},
-  },
+package main
+
+import (
+  "os"
+
+  "github.com/urfave/cli"
+)
+
+func main() {
+  app := cli.NewApp()
+
+  app.Flags = []cli.Flag{
+    &cli.StringFlag{
+      Name:    "lang",
+      Aliases: []string{"l"},
+      Value:   "english",
+      Usage:   "language for the greeting",
+      EnvVars: []string{"LEGACY_COMPAT_LANG", "APP_LANG", "LANG"},
+    },
+  }
+
+  app.Run(os.Args)
 }
 ```
 
 #### Values from alternate input sources (YAML and others)
 
-There is a separate package altsrc that adds support for getting flag values from other input sources like YAML.
+There is a separate package altsrc that adds support for getting flag values
+from other input sources like YAML.
 
-In order to get values for a flag from an alternate input source the following code would be added to wrap an existing cli.Flag like below:
+In order to get values for a flag from an alternate input source the following
+code would be added to wrap an existing cli.Flag like below:
 
 ``` go
   altsrc.NewIntFlag(&cli.IntFlag{Name: "test"})
 ```
 
-Initialization must also occur for these flags. Below is an example initializing getting data from a yaml file below.
+Initialization must also occur for these flags. Below is an example initializing
+getting data from a yaml file below.
 
 ``` go
   command.Before = altsrc.InitInputSourceWithContext(command.Flags, NewYamlSourceFromFlagFunc("load"))
 ```
 
-The code above will use the "load" string as a flag name to get the file name of a yaml file from the cli.Context.
-It will then use that file name to initialize the yaml input source for any flags that are defined on that command.
-As a note the "load" flag used would also have to be defined on the command flags in order for this code snipped to work.
+The code above will use the "load" string as a flag name to get the file name of
+a yaml file from the cli.Context.  It will then use that file name to initialize
+the yaml input source for any flags that are defined on that command.  As a note
+the "load" flag used would also have to be defined on the command flags in order
+for this code snipped to work.
 
-Currently only YAML files are supported but developers can add support for other input sources by implementing the
-altsrc.InputSourceContext for their given sources.
+Currently only YAML files are supported but developers can add support for other
+input sources by implementing the altsrc.InputSourceContext for their given
+sources.
 
 Here is a more complete sample of a command using YAML support:
 
+<!-- {
+  "args": ["test-cmd", "&#45;&#45;help"],
+  "output": "&#45&#45;test value.*default: 0"
+} -->
 ``` go
-  command := &cli.Command{
-    Name:        "test-cmd",
-    Aliases:     []string{"tc"},
-    Usage:       "this is for testing",
-    Description: "testing",
-    Action: func(c *cli.Context) error {
-      // Action to run
-      return nil
-    },
-    Flags: []cli.Flag{
-      NewIntFlag(&cli.IntFlag{Name: "test"}),
-      &cli.StringFlag{Name: "load"}},
+package notmain
+
+import (
+  "fmt"
+  "os"
+
+  "github.com/urfave/cli"
+  "github.com/urfave/cli/altsrc"
+)
+
+func main() {
+  app := cli.NewApp()
+
+  flags := []cli.Flag{
+    altsrc.NewIntFlag(&cli.IntFlag{Name: "test"}),
+    &cli.StringFlag{Name: "load"},
   }
-  command.Before = InitInputSourceWithContext(command.Flags, NewYamlSourceFromFlagFunc("load"))
-  err := command.Run(c)
+
+  app.Action = func(c *cli.Context) error {
+    fmt.Println("yaml ist rad")
+    return nil
+  }
+
+  app.Before = altsrc.InitInputSourceWithContext(flags, altsrc.NewYamlSourceFromFlagFunc("load"))
+  app.Flags = flags
+
+  app.Run(os.Args)
+}
 ```
 
 ### Subcommands
 
 Subcommands can be defined for a more git-like command line app.
 
+<!-- {
+  "args": ["template", "add"],
+  "output": "new task template: .+"
+} -->
 ```go
-...
-app.Commands = []*cli.Command{
-  {
-    Name:      "add",
-    Aliases:     []string{"a"},
-    Usage:     "add a task to the list",
-    Action: func(c *cli.Context) error {
-      fmt.Println("added task: ", c.Args().First())
-      return nil
-    },
-  },
-  {
-    Name:      "complete",
-    Aliases:     []string{"c"},
-    Usage:     "complete a task on the list",
-    Action: func(c *cli.Context) error {
-      fmt.Println("completed task: ", c.Args().First())
-      return nil
-    },
-  },
-  {
-    Name:      "template",
-    Aliases:     []string{"r"},
-    Usage:     "options for task templates",
-    Subcommands: []*cli.Command{
-      {
-        Name:  "add",
-        Usage: "add a new template",
-        Action: func(c *cli.Context) error {
-          fmt.Println("new task template: ", c.Args().First())
-          return nil
-        },
-      },
-      {
-        Name:  "remove",
-        Usage: "remove an existing template",
-        Action: func(c *cli.Context) error {
-          fmt.Println("removed task template: ", c.Args().First())
-          return nil
-        },
+package main
+
+import (
+  "fmt"
+  "os"
+
+  "github.com/urfave/cli"
+)
+
+func main() {
+  app := cli.NewApp()
+
+  app.Commands = []*cli.Command{
+    {
+      Name:    "add",
+      Aliases: []string{"a"},
+      Usage:   "add a task to the list",
+      Action:  func(c *cli.Context) error {
+        fmt.Println("added task: ", c.Args().First())
+        return nil
       },
     },
-  },
+    {
+      Name:    "complete",
+      Aliases: []string{"c"},
+      Usage:   "complete a task on the list",
+      Action:  func(c *cli.Context) error {
+        fmt.Println("completed task: ", c.Args().First())
+        return nil
+      },
+    },
+    {
+      Name:        "template",
+      Aliases:     []string{"t"},
+      Usage:       "options for task templates",
+      Subcommands: []*cli.Command{
+        {
+          Name:  "add",
+          Usage: "add a new template",
+          Action: func(c *cli.Context) error {
+            fmt.Println("new task template: ", c.Args().First())
+            return nil
+          },
+        },
+        {
+          Name:  "remove",
+          Usage: "remove an existing template",
+          Action: func(c *cli.Context) error {
+            fmt.Println("removed task template: ", c.Args().First())
+            return nil
+          },
+        },
+      },
+    },
+  }
+
+  app.Run(os.Args)
 }
-...
 ```
 
 ### Subcommands categories
@@ -441,7 +630,17 @@ output.
 E.g.
 
 ```go
-...
+package main
+
+import (
+  "os"
+
+  "github.com/urfave/cli"
+)
+
+func main() {
+  app := cli.NewApp()
+
   app.Commands = []*cli.Command{
     {
       Name: "noop",
@@ -455,20 +654,20 @@ E.g.
       Category: "template",
     },
   }
-...
+
+  app.Run(os.Args)
+}
 ```
 
 Will include:
 
 ```
-...
 COMMANDS:
     noop
 
   Template actions:
     add
     remove
-...
 ```
 
 ### Exit code
@@ -514,32 +713,48 @@ flag on the `App` object.  By default, this setting will only auto-complete to
 show an app's subcommands, but you can write your own completion methods for
 the App or its subcommands.
 
-```go
-...
-var tasks = []string{"cook", "clean", "laundry", "eat", "sleep", "code"}
-app := cli.NewApp()
-app.EnableBashCompletion = true
-app.Commands = []*cli.Command{
-  {
-    Name:  "complete",
-    Aliases: []string{"c"},
-    Usage: "complete a task on the list",
-    Action: func(c *cli.Context) error {
-       fmt.Println("completed task: ", c.Args().First())
-       return nil
-    },
-    BashComplete: func(c *cli.Context) {
-      // This will complete if no args are passed
-      if c.NArg() > 0 {
-        return
-      }
-      for _, t := range tasks {
-        fmt.Println(t)
-      }
+<!-- {
+  "args": ["complete", "&#45;&#45;generate&#45;bash&#45;completion"],
+  "output": "laundry"
+} -->
+``` go
+package main
+
+import (
+  "fmt"
+  "os"
+
+  "github.com/urfave/cli"
+)
+
+func main() {
+  tasks := []string{"cook", "clean", "laundry", "eat", "sleep", "code"}
+
+  app := cli.NewApp()
+  app.EnableBashCompletion = true
+  app.Commands = []*cli.Command{
+    {
+      Name:    "complete",
+      Aliases: []string{"c"},
+      Usage:   "complete a task on the list",
+      Action: func(c *cli.Context) error {
+         fmt.Println("completed task: ", c.Args().First())
+         return nil
+      },
+      BashComplete: func(c *cli.Context) {
+        // This will complete if no args are passed
+        if c.NArg() > 0 {
+          return
+        }
+        for _, t := range tasks {
+          fmt.Println(t)
+        }
+      },
     },
   }
+
+  app.Run(os.Args)
 }
-...
 ```
 
 #### To Enable
