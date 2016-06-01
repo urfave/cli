@@ -752,14 +752,14 @@ func main() {
 }
 ```
 
-#### To Enable
+#### Enabling
 
 Source the `autocomplete/bash_autocomplete` file in your `.bashrc` file while
 setting the `PROG` variable to the name of your program:
 
 `PROG=myprogram source /.../cli/autocomplete/bash_autocomplete`
 
-#### To Distribute
+#### Distribution
 
 Copy `autocomplete/bash_autocomplete` into `/etc/bash_completion.d/` and rename
 it to the name of the program you wish to add autocomplete support for (or
@@ -775,7 +775,48 @@ Alternatively, you can just document that users should source the generic
 `autocomplete/bash_autocomplete` in their bash configuration with `$PROG` set
 to the name of their program (as above).
 
-### Generated Help Text Customization
+#### Customization
+
+The default bash completion flag (`--generate-bash-completion`) is defined as
+`cli.BashCompletionFlag`, and may be redefined if desired, e.g.:
+
+<!-- {
+  "args": ["&#45;&#45;compgen"],
+  "output": "wat\nhelp\nh"
+} -->
+``` go
+package main
+
+import (
+  "os"
+
+  "github.com/urfave/cli"
+)
+
+func main() {
+  cli.BashCompletionFlag = cli.BoolFlag{
+    Name:   "compgen",
+    Hidden: true,
+  }
+
+  app := cli.NewApp()
+  app.EnableBashCompletion = true
+  app.Commands = []cli.Command{
+    {
+      Name: "wat",
+    },
+  }
+  app.Run(os.Args)
+}
+```
+
+### Generated Help Text
+
+The default help flag (`-h/--help`) is defined as `cli.HelpFlag` and is checked 
+by the cli internals in order to print generated help text for the app, command,
+or subcommand, and break execution.
+
+#### Customization
 
 All of the help text generation may be customized, and at multiple levels.  The
 templates are exposed as variables `AppHelpTemplate`, `CommandHelpTemplate`, and
@@ -838,6 +879,335 @@ VERSION:
   }
 
   cli.NewApp().Run(os.Args)
+}
+```
+
+The default flag may be customized to something other than `-h/--help` by
+setting `cli.HelpFlag`, e.g.:
+
+<!-- {
+  "args": ["&#45;&#45halp"],
+  "output": "haaaaalp.*HALP"
+} -->
+``` go
+package main
+
+import (
+  "os"
+
+  "github.com/urfave/cli"
+)
+
+func main() {
+  cli.HelpFlag = cli.BoolFlag{
+    Name: "halp, haaaaalp",
+    Usage: "HALP",
+    EnvVar: "SHOW_HALP,HALPPLZ",
+  }
+
+  cli.NewApp().Run(os.Args)
+}
+```
+
+### Version Flag
+
+The default version flag (`-v/--version`) is defined as `cli.VersionFlag`, which
+is checked by the cli internals in order to print the `App.Version` via
+`cli.VersionPrinter` and break execution.
+
+#### Customization
+
+The default flag may be cusomized to something other than `-v/--version` by
+setting `cli.VersionFlag`, e.g.:
+
+<!-- {
+  "args": ["&#45;&#45print-version"],
+  "output": "partay version v19\\.99\\.0"
+} -->
+``` go
+package main
+
+import (
+  "os"
+
+  "github.com/urfave/cli"
+)
+
+func main() {
+  cli.VersionFlag = cli.BoolFlag{
+    Name: "print-version, V",
+    Usage: "print only the version",
+  }
+
+  app := cli.NewApp()
+  app.Name = "partay"
+  app.Version = "v19.99.0"
+  app.Run(os.Args)
+}
+```
+
+Alternatively, the version printer at `cli.VersionPrinter` may be overridden, e.g.:
+
+<!-- {
+  "args": ["&#45;&#45version"],
+  "output": "version=v19\\.99\\.0 revision=fafafaf"
+} -->
+``` go
+package main
+
+import (
+  "fmt"
+  "os"
+
+  "github.com/urfave/cli"
+)
+
+var (
+  Revision = "fafafaf"
+)
+
+func main() {
+  cli.VersionPrinter = func(c *cli.Context) {
+    fmt.Printf("version=%s revision=%s\n", c.App.Version, Revision)
+  }
+
+  app := cli.NewApp()
+  app.Name = "partay"
+  app.Version = "v19.99.0"
+  app.Run(os.Args)
+}
+```
+
+#### Full API Example
+
+**NOTE**: This is a contrived (functioning) example meant strictly for API
+demonstration purposes.  Use of one's imagination is encouraged.
+
+``` go
+package main
+
+import (
+  "errors"
+  "flag"
+  "fmt"
+  "io"
+  "io/ioutil"
+  "time"
+
+  "github.com/urfave/cli"
+)
+
+func init() {
+  cli.AppHelpTemplate += "\nCUSTOMIZED: you bet ur muffins\n"
+  cli.CommandHelpTemplate += "\nYMMV\n"
+  cli.SubcommandHelpTemplate += "\nor something\n"
+
+  cli.HelpFlag = cli.BoolFlag{Name: "halp"}
+  cli.BashCompletionFlag = cli.BoolFlag{Name: "compgen", Hidden: true}
+  cli.VersionFlag = cli.BoolFlag{Name: "print-version, V"}
+
+  cli.HelpPrinter = func(w io.Writer, templ string, data interface{}) {
+    fmt.Fprintf(w, "best of luck to you\n")
+  }
+  cli.VersionPrinter = func(c *cli.Context) {
+    fmt.Fprintf(c.App.Writer, "version=%s\n", c.App.Version)
+  }
+  cli.OsExiter = func(c int) {
+    fmt.Fprintf(cli.ErrWriter, "refusing to exit %d\n", c)
+  }
+  cli.ErrWriter = ioutil.Discard
+  cli.FlagStringer = func(fl cli.Flag) string {
+    return fmt.Sprintf("\t\t%s", fl.GetName())
+  }
+}
+
+type hexWriter struct{}
+
+func (w *hexWriter) Write(p []byte) (int, error) {
+  for _, b := range p {
+    fmt.Printf("%x", b)
+  }
+  fmt.Printf("\n")
+
+  return len(p), nil
+}
+
+func main() {
+  app := cli.NewApp()
+  app.Name = "kənˈtrīv"
+  app.Version = "v19.99.0"
+  app.Compiled = time.Now()
+  app.Authors = []cli.Author{
+    {
+      Name:  "Example Human",
+      Email: "human@example.com",
+    },
+  }
+  app.Copyright = "(c) 1999 Serious Enterprise"
+  app.HelpName = "contrive"
+  app.Usage = "demonstrate available API"
+  app.UsageText = "contrive - demonstrating the available API"
+  app.ArgsUsage = "[args and such]"
+  app.Commands = []cli.Command{
+    {
+      Name:        "doo",
+      Aliases:     []string{"do"},
+      Category:    "motion",
+      Usage:       "do the doo",
+      UsageText:   "doo - does the dooing",
+      Description: "no really, there is a lot of dooing to be done",
+      ArgsUsage:   "[arrgh]",
+      Flags: []cli.Flag{
+        cli.BoolFlag{Name: "forever, forevvarr"},
+      },
+      Subcommands: cli.Commands{
+        {
+          Name:   "wop",
+          Action: wopAction,
+        },
+      },
+      SkipFlagParsing: false,
+      HideHelp:        false,
+      Hidden:          false,
+      HelpName:        "doo!",
+      BashComplete: func(c *cli.Context) {
+        fmt.Fprintf(c.App.Writer, "--better\n")
+      },
+      Before: func(c *cli.Context) error {
+        fmt.Fprintf(c.App.Writer, "brace for impact\n")
+        return nil
+      },
+      After: func(c *cli.Context) error {
+        fmt.Fprintf(c.App.Writer, "did we lose anyone?\n")
+        return nil
+      },
+      Action: func(c *cli.Context) error {
+        c.Command.FullName()
+        c.Command.HasName("wop")
+        c.Command.Names()
+        c.Command.VisibleFlags()
+        fmt.Fprintf(c.App.Writer, "dodododododoodododddooooododododooo\n")
+        if c.Bool("forever") {
+          c.Command.Run(c)
+        }
+        return nil
+      },
+      OnUsageError: func(c *cli.Context, err error, isSubcommand bool) error {
+        fmt.Fprintf(c.App.Writer, "for shame\n")
+        return err
+      },
+    },
+  }
+  app.Flags = []cli.Flag{
+    cli.BoolFlag{Name: "fancy"},
+    cli.BoolTFlag{Name: "fancy"},
+    cli.StringFlag{Name: "dance-move, d"},
+  }
+  app.EnableBashCompletion = true
+  app.HideHelp = false
+  app.HideVersion = false
+  app.BashComplete = func(c *cli.Context) {
+    fmt.Fprintf(c.App.Writer, "lipstick\nkiss\nme\nlipstick\nringo\n")
+  }
+  app.Before = func(c *cli.Context) error {
+    fmt.Fprintf(c.App.Writer, "HEEEERE GOES\n")
+    return nil
+  }
+  app.After = func(c *cli.Context) error {
+    fmt.Fprintf(c.App.Writer, "Phew!\n")
+    return nil
+  }
+  app.CommandNotFound = func(c *cli.Context, command string) {
+    fmt.Fprintf(c.App.Writer, "Thar be no %q here.\n", command)
+  }
+  app.OnUsageError = func(c *cli.Context, err error, isSubcommand bool) error {
+    if isSubcommand {
+      return err
+    }
+
+    fmt.Fprintf(c.App.Writer, "WRONG: %#v\n", err)
+    return nil
+  }
+  app.Action = func(c *cli.Context) error {
+    cli.DefaultAppComplete(c)
+    cli.HandleExitCoder(errors.New("not an exit coder, though"))
+    cli.ShowAppHelp(c)
+    cli.ShowCommandCompletions(c, "nope")
+    cli.ShowCommandHelp(c, "also-nope")
+    cli.ShowCompletions(c)
+    cli.ShowSubcommandHelp(c)
+    cli.ShowVersion(c)
+
+    categories := c.App.Categories()
+    categories.AddCommand("sounds", cli.Command{
+      Name: "bloop",
+    })
+
+    for _, category := range categories {
+      fmt.Fprintf(c.App.Writer, "%s\n", category.Name)
+      fmt.Fprintf(c.App.Writer, "%#v\n", category.Commands)
+      fmt.Fprintf(c.App.Writer, "%#v\n", category.VisibleCommands())
+    }
+
+    c.App.Command("doo")
+    c.App.Run([]string{"app", "doo", "wop"})
+    c.App.RunAsSubcommand(c)
+    c.App.Setup()
+    c.App.VisibleCategories()
+    c.App.VisibleCommands()
+    c.App.VisibleFlags()
+
+    c.Args().First()
+    c.Args().Get(1)
+    c.Args().Present()
+    c.Args().Tail()
+
+    set := flag.NewFlagSet("contrive", 0)
+    nc := cli.NewContext(c.App, set, c)
+    nc.Args()
+    nc.Bool("nope")
+    nc.BoolT("nerp")
+    nc.Duration("howlong")
+    nc.Float64("hay")
+    nc.Generic("bloop")
+    nc.Int("bips")
+    nc.IntSlice("blups")
+    nc.String("snurt")
+    nc.StringSlice("snurkles")
+    nc.GlobalBool("global-nope")
+    nc.GlobalBoolT("global-nerp")
+    nc.GlobalDuration("global-howlong")
+    nc.GlobalFloat64("global-hay")
+    nc.GlobalGeneric("global-bloop")
+    nc.GlobalInt("global-bips")
+    nc.GlobalIntSlice("global-blups")
+    nc.GlobalString("global-snurt")
+    nc.GlobalStringSlice("global-snurkles")
+
+    nc.FlagNames()
+    nc.GlobalFlagNames()
+    nc.GlobalIsSet("wat")
+    nc.GlobalSet("wat", "nope")
+    nc.NArg()
+    nc.NumFlags()
+    nc.Parent()
+    nc.Set("wat", "also-nope")
+
+    ec := cli.NewExitError("ohwell", 86)
+    fmt.Fprintf(c.App.Writer, "%d", ec.ExitCode())
+    return ec
+  }
+  app.Writer = &hexWriter{}
+  app.ErrWriter = &hexWriter{}
+  app.Metadata = map[string]interface{}{
+    "layers":     "many",
+    "explicable": false,
+  }
+}
+
+func wopAction(c *cli.Context) error {
+  fmt.Fprintf(c.App.Writer, ":wave: over here, eh\n")
+  return nil
 }
 ```
 
