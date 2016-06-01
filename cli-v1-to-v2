@@ -187,7 +187,10 @@ def _context_args_index_repl(match):
 
 @_migrator
 def _migrate_envvar_string(source):
-    return re.sub('EnvVar:(?P<ws>\\s+)"(?P<string>[^"]+)"', _envvar_string_repl, source)
+    return re.sub(
+        'EnvVar:(?P<ws>\\s+)"(?P<string>[^"]+)"',
+        _envvar_string_repl, source
+    )
 
 
 def _envvar_string_repl(match):
