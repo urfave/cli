@@ -983,6 +983,9 @@ func main() {
 **NOTE**: This is a contrived (functioning) example meant strictly for API
 demonstration purposes.  Use of one's imagination is encouraged.
 
+<!-- {
+	"output": "made it!\nPhew!"
+} -->
 ``` go
 package main
 
@@ -992,6 +995,7 @@ import (
   "fmt"
   "io"
   "io/ioutil"
+  "os"
   "time"
 
   "github.com/urfave/cli"
@@ -1100,7 +1104,7 @@ func main() {
   }
   app.Flags = []cli.Flag{
     cli.BoolFlag{Name: "fancy"},
-    cli.BoolTFlag{Name: "fancy"},
+    cli.BoolTFlag{Name: "fancier"},
     cli.StringFlag{Name: "dance-move, d"},
   }
   app.EnableBashCompletion = true
@@ -1150,8 +1154,13 @@ func main() {
     }
 
     c.App.Command("doo")
-    c.App.Run([]string{"app", "doo", "wop"})
-    c.App.RunAsSubcommand(c)
+    if c.Bool("infinite") {
+      c.App.Run([]string{"app", "doo", "wop"})
+    }
+
+    if c.Bool("forevar") {
+      c.App.RunAsSubcommand(c)
+    }
     c.App.Setup()
     c.App.VisibleCategories()
     c.App.VisibleCommands()
@@ -1195,14 +1204,19 @@ func main() {
 
     ec := cli.NewExitError("ohwell", 86)
     fmt.Fprintf(c.App.Writer, "%d", ec.ExitCode())
+    fmt.Printf("made it!\n")
     return ec
   }
   app.Writer = &hexWriter{}
+  // just kidding there
+  app.Writer = os.Stdout
   app.ErrWriter = &hexWriter{}
   app.Metadata = map[string]interface{}{
     "layers":     "many",
     "explicable": false,
   }
+
+  app.Run(os.Args)
 }
 
 func wopAction(c *cli.Context) error {
