@@ -191,7 +191,7 @@ func printHelp(out io.Writer, templ string, data interface{}) {
 		"join": strings.Join,
 	}
 
-	w := tabwriter.NewWriter(out, 0, 8, 1, '\t', 0)
+	w := tabwriter.NewWriter(out, 1, 8, 2, ' ', 0)
 	t := template.Must(template.New("help").Funcs(funcMap).Parse(templ))
 	err := t.Execute(w, data)
 	if err != nil {
