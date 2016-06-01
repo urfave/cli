@@ -12,24 +12,6 @@ _DESCRIPTION = """\
 Migrate arbitrary `.go` sources (mostly) from the v1 to v2 API.
 """
 _V2_IMPORT = '"gopkg.in/urfave/cli.v2"'
-_V1_IMPORT_RE = re.compile(
-    '"(?:github\\.com|gopkg\\.in)/(?:codegangsta|urfave)/cli(?:\\.v1|)"',
-)
-_SLICE_TYPE_RE = re.compile(
-    '&cli\\.(?P<type>IntSlice|StringSlice){(?P<args>[^}]*)}',
-    flags=re.DOTALL
-)
-_FLAG_LITERAL_RE = re.compile('(?P<prefix>\\s+)cli\\.(?P<type>\\w+)Flag{')
-_COMMAND_SLICE_RE = re.compile('(?P<prefix>\\[\\])cli\\.Command{')
-_COMMAND_LITERAL_RE = re.compile('(?P<prefix>\\s+)cli\\.Command{')
-_EXIT_ERROR_RE = re.compile('cli\\.NewExitError')
-_CONTEXT_ARGS_INDEX_RE = re.compile('\\.Args\\(\\)\\[(?P<index>\\d+)\\]')
-_ENVVAR_STRING_RE = re.compile('EnvVar:(?P<ws>\\s+)"(?P<string>[^"]+)"')
-_BOOL_T_FLAG_RE = re.compile(
-    'cli\\.BoolTFlag{(?P<args>[^}]*)}',
-    flags=re.DOTALL
-)
-
 _MIGRATORS = {}
 
 
@@ -120,86 +102,135 @@ def _migrator(func):
 
 @_migrator
 def _migrate_command_slice(source):
-    return _COMMAND_SLICE_RE.sub(_command_slice_repl, source)
+    return re.sub(
+        '(?P<prefix>\\[\\])cli\\.Command{',
+        _command_slice_repl, source
+    )
 
 
 def _command_slice_repl(match):
-    return '{}*cli.Command{{'.format(match.groupdict()['prefix'])
+    return '{prefix}*cli.Command{{'.format(**match.groupdict())
 
 
 @_migrator
 def _migrate_command_literal(source):
-    return _COMMAND_LITERAL_RE.sub(_command_literal_repl, source)
+    return re.sub(
+        '(?P<prefix>\\s+)cli\\.Command{',
+        _command_literal_repl, source
+    )
 
 
 def _command_literal_repl(match):
-    return '{}&cli.Command{{'.format(match.groupdict()['prefix'])
+    return '{prefix}&cli.Command{{'.format(**match.groupdict())
 
 
 @_migrator
 def _migrate_slice_types(source):
-    return _SLICE_TYPE_RE.sub(_slice_type_repl, source)
+    return re.sub(
+        '&cli\\.(?P<type>IntSlice|StringSlice){(?P<args>[^}]*)}',
+        _slice_type_repl, source, flags=re.DOTALL
+    )
 
 
 def _slice_type_repl(match):
-    return 'cli.New{}({})'.format(
-        match.groupdict()['type'], match.groupdict()['args']
-    )
+    return 'cli.New{type}({args})'.format(**match.groupdict())
 
 
 @_migrator
 def _migrate_flag_literals(source):
-    return _FLAG_LITERAL_RE.sub(_flag_literal_repl, source)
+    return re.sub(
+        '(?P<prefix>\\s+)cli\\.(?P<type>\\w+)Flag{',
+        _flag_literal_repl, source
+    )
 
 
 def _flag_literal_repl(match):
-    return '{}&cli.{}Flag{{'.format(
-        match.groupdict()['prefix'], match.groupdict()['type']
-    )
+    return '{prefix}&cli.{type}Flag{{'.format(**match.groupdict())
 
 
 @_migrator
 def _migrate_v1_imports(source):
-    return _V1_IMPORT_RE.sub(_V2_IMPORT, source)
-
-
-@_migrator
-def _migrate_new_exit_error(source):
-    return _EXIT_ERROR_RE.sub('cli.Exit', source)
-
-
-@_migrator
-def _migrate_bool_t_flag(source):
-    return _BOOL_T_FLAG_RE.sub(_bool_t_flag_repl, source)
-
-
-def _bool_t_flag_repl(match):
-    return 'cli.BoolFlag{{Value: true,{}}}'.format(
-        match.groupdict()['args']
+    return re.sub(
+        '"(?:github\\.com|gopkg\\.in)/(?:codegangsta|urfave)/cli(?:\\.v1|)"',
+        _V2_IMPORT, source
     )
 
 
 @_migrator
+def _migrate_new_exit_error(source):
+    return re.sub('cli\\.NewExitError', 'cli.Exit', source)
+
+
+@_migrator
+def _migrate_bool_t_flag(source):
+    return re.sub(
+        'cli\\.BoolTFlag{(?P<args>[^}]*)}',
+        _bool_t_flag_repl, source, flags=re.DOTALL
+    )
+
+
+def _bool_t_flag_repl(match):
+    return 'cli.BoolFlag{{Value: true,{args}}}'.format(**match.groupdict())
+
+
+@_migrator
 def _migrate_context_args_index(source):
-    return _CONTEXT_ARGS_INDEX_RE.sub(_context_args_index_repl, source)
+    return re.sub(
+        '\\.Args\\(\\)\\[(?P<index>\\d+)\\]',
+        _context_args_index_repl, source
+    )
 
 
 def _context_args_index_repl(match):
-    return '.Args().Get({})'.format(match.groupdict()['index'])
+    return '.Args().Get({index})'.format(**match.groupdict())
 
 
 @_migrator
 def _migrate_envvar_string(source):
-    return _ENVVAR_STRING_RE.sub(_envvar_string_repl, source)
+    return re.sub('EnvVar:(?P<ws>\\s+)"(?P<string>[^"]+)"', _envvar_string_repl, source)
 
 
 def _envvar_string_repl(match):
-    return 'EnvVars:{}[]string{{{}}}'.format(
-        match.groupdict()['ws'],
-        ', '.join([
+    return 'EnvVars:{ws}[]string{{{value}}}'.format(
+        value=', '.join([
             '"{}"'.format(s) for s in
             re.split('\\s*,\\s*', match.groupdict()['string'])
-        ])
+        ]),
+        **match.groupdict()
+    )
+
+
+@_migrator
+def _migrate_flag_name_stringly(source):
+    return re.sub(
+        '(?P<prefix>\\s+)Name:(?P<ws>\\s+)"(?P<string>[^"]+)"',
+        _flag_name_stringly_repl, source
+    )
+
+
+def _flag_name_stringly_repl(match):
+    revars = dict(match.groupdict())
+
+    string = revars['string']
+    parts = list(
+        reversed(
+            sorted(
+                filter(lambda s: len(s.strip()) > 0, [
+                    part.strip() for part in string.split(',')
+                ]), key=len
+            )
+        )
+    )
+
+    if len(parts) == 1:
+        return '{prefix}Name:{ws}"{string}"'.format(**revars)
+
+    return (
+        '{prefix}Name:{ws}"{name}", Aliases: []string{{{aliases}}}'
+    ).format(
+        name=parts[0],
+        aliases=', '.join(['"{}"'.format(s) for s in parts[1:]]),
+        **revars
     )
 
 
@@ -328,6 +359,19 @@ _MIGRATOR_TESTS = (
 \t\t\t&cli.StringFlag{
 \t\t\t\tName:   "toots",
 \t\t\t\tEnvVars: []string{"TOOTS", "TOOTERS"},
+\t\t\t},
+\t\t}
+"""),
+    ("""
+\t\tapp.Flags = []cli.Flag{
+\t\t\tcli.StringFlag{
+\t\t\t\tName:   "t, tootles, toots",
+\t\t\t},
+\t\t}
+""", """
+\t\tapp.Flags = []cli.Flag{
+\t\t\t&cli.StringFlag{
+\t\t\t\tName:   "tootles", Aliases: []string{"toots", "t"},
 \t\t\t},
 \t\t}
 """)
