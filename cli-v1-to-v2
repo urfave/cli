@@ -2,6 +2,7 @@
 from __future__ import print_function, unicode_literals
 
 import argparse
+import io
 import logging
 import os
 import re
@@ -52,7 +53,7 @@ def main(sysargs=sys.argv[:]):
         if args.write:
             logging.info('Updating %s', filepath)
 
-            with open(filepath, 'w') as outfile:
+            with io.open(filepath, 'w', encoding='utf-8') as outfile:
                 outfile.write(updated_source)
         else:
             logging.info('// Updated %s:', filepath)
@@ -84,7 +85,7 @@ def _find_candidate_files(paths):
 
 
 def _update_filepath(filepath):
-    with open(filepath) as infile:
+    with io.open(filepath, encoding='utf-8') as infile:
         return _update_source(infile.read())
 
 
@@ -96,39 +97,39 @@ def _update_source(source):
 
 
 def _migrator(func):
-    _MIGRATORS[func.__name__.replace('_migrate_', '')] = func
+    _MIGRATORS[func.__name__.strip('_')] = func
     return func
 
 
 @_migrator
-def _migrate_command_slice(source):
+def _slice_pointer_types(source):
     return re.sub(
-        '(?P<prefix>\\[\\])cli\\.Command{',
-        _command_slice_repl, source
+        '(?P<prefix>\\[\\])cli\\.(?P<type>Command|Author){',
+        _slice_pointer_types_repl, source, flags=re.UNICODE
     )
 
 
-def _command_slice_repl(match):
-    return '{prefix}*cli.Command{{'.format(**match.groupdict())
+def _slice_pointer_types_repl(match):
+    return '{prefix}*cli.{type}{{'.format(**match.groupdict())
 
 
 @_migrator
-def _migrate_command_literal(source):
+def _pointer_type_literal(source):
     return re.sub(
-        '(?P<prefix>\\s+)cli\\.Command{',
-        _command_literal_repl, source
+        '(?P<prefix>\\s+)cli\\.(?P<type>Command|Author){',
+        _pointer_type_literal_repl, source, flags=re.UNICODE
     )
 
 
-def _command_literal_repl(match):
-    return '{prefix}&cli.Command{{'.format(**match.groupdict())
+def _pointer_type_literal_repl(match):
+    return '{prefix}&cli.{type}{{'.format(**match.groupdict())
 
 
 @_migrator
-def _migrate_slice_types(source):
+def _slice_types(source):
     return re.sub(
         '&cli\\.(?P<type>IntSlice|StringSlice){(?P<args>[^}]*)}',
-        _slice_type_repl, source, flags=re.DOTALL
+        _slice_type_repl, source, flags=re.DOTALL|re.UNICODE
     )
 
 
@@ -137,10 +138,10 @@ def _slice_type_repl(match):
 
 
 @_migrator
-def _migrate_flag_literals(source):
+def _flag_literals(source):
     return re.sub(
         '(?P<prefix>\\s+)cli\\.(?P<type>\\w+)Flag{',
-        _flag_literal_repl, source
+        _flag_literal_repl, source, flags=re.UNICODE
     )
 
 
@@ -149,23 +150,23 @@ def _flag_literal_repl(match):
 
 
 @_migrator
-def _migrate_v1_imports(source):
+def _v1_imports(source):
     return re.sub(
         '"(?:github\\.com|gopkg\\.in)/(?:codegangsta|urfave)/cli(?:\\.v1|)"',
-        _V2_IMPORT, source
+        _V2_IMPORT, source, flags=re.UNICODE
     )
 
 
 @_migrator
-def _migrate_new_exit_error(source):
-    return re.sub('cli\\.NewExitError', 'cli.Exit', source)
+def _new_exit_error(source):
+    return re.sub('cli\\.NewExitError', 'cli.Exit', source, flags=re.UNICODE)
 
 
 @_migrator
-def _migrate_bool_t_flag(source):
+def _bool_t_flag(source):
     return re.sub(
         'cli\\.BoolTFlag{(?P<args>[^}]*)}',
-        _bool_t_flag_repl, source, flags=re.DOTALL
+        _bool_t_flag_repl, source, flags=re.DOTALL|re.UNICODE
     )
 
 
@@ -174,10 +175,10 @@ def _bool_t_flag_repl(match):
 
 
 @_migrator
-def _migrate_context_args_index(source):
+def _context_args_index(source):
     return re.sub(
         '\\.Args\\(\\)\\[(?P<index>\\d+)\\]',
-        _context_args_index_repl, source
+        _context_args_index_repl, source, flags=re.UNICODE
     )
 
 
@@ -186,10 +187,10 @@ def _context_args_index_repl(match):
 
 
 @_migrator
-def _migrate_envvar_string(source):
+def _envvar_string(source):
     return re.sub(
         'EnvVar:(?P<ws>\\s+)"(?P<string>[^"]+)"',
-        _envvar_string_repl, source
+        _envvar_string_repl, source, flags=re.UNICODE
     )
 
 
@@ -197,17 +198,20 @@ def _envvar_string_repl(match):
     return 'EnvVars:{ws}[]string{{{value}}}'.format(
         value=', '.join([
             '"{}"'.format(s) for s in
-            re.split('\\s*,\\s*', match.groupdict()['string'])
+            re.split(
+                '\\s*,\\s*', match.groupdict()['string'],
+                flags=re.UNICODE
+            )
         ]),
         **match.groupdict()
     )
 
 
 @_migrator
-def _migrate_flag_name_stringly(source):
+def _flag_name_stringly(source):
     return re.sub(
         '(?P<prefix>\\s+)Name:(?P<ws>\\s+)"(?P<string>[^"]+)"',
-        _flag_name_stringly_repl, source
+        _flag_name_stringly_repl, source, flags=re.UNICODE
     )
 
 
@@ -235,6 +239,86 @@ def _flag_name_stringly_repl(match):
         aliases=', '.join(['"{}"'.format(s) for s in parts[1:]]),
         **revars
     )
+
+
+@_migrator
+def _commands_opaque_type(source):
+    return re.sub('cli\\.Commands', '[]*cli.Command', source, flags=re.UNICODE)
+
+
+@_migrator
+def _flag_names(source):
+    return re.sub('\\.GetName\\(\\)', '.Names()[0]', source, flags=re.UNICODE)
+
+
+@_migrator
+def _app_categories(source):
+    return re.sub(
+        '\\.App\\.Categories\\(\\)', '.App.Categories',
+        source, flags=re.UNICODE
+    )
+
+
+@_migrator
+def _range_categories(source):
+    # XXX: brittle
+    return re.sub(
+        '(?P<prefix>:=\\s+range\\s+)categories(?P<suffix>[^\\.])',
+        _range_categories_repl, source, flags=re.UNICODE|re.IGNORECASE
+    )
+
+
+def _range_categories_repl(match):
+    return '{prefix}categories.Categories(){suffix}'.format(
+        **match.groupdict()
+    )
+
+
+@_migrator
+def _command_category_commands(source):
+    # XXX: brittle
+    return re.sub(
+        '(?P<prefix>\\s+category\\.)Commands(?P<suffix>[^(])',
+        _command_category_commands_repl, source, flags=re.UNICODE
+    )
+
+
+def _command_category_commands_repl(match):
+    return '{prefix}VisibleCommands(){suffix}'.format(**match.groupdict())
+
+
+@_migrator
+def _context_bool_t(source):
+    # XXX: probably brittle
+    return re.sub(
+        '(?P<prefix>\\S+)(?:Global|)BoolT\\(',
+        _context_bool_t_repl, source, flags=re.UNICODE
+    )
+
+
+def _context_bool_t_repl(match):
+    return '!{prefix}Bool('.format(**match.groupdict())
+
+
+@_migrator
+def _context_global_methods(source):
+    return re.sub(
+        '\\.Global(?P<method>' \
+            'Bool|Duration|Float64|Generic|Int|IntSlice|String|StringSlice|' \
+            'FlagNames|IsSet|Set' \
+        ')\\(',
+        _context_global_methods_repl, source, flags=re.UNICODE
+    )
+
+
+def _context_global_methods_repl(match):
+    return '.{method}('.format(**match.groupdict())
+
+
+@_migrator
+def _context_parent(source):
+    # XXX: brittle
+    return re.sub('\\.Parent\\(\\)', '.Lineage()[1]', source, flags=re.UNICODE)
 
 
 def test_migrators():
