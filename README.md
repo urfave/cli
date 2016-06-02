@@ -1042,7 +1042,7 @@ func main() {
   app.Version = "v19.99.0"
   app.Compiled = time.Now()
   app.Authors = []cli.Author{
-    {
+    cli.Author{
       Name:  "Example Human",
       Email: "human@example.com",
     },
@@ -1053,7 +1053,7 @@ func main() {
   app.UsageText = "contrive - demonstrating the available API"
   app.ArgsUsage = "[args and such]"
   app.Commands = []cli.Command{
-    {
+    cli.Command{
       Name:        "doo",
       Aliases:     []string{"do"},
       Category:    "motion",
@@ -1065,7 +1065,7 @@ func main() {
         cli.BoolFlag{Name: "forever, forevvarr"},
       },
       Subcommands: cli.Commands{
-        {
+        cli.Command{
           Name:   "wop",
           Action: wopAction,
         },
@@ -1147,13 +1147,13 @@ func main() {
       Name: "bloop",
     })
 
-    for _, category := range categories {
+    for _, category := range c.App.Categories() {
       fmt.Fprintf(c.App.Writer, "%s\n", category.Name)
       fmt.Fprintf(c.App.Writer, "%#v\n", category.Commands)
       fmt.Fprintf(c.App.Writer, "%#v\n", category.VisibleCommands())
     }
 
-    c.App.Command("doo")
+    fmt.Printf("%#v\n", c.App.Command("doo"))
     if c.Bool("infinite") {
       c.App.Run([]string{"app", "doo", "wop"})
     }
@@ -1162,44 +1162,48 @@ func main() {
       c.App.RunAsSubcommand(c)
     }
     c.App.Setup()
-    c.App.VisibleCategories()
-    c.App.VisibleCommands()
-    c.App.VisibleFlags()
+    fmt.Printf("%#v\n", c.App.VisibleCategories())
+    fmt.Printf("%#v\n", c.App.VisibleCommands())
+    fmt.Printf("%#v\n", c.App.VisibleFlags())
 
-    c.Args().First()
-    c.Args().Get(1)
-    c.Args().Present()
-    c.Args().Tail()
+    fmt.Printf("%#v\n", c.Args().First())
+    if len(c.Args()) > 0 {
+      fmt.Printf("%#v\n", c.Args()[1])
+    }
+    fmt.Printf("%#v\n", c.Args().Present())
+    fmt.Printf("%#v\n", c.Args().Tail())
 
     set := flag.NewFlagSet("contrive", 0)
     nc := cli.NewContext(c.App, set, c)
-    nc.Args()
-    nc.Bool("nope")
-    nc.BoolT("nerp")
-    nc.Duration("howlong")
-    nc.Float64("hay")
-    nc.Generic("bloop")
-    nc.Int("bips")
-    nc.IntSlice("blups")
-    nc.String("snurt")
-    nc.StringSlice("snurkles")
-    nc.GlobalBool("global-nope")
-    nc.GlobalBoolT("global-nerp")
-    nc.GlobalDuration("global-howlong")
-    nc.GlobalFloat64("global-hay")
-    nc.GlobalGeneric("global-bloop")
-    nc.GlobalInt("global-bips")
-    nc.GlobalIntSlice("global-blups")
-    nc.GlobalString("global-snurt")
-    nc.GlobalStringSlice("global-snurkles")
 
-    nc.FlagNames()
-    nc.GlobalFlagNames()
-    nc.GlobalIsSet("wat")
-    nc.GlobalSet("wat", "nope")
-    nc.NArg()
-    nc.NumFlags()
-    nc.Parent()
+    fmt.Printf("%#v\n", nc.Args())
+    fmt.Printf("%#v\n", nc.Bool("nope"))
+    fmt.Printf("%#v\n", nc.BoolT("nerp"))
+    fmt.Printf("%#v\n", nc.Duration("howlong"))
+    fmt.Printf("%#v\n", nc.Float64("hay"))
+    fmt.Printf("%#v\n", nc.Generic("bloop"))
+    fmt.Printf("%#v\n", nc.Int("bips"))
+    fmt.Printf("%#v\n", nc.IntSlice("blups"))
+    fmt.Printf("%#v\n", nc.String("snurt"))
+    fmt.Printf("%#v\n", nc.StringSlice("snurkles"))
+    fmt.Printf("%#v\n", nc.GlobalBool("global-nope"))
+    fmt.Printf("%#v\n", nc.GlobalBoolT("global-nerp"))
+    fmt.Printf("%#v\n", nc.GlobalDuration("global-howlong"))
+    fmt.Printf("%#v\n", nc.GlobalFloat64("global-hay"))
+    fmt.Printf("%#v\n", nc.GlobalGeneric("global-bloop"))
+    fmt.Printf("%#v\n", nc.GlobalInt("global-bips"))
+    fmt.Printf("%#v\n", nc.GlobalIntSlice("global-blups"))
+    fmt.Printf("%#v\n", nc.GlobalString("global-snurt"))
+    fmt.Printf("%#v\n", nc.GlobalStringSlice("global-snurkles"))
+
+    fmt.Printf("%#v\n", nc.FlagNames())
+    fmt.Printf("%#v\n", nc.GlobalFlagNames())
+    fmt.Printf("%#v\n", nc.GlobalIsSet("wat"))
+    fmt.Printf("%#v\n", nc.GlobalSet("wat", "nope"))
+    fmt.Printf("%#v\n", nc.NArg())
+    fmt.Printf("%#v\n", nc.NumFlags())
+    fmt.Printf("%#v\n", nc.Parent())
+
     nc.Set("wat", "also-nope")
 
     ec := cli.NewExitError("ohwell", 86)
@@ -1207,13 +1211,16 @@ func main() {
     fmt.Printf("made it!\n")
     return ec
   }
-  app.Writer = &hexWriter{}
-  // just kidding there
-  app.Writer = os.Stdout
-  app.ErrWriter = &hexWriter{}
+
+  if os.Getenv("HEXY") != "" {
+    app.Writer = &hexWriter{}
+    app.ErrWriter = &hexWriter{}
+  }
+
   app.Metadata = map[string]interface{}{
     "layers":     "many",
     "explicable": false,
+    "whatever-values": 19.99,
   }
 
   app.Run(os.Args)
