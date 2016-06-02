@@ -129,7 +129,7 @@ def _pointer_type_literal(source):
 def _slice_types(source):
     return _subfmt(
         '&cli\\.(?P<type>IntSlice|StringSlice){(?P<args>[^}]*)}',
-        'cli.New{type}({args})', source, flags=re.DOTALL|re.UNICODE
+        'cli.New{type}({args})', source, flags=re.DOTALL | re.UNICODE
     )
 
 
@@ -159,7 +159,7 @@ def _bool_t_flag(source):
     return _subfmt(
         'cli\\.BoolTFlag{(?P<args>[^}]*)}',
         'cli.BoolFlag{{Value: true,{args}}}',
-        source, flags=re.DOTALL|re.UNICODE
+        source, flags=re.DOTALL | re.UNICODE
     )
 
 
@@ -278,9 +278,9 @@ def _context_bool_t(source):
 @_migrator
 def _context_global_methods(source):
     return _subfmt(
-        '\\.Global(?P<method>' \
-            'Bool|Duration|Float64|Generic|Int|IntSlice|String|StringSlice|' \
-            'FlagNames|IsSet|Set' \
+        '\\.Global(?P<method>'
+        'Bool|Duration|Float64|Generic|Int|IntSlice|String|StringSlice|'
+        'FlagNames|IsSet|Set'
         ')\\(',
         '.{method}(', source
     )
