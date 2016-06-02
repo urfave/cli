@@ -25,6 +25,9 @@ def main(sysargs=sys.argv[:]):
                         action='store_true', default=False)
     parser.add_argument('-q', '--quiet', help='quiet down the logging',
                         action='store_true', default=False)
+    parser.add_argument('-D', '--debug', help='debug up the logging',
+                        action='store_true',
+                        default=(os.environ.get('DEBUG') != ''))
     parser.add_argument('--selftest', help='run internal tests',
                         action='store_true', default=False)
 
@@ -38,10 +41,10 @@ def main(sysargs=sys.argv[:]):
         test_migrators()
         return 0
 
-    logging.basicConfig(
-        level=(logging.FATAL if args.quiet else logging.INFO),
-        format='%(message)s'
-    )
+    level = logging.FATAL if args.quiet else logging.INFO
+    level = logging.DEBUG if args.debug else level
+
+    logging.basicConfig(level=level, format='%(message)s')
 
     paths = args.path
     if len(paths) == 0:
@@ -90,7 +93,7 @@ def _update_filepath(filepath):
 
 def _update_source(source):
     for migrator, func in _MIGRATORS:
-        logging.info('Running %s migrator', migrator)
+        logging.debug('Running %s migrator', migrator)
         source = func(source)
     return source
 
