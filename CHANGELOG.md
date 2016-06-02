@@ -8,6 +8,10 @@
 - testing on OS X
 - testing on Windows
 
+### Changed
+- Use spaces for alignment in help/usage output instead of tabs, making the
+  output alignment consistent regardless of tab width
+
 ### Fixed
 - Printing of command aliases in help text
 
