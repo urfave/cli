@@ -15,8 +15,8 @@
 
 ### Removed
 - the ability to specify `&StringSlice{...string}` or `&IntSlice{...int}`.
-  To migrate to the new API, you may choose to run [this helper
-  (python) script](./cli-migrate-slice-types).
+  To migrate to the new API, you may choose to run [the migrator
+  (python) script](./cli-v1-to-v2).
 - The optimistic reordering of arguments and flags introduced by
   https://github.com/codegangsta/cli/pull/36. This behavior only worked when
   all arguments appeared before all flags, but caused [weird issues with boolean

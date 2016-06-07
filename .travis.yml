@@ -10,12 +10,15 @@ go:
 - 1.6.2
 - master
 
+env: pip_install="pip install --user"
+
 matrix:
   allow_failures:
   - go: master
   include:
   - go: 1.6.2
     os: osx
+    env: pip_install="sudo pip install"
   - go: 1.1.2
     install: go get -v .
     before_script: echo skipping gfmxr on $TRAVIS_GO_VERSION
@@ -25,8 +28,12 @@ matrix:
 
 before_script:
 - go get github.com/urfave/gfmxr/...
+- $pip_install flake8
 
 script:
+- flake8 runtests cli-v1-to-v2
 - ./runtests vet
 - ./runtests test
 - ./runtests gfmxr
+- ./cli-v1-to-v2 --selftest
+- ./runtests migrations
