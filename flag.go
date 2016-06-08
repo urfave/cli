@@ -512,7 +512,7 @@ func (f Float64Flag) GetName() string {
 func visibleFlags(fl []Flag) []Flag {
 	visible := []Flag{}
 	for _, flag := range fl {
-		if !reflect.ValueOf(flag).FieldByName("Hidden").Bool() {
+		if !flagValue(flag).FieldByName("Hidden").Bool() {
 			visible = append(visible, flag)
 		}
 	}
@@ -578,8 +578,16 @@ func withEnvHint(envVar, str string) string {
 	return str + envText
 }
 
-func stringifyFlag(f Flag) string {
+func flagValue(f Flag) reflect.Value {
 	fv := reflect.ValueOf(f)
+	for fv.Kind() == reflect.Ptr {
+		fv = reflect.Indirect(fv)
+	}
+	return fv
+}
+
+func stringifyFlag(f Flag) string {
+	fv := flagValue(f)
 
 	switch f.(type) {
 	case IntSliceFlag:
