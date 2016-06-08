@@ -512,7 +512,7 @@ func (f Float64Flag) GetName() string {
 func visibleFlags(fl []Flag) []Flag {
 	visible := []Flag{}
 	for _, flag := range fl {
-		if !reflect.ValueOf(flag).FieldByName("Hidden").Bool() {
+		if !reflect.Indirect(reflect.ValueOf(flag)).FieldByName("Hidden").Bool() {
 			visible = append(visible, flag)
 		}
 	}
