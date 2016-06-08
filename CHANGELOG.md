@@ -14,6 +14,7 @@
 
 ### Fixed
 - Printing of command aliases in help text
+- Printing of visible flags for both struct and struct pointer flags
 
 ## [1.17.0] - 2016-05-09
 ### Added
