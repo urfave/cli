@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -464,11 +465,13 @@ func (a Author) String() string {
 func HandleAction(action interface{}, context *Context) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			switch r.(type) {
-			case error:
-				err = r.(error)
-			default:
-				err = NewExitError(fmt.Sprintf("ERROR unknown Action error: %v. See %s", r, appActionDeprecationURL), 2)
+			// Try to detect a known reflection error from *this scope*, rather than
+			// swallowing all panics that may happen when calling an Action func.
+			s := fmt.Sprintf("%v", r)
+			if strings.HasPrefix(s, "reflect: ") && strings.Contains(s, "too many input arguments") {
+				err = NewExitError(fmt.Sprintf("ERROR unknown Action error: %v.  See %s", r, appActionDeprecationURL), 2)
+			} else {
+				panic(r)
 			}
 		}
 	}()
