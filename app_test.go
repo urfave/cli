@@ -1452,3 +1452,16 @@ func TestHandleAction_WithInvalidFuncReturnSignature(t *testing.T) {
 		t.Fatalf("expected error exit code to be 2, but got: %v", exitErr.ExitCode())
 	}
 }
+
+func TestHandleAction_WithUnknownPanic(t *testing.T) {
+	defer func() { refute(t, recover(), nil) }()
+
+	var fn ActionFunc
+
+	app := NewApp()
+	app.Action = func(ctx *Context) error {
+		fn(ctx)
+		return nil
+	}
+	HandleAction(app.Action, NewContext(app, flagSet(app.Name, app.Flags), nil))
+}
