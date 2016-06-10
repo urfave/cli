@@ -1112,8 +1112,8 @@ func main() {
   }
   app.Flags = []cli.Flag{
     &cli.BoolFlag{Name: "fancy"},
-    &cli.BoolFlag{Value: true,Name: "fancier"},
-    &cli.StringFlag{Name: "dance-move, d"},
+    &cli.BoolFlag{Value: true, Name: "fancier"},
+    &cli.StringFlag{Name: "dance-move", Aliases: []string{"d"}},
   }
   app.EnableBashCompletion = true
   app.HideHelp = false
@@ -1194,17 +1194,7 @@ func main() {
     fmt.Printf("%#v\n", nc.IntSlice("blups"))
     fmt.Printf("%#v\n", nc.String("snurt"))
     fmt.Printf("%#v\n", nc.StringSlice("snurkles"))
-    fmt.Printf("%#v\n", nc.Bool("global-nope"))
-    fmt.Printf("%#v\n", !nc.Bool("global-nerp"))
-    fmt.Printf("%#v\n", nc.Duration("global-howlong"))
-    fmt.Printf("%#v\n", nc.Float64("global-hay"))
-    fmt.Printf("%#v\n", nc.Generic("global-bloop"))
-    fmt.Printf("%#v\n", nc.Int("global-bips"))
-    fmt.Printf("%#v\n", nc.IntSlice("global-blups"))
-    fmt.Printf("%#v\n", nc.String("global-snurt"))
-    fmt.Printf("%#v\n", nc.StringSlice("global-snurkles"))
 
-    fmt.Printf("%#v\n", nc.FlagNames())
     fmt.Printf("%#v\n", nc.FlagNames())
     fmt.Printf("%#v\n", nc.IsSet("wat"))
     fmt.Printf("%#v\n", nc.Set("wat", "nope"))
@@ -1226,8 +1216,8 @@ func main() {
   }
 
   app.Metadata = map[string]interface{}{
-    "layers":     "many",
-    "explicable": false,
+    "layers":          "many",
+    "explicable":      false,
     "whatever-values": 19.99,
   }
 
