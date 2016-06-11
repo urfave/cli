@@ -31,6 +31,11 @@ func (c *Context) Int(name string) int {
 	return lookupInt(name, c.flagSet)
 }
 
+// Int64 looks up the value of a local int flag, returns 0 if no int flag exists
+func (c *Context) Int64(name string) int64 {
+	return lookupInt64(name, c.flagSet)
+}
+
 // Duration looks up the value of a local time.Duration flag, returns 0 if no
 // time.Duration flag exists
 func (c *Context) Duration(name string) time.Duration {
@@ -80,6 +85,14 @@ func (c *Context) Generic(name string) interface{} {
 func (c *Context) GlobalInt(name string) int {
 	if fs := lookupGlobalFlagSet(name, c); fs != nil {
 		return lookupInt(name, fs)
+	}
+	return 0
+}
+
+// GlobalInt64 looks up the value of a global int flag, returns 0 if no int flag exists
+func (c *Context) GlobalInt64(name string) int64 {
+	if fs := lookupGlobalFlagSet(name, c); fs != nil {
+		return lookupInt64(name, fs)
 	}
 	return 0
 }
@@ -307,6 +320,19 @@ func lookupInt(name string, set *flag.FlagSet) int {
 	f := set.Lookup(name)
 	if f != nil {
 		val, err := strconv.Atoi(f.Value.String())
+		if err != nil {
+			return 0
+		}
+		return val
+	}
+
+	return 0
+}
+
+func lookupInt64(name string, set *flag.FlagSet) int64 {
+	f := set.Lookup(name)
+	if f != nil {
+		val, err := strconv.ParseInt(f.Value.String(), 10, 64)
 		if err != nil {
 			return 0
 		}
