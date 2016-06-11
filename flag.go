@@ -420,6 +420,51 @@ func (f IntFlag) GetName() string {
 	return f.Name
 }
 
+// Int64Flag is a flag that takes a 64-bit integer
+// Errors if the value provided cannot be parsed
+type Int64Flag struct {
+	Name        string
+	Value       int64
+	Usage       string
+	EnvVar      string
+	Destination *int64
+	Hidden      bool
+}
+
+// String returns the usage
+func (f Int64Flag) String() string {
+	return FlagStringer(f)
+}
+
+// Apply populates the flag given the flag set and environment
+func (f Int64Flag) Apply(set *flag.FlagSet) {
+	if f.EnvVar != "" {
+		for _, envVar := range strings.Split(f.EnvVar, ",") {
+			envVar = strings.TrimSpace(envVar)
+			if envVal := os.Getenv(envVar); envVal != "" {
+				envValInt, err := strconv.ParseInt(envVal, 0, 64)
+				if err == nil {
+					f.Value = envValInt
+					break
+				}
+			}
+		}
+	}
+
+	eachName(f.Name, func(name string) {
+		if f.Destination != nil {
+			set.Int64Var(f.Destination, name, f.Value, f.Usage)
+			return
+		}
+		set.Int64(name, f.Value, f.Usage)
+	})
+}
+
+// GetName returns the name of the flag.
+func (f Int64Flag) GetName() string {
+	return f.Name
+}
+
 // DurationFlag is a flag that takes a duration specified in Go's duration
 // format: https://golang.org/pkg/time/#ParseDuration
 type DurationFlag struct {

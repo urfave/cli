@@ -162,6 +162,42 @@ func TestIntFlagWithEnvVarHelpOutput(t *testing.T) {
 	}
 }
 
+var int64FlagTests = []struct {
+	name     string
+	expected string
+}{
+	{"hats", "--hats value\t(default: 8589934592)"},
+	{"H", "-H value\t(default: 8589934592)"},
+}
+
+func TestInt64FlagHelpOutput(t *testing.T) {
+	for _, test := range int64FlagTests {
+		flag := Int64Flag{Name: test.name, Value: 8589934592}
+		output := flag.String()
+
+		if output != test.expected {
+			t.Errorf("%s does not match %s", output, test.expected)
+		}
+	}
+}
+
+func TestInt64FlagWithEnvVarHelpOutput(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("APP_BAR", "2")
+	for _, test := range int64FlagTests {
+		flag := IntFlag{Name: test.name, EnvVar: "APP_BAR"}
+		output := flag.String()
+
+		expectedSuffix := " [$APP_BAR]"
+		if runtime.GOOS == "windows" {
+			expectedSuffix = " [%APP_BAR%]"
+		}
+		if !strings.HasSuffix(output, expectedSuffix) {
+			t.Errorf("%s does not end with"+expectedSuffix, output)
+		}
+	}
+}
+
 var durationFlagTests = []struct {
 	name     string
 	expected string
