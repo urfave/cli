@@ -1,3 +1,6 @@
+cli
+===
+
 [![Build Status](https://travis-ci.org/urfave/cli.svg?branch=master)](https://travis-ci.org/urfave/cli)
 [![Windows Build Status](https://ci.appveyor.com/api/projects/status/rtgk5xufi932pb2v?svg=true)](https://ci.appveyor.com/project/urfave/cli)
 [![GoDoc](https://godoc.org/github.com/urfave/cli?status.svg)](https://godoc.org/github.com/urfave/cli)
@@ -6,9 +9,6 @@
 [![top level coverage](https://gocover.io/_badge/github.com/urfave/cli?0 "top level coverage")](http://gocover.io/github.com/urfave/cli) /
 [![altsrc coverage](https://gocover.io/_badge/github.com/urfave/cli/altsrc?0 "altsrc coverage")](http://gocover.io/github.com/urfave/cli/altsrc)
 
-
-# cli
-
 **Notice:** This is the library formerly known as
 `github.com/codegangsta/cli` -- Github will automatically redirect requests
 to this repository, but we recommend updating your references for clarity.
@@ -16,6 +16,37 @@ to this repository, but we recommend updating your references for clarity.
 cli is a simple, fast, and fun package for building command line apps in Go. The
 goal is to enable developers to write fast and distributable command line
 applications in an expressive way.
+
+<!-- toc -->
+
+- [Overview](#overview)
+- [Installation](#installation)
+  * [Supported platforms](#supported-platforms)
+  * [Using the `v2` branch](#using-the-v2-branch)
+  * [Pinning to the `v1` branch](#pinning-to-the-v1-branch)
+- [Getting Started](#getting-started)
+- [Examples](#examples)
+  * [Arguments](#arguments)
+  * [Flags](#flags)
+    + [Placeholder Values](#placeholder-values)
+    + [Alternate Names](#alternate-names)
+    + [Values from the Environment](#values-from-the-environment)
+    + [Values from alternate input sources (YAML and others)](#values-from-alternate-input-sources-yaml-and-others)
+  * [Subcommands](#subcommands)
+  * [Subcommands categories](#subcommands-categories)
+  * [Exit code](#exit-code)
+  * [Bash Completion](#bash-completion)
+    + [Enabling](#enabling)
+    + [Distribution](#distribution)
+    + [Customization](#customization)
+  * [Generated Help Text](#generated-help-text)
+    + [Customization](#customization-1)
+  * [Version Flag](#version-flag)
+    + [Customization](#customization-2)
+    + [Full API Example](#full-api-example)
+- [Contribution Guidelines](#contribution-guidelines)
+
+<!-- tocstop -->
 
 ## Overview
 

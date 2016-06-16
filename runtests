@@ -18,7 +18,8 @@ def main(sysargs=sys.argv[:]):
     targets = {
         'vet': _vet,
         'test': _test,
-        'gfmxr': _gfmxr
+        'gfmxr': _gfmxr,
+        'toc': _toc,
     }
 
     parser = argparse.ArgumentParser()
@@ -60,6 +61,11 @@ def _gfmxr():
 
 def _vet():
     _run('go vet ./...'.split())
+
+
+def _toc():
+    _run(['node_modules/.bin/markdown-toc', '-i', 'README.md'])
+    _run(['git', 'diff', '--quiet'])
 
 
 def _run(command):
