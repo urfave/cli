@@ -189,7 +189,7 @@ func (f *IntSlice) Set(value string) error {
 
 // String returns a readable representation of this value (for usage defaults)
 func (f *IntSlice) String() string {
-	return fmt.Sprintf("%d", *f)
+	return fmt.Sprintf("%#v", *f)
 }
 
 // Value returns the slice of ints set by this flag
@@ -260,7 +260,7 @@ func (f *Int64Slice) Set(value string) error {
 
 // String returns a readable representation of this value (for usage defaults)
 func (f *Int64Slice) String() string {
-	return fmt.Sprintf("%d", *f)
+	return fmt.Sprintf("%#v", *f)
 }
 
 // Value returns the slice of ints set by this flag
@@ -447,7 +447,6 @@ func (f StringFlag) GetName() string {
 }
 
 // IntFlag is a flag that takes an integer
-// Errors if the value provided cannot be parsed
 type IntFlag struct {
 	Name        string
 	Value       int
@@ -492,7 +491,6 @@ func (f IntFlag) GetName() string {
 }
 
 // Int64Flag is a flag that takes a 64-bit integer
-// Errors if the value provided cannot be parsed
 type Int64Flag struct {
 	Name        string
 	Value       int64
@@ -582,7 +580,6 @@ func (f DurationFlag) GetName() string {
 }
 
 // Float64Flag is a flag that takes an float value
-// Errors if the value provided cannot be parsed
 type Float64Flag struct {
 	Name        string
 	Value       float64

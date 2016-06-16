@@ -13,7 +13,7 @@ func TestNewContext(t *testing.T) {
 	set.Float64("myflag64", float64(17), "doc")
 	globalSet := flag.NewFlagSet("test", 0)
 	globalSet.Int("myflag", 42, "doc")
-	globalSet.Int("myflagInt64", 42, "doc")
+	globalSet.Int64("myflagInt64", int64(42), "doc")
 	globalSet.Float64("myflag64", float64(47), "doc")
 	globalCtx := NewContext(nil, globalSet, nil)
 	command := Command{Name: "mycommand"}
