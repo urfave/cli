@@ -36,6 +36,16 @@ func (c *Context) Int64(name string) int64 {
 	return lookupInt64(name, c.flagSet)
 }
 
+// Uint looks up the value of a local int flag, returns 0 if no int flag exists
+func (c *Context) Uint(name string) uint {
+	return lookupUint(name, c.flagSet)
+}
+
+// Uint64 looks up the value of a local int flag, returns 0 if no int flag exists
+func (c *Context) Uint64(name string) uint64 {
+	return lookupUint64(name, c.flagSet)
+}
+
 // Duration looks up the value of a local time.Duration flag, returns 0 if no
 // time.Duration flag exists
 func (c *Context) Duration(name string) time.Duration {
@@ -99,6 +109,22 @@ func (c *Context) GlobalInt(name string) int {
 func (c *Context) GlobalInt64(name string) int64 {
 	if fs := lookupGlobalFlagSet(name, c); fs != nil {
 		return lookupInt64(name, fs)
+	}
+	return 0
+}
+
+// GlobalUint looks up the value of a global int flag, returns 0 if no int flag exists
+func (c *Context) GlobalUint(name string) uint {
+	if fs := lookupGlobalFlagSet(name, c); fs != nil {
+		return lookupUint(name, fs)
+	}
+	return 0
+}
+
+// GlobalUint64 looks up the value of a global int flag, returns 0 if no int flag exists
+func (c *Context) GlobalUint64(name string) uint64 {
+	if fs := lookupGlobalFlagSet(name, c); fs != nil {
+		return lookupUint64(name, fs)
 	}
 	return 0
 }
@@ -334,7 +360,20 @@ func lookupGlobalFlagSet(name string, ctx *Context) *flag.FlagSet {
 func lookupInt(name string, set *flag.FlagSet) int {
 	f := set.Lookup(name)
 	if f != nil {
-		val, err := strconv.Atoi(f.Value.String())
+		val, err := strconv.ParseInt(f.Value.String(), 0, 64)
+		if err != nil {
+			return 0
+		}
+		return int(val)
+	}
+
+	return 0
+}
+
+func lookupInt64(name string, set *flag.FlagSet) int64 {
+	f := set.Lookup(name)
+	if f != nil {
+		val, err := strconv.ParseInt(f.Value.String(), 0, 64)
 		if err != nil {
 			return 0
 		}
@@ -344,10 +383,23 @@ func lookupInt(name string, set *flag.FlagSet) int {
 	return 0
 }
 
-func lookupInt64(name string, set *flag.FlagSet) int64 {
+func lookupUint(name string, set *flag.FlagSet) uint {
 	f := set.Lookup(name)
 	if f != nil {
-		val, err := strconv.ParseInt(f.Value.String(), 10, 64)
+		val, err := strconv.ParseUint(f.Value.String(), 0, 64)
+		if err != nil {
+			return 0
+		}
+		return uint(val)
+	}
+
+	return 0
+}
+
+func lookupUint64(name string, set *flag.FlagSet) uint64 {
+	f := set.Lookup(name)
+	if f != nil {
+		val, err := strconv.ParseUint(f.Value.String(), 0, 64)
 		if err != nil {
 			return 0
 		}

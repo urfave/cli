@@ -211,7 +211,7 @@ COMMANDS:
     help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS
-    --version	Shows version information
+    --version Shows version information
 ```
 
 ### Arguments
@@ -984,7 +984,7 @@ func main() {
 demonstration purposes.  Use of one's imagination is encouraged.
 
 <!-- {
-	"output": "made it!\nPhew!"
+  "output": "made it!\nPhew!"
 } -->
 ``` go
 package main
@@ -1034,6 +1034,19 @@ func (w *hexWriter) Write(p []byte) (int, error) {
   fmt.Printf("\n")
 
   return len(p), nil
+}
+
+type genericType struct{
+  s string
+}
+
+func (g *genericType) Set(value string) error {
+  g.s = value
+  return nil
+}
+
+func (g *genericType) String() string {
+  return g.s
 }
 
 func main() {
@@ -1105,7 +1118,17 @@ func main() {
   app.Flags = []cli.Flag{
     cli.BoolFlag{Name: "fancy"},
     cli.BoolTFlag{Name: "fancier"},
+    cli.DurationFlag{Name: "howlong, H", Value: time.Second * 3},
+    cli.Float64Flag{Name: "howmuch"},
+    cli.GenericFlag{Name: "wat", Value: &genericType{}},
+    cli.Int64Flag{Name: "longdistance"},
+    cli.Int64SliceFlag{Name: "intervals"},
+    cli.IntFlag{Name: "distance"},
+    cli.IntSliceFlag{Name: "times"},
     cli.StringFlag{Name: "dance-move, d"},
+    cli.StringSliceFlag{Name: "names, N"},
+    cli.UintFlag{Name: "age"},
+    cli.Uint64Flag{Name: "bigage"},
   }
   app.EnableBashCompletion = true
   app.HideHelp = false
@@ -1182,10 +1205,14 @@ func main() {
     fmt.Printf("%#v\n", nc.Duration("howlong"))
     fmt.Printf("%#v\n", nc.Float64("hay"))
     fmt.Printf("%#v\n", nc.Generic("bloop"))
+    fmt.Printf("%#v\n", nc.Int64("bonk"))
+    fmt.Printf("%#v\n", nc.Int64Slice("burnks"))
     fmt.Printf("%#v\n", nc.Int("bips"))
     fmt.Printf("%#v\n", nc.IntSlice("blups"))
     fmt.Printf("%#v\n", nc.String("snurt"))
     fmt.Printf("%#v\n", nc.StringSlice("snurkles"))
+    fmt.Printf("%#v\n", nc.Uint("flub"))
+    fmt.Printf("%#v\n", nc.Uint64("florb"))
     fmt.Printf("%#v\n", nc.GlobalBool("global-nope"))
     fmt.Printf("%#v\n", nc.GlobalBoolT("global-nerp"))
     fmt.Printf("%#v\n", nc.GlobalDuration("global-howlong"))

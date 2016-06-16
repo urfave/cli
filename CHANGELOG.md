@@ -7,7 +7,7 @@
 - `./runtests` test runner with coverage tracking by default
 - testing on OS X
 - testing on Windows
-- `Int64Flag` type and supporting code
+- `UintFlag`, `Uint64Flag`, and `Int64Flag` types and supporting code
 
 ### Changed
 - Use spaces for alignment in help/usage output instead of tabs, making the

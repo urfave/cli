@@ -534,6 +534,94 @@ func (f Int64Flag) GetName() string {
 	return f.Name
 }
 
+// UintFlag is a flag that takes an unsigned integer
+type UintFlag struct {
+	Name        string
+	Value       uint
+	Usage       string
+	EnvVar      string
+	Destination *uint
+	Hidden      bool
+}
+
+// String returns the usage
+func (f UintFlag) String() string {
+	return FlagStringer(f)
+}
+
+// Apply populates the flag given the flag set and environment
+func (f UintFlag) Apply(set *flag.FlagSet) {
+	if f.EnvVar != "" {
+		for _, envVar := range strings.Split(f.EnvVar, ",") {
+			envVar = strings.TrimSpace(envVar)
+			if envVal := os.Getenv(envVar); envVal != "" {
+				envValInt, err := strconv.ParseUint(envVal, 0, 64)
+				if err == nil {
+					f.Value = uint(envValInt)
+					break
+				}
+			}
+		}
+	}
+
+	eachName(f.Name, func(name string) {
+		if f.Destination != nil {
+			set.UintVar(f.Destination, name, f.Value, f.Usage)
+			return
+		}
+		set.Uint(name, f.Value, f.Usage)
+	})
+}
+
+// GetName returns the name of the flag.
+func (f UintFlag) GetName() string {
+	return f.Name
+}
+
+// Uint64Flag is a flag that takes an unsigned 64-bit integer
+type Uint64Flag struct {
+	Name        string
+	Value       uint64
+	Usage       string
+	EnvVar      string
+	Destination *uint64
+	Hidden      bool
+}
+
+// String returns the usage
+func (f Uint64Flag) String() string {
+	return FlagStringer(f)
+}
+
+// Apply populates the flag given the flag set and environment
+func (f Uint64Flag) Apply(set *flag.FlagSet) {
+	if f.EnvVar != "" {
+		for _, envVar := range strings.Split(f.EnvVar, ",") {
+			envVar = strings.TrimSpace(envVar)
+			if envVal := os.Getenv(envVar); envVal != "" {
+				envValInt, err := strconv.ParseUint(envVal, 0, 64)
+				if err == nil {
+					f.Value = uint64(envValInt)
+					break
+				}
+			}
+		}
+	}
+
+	eachName(f.Name, func(name string) {
+		if f.Destination != nil {
+			set.Uint64Var(f.Destination, name, f.Value, f.Usage)
+			return
+		}
+		set.Uint64(name, f.Value, f.Usage)
+	})
+}
+
+// GetName returns the name of the flag.
+func (f Uint64Flag) GetName() string {
+	return f.Name
+}
+
 // DurationFlag is a flag that takes a duration specified in Go's duration
 // format: https://golang.org/pkg/time/#ParseDuration
 type DurationFlag struct {

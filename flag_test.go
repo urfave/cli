@@ -198,6 +198,78 @@ func TestInt64FlagWithEnvVarHelpOutput(t *testing.T) {
 	}
 }
 
+var uintFlagTests = []struct {
+	name     string
+	expected string
+}{
+	{"nerfs", "--nerfs value\t(default: 41)"},
+	{"N", "-N value\t(default: 41)"},
+}
+
+func TestUintFlagHelpOutput(t *testing.T) {
+	for _, test := range uintFlagTests {
+		flag := UintFlag{Name: test.name, Value: 41}
+		output := flag.String()
+
+		if output != test.expected {
+			t.Errorf("%s does not match %s", output, test.expected)
+		}
+	}
+}
+
+func TestUintFlagWithEnvVarHelpOutput(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("APP_BAR", "2")
+	for _, test := range uintFlagTests {
+		flag := UintFlag{Name: test.name, EnvVar: "APP_BAR"}
+		output := flag.String()
+
+		expectedSuffix := " [$APP_BAR]"
+		if runtime.GOOS == "windows" {
+			expectedSuffix = " [%APP_BAR%]"
+		}
+		if !strings.HasSuffix(output, expectedSuffix) {
+			t.Errorf("%s does not end with"+expectedSuffix, output)
+		}
+	}
+}
+
+var uint64FlagTests = []struct {
+	name     string
+	expected string
+}{
+	{"gerfs", "--gerfs value\t(default: 8589934582)"},
+	{"G", "-G value\t(default: 8589934582)"},
+}
+
+func TestUint64FlagHelpOutput(t *testing.T) {
+	for _, test := range uint64FlagTests {
+		flag := Uint64Flag{Name: test.name, Value: 8589934582}
+		output := flag.String()
+
+		if output != test.expected {
+			t.Errorf("%s does not match %s", output, test.expected)
+		}
+	}
+}
+
+func TestUint64FlagWithEnvVarHelpOutput(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("APP_BAR", "2")
+	for _, test := range uint64FlagTests {
+		flag := UintFlag{Name: test.name, EnvVar: "APP_BAR"}
+		output := flag.String()
+
+		expectedSuffix := " [$APP_BAR]"
+		if runtime.GOOS == "windows" {
+			expectedSuffix = " [%APP_BAR%]"
+		}
+		if !strings.HasSuffix(output, expectedSuffix) {
+			t.Errorf("%s does not end with"+expectedSuffix, output)
+		}
+	}
+}
+
 var durationFlagTests = []struct {
 	name     string
 	expected string
