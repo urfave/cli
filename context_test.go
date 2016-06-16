@@ -9,17 +9,21 @@ import (
 func TestNewContext(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Int("myflag", 12, "doc")
+	set.Int("myflagInt64", 12, "doc")
 	set.Float64("myflag64", float64(17), "doc")
 	globalSet := flag.NewFlagSet("test", 0)
 	globalSet.Int("myflag", 42, "doc")
+	globalSet.Int64("myflagInt64", int64(42), "doc")
 	globalSet.Float64("myflag64", float64(47), "doc")
 	globalCtx := NewContext(nil, globalSet, nil)
 	command := Command{Name: "mycommand"}
 	c := NewContext(nil, set, globalCtx)
 	c.Command = command
 	expect(t, c.Int("myflag"), 12)
+	expect(t, c.Int64("myflagInt64"), int64(12))
 	expect(t, c.Float64("myflag64"), float64(17))
 	expect(t, c.GlobalInt("myflag"), 42)
+	expect(t, c.GlobalInt64("myflagInt64"), int64(42))
 	expect(t, c.GlobalFloat64("myflag64"), float64(47))
 	expect(t, c.Command.Name, "mycommand")
 }
@@ -31,12 +35,27 @@ func TestContext_Int(t *testing.T) {
 	expect(t, c.Int("myflag"), 12)
 }
 
+func TestContext_Int64(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Int64("myflagInt64", 12, "doc")
+	c := NewContext(nil, set, nil)
+	expect(t, c.Int64("myflagInt64"), int64(12))
+}
+
 func TestContext_GlobalInt(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Int("myflag", 12, "doc")
 	c := NewContext(nil, set, nil)
 	expect(t, c.GlobalInt("myflag"), 12)
 	expect(t, c.GlobalInt("nope"), 0)
+}
+
+func TestContext_GlobalInt64(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Int64("myflagInt64", 12, "doc")
+	c := NewContext(nil, set, nil)
+	expect(t, c.GlobalInt64("myflagInt64"), int64(12))
+	expect(t, c.GlobalInt64("nope"), int64(0))
 }
 
 func TestContext_Float64(t *testing.T) {
