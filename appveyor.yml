@@ -18,6 +18,8 @@ install:
 - go env
 - go get github.com/urfave/gfmxr/...
 - go get -v -t ./...
+- mkdir c:\gopath\src\gopkg.in\urfave
+- mklink c:\gopath\src\github.com\urfave\cli c:\gopath\src\gopkg.in\urfave\cli.v2
 
 build_script:
 - python runtests vet
@@ -25,3 +27,4 @@ build_script:
 - python runtests gfmxr
 - python cli-v1-to-v2 --selftest
 - python runtests migrations
+- python runtests toc
