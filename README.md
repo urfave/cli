@@ -1047,7 +1047,7 @@ func init() {
 
   cli.HelpFlag = &cli.BoolFlag{Name: "halp"}
   cli.BashCompletionFlag = &cli.BoolFlag{Name: "compgen", Hidden: true}
-  cli.VersionFlag = &cli.BoolFlag{Name: "print-version, V"}
+  cli.VersionFlag = &cli.BoolFlag{Name: "print-version", Aliases: []string{"V"}}
 
   cli.HelpPrinter = func(w io.Writer, templ string, data interface{}) {
     fmt.Fprintf(w, "best of luck to you\n")
@@ -1114,7 +1114,7 @@ func main() {
       Description: "no really, there is a lot of dooing to be done",
       ArgsUsage:   "[arrgh]",
       Flags: []cli.Flag{
-        &cli.BoolFlag{Name: "forever, forevvarr"},
+        &cli.BoolFlag{Name: "forever", Aliases: []string{"forevvarr"}},
       },
       Subcommands: []*cli.Command{
         &cli.Command{
@@ -1157,15 +1157,15 @@ func main() {
   app.Flags = []cli.Flag{
     &cli.BoolFlag{Name: "fancy"},
     &cli.BoolFlag{Value: true, Name: "fancier"},
-    &cli.DurationFlag{Name: "howlong, H", Value: time.Second * 3},
+    &cli.DurationFlag{Name: "howlong", Aliases: []string{"H"}, Value: time.Second * 3},
     &cli.Float64Flag{Name: "howmuch"},
     &cli.GenericFlag{Name: "wat", Value: &genericType{}},
     &cli.Int64Flag{Name: "longdistance"},
     &cli.Int64SliceFlag{Name: "intervals"},
     &cli.IntFlag{Name: "distance"},
     &cli.IntSliceFlag{Name: "times"},
-    &cli.StringFlag{Name: "dance-move, d"},
-    &cli.StringSliceFlag{Name: "names, N"},
+    &cli.StringFlag{Name: "dance-move", Aliases: []string{"d"}},
+    &cli.StringSliceFlag{Name: "names", Aliases: []string{"N"}},
     &cli.UintFlag{Name: "age"},
     &cli.Uint64Flag{Name: "bigage"},
   }
