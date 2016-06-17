@@ -43,7 +43,7 @@ applications in an expressive way.
     + [Customization](#customization-1)
   * [Version Flag](#version-flag)
     + [Customization](#customization-2)
-    + [Full API Example](#full-api-example)
+  * [Full API Example](#full-api-example)
 - [Contribution Guidelines](#contribution-guidelines)
 
 <!-- tocstop -->
@@ -1017,7 +1017,7 @@ func main() {
 }
 ```
 
-#### Full API Example
+### Full API Example
 
 **NOTE**: This is a contrived (functioning) example meant strictly for API
 demonstration purposes.  Use of one's imagination is encouraged.
