@@ -36,6 +36,9 @@ before_script:
 - if [ ! -f node_modules/.bin/markdown-toc ] ; then
     npm install markdown-toc ;
   fi
+- mkdir -p ~/gopath/src/gopkg.in/urfave
+- rm -rf ~/gopath/src/gopkg.in/urfave/cli.v2
+- ln -sv ~/gopath/src/github.com/urfave/cli ~/gopath/src/gopkg.in/urfave/cli.v2
 
 script:
 - flake8 runtests cli-v1-to-v2

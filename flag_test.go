@@ -215,7 +215,7 @@ func TestInt64FlagWithEnvVarHelpOutput(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("APP_BAR", "2")
 	for _, test := range int64FlagTests {
-		flag := IntFlag{Name: test.name, EnvVar: "APP_BAR"}
+		flag := IntFlag{Name: test.name, EnvVars: []string{"APP_BAR"}}
 		output := flag.String()
 
 		expectedSuffix := " [$APP_BAR]"
@@ -251,7 +251,7 @@ func TestUintFlagWithEnvVarHelpOutput(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("APP_BAR", "2")
 	for _, test := range uintFlagTests {
-		flag := UintFlag{Name: test.name, EnvVar: "APP_BAR"}
+		flag := UintFlag{Name: test.name, EnvVars: []string{"APP_BAR"}}
 		output := flag.String()
 
 		expectedSuffix := " [$APP_BAR]"
@@ -287,7 +287,7 @@ func TestUint64FlagWithEnvVarHelpOutput(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("APP_BAR", "2")
 	for _, test := range uint64FlagTests {
-		flag := UintFlag{Name: test.name, EnvVar: "APP_BAR"}
+		flag := UintFlag{Name: test.name, EnvVars: []string{"APP_BAR"}}
 		output := flag.String()
 
 		expectedSuffix := " [$APP_BAR]"
@@ -397,22 +397,19 @@ func TestIntSliceFlagApply_SetsAllNames(t *testing.T) {
 
 var int64SliceFlagTests = []struct {
 	name     string
+	aliases  []string
 	value    *Int64Slice
 	expected string
 }{
-	{"heads", &Int64Slice{}, "--heads value\t"},
-	{"H", &Int64Slice{}, "-H value\t"},
-	{"H, heads", func() *Int64Slice {
-		i := &Int64Slice{}
-		i.Set("2")
-		i.Set("17179869184")
-		return i
-	}(), "-H value, --heads value\t(default: 2, 17179869184)"},
+	{"heads", nil, NewInt64Slice(), "--heads value\t"},
+	{"H", nil, NewInt64Slice(), "-H value\t"},
+	{"heads", []string{"H"}, NewInt64Slice(int64(2), int64(17179869184)),
+		"--heads value, -H value\t(default: 2, 17179869184)"},
 }
 
 func TestInt64SliceFlagHelpOutput(t *testing.T) {
 	for _, test := range int64SliceFlagTests {
-		flag := Int64SliceFlag{Name: test.name, Value: test.value}
+		flag := Int64SliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value}
 		output := flag.String()
 
 		if output != test.expected {
@@ -425,7 +422,7 @@ func TestInt64SliceFlagWithEnvVarHelpOutput(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("APP_SMURF", "42,17179869184")
 	for _, test := range int64SliceFlagTests {
-		flag := Int64SliceFlag{Name: test.name, Value: test.value, EnvVar: "APP_SMURF"}
+		flag := Int64SliceFlag{Name: test.name, Value: test.value, EnvVars: []string{"APP_SMURF"}}
 		output := flag.String()
 
 		expectedSuffix := " [$APP_SMURF]"
@@ -929,7 +926,7 @@ func TestParseMultiIntSliceFromEnvCascade(t *testing.T) {
 func TestParseMultiInt64Slice(t *testing.T) {
 	(&App{
 		Flags: []Flag{
-			Int64SliceFlag{Name: "serve, s", Value: &Int64Slice{}},
+			&Int64SliceFlag{Name: "serve", Aliases: []string{"s"}, Value: NewInt64Slice()},
 		},
 		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.Int64Slice("serve"), []int64{10, 17179869184}) {
@@ -949,7 +946,7 @@ func TestParseMultiInt64SliceFromEnv(t *testing.T) {
 
 	(&App{
 		Flags: []Flag{
-			Int64SliceFlag{Name: "intervals, i", Value: &Int64Slice{}, EnvVar: "APP_INTERVALS"},
+			&Int64SliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: NewInt64Slice(), EnvVars: []string{"APP_INTERVALS"}},
 		},
 		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.Int64Slice("intervals"), []int64{20, 30, 17179869184}) {
@@ -969,7 +966,7 @@ func TestParseMultiInt64SliceFromEnvCascade(t *testing.T) {
 
 	(&App{
 		Flags: []Flag{
-			Int64SliceFlag{Name: "intervals, i", Value: &Int64Slice{}, EnvVar: "COMPAT_INTERVALS,APP_INTERVALS"},
+			&Int64SliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: NewInt64Slice(), EnvVars: []string{"COMPAT_INTERVALS", "APP_INTERVALS"}},
 		},
 		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.Int64Slice("intervals"), []int64{20, 30, 17179869184}) {
@@ -1333,6 +1330,22 @@ func TestIntSlice_Serialized_Set(t *testing.T) {
 	}
 
 	sl1 := NewIntSlice(3, 4)
+	sl1.Set(ser0)
+
+	if sl0.String() != sl1.String() {
+		t.Fatalf("pre and post serialization do not match: %v != %v", sl0, sl1)
+	}
+}
+
+func TestInt64Slice_Serialized_Set(t *testing.T) {
+	sl0 := NewInt64Slice(int64(1), int64(2))
+	ser0 := sl0.Serialized()
+
+	if len(ser0) < len(slPfx) {
+		t.Fatalf("serialized shorter than expected: %q", ser0)
+	}
+
+	sl1 := NewInt64Slice(int64(3), int64(4))
 	sl1.Set(ser0)
 
 	if sl0.String() != sl1.String() {
