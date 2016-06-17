@@ -31,14 +31,14 @@ matrix:
     - ./runtests test
 
 before_script:
-- go get github.com/urfave/gfmxr/...
 - $pip_install flake8
 - if [ ! -f node_modules/.bin/markdown-toc ] ; then
     npm install markdown-toc ;
   fi
 - mkdir -p ${GOPATH%%:*}/src/gopkg.in/urfave
-- rm -rf ${GOPATH%%:*}/src/gopkg.in/urfave/cli.v2
+- rm -rvf ${GOPATH%%:*}/src/gopkg.in/urfave/cli.v2
 - ln -sv ${TRAVIS_BUILD_DIR} ${GOPATH%%:*}/src/gopkg.in/urfave/cli.v2
+- go get github.com/urfave/gfmxr/...
 
 script:
 - flake8 runtests cli-v1-to-v2
