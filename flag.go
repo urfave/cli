@@ -253,8 +253,8 @@ func (i *IntSlice) Set(value string) error {
 }
 
 // String returns a readable representation of this value (for usage defaults)
-func (i *IntSlice) String() string {
-	return fmt.Sprintf("%v", i.slice)
+func (f *IntSlice) String() string {
+	return fmt.Sprintf("%#v", f.slice)
 }
 
 // Serialized allows IntSlice to fulfill Serializeder
@@ -315,6 +315,77 @@ func (f *IntSliceFlag) Apply(set *flag.FlagSet) {
 // Names returns the name of the flag.
 func (f *IntSliceFlag) Names() []string {
 	return flagNames(f)
+}
+
+// Int64Slice is an opaque type for []int to satisfy flag.Value
+type Int64Slice []int64
+
+// Set parses the value into an integer and appends it to the list of values
+func (f *Int64Slice) Set(value string) error {
+	tmp, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		return err
+	}
+	*f = append(*f, tmp)
+	return nil
+}
+
+// String returns a readable representation of this value (for usage defaults)
+func (f *Int64Slice) String() string {
+	return fmt.Sprintf("%#v", *f)
+}
+
+// Value returns the slice of ints set by this flag
+func (f *Int64Slice) Value() []int64 {
+	return *f
+}
+
+// Int64SliceFlag is an int flag that can be specified multiple times on the
+// command-line
+type Int64SliceFlag struct {
+	Name   string
+	Value  *Int64Slice
+	Usage  string
+	EnvVar string
+	Hidden bool
+}
+
+// String returns the usage
+func (f Int64SliceFlag) String() string {
+	return FlagStringer(f)
+}
+
+// Apply populates the flag given the flag set and environment
+func (f Int64SliceFlag) Apply(set *flag.FlagSet) {
+	if f.EnvVar != "" {
+		for _, envVar := range strings.Split(f.EnvVar, ",") {
+			envVar = strings.TrimSpace(envVar)
+			if envVal := os.Getenv(envVar); envVal != "" {
+				newVal := &Int64Slice{}
+				for _, s := range strings.Split(envVal, ",") {
+					s = strings.TrimSpace(s)
+					err := newVal.Set(s)
+					if err != nil {
+						fmt.Fprintf(ErrWriter, err.Error())
+					}
+				}
+				f.Value = newVal
+				break
+			}
+		}
+	}
+
+	eachName(f.Name, func(name string) {
+		if f.Value == nil {
+			f.Value = &Int64Slice{}
+		}
+		set.Var(f.Value, name, f.Usage)
+	})
+}
+
+// GetName returns the name of the flag.
+func (f Int64SliceFlag) GetName() string {
+	return f.Name
 }
 
 // BoolFlag is a switch that defaults to false
@@ -403,7 +474,6 @@ func (f *StringFlag) Names() []string {
 }
 
 // IntFlag is a flag that takes an integer
-// Errors if the value provided cannot be parsed
 type IntFlag struct {
 	Name        string
 	Aliases     []string
@@ -445,6 +515,138 @@ func (f *IntFlag) Apply(set *flag.FlagSet) {
 // Names returns the name of the flag.
 func (f *IntFlag) Names() []string {
 	return flagNames(f)
+}
+
+// Int64Flag is a flag that takes a 64-bit integer
+type Int64Flag struct {
+	Name        string
+	Value       int64
+	Usage       string
+	EnvVar      string
+	Destination *int64
+	Hidden      bool
+}
+
+// String returns the usage
+func (f Int64Flag) String() string {
+	return FlagStringer(f)
+}
+
+// Apply populates the flag given the flag set and environment
+func (f Int64Flag) Apply(set *flag.FlagSet) {
+	if f.EnvVar != "" {
+		for _, envVar := range strings.Split(f.EnvVar, ",") {
+			envVar = strings.TrimSpace(envVar)
+			if envVal := os.Getenv(envVar); envVal != "" {
+				envValInt, err := strconv.ParseInt(envVal, 0, 64)
+				if err == nil {
+					f.Value = envValInt
+					break
+				}
+			}
+		}
+	}
+
+	eachName(f.Name, func(name string) {
+		if f.Destination != nil {
+			set.Int64Var(f.Destination, name, f.Value, f.Usage)
+			return
+		}
+		set.Int64(name, f.Value, f.Usage)
+	})
+}
+
+// GetName returns the name of the flag.
+func (f Int64Flag) GetName() string {
+	return f.Name
+}
+
+// UintFlag is a flag that takes an unsigned integer
+type UintFlag struct {
+	Name        string
+	Value       uint
+	Usage       string
+	EnvVar      string
+	Destination *uint
+	Hidden      bool
+}
+
+// String returns the usage
+func (f UintFlag) String() string {
+	return FlagStringer(f)
+}
+
+// Apply populates the flag given the flag set and environment
+func (f UintFlag) Apply(set *flag.FlagSet) {
+	if f.EnvVar != "" {
+		for _, envVar := range strings.Split(f.EnvVar, ",") {
+			envVar = strings.TrimSpace(envVar)
+			if envVal := os.Getenv(envVar); envVal != "" {
+				envValInt, err := strconv.ParseUint(envVal, 0, 64)
+				if err == nil {
+					f.Value = uint(envValInt)
+					break
+				}
+			}
+		}
+	}
+
+	eachName(f.Name, func(name string) {
+		if f.Destination != nil {
+			set.UintVar(f.Destination, name, f.Value, f.Usage)
+			return
+		}
+		set.Uint(name, f.Value, f.Usage)
+	})
+}
+
+// GetName returns the name of the flag.
+func (f UintFlag) GetName() string {
+	return f.Name
+}
+
+// Uint64Flag is a flag that takes an unsigned 64-bit integer
+type Uint64Flag struct {
+	Name        string
+	Value       uint64
+	Usage       string
+	EnvVar      string
+	Destination *uint64
+	Hidden      bool
+}
+
+// String returns the usage
+func (f Uint64Flag) String() string {
+	return FlagStringer(f)
+}
+
+// Apply populates the flag given the flag set and environment
+func (f Uint64Flag) Apply(set *flag.FlagSet) {
+	if f.EnvVar != "" {
+		for _, envVar := range strings.Split(f.EnvVar, ",") {
+			envVar = strings.TrimSpace(envVar)
+			if envVal := os.Getenv(envVar); envVal != "" {
+				envValInt, err := strconv.ParseUint(envVal, 0, 64)
+				if err == nil {
+					f.Value = uint64(envValInt)
+					break
+				}
+			}
+		}
+	}
+
+	eachName(f.Name, func(name string) {
+		if f.Destination != nil {
+			set.Uint64Var(f.Destination, name, f.Value, f.Usage)
+			return
+		}
+		set.Uint64(name, f.Value, f.Usage)
+	})
+}
+
+// GetName returns the name of the flag.
+func (f Uint64Flag) GetName() string {
+	return f.Name
 }
 
 // DurationFlag is a flag that takes a duration specified in Go's duration
@@ -493,7 +695,6 @@ func (f *DurationFlag) Names() []string {
 }
 
 // Float64Flag is a flag that takes an float value
-// Errors if the value provided cannot be parsed
 type Float64Flag struct {
 	Name        string
 	Aliases     []string
@@ -659,9 +860,14 @@ func stringifyFlag(f Flag) string {
 
 	switch f.(type) {
 	case *IntSliceFlag:
-		return withEnvHint(flagStringSliceField(f, "EnvVars"), stringifyIntSliceFlag(f.(*IntSliceFlag)))
+		return withEnvHint(fv.FieldByName("EnvVar").String(),
+			stringifyIntSliceFlag(f.(*IntSliceFlag)))
+	case *Int64SliceFlag:
+		return withEnvHint(fv.FieldByName("EnvVar").String(),
+			stringifyInt64SliceFlag(f.(*Int64SliceFlag)))
 	case *StringSliceFlag:
-		return withEnvHint(flagStringSliceField(f, "EnvVars"), stringifyStringSliceFlag(f.(*StringSliceFlag)))
+		return withEnvHint(fv.FieldByName("EnvVar").String(),
+			stringifyStringSliceFlag(f.(*StringSliceFlag)))
 	}
 
 	placeholder, usage := unquoteUsage(fv.FieldByName("Usage").String())
@@ -702,6 +908,17 @@ func stringifyIntSliceFlag(f *IntSliceFlag) string {
 	}
 
 	return stringifySliceFlag(f.Usage, append([]string{f.Name}, f.Aliases...), defaultVals)
+}
+
+func stringifyInt64SliceFlag(f Int64SliceFlag) string {
+	defaultVals := []string{}
+	if f.Value != nil && len(f.Value.Value()) > 0 {
+		for _, i := range f.Value.Value() {
+			defaultVals = append(defaultVals, fmt.Sprintf("%d", i))
+		}
+	}
+
+	return stringifySliceFlag(f.Usage, f.Name, defaultVals)
 }
 
 func stringifyStringSliceFlag(f *StringSliceFlag) string {

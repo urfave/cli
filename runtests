@@ -92,6 +92,12 @@ def _migrations():
             shutil.rmtree(tmpdir, ignore_errors=True)
 
 
+@_target
+def _toc():
+    _run(['node_modules/.bin/markdown-toc', '-i', 'README.md'])
+    _run(['git', 'diff', '--quiet'])
+
+
 def _run(command):
     print('runtests: {}'.format(' '.join(command)), file=sys.stderr)
     check_call(command)

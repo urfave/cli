@@ -2,6 +2,10 @@ language: go
 
 sudo: false
 
+cache:
+  directories:
+  - node_modules
+
 go:
 - 1.2.2
 - 1.3.3
@@ -29,6 +33,9 @@ matrix:
 before_script:
 - go get github.com/urfave/gfmxr/...
 - $pip_install flake8
+- if [ ! -f node_modules/.bin/markdown-toc ] ; then
+    npm install markdown-toc ;
+  fi
 
 script:
 - flake8 runtests cli-v1-to-v2
@@ -37,3 +44,4 @@ script:
 - ./runtests gfmxr
 - ./cli-v1-to-v2 --selftest
 - ./runtests migrations
+- ./runtests toc

@@ -192,6 +192,114 @@ func TestIntFlagApply_SetsAllNames(t *testing.T) {
 	expect(t, v, 5)
 }
 
+var int64FlagTests = []struct {
+	name     string
+	expected string
+}{
+	{"hats", "--hats value\t(default: 8589934592)"},
+	{"H", "-H value\t(default: 8589934592)"},
+}
+
+func TestInt64FlagHelpOutput(t *testing.T) {
+	for _, test := range int64FlagTests {
+		flag := Int64Flag{Name: test.name, Value: 8589934592}
+		output := flag.String()
+
+		if output != test.expected {
+			t.Errorf("%s does not match %s", output, test.expected)
+		}
+	}
+}
+
+func TestInt64FlagWithEnvVarHelpOutput(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("APP_BAR", "2")
+	for _, test := range int64FlagTests {
+		flag := IntFlag{Name: test.name, EnvVar: "APP_BAR"}
+		output := flag.String()
+
+		expectedSuffix := " [$APP_BAR]"
+		if runtime.GOOS == "windows" {
+			expectedSuffix = " [%APP_BAR%]"
+		}
+		if !strings.HasSuffix(output, expectedSuffix) {
+			t.Errorf("%s does not end with"+expectedSuffix, output)
+		}
+	}
+}
+
+var uintFlagTests = []struct {
+	name     string
+	expected string
+}{
+	{"nerfs", "--nerfs value\t(default: 41)"},
+	{"N", "-N value\t(default: 41)"},
+}
+
+func TestUintFlagHelpOutput(t *testing.T) {
+	for _, test := range uintFlagTests {
+		flag := UintFlag{Name: test.name, Value: 41}
+		output := flag.String()
+
+		if output != test.expected {
+			t.Errorf("%s does not match %s", output, test.expected)
+		}
+	}
+}
+
+func TestUintFlagWithEnvVarHelpOutput(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("APP_BAR", "2")
+	for _, test := range uintFlagTests {
+		flag := UintFlag{Name: test.name, EnvVar: "APP_BAR"}
+		output := flag.String()
+
+		expectedSuffix := " [$APP_BAR]"
+		if runtime.GOOS == "windows" {
+			expectedSuffix = " [%APP_BAR%]"
+		}
+		if !strings.HasSuffix(output, expectedSuffix) {
+			t.Errorf("%s does not end with"+expectedSuffix, output)
+		}
+	}
+}
+
+var uint64FlagTests = []struct {
+	name     string
+	expected string
+}{
+	{"gerfs", "--gerfs value\t(default: 8589934582)"},
+	{"G", "-G value\t(default: 8589934582)"},
+}
+
+func TestUint64FlagHelpOutput(t *testing.T) {
+	for _, test := range uint64FlagTests {
+		flag := Uint64Flag{Name: test.name, Value: 8589934582}
+		output := flag.String()
+
+		if output != test.expected {
+			t.Errorf("%s does not match %s", output, test.expected)
+		}
+	}
+}
+
+func TestUint64FlagWithEnvVarHelpOutput(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("APP_BAR", "2")
+	for _, test := range uint64FlagTests {
+		flag := UintFlag{Name: test.name, EnvVar: "APP_BAR"}
+		output := flag.String()
+
+		expectedSuffix := " [$APP_BAR]"
+		if runtime.GOOS == "windows" {
+			expectedSuffix = " [%APP_BAR%]"
+		}
+		if !strings.HasSuffix(output, expectedSuffix) {
+			t.Errorf("%s does not end with"+expectedSuffix, output)
+		}
+	}
+}
+
 var durationFlagTests = []struct {
 	name     string
 	expected string
@@ -285,6 +393,49 @@ func TestIntSliceFlagApply_SetsAllNames(t *testing.T) {
 
 	err := set.Parse([]string{"--bits", "23", "-B", "3", "--bips", "99"})
 	expect(t, err, nil)
+}
+
+var int64SliceFlagTests = []struct {
+	name     string
+	value    *Int64Slice
+	expected string
+}{
+	{"heads", &Int64Slice{}, "--heads value\t"},
+	{"H", &Int64Slice{}, "-H value\t"},
+	{"H, heads", func() *Int64Slice {
+		i := &Int64Slice{}
+		i.Set("2")
+		i.Set("17179869184")
+		return i
+	}(), "-H value, --heads value\t(default: 2, 17179869184)"},
+}
+
+func TestInt64SliceFlagHelpOutput(t *testing.T) {
+	for _, test := range int64SliceFlagTests {
+		flag := Int64SliceFlag{Name: test.name, Value: test.value}
+		output := flag.String()
+
+		if output != test.expected {
+			t.Errorf("%q does not match %q", output, test.expected)
+		}
+	}
+}
+
+func TestInt64SliceFlagWithEnvVarHelpOutput(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("APP_SMURF", "42,17179869184")
+	for _, test := range int64SliceFlagTests {
+		flag := Int64SliceFlag{Name: test.name, Value: test.value, EnvVar: "APP_SMURF"}
+		output := flag.String()
+
+		expectedSuffix := " [$APP_SMURF]"
+		if runtime.GOOS == "windows" {
+			expectedSuffix = " [%APP_SMURF%]"
+		}
+		if !strings.HasSuffix(output, expectedSuffix) {
+			t.Errorf("%q does not end with"+expectedSuffix, output)
+		}
+	}
 }
 
 var float64FlagTests = []struct {
@@ -768,6 +919,63 @@ func TestParseMultiIntSliceFromEnvCascade(t *testing.T) {
 				t.Errorf("main name not set from env")
 			}
 			if !reflect.DeepEqual(ctx.IntSlice("i"), []int{20, 30, 40}) {
+				t.Errorf("short name not set from env")
+			}
+			return nil
+		},
+	}).Run([]string{"run"})
+}
+
+func TestParseMultiInt64Slice(t *testing.T) {
+	(&App{
+		Flags: []Flag{
+			Int64SliceFlag{Name: "serve, s", Value: &Int64Slice{}},
+		},
+		Action: func(ctx *Context) error {
+			if !reflect.DeepEqual(ctx.Int64Slice("serve"), []int64{10, 17179869184}) {
+				t.Errorf("main name not set")
+			}
+			if !reflect.DeepEqual(ctx.Int64Slice("s"), []int64{10, 17179869184}) {
+				t.Errorf("short name not set")
+			}
+			return nil
+		},
+	}).Run([]string{"run", "-s", "10", "-s", "17179869184"})
+}
+
+func TestParseMultiInt64SliceFromEnv(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("APP_INTERVALS", "20,30,17179869184")
+
+	(&App{
+		Flags: []Flag{
+			Int64SliceFlag{Name: "intervals, i", Value: &Int64Slice{}, EnvVar: "APP_INTERVALS"},
+		},
+		Action: func(ctx *Context) error {
+			if !reflect.DeepEqual(ctx.Int64Slice("intervals"), []int64{20, 30, 17179869184}) {
+				t.Errorf("main name not set from env")
+			}
+			if !reflect.DeepEqual(ctx.Int64Slice("i"), []int64{20, 30, 17179869184}) {
+				t.Errorf("short name not set from env")
+			}
+			return nil
+		},
+	}).Run([]string{"run"})
+}
+
+func TestParseMultiInt64SliceFromEnvCascade(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("APP_INTERVALS", "20,30,17179869184")
+
+	(&App{
+		Flags: []Flag{
+			Int64SliceFlag{Name: "intervals, i", Value: &Int64Slice{}, EnvVar: "COMPAT_INTERVALS,APP_INTERVALS"},
+		},
+		Action: func(ctx *Context) error {
+			if !reflect.DeepEqual(ctx.Int64Slice("intervals"), []int64{20, 30, 17179869184}) {
+				t.Errorf("main name not set from env")
+			}
+			if !reflect.DeepEqual(ctx.Int64Slice("i"), []int64{20, 30, 17179869184}) {
 				t.Errorf("short name not set from env")
 			}
 			return nil
