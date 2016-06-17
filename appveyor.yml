@@ -17,7 +17,7 @@ install:
 - go version
 - go env
 - mkdir c:\gopath\src\gopkg.in\urfave
-- mklink c:\gopath\src\github.com\urfave\cli c:\gopath\src\gopkg.in\urfave\cli.v2
+- xcopy /E c:\gopath\src\github.com\urfave\cli c:\gopath\src\gopkg.in\urfave\cli.v2
 - go get github.com/urfave/gfmxr/...
 - go get -v -t ./...
 
