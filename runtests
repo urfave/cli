@@ -94,7 +94,8 @@ def _migrations():
 
 @_target
 def _toc():
-    _run(['node_modules/.bin/markdown-toc', '-i', 'README.md'])
+    npm_bindir = check_output(['npm', 'bin']).strip()
+    _run(['node', os.path.join(npm_bindir, 'markdown-toc'), '-i', 'README.md'])
     _run(['git', 'diff', '--quiet'])
 
 
