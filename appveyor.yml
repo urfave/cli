@@ -23,7 +23,7 @@ install:
 - go get github.com/urfave/gfmxr/...
 - go get -v -t ./...
 - ps: $MarkdownTocExists = Test-Path node_modules\.bin\markdown-toc
-- ps: if ($MarkdownTocExists -eq $False) { npm install markdown-toc }
+- ps: if ($MarkdownTocExists -eq $False) { cmd /c npm install markdown-toc }
 
 build_script:
 - python runtests vet
