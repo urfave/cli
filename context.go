@@ -33,6 +33,30 @@ func (c *Context) Int(name string) int {
 	return 0
 }
 
+// Int64 looks up the value of a local int flag, returns 0 if no int flag exists
+func (c *Context) Int64(name string) int64 {
+	if fs := lookupFlagSet(name, c); fs != nil {
+		return lookupInt64(name, fs)
+	}
+	return 0
+}
+
+// Uint looks up the value of a local int flag, returns 0 if no int flag exists
+func (c *Context) Uint(name string) uint {
+	if fs := lookupFlagSet(name, c); fs != nil {
+		return lookupUint(name, fs)
+	}
+	return 0
+}
+
+// Uint64 looks up the value of a local int flag, returns 0 if no int flag exists
+func (c *Context) Uint64(name string) uint64 {
+	if fs := lookupFlagSet(name, c); fs != nil {
+		return lookupUint64(name, fs)
+	}
+	return 0
+}
+
 // Duration looks up the value of a local time.Duration flag, returns 0 if no
 // time.Duration flag exists
 func (c *Context) Duration(name string) time.Duration {
@@ -49,6 +73,15 @@ func (c *Context) Float64(name string) float64 {
 		return lookupFloat64(name, fs)
 	}
 	return 0
+}
+
+// Int64Slice looks up the value of a local int slice flag, returns nil if no int
+// slice flag exists
+func (c *Context) Int64Slice(name string) []int64 {
+	if fs := lookupFlagSet(name, c); fs != nil {
+		return lookupInt64Slice(name, fs)
+	}
+	return nil
 }
 
 // Bool looks up the value of a local bool flag, returns false if no bool flag exists
@@ -171,7 +204,46 @@ func lookupFlagSet(name string, ctx *Context) *flag.FlagSet {
 func lookupInt(name string, set *flag.FlagSet) int {
 	f := set.Lookup(name)
 	if f != nil {
-		val, err := strconv.Atoi(f.Value.String())
+		val, err := strconv.ParseInt(f.Value.String(), 0, 64)
+		if err != nil {
+			return 0
+		}
+		return int(val)
+	}
+
+	return 0
+}
+
+func lookupInt64(name string, set *flag.FlagSet) int64 {
+	f := set.Lookup(name)
+	if f != nil {
+		val, err := strconv.ParseInt(f.Value.String(), 0, 64)
+		if err != nil {
+			return 0
+		}
+		return val
+	}
+
+	return 0
+}
+
+func lookupUint(name string, set *flag.FlagSet) uint {
+	f := set.Lookup(name)
+	if f != nil {
+		val, err := strconv.ParseUint(f.Value.String(), 0, 64)
+		if err != nil {
+			return 0
+		}
+		return uint(val)
+	}
+
+	return 0
+}
+
+func lookupUint64(name string, set *flag.FlagSet) uint64 {
+	f := set.Lookup(name)
+	if f != nil {
+		val, err := strconv.ParseUint(f.Value.String(), 0, 64)
 		if err != nil {
 			return 0
 		}
@@ -229,6 +301,16 @@ func lookupIntSlice(name string, set *flag.FlagSet) []int {
 	f := set.Lookup(name)
 	if f != nil {
 		return (f.Value.(*IntSlice)).Value()
+
+	}
+
+	return nil
+}
+
+func lookupInt64Slice(name string, set *flag.FlagSet) []int64 {
+	f := set.Lookup(name)
+	if f != nil {
+		return (f.Value.(*Int64Slice)).Value()
 
 	}
 

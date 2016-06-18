@@ -10,15 +10,24 @@ import (
 func TestNewContext(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Int("myflag", 12, "doc")
+	set.Int64("myflagInt64", int64(12), "doc")
+	set.Uint("myflagUint", uint(93), "doc")
+	set.Uint64("myflagUint64", uint64(93), "doc")
 	set.Float64("myflag64", float64(17), "doc")
 	globalSet := flag.NewFlagSet("test", 0)
 	globalSet.Int("myflag", 42, "doc")
+	globalSet.Int64("myflagInt64", int64(42), "doc")
+	globalSet.Uint("myflagUint", uint(33), "doc")
+	globalSet.Uint64("myflagUint64", uint64(33), "doc")
 	globalSet.Float64("myflag64", float64(47), "doc")
 	globalCtx := NewContext(nil, globalSet, nil)
 	command := &Command{Name: "mycommand"}
 	c := NewContext(nil, set, globalCtx)
 	c.Command = command
 	expect(t, c.Int("myflag"), 12)
+	expect(t, c.Int64("myflagInt64"), int64(12))
+	expect(t, c.Uint("myflagUint"), uint(93))
+	expect(t, c.Uint64("myflagUint64"), uint64(93))
 	expect(t, c.Float64("myflag64"), float64(17))
 	expect(t, c.Command.Name, "mycommand")
 }
@@ -28,6 +37,27 @@ func TestContext_Int(t *testing.T) {
 	set.Int("myflag", 12, "doc")
 	c := NewContext(nil, set, nil)
 	expect(t, c.Int("myflag"), 12)
+}
+
+func TestContext_Int64(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Int64("myflagInt64", 12, "doc")
+	c := NewContext(nil, set, nil)
+	expect(t, c.Int64("myflagInt64"), int64(12))
+}
+
+func TestContext_Uint(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Uint("myflagUint", uint(13), "doc")
+	c := NewContext(nil, set, nil)
+	expect(t, c.Uint("myflagUint"), uint(13))
+}
+
+func TestContext_Uint64(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Uint64("myflagUint64", uint64(9), "doc")
+	c := NewContext(nil, set, nil)
+	expect(t, c.Uint64("myflagUint64"), uint64(9))
 }
 
 func TestContext_Float64(t *testing.T) {
