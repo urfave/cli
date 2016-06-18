@@ -22,7 +22,8 @@ install:
 - git clone . c:\gopath\src\gopkg.in\urfave\cli.v2
 - go get github.com/urfave/gfmxr/...
 - go get -v -t ./...
-- ps: if (Test-Path node_modules\.bin\markdown-toc -eq $False) { npm install markdown-toc }
+- ps: $MarkdownTocExists = Test-Path node_modules\.bin\markdown-toc
+- ps: if ($MarkdownTocExists -eq $False) { npm install markdown-toc }
 
 build_script:
 - python runtests vet
