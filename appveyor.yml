@@ -16,9 +16,7 @@ install:
 - set PATH=%GOPATH%\bin;C:\go\bin;%PATH%
 - go version
 - go env
-- mkdir c:\gopath\src\gopkg.in\urfave
-- robocopy c:\gopath\src\github.com\urfave\cli c:\gopath\src\gopkg.in\urfave\cli.v2
-      /DCOPY:DA /MIR /FFT /Z /XA:SH /R:0 /TEE /XJD ^& IF %ERRORLEVEL% LEQ 4 exit 0
+- git clone . c:\gopath\src\gopkg.in\urfave\cli.v2
 - go get github.com/urfave/gfmxr/...
 - go get -v -t ./...
 
