@@ -101,6 +101,7 @@ def _toc():
 
 def _run(command):
     print('runtests: {}'.format(' '.join(command)), file=sys.stderr)
+    sys.stderr.flush()
     check_call(command)
 
 
