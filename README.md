@@ -84,6 +84,8 @@ released version of Go on OS X and Windows.  For full details, see
 
 ### Using the `v2` branch
 
+**Warning**: The `v2` branch is currently unreleased and considered unstable.
+
 There is currently a long-lived branch named `v2` that is intended to land as
 the new `master` branch once development there has settled down.  The current
 `master` branch (mirrored as `v1`) is being manually merged into `v2` on
@@ -1011,7 +1013,7 @@ func main() {
 
 #### Full API Example
 
-**NOTE**: This is a contrived (functioning) example meant strictly for API
+**Notice**: This is a contrived (functioning) example meant strictly for API
 demonstration purposes.  Use of one's imagination is encouraged.
 
 <!-- {
