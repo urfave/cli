@@ -11,8 +11,7 @@ import (
 	"time"
 )
 
-// App is the main structure of a cli application. It is recommended that
-// an app be created with the cli.NewApp() function
+// App is the main structure of a cli application.
 type App struct {
 	// The name of the program. Defaults to path.Base(os.Args[0])
 	Name string
@@ -78,22 +77,6 @@ func compileTime() time.Time {
 	return info.ModTime()
 }
 
-// NewApp creates a new cli Application with some reasonable defaults for Name,
-// Usage, Version and Action.
-func NewApp() *App {
-	return &App{
-		Name:         filepath.Base(os.Args[0]),
-		HelpName:     filepath.Base(os.Args[0]),
-		Usage:        "A new cli application",
-		UsageText:    "",
-		Version:      "0.0.0",
-		BashComplete: DefaultAppComplete,
-		Action:       helpCommand.Action,
-		Compiled:     compileTime(),
-		Writer:       os.Stdout,
-	}
-}
-
 // Setup runs initialization code to ensure all data structures are ready for
 // `Run` or inspection prior to `Run`.  It is internally called by `Run`, but
 // will return early if setup has already happened.
@@ -103,6 +86,38 @@ func (a *App) Setup() {
 	}
 
 	a.didSetup = true
+
+	if a.Name == "" {
+		a.Name = filepath.Base(os.Args[0])
+	}
+
+	if a.HelpName == "" {
+		a.HelpName = filepath.Base(os.Args[0])
+	}
+
+	if a.Usage == "" {
+		a.Usage = "A new cli application"
+	}
+
+	if a.Version == "" {
+		a.Version = "0.0.0"
+	}
+
+	if a.BashComplete == nil {
+		a.BashComplete = DefaultAppComplete
+	}
+
+	if a.Action == nil {
+		a.Action = helpCommand.Action
+	}
+
+	if a.Compiled == (time.Time{}) {
+		a.Compiled = compileTime()
+	}
+
+	if a.Writer == nil {
+		a.Writer = os.Stdout
+	}
 
 	newCmds := []*Command{}
 	for _, c := range a.Commands {
