@@ -20,6 +20,7 @@ install:
 - go env
 - go get github.com/urfave/gfmxr/...
 - rmdir c:\gopath\src\gopkg.in\urfave\cli.v2 /s /q
+- rmdir c:\gopath\pkg /s /q
 - git clone . c:\gopath\src\gopkg.in\urfave\cli.v2
 - go get -v -t ./...
 - if not exist node_modules\.bin\markdown-toc npm install markdown-toc

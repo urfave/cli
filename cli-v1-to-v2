@@ -294,7 +294,9 @@ def _context_parent(source):
 
 @_migrator
 def _app_init(source):
-    return re.sub('cli\\.NewApp\\(\\)', '(&cli.App{})', source, flags=re.UNICODE)
+    return re.sub(
+        'cli\\.NewApp\\(\\)', '(&cli.App{})', source, flags=re.UNICODE
+    )
 
 
 def test_migrators():
