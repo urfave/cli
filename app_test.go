@@ -1131,7 +1131,8 @@ func TestApp_Run_Categories(t *testing.T) {
 	buf := new(bytes.Buffer)
 
 	app := &App{
-		Name: "categories",
+		Name:     "categories",
+		HideHelp: true,
 		Commands: []*Command{
 			{
 				Name:     "command1",
@@ -1181,7 +1182,8 @@ func TestApp_Run_Categories(t *testing.T) {
 
 func TestApp_VisibleCategories(t *testing.T) {
 	app := &App{
-		Name: "visible-categories",
+		Name:     "visible-categories",
+		HideHelp: true,
 		Commands: []*Command{
 			{
 				Name:     "command1",
@@ -1221,7 +1223,8 @@ func TestApp_VisibleCategories(t *testing.T) {
 	expect(t, expected, app.VisibleCategories())
 
 	app = &App{
-		Name: "visible-categories",
+		Name:     "visible-categories",
+		HideHelp: true,
 		Commands: []*Command{
 			{
 				Name:     "command1",
@@ -1256,7 +1259,8 @@ func TestApp_VisibleCategories(t *testing.T) {
 	expect(t, expected, app.VisibleCategories())
 
 	app = &App{
-		Name: "visible-categories",
+		Name:     "visible-categories",
+		HideHelp: true,
 		Commands: []*Command{
 			{
 				Name:     "command1",
