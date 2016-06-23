@@ -17,3 +17,5 @@
 //     app.Run(os.Args)
 //   }
 package cli
+
+//go:generate python ./generate-flag-types flag_generated.go flag-types.json

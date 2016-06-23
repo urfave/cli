@@ -1,0 +1,79 @@
+[
+  {
+    "name": "Bool",
+    "type": "bool",
+    "value": false,
+    "context_default": "false"
+  },
+  {
+    "name": "BoolT",
+    "type": "bool",
+    "value": false,
+    "doctail": " that is true by default",
+    "context_default": "false"
+  },
+  {
+    "name": "Duration",
+    "type": "time.Duration",
+    "doctail": " (see https://golang.org/pkg/time/#ParseDuration)",
+    "context_default": "0"
+  },
+  {
+    "name": "Float64",
+    "type": "float64",
+    "context_default": "0"
+  },
+  {
+    "name": "Generic",
+    "type": "Generic",
+    "dest": false,
+    "context_default": "nil",
+    "context_type": "interface{}"
+  },
+  {
+    "name": "Int64",
+    "type": "int64",
+    "context_default": "0"
+  },
+  {
+    "name": "Int",
+    "type": "int",
+    "context_default": "0"
+  },
+  {
+    "name": "IntSlice",
+    "type": "*IntSlice",
+    "dest": false,
+    "context_default": "nil",
+    "context_type": "[]int"
+  },
+  {
+    "name": "Int64Slice",
+    "type": "*Int64Slice",
+    "dest": false,
+    "context_default": "nil",
+    "context_type": "[]int64"
+  },
+  {
+    "name": "String",
+    "type": "string",
+    "context_default": "\"\""
+  },
+  {
+    "name": "StringSlice",
+    "type": "*StringSlice",
+    "dest": false,
+    "context_default": "nil",
+    "context_type": "[]string"
+  },
+  {
+    "name": "Uint64",
+    "type": "uint64",
+    "context_default": "0"
+  },
+  {
+    "name": "Uint",
+    "type": "uint",
+    "context_default": "0"
+  }
+]

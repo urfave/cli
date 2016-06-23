@@ -1,0 +1,116 @@
+#!/usr/bin/env python
+
+from __future__ import print_function, unicode_literals
+
+import io
+import json
+import os
+import subprocess
+import sys
+import textwrap
+
+
+def main(sysargs=sys.argv[:]):
+    _generate_flag_types(sys.argv[1], sys.argv[2])
+    return 0
+
+
+def _generate_flag_types(output_filename, types_filename):
+    try:
+        types = _load_types(types_filename)
+        if os.path.exists(output_filename):
+            os.chmod(output_filename, 0644)
+
+        with io.open(output_filename, 'w', encoding='utf-8') as outfile:
+            _write_flag_types(outfile, types)
+
+        new_content = subprocess.check_output(
+            ['goimports', output_filename]
+        ).decode('utf-8')
+
+        with io.open(output_filename, 'w', encoding='utf-8') as outfile:
+            print(new_content, file=outfile, end='')
+
+    finally:
+        if os.path.exists(output_filename):
+            os.chmod(output_filename, 0444)
+
+
+def _load_types(types_filename):
+    with io.open(types_filename, encoding='utf-8') as infile:
+        return json.load(infile)
+
+
+def _write_flag_types(outfile, types):
+    _fwrite(outfile, """\
+        package cli
+
+        // WARNING: This file is generated!
+
+        """)
+
+    for typedef in types:
+        typedef.setdefault('doctail', '')
+        typedef.setdefault('context_type', typedef['type'])
+        typedef.setdefault('struct', True)
+        typedef.setdefault('dest', True)
+        typedef.setdefault('value', True)
+
+        if typedef['struct']:
+            _fwrite(outfile, """\
+            // {name}Flag is a flag with type {type}{doctail}
+            type {name}Flag struct {{
+                Name string
+                Usage string
+                EnvVar string
+                Hidden bool
+            """.format(**typedef))
+
+            if typedef['value']:
+                _fwrite(outfile, """\
+                Value {type}
+                """.format(**typedef))
+
+            if typedef['dest']:
+                _fwrite(outfile, """\
+                Destination *{type}
+                """.format(**typedef))
+
+            _fwrite(outfile, "\n}\n\n")
+
+        _fwrite(outfile, """\
+            // String returns a readable representation of this value
+            // (for usage defaults)
+            func (f {name}Flag) String() string {{
+                return FlagStringer(f)
+            }}
+
+            // GetName returns the name of the flag
+            func (f {name}Flag) GetName() string {{
+                return f.Name
+            }}
+
+            // {name} looks up the value of a local {name}Flag, returns
+            // {context_default} if not found
+            func (c *Context) {name}(name string) {context_type} {{
+                return lookup{name}(name, c.flagSet)
+            }}
+
+            // Global{name} looks up the value of a global {name}Flag, returns
+            // {context_default} if not found
+            func (c *Context) Global{name}(name string) {context_type} {{
+                if fs := lookupGlobalFlagSet(name, c); fs != nil {{
+                    return lookup{name}(name, fs)
+                }}
+                return {context_default}
+            }}
+
+            """.format(**typedef))
+
+
+def _fwrite(outfile, text):
+    print(textwrap.dedent(text), end='', file=outfile)
+
+
+if __name__ == '__main__':
+    sys.exit(main())
