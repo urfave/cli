@@ -143,6 +143,23 @@ func Test_helpCommand_Action_ErrorIfNoTopic(t *testing.T) {
 	}
 }
 
+func Test_helpCommand_InHelpOutput(t *testing.T) {
+	app := NewApp()
+	output := &bytes.Buffer{}
+	app.Writer = output
+	app.Run([]string{"test", "--help"})
+
+	s := output.String()
+
+	if strings.Contains(s, "\nCOMMANDS:\nGLOBAL OPTIONS:\n") {
+		t.Fatalf("empty COMMANDS section detected: %q", s)
+	}
+
+	if !strings.Contains(s, "help, h") {
+		t.Fatalf("missing \"help, h\": %q", s)
+	}
+}
+
 func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 	app := NewApp()
 
