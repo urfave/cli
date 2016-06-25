@@ -292,6 +292,13 @@ def _context_parent(source):
     return re.sub('\\.Parent\\(\\)', '.Lineage()[1]', source, flags=re.UNICODE)
 
 
+@_migrator
+def _app_init(source):
+    return re.sub(
+        'cli\\.NewApp\\(\\)', '(&cli.App{})', source, flags=re.UNICODE
+    )
+
+
 def test_migrators():
     import difflib
 
@@ -432,6 +439,13 @@ _MIGRATOR_TESTS = (
 \t\t\t\tName:   "tootles", Aliases: []string{"toots", "t"},
 \t\t\t},
 \t\t}
+"""),
+    ("""
+\t\tapp := cli.NewApp()
+\t\tapp.HideHelp = true
+""", """
+\t\tapp := (&cli.App{})
+\t\tapp.HideHelp = true
 """)
 )
 

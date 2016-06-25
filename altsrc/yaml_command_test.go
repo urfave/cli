@@ -15,7 +15,7 @@ import (
 )
 
 func TestCommandYamlFileTest(t *testing.T) {
-	app := cli.NewApp()
+	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
 	ioutil.WriteFile("current.yaml", []byte("test: 15"), 0666)
 	defer os.Remove("current.yaml")
@@ -45,7 +45,7 @@ func TestCommandYamlFileTest(t *testing.T) {
 }
 
 func TestCommandYamlFileTestGlobalEnvVarWins(t *testing.T) {
-	app := cli.NewApp()
+	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
 	ioutil.WriteFile("current.yaml", []byte("test: 15"), 0666)
 	defer os.Remove("current.yaml")
@@ -79,7 +79,7 @@ func TestCommandYamlFileTestGlobalEnvVarWins(t *testing.T) {
 }
 
 func TestCommandYamlFileTestGlobalEnvVarWinsNested(t *testing.T) {
-	app := cli.NewApp()
+	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
 	ioutil.WriteFile("current.yaml", []byte(`top:
   test: 15`), 0666)
@@ -114,7 +114,7 @@ func TestCommandYamlFileTestGlobalEnvVarWinsNested(t *testing.T) {
 }
 
 func TestCommandYamlFileTestSpecifiedFlagWins(t *testing.T) {
-	app := cli.NewApp()
+	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
 	ioutil.WriteFile("current.yaml", []byte("test: 15"), 0666)
 	defer os.Remove("current.yaml")
@@ -146,7 +146,7 @@ func TestCommandYamlFileTestSpecifiedFlagWins(t *testing.T) {
 }
 
 func TestCommandYamlFileTestSpecifiedFlagWinsNested(t *testing.T) {
-	app := cli.NewApp()
+	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
 	ioutil.WriteFile("current.yaml", []byte(`top:
   test: 15`), 0666)
@@ -179,7 +179,7 @@ func TestCommandYamlFileTestSpecifiedFlagWinsNested(t *testing.T) {
 }
 
 func TestCommandYamlFileTestDefaultValueFileWins(t *testing.T) {
-	app := cli.NewApp()
+	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
 	ioutil.WriteFile("current.yaml", []byte("test: 15"), 0666)
 	defer os.Remove("current.yaml")
@@ -211,7 +211,7 @@ func TestCommandYamlFileTestDefaultValueFileWins(t *testing.T) {
 }
 
 func TestCommandYamlFileTestDefaultValueFileWinsNested(t *testing.T) {
-	app := cli.NewApp()
+	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
 	ioutil.WriteFile("current.yaml", []byte(`top:
   test: 15`), 0666)
@@ -244,7 +244,7 @@ func TestCommandYamlFileTestDefaultValueFileWinsNested(t *testing.T) {
 }
 
 func TestCommandYamlFileFlagHasDefaultGlobalEnvYamlSetGlobalEnvWins(t *testing.T) {
-	app := cli.NewApp()
+	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
 	ioutil.WriteFile("current.yaml", []byte("test: 15"), 0666)
 	defer os.Remove("current.yaml")
@@ -278,7 +278,7 @@ func TestCommandYamlFileFlagHasDefaultGlobalEnvYamlSetGlobalEnvWins(t *testing.T
 }
 
 func TestCommandYamlFileFlagHasDefaultGlobalEnvYamlSetGlobalEnvWinsNested(t *testing.T) {
-	app := cli.NewApp()
+	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
 	ioutil.WriteFile("current.yaml", []byte(`top:
   test: 15`), 0666)
