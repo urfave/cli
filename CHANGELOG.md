@@ -3,6 +3,7 @@
 **ATTN**: This project uses [semantic versioning](http://semver.org/).
 
 ## [Unreleased]
+
 ### Added
 - `./runtests` test runner with coverage tracking by default
 - testing on OS X
@@ -16,6 +17,9 @@
 ### Fixed
 - Printing of command aliases in help text
 - Printing of visible flags for both struct and struct pointer flags
+- Display the `help` subcommand when using `CommandCategories`
+- No longer swallows `panic`s that occur within the `Action`s themselves when
+  detecting the signature of the `Action` field
 
 ## [1.17.0] - 2016-05-09
 ### Added
