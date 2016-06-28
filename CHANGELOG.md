@@ -4,6 +4,7 @@
 
 ## [Unreleased]
 
+## [1.18.0] - 2016-06-27
 ### Added
 - `./runtests` test runner with coverage tracking by default
 - testing on OS X
@@ -300,7 +301,8 @@ signature of `func(*cli.Context) error`, as defined by `cli.ActionFunc`.
 ### Added
 - Initial implementation.
 
-[Unreleased]: https://github.com/urfave/cli/compare/v1.17.0...HEAD
+[Unreleased]: https://github.com/urfave/cli/compare/v1.18.0...HEAD
+[1.18.0]: https://github.com/urfave/cli/compare/v1.17.0...v1.18.0
 [1.17.0]: https://github.com/urfave/cli/compare/v1.16.0...v1.17.0
 [1.16.0]: https://github.com/urfave/cli/compare/v1.15.0...v1.16.0
 [1.15.0]: https://github.com/urfave/cli/compare/v1.14.0...v1.15.0
