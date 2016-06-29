@@ -765,6 +765,111 @@ func (f *Float64Flag) Names() []string {
 	return flagNames(f)
 }
 
+
+
+
+// NewFloat64Slice makes a *Float64Slice with default values
+func NewFloat64Slice(defaults ...float64) *Float64Slice {
+	return &Float64Slice{slice: append([]float64{}, defaults...)}
+}
+
+
+// Float64Slice is an opaque type for []float64 to satisfy flag.Value
+type Float64Slice struct {
+	slice      []float64
+	hasBeenSet bool
+}
+
+// Set parses the value into a float64 and appends it to the list of values
+func (f *Float64Slice) Set(value string) error {
+	if !f.hasBeenSet {
+		f.slice = []float64{}
+		f.hasBeenSet = true
+	}
+
+	if strings.HasPrefix(value, slPfx) {
+		// Deserializing assumes overwrite
+		_ = json.Unmarshal([]byte(strings.Replace(value, slPfx, "", 1)), &f.slice)
+		f.hasBeenSet = true
+		return nil
+	}
+
+	tmp, err := strconv.ParseFloat(value, 64)
+	if err != nil {
+		return err
+	}
+
+	f.slice = append(f.slice, tmp)
+	return nil
+}
+
+// String returns a readable representation of this value (for usage defaults)
+func (f *Float64Slice) String() string {
+	return fmt.Sprintf("%#v", f.slice)
+}
+
+// Serialized allows Float64Slice to fulfill Serializeder
+func (f *Float64Slice) Serialized() string {
+	jsonBytes, _ := json.Marshal(f.slice)
+	return fmt.Sprintf("%s%s", slPfx, string(jsonBytes))
+}
+
+// Value returns the slice of float64s set by this flag
+func (f *Float64Slice) Value() []float64 {
+	return f.slice
+}
+
+// Float64SliceFlag is a float64 flag that can be specified multiple times on the
+// command-line
+type Float64SliceFlag struct {
+	Name    string
+	Aliases []string
+	Value   *Float64Slice
+	Usage   string
+	EnvVars []string
+	Hidden  bool
+}
+
+// String returns the usage
+func (f *Float64SliceFlag) String() string {
+	return FlagStringer(f)
+}
+
+// Apply populates the flag given the flag set and environment
+func (f *Float64SliceFlag) Apply(set *flag.FlagSet) {
+	if f.EnvVars != nil {
+		for _, envVar := range f.EnvVars {
+			if envVal := os.Getenv(envVar); envVal != "" {
+				newVal := NewFloat64Slice()
+				for _, s := range strings.Split(envVal, ",") {
+					s = strings.TrimSpace(s)
+					err := newVal.Set(s)
+					if err != nil {
+						fmt.Fprintf(ErrWriter, err.Error())
+					}
+				}
+				f.Value = newVal
+				break
+			}
+		}
+	}
+
+	if f.Value == nil {
+		f.Value = NewFloat64Slice()
+	}
+
+	for _, name := range f.Names() {
+		set.Var(f.Value, name, f.Usage)
+	}
+}
+
+// Names returns the names of the flag.
+func (f *Float64SliceFlag) Names() []string {
+	return flagNames(f)
+}
+
+
+
 func visibleFlags(fl []Flag) []Flag {
 	visible := []Flag{}
 	for _, flag := range fl {
@@ -893,6 +998,9 @@ func stringifyFlag(f Flag) string {
 	case *Int64SliceFlag:
 		return withEnvHint(flagStringSliceField(f, "EnvVars"),
 			stringifyInt64SliceFlag(f.(*Int64SliceFlag)))
+	case *Float64SliceFlag:
+		return withEnvHint(flagStringSliceField(f, "EnvVars"),
+			stringifyFloat64SliceFlag(f.(*Float64SliceFlag)))
 	case *StringSliceFlag:
 		return withEnvHint(flagStringSliceField(f, "EnvVars"),
 			stringifyStringSliceFlag(f.(*StringSliceFlag)))
@@ -943,6 +1051,17 @@ func stringifyInt64SliceFlag(f *Int64SliceFlag) string {
 	if f.Value != nil && len(f.Value.Value()) > 0 {
 		for _, i := range f.Value.Value() {
 			defaultVals = append(defaultVals, fmt.Sprintf("%d", i))
+		}
+	}
+
+	return stringifySliceFlag(f.Usage, f.Names(), defaultVals)
+}
+
+func stringifyFloat64SliceFlag(f *Float64SliceFlag) string {
+	defaultVals := []string{}
+	if f.Value != nil && len(f.Value.Value()) > 0 {
+		for _, i := range f.Value.Value() {
+			defaultVals = append(defaultVals, strings.TrimRight(strings.TrimRight(fmt.Sprintf("%f", i), "0"), "."))
 		}
 	}
 
