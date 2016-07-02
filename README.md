@@ -615,9 +615,9 @@ the yaml input source for any flags that are defined on that command.  As a note
 the "load" flag used would also have to be defined on the command flags in order
 for this code snipped to work.
 
-Currently only the aboved specified formats are supported but developers can
-add support for other input sources by implementing the
-altsrc.InputSourceContext for their given sources.
+Currently only YAML and JSON files are supported but developers can add support
+for other input sources by implementing the altsrc.InputSourceContext for their
+given sources.
 
 Here is a more complete sample of a command using YAML support:
 
