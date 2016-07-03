@@ -84,6 +84,15 @@ func (c *Context) Int64Slice(name string) []int64 {
 	return nil
 }
 
+// Float64Slice looks up the value of a local float64 slice flag, returns nil if no float
+// slice flag exists
+func (c *Context) Float64Slice(name string) []float64 {
+	if fs := lookupFlagSet(name, c); fs != nil {
+		return lookupFloat64Slice(name, fs)
+	}
+	return nil
+}
+
 // Bool looks up the value of a local bool flag, returns false if no bool flag exists
 func (c *Context) Bool(name string) bool {
 	if fs := lookupFlagSet(name, c); fs != nil {
@@ -314,6 +323,14 @@ func lookupInt64Slice(name string, set *flag.FlagSet) []int64 {
 
 	}
 
+	return nil
+}
+
+func lookupFloat64Slice(name string, set *flag.FlagSet) []float64 {
+	f := set.Lookup(name)
+	if f != nil {
+		return (f.Value.(*Float64Slice)).Value()
+	}
 	return nil
 }
 

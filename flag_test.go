@@ -482,6 +482,49 @@ func TestFloat64FlagApply_SetsAllNames(t *testing.T) {
 	expect(t, v, float64(43.33333))
 }
 
+
+var float64SliceFlagTests = []struct {
+	name     string
+	aliases  []string
+	value    *Float64Slice
+	expected string
+}{
+	{"heads", nil, NewFloat64Slice(), "--heads value\t"},
+	{"H", nil, NewFloat64Slice(), "-H value\t"},
+	{"heads", []string{"H"}, NewFloat64Slice(float64(0.1234), float64(-10.5)),
+		"--heads value, -H value\t(default: 0.1234, -10.5)"},
+}
+
+func TestFloat64SliceFlagHelpOutput(t *testing.T) {
+	for _, test := range float64SliceFlagTests {
+		flag := Float64SliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value}
+		output := flag.String()
+
+		if output != test.expected {
+			t.Errorf("%q does not match %q", output, test.expected)
+		}
+	}
+}
+
+func TestFloat64SliceFlagWithEnvVarHelpOutput(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("APP_SMURF", "0.1234,-10.5")
+	for _, test := range float64SliceFlagTests {
+		flag := Float64SliceFlag{Name: test.name, Value: test.value, EnvVars: []string{"APP_SMURF"}}
+		output := flag.String()
+
+		expectedSuffix := " [$APP_SMURF]"
+		if runtime.GOOS == "windows" {
+			expectedSuffix = " [%APP_SMURF%]"
+		}
+		if !strings.HasSuffix(output, expectedSuffix) {
+			t.Errorf("%q does not end with"+expectedSuffix, output)
+		}
+	}
+}
+
+
+
 var genericFlagTests = []struct {
 	name     string
 	value    Generic
@@ -1056,6 +1099,48 @@ func TestParseMultiFloat64FromEnvCascade(t *testing.T) {
 	}
 	a.Run([]string{"run"})
 }
+
+
+func TestParseMultiFloat64SliceFromEnv(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("APP_INTERVALS", "0.1,-10.5")
+
+	(&App{
+		Flags: []Flag{
+			&Float64SliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: NewFloat64Slice(), EnvVars: []string{"APP_INTERVALS"}},
+		},
+		Action: func(ctx *Context) error {
+			if !reflect.DeepEqual(ctx.Float64Slice("intervals"), []float64{0.1, -10.5}) {
+				t.Errorf("main name not set from env")
+			}
+			if !reflect.DeepEqual(ctx.Float64Slice("i"), []float64{0.1, -10.5}) {
+				t.Errorf("short name not set from env")
+			}
+			return nil
+		},
+	}).Run([]string{"run"})
+}
+
+func TestParseMultiFloat64SliceFromEnvCascade(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("APP_INTERVALS", "0.1234,-10.5")
+
+	(&App{
+		Flags: []Flag{
+			&Float64SliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: NewFloat64Slice(), EnvVars: []string{"COMPAT_INTERVALS", "APP_INTERVALS"}},
+		},
+		Action: func(ctx *Context) error {
+			if !reflect.DeepEqual(ctx.Float64Slice("intervals"), []float64{0.1234, -10.5}) {
+				t.Errorf("main name not set from env")
+			}
+			if !reflect.DeepEqual(ctx.Float64Slice("i"), []float64{0.1234, -10.5}) {
+				t.Errorf("short name not set from env")
+			}
+			return nil
+		},
+	}).Run([]string{"run"})
+}
+
 
 func TestParseMultiBool(t *testing.T) {
 	a := App{

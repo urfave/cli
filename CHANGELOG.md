@@ -5,6 +5,7 @@
 ## 2.0.0 - (unreleased 2.x series)
 ### Added
 - `NewStringSlice` and `NewIntSlice` for creating their related types
+- `Float64SliceFlag` for unmarshaling a list of floats from the user
 - `Context.Lineage` to get all contexts from current up to global
 - `Context.LocalFlagNames` to get the flag names from *only* the current context
 - `BoolFlag.Value` to handle both default-false and default-true
