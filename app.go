@@ -160,6 +160,10 @@ func (a *App) Setup() {
 		a.categories = a.categories.AddCommand(command.Category, command)
 	}
 	sort.Sort(a.categories)
+
+	if a.Metadata == nil {
+		a.Metadata = make(map[string]interface{})
+	}
 }
 
 // Run is the entry point to the cli app. Parses the arguments slice and routes
@@ -438,6 +442,18 @@ func (a *App) appendFlag(flag Flag) {
 	if !a.hasFlag(flag) {
 		a.Flags = append(a.Flags, flag)
 	}
+}
+
+func (a *App) SetMetadata(key string, value interface{}) {
+	a.Metadata[key] = value
+}
+
+func (a *App) GetMetadata(key string) (interface{}, error) {
+	v, ok := a.Metadata[key]
+	if !ok {
+		return nil, fmt.Errorf("Metadata key %q not found", key)
+	}
+	return v, nil
 }
 
 // Author represents someone who has contributed to a cli project.
