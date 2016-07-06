@@ -19,6 +19,12 @@ var GenerateCompletionFlag = BoolFlag{
 	Hidden: true,
 }
 
+// BashCompletionFlag prints bash completion code
+var BashCompletionFlag = StringFlag{
+	Name:  "bash",
+	Usage: "print completion code for bash. 'value' is the program name",
+}
+
 // VersionFlag prints the version for the application
 var VersionFlag = BoolFlag{
 	Name:  "version, v",

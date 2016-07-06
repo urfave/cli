@@ -265,3 +265,25 @@ func checkCommandCompletions(c *Context, name string) bool {
 
 	return false
 }
+
+func bashCompletionCode(progName string) string {
+	var template = `_cli_bash_autocomplete() {
+     local cur opts base;
+     COMPREPLY=();
+     cur="${COMP_WORDS[COMP_CWORD]}";
+     opts=$( ${COMP_WORDS[@]:0:$COMP_CWORD} --generate-bash-completion );
+     COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) );
+     return 0;
+};
+complete -F _cli_bash_autocomplete %s`
+	return fmt.Sprintf(template, progName)
+}
+
+func checkBashCompletion(c *Context) bool {
+	if c.GlobalIsSet(BashCompletionFlag.Name) && c.App.EnableBashCompletion {
+		fmt.Print(bashCompletionCode(c.GlobalString(BashCompletionFlag.Name)))
+		return true
+	}
+
+	return false
+}
