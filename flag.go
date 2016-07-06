@@ -25,6 +25,12 @@ var BashCompletionFlag = StringFlag{
 	Usage: "print completion code for bash. 'value' is the program name",
 }
 
+// ZshCompletionFlag prints zsh completion code
+var ZshCompletionFlag = StringFlag{
+	Name:  "zsh",
+	Usage: "print completion code for bash. 'value' is the program name",
+}
+
 // VersionFlag prints the version for the application
 var VersionFlag = BoolFlag{
 	Name:  "version, v",

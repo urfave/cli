@@ -279,9 +279,25 @@ complete -F _cli_bash_autocomplete %s`
 	return fmt.Sprintf(template, progName)
 }
 
+func zshCompletionCode(progName string) string {
+	var template = `autoload -U compinit && compinit;
+autoload -U bashcompinit && bashcompinit;`
+	
+	return template + "\n" + bashCompletionCode(progName)
+}
+
 func checkBashCompletion(c *Context) bool {
 	if c.GlobalIsSet(BashCompletionFlag.Name) && c.App.EnableBashCompletion {
 		fmt.Print(bashCompletionCode(c.GlobalString(BashCompletionFlag.Name)))
+		return true
+	}
+
+	return false
+}
+
+func checkZshCompletion(c *Context) bool {
+	if c.GlobalIsSet(ZshCompletionFlag.Name) && c.App.EnableBashCompletion {
+		fmt.Print(zshCompletionCode(c.GlobalString(BashCompletionFlag.Name)))
 		return true
 	}
 
