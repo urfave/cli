@@ -13,8 +13,8 @@ import (
 
 const defaultPlaceholder = "value"
 
-// BashCompletionFlag enables bash-completion for all commands and subcommands
-var BashCompletionFlag = BoolFlag{
+// GenerateCompletionFlag enables bash-completion for all commands and subcommands
+var GenerateCompletionFlag = BoolFlag{
 	Name:   "generate-bash-completion",
 	Hidden: true,
 }

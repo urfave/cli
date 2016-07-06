@@ -148,7 +148,7 @@ func (a *App) Setup() {
 	}
 
 	if a.EnableBashCompletion {
-		a.appendFlag(BashCompletionFlag)
+		a.appendFlag(GenerateCompletionFlag)
 	}
 
 	if !a.HideVersion {
@@ -278,7 +278,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 
 	// append flags
 	if a.EnableBashCompletion {
-		a.appendFlag(BashCompletionFlag)
+		a.appendFlag(GenerateCompletionFlag)
 	}
 
 	// parse flags

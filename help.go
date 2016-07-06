@@ -249,7 +249,7 @@ func checkSubcommandHelp(c *Context) bool {
 }
 
 func checkCompletions(c *Context) bool {
-	if (c.GlobalBool(BashCompletionFlag.Name) || c.Bool(BashCompletionFlag.Name)) && c.App.EnableBashCompletion {
+	if (c.GlobalBool(GenerateCompletionFlag.Name) || c.Bool(GenerateCompletionFlag.Name)) && c.App.EnableBashCompletion {
 		ShowCompletions(c)
 		return true
 	}
@@ -258,7 +258,7 @@ func checkCompletions(c *Context) bool {
 }
 
 func checkCommandCompletions(c *Context, name string) bool {
-	if c.Bool(BashCompletionFlag.Name) && c.App.EnableBashCompletion {
+	if c.Bool(GenerateCompletionFlag.Name) && c.App.EnableBashCompletion {
 		ShowCommandCompletions(c, name)
 		return true
 	}
