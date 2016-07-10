@@ -18,4 +18,4 @@
 //   }
 package cli
 
-//go:generate python ./generate-flag-types flag_generated.go flag-types.json
+//go:generate python ./generate-flag-types -i flag-types.json -o flag_generated.go

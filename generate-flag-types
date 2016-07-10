@@ -1,44 +1,106 @@
 #!/usr/bin/env python
+"""
+The flag types that ship with the cli library have many things in common, and
+so we can take advantage of the `go generate` command to create much of the
+source code from a list of definitions.  These definitions attempt to cover
+the parts that vary between flag types, and should evolve as needed.
+
+An example of the minimum definition needed is:
+
+    {
+      "name": "SomeType",
+      "type": "sometype",
+      "context_default": "nil"
+    }
+
+In this example, the generated code will include a type named `SomeTypeFlag`
+that is expected to wrap a value of type `sometype`.  Fetching values by name
+via `*cli.Context` will default to a value of `nil`.
+
+A more complete, albeit somewhat redundant, example showing all available
+definition keys is:
+
+    {
+      "name": "VeryMuchType",
+      "type": "*VeryMuchType",
+      "value": true,
+      "dest": false,
+      "doctail": " which really only wraps a []float64, oh well!",
+      "context_type": "[]float64",
+      "context_default": "nil"
+    }
+
+The meaning of each field is as follows:
+
+               name (string) - The type "name", which will be suffixed with
+                               `Flag` when generating the type definition
+               type (string) - The type that the generated `Flag` type is
+                               expected to "contain" as its `.Value` member
+                value (bool) - Should the generated type have a `Value` member?
+                 dest (bool) - Should the generated type support a destination
+                               pointer?
+            doctail (string) - Additional docs for the flag type comment
+       context_type (string) - The literal type used in the `*cli.Context`
+                               reader func signature
+    context_default (string) - The literal value used as the default by the
+                               `*cli.Context` reader funcs when no value is
+                               present
+
+"""
 
 from __future__ import print_function, unicode_literals
 
-import io
+import argparse
 import json
 import os
 import subprocess
 import sys
+import tempfile
 import textwrap
 
 
+class _FancyFormatter(argparse.ArgumentDefaultsHelpFormatter,
+                      argparse.RawDescriptionHelpFormatter):
+    pass
+
+
 def main(sysargs=sys.argv[:]):
-    _generate_flag_types(sys.argv[1], sys.argv[2])
+    parser = argparse.ArgumentParser(
+        description='Generate flag type code!',
+        formatter_class=_FancyFormatter)
+    parser.add_argument(
+        '-i', '--in-json',
+        type=argparse.FileType('r'),
+        default=sys.stdin,
+        help='Input JSON file which defines each type to be generated'
+    )
+    parser.add_argument(
+        '-o', '--out-go',
+        type=argparse.FileType('w'),
+        default=sys.stdout,
+        help='Output file/stream to which generated source will be written'
+    )
+    parser.epilog = __doc__
+
+    args = parser.parse_args(sysargs[1:])
+    _generate_flag_types(args.out_go, args.in_json)
     return 0
 
 
-def _generate_flag_types(output_filename, types_filename):
-    try:
-        types = _load_types(types_filename)
-        if os.path.exists(output_filename):
-            os.chmod(output_filename, 0644)
+def _generate_flag_types(output_go, input_json):
+    types = json.load(input_json)
 
-        with io.open(output_filename, 'w', encoding='utf-8') as outfile:
-            _write_flag_types(outfile, types)
+    tmp = tempfile.NamedTemporaryFile(suffix='.go', delete=False)
+    _write_flag_types(tmp, types)
+    tmp.close()
 
-        new_content = subprocess.check_output(
-            ['goimports', output_filename]
-        ).decode('utf-8')
+    new_content = subprocess.check_output(
+        ['goimports', tmp.name]
+    ).decode('utf-8')
 
-        with io.open(output_filename, 'w', encoding='utf-8') as outfile:
-            print(new_content, file=outfile, end='')
-
-    finally:
-        if os.path.exists(output_filename):
-            os.chmod(output_filename, 0444)
-
-
-def _load_types(types_filename):
-    with io.open(types_filename, encoding='utf-8') as infile:
-        return json.load(infile)
+    print(new_content, file=output_go, end='')
+    output_go.flush()
+    os.remove(tmp.name)
 
 
 def _write_flag_types(outfile, types):
@@ -52,31 +114,29 @@ def _write_flag_types(outfile, types):
     for typedef in types:
         typedef.setdefault('doctail', '')
         typedef.setdefault('context_type', typedef['type'])
-        typedef.setdefault('struct', True)
         typedef.setdefault('dest', True)
         typedef.setdefault('value', True)
 
-        if typedef['struct']:
+        _fwrite(outfile, """\
+        // {name}Flag is a flag with type {type}{doctail}
+        type {name}Flag struct {{
+            Name string
+            Usage string
+            EnvVar string
+            Hidden bool
+        """.format(**typedef))
+
+        if typedef['value']:
             _fwrite(outfile, """\
-            // {name}Flag is a flag with type {type}{doctail}
-            type {name}Flag struct {{
-                Name string
-                Usage string
-                EnvVar string
-                Hidden bool
+            Value {type}
             """.format(**typedef))
 
-            if typedef['value']:
-                _fwrite(outfile, """\
-                Value {type}
-                """.format(**typedef))
+        if typedef['dest']:
+            _fwrite(outfile, """\
+            Destination *{type}
+            """.format(**typedef))
 
-            if typedef['dest']:
-                _fwrite(outfile, """\
-                Destination *{type}
-                """.format(**typedef))
-
-            _fwrite(outfile, "\n}\n\n")
+        _fwrite(outfile, "\n}\n\n")
 
         _fwrite(outfile, """\
             // String returns a readable representation of this value

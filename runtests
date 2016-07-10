@@ -66,7 +66,7 @@ def _vet():
 
 def _toc():
     _run('node_modules/.bin/markdown-toc -i README.md')
-    _run('git diff --quiet')
+    _run('git diff --exit-code')
 
 
 def _gen():
@@ -76,7 +76,7 @@ def _gen():
         return
 
     _run('go generate .')
-    _run('git diff --quiet')
+    _run('git diff --exit-code')
 
 
 def _run(command):
