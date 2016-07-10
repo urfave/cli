@@ -1,6 +1,10 @@
 package cli
 
-import "time"
+import (
+	"flag"
+	"strconv"
+	"time"
+)
 
 // WARNING: This file is generated!
 
@@ -39,6 +43,18 @@ func (c *Context) GlobalBool(name string) bool {
 	return false
 }
 
+func lookupBool(name string, set *flag.FlagSet) bool {
+	f := set.Lookup(name)
+	if f != nil {
+		parsed, err := strconv.ParseBool(f.Value.String())
+		if err != nil {
+			return false
+		}
+		return parsed
+	}
+	return false
+}
+
 // BoolTFlag is a flag with type bool that is true by default
 type BoolTFlag struct {
 	Name        string
@@ -70,6 +86,18 @@ func (c *Context) BoolT(name string) bool {
 func (c *Context) GlobalBoolT(name string) bool {
 	if fs := lookupGlobalFlagSet(name, c); fs != nil {
 		return lookupBoolT(name, fs)
+	}
+	return false
+}
+
+func lookupBoolT(name string, set *flag.FlagSet) bool {
+	f := set.Lookup(name)
+	if f != nil {
+		parsed, err := strconv.ParseBool(f.Value.String())
+		if err != nil {
+			return false
+		}
+		return parsed
 	}
 	return false
 }
@@ -110,6 +138,18 @@ func (c *Context) GlobalDuration(name string) time.Duration {
 	return 0
 }
 
+func lookupDuration(name string, set *flag.FlagSet) time.Duration {
+	f := set.Lookup(name)
+	if f != nil {
+		parsed, err := time.ParseDuration(f.Value.String())
+		if err != nil {
+			return 0
+		}
+		return parsed
+	}
+	return 0
+}
+
 // Float64Flag is a flag with type float64
 type Float64Flag struct {
 	Name        string
@@ -146,6 +186,18 @@ func (c *Context) GlobalFloat64(name string) float64 {
 	return 0
 }
 
+func lookupFloat64(name string, set *flag.FlagSet) float64 {
+	f := set.Lookup(name)
+	if f != nil {
+		parsed, err := strconv.ParseFloat(f.Value.String(), 64)
+		if err != nil {
+			return 0
+		}
+		return parsed
+	}
+	return 0
+}
+
 // GenericFlag is a flag with type Generic
 type GenericFlag struct {
 	Name   string
@@ -177,6 +229,18 @@ func (c *Context) Generic(name string) interface{} {
 func (c *Context) GlobalGeneric(name string) interface{} {
 	if fs := lookupGlobalFlagSet(name, c); fs != nil {
 		return lookupGeneric(name, fs)
+	}
+	return nil
+}
+
+func lookupGeneric(name string, set *flag.FlagSet) interface{} {
+	f := set.Lookup(name)
+	if f != nil {
+		parsed, err := f.Value, error(nil)
+		if err != nil {
+			return nil
+		}
+		return parsed
 	}
 	return nil
 }
@@ -217,6 +281,18 @@ func (c *Context) GlobalInt64(name string) int64 {
 	return 0
 }
 
+func lookupInt64(name string, set *flag.FlagSet) int64 {
+	f := set.Lookup(name)
+	if f != nil {
+		parsed, err := strconv.ParseInt(f.Value.String(), 0, 64)
+		if err != nil {
+			return 0
+		}
+		return parsed
+	}
+	return 0
+}
+
 // IntFlag is a flag with type int
 type IntFlag struct {
 	Name        string
@@ -249,6 +325,18 @@ func (c *Context) Int(name string) int {
 func (c *Context) GlobalInt(name string) int {
 	if fs := lookupGlobalFlagSet(name, c); fs != nil {
 		return lookupInt(name, fs)
+	}
+	return 0
+}
+
+func lookupInt(name string, set *flag.FlagSet) int {
+	f := set.Lookup(name)
+	if f != nil {
+		parsed, err := strconv.ParseInt(f.Value.String(), 0, 64)
+		if err != nil {
+			return 0
+		}
+		return int(parsed)
 	}
 	return 0
 }
@@ -288,6 +376,18 @@ func (c *Context) GlobalIntSlice(name string) []int {
 	return nil
 }
 
+func lookupIntSlice(name string, set *flag.FlagSet) []int {
+	f := set.Lookup(name)
+	if f != nil {
+		parsed, err := (f.Value.(*IntSlice)).Value(), error(nil)
+		if err != nil {
+			return nil
+		}
+		return parsed
+	}
+	return nil
+}
+
 // Int64SliceFlag is a flag with type *Int64Slice
 type Int64SliceFlag struct {
 	Name   string
@@ -319,6 +419,18 @@ func (c *Context) Int64Slice(name string) []int64 {
 func (c *Context) GlobalInt64Slice(name string) []int64 {
 	if fs := lookupGlobalFlagSet(name, c); fs != nil {
 		return lookupInt64Slice(name, fs)
+	}
+	return nil
+}
+
+func lookupInt64Slice(name string, set *flag.FlagSet) []int64 {
+	f := set.Lookup(name)
+	if f != nil {
+		parsed, err := (f.Value.(*Int64Slice)).Value(), error(nil)
+		if err != nil {
+			return nil
+		}
+		return parsed
 	}
 	return nil
 }
@@ -359,6 +471,18 @@ func (c *Context) GlobalString(name string) string {
 	return ""
 }
 
+func lookupString(name string, set *flag.FlagSet) string {
+	f := set.Lookup(name)
+	if f != nil {
+		parsed, err := f.Value.String(), error(nil)
+		if err != nil {
+			return ""
+		}
+		return parsed
+	}
+	return ""
+}
+
 // StringSliceFlag is a flag with type *StringSlice
 type StringSliceFlag struct {
 	Name   string
@@ -390,6 +514,18 @@ func (c *Context) StringSlice(name string) []string {
 func (c *Context) GlobalStringSlice(name string) []string {
 	if fs := lookupGlobalFlagSet(name, c); fs != nil {
 		return lookupStringSlice(name, fs)
+	}
+	return nil
+}
+
+func lookupStringSlice(name string, set *flag.FlagSet) []string {
+	f := set.Lookup(name)
+	if f != nil {
+		parsed, err := (f.Value.(*StringSlice)).Value(), error(nil)
+		if err != nil {
+			return nil
+		}
+		return parsed
 	}
 	return nil
 }
@@ -430,6 +566,18 @@ func (c *Context) GlobalUint64(name string) uint64 {
 	return 0
 }
 
+func lookupUint64(name string, set *flag.FlagSet) uint64 {
+	f := set.Lookup(name)
+	if f != nil {
+		parsed, err := strconv.ParseUint(f.Value.String(), 0, 64)
+		if err != nil {
+			return 0
+		}
+		return parsed
+	}
+	return 0
+}
+
 // UintFlag is a flag with type uint
 type UintFlag struct {
 	Name        string
@@ -462,6 +610,18 @@ func (c *Context) Uint(name string) uint {
 func (c *Context) GlobalUint(name string) uint {
 	if fs := lookupGlobalFlagSet(name, c); fs != nil {
 		return lookupUint(name, fs)
+	}
+	return 0
+}
+
+func lookupUint(name string, set *flag.FlagSet) uint {
+	f := set.Lookup(name)
+	if f != nil {
+		parsed, err := strconv.ParseUint(f.Value.String(), 0, 64)
+		if err != nil {
+			return 0
+		}
+		return uint(parsed)
 	}
 	return 0
 }

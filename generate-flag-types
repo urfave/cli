@@ -27,7 +27,9 @@ definition keys is:
       "dest": false,
       "doctail": " which really only wraps a []float64, oh well!",
       "context_type": "[]float64",
-      "context_default": "nil"
+      "context_default": "nil",
+      "parser": "parseVeryMuchType(f.Value.String())",
+      "parser_cast": "[]float64(parsed)"
     }
 
 The meaning of each field is as follows:
@@ -45,7 +47,11 @@ The meaning of each field is as follows:
     context_default (string) - The literal value used as the default by the
                                `*cli.Context` reader funcs when no value is
                                present
-
+             parser (string) - Literal code used to parse the flag `f`,
+                               expected to have a return signature of
+                               (value, error)
+        parser_cast (string) - Literal code used to cast the `parsed` value
+                               returned from the `parser` code
 """
 
 from __future__ import print_function, unicode_literals
@@ -116,6 +122,9 @@ def _write_flag_types(outfile, types):
         typedef.setdefault('context_type', typedef['type'])
         typedef.setdefault('dest', True)
         typedef.setdefault('value', True)
+        typedef.setdefault('parser', 'f.Value, error(nil)')
+        typedef.setdefault('parser_cast', 'parsed')
+
 
         _fwrite(outfile, """\
         // {name}Flag is a flag with type {type}{doctail}
@@ -165,6 +174,17 @@ def _write_flag_types(outfile, types):
                 return {context_default}
             }}
 
+            func lookup{name}(name string, set *flag.FlagSet) {context_type} {{
+                f := set.Lookup(name)
+                if f != nil {{
+                    parsed, err := {parser}
+                    if err != nil {{
+                        return {context_default}
+                    }}
+                    return {parser_cast}
+                }}
+                return {context_default}
+            }}
             """.format(**typedef))
 
 
