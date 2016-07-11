@@ -13,9 +13,9 @@ An example of the minimum definition needed is:
       "context_default": "nil"
     }
 
-In this example, the generated code will include a type named `SomeTypeFlag`
-that is expected to wrap a value of type `sometype`.  Fetching values by name
-via `*cli.Context` will default to a value of `nil`.
+In this example, the code generated for the `cli` package will include a type
+named `SomeTypeFlag` that is expected to wrap a value of type `sometype`.
+Fetching values by name via `*cli.Context` will default to a value of `nil`.
 
 A more complete, albeit somewhat redundant, example showing all available
 definition keys is:
@@ -36,12 +36,14 @@ The meaning of each field is as follows:
 
                name (string) - The type "name", which will be suffixed with
                                `Flag` when generating the type definition
-               type (string) - The type that the generated `Flag` type is
-                               expected to "contain" as its `.Value` member
-                value (bool) - Should the generated type have a `Value` member?
-                 dest (bool) - Should the generated type support a destination
-                               pointer?
-            doctail (string) - Additional docs for the flag type comment
+                               for `cli` and the wrapper type for `altsrc`
+               type (string) - The type that the generated `Flag` type for `cli`
+                               is expected to "contain" as its `.Value` member
+                value (bool) - Should the generated `cli` type have a `Value`
+                               member?
+                 dest (bool) - Should the generated `cli` type support a
+                               destination pointer?
+            doctail (string) - Additional docs for the `cli` flag type comment
        context_type (string) - The literal type used in the `*cli.Context`
                                reader func signature
     context_default (string) - The literal value used as the default by the
@@ -75,6 +77,11 @@ def main(sysargs=sys.argv[:]):
         description='Generate flag type code!',
         formatter_class=_FancyFormatter)
     parser.add_argument(
+        'package',
+        type=str, default='cli', choices=['cli', 'altsrc'],
+        help='Package for which flag types will be generated'
+    )
+    parser.add_argument(
         '-i', '--in-json',
         type=argparse.FileType('r'),
         default=sys.stdin,
@@ -89,15 +96,15 @@ def main(sysargs=sys.argv[:]):
     parser.epilog = __doc__
 
     args = parser.parse_args(sysargs[1:])
-    _generate_flag_types(args.out_go, args.in_json)
+    _generate_flag_types(_WRITEFUNCS[args.package], args.out_go, args.in_json)
     return 0
 
 
-def _generate_flag_types(output_go, input_json):
+def _generate_flag_types(writefunc, output_go, input_json):
     types = json.load(input_json)
 
     tmp = tempfile.NamedTemporaryFile(suffix='.go', delete=False)
-    _write_flag_types(tmp, types)
+    writefunc(tmp, types)
     tmp.close()
 
     new_content = subprocess.check_output(
@@ -109,7 +116,16 @@ def _generate_flag_types(output_go, input_json):
     os.remove(tmp.name)
 
 
-def _write_flag_types(outfile, types):
+def _set_typedef_defaults(typedef):
+    typedef.setdefault('doctail', '')
+    typedef.setdefault('context_type', typedef['type'])
+    typedef.setdefault('dest', True)
+    typedef.setdefault('value', True)
+    typedef.setdefault('parser', 'f.Value, error(nil)')
+    typedef.setdefault('parser_cast', 'parsed')
+
+
+def _write_cli_flag_types(outfile, types):
     _fwrite(outfile, """\
         package cli
 
@@ -118,13 +134,7 @@ def _write_flag_types(outfile, types):
         """)
 
     for typedef in types:
-        typedef.setdefault('doctail', '')
-        typedef.setdefault('context_type', typedef['type'])
-        typedef.setdefault('dest', True)
-        typedef.setdefault('value', True)
-        typedef.setdefault('parser', 'f.Value, error(nil)')
-        typedef.setdefault('parser_cast', 'parsed')
-
+        _set_typedef_defaults(typedef)
 
         _fwrite(outfile, """\
         // {name}Flag is a flag with type {type}{doctail}
@@ -188,9 +198,47 @@ def _write_flag_types(outfile, types):
             """.format(**typedef))
 
 
+def _write_altsrc_flag_types(outfile, types):
+    _fwrite(outfile, """\
+        package altsrc
+
+        // WARNING: This file is generated!
+
+        """)
+
+    for typedef in types:
+        _set_typedef_defaults(typedef)
+
+        _fwrite(outfile, """\
+        // {name}Flag is the flag type that wraps cli.{name}Flag to allow
+        // for other values to be specified
+        type {name}Flag struct {{
+            cli.{name}Flag
+            set *flag.FlagSet
+        }}
+
+        // New{name}Flag creates a new {name}Flag
+        func New{name}Flag(fl cli.{name}Flag) *{name}Flag {{
+            return &{name}Flag{{{name}Flag: fl, set: nil}}
+        }}
+
+        // Apply saves the flagSet for later usage calls, then calls the
+        // wrapped {name}Flag.Apply
+        func (f *{name}Flag) Apply(set *flag.FlagSet) {{
+            f.set = set
+            f.{name}Flag.Apply(set)
+        }}
+        """.format(**typedef))
+
+
 def _fwrite(outfile, text):
     print(textwrap.dedent(text), end='', file=outfile)
 
+
+_WRITEFUNCS = {
+    'cli': _write_cli_flag_types,
+    'altsrc': _write_altsrc_flag_types
+}
 
 if __name__ == '__main__':
     sys.exit(main())

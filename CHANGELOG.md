@@ -3,6 +3,8 @@
 **ATTN**: This project uses [semantic versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Flag type code generation via `go generate`
 
 ## [1.18.0] - 2016-06-27
 ### Added
