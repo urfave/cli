@@ -78,7 +78,7 @@ def main(sysargs=sys.argv[:]):
         formatter_class=_FancyFormatter)
     parser.add_argument(
         'package',
-        type=str, default='cli', choices=['cli', 'altsrc'],
+        type=str, default='cli', choices=_WRITEFUNCS.keys(),
         help='Package for which flag types will be generated'
     )
     parser.add_argument(
