@@ -3,6 +3,8 @@
 **ATTN**: This project uses [semantic versioning](http://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Raise minimum tested/supported Go version to 1.2+
 
 ## [1.18.0] - 2016-06-27
 ### Added

@@ -60,18 +60,16 @@ organized, and expressive!
 
 ## Installation
 
-Make sure you have a working Go environment.  Go version 1.1+ is required for
-core cli, whereas use of the [`./altsrc`](./altsrc) input extensions requires Go
-version 1.2+. [See the install
-instructions](http://golang.org/doc/install.html).
+Make sure you have a working Go environment.  Go version 1.2+ is supported.  [See
+the install instructions for Go](http://golang.org/doc/install.html).
 
 To install cli, simply run:
 ```
 $ go get github.com/urfave/cli
 ```
 
-Make sure your `PATH` includes to the `$GOPATH/bin` directory so your commands
-can be easily used:
+Make sure your `PATH` includes the `$GOPATH/bin` directory so your commands can
+be easily used:
 ```
 export PATH=$PATH:$GOPATH/bin
 ```
