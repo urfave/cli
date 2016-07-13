@@ -70,22 +70,6 @@ type Generic interface {
 	String() string
 }
 
-// GenericFlag is the flag type for types implementing Generic
-type GenericFlag struct {
-	Name   string
-	Value  Generic
-	Usage  string
-	EnvVar string
-	Hidden bool
-}
-
-// String returns the string representation of the generic flag to display the
-// help text to the user (uses the String() method of the generic flag to show
-// the value)
-func (f GenericFlag) String() string {
-	return FlagStringer(f)
-}
-
 // Apply takes the flagset and calls Set on the generic flag with the value
 // provided by the user for parsing by the flag
 func (f GenericFlag) Apply(set *flag.FlagSet) {
@@ -105,11 +89,6 @@ func (f GenericFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-// GetName returns the name of a flag.
-func (f GenericFlag) GetName() string {
-	return f.Name
-}
-
 // StringSlice is an opaque type for []string to satisfy flag.Value
 type StringSlice []string
 
@@ -127,21 +106,6 @@ func (f *StringSlice) String() string {
 // Value returns the slice of strings set by this flag
 func (f *StringSlice) Value() []string {
 	return *f
-}
-
-// StringSliceFlag is a string flag that can be specified multiple times on the
-// command-line
-type StringSliceFlag struct {
-	Name   string
-	Value  *StringSlice
-	Usage  string
-	EnvVar string
-	Hidden bool
-}
-
-// String returns the usage
-func (f StringSliceFlag) String() string {
-	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -169,11 +133,6 @@ func (f StringSliceFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-// GetName returns the name of a flag.
-func (f StringSliceFlag) GetName() string {
-	return f.Name
-}
-
 // IntSlice is an opaque type for []int to satisfy flag.Value
 type IntSlice []int
 
@@ -195,21 +154,6 @@ func (f *IntSlice) String() string {
 // Value returns the slice of ints set by this flag
 func (f *IntSlice) Value() []int {
 	return *f
-}
-
-// IntSliceFlag is an int flag that can be specified multiple times on the
-// command-line
-type IntSliceFlag struct {
-	Name   string
-	Value  *IntSlice
-	Usage  string
-	EnvVar string
-	Hidden bool
-}
-
-// String returns the usage
-func (f IntSliceFlag) String() string {
-	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -240,11 +184,6 @@ func (f IntSliceFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-// GetName returns the name of the flag.
-func (f IntSliceFlag) GetName() string {
-	return f.Name
-}
-
 // Int64Slice is an opaque type for []int to satisfy flag.Value
 type Int64Slice []int64
 
@@ -266,21 +205,6 @@ func (f *Int64Slice) String() string {
 // Value returns the slice of ints set by this flag
 func (f *Int64Slice) Value() []int64 {
 	return *f
-}
-
-// Int64SliceFlag is an int flag that can be specified multiple times on the
-// command-line
-type Int64SliceFlag struct {
-	Name   string
-	Value  *Int64Slice
-	Usage  string
-	EnvVar string
-	Hidden bool
-}
-
-// String returns the usage
-func (f Int64SliceFlag) String() string {
-	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -311,25 +235,6 @@ func (f Int64SliceFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-// GetName returns the name of the flag.
-func (f Int64SliceFlag) GetName() string {
-	return f.Name
-}
-
-// BoolFlag is a switch that defaults to false
-type BoolFlag struct {
-	Name        string
-	Usage       string
-	EnvVar      string
-	Destination *bool
-	Hidden      bool
-}
-
-// String returns a readable representation of this value (for usage defaults)
-func (f BoolFlag) String() string {
-	return FlagStringer(f)
-}
-
 // Apply populates the flag given the flag set and environment
 func (f BoolFlag) Apply(set *flag.FlagSet) {
 	val := false
@@ -353,26 +258,6 @@ func (f BoolFlag) Apply(set *flag.FlagSet) {
 		}
 		set.Bool(name, val, f.Usage)
 	})
-}
-
-// GetName returns the name of the flag.
-func (f BoolFlag) GetName() string {
-	return f.Name
-}
-
-// BoolTFlag this represents a boolean flag that is true by default, but can
-// still be set to false by --some-flag=false
-type BoolTFlag struct {
-	Name        string
-	Usage       string
-	EnvVar      string
-	Destination *bool
-	Hidden      bool
-}
-
-// String returns a readable representation of this value (for usage defaults)
-func (f BoolTFlag) String() string {
-	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -400,26 +285,6 @@ func (f BoolTFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-// GetName returns the name of the flag.
-func (f BoolTFlag) GetName() string {
-	return f.Name
-}
-
-// StringFlag represents a flag that takes as string value
-type StringFlag struct {
-	Name        string
-	Value       string
-	Usage       string
-	EnvVar      string
-	Destination *string
-	Hidden      bool
-}
-
-// String returns the usage
-func (f StringFlag) String() string {
-	return FlagStringer(f)
-}
-
 // Apply populates the flag given the flag set and environment
 func (f StringFlag) Apply(set *flag.FlagSet) {
 	if f.EnvVar != "" {
@@ -439,26 +304,6 @@ func (f StringFlag) Apply(set *flag.FlagSet) {
 		}
 		set.String(name, f.Value, f.Usage)
 	})
-}
-
-// GetName returns the name of the flag.
-func (f StringFlag) GetName() string {
-	return f.Name
-}
-
-// IntFlag is a flag that takes an integer
-type IntFlag struct {
-	Name        string
-	Value       int
-	Usage       string
-	EnvVar      string
-	Destination *int
-	Hidden      bool
-}
-
-// String returns the usage
-func (f IntFlag) String() string {
-	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -485,26 +330,6 @@ func (f IntFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-// GetName returns the name of the flag.
-func (f IntFlag) GetName() string {
-	return f.Name
-}
-
-// Int64Flag is a flag that takes a 64-bit integer
-type Int64Flag struct {
-	Name        string
-	Value       int64
-	Usage       string
-	EnvVar      string
-	Destination *int64
-	Hidden      bool
-}
-
-// String returns the usage
-func (f Int64Flag) String() string {
-	return FlagStringer(f)
-}
-
 // Apply populates the flag given the flag set and environment
 func (f Int64Flag) Apply(set *flag.FlagSet) {
 	if f.EnvVar != "" {
@@ -527,26 +352,6 @@ func (f Int64Flag) Apply(set *flag.FlagSet) {
 		}
 		set.Int64(name, f.Value, f.Usage)
 	})
-}
-
-// GetName returns the name of the flag.
-func (f Int64Flag) GetName() string {
-	return f.Name
-}
-
-// UintFlag is a flag that takes an unsigned integer
-type UintFlag struct {
-	Name        string
-	Value       uint
-	Usage       string
-	EnvVar      string
-	Destination *uint
-	Hidden      bool
-}
-
-// String returns the usage
-func (f UintFlag) String() string {
-	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -573,26 +378,6 @@ func (f UintFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-// GetName returns the name of the flag.
-func (f UintFlag) GetName() string {
-	return f.Name
-}
-
-// Uint64Flag is a flag that takes an unsigned 64-bit integer
-type Uint64Flag struct {
-	Name        string
-	Value       uint64
-	Usage       string
-	EnvVar      string
-	Destination *uint64
-	Hidden      bool
-}
-
-// String returns the usage
-func (f Uint64Flag) String() string {
-	return FlagStringer(f)
-}
-
 // Apply populates the flag given the flag set and environment
 func (f Uint64Flag) Apply(set *flag.FlagSet) {
 	if f.EnvVar != "" {
@@ -615,27 +400,6 @@ func (f Uint64Flag) Apply(set *flag.FlagSet) {
 		}
 		set.Uint64(name, f.Value, f.Usage)
 	})
-}
-
-// GetName returns the name of the flag.
-func (f Uint64Flag) GetName() string {
-	return f.Name
-}
-
-// DurationFlag is a flag that takes a duration specified in Go's duration
-// format: https://golang.org/pkg/time/#ParseDuration
-type DurationFlag struct {
-	Name        string
-	Value       time.Duration
-	Usage       string
-	EnvVar      string
-	Destination *time.Duration
-	Hidden      bool
-}
-
-// String returns a readable representation of this value (for usage defaults)
-func (f DurationFlag) String() string {
-	return FlagStringer(f)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -662,26 +426,6 @@ func (f DurationFlag) Apply(set *flag.FlagSet) {
 	})
 }
 
-// GetName returns the name of the flag.
-func (f DurationFlag) GetName() string {
-	return f.Name
-}
-
-// Float64Flag is a flag that takes an float value
-type Float64Flag struct {
-	Name        string
-	Value       float64
-	Usage       string
-	EnvVar      string
-	Destination *float64
-	Hidden      bool
-}
-
-// String returns the usage
-func (f Float64Flag) String() string {
-	return FlagStringer(f)
-}
-
 // Apply populates the flag given the flag set and environment
 func (f Float64Flag) Apply(set *flag.FlagSet) {
 	if f.EnvVar != "" {
@@ -703,11 +447,6 @@ func (f Float64Flag) Apply(set *flag.FlagSet) {
 		}
 		set.Float64(name, f.Value, f.Usage)
 	})
-}
-
-// GetName returns the name of the flag.
-func (f Float64Flag) GetName() string {
-	return f.Name
 }
 
 func visibleFlags(fl []Flag) []Flag {
