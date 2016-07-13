@@ -240,7 +240,7 @@ func checkCommandHelp(c *Context, name string) bool {
 }
 
 func checkSubcommandHelp(c *Context) bool {
-	if c.GlobalBool("h") || c.GlobalBool("help") {
+	if c.Bool("h") || c.Bool("help") {
 		ShowSubcommandHelp(c)
 		return true
 	}
