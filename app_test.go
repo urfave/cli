@@ -908,6 +908,7 @@ func TestApp_Run_CommandWithSubcommandHasHelpTopic(t *testing.T) {
 			Name:        "foo",
 			Description: "descriptive wall of text about how it does foo things",
 			Subcommands: []Command{subCmdBar, subCmdBaz},
+			Action:      func(c *Context) error { return nil },
 		}
 
 		app.Commands = []Command{cmd}
