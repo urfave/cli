@@ -37,8 +37,8 @@ The meaning of each field is as follows:
                name (string) - The type "name", which will be suffixed with
                                `Flag` when generating the type definition
                                for `cli` and the wrapper type for `altsrc`
-               type (string) - The type that the generated `Flag` type for `cli`
-                               is expected to "contain" as its `.Value` member
+               type (string) - The type that the generated `Flag` type for
+                               `cli` is expected to "contain" as its `.Value` member
                 value (bool) - Should the generated `cli` type have a `Value`
                                member?
                  dest (bool) - Should the generated `cli` type support a

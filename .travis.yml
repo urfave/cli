@@ -38,7 +38,7 @@ before_script:
 - ln -sv ${TRAVIS_BUILD_DIR} ${GOPATH%%:*}/src/gopkg.in/urfave/cli.v2
 
 script:
-- flake8 runtests cli-v1-to-v2
+- flake8 runtests cli-v1-to-v2 generate-flag-types
 - ./runtests gen
 - ./runtests vet
 - ./runtests test
