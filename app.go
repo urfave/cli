@@ -149,6 +149,10 @@ func (a *App) Setup() {
 		a.Categories.AddCommand(command.Category, command)
 	}
 	sort.Sort(a.Categories.(*commandCategories))
+
+	if a.Metadata == nil {
+		a.Metadata = make(map[string]interface{})
+	}
 }
 
 // Run is the entry point to the cli app. Parses the arguments slice and routes
