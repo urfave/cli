@@ -31,7 +31,6 @@ before_script:
 - if [ ! -f node_modules/.bin/markdown-toc ] ; then
     npm install markdown-toc ;
   fi
-- go get github.com/urfave/gfmxr/...
 - mkdir -p ${GOPATH%%:*}/src/gopkg.in/urfave
 - rm -rvf ${GOPATH%%:*}/src/gopkg.in/urfave/cli.v2
 - rm -rvf ${GOPATH%%:*}/pkg/*/gopkg.in/urfave/cli.v2.a

@@ -83,7 +83,7 @@ def _migrations():
     try:
         os.chdir(tmpdir)
         _run('curl -sSL -o README.md {}'.format(v1_readme_url).split())
-        _run('gfmxr extract -o .'.split())
+        _run('gfmrun extract -o .'.split())
 
         for gofile in glob.glob('*.go'):
             for i in (0, 1):
