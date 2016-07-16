@@ -26,7 +26,7 @@ matrix:
 
 before_script:
 - $pip_install flake8
-- go get github.com/urfave/gfmxr/...
+- go get github.com/urfave/gfmrun/...
 - go get golang.org/x/tools/cmd/goimports
 - if [ ! -f node_modules/.bin/markdown-toc ] ; then
     npm install markdown-toc ;
@@ -42,7 +42,7 @@ script:
 - ./runtests gen
 - ./runtests vet
 - ./runtests test
-- ./runtests gfmxr
+- ./runtests gfmrun
 - ./cli-v1-to-v2 --selftest
 - ./runtests migrations
 - ./runtests toc
