@@ -27,6 +27,12 @@ var BashCompletionFlag = &BoolFlag{
 	Hidden: true,
 }
 
+// InitCompletionFlag generates completion code
+var InitCompletionFlag = &StringFlag{
+	Name:  "init-completion",
+	Usage: "generate completion code. Value must be 'bash' or 'zsh'",
+}
+
 // VersionFlag prints the version for the application
 var VersionFlag = &BoolFlag{
 	Name:    "version",

@@ -138,6 +138,7 @@ func (a *App) Setup() {
 
 	if a.EnableBashCompletion {
 		a.appendFlag(BashCompletionFlag)
+		a.appendFlag(InitCompletionFlag)
 	}
 
 	if !a.HideVersion {
@@ -173,6 +174,11 @@ func (a *App) Run(arguments []string) (err error) {
 	}
 
 	if checkCompletions(context) {
+		return nil
+	}
+
+	var done bool
+	if done, err = checkInitCompletion(context); done {
 		return nil
 	}
 
