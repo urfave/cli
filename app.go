@@ -148,7 +148,9 @@ func (a *App) Setup() {
 	}
 
 	if a.EnableBashCompletion {
+		a.appendFlag(GenerateCompletionFlag)
 		a.appendFlag(BashCompletionFlag)
+		a.appendFlag(ZshCompletionFlag)
 	}
 
 	if !a.HideVersion {
@@ -184,6 +186,14 @@ func (a *App) Run(arguments []string) (err error) {
 	}
 
 	if checkCompletions(context) {
+		return nil
+	}
+
+	if checkBashCompletion(context) {
+		return nil
+	}
+
+	if checkZshCompletion(context) {
 		return nil
 	}
 
@@ -282,7 +292,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 
 	// append flags
 	if a.EnableBashCompletion {
-		a.appendFlag(BashCompletionFlag)
+		a.appendFlag(GenerateCompletionFlag)
 	}
 
 	// parse flags

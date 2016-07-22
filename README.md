@@ -785,10 +785,30 @@ func main() {
 
 #### Enabling
 
-Source the `autocomplete/bash_autocomplete` file in your `.bashrc` file while
-setting the `PROG` variable to the name of your program:
+You can enable bash or zsh completion by using the flag `--bash`,
+respectively `--zsh`. These flags take the name of your program as
+parameter.
 
-`PROG=myprogram source /.../cli/autocomplete/bash_autocomplete`
+To setup for bash (if your program is in your PATH):
+
+```
+eval "`myprogram --bash myprogram`"
+```
+
+If your program is in the current directory:
+
+```
+eval "`./myprogram --bash ./myprogram`"
+```
+
+Alternatively, you can put the completion code in your `.bashrc` file:
+```
+myprogram --bash myprogram >> ~/.bashrc
+```
+
+Note: you have to specify the path of your program because you can define
+your own completion functions. The shell has then to know where your
+program is in order to generate possible completions.
 
 #### Distribution
 

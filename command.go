@@ -83,7 +83,7 @@ func (c Command) Run(ctx *Context) (err error) {
 	}
 
 	if ctx.App.EnableBashCompletion {
-		c.Flags = append(c.Flags, BashCompletionFlag)
+		c.Flags = append(c.Flags, GenerateCompletionFlag)
 	}
 
 	set := flagSet(c.Name, c.Flags)

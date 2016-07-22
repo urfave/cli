@@ -13,10 +13,22 @@ import (
 
 const defaultPlaceholder = "value"
 
-// BashCompletionFlag enables bash-completion for all commands and subcommands
-var BashCompletionFlag = BoolFlag{
+// GenerateCompletionFlag enables bash-completion for all commands and subcommands
+var GenerateCompletionFlag = BoolFlag{
 	Name:   "generate-bash-completion",
 	Hidden: true,
+}
+
+// BashCompletionFlag prints bash completion code
+var BashCompletionFlag = StringFlag{
+	Name:  "bash",
+	Usage: "print completion code for bash. 'value' is the program name",
+}
+
+// ZshCompletionFlag prints zsh completion code
+var ZshCompletionFlag = StringFlag{
+	Name:  "zsh",
+	Usage: "print completion code for bash. 'value' is the program name",
 }
 
 // VersionFlag prints the version for the application

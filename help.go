@@ -249,7 +249,7 @@ func checkSubcommandHelp(c *Context) bool {
 }
 
 func checkCompletions(c *Context) bool {
-	if (c.GlobalBool(BashCompletionFlag.Name) || c.Bool(BashCompletionFlag.Name)) && c.App.EnableBashCompletion {
+	if (c.GlobalBool(GenerateCompletionFlag.Name) || c.Bool(GenerateCompletionFlag.Name)) && c.App.EnableBashCompletion {
 		ShowCompletions(c)
 		return true
 	}
@@ -258,8 +258,46 @@ func checkCompletions(c *Context) bool {
 }
 
 func checkCommandCompletions(c *Context, name string) bool {
-	if c.Bool(BashCompletionFlag.Name) && c.App.EnableBashCompletion {
+	if c.Bool(GenerateCompletionFlag.Name) && c.App.EnableBashCompletion {
 		ShowCommandCompletions(c, name)
+		return true
+	}
+
+	return false
+}
+
+func bashCompletionCode(progName string) string {
+	var template = `_cli_bash_autocomplete() {
+     local cur opts base;
+     COMPREPLY=();
+     cur="${COMP_WORDS[COMP_CWORD]}";
+     opts=$( ${COMP_WORDS[@]:0:$COMP_CWORD} --generate-bash-completion );
+     COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) );
+     return 0;
+};
+complete -F _cli_bash_autocomplete %s`
+	return fmt.Sprintf(template, progName)
+}
+
+func zshCompletionCode(progName string) string {
+	var template = `autoload -U compinit && compinit;
+autoload -U bashcompinit && bashcompinit;`
+	
+	return template + "\n" + bashCompletionCode(progName)
+}
+
+func checkBashCompletion(c *Context) bool {
+	if c.GlobalIsSet(BashCompletionFlag.Name) && c.App.EnableBashCompletion {
+		fmt.Print(bashCompletionCode(c.GlobalString(BashCompletionFlag.Name)))
+		return true
+	}
+
+	return false
+}
+
+func checkZshCompletion(c *Context) bool {
+	if c.GlobalIsSet(ZshCompletionFlag.Name) && c.App.EnableBashCompletion {
+		fmt.Print(zshCompletionCode(c.GlobalString(BashCompletionFlag.Name)))
 		return true
 	}
 
