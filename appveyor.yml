@@ -10,7 +10,6 @@ environment:
   PYTHON: C:\Python27-x64
   PYTHON_VERSION: 2.7.x
   PYTHON_ARCH: 64
-  GFMXR_DEBUG: 1
 
 install:
 - set PATH=%GOPATH%\bin;C:\go\bin;%PATH%
