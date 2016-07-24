@@ -169,7 +169,10 @@ def _write_cli_flag_types(outfile, types):
             // {name} looks up the value of a local {name}Flag, returns
             // {context_default} if not found
             func (c *Context) {name}(name string) {context_type} {{
-                return lookup{name}(name, c.flagSet)
+                if fs := lookupFlagSet(name, c); fs != nil {{
+                    return lookup{name}(name, fs)
+                }}
+                return {context_default}
             }}
 
             func lookup{name}(name string, set *flag.FlagSet) {context_type} {{

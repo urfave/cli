@@ -35,57 +35,89 @@ func TestNewContext(t *testing.T) {
 func TestContext_Int(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Int("myflag", 12, "doc")
-	c := NewContext(nil, set, nil)
+	parentSet := flag.NewFlagSet("test", 0)
+	parentSet.Int("top-flag", 13, "doc")
+	parentCtx := NewContext(nil, parentSet, nil)
+	c := NewContext(nil, set, parentCtx)
 	expect(t, c.Int("myflag"), 12)
+	expect(t, c.Int("top-flag"), 13)
 }
 
 func TestContext_Int64(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Int64("myflagInt64", 12, "doc")
-	c := NewContext(nil, set, nil)
+	parentSet := flag.NewFlagSet("test", 0)
+	parentSet.Int64("top-flag", 13, "doc")
+	parentCtx := NewContext(nil, parentSet, nil)
+	c := NewContext(nil, set, parentCtx)
 	expect(t, c.Int64("myflagInt64"), int64(12))
+	expect(t, c.Int64("top-flag"), int64(13))
 }
 
 func TestContext_Uint(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Uint("myflagUint", uint(13), "doc")
-	c := NewContext(nil, set, nil)
+	parentSet := flag.NewFlagSet("test", 0)
+	parentSet.Uint("top-flag", uint(14), "doc")
+	parentCtx := NewContext(nil, parentSet, nil)
+	c := NewContext(nil, set, parentCtx)
 	expect(t, c.Uint("myflagUint"), uint(13))
+	expect(t, c.Uint("top-flag"), uint(14))
 }
 
 func TestContext_Uint64(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Uint64("myflagUint64", uint64(9), "doc")
-	c := NewContext(nil, set, nil)
+	parentSet := flag.NewFlagSet("test", 0)
+	parentSet.Uint64("top-flag", uint64(10), "doc")
+	parentCtx := NewContext(nil, parentSet, nil)
+	c := NewContext(nil, set, parentCtx)
 	expect(t, c.Uint64("myflagUint64"), uint64(9))
+	expect(t, c.Uint64("top-flag"), uint64(10))
 }
 
 func TestContext_Float64(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Float64("myflag", float64(17), "doc")
-	c := NewContext(nil, set, nil)
+	parentSet := flag.NewFlagSet("test", 0)
+	parentSet.Float64("top-flag", float64(18), "doc")
+	parentCtx := NewContext(nil, parentSet, nil)
+	c := NewContext(nil, set, parentCtx)
 	expect(t, c.Float64("myflag"), float64(17))
+	expect(t, c.Float64("top-flag"), float64(18))
 }
 
 func TestContext_Duration(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
-	set.Duration("myflag", time.Duration(12*time.Second), "doc")
-	c := NewContext(nil, set, nil)
-	expect(t, c.Duration("myflag"), time.Duration(12*time.Second))
+	set.Duration("myflag", 12*time.Second, "doc")
+	parentSet := flag.NewFlagSet("test", 0)
+	parentSet.Duration("top-flag", 13*time.Second, "doc")
+	parentCtx := NewContext(nil, parentSet, nil)
+	c := NewContext(nil, set, parentCtx)
+	expect(t, c.Duration("myflag"), 12*time.Second)
+	expect(t, c.Duration("top-flag"), 13*time.Second)
 }
 
 func TestContext_String(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.String("myflag", "hello world", "doc")
-	c := NewContext(nil, set, nil)
+	parentSet := flag.NewFlagSet("test", 0)
+	parentSet.String("top-flag", "hai veld", "doc")
+	parentCtx := NewContext(nil, parentSet, nil)
+	c := NewContext(nil, set, parentCtx)
 	expect(t, c.String("myflag"), "hello world")
+	expect(t, c.String("top-flag"), "hai veld")
 }
 
 func TestContext_Bool(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("myflag", false, "doc")
-	c := NewContext(nil, set, nil)
+	parentSet := flag.NewFlagSet("test", 0)
+	parentSet.Bool("top-flag", true, "doc")
+	parentCtx := NewContext(nil, parentSet, nil)
+	c := NewContext(nil, set, parentCtx)
 	expect(t, c.Bool("myflag"), false)
+	expect(t, c.Bool("top-flag"), true)
 }
 
 func TestContext_Args(t *testing.T) {
