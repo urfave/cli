@@ -5,6 +5,7 @@
 ## [Unreleased]
 ### Added
 - Flag type code generation via `go generate`
+- Write to stderr and exit 1 if action returns non-nil error
 
 ### Changed
 - Raise minimum tested/supported Go version to 1.2+

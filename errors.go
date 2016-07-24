@@ -93,6 +93,6 @@ func HandleExitCoder(err error) {
 
 	if err.Error() != "" {
 		fmt.Fprintln(ErrWriter, err)
-		OsExiter(1)
 	}
+	OsExiter(1)
 }
