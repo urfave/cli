@@ -100,7 +100,7 @@ func TestHandleExitCoder_ErrorWithoutMessage(t *testing.T) {
 	err := errors.New("")
 	HandleExitCoder(err)
 
-	expect(t, exitCode, 0)
-	expect(t, called, false)
+	expect(t, exitCode, 1)
+	expect(t, called, true)
 	expect(t, ErrWriter.(*bytes.Buffer).String(), "")
 }
