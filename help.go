@@ -129,7 +129,7 @@ func DefaultAppComplete(c *Context) {
 			continue
 		}
 		for _, name := range command.Names() {
-			fmt.Fprintln(c.App.Writer, name)
+			fmt.Fprintf(c.App.Writer, "%s:%s\n", name, command.Usage)
 		}
 	}
 }
