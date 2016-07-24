@@ -13,6 +13,19 @@ import (
 	"testing"
 )
 
+var (
+	lastExitCode = 0
+	fakeOsExiter = func(rc int) {
+		lastExitCode = rc
+	}
+	fakeErrWriter = &bytes.Buffer{}
+)
+
+func init() {
+	OsExiter = fakeOsExiter
+	ErrWriter = fakeErrWriter
+}
+
 type opCounts struct {
 	Total, BashComplete, OnUsageError, Before, CommandNotFound, Action, After, SubCommand int
 }

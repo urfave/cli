@@ -1,8 +1,8 @@
 package cli
 
 import (
+	"bytes"
 	"errors"
-	"os"
 	"testing"
 )
 
@@ -15,7 +15,7 @@ func TestHandleExitCoder_nil(t *testing.T) {
 		called = true
 	}
 
-	defer func() { OsExiter = os.Exit }()
+	defer func() { OsExiter = fakeOsExiter }()
 
 	HandleExitCoder(nil)
 
@@ -32,7 +32,7 @@ func TestHandleExitCoder_ExitCoder(t *testing.T) {
 		called = true
 	}
 
-	defer func() { OsExiter = os.Exit }()
+	defer func() { OsExiter = fakeOsExiter }()
 
 	HandleExitCoder(NewExitError("galactic perimeter breach", 9))
 
@@ -49,7 +49,7 @@ func TestHandleExitCoder_MultiErrorWithExitCoder(t *testing.T) {
 		called = true
 	}
 
-	defer func() { OsExiter = os.Exit }()
+	defer func() { OsExiter = fakeOsExiter }()
 
 	exitErr := NewExitError("galactic perimeter breach", 9)
 	err := NewMultiError(errors.New("wowsa"), errors.New("egad"), exitErr)
@@ -57,4 +57,50 @@ func TestHandleExitCoder_MultiErrorWithExitCoder(t *testing.T) {
 
 	expect(t, exitCode, 9)
 	expect(t, called, true)
+}
+
+func TestHandleExitCoder_ErrorWithMessage(t *testing.T) {
+	exitCode := 0
+	called := false
+
+	OsExiter = func(rc int) {
+		exitCode = rc
+		called = true
+	}
+	ErrWriter = &bytes.Buffer{}
+
+	defer func() {
+		OsExiter = fakeOsExiter
+		ErrWriter = fakeErrWriter
+	}()
+
+	err := errors.New("gourd havens")
+	HandleExitCoder(err)
+
+	expect(t, exitCode, 1)
+	expect(t, called, true)
+	expect(t, ErrWriter.(*bytes.Buffer).String(), "gourd havens\n")
+}
+
+func TestHandleExitCoder_ErrorWithoutMessage(t *testing.T) {
+	exitCode := 0
+	called := false
+
+	OsExiter = func(rc int) {
+		exitCode = rc
+		called = true
+	}
+	ErrWriter = &bytes.Buffer{}
+
+	defer func() {
+		OsExiter = fakeOsExiter
+		ErrWriter = fakeErrWriter
+	}()
+
+	err := errors.New("")
+	HandleExitCoder(err)
+
+	expect(t, exitCode, 0)
+	expect(t, called, false)
+	expect(t, ErrWriter.(*bytes.Buffer).String(), "")
 }
