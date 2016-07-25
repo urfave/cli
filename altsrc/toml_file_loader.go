@@ -13,7 +13,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-type TomlMap struct {
+type tomlMap struct {
 	Map map[interface{}]interface{}
 }
 
@@ -66,7 +66,7 @@ func unmarshalMap(i interface{}) (ret map[interface{}]interface{}, err error) {
 	return ret, nil
 }
 
-func (self *TomlMap) UnmarshalTOML(i interface{}) error {
+func (self *tomlMap) UnmarshalTOML(i interface{}) error {
 	if tmp, err := unmarshalMap(i); err == nil {
 		self.Map = tmp
 	} else {
@@ -82,7 +82,7 @@ type tomlSourceContext struct {
 // NewTomlSourceFromFile creates a new TOML InputSourceContext from a filepath.
 func NewTomlSourceFromFile(file string) (InputSourceContext, error) {
 	tsc := &tomlSourceContext{FilePath: file}
-	var results TomlMap = TomlMap{}
+	var results tomlMap = tomlMap{}
 	if err := readCommandToml(tsc.FilePath, &results); err != nil {
 		return nil, fmt.Errorf("Unable to load TOML file '%s': inner error: \n'%v'", tsc.FilePath, err.Error())
 	}
