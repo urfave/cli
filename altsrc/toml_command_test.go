@@ -1,4 +1,4 @@
-// Disabling building of tom support in cases where golang is 1.0 or 1.1
+// Disabling building of toml support in cases where golang is 1.0 or 1.1
 // as the encoding library is not implemented or supported.
 
 // +build go1.2
