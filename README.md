@@ -953,7 +953,7 @@ setting `cli.VersionFlag`, e.g.:
 
 <!-- {
   "args": ["&#45;&#45print-version"],
-  "output": "partay version v19\\.99\\.0"
+  "output": "partay version 19\\.99\\.0"
 } -->
 ``` go
 package main
@@ -972,7 +972,7 @@ func main() {
 
   app := cli.NewApp()
   app.Name = "partay"
-  app.Version = "v19.99.0"
+  app.Version = "19.99.0"
   app.Run(os.Args)
 }
 ```
@@ -981,7 +981,7 @@ Alternatively, the version printer at `cli.VersionPrinter` may be overridden, e.
 
 <!-- {
   "args": ["&#45;&#45version"],
-  "output": "version=v19\\.99\\.0 revision=fafafaf"
+  "output": "version=19\\.99\\.0 revision=fafafaf"
 } -->
 ``` go
 package main
@@ -1004,7 +1004,7 @@ func main() {
 
   app := cli.NewApp()
   app.Name = "partay"
-  app.Version = "v19.99.0"
+  app.Version = "19.99.0"
   app.Run(os.Args)
 }
 ```
@@ -1083,7 +1083,7 @@ func (g *genericType) String() string {
 func main() {
   app := cli.NewApp()
   app.Name = "kənˈtrīv"
-  app.Version = "v19.99.0"
+  app.Version = "19.99.0"
   app.Compiled = time.Now()
   app.Authors = []cli.Author{
     cli.Author{
