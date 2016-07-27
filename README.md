@@ -549,7 +549,7 @@ Here is a more complete sample of a command using YAML support:
   "output": "&#45&#45;test value.*default: 0"
 } -->
 ``` go
-package notmain
+package main
 
 import (
   "fmt"
@@ -843,7 +843,7 @@ func main() {
 
 ### Generated Help Text
 
-The default help flag (`-h/--help`) is defined as `cli.HelpFlag` and is checked 
+The default help flag (`-h/--help`) is defined as `cli.HelpFlag` and is checked
 by the cli internals in order to print generated help text for the app, command,
 or subcommand, and break execution.
 
