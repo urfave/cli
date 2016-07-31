@@ -31,7 +31,7 @@ applications in an expressive way.
     + [Placeholder Values](#placeholder-values)
     + [Alternate Names](#alternate-names)
     + [Values from the Environment](#values-from-the-environment)
-    + [Values from alternate input sources (YAML and others)](#values-from-alternate-input-sources-yaml-and-others)
+    + [Values from alternate input sources (YAML, TOML, and others)](#values-from-alternate-input-sources-yaml-toml-and-others)
   * [Subcommands](#subcommands)
   * [Subcommands categories](#subcommands-categories)
   * [Exit code](#exit-code)
@@ -513,10 +513,14 @@ func main() {
 }
 ```
 
-#### Values from alternate input sources (YAML and others)
+#### Values from alternate input sources (YAML, TOML, and others)
 
 There is a separate package altsrc that adds support for getting flag values
-from other input sources like YAML.
+from other file input sources.
+
+Currently supported input source formats:
+* YAML
+* TOML
 
 In order to get values for a flag from an alternate input source the following
 code would be added to wrap an existing cli.Flag like below:
@@ -538,9 +542,9 @@ the yaml input source for any flags that are defined on that command.  As a note
 the "load" flag used would also have to be defined on the command flags in order
 for this code snipped to work.
 
-Currently only YAML files are supported but developers can add support for other
-input sources by implementing the altsrc.InputSourceContext for their given
-sources.
+Currently only the aboved specified formats are supported but developers can
+add support for other input sources by implementing the
+altsrc.InputSourceContext for their given sources.
 
 Here is a more complete sample of a command using YAML support:
 
