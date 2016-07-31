@@ -2,6 +2,7 @@ package cli
 
 import (
 	"flag"
+	"os"
 	"testing"
 	"time"
 )
@@ -180,6 +181,33 @@ func TestContext_IsSet(t *testing.T) {
 	expect(t, c.IsSet("myflagGlobal"), false)
 }
 
+// XXX Corresponds to hack in context.IsSet for flags with EnvVar field
+// Should be moved to `flag_test` in v2
+func TestContext_IsSet_fromEnv(t *testing.T) {
+	var timeoutIsSet, tIsSet, noEnvVarIsSet, nIsSet bool
+
+	os.Clearenv()
+	os.Setenv("APP_TIMEOUT_SECONDS", "15.5")
+	a := App{
+		Flags: []Flag{
+			Float64Flag{Name: "timeout, t", EnvVar: "APP_TIMEOUT_SECONDS"},
+			Float64Flag{Name: "no-env-var, n"},
+		},
+		Action: func(ctx *Context) error {
+			timeoutIsSet = ctx.IsSet("timeout")
+			tIsSet = ctx.IsSet("t")
+			noEnvVarIsSet = ctx.IsSet("no-env-var")
+			nIsSet = ctx.IsSet("n")
+			return nil
+		},
+	}
+	a.Run([]string{"run"})
+	expect(t, timeoutIsSet, true)
+	expect(t, tIsSet, true)
+	expect(t, noEnvVarIsSet, false)
+	expect(t, nIsSet, false)
+}
+
 func TestContext_GlobalIsSet(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("myflag", false, "doc")
@@ -197,6 +225,38 @@ func TestContext_GlobalIsSet(t *testing.T) {
 	expect(t, c.GlobalIsSet("myflagGlobal"), true)
 	expect(t, c.GlobalIsSet("myflagGlobalUnset"), false)
 	expect(t, c.GlobalIsSet("bogusGlobal"), false)
+}
+
+// XXX Corresponds to hack in context.IsSet for flags with EnvVar field
+// Should be moved to `flag_test` in v2
+func TestContext_GlobalIsSet_fromEnv(t *testing.T) {
+	var timeoutIsSet, tIsSet, noEnvVarIsSet, nIsSet bool
+
+	os.Clearenv()
+	os.Setenv("APP_TIMEOUT_SECONDS", "15.5")
+	a := App{
+		Flags: []Flag{
+			Float64Flag{Name: "timeout, t", EnvVar: "APP_TIMEOUT_SECONDS"},
+			Float64Flag{Name: "no-env-var, n"},
+		},
+		Commands: []Command{
+			{
+				Name: "hello",
+				Action: func(ctx *Context) error {
+					timeoutIsSet = ctx.GlobalIsSet("timeout")
+					tIsSet = ctx.GlobalIsSet("t")
+					noEnvVarIsSet = ctx.GlobalIsSet("no-env-var")
+					nIsSet = ctx.GlobalIsSet("n")
+					return nil
+				},
+			},
+		},
+	}
+	a.Run([]string{"run", "hello"})
+	expect(t, timeoutIsSet, true)
+	expect(t, tIsSet, true)
+	expect(t, noEnvVarIsSet, false)
+	expect(t, nIsSet, false)
 }
 
 func TestContext_NumFlags(t *testing.T) {
