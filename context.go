@@ -79,9 +79,12 @@ func (c *Context) IsSet(name string) bool {
 					return
 				}
 
-				envVars := reflect.ValueOf(f).FieldByName("EnvVar").String()
+				envVarValue := reflect.ValueOf(f).FieldByName("EnvVar")
+				if !envVarValue.IsValid() {
+					return
+				}
 
-				eachName(envVars, func(envVar string) {
+				eachName(envVarValue.String(), func(envVar string) {
 					envVar = strings.TrimSpace(envVar)
 					if envVal := os.Getenv(envVar); envVal != "" {
 						c.setFlags[name] = true
