@@ -473,7 +473,7 @@ func HandleAction(action interface{}, context *Context) (err error) {
 			// swallowing all panics that may happen when calling an Action func.
 			s := fmt.Sprintf("%v", r)
 			if strings.HasPrefix(s, "reflect: ") && strings.Contains(s, "too many input arguments") {
-				err = NewExitError(fmt.Sprintf("ERROR unknown Action error: %v."), 2)
+				err = NewExitError(fmt.Sprintf("ERROR unknown Action error: %v.", r), 2)
 			} else {
 				panic(r)
 			}
