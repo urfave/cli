@@ -26,7 +26,7 @@ matrix:
 
 before_script:
 - $pip_install flake8
-- go get github.com/urfave/gfmrun/...
+- go get github.com/urfave/gfmrun/... || true
 - go get golang.org/x/tools/... || true
 - if [ ! -f node_modules/.bin/markdown-toc ] ; then
     npm install markdown-toc ;
