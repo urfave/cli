@@ -75,6 +75,11 @@ def _vet():
 
 @_target
 def _migrations():
+    go_version = check_output('go version'.split()).split()[2]
+    if go_version < 'go1.3':
+        print('runtests: skip on {}'.format(go_version), file=sys.stderr)
+        return
+
     migration_script = os.path.abspath(
         os.environ.get('V1TOV2', './cli-v1-to-v2')
     )
