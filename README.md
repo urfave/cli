@@ -967,7 +967,7 @@ setting `cli.VersionFlag`, e.g.:
 
 <!-- {
   "args": ["&#45;&#45print-version"],
-  "output": "partay version 19\\.99\\.0"
+  "output": "partay version v19\\.99\\.0"
 } -->
 ``` go
 package main
@@ -996,7 +996,7 @@ Alternatively, the version printer at `cli.VersionPrinter` may be overridden, e.
 
 <!-- {
   "args": ["&#45;&#45version"],
-  "output": "version=19\\.99\\.0 revision=fafafaf"
+  "output": "version=v19\\.99\\.0 revision=fafafaf"
 } -->
 ``` go
 package main
