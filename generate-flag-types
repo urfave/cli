@@ -193,6 +193,8 @@ def _write_altsrc_flag_types(outfile, types):
     _fwrite(outfile, """\
         package altsrc
 
+        import "gopkg.in/urfave/cli.v2"
+
         // WARNING: This file is generated!
 
         """)
