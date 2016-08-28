@@ -67,6 +67,16 @@ func TestStringFlagHelpOutput(t *testing.T) {
 	}
 }
 
+func TestStringFlagDefaultText(t *testing.T) {
+	flag := &StringFlag{Name: "foo", Aliases: nil, Usage: "amount of `foo` requested", Value: "none", DefaultText: "all of it"}
+	expected := "--foo foo\tamount of foo requested (default: \"all of it\")"
+	output := flag.String()
+
+	if output != expected {
+		t.Errorf("%q does not match %q", output, expected)
+	}
+}
+
 func TestStringFlagWithEnvVarHelpOutput(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("APP_FOO", "derp")
@@ -482,7 +492,6 @@ func TestFloat64FlagApply_SetsAllNames(t *testing.T) {
 	expect(t, v, float64(43.33333))
 }
 
-
 var float64SliceFlagTests = []struct {
 	name     string
 	aliases  []string
@@ -522,8 +531,6 @@ func TestFloat64SliceFlagWithEnvVarHelpOutput(t *testing.T) {
 		}
 	}
 }
-
-
 
 var genericFlagTests = []struct {
 	name     string
@@ -1100,7 +1107,6 @@ func TestParseMultiFloat64FromEnvCascade(t *testing.T) {
 	a.Run([]string{"run"})
 }
 
-
 func TestParseMultiFloat64SliceFromEnv(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("APP_INTERVALS", "0.1,-10.5")
@@ -1140,7 +1146,6 @@ func TestParseMultiFloat64SliceFromEnvCascade(t *testing.T) {
 		},
 	}).Run([]string{"run"})
 }
-
 
 func TestParseMultiBool(t *testing.T) {
 	a := App{

@@ -16,6 +16,7 @@ type BoolFlag struct {
 	EnvVars     []string
 	Hidden      bool
 	Value       bool
+	DefaultText string
 	Destination *bool
 }
 
@@ -59,6 +60,7 @@ type DurationFlag struct {
 	EnvVars     []string
 	Hidden      bool
 	Value       time.Duration
+	DefaultText string
 	Destination *time.Duration
 }
 
@@ -102,6 +104,7 @@ type Float64Flag struct {
 	EnvVars     []string
 	Hidden      bool
 	Value       float64
+	DefaultText string
 	Destination *float64
 }
 
@@ -139,12 +142,13 @@ func lookupFloat64(name string, set *flag.FlagSet) float64 {
 
 // GenericFlag is a flag with type Generic
 type GenericFlag struct {
-	Name    string
-	Aliases []string
-	Usage   string
-	EnvVars []string
-	Hidden  bool
-	Value   Generic
+	Name        string
+	Aliases     []string
+	Usage       string
+	EnvVars     []string
+	Hidden      bool
+	Value       Generic
+	DefaultText string
 }
 
 // String returns a readable representation of this value
@@ -187,6 +191,7 @@ type Int64Flag struct {
 	EnvVars     []string
 	Hidden      bool
 	Value       int64
+	DefaultText string
 	Destination *int64
 }
 
@@ -230,6 +235,7 @@ type IntFlag struct {
 	EnvVars     []string
 	Hidden      bool
 	Value       int
+	DefaultText string
 	Destination *int
 }
 
@@ -267,12 +273,13 @@ func lookupInt(name string, set *flag.FlagSet) int {
 
 // IntSliceFlag is a flag with type *IntSlice
 type IntSliceFlag struct {
-	Name    string
-	Aliases []string
-	Usage   string
-	EnvVars []string
-	Hidden  bool
-	Value   *IntSlice
+	Name        string
+	Aliases     []string
+	Usage       string
+	EnvVars     []string
+	Hidden      bool
+	Value       *IntSlice
+	DefaultText string
 }
 
 // String returns a readable representation of this value
@@ -309,12 +316,13 @@ func lookupIntSlice(name string, set *flag.FlagSet) []int {
 
 // Int64SliceFlag is a flag with type *Int64Slice
 type Int64SliceFlag struct {
-	Name    string
-	Aliases []string
-	Usage   string
-	EnvVars []string
-	Hidden  bool
-	Value   *Int64Slice
+	Name        string
+	Aliases     []string
+	Usage       string
+	EnvVars     []string
+	Hidden      bool
+	Value       *Int64Slice
+	DefaultText string
 }
 
 // String returns a readable representation of this value
@@ -351,12 +359,13 @@ func lookupInt64Slice(name string, set *flag.FlagSet) []int64 {
 
 // Float64SliceFlag is a flag with type *Float64Slice
 type Float64SliceFlag struct {
-	Name    string
-	Aliases []string
-	Usage   string
-	EnvVars []string
-	Hidden  bool
-	Value   *Float64Slice
+	Name        string
+	Aliases     []string
+	Usage       string
+	EnvVars     []string
+	Hidden      bool
+	Value       *Float64Slice
+	DefaultText string
 }
 
 // String returns a readable representation of this value
@@ -399,6 +408,7 @@ type StringFlag struct {
 	EnvVars     []string
 	Hidden      bool
 	Value       string
+	DefaultText string
 	Destination *string
 }
 
@@ -436,12 +446,13 @@ func lookupString(name string, set *flag.FlagSet) string {
 
 // StringSliceFlag is a flag with type *StringSlice
 type StringSliceFlag struct {
-	Name    string
-	Aliases []string
-	Usage   string
-	EnvVars []string
-	Hidden  bool
-	Value   *StringSlice
+	Name        string
+	Aliases     []string
+	Usage       string
+	EnvVars     []string
+	Hidden      bool
+	Value       *StringSlice
+	DefaultText string
 }
 
 // String returns a readable representation of this value
@@ -484,6 +495,7 @@ type Uint64Flag struct {
 	EnvVars     []string
 	Hidden      bool
 	Value       uint64
+	DefaultText string
 	Destination *uint64
 }
 
@@ -527,6 +539,7 @@ type UintFlag struct {
 	EnvVars     []string
 	Hidden      bool
 	Value       uint
+	DefaultText string
 	Destination *uint
 }
 
