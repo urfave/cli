@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/urfave/cli"
+	"gopkg.in/urfave/cli.v2"
 )
 
 // FlagInputSourceExtension is an extension interface of cli.Flag that
