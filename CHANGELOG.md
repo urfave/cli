@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+## [1.16.1] - 2016-08-28
+### Fixed
+- Removed deprecation warnings to STDERR to avoid them leaking to the end-user
+
 ## [1.16.0] - 2016-05-02
 ### Added
 - `Hidden` field on all flag struct types to omit from generated help text
