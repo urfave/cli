@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+## [1.17.1] - 2016-08-28
+### Fixed
+- Removed deprecation warnings to STDERR to avoid them leaking to the end-user
+
 ## [1.17.0] - 2016-05-09
 ### Added
 - Pluggable flag-level help text rendering via `cli.DefaultFlagStringFunc`
@@ -24,6 +28,10 @@
   that a 0 exit code indicated a successful execution.
 - cleanups based on [Go Report Card
   feedback](https://goreportcard.com/report/github.com/codegangsta/cli)
+
+## [1.16.1] - 2016-08-28
+### Fixed
+- Removed deprecation warnings to STDERR to avoid them leaking to the end-user
 
 ## [1.16.0] - 2016-05-02
 ### Added
