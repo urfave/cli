@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+## [1.18.1] - 2016-08-28
+### Fixed
+- Removed deprecation warnings to STDERR to avoid them leaking to the end-user (backported)
+
 ## [1.18.0] - 2016-06-27
 ### Added
 - `./runtests` test runner with coverage tracking by default
@@ -21,6 +25,10 @@
 - Display the `help` subcommand when using `CommandCategories`
 - No longer swallows `panic`s that occur within the `Action`s themselves when
   detecting the signature of the `Action` field
+
+## [1.17.1] - 2016-08-28
+### Fixed
+- Removed deprecation warnings to STDERR to avoid them leaking to the end-user
 
 ## [1.17.0] - 2016-05-09
 ### Added
@@ -42,6 +50,10 @@
   that a 0 exit code indicated a successful execution.
 - cleanups based on [Go Report Card
   feedback](https://goreportcard.com/report/github.com/urfave/cli)
+
+## [1.16.1] - 2016-08-28
+### Fixed
+- Removed deprecation warnings to STDERR to avoid them leaking to the end-user
 
 ## [1.16.0] - 2016-05-02
 ### Added
