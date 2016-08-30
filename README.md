@@ -32,7 +32,7 @@ applications in an expressive way.
     + [Alternate Names](#alternate-names)
     + [Values from the Environment](#values-from-the-environment)
     + [Values from alternate input sources (YAML, TOML, and others)](#values-from-alternate-input-sources-yaml-toml-and-others)
-    + [Default Values for Help Output](#default-values-for-help-output)
+    + [Default Values for help output](#default-values-for-help-output)
   * [Subcommands](#subcommands)
   * [Subcommands categories](#subcommands-categories)
   * [Exit code](#exit-code)
