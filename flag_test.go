@@ -69,7 +69,7 @@ func TestStringFlagHelpOutput(t *testing.T) {
 
 func TestStringFlagDefaultText(t *testing.T) {
 	flag := &StringFlag{Name: "foo", Aliases: nil, Usage: "amount of `foo` requested", Value: "none", DefaultText: "all of it"}
-	expected := "--foo foo\tamount of foo requested (default: \"all of it\")"
+	expected := "--foo foo\tamount of foo requested (default: all of it)"
 	output := flag.String()
 
 	if output != expected {

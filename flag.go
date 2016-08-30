@@ -742,7 +742,7 @@ func stringifyFlag(f Flag) string {
 	helpText := fv.FieldByName("DefaultText")
 	if helpText.IsValid() && helpText.String() != "" {
 		needsPlaceholder = val.Kind() != reflect.Bool
-		defaultValueString = fmt.Sprintf(" (default: %q)", helpText.String())
+		defaultValueString = fmt.Sprintf(" (default: %s)", helpText.String())
 	}
 
 	if defaultValueString == " (default: )" {

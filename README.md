@@ -589,6 +589,48 @@ func main() {
 }
 ```
 
+#### Default Values for help output
+
+Sometimes it's useful to specify a flag's default help-text value within the flag declaration. This can be useful if the default value for a flag is a computed value. The default value can be set via the `DefaultText` struct field.
+
+For example this:
+
+<!-- {
+  "args": ["&#45;&#45;help"],
+  "output": "&#45;&#45;port value"
+} -->
+```go
+package main
+
+import (
+  "os"
+
+  "gopkg.in/urfave/cli.v2"
+)
+
+func main() {
+  app := &cli.App{
+    Flags: []cli.Flag{
+      &cli.IntFlag{
+        Name:    "port",
+        Usage:   "Use a randomized port",
+        Value: 0,
+        DefaultText: "random",
+      },
+    },
+  }
+
+  app.Run(os.Args)
+}
+```
+
+Will result in help output like:
+
+```
+--port value  Use a randomized port (default: random)
+```
+
+
 ### Subcommands
 
 Subcommands can be defined for a more git-like command line app.
