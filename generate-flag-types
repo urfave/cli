@@ -145,6 +145,7 @@ def _write_cli_flag_types(outfile, types):
             EnvVars []string
             Hidden bool
             Value {type}
+            DefaultText string
         """.format(**typedef))
 
         if typedef['dest']:
