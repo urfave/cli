@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/urfave/cli"
+	"gopkg.in/urfave/cli.v2"
 )
 
 const (
