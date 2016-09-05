@@ -46,6 +46,8 @@ type Command struct {
 	Flags []Flag
 	// Treat all flags as normal arguments if true
 	SkipFlagParsing bool
+	// Treat the flags as normal arguments if true
+	SkipLastFlagParsing bool
 	// Boolean to hide built-in help command
 	HideHelp bool
 	// Boolean to hide this command from help or completion
@@ -90,6 +92,7 @@ func (c Command) Run(ctx *Context) (err error) {
 	set.SetOutput(ioutil.Discard)
 
 	if !c.SkipFlagParsing {
+		firstFlagAdjust := -1
 		firstFlagIndex := -1
 		terminatorIndex := -1
 		for index, arg := range ctx.Args() {
@@ -101,9 +104,13 @@ func (c Command) Run(ctx *Context) (err error) {
 				continue
 			} else if strings.HasPrefix(arg, "-") && firstFlagIndex == -1 {
 				firstFlagIndex = index
+			} else {
+				firstFlagAdjust = index
 			}
 		}
-
+		if c.SkipLastFlagParsing && firstFlagAdjust < firstFlagIndex {
+			firstFlagIndex = -1
+		}
 		if firstFlagIndex > -1 {
 			args := ctx.Args()
 			regularArgs := make([]string, len(args[1:firstFlagIndex]))
