@@ -849,7 +849,7 @@ func main() {
 
 ### Generated Help Text
 
-The default help flag (`-h/--help`) is defined as `cli.HelpFlag` and is checked 
+The default help flag (`-h/--help`) is defined as `cli.HelpFlag` and is checked
 by the cli internals in order to print generated help text for the app, command,
 or subcommand, and break execution.
 
@@ -954,7 +954,7 @@ is checked by the cli internals in order to print the `App.Version` via
 
 #### Customization
 
-The default flag may be cusomized to something other than `-v/--version` by
+The default flag may be customized to something other than `-v/--version` by
 setting `cli.VersionFlag`, e.g.:
 
 <!-- {
