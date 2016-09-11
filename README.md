@@ -23,7 +23,7 @@ applications in an expressive way.
 - [Installation](#installation)
   * [Supported platforms](#supported-platforms)
   * [Using the `v2` branch](#using-the-v2-branch)
-  * [Pinning to the `v1` branch](#pinning-to-the-v1-branch)
+  * [Pinning to the `v1` releases](#pinning-to-the-v1-releases)
 - [Getting Started](#getting-started)
 - [Examples](#examples)
   * [Arguments](#arguments)
@@ -104,11 +104,11 @@ import (
 ...
 ```
 
-### Pinning to the `v1` branch
+### Pinning to the `v1` releases
 
 Similarly to the section above describing use of the `v2` branch, if one wants
 to avoid any unexpected compatibility pains once `v2` becomes `master`, then
-pinning to the `v1` branch is an acceptable option, e.g.:
+pinning to `v1` is an acceptable option, e.g.:
 
 ```
 $ go get gopkg.in/urfave/cli.v1
@@ -121,6 +121,8 @@ import (
 )
 ...
 ```
+
+This will pull the latest tagged `v1` release (e.g. `v1.18.1` at the time of writing).
 
 ## Getting Started
 
