@@ -128,6 +128,8 @@ func (c Command) Run(ctx *Context) (err error) {
 		} else {
 			err = set.Parse(ctx.Args().Tail())
 		}
+	} else {
+		err = set.Parse(ctx.Args().Tail())
 	}
 
 	if err != nil {
