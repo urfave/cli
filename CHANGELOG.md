@@ -3,13 +3,33 @@
 **ATTN**: This project uses [semantic versioning](http://semver.org/).
 
 ## [Unreleased]
+
+
+## [1.19.0] - 2016-09-11
 ### Added
 - Flag type code generation via `go generate`
 - Write to stderr and exit 1 if action returns non-nil error
 - Added support for TOML to the `altsrc` loader
+- `SkipArgReorder` was added to allow users to skip the argument reordering.
+  This is useful if you want to consider all "flags" after an argument as
+  arguments rather than flags (the default behavior of the stdlib `flag`
+  library). This is backported functionality from the [removal of the flag
+  reordering](https://github.com/urfave/cli/pull/398) in the unreleased version
+  2
 
 ### Changed
 - Raise minimum tested/supported Go version to 1.2+
+
+### Fixed
+- `App.Metadata` is initialized automatically now (previously was `nil` unless initialized)
+- Correctly show help message if `-h` is provided to a subcommand
+- `context.(Global)IsSet` now respects environment variables. Previously it
+  would return `false` if a flag was specified in the environment rather than
+  as an argument
+- Removed deprecation warnings to STDERR to avoid them leaking to the end-user
+- `altsrc`s import paths were updated to use `gopkg.in/urfave/cli.v1`. This
+  fixes issues that occurred when `gopkg.in/urfave/cli.v1` was imported as well
+  as `altsrc` where Go would complain that the types didn't match
 
 ## [1.18.1] - 2016-08-28
 ### Fixed
