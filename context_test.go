@@ -184,18 +184,22 @@ func TestContext_IsSet(t *testing.T) {
 // XXX Corresponds to hack in context.IsSet for flags with EnvVar field
 // Should be moved to `flag_test` in v2
 func TestContext_IsSet_fromEnv(t *testing.T) {
-	var timeoutIsSet, tIsSet, noEnvVarIsSet, nIsSet bool
+	var timeoutIsSet, tIsSet, noEnvVarIsSet, nIsSet, passwordIsSet, pIsSet bool
 
 	os.Clearenv()
 	os.Setenv("APP_TIMEOUT_SECONDS", "15.5")
+	os.Setenv("APP_PASSWORD", "")
 	a := App{
 		Flags: []Flag{
 			Float64Flag{Name: "timeout, t", EnvVar: "APP_TIMEOUT_SECONDS"},
+			Float64Flag{Name: "password, p", EnvVar: "APP_PASSWORD"},
 			Float64Flag{Name: "no-env-var, n"},
 		},
 		Action: func(ctx *Context) error {
 			timeoutIsSet = ctx.IsSet("timeout")
 			tIsSet = ctx.IsSet("t")
+			passwordIsSet = ctx.IsSet("password")
+			pIsSet = ctx.IsSet("p")
 			noEnvVarIsSet = ctx.IsSet("no-env-var")
 			nIsSet = ctx.IsSet("n")
 			return nil
@@ -204,6 +208,8 @@ func TestContext_IsSet_fromEnv(t *testing.T) {
 	a.Run([]string{"run"})
 	expect(t, timeoutIsSet, true)
 	expect(t, tIsSet, true)
+	expect(t, passwordIsSet, true)
+	expect(t, pIsSet, true)
 	expect(t, noEnvVarIsSet, false)
 	expect(t, nIsSet, false)
 }

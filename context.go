@@ -3,9 +3,9 @@ package cli
 import (
 	"errors"
 	"flag"
-	"os"
 	"reflect"
 	"strings"
+	"syscall"
 )
 
 // Context is a type that is passed through to
@@ -91,7 +91,7 @@ func (c *Context) IsSet(name string) bool {
 
 				eachName(envVarValue.String(), func(envVar string) {
 					envVar = strings.TrimSpace(envVar)
-					if envVal := os.Getenv(envVar); envVal != "" {
+					if _, ok := syscall.Getenv(envVar); ok {
 						c.setFlags[name] = true
 						return
 					}

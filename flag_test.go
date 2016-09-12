@@ -29,6 +29,38 @@ func TestBoolFlagHelpOutput(t *testing.T) {
 	}
 }
 
+func TestParseBoolFromEnv(t *testing.T) {
+	var boolFlagTests = []struct {
+		input  string
+		output bool
+	}{
+		{"", false},
+		{"1", true},
+		{"false", false},
+		{"true", true},
+	}
+
+	for _, test := range boolFlagTests {
+		os.Clearenv()
+		os.Setenv("DEBUG", test.input)
+		a := App{
+			Flags: []Flag{
+				BoolFlag{Name: "debug, d", EnvVar: "DEBUG"},
+			},
+			Action: func(ctx *Context) error {
+				if ctx.Bool("debug") != test.output {
+					t.Errorf("expected %+v to be parsed as %+v, instead was %+v", test.input, test.output, ctx.Bool("debug"))
+				}
+				if ctx.Bool("d") != test.output {
+					t.Errorf("expected %+v to be parsed as %+v, instead was %+v", test.input, test.output, ctx.Bool("d"))
+				}
+				return nil
+			},
+		}
+		a.Run([]string{"run"})
+	}
+}
+
 var stringFlagTests = []struct {
 	name     string
 	usage    string
@@ -939,6 +971,38 @@ func TestParseMultiBoolFromEnvCascade(t *testing.T) {
 		},
 	}
 	a.Run([]string{"run"})
+}
+
+func TestParseBoolTFromEnv(t *testing.T) {
+	var boolTFlagTests = []struct {
+		input  string
+		output bool
+	}{
+		{"", false},
+		{"1", true},
+		{"false", false},
+		{"true", true},
+	}
+
+	for _, test := range boolTFlagTests {
+		os.Clearenv()
+		os.Setenv("DEBUG", test.input)
+		a := App{
+			Flags: []Flag{
+				BoolTFlag{Name: "debug, d", EnvVar: "DEBUG"},
+			},
+			Action: func(ctx *Context) error {
+				if ctx.Bool("debug") != test.output {
+					t.Errorf("expected %+v to be parsed as %+v, instead was %+v", test.input, test.output, ctx.Bool("debug"))
+				}
+				if ctx.Bool("d") != test.output {
+					t.Errorf("expected %+v to be parsed as %+v, instead was %+v", test.input, test.output, ctx.Bool("d"))
+				}
+				return nil
+			},
+		}
+		a.Run([]string{"run"})
+	}
 }
 
 func TestParseMultiBoolT(t *testing.T) {
