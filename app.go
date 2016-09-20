@@ -158,17 +158,29 @@ func (a *App) Setup() {
 	}
 }
 
-// Run is the entry point to the cli app. Parses the arguments slice and routes
-// to the proper flag/args combination
+// Run is an alias for RunWithEnv that defaults to getting the current
+// os.Environ()
 func (a *App) Run(arguments []string) (err error) {
+	return a.RunWithEnv(arguments, os.Environ())
+}
+
+// RunWithEnv is the entry point to the cli app. Parses the arguments slice and routes
+// to the proper flag/args combination.
+//
+// arguments maps to os.Args
+// environ maps to os.Environ()
+func (a *App) RunWithEnv(arguments, environ []string) (err error) {
 	a.Setup()
 
+	// setup env
+	env := parseEnviron(environ)
+
 	// parse flags
-	set := flagSet(a.Name, a.Flags)
+	set := flagSet(a.Name, a.Flags, env)
 	set.SetOutput(ioutil.Discard)
 	err = set.Parse(arguments[1:])
 	nerr := normalizeFlags(a.Flags, set)
-	context := NewContext(a, set, nil)
+	context := NewContext(a, set, env, nil)
 	if nerr != nil {
 		fmt.Fprintln(a.Writer, nerr)
 		ShowAppHelp(context)
@@ -278,11 +290,11 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	}
 
 	// parse flags
-	set := flagSet(a.Name, a.Flags)
+	set := flagSet(a.Name, a.Flags, ctx.Env())
 	set.SetOutput(ioutil.Discard)
 	err = set.Parse(ctx.Args().Tail())
 	nerr := normalizeFlags(a.Flags, set)
-	context := NewContext(a, set, ctx)
+	context := NewContext(a, set, nil, ctx)
 
 	if nerr != nil {
 		fmt.Fprintln(a.Writer, nerr)

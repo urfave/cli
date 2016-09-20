@@ -20,9 +20,9 @@ func TestNewContext(t *testing.T) {
 	globalSet.Uint("myflagUint", uint(33), "doc")
 	globalSet.Uint64("myflagUint64", uint64(33), "doc")
 	globalSet.Float64("myflag64", float64(47), "doc")
-	globalCtx := NewContext(nil, globalSet, nil)
+	globalCtx := NewContext(nil, globalSet, Env{}, nil)
 	command := &Command{Name: "mycommand"}
-	c := NewContext(nil, set, globalCtx)
+	c := NewContext(nil, set, nil, globalCtx)
 	c.Command = command
 	expect(t, c.Int("myflag"), 12)
 	expect(t, c.Int64("myflagInt64"), int64(12))
@@ -37,8 +37,8 @@ func TestContext_Int(t *testing.T) {
 	set.Int("myflag", 12, "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Int("top-flag", 13, "doc")
-	parentCtx := NewContext(nil, parentSet, nil)
-	c := NewContext(nil, set, parentCtx)
+	parentCtx := NewContext(nil, parentSet, Env{}, nil)
+	c := NewContext(nil, set, nil, parentCtx)
 	expect(t, c.Int("myflag"), 12)
 	expect(t, c.Int("top-flag"), 13)
 }
@@ -48,8 +48,8 @@ func TestContext_Int64(t *testing.T) {
 	set.Int64("myflagInt64", 12, "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Int64("top-flag", 13, "doc")
-	parentCtx := NewContext(nil, parentSet, nil)
-	c := NewContext(nil, set, parentCtx)
+	parentCtx := NewContext(nil, parentSet, Env{}, nil)
+	c := NewContext(nil, set, nil, parentCtx)
 	expect(t, c.Int64("myflagInt64"), int64(12))
 	expect(t, c.Int64("top-flag"), int64(13))
 }
@@ -59,8 +59,8 @@ func TestContext_Uint(t *testing.T) {
 	set.Uint("myflagUint", uint(13), "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Uint("top-flag", uint(14), "doc")
-	parentCtx := NewContext(nil, parentSet, nil)
-	c := NewContext(nil, set, parentCtx)
+	parentCtx := NewContext(nil, parentSet, Env{}, nil)
+	c := NewContext(nil, set, nil, parentCtx)
 	expect(t, c.Uint("myflagUint"), uint(13))
 	expect(t, c.Uint("top-flag"), uint(14))
 }
@@ -70,8 +70,8 @@ func TestContext_Uint64(t *testing.T) {
 	set.Uint64("myflagUint64", uint64(9), "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Uint64("top-flag", uint64(10), "doc")
-	parentCtx := NewContext(nil, parentSet, nil)
-	c := NewContext(nil, set, parentCtx)
+	parentCtx := NewContext(nil, parentSet, Env{}, nil)
+	c := NewContext(nil, set, nil, parentCtx)
 	expect(t, c.Uint64("myflagUint64"), uint64(9))
 	expect(t, c.Uint64("top-flag"), uint64(10))
 }
@@ -81,8 +81,8 @@ func TestContext_Float64(t *testing.T) {
 	set.Float64("myflag", float64(17), "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Float64("top-flag", float64(18), "doc")
-	parentCtx := NewContext(nil, parentSet, nil)
-	c := NewContext(nil, set, parentCtx)
+	parentCtx := NewContext(nil, parentSet, Env{}, nil)
+	c := NewContext(nil, set, nil, parentCtx)
 	expect(t, c.Float64("myflag"), float64(17))
 	expect(t, c.Float64("top-flag"), float64(18))
 }
@@ -92,8 +92,8 @@ func TestContext_Duration(t *testing.T) {
 	set.Duration("myflag", 12*time.Second, "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Duration("top-flag", 13*time.Second, "doc")
-	parentCtx := NewContext(nil, parentSet, nil)
-	c := NewContext(nil, set, parentCtx)
+	parentCtx := NewContext(nil, parentSet, Env{}, nil)
+	c := NewContext(nil, set, nil, parentCtx)
 	expect(t, c.Duration("myflag"), 12*time.Second)
 	expect(t, c.Duration("top-flag"), 13*time.Second)
 }
@@ -103,8 +103,8 @@ func TestContext_String(t *testing.T) {
 	set.String("myflag", "hello world", "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.String("top-flag", "hai veld", "doc")
-	parentCtx := NewContext(nil, parentSet, nil)
-	c := NewContext(nil, set, parentCtx)
+	parentCtx := NewContext(nil, parentSet, Env{}, nil)
+	c := NewContext(nil, set, nil, parentCtx)
 	expect(t, c.String("myflag"), "hello world")
 	expect(t, c.String("top-flag"), "hai veld")
 }
@@ -114,8 +114,8 @@ func TestContext_Bool(t *testing.T) {
 	set.Bool("myflag", false, "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Bool("top-flag", true, "doc")
-	parentCtx := NewContext(nil, parentSet, nil)
-	c := NewContext(nil, set, parentCtx)
+	parentCtx := NewContext(nil, parentSet, Env{}, nil)
+	c := NewContext(nil, set, nil, parentCtx)
 	expect(t, c.Bool("myflag"), false)
 	expect(t, c.Bool("top-flag"), true)
 }
@@ -123,7 +123,7 @@ func TestContext_Bool(t *testing.T) {
 func TestContext_Args(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("myflag", false, "doc")
-	c := NewContext(nil, set, nil)
+	c := NewContext(nil, set, Env{}, nil)
 	set.Parse([]string{"--myflag", "bat", "baz"})
 	expect(t, c.Args().Len(), 2)
 	expect(t, c.Bool("myflag"), true)
@@ -132,7 +132,7 @@ func TestContext_Args(t *testing.T) {
 func TestContext_NArg(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("myflag", false, "doc")
-	c := NewContext(nil, set, nil)
+	c := NewContext(nil, set, Env{}, nil)
 	set.Parse([]string{"--myflag", "bat", "baz"})
 	expect(t, c.NArg(), 2)
 }
@@ -144,8 +144,8 @@ func TestContext_IsSet(t *testing.T) {
 	set.String("three-flag", "hello world", "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Bool("top-flag", true, "doc")
-	parentCtx := NewContext(nil, parentSet, nil)
-	ctx := NewContext(nil, set, parentCtx)
+	parentCtx := NewContext(nil, parentSet, Env{}, nil)
+	ctx := NewContext(nil, set, nil, parentCtx)
 
 	set.Parse([]string{"--one-flag", "--two-flag", "--three-flag", "frob"})
 	parentSet.Parse([]string{"--top-flag"})
@@ -163,8 +163,8 @@ func TestContext_NumFlags(t *testing.T) {
 	set.String("otherflag", "hello world", "doc")
 	globalSet := flag.NewFlagSet("test", 0)
 	globalSet.Bool("myflagGlobal", true, "doc")
-	globalCtx := NewContext(nil, globalSet, nil)
-	c := NewContext(nil, set, globalCtx)
+	globalCtx := NewContext(nil, globalSet, Env{}, nil)
+	c := NewContext(nil, set, nil, globalCtx)
 	set.Parse([]string{"--myflag", "--otherflag=foo"})
 	globalSet.Parse([]string{"--myflagGlobal"})
 	expect(t, c.NumFlags(), 2)
@@ -173,7 +173,7 @@ func TestContext_NumFlags(t *testing.T) {
 func TestContext_Set(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Int("int", 5, "an int")
-	c := NewContext(nil, set, nil)
+	c := NewContext(nil, set, Env{}, nil)
 
 	c.Set("int", "1")
 	expect(t, c.Int("int"), 1)
@@ -185,8 +185,8 @@ func TestContext_LocalFlagNames(t *testing.T) {
 	set.String("two-flag", "hello world", "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Bool("top-flag", true, "doc")
-	parentCtx := NewContext(nil, parentSet, nil)
-	ctx := NewContext(nil, set, parentCtx)
+	parentCtx := NewContext(nil, parentSet, Env{}, nil)
+	ctx := NewContext(nil, set, nil, parentCtx)
 	set.Parse([]string{"--one-flag", "--two-flag=foo"})
 	parentSet.Parse([]string{"--top-flag"})
 
@@ -202,8 +202,8 @@ func TestContext_FlagNames(t *testing.T) {
 	set.String("two-flag", "hello world", "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Bool("top-flag", true, "doc")
-	parentCtx := NewContext(nil, parentSet, nil)
-	ctx := NewContext(nil, set, parentCtx)
+	parentCtx := NewContext(nil, parentSet, Env{}, nil)
+	ctx := NewContext(nil, set, nil, parentCtx)
 	set.Parse([]string{"--one-flag", "--two-flag=foo"})
 	parentSet.Parse([]string{"--top-flag"})
 
@@ -218,8 +218,8 @@ func TestContext_Lineage(t *testing.T) {
 	set.Bool("local-flag", false, "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Bool("top-flag", true, "doc")
-	parentCtx := NewContext(nil, parentSet, nil)
-	ctx := NewContext(nil, set, parentCtx)
+	parentCtx := NewContext(nil, parentSet, Env{}, nil)
+	ctx := NewContext(nil, set, nil, parentCtx)
 	set.Parse([]string{"--local-flag"})
 	parentSet.Parse([]string{"--top-flag"})
 
@@ -234,8 +234,8 @@ func TestContext_lookupFlagSet(t *testing.T) {
 	set.Bool("local-flag", false, "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Bool("top-flag", true, "doc")
-	parentCtx := NewContext(nil, parentSet, nil)
-	ctx := NewContext(nil, set, parentCtx)
+	parentCtx := NewContext(nil, parentSet, Env{}, nil)
+	ctx := NewContext(nil, set, nil, parentCtx)
 	set.Parse([]string{"--local-flag"})
 	parentSet.Parse([]string{"--top-flag"})
 

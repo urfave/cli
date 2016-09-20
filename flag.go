@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"os"
 	"reflect"
 	"regexp"
 	"runtime"
@@ -84,15 +83,15 @@ func (f FlagsByName) Swap(i, j int) {
 type Flag interface {
 	fmt.Stringer
 	// Apply Flag settings to the given flag set
-	Apply(*flag.FlagSet)
+	Apply(*flag.FlagSet, Env)
 	Names() []string
 }
 
-func flagSet(name string, flags []Flag) *flag.FlagSet {
+func flagSet(name string, flags []Flag, env Env) *flag.FlagSet {
 	set := flag.NewFlagSet(name, flag.ContinueOnError)
 
 	for _, f := range flags {
-		f.Apply(set)
+		f.Apply(set, env)
 	}
 	return set
 }
@@ -105,11 +104,11 @@ type Generic interface {
 
 // Apply takes the flagset and calls Set on the generic flag with the value
 // provided by the user for parsing by the flag
-func (f *GenericFlag) Apply(set *flag.FlagSet) {
+func (f *GenericFlag) Apply(set *flag.FlagSet, env Env) {
 	val := f.Value
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal := env.Get(envVar); envVal != "" {
 				val.Set(envVal)
 				break
 			}
@@ -167,10 +166,10 @@ func (f *StringSlice) Value() []string {
 }
 
 // Apply populates the flag given the flag set and environment
-func (f *StringSliceFlag) Apply(set *flag.FlagSet) {
+func (f *StringSliceFlag) Apply(set *flag.FlagSet, env Env) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal := env.Get(envVar); envVal != "" {
 				newVal := NewStringSlice()
 				for _, s := range strings.Split(envVal, ",") {
 					s = strings.TrimSpace(s)
@@ -257,10 +256,10 @@ func (i *IntSlice) Value() []int {
 }
 
 // Apply populates the flag given the flag set and environment
-func (f *IntSliceFlag) Apply(set *flag.FlagSet) {
+func (f *IntSliceFlag) Apply(set *flag.FlagSet, env Env) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal := env.Get(envVar); envVal != "" {
 				newVal := NewIntSlice()
 				for _, s := range strings.Split(envVal, ",") {
 					s = strings.TrimSpace(s)
@@ -330,10 +329,10 @@ func (f *Int64Slice) Value() []int64 {
 }
 
 // Apply populates the flag given the flag set and environment
-func (f *Int64SliceFlag) Apply(set *flag.FlagSet) {
+func (f *Int64SliceFlag) Apply(set *flag.FlagSet, env Env) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal := env.Get(envVar); envVal != "" {
 				newVal := NewInt64Slice()
 				for _, s := range strings.Split(envVal, ",") {
 					s = strings.TrimSpace(s)
@@ -358,10 +357,10 @@ func (f *Int64SliceFlag) Apply(set *flag.FlagSet) {
 }
 
 // Apply populates the flag given the flag set and environment
-func (f *BoolFlag) Apply(set *flag.FlagSet) {
+func (f *BoolFlag) Apply(set *flag.FlagSet, env Env) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal := env.Get(envVar); envVal != "" {
 				envValBool, err := strconv.ParseBool(envVal)
 				if err == nil {
 					f.Value = envValBool
@@ -381,10 +380,10 @@ func (f *BoolFlag) Apply(set *flag.FlagSet) {
 }
 
 // Apply populates the flag given the flag set and environment
-func (f *StringFlag) Apply(set *flag.FlagSet) {
+func (f *StringFlag) Apply(set *flag.FlagSet, env Env) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal := env.Get(envVar); envVal != "" {
 				f.Value = envVal
 				break
 			}
@@ -401,10 +400,10 @@ func (f *StringFlag) Apply(set *flag.FlagSet) {
 }
 
 // Apply populates the flag given the flag set and environment
-func (f *IntFlag) Apply(set *flag.FlagSet) {
+func (f *IntFlag) Apply(set *flag.FlagSet, env Env) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal := env.Get(envVar); envVal != "" {
 				envValInt, err := strconv.ParseInt(envVal, 0, 64)
 				if err == nil {
 					f.Value = int(envValInt)
@@ -424,10 +423,10 @@ func (f *IntFlag) Apply(set *flag.FlagSet) {
 }
 
 // Apply populates the flag given the flag set and environment
-func (f *Int64Flag) Apply(set *flag.FlagSet) {
+func (f *Int64Flag) Apply(set *flag.FlagSet, env Env) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal := env.Get(envVar); envVal != "" {
 				envValInt, err := strconv.ParseInt(envVal, 0, 64)
 				if err == nil {
 					f.Value = envValInt
@@ -447,10 +446,10 @@ func (f *Int64Flag) Apply(set *flag.FlagSet) {
 }
 
 // Apply populates the flag given the flag set and environment
-func (f *UintFlag) Apply(set *flag.FlagSet) {
+func (f *UintFlag) Apply(set *flag.FlagSet, env Env) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal := env.Get(envVar); envVal != "" {
 				envValInt, err := strconv.ParseUint(envVal, 0, 64)
 				if err == nil {
 					f.Value = uint(envValInt)
@@ -470,10 +469,10 @@ func (f *UintFlag) Apply(set *flag.FlagSet) {
 }
 
 // Apply populates the flag given the flag set and environment
-func (f *Uint64Flag) Apply(set *flag.FlagSet) {
+func (f *Uint64Flag) Apply(set *flag.FlagSet, env Env) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal := env.Get(envVar); envVal != "" {
 				envValInt, err := strconv.ParseUint(envVal, 0, 64)
 				if err == nil {
 					f.Value = uint64(envValInt)
@@ -493,10 +492,10 @@ func (f *Uint64Flag) Apply(set *flag.FlagSet) {
 }
 
 // Apply populates the flag given the flag set and environment
-func (f *DurationFlag) Apply(set *flag.FlagSet) {
+func (f *DurationFlag) Apply(set *flag.FlagSet, env Env) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal := env.Get(envVar); envVal != "" {
 				envValDuration, err := time.ParseDuration(envVal)
 				if err == nil {
 					f.Value = envValDuration
@@ -516,10 +515,10 @@ func (f *DurationFlag) Apply(set *flag.FlagSet) {
 }
 
 // Apply populates the flag given the flag set and environment
-func (f *Float64Flag) Apply(set *flag.FlagSet) {
+func (f *Float64Flag) Apply(set *flag.FlagSet, env Env) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal := env.Get(envVar); envVal != "" {
 				envValFloat, err := strconv.ParseFloat(envVal, 10)
 				if err == nil {
 					f.Value = float64(envValFloat)
@@ -588,10 +587,10 @@ func (f *Float64Slice) Value() []float64 {
 }
 
 // Apply populates the flag given the flag set and environment
-func (f *Float64SliceFlag) Apply(set *flag.FlagSet) {
+func (f *Float64SliceFlag) Apply(set *flag.FlagSet, env Env) {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal := env.Get(envVar); envVal != "" {
 				newVal := NewFloat64Slice()
 				for _, s := range strings.Split(envVal, ",") {
 					s = strings.TrimSpace(s)

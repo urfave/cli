@@ -75,7 +75,7 @@ func (c *Command) Run(ctx *Context) (err error) {
 		c.appendFlag(GenerateCompletionFlag)
 	}
 
-	set := flagSet(c.Name, c.Flags)
+	set := flagSet(c.Name, c.Flags, ctx.Env())
 	set.SetOutput(ioutil.Discard)
 
 	if c.SkipFlagParsing {
@@ -104,7 +104,7 @@ func (c *Command) Run(ctx *Context) (err error) {
 		return nerr
 	}
 
-	context := NewContext(ctx.App, set, ctx)
+	context := NewContext(ctx.App, set, nil, ctx)
 
 	if checkCommandCompletions(context, c.Name) {
 		return nil

@@ -17,11 +17,12 @@ type Context struct {
 	Command *Command
 
 	flagSet       *flag.FlagSet
+	env           Env
 	parentContext *Context
 }
 
 // NewContext creates a new context. For use in when invoking an App or Command action.
-func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
+func NewContext(app *App, set *flag.FlagSet, env Env, parentCtx *Context) *Context {
 	return &Context{App: app, flagSet: set, parentContext: parentCtx}
 }
 
@@ -151,6 +152,15 @@ func lookupFlag(name string, ctx *Context) Flag {
 	}
 
 	return nil
+}
+
+// Env returns the environment variables in that context
+func (c *Context) Env() Env {
+	if c.parentContext != nil {
+		return c.parentContext.Env()
+	} else {
+		return c.env
+	}
 }
 
 func lookupFlagSet(name string, ctx *Context) *flag.FlagSet {
