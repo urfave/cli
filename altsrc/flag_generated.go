@@ -22,9 +22,9 @@ func NewBoolFlag(fl *cli.BoolFlag) *BoolFlag {
 
 // Apply saves the flagSet for later usage calls, then calls the
 // wrapped BoolFlag.Apply
-func (f *BoolFlag) Apply(set *flag.FlagSet) {
+func (f *BoolFlag) Apply(set *flag.FlagSet, env cli.Env) {
 	f.set = set
-	f.BoolFlag.Apply(set)
+	f.BoolFlag.Apply(set, env)
 }
 
 // DurationFlag is the flag type that wraps cli.DurationFlag to allow
@@ -41,9 +41,9 @@ func NewDurationFlag(fl *cli.DurationFlag) *DurationFlag {
 
 // Apply saves the flagSet for later usage calls, then calls the
 // wrapped DurationFlag.Apply
-func (f *DurationFlag) Apply(set *flag.FlagSet) {
+func (f *DurationFlag) Apply(set *flag.FlagSet, env cli.Env) {
 	f.set = set
-	f.DurationFlag.Apply(set)
+	f.DurationFlag.Apply(set, env)
 }
 
 // Float64Flag is the flag type that wraps cli.Float64Flag to allow
@@ -60,9 +60,9 @@ func NewFloat64Flag(fl *cli.Float64Flag) *Float64Flag {
 
 // Apply saves the flagSet for later usage calls, then calls the
 // wrapped Float64Flag.Apply
-func (f *Float64Flag) Apply(set *flag.FlagSet) {
+func (f *Float64Flag) Apply(set *flag.FlagSet, env cli.Env) {
 	f.set = set
-	f.Float64Flag.Apply(set)
+	f.Float64Flag.Apply(set, env)
 }
 
 // GenericFlag is the flag type that wraps cli.GenericFlag to allow
@@ -79,9 +79,9 @@ func NewGenericFlag(fl *cli.GenericFlag) *GenericFlag {
 
 // Apply saves the flagSet for later usage calls, then calls the
 // wrapped GenericFlag.Apply
-func (f *GenericFlag) Apply(set *flag.FlagSet) {
+func (f *GenericFlag) Apply(set *flag.FlagSet, env cli.Env) {
 	f.set = set
-	f.GenericFlag.Apply(set)
+	f.GenericFlag.Apply(set, env)
 }
 
 // Int64Flag is the flag type that wraps cli.Int64Flag to allow
@@ -98,9 +98,9 @@ func NewInt64Flag(fl *cli.Int64Flag) *Int64Flag {
 
 // Apply saves the flagSet for later usage calls, then calls the
 // wrapped Int64Flag.Apply
-func (f *Int64Flag) Apply(set *flag.FlagSet) {
+func (f *Int64Flag) Apply(set *flag.FlagSet, env cli.Env) {
 	f.set = set
-	f.Int64Flag.Apply(set)
+	f.Int64Flag.Apply(set, env)
 }
 
 // IntFlag is the flag type that wraps cli.IntFlag to allow
@@ -117,9 +117,9 @@ func NewIntFlag(fl *cli.IntFlag) *IntFlag {
 
 // Apply saves the flagSet for later usage calls, then calls the
 // wrapped IntFlag.Apply
-func (f *IntFlag) Apply(set *flag.FlagSet) {
+func (f *IntFlag) Apply(set *flag.FlagSet, env cli.Env) {
 	f.set = set
-	f.IntFlag.Apply(set)
+	f.IntFlag.Apply(set, env)
 }
 
 // IntSliceFlag is the flag type that wraps cli.IntSliceFlag to allow
@@ -136,9 +136,9 @@ func NewIntSliceFlag(fl *cli.IntSliceFlag) *IntSliceFlag {
 
 // Apply saves the flagSet for later usage calls, then calls the
 // wrapped IntSliceFlag.Apply
-func (f *IntSliceFlag) Apply(set *flag.FlagSet) {
+func (f *IntSliceFlag) Apply(set *flag.FlagSet, env cli.Env) {
 	f.set = set
-	f.IntSliceFlag.Apply(set)
+	f.IntSliceFlag.Apply(set, env)
 }
 
 // Int64SliceFlag is the flag type that wraps cli.Int64SliceFlag to allow
@@ -155,9 +155,9 @@ func NewInt64SliceFlag(fl *cli.Int64SliceFlag) *Int64SliceFlag {
 
 // Apply saves the flagSet for later usage calls, then calls the
 // wrapped Int64SliceFlag.Apply
-func (f *Int64SliceFlag) Apply(set *flag.FlagSet) {
+func (f *Int64SliceFlag) Apply(set *flag.FlagSet, env cli.Env) {
 	f.set = set
-	f.Int64SliceFlag.Apply(set)
+	f.Int64SliceFlag.Apply(set, env)
 }
 
 // Float64SliceFlag is the flag type that wraps cli.Float64SliceFlag to allow
@@ -174,9 +174,9 @@ func NewFloat64SliceFlag(fl *cli.Float64SliceFlag) *Float64SliceFlag {
 
 // Apply saves the flagSet for later usage calls, then calls the
 // wrapped Float64SliceFlag.Apply
-func (f *Float64SliceFlag) Apply(set *flag.FlagSet) {
+func (f *Float64SliceFlag) Apply(set *flag.FlagSet, env cli.Env) {
 	f.set = set
-	f.Float64SliceFlag.Apply(set)
+	f.Float64SliceFlag.Apply(set, env)
 }
 
 // StringFlag is the flag type that wraps cli.StringFlag to allow
@@ -193,9 +193,9 @@ func NewStringFlag(fl *cli.StringFlag) *StringFlag {
 
 // Apply saves the flagSet for later usage calls, then calls the
 // wrapped StringFlag.Apply
-func (f *StringFlag) Apply(set *flag.FlagSet) {
+func (f *StringFlag) Apply(set *flag.FlagSet, env cli.Env) {
 	f.set = set
-	f.StringFlag.Apply(set)
+	f.StringFlag.Apply(set, env)
 }
 
 // StringSliceFlag is the flag type that wraps cli.StringSliceFlag to allow
@@ -212,9 +212,9 @@ func NewStringSliceFlag(fl *cli.StringSliceFlag) *StringSliceFlag {
 
 // Apply saves the flagSet for later usage calls, then calls the
 // wrapped StringSliceFlag.Apply
-func (f *StringSliceFlag) Apply(set *flag.FlagSet) {
+func (f *StringSliceFlag) Apply(set *flag.FlagSet, env cli.Env) {
 	f.set = set
-	f.StringSliceFlag.Apply(set)
+	f.StringSliceFlag.Apply(set, env)
 }
 
 // Uint64Flag is the flag type that wraps cli.Uint64Flag to allow
@@ -231,9 +231,9 @@ func NewUint64Flag(fl *cli.Uint64Flag) *Uint64Flag {
 
 // Apply saves the flagSet for later usage calls, then calls the
 // wrapped Uint64Flag.Apply
-func (f *Uint64Flag) Apply(set *flag.FlagSet) {
+func (f *Uint64Flag) Apply(set *flag.FlagSet, env cli.Env) {
 	f.set = set
-	f.Uint64Flag.Apply(set)
+	f.Uint64Flag.Apply(set, env)
 }
 
 // UintFlag is the flag type that wraps cli.UintFlag to allow
@@ -250,7 +250,7 @@ func NewUintFlag(fl *cli.UintFlag) *UintFlag {
 
 // Apply saves the flagSet for later usage calls, then calls the
 // wrapped UintFlag.Apply
-func (f *UintFlag) Apply(set *flag.FlagSet) {
+func (f *UintFlag) Apply(set *flag.FlagSet, env cli.Env) {
 	f.set = set
-	f.UintFlag.Apply(set)
+	f.UintFlag.Apply(set, env)
 }

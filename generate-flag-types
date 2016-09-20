@@ -218,9 +218,9 @@ def _write_altsrc_flag_types(outfile, types):
 
         // Apply saves the flagSet for later usage calls, then calls the
         // wrapped {name}Flag.Apply
-        func (f *{name}Flag) Apply(set *flag.FlagSet) {{
+        func (f *{name}Flag) Apply(set *flag.FlagSet, env cli.Env) {{
             f.set = set
-            f.{name}Flag.Apply(set)
+            f.{name}Flag.Apply(set, env)
         }}
         """.format(**typedef))
 

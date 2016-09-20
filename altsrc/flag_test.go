@@ -3,7 +3,6 @@ package altsrc
 import (
 	"flag"
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -270,15 +269,16 @@ func TestFloat64ApplyInputSourceMethodEnvVarSet(t *testing.T) {
 }
 
 func runTest(t *testing.T, test testApplyInputSource) *cli.Context {
-	inputSource := &MapInputSource{valueMap: map[interface{}]interface{}{test.FlagName: test.MapValue}}
-	set := flag.NewFlagSet(test.FlagSetName, flag.ContinueOnError)
-	c := cli.NewContext(nil, set, nil)
+	env := cli.Env{}
 	if test.EnvVarName != "" && test.EnvVarValue != "" {
-		os.Setenv(test.EnvVarName, test.EnvVarValue)
-		defer os.Setenv(test.EnvVarName, "")
+		env[test.EnvVarName] = test.EnvVarValue
 	}
 
-	test.Flag.Apply(set)
+	inputSource := &MapInputSource{valueMap: map[interface{}]interface{}{test.FlagName: test.MapValue}}
+	set := flag.NewFlagSet(test.FlagSetName, flag.ContinueOnError)
+	c := cli.NewContext(nil, set, env, nil)
+
+	test.Flag.Apply(set, env)
 	if test.ContextValue != nil {
 		flag := set.Lookup(test.FlagName)
 		flag.Value = test.ContextValue

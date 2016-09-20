@@ -2,7 +2,6 @@ package altsrc
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 
 	"gopkg.in/urfave/cli.v2"
@@ -64,7 +63,7 @@ func InitInputSourceWithContext(flags []cli.Flag, createInputSource func(context
 // ApplyInputSourceValue applies a generic value to the flagSet if required
 func (f *GenericFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
-		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) {
+		if !context.IsSet(f.Name) && !isEnvVarSet(context, f.EnvVars) {
 			value, err := isc.Generic(f.GenericFlag.Name)
 			if err != nil {
 				return err
@@ -83,7 +82,7 @@ func (f *GenericFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourc
 // ApplyInputSourceValue applies a StringSlice value to the flagSet if required
 func (f *StringSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
-		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) {
+		if !context.IsSet(f.Name) && !isEnvVarSet(context, f.EnvVars) {
 			value, err := isc.StringSlice(f.StringSliceFlag.Name)
 			if err != nil {
 				return err
@@ -105,7 +104,7 @@ func (f *StringSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputS
 // ApplyInputSourceValue applies a IntSlice value if required
 func (f *IntSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
-		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) {
+		if !context.IsSet(f.Name) && !isEnvVarSet(context, f.EnvVars) {
 			value, err := isc.IntSlice(f.IntSliceFlag.Name)
 			if err != nil {
 				return err
@@ -127,7 +126,7 @@ func (f *IntSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSour
 // ApplyInputSourceValue applies a Bool value to the flagSet if required
 func (f *BoolFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
-		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) {
+		if !context.IsSet(f.Name) && !isEnvVarSet(context, f.EnvVars) {
 			value, err := isc.Bool(f.BoolFlag.Name)
 			if err != nil {
 				return err
@@ -145,7 +144,7 @@ func (f *BoolFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceCo
 // ApplyInputSourceValue applies a String value to the flagSet if required
 func (f *StringFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
-		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) {
+		if !(context.IsSet(f.Name) || isEnvVarSet(context, f.EnvVars)) {
 			value, err := isc.String(f.StringFlag.Name)
 			if err != nil {
 				return err
@@ -163,7 +162,7 @@ func (f *StringFlag) ApplyInputSourceValue(context *cli.Context, isc InputSource
 // ApplyInputSourceValue applies a int value to the flagSet if required
 func (f *IntFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
-		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) {
+		if !(context.IsSet(f.Name) || isEnvVarSet(context, f.EnvVars)) {
 			value, err := isc.Int(f.IntFlag.Name)
 			if err != nil {
 				return err
@@ -181,7 +180,7 @@ func (f *IntFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceCon
 // ApplyInputSourceValue applies a Duration value to the flagSet if required
 func (f *DurationFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
-		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) {
+		if !(context.IsSet(f.Name) || isEnvVarSet(context, f.EnvVars)) {
 			value, err := isc.Duration(f.DurationFlag.Name)
 			if err != nil {
 				return err
@@ -199,7 +198,7 @@ func (f *DurationFlag) ApplyInputSourceValue(context *cli.Context, isc InputSour
 // ApplyInputSourceValue applies a Float64 value to the flagSet if required
 func (f *Float64Flag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
-		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) {
+		if !(context.IsSet(f.Name) || isEnvVarSet(context, f.EnvVars)) {
 			value, err := isc.Float64(f.Float64Flag.Name)
 			if err != nil {
 				return err
@@ -215,15 +214,10 @@ func (f *Float64Flag) ApplyInputSourceValue(context *cli.Context, isc InputSourc
 	return nil
 }
 
-func isEnvVarSet(envVars []string) bool {
+func isEnvVarSet(c *cli.Context, envVars []string) bool {
 	for _, envVar := range envVars {
-		if envVal := os.Getenv(envVar); envVal != "" {
-			// TODO: Can't use this for bools as
-			// set means that it was true or false based on
-			// Bool flag type, should work for other types
-			if len(envVal) > 0 {
-				return true
-			}
+		if c.Env().Has(envVar) {
+			return true
 		}
 	}
 
