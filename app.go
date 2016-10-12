@@ -42,6 +42,8 @@ type App struct {
 	ArgsUsage string
 	// Version of the program
 	Version string
+	// Description of the program
+	Description string
 	// List of commands to execute
 	Commands []Command
 	// List of flags to parse

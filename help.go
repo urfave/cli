@@ -20,7 +20,10 @@ USAGE:
    {{if .Version}}{{if not .HideVersion}}
 VERSION:
    {{.Version}}
-   {{end}}{{end}}{{if len .Authors}}
+   {{end}}{{end}}{{if .Description}}
+DESCRIPTION:
+   {{.Description}}
+{{end}}{{if len .Authors}}
 AUTHOR(S):
    {{range .Authors}}{{.}}{{end}}
    {{end}}{{if .VisibleCommands}}
