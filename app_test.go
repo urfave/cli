@@ -202,6 +202,12 @@ func TestApp_Command(t *testing.T) {
 	}
 }
 
+func TestApp_Setup_defaultsWriter(t *testing.T) {
+	app := &App{}
+	app.Setup()
+	expect(t, app.Writer, os.Stdout)
+}
+
 func TestApp_CommandWithArgBeforeFlags(t *testing.T) {
 	var parsedOption, firstArg string
 
