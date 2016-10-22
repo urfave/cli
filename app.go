@@ -458,10 +458,10 @@ type Author struct {
 func (a Author) String() string {
 	e := ""
 	if a.Email != "" {
-		e = "<" + a.Email + "> "
+		e = " <" + a.Email + ">"
 	}
 
-	return fmt.Sprintf("%v %v", a.Name, e)
+	return fmt.Sprintf("%v%v", a.Name, e)
 }
 
 // HandleAction uses ✧✧✧reflection✧✧✧ to figure out if the given Action is an
