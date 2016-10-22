@@ -30,6 +30,7 @@ applications in an expressive way.
   * [Flags](#flags)
     + [Placeholder Values](#placeholder-values)
     + [Alternate Names](#alternate-names)
+    + [Ordering](#ordering)
     + [Values from the Environment](#values-from-the-environment)
     + [Values from alternate input sources (YAML, TOML, and others)](#values-from-alternate-input-sources-yaml-toml-and-others)
   * [Subcommands](#subcommands)
@@ -449,6 +450,56 @@ func main() {
 That flag can then be set with `--lang spanish` or `-l spanish`. Note that
 giving two different forms of the same flag in the same command invocation is an
 error.
+
+#### Ordering
+
+Flags for the application and commands are shown in the order they are defined.
+However, it's possible to sort them from outside this library by using `FlagsByName`
+with `sort`.
+
+For example this:
+
+<!-- {
+  "args": ["&#45;&#45;help"],
+  "output": "Load configuration from FILE\n.*Language for the greeting.*"
+} -->
+``` go
+package main
+
+import (
+  "os"
+  "sort"
+
+  "github.com/urfave/cli"
+)
+
+func main() {
+  app := cli.NewApp()
+
+  app.Flags = []cli.Flag {
+    cli.StringFlag{
+      Name: "lang, l",
+      Value: "english",
+      Usage: "Language for the greeting",
+    },
+    cli.StringFlag{
+      Name: "config, c",
+      Usage: "Load configuration from `FILE`",
+    },
+  }
+
+  sort.Sort(cli.FlagsByName(app.Flags))
+
+  app.Run(os.Args)
+}
+```
+
+Will result in help output like:
+
+```
+--config FILE, -c FILE  Load configuration from FILE
+--lang value, -l value  Language for the greeting (default: "english")
+```
 
 #### Values from the Environment
 
