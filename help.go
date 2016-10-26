@@ -182,16 +182,16 @@ func printVersion(c *Context) {
 // ShowCompletions prints the lists of commands within a given context
 func ShowCompletions(c *Context) {
 	a := c.App
-	if a != nil && a.BashComplete != nil {
-		a.BashComplete(c)
+	if a != nil && a.ShellComplete != nil {
+		a.ShellComplete(c)
 	}
 }
 
 // ShowCommandCompletions prints the custom completions for a given command
 func ShowCommandCompletions(ctx *Context, command string) {
 	c := ctx.App.Command(command)
-	if c != nil && c.BashComplete != nil {
-		c.BashComplete(ctx)
+	if c != nil && c.ShellComplete != nil {
+		c.ShellComplete(ctx)
 	}
 }
 
@@ -270,7 +270,7 @@ func checkSubcommandHelp(c *Context) bool {
 }
 
 func checkCompletions(c *Context) bool {
-	if c.Bool(BashCompletionFlag.Name) && c.App.EnableBashCompletion {
+	if c.Bool(GenerateCompletionFlag.Name) && c.App.EnableShellCompletion {
 		ShowCompletions(c)
 		return true
 	}
@@ -279,10 +279,48 @@ func checkCompletions(c *Context) bool {
 }
 
 func checkCommandCompletions(c *Context, name string) bool {
-	if c.Bool(BashCompletionFlag.Name) && c.App.EnableBashCompletion {
+	if c.Bool(GenerateCompletionFlag.Name) && c.App.EnableShellCompletion {
 		ShowCommandCompletions(c, name)
 		return true
 	}
 
 	return false
+}
+
+func checkInitCompletion(c *Context) (bool, error) {
+	if c.IsSet(InitCompletionFlag.Name) {
+		shell := c.String(InitCompletionFlag.Name)
+		progName := os.Args[0]
+		switch shell {
+		case "bash":
+			fmt.Print(bashCompletionCode(progName))
+			return true, nil
+		case "zsh":
+			fmt.Print(zshCompletionCode(progName))
+			return true, nil
+		default:
+			return false, fmt.Errorf("--init-completion value cannot be '%s'", shell)
+		}
+	}
+	return false, nil
+}
+
+func bashCompletionCode(progName string) string {
+	var template = `_cli_bash_autocomplete() {
+     local cur opts base;
+     COMPREPLY=();
+     cur="${COMP_WORDS[COMP_CWORD]}";
+     opts=$( ${COMP_WORDS[@]:0:$COMP_CWORD} --generate-completion );
+     COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) );
+     return 0;
+};
+complete -F _cli_bash_autocomplete %s`
+	return fmt.Sprintf(template, progName)
+}
+
+func zshCompletionCode(progName string) string {
+	var template = `autoload -U compinit && compinit;
+autoload -U bashcompinit && bashcompinit;`
+
+	return template + "\n" + bashCompletionCode(progName)
 }

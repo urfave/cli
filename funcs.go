@@ -1,7 +1,7 @@
 package cli
 
-// BashCompleteFunc is an action to execute when the bash-completion flag is set
-type BashCompleteFunc func(*Context)
+// ShellCompleteFunc is an action to execute when the shell completion flag is set
+type ShellCompleteFunc func(*Context)
 
 // BeforeFunc is an action to execute before any subcommands are run, but after
 // the context is ready if a non-nil error is returned, no subcommands are run

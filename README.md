@@ -36,7 +36,7 @@ applications in an expressive way.
   * [Subcommands](#subcommands)
   * [Subcommands categories](#subcommands-categories)
   * [Exit code](#exit-code)
-  * [Bash Completion](#bash-completion)
+  * [Shell Completion](#shell-completion)
     + [Enabling](#enabling)
     + [Distribution](#distribution)
     + [Customization](#customization)
@@ -787,15 +787,15 @@ func main() {
 }
 ```
 
-### Bash Completion
+### Shell Completion
 
-You can enable completion commands by setting the `EnableBashCompletion`
+You can enable completion commands by setting the `EnableShellCompletion`
 flag on the `App` object.  By default, this setting will only auto-complete to
 show an app's subcommands, but you can write your own completion methods for
 the App or its subcommands.
 
 <!-- {
-  "args": ["complete", "&#45;&#45;generate&#45;bash&#45;completion"],
+  "args": ["complete", "&#45;&#45;generate&#45;completion"],
   "output": "laundry"
 } -->
 ``` go
@@ -812,7 +812,7 @@ func main() {
   tasks := []string{"cook", "clean", "laundry", "eat", "sleep", "code"}
 
   app := &cli.App{
-    EnableBashCompletion: true,
+    EnableShellCompletion: true,
     Commands: []*cli.Command{
       {
         Name:    "complete",
@@ -822,7 +822,7 @@ func main() {
            fmt.Println("completed task: ", c.Args().First())
            return nil
         },
-        BashComplete: func(c *cli.Context) {
+        ShellComplete: func(c *cli.Context) {
           // This will complete if no args are passed
           if c.NArg() > 0 {
             return
@@ -841,10 +841,18 @@ func main() {
 
 #### Enabling
 
-Source the `autocomplete/bash_autocomplete` file in your `.bashrc` file while
-setting the `PROG` variable to the name of your program:
+You can generate bash or zsh completion code by using the flag `--init-completion bash` or `--init-completion zsh`.
 
-`PROG=myprogram source /.../cli/autocomplete/bash_autocomplete`
+To setup for bash:
+
+```
+eval "`myprogram --init-completion bash`"
+```
+
+Alternatively, you can put the completion code in your `.bashrc` file:
+```
+myprogram --init-completion bash >> ~/.bashrc
+```
 
 #### Distribution
 
@@ -864,8 +872,8 @@ to the name of their program (as above).
 
 #### Customization
 
-The default bash completion flag (`--generate-bash-completion`) is defined as
-`cli.BashCompletionFlag`, and may be redefined if desired, e.g.:
+The default shell completion flag (`--generate-completion`) is defined as
+`cli.GenerateCompletionFlag`, and may be redefined if desired, e.g.:
 
 <!-- {
   "args": ["&#45;&#45;compgen"],
@@ -881,13 +889,13 @@ import (
 )
 
 func main() {
-  cli.BashCompletionFlag = &cli.BoolFlag{
+  cli.GenerateCompletionFlag = &cli.BoolFlag{
     Name:   "compgen",
     Hidden: true,
   }
 
   app := &cli.App{
-    EnableBashCompletion: true,
+    EnableShellCompletion: true,
     Commands: []*cli.Command{
       {
         Name: "wat",
@@ -1097,7 +1105,7 @@ func init() {
   cli.SubcommandHelpTemplate += "\nor something\n"
 
   cli.HelpFlag = &cli.BoolFlag{Name: "halp"}
-  cli.BashCompletionFlag = &cli.BoolFlag{Name: "compgen", Hidden: true}
+  cli.GenerateCompletionFlag = &cli.BoolFlag{Name: "compgen", Hidden: true}
   cli.VersionFlag = &cli.BoolFlag{Name: "print-version", Aliases: []string{"V"}}
 
   cli.HelpPrinter = func(w io.Writer, templ string, data interface{}) {
@@ -1177,7 +1185,7 @@ func main() {
         HideHelp:        false,
         Hidden:          false,
         HelpName:        "doo!",
-        BashComplete: func(c *cli.Context) {
+        ShellComplete: func(c *cli.Context) {
           fmt.Fprintf(c.App.Writer, "--better\n")
         },
         Before: func(c *cli.Context) error {
@@ -1220,10 +1228,10 @@ func main() {
       &cli.UintFlag{Name: "age"},
       &cli.Uint64Flag{Name: "bigage"},
     },
-    EnableBashCompletion: true,
+    EnableShellCompletion: true,
     HideHelp: false,
     HideVersion: false,
-    BashComplete: func(c *cli.Context) {
+    ShellComplete: func(c *cli.Context) {
       fmt.Fprintf(c.App.Writer, "lipstick\nkiss\nme\nlipstick\nringo\n")
     },
     Before: func(c *cli.Context) error {

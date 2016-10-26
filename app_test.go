@@ -27,7 +27,7 @@ func init() {
 }
 
 type opCounts struct {
-	Total, BashComplete, OnUsageError, Before, CommandNotFound, Action, After, SubCommand int
+	Total, ShellComplete, OnUsageError, Before, CommandNotFound, Action, After, SubCommand int
 }
 
 func ExampleApp_Run() {
@@ -125,13 +125,13 @@ func ExampleApp_Run_help() {
 	//    This is how we describe describeit the function
 }
 
-func ExampleApp_Run_bashComplete() {
+func ExampleApp_Run_shellComplete() {
 	// set args for examples sake
-	os.Args = []string{"greet", "--generate-bash-completion"}
+	os.Args = []string{"greet", "--generate-completion"}
 
 	app := &App{
 		Name:                 "greet",
-		EnableBashCompletion: true,
+		EnableShellCompletion: true,
 		Commands: []*Command{
 			{
 				Name:        "describeit",
@@ -145,7 +145,7 @@ func ExampleApp_Run_bashComplete() {
 			}, {
 				Name:        "next",
 				Usage:       "next example",
-				Description: "more stuff to see when generating bash completion",
+				Description: "more stuff to see when generating shell completion",
 				Action: func(c *Context) error {
 					fmt.Printf("the next example")
 					return nil
@@ -748,10 +748,10 @@ func TestApp_OrderOfOperations(t *testing.T) {
 	resetCounts := func() { counts = &opCounts{} }
 
 	app := &App{
-		EnableBashCompletion: true,
-		BashComplete: func(c *Context) {
+		EnableShellCompletion: true,
+		ShellComplete: func(c *Context) {
 			counts.Total++
-			counts.BashComplete = counts.Total
+			counts.ShellComplete = counts.Total
 		},
 		OnUsageError: func(c *Context, err error, isSubcommand bool) error {
 			counts.Total++
@@ -814,8 +814,8 @@ func TestApp_OrderOfOperations(t *testing.T) {
 
 	resetCounts()
 
-	_ = app.Run([]string{"command", "--generate-bash-completion"})
-	expect(t, counts.BashComplete, 1)
+	_ = app.Run([]string{"command", "--generate-completion"})
+	expect(t, counts.ShellComplete, 1)
 	expect(t, counts.Total, 1)
 
 	resetCounts()

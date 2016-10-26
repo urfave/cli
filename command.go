@@ -23,8 +23,8 @@ type Command struct {
 	ArgsUsage string
 	// The category the command is part of
 	Category string
-	// The function to call when checking for bash command completions
-	BashComplete BashCompleteFunc
+	// The function to call when checking for shell command completions
+	ShellComplete ShellCompleteFunc
 	// An action to execute before any sub-subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no sub-subcommands are run
 	Before BeforeFunc
@@ -71,8 +71,8 @@ func (c *Command) Run(ctx *Context) (err error) {
 		c.appendFlag(HelpFlag)
 	}
 
-	if ctx.App.EnableBashCompletion {
-		c.appendFlag(BashCompletionFlag)
+	if ctx.App.EnableShellCompletion {
+		c.appendFlag(GenerateCompletionFlag)
 	}
 
 	set := flagSet(c.Name, c.Flags)
@@ -202,9 +202,9 @@ func (c *Command) startApp(ctx *Context) error {
 	sort.Sort(app.Categories.(*commandCategories))
 
 	// bash completion
-	app.EnableBashCompletion = ctx.App.EnableBashCompletion
-	if c.BashComplete != nil {
-		app.BashComplete = c.BashComplete
+	app.EnableShellCompletion = ctx.App.EnableShellCompletion
+	if c.ShellComplete != nil {
+		app.ShellComplete = c.ShellComplete
 	}
 
 	// set the actions
