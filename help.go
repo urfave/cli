@@ -16,24 +16,28 @@ var AppHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
 USAGE:
-   {{if .UsageText}}{{.UsageText}}{{else}}{{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}
-   {{if .Version}}{{if not .HideVersion}}
+   {{if .UsageText}}{{.UsageText}}{{else}}{{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
+
 VERSION:
-   {{.Version}}
-   {{end}}{{end}}{{if len .Authors}}
-AUTHOR(S):
-   {{range .Authors}}{{.}}{{end}}
-   {{end}}{{if .VisibleCommands}}
+   {{.Version}}{{end}}{{end}}{{if .Description}}
+
+DESCRIPTION:
+   {{.Description}}{{end}}{{if len .Authors}}
+
+AUTHOR{{with $length := len .Authors}}{{if ne 1 $length}}S{{end}}{{end}}:
+   {{range $index, $author := .Authors}}{{if $index}}
+   {{end}}{{$author}}{{end}}{{end}}{{if .VisibleCommands}}
+
 COMMANDS:{{range .VisibleCategories}}{{if .Name}}
    {{.Name}}:{{end}}{{range .VisibleCommands}}
-     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}
-{{end}}{{end}}{{if .VisibleFlags}}
+     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
+
 GLOBAL OPTIONS:
-   {{range .VisibleFlags}}{{.}}
-   {{end}}{{end}}{{if .Copyright}}
+   {{range $index, $option := .VisibleFlags}}{{if $index}}
+   {{end}}{{$option}}{{end}}{{end}}{{if .Copyright}}
+
 COPYRIGHT:
-   {{.Copyright}}
-   {{end}}
+   {{.Copyright}}{{end}}
 `
 
 // CommandHelpTemplate is the text template for the command help topic.
@@ -204,17 +208,6 @@ func printHelp(out io.Writer, templ string, data interface{}) {
 	t := template.Must(template.New("help").Funcs(funcMap).Parse(templ))
 
 	errDebug := os.Getenv("CLI_TEMPLATE_ERROR_DEBUG") != ""
-
-	defer func() {
-		if r := recover(); r != nil {
-			if errDebug {
-				fmt.Fprintf(ErrWriter, "CLI TEMPLATE PANIC: %#v\n", r)
-			}
-			if os.Getenv("CLI_TEMPLATE_REPANIC") != "" {
-				panic(r)
-			}
-		}
-	}()
 
 	err := t.Execute(w, data)
 	if err != nil {

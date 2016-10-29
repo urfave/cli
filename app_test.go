@@ -91,7 +91,63 @@ func ExampleApp_Run_subcommand() {
 	// Hello, Jeremy
 }
 
-func ExampleApp_Run_help() {
+func ExampleApp_Run_appHelp() {
+	// set args for examples sake
+	os.Args = []string{"greet", "help"}
+
+	app := &App{
+		Name:        "greet",
+		Version:     "0.1.0",
+		Description: "This is how we describe greet the app",
+		Authors: []*Author{
+			{Name: "Harrison", Email: "harrison@lolwut.com"},
+			{Name: "Oliver Allen", Email: "oliver@toyshop.com"},
+		},
+		Flags: []Flag{
+			&StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
+		},
+		Commands: []*Command{
+			{
+				Name:        "describeit",
+				Aliases:     []string{"d"},
+				Usage:       "use it to see a description",
+				Description: "This is how we describe describeit the function",
+				Action: func(c *Context) error {
+					fmt.Printf("i like to describe things")
+					return nil
+				},
+			},
+		},
+	}
+	app.Run(os.Args)
+	// Output:
+	// NAME:
+	//    greet - A new cli application
+	//
+	// USAGE:
+	//    greet [global options] command [command options] [arguments...]
+	//
+	// VERSION:
+	//    0.1.0
+	//
+	// DESCRIPTION:
+	//    This is how we describe greet the app
+	//
+	// AUTHORS:
+	//    Harrison <harrison@lolwut.com>
+	//    Oliver Allen <oliver@toyshop.com>
+	//
+	// COMMANDS:
+	//      describeit, d  use it to see a description
+	//      help, h        Shows a list of commands or help for one command
+	//
+	// GLOBAL OPTIONS:
+	//    --name value   a name to say (default: "bob")
+	//    --help, -h     show help (default: false)
+	//    --version, -v  print the version (default: false)
+}
+
+func ExampleApp_Run_commandHelp() {
 	// set args for examples sake
 	os.Args = []string{"greet", "h", "describeit"}
 
@@ -130,7 +186,7 @@ func ExampleApp_Run_shellComplete() {
 	os.Args = []string{"greet", "--generate-completion"}
 
 	app := &App{
-		Name:                 "greet",
+		Name: "greet",
 		EnableShellCompletion: true,
 		Commands: []*Command{
 			{
@@ -232,6 +288,24 @@ func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
 
 	expect(t, context.Args().Get(0), "abcd")
 	expect(t, context.String("lang"), "spanish")
+}
+
+func TestApp_RunAsSubCommandIncorrectUsage(t *testing.T) {
+	a := App{
+		Name: "cmd",
+		Flags: []Flag{
+			&StringFlag{Name: "--foo"},
+		},
+		Writer: bytes.NewBufferString(""),
+	}
+
+	set := flag.NewFlagSet("", flag.ContinueOnError)
+	set.Parse([]string{"", "---foo"})
+	c := &Context{flagSet: set}
+
+	err := a.RunAsSubcommand(c)
+
+	expect(t, err, errors.New("bad flag syntax: ---foo"))
 }
 
 func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {

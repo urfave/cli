@@ -58,6 +58,26 @@ type Serializeder interface {
 	Serialized() string
 }
 
+// FlagsByName is a slice of Flag.
+type FlagsByName []Flag
+
+func (f FlagsByName) Len() int {
+	return len(f)
+}
+
+func (f FlagsByName) Less(i, j int) bool {
+	if len(f[j].Names()) == 0 {
+		return false
+	} else if len(f[i].Names()) == 0 {
+		return true
+	}
+	return f[i].Names()[0] < f[j].Names()[0]
+}
+
+func (f FlagsByName) Swap(i, j int) {
+	f[i], f[j] = f[j], f[i]
+}
+
 // Flag is a common interface related to parsing flags in cli.
 // For more advanced flag parsing techniques, it is recommended that
 // this interface be implemented.

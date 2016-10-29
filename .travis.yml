@@ -12,6 +12,7 @@ go:
 - 1.4.2
 - 1.5.x
 - 1.6.x
+- 1.7.x
 - master
 
 env: pip_install="pip install --user"
@@ -21,6 +22,9 @@ matrix:
   - go: master
   include:
   - go: 1.6.x
+    os: osx
+    env: pip_install="sudo pip install"
+  - go: 1.7.x
     os: osx
     env: pip_install="sudo pip install"
 
