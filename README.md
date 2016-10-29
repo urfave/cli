@@ -23,13 +23,14 @@ applications in an expressive way.
 - [Installation](#installation)
   * [Supported platforms](#supported-platforms)
   * [Using the `v2` branch](#using-the-v2-branch)
-  * [Pinning to the `v1` branch](#pinning-to-the-v1-branch)
+  * [Pinning to the `v1` releases](#pinning-to-the-v1-releases)
 - [Getting Started](#getting-started)
 - [Examples](#examples)
   * [Arguments](#arguments)
   * [Flags](#flags)
     + [Placeholder Values](#placeholder-values)
     + [Alternate Names](#alternate-names)
+    + [Ordering](#ordering)
     + [Values from the Environment](#values-from-the-environment)
     + [Values from alternate input sources (YAML, TOML, and others)](#values-from-alternate-input-sources-yaml-toml-and-others)
     + [Default Values for help output](#default-values-for-help-output)
@@ -108,11 +109,11 @@ import (
 **NOTE**: There is a [migrator (python) script](./cli-v1-to-v2) available to aid
 with the transition from the v1 to v2 API.
 
-### Pinning to the `v1` branch
+### Pinning to the `v1` releases
 
 Similarly to the section above describing use of the `v2` branch, if one wants
 to avoid any unexpected compatibility pains once `v2` becomes `master`, then
-pinning to the `v1` branch is an acceptable option, e.g.:
+pinning to `v1` is an acceptable option, e.g.:
 
 ```
 $ go get gopkg.in/urfave/cli.v1
@@ -125,6 +126,8 @@ import (
 )
 ...
 ```
+
+This will pull the latest tagged `v1` release (e.g. `v1.18.1` at the time of writing).
 
 ## Getting Started
 
@@ -453,6 +456,56 @@ func main() {
 That flag can then be set with `--lang spanish` or `-l spanish`. Note that
 giving two different forms of the same flag in the same command invocation is an
 error.
+
+#### Ordering
+
+Flags for the application and commands are shown in the order they are defined.
+However, it's possible to sort them from outside this library by using `FlagsByName`
+with `sort`.
+
+For example this:
+
+<!-- {
+  "args": ["&#45;&#45;help"],
+  "output": "Load configuration from FILE\n.*Language for the greeting.*"
+} -->
+``` go
+package main
+
+import (
+  "os"
+  "sort"
+
+  "github.com/urfave/cli"
+)
+
+func main() {
+  app := cli.NewApp()
+
+  app.Flags = []cli.Flag {
+    cli.StringFlag{
+      Name: "lang, l",
+      Value: "english",
+      Usage: "Language for the greeting",
+    },
+    cli.StringFlag{
+      Name: "config, c",
+      Usage: "Load configuration from `FILE`",
+    },
+  }
+
+  sort.Sort(cli.FlagsByName(app.Flags))
+
+  app.Run(os.Args)
+}
+```
+
+Will result in help output like:
+
+```
+--config FILE, -c FILE  Load configuration from FILE
+--lang value, -l value  Language for the greeting (default: "english")
+```
 
 #### Values from the Environment
 
@@ -1013,7 +1066,7 @@ is checked by the cli internals in order to print the `App.Version` via
 
 #### Customization
 
-The default flag may be cusomized to something other than `-v/--version` by
+The default flag may be customized to something other than `-v/--version` by
 setting `cli.VersionFlag`, e.g.:
 
 <!-- {

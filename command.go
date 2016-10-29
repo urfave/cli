@@ -90,7 +90,7 @@ func (c *Command) Run(ctx *Context) (err error) {
 			HandleExitCoder(err)
 			return err
 		}
-		fmt.Fprintf(ctx.App.Writer, "Incorrect Usage: %s\n\n", err)
+		fmt.Fprintln(ctx.App.Writer, "Incorrect Usage:", err.Error())
 		fmt.Fprintln(ctx.App.Writer)
 		ShowCommandHelp(ctx, c.Name)
 		return err
