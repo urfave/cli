@@ -42,6 +42,8 @@ type App struct {
 	ArgsUsage string
 	// Version of the program
 	Version string
+	// Description of the program
+	Description string
 	// List of commands to execute
 	Commands []Command
 	// List of flags to parse
@@ -198,7 +200,7 @@ func (a *App) Run(arguments []string) (err error) {
 			HandleExitCoder(err)
 			return err
 		}
-		fmt.Fprintf(a.Writer, "%s\n\n", "Incorrect Usage.")
+		fmt.Fprintf(a.Writer, "%s %s\n\n", "Incorrect Usage.", err.Error())
 		ShowAppHelp(context)
 		return err
 	}
@@ -319,7 +321,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 			HandleExitCoder(err)
 			return err
 		}
-		fmt.Fprintf(a.Writer, "%s\n\n", "Incorrect Usage.")
+		fmt.Fprintf(a.Writer, "%s %s\n\n", "Incorrect Usage.", err.Error())
 		ShowSubcommandHelp(context)
 		return err
 	}
@@ -460,10 +462,10 @@ type Author struct {
 func (a Author) String() string {
 	e := ""
 	if a.Email != "" {
-		e = "<" + a.Email + "> "
+		e = " <" + a.Email + ">"
 	}
 
-	return fmt.Sprintf("%v %v", a.Name, e)
+	return fmt.Sprintf("%v%v", a.Name, e)
 }
 
 // HandleAction uses ✧✧✧reflection✧✧✧ to figure out if the given Action is an
