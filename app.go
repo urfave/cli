@@ -167,6 +167,10 @@ func (a *App) Setup() {
 	if a.Metadata == nil {
 		a.Metadata = make(map[string]interface{})
 	}
+
+	if a.Writer == nil {
+		a.Writer = os.Stdout
+	}
 }
 
 // Run is the entry point to the cli app. Parses the arguments slice and routes
