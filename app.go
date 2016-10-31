@@ -158,10 +158,9 @@ func (a *App) Setup() {
 	}
 }
 
-// Run is an alias for RunWithEnv that defaults to getting the current
-// os.Environ()
-func (a *App) Run(arguments []string) (err error) {
-	return a.RunWithEnv(arguments, os.Environ())
+// Run is an alias for RunWithRuntime(DefaultRuntime)
+func (a *App) Run() (err error) {
+	return a.RunWithRuntime(DefaultRuntime)
 }
 
 // RunWithEnv is the entry point to the cli app. Parses the arguments slice and routes
@@ -169,16 +168,16 @@ func (a *App) Run(arguments []string) (err error) {
 //
 // arguments maps to os.Args
 // environ maps to os.Environ()
-func (a *App) RunWithEnv(arguments, environ []string) (err error) {
+func (a *App) RunWithRuntime(r Runtime) (err error) {
 	a.Setup()
 
 	// setup env
-	env := Env(environ)
+	env := Env(r.Env)
 
 	// parse flags
 	set := flagSet(a.Name, a.Flags, env)
 	set.SetOutput(ioutil.Discard)
-	err = set.Parse(arguments[1:])
+	err = set.Parse(r.Args[1:])
 	nerr := normalizeFlags(a.Flags, set)
 	context := NewContext(a, set, env, nil)
 	if nerr != nil {

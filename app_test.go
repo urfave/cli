@@ -47,7 +47,7 @@ func ExampleApp_Run() {
 		Authors:   []*Author{{Name: "Oliver Allen", Email: "oliver@toyshop.example.com"}},
 	}
 
-	app.Run(os.Args)
+	app.Run()
 	// Output:
 	// Hello Jeremy
 }
@@ -86,7 +86,7 @@ func ExampleApp_Run_subcommand() {
 		},
 	}
 
-	app.Run(os.Args)
+	app.Run()
 	// Output:
 	// Hello, Jeremy
 }
@@ -119,7 +119,7 @@ func ExampleApp_Run_appHelp() {
 			},
 		},
 	}
-	app.Run(os.Args)
+	app.Run()
 	// Output:
 	// NAME:
 	//    greet - A new cli application
@@ -169,7 +169,7 @@ func ExampleApp_Run_commandHelp() {
 			},
 		},
 	}
-	app.Run(os.Args)
+	app.Run()
 	// Output:
 	// NAME:
 	//    greet describeit - use it to see a description
@@ -210,7 +210,7 @@ func ExampleApp_Run_shellComplete() {
 		},
 	}
 
-	app.Run(os.Args)
+	app.Run()
 	// Output:
 	// describeit
 	// d
@@ -229,9 +229,9 @@ func TestApp_Run(t *testing.T) {
 		},
 	}
 
-	err := app.Run([]string{"command", "foo"})
+	err := app.RunWithRuntime(Runtime{[]string{"command", "foo"}, nil})
 	expect(t, err, nil)
-	err = app.Run([]string{"command", "bar"})
+	err = app.RunWithRuntime(Runtime{[]string{"command", "bar"}, nil})
 	expect(t, err, nil)
 	expect(t, s, "foobar")
 }
@@ -284,7 +284,9 @@ func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
 			},
 		},
 	}
-	a.Run([]string{"", "foo", "--lang", "spanish", "abcd"})
+	a.RunWithRuntime(Runtime{
+		Args: []string{"", "foo", "--lang", "spanish", "abcd"},
+	})
 
 	expect(t, context.Args().Get(0), "abcd")
 	expect(t, context.String("lang"), "spanish")
@@ -326,7 +328,9 @@ func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
 	}
 	app.Commands = []*Command{command}
 
-	app.Run([]string{"", "cmd", "--option", "my-option", "my-arg", "--", "--notARealFlag"})
+	app.RunWithRuntime(Runtime{
+		Args: []string{"", "cmd", "--option", "my-option", "my-arg", "--", "--notARealFlag"},
+	})
 
 	expect(t, parsedOption, "my-option")
 	expect(t, args.Get(0), "my-arg")
@@ -347,7 +351,7 @@ func TestApp_CommandWithDash(t *testing.T) {
 	}
 	app.Commands = []*Command{command}
 
-	app.Run([]string{"", "cmd", "my-arg", "-"})
+	app.RunWithRuntime(Runtime{[]string{"", "cmd", "my-arg", "-"}, nil})
 
 	expect(t, args.Get(0), "my-arg")
 	expect(t, args.Get(1), "-")
@@ -366,7 +370,9 @@ func TestApp_CommandWithNoFlagBeforeTerminator(t *testing.T) {
 	}
 	app.Commands = []*Command{command}
 
-	app.Run([]string{"", "cmd", "my-arg", "--", "notAFlagAtAll"})
+	app.RunWithRuntime(Runtime{
+		Args: []string{"", "cmd", "my-arg", "--", "notAFlagAtAll"},
+	})
 
 	expect(t, args.Get(0), "my-arg")
 	expect(t, args.Get(1), "--")
@@ -437,7 +443,7 @@ func TestApp_Float64Flag(t *testing.T) {
 		},
 	}
 
-	app.Run([]string{"", "--height", "1.93"})
+	app.RunWithRuntime(Runtime{[]string{"", "--height", "1.93"}, nil})
 	expect(t, meters, 1.93)
 }
 
@@ -463,7 +469,9 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 	}
 	app.Commands = []*Command{command}
 
-	app.Run([]string{"", "cmd", "-p", "22", "-p", "80", "-ip", "8.8.8.8", "-ip", "8.8.4.4", "my-arg"})
+	app.RunWithRuntime(Runtime{
+		Args: []string{"", "cmd", "-p", "22", "-p", "80", "-ip", "8.8.8.8", "-ip", "8.8.4.4", "my-arg"},
+	})
 
 	IntsEquals := func(a, b []int) bool {
 		if len(a) != len(b) {
@@ -519,7 +527,7 @@ func TestApp_ParseSliceFlagsWithMissingValue(t *testing.T) {
 	}
 	app.Commands = []*Command{command}
 
-	app.Run([]string{"", "cmd", "-a", "2", "-str", "A", "my-arg"})
+	app.RunWithRuntime(Runtime{[]string{"", "cmd", "-a", "2", "-str", "A", "my-arg"}, nil})
 
 	var expectedIntSlice = []int{2}
 	var expectedStringSlice = []string{"A"}
