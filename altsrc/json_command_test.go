@@ -24,7 +24,7 @@ func TestCommandJSONFileTest(t *testing.T) {
 	test := []string{"test-cmd", "--load", fileName}
 	set.Parse(test)
 
-	c := cli.NewContext(app, set, cli.Env{}, nil)
+	c := cli.NewContext(app, set, nil, nil)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -121,7 +121,7 @@ func TestCommandJSONFileTestSpecifiedFlagWins(t *testing.T) {
 	test := []string{"test-cmd", "--load", fileName, "--test", "7"}
 	set.Parse(test)
 
-	c := cli.NewContext(app, set, cli.Env{}, nil)
+	c := cli.NewContext(app, set, nil, nil)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -153,7 +153,7 @@ func TestCommandJSONFileTestSpecifiedFlagWinsNested(t *testing.T) {
 	test := []string{"test-cmd", "--load", fileName, "--top.test", "7"}
 	set.Parse(test)
 
-	c := cli.NewContext(app, set, cli.Env{}, nil)
+	c := cli.NewContext(app, set, nil, nil)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -185,7 +185,7 @@ func TestCommandJSONFileTestDefaultValueFileWins(t *testing.T) {
 	test := []string{"test-cmd", "--load", fileName}
 	set.Parse(test)
 
-	c := cli.NewContext(app, set, cli.Env{}, nil)
+	c := cli.NewContext(app, set, nil, nil)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -217,7 +217,7 @@ func TestCommandJSONFileTestDefaultValueFileWinsNested(t *testing.T) {
 	test := []string{"test-cmd", "--load", fileName}
 	set.Parse(test)
 
-	c := cli.NewContext(app, set, cli.Env{}, nil)
+	c := cli.NewContext(app, set, nil, nil)
 
 	command := &cli.Command{
 		Name:        "test-cmd",

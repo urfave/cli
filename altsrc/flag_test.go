@@ -260,7 +260,7 @@ func TestFloat64ApplyInputSourceMethodEnvVarSet(t *testing.T) {
 }
 
 func runTest(t *testing.T, test testApplyInputSource) *cli.Context {
-	env := cli.Env{}
+	env := cli.Env(nil)
 	if test.EnvVar != "" {
 		env = cli.Env{test.EnvVar}
 	}

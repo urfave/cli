@@ -782,7 +782,7 @@ func TestApp_VersionPrinter(t *testing.T) {
 	}
 
 	app := &App{}
-	ctx := NewContext(app, nil, Env{}, nil)
+	ctx := NewContext(app, nil, nil, nil)
 	ShowVersion(ctx)
 
 	if wasCalled == false {

@@ -22,7 +22,7 @@ func TestCommandTomFileTest(t *testing.T) {
 	test := []string{"test-cmd", "--load", "current.toml"}
 	set.Parse(test)
 
-	c := cli.NewContext(app, set, cli.Env{}, nil)
+	c := cli.NewContext(app, set, nil, nil)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -117,7 +117,7 @@ func TestCommandTomlFileTestSpecifiedFlagWins(t *testing.T) {
 	test := []string{"test-cmd", "--load", "current.toml", "--test", "7"}
 	set.Parse(test)
 
-	c := cli.NewContext(app, set, cli.Env{}, nil)
+	c := cli.NewContext(app, set, nil, nil)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -150,7 +150,7 @@ func TestCommandTomlFileTestSpecifiedFlagWinsNested(t *testing.T) {
 	test := []string{"test-cmd", "--load", "current.toml", "--top.test", "7"}
 	set.Parse(test)
 
-	c := cli.NewContext(app, set, cli.Env{}, nil)
+	c := cli.NewContext(app, set, nil, nil)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -182,7 +182,7 @@ func TestCommandTomlFileTestDefaultValueFileWins(t *testing.T) {
 	test := []string{"test-cmd", "--load", "current.toml"}
 	set.Parse(test)
 
-	c := cli.NewContext(app, set, cli.Env{}, nil)
+	c := cli.NewContext(app, set, nil, nil)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -214,7 +214,7 @@ func TestCommandTomlFileTestDefaultValueFileWinsNested(t *testing.T) {
 	test := []string{"test-cmd", "--load", "current.toml"}
 	set.Parse(test)
 
-	c := cli.NewContext(app, set, cli.Env{}, nil)
+	c := cli.NewContext(app, set, nil, nil)
 
 	command := &cli.Command{
 		Name:        "test-cmd",

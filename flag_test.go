@@ -34,7 +34,7 @@ func TestBoolFlagApply_SetsAllNames(t *testing.T) {
 	v := false
 	fl := BoolFlag{Name: "wat", Aliases: []string{"W", "huh"}, Destination: &v}
 	set := flag.NewFlagSet("test", 0)
-	fl.Apply(set, Env{})
+	fl.Apply(set, nil)
 
 	err := set.Parse([]string{"--wat", "-W", "--huh"})
 	expect(t, err, nil)
@@ -98,7 +98,7 @@ func TestStringFlagApply_SetsAllNames(t *testing.T) {
 	v := "mmm"
 	fl := StringFlag{Name: "hay", Aliases: []string{"H", "hayyy"}, Destination: &v}
 	set := flag.NewFlagSet("test", 0)
-	fl.Apply(set, Env{})
+	fl.Apply(set, nil)
 
 	err := set.Parse([]string{"--hay", "u", "-H", "yuu", "--hayyy", "YUUUU"})
 	expect(t, err, nil)
@@ -149,7 +149,7 @@ func TestStringSliceFlagWithEnvVarHelpOutput(t *testing.T) {
 func TestStringSliceFlagApply_SetsAllNames(t *testing.T) {
 	fl := StringSliceFlag{Name: "goat", Aliases: []string{"G", "gooots"}}
 	set := flag.NewFlagSet("test", 0)
-	fl.Apply(set, Env{})
+	fl.Apply(set, nil)
 
 	err := set.Parse([]string{"--goat", "aaa", "-G", "bbb", "--gooots", "eeeee"})
 	expect(t, err, nil)
@@ -195,7 +195,7 @@ func TestIntFlagApply_SetsAllNames(t *testing.T) {
 	v := 3
 	fl := IntFlag{Name: "banana", Aliases: []string{"B", "banannanana"}, Destination: &v}
 	set := flag.NewFlagSet("test", 0)
-	fl.Apply(set, Env{})
+	fl.Apply(set, nil)
 
 	err := set.Parse([]string{"--banana", "1", "-B", "2", "--banannanana", "5"})
 	expect(t, err, nil)
@@ -350,7 +350,7 @@ func TestDurationFlagApply_SetsAllNames(t *testing.T) {
 	v := time.Second * 20
 	fl := DurationFlag{Name: "howmuch", Aliases: []string{"H", "whyyy"}, Destination: &v}
 	set := flag.NewFlagSet("test", 0)
-	fl.Apply(set, Env{})
+	fl.Apply(set, nil)
 
 	err := set.Parse([]string{"--howmuch", "30s", "-H", "5m", "--whyyy", "30h"})
 	expect(t, err, nil)
@@ -399,7 +399,7 @@ func TestIntSliceFlagWithEnvVarHelpOutput(t *testing.T) {
 func TestIntSliceFlagApply_SetsAllNames(t *testing.T) {
 	fl := IntSliceFlag{Name: "bits", Aliases: []string{"B", "bips"}}
 	set := flag.NewFlagSet("test", 0)
-	fl.Apply(set, Env{})
+	fl.Apply(set, nil)
 
 	err := set.Parse([]string{"--bits", "23", "-B", "3", "--bips", "99"})
 	expect(t, err, nil)
@@ -485,7 +485,7 @@ func TestFloat64FlagApply_SetsAllNames(t *testing.T) {
 	v := float64(99.1)
 	fl := Float64Flag{Name: "noodles", Aliases: []string{"N", "nurbles"}, Destination: &v}
 	set := flag.NewFlagSet("test", 0)
-	fl.Apply(set, Env{})
+	fl.Apply(set, nil)
 
 	err := set.Parse([]string{"--noodles", "1.3", "-N", "11", "--nurbles", "43.33333"})
 	expect(t, err, nil)
@@ -572,7 +572,7 @@ func TestGenericFlagWithEnvVarHelpOutput(t *testing.T) {
 func TestGenericFlagApply_SetsAllNames(t *testing.T) {
 	fl := GenericFlag{Name: "orbs", Aliases: []string{"O", "obrs"}, Value: &Parser{}}
 	set := flag.NewFlagSet("test", 0)
-	fl.Apply(set, Env{})
+	fl.Apply(set, nil)
 
 	err := set.Parse([]string{"--orbs", "eleventy,3", "-O", "4,bloop", "--obrs", "19,s"})
 	expect(t, err, nil)
