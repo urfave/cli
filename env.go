@@ -5,45 +5,34 @@ import (
 )
 
 // Represents key=value environment variables
-type Env map[string]string
-
-// Transforms the os.Environ() format to Env.
-//
-// Theoretically the environ can contain duplicate keys but I never saw that
-// in the wild.
-func parseEnviron(environ []string) Env {
-	env := make(Env, len(environ))
-	for _, pair := range environ {
-		kv := strings.SplitN(pair, "=", 2)
-		env[kv[0]] = kv[1]
-	}
-	return env
-}
+type Env []string
 
 // Get returns the value associated to `key'. If the key doesn't exists,
 // returns an empty string.
-func (e Env) Get(key string) string {
-	return e[key]
+func (e Env) Get(name string) string {
+	v, _ := e.Lookup(name)
+	return v
+}
+
+// Has checks for the existence of the key in the data set
+func (e Env) Has(name string) bool {
+	_, ok := e.Lookup(name)
+	return ok
 }
 
 // Lookup returns the value and true or empty string and false depending on if
 // the environment variable exists or not.
-func (e Env) Lookup(key string) (string, bool) {
-	v, ok := e[key]
-	return v, ok
-}
-
-// Has checks for the existence of the key in the data set
-func (e Env) Has(key string) bool {
-	_, ok := e[key]
-	return ok
+func (e Env) Lookup(name string) (string, bool) {
+	prefix := name + "="
+	for _, pair := range e {
+		if strings.HasPrefix(pair, prefix) {
+			return pair[len(prefix):], true
+		}
+	}
+	return "", false
 }
 
 // Converst the env back to the os.Environ() format.
 func (e Env) Environ() []string {
-	environ := make([]string, 0, len(e))
-	for k, v := range e {
-		environ = append(environ, k+"="+v)
-	}
-	return environ
+	return []string(e)
 }

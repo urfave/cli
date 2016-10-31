@@ -173,7 +173,7 @@ func (a *App) RunWithEnv(arguments, environ []string) (err error) {
 	a.Setup()
 
 	// setup env
-	env := parseEnviron(environ)
+	env := Env(environ)
 
 	// parse flags
 	set := flagSet(a.Name, a.Flags, env)
