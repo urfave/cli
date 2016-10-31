@@ -52,13 +52,11 @@ func TestCommandJSONFileTestGlobalEnvVarWins(t *testing.T) {
 
 	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
-	os.Setenv("THE_TEST", "10")
-	defer os.Setenv("THE_TEST", "")
 
 	test := []string{"test-cmd", "--load", fileName}
 	set.Parse(test)
 
-	c := cli.NewContext(app, set, cli.Env{}, nil)
+	c := cli.NewContext(app, set, cli.Env{"THE_TEST=10"}, nil)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -87,13 +85,11 @@ func TestCommandJSONFileTestGlobalEnvVarWinsNested(t *testing.T) {
 
 	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
-	os.Setenv("THE_TEST", "10")
-	defer os.Setenv("THE_TEST", "")
 
 	test := []string{"test-cmd", "--load", fileName}
 	set.Parse(test)
 
-	c := cli.NewContext(app, set, cli.Env{}, nil)
+	c := cli.NewContext(app, set, cli.Env{"THE_TEST=10"}, nil)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -250,13 +246,11 @@ func TestCommandJSONFileFlagHasDefaultGlobalEnvJSONSetGlobalEnvWins(t *testing.T
 
 	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
-	os.Setenv("THE_TEST", "11")
-	defer os.Setenv("THE_TEST", "")
 
 	test := []string{"test-cmd", "--load", fileName}
 	set.Parse(test)
 
-	c := cli.NewContext(app, set, cli.Env{}, nil)
+	c := cli.NewContext(app, set, cli.Env{"THE_TEST=11"}, nil)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -284,13 +278,11 @@ func TestCommandJSONFileFlagHasDefaultGlobalEnvJSONSetGlobalEnvWinsNested(t *tes
 
 	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
-	os.Setenv("THE_TEST", "11")
-	defer os.Setenv("THE_TEST", "")
 
 	test := []string{"test-cmd", "--load", fileName}
 	set.Parse(test)
 
-	c := cli.NewContext(app, set, cli.Env{}, nil)
+	c := cli.NewContext(app, set, cli.Env{"THE_TEST=11"}, nil)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
