@@ -17,8 +17,7 @@ type testApplyInputSource struct {
 	Expected           string
 	ContextValueString string
 	ContextValue       flag.Value
-	EnvVarValue        string
-	EnvVarName         string
+	EnvVar             string
 	MapValue           interface{}
 }
 
@@ -50,10 +49,9 @@ func TestGenericApplyInputSourceMethodEnvVarSet(t *testing.T) {
 			Value:   &Parser{},
 			EnvVars: []string{"TEST"},
 		}),
-		FlagName:    "test",
-		MapValue:    &Parser{"efg", "hij"},
-		EnvVarName:  "TEST",
-		EnvVarValue: "abc,def",
+		FlagName: "test",
+		MapValue: &Parser{"efg", "hij"},
+		EnvVar:   "TEST=abc,def",
 	})
 	expect(t, &Parser{"abc", "def"}, c.Generic("test"))
 }
@@ -79,11 +77,10 @@ func TestStringSliceApplyInputSourceMethodContextSet(t *testing.T) {
 
 func TestStringSliceApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:        NewStringSliceFlag(&cli.StringSliceFlag{Name: "test", EnvVars: []string{"TEST"}}),
-		FlagName:    "test",
-		MapValue:    []string{"hello", "world"},
-		EnvVarName:  "TEST",
-		EnvVarValue: "oh,no",
+		Flag:     NewStringSliceFlag(&cli.StringSliceFlag{Name: "test", EnvVars: []string{"TEST"}}),
+		FlagName: "test",
+		MapValue: []string{"hello", "world"},
+		EnvVar:   "TEST=oh,no",
 	})
 	expect(t, c.StringSlice("test"), []string{"oh", "no"})
 }
@@ -109,11 +106,10 @@ func TestIntSliceApplyInputSourceMethodContextSet(t *testing.T) {
 
 func TestIntSliceApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:        NewIntSliceFlag(&cli.IntSliceFlag{Name: "test", EnvVars: []string{"TEST"}}),
-		FlagName:    "test",
-		MapValue:    []int{1, 2},
-		EnvVarName:  "TEST",
-		EnvVarValue: "3,4",
+		Flag:     NewIntSliceFlag(&cli.IntSliceFlag{Name: "test", EnvVars: []string{"TEST"}}),
+		FlagName: "test",
+		MapValue: []int{1, 2},
+		EnvVar:   "TEST=3,4",
 	})
 	expect(t, c.IntSlice("test"), []int{3, 4})
 }
@@ -139,11 +135,10 @@ func TestBoolApplyInputSourceMethodContextSet(t *testing.T) {
 
 func TestBoolApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:        NewBoolFlag(&cli.BoolFlag{Name: "test", EnvVars: []string{"TEST"}}),
-		FlagName:    "test",
-		MapValue:    false,
-		EnvVarName:  "TEST",
-		EnvVarValue: "true",
+		Flag:     NewBoolFlag(&cli.BoolFlag{Name: "test", EnvVars: []string{"TEST"}}),
+		FlagName: "test",
+		MapValue: false,
+		EnvVar:   "TEST=true",
 	})
 	expect(t, true, c.Bool("test"))
 }
@@ -169,11 +164,10 @@ func TestStringApplyInputSourceMethodContextSet(t *testing.T) {
 
 func TestStringApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:        NewStringFlag(&cli.StringFlag{Name: "test", EnvVars: []string{"TEST"}}),
-		FlagName:    "test",
-		MapValue:    "hello",
-		EnvVarName:  "TEST",
-		EnvVarValue: "goodbye",
+		Flag:     NewStringFlag(&cli.StringFlag{Name: "test", EnvVars: []string{"TEST"}}),
+		FlagName: "test",
+		MapValue: "hello",
+		EnvVar:   "TEST=goodbye",
 	})
 	expect(t, "goodbye", c.String("test"))
 }
@@ -199,11 +193,10 @@ func TestIntApplyInputSourceMethodContextSet(t *testing.T) {
 
 func TestIntApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:        NewIntFlag(&cli.IntFlag{Name: "test", EnvVars: []string{"TEST"}}),
-		FlagName:    "test",
-		MapValue:    15,
-		EnvVarName:  "TEST",
-		EnvVarValue: "12",
+		Flag:     NewIntFlag(&cli.IntFlag{Name: "test", EnvVars: []string{"TEST"}}),
+		FlagName: "test",
+		MapValue: 15,
+		EnvVar:   "TEST=12",
 	})
 	expect(t, 12, c.Int("test"))
 }
@@ -229,11 +222,10 @@ func TestDurationApplyInputSourceMethodContextSet(t *testing.T) {
 
 func TestDurationApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:        NewDurationFlag(&cli.DurationFlag{Name: "test", EnvVars: []string{"TEST"}}),
-		FlagName:    "test",
-		MapValue:    time.Duration(30 * time.Second),
-		EnvVarName:  "TEST",
-		EnvVarValue: time.Duration(15 * time.Second).String(),
+		Flag:     NewDurationFlag(&cli.DurationFlag{Name: "test", EnvVars: []string{"TEST"}}),
+		FlagName: "test",
+		MapValue: time.Duration(30 * time.Second),
+		EnvVar:   "TEST=" + time.Duration(15*time.Second).String(),
 	})
 	expect(t, time.Duration(15*time.Second), c.Duration("test"))
 }
@@ -259,19 +251,18 @@ func TestFloat64ApplyInputSourceMethodContextSet(t *testing.T) {
 
 func TestFloat64ApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:        NewFloat64Flag(&cli.Float64Flag{Name: "test", EnvVars: []string{"TEST"}}),
-		FlagName:    "test",
-		MapValue:    1.3,
-		EnvVarName:  "TEST",
-		EnvVarValue: fmt.Sprintf("%v", 1.4),
+		Flag:     NewFloat64Flag(&cli.Float64Flag{Name: "test", EnvVars: []string{"TEST"}}),
+		FlagName: "test",
+		MapValue: 1.3,
+		EnvVar:   fmt.Sprintf("TEST=%v", 1.4),
 	})
 	expect(t, 1.4, c.Float64("test"))
 }
 
 func runTest(t *testing.T, test testApplyInputSource) *cli.Context {
 	env := cli.Env{}
-	if test.EnvVarName != "" && test.EnvVarValue != "" {
-		env[test.EnvVarName] = test.EnvVarValue
+	if test.EnvVar != "" {
+		env = cli.Env{test.EnvVar}
 	}
 
 	inputSource := &MapInputSource{valueMap: map[interface{}]interface{}{test.FlagName: test.MapValue}}
