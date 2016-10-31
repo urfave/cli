@@ -23,7 +23,7 @@ type Context struct {
 
 // NewContext creates a new context. For use in when invoking an App or Command action.
 func NewContext(app *App, set *flag.FlagSet, env Env, parentCtx *Context) *Context {
-	return &Context{App: app, flagSet: set, parentContext: parentCtx}
+	return &Context{App: app, flagSet: set, env: env, parentContext: parentCtx}
 }
 
 // NumFlags returns the number of flags set
