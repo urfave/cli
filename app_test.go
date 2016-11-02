@@ -1492,7 +1492,7 @@ func TestHandleAction_WithNonFuncAction(t *testing.T) {
 		t.Fatalf("expected to receive a *ExitError")
 	}
 
-	if !strings.HasPrefix(exitErr.Error(), "ERROR invalid Action type") {
+	if !strings.HasPrefix(exitErr.Error(), "ERROR invalid Action type.") {
 		t.Fatalf("expected an unknown Action error, but got: %v", exitErr.Error())
 	}
 
@@ -1516,7 +1516,7 @@ func TestHandleAction_WithInvalidFuncSignature(t *testing.T) {
 		t.Fatalf("expected to receive a *ExitError")
 	}
 
-	if !strings.HasPrefix(exitErr.Error(), "ERROR unknown Action error") {
+	if !strings.HasPrefix(exitErr.Error(), "ERROR invalid Action type") {
 		t.Fatalf("expected an unknown Action error, but got: %v", exitErr.Error())
 	}
 
@@ -1540,7 +1540,7 @@ func TestHandleAction_WithInvalidFuncReturnSignature(t *testing.T) {
 		t.Fatalf("expected to receive a *ExitError")
 	}
 
-	if !strings.HasPrefix(exitErr.Error(), "ERROR invalid Action signature") {
+	if !strings.HasPrefix(exitErr.Error(), "ERROR invalid Action type") {
 		t.Fatalf("expected an invalid Action signature error, but got: %v", exitErr.Error())
 	}
 
