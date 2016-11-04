@@ -252,20 +252,43 @@ func checkSubcommandHelp(c *Context) bool {
 	return false
 }
 
-func checkCompletions(c *Context) bool {
-	if (c.GlobalBool(BashCompletionFlag.Name) || c.Bool(BashCompletionFlag.Name)) && c.App.EnableBashCompletion {
-		ShowCompletions(c)
-		return true
+func checkCompleteFlag(a *App, arguments []string) (bool, []string) {
+	if !a.EnableBashCompletion {
+		return false, arguments
 	}
 
-	return false
+	pos := len(arguments) - 1
+	lastArg := arguments[pos]
+
+	if lastArg != "--"+BashCompletionFlag.Name {
+		return false, arguments
+	}
+
+	return true, arguments[:pos]
+}
+
+func checkCompletions(c *Context) bool {
+	if !c.complete {
+		return false
+	}
+
+	if args := c.Args(); args.Present() {
+		name := args.First()
+		if cmd := c.App.Command(name); cmd != nil {
+			// let the command handle the completion
+			return false
+		}
+	}
+
+	ShowCompletions(c)
+	return true
 }
 
 func checkCommandCompletions(c *Context, name string) bool {
-	if c.Bool(BashCompletionFlag.Name) && c.App.EnableBashCompletion {
-		ShowCommandCompletions(c, name)
-		return true
+	if !c.complete {
+		return false
 	}
 
-	return false
+	ShowCommandCompletions(c, name)
+	return true
 }
