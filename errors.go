@@ -34,6 +34,10 @@ func (m MultiError) Error() string {
 	return strings.Join(errs, "\n")
 }
 
+type ErrorFormatter interface {
+	Format(s fmt.State, verb rune)
+}
+
 // ExitCoder is the interface checked by `App` and `Command` for a custom exit
 // code
 type ExitCoder interface {
@@ -44,11 +48,11 @@ type ExitCoder interface {
 // ExitError fulfills both the builtin `error` interface and `ExitCoder`
 type ExitError struct {
 	exitCode int
-	message  string
+	message  interface{}
 }
 
 // NewExitError makes a new *ExitError
-func NewExitError(message string, exitCode int) *ExitError {
+func NewExitError(message interface{}, exitCode int) *ExitError {
 	return &ExitError{
 		exitCode: exitCode,
 		message:  message,
@@ -58,7 +62,7 @@ func NewExitError(message string, exitCode int) *ExitError {
 // Error returns the string message, fulfilling the interface required by
 // `error`
 func (ee *ExitError) Error() string {
-	return ee.message
+	return fmt.Sprintf("%v", ee.message)
 }
 
 // ExitCode returns the exit code, fulfilling the interface required by
@@ -77,7 +81,9 @@ func HandleExitCoder(err error) {
 	}
 
 	if exitErr, ok := err.(ExitCoder); ok {
-		if err.Error() != "" {
+		if _, ok := exitErr.(ErrorFormatter); ok {
+			fmt.Fprintf(ErrWriter, "%+v\n", err)
+		} else {
 			fmt.Fprintln(ErrWriter, err)
 		}
 		OsExiter(exitErr.ExitCode())
