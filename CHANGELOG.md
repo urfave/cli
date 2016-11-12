@@ -21,6 +21,7 @@
 - Raise minimum tested/supported Go version to 1.2+
 
 ### Fixed
+- If no action is specified on a command or app, the help is now printed instead of `panic`ing
 - `App.Metadata` is initialized automatically now (previously was `nil` unless initialized)
 - Correctly show help message if `-h` is provided to a subcommand
 - `context.(Global)IsSet` now respects environment variables. Previously it
