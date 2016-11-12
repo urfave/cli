@@ -5,8 +5,11 @@
 ## [Unreleased]
 
 
-## [1.19.0] - 2016-09-11
+## [1.19.0] - 2016-11-12
 ### Added
+- `FlagsByName` was added to make it easy to sort flags (e.g. `sort.Sort(cli.FlagsByName(app.Flags))`)
+- A `Description` field was added to `App` for a more detailed description of
+  the application (similar to the existing `Description` field on `Command`)
 - Flag type code generation via `go generate`
 - Write to stderr and exit 1 if action returns non-nil error
 - Added support for TOML to the `altsrc` loader
@@ -21,6 +24,12 @@
 - Raise minimum tested/supported Go version to 1.2+
 
 ### Fixed
+- Consider empty environment variables as set (previously environment variables
+  with the equivalent of `""` would be skipped rather than their value used).
+- Return an error if the value in a given environment variable cannot be parsed
+  as the flag type. Previously these errors were silently swallowed.
+- Print full error when an invalid flag is specified (which includes the invalid flag)
+- `App.Writer` defaults to `stdout` when `nil`
 - If no action is specified on a command or app, the help is now printed instead of `panic`ing
 - `App.Metadata` is initialized automatically now (previously was `nil` unless initialized)
 - Correctly show help message if `-h` is provided to a subcommand
