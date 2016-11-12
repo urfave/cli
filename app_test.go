@@ -178,6 +178,49 @@ func ExampleApp_Run_commandHelp() {
 	//    This is how we describe describeit the function
 }
 
+func ExampleApp_Run_noAction() {
+	app := App{}
+	app.Name = "greet"
+	app.Run([]string{"greet"})
+	// Output:
+	// NAME:
+	//    greet
+	//
+	// USAGE:
+	//     [global options] command [command options] [arguments...]
+	//
+	// COMMANDS:
+	//      help, h  Shows a list of commands or help for one command
+	//
+	// GLOBAL OPTIONS:
+	//    --help, -h     show help
+	//    --version, -v  print the version
+}
+
+func ExampleApp_Run_subcommandNoAction() {
+	app := App{}
+	app.Name = "greet"
+	app.Commands = []Command{
+		{
+			Name:        "describeit",
+			Aliases:     []string{"d"},
+			Usage:       "use it to see a description",
+			Description: "This is how we describe describeit the function",
+		},
+	}
+	app.Run([]string{"greet", "describeit"})
+	// Output:
+	// NAME:
+	//     describeit - use it to see a description
+	//
+	// USAGE:
+	//     describeit [arguments...]
+	//
+	// DESCRIPTION:
+	//    This is how we describe describeit the function
+
+}
+
 func ExampleApp_Run_bashComplete() {
 	// set args for examples sake
 	os.Args = []string{"greet", "--generate-bash-completion"}
