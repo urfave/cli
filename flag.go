@@ -37,6 +37,21 @@ var HelpFlag = BoolFlag{
 // to display a flag.
 var FlagStringer FlagStringFunc = stringifyFlag
 
+// FlagsByName is a slice of Flag.
+type FlagsByName []Flag
+
+func (f FlagsByName) Len() int {
+	return len(f)
+}
+
+func (f FlagsByName) Less(i, j int) bool {
+	return f[i].GetName() < f[j].GetName()
+}
+
+func (f FlagsByName) Swap(i, j int) {
+	f[i], f[j] = f[j], f[i]
+}
+
 // Flag is a common interface related to parsing flags in cli.
 // For more advanced flag parsing techniques, it is recommended that
 // this interface be implemented.

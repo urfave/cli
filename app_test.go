@@ -90,7 +90,62 @@ func ExampleApp_Run_subcommand() {
 	// Hello, Jeremy
 }
 
-func ExampleApp_Run_help() {
+func ExampleApp_Run_appHelp() {
+	// set args for examples sake
+	os.Args = []string{"greet", "help"}
+
+	app := NewApp()
+	app.Name = "greet"
+	app.Version = "0.1.0"
+	app.Description = "This is how we describe greet the app"
+	app.Authors = []Author{
+		{Name: "Harrison", Email: "harrison@lolwut.com"},
+		{Name: "Oliver Allen", Email: "oliver@toyshop.com"},
+	}
+	app.Flags = []Flag{
+		StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
+	}
+	app.Commands = []Command{
+		{
+			Name:        "describeit",
+			Aliases:     []string{"d"},
+			Usage:       "use it to see a description",
+			Description: "This is how we describe describeit the function",
+			Action: func(c *Context) error {
+				fmt.Printf("i like to describe things")
+				return nil
+			},
+		},
+	}
+	app.Run(os.Args)
+	// Output:
+	// NAME:
+	//    greet - A new cli application
+	//
+	// USAGE:
+	//    greet [global options] command [command options] [arguments...]
+	//
+	// VERSION:
+	//    0.1.0
+	//
+	// DESCRIPTION:
+	//    This is how we describe greet the app
+	//
+	// AUTHORS:
+	//    Harrison <harrison@lolwut.com>
+	//    Oliver Allen <oliver@toyshop.com>
+	//
+	// COMMANDS:
+	//      describeit, d  use it to see a description
+	//      help, h        Shows a list of commands or help for one command
+	//
+	// GLOBAL OPTIONS:
+	//    --name value   a name to say (default: "bob")
+	//    --help, -h     show help
+	//    --version, -v  print the version
+}
+
+func ExampleApp_Run_commandHelp() {
 	// set args for examples sake
 	os.Args = []string{"greet", "h", "describeit"}
 
@@ -202,6 +257,12 @@ func TestApp_Command(t *testing.T) {
 	}
 }
 
+func TestApp_Setup_defaultsWriter(t *testing.T) {
+	app := &App{}
+	app.Setup()
+	expect(t, app.Writer, os.Stdout)
+}
+
 func TestApp_CommandWithArgBeforeFlags(t *testing.T) {
 	var parsedOption, firstArg string
 
@@ -250,6 +311,23 @@ func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
 
 	expect(t, context.Args().Get(0), "abcd")
 	expect(t, context.String("lang"), "spanish")
+}
+
+func TestApp_RunAsSubCommandIncorrectUsage(t *testing.T) {
+	a := App{
+		Flags: []Flag{
+			StringFlag{Name: "--foo"},
+		},
+		Writer: bytes.NewBufferString(""),
+	}
+
+	set := flag.NewFlagSet("", flag.ContinueOnError)
+	set.Parse([]string{"", "---foo"})
+	c := &Context{flagSet: set}
+
+	err := a.RunAsSubcommand(c)
+
+	expect(t, err, errors.New("bad flag syntax: ---foo"))
 }
 
 func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
@@ -1414,7 +1492,7 @@ func TestHandleAction_WithNonFuncAction(t *testing.T) {
 		t.Fatalf("expected to receive a *ExitError")
 	}
 
-	if !strings.HasPrefix(exitErr.Error(), "ERROR invalid Action type") {
+	if !strings.HasPrefix(exitErr.Error(), "ERROR invalid Action type.") {
 		t.Fatalf("expected an unknown Action error, but got: %v", exitErr.Error())
 	}
 
@@ -1438,7 +1516,7 @@ func TestHandleAction_WithInvalidFuncSignature(t *testing.T) {
 		t.Fatalf("expected to receive a *ExitError")
 	}
 
-	if !strings.HasPrefix(exitErr.Error(), "ERROR unknown Action error") {
+	if !strings.HasPrefix(exitErr.Error(), "ERROR invalid Action type") {
 		t.Fatalf("expected an unknown Action error, but got: %v", exitErr.Error())
 	}
 
@@ -1462,7 +1540,7 @@ func TestHandleAction_WithInvalidFuncReturnSignature(t *testing.T) {
 		t.Fatalf("expected to receive a *ExitError")
 	}
 
-	if !strings.HasPrefix(exitErr.Error(), "ERROR invalid Action signature") {
+	if !strings.HasPrefix(exitErr.Error(), "ERROR invalid Action type") {
 		t.Fatalf("expected an invalid Action signature error, but got: %v", exitErr.Error())
 	}
 
