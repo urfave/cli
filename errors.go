@@ -81,10 +81,12 @@ func HandleExitCoder(err error) {
 	}
 
 	if exitErr, ok := err.(ExitCoder); ok {
-		if _, ok := exitErr.(ErrorFormatter); ok {
-			fmt.Fprintf(ErrWriter, "%+v\n", err)
-		} else {
-			fmt.Fprintln(ErrWriter, err)
+		if err.Error() != "" {
+			if _, ok := exitErr.(ErrorFormatter); ok {
+				fmt.Fprintf(ErrWriter, "%+v\n", err)
+			} else {
+				fmt.Fprintln(ErrWriter, err)
+			}
 		}
 		OsExiter(exitErr.ExitCode())
 		return
@@ -98,7 +100,11 @@ func HandleExitCoder(err error) {
 	}
 
 	if err.Error() != "" {
-		fmt.Fprintln(ErrWriter, err)
+		if _, ok := err.(ErrorFormatter); ok {
+			fmt.Fprintf(ErrWriter, "%+v\n", err)
+		} else {
+			fmt.Fprintln(ErrWriter, err)
+		}
 	}
 	OsExiter(1)
 }

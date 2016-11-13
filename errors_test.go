@@ -111,6 +111,10 @@ type ErrorWithFormat struct {
 	error
 }
 
+func NewErrorWithFormat(m string) *ErrorWithFormat {
+	return &ErrorWithFormat{error: errors.New(m)}
+}
+
 func (f *ErrorWithFormat) Format(s fmt.State, verb rune) {
 	fmt.Fprintf(s, "This the format: %v", f.error)
 }
@@ -128,9 +132,26 @@ func TestHandleExitCoder_ErrorWithFormat(t *testing.T) {
 		ErrWriter = fakeErrWriter
 	}()
 
-	err := &ErrorWithFormat{error: errors.New("I am formatted")}
+	err := NewErrorWithFormat("I am formatted")
 	HandleExitCoder(err)
 
 	expect(t, called, true)
 	expect(t, ErrWriter.(*bytes.Buffer).String(), "This the format: I am formatted\n")
+}
+
+func TestHandleExitCoder_MultiErrorWithFormat(t *testing.T) {
+	called := false
+
+	OsExiter = func(rc int) {
+		called = true
+	}
+	ErrWriter = &bytes.Buffer{}
+
+	defer func() { OsExiter = fakeOsExiter }()
+
+	err := NewMultiError(NewErrorWithFormat("err1"), NewErrorWithFormat("err2"))
+	HandleExitCoder(err)
+
+	expect(t, called, true)
+	expect(t, ErrWriter.(*bytes.Buffer).String(), "This the format: err1\nThis the format: err2\n")
 }
