@@ -191,7 +191,7 @@ func TestContext_IsSet_fromEnv(t *testing.T) {
 		unparsableIsSet, uIsSet bool
 	)
 
-	os.Clearenv()
+	clearenv()
 	os.Setenv("APP_TIMEOUT_SECONDS", "15.5")
 	os.Setenv("APP_PASSWORD", "")
 	a := App{
@@ -256,7 +256,7 @@ func TestContext_GlobalIsSet_fromEnv(t *testing.T) {
 		unparsableIsSet, uIsSet bool
 	)
 
-	os.Clearenv()
+	clearenv()
 	os.Setenv("APP_TIMEOUT_SECONDS", "15.5")
 	os.Setenv("APP_PASSWORD", "")
 	a := App{
