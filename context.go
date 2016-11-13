@@ -3,9 +3,9 @@ package cli
 import (
 	"errors"
 	"flag"
-	"os"
 	"reflect"
 	"strings"
+	"syscall"
 )
 
 // Context is a type that is passed through to
@@ -91,7 +91,7 @@ func (c *Context) IsSet(name string) bool {
 
 				eachName(envVarValue.String(), func(envVar string) {
 					envVar = strings.TrimSpace(envVar)
-					if envVal := os.Getenv(envVar); envVal != "" {
+					if _, ok := syscall.Getenv(envVar); ok {
 						c.setFlags[name] = true
 						return
 					}
@@ -145,6 +145,11 @@ func (c *Context) GlobalFlagNames() (names []string) {
 // Parent returns the parent context, if any
 func (c *Context) Parent() *Context {
 	return c.parentContext
+}
+
+// value returns the value of the flag coressponding to `name`
+func (c *Context) value(name string) interface{} {
+	return c.flagSet.Lookup(name).Value.(flag.Getter).Get()
 }
 
 // Args contains apps console arguments

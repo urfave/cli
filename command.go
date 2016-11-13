@@ -91,7 +91,10 @@ func (c Command) Run(ctx *Context) (err error) {
 		c.Flags = append(c.Flags, BashCompletionFlag)
 	}
 
-	set := flagSet(c.Name, c.Flags)
+	set, err := flagSet(c.Name, c.Flags)
+	if err != nil {
+		return err
+	}
 	set.SetOutput(ioutil.Discard)
 
 	if c.SkipFlagParsing {
