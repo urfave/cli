@@ -1561,3 +1561,47 @@ func TestHandleAction_WithUnknownPanic(t *testing.T) {
 	}
 	HandleAction(app.Action, NewContext(app, flagSet(app.Name, app.Flags), nil))
 }
+
+func TestShellCompletionForIncompleteFlags(t *testing.T) {
+	app := NewApp()
+	app.Flags = []Flag{
+		IntFlag{
+			Name: "test-completion",
+		},
+	}
+	app.EnableBashCompletion = true
+	app.BashComplete = func(ctx *Context) {
+		for _, command := range ctx.App.Commands {
+			if command.Hidden {
+				continue
+			}
+
+			for _, name := range command.Names() {
+				fmt.Fprintln(ctx.App.Writer, name)
+			}
+		}
+
+		for _, flag := range ctx.App.Flags {
+			for _, name := range strings.Split(flag.GetName(), ",") {
+				if name == BashCompletionFlag.Name {
+					continue
+				}
+
+				switch name = strings.TrimSpace(name); len(name) {
+				case 0:
+				case 1:
+					fmt.Fprintln(ctx.App.Writer, "-"+name)
+				default:
+					fmt.Fprintln(ctx.App.Writer, "--"+name)
+				}
+			}
+		}
+	}
+	app.Action = func(ctx *Context) error {
+		return fmt.Errorf("should not get here")
+	}
+	err := app.Run([]string{"", "--test-completion", "--" + BashCompletionFlag.Name})
+	if err != nil {
+		t.Errorf("app should not return an error: %s", err)
+	}
+}
