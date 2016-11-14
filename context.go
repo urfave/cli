@@ -15,7 +15,7 @@ import (
 type Context struct {
 	App           *App
 	Command       Command
-	complete      bool
+	shellComplete bool
 	flagSet       *flag.FlagSet
 	setFlags      map[string]bool
 	parentContext *Context
@@ -26,7 +26,7 @@ func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
 	c := &Context{App: app, flagSet: set, parentContext: parentCtx}
 
 	if parentCtx != nil {
-		c.complete = parentCtx.complete
+		c.shellComplete = parentCtx.shellComplete
 	}
 
 	return c

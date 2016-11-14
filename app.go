@@ -175,7 +175,7 @@ func (a *App) Run(arguments []string) (err error) {
 	// flag name as the value of the flag before it which is undesirable
 	// note that we can only do this because the shell autocomplete function
 	// always appends the completion flag at the end of the command
-	complete, arguments := checkCompleteFlag(a, arguments)
+	shellComplete, arguments := checkShellCompleteFlag(a, arguments)
 
 	// parse flags
 	set := flagSet(a.Name, a.Flags)
@@ -188,7 +188,7 @@ func (a *App) Run(arguments []string) (err error) {
 		ShowAppHelp(context)
 		return nerr
 	}
-	context.complete = complete
+	context.shellComplete = shellComplete
 
 	if checkCompletions(context) {
 		return nil

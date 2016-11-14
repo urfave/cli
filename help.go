@@ -252,7 +252,7 @@ func checkSubcommandHelp(c *Context) bool {
 	return false
 }
 
-func checkCompleteFlag(a *App, arguments []string) (bool, []string) {
+func checkShellCompleteFlag(a *App, arguments []string) (bool, []string) {
 	if !a.EnableBashCompletion {
 		return false, arguments
 	}
@@ -268,7 +268,7 @@ func checkCompleteFlag(a *App, arguments []string) (bool, []string) {
 }
 
 func checkCompletions(c *Context) bool {
-	if !c.complete {
+	if !c.shellComplete {
 		return false
 	}
 
@@ -285,7 +285,7 @@ func checkCompletions(c *Context) bool {
 }
 
 func checkCommandCompletions(c *Context, name string) bool {
-	if !c.complete {
+	if !c.shellComplete {
 		return false
 	}
 
