@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"runtime"
+	"strings"
 
 	"gopkg.in/urfave/cli.v1"
 
