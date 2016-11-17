@@ -76,8 +76,8 @@ func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {
 
 	for _, f := range flags {
 		//TODO remove in v2 when errorableFlag is removed
-		if f, ok := f.(errorableFlag); ok {
-			if err := f.applyWithError(set); err != nil {
+		if ef, ok := f.(errorableFlag); ok {
+			if err := ef.applyWithError(set); err != nil {
 				return nil, err
 			}
 		} else {
