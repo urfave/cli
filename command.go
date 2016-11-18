@@ -87,7 +87,10 @@ func (c Command) Run(ctx *Context) (err error) {
 		)
 	}
 
-	set := flagSet(c.Name, c.Flags)
+	set, err := flagSet(c.Name, c.Flags)
+	if err != nil {
+		return err
+	}
 	set.SetOutput(ioutil.Discard)
 
 	if c.SkipFlagParsing {
@@ -180,6 +183,10 @@ func (c Command) Run(ctx *Context) (err error) {
 			HandleExitCoder(err)
 			return err
 		}
+	}
+
+	if c.Action == nil {
+		c.Action = helpSubcommand.Action
 	}
 
 	context.Command = c
