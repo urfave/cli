@@ -149,6 +149,10 @@ func (a *App) Setup() {
 		a.appendFlag(BashCompletionFlag)
 	}
 
+	if a.Version == "" {
+		a.HideVersion = true
+	}
+
 	if !a.HideVersion {
 		a.appendFlag(VersionFlag)
 	}
