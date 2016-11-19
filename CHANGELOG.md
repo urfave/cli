@@ -19,6 +19,8 @@
   library). This is backported functionality from the [removal of the flag
   reordering](https://github.com/urfave/cli/pull/398) in the unreleased version
   2
+- For formatted errors (those implementing `ErrorFormatter`), the errors will
+  be formatted during output. Compatible with `pkg/errors`.
 
 ### Changed
 - Raise minimum tested/supported Go version to 1.2+
