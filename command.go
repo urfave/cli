@@ -87,10 +87,6 @@ func (c Command) Run(ctx *Context) (err error) {
 		)
 	}
 
-	if ctx.App.EnableBashCompletion {
-		c.Flags = append(c.Flags, BashCompletionFlag)
-	}
-
 	set, err := flagSet(c.Name, c.Flags)
 	if err != nil {
 		return err
@@ -135,6 +131,19 @@ func (c Command) Run(ctx *Context) (err error) {
 		err = set.Parse(ctx.Args().Tail())
 	}
 
+	nerr := normalizeFlags(c.Flags, set)
+	if nerr != nil {
+		fmt.Fprintln(ctx.App.Writer, nerr)
+		fmt.Fprintln(ctx.App.Writer)
+		ShowCommandHelp(ctx, c.Name)
+		return nerr
+	}
+
+	context := NewContext(ctx.App, set, ctx)
+	if checkCommandCompletions(context, c.Name) {
+		return nil
+	}
+
 	if err != nil {
 		if c.OnUsageError != nil {
 			err := c.OnUsageError(ctx, err, false)
@@ -145,20 +154,6 @@ func (c Command) Run(ctx *Context) (err error) {
 		fmt.Fprintln(ctx.App.Writer)
 		ShowCommandHelp(ctx, c.Name)
 		return err
-	}
-
-	nerr := normalizeFlags(c.Flags, set)
-	if nerr != nil {
-		fmt.Fprintln(ctx.App.Writer, nerr)
-		fmt.Fprintln(ctx.App.Writer)
-		ShowCommandHelp(ctx, c.Name)
-		return nerr
-	}
-
-	context := NewContext(ctx.App, set, ctx)
-
-	if checkCommandCompletions(context, c.Name) {
-		return nil
 	}
 
 	if checkCommandHelp(context, c.Name) {
