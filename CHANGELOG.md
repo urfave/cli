@@ -5,7 +5,7 @@
 ## [Unreleased]
 
 
-## [1.19.0] - 2016-11-12
+## [1.19.0] - 2016-11-19
 ### Added
 - `FlagsByName` was added to make it easy to sort flags (e.g. `sort.Sort(cli.FlagsByName(app.Flags))`)
 - A `Description` field was added to `App` for a more detailed description of
