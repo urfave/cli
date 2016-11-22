@@ -1664,3 +1664,22 @@ func TestShellCompletionForIncompleteFlags(t *testing.T) {
 		t.Errorf("app should not return an error: %s", err)
 	}
 }
+
+func TestHandleActionActuallyWorksWithActions(t *testing.T) {
+	var f ActionFunc
+	called := false
+	f = func(c *Context) error {
+		called = true
+		return nil
+	}
+
+	err := HandleAction(f, nil)
+
+	if err != nil {
+		t.Errorf("Should not have errored: %v", err)
+	}
+
+	if !called {
+		t.Errorf("Function was not called")
+	}
+}
