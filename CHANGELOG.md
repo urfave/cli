@@ -4,6 +4,18 @@
 
 ## [Unreleased]
 
+## [1.19.1] - 2016-11-21
+
+### Fixed
+
+- Fixes regression introduced in 1.19.0 where using an `ActionFunc` as
+  the `Action` for a command would cause it to error rather than calling the
+  function. Should not have a affected declarative cases using `func(c
+  *cli.Context) err)`.
+- Shell completion now handles the case where the user specifies
+  `--generate-bash-completion` immediately after a flag that takes an argument.
+  Previously it call the application with `--generate-bash-completion` as the
+  flag value.
 
 ## [1.19.0] - 2016-11-19
 ### Added
