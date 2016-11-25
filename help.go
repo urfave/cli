@@ -112,10 +112,17 @@ var helpSubcommand = Command{
 // Prints help for the App or Command
 type helpPrinter func(w io.Writer, templ string, data interface{})
 
+// Prints help for the App or Command with custom template function.
+type helpPrinterCustom func(w io.Writer, templ string, data interface{}, customFunc map[string]interface{})
+
 // HelpPrinter is a function that writes the help output. If not set a default
 // is used. The function signature is:
 // func(w io.Writer, templ string, data interface{})
 var HelpPrinter helpPrinter = printHelp
+
+// HelPrinterCustom is same as HelpPrinter but
+// takes a custom function for template function map.
+var HelpPrinterCustom helpPrinterCustom = printHelpCustom
 
 // VersionPrinter prints the version for the App
 var VersionPrinter = printVersion
@@ -129,7 +136,13 @@ func ShowAppHelpAndExit(c *Context, exitCode int) {
 // ShowAppHelp is an action that displays the help.
 func ShowAppHelp(c *Context) error {
 	if c.App.CustomAppHelpTemplate != "" {
-		HelpPrinter(c.App.Writer, c.App.CustomAppHelpTemplate, c.App)
+		if c.App.ExtraInfo != nil {
+			HelpPrinterCustom(c.App.Writer, c.App.CustomAppHelpTemplate, c.App, map[string]interface{}{
+				"ExtraInfo": c.App.ExtraInfo,
+			})
+		} else {
+			HelpPrinter(c.App.Writer, c.App.CustomAppHelpTemplate, c.App)
+		}
 	} else {
 		HelpPrinter(c.App.Writer, AppHelpTemplate, c.App)
 	}
@@ -211,9 +224,14 @@ func ShowCommandCompletions(ctx *Context, command string) {
 	}
 }
 
-func printHelp(out io.Writer, templ string, data interface{}) {
+func printHelpCustom(out io.Writer, templ string, data interface{}, customFunc map[string]interface{}) {
 	funcMap := template.FuncMap{
 		"join": strings.Join,
+	}
+	if customFunc != nil {
+		for key, value := range customFunc {
+			funcMap[key] = value
+		}
 	}
 
 	w := tabwriter.NewWriter(out, 1, 8, 2, ' ', 0)
@@ -228,6 +246,10 @@ func printHelp(out io.Writer, templ string, data interface{}) {
 		return
 	}
 	w.Flush()
+}
+
+func printHelp(out io.Writer, templ string, data interface{}) {
+	printHelpCustom(out, templ, data, nil)
 }
 
 func checkVersion(c *Context) bool {
