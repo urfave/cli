@@ -85,6 +85,10 @@ type App struct {
 	ErrWriter io.Writer
 	// Other custom info
 	Metadata map[string]interface{}
+	// CustomAppHelpTemplate the text template for app help topic.
+	// cli.go uses text/template to render templates. You can
+	// render custom help text by setting this variable.
+	CustomAppHelpTemplate string
 
 	didSetup bool
 }

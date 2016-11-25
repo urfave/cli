@@ -120,9 +120,19 @@ var HelpPrinter helpPrinter = printHelp
 // VersionPrinter prints the version for the App
 var VersionPrinter = printVersion
 
+// ShowAppHelpAndExit - Prints the list of subcommands for the app and exits with exit code.
+func ShowAppHelpAndExit(c *Context, exitCode int) {
+	ShowAppHelp(c)
+	os.Exit(exitCode)
+}
+
 // ShowAppHelp is an action that displays the help.
 func ShowAppHelp(c *Context) error {
-	HelpPrinter(c.App.Writer, AppHelpTemplate, c.App)
+	if c.App.CustomAppHelpTemplate != "" {
+		HelpPrinter(c.App.Writer, c.App.CustomAppHelpTemplate, c.App)
+	} else {
+		HelpPrinter(c.App.Writer, AppHelpTemplate, c.App)
+	}
 	return nil
 }
 
@@ -138,6 +148,12 @@ func DefaultAppComplete(c *Context) {
 	}
 }
 
+// ShowCommandHelpAndExit - exits with code after showing help
+func ShowCommandHelpAndExit(c *Context, command string, code int) {
+	ShowCommandHelp(c, command)
+	os.Exit(code)
+}
+
 // ShowCommandHelp prints help for the given command
 func ShowCommandHelp(ctx *Context, command string) error {
 	// show the subcommand help for a command with subcommands
@@ -148,7 +164,11 @@ func ShowCommandHelp(ctx *Context, command string) error {
 
 	for _, c := range ctx.App.Commands {
 		if c.HasName(command) {
-			HelpPrinter(ctx.App.Writer, CommandHelpTemplate, c)
+			if c.CustomHelpTemplate != "" {
+				HelpPrinter(ctx.App.Writer, c.CustomHelpTemplate, c)
+			} else {
+				HelpPrinter(ctx.App.Writer, CommandHelpTemplate, c)
+			}
 			return nil
 		}
 	}
