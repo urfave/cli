@@ -3,11 +3,11 @@ package cli
 import (
 	"flag"
 	"fmt"
-	"os"
 	"reflect"
 	"runtime"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -37,6 +37,21 @@ var HelpFlag = BoolFlag{
 // to display a flag.
 var FlagStringer FlagStringFunc = stringifyFlag
 
+// FlagsByName is a slice of Flag.
+type FlagsByName []Flag
+
+func (f FlagsByName) Len() int {
+	return len(f)
+}
+
+func (f FlagsByName) Less(i, j int) bool {
+	return f[i].GetName() < f[j].GetName()
+}
+
+func (f FlagsByName) Swap(i, j int) {
+	f[i], f[j] = f[j], f[i]
+}
+
 // Flag is a common interface related to parsing flags in cli.
 // For more advanced flag parsing techniques, it is recommended that
 // this interface be implemented.
@@ -47,13 +62,29 @@ type Flag interface {
 	GetName() string
 }
 
-func flagSet(name string, flags []Flag) *flag.FlagSet {
+// errorableFlag is an interface that allows us to return errors during apply
+// it allows flags defined in this library to return errors in a fashion backwards compatible
+// TODO remove in v2 and modify the existing Flag interface to return errors
+type errorableFlag interface {
+	Flag
+
+	ApplyWithError(*flag.FlagSet) error
+}
+
+func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {
 	set := flag.NewFlagSet(name, flag.ContinueOnError)
 
 	for _, f := range flags {
-		f.Apply(set)
+		//TODO remove in v2 when errorableFlag is removed
+		if ef, ok := f.(errorableFlag); ok {
+			if err := ef.ApplyWithError(set); err != nil {
+				return nil, err
+			}
+		} else {
+			f.Apply(set)
+		}
 	}
-	return set
+	return set, nil
 }
 
 func eachName(longName string, fn func(string)) {
@@ -72,13 +103,22 @@ type Generic interface {
 
 // Apply takes the flagset and calls Set on the generic flag with the value
 // provided by the user for parsing by the flag
+// Ignores parsing errors
 func (f GenericFlag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError takes the flagset and calls Set on the generic flag with the value
+// provided by the user for parsing by the flag
+func (f GenericFlag) ApplyWithError(set *flag.FlagSet) error {
 	val := f.Value
 	if f.EnvVar != "" {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
-			if envVal := os.Getenv(envVar); envVal != "" {
-				val.Set(envVal)
+			if envVal, ok := syscall.Getenv(envVar); ok {
+				if err := val.Set(envVal); err != nil {
+					return fmt.Errorf("could not parse %s as value for flag %s: %s", envVal, f.Name, err)
+				}
 				break
 			}
 		}
@@ -87,9 +127,11 @@ func (f GenericFlag) Apply(set *flag.FlagSet) {
 	eachName(f.Name, func(name string) {
 		set.Var(f.Value, name, f.Usage)
 	})
+
+	return nil
 }
 
-// StringSlice is an opaque type for []string to satisfy flag.Value
+// StringSlice is an opaque type for []string to satisfy flag.Value and flag.Getter
 type StringSlice []string
 
 // Set appends the string value to the list of values
@@ -108,16 +150,29 @@ func (f *StringSlice) Value() []string {
 	return *f
 }
 
+// Get returns the slice of strings set by this flag
+func (f *StringSlice) Get() interface{} {
+	return *f
+}
+
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f StringSliceFlag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f StringSliceFlag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVar != "" {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal, ok := syscall.Getenv(envVar); ok {
 				newVal := &StringSlice{}
 				for _, s := range strings.Split(envVal, ",") {
 					s = strings.TrimSpace(s)
-					newVal.Set(s)
+					if err := newVal.Set(s); err != nil {
+						return fmt.Errorf("could not parse %s as string value for flag %s: %s", envVal, f.Name, err)
+					}
 				}
 				f.Value = newVal
 				break
@@ -131,9 +186,11 @@ func (f StringSliceFlag) Apply(set *flag.FlagSet) {
 		}
 		set.Var(f.Value, name, f.Usage)
 	})
+
+	return nil
 }
 
-// IntSlice is an opaque type for []int to satisfy flag.Value
+// IntSlice is an opaque type for []int to satisfy flag.Value and flag.Getter
 type IntSlice []int
 
 // Set parses the value into an integer and appends it to the list of values
@@ -156,18 +213,28 @@ func (f *IntSlice) Value() []int {
 	return *f
 }
 
+// Get returns the slice of ints set by this flag
+func (f *IntSlice) Get() interface{} {
+	return *f
+}
+
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f IntSliceFlag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f IntSliceFlag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVar != "" {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal, ok := syscall.Getenv(envVar); ok {
 				newVal := &IntSlice{}
 				for _, s := range strings.Split(envVal, ",") {
 					s = strings.TrimSpace(s)
-					err := newVal.Set(s)
-					if err != nil {
-						fmt.Fprintf(ErrWriter, err.Error())
+					if err := newVal.Set(s); err != nil {
+						return fmt.Errorf("could not parse %s as int slice value for flag %s: %s", envVal, f.Name, err)
 					}
 				}
 				f.Value = newVal
@@ -182,9 +249,11 @@ func (f IntSliceFlag) Apply(set *flag.FlagSet) {
 		}
 		set.Var(f.Value, name, f.Usage)
 	})
+
+	return nil
 }
 
-// Int64Slice is an opaque type for []int to satisfy flag.Value
+// Int64Slice is an opaque type for []int to satisfy flag.Value and flag.Getter
 type Int64Slice []int64
 
 // Set parses the value into an integer and appends it to the list of values
@@ -207,18 +276,28 @@ func (f *Int64Slice) Value() []int64 {
 	return *f
 }
 
+// Get returns the slice of ints set by this flag
+func (f *Int64Slice) Get() interface{} {
+	return *f
+}
+
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f Int64SliceFlag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f Int64SliceFlag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVar != "" {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal, ok := syscall.Getenv(envVar); ok {
 				newVal := &Int64Slice{}
 				for _, s := range strings.Split(envVal, ",") {
 					s = strings.TrimSpace(s)
-					err := newVal.Set(s)
-					if err != nil {
-						fmt.Fprintf(ErrWriter, err.Error())
+					if err := newVal.Set(s); err != nil {
+						return fmt.Errorf("could not parse %s as int64 slice value for flag %s: %s", envVal, f.Name, err)
 					}
 				}
 				f.Value = newVal
@@ -233,19 +312,33 @@ func (f Int64SliceFlag) Apply(set *flag.FlagSet) {
 		}
 		set.Var(f.Value, name, f.Usage)
 	})
+	return nil
 }
 
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f BoolFlag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f BoolFlag) ApplyWithError(set *flag.FlagSet) error {
 	val := false
 	if f.EnvVar != "" {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
-			if envVal := os.Getenv(envVar); envVal != "" {
-				envValBool, err := strconv.ParseBool(envVal)
-				if err == nil {
-					val = envValBool
+			if envVal, ok := syscall.Getenv(envVar); ok {
+				if envVal == "" {
+					val = false
+					break
 				}
+
+				envValBool, err := strconv.ParseBool(envVal)
+				if err != nil {
+					return fmt.Errorf("could not parse %s as bool value for flag %s: %s", envVal, f.Name, err)
+				}
+
+				val = envValBool
 				break
 			}
 		}
@@ -258,20 +351,35 @@ func (f BoolFlag) Apply(set *flag.FlagSet) {
 		}
 		set.Bool(name, val, f.Usage)
 	})
+
+	return nil
 }
 
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f BoolTFlag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f BoolTFlag) ApplyWithError(set *flag.FlagSet) error {
 	val := true
 	if f.EnvVar != "" {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
-			if envVal := os.Getenv(envVar); envVal != "" {
-				envValBool, err := strconv.ParseBool(envVal)
-				if err == nil {
-					val = envValBool
+			if envVal, ok := syscall.Getenv(envVar); ok {
+				if envVal == "" {
+					val = false
 					break
 				}
+
+				envValBool, err := strconv.ParseBool(envVal)
+				if err != nil {
+					return fmt.Errorf("could not parse %s as bool value for flag %s: %s", envVal, f.Name, err)
+				}
+
+				val = envValBool
+				break
 			}
 		}
 	}
@@ -283,14 +391,22 @@ func (f BoolTFlag) Apply(set *flag.FlagSet) {
 		}
 		set.Bool(name, val, f.Usage)
 	})
+
+	return nil
 }
 
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f StringFlag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f StringFlag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVar != "" {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal, ok := syscall.Getenv(envVar); ok {
 				f.Value = envVal
 				break
 			}
@@ -304,19 +420,28 @@ func (f StringFlag) Apply(set *flag.FlagSet) {
 		}
 		set.String(name, f.Value, f.Usage)
 	})
+
+	return nil
 }
 
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f IntFlag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f IntFlag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVar != "" {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal, ok := syscall.Getenv(envVar); ok {
 				envValInt, err := strconv.ParseInt(envVal, 0, 64)
-				if err == nil {
-					f.Value = int(envValInt)
-					break
+				if err != nil {
+					return fmt.Errorf("could not parse %s as int value for flag %s: %s", envVal, f.Name, err)
 				}
+				f.Value = int(envValInt)
+				break
 			}
 		}
 	}
@@ -328,19 +453,29 @@ func (f IntFlag) Apply(set *flag.FlagSet) {
 		}
 		set.Int(name, f.Value, f.Usage)
 	})
+
+	return nil
 }
 
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f Int64Flag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f Int64Flag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVar != "" {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal, ok := syscall.Getenv(envVar); ok {
 				envValInt, err := strconv.ParseInt(envVal, 0, 64)
-				if err == nil {
-					f.Value = envValInt
-					break
+				if err != nil {
+					return fmt.Errorf("could not parse %s as int value for flag %s: %s", envVal, f.Name, err)
 				}
+
+				f.Value = envValInt
+				break
 			}
 		}
 	}
@@ -352,19 +487,29 @@ func (f Int64Flag) Apply(set *flag.FlagSet) {
 		}
 		set.Int64(name, f.Value, f.Usage)
 	})
+
+	return nil
 }
 
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f UintFlag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f UintFlag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVar != "" {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal, ok := syscall.Getenv(envVar); ok {
 				envValInt, err := strconv.ParseUint(envVal, 0, 64)
-				if err == nil {
-					f.Value = uint(envValInt)
-					break
+				if err != nil {
+					return fmt.Errorf("could not parse %s as uint value for flag %s: %s", envVal, f.Name, err)
 				}
+
+				f.Value = uint(envValInt)
+				break
 			}
 		}
 	}
@@ -376,19 +521,29 @@ func (f UintFlag) Apply(set *flag.FlagSet) {
 		}
 		set.Uint(name, f.Value, f.Usage)
 	})
+
+	return nil
 }
 
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f Uint64Flag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f Uint64Flag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVar != "" {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal, ok := syscall.Getenv(envVar); ok {
 				envValInt, err := strconv.ParseUint(envVal, 0, 64)
-				if err == nil {
-					f.Value = uint64(envValInt)
-					break
+				if err != nil {
+					return fmt.Errorf("could not parse %s as uint64 value for flag %s: %s", envVal, f.Name, err)
 				}
+
+				f.Value = uint64(envValInt)
+				break
 			}
 		}
 	}
@@ -400,19 +555,29 @@ func (f Uint64Flag) Apply(set *flag.FlagSet) {
 		}
 		set.Uint64(name, f.Value, f.Usage)
 	})
+
+	return nil
 }
 
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f DurationFlag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f DurationFlag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVar != "" {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal, ok := syscall.Getenv(envVar); ok {
 				envValDuration, err := time.ParseDuration(envVal)
-				if err == nil {
-					f.Value = envValDuration
-					break
+				if err != nil {
+					return fmt.Errorf("could not parse %s as duration for flag %s: %s", envVal, f.Name, err)
 				}
+
+				f.Value = envValDuration
+				break
 			}
 		}
 	}
@@ -424,18 +589,29 @@ func (f DurationFlag) Apply(set *flag.FlagSet) {
 		}
 		set.Duration(name, f.Value, f.Usage)
 	})
+
+	return nil
 }
 
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f Float64Flag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f Float64Flag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVar != "" {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
-			if envVal := os.Getenv(envVar); envVal != "" {
+			if envVal, ok := syscall.Getenv(envVar); ok {
 				envValFloat, err := strconv.ParseFloat(envVal, 10)
-				if err == nil {
-					f.Value = float64(envValFloat)
+				if err != nil {
+					return fmt.Errorf("could not parse %s as float64 value for flag %s: %s", envVal, f.Name, err)
 				}
+
+				f.Value = float64(envValFloat)
+				break
 			}
 		}
 	}
@@ -447,6 +623,8 @@ func (f Float64Flag) Apply(set *flag.FlagSet) {
 		}
 		set.Float64(name, f.Value, f.Usage)
 	})
+
+	return nil
 }
 
 func visibleFlags(fl []Flag) []Flag {

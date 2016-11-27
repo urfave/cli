@@ -202,6 +202,10 @@ def _write_altsrc_flag_types(outfile, types):
     _fwrite(outfile, """\
         package altsrc
 
+        import (
+            "gopkg.in/urfave/cli.v1"
+        )
+
         // WARNING: This file is generated!
 
         """)
@@ -227,6 +231,13 @@ def _write_altsrc_flag_types(outfile, types):
         func (f *{name}Flag) Apply(set *flag.FlagSet) {{
             f.set = set
             f.{name}Flag.Apply(set)
+        }}
+
+        // ApplyWithError saves the flagSet for later usage calls, then calls the
+        // wrapped {name}Flag.ApplyWithError
+        func (f *{name}Flag) ApplyWithError(set *flag.FlagSet) error {{
+            f.set = set
+            return f.{name}Flag.ApplyWithError(set)
         }}
         """.format(**typedef))
 
