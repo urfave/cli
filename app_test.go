@@ -1620,3 +1620,21 @@ func TestHandleAction_WithUnknownPanic(t *testing.T) {
 	}
 	HandleAction(app.Action, NewContext(app, fs, nil))
 }
+
+func TestHandleAction_WithActionFunc(t *testing.T) {
+	app := NewApp()
+	ctx := NewContext(app, nil, nil)
+
+	var action ActionFunc = func(c *Context) error {
+		return errors.New("ActionFunc is supported")
+	}
+
+	result := HandleAction(action, ctx)
+	if result == nil {
+		t.Fatalf("expected an error but, but got: nil")
+	} else {
+		if errorMsg := result.Error(); errorMsg != "ActionFunc is supported" {
+			t.Fatalf("expected error '%s', but got: %v", "ActionFunc is supported", errorMsg)
+		}
+	}
+}
