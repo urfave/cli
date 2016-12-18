@@ -455,13 +455,13 @@ error.
 
 Flags for the application and commands are shown in the order they are defined.
 However, it's possible to sort them from outside this library by using `FlagsByName`
-with `sort`.
+or `CommandsByName` with `sort`.
 
 For example this:
 
 <!-- {
   "args": ["&#45;&#45;help"],
-  "output": "Load configuration from FILE\n.*Language for the greeting.*"
+  "output": "add a task to the list\n.*complete a task on the list\n.*\n\n.*\n.*Load configuration from FILE\n.*Language for the greeting.*"
 } -->
 ``` go
 package main
@@ -488,7 +488,27 @@ func main() {
     },
   }
 
+  app.Commands = []cli.Command{
+    {
+      Name:    "complete",
+      Aliases: []string{"c"},
+      Usage:   "complete a task on the list",
+      Action:  func(c *cli.Context) error {
+        return nil
+      },
+    },
+    {
+      Name:    "add",
+      Aliases: []string{"a"},
+      Usage:   "add a task to the list",
+      Action:  func(c *cli.Context) error {
+        return nil
+      },
+    },
+  }
+
   sort.Sort(cli.FlagsByName(app.Flags))
+  sort.Sort(cli.CommandsByName(app.Commands))
 
   app.Run(os.Args)
 }
