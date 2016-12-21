@@ -57,6 +57,10 @@ def _test():
 
 
 def _gfmrun():
+    go_version = check_output('go version'.split()).split()[2]
+    if go_version < 'go1.3':
+        print('runtests: skip on {}'.format(go_version), file=sys.stderr)
+        return
     _run(['gfmrun', '-c', str(_gfmrun_count()), '-s', 'README.md'])
 
 

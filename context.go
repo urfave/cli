@@ -3,7 +3,9 @@ package cli
 import (
 	"errors"
 	"flag"
+	"reflect"
 	"strings"
+	"syscall"
 )
 
 // Context is a type that is passed through to
@@ -11,17 +13,23 @@ import (
 // can be used to retrieve context-specific Args and
 // parsed command-line options.
 type Context struct {
-	App            *App
-	Command        Command
-	flagSet        *flag.FlagSet
-	setFlags       map[string]bool
-	globalSetFlags map[string]bool
-	parentContext  *Context
+	App           *App
+	Command       Command
+	shellComplete bool
+	flagSet       *flag.FlagSet
+	setFlags      map[string]bool
+	parentContext *Context
 }
 
 // NewContext creates a new context. For use in when invoking an App or Command action.
 func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
-	return &Context{App: app, flagSet: set, parentContext: parentCtx}
+	c := &Context{App: app, flagSet: set, parentContext: parentCtx}
+
+	if parentCtx != nil {
+		c.shellComplete = parentCtx.shellComplete
+	}
+
+	return c
 }
 
 // NumFlags returns the number of flags set
@@ -43,28 +51,78 @@ func (c *Context) GlobalSet(name, value string) error {
 func (c *Context) IsSet(name string) bool {
 	if c.setFlags == nil {
 		c.setFlags = make(map[string]bool)
+
 		c.flagSet.Visit(func(f *flag.Flag) {
 			c.setFlags[f.Name] = true
 		})
+
+		c.flagSet.VisitAll(func(f *flag.Flag) {
+			if _, ok := c.setFlags[f.Name]; ok {
+				return
+			}
+			c.setFlags[f.Name] = false
+		})
+
+		// XXX hack to support IsSet for flags with EnvVar
+		//
+		// There isn't an easy way to do this with the current implementation since
+		// whether a flag was set via an environment variable is very difficult to
+		// determine here. Instead, we intend to introduce a backwards incompatible
+		// change in version 2 to add `IsSet` to the Flag interface to push the
+		// responsibility closer to where the information required to determine
+		// whether a flag is set by non-standard means such as environment
+		// variables is avaliable.
+		//
+		// See https://github.com/urfave/cli/issues/294 for additional discussion
+		flags := c.Command.Flags
+		if c.Command.Name == "" { // cannot == Command{} since it contains slice types
+			if c.App != nil {
+				flags = c.App.Flags
+			}
+		}
+		for _, f := range flags {
+			eachName(f.GetName(), func(name string) {
+				if isSet, ok := c.setFlags[name]; isSet || !ok {
+					return
+				}
+
+				val := reflect.ValueOf(f)
+				if val.Kind() == reflect.Ptr {
+					val = val.Elem()
+				}
+
+				envVarValue := val.FieldByName("EnvVar")
+				if !envVarValue.IsValid() {
+					return
+				}
+
+				eachName(envVarValue.String(), func(envVar string) {
+					envVar = strings.TrimSpace(envVar)
+					if _, ok := syscall.Getenv(envVar); ok {
+						c.setFlags[name] = true
+						return
+					}
+				})
+			})
+		}
 	}
-	return c.setFlags[name] == true
+
+	return c.setFlags[name]
 }
 
 // GlobalIsSet determines if the global flag was actually set
 func (c *Context) GlobalIsSet(name string) bool {
-	if c.globalSetFlags == nil {
-		c.globalSetFlags = make(map[string]bool)
-		ctx := c
-		if ctx.parentContext != nil {
-			ctx = ctx.parentContext
-		}
-		for ; ctx != nil && c.globalSetFlags[name] == false; ctx = ctx.parentContext {
-			ctx.flagSet.Visit(func(f *flag.Flag) {
-				c.globalSetFlags[f.Name] = true
-			})
+	ctx := c
+	if ctx.parentContext != nil {
+		ctx = ctx.parentContext
+	}
+
+	for ; ctx != nil; ctx = ctx.parentContext {
+		if ctx.IsSet(name) {
+			return true
 		}
 	}
-	return c.globalSetFlags[name]
+	return false
 }
 
 // FlagNames returns a slice of flag names used in this context.
@@ -94,6 +152,11 @@ func (c *Context) GlobalFlagNames() (names []string) {
 // Parent returns the parent context, if any
 func (c *Context) Parent() *Context {
 	return c.parentContext
+}
+
+// value returns the value of the flag coressponding to `name`
+func (c *Context) value(name string) interface{} {
+	return c.flagSet.Lookup(name).Value.(flag.Getter).Get()
 }
 
 // Args contains apps console arguments

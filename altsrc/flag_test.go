@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/urfave/cli"
+	"gopkg.in/urfave/cli.v1"
 )
 
 type testApplyInputSource struct {

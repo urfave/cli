@@ -29,6 +29,81 @@ func TestBoolFlagHelpOutput(t *testing.T) {
 	}
 }
 
+func TestFlagsFromEnv(t *testing.T) {
+	var flagTests = []struct {
+		input  string
+		output interface{}
+		flag   Flag
+		err    error
+	}{
+		{"", false, BoolFlag{Name: "debug", EnvVar: "DEBUG"}, nil},
+		{"1", true, BoolFlag{Name: "debug", EnvVar: "DEBUG"}, nil},
+		{"false", false, BoolFlag{Name: "debug", EnvVar: "DEBUG"}, nil},
+		{"foobar", true, BoolFlag{Name: "debug", EnvVar: "DEBUG"}, fmt.Errorf(`could not parse foobar as bool value for flag debug: strconv.ParseBool: parsing "foobar": invalid syntax`)},
+
+		{"", false, BoolTFlag{Name: "debug", EnvVar: "DEBUG"}, nil},
+		{"1", true, BoolTFlag{Name: "debug", EnvVar: "DEBUG"}, nil},
+		{"false", false, BoolTFlag{Name: "debug", EnvVar: "DEBUG"}, nil},
+		{"foobar", true, BoolTFlag{Name: "debug", EnvVar: "DEBUG"}, fmt.Errorf(`could not parse foobar as bool value for flag debug: strconv.ParseBool: parsing "foobar": invalid syntax`)},
+
+		{"1s", 1 * time.Second, DurationFlag{Name: "time", EnvVar: "TIME"}, nil},
+		{"foobar", false, DurationFlag{Name: "time", EnvVar: "TIME"}, fmt.Errorf(`could not parse foobar as duration for flag time: time: invalid duration foobar`)},
+
+		{"1.2", 1.2, Float64Flag{Name: "seconds", EnvVar: "SECONDS"}, nil},
+		{"1", 1.0, Float64Flag{Name: "seconds", EnvVar: "SECONDS"}, nil},
+		{"foobar", 0, Float64Flag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Errorf(`could not parse foobar as float64 value for flag seconds: strconv.ParseFloat: parsing "foobar": invalid syntax`)},
+
+		{"1", int64(1), Int64Flag{Name: "seconds", EnvVar: "SECONDS"}, nil},
+		{"1.2", 0, Int64Flag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Errorf(`could not parse 1.2 as int value for flag seconds: strconv.ParseInt: parsing "1.2": invalid syntax`)},
+		{"foobar", 0, Int64Flag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Errorf(`could not parse foobar as int value for flag seconds: strconv.ParseInt: parsing "foobar": invalid syntax`)},
+
+		{"1", 1, IntFlag{Name: "seconds", EnvVar: "SECONDS"}, nil},
+		{"1.2", 0, IntFlag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Errorf(`could not parse 1.2 as int value for flag seconds: strconv.ParseInt: parsing "1.2": invalid syntax`)},
+		{"foobar", 0, IntFlag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Errorf(`could not parse foobar as int value for flag seconds: strconv.ParseInt: parsing "foobar": invalid syntax`)},
+
+		{"1,2", IntSlice{1, 2}, IntSliceFlag{Name: "seconds", EnvVar: "SECONDS"}, nil},
+		{"1.2,2", IntSlice{}, IntSliceFlag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Errorf(`could not parse 1.2,2 as int slice value for flag seconds: strconv.ParseInt: parsing "1.2": invalid syntax`)},
+		{"foobar", IntSlice{}, IntSliceFlag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Errorf(`could not parse foobar as int slice value for flag seconds: strconv.ParseInt: parsing "foobar": invalid syntax`)},
+
+		{"1,2", Int64Slice{1, 2}, Int64SliceFlag{Name: "seconds", EnvVar: "SECONDS"}, nil},
+		{"1.2,2", Int64Slice{}, Int64SliceFlag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Errorf(`could not parse 1.2,2 as int64 slice value for flag seconds: strconv.ParseInt: parsing "1.2": invalid syntax`)},
+		{"foobar", Int64Slice{}, Int64SliceFlag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Errorf(`could not parse foobar as int64 slice value for flag seconds: strconv.ParseInt: parsing "foobar": invalid syntax`)},
+
+		{"foo", "foo", StringFlag{Name: "name", EnvVar: "NAME"}, nil},
+
+		{"foo,bar", StringSlice{"foo", "bar"}, StringSliceFlag{Name: "names", EnvVar: "NAMES"}, nil},
+
+		{"1", uint(1), UintFlag{Name: "seconds", EnvVar: "SECONDS"}, nil},
+		{"1.2", 0, UintFlag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Errorf(`could not parse 1.2 as uint value for flag seconds: strconv.ParseUint: parsing "1.2": invalid syntax`)},
+		{"foobar", 0, UintFlag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Errorf(`could not parse foobar as uint value for flag seconds: strconv.ParseUint: parsing "foobar": invalid syntax`)},
+
+		{"1", uint64(1), Uint64Flag{Name: "seconds", EnvVar: "SECONDS"}, nil},
+		{"1.2", 0, Uint64Flag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Errorf(`could not parse 1.2 as uint64 value for flag seconds: strconv.ParseUint: parsing "1.2": invalid syntax`)},
+		{"foobar", 0, Uint64Flag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Errorf(`could not parse foobar as uint64 value for flag seconds: strconv.ParseUint: parsing "foobar": invalid syntax`)},
+
+		{"foo,bar", &Parser{"foo", "bar"}, GenericFlag{Name: "names", Value: &Parser{}, EnvVar: "NAMES"}, nil},
+	}
+
+	for _, test := range flagTests {
+		os.Clearenv()
+		os.Setenv(reflect.ValueOf(test.flag).FieldByName("EnvVar").String(), test.input)
+		a := App{
+			Flags: []Flag{test.flag},
+			Action: func(ctx *Context) error {
+				if !reflect.DeepEqual(ctx.value(test.flag.GetName()), test.output) {
+					t.Errorf("expected %+v to be parsed as %+v, instead was %+v", test.input, test.output, ctx.value(test.flag.GetName()))
+				}
+				return nil
+			},
+		}
+
+		err := a.Run([]string{"run"})
+		if !reflect.DeepEqual(test.err, err) {
+			t.Errorf("expected error %s, got error %s", test.err, err)
+		}
+	}
+}
+
 var stringFlagTests = []struct {
 	name     string
 	usage    string
@@ -941,6 +1016,38 @@ func TestParseMultiBoolFromEnvCascade(t *testing.T) {
 	a.Run([]string{"run"})
 }
 
+func TestParseBoolTFromEnv(t *testing.T) {
+	var boolTFlagTests = []struct {
+		input  string
+		output bool
+	}{
+		{"", false},
+		{"1", true},
+		{"false", false},
+		{"true", true},
+	}
+
+	for _, test := range boolTFlagTests {
+		os.Clearenv()
+		os.Setenv("DEBUG", test.input)
+		a := App{
+			Flags: []Flag{
+				BoolTFlag{Name: "debug, d", EnvVar: "DEBUG"},
+			},
+			Action: func(ctx *Context) error {
+				if ctx.Bool("debug") != test.output {
+					t.Errorf("expected %+v to be parsed as %+v, instead was %+v", test.input, test.output, ctx.Bool("debug"))
+				}
+				if ctx.Bool("d") != test.output {
+					t.Errorf("expected %+v to be parsed as %+v, instead was %+v", test.input, test.output, ctx.Bool("d"))
+				}
+				return nil
+			},
+		}
+		a.Run([]string{"run"})
+	}
+}
+
 func TestParseMultiBoolT(t *testing.T) {
 	a := App{
 		Flags: []Flag{
@@ -1034,6 +1141,10 @@ func (p *Parser) Set(value string) error {
 
 func (p *Parser) String() string {
 	return fmt.Sprintf("%s,%s", p[0], p[1])
+}
+
+func (p *Parser) Get() interface{} {
+	return p
 }
 
 func TestParseGeneric(t *testing.T) {

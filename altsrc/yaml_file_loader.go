@@ -12,7 +12,7 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/urfave/cli"
+	"gopkg.in/urfave/cli.v1"
 
 	"gopkg.in/yaml.v2"
 )

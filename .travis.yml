@@ -12,6 +12,7 @@ go:
 - 1.4.2
 - 1.5.x
 - 1.6.x
+- 1.7.x
 - master
 
 matrix:
@@ -20,9 +21,11 @@ matrix:
   include:
   - go: 1.6.x
     os: osx
+  - go: 1.7.x
+    os: osx
 
 before_script:
-- go get github.com/urfave/gfmrun/...
+- go get github.com/urfave/gfmrun/... || true
 - go get golang.org/x/tools/... || true
 - if [ ! -f node_modules/.bin/markdown-toc ] ; then
     npm install markdown-toc ;
