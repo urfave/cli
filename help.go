@@ -13,7 +13,7 @@ import (
 // cli.go uses text/template to render templates. You can
 // render custom help text by setting this variable.
 var AppHelpTemplate = `NAME:
-   {{.Name}} - {{.Usage}}
+   {{.Name}}{{if .Usage}} - {{.Usage}}{{end}}
 
 USAGE:
    {{if .UsageText}}{{.UsageText}}{{else}}{{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
@@ -252,20 +252,43 @@ func checkSubcommandHelp(c *Context) bool {
 	return false
 }
 
-func checkCompletions(c *Context) bool {
-	if (c.GlobalBool(BashCompletionFlag.Name) || c.Bool(BashCompletionFlag.Name)) && c.App.EnableBashCompletion {
-		ShowCompletions(c)
-		return true
+func checkShellCompleteFlag(a *App, arguments []string) (bool, []string) {
+	if !a.EnableBashCompletion {
+		return false, arguments
 	}
 
-	return false
+	pos := len(arguments) - 1
+	lastArg := arguments[pos]
+
+	if lastArg != "--"+BashCompletionFlag.Name {
+		return false, arguments
+	}
+
+	return true, arguments[:pos]
+}
+
+func checkCompletions(c *Context) bool {
+	if !c.shellComplete {
+		return false
+	}
+
+	if args := c.Args(); args.Present() {
+		name := args.First()
+		if cmd := c.App.Command(name); cmd != nil {
+			// let the command handle the completion
+			return false
+		}
+	}
+
+	ShowCompletions(c)
+	return true
 }
 
 func checkCommandCompletions(c *Context, name string) bool {
-	if c.Bool(BashCompletionFlag.Name) && c.App.EnableBashCompletion {
-		ShowCommandCompletions(c, name)
-		return true
+	if !c.shellComplete {
+		return false
 	}
 
-	return false
+	ShowCommandCompletions(c, name)
+	return true
 }

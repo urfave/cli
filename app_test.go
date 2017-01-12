@@ -178,6 +178,49 @@ func ExampleApp_Run_commandHelp() {
 	//    This is how we describe describeit the function
 }
 
+func ExampleApp_Run_noAction() {
+	app := App{}
+	app.Name = "greet"
+	app.Run([]string{"greet"})
+	// Output:
+	// NAME:
+	//    greet
+	//
+	// USAGE:
+	//     [global options] command [command options] [arguments...]
+	//
+	// COMMANDS:
+	//      help, h  Shows a list of commands or help for one command
+	//
+	// GLOBAL OPTIONS:
+	//    --help, -h     show help
+	//    --version, -v  print the version
+}
+
+func ExampleApp_Run_subcommandNoAction() {
+	app := App{}
+	app.Name = "greet"
+	app.Commands = []Command{
+		{
+			Name:        "describeit",
+			Aliases:     []string{"d"},
+			Usage:       "use it to see a description",
+			Description: "This is how we describe describeit the function",
+		},
+	}
+	app.Run([]string{"greet", "describeit"})
+	// Output:
+	// NAME:
+	//     describeit - use it to see a description
+	//
+	// USAGE:
+	//     describeit [arguments...]
+	//
+	// DESCRIPTION:
+	//    This is how we describe describeit the function
+
+}
+
 func ExampleApp_Run_bashComplete() {
 	// set args for examples sake
 	os.Args = []string{"greet", "--generate-bash-completion"}
@@ -1480,7 +1523,11 @@ func TestApp_OnUsageError_WithWrongFlagValue_ForSubcommand(t *testing.T) {
 func TestHandleAction_WithNonFuncAction(t *testing.T) {
 	app := NewApp()
 	app.Action = 42
-	err := HandleAction(app.Action, NewContext(app, flagSet(app.Name, app.Flags), nil))
+	fs, err := flagSet(app.Name, app.Flags)
+	if err != nil {
+		t.Errorf("error creating FlagSet: %s", err)
+	}
+	err = HandleAction(app.Action, NewContext(app, fs, nil))
 
 	if err == nil {
 		t.Fatalf("expected to receive error from Run, got none")
@@ -1504,7 +1551,11 @@ func TestHandleAction_WithNonFuncAction(t *testing.T) {
 func TestHandleAction_WithInvalidFuncSignature(t *testing.T) {
 	app := NewApp()
 	app.Action = func() string { return "" }
-	err := HandleAction(app.Action, NewContext(app, flagSet(app.Name, app.Flags), nil))
+	fs, err := flagSet(app.Name, app.Flags)
+	if err != nil {
+		t.Errorf("error creating FlagSet: %s", err)
+	}
+	err = HandleAction(app.Action, NewContext(app, fs, nil))
 
 	if err == nil {
 		t.Fatalf("expected to receive error from Run, got none")
@@ -1528,7 +1579,11 @@ func TestHandleAction_WithInvalidFuncSignature(t *testing.T) {
 func TestHandleAction_WithInvalidFuncReturnSignature(t *testing.T) {
 	app := NewApp()
 	app.Action = func(_ *Context) (int, error) { return 0, nil }
-	err := HandleAction(app.Action, NewContext(app, flagSet(app.Name, app.Flags), nil))
+	fs, err := flagSet(app.Name, app.Flags)
+	if err != nil {
+		t.Errorf("error creating FlagSet: %s", err)
+	}
+	err = HandleAction(app.Action, NewContext(app, fs, nil))
 
 	if err == nil {
 		t.Fatalf("expected to receive error from Run, got none")
@@ -1559,5 +1614,72 @@ func TestHandleAction_WithUnknownPanic(t *testing.T) {
 		fn(ctx)
 		return nil
 	}
-	HandleAction(app.Action, NewContext(app, flagSet(app.Name, app.Flags), nil))
+	fs, err := flagSet(app.Name, app.Flags)
+	if err != nil {
+		t.Errorf("error creating FlagSet: %s", err)
+	}
+	HandleAction(app.Action, NewContext(app, fs, nil))
+}
+
+func TestShellCompletionForIncompleteFlags(t *testing.T) {
+	app := NewApp()
+	app.Flags = []Flag{
+		IntFlag{
+			Name: "test-completion",
+		},
+	}
+	app.EnableBashCompletion = true
+	app.BashComplete = func(ctx *Context) {
+		for _, command := range ctx.App.Commands {
+			if command.Hidden {
+				continue
+			}
+
+			for _, name := range command.Names() {
+				fmt.Fprintln(ctx.App.Writer, name)
+			}
+		}
+
+		for _, flag := range ctx.App.Flags {
+			for _, name := range strings.Split(flag.GetName(), ",") {
+				if name == BashCompletionFlag.Name {
+					continue
+				}
+
+				switch name = strings.TrimSpace(name); len(name) {
+				case 0:
+				case 1:
+					fmt.Fprintln(ctx.App.Writer, "-"+name)
+				default:
+					fmt.Fprintln(ctx.App.Writer, "--"+name)
+				}
+			}
+		}
+	}
+	app.Action = func(ctx *Context) error {
+		return fmt.Errorf("should not get here")
+	}
+	err := app.Run([]string{"", "--test-completion", "--" + BashCompletionFlag.Name})
+	if err != nil {
+		t.Errorf("app should not return an error: %s", err)
+	}
+}
+
+func TestHandleActionActuallyWorksWithActions(t *testing.T) {
+	var f ActionFunc
+	called := false
+	f = func(c *Context) error {
+		called = true
+		return nil
+	}
+
+	err := HandleAction(f, nil)
+
+	if err != nil {
+		t.Errorf("Should not have errored: %v", err)
+	}
+
+	if !called {
+		t.Errorf("Function was not called")
+	}
 }

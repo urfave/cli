@@ -3,9 +3,9 @@ package cli
 import (
 	"errors"
 	"flag"
-	"os"
 	"reflect"
 	"strings"
+	"syscall"
 )
 
 // Context is a type that is passed through to
@@ -15,6 +15,7 @@ import (
 type Context struct {
 	App           *App
 	Command       Command
+	shellComplete bool
 	flagSet       *flag.FlagSet
 	setFlags      map[string]bool
 	parentContext *Context
@@ -22,7 +23,13 @@ type Context struct {
 
 // NewContext creates a new context. For use in when invoking an App or Command action.
 func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
-	return &Context{App: app, flagSet: set, parentContext: parentCtx}
+	c := &Context{App: app, flagSet: set, parentContext: parentCtx}
+
+	if parentCtx != nil {
+		c.shellComplete = parentCtx.shellComplete
+	}
+
+	return c
 }
 
 // NumFlags returns the number of flags set
@@ -91,7 +98,7 @@ func (c *Context) IsSet(name string) bool {
 
 				eachName(envVarValue.String(), func(envVar string) {
 					envVar = strings.TrimSpace(envVar)
-					if envVal := os.Getenv(envVar); envVal != "" {
+					if _, ok := syscall.Getenv(envVar); ok {
 						c.setFlags[name] = true
 						return
 					}
@@ -145,6 +152,11 @@ func (c *Context) GlobalFlagNames() (names []string) {
 // Parent returns the parent context, if any
 func (c *Context) Parent() *Context {
 	return c.parentContext
+}
+
+// value returns the value of the flag coressponding to `name`
+func (c *Context) value(name string) interface{} {
+	return c.flagSet.Lookup(name).Value.(flag.Getter).Get()
 }
 
 // Args contains apps console arguments

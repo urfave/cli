@@ -145,10 +145,6 @@ func (a *App) Setup() {
 		}
 	}
 
-	if a.EnableBashCompletion {
-		a.appendFlag(BashCompletionFlag)
-	}
-
 	if !a.HideVersion {
 		a.appendFlag(VersionFlag)
 	}
@@ -173,8 +169,20 @@ func (a *App) Setup() {
 func (a *App) Run(arguments []string) (err error) {
 	a.Setup()
 
+	// handle the completion flag separately from the flagset since
+	// completion could be attempted after a flag, but before its value was put
+	// on the command line. this causes the flagset to interpret the completion
+	// flag name as the value of the flag before it which is undesirable
+	// note that we can only do this because the shell autocomplete function
+	// always appends the completion flag at the end of the command
+	shellComplete, arguments := checkShellCompleteFlag(a, arguments)
+
 	// parse flags
-	set := flagSet(a.Name, a.Flags)
+	set, err := flagSet(a.Name, a.Flags)
+	if err != nil {
+		return err
+	}
+
 	set.SetOutput(ioutil.Discard)
 	err = set.Parse(arguments[1:])
 	nerr := normalizeFlags(a.Flags, set)
@@ -184,6 +192,7 @@ func (a *App) Run(arguments []string) (err error) {
 		ShowAppHelp(context)
 		return nerr
 	}
+	context.shellComplete = shellComplete
 
 	if checkCompletions(context) {
 		return nil
@@ -242,6 +251,10 @@ func (a *App) Run(arguments []string) (err error) {
 		}
 	}
 
+	if a.Action == nil {
+		a.Action = helpCommand.Action
+	}
+
 	// Run default Action
 	err = HandleAction(a.Action, context)
 
@@ -283,13 +296,12 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	}
 	a.Commands = newCmds
 
-	// append flags
-	if a.EnableBashCompletion {
-		a.appendFlag(BashCompletionFlag)
+	// parse flags
+	set, err := flagSet(a.Name, a.Flags)
+	if err != nil {
+		return err
 	}
 
-	// parse flags
-	set := flagSet(a.Name, a.Flags)
 	set.SetOutput(ioutil.Discard)
 	err = set.Parse(ctx.Args().Tail())
 	nerr := normalizeFlags(a.Flags, set)
@@ -467,7 +479,9 @@ func (a Author) String() string {
 // it's an ActionFunc or a func with the legacy signature for Action, the func
 // is run!
 func HandleAction(action interface{}, context *Context) (err error) {
-	if a, ok := action.(func(*Context) error); ok {
+	if a, ok := action.(ActionFunc); ok {
+		return a(context)
+	} else if a, ok := action.(func(*Context) error); ok {
 		return a(context)
 	} else if a, ok := action.(func(*Context)); ok { // deprecated function signature
 		a(context)
