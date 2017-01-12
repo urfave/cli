@@ -12,8 +12,10 @@ func TestHandleExitCoder_nil(t *testing.T) {
 	called := false
 
 	OsExiter = func(rc int) {
-		exitCode = rc
-		called = true
+		if !called {
+			exitCode = rc
+			called = true
+		}
 	}
 
 	defer func() { OsExiter = fakeOsExiter }()
@@ -29,8 +31,10 @@ func TestHandleExitCoder_ExitCoder(t *testing.T) {
 	called := false
 
 	OsExiter = func(rc int) {
-		exitCode = rc
-		called = true
+		if !called {
+			exitCode = rc
+			called = true
+		}
 	}
 
 	defer func() { OsExiter = fakeOsExiter }()
@@ -46,8 +50,10 @@ func TestHandleExitCoder_MultiErrorWithExitCoder(t *testing.T) {
 	called := false
 
 	OsExiter = func(rc int) {
-		exitCode = rc
-		called = true
+		if !called {
+			exitCode = rc
+			called = true
+		}
 	}
 
 	defer func() { OsExiter = fakeOsExiter }()
@@ -65,8 +71,10 @@ func TestHandleExitCoder_ErrorWithMessage(t *testing.T) {
 	called := false
 
 	OsExiter = func(rc int) {
-		exitCode = rc
-		called = true
+		if !called {
+			exitCode = rc
+			called = true
+		}
 	}
 	ErrWriter = &bytes.Buffer{}
 
@@ -88,8 +96,10 @@ func TestHandleExitCoder_ErrorWithoutMessage(t *testing.T) {
 	called := false
 
 	OsExiter = func(rc int) {
-		exitCode = rc
-		called = true
+		if !called {
+			exitCode = rc
+			called = true
+		}
 	}
 	ErrWriter = &bytes.Buffer{}
 
@@ -123,7 +133,9 @@ func TestHandleExitCoder_ErrorWithFormat(t *testing.T) {
 	called := false
 
 	OsExiter = func(rc int) {
-		called = true
+		if !called {
+			called = true
+		}
 	}
 	ErrWriter = &bytes.Buffer{}
 
@@ -143,7 +155,9 @@ func TestHandleExitCoder_MultiErrorWithFormat(t *testing.T) {
 	called := false
 
 	OsExiter = func(rc int) {
-		called = true
+		if !called {
+			called = true
+		}
 	}
 	ErrWriter = &bytes.Buffer{}
 
