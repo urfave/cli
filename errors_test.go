@@ -59,10 +59,11 @@ func TestHandleExitCoder_MultiErrorWithExitCoder(t *testing.T) {
 	defer func() { OsExiter = fakeOsExiter }()
 
 	exitErr := NewExitError("galactic perimeter breach", 9)
-	err := NewMultiError(errors.New("wowsa"), errors.New("egad"), exitErr)
+	exitErr2 := NewExitError("last ExitCoder", 11)
+	err := NewMultiError(errors.New("wowsa"), errors.New("egad"), exitErr, exitErr2)
 	HandleExitCoder(err)
 
-	expect(t, exitCode, 9)
+	expect(t, exitCode, 11)
 	expect(t, called, true)
 }
 
