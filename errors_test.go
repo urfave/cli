@@ -12,8 +12,10 @@ func TestHandleExitCoder_nil(t *testing.T) {
 	called := false
 
 	OsExiter = func(rc int) {
-		exitCode = rc
-		called = true
+		if !called {
+			exitCode = rc
+			called = true
+		}
 	}
 
 	defer func() { OsExiter = fakeOsExiter }()
@@ -29,8 +31,10 @@ func TestHandleExitCoder_ExitCoder(t *testing.T) {
 	called := false
 
 	OsExiter = func(rc int) {
-		exitCode = rc
-		called = true
+		if !called {
+			exitCode = rc
+			called = true
+		}
 	}
 
 	defer func() { OsExiter = fakeOsExiter }()
@@ -46,17 +50,20 @@ func TestHandleExitCoder_MultiErrorWithExitCoder(t *testing.T) {
 	called := false
 
 	OsExiter = func(rc int) {
-		exitCode = rc
-		called = true
+		if !called {
+			exitCode = rc
+			called = true
+		}
 	}
 
 	defer func() { OsExiter = fakeOsExiter }()
 
 	exitErr := NewExitError("galactic perimeter breach", 9)
-	err := NewMultiError(errors.New("wowsa"), errors.New("egad"), exitErr)
+	exitErr2 := NewExitError("last ExitCoder", 11)
+	err := NewMultiError(errors.New("wowsa"), errors.New("egad"), exitErr, exitErr2)
 	HandleExitCoder(err)
 
-	expect(t, exitCode, 9)
+	expect(t, exitCode, 11)
 	expect(t, called, true)
 }
 
@@ -65,8 +72,10 @@ func TestHandleExitCoder_ErrorWithMessage(t *testing.T) {
 	called := false
 
 	OsExiter = func(rc int) {
-		exitCode = rc
-		called = true
+		if !called {
+			exitCode = rc
+			called = true
+		}
 	}
 	ErrWriter = &bytes.Buffer{}
 
@@ -88,8 +97,10 @@ func TestHandleExitCoder_ErrorWithoutMessage(t *testing.T) {
 	called := false
 
 	OsExiter = func(rc int) {
-		exitCode = rc
-		called = true
+		if !called {
+			exitCode = rc
+			called = true
+		}
 	}
 	ErrWriter = &bytes.Buffer{}
 
@@ -123,7 +134,9 @@ func TestHandleExitCoder_ErrorWithFormat(t *testing.T) {
 	called := false
 
 	OsExiter = func(rc int) {
-		called = true
+		if !called {
+			called = true
+		}
 	}
 	ErrWriter = &bytes.Buffer{}
 
@@ -143,7 +156,9 @@ func TestHandleExitCoder_MultiErrorWithFormat(t *testing.T) {
 	called := false
 
 	OsExiter = func(rc int) {
-		called = true
+		if !called {
+			called = true
+		}
 	}
 	ErrWriter = &bytes.Buffer{}
 
