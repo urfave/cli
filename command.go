@@ -61,6 +61,20 @@ type Command struct {
 	commandNamePath []string
 }
 
+type CommandsByName []Command
+
+func (c CommandsByName) Len() int {
+	return len(c)
+}
+
+func (c CommandsByName) Less(i, j int) bool {
+	return c[i].Name < c[j].Name
+}
+
+func (c CommandsByName) Swap(i, j int) {
+	c[i], c[j] = c[j], c[i]
+}
+
 // FullName returns the full name of the command.
 // For subcommands this ensures that parent commands are part of the command path
 func (c Command) FullName() string {
