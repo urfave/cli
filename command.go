@@ -264,6 +264,7 @@ func (c Command) startApp(ctx *Context) error {
 	app.Author = ctx.App.Author
 	app.Email = ctx.App.Email
 	app.Writer = ctx.App.Writer
+	app.ErrWriter = ctx.App.ErrWriter
 
 	app.categories = CommandCategories{}
 	for _, command := range c.Subcommands {

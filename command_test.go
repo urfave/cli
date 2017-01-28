@@ -153,3 +153,32 @@ func TestCommand_OnUsageError_WithWrongFlagValue(t *testing.T) {
 		t.Errorf("Expect an intercepted error, but got \"%v\"", err)
 	}
 }
+
+func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
+	app := NewApp()
+	app.ErrWriter = ioutil.Discard
+	app.Commands = []Command{
+		{
+			Name:  "bar",
+			Usage: "this is for testing",
+			Subcommands: []Command{
+				{
+					Name:  "baz",
+					Usage: "this is for testing",
+					Action: func(c *Context) error {
+						if c.App.ErrWriter != ioutil.Discard {
+							return fmt.Errorf("ErrWriter not passed")
+						}
+
+						return nil
+					},
+				},
+			},
+		},
+	}
+
+	err := app.Run([]string{"foo", "bar", "baz"})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
