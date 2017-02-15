@@ -298,11 +298,13 @@ def _app_init(source):
         'cli\\.NewApp\\(\\)', '(&cli.App{})', source, flags=re.UNICODE
     )
 
+
 @_migrator
 def _bash_complete(source):
     return re.sub(
         'BashComplete:', 'ShellComplete:',
         re.sub('\\.BashComplete', '.ShellComplete', source, flags=re.UNICODE))
+
 
 @_migrator
 def _enable_bash_completion(source):
@@ -310,11 +312,13 @@ def _enable_bash_completion(source):
         '\\.EnableBashCompletion', '.EnableShellCompletion', source, flags=re.UNICODE
     )
 
+
 @_migrator
 def _bash_completion_flag(source):
     return re.sub(
         'cli\\.BashCompletionFlag', 'cli.GenerateCompletionFlag', source, flags=re.UNICODE
     )
+
 
 def test_migrators():
     import difflib
