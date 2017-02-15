@@ -186,23 +186,9 @@ func (a Args) First() string {
 	return a.Get(0)
 }
 
-// Last - Return the last argument, or else a blank string
-func (a Args) Last() string {
-	return a.Get(len(a) - 1)
-}
-
-// Head - Return the rest of the arguments (not the last one)
-// or else an empty string slice
-func (a Args) Head() Args {
-	if len(a) == 1 {
-		return a
-	}
-	return []string(a)[:len(a)-1]
-}
-
 // Tail returns the rest of the arguments (not the first one)
 // or else an empty string slice
-func (a Args) Tail() Args {
+func (a Args) Tail() []string {
 	if len(a) >= 2 {
 		return []string(a)[1:]
 	}
