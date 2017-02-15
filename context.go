@@ -78,7 +78,7 @@ func (c *Context) IsSet(name string) bool {
 	for _, envVar := range envVarValues.Interface().([]string) {
 		envVar = strings.TrimSpace(envVar)
 		if envVal := os.Getenv(envVar); envVal != "" {
-			continue
+			return true
 		}
 	}
 
