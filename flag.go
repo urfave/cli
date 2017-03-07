@@ -136,7 +136,10 @@ type StringSlice []string
 
 // Set appends the string value to the list of values
 func (f *StringSlice) Set(value string) error {
-	*f = append(*f, value)
+	for _, s := range strings.Split(value, ",") {
+		s = strings.TrimSpace(s)
+		*f = append(*f, s)
+	}
 	return nil
 }
 
@@ -168,11 +171,8 @@ func (f StringSliceFlag) ApplyWithError(set *flag.FlagSet) error {
 			envVar = strings.TrimSpace(envVar)
 			if envVal, ok := syscall.Getenv(envVar); ok {
 				newVal := &StringSlice{}
-				for _, s := range strings.Split(envVal, ",") {
-					s = strings.TrimSpace(s)
-					if err := newVal.Set(s); err != nil {
-						return fmt.Errorf("could not parse %s as string value for flag %s: %s", envVal, f.Name, err)
-					}
+				if err := newVal.Set(envVal); err != nil {
+					return fmt.Errorf("could not parse %s as string value for flag %s: %s", envVal, f.Name, err)
 				}
 				f.Value = newVal
 				break
@@ -195,11 +195,14 @@ type IntSlice []int
 
 // Set parses the value into an integer and appends it to the list of values
 func (f *IntSlice) Set(value string) error {
-	tmp, err := strconv.Atoi(value)
-	if err != nil {
-		return err
+	for _, s := range strings.Split(value, ",") {
+		s = strings.TrimSpace(s)
+		tmp, err := strconv.Atoi(s)
+		if err != nil {
+			return err
+		}
+		*f = append(*f, tmp)
 	}
-	*f = append(*f, tmp)
 	return nil
 }
 
@@ -231,11 +234,8 @@ func (f IntSliceFlag) ApplyWithError(set *flag.FlagSet) error {
 			envVar = strings.TrimSpace(envVar)
 			if envVal, ok := syscall.Getenv(envVar); ok {
 				newVal := &IntSlice{}
-				for _, s := range strings.Split(envVal, ",") {
-					s = strings.TrimSpace(s)
-					if err := newVal.Set(s); err != nil {
-						return fmt.Errorf("could not parse %s as int slice value for flag %s: %s", envVal, f.Name, err)
-					}
+				if err := newVal.Set(envVal); err != nil {
+					return fmt.Errorf("could not parse %s as int slice value for flag %s: %s", envVal, f.Name, err)
 				}
 				f.Value = newVal
 				break
@@ -258,11 +258,14 @@ type Int64Slice []int64
 
 // Set parses the value into an integer and appends it to the list of values
 func (f *Int64Slice) Set(value string) error {
-	tmp, err := strconv.ParseInt(value, 10, 64)
-	if err != nil {
-		return err
+	for _, s := range strings.Split(value, ",") {
+		s = strings.TrimSpace(s)
+		tmp, err := strconv.ParseInt(s, 10, 64)
+		if err != nil {
+			return err
+		}
+		*f = append(*f, tmp)
 	}
-	*f = append(*f, tmp)
 	return nil
 }
 
@@ -294,11 +297,8 @@ func (f Int64SliceFlag) ApplyWithError(set *flag.FlagSet) error {
 			envVar = strings.TrimSpace(envVar)
 			if envVal, ok := syscall.Getenv(envVar); ok {
 				newVal := &Int64Slice{}
-				for _, s := range strings.Split(envVal, ",") {
-					s = strings.TrimSpace(s)
-					if err := newVal.Set(s); err != nil {
-						return fmt.Errorf("could not parse %s as int64 slice value for flag %s: %s", envVal, f.Name, err)
-					}
+				if err := newVal.Set(envVal); err != nil {
+					return fmt.Errorf("could not parse %s as int64 slice value for flag %s: %s", envVal, f.Name, err)
 				}
 				f.Value = newVal
 				break

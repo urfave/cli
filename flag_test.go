@@ -643,6 +643,20 @@ func TestParseMultiStringSlice(t *testing.T) {
 	}).Run([]string{"run", "-s", "10", "-s", "20"})
 }
 
+func TestParseCommaStringSlice(t *testing.T) {
+	(&App{
+		Flags: []Flag{
+			StringSliceFlag{Name: "serve", Value: &StringSlice{}},
+		},
+		Action: func(ctx *Context) error {
+			if !reflect.DeepEqual(ctx.StringSlice("serve"), []string{"10", "20"}) {
+				t.Errorf("main name not set")
+			}
+			return nil
+		},
+	}).Run([]string{"run", "-s", "10,20"})
+}
+
 func TestParseMultiStringSliceFromEnv(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("APP_INTERVALS", "20,30,40")
@@ -777,6 +791,20 @@ func TestParseMultiIntSlice(t *testing.T) {
 	}).Run([]string{"run", "-s", "10", "-s", "20"})
 }
 
+func TestParseCommaIntSlice(t *testing.T) {
+	(&App{
+		Flags: []Flag{
+			IntSliceFlag{Name: "serve", Value: &IntSlice{}},
+		},
+		Action: func(ctx *Context) error {
+			if !reflect.DeepEqual(ctx.IntSlice("serve"), []int{10, 20}) {
+				t.Errorf("main name not set")
+			}
+			return nil
+		},
+	}).Run([]string{"run", "-s", "10,20"})
+}
+
 func TestParseMultiIntSliceFromEnv(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("APP_INTERVALS", "20,30,40")
@@ -832,6 +860,20 @@ func TestParseMultiInt64Slice(t *testing.T) {
 			return nil
 		},
 	}).Run([]string{"run", "-s", "10", "-s", "17179869184"})
+}
+
+func TestParseCommaInt64Slice(t *testing.T) {
+	(&App{
+		Flags: []Flag{
+			Int64SliceFlag{Name: "serve", Value: &Int64Slice{}},
+		},
+		Action: func(ctx *Context) error {
+			if !reflect.DeepEqual(ctx.Int64Slice("serve"), []int64{10, 17179869184}) {
+				t.Errorf("main name not set")
+			}
+			return nil
+		},
+	}).Run([]string{"run", "-s", "10,17179869184"})
 }
 
 func TestParseMultiInt64SliceFromEnv(t *testing.T) {
