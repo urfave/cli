@@ -244,11 +244,9 @@ func (c Command) startApp(ctx *Context) error {
 		app.HelpName = app.Name
 	}
 
-	if c.Description != "" {
-		app.Usage = c.Description
-	} else {
-		app.Usage = c.Usage
-	}
+	app.Usage = c.Usage
+	app.Description = c.Description
+	app.ArgsUsage = c.ArgsUsage
 
 	// set CommandNotFound
 	app.CommandNotFound = ctx.App.CommandNotFound
@@ -264,6 +262,7 @@ func (c Command) startApp(ctx *Context) error {
 	app.Author = ctx.App.Author
 	app.Email = ctx.App.Email
 	app.Writer = ctx.App.Writer
+	app.ErrWriter = ctx.App.ErrWriter
 
 	app.categories = CommandCategories{}
 	for _, command := range c.Subcommands {
