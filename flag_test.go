@@ -1213,3 +1213,23 @@ func TestParseGenericFromEnvCascade(t *testing.T) {
 	}
 	a.Run([]string{"run"})
 }
+
+// func TestFlagFromFile(t *testing.T) {
+// 	temp, err := ioutil.TempFile("", "urfave_cli_test")
+// 	if err != nil {
+// 		t.Error(err)
+// 		return
+// 	}
+// 	io.WriteString(temp, "abc")
+// 	temp.Close()
+// 	defer func() {
+// 		os.Remove(temp.Name())
+// 	}()
+//
+// 	if want, got := flagFromFileEnv("file-does-not-exist", "123"), "123"; want != got {
+// 		t.Errorf("Did not expect %v - Got %v", want, got)
+// 	}
+// 	if want, got := flagFromFile(temp.Name(), "123"), "abc"; want != got {
+// 		t.Errorf("Did not expect %v - Got %v", want, got)
+// 	}
+// }
