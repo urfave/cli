@@ -32,6 +32,7 @@ applications in an expressive way.
     + [Alternate Names](#alternate-names)
     + [Ordering](#ordering)
     + [Values from the Environment](#values-from-the-environment)
+    + [Values from files](#values-from-files)
     + [Values from alternate input sources (YAML, TOML, and others)](#values-from-alternate-input-sources-yaml-toml-and-others)
   * [Subcommands](#subcommands)
   * [Subcommands categories](#subcommands-categories)
@@ -579,6 +580,38 @@ func main() {
       Value: "english",
       Usage: "language for the greeting",
       EnvVar: "LEGACY_COMPAT_LANG,APP_LANG,LANG",
+    },
+  }
+
+  app.Run(os.Args)
+}
+```
+
+#### Values from Files
+
+You can also have the default value set from file via `FilePath`.  e.g.
+
+<!-- {
+  "args": ["&#45;&#45;help"],
+  "output": "language for the greeting.*APP_LANG"
+} -->
+``` go
+package main
+
+import (
+  "os"
+
+  "github.com/urfave/cli"
+)
+
+func main() {
+  app := cli.NewApp()
+
+  app.Flags = []cli.Flag {
+    cli.StringFlag{
+      Name: "password, p",
+      Usage: "password for the mysql database",
+      FilePath: "/etc/mysql/password",
     },
   }
 
