@@ -1316,7 +1316,7 @@ func TestFlagFromFile(t *testing.T) {
 		{"file-does-not-exist", "APP_BAR", ""},
 		{"file-does-not-exist", "APP_FOO", "123"},
 		{"file-does-not-exist", "APP_FOO,APP_BAR", "123"},
-		{temp.Name(), "APP_FOO", "123"},
+		{temp.Name(), "APP_FOO", "abc"},
 		{temp.Name(), "APP_BAR", "abc"},
 	}
 
