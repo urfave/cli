@@ -616,6 +616,14 @@ func withEnvHint(envVar, str string) string {
 	return str + envText
 }
 
+func withFileHint(filePath, str string) string {
+	fileText := ""
+	if filePath != "" {
+		fileText = fmt.Sprintf(" [%s]", filePath)
+	}
+	return str + fileText
+}
+
 func flagValue(f Flag) reflect.Value {
 	fv := reflect.ValueOf(f)
 	for fv.Kind() == reflect.Ptr {
@@ -629,14 +637,29 @@ func stringifyFlag(f Flag) string {
 
 	switch f.(type) {
 	case IntSliceFlag:
-		return withEnvHint(fv.FieldByName("EnvVar").String(),
-			stringifyIntSliceFlag(f.(IntSliceFlag)))
+		return withFileHint(
+			fv.FieldByName("FilePath").String(),
+			withEnvHint(
+				fv.FieldByName("EnvVar").String(),
+				stringifyIntSliceFlag(f.(IntSliceFlag)),
+			),
+		)
 	case Int64SliceFlag:
-		return withEnvHint(fv.FieldByName("EnvVar").String(),
-			stringifyInt64SliceFlag(f.(Int64SliceFlag)))
+		return withFileHint(
+			fv.FieldByName("FilePath").String(),
+			withEnvHint(
+				fv.FieldByName("EnvVar").String(),
+				stringifyInt64SliceFlag(f.(Int64SliceFlag)),
+			),
+		)
 	case StringSliceFlag:
-		return withEnvHint(fv.FieldByName("EnvVar").String(),
-			stringifyStringSliceFlag(f.(StringSliceFlag)))
+		return withFileHint(
+			fv.FieldByName("FilePath").String(),
+			withEnvHint(
+				fv.FieldByName("EnvVar").String(),
+				stringifyStringSliceFlag(f.(StringSliceFlag)),
+			),
+		)
 	}
 
 	placeholder, usage := unquoteUsage(fv.FieldByName("Usage").String())
@@ -664,8 +687,13 @@ func stringifyFlag(f Flag) string {
 
 	usageWithDefault := strings.TrimSpace(fmt.Sprintf("%s%s", usage, defaultValueString))
 
-	return withEnvHint(fv.FieldByName("EnvVar").String(),
-		fmt.Sprintf("%s\t%s", prefixedNames(fv.FieldByName("Name").String(), placeholder), usageWithDefault))
+	return withFileHint(
+		fv.FieldByName("FilePath").String(),
+		withEnvHint(
+			fv.FieldByName("EnvVar").String(),
+			fmt.Sprintf("%s\t%s", prefixedNames(fv.FieldByName("Name").String(), placeholder), usageWithDefault),
+		),
+	)
 }
 
 func stringifyIntSliceFlag(f IntSliceFlag) string {
@@ -719,15 +747,15 @@ func stringifySliceFlag(usage, name string, defaultVals []string) string {
 }
 
 func flagFromFileEnv(filePath, envName string) (val string, ok bool) {
+	if filePath != "" {
+		if data, err := ioutil.ReadFile(filePath); err == nil {
+			return string(data), true
+		}
+	}
 	for _, envVar := range strings.Split(envName, ",") {
 		envVar = strings.TrimSpace(envVar)
 		if envVal, ok := syscall.Getenv(envVar); ok {
 			return envVal, true
-		}
-	}
-	if filePath != "" {
-		if data, err := ioutil.ReadFile(filePath); err == nil {
-			return string(data), true
 		}
 	}
 	return

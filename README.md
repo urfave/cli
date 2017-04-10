@@ -587,13 +587,13 @@ func main() {
 }
 ```
 
-#### Values from Files
+#### Values from files
 
 You can also have the default value set from file via `FilePath`.  e.g.
 
 <!-- {
   "args": ["&#45;&#45;help"],
-  "output": "language for the greeting.*APP_LANG"
+  "output": "password for the mysql database"
 } -->
 ``` go
 package main
@@ -618,6 +618,9 @@ func main() {
   app.Run(os.Args)
 }
 ```
+
+Note that default values set from file (e.g. `FilePath`) take precedence over
+default values set from the enviornment (e.g. `EnvVar`).
 
 #### Values from alternate input sources (YAML, TOML, and others)
 
