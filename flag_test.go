@@ -62,17 +62,17 @@ func TestFlagsFromEnv(t *testing.T) {
 		{"1.2", 0, IntFlag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Sprintf(`could not parse 1.2 as int value for flag seconds: .*`)},
 		{"foobar", 0, IntFlag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Sprintf(`could not parse foobar as int value for flag seconds: .*`)},
 
-		{"1,2", IntSlice{1, 2}, IntSliceFlag{Name: "seconds", EnvVar: "SECONDS"}, ""},
-		{"1.2,2", IntSlice{}, IntSliceFlag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Sprintf(`could not parse 1.2,2 as int slice value for flag seconds: .*`)},
-		{"foobar", IntSlice{}, IntSliceFlag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Sprintf(`could not parse foobar as int slice value for flag seconds: .*`)},
+		{"1,2", []int{1, 2}, IntSliceFlag{Name: "seconds", EnvVar: "SECONDS"}, ""},
+		{"1.2,2", []int{}, IntSliceFlag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Sprintf(`could not parse 1.2,2 as int slice value for flag seconds: .*`)},
+		{"foobar", []int{}, IntSliceFlag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Sprintf(`could not parse foobar as int slice value for flag seconds: .*`)},
 
-		{"1,2", Int64Slice{1, 2}, Int64SliceFlag{Name: "seconds", EnvVar: "SECONDS"}, ""},
-		{"1.2,2", Int64Slice{}, Int64SliceFlag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Sprintf(`could not parse 1.2,2 as int64 slice value for flag seconds: .*`)},
-		{"foobar", Int64Slice{}, Int64SliceFlag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Sprintf(`could not parse foobar as int64 slice value for flag seconds: .*`)},
+		{"1,2", []int64{1, 2}, Int64SliceFlag{Name: "seconds", EnvVar: "SECONDS"}, ""},
+		{"1.2,2", []int64{}, Int64SliceFlag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Sprintf(`could not parse 1.2,2 as int64 slice value for flag seconds: .*`)},
+		{"foobar", []int64{}, Int64SliceFlag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Sprintf(`could not parse foobar as int64 slice value for flag seconds: .*`)},
 
 		{"foo", "foo", StringFlag{Name: "name", EnvVar: "NAME"}, ""},
 
-		{"foo,bar", StringSlice{"foo", "bar"}, StringSliceFlag{Name: "names", EnvVar: "NAMES"}, ""},
+		{"foo,bar", []string{"foo", "bar"}, StringSliceFlag{Name: "names", EnvVar: "NAMES"}, ""},
 
 		{"1", uint(1), UintFlag{Name: "seconds", EnvVar: "SECONDS"}, ""},
 		{"1.2", 0, UintFlag{Name: "seconds", EnvVar: "SECONDS"}, fmt.Sprintf(`could not parse 1.2 as uint value for flag seconds: .*`)},
