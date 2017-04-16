@@ -235,7 +235,7 @@ func checkHelp(c *Context) bool {
 }
 
 func checkCommandHelp(c *Context, name string) bool {
-	if c.Bool("h") || c.Bool("help") {
+	if c.Bool("help") {
 		ShowCommandHelp(c, name)
 		return true
 	}
@@ -244,7 +244,7 @@ func checkCommandHelp(c *Context, name string) bool {
 }
 
 func checkSubcommandHelp(c *Context) bool {
-	if c.Bool("h") || c.Bool("help") {
+	if c.Bool("help") {
 		ShowSubcommandHelp(c)
 		return true
 	}
