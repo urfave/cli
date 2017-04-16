@@ -137,7 +137,19 @@ func (c Command) Run(ctx *Context) (err error) {
 				flagArgs = args[firstFlagIndex:]
 			}
 
-			err = set.Parse(append(flagArgs, regularArgs...))
+			// separate combined flags
+			var flagArgsSeparated []string
+			for _, flagArg := range flagArgs {
+				if strings.HasPrefix(flagArg, "-") && strings.HasPrefix(flagArg, "--") == false && len(flagArg) >2 {
+					for _, flagChar := range flagArg[1:] {
+						flagArgsSeparated = append(flagArgsSeparated, "-" + string(flagChar))
+					}
+				} else {
+					flagArgsSeparated = append(flagArgsSeparated, flagArg)
+				}
+			}
+
+			err = set.Parse(append(flagArgsSeparated, regularArgs...))
 		} else {
 			err = set.Parse(ctx.Args().Tail())
 		}
