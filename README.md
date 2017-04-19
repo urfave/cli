@@ -626,7 +626,7 @@ Here is a more complete sample of a command using YAML support:
   "output": "&#45&#45;test value.*default: 0"
 } -->
 ``` go
-package notmain
+package main
 
 import (
   "fmt"
