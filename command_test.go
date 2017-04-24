@@ -127,6 +127,30 @@ func TestCommand_Run_BeforeSavesMetadata(t *testing.T) {
 	}
 }
 
+func TestCommand_OnUsageError_hasCommandContext(t *testing.T) {
+	app := NewApp()
+	app.Commands = []Command{
+		{
+			Name: "bar",
+			Flags: []Flag{
+				IntFlag{Name: "flag"},
+			},
+			OnUsageError: func(c *Context, err error, _ bool) error {
+				return fmt.Errorf("intercepted in %s: %s", c.Command.Name, err.Error())
+			},
+		},
+	}
+
+	err := app.Run([]string{"foo", "bar", "--flag=wrong"})
+	if err == nil {
+		t.Fatalf("expected to receive error from Run, got none")
+	}
+
+	if !strings.HasPrefix(err.Error(), "intercepted in bar") {
+		t.Errorf("Expect an intercepted error, but got \"%v\"", err)
+	}
+}
+
 func TestCommand_OnUsageError_WithWrongFlagValue(t *testing.T) {
 	app := NewApp()
 	app.Commands = []Command{
