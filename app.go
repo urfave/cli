@@ -83,7 +83,8 @@ type App struct {
 	Writer io.Writer
 	// ErrWriter writes error output
 	ErrWriter io.Writer
-	// Execute this function to handle ExitErrors
+	// Execute this function to handle ExitErrors. If not provided, HandleExitCoder is provided to
+	// function as a default, so this is optional.
 	ExitErrHandler ExitErrHandlerFunc
 	// Other custom info
 	Metadata map[string]interface{}
