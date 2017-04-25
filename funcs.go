@@ -26,3 +26,7 @@ type OnUsageErrorFunc func(context *Context, err error, isSubcommand bool) error
 // FlagStringFunc is used by the help generation to display a flag, which is
 // expected to be a single line.
 type FlagStringFunc func(Flag) string
+
+// ExitErrHandlerFunc is executed if provided in order to handle ExitError values
+// returned by Actions and Before/After functions.
+type ExitErrHandlerFunc func(error)
