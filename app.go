@@ -83,6 +83,8 @@ type App struct {
 	Writer io.Writer
 	// ErrWriter writes error output
 	ErrWriter io.Writer
+	// Execute this function to handle ExitErrors
+	ExitErrHandler ExitErrHandlerFunc
 	// Other custom info
 	Metadata map[string]interface{}
 	// Carries a function which returns app specific info.
@@ -207,7 +209,7 @@ func (a *App) Run(arguments []string) (err error) {
 	if err != nil {
 		if a.OnUsageError != nil {
 			err := a.OnUsageError(context, err, false)
-			HandleExitCoder(err)
+			a.handleExitCoder(err)
 			return err
 		}
 		fmt.Fprintf(a.Writer, "%s %s\n\n", "Incorrect Usage.", err.Error())
@@ -241,7 +243,7 @@ func (a *App) Run(arguments []string) (err error) {
 		beforeErr := a.Before(context)
 		if beforeErr != nil {
 			ShowAppHelp(context)
-			HandleExitCoder(beforeErr)
+			a.handleExitCoder(beforeErr)
 			err = beforeErr
 			return err
 		}
@@ -263,7 +265,7 @@ func (a *App) Run(arguments []string) (err error) {
 	// Run default Action
 	err = HandleAction(a.Action, context)
 
-	HandleExitCoder(err)
+	a.handleExitCoder(err)
 	return err
 }
 
@@ -330,7 +332,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	if err != nil {
 		if a.OnUsageError != nil {
 			err = a.OnUsageError(context, err, true)
-			HandleExitCoder(err)
+			a.handleExitCoder(err)
 			return err
 		}
 		fmt.Fprintf(a.Writer, "%s %s\n\n", "Incorrect Usage.", err.Error())
@@ -352,7 +354,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 		defer func() {
 			afterErr := a.After(context)
 			if afterErr != nil {
-				HandleExitCoder(err)
+				a.handleExitCoder(err)
 				if err != nil {
 					err = NewMultiError(err, afterErr)
 				} else {
@@ -365,7 +367,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	if a.Before != nil {
 		beforeErr := a.Before(context)
 		if beforeErr != nil {
-			HandleExitCoder(beforeErr)
+			a.handleExitCoder(beforeErr)
 			err = beforeErr
 			return err
 		}
@@ -383,7 +385,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	// Run default Action
 	err = HandleAction(a.Action, context)
 
-	HandleExitCoder(err)
+	a.handleExitCoder(err)
 	return err
 }
 
@@ -461,6 +463,14 @@ func (a *App) errWriter() io.Writer {
 func (a *App) appendFlag(flag Flag) {
 	if !a.hasFlag(flag) {
 		a.Flags = append(a.Flags, flag)
+	}
+}
+
+func (a *App) handleExitCoder(err error) {
+	if a.ExitErrHandler != nil {
+		a.ExitErrHandler(err)
+	} else {
+		HandleExitCoder(err)
 	}
 }
 
