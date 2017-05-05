@@ -178,6 +178,38 @@ func TestCommand_OnUsageError_WithWrongFlagValue(t *testing.T) {
 	}
 }
 
+func TestCommand_OnUsageError_WithSubcommand(t *testing.T) {
+	app := NewApp()
+	app.Commands = []Command{
+		{
+			Name: "bar",
+			Subcommands: []Command{
+				{
+					Name: "baz",
+				},
+			},
+			Flags: []Flag{
+				IntFlag{Name: "flag"},
+			},
+			OnUsageError: func(c *Context, err error, _ bool) error {
+				if !strings.HasPrefix(err.Error(), "invalid value \"wrong\"") {
+					t.Errorf("Expect an invalid value error, but got \"%v\"", err)
+				}
+				return errors.New("intercepted: " + err.Error())
+			},
+		},
+	}
+
+	err := app.Run([]string{"foo", "bar", "--flag=wrong"})
+	if err == nil {
+		t.Fatalf("expected to receive error from Run, got none")
+	}
+
+	if !strings.HasPrefix(err.Error(), "intercepted: invalid value") {
+		t.Errorf("Expect an intercepted error, but got \"%v\"", err)
+	}
+}
+
 func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
 	app := NewApp()
 	app.ErrWriter = ioutil.Discard
