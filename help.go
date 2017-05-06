@@ -212,8 +212,8 @@ func printHelp(out io.Writer, templ string, data interface{}) {
 
 func checkVersion(c *Context) bool {
 	found := false
-	if VersionFlag.Name != "" {
-		eachName(VersionFlag.Name, func(name string) {
+	if VersionFlag.GetName() != "" {
+		eachName(VersionFlag.GetName(), func(name string) {
 			if c.GlobalBool(name) || c.Bool(name) {
 				found = true
 			}
@@ -224,8 +224,8 @@ func checkVersion(c *Context) bool {
 
 func checkHelp(c *Context) bool {
 	found := false
-	if HelpFlag.Name != "" {
-		eachName(HelpFlag.Name, func(name string) {
+	if HelpFlag.GetName() != "" {
+		eachName(HelpFlag.GetName(), func(name string) {
 			if c.GlobalBool(name) || c.Bool(name) {
 				found = true
 			}
@@ -260,7 +260,7 @@ func checkShellCompleteFlag(a *App, arguments []string) (bool, []string) {
 	pos := len(arguments) - 1
 	lastArg := arguments[pos]
 
-	if lastArg != "--"+BashCompletionFlag.Name {
+	if lastArg != "--"+BashCompletionFlag.GetName() {
 		return false, arguments
 	}
 
