@@ -59,6 +59,11 @@ type Command struct {
 	// Full name of command for help, defaults to full command name, including parent commands.
 	HelpName        string
 	commandNamePath []string
+
+	// CustomHelpTemplate the text template for the command help topic.
+	// cli.go uses text/template to render templates. You can
+	// render custom help text by setting this variable.
+	CustomHelpTemplate string
 }
 
 type CommandsByName []Command
@@ -250,6 +255,7 @@ func (c Command) startApp(ctx *Context) error {
 
 	// set CommandNotFound
 	app.CommandNotFound = ctx.App.CommandNotFound
+	app.CustomAppHelpTemplate = c.CustomHelpTemplate
 
 	// set the flags and commands
 	app.Commands = c.Subcommands

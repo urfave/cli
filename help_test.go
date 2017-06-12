@@ -3,6 +3,8 @@ package cli
 import (
 	"bytes"
 	"flag"
+	"fmt"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -256,6 +258,49 @@ func TestShowSubcommandHelp_CommandAliases(t *testing.T) {
 	}
 }
 
+func TestShowCommandHelp_Customtemplate(t *testing.T) {
+	app := &App{
+		Commands: []Command{
+			{
+				Name: "frobbly",
+				Action: func(ctx *Context) error {
+					return nil
+				},
+				HelpName: "foo frobbly",
+				CustomHelpTemplate: `NAME:
+   {{.HelpName}} - {{.Usage}}
+
+USAGE:
+   {{.HelpName}} [FLAGS] TARGET [TARGET ...]
+
+FLAGS:
+  {{range .VisibleFlags}}{{.}}
+  {{end}}
+EXAMPLES:
+   1. Frobbly runs with this param locally.
+      $ {{.HelpName}} wobbly
+`,
+			},
+		},
+	}
+
+	output := &bytes.Buffer{}
+	app.Writer = output
+	app.Run([]string{"foo", "help", "frobbly"})
+
+	if strings.Contains(output.String(), "2. Frobbly runs without this param locally.") {
+		t.Errorf("expected output to exclude \"2. Frobbly runs without this param locally.\"; got: %q", output.String())
+	}
+
+	if !strings.Contains(output.String(), "1. Frobbly runs with this param locally.") {
+		t.Errorf("expected output to include \"1. Frobbly runs with this param locally.\"; got: %q", output.String())
+	}
+
+	if !strings.Contains(output.String(), "$ foo frobbly wobbly") {
+		t.Errorf("expected output to include \"$ foo frobbly wobbly\"; got: %q", output.String())
+	}
+}
+
 func TestShowAppHelp_HiddenCommand(t *testing.T) {
 	app := &App{
 		Commands: []Command{
@@ -285,5 +330,80 @@ func TestShowAppHelp_HiddenCommand(t *testing.T) {
 
 	if !strings.Contains(output.String(), "frobbly") {
 		t.Errorf("expected output to include \"frobbly\"; got: %q", output.String())
+	}
+}
+
+func TestShowAppHelp_CustomAppTemplate(t *testing.T) {
+	app := &App{
+		Commands: []Command{
+			{
+				Name: "frobbly",
+				Action: func(ctx *Context) error {
+					return nil
+				},
+			},
+			{
+				Name:   "secretfrob",
+				Hidden: true,
+				Action: func(ctx *Context) error {
+					return nil
+				},
+			},
+		},
+		ExtraInfo: func() map[string]string {
+			platform := fmt.Sprintf("OS: %s | Arch: %s", runtime.GOOS, runtime.GOARCH)
+			goruntime := fmt.Sprintf("Version: %s | CPUs: %d", runtime.Version(), runtime.NumCPU())
+			return map[string]string{
+				"PLATFORM": platform,
+				"RUNTIME":  goruntime,
+			}
+		},
+		CustomAppHelpTemplate: `NAME:
+  {{.Name}} - {{.Usage}}
+
+USAGE:
+  {{.Name}} {{if .VisibleFlags}}[FLAGS] {{end}}COMMAND{{if .VisibleFlags}} [COMMAND FLAGS | -h]{{end}} [ARGUMENTS...]
+
+COMMANDS:
+  {{range .VisibleCommands}}{{join .Names ", "}}{{ "\t" }}{{.Usage}}
+  {{end}}{{if .VisibleFlags}}
+GLOBAL FLAGS:
+  {{range .VisibleFlags}}{{.}}
+  {{end}}{{end}}
+VERSION:
+  2.0.0
+{{"\n"}}{{range $key, $value := ExtraInfo}}
+{{$key}}:
+  {{$value}}
+{{end}}`,
+	}
+
+	output := &bytes.Buffer{}
+	app.Writer = output
+	app.Run([]string{"app", "--help"})
+
+	if strings.Contains(output.String(), "secretfrob") {
+		t.Errorf("expected output to exclude \"secretfrob\"; got: %q", output.String())
+	}
+
+	if !strings.Contains(output.String(), "frobbly") {
+		t.Errorf("expected output to include \"frobbly\"; got: %q", output.String())
+	}
+
+	if !strings.Contains(output.String(), "PLATFORM:") ||
+		!strings.Contains(output.String(), "OS:") ||
+		!strings.Contains(output.String(), "Arch:") {
+		t.Errorf("expected output to include \"PLATFORM:, OS: and Arch:\"; got: %q", output.String())
+	}
+
+	if !strings.Contains(output.String(), "RUNTIME:") ||
+		!strings.Contains(output.String(), "Version:") ||
+		!strings.Contains(output.String(), "CPUs:") {
+		t.Errorf("expected output to include \"RUNTIME:, Version: and CPUs:\"; got: %q", output.String())
+	}
+
+	if !strings.Contains(output.String(), "VERSION:") ||
+		!strings.Contains(output.String(), "2.0.0") {
+		t.Errorf("expected output to include \"VERSION:, 2.0.0\"; got: %q", output.String())
 	}
 }
