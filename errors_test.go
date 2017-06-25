@@ -12,8 +12,10 @@ func TestHandleExitCoder_nil(t *testing.T) {
 	called := false
 
 	OsExiter = func(rc int) {
-		exitCode = rc
-		called = true
+		if !called {
+			exitCode = rc
+			called = true
+		}
 	}
 
 	defer func() { OsExiter = fakeOsExiter }()
@@ -29,8 +31,10 @@ func TestHandleExitCoder_ExitCoder(t *testing.T) {
 	called := false
 
 	OsExiter = func(rc int) {
-		exitCode = rc
-		called = true
+		if !called {
+			exitCode = rc
+			called = true
+		}
 	}
 
 	defer func() { OsExiter = fakeOsExiter }()
@@ -46,64 +50,21 @@ func TestHandleExitCoder_MultiErrorWithExitCoder(t *testing.T) {
 	called := false
 
 	OsExiter = func(rc int) {
-		exitCode = rc
-		called = true
+		if !called {
+			exitCode = rc
+			called = true
+		}
 	}
 
 	defer func() { OsExiter = fakeOsExiter }()
 
 	exitErr := NewExitError("galactic perimeter breach", 9)
-	err := NewMultiError(errors.New("wowsa"), errors.New("egad"), exitErr)
+	exitErr2 := NewExitError("last ExitCoder", 11)
+	err := NewMultiError(errors.New("wowsa"), errors.New("egad"), exitErr, exitErr2)
 	HandleExitCoder(err)
 
-	expect(t, exitCode, 9)
+	expect(t, exitCode, 11)
 	expect(t, called, true)
-}
-
-func TestHandleExitCoder_ErrorWithMessage(t *testing.T) {
-	exitCode := 0
-	called := false
-
-	OsExiter = func(rc int) {
-		exitCode = rc
-		called = true
-	}
-	ErrWriter = &bytes.Buffer{}
-
-	defer func() {
-		OsExiter = fakeOsExiter
-		ErrWriter = fakeErrWriter
-	}()
-
-	err := errors.New("gourd havens")
-	HandleExitCoder(err)
-
-	expect(t, exitCode, 1)
-	expect(t, called, true)
-	expect(t, ErrWriter.(*bytes.Buffer).String(), "gourd havens\n")
-}
-
-func TestHandleExitCoder_ErrorWithoutMessage(t *testing.T) {
-	exitCode := 0
-	called := false
-
-	OsExiter = func(rc int) {
-		exitCode = rc
-		called = true
-	}
-	ErrWriter = &bytes.Buffer{}
-
-	defer func() {
-		OsExiter = fakeOsExiter
-		ErrWriter = fakeErrWriter
-	}()
-
-	err := errors.New("")
-	HandleExitCoder(err)
-
-	expect(t, exitCode, 1)
-	expect(t, called, true)
-	expect(t, ErrWriter.(*bytes.Buffer).String(), "")
 }
 
 // make a stub to not import pkg/errors
@@ -123,7 +84,9 @@ func TestHandleExitCoder_ErrorWithFormat(t *testing.T) {
 	called := false
 
 	OsExiter = func(rc int) {
-		called = true
+		if !called {
+			called = true
+		}
 	}
 	ErrWriter = &bytes.Buffer{}
 
@@ -132,7 +95,7 @@ func TestHandleExitCoder_ErrorWithFormat(t *testing.T) {
 		ErrWriter = fakeErrWriter
 	}()
 
-	err := NewErrorWithFormat("I am formatted")
+	err := NewExitError(NewErrorWithFormat("I am formatted"), 1)
 	HandleExitCoder(err)
 
 	expect(t, called, true)
@@ -143,7 +106,9 @@ func TestHandleExitCoder_MultiErrorWithFormat(t *testing.T) {
 	called := false
 
 	OsExiter = func(rc int) {
-		called = true
+		if !called {
+			called = true
+		}
 	}
 	ErrWriter = &bytes.Buffer{}
 
