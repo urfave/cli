@@ -29,4 +29,4 @@ type FlagStringFunc func(Flag) string
 
 // ExitErrHandlerFunc is executed if provided in order to handle ExitError values
 // returned by Actions and Before/After functions.
-type ExitErrHandlerFunc func(error)
+type ExitErrHandlerFunc func(context *Context, error)
