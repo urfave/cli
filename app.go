@@ -468,7 +468,7 @@ func (a *App) appendFlag(flag Flag) {
 	}
 }
 
-func (a *App) handleExitCoder(context *Context, error) {
+func (a *App) handleExitCoder(context *Context, err error) {
 	if a.ExitErrHandler != nil {
 		a.ExitErrHandler(context, err)
 	} else {
