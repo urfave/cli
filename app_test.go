@@ -1661,6 +1661,42 @@ func TestHandleAction_WithInvalidFuncReturnSignature(t *testing.T) {
 	}
 }
 
+func TestHandleExitCoder_Default(t *testing.T) {
+	app := NewApp()
+	fs, err := flagSet(app.Name, app.Flags)
+	if err != nil {
+		t.Errorf("error creating FlagSet: %s", err)
+	}
+
+	ctx := NewContext(app, fs, nil)
+	app.handleExitCoder(ctx, errors.New("Default Behavior Error"))
+
+	output := fakeErrWriter.String()
+	if !strings.Contains(output, "Default") {
+		t.Fatalf("Expected Default Behavior from Error Handler but got: %s", output)
+	}
+}
+
+func TestHandleExitCoder_Custom(t *testing.T) {
+	app := NewApp()
+	fs, err := flagSet(app.Name, app.Flags)
+	if err != nil {
+		t.Errorf("error creating FlagSet: %s", err)
+	}
+
+	app.ExitErrHandler = func(_ *Context, _ error) {
+		fmt.Fprintln(ErrWriter, "I'm a Custom error handler, I print what I want!")
+	}
+
+	ctx := NewContext(app, fs, nil)
+	app.handleExitCoder(ctx, errors.New("Default Behavior Error"))
+
+	output := fakeErrWriter.String()
+	if !strings.Contains(output, "Custom") {
+		t.Fatalf("Expected Custom Behavior from Error Handler but got: %s", output)
+	}
+}
+
 func TestHandleAction_WithUnknownPanic(t *testing.T) {
 	defer func() { refute(t, recover(), nil) }()
 
