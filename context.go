@@ -244,6 +244,31 @@ func copyFlag(name string, ff *flag.Flag, set *flag.FlagSet) {
 	}
 }
 
+func flagsAreIdentical(names []string, set *flag.FlagSet) bool {
+	// fix for situations such as gitlab.com/ayufan/golang-cli-helpers; in that
+	// case, the different names point to the same struct field value so
+	// copyFlag breaks things
+
+	if len(names) == 0 {
+		return false
+	}
+
+	f := set.Lookup(strings.Trim(names[0], " "))
+	if f == nil {
+		return false
+	}
+
+	for i := 1; i < len(names); i++ {
+		g := set.Lookup(strings.Trim(names[i], " "))
+
+		if f.Value.String() != g.Value.String() {
+			return false
+		}
+	}
+
+	return true
+}
+
 func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
 	visited := make(map[string]bool)
 	set.Visit(func(f *flag.Flag) {
@@ -265,6 +290,9 @@ func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
 			}
 		}
 		if ff == nil {
+			continue
+		}
+		if flagsAreIdentical(parts, set) {
 			continue
 		}
 		for _, name := range parts {
