@@ -63,7 +63,7 @@ func TestStringSliceApplyInputSourceValue(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
 		Flag:     NewStringSliceFlag(&cli.StringSliceFlag{Name: "test"}),
 		FlagName: "test",
-		MapValue: []string{"hello", "world"},
+		MapValue: []interface{}{"hello", "world"},
 	})
 	expect(t, c.StringSlice("test"), []string{"hello", "world"})
 }
