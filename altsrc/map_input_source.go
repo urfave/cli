@@ -131,11 +131,20 @@ func (fsm *MapInputSource) String(name string) (string, error) {
 func (fsm *MapInputSource) StringSlice(name string) ([]string, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if exists {
-		otherValue, isType := otherGenericValue.([]string)
-		if !isType {
+		otherValue, ok := otherGenericValue.([]interface{})
+		if !ok {
 			return nil, incorrectTypeForFlagError(name, "[]string", otherGenericValue)
 		}
-		return otherValue, nil
+		value := make([]string, len(otherValue))
+		for i, v := range otherValue {
+			var ok bool
+			value[i], ok = v.(string)
+			if !ok {
+				return nil, incorrectTypeForFlagError(name, "[]string", otherGenericValue)
+			}
+		}
+
+		return value, nil
 	}
 	nestedGenericValue, exists := nestedVal(name, fsm.valueMap)
 	if exists {
