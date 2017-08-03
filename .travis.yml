@@ -1,27 +1,18 @@
 language: go
-
 sudo: false
+dist: trusty
 
 cache:
   directories:
   - node_modules
 
-go:
-- 1.6.x
-- 1.7.x
-- 1.8.x
-- master
+go: 1.8.x
 
 matrix:
-  allow_failures:
-  - go: master
   include:
-  - go: 1.6.x
-    os: osx
-  - go: 1.7.x
-    os: osx
   - go: 1.8.x
     os: osx
+    osx_image: xcode8.3
 
 before_script:
 - go get github.com/urfave/gfmrun/... || true
