@@ -492,23 +492,22 @@ func main() {
         Usage: "Load configuration from `FILE`",
       },
     },
-  }
-
-  app.Commands = []cli.Command{
-    {
-      Name:    "complete",
-      Aliases: []string{"c"},
-      Usage:   "complete a task on the list",
-      Action:  func(c *cli.Context) error {
-        return nil
+    Commands: []*cli.Command{
+      {
+        Name:    "complete",
+        Aliases: []string{"c"},
+        Usage:   "complete a task on the list",
+        Action:  func(c *cli.Context) error {
+          return nil
+        },
       },
-    },
-    {
-      Name:    "add",
-      Aliases: []string{"a"},
-      Usage:   "add a task to the list",
-      Action:  func(c *cli.Context) error {
-        return nil
+      {
+        Name:    "add",
+        Aliases: []string{"a"},
+        Usage:   "add a task to the list",
+        Action:  func(c *cli.Context) error {
+          return nil
+        },
       },
     },
   }

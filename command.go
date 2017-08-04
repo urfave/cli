@@ -56,7 +56,7 @@ type Command struct {
 	CustomHelpTemplate string
 }
 
-type CommandsByName []Command
+type CommandsByName []*Command
 
 func (c CommandsByName) Len() int {
 	return len(c)
