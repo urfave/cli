@@ -1520,6 +1520,63 @@ func TestApp_OnUsageError_WithWrongFlagValue_ForSubcommand(t *testing.T) {
 	}
 }
 
+// A custom flag that conforms to the relevant interfaces, but has none of the
+// fields that the other flag types do.
+type customBoolFlag struct {
+	Nombre string
+}
+
+// Don't use the normal FlagStringer
+func (c *customBoolFlag) String() string {
+	return "***" + c.Nombre + "***"
+}
+
+func (c *customBoolFlag) GetName() string {
+	return c.Nombre
+}
+
+func (c *customBoolFlag) Apply(set *flag.FlagSet) {
+	set.String(c.Nombre, c.Nombre, "")
+}
+
+func TestCustomFlagsUnused(t *testing.T) {
+	app := NewApp()
+	app.Flags = []Flag{&customBoolFlag{"custom"}}
+
+	err := app.Run([]string{"foo"})
+	if err != nil {
+		t.Errorf("Run returned unexpected error: %v", err)
+	}
+}
+
+func TestCustomFlagsUsed(t *testing.T) {
+	app := NewApp()
+	app.Flags = []Flag{&customBoolFlag{"custom"}}
+
+	err := app.Run([]string{"foo", "--custom=bar"})
+	if err != nil {
+		t.Errorf("Run returned unexpected error: %v", err)
+	}
+}
+
+func TestCustomHelpVersionFlags(t *testing.T) {
+	app := NewApp()
+
+	// Be sure to reset the global flags
+	defer func(helpFlag Flag, versionFlag Flag) {
+		HelpFlag = helpFlag
+		VersionFlag = versionFlag
+	}(HelpFlag, VersionFlag)
+
+	HelpFlag = &customBoolFlag{"help-custom"}
+	VersionFlag = &customBoolFlag{"version-custom"}
+
+	err := app.Run([]string{"foo", "--help-custom=bar"})
+	if err != nil {
+		t.Errorf("Run returned unexpected error: %v", err)
+	}
+}
+
 func TestHandleAction_WithNonFuncAction(t *testing.T) {
 	app := NewApp()
 	app.Action = 42
@@ -1642,7 +1699,7 @@ func TestShellCompletionForIncompleteFlags(t *testing.T) {
 
 		for _, flag := range ctx.App.Flags {
 			for _, name := range strings.Split(flag.GetName(), ",") {
-				if name == BashCompletionFlag.Name {
+				if name == BashCompletionFlag.GetName() {
 					continue
 				}
 
@@ -1659,7 +1716,7 @@ func TestShellCompletionForIncompleteFlags(t *testing.T) {
 	app.Action = func(ctx *Context) error {
 		return fmt.Errorf("should not get here")
 	}
-	err := app.Run([]string{"", "--test-completion", "--" + BashCompletionFlag.Name})
+	err := app.Run([]string{"", "--test-completion", "--" + BashCompletionFlag.GetName()})
 	if err != nil {
 		t.Errorf("app should not return an error: %s", err)
 	}
