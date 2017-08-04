@@ -11,8 +11,6 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -276,10 +274,10 @@ func TestApp_Run(t *testing.T) {
 	}
 
 	err := app.Run([]string{"command", "foo"})
-	assert.Nil(t, err)
+	expect(t, err, nil)
 	err = app.Run([]string{"command", "bar"})
-	assert.Nil(t, err)
-	assert.Equal(t, "foobar", s)
+	expect(t, err, nil)
+	expect(t, s, "foobar")
 }
 
 var commandAppTests = []struct {
@@ -333,8 +331,8 @@ func TestApp_CommandWithArgBeforeFlags(t *testing.T) {
 	}
 	app.Run([]string{"", "cmd", "my-arg", "--option", "my-option"})
 
-	assert.Equal(t, parsedOption, "my-option")
-	assert.Equal(t, firstArg, "my-arg")
+	expect(t, parsedOption, "my-option")
+	expect(t, firstArg, "my-arg")
 }
 
 func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
