@@ -17,6 +17,7 @@ type BoolFlag struct {
 	Hidden      bool
 	Value       bool
 	DefaultText string
+
 	Destination *bool
 }
 
@@ -61,6 +62,7 @@ type DurationFlag struct {
 	Hidden      bool
 	Value       time.Duration
 	DefaultText string
+
 	Destination *time.Duration
 }
 
@@ -105,6 +107,7 @@ type Float64Flag struct {
 	Hidden      bool
 	Value       float64
 	DefaultText string
+
 	Destination *float64
 }
 
@@ -192,6 +195,7 @@ type Int64Flag struct {
 	Hidden      bool
 	Value       int64
 	DefaultText string
+
 	Destination *int64
 }
 
@@ -236,6 +240,7 @@ type IntFlag struct {
 	Hidden      bool
 	Value       int
 	DefaultText string
+
 	Destination *int
 }
 
@@ -409,6 +414,7 @@ type StringFlag struct {
 	Hidden      bool
 	Value       string
 	DefaultText string
+
 	Destination *string
 }
 
@@ -496,6 +502,7 @@ type Uint64Flag struct {
 	Hidden      bool
 	Value       uint64
 	DefaultText string
+
 	Destination *uint64
 }
 
@@ -540,6 +547,7 @@ type UintFlag struct {
 	Hidden      bool
 	Value       uint
 	DefaultText string
+
 	Destination *uint
 }
 

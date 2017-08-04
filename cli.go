@@ -12,6 +12,7 @@
 //			 Usage: "say a greeting",
 //			 Action: func(c *cli.Context) error {
 //				 println("Greetings")
+//         return nil
 //			 },
 //		 }
 //

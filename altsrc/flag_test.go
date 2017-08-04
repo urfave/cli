@@ -63,7 +63,7 @@ func TestStringSliceApplyInputSourceValue(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
 		Flag:     NewStringSliceFlag(&cli.StringSliceFlag{Name: "test"}),
 		FlagName: "test",
-		MapValue: []string{"hello", "world"},
+		MapValue: []interface{}{"hello", "world"},
 	})
 	expect(t, c.StringSlice("test"), []string{"hello", "world"})
 }
@@ -72,7 +72,7 @@ func TestStringSliceApplyInputSourceMethodContextSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
 		Flag:               NewStringSliceFlag(&cli.StringSliceFlag{Name: "test"}),
 		FlagName:           "test",
-		MapValue:           []string{"hello", "world"},
+		MapValue:           []interface{}{"hello", "world"},
 		ContextValueString: "ohno",
 	})
 	expect(t, c.StringSlice("test"), []string{"ohno"})
@@ -82,7 +82,7 @@ func TestStringSliceApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
 		Flag:        NewStringSliceFlag(&cli.StringSliceFlag{Name: "test", EnvVars: []string{"TEST"}}),
 		FlagName:    "test",
-		MapValue:    []string{"hello", "world"},
+		MapValue:    []interface{}{"hello", "world"},
 		EnvVarName:  "TEST",
 		EnvVarValue: "oh,no",
 	})
@@ -93,7 +93,7 @@ func TestIntSliceApplyInputSourceValue(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
 		Flag:     NewIntSliceFlag(&cli.IntSliceFlag{Name: "test"}),
 		FlagName: "test",
-		MapValue: []int{1, 2},
+		MapValue: []interface{}{1, 2},
 	})
 	expect(t, c.IntSlice("test"), []int{1, 2})
 }
@@ -102,7 +102,7 @@ func TestIntSliceApplyInputSourceMethodContextSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
 		Flag:               NewIntSliceFlag(&cli.IntSliceFlag{Name: "test"}),
 		FlagName:           "test",
-		MapValue:           []int{1, 2},
+		MapValue:           []interface{}{1, 2},
 		ContextValueString: "3",
 	})
 	expect(t, c.IntSlice("test"), []int{3})
@@ -112,7 +112,7 @@ func TestIntSliceApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
 		Flag:        NewIntSliceFlag(&cli.IntSliceFlag{Name: "test", EnvVars: []string{"TEST"}}),
 		FlagName:    "test",
-		MapValue:    []int{1, 2},
+		MapValue:    []interface{}{1, 2},
 		EnvVarName:  "TEST",
 		EnvVarValue: "3,4",
 	})

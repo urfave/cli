@@ -104,7 +104,9 @@ def main(sysargs=sys.argv[:]):
 def _generate_flag_types(writefunc, output_go, input_json):
     types = json.load(input_json)
 
-    tmp = tempfile.NamedTemporaryFile(suffix='.go', delete=False)
+    tmp = tempfile.NamedTemporaryFile(
+        suffix='.go', mode='w', delete=False, encoding='utf-8'
+    )
     writefunc(tmp, types)
     tmp.close()
 
@@ -222,11 +224,18 @@ def _write_altsrc_flag_types(outfile, types):
             f.set = set
             f.{name}Flag.Apply(set)
         }}
+
+        // ApplyWithError saves the flagSet for later usage calls, then calls the
+        // wrapped {name}Flag.ApplyWithError
+        func (f *{name}Flag) ApplyWithError(set *flag.FlagSet) error {{
+            f.set = set
+            return f.{name}Flag.ApplyWithError(set)
+        }}
         """.format(**typedef))
 
 
 def _fwrite(outfile, text):
-    print(textwrap.dedent(text), end='', file=outfile)
+    print(textwrap.dedent(text), end=None, file=outfile)
 
 
 _WRITEFUNCS = {

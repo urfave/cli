@@ -166,9 +166,10 @@ func TestContext_IsSet_fromEnv(t *testing.T) {
 		globalTimeoutIsSet, TIsSet, globalNoEnvVarIsSet, NIsSet bool
 	)
 
-	os.Clearenv()
+	clearenv()
 	os.Setenv("GLOBAL_APP_TIMEOUT_SECONDS", "15.5")
 	os.Setenv("APP_TIMEOUT_SECONDS", "15.5")
+	os.Setenv("APP_PASSWORD", "")
 	a := App{
 		Flags: []Flag{
 			&Float64Flag{
@@ -216,8 +217,17 @@ func TestContext_IsSet_fromEnv(t *testing.T) {
 	expect(t, NIsSet, false)
 	expect(t, timeoutIsSet, true)
 	expect(t, tIsSet, true)
+	expect(t, passwordIsSet, true)
+	expect(t, pIsSet, true)
 	expect(t, noEnvVarIsSet, false)
 	expect(t, nIsSet, false)
+
+	os.Setenv("APP_UNPARSABLE", "foobar")
+	if err := a.Run([]string{"run"}); err != nil {
+		t.Logf("error running Run(): %+v", err)
+	}
+	expect(t, unparsableIsSet, false)
+	expect(t, uIsSet, false)
 }
 
 func TestContext_NumFlags(t *testing.T) {
@@ -238,8 +248,10 @@ func TestContext_Set(t *testing.T) {
 	set.Int("int", 5, "an int")
 	c := NewContext(nil, set, nil)
 
+	expect(t, c.IsSet("int"), false)
 	c.Set("int", "1")
 	expect(t, c.Int("int"), 1)
+	expect(t, c.IsSet("int"), true)
 }
 
 func TestContext_LocalFlagNames(t *testing.T) {
