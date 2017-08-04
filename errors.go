@@ -66,7 +66,7 @@ type exitError struct {
 
 // Exit wraps a message and exit code into an ExitCoder suitable for handling by
 // HandleExitCoder
-func Exit(message string, exitCode int) ExitCoder {
+func Exit(message interface{}, exitCode int) ExitCoder {
 	return &exitError{
 		exitCode: exitCode,
 		message:  message,
@@ -74,7 +74,7 @@ func Exit(message string, exitCode int) ExitCoder {
 }
 
 func (ee *exitError) Error() string {
-	return ee.message
+	return fmt.Sprintf("%v", ee.message)
 }
 
 func (ee *exitError) ExitCode() int {
@@ -112,7 +112,7 @@ func HandleExitCoder(err error) {
 
 func handleMultiError(multiErr MultiError) int {
 	code := 1
-	for _, merr := range multiErr.Errors {
+	for _, merr := range multiErr.Errors() {
 		if multiErr2, ok := merr.(MultiError); ok {
 			code = handleMultiError(multiErr2)
 		} else {

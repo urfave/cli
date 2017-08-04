@@ -11,6 +11,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -201,14 +203,15 @@ func ExampleApp_Run_noAction() {
 }
 
 func ExampleApp_Run_subcommandNoAction() {
-	app := App{}
-	app.Name = "greet"
-	app.Commands = []Command{
-		{
-			Name:        "describeit",
-			Aliases:     []string{"d"},
-			Usage:       "use it to see a description",
-			Description: "This is how we describe describeit the function",
+	app := &App{
+		Name: "greet",
+		Commands: []*Command{
+			{
+				Name:        "describeit",
+				Aliases:     []string{"d"},
+				Usage:       "use it to see a description",
+				Description: "This is how we describe describeit the function",
+			},
 		},
 	}
 	app.Run([]string{"greet", "describeit"})
@@ -273,10 +276,10 @@ func TestApp_Run(t *testing.T) {
 	}
 
 	err := app.Run([]string{"command", "foo"})
-	expect(t, err, nil)
+	assert.Nil(t, err)
 	err = app.Run([]string{"command", "bar"})
-	expect(t, err, nil)
-	expect(t, s, "foobar")
+	assert.Nil(t, err)
+	assert.Equal(t, "foobar", s)
 }
 
 var commandAppTests = []struct {
@@ -292,12 +295,11 @@ var commandAppTests = []struct {
 }
 
 func TestApp_Command(t *testing.T) {
-	app := &App{}
-	fooCommand := &Command{Name: "foobar", Aliases: []string{"f"}}
-	batCommand := &Command{Name: "batbaz", Aliases: []string{"b"}}
-	app.Commands = []*Command{
-		fooCommand,
-		batCommand,
+	app := &App{
+		Commands: []*Command{
+			{Name: "foobar", Aliases: []string{"f"}},
+			{Name: "batbaz", Aliases: []string{"b"}},
+		},
 	}
 
 	for _, test := range commandAppTests {
@@ -314,24 +316,25 @@ func TestApp_Setup_defaultsWriter(t *testing.T) {
 func TestApp_CommandWithArgBeforeFlags(t *testing.T) {
 	var parsedOption, firstArg string
 
-	app := NewApp()
-	command := Command{
-		Name: "cmd",
-		Flags: []Flag{
-			StringFlag{Name: "option", Value: "", Usage: "some option"},
-		},
-		Action: func(c *Context) error {
-			parsedOption = c.String("option")
-			firstArg = c.Args().First()
-			return nil
+	app := &App{
+		Commands: []*Command{
+			{
+				Name: "cmd",
+				Flags: []Flag{
+					&StringFlag{Name: "option", Value: "", Usage: "some option"},
+				},
+				Action: func(c *Context) error {
+					parsedOption = c.String("option")
+					firstArg = c.Args().First()
+					return nil
+				},
+			},
 		},
 	}
-	app.Commands = []Command{command}
-
 	app.Run([]string{"", "cmd", "my-arg", "--option", "my-option"})
 
-	expect(t, parsedOption, "my-option")
-	expect(t, firstArg, "my-arg")
+	assert.Equal(t, parsedOption, "my-option")
+	assert.Equal(t, firstArg, "my-arg")
 }
 
 func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
@@ -384,19 +387,21 @@ func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
 	var parsedOption string
 	var args Args
 
-	app := &App{}
-	command := &Command{
-		Name: "cmd",
-		Flags: []Flag{
-			&StringFlag{Name: "option", Value: "", Usage: "some option"},
-		},
-		Action: func(c *Context) error {
-			parsedOption = c.String("option")
-			args = c.Args()
-			return nil
+	app := &App{
+		Commands: []*Command{
+			{
+				Name: "cmd",
+				Flags: []Flag{
+					&StringFlag{Name: "option", Value: "", Usage: "some option"},
+				},
+				Action: func(c *Context) error {
+					parsedOption = c.String("option")
+					args = c.Args()
+					return nil
+				},
+			},
 		},
 	}
-	app.Commands = []*Command{command}
 
 	app.Run([]string{"", "cmd", "--option", "my-option", "my-arg", "--", "--notARealFlag"})
 
@@ -409,15 +414,17 @@ func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
 func TestApp_CommandWithDash(t *testing.T) {
 	var args Args
 
-	app := &App{}
-	command := &Command{
-		Name: "cmd",
-		Action: func(c *Context) error {
-			args = c.Args()
-			return nil
+	app := &App{
+		Commands: []*Command{
+			{
+				Name: "cmd",
+				Action: func(c *Context) error {
+					args = c.Args()
+					return nil
+				},
+			},
 		},
 	}
-	app.Commands = []*Command{command}
 
 	app.Run([]string{"", "cmd", "my-arg", "-"})
 
@@ -428,15 +435,17 @@ func TestApp_CommandWithDash(t *testing.T) {
 func TestApp_CommandWithNoFlagBeforeTerminator(t *testing.T) {
 	var args Args
 
-	app := &App{}
-	command := &Command{
-		Name: "cmd",
-		Action: func(c *Context) error {
-			args = c.Args()
-			return nil
+	app := &App{
+		Commands: []*Command{
+			{
+				Name: "cmd",
+				Action: func(c *Context) error {
+					args = c.Args()
+					return nil
+				},
+			},
 		},
 	}
-	app.Commands = []*Command{command}
 
 	app.Run([]string{"", "cmd", "my-arg", "--", "notAFlagAtAll"})
 
@@ -518,22 +527,24 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 	var parsedIntSlice []int
 	var parsedStringSlice []string
 
-	app := &App{}
-	command := &Command{
-		Name: "cmd",
-		Flags: []Flag{
-			&IntSliceFlag{Name: "p", Value: NewIntSlice(), Usage: "set one or more ip addr"},
-			&StringSliceFlag{Name: "ip", Value: NewStringSlice(), Usage: "set one or more ports to open"},
-		},
-		Action: func(c *Context) error {
-			parsedIntSlice = c.IntSlice("p")
-			parsedStringSlice = c.StringSlice("ip")
-			parsedOption = c.String("option")
-			firstArg = c.Args().First()
-			return nil
+	app := &App{
+		Commands: []*Command{
+			{
+				Name: "cmd",
+				Flags: []Flag{
+					&IntSliceFlag{Name: "p", Value: NewIntSlice(), Usage: "set one or more ip addr"},
+					&StringSliceFlag{Name: "ip", Value: NewStringSlice(), Usage: "set one or more ports to open"},
+				},
+				Action: func(c *Context) error {
+					parsedIntSlice = c.IntSlice("p")
+					parsedStringSlice = c.StringSlice("ip")
+					parsedOption = c.String("option")
+					firstArg = c.Args().First()
+					return nil
+				},
+			},
 		},
 	}
-	app.Commands = []*Command{command}
 
 	app.Run([]string{"", "cmd", "-p", "22", "-p", "80", "-ip", "8.8.8.8", "-ip", "8.8.4.4", "my-arg"})
 
@@ -576,20 +587,22 @@ func TestApp_ParseSliceFlagsWithMissingValue(t *testing.T) {
 	var parsedIntSlice []int
 	var parsedStringSlice []string
 
-	app := &App{}
-	command := &Command{
-		Name: "cmd",
-		Flags: []Flag{
-			&IntSliceFlag{Name: "a", Usage: "set numbers"},
-			&StringSliceFlag{Name: "str", Usage: "set strings"},
-		},
-		Action: func(c *Context) error {
-			parsedIntSlice = c.IntSlice("a")
-			parsedStringSlice = c.StringSlice("str")
-			return nil
+	app := &App{
+		Commands: []*Command{
+			{
+				Name: "cmd",
+				Flags: []Flag{
+					&IntSliceFlag{Name: "a", Usage: "set numbers"},
+					&StringSliceFlag{Name: "str", Usage: "set strings"},
+				},
+				Action: func(c *Context) error {
+					parsedIntSlice = c.IntSlice("a")
+					parsedStringSlice = c.StringSlice("str")
+					return nil
+				},
+			},
 		},
 	}
-	app.Commands = []*Command{command}
 
 	app.Run([]string{"", "cmd", "-a", "2", "-str", "A", "my-arg"})
 
@@ -1569,8 +1582,8 @@ func (c *customBoolFlag) String() string {
 	return "***" + c.Nombre + "***"
 }
 
-func (c *customBoolFlag) GetName() string {
-	return c.Nombre
+func (c *customBoolFlag) Names() []string {
+	return []string{c.Nombre}
 }
 
 func (c *customBoolFlag) Apply(set *flag.FlagSet) {
@@ -1578,8 +1591,9 @@ func (c *customBoolFlag) Apply(set *flag.FlagSet) {
 }
 
 func TestCustomFlagsUnused(t *testing.T) {
-	app := NewApp()
-	app.Flags = []Flag{&customBoolFlag{"custom"}}
+	app := &App{
+		Flags: []Flag{&customBoolFlag{"custom"}},
+	}
 
 	err := app.Run([]string{"foo"})
 	if err != nil {
@@ -1588,8 +1602,9 @@ func TestCustomFlagsUnused(t *testing.T) {
 }
 
 func TestCustomFlagsUsed(t *testing.T) {
-	app := NewApp()
-	app.Flags = []Flag{&customBoolFlag{"custom"}}
+	app := &App{
+		Flags: []Flag{&customBoolFlag{"custom"}},
+	}
 
 	err := app.Run([]string{"foo", "--custom=bar"})
 	if err != nil {
@@ -1598,12 +1613,12 @@ func TestCustomFlagsUsed(t *testing.T) {
 }
 
 func TestCustomHelpVersionFlags(t *testing.T) {
-	app := NewApp()
+	app := &App{}
 
 	// Be sure to reset the global flags
 	defer func(helpFlag Flag, versionFlag Flag) {
-		HelpFlag = helpFlag
-		VersionFlag = versionFlag
+		HelpFlag = helpFlag.(*BoolFlag)
+		VersionFlag = versionFlag.(*BoolFlag)
 	}(HelpFlag, VersionFlag)
 
 	HelpFlag = &customBoolFlag{"help-custom"}
@@ -1615,166 +1630,47 @@ func TestCustomHelpVersionFlags(t *testing.T) {
 	}
 }
 
-func TestHandleAction_WithNonFuncAction(t *testing.T) {
-	app := NewApp()
-	app.Action = 42
-	fs, err := flagSet(app.Name, app.Flags)
-	if err != nil {
-		t.Errorf("error creating FlagSet: %s", err)
-	}
-	err = HandleAction(app.Action, NewContext(app, fs, nil))
-
-	if err == nil {
-		t.Fatalf("expected to receive error from Run, got none")
-	}
-
-	exitErr, ok := err.(*ExitError)
-
-	if !ok {
-		t.Fatalf("expected to receive a *ExitError")
-	}
-
-	if !strings.HasPrefix(exitErr.Error(), "ERROR invalid Action type.") {
-		t.Fatalf("expected an unknown Action error, but got: %v", exitErr.Error())
-	}
-
-	if exitErr.ExitCode() != 2 {
-		t.Fatalf("expected error exit code to be 2, but got: %v", exitErr.ExitCode())
-	}
-}
-
-func TestHandleAction_WithInvalidFuncSignature(t *testing.T) {
-	app := NewApp()
-	app.Action = func() string { return "" }
-	fs, err := flagSet(app.Name, app.Flags)
-	if err != nil {
-		t.Errorf("error creating FlagSet: %s", err)
-	}
-	err = HandleAction(app.Action, NewContext(app, fs, nil))
-
-	if err == nil {
-		t.Fatalf("expected to receive error from Run, got none")
-	}
-
-	exitErr, ok := err.(*ExitError)
-
-	if !ok {
-		t.Fatalf("expected to receive a *ExitError")
-	}
-
-	if !strings.HasPrefix(exitErr.Error(), "ERROR invalid Action type") {
-		t.Fatalf("expected an unknown Action error, but got: %v", exitErr.Error())
-	}
-
-	if exitErr.ExitCode() != 2 {
-		t.Fatalf("expected error exit code to be 2, but got: %v", exitErr.ExitCode())
-	}
-}
-
-func TestHandleAction_WithInvalidFuncReturnSignature(t *testing.T) {
-	app := NewApp()
-	app.Action = func(_ *Context) (int, error) { return 0, nil }
-	fs, err := flagSet(app.Name, app.Flags)
-	if err != nil {
-		t.Errorf("error creating FlagSet: %s", err)
-	}
-	err = HandleAction(app.Action, NewContext(app, fs, nil))
-
-	if err == nil {
-		t.Fatalf("expected to receive error from Run, got none")
-	}
-
-	exitErr, ok := err.(*ExitError)
-
-	if !ok {
-		t.Fatalf("expected to receive a *ExitError")
-	}
-
-	if !strings.HasPrefix(exitErr.Error(), "ERROR invalid Action type") {
-		t.Fatalf("expected an invalid Action signature error, but got: %v", exitErr.Error())
-	}
-
-	if exitErr.ExitCode() != 2 {
-		t.Fatalf("expected error exit code to be 2, but got: %v", exitErr.ExitCode())
-	}
-}
-
-func TestHandleAction_WithUnknownPanic(t *testing.T) {
-	defer func() { refute(t, recover(), nil) }()
-
-	var fn ActionFunc
-
-	app := NewApp()
-	app.Action = func(ctx *Context) error {
-		fn(ctx)
-		return nil
-	}
-	fs, err := flagSet(app.Name, app.Flags)
-	if err != nil {
-		t.Errorf("error creating FlagSet: %s", err)
-	}
-	HandleAction(app.Action, NewContext(app, fs, nil))
-}
-
 func TestShellCompletionForIncompleteFlags(t *testing.T) {
-	app := NewApp()
-	app.Flags = []Flag{
-		IntFlag{
-			Name: "test-completion",
+	app := &App{
+		Flags: []Flag{
+			&IntFlag{
+				Name: "test-completion",
+			},
 		},
-	}
-	app.EnableBashCompletion = true
-	app.BashComplete = func(ctx *Context) {
-		for _, command := range ctx.App.Commands {
-			if command.Hidden {
-				continue
-			}
-
-			for _, name := range command.Names() {
-				fmt.Fprintln(ctx.App.Writer, name)
-			}
-		}
-
-		for _, flag := range ctx.App.Flags {
-			for _, name := range strings.Split(flag.GetName(), ",") {
-				if name == BashCompletionFlag.GetName() {
+		EnableShellCompletion: true,
+		ShellComplete: func(ctx *Context) {
+			for _, command := range ctx.App.Commands {
+				if command.Hidden {
 					continue
 				}
 
-				switch name = strings.TrimSpace(name); len(name) {
-				case 0:
-				case 1:
-					fmt.Fprintln(ctx.App.Writer, "-"+name)
-				default:
-					fmt.Fprintln(ctx.App.Writer, "--"+name)
+				for _, name := range command.Names() {
+					fmt.Fprintln(ctx.App.Writer, name)
 				}
 			}
-		}
+
+			for _, flag := range ctx.App.Flags {
+				for _, name := range flag.Names() {
+					if name == genCompName() {
+						continue
+					}
+
+					switch name = strings.TrimSpace(name); len(name) {
+					case 0:
+					case 1:
+						fmt.Fprintln(ctx.App.Writer, "-"+name)
+					default:
+						fmt.Fprintln(ctx.App.Writer, "--"+name)
+					}
+				}
+			}
+		},
+		Action: func(ctx *Context) error {
+			return fmt.Errorf("should not get here")
+		},
 	}
-	app.Action = func(ctx *Context) error {
-		return fmt.Errorf("should not get here")
-	}
-	err := app.Run([]string{"", "--test-completion", "--" + BashCompletionFlag.GetName()})
+	err := app.Run([]string{"", "--test-completion", "--" + genCompName()})
 	if err != nil {
 		t.Errorf("app should not return an error: %s", err)
-	}
-}
-
-func TestHandleActionActuallyWorksWithActions(t *testing.T) {
-	var f ActionFunc
-	called := false
-	f = func(c *Context) error {
-		called = true
-		return nil
-	}
-
-	err := HandleAction(f, nil)
-
-	if err != nil {
-		t.Errorf("Should not have errored: %v", err)
-	}
-
-	if !called {
-		t.Errorf("Function was not called")
 	}
 }

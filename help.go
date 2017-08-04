@@ -266,11 +266,9 @@ func printHelp(out io.Writer, templ string, data interface{}) {
 
 func checkVersion(c *Context) bool {
 	found := false
-	if VersionFlag.Name != "" {
-		for _, name := range VersionFlag.Names() {
-			if c.Bool(name) {
-				found = true
-			}
+	for _, name := range VersionFlag.Names() {
+		if c.Bool(name) {
+			found = true
 		}
 	}
 	return found
@@ -278,11 +276,9 @@ func checkVersion(c *Context) bool {
 
 func checkHelp(c *Context) bool {
 	found := false
-	if HelpFlag.Name != "" {
-		for _, name := range HelpFlag.Names() {
-			if c.Bool(name) {
-				found = true
-			}
+	for _, name := range HelpFlag.Names() {
+		if c.Bool(name) {
+			found = true
 		}
 	}
 	return found
@@ -307,14 +303,14 @@ func checkSubcommandHelp(c *Context) bool {
 }
 
 func checkShellCompleteFlag(a *App, arguments []string) (bool, []string) {
-	if !a.EnableBashCompletion {
+	if !a.EnableShellCompletion {
 		return false, arguments
 	}
 
 	pos := len(arguments) - 1
 	lastArg := arguments[pos]
 
-	if lastArg != "--"+BashCompletionFlag.GetName() {
+	if lastArg != "--"+genCompName() {
 		return false, arguments
 	}
 
@@ -322,7 +318,7 @@ func checkShellCompleteFlag(a *App, arguments []string) (bool, []string) {
 }
 
 func checkCompletions(c *Context) bool {
-	if !c.Bool(GenerateCompletionFlag.Name) && !c.App.EnableShellCompletion {
+	if !c.Bool(genCompName()) && !c.App.EnableShellCompletion {
 		return false
 	}
 
@@ -339,7 +335,7 @@ func checkCompletions(c *Context) bool {
 }
 
 func checkCommandCompletions(c *Context, name string) bool {
-	if !c.Bool(GenerateCompletionFlag.Name) && !c.App.EnableShellCompletion {
+	if !c.Bool(genCompName()) && !c.App.EnableShellCompletion {
 		return false
 	}
 

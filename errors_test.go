@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestHandleExitCoder_nil(t *testing.T) {
@@ -95,7 +97,7 @@ func TestHandleExitCoder_ErrorWithFormat(t *testing.T) {
 		ErrWriter = fakeErrWriter
 	}()
 
-	err := NewExitError(NewErrorWithFormat("I am formatted"), 1)
+	err := Exit(NewErrorWithFormat("I am formatted"), 1)
 	HandleExitCoder(err)
 
 	expect(t, called, true)
@@ -114,9 +116,9 @@ func TestHandleExitCoder_MultiErrorWithFormat(t *testing.T) {
 
 	defer func() { OsExiter = fakeOsExiter }()
 
-	err := NewMultiError(NewErrorWithFormat("err1"), NewErrorWithFormat("err2"))
+	err := newMultiError(NewErrorWithFormat("err1"), NewErrorWithFormat("err2"))
 	HandleExitCoder(err)
 
-	expect(t, called, true)
-	expect(t, ErrWriter.(*bytes.Buffer).String(), "This the format: err1\nThis the format: err2\n")
+	assert.True(t, called)
+	assert.Equal(t, "This the format: err1\nThis the format: err2\n", ErrWriter.(*bytes.Buffer).String())
 }

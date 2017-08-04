@@ -22,9 +22,17 @@ var (
 )
 
 // GenerateCompletionFlag enables completion for all commands and subcommands
-var GenerateCompletionFlag = &BoolFlag{
+var GenerateCompletionFlag Flag = &BoolFlag{
 	Name:   "generate-completion",
 	Hidden: true,
+}
+
+func genCompName() string {
+	names := GenerateCompletionFlag.Names()
+	if len(names) == 0 {
+		return "generate-completion"
+	}
+	return names[0]
 }
 
 // InitCompletionFlag generates completion code
@@ -34,7 +42,7 @@ var InitCompletionFlag = &StringFlag{
 }
 
 // VersionFlag prints the version for the application
-var VersionFlag = &BoolFlag{
+var VersionFlag Flag = &BoolFlag{
 	Name:    "version",
 	Aliases: []string{"v"},
 	Usage:   "print the version",
@@ -43,7 +51,7 @@ var VersionFlag = &BoolFlag{
 // HelpFlag prints the help for all commands and subcommands.
 // Set to nil to disable the flag.  The subcommand
 // will still be added unless HideHelp is set to true.
-var HelpFlag = &BoolFlag{
+var HelpFlag Flag = &BoolFlag{
 	Name:    "help",
 	Aliases: []string{"h"},
 	Usage:   "show help",
@@ -121,7 +129,14 @@ type Generic interface {
 
 // Apply takes the flagset and calls Set on the generic flag with the value
 // provided by the user for parsing by the flag
+// Ignores parsing errors
 func (f *GenericFlag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError takes the flagset and calls Set on the generic flag with the
+// value provided by the user for parsing by the flag
+func (f *GenericFlag) ApplyWithError(set *flag.FlagSet) error {
 	val := f.Value
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
@@ -135,6 +150,7 @@ func (f *GenericFlag) Apply(set *flag.FlagSet) {
 	for _, name := range f.Names() {
 		set.Var(val, name, f.Usage)
 	}
+	return nil
 }
 
 // StringSlice wraps a []string to satisfy flag.Value
@@ -188,7 +204,13 @@ func (f *StringSlice) Get() interface{} {
 }
 
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f *StringSliceFlag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f *StringSliceFlag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
 			if envVal, ok := syscall.Getenv(envVar); ok {
@@ -212,6 +234,7 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) {
 	for _, name := range f.Names() {
 		set.Var(f.Value, name, f.Usage)
 	}
+	return nil
 }
 
 // IntSlice wraps an []int to satisfy flag.Value
@@ -285,7 +308,13 @@ func (f *IntSlice) Get() interface{} {
 }
 
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f *IntSliceFlag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f *IntSliceFlag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
 			if envVal, ok := syscall.Getenv(envVar); ok {
@@ -309,6 +338,7 @@ func (f *IntSliceFlag) Apply(set *flag.FlagSet) {
 	for _, name := range f.Names() {
 		set.Var(f.Value, name, f.Usage)
 	}
+	return nil
 }
 
 // Int64Slice is an opaque type for []int to satisfy flag.Value
@@ -362,7 +392,13 @@ func (f *Int64Slice) Get() interface{} {
 }
 
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f *Int64SliceFlag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f *Int64SliceFlag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
 			if envVal, ok := syscall.Getenv(envVar); ok {
@@ -386,10 +422,17 @@ func (f *Int64SliceFlag) Apply(set *flag.FlagSet) {
 	for _, name := range f.Names() {
 		set.Var(f.Value, name, f.Usage)
 	}
+	return nil
 }
 
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f *BoolFlag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f *BoolFlag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
 			if envVal, ok := syscall.Getenv(envVar); ok {
@@ -398,7 +441,6 @@ func (f *BoolFlag) Apply(set *flag.FlagSet) {
 					f.Value = envValBool
 				}
 
-				val = envValBool
 				break
 			}
 		}
@@ -411,10 +453,17 @@ func (f *BoolFlag) Apply(set *flag.FlagSet) {
 		}
 		set.Bool(name, f.Value, f.Usage)
 	}
+	return nil
 }
 
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f *StringFlag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f *StringFlag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
 			if envVal, ok := syscall.Getenv(envVar); ok {
@@ -431,10 +480,17 @@ func (f *StringFlag) Apply(set *flag.FlagSet) {
 		}
 		set.String(name, f.Value, f.Usage)
 	}
+	return nil
 }
 
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f *IntFlag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f *IntFlag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
 			if envVal, ok := syscall.Getenv(envVar); ok {
@@ -455,10 +511,17 @@ func (f *IntFlag) Apply(set *flag.FlagSet) {
 		}
 		set.Int(name, f.Value, f.Usage)
 	}
+	return nil
 }
 
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f *Int64Flag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f *Int64Flag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
 			if envVal, ok := syscall.Getenv(envVar); ok {
@@ -476,14 +539,21 @@ func (f *Int64Flag) Apply(set *flag.FlagSet) {
 	for _, name := range f.Names() {
 		if f.Destination != nil {
 			set.Int64Var(f.Destination, name, f.Value, f.Usage)
-			return
+			return nil
 		}
 		set.Int64(name, f.Value, f.Usage)
 	}
+	return nil
 }
 
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f *UintFlag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f *UintFlag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
 			if envVal, ok := syscall.Getenv(envVar); ok {
@@ -501,14 +571,21 @@ func (f *UintFlag) Apply(set *flag.FlagSet) {
 	for _, name := range f.Names() {
 		if f.Destination != nil {
 			set.UintVar(f.Destination, name, f.Value, f.Usage)
-			return
+			return nil
 		}
 		set.Uint(name, f.Value, f.Usage)
 	}
+	return nil
 }
 
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f *Uint64Flag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f *Uint64Flag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
 			if envVal, ok := syscall.Getenv(envVar); ok {
@@ -526,14 +603,21 @@ func (f *Uint64Flag) Apply(set *flag.FlagSet) {
 	for _, name := range f.Names() {
 		if f.Destination != nil {
 			set.Uint64Var(f.Destination, name, f.Value, f.Usage)
-			return
+			return nil
 		}
 		set.Uint64(name, f.Value, f.Usage)
 	}
+	return nil
 }
 
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f *DurationFlag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f *DurationFlag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
 			if envVal, ok := syscall.Getenv(envVar); ok {
@@ -555,10 +639,17 @@ func (f *DurationFlag) Apply(set *flag.FlagSet) {
 		}
 		set.Duration(name, f.Value, f.Usage)
 	}
+	return nil
 }
 
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f *Float64Flag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f *Float64Flag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
 			if envVal, ok := syscall.Getenv(envVar); ok {
@@ -580,6 +671,7 @@ func (f *Float64Flag) Apply(set *flag.FlagSet) {
 		}
 		set.Float64(name, f.Value, f.Usage)
 	}
+	return nil
 }
 
 // NewFloat64Slice makes a *Float64Slice with default values
@@ -633,7 +725,13 @@ func (f *Float64Slice) Value() []float64 {
 }
 
 // Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f *Float64SliceFlag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f *Float64SliceFlag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
 			if envVal, ok := syscall.Getenv(envVar); ok {
@@ -658,6 +756,7 @@ func (f *Float64SliceFlag) Apply(set *flag.FlagSet) {
 	for _, name := range f.Names() {
 		set.Var(f.Value, name, f.Usage)
 	}
+	return nil
 }
 
 func visibleFlags(fl []Flag) []Flag {

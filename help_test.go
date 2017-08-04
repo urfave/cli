@@ -259,7 +259,7 @@ func TestShowSubcommandHelp_CommandAliases(t *testing.T) {
 
 func TestShowCommandHelp_Customtemplate(t *testing.T) {
 	app := &App{
-		Commands: []Command{
+		Commands: []*Command{
 			{
 				Name: "frobbly",
 				Action: func(ctx *Context) error {
@@ -301,7 +301,7 @@ EXAMPLES:
 
 func TestShowSubcommandHelp_CommandUsageText(t *testing.T) {
 	app := &App{
-		Commands: []Command{
+		Commands: []*Command{
 			{
 				Name:      "frobbly",
 				UsageText: "this is usage text",
@@ -321,10 +321,10 @@ func TestShowSubcommandHelp_CommandUsageText(t *testing.T) {
 
 func TestShowSubcommandHelp_SubcommandUsageText(t *testing.T) {
 	app := &App{
-		Commands: []Command{
+		Commands: []*Command{
 			{
 				Name: "frobbly",
-				Subcommands: []Command{
+				Subcommands: []*Command{
 					{
 						Name:      "bobbly",
 						UsageText: "this is usage text",
@@ -377,7 +377,7 @@ func TestShowAppHelp_HiddenCommand(t *testing.T) {
 
 func TestShowAppHelp_CustomAppTemplate(t *testing.T) {
 	app := &App{
-		Commands: []Command{
+		Commands: []*Command{
 			{
 				Name: "frobbly",
 				Action: func(ctx *Context) error {

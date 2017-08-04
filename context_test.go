@@ -2,7 +2,6 @@ package cli
 
 import (
 	"flag"
-	"os"
 	"sort"
 	"testing"
 	"time"
@@ -156,78 +155,6 @@ func TestContext_IsSet(t *testing.T) {
 	expect(t, ctx.IsSet("three-flag"), true)
 	expect(t, ctx.IsSet("top-flag"), true)
 	expect(t, ctx.IsSet("bogus"), false)
-}
-
-// XXX Corresponds to hack in context.IsSet for flags with EnvVar field
-// Should be moved to `flag_test` in v2
-func TestContext_IsSet_fromEnv(t *testing.T) {
-	var (
-		timeoutIsSet, tIsSet, noEnvVarIsSet, nIsSet             bool
-		globalTimeoutIsSet, TIsSet, globalNoEnvVarIsSet, NIsSet bool
-	)
-
-	clearenv()
-	os.Setenv("GLOBAL_APP_TIMEOUT_SECONDS", "15.5")
-	os.Setenv("APP_TIMEOUT_SECONDS", "15.5")
-	os.Setenv("APP_PASSWORD", "")
-	a := App{
-		Flags: []Flag{
-			&Float64Flag{
-				Name:    "global-timeout",
-				Aliases: []string{"T"},
-				EnvVars: []string{"GLOBAL_APP_TIMEOUT_SECONDS"},
-			},
-			&Float64Flag{
-				Name:    "global-no-env-var",
-				Aliases: []string{"N"},
-			},
-		},
-		Commands: []*Command{
-			{
-				Name: "hello",
-				Flags: []Flag{
-					&Float64Flag{
-						Name:    "timeout",
-						Aliases: []string{"t"},
-						EnvVars: []string{"APP_TIMEOUT_SECONDS"},
-					},
-					&Float64Flag{
-						Name:    "no-env-var",
-						Aliases: []string{"n"},
-					},
-				},
-				Action: func(ctx *Context) error {
-					globalTimeoutIsSet = ctx.IsSet("global-timeout")
-					TIsSet = ctx.IsSet("T")
-					globalNoEnvVarIsSet = ctx.IsSet("global-no-env-var")
-					NIsSet = ctx.IsSet("N")
-					timeoutIsSet = ctx.IsSet("timeout")
-					tIsSet = ctx.IsSet("t")
-					noEnvVarIsSet = ctx.IsSet("no-env-var")
-					nIsSet = ctx.IsSet("n")
-					return nil
-				},
-			},
-		},
-	}
-	a.Run([]string{"run", "hello"})
-	expect(t, globalTimeoutIsSet, true)
-	expect(t, TIsSet, true)
-	expect(t, globalNoEnvVarIsSet, false)
-	expect(t, NIsSet, false)
-	expect(t, timeoutIsSet, true)
-	expect(t, tIsSet, true)
-	expect(t, passwordIsSet, true)
-	expect(t, pIsSet, true)
-	expect(t, noEnvVarIsSet, false)
-	expect(t, nIsSet, false)
-
-	os.Setenv("APP_UNPARSABLE", "foobar")
-	if err := a.Run([]string{"run"}); err != nil {
-		t.Logf("error running Run(): %+v", err)
-	}
-	expect(t, unparsableIsSet, false)
-	expect(t, uIsSet, false)
 }
 
 func TestContext_NumFlags(t *testing.T) {
