@@ -1306,6 +1306,7 @@ func main() {
       fmt.Fprintf(c.App.Writer, "WRONG: %#v\n", err)
       return nil
     },
+    IgnoreUsageError: true,
     Action: func(c *cli.Context) error {
       cli.DefaultAppComplete(c)
       cli.HandleExitCoder(errors.New("not an exit coder, though"))
