@@ -51,6 +51,8 @@ type App struct {
 	Action ActionFunc
 	// Execute this function if the proper command cannot be found
 	CommandNotFound CommandNotFoundFunc
+	// Ignore usage errors to be handled later
+	IgnoreUsageError bool
 	// Execute this function if an usage error occurs
 	OnUsageError OnUsageErrorFunc
 	// Compilation date
@@ -187,7 +189,7 @@ func (a *App) Run(arguments []string) (err error) {
 		}
 	}
 
-	if err != nil {
+	if err != nil && !a.IgnoreUsageError {
 		if a.OnUsageError != nil {
 			err := a.OnUsageError(context, err, false)
 			HandleExitCoder(err)

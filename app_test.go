@@ -1485,3 +1485,24 @@ func TestApp_OnUsageError_WithWrongFlagValue_ForSubcommand(t *testing.T) {
 		t.Errorf("Expect an intercepted error, but got \"%v\"", err)
 	}
 }
+
+func TestApp_IgnoreOnUsageError(t *testing.T) {
+	app := &App{
+		Flags: []Flag{
+			&IntFlag{Name: "flag"},
+		},
+		Action: func(c *Context) error {
+			return nil
+		},
+		OnUsageError: func(c *Context, err error, isSubcommand bool) error {
+			t.Fatalf("Shouldn't throw error")
+			return errors.New("intercepted: " + err.Error())
+		},
+		IgnoreUsageError: true,
+	}
+
+	err := app.Run([]string{"foo", "--wrong-flag"})
+	if err != nil {
+		t.Fatalf("expected to not receive error, but got: \"%v\"", err)
+	}
+}
