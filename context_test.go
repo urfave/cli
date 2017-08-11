@@ -375,8 +375,10 @@ func TestContext_Set(t *testing.T) {
 	set.Int("int", 5, "an int")
 	c := NewContext(nil, set, nil)
 
+	expect(t, c.IsSet("int"), false)
 	c.Set("int", "1")
 	expect(t, c.Int("int"), 1)
+	expect(t, c.IsSet("int"), true)
 }
 
 func TestContext_GlobalSet(t *testing.T) {
@@ -393,7 +395,9 @@ func TestContext_GlobalSet(t *testing.T) {
 	expect(t, c.Int("int"), 1)
 	expect(t, c.GlobalInt("int"), 5)
 
+	expect(t, c.GlobalIsSet("int"), false)
 	c.GlobalSet("int", "1")
 	expect(t, c.Int("int"), 1)
 	expect(t, c.GlobalInt("int"), 1)
+	expect(t, c.GlobalIsSet("int"), true)
 }
