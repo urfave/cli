@@ -318,21 +318,29 @@ func checkShellCompleteFlag(a *App, arguments []string) (bool, []string) {
 }
 
 func checkCompletions(c *Context) bool {
-	if c.shellComplete {
-		ShowCompletions(c)
-		return true
+	if !c.shellComplete {
+		return false
 	}
 
-	return false
+	if args := c.Args(); args.Present() {
+		name := args.First()
+		if cmd := c.App.Command(name); cmd != nil {
+			// let the command handle the completion
+			return false
+		}
+	}
+
+	ShowCompletions(c)
+	return true
 }
 
 func checkCommandCompletions(c *Context, name string) bool {
-	if c.shellComplete {
-		ShowCommandCompletions(c, name)
-		return true
+	if !c.shellComplete {
+		return false
 	}
 
-	return false
+	ShowCommandCompletions(c, name)
+	return true
 }
 
 func checkInitCompletion(c *Context) (bool, error) {
