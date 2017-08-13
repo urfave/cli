@@ -23,9 +23,8 @@ var (
 
 // GenerateCompletionFlag enables completion for all commands and subcommands
 var GenerateCompletionFlag Flag = &BoolFlag{
-	Name:    "generate-completion",
-	Aliases: []string{"compgen"},
-	Hidden:  true,
+	Name:   "generate-completion",
+	Hidden: true,
 }
 
 func genCompName() string {
