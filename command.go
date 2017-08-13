@@ -159,6 +159,10 @@ func (c *Command) Run(ctx *Context) (err error) {
 		}
 	}
 
+	if c.Action == nil {
+		c.Action = helpSubcommand.Action
+	}
+
 	context.Command = c
 	err = c.Action(context)
 

@@ -187,17 +187,20 @@ func ExampleApp_Run_noAction() {
 	app.Run([]string{"greet"})
 	// Output:
 	// NAME:
-	//    greet
+	//    greet - A new cli application
 	//
 	// USAGE:
-	//     [global options] command [command options] [arguments...]
+	//    greet [global options] command [command options] [arguments...]
+	//
+	// VERSION:
+	//    0.0.0
 	//
 	// COMMANDS:
 	//      help, h  Shows a list of commands or help for one command
 	//
 	// GLOBAL OPTIONS:
-	//    --help, -h     show help
-	//    --version, -v  print the version
+	//    --help, -h     show help (default: false)
+	//    --version, -v  print the version (default: false)
 }
 
 func ExampleApp_Run_subcommandNoAction() {
@@ -215,19 +218,22 @@ func ExampleApp_Run_subcommandNoAction() {
 	app.Run([]string{"greet", "describeit"})
 	// Output:
 	// NAME:
-	//     describeit - use it to see a description
+	//    greet describeit - use it to see a description
 	//
 	// USAGE:
-	//     describeit [arguments...]
+	//    greet describeit [command options] [arguments...]
 	//
 	// DESCRIPTION:
 	//    This is how we describe describeit the function
+	//
+	// OPTIONS:
+	//    --help, -h  show help (default: false)
 
 }
 
 func ExampleApp_Run_shellComplete() {
 	// set args for examples sake
-	os.Args = []string{"greet", "--generate-completion"}
+	os.Args = []string{"greet", fmt.Sprintf("--%s", genCompName())}
 
 	app := &App{
 		Name: "greet",
@@ -309,30 +315,6 @@ func TestApp_Setup_defaultsWriter(t *testing.T) {
 	app := &App{}
 	app.Setup()
 	expect(t, app.Writer, os.Stdout)
-}
-
-func TestApp_CommandWithArgBeforeFlags(t *testing.T) {
-	var parsedOption, firstArg string
-
-	app := &App{
-		Commands: []*Command{
-			{
-				Name: "cmd",
-				Flags: []Flag{
-					&StringFlag{Name: "option", Value: "", Usage: "some option"},
-				},
-				Action: func(c *Context) error {
-					parsedOption = c.String("option")
-					firstArg = c.Args().First()
-					return nil
-				},
-			},
-		},
-	}
-	app.Run([]string{"", "cmd", "my-arg", "--option", "my-option"})
-
-	expect(t, parsedOption, "my-option")
-	expect(t, firstArg, "my-arg")
 }
 
 func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
@@ -907,6 +889,7 @@ func TestApp_OrderOfOperations(t *testing.T) {
 	app := &App{
 		EnableShellCompletion: true,
 		ShellComplete: func(c *Context) {
+			fmt.Fprintf(os.Stderr, "---> ShellComplete(%#v)\n", c)
 			counts.Total++
 			counts.ShellComplete = counts.Total
 		},
@@ -971,7 +954,7 @@ func TestApp_OrderOfOperations(t *testing.T) {
 
 	resetCounts()
 
-	_ = app.Run([]string{"command", "--generate-completion"})
+	_ = app.Run([]string{"command", fmt.Sprintf("--%s", genCompName())})
 	expect(t, counts.ShellComplete, 1)
 	expect(t, counts.Total, 1)
 

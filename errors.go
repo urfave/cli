@@ -103,9 +103,8 @@ func HandleExitCoder(err error) {
 	}
 
 	if multiErr, ok := err.(MultiError); ok {
-		for _, merr := range multiErr.Errors() {
-			HandleExitCoder(merr)
-		}
+		code := handleMultiError(multiErr)
+		OsExiter(code)
 		return
 	}
 }
@@ -115,7 +114,7 @@ func handleMultiError(multiErr MultiError) int {
 	for _, merr := range multiErr.Errors() {
 		if multiErr2, ok := merr.(MultiError); ok {
 			code = handleMultiError(multiErr2)
-		} else {
+		} else if merr != nil {
 			fmt.Fprintln(ErrWriter, merr)
 			if exitErr, ok := merr.(ExitCoder); ok {
 				code = exitErr.ExitCode()

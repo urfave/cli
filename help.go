@@ -318,29 +318,21 @@ func checkShellCompleteFlag(a *App, arguments []string) (bool, []string) {
 }
 
 func checkCompletions(c *Context) bool {
-	if !c.Bool(genCompName()) && !c.App.EnableShellCompletion {
-		return false
+	if c.shellComplete {
+		ShowCompletions(c)
+		return true
 	}
 
-	if args := c.Args(); args.Present() {
-		name := args.First()
-		if cmd := c.App.Command(name); cmd != nil {
-			// let the command handle the completion
-			return false
-		}
-	}
-
-	ShowCompletions(c)
-	return true
+	return false
 }
 
 func checkCommandCompletions(c *Context, name string) bool {
-	if !c.Bool(genCompName()) && !c.App.EnableShellCompletion {
-		return false
+	if c.shellComplete {
+		ShowCommandCompletions(c, name)
+		return true
 	}
 
-	ShowCommandCompletions(c, name)
-	return true
+	return false
 }
 
 func checkInitCompletion(c *Context) (bool, error) {
@@ -366,12 +358,12 @@ func bashCompletionCode(progName string) string {
      local cur opts base;
      COMPREPLY=();
      cur="${COMP_WORDS[COMP_CWORD]}";
-     opts=$( ${COMP_WORDS[@]:0:$COMP_CWORD} --generate-completion );
+     opts=$( ${COMP_WORDS[@]:0:$COMP_CWORD} --%s );
      COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) );
      return 0;
 };
 complete -F _cli_bash_autocomplete %s`
-	return fmt.Sprintf(template, progName)
+	return fmt.Sprintf(template, genCompName(), progName)
 }
 
 func zshCompletionCode(progName string) string {

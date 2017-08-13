@@ -121,7 +121,7 @@ func (c *Context) Lineage() []*Context {
 	return lineage
 }
 
-// value returns the value of the flag coressponding to `name`
+// value returns the value of the flag corresponding to `name`
 func (c *Context) value(name string) interface{} {
 	return c.flagSet.Lookup(name).Value.(flag.Getter).Get()
 }

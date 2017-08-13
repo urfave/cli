@@ -23,8 +23,9 @@ var (
 
 // GenerateCompletionFlag enables completion for all commands and subcommands
 var GenerateCompletionFlag Flag = &BoolFlag{
-	Name:   "generate-completion",
-	Hidden: true,
+	Name:    "generate-completion",
+	Aliases: []string{"compgen"},
+	Hidden:  true,
 }
 
 func genCompName() string {
@@ -218,7 +219,7 @@ func (f *StringSliceFlag) ApplyWithError(set *flag.FlagSet) error {
 				for _, s := range strings.Split(envVal, ",") {
 					s = strings.TrimSpace(s)
 					if err := newVal.Set(s); err != nil {
-						return fmt.Errorf("could not parse %s as string value for flag %s: %s", envVal, f.Name, err)
+						return fmt.Errorf("could not parse %q as string value for flag %s: %s", envVal, f.Name, err)
 					}
 				}
 				f.Value = newVal
@@ -322,7 +323,7 @@ func (f *IntSliceFlag) ApplyWithError(set *flag.FlagSet) error {
 				for _, s := range strings.Split(envVal, ",") {
 					s = strings.TrimSpace(s)
 					if err := newVal.Set(s); err != nil {
-						return fmt.Errorf("could not parse %s as int slice value for flag %s: %s", envVal, f.Name, err)
+						return fmt.Errorf("could not parse %q as int slice value for flag %s: %s", envVal, f.Name, err)
 					}
 				}
 				f.Value = newVal
@@ -406,7 +407,7 @@ func (f *Int64SliceFlag) ApplyWithError(set *flag.FlagSet) error {
 				for _, s := range strings.Split(envVal, ",") {
 					s = strings.TrimSpace(s)
 					if err := newVal.Set(s); err != nil {
-						return fmt.Errorf("could not parse %s as int64 slice value for flag %s: %s", envVal, f.Name, err)
+						return fmt.Errorf("could not parse %q as int64 slice value for flag %s: %s", envVal, f.Name, err)
 					}
 				}
 				f.Value = newVal
@@ -436,11 +437,16 @@ func (f *BoolFlag) ApplyWithError(set *flag.FlagSet) error {
 	if f.EnvVars != nil {
 		for _, envVar := range f.EnvVars {
 			if envVal, ok := syscall.Getenv(envVar); ok {
-				envValBool, err := strconv.ParseBool(envVal)
-				if err == nil {
-					f.Value = envValBool
+				if envVal == "" {
+					f.Value = false
+					break
 				}
 
+				envValBool, err := strconv.ParseBool(envVal)
+				if err != nil {
+					return fmt.Errorf("could not parse %q as bool value for flag %s: %s", envVal, f.Name, err)
+				}
+				f.Value = envValBool
 				break
 			}
 		}
@@ -496,7 +502,7 @@ func (f *IntFlag) ApplyWithError(set *flag.FlagSet) error {
 			if envVal, ok := syscall.Getenv(envVar); ok {
 				envValInt, err := strconv.ParseInt(envVal, 0, 64)
 				if err != nil {
-					return fmt.Errorf("could not parse %s as int value for flag %s: %s", envVal, f.Name, err)
+					return fmt.Errorf("could not parse %q as int value for flag %s: %s", envVal, f.Name, err)
 				}
 				f.Value = int(envValInt)
 				break
@@ -527,7 +533,7 @@ func (f *Int64Flag) ApplyWithError(set *flag.FlagSet) error {
 			if envVal, ok := syscall.Getenv(envVar); ok {
 				envValInt, err := strconv.ParseInt(envVal, 0, 64)
 				if err != nil {
-					return fmt.Errorf("could not parse %s as int value for flag %s: %s", envVal, f.Name, err)
+					return fmt.Errorf("could not parse %q as int value for flag %s: %s", envVal, f.Name, err)
 				}
 
 				f.Value = envValInt
@@ -559,7 +565,7 @@ func (f *UintFlag) ApplyWithError(set *flag.FlagSet) error {
 			if envVal, ok := syscall.Getenv(envVar); ok {
 				envValInt, err := strconv.ParseUint(envVal, 0, 64)
 				if err != nil {
-					return fmt.Errorf("could not parse %s as uint value for flag %s: %s", envVal, f.Name, err)
+					return fmt.Errorf("could not parse %q as uint value for flag %s: %s", envVal, f.Name, err)
 				}
 
 				f.Value = uint(envValInt)
@@ -591,7 +597,7 @@ func (f *Uint64Flag) ApplyWithError(set *flag.FlagSet) error {
 			if envVal, ok := syscall.Getenv(envVar); ok {
 				envValInt, err := strconv.ParseUint(envVal, 0, 64)
 				if err != nil {
-					return fmt.Errorf("could not parse %s as uint64 value for flag %s: %s", envVal, f.Name, err)
+					return fmt.Errorf("could not parse %q as uint64 value for flag %s: %s", envVal, f.Name, err)
 				}
 
 				f.Value = uint64(envValInt)
@@ -623,7 +629,7 @@ func (f *DurationFlag) ApplyWithError(set *flag.FlagSet) error {
 			if envVal, ok := syscall.Getenv(envVar); ok {
 				envValDuration, err := time.ParseDuration(envVal)
 				if err != nil {
-					return fmt.Errorf("could not parse %s as duration for flag %s: %s", envVal, f.Name, err)
+					return fmt.Errorf("could not parse %q as duration for flag %s: %s", envVal, f.Name, err)
 				}
 
 				f.Value = envValDuration
@@ -655,7 +661,7 @@ func (f *Float64Flag) ApplyWithError(set *flag.FlagSet) error {
 			if envVal, ok := syscall.Getenv(envVar); ok {
 				envValFloat, err := strconv.ParseFloat(envVal, 10)
 				if err != nil {
-					return fmt.Errorf("could not parse %s as float64 value for flag %s: %s", envVal, f.Name, err)
+					return fmt.Errorf("could not parse %q as float64 value for flag %s: %s", envVal, f.Name, err)
 				}
 
 				f.Value = float64(envValFloat)

@@ -43,6 +43,24 @@ func TestBoolFlagApply_SetsAllNames(t *testing.T) {
 }
 
 func TestFlagsFromEnv(t *testing.T) {
+	newSetIntSlice := func(defaults ...int) IntSlice {
+		s := NewIntSlice(defaults...)
+		s.hasBeenSet = true
+		return *s
+	}
+
+	newSetInt64Slice := func(defaults ...int64) Int64Slice {
+		s := NewInt64Slice(defaults...)
+		s.hasBeenSet = true
+		return *s
+	}
+
+	newSetStringSlice := func(defaults ...string) StringSlice {
+		s := NewStringSlice(defaults...)
+		s.hasBeenSet = true
+		return *s
+	}
+
 	var flagTests = []struct {
 		input     string
 		output    interface{}
@@ -52,54 +70,55 @@ func TestFlagsFromEnv(t *testing.T) {
 		{"", false, &BoolFlag{Name: "debug", EnvVars: []string{"DEBUG"}}, ""},
 		{"1", true, &BoolFlag{Name: "debug", EnvVars: []string{"DEBUG"}}, ""},
 		{"false", false, &BoolFlag{Name: "debug", EnvVars: []string{"DEBUG"}}, ""},
-		{"foobar", true, &BoolFlag{Name: "debug", EnvVars: []string{"DEBUG"}}, fmt.Sprintf(`could not parse foobar as bool value for flag debug: .*`)},
+		{"foobar", true, &BoolFlag{Name: "debug", EnvVars: []string{"DEBUG"}}, `could not parse "foobar" as bool value for flag debug: .*`},
 
 		{"1s", 1 * time.Second, &DurationFlag{Name: "time", EnvVars: []string{"TIME"}}, ""},
-		{"foobar", false, &DurationFlag{Name: "time", EnvVars: []string{"TIME"}}, fmt.Sprintf(`could not parse foobar as duration for flag time: .*`)},
+		{"foobar", false, &DurationFlag{Name: "time", EnvVars: []string{"TIME"}}, `could not parse "foobar" as duration for flag time: .*`},
 
 		{"1.2", 1.2, &Float64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
 		{"1", 1.0, &Float64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
-		{"foobar", 0, &Float64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, fmt.Sprintf(`could not parse foobar as float64 value for flag seconds: .*`)},
+		{"foobar", 0, &Float64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as float64 value for flag seconds: .*`},
 
 		{"1", int64(1), &Int64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
-		{"1.2", 0, &Int64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, fmt.Sprintf(`could not parse 1.2 as int value for flag seconds: .*`)},
-		{"foobar", 0, &Int64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, fmt.Sprintf(`could not parse foobar as int value for flag seconds: .*`)},
+		{"1.2", 0, &Int64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2" as int value for flag seconds: .*`},
+		{"foobar", 0, &Int64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as int value for flag seconds: .*`},
 
 		{"1", 1, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
-		{"1.2", 0, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, fmt.Sprintf(`could not parse 1.2 as int value for flag seconds: .*`)},
-		{"foobar", 0, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, fmt.Sprintf(`could not parse foobar as int value for flag seconds: .*`)},
+		{"1.2", 0, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2" as int value for flag seconds: .*`},
+		{"foobar", 0, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as int value for flag seconds: .*`},
 
-		{"1,2", NewIntSlice(1, 2), &IntSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
-		{"1.2,2", NewIntSlice(), &IntSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, fmt.Sprintf(`could not parse 1.2,2 as int slice value for flag seconds: .*`)},
-		{"foobar", NewIntSlice(), &IntSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, fmt.Sprintf(`could not parse foobar as int slice value for flag seconds: .*`)},
+		{"1,2", newSetIntSlice(1, 2), &IntSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
+		{"1.2,2", newSetIntSlice(), &IntSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2,2" as int slice value for flag seconds: .*`},
+		{"foobar", newSetIntSlice(), &IntSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as int slice value for flag seconds: .*`},
 
-		{"1,2", NewInt64Slice(1, 2), &Int64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
-		{"1.2,2", NewInt64Slice(), &Int64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, fmt.Sprintf(`could not parse 1.2,2 as int64 slice value for flag seconds: .*`)},
-		{"foobar", NewInt64Slice(), &Int64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, fmt.Sprintf(`could not parse foobar as int64 slice value for flag seconds: .*`)},
+		{"1,2", newSetInt64Slice(1, 2), &Int64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
+		{"1.2,2", newSetInt64Slice(), &Int64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2,2" as int64 slice value for flag seconds: .*`},
+		{"foobar", newSetInt64Slice(), &Int64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as int64 slice value for flag seconds: .*`},
 
 		{"foo", "foo", &StringFlag{Name: "name", EnvVars: []string{"NAME"}}, ""},
 
-		{"foo,bar", NewStringSlice("foo", "bar"), &StringSliceFlag{Name: "names", EnvVars: []string{"NAMES"}}, ""},
+		{"foo,bar", newSetStringSlice("foo", "bar"), &StringSliceFlag{Name: "names", EnvVars: []string{"NAMES"}}, ""},
 
 		{"1", uint(1), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
-		{"1.2", 0, &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, fmt.Sprintf(`could not parse 1.2 as uint value for flag seconds: .*`)},
-		{"foobar", 0, &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, fmt.Sprintf(`could not parse foobar as uint value for flag seconds: .*`)},
+		{"1.2", 0, &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2" as uint value for flag seconds: .*`},
+		{"foobar", 0, &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as uint value for flag seconds: .*`},
 
 		{"1", uint64(1), &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
-		{"1.2", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, fmt.Sprintf(`could not parse 1.2 as uint64 value for flag seconds: .*`)},
-		{"foobar", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, fmt.Sprintf(`could not parse foobar as uint64 value for flag seconds: .*`)},
+		{"1.2", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2" as uint64 value for flag seconds: .*`},
+		{"foobar", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as uint64 value for flag seconds: .*`},
 
 		{"foo,bar", &Parser{"foo", "bar"}, &GenericFlag{Name: "names", Value: &Parser{}, EnvVars: []string{"NAMES"}}, ""},
 	}
 
-	for _, test := range flagTests {
+	for i, test := range flagTests {
 		clearenv()
-		os.Setenv(reflect.ValueOf(test.flag).FieldByName("EnvVars").Slice(0, 1).String(), test.input)
+		envVarSlice := reflect.Indirect(reflect.ValueOf(test.flag)).FieldByName("EnvVars").Slice(0, 1)
+		os.Setenv(envVarSlice.Index(0).String(), test.input)
 		a := App{
 			Flags: []Flag{test.flag},
 			Action: func(ctx *Context) error {
 				if !reflect.DeepEqual(ctx.value(test.flag.Names()[0]), test.output) {
-					t.Errorf("expected %+v to be parsed as %+v, instead was %+v", test.input, test.output, ctx.value(test.flag.Names()[0]))
+					t.Errorf("ex:%01d expected %q to be parsed as %#v, instead was %#v", i, test.input, test.output, ctx.value(test.flag.Names()[0]))
 				}
 				return nil
 			},
@@ -109,15 +128,15 @@ func TestFlagsFromEnv(t *testing.T) {
 
 		if test.errRegexp != "" {
 			if err == nil {
-				t.Errorf("expected error to match %s, got none", test.errRegexp)
+				t.Errorf("expected error to match %q, got none", test.errRegexp)
 			} else {
 				if matched, _ := regexp.MatchString(test.errRegexp, err.Error()); !matched {
-					t.Errorf("expected error to match %s, got error %s", test.errRegexp, err)
+					t.Errorf("expected error to match %q, got error %s", test.errRegexp, err)
 				}
 			}
 		} else {
 			if err != nil && test.errRegexp == "" {
-				t.Errorf("expected no error got %s", err)
+				t.Errorf("expected no error got %q", err)
 			}
 		}
 	}
