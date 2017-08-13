@@ -149,7 +149,7 @@ def _go_version():
 
 
 def _combine_coverprofiles(coverprofiles):
-    tmp_args = dict(suffix='.coverprofile', delete=False)
+    tmp_args = dict(suffix='.coverprofile', mode='w', delete=False)
     if _PY3:
         tmp_args['encoding'] = 'utf-8'
 
