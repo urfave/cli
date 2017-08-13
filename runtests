@@ -154,13 +154,13 @@ def _combine_coverprofiles(coverprofiles):
         tmp_args['encoding'] = 'utf-8'
 
     combined = tempfile.NamedTemporaryFile(**tmp_args)
-    combined.write(b'mode: set\n')
+    combined.write('mode: set\n')
 
     for coverprofile in coverprofiles:
         with codecs.open(coverprofile, 'r', 'utf-8') as infile:
             for line in infile.readlines():
                 if not line.startswith('mode: '):
-                    combined.write(line.encode('utf-8'))
+                    combined.write(line)
 
     combined.flush()
     name = combined.name
