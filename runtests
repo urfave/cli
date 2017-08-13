@@ -13,6 +13,7 @@ import tempfile
 from subprocess import check_call, check_output
 
 
+_PY3 = sys.version_info.major == 3
 _WINDOWS = platform.system().lower() == 'windows'
 _PACKAGE_NAME = os.environ.get(
     'CLI_PACKAGE_NAME', 'github.com/urfave/cli'
@@ -148,9 +149,11 @@ def _go_version():
 
 
 def _combine_coverprofiles(coverprofiles):
-    combined = tempfile.NamedTemporaryFile(
-        suffix='.coverprofile', delete=False
-    )
+    tmp_args = dict(suffix='.coverprofile', delete=False)
+    if _PY3:
+        tmp_args['encoding'] = 'utf-8'
+
+    combined = tempfile.NamedTemporaryFile(**tmp_args)
     combined.write(b'mode: set\n')
 
     for coverprofile in coverprofiles:
