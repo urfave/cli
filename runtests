@@ -160,7 +160,7 @@ def _combine_coverprofiles(coverprofiles):
         with codecs.open(coverprofile, 'r', 'utf-8') as infile:
             for line in infile.readlines():
                 if not line.startswith('mode: '):
-                    combined.write(line.encode('utf-8'))
+                    combined.write(line)
 
     combined.flush()
     name = combined.name
