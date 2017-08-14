@@ -13,8 +13,9 @@ import (
 // can be used to retrieve context-specific args and
 // parsed command-line options.
 type Context struct {
-	App     *App
-	Command *Command
+	App           *App
+	Command       *Command
+	shellComplete bool
 
 	flagSet       *flag.FlagSet
 	parentContext *Context
@@ -22,7 +23,13 @@ type Context struct {
 
 // NewContext creates a new context. For use in when invoking an App or Command action.
 func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
-	return &Context{App: app, flagSet: set, parentContext: parentCtx}
+	c := &Context{App: app, flagSet: set, parentContext: parentCtx}
+
+	if parentCtx != nil {
+		c.shellComplete = parentCtx.shellComplete
+	}
+
+	return c
 }
 
 // NumFlags returns the number of flags set
@@ -112,6 +119,11 @@ func (c *Context) Lineage() []*Context {
 	}
 
 	return lineage
+}
+
+// value returns the value of the flag corresponding to `name`
+func (c *Context) value(name string) interface{} {
+	return c.flagSet.Lookup(name).Value.(flag.Getter).Get()
 }
 
 // Args returns the command line arguments associated with the context.

@@ -181,9 +181,59 @@ func ExampleApp_Run_commandHelp() {
 	//    This is how we describe describeit the function
 }
 
+func ExampleApp_Run_noAction() {
+	app := App{}
+	app.Name = "greet"
+	app.Run([]string{"greet"})
+	// Output:
+	// NAME:
+	//    greet - A new cli application
+	//
+	// USAGE:
+	//    greet [global options] command [command options] [arguments...]
+	//
+	// VERSION:
+	//    0.0.0
+	//
+	// COMMANDS:
+	//      help, h  Shows a list of commands or help for one command
+	//
+	// GLOBAL OPTIONS:
+	//    --help, -h     show help (default: false)
+	//    --version, -v  print the version (default: false)
+}
+
+func ExampleApp_Run_subcommandNoAction() {
+	app := &App{
+		Name: "greet",
+		Commands: []*Command{
+			{
+				Name:        "describeit",
+				Aliases:     []string{"d"},
+				Usage:       "use it to see a description",
+				Description: "This is how we describe describeit the function",
+			},
+		},
+	}
+	app.Run([]string{"greet", "describeit"})
+	// Output:
+	// NAME:
+	//    greet describeit - use it to see a description
+	//
+	// USAGE:
+	//    greet describeit [command options] [arguments...]
+	//
+	// DESCRIPTION:
+	//    This is how we describe describeit the function
+	//
+	// OPTIONS:
+	//    --help, -h  show help (default: false)
+
+}
+
 func ExampleApp_Run_shellComplete() {
 	// set args for examples sake
-	os.Args = []string{"greet", "--generate-completion"}
+	os.Args = []string{"greet", fmt.Sprintf("--%s", genCompName())}
 
 	app := &App{
 		Name: "greet",
@@ -249,17 +299,22 @@ var commandAppTests = []struct {
 }
 
 func TestApp_Command(t *testing.T) {
-	app := &App{}
-	fooCommand := &Command{Name: "foobar", Aliases: []string{"f"}}
-	batCommand := &Command{Name: "batbaz", Aliases: []string{"b"}}
-	app.Commands = []*Command{
-		fooCommand,
-		batCommand,
+	app := &App{
+		Commands: []*Command{
+			{Name: "foobar", Aliases: []string{"f"}},
+			{Name: "batbaz", Aliases: []string{"b"}},
+		},
 	}
 
 	for _, test := range commandAppTests {
 		expect(t, app.Command(test.name) != nil, test.expected)
 	}
+}
+
+func TestApp_Setup_defaultsWriter(t *testing.T) {
+	app := &App{}
+	app.Setup()
+	expect(t, app.Writer, os.Stdout)
 }
 
 func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
@@ -312,19 +367,21 @@ func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
 	var parsedOption string
 	var args Args
 
-	app := &App{}
-	command := &Command{
-		Name: "cmd",
-		Flags: []Flag{
-			&StringFlag{Name: "option", Value: "", Usage: "some option"},
-		},
-		Action: func(c *Context) error {
-			parsedOption = c.String("option")
-			args = c.Args()
-			return nil
+	app := &App{
+		Commands: []*Command{
+			{
+				Name: "cmd",
+				Flags: []Flag{
+					&StringFlag{Name: "option", Value: "", Usage: "some option"},
+				},
+				Action: func(c *Context) error {
+					parsedOption = c.String("option")
+					args = c.Args()
+					return nil
+				},
+			},
 		},
 	}
-	app.Commands = []*Command{command}
 
 	app.Run([]string{"", "cmd", "--option", "my-option", "my-arg", "--", "--notARealFlag"})
 
@@ -337,15 +394,17 @@ func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
 func TestApp_CommandWithDash(t *testing.T) {
 	var args Args
 
-	app := &App{}
-	command := &Command{
-		Name: "cmd",
-		Action: func(c *Context) error {
-			args = c.Args()
-			return nil
+	app := &App{
+		Commands: []*Command{
+			{
+				Name: "cmd",
+				Action: func(c *Context) error {
+					args = c.Args()
+					return nil
+				},
+			},
 		},
 	}
-	app.Commands = []*Command{command}
 
 	app.Run([]string{"", "cmd", "my-arg", "-"})
 
@@ -356,15 +415,17 @@ func TestApp_CommandWithDash(t *testing.T) {
 func TestApp_CommandWithNoFlagBeforeTerminator(t *testing.T) {
 	var args Args
 
-	app := &App{}
-	command := &Command{
-		Name: "cmd",
-		Action: func(c *Context) error {
-			args = c.Args()
-			return nil
+	app := &App{
+		Commands: []*Command{
+			{
+				Name: "cmd",
+				Action: func(c *Context) error {
+					args = c.Args()
+					return nil
+				},
+			},
 		},
 	}
-	app.Commands = []*Command{command}
 
 	app.Run([]string{"", "cmd", "my-arg", "--", "notAFlagAtAll"})
 
@@ -446,22 +507,24 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 	var parsedIntSlice []int
 	var parsedStringSlice []string
 
-	app := &App{}
-	command := &Command{
-		Name: "cmd",
-		Flags: []Flag{
-			&IntSliceFlag{Name: "p", Value: NewIntSlice(), Usage: "set one or more ip addr"},
-			&StringSliceFlag{Name: "ip", Value: NewStringSlice(), Usage: "set one or more ports to open"},
-		},
-		Action: func(c *Context) error {
-			parsedIntSlice = c.IntSlice("p")
-			parsedStringSlice = c.StringSlice("ip")
-			parsedOption = c.String("option")
-			firstArg = c.Args().First()
-			return nil
+	app := &App{
+		Commands: []*Command{
+			{
+				Name: "cmd",
+				Flags: []Flag{
+					&IntSliceFlag{Name: "p", Value: NewIntSlice(), Usage: "set one or more ip addr"},
+					&StringSliceFlag{Name: "ip", Value: NewStringSlice(), Usage: "set one or more ports to open"},
+				},
+				Action: func(c *Context) error {
+					parsedIntSlice = c.IntSlice("p")
+					parsedStringSlice = c.StringSlice("ip")
+					parsedOption = c.String("option")
+					firstArg = c.Args().First()
+					return nil
+				},
+			},
 		},
 	}
-	app.Commands = []*Command{command}
 
 	app.Run([]string{"", "cmd", "-p", "22", "-p", "80", "-ip", "8.8.8.8", "-ip", "8.8.4.4", "my-arg"})
 
@@ -504,20 +567,22 @@ func TestApp_ParseSliceFlagsWithMissingValue(t *testing.T) {
 	var parsedIntSlice []int
 	var parsedStringSlice []string
 
-	app := &App{}
-	command := &Command{
-		Name: "cmd",
-		Flags: []Flag{
-			&IntSliceFlag{Name: "a", Usage: "set numbers"},
-			&StringSliceFlag{Name: "str", Usage: "set strings"},
-		},
-		Action: func(c *Context) error {
-			parsedIntSlice = c.IntSlice("a")
-			parsedStringSlice = c.StringSlice("str")
-			return nil
+	app := &App{
+		Commands: []*Command{
+			{
+				Name: "cmd",
+				Flags: []Flag{
+					&IntSliceFlag{Name: "a", Usage: "set numbers"},
+					&StringSliceFlag{Name: "str", Usage: "set strings"},
+				},
+				Action: func(c *Context) error {
+					parsedIntSlice = c.IntSlice("a")
+					parsedStringSlice = c.StringSlice("str")
+					return nil
+				},
+			},
 		},
 	}
-	app.Commands = []*Command{command}
 
 	app.Run([]string{"", "cmd", "-a", "2", "-str", "A", "my-arg"})
 
@@ -824,6 +889,7 @@ func TestApp_OrderOfOperations(t *testing.T) {
 	app := &App{
 		EnableShellCompletion: true,
 		ShellComplete: func(c *Context) {
+			fmt.Fprintf(os.Stderr, "---> ShellComplete(%#v)\n", c)
 			counts.Total++
 			counts.ShellComplete = counts.Total
 		},
@@ -888,7 +954,7 @@ func TestApp_OrderOfOperations(t *testing.T) {
 
 	resetCounts()
 
-	_ = app.Run([]string{"command", "--generate-completion"})
+	_ = app.Run([]string{"command", fmt.Sprintf("--%s", genCompName())})
 	expect(t, counts.ShellComplete, 1)
 	expect(t, counts.Total, 1)
 
@@ -1483,5 +1549,109 @@ func TestApp_OnUsageError_WithWrongFlagValue_ForSubcommand(t *testing.T) {
 
 	if !strings.HasPrefix(err.Error(), "intercepted: invalid value") {
 		t.Errorf("Expect an intercepted error, but got \"%v\"", err)
+	}
+}
+
+// A custom flag that conforms to the relevant interfaces, but has none of the
+// fields that the other flag types do.
+type customBoolFlag struct {
+	Nombre string
+}
+
+// Don't use the normal FlagStringer
+func (c *customBoolFlag) String() string {
+	return "***" + c.Nombre + "***"
+}
+
+func (c *customBoolFlag) Names() []string {
+	return []string{c.Nombre}
+}
+
+func (c *customBoolFlag) Apply(set *flag.FlagSet) {
+	set.String(c.Nombre, c.Nombre, "")
+}
+
+func TestCustomFlagsUnused(t *testing.T) {
+	app := &App{
+		Flags: []Flag{&customBoolFlag{"custom"}},
+	}
+
+	err := app.Run([]string{"foo"})
+	if err != nil {
+		t.Errorf("Run returned unexpected error: %v", err)
+	}
+}
+
+func TestCustomFlagsUsed(t *testing.T) {
+	app := &App{
+		Flags: []Flag{&customBoolFlag{"custom"}},
+	}
+
+	err := app.Run([]string{"foo", "--custom=bar"})
+	if err != nil {
+		t.Errorf("Run returned unexpected error: %v", err)
+	}
+}
+
+func TestCustomHelpVersionFlags(t *testing.T) {
+	app := &App{}
+
+	// Be sure to reset the global flags
+	defer func(helpFlag Flag, versionFlag Flag) {
+		HelpFlag = helpFlag.(*BoolFlag)
+		VersionFlag = versionFlag.(*BoolFlag)
+	}(HelpFlag, VersionFlag)
+
+	HelpFlag = &customBoolFlag{"help-custom"}
+	VersionFlag = &customBoolFlag{"version-custom"}
+
+	err := app.Run([]string{"foo", "--help-custom=bar"})
+	if err != nil {
+		t.Errorf("Run returned unexpected error: %v", err)
+	}
+}
+
+func TestShellCompletionForIncompleteFlags(t *testing.T) {
+	app := &App{
+		Flags: []Flag{
+			&IntFlag{
+				Name: "test-completion",
+			},
+		},
+		EnableShellCompletion: true,
+		ShellComplete: func(ctx *Context) {
+			for _, command := range ctx.App.Commands {
+				if command.Hidden {
+					continue
+				}
+
+				for _, name := range command.Names() {
+					fmt.Fprintln(ctx.App.Writer, name)
+				}
+			}
+
+			for _, flag := range ctx.App.Flags {
+				for _, name := range flag.Names() {
+					if name == genCompName() {
+						continue
+					}
+
+					switch name = strings.TrimSpace(name); len(name) {
+					case 0:
+					case 1:
+						fmt.Fprintln(ctx.App.Writer, "-"+name)
+					default:
+						fmt.Fprintln(ctx.App.Writer, "--"+name)
+					}
+				}
+			}
+		},
+		Action: func(ctx *Context) error {
+			return fmt.Errorf("should not get here")
+		},
+	}
+	err := app.Run([]string{"", "--test-completion", "--" + genCompName()})
+	if err != nil {
+		t.Errorf("app should not return an error: %s", err)
 	}
 }

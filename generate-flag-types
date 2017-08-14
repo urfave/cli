@@ -68,6 +68,9 @@ import tempfile
 import textwrap
 
 
+_PY3 = sys.version_info.major == 3
+
+
 class _FancyFormatter(argparse.ArgumentDefaultsHelpFormatter,
                       argparse.RawDescriptionHelpFormatter):
     pass
@@ -104,7 +107,7 @@ def main(sysargs=sys.argv[:]):
 def _generate_flag_types(writefunc, output_go, input_json):
     types = json.load(input_json)
 
-    tmp = tempfile.NamedTemporaryFile(suffix='.go', delete=False)
+    tmp = _get_named_tmp_go()
     writefunc(tmp, types)
     tmp.close()
 
@@ -115,6 +118,13 @@ def _generate_flag_types(writefunc, output_go, input_json):
     print(new_content, file=output_go, end='')
     output_go.flush()
     os.remove(tmp.name)
+
+
+def _get_named_tmp_go():
+    tmp_args = dict(suffix='.go', mode='w', delete=False)
+    if _PY3:
+        tmp_args['encoding'] = 'utf-8'
+    return tempfile.NamedTemporaryFile(**tmp_args)
 
 
 def _set_typedef_defaults(typedef):
@@ -222,11 +232,18 @@ def _write_altsrc_flag_types(outfile, types):
             f.set = set
             f.{name}Flag.Apply(set)
         }}
+
+        // ApplyWithError saves the flagSet for later usage calls, then calls the
+        // wrapped {name}Flag.ApplyWithError
+        func (f *{name}Flag) ApplyWithError(set *flag.FlagSet) error {{
+            f.set = set
+            return f.{name}Flag.ApplyWithError(set)
+        }}
         """.format(**typedef))
 
 
 def _fwrite(outfile, text):
-    print(textwrap.dedent(text), end='', file=outfile)
+    print(textwrap.dedent(text), end=None, file=outfile)
 
 
 _WRITEFUNCS = {

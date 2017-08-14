@@ -11,7 +11,8 @@
 //			 Name: "greet",
 //			 Usage: "say a greeting",
 //			 Action: func(c *cli.Context) error {
-//				 println("Greetings")
+//				 fmt.Println("Greetings")
+//				 return nil
 //			 },
 //		 }
 //

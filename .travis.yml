@@ -1,35 +1,23 @@
 language: go
-
 sudo: false
+dist: trusty
+osx_image: xcode8.3
+go: 1.8.x
+
+os:
+- linux
+- osx
 
 cache:
   directories:
   - node_modules
 
-go:
-- 1.2.x
-- 1.3.x
-- 1.4.2
-- 1.5.x
-- 1.6.x
-- 1.7.x
-- master
-
-env: pip_install="pip install --user"
-
-matrix:
-  allow_failures:
-  - go: master
-  include:
-  - go: 1.6.x
-    os: osx
-    env: pip_install="sudo pip install"
-  - go: 1.7.x
-    os: osx
-    env: pip_install="sudo pip install"
-
 before_script:
-- $pip_install flake8
+- if [[ $(uname) == Darwin ]]; then
+    sudo pip install flake8;
+  else
+    pip install --user flake8;
+  fi
 - mkdir -p ${GOPATH%%:*}/src/gopkg.in/urfave
 - rm -rvf ${GOPATH%%:*}/src/gopkg.in/urfave/cli.v2
 - rm -rvf ${GOPATH%%:*}/pkg/*/gopkg.in/urfave/cli.v2.a
