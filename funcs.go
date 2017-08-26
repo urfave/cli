@@ -26,3 +26,11 @@ type OnUsageErrorFunc func(context *Context, err error, isSubcommand bool) error
 // FlagStringFunc is used by the help generation to display a flag, which is
 // expected to be a single line.
 type FlagStringFunc func(Flag) string
+
+// FlagNamePrefixFunc is used by the default FlagStringFunc to create prefix
+// text for a flag's full name.
+type FlagNamePrefixFunc func(fullName, placeholder string) string
+
+// FlagEnvHintFunc is used by the default FlagStringFunc to annotate flag help
+// with the environment variable details.
+type FlagEnvHintFunc func(envVar, str string) string
