@@ -778,7 +778,7 @@ func visibleFlags(fl []Flag) []Flag {
 func prefixFor(name string) (prefix string) {
 	if len(name) == 1 {
 		prefix = "-"
-	} else {
+	} else if name[0] != '-' {
 		prefix = "--"
 	}
 
