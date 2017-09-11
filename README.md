@@ -761,11 +761,11 @@ func main() {
     },
     {
       Name:     "add",
-      Category: "template",
+      Category: "Template actions",
     },
     {
       Name:     "remove",
-      Category: "template",
+      Category: "Template actions",
     },
   }
 
