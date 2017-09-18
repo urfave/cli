@@ -158,6 +158,83 @@ func TestStringFlagWithEnvVarHelpOutput(t *testing.T) {
 	}
 }
 
+var prefixStringFlagTests = []struct {
+	name     string
+	usage    string
+	value    string
+	prefixer FlagNamePrefixFunc
+	expected string
+}{
+	{"foo", "", "", func(a, b string) string {
+		return fmt.Sprintf("name: %s, ph: %s", a, b)
+	}, "name: foo, ph: value\t"},
+	{"f", "", "", func(a, b string) string {
+		return fmt.Sprintf("name: %s, ph: %s", a, b)
+	}, "name: f, ph: value\t"},
+	{"f", "The total `foo` desired", "all", func(a, b string) string {
+		return fmt.Sprintf("name: %s, ph: %s", a, b)
+	}, "name: f, ph: foo\tThe total foo desired (default: \"all\")"},
+	{"test", "", "Something", func(a, b string) string {
+		return fmt.Sprintf("name: %s, ph: %s", a, b)
+	}, "name: test, ph: value\t(default: \"Something\")"},
+	{"config,c", "Load configuration from `FILE`", "", func(a, b string) string {
+		return fmt.Sprintf("name: %s, ph: %s", a, b)
+	}, "name: config,c, ph: FILE\tLoad configuration from FILE"},
+	{"config,c", "Load configuration from `CONFIG`", "config.json", func(a, b string) string {
+		return fmt.Sprintf("name: %s, ph: %s", a, b)
+	}, "name: config,c, ph: CONFIG\tLoad configuration from CONFIG (default: \"config.json\")"},
+}
+
+func TestFlagNamePrefixer(t *testing.T) {
+	defer func() {
+		FlagNamePrefixer = prefixedNames
+	}()
+
+	for _, test := range prefixStringFlagTests {
+		FlagNamePrefixer = test.prefixer
+		flag := StringFlag{Name: test.name, Usage: test.usage, Value: test.value}
+		output := flag.String()
+		if output != test.expected {
+			t.Errorf("%q does not match %q", output, test.expected)
+		}
+	}
+}
+
+var envHintFlagTests = []struct {
+	name     string
+	env      string
+	hinter   FlagEnvHintFunc
+	expected string
+}{
+	{"foo", "", func(a, b string) string {
+		return fmt.Sprintf("env: %s, str: %s", a, b)
+	}, "env: , str: --foo value\t"},
+	{"f", "", func(a, b string) string {
+		return fmt.Sprintf("env: %s, str: %s", a, b)
+	}, "env: , str: -f value\t"},
+	{"foo", "ENV_VAR", func(a, b string) string {
+		return fmt.Sprintf("env: %s, str: %s", a, b)
+	}, "env: ENV_VAR, str: --foo value\t"},
+	{"f", "ENV_VAR", func(a, b string) string {
+		return fmt.Sprintf("env: %s, str: %s", a, b)
+	}, "env: ENV_VAR, str: -f value\t"},
+}
+
+func TestFlagEnvHinter(t *testing.T) {
+	defer func() {
+		FlagEnvHinter = withEnvHint
+	}()
+
+	for _, test := range envHintFlagTests {
+		FlagEnvHinter = test.hinter
+		flag := StringFlag{Name: test.name, EnvVar: test.env}
+		output := flag.String()
+		if output != test.expected {
+			t.Errorf("%q does not match %q", output, test.expected)
+		}
+	}
+}
+
 var stringSliceFlagTests = []struct {
 	name     string
 	value    *StringSlice
