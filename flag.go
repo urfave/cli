@@ -37,6 +37,14 @@ var HelpFlag Flag = BoolFlag{
 // to display a flag.
 var FlagStringer FlagStringFunc = stringifyFlag
 
+// FlagNamePrefixer converts a full flag name and its placeholder into the help
+// message flag prefix. This is used by the default FlagStringer.
+var FlagNamePrefixer FlagNamePrefixFunc = prefixedNames
+
+// FlagEnvHinter annotates flag help message with the environment variable
+// details. This is used by the default FlagStringer.
+var FlagEnvHinter FlagEnvHintFunc = withEnvHint
+
 // FlagsByName is a slice of Flag.
 type FlagsByName []Flag
 
@@ -710,13 +718,13 @@ func stringifyFlag(f Flag) string {
 
 	switch f.(type) {
 	case IntSliceFlag:
-		return withEnvHint(fv.FieldByName("EnvVar").String(),
+		return FlagEnvHinter(fv.FieldByName("EnvVar").String(),
 			stringifyIntSliceFlag(f.(IntSliceFlag)))
 	case Int64SliceFlag:
-		return withEnvHint(fv.FieldByName("EnvVar").String(),
+		return FlagEnvHinter(fv.FieldByName("EnvVar").String(),
 			stringifyInt64SliceFlag(f.(Int64SliceFlag)))
 	case StringSliceFlag:
-		return withEnvHint(fv.FieldByName("EnvVar").String(),
+		return FlagEnvHinter(fv.FieldByName("EnvVar").String(),
 			stringifyStringSliceFlag(f.(StringSliceFlag)))
 	}
 
@@ -744,8 +752,8 @@ func stringifyFlag(f Flag) string {
 
 	usageWithDefault := strings.TrimSpace(fmt.Sprintf("%s%s", usage, defaultValueString))
 
-	return withEnvHint(fv.FieldByName("EnvVar").String(),
-		fmt.Sprintf("%s\t%s", prefixedNames(fv.FieldByName("Name").String(), placeholder), usageWithDefault))
+	return FlagEnvHinter(fv.FieldByName("EnvVar").String(),
+		fmt.Sprintf("%s\t%s", FlagNamePrefixer(fv.FieldByName("Name").String(), placeholder), usageWithDefault))
 }
 
 func stringifyIntSliceFlag(f IntSliceFlag) string {
@@ -795,5 +803,5 @@ func stringifySliceFlag(usage, name string, defaultVals []string) string {
 	}
 
 	usageWithDefault := strings.TrimSpace(fmt.Sprintf("%s%s", usage, defaultVal))
-	return fmt.Sprintf("%s\t%s", prefixedNames(name, placeholder), usageWithDefault)
+	return fmt.Sprintf("%s\t%s", FlagNamePrefixer(name, placeholder), usageWithDefault)
 }
