@@ -2,6 +2,7 @@ package altsrc
 
 import (
 	"fmt"
+	"path/filepath"
 	"strconv"
 	"syscall"
 
@@ -152,6 +153,34 @@ func (f *StringFlag) ApplyInputSourceValue(context *cli.Context, isc InputSource
 			}
 			if value != "" {
 				for _, name := range f.Names() {
+					f.set.Set(name, value)
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// ApplyInputSourceValue applies a Path value to the flagSet if required
+func (f *PathFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
+	if f.set != nil {
+		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) {
+			value, err := isc.String(f.PathFlag.Name)
+			if err != nil {
+				return err
+			}
+			if value != "" {
+				for _, name := range f.Names() {
+
+					if !filepath.IsAbs(value) && isc.Source() != "" {
+						basePathAbs, err := filepath.Abs(isc.Source())
+						if err != nil {
+							return err
+						}
+
+						value = filepath.Join(filepath.Dir(basePathAbs), value)
+					}
+
 					f.set.Set(name, value)
 				}
 			}
