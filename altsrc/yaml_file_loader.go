@@ -32,7 +32,7 @@ func NewYamlSourceFromFile(file string) (InputSourceContext, error) {
 		return nil, fmt.Errorf("Unable to load Yaml file '%s': inner error: \n'%v'", ysc.FilePath, err.Error())
 	}
 
-	return &MapInputSource{valueMap: results}, nil
+	return &MapInputSource{file: file, valueMap: results}, nil
 }
 
 // NewYamlSourceFromFlagFunc creates a new Yaml InputSourceContext from a provided flag name and source context.

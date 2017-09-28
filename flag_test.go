@@ -96,6 +96,7 @@ func TestFlagsFromEnv(t *testing.T) {
 		{"foobar", newSetInt64Slice(), &Int64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as int64 slice value for flag seconds: .*`},
 
 		{"foo", "foo", &StringFlag{Name: "name", EnvVars: []string{"NAME"}}, ""},
+		{"path", "path", &PathFlag{Name: "path", EnvVars: []string{"PATH"}}, ""},
 
 		{"foo,bar", newSetStringSlice("foo", "bar"), &StringSliceFlag{Name: "names", EnvVars: []string{"NAMES"}}, ""},
 
@@ -204,6 +205,56 @@ func TestStringFlagApply_SetsAllNames(t *testing.T) {
 	err := set.Parse([]string{"--hay", "u", "-H", "yuu", "--hayyy", "YUUUU"})
 	expect(t, err, nil)
 	expect(t, v, "YUUUU")
+}
+
+var pathFlagTests = []struct {
+	name     string
+	aliases  []string
+	usage    string
+	value    string
+	expected string
+}{
+	{"f", nil, "", "", "-f value\t"},
+	{"f", nil, "Path is the `path` of file", "/path/to/file", "-f path\tPath is the path of file (default: \"/path/to/file\")"},
+}
+
+func TestPathFlagHelpOutput(t *testing.T) {
+	for _, test := range pathFlagTests {
+		flag := &PathFlag{Name: test.name, Aliases: test.aliases, Usage: test.usage, Value: test.value}
+		output := flag.String()
+
+		if output != test.expected {
+			t.Errorf("%q does not match %q", output, test.expected)
+		}
+	}
+}
+
+func TestPathFlagWithEnvVarHelpOutput(t *testing.T) {
+	clearenv()
+	os.Setenv("APP_PATH", "/path/to/file")
+	for _, test := range pathFlagTests {
+		flag := &PathFlag{Name: test.name, Aliases: test.aliases, Value: test.value, EnvVars: []string{"APP_PATH"}}
+		output := flag.String()
+
+		expectedSuffix := " [$APP_PATH]"
+		if runtime.GOOS == "windows" {
+			expectedSuffix = " [%APP_PATH%]"
+		}
+		if !strings.HasSuffix(output, expectedSuffix) {
+			t.Errorf("%s does not end with"+expectedSuffix, output)
+		}
+	}
+}
+
+func TestPathFlagApply_SetsAllNames(t *testing.T) {
+	v := "mmm"
+	fl := PathFlag{Name: "path", Aliases: []string{"p", "PATH"}, Destination: &v}
+	set := flag.NewFlagSet("test", 0)
+	fl.Apply(set)
+
+	err := set.Parse([]string{"--path", "/path/to/file/path", "-p", "/path/to/file/p", "--PATH", "/path/to/file/PATH"})
+	expect(t, err, nil)
+	expect(t, v, "/path/to/file/PATH")
 }
 
 var stringSliceFlagTests = []struct {

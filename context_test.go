@@ -109,6 +109,17 @@ func TestContext_String(t *testing.T) {
 	expect(t, c.String("top-flag"), "hai veld")
 }
 
+func TestContext_Path(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.String("path", "path/to/file", "path to file")
+	parentSet := flag.NewFlagSet("test", 0)
+	parentSet.String("top-path", "path/to/top/file", "doc")
+	parentCtx := NewContext(nil, parentSet, nil)
+	c := NewContext(nil, set, parentCtx)
+	expect(t, c.Path("path"), "path/to/file")
+	expect(t, c.Path("top-path"), "path/to/top/file")
+}
+
 func TestContext_Bool(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("myflag", false, "doc")
