@@ -497,7 +497,6 @@ func TestApp_Float64Flag(t *testing.T) {
 }
 
 func TestApp_ParseSliceFlags(t *testing.T) {
-	var parsedOption, firstArg string
 	var parsedIntSlice []int
 	var parsedStringSlice []string
 
@@ -511,8 +510,6 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 		Action: func(c *Context) error {
 			parsedIntSlice = c.IntSlice("p")
 			parsedStringSlice = c.StringSlice("ip")
-			parsedOption = c.String("option")
-			firstArg = c.Args().First()
 			return nil
 		},
 	}
