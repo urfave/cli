@@ -125,9 +125,9 @@ func (f GenericFlag) Apply(set *flag.FlagSet) {
 // provided by the user for parsing by the flag
 func (f GenericFlag) ApplyWithError(set *flag.FlagSet) error {
 	val := f.Value
-	if envVal, ok := flagFromFileEnv(f.FilePath, f.EnvVar); ok {
-		if err := val.Set(envVal); err != nil {
-			return fmt.Errorf("could not parse %s as value for flag %s: %s", envVal, f.Name, err)
+	if fileEnvVal, ok := flagFromFileEnv(f.FilePath, f.EnvVar); ok {
+		if err := val.Set(fileEnvVal); err != nil {
+			return fmt.Errorf("could not parse %s as value for flag %s: %s", fileEnvVal, f.Name, err)
 		}
 	}
 
@@ -658,8 +658,6 @@ func stringifyFlag(f Flag) string {
 			),
 		)
 	case Int64SliceFlag:
-		// return FlagEnvHinter(fv.FieldByName("EnvVar").String(),
-		// 	stringifyInt64SliceFlag(f.(Int64SliceFlag)))
 		return FlagFileHinter(
 			fv.FieldByName("FilePath").String(),
 			FlagEnvHinter(
@@ -668,8 +666,6 @@ func stringifyFlag(f Flag) string {
 			),
 		)
 	case StringSliceFlag:
-		// return FlagEnvHinter(fv.FieldByName("EnvVar").String(),
-		// 	stringifyStringSliceFlag(f.(StringSliceFlag)))
 		return FlagFileHinter(
 			fv.FieldByName("FilePath").String(),
 			FlagEnvHinter(
@@ -763,16 +759,16 @@ func stringifySliceFlag(usage, name string, defaultVals []string) string {
 }
 
 func flagFromFileEnv(filePath, envName string) (val string, ok bool) {
-	if filePath != "" {
-		if data, err := ioutil.ReadFile(filePath); err == nil {
-			return string(data), true
-		}
-	}
 	for _, envVar := range strings.Split(envName, ",") {
 		envVar = strings.TrimSpace(envVar)
 		if envVal, ok := syscall.Getenv(envVar); ok {
 			return envVal, true
 		}
 	}
-	return
+	for _, fileVar := range strings.Split(filePath, ",") {
+		if data, err := ioutil.ReadFile(fileVar); err == nil {
+			return string(data), true
+		}
+	}
+	return "", false
 }
