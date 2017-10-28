@@ -53,7 +53,7 @@ func (f FlagsByName) Len() int {
 }
 
 func (f FlagsByName) Less(i, j int) bool {
-	return f[i].GetName() < f[j].GetName()
+	return lexicographicLess(f[i].GetName(), f[j].GetName())
 }
 
 func (f FlagsByName) Swap(i, j int) {

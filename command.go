@@ -73,7 +73,7 @@ func (c CommandsByName) Len() int {
 }
 
 func (c CommandsByName) Less(i, j int) bool {
-	return c[i].Name < c[j].Name
+	return lexicographicLess(c[i].Name, c[j].Name)
 }
 
 func (c CommandsByName) Swap(i, j int) {
