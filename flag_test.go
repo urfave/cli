@@ -2,6 +2,8 @@ package cli
 
 import (
 	"fmt"
+	"io"
+	"io/ioutil"
 	"os"
 	"reflect"
 	"regexp"
@@ -1289,4 +1291,39 @@ func TestParseGenericFromEnvCascade(t *testing.T) {
 		},
 	}
 	a.Run([]string{"run"})
+}
+
+func TestFlagFromFile(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("APP_FOO", "123")
+
+	temp, err := ioutil.TempFile("", "urfave_cli_test")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	io.WriteString(temp, "abc")
+	temp.Close()
+	defer func() {
+		os.Remove(temp.Name())
+	}()
+
+	var filePathTests = []struct {
+		path     string
+		name     string
+		expected string
+	}{
+		{"file-does-not-exist", "APP_BAR", ""},
+		{"file-does-not-exist", "APP_FOO", "123"},
+		{"file-does-not-exist", "APP_FOO,APP_BAR", "123"},
+		{temp.Name(), "APP_FOO", "123"},
+		{temp.Name(), "APP_BAR", "abc"},
+	}
+
+	for _, filePathTest := range filePathTests {
+		got, _ := flagFromFileEnv(filePathTest.path, filePathTest.name)
+		if want := filePathTest.expected; got != want {
+			t.Errorf("Did not expect %v - Want %v", got, want)
+		}
+	}
 }
