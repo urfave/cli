@@ -140,13 +140,17 @@ discovery. So a cli app can be as little as one line of code in `main()`.
 package main
 
 import (
+  "log"
   "os"
 
   "github.com/urfave/cli"
 )
 
 func main() {
-  cli.NewApp().Run(os.Args)
+  err := cli.NewApp().Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -161,6 +165,7 @@ package main
 
 import (
   "fmt"
+  "log"
   "os"
 
   "github.com/urfave/cli"
@@ -175,7 +180,10 @@ func main() {
     return nil
   }
 
-  app.Run(os.Args)
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -199,6 +207,7 @@ package main
 
 import (
   "fmt"
+  "log"
   "os"
 
   "github.com/urfave/cli"
@@ -213,7 +222,10 @@ func main() {
     return nil
   }
 
-  app.Run(os.Args)
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -262,6 +274,7 @@ package main
 
 import (
   "fmt"
+  "log"
   "os"
 
   "github.com/urfave/cli"
@@ -275,7 +288,10 @@ func main() {
     return nil
   }
 
-  app.Run(os.Args)
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -291,6 +307,7 @@ package main
 
 import (
   "fmt"
+  "log"
   "os"
 
   "github.com/urfave/cli"
@@ -320,7 +337,10 @@ func main() {
     return nil
   }
 
-  app.Run(os.Args)
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -334,6 +354,7 @@ scanned.
 package main
 
 import (
+  "log"
   "os"
   "fmt"
 
@@ -367,7 +388,10 @@ func main() {
     return nil
   }
 
-  app.Run(os.Args)
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -388,6 +412,7 @@ For example this:
 package main
 
 import (
+  "log"
   "os"
 
   "github.com/urfave/cli"
@@ -403,7 +428,10 @@ func main() {
     },
   }
 
-  app.Run(os.Args)
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -429,6 +457,7 @@ list for the `Name`. e.g.
 package main
 
 import (
+  "log"
   "os"
 
   "github.com/urfave/cli"
@@ -445,7 +474,10 @@ func main() {
     },
   }
 
-  app.Run(os.Args)
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -469,6 +501,7 @@ For example this:
 package main
 
 import (
+  "log"
   "os"
   "sort"
 
@@ -512,7 +545,10 @@ func main() {
   sort.Sort(cli.FlagsByName(app.Flags))
   sort.Sort(cli.CommandsByName(app.Commands))
 
-  app.Run(os.Args)
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -535,6 +571,7 @@ You can also have the default value set from the environment via `EnvVar`.  e.g.
 package main
 
 import (
+  "log"
   "os"
 
   "github.com/urfave/cli"
@@ -552,7 +589,10 @@ func main() {
     },
   }
 
-  app.Run(os.Args)
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -567,6 +607,7 @@ environment variable that resolves is used as the default.
 package main
 
 import (
+  "log"
   "os"
 
   "github.com/urfave/cli"
@@ -584,7 +625,10 @@ func main() {
     },
   }
 
-  app.Run(os.Args)
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -600,6 +644,7 @@ You can also have the default value set from file via `FilePath`.  e.g.
 package main
 
 import (
+  "log"
   "os"
 
   "github.com/urfave/cli"
@@ -616,7 +661,10 @@ func main() {
     },
   }
 
-  app.Run(os.Args)
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -667,6 +715,7 @@ package notmain
 
 import (
   "fmt"
+  "log"
   "os"
 
   "github.com/urfave/cli"
@@ -689,7 +738,10 @@ func main() {
   app.Before = altsrc.InitInputSourceWithContext(flags, altsrc.NewYamlSourceFromFlagFunc("load"))
   app.Flags = flags
 
-  app.Run(os.Args)
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -715,6 +767,7 @@ package main
 
 import (
   "fmt"
+  "log"
   "os"
 
   "github.com/urfave/cli"
@@ -767,7 +820,10 @@ func main() {
     },
   }
 
-  app.Run(os.Args)
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -783,6 +839,7 @@ E.g.
 package main
 
 import (
+  "log"
   "os"
 
   "github.com/urfave/cli"
@@ -805,7 +862,10 @@ func main() {
     },
   }
 
-  app.Run(os.Args)
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -831,6 +891,7 @@ may be set by returning a non-nil error that fulfills `cli.ExitCoder`, *or* a
 package main
 
 import (
+  "log"
   "os"
 
   "github.com/urfave/cli"
@@ -851,7 +912,10 @@ func main() {
     return nil
   }
 
-  app.Run(os.Args)
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -871,6 +935,7 @@ package main
 
 import (
   "fmt"
+  "log"
   "os"
 
   "github.com/urfave/cli"
@@ -902,7 +967,10 @@ func main() {
     },
   }
 
-  app.Run(os.Args)
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -942,6 +1010,7 @@ The default bash completion flag (`--generate-bash-completion`) is defined as
 package main
 
 import (
+  "log"
   "os"
 
   "github.com/urfave/cli"
@@ -960,7 +1029,10 @@ func main() {
       Name: "wat",
     },
   }
-  app.Run(os.Args)
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -986,6 +1058,7 @@ package main
 
 import (
   "fmt"
+  "log"
   "io"
   "os"
 
@@ -1029,7 +1102,10 @@ VERSION:
     fmt.Println("Ha HA.  I pwnd the help!!1")
   }
 
-  cli.NewApp().Run(os.Args)
+  err := cli.NewApp().Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -1044,6 +1120,7 @@ setting `cli.HelpFlag`, e.g.:
 package main
 
 import (
+  "log"
   "os"
 
   "github.com/urfave/cli"
@@ -1056,7 +1133,10 @@ func main() {
     EnvVar: "SHOW_HALP,HALPPLZ",
   }
 
-  cli.NewApp().Run(os.Args)
+  err := cli.NewApp().Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -1079,6 +1159,7 @@ setting `cli.VersionFlag`, e.g.:
 package main
 
 import (
+  "log"
   "os"
 
   "github.com/urfave/cli"
@@ -1093,7 +1174,10 @@ func main() {
   app := cli.NewApp()
   app.Name = "partay"
   app.Version = "19.99.0"
-  app.Run(os.Args)
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -1108,6 +1192,7 @@ package main
 
 import (
   "fmt"
+  "log"
   "os"
 
   "github.com/urfave/cli"
@@ -1125,7 +1210,10 @@ func main() {
   app := cli.NewApp()
   app.Name = "partay"
   app.Version = "19.99.0"
-  app.Run(os.Args)
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
 
@@ -1387,7 +1475,7 @@ func main() {
     ec := cli.NewExitError("ohwell", 86)
     fmt.Fprintf(c.App.Writer, "%d", ec.ExitCode())
     fmt.Printf("made it!\n")
-    return ec
+    return nil
   }
 
   if os.Getenv("HEXY") != "" {
@@ -1401,7 +1489,9 @@ func main() {
     "whatever-values": 19.99,
   }
 
-  app.Run(os.Args)
+
+  // ignore error so we don't exit non-zero and break gfmrun README example tests
+  _ = app.Run(os.Args)
 }
 
 func wopAction(c *cli.Context) error {
