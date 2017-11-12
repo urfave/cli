@@ -57,6 +57,7 @@ func lookupBool(name string, set *flag.FlagSet) bool {
 }
 
 // BoolTFlag is a flag with type bool that is true by default
+// Unlilke BoolFlag it requires explicit =false to be passed at command line to switch
 type BoolTFlag struct {
 	Name        string
 	Usage       string
