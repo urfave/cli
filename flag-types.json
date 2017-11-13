@@ -10,7 +10,7 @@
     "name": "BoolT",
     "type": "bool",
     "value": false,
-    "doctail": " that is true by default",
+    "doctail": " that is true by default, to switch requires explicit `=false` at cli",
     "context_default": "false",
     "parser": "strconv.ParseBool(f.Value.String())"
   },
