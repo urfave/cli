@@ -11,20 +11,23 @@ import (
 
 func TestCommandFlagParsing(t *testing.T) {
 	cases := []struct {
-		testArgs        []string
-		skipFlagParsing bool
-		skipArgReorder  bool
-		expectedErr     error
+		testArgs               []string
+		skipFlagParsing        bool
+		skipArgReorder         bool
+		expectedErr            error
+		UseShortOptionHandling bool
 	}{
 		// Test normal "not ignoring flags" flow
-		{[]string{"test-cmd", "blah", "blah", "-break"}, false, false, errors.New("flag provided but not defined: -break")},
+		{[]string{"test-cmd", "blah", "blah", "-break"}, false, false, errors.New("flag provided but not defined: -break"), false},
 
 		// Test no arg reorder
-		{[]string{"test-cmd", "blah", "blah", "-break"}, false, true, nil},
+		{[]string{"test-cmd", "blah", "blah", "-break"}, false, true, nil, false},
 
-		{[]string{"test-cmd", "blah", "blah"}, true, false, nil},   // Test SkipFlagParsing without any args that look like flags
-		{[]string{"test-cmd", "blah", "-break"}, true, false, nil}, // Test SkipFlagParsing with random flag arg
-		{[]string{"test-cmd", "blah", "-help"}, true, false, nil},  // Test SkipFlagParsing with "special" help flag arg
+		{[]string{"test-cmd", "blah", "blah"}, true, false, nil, false},   // Test SkipFlagParsing without any args that look like flags
+		{[]string{"test-cmd", "blah", "-break"}, true, false, nil, false}, // Test SkipFlagParsing with random flag arg
+		{[]string{"test-cmd", "blah", "-help"}, true, false, nil, false},  // Test SkipFlagParsing with "special" help flag arg
+		{[]string{"test-cmd", "blah"}, false, false, nil, true},           // Test UseShortOptionHandling
+
 	}
 
 	for _, c := range cases {
@@ -36,13 +39,14 @@ func TestCommandFlagParsing(t *testing.T) {
 		context := NewContext(app, set, nil)
 
 		command := Command{
-			Name:            "test-cmd",
-			Aliases:         []string{"tc"},
-			Usage:           "this is for testing",
-			Description:     "testing",
-			Action:          func(_ *Context) error { return nil },
-			SkipFlagParsing: c.skipFlagParsing,
-			SkipArgReorder:  c.skipArgReorder,
+			Name:                   "test-cmd",
+			Aliases:                []string{"tc"},
+			Usage:                  "this is for testing",
+			Description:            "testing",
+			Action:                 func(_ *Context) error { return nil },
+			SkipFlagParsing:        c.skipFlagParsing,
+			SkipArgReorder:         c.skipArgReorder,
+			UseShortOptionHandling: c.UseShortOptionHandling,
 		}
 
 		err := command.Run(context)
