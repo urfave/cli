@@ -93,8 +93,8 @@ func TestFlagsFromEnv(t *testing.T) {
 		a := App{
 			Flags: []Flag{test.flag},
 			Action: func(ctx *Context) error {
-				if !reflect.DeepEqual(ctx.value(test.flag.GetName()), test.output) {
-					t.Errorf("expected %+v to be parsed as %+v, instead was %+v", test.input, test.output, ctx.value(test.flag.GetName()))
+				if !reflect.DeepEqual(ctx.Value(test.flag.GetName()), test.output) {
+					t.Errorf("expected %+v to be parsed as %+v, instead was %+v", test.input, test.output, ctx.Value(test.flag.GetName()))
 				}
 				return nil
 			},
