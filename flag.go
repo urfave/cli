@@ -178,7 +178,11 @@ func (f StringSliceFlag) ApplyWithError(set *flag.FlagSet) error {
 				return fmt.Errorf("could not parse %s as string value for flag %s: %s", envVal, f.Name, err)
 			}
 		}
-		f.Value = newVal
+		if f.Value == nil {
+			f.Value = newVal
+		} else {
+			*f.Value = *newVal
+		}
 	}
 
 	eachName(f.Name, func(name string) {
@@ -235,7 +239,11 @@ func (f IntSliceFlag) ApplyWithError(set *flag.FlagSet) error {
 				return fmt.Errorf("could not parse %s as int slice value for flag %s: %s", envVal, f.Name, err)
 			}
 		}
-		f.Value = newVal
+		if f.Value == nil {
+			f.Value = newVal
+		} else {
+			*f.Value = *newVal
+		}
 	}
 
 	eachName(f.Name, func(name string) {
@@ -292,7 +300,11 @@ func (f Int64SliceFlag) ApplyWithError(set *flag.FlagSet) error {
 				return fmt.Errorf("could not parse %s as int64 slice value for flag %s: %s", envVal, f.Name, err)
 			}
 		}
-		f.Value = newVal
+		if f.Value == nil {
+			f.Value = newVal
+		} else {
+			*f.Value = *newVal
+		}
 	}
 
 	eachName(f.Name, func(name string) {
