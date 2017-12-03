@@ -22,6 +22,7 @@ func TestCommandFlagParsing(t *testing.T) {
 
 		// Test no arg reorder
 		{[]string{"test-cmd", "blah", "blah", "-break"}, false, true, nil, false},
+		{[]string{"test-cmd", "blah", "blah", "-break", "ls", "-l"}, false, true, nil, true},
 
 		{[]string{"test-cmd", "blah", "blah"}, true, false, nil, false},   // Test SkipFlagParsing without any args that look like flags
 		{[]string{"test-cmd", "blah", "-break"}, true, false, nil, false}, // Test SkipFlagParsing with random flag arg
