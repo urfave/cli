@@ -453,7 +453,6 @@ func (a *App) hasFlag(flag Flag) bool {
 }
 
 func (a *App) errWriter() io.Writer {
-
 	// When the app ErrWriter is nil use the package level one.
 	if a.ErrWriter == nil {
 		return ErrWriter
