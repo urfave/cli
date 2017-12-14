@@ -443,13 +443,21 @@ func (a *App) VisibleFlags() []Flag {
 }
 
 func (a *App) hasFlag(flag Flag) bool {
+	found := false
 	for _, f := range a.Flags {
-		if flag == f {
-			return true
+		if flag.GetName() == f.GetName() {
+			found = true
+			break
 		}
+		eachName(flag.GetName(), func(name string) {
+			eachName(f.GetName(), func(n string) {
+				if name == n {
+					found = true
+				}
+			})
+		})
 	}
-
-	return false
+	return found
 }
 
 func (a *App) errWriter() io.Writer {
