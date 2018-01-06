@@ -178,7 +178,7 @@ func (c *Command) parseFlags(args Args) (*flag.FlagSet, error) {
 	set.SetOutput(ioutil.Discard)
 
 	if c.SkipFlagParsing {
-		return set, set.Parse(append([]string{c.Name, "--"}, args...))
+		return set, set.Parse(append([]string{"--"}, args...))
 	}
 
 	if c.UseShortOptionHandling {
