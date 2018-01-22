@@ -268,6 +268,32 @@ func (f *StringFlag) ApplyWithError(set *flag.FlagSet) error {
 	return f.StringFlag.ApplyWithError(set)
 }
 
+// PathFlag is the flag type that wraps cli.PathFlag to allow
+// for other values to be specified
+type PathFlag struct {
+	*cli.PathFlag
+	set *flag.FlagSet
+}
+
+// NewPathFlag creates a new PathFlag
+func NewPathFlag(fl *cli.PathFlag) *PathFlag {
+	return &PathFlag{PathFlag: fl, set: nil}
+}
+
+// Apply saves the flagSet for later usage calls, then calls the
+// wrapped PathFlag.Apply
+func (f *PathFlag) Apply(set *flag.FlagSet) {
+	f.set = set
+	f.PathFlag.Apply(set)
+}
+
+// ApplyWithError saves the flagSet for later usage calls, then calls the
+// wrapped PathFlag.ApplyWithError
+func (f *PathFlag) ApplyWithError(set *flag.FlagSet) error {
+	f.set = set
+	return f.PathFlag.ApplyWithError(set)
+}
+
 // StringSliceFlag is the flag type that wraps cli.StringSliceFlag to allow
 // for other values to be specified
 type StringSliceFlag struct {

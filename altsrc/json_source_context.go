@@ -29,7 +29,13 @@ func NewJSONSourceFromFile(f string) (InputSourceContext, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewJSONSource(data)
+	s, err := newJSONSource(data)
+	if err != nil {
+		return nil, err
+	}
+
+	s.file = f
+	return s, nil
 }
 
 // NewJSONSourceFromReader returns an InputSourceContext suitable for
@@ -45,11 +51,19 @@ func NewJSONSourceFromReader(r io.Reader) (InputSourceContext, error) {
 // NewJSONSource returns an InputSourceContext suitable for retrieving
 // config variables from raw JSON data.
 func NewJSONSource(data []byte) (InputSourceContext, error) {
+	return newJSONSource(data)
+}
+
+func newJSONSource(data []byte) (*jsonSource, error) {
 	var deserialized map[string]interface{}
 	if err := json.Unmarshal(data, &deserialized); err != nil {
 		return nil, err
 	}
 	return &jsonSource{deserialized: deserialized}, nil
+}
+
+func (x *jsonSource) Source() string {
+	return x.file
 }
 
 func (x *jsonSource) Int(name string) (int, error) {
@@ -198,5 +212,6 @@ func jsonGetValue(key string, m map[string]interface{}) (interface{}, error) {
 }
 
 type jsonSource struct {
+	file         string
 	deserialized map[string]interface{}
 }

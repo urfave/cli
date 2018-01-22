@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -20,6 +21,7 @@ type testApplyInputSource struct {
 	ContextValue       flag.Value
 	EnvVarValue        string
 	EnvVarName         string
+	SourcePath         string
 	MapValue           interface{}
 }
 
@@ -178,6 +180,43 @@ func TestStringApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	})
 	expect(t, "goodbye", c.String("test"))
 }
+func TestPathApplyInputSourceMethodSet(t *testing.T) {
+	c := runTest(t, testApplyInputSource{
+		Flag:       NewPathFlag(&cli.PathFlag{Name: "test"}),
+		FlagName:   "test",
+		MapValue:   "hello",
+		SourcePath: "/path/to/source/file",
+	})
+
+	expected := "/path/to/source/hello"
+	if runtime.GOOS == "windows" {
+		expected = `C:\path\to\source\hello`
+	}
+	expect(t, expected, c.String("test"))
+}
+
+func TestPathApplyInputSourceMethodContextSet(t *testing.T) {
+	c := runTest(t, testApplyInputSource{
+		Flag:               NewPathFlag(&cli.PathFlag{Name: "test"}),
+		FlagName:           "test",
+		MapValue:           "hello",
+		ContextValueString: "goodbye",
+		SourcePath:         "/path/to/source/file",
+	})
+	expect(t, "goodbye", c.String("test"))
+}
+
+func TestPathApplyInputSourceMethodEnvVarSet(t *testing.T) {
+	c := runTest(t, testApplyInputSource{
+		Flag:        NewPathFlag(&cli.PathFlag{Name: "test", EnvVars: []string{"TEST"}}),
+		FlagName:    "test",
+		MapValue:    "hello",
+		EnvVarName:  "TEST",
+		EnvVarValue: "goodbye",
+		SourcePath:  "/path/to/source/file",
+	})
+	expect(t, "goodbye", c.String("test"))
+}
 
 func TestIntApplyInputSourceMethodSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
@@ -270,7 +309,10 @@ func TestFloat64ApplyInputSourceMethodEnvVarSet(t *testing.T) {
 }
 
 func runTest(t *testing.T, test testApplyInputSource) *cli.Context {
-	inputSource := &MapInputSource{valueMap: map[interface{}]interface{}{test.FlagName: test.MapValue}}
+	inputSource := &MapInputSource{
+		file:     test.SourcePath,
+		valueMap: map[interface{}]interface{}{test.FlagName: test.MapValue},
+	}
 	set := flag.NewFlagSet(test.FlagSetName, flag.ContinueOnError)
 	c := cli.NewContext(nil, set, nil)
 	if test.EnvVarName != "" && test.EnvVarValue != "" {

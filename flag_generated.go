@@ -450,6 +450,51 @@ func lookupString(name string, set *flag.FlagSet) string {
 	return ""
 }
 
+// PathFlag is a flag with type string
+type PathFlag struct {
+	Name        string
+	Aliases     []string
+	Usage       string
+	EnvVars     []string
+	Hidden      bool
+	Value       string
+	DefaultText string
+
+	Destination *string
+}
+
+// String returns a readable representation of this value
+// (for usage defaults)
+func (f *PathFlag) String() string {
+	return FlagStringer(f)
+}
+
+// Names returns the names of the flag
+func (f *PathFlag) Names() []string {
+	return flagNames(f)
+}
+
+// Path looks up the value of a local PathFlag, returns
+// "" if not found
+func (c *Context) Path(name string) string {
+	if fs := lookupFlagSet(name, c); fs != nil {
+		return lookupPath(name, fs)
+	}
+	return ""
+}
+
+func lookupPath(name string, set *flag.FlagSet) string {
+	f := set.Lookup(name)
+	if f != nil {
+		parsed, err := f.Value.String(), error(nil)
+		if err != nil {
+			return ""
+		}
+		return parsed
+	}
+	return ""
+}
+
 // StringSliceFlag is a flag with type *StringSlice
 type StringSliceFlag struct {
 	Name        string
