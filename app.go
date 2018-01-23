@@ -482,7 +482,7 @@ func (a *Author) String() string {
 }
 
 // DefaultAppComplete returns an ActionFunc to run a default command if non were passed.
-// Usage: `app.Action = DefaultCommand("command")`
+// Usage: `app.Action = cli.DefaultCommand("command")`
 func DefaultCommand(name string) ActionFunc {
 	return func(ctx *Context) error {
 		return ctx.App.Command(name).Run(ctx)
