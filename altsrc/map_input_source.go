@@ -12,6 +12,7 @@ import (
 // MapInputSource implements InputSourceContext to return
 // data from the map that is loaded.
 type MapInputSource struct {
+	file     string
 	valueMap map[interface{}]interface{}
 }
 
@@ -37,6 +38,11 @@ func nestedVal(name string, tree map[interface{}]interface{}) (interface{}, bool
 		}
 	}
 	return nil, false
+}
+
+// Source returns the path of the source file
+func (fsm *MapInputSource) Source() string {
+	return fsm.file
 }
 
 // Int returns an int from the map if it exists otherwise returns 0

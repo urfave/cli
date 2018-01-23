@@ -86,7 +86,7 @@ func NewTomlSourceFromFile(file string) (InputSourceContext, error) {
 	if err := readCommandToml(tsc.FilePath, &results); err != nil {
 		return nil, fmt.Errorf("Unable to load TOML file '%s': inner error: \n'%v'", tsc.FilePath, err.Error())
 	}
-	return &MapInputSource{valueMap: results.Map}, nil
+	return &MapInputSource{file: file, valueMap: results.Map}, nil
 }
 
 // NewTomlSourceFromFlagFunc creates a new TOML InputSourceContext from a provided flag name and source context.

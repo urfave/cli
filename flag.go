@@ -490,6 +490,33 @@ func (f *StringFlag) ApplyWithError(set *flag.FlagSet) error {
 
 // Apply populates the flag given the flag set and environment
 // Ignores errors
+func (f *PathFlag) Apply(set *flag.FlagSet) {
+	f.ApplyWithError(set)
+}
+
+// ApplyWithError populates the flag given the flag set and environment
+func (f *PathFlag) ApplyWithError(set *flag.FlagSet) error {
+	if f.EnvVars != nil {
+		for _, envVar := range f.EnvVars {
+			if envVal, ok := syscall.Getenv(envVar); ok {
+				f.Value = envVal
+				break
+			}
+		}
+	}
+
+	for _, name := range f.Names() {
+		if f.Destination != nil {
+			set.StringVar(f.Destination, name, f.Value, f.Usage)
+			continue
+		}
+		set.String(name, f.Value, f.Usage)
+	}
+	return nil
+}
+
+// Apply populates the flag given the flag set and environment
+// Ignores errors
 func (f *IntFlag) Apply(set *flag.FlagSet) {
 	f.ApplyWithError(set)
 }
