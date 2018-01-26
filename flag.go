@@ -209,18 +209,18 @@ func (f *IntSlice) Set(value string) error {
 }
 
 // String returns a readable representation of this value (for usage defaults)
-func (f *IntSlice) String() string {
-	return fmt.Sprintf("%#v", *f)
+func (f IntSlice) String() string {
+	return fmt.Sprintf("%#v", []int(f))
 }
 
 // Value returns the slice of ints set by this flag
-func (f *IntSlice) Value() []int {
-	return *f
+func (f IntSlice) Value() []int {
+	return f
 }
 
 // Get returns the slice of ints set by this flag
-func (f *IntSlice) Get() interface{} {
-	return *f
+func (f IntSlice) Get() interface{} {
+	return f
 }
 
 // Apply populates the flag given the flag set and environment
