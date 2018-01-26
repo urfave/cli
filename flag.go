@@ -270,18 +270,18 @@ func (f *Int64Slice) Set(value string) error {
 }
 
 // String returns a readable representation of this value (for usage defaults)
-func (f *Int64Slice) String() string {
-	return fmt.Sprintf("%#v", *f)
+func (f Int64Slice) String() string {
+	return fmt.Sprintf("%#v", []int64(f))
 }
 
 // Value returns the slice of ints set by this flag
-func (f *Int64Slice) Value() []int64 {
-	return *f
+func (f Int64Slice) Value() []int64 {
+	return f
 }
 
 // Get returns the slice of ints set by this flag
-func (f *Int64Slice) Get() interface{} {
-	return *f
+func (f Int64Slice) Get() interface{} {
+	return f
 }
 
 // Apply populates the flag given the flag set and environment
