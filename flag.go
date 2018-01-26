@@ -148,18 +148,18 @@ func (f *StringSlice) Set(value string) error {
 }
 
 // String returns a readable representation of this value (for usage defaults)
-func (f *StringSlice) String() string {
-	return fmt.Sprintf("%s", *f)
+func (f StringSlice) String() string {
+	return fmt.Sprintf("%s", []string(f))
 }
 
 // Value returns the slice of strings set by this flag
-func (f *StringSlice) Value() []string {
-	return *f
+func (f StringSlice) Value() []string {
+	return f
 }
 
 // Get returns the slice of strings set by this flag
-func (f *StringSlice) Get() interface{} {
-	return *f
+func (f StringSlice) Get() interface{} {
+	return f
 }
 
 // Apply populates the flag given the flag set and environment
