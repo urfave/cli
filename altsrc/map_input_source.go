@@ -71,22 +71,26 @@ func (fsm *MapInputSource) Int(name string) (int, error) {
 func (fsm *MapInputSource) Duration(name string) (time.Duration, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if exists {
-		otherValue, isType := otherGenericValue.(time.Duration)
-		if !isType {
-			return 0, incorrectTypeForFlagError(name, "duration", otherGenericValue)
-		}
-		return otherValue, nil
+		return castDuration(name, otherGenericValue)
 	}
 	nestedGenericValue, exists := nestedVal(name, fsm.valueMap)
 	if exists {
-		otherValue, isType := nestedGenericValue.(time.Duration)
-		if !isType {
-			return 0, incorrectTypeForFlagError(name, "duration", nestedGenericValue)
-		}
-		return otherValue, nil
+		return castDuration(name, nestedGenericValue)
 	}
 
 	return 0, nil
+}
+
+func castDuration(name string, value interface{}) (time.Duration, error) {
+	if otherValue, isType := value.(time.Duration); isType {
+		return otherValue, nil
+	}
+	otherStringValue, isType := value.(string)
+	parsedValue, err := time.ParseDuration(otherStringValue)
+	if !isType || err != nil {
+		return 0, incorrectTypeForFlagError(name, "duration", value)
+	}
+	return parsedValue, nil
 }
 
 // Float64 returns an float64 from the map if it exists otherwise returns 0
