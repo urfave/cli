@@ -122,7 +122,7 @@ func (c *Command) Run(ctx *Context) (err error) {
 
 	if err != nil {
 		if c.OnUsageError != nil {
-			err := c.OnUsageError(context, err, false)
+			err = c.OnUsageError(context, err, false)
 			HandleExitCoder(err)
 			return err
 		}

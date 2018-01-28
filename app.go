@@ -212,7 +212,7 @@ func (a *App) Run(arguments []string) (err error) {
 
 	if err != nil {
 		if a.OnUsageError != nil {
-			err := a.OnUsageError(context, err, false)
+			err = a.OnUsageError(context, err, false)
 			HandleExitCoder(err)
 			return err
 		}
@@ -479,4 +479,12 @@ func (a *Author) String() string {
 	}
 
 	return fmt.Sprintf("%v%v", a.Name, e)
+}
+
+// DefaultAppComplete returns an ActionFunc to run a default command if non were passed.
+// Usage: `app.Action = cli.DefaultCommand("command")`
+func DefaultCommand(name string) ActionFunc {
+	return func(ctx *Context) error {
+		return ctx.App.Command(name).Run(ctx)
+	}
 }
