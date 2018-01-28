@@ -14,7 +14,7 @@ cache:
 
 before_script:
 - if [[ $(uname) == Darwin ]]; then
-    sudo pip install flake8;
+    sudo pip2 install flake8;
   else
     pip install --user flake8;
   fi
