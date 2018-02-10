@@ -329,6 +329,39 @@ func TestApp_CommandWithArgBeforeFlags(t *testing.T) {
 	expect(t, firstArg, "my-arg")
 }
 
+func TestApp_CommandWithArgBeforeBoolFlags(t *testing.T) {
+	var parsedOption, parsedSecondOption, firstArg string
+	var parsedBool, parsedSecondBool bool
+
+	app := NewApp()
+	command := Command{
+		Name: "cmd",
+		Flags: []Flag{
+			StringFlag{Name: "option", Value: "", Usage: "some option"},
+			StringFlag{Name: "secondOption", Value: "", Usage: "another option"},
+			BoolFlag{Name: "boolflag", Usage: "some bool"},
+			BoolFlag{Name: "b", Usage: "another bool"},
+		},
+		Action: func(c *Context) error {
+			parsedOption = c.String("option")
+			parsedSecondOption = c.String("secondOption")
+			parsedBool = c.Bool("boolflag")
+			parsedSecondBool = c.Bool("b")
+			firstArg = c.Args().First()
+			return nil
+		},
+	}
+	app.Commands = []Command{command}
+
+	app.Run([]string{"", "cmd", "my-arg", "--boolflag", "--option", "my-option", "-b", "--secondOption", "fancy-option"})
+
+	expect(t, parsedOption, "my-option")
+	expect(t, parsedSecondOption, "fancy-option")
+	expect(t, parsedBool, true)
+	expect(t, parsedSecondBool, true)
+	expect(t, firstArg, "my-arg")
+}
+
 func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
 	var context *Context
 
