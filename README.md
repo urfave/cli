@@ -47,6 +47,7 @@ applications in an expressive way.
   * [Version Flag](#version-flag)
     + [Customization](#customization-2)
     + [Full API Example](#full-api-example)
+  * [Combining short Bool options](#combining-short-bool-options)
 - [Contribution Guidelines](#contribution-guidelines)
 
 <!-- tocstop -->
@@ -1499,6 +1500,26 @@ func wopAction(c *cli.Context) error {
   return nil
 }
 ```
+
+### Combining short Bool options
+
+Traditional use of boolean options using their shortnames look like this:
+```
+# cmd foobar -s -o
+```
+
+Suppose you want users to be able to combine your bool options with their shortname.  This
+can be done using the **UseShortOptionHandling** bool in your commands.  Suppose your program
+has a two bool flags such as *serve* and *option* with the short options of *-o* and
+*-s* respectively. With **UseShortOptionHandling** set to *true*, a user can use a syntax
+like:
+```
+# cmd foobar -so
+```
+
+If you enable the **UseShortOptionHandling*, then you must not use any flags that have a single
+leading *-* or this will result in failures.  For example, **-option** can no longer be used.  Flags
+with two leading dashes (such as **--options**) are still valid.
 
 ## Contribution Guidelines
 

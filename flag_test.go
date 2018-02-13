@@ -1048,6 +1048,31 @@ func TestParseMultiBool(t *testing.T) {
 	a.Run([]string{"run", "--serve"})
 }
 
+func TestParseBoolShortOptionHandle(t *testing.T) {
+	a := App{
+		Commands: []Command{
+			{
+				Name: "foobar",
+				UseShortOptionHandling: true,
+				Action: func(ctx *Context) error {
+					if ctx.Bool("serve") != true {
+						t.Errorf("main name not set")
+					}
+					if ctx.Bool("option") != true {
+						t.Errorf("short name not set")
+					}
+					return nil
+				},
+				Flags: []Flag{
+					BoolFlag{Name: "serve, s"},
+					BoolFlag{Name: "option, o"},
+				},
+			},
+		},
+	}
+	a.Run([]string{"run", "foobar", "-so"})
+}
+
 func TestParseDestinationBool(t *testing.T) {
 	var dest bool
 	a := App{

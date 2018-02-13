@@ -178,7 +178,11 @@ func (f StringSliceFlag) ApplyWithError(set *flag.FlagSet) error {
 				return fmt.Errorf("could not parse %s as string value for flag %s: %s", envVal, f.Name, err)
 			}
 		}
-		f.Value = newVal
+		if f.Value == nil {
+			f.Value = newVal
+		} else {
+			*f.Value = *newVal
+		}
 	}
 
 	eachName(f.Name, func(name string) {
@@ -235,7 +239,11 @@ func (f IntSliceFlag) ApplyWithError(set *flag.FlagSet) error {
 				return fmt.Errorf("could not parse %s as int slice value for flag %s: %s", envVal, f.Name, err)
 			}
 		}
-		f.Value = newVal
+		if f.Value == nil {
+			f.Value = newVal
+		} else {
+			*f.Value = *newVal
+		}
 	}
 
 	eachName(f.Name, func(name string) {
@@ -292,7 +300,11 @@ func (f Int64SliceFlag) ApplyWithError(set *flag.FlagSet) error {
 				return fmt.Errorf("could not parse %s as int64 slice value for flag %s: %s", envVal, f.Name, err)
 			}
 		}
-		f.Value = newVal
+		if f.Value == nil {
+			f.Value = newVal
+		} else {
+			*f.Value = *newVal
+		}
 	}
 
 	eachName(f.Name, func(name string) {
@@ -624,7 +636,7 @@ func withEnvHint(envVar, str string) string {
 			suffix = "%"
 			sep = "%, %"
 		}
-		envText = fmt.Sprintf(" [%s%s%s]", prefix, strings.Join(strings.Split(envVar, ","), sep), suffix)
+		envText = " [" + prefix + strings.Join(strings.Split(envVar, ","), sep) + suffix + "]"
 	}
 	return str + envText
 }
@@ -697,13 +709,13 @@ func stringifyFlag(f Flag) string {
 		placeholder = defaultPlaceholder
 	}
 
-	usageWithDefault := strings.TrimSpace(fmt.Sprintf("%s%s", usage, defaultValueString))
+	usageWithDefault := strings.TrimSpace(usage + defaultValueString)
 
 	return FlagFileHinter(
 		fv.FieldByName("FilePath").String(),
 		FlagEnvHinter(
 			fv.FieldByName("EnvVar").String(),
-			fmt.Sprintf("%s\t%s", FlagNamePrefixer(fv.FieldByName("Name").String(), placeholder), usageWithDefault),
+			FlagNamePrefixer(fv.FieldByName("Name").String(), placeholder)+"\t"+usageWithDefault,
 		),
 	)
 }
@@ -712,7 +724,7 @@ func stringifyIntSliceFlag(f IntSliceFlag) string {
 	defaultVals := []string{}
 	if f.Value != nil && len(f.Value.Value()) > 0 {
 		for _, i := range f.Value.Value() {
-			defaultVals = append(defaultVals, fmt.Sprintf("%d", i))
+			defaultVals = append(defaultVals, strconv.Itoa(i))
 		}
 	}
 
@@ -723,7 +735,7 @@ func stringifyInt64SliceFlag(f Int64SliceFlag) string {
 	defaultVals := []string{}
 	if f.Value != nil && len(f.Value.Value()) > 0 {
 		for _, i := range f.Value.Value() {
-			defaultVals = append(defaultVals, fmt.Sprintf("%d", i))
+			defaultVals = append(defaultVals, strconv.FormatInt(i, 10))
 		}
 	}
 
@@ -735,7 +747,7 @@ func stringifyStringSliceFlag(f StringSliceFlag) string {
 	if f.Value != nil && len(f.Value.Value()) > 0 {
 		for _, s := range f.Value.Value() {
 			if len(s) > 0 {
-				defaultVals = append(defaultVals, fmt.Sprintf("%q", s))
+				defaultVals = append(defaultVals, strconv.Quote(s))
 			}
 		}
 	}
@@ -754,8 +766,8 @@ func stringifySliceFlag(usage, name string, defaultVals []string) string {
 		defaultVal = fmt.Sprintf(" (default: %s)", strings.Join(defaultVals, ", "))
 	}
 
-	usageWithDefault := strings.TrimSpace(fmt.Sprintf("%s%s", usage, defaultVal))
-	return fmt.Sprintf("%s\t%s", FlagNamePrefixer(name, placeholder), usageWithDefault)
+	usageWithDefault := strings.TrimSpace(usage + defaultVal)
+	return FlagNamePrefixer(name, placeholder) + "\t" + usageWithDefault
 }
 
 func flagFromFileEnv(filePath, envName string) (val string, ok bool) {
