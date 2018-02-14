@@ -36,12 +36,13 @@ func ApplyInputSourceValues(context *cli.Context, inputSourceContext InputSource
 
 // InitInputSource is used to to setup an InputSourceContext on a cli.Command Before method. It will create a new
 // input source based on the func provided. If there is no error it will then apply the new input source to any flags
-// that are supported by the input source
+// that are supported by the input source. If there is error the function fails silently and flag parsing relies on
+// command line arguments.
 func InitInputSource(flags []cli.Flag, createInputSource func() (InputSourceContext, error)) cli.BeforeFunc {
 	return func(context *cli.Context) error {
 		inputSource, err := createInputSource()
 		if err != nil {
-			return fmt.Errorf("Unable to create input source: inner error: \n'%v'", err.Error())
+			return nil
 		}
 
 		return ApplyInputSourceValues(context, inputSource, flags)
@@ -50,12 +51,13 @@ func InitInputSource(flags []cli.Flag, createInputSource func() (InputSourceCont
 
 // InitInputSourceWithContext is used to to setup an InputSourceContext on a cli.Command Before method. It will create a new
 // input source based on the func provided with potentially using existing cli.Context values to initialize itself. If there is
-// no error it will then apply the new input source to any flags that are supported by the input source
+// no error it will then apply the new input source to any flags that are supported by the input source. If there is error the
+// function fails silently and flag parsing relies on command line arguments.
 func InitInputSourceWithContext(flags []cli.Flag, createInputSource func(context *cli.Context) (InputSourceContext, error)) cli.BeforeFunc {
 	return func(context *cli.Context) error {
 		inputSource, err := createInputSource(context)
 		if err != nil {
-			return fmt.Errorf("Unable to create input source with context: inner error: \n'%v'", err.Error())
+			return nil
 		}
 
 		return ApplyInputSourceValues(context, inputSource, flags)
