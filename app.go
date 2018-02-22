@@ -79,6 +79,8 @@ type App struct {
 	Author string
 	// Email of Author (Note: Use App.Authors, this is deprecated)
 	Email string
+	// Reader reader to read input from
+	Reader io.Reader
 	// Writer writer to write output to
 	Writer io.Writer
 	// ErrWriter writes error output
@@ -108,6 +110,21 @@ func compileTime() time.Time {
 	return info.ModTime()
 }
 
+func defaultReader() io.Reader {
+	return os.Stdin
+}
+
+func defaultWriter() io.Writer {
+	return os.Stdout
+}
+
+func defaultErrWriter() io.Writer {
+	if ErrWriter == nil {
+		return os.Stderr
+	}
+	return ErrWriter
+}
+
 // NewApp creates a new cli Application with some reasonable defaults for Name,
 // Usage, Version and Action.
 func NewApp() *App {
@@ -120,7 +137,9 @@ func NewApp() *App {
 		BashComplete: DefaultAppComplete,
 		Action:       helpCommand.Action,
 		Compiled:     compileTime(),
-		Writer:       os.Stdout,
+		Reader:       defaultReader(),
+		Writer:       defaultWriter(),
+		ErrWriter:    defaultErrWriter(),
 	}
 }
 
@@ -168,8 +187,14 @@ func (a *App) Setup() {
 		a.Metadata = make(map[string]interface{})
 	}
 
+	if a.Reader == nil {
+		a.Reader = defaultReader()
+	}
 	if a.Writer == nil {
-		a.Writer = os.Stdout
+		a.Writer = defaultWriter()
+	}
+	if a.ErrWriter == nil {
+		a.ErrWriter = defaultErrWriter()
 	}
 }
 
@@ -278,7 +303,7 @@ func (a *App) Run(arguments []string) (err error) {
 // code in the cli.ExitCoder
 func (a *App) RunAndExitOnError() {
 	if err := a.Run(os.Args); err != nil {
-		fmt.Fprintln(a.errWriter(), err)
+		fmt.Fprintln(a.ErrWriter, err)
 		OsExiter(1)
 	}
 }
@@ -450,15 +475,6 @@ func (a *App) hasFlag(flag Flag) bool {
 	}
 
 	return false
-}
-
-func (a *App) errWriter() io.Writer {
-	// When the app ErrWriter is nil use the package level one.
-	if a.ErrWriter == nil {
-		return ErrWriter
-	}
-
-	return a.ErrWriter
 }
 
 func (a *App) appendFlag(flag Flag) {

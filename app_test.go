@@ -300,12 +300,6 @@ func TestApp_Command(t *testing.T) {
 	}
 }
 
-func TestApp_Setup_defaultsWriter(t *testing.T) {
-	app := &App{}
-	app.Setup()
-	expect(t, app.Writer, os.Stdout)
-}
-
 func TestApp_CommandWithArgBeforeFlags(t *testing.T) {
 	var parsedOption, firstArg string
 
@@ -618,11 +612,54 @@ func TestApp_ParseSliceFlagsWithMissingValue(t *testing.T) {
 	}
 }
 
-func TestApp_DefaultStdout(t *testing.T) {
+func TestApp_DefaultReader(t *testing.T) {
+	app := NewApp()
+
+	if app.Reader != os.Stdin {
+		t.Error("Default input reader not set.")
+	}
+}
+
+func TestApp_DefaultWriter(t *testing.T) {
 	app := NewApp()
 
 	if app.Writer != os.Stdout {
 		t.Error("Default output writer not set.")
+	}
+}
+
+func TestApp_DefaultErrWriter(t *testing.T) {
+	app := NewApp()
+
+	if app.ErrWriter != ErrWriter {
+		t.Error("Default output error writer not set.")
+	}
+}
+
+func TestApp_Setup_DefaultsReader(t *testing.T) {
+	app := &App{}
+	app.Setup()
+
+	if app.Reader != os.Stdin {
+		t.Error("Input reader not set after setup.")
+	}
+}
+
+func TestApp_Setup_DefaultsWriter(t *testing.T) {
+	app := &App{}
+	app.Setup()
+
+	if app.Writer != os.Stdout {
+		t.Error("Output writer not set after setup.")
+	}
+}
+
+func TestApp_Setup_DefaultsErrWriter(t *testing.T) {
+	app := &App{}
+	app.Setup()
+
+	if app.ErrWriter != ErrWriter {
+		t.Error("Output error writer not set after setup.")
 	}
 }
 
