@@ -1142,6 +1142,7 @@ demonstration purposes.  Use of one's imagination is encouraged.
 package main
 
 import (
+  "bytes"
   "errors"
   "flag"
   "fmt"
@@ -1385,10 +1386,17 @@ func main() {
 
     nc.Set("wat", "also-nope")
 
+    input, _ := ioutil.ReadAll(c.App.Reader)
+    c.App.Writer.Write(input)
+
     ec := cli.NewExitError("ohwell", 86)
     fmt.Fprintf(c.App.Writer, "%d", ec.ExitCode())
     fmt.Printf("made it!\n")
     return ec
+  }
+
+  if stuff := os.Getenv("STUFF"); stuff != "" {
+    app.Reader = bytes.NewReader([]byte(stuff))
   }
 
   if os.Getenv("HEXY") != "" {
