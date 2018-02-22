@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"regexp"
 	"runtime"
 	"strings"
 	"testing"
@@ -255,6 +256,53 @@ func TestShowSubcommandHelp_CommandAliases(t *testing.T) {
 
 	if !strings.Contains(output.String(), "frobbly, fr, frob, bork") {
 		t.Errorf("expected output to include all command aliases; got: %q", output.String())
+	}
+}
+
+func TestShowAppHelp_MultilineDescription(t *testing.T) {
+	app := &App{
+		Name:        "foo",
+		Description: "plugh\nxyzzy",
+		Action: func(ctx *Context) error {
+			return nil
+		},
+	}
+
+	output := &bytes.Buffer{}
+	app.Writer = output
+	app.Run([]string{"foo", "--help"})
+
+	plughSubs := regexp.MustCompile(`(\s*)plugh`).FindStringSubmatch(output.String())
+	xyzzySubs := regexp.MustCompile(`(\s*)xyzzy`).FindStringSubmatch(output.String())
+
+	if plughSubs == nil || xyzzySubs == nil || plughSubs[1] != xyzzySubs[1] {
+		t.Errorf("expected description lines to be equally indented; got: %q", output.String())
+	}
+}
+
+func TestShowCommandHelp_MultilineDescription(t *testing.T) {
+	app := &App{
+		Commands: []Command{
+			{
+				Name:        "frobbly",
+				Aliases:     []string{"fr", "frob", "bork"},
+				Description: "plugh\nxyzzy",
+				Action: func(ctx *Context) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	output := &bytes.Buffer{}
+	app.Writer = output
+	app.Run([]string{"foo", "help", "fr"})
+
+	plughSubs := regexp.MustCompile(`(\s*)plugh`).FindStringSubmatch(output.String())
+	xyzzySubs := regexp.MustCompile(`(\s*)xyzzy`).FindStringSubmatch(output.String())
+
+	if plughSubs == nil || xyzzySubs == nil || plughSubs[1] != xyzzySubs[1] {
+		t.Errorf("expected description lines to be equally indented; got: %q", output.String())
 	}
 }
 

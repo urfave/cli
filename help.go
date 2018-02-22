@@ -21,8 +21,8 @@ USAGE:
 VERSION:
    {{.Version}}{{end}}{{end}}{{if .Description}}
 
-DESCRIPTION:
-   {{.Description}}{{end}}{{if len .Authors}}
+DESCRIPTION:{{with $desclines := split .Description "\n"}}{{range $descline := $desclines}}
+   {{$descline}}{{end}}{{end}}{{end}}{{if len .Authors}}
 
 AUTHOR{{with $length := len .Authors}}{{if ne 1 $length}}S{{end}}{{end}}:
    {{range $index, $author := .Authors}}{{if $index}}
@@ -53,8 +53,8 @@ USAGE:
 CATEGORY:
    {{.Category}}{{end}}{{if .Description}}
 
-DESCRIPTION:
-   {{.Description}}{{end}}{{if .VisibleFlags}}
+DESCRIPTION:{{with $desclines := split .Description "\n"}}{{range $descline := $desclines}}
+   {{$descline}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
 
 OPTIONS:
    {{range .VisibleFlags}}{{.}}
@@ -229,7 +229,8 @@ func ShowCommandCompletions(ctx *Context, command string) {
 
 func printHelpCustom(out io.Writer, templ string, data interface{}, customFunc map[string]interface{}) {
 	funcMap := template.FuncMap{
-		"join": strings.Join,
+		"join":  strings.Join,
+		"split": strings.Split,
 	}
 	if customFunc != nil {
 		for key, value := range customFunc {
