@@ -15,6 +15,12 @@ type MapInputSource struct {
 	valueMap map[interface{}]interface{}
 }
 
+// NewMapInputSource instantiates a MapInputSource from an arbitrary
+// string->value map
+func NewMapInputSource(valueMap map[interface{}]interface{}) MapInputSource {
+	return MapInputSource{valueMap: valueMap}
+}
+
 // nestedVal checks if the name has '.' delimiters.
 // If so, it tries to traverse the tree by the '.' delimited sections to find
 // a nested value for the key.
