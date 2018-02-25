@@ -9,9 +9,9 @@ cli
 [![top level coverage](https://gocover.io/_badge/github.com/urfave/cli?0 "top level coverage")](http://gocover.io/github.com/urfave/cli) /
 [![altsrc coverage](https://gocover.io/_badge/github.com/urfave/cli/altsrc?0 "altsrc coverage")](http://gocover.io/github.com/urfave/cli/altsrc)
 
-**Notice:** This is the library formerly known as
-`github.com/codegangsta/cli` -- Github will automatically redirect requests
-to this repository, but we recommend updating your references for clarity.
+This is the library formerly known as `github.com/codegangsta/cli` -- Github
+will automatically redirect requests to this repository, but we recommend
+updating your references for clarity.
 
 cli is a simple, fast, and fun package for building command line apps in Go. The
 goal is to enable developers to write fast and distributable command line
@@ -32,7 +32,9 @@ applications in an expressive way.
     + [Alternate Names](#alternate-names)
     + [Ordering](#ordering)
     + [Values from the Environment](#values-from-the-environment)
+    + [Values from files](#values-from-files)
     + [Values from alternate input sources (YAML, TOML, and others)](#values-from-alternate-input-sources-yaml-toml-and-others)
+    + [Precedence](#precedence)
   * [Subcommands](#subcommands)
   * [Subcommands categories](#subcommands-categories)
   * [Exit code](#exit-code)
@@ -45,6 +47,7 @@ applications in an expressive way.
   * [Version Flag](#version-flag)
     + [Customization](#customization-2)
     + [Full API Example](#full-api-example)
+  * [Combining short Bool options](#combining-short-bool-options)
 - [Contribution Guidelines](#contribution-guidelines)
 
 <!-- tocstop -->
@@ -586,6 +589,41 @@ func main() {
 }
 ```
 
+#### Values from files
+
+You can also have the default value set from file via `FilePath`.  e.g.
+
+<!-- {
+  "args": ["&#45;&#45;help"],
+  "output": "password for the mysql database"
+} -->
+``` go
+package main
+
+import (
+  "os"
+
+  "github.com/urfave/cli"
+)
+
+func main() {
+  app := cli.NewApp()
+
+  app.Flags = []cli.Flag {
+    cli.StringFlag{
+      Name: "password, p",
+      Usage: "password for the mysql database",
+      FilePath: "/etc/mysql/password",
+    },
+  }
+
+  app.Run(os.Args)
+}
+```
+
+Note that default values set from file (e.g. `FilePath`) take precedence over
+default values set from the enviornment (e.g. `EnvVar`).
+
 #### Values from alternate input sources (YAML, TOML, and others)
 
 There is a separate package altsrc that adds support for getting flag values
@@ -655,6 +693,15 @@ func main() {
   app.Run(os.Args)
 }
 ```
+
+#### Precedence
+
+The precedence for flag value sources is as follows (highest to lowest):
+
+0. Command line flag value from user
+0. Environment variable (if specified)
+0. Configuration file (if specified)
+0. Default defined on the flag
 
 ### Subcommands
 
@@ -751,11 +798,11 @@ func main() {
     },
     {
       Name:     "add",
-      Category: "template",
+      Category: "Template actions",
     },
     {
       Name:     "remove",
-      Category: "template",
+      Category: "Template actions",
     },
   }
 
@@ -1364,18 +1411,26 @@ func wopAction(c *cli.Context) error {
 }
 ```
 
+### Combining short Bool options
+
+Traditional use of boolean options using their shortnames look like this:
+```
+# cmd foobar -s -o
+```
+
+Suppose you want users to be able to combine your bool options with their shortname.  This
+can be done using the **UseShortOptionHandling** bool in your commands.  Suppose your program
+has a two bool flags such as *serve* and *option* with the short options of *-o* and
+*-s* respectively. With **UseShortOptionHandling** set to *true*, a user can use a syntax
+like:
+```
+# cmd foobar -so
+```
+
+If you enable the **UseShortOptionHandling*, then you must not use any flags that have a single
+leading *-* or this will result in failures.  For example, **-option** can no longer be used.  Flags
+with two leading dashes (such as **--options**) are still valid.
+
 ## Contribution Guidelines
 
-Feel free to put up a pull request to fix a bug or maybe add a feature. I will
-give it a code review and make sure that it does not break backwards
-compatibility. If I or any other collaborators agree that it is in line with
-the vision of the project, we will work with you to get the code into
-a mergeable state and merge it into the master branch.
-
-If you have contributed something significant to the project, we will most
-likely add you as a collaborator. As a collaborator you are given the ability
-to merge others pull requests. It is very important that new code does not
-break existing code, so be careful about what code you do choose to merge.
-
-If you feel like you have contributed to the project but have not yet been
-added as a collaborator, we probably forgot to add you, please open an issue.
+See [./CONTRIBUTING.md](./CONTRIBUTING.md)
