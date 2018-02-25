@@ -258,6 +258,44 @@ func ExampleApp_Run_bashComplete() {
 	// h
 }
 
+func ExampleApp_Run_zshComplete() {
+	// set args for examples sake
+	os.Args = []string{"greet", "--generate-bash-completion"}
+	os.Setenv("_CLI_ZSH_AUTOCOMPLETE_HACK", "1")
+
+	app := NewApp()
+	app.Name = "greet"
+	app.EnableBashCompletion = true
+	app.Commands = []Command{
+		{
+			Name:        "describeit",
+			Aliases:     []string{"d"},
+			Usage:       "use it to see a description",
+			Description: "This is how we describe describeit the function",
+			Action: func(c *Context) error {
+				fmt.Printf("i like to describe things")
+				return nil
+			},
+		}, {
+			Name:        "next",
+			Usage:       "next example",
+			Description: "more stuff to see when generating bash completion",
+			Action: func(c *Context) error {
+				fmt.Printf("the next example")
+				return nil
+			},
+		},
+	}
+
+	app.Run(os.Args)
+	// Output:
+	// describeit:use it to see a description
+	// d:use it to see a description
+	// next:next example
+	// help:Shows a list of commands or help for one command
+	// h:Shows a list of commands or help for one command
+}
+
 func TestApp_Run(t *testing.T) {
 	s := ""
 
@@ -326,6 +364,39 @@ func TestApp_CommandWithArgBeforeFlags(t *testing.T) {
 	app.Run([]string{"", "cmd", "my-arg", "--option", "my-option"})
 
 	expect(t, parsedOption, "my-option")
+	expect(t, firstArg, "my-arg")
+}
+
+func TestApp_CommandWithArgBeforeBoolFlags(t *testing.T) {
+	var parsedOption, parsedSecondOption, firstArg string
+	var parsedBool, parsedSecondBool bool
+
+	app := NewApp()
+	command := Command{
+		Name: "cmd",
+		Flags: []Flag{
+			StringFlag{Name: "option", Value: "", Usage: "some option"},
+			StringFlag{Name: "secondOption", Value: "", Usage: "another option"},
+			BoolFlag{Name: "boolflag", Usage: "some bool"},
+			BoolFlag{Name: "b", Usage: "another bool"},
+		},
+		Action: func(c *Context) error {
+			parsedOption = c.String("option")
+			parsedSecondOption = c.String("secondOption")
+			parsedBool = c.Bool("boolflag")
+			parsedSecondBool = c.Bool("b")
+			firstArg = c.Args().First()
+			return nil
+		},
+	}
+	app.Commands = []Command{command}
+
+	app.Run([]string{"", "cmd", "my-arg", "--boolflag", "--option", "my-option", "-b", "--secondOption", "fancy-option"})
+
+	expect(t, parsedOption, "my-option")
+	expect(t, parsedSecondOption, "fancy-option")
+	expect(t, parsedBool, true)
+	expect(t, parsedSecondBool, true)
 	expect(t, firstArg, "my-arg")
 }
 
@@ -497,7 +568,6 @@ func TestApp_Float64Flag(t *testing.T) {
 }
 
 func TestApp_ParseSliceFlags(t *testing.T) {
-	var parsedOption, firstArg string
 	var parsedIntSlice []int
 	var parsedStringSlice []string
 
@@ -511,8 +581,6 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 		Action: func(c *Context) error {
 			parsedIntSlice = c.IntSlice("p")
 			parsedStringSlice = c.StringSlice("ip")
-			parsedOption = c.String("option")
-			firstArg = c.Args().First()
 			return nil
 		},
 	}
@@ -1658,6 +1726,42 @@ func TestHandleAction_WithInvalidFuncReturnSignature(t *testing.T) {
 
 	if exitErr.ExitCode() != 2 {
 		t.Fatalf("expected error exit code to be 2, but got: %v", exitErr.ExitCode())
+	}
+}
+
+func TestHandleExitCoder_Default(t *testing.T) {
+	app := NewApp()
+	fs, err := flagSet(app.Name, app.Flags)
+	if err != nil {
+		t.Errorf("error creating FlagSet: %s", err)
+	}
+
+	ctx := NewContext(app, fs, nil)
+	app.handleExitCoder(ctx, NewExitError("Default Behavior Error", 42))
+
+	output := fakeErrWriter.String()
+	if !strings.Contains(output, "Default") {
+		t.Fatalf("Expected Default Behavior from Error Handler but got: %s", output)
+	}
+}
+
+func TestHandleExitCoder_Custom(t *testing.T) {
+	app := NewApp()
+	fs, err := flagSet(app.Name, app.Flags)
+	if err != nil {
+		t.Errorf("error creating FlagSet: %s", err)
+	}
+
+	app.ExitErrHandler = func(_ *Context, _ error) {
+		fmt.Fprintln(ErrWriter, "I'm a Custom error handler, I print what I want!")
+	}
+
+	ctx := NewContext(app, fs, nil)
+	app.handleExitCoder(ctx, NewExitError("Default Behavior Error", 42))
+
+	output := fakeErrWriter.String()
+	if !strings.Contains(output, "Custom") {
+		t.Fatalf("Expected Custom Behavior from Error Handler but got: %s", output)
 	}
 }
 
