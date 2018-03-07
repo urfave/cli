@@ -305,7 +305,6 @@ func TestCommandSkipFlagParsing(t *testing.T) {
 					},
 					Action: func(c *Context) {
 						fmt.Printf("%+v\n", c.String("flag"))
-						value = c.String("flag")
 						args = c.Args()
 					},
 				},
