@@ -120,29 +120,29 @@ func ExampleApp_Run_appHelp() {
 	app.Run(os.Args)
 	// Output:
 	// NAME:
-	//    greet - A new cli application
+	//   greet - A new cli application
 	//
 	// USAGE:
-	//    greet [global options] command [command options] [arguments...]
+	//   greet [global options] command [command options] [arguments...]
 	//
 	// VERSION:
-	//    0.1.0
+	//   0.1.0
 	//
 	// DESCRIPTION:
-	//    This is how we describe greet the app
+	//   This is how we describe greet the app
 	//
 	// AUTHORS:
-	//    Harrison <harrison@lolwut.com>
-	//    Oliver Allen <oliver@toyshop.com>
+	//   Harrison <harrison@lolwut.com>
+	//   Oliver Allen <oliver@toyshop.com>
 	//
 	// COMMANDS:
-	//      describeit, d  use it to see a description
-	//      help, h        Shows a list of commands or help for one command
+	//   describeit, d  use it to see a description
+	//   help, h        Shows a list of commands or help for one command
 	//
-	// GLOBAL OPTIONS:
-	//    --name value   a name to say (default: "bob")
-	//    --help, -h     show help
-	//    --version, -v  print the version
+	// GLOBAL FLAGS:
+	//   --name value   a name to say (default: "bob")
+	//   --help, -h     show help
+	//   --version, -v  print the version
 }
 
 func ExampleApp_Run_commandHelp() {
@@ -169,13 +169,16 @@ func ExampleApp_Run_commandHelp() {
 	app.Run(os.Args)
 	// Output:
 	// NAME:
-	//    greet describeit - use it to see a description
+	//   greet describeit - use it to see a description
 	//
 	// USAGE:
-	//    greet describeit [arguments...]
+	//   greet describeit [command options] [arguments...]
 	//
 	// DESCRIPTION:
-	//    This is how we describe describeit the function
+	//   This is how we describe describeit the function
+	//
+	// FLAGS:
+	//   --help, -h  show help
 }
 
 func ExampleApp_Run_noAction() {
@@ -184,17 +187,17 @@ func ExampleApp_Run_noAction() {
 	app.Run([]string{"greet"})
 	// Output:
 	// NAME:
-	//    greet
+	//   greet
 	//
 	// USAGE:
-	//     [global options] command [command options] [arguments...]
+	//    [global options] command [command options] [arguments...]
 	//
 	// COMMANDS:
-	//      help, h  Shows a list of commands or help for one command
+	//   help, h  Shows a list of commands or help for one command
 	//
-	// GLOBAL OPTIONS:
-	//    --help, -h     show help
-	//    --version, -v  print the version
+	// GLOBAL FLAGS:
+	//   --help, -h     show help
+	//   --version, -v  print the version
 }
 
 func ExampleApp_Run_subcommandNoAction() {
@@ -211,13 +214,16 @@ func ExampleApp_Run_subcommandNoAction() {
 	app.Run([]string{"greet", "describeit"})
 	// Output:
 	// NAME:
-	//     describeit - use it to see a description
+	//    describeit - use it to see a description
 	//
 	// USAGE:
-	//     describeit [arguments...]
+	//    describeit [command options] [arguments...]
 	//
 	// DESCRIPTION:
-	//    This is how we describe describeit the function
+	//   This is how we describe describeit the function
+	//
+	// FLAGS:
+	//   --help, -h  show help
 
 }
 
@@ -1164,7 +1170,7 @@ func TestApp_Run_SubcommandFullPath(t *testing.T) {
 	if !strings.Contains(output, "command foo bar - does bar things") {
 		t.Errorf("expected full path to subcommand: %s", output)
 	}
-	if !strings.Contains(output, "command foo bar [arguments...]") {
+	if !strings.Contains(output, "command foo bar [command options] [arguments...]") {
 		t.Errorf("expected full path to subcommand: %s", output)
 	}
 }
@@ -1195,7 +1201,7 @@ func TestApp_Run_SubcommandHelpName(t *testing.T) {
 	if !strings.Contains(output, "custom - does bar things") {
 		t.Errorf("expected HelpName for subcommand: %s", output)
 	}
-	if !strings.Contains(output, "custom [arguments...]") {
+	if !strings.Contains(output, "custom [command options] [arguments...]") {
 		t.Errorf("expected HelpName to subcommand: %s", output)
 	}
 }
@@ -1226,7 +1232,7 @@ func TestApp_Run_CommandHelpName(t *testing.T) {
 	if !strings.Contains(output, "command foo bar - does bar things") {
 		t.Errorf("expected full path to subcommand: %s", output)
 	}
-	if !strings.Contains(output, "command foo bar [arguments...]") {
+	if !strings.Contains(output, "command foo bar [command options] [arguments...]") {
 		t.Errorf("expected full path to subcommand: %s", output)
 	}
 }
@@ -1257,7 +1263,7 @@ func TestApp_Run_CommandSubcommandHelpName(t *testing.T) {
 	if !strings.Contains(output, "base foo - foo commands") {
 		t.Errorf("expected full path to subcommand: %s", output)
 	}
-	if !strings.Contains(output, "base foo command [command options] [arguments...]") {
+	if !strings.Contains(output, "base foo COMMAND [COMMAND FLAGS | -h] [ARGUMENTS...]") {
 		t.Errorf("expected full path to subcommand: %s", output)
 	}
 }
@@ -1328,7 +1334,7 @@ func TestApp_Run_Version(t *testing.T) {
 func TestApp_Run_Categories(t *testing.T) {
 	app := NewApp()
 	app.Name = "categories"
-	app.HideHelp = true
+	app.HideHelpCommand = true
 	app.Commands = []Command{
 		{
 			Name:     "command1",
@@ -1370,7 +1376,7 @@ func TestApp_Run_Categories(t *testing.T) {
 	output := buf.String()
 	t.Logf("output: %q\n", buf.Bytes())
 
-	if !strings.Contains(output, "1:\n     command1") {
+	if !strings.Contains(output, "1:\n  command1") {
 		t.Errorf("want buffer to include category %q, did not: \n%q", "1:\n     command1", output)
 	}
 }
@@ -1378,7 +1384,7 @@ func TestApp_Run_Categories(t *testing.T) {
 func TestApp_VisibleCategories(t *testing.T) {
 	app := NewApp()
 	app.Name = "visible-categories"
-	app.HideHelp = true
+	app.HideHelpCommand = true
 	app.Commands = []Command{
 		{
 			Name:     "command1",
@@ -1418,7 +1424,7 @@ func TestApp_VisibleCategories(t *testing.T) {
 
 	app = NewApp()
 	app.Name = "visible-categories"
-	app.HideHelp = true
+	app.HideHelpCommand = true
 	app.Commands = []Command{
 		{
 			Name:     "command1",
@@ -1453,7 +1459,7 @@ func TestApp_VisibleCategories(t *testing.T) {
 
 	app = NewApp()
 	app.Name = "visible-categories"
-	app.HideHelp = true
+	app.HideHelpCommand = true
 	app.Commands = []Command{
 		{
 			Name:     "command1",
