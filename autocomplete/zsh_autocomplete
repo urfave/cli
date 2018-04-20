@@ -1,3 +1,5 @@
+: ${PROG:=$(basename ${(%):-%N})}
+
 _cli_zsh_autocomplete() {
 
   local -a opts
@@ -9,3 +11,5 @@ _cli_zsh_autocomplete() {
 }
 
 compdef _cli_zsh_autocomplete $PROG
+
+unset PROG
