@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -94,6 +95,8 @@ type App struct {
 	// cli.go uses text/template to render templates. You can
 	// render custom help text by setting this variable.
 	CustomAppHelpTemplate string
+	// FlagErrorHandling sets the flag error handling type for flag parsing
+	FlagErrorHandling flag.ErrorHandling
 
 	didSetup bool
 }
@@ -112,15 +115,16 @@ func compileTime() time.Time {
 // Usage, Version and Action.
 func NewApp() *App {
 	return &App{
-		Name:         filepath.Base(os.Args[0]),
-		HelpName:     filepath.Base(os.Args[0]),
-		Usage:        "A new cli application",
-		UsageText:    "",
-		Version:      "0.0.0",
-		BashComplete: DefaultAppComplete,
-		Action:       helpCommand.Action,
-		Compiled:     compileTime(),
-		Writer:       os.Stdout,
+		Name:              filepath.Base(os.Args[0]),
+		HelpName:          filepath.Base(os.Args[0]),
+		Usage:             "A new cli application",
+		UsageText:         "",
+		Version:           "0.0.0",
+		BashComplete:      DefaultAppComplete,
+		Action:            helpCommand.Action,
+		Compiled:          compileTime(),
+		Writer:            os.Stdout,
+		FlagErrorHandling: flag.ContinueOnError,
 	}
 }
 
@@ -187,7 +191,7 @@ func (a *App) Run(arguments []string) (err error) {
 	shellComplete, arguments := checkShellCompleteFlag(a, arguments)
 
 	// parse flags
-	set, err := flagSet(a.Name, a.Flags)
+	set, err := flagSet(a.Name, a.Flags, a.FlagErrorHandling)
 	if err != nil {
 		return err
 	}
@@ -306,7 +310,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	a.Commands = newCmds
 
 	// parse flags
-	set, err := flagSet(a.Name, a.Flags)
+	set, err := flagSet(a.Name, a.Flags, a.FlagErrorHandling)
 	if err != nil {
 		return err
 	}

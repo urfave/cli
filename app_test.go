@@ -1648,7 +1648,7 @@ func TestCustomHelpVersionFlags(t *testing.T) {
 func TestHandleAction_WithNonFuncAction(t *testing.T) {
 	app := NewApp()
 	app.Action = 42
-	fs, err := flagSet(app.Name, app.Flags)
+	fs, err := flagSet(app.Name, app.Flags, app.FlagErrorHandling)
 	if err != nil {
 		t.Errorf("error creating FlagSet: %s", err)
 	}
@@ -1676,7 +1676,7 @@ func TestHandleAction_WithNonFuncAction(t *testing.T) {
 func TestHandleAction_WithInvalidFuncSignature(t *testing.T) {
 	app := NewApp()
 	app.Action = func() string { return "" }
-	fs, err := flagSet(app.Name, app.Flags)
+	fs, err := flagSet(app.Name, app.Flags, app.FlagErrorHandling)
 	if err != nil {
 		t.Errorf("error creating FlagSet: %s", err)
 	}
@@ -1704,7 +1704,7 @@ func TestHandleAction_WithInvalidFuncSignature(t *testing.T) {
 func TestHandleAction_WithInvalidFuncReturnSignature(t *testing.T) {
 	app := NewApp()
 	app.Action = func(_ *Context) (int, error) { return 0, nil }
-	fs, err := flagSet(app.Name, app.Flags)
+	fs, err := flagSet(app.Name, app.Flags, app.FlagErrorHandling)
 	if err != nil {
 		t.Errorf("error creating FlagSet: %s", err)
 	}
@@ -1731,7 +1731,7 @@ func TestHandleAction_WithInvalidFuncReturnSignature(t *testing.T) {
 
 func TestHandleExitCoder_Default(t *testing.T) {
 	app := NewApp()
-	fs, err := flagSet(app.Name, app.Flags)
+	fs, err := flagSet(app.Name, app.Flags, app.FlagErrorHandling)
 	if err != nil {
 		t.Errorf("error creating FlagSet: %s", err)
 	}
@@ -1747,7 +1747,7 @@ func TestHandleExitCoder_Default(t *testing.T) {
 
 func TestHandleExitCoder_Custom(t *testing.T) {
 	app := NewApp()
-	fs, err := flagSet(app.Name, app.Flags)
+	fs, err := flagSet(app.Name, app.Flags, app.FlagErrorHandling)
 	if err != nil {
 		t.Errorf("error creating FlagSet: %s", err)
 	}
@@ -1775,7 +1775,7 @@ func TestHandleAction_WithUnknownPanic(t *testing.T) {
 		fn(ctx)
 		return nil
 	}
-	fs, err := flagSet(app.Name, app.Flags)
+	fs, err := flagSet(app.Name, app.Flags, app.FlagErrorHandling)
 	if err != nil {
 		t.Errorf("error creating FlagSet: %s", err)
 	}

@@ -111,7 +111,7 @@ func (c Command) Run(ctx *Context) (err error) {
 		)
 	}
 
-	set, err := c.parseFlags(ctx.Args().Tail())
+	set, err := c.parseFlags(ctx.Args().Tail(), ctx.App.FlagErrorHandling)
 
 	context := NewContext(ctx.App, set, ctx)
 	context.Command = c
@@ -170,8 +170,8 @@ func (c Command) Run(ctx *Context) (err error) {
 	return err
 }
 
-func (c *Command) parseFlags(args Args) (*flag.FlagSet, error) {
-	set, err := flagSet(c.Name, c.Flags)
+func (c *Command) parseFlags(args Args, errorHandling flag.ErrorHandling) (*flag.FlagSet, error) {
+	set, err := flagSet(c.Name, c.Flags, errorHandling)
 	if err != nil {
 		return nil, err
 	}

@@ -84,8 +84,8 @@ type errorableFlag interface {
 	ApplyWithError(*flag.FlagSet) error
 }
 
-func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {
-	set := flag.NewFlagSet(name, flag.ContinueOnError)
+func flagSet(name string, flags []Flag, errorHandling flag.ErrorHandling) (*flag.FlagSet, error) {
+	set := flag.NewFlagSet(name, errorHandling)
 
 	for _, f := range flags {
 		//TODO remove in v2 when errorableFlag is removed
