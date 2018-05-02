@@ -258,6 +258,44 @@ func ExampleApp_Run_bashComplete() {
 	// h
 }
 
+func ExampleApp_Run_zshComplete() {
+	// set args for examples sake
+	os.Args = []string{"greet", "--generate-bash-completion"}
+	os.Setenv("_CLI_ZSH_AUTOCOMPLETE_HACK", "1")
+
+	app := NewApp()
+	app.Name = "greet"
+	app.EnableBashCompletion = true
+	app.Commands = []Command{
+		{
+			Name:        "describeit",
+			Aliases:     []string{"d"},
+			Usage:       "use it to see a description",
+			Description: "This is how we describe describeit the function",
+			Action: func(c *Context) error {
+				fmt.Printf("i like to describe things")
+				return nil
+			},
+		}, {
+			Name:        "next",
+			Usage:       "next example",
+			Description: "more stuff to see when generating bash completion",
+			Action: func(c *Context) error {
+				fmt.Printf("the next example")
+				return nil
+			},
+		},
+	}
+
+	app.Run(os.Args)
+	// Output:
+	// describeit:use it to see a description
+	// d:use it to see a description
+	// next:next example
+	// help:Shows a list of commands or help for one command
+	// h:Shows a list of commands or help for one command
+}
+
 func TestApp_Run(t *testing.T) {
 	s := ""
 
