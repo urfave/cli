@@ -138,14 +138,12 @@ func (a *App) Setup() {
 		a.Authors = append(a.Authors, Author{Name: a.Author, Email: a.Email})
 	}
 
-	newCmds := []Command{}
-	for _, c := range a.Commands {
+	for index := range a.Commands {
+		c := &a.Commands[index]
 		if c.HelpName == "" {
 			c.HelpName = fmt.Sprintf("%s %s", a.HelpName, c.Name)
 		}
-		newCmds = append(newCmds, c)
 	}
-	a.Commands = newCmds
 
 	if a.Command(helpCommand.Name) == nil && !a.HideHelp {
 		a.Commands = append(a.Commands, helpCommand)
