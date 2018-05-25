@@ -127,14 +127,11 @@ func (a *App) Setup() {
 		a.Writer = os.Stdout
 	}
 
-	newCmds := []*Command{}
 	for _, c := range a.Commands {
 		if c.HelpName == "" {
 			c.HelpName = fmt.Sprintf("%s %s", a.HelpName, c.Name)
 		}
-		newCmds = append(newCmds, c)
 	}
-	a.Commands = newCmds
 
 	if a.Command(helpCommand.Name) == nil && !a.HideHelp {
 		a.appendCommand(helpCommand)
