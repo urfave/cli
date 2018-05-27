@@ -504,6 +504,7 @@ func TestApp_Float64Flag(t *testing.T) {
 
 func TestApp_ParseSliceFlags(t *testing.T) {
 	var parsedOption, firstArg string
+	_, _ = parsedOption, firstArg
 	var parsedIntSlice []int
 	var parsedStringSlice []string
 
