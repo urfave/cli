@@ -57,6 +57,52 @@ func TestCommandFlagParsing(t *testing.T) {
 	}
 }
 
+func TestParseAndRunShortOpts(t *testing.T) {
+	cases := []struct {
+		testArgs               []string
+		expectedErr            error
+		expectedArgs           []string
+	}{
+		{[]string{"foo", "test", "-a"}, nil, []string{}},
+		{[]string{"foo", "test", "-c", "arg1", "arg2"}, nil, []string{"arg1", "arg2"}},
+		{[]string{"foo", "test", "-f"}, nil, []string{}},
+		{[]string{"foo", "test", "-ac", "--fgh"}, nil, []string{}},
+		{[]string{"foo", "test", "-af"}, nil, []string{}},
+		{[]string{"foo", "test", "-cf"}, nil, []string{}},
+		{[]string{"foo", "test", "-acf"}, nil, []string{}},
+		{[]string{"foo", "test", "-invalid"}, errors.New("flag provided but not defined: -invalid"), []string{}},
+		{[]string{"foo", "test", "-acf", "arg1", "-invalid"}, nil, []string{"arg1" ,"-invalid"}},
+	}
+
+	var args []string
+	cmd := Command{
+		Name:                   "test",
+		Usage:                  "this is for testing",
+		Description:            "testing",
+		Action:                 func(c *Context) error {
+						args = c.Args()
+						return nil
+					},
+		SkipArgReorder:         true,
+		UseShortOptionHandling: true,
+		Flags: []Flag{
+			BoolFlag{Name: "abc, a"},
+			BoolFlag{Name: "cde, c"},
+			BoolFlag{Name: "fgh, f"},
+		},
+	}
+
+	for _, c := range cases {
+		app := NewApp()
+		app.Commands = []Command{cmd}
+
+		err := app.Run(c.testArgs)
+
+		expect(t, err, c.expectedErr)
+		expect(t, args, c.expectedArgs)
+	}
+}
+
 func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 	app := NewApp()
 	app.Commands = []Command{
