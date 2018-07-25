@@ -178,6 +178,38 @@ func TestCommand_Run_BeforeSavesMetadata(t *testing.T) {
 	}
 }
 
+func TestCommand_ExitErrHandler_subCommands(t *testing.T) {
+	app := NewApp()
+	app.Commands = []Command{
+		{
+			Name: "bar",
+			Subcommands: []Command{
+				{
+					Name: "sub",
+					Action: func(c *Context) error {
+						return fmt.Errorf("error from subcommand %s", c.Command.FullName())
+					},
+				},
+			},
+		},
+	}
+
+	var herr error
+	app.ExitErrHandler = func(c *Context, err error) {
+		herr = err
+	}
+
+	err := app.Run([]string{"foo", "bar", "sub"})
+
+	if err == nil {
+		t.Fatalf("expected to receive error from Run, got none")
+	}
+
+	if herr == nil {
+		t.Fatalf("expected to receive error in ExitErrHandler, got none")
+	}
+}
+
 func TestCommand_OnUsageError_hasCommandContext(t *testing.T) {
 	app := NewApp()
 	app.Commands = []Command{

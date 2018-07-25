@@ -369,6 +369,7 @@ func (c Command) startApp(ctx *Context) error {
 		app.Action = helpSubcommand.Action
 	}
 	app.OnUsageError = c.OnUsageError
+	app.ExitErrHandler = ctx.App.ExitErrHandler
 
 	for index, cc := range app.Commands {
 		app.Commands[index].commandNamePath = []string{c.Name, cc.Name}
