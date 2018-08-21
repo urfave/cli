@@ -339,7 +339,6 @@ func TestCommandSkipFlagParsing(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		value := ""
 		args := []string{}
 		app := &App{
 			Commands: []Command{
@@ -351,7 +350,6 @@ func TestCommandSkipFlagParsing(t *testing.T) {
 					},
 					Action: func(c *Context) {
 						fmt.Printf("%+v\n", c.String("flag"))
-						value = c.String("flag")
 						args = c.Args()
 					},
 				},
