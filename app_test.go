@@ -1079,7 +1079,6 @@ func TestApp_OrderOfOperations(t *testing.T) {
 		counts.Prepare = counts.Total
 		return errors.New("hay Prepare")
 	}
-
 	app.Prepare = prepareNoError
 
 	app.CommandNotFound = func(c *Context, command string) {

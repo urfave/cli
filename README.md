@@ -670,7 +670,7 @@ func main() {
 ```
 
 Note that default values set from file (e.g. `FilePath`) take precedence over
-default values set from the enviornment (e.g. `EnvVar`).
+default values set from the environment (e.g. `EnvVar`).
 
 #### Values from alternate input sources (YAML, TOML, and others)
 
