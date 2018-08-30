@@ -719,7 +719,7 @@ import (
   "log"
   "os"
 
-  "github.com/urfave/cli"
+  "gopkg.in/urfave/cli.v1"
   "github.com/urfave/cli/altsrc"
 )
 
