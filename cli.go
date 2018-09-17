@@ -20,3 +20,4 @@
 package cli
 
 //go:generate python ./generate-flag-types cli -i flag-types.json -o flag_generated.go
+//go:generate go run templates_generate.go
