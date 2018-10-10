@@ -237,10 +237,8 @@ func printHelpCustom(out io.Writer, templ string, data interface{}, customFunc m
 	funcMap := template.FuncMap{
 		"join": strings.Join,
 	}
-	if customFunc != nil {
-		for key, value := range customFunc {
-			funcMap[key] = value
-		}
+	for key, value := range customFunc {
+		funcMap[key] = value
 	}
 
 	w := tabwriter.NewWriter(out, 1, 8, 2, ' ', 0)
