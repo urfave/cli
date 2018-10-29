@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"os"
@@ -20,6 +21,7 @@ type Context struct {
 	flagSet       *flag.FlagSet
 	setFlags      map[string]bool
 	parentContext *Context
+	Ctx           context.Context
 }
 
 // NewContext creates a new context. For use in when invoking an App or Command action.
@@ -28,6 +30,7 @@ func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
 
 	if parentCtx != nil {
 		c.shellComplete = parentCtx.shellComplete
+		c.Ctx = parentCtx.Ctx
 	}
 
 	return c
