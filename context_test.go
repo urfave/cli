@@ -253,11 +253,10 @@ func TestContext_GlobalIsSet_fromEnv(t *testing.T) {
 		timeoutIsSet, tIsSet    bool
 		noEnvVarIsSet, nIsSet   bool
 		passwordIsSet, pIsSet   bool
-		passwordValue string
+		passwordValue           string
 		unparsableIsSet, uIsSet bool
-		overrideIsSet, oIsSet bool
+		overrideIsSet, oIsSet   bool
 		overrideValue           string
-
 	)
 
 	clearenv()
