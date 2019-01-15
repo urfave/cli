@@ -39,23 +39,33 @@ func nestedVal(name string, tree map[interface{}]interface{}) (interface{}, bool
 	return nil, false
 }
 
+func (fsm *MapInputSource) getValue(key string) (interface{}, bool) {
+	parts := strings.Split(key, ",")
+	var ret interface{}
+	var exists bool = false
+	for _, name := range parts {
+		name = strings.Trim(name, " ")
+		ret, exists = fsm.valueMap[name]
+		if exists {
+			break
+		}
+		ret, exists = nestedVal(name, fsm.valueMap)
+		if exists {
+			break
+		}
+	}
+	return ret, exists
+}
+
 // Int returns an int from the map if it exists otherwise returns 0
 func (fsm *MapInputSource) Int(name string) (int, error) {
-	otherGenericValue, exists := fsm.valueMap[name]
+	genericValue, exists := fsm.getValue(name)
 	if exists {
-		otherValue, isType := otherGenericValue.(int)
+		value, isType := genericValue.(int)
 		if !isType {
-			return 0, incorrectTypeForFlagError(name, "int", otherGenericValue)
+			return 0, incorrectTypeForFlagError(name, "int", genericValue)
 		}
-		return otherValue, nil
-	}
-	nestedGenericValue, exists := nestedVal(name, fsm.valueMap)
-	if exists {
-		otherValue, isType := nestedGenericValue.(int)
-		if !isType {
-			return 0, incorrectTypeForFlagError(name, "int", nestedGenericValue)
-		}
-		return otherValue, nil
+		return value, nil
 	}
 
 	return 0, nil
@@ -63,21 +73,13 @@ func (fsm *MapInputSource) Int(name string) (int, error) {
 
 // Duration returns a duration from the map if it exists otherwise returns 0
 func (fsm *MapInputSource) Duration(name string) (time.Duration, error) {
-	otherGenericValue, exists := fsm.valueMap[name]
+	genericValue, exists := fsm.getValue(name)
 	if exists {
-		otherValue, isType := otherGenericValue.(time.Duration)
+		value, isType := genericValue.(time.Duration)
 		if !isType {
-			return 0, incorrectTypeForFlagError(name, "duration", otherGenericValue)
+			return 0, incorrectTypeForFlagError(name, "duration", genericValue)
 		}
-		return otherValue, nil
-	}
-	nestedGenericValue, exists := nestedVal(name, fsm.valueMap)
-	if exists {
-		otherValue, isType := nestedGenericValue.(time.Duration)
-		if !isType {
-			return 0, incorrectTypeForFlagError(name, "duration", nestedGenericValue)
-		}
-		return otherValue, nil
+		return value, nil
 	}
 
 	return 0, nil
@@ -85,21 +87,13 @@ func (fsm *MapInputSource) Duration(name string) (time.Duration, error) {
 
 // Float64 returns an float64 from the map if it exists otherwise returns 0
 func (fsm *MapInputSource) Float64(name string) (float64, error) {
-	otherGenericValue, exists := fsm.valueMap[name]
+	genericValue, exists := fsm.getValue(name)
 	if exists {
-		otherValue, isType := otherGenericValue.(float64)
+		value, isType := genericValue.(float64)
 		if !isType {
-			return 0, incorrectTypeForFlagError(name, "float64", otherGenericValue)
+			return 0, incorrectTypeForFlagError(name, "float64", genericValue)
 		}
-		return otherValue, nil
-	}
-	nestedGenericValue, exists := nestedVal(name, fsm.valueMap)
-	if exists {
-		otherValue, isType := nestedGenericValue.(float64)
-		if !isType {
-			return 0, incorrectTypeForFlagError(name, "float64", nestedGenericValue)
-		}
-		return otherValue, nil
+		return value, nil
 	}
 
 	return 0, nil
@@ -107,21 +101,13 @@ func (fsm *MapInputSource) Float64(name string) (float64, error) {
 
 // String returns a string from the map if it exists otherwise returns an empty string
 func (fsm *MapInputSource) String(name string) (string, error) {
-	otherGenericValue, exists := fsm.valueMap[name]
+	genericValue, exists := fsm.getValue(name)
 	if exists {
-		otherValue, isType := otherGenericValue.(string)
+		value, isType := genericValue.(string)
 		if !isType {
-			return "", incorrectTypeForFlagError(name, "string", otherGenericValue)
+			return "", incorrectTypeForFlagError(name, "string", genericValue)
 		}
-		return otherValue, nil
-	}
-	nestedGenericValue, exists := nestedVal(name, fsm.valueMap)
-	if exists {
-		otherValue, isType := nestedGenericValue.(string)
-		if !isType {
-			return "", incorrectTypeForFlagError(name, "string", nestedGenericValue)
-		}
-		return otherValue, nil
+		return value, nil
 	}
 
 	return "", nil
@@ -129,21 +115,18 @@ func (fsm *MapInputSource) String(name string) (string, error) {
 
 // StringSlice returns an []string from the map if it exists otherwise returns nil
 func (fsm *MapInputSource) StringSlice(name string) ([]string, error) {
-	otherGenericValue, exists := fsm.valueMap[name]
+	genericValue, exists := fsm.getValue(name)
 	if !exists {
-		otherGenericValue, exists = nestedVal(name, fsm.valueMap)
-		if !exists {
-			return nil, nil
-		}
+		return nil, nil
 	}
 
-	otherValue, isType := otherGenericValue.([]interface{})
+	value, isType := genericValue.([]interface{})
 	if !isType {
-		return nil, incorrectTypeForFlagError(name, "[]interface{}", otherGenericValue)
+		return nil, incorrectTypeForFlagError(name, "[]interface{}", genericValue)
 	}
 
-	var stringSlice = make([]string, 0, len(otherValue))
-	for i, v := range otherValue {
+	var stringSlice = make([]string, 0, len(value))
+	for i, v := range value {
 		stringValue, isType := v.(string)
 
 		if !isType {
@@ -158,21 +141,18 @@ func (fsm *MapInputSource) StringSlice(name string) ([]string, error) {
 
 // IntSlice returns an []int from the map if it exists otherwise returns nil
 func (fsm *MapInputSource) IntSlice(name string) ([]int, error) {
-	otherGenericValue, exists := fsm.valueMap[name]
+	genericValue, exists := fsm.getValue(name)
 	if !exists {
-		otherGenericValue, exists = nestedVal(name, fsm.valueMap)
-		if !exists {
-			return nil, nil
-		}
+		return nil, nil
 	}
 
-	otherValue, isType := otherGenericValue.([]interface{})
+	value, isType := genericValue.([]interface{})
 	if !isType {
-		return nil, incorrectTypeForFlagError(name, "[]interface{}", otherGenericValue)
+		return nil, incorrectTypeForFlagError(name, "[]interface{}", genericValue)
 	}
 
-	var intSlice = make([]int, 0, len(otherValue))
-	for i, v := range otherValue {
+	var intSlice = make([]int, 0, len(value))
+	for i, v := range value {
 		intValue, isType := v.(int)
 
 		if !isType {
@@ -187,21 +167,13 @@ func (fsm *MapInputSource) IntSlice(name string) ([]int, error) {
 
 // Generic returns an cli.Generic from the map if it exists otherwise returns nil
 func (fsm *MapInputSource) Generic(name string) (cli.Generic, error) {
-	otherGenericValue, exists := fsm.valueMap[name]
+	genericValue, exists := fsm.getValue(name)
 	if exists {
-		otherValue, isType := otherGenericValue.(cli.Generic)
+		value, isType := genericValue.(cli.Generic)
 		if !isType {
-			return nil, incorrectTypeForFlagError(name, "cli.Generic", otherGenericValue)
+			return nil, incorrectTypeForFlagError(name, "cli.Generic", genericValue)
 		}
-		return otherValue, nil
-	}
-	nestedGenericValue, exists := nestedVal(name, fsm.valueMap)
-	if exists {
-		otherValue, isType := nestedGenericValue.(cli.Generic)
-		if !isType {
-			return nil, incorrectTypeForFlagError(name, "cli.Generic", nestedGenericValue)
-		}
-		return otherValue, nil
+		return value, nil
 	}
 
 	return nil, nil
@@ -209,21 +181,13 @@ func (fsm *MapInputSource) Generic(name string) (cli.Generic, error) {
 
 // Bool returns an bool from the map otherwise returns false
 func (fsm *MapInputSource) Bool(name string) (bool, error) {
-	otherGenericValue, exists := fsm.valueMap[name]
+	genericValue, exists := fsm.getValue(name)
 	if exists {
-		otherValue, isType := otherGenericValue.(bool)
+		value, isType := genericValue.(bool)
 		if !isType {
-			return false, incorrectTypeForFlagError(name, "bool", otherGenericValue)
+			return false, incorrectTypeForFlagError(name, "bool", genericValue)
 		}
-		return otherValue, nil
-	}
-	nestedGenericValue, exists := nestedVal(name, fsm.valueMap)
-	if exists {
-		otherValue, isType := nestedGenericValue.(bool)
-		if !isType {
-			return false, incorrectTypeForFlagError(name, "bool", nestedGenericValue)
-		}
-		return otherValue, nil
+		return value, nil
 	}
 
 	return false, nil
@@ -231,21 +195,13 @@ func (fsm *MapInputSource) Bool(name string) (bool, error) {
 
 // BoolT returns an bool from the map otherwise returns true
 func (fsm *MapInputSource) BoolT(name string) (bool, error) {
-	otherGenericValue, exists := fsm.valueMap[name]
+	genericValue, exists := fsm.getValue(name)
 	if exists {
-		otherValue, isType := otherGenericValue.(bool)
+		value, isType := genericValue.(bool)
 		if !isType {
-			return true, incorrectTypeForFlagError(name, "bool", otherGenericValue)
+			return true, incorrectTypeForFlagError(name, "bool", genericValue)
 		}
-		return otherValue, nil
-	}
-	nestedGenericValue, exists := nestedVal(name, fsm.valueMap)
-	if exists {
-		otherValue, isType := nestedGenericValue.(bool)
-		if !isType {
-			return true, incorrectTypeForFlagError(name, "bool", nestedGenericValue)
-		}
-		return otherValue, nil
+		return value, nil
 	}
 
 	return true, nil

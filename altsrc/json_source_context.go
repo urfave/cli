@@ -182,7 +182,17 @@ func (x *jsonSource) BoolT(name string) (bool, error) {
 }
 
 func (x *jsonSource) getValue(key string) (interface{}, error) {
-	return jsonGetValue(key, x.deserialized)
+	parts := strings.Split(key, ",")
+	var ret interface{}
+	var err error
+	for _, name := range parts {
+		name = strings.Trim(name, " ")
+		ret, err = jsonGetValue(name, x.deserialized)
+		if err == nil && ret != nil {
+			break
+		}
+	}
+	return ret, err
 }
 
 func jsonGetValue(key string, m map[string]interface{}) (interface{}, error) {
