@@ -45,6 +45,8 @@ type Command struct {
 	Subcommands Commands
 	// List of flags to parse
 	Flags []Flag
+	// List of all flag categories
+	FlagCategories FlagCategories
 	// Treat all flags as normal arguments if true
 	SkipFlagParsing bool
 	// Skip argument reordering which attempts to move flags before arguments,
@@ -375,6 +377,11 @@ func (c Command) startApp(ctx *Context) error {
 	}
 
 	return app.RunAsSubcommand(ctx)
+}
+
+// Categories returns a slice containing all the categories with the commands they contain
+func (c Command) VisibleFlagCategories() FlagCategories {
+	return c.FlagCategories
 }
 
 // VisibleFlags returns a slice of the Flags with Hidden=false

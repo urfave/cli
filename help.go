@@ -54,9 +54,10 @@ CATEGORY:
    {{.Category}}{{end}}{{if .Description}}
 
 DESCRIPTION:
-   {{.Description}}{{end}}{{if .VisibleFlags}}
+   {{.Description}}{{end}}
 
-OPTIONS:
+OPTIONS:{{range .VisibleFlagCategories}}
+  {{.Name}}
    {{range .VisibleFlags}}{{.}}
    {{end}}{{end}}
 `
@@ -250,7 +251,10 @@ func printHelpCustom(out io.Writer, templ string, data interface{}, customFunc m
 		// If the writer is closed, t.Execute will fail, and there's nothing
 		// we can do to recover.
 		if os.Getenv("CLI_TEMPLATE_ERROR_DEBUG") != "" {
-			fmt.Fprintf(ErrWriter, "CLI TEMPLATE ERROR: %#v\n", err)
+      // Generic error message
+			fmt.Fprintf(ErrWriter, "CLI TEMPLATE ERROR DEBUG: %#v\n", err)
+      // Helpful error message
+			fmt.Fprintf(ErrWriter, "CLI TEMPLATE ERROR DEBUG: %#v\n", err.Error())
 		}
 		return
 	}

@@ -145,6 +145,14 @@ func (a *App) Setup() {
 		if c.HelpName == "" {
 			c.HelpName = fmt.Sprintf("%s %s", a.HelpName, c.Name)
 		}
+
+		fc := FlagCategories{}
+		for _, flag := range c.Flags {
+			fc = fc.AddFlag(flag.GetCategory(), flag)
+		}
+
+		sort.Sort(fc)
+		c.FlagCategories = fc
 		newCmds = append(newCmds, c)
 	}
 	a.Commands = newCmds
@@ -166,7 +174,7 @@ func (a *App) Setup() {
 	}
 	sort.Sort(a.categories)
 
-if a.Metadata == nil {
+	if a.Metadata == nil {
 		a.Metadata = make(map[string]interface{})
 	}
 
@@ -192,11 +200,6 @@ func (a *App) Run(arguments []string) (err error) {
 	set, err := flagSet(a.Name, a.Flags)
 	if err != nil {
 		return err
-	}
-
-	a.flagCategories = FlagCategories{}
-	for _, flag := range a.Flags {
-		a.flagCategories = a.flagCategories.AddFlag(flag.GetCategory(), flag)
 	}
 
 	set.SetOutput(ioutil.Discard)
@@ -445,7 +448,7 @@ func (a *App) VisibleCommands() []Command {
 }
 
 // Categories returns a slice containing all the categories with the commands they contain
-func (a *App) FlagCategories() FlagCategories {
+func (a *App) VisibleFlagCategories() FlagCategories {
 	return a.flagCategories
 }
 
