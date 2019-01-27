@@ -15,6 +15,7 @@ type BoolFlag struct {
 	EnvVar      string
 	FilePath    string
 	Hidden      bool
+	Category    string
 	Destination *bool
 }
 
@@ -27,6 +28,11 @@ func (f BoolFlag) String() string {
 // GetName returns the name of the flag
 func (f BoolFlag) GetName() string {
 	return f.Name
+}
+
+// GetHidden lets us know if the flag is hidden or not
+func (f BoolFlag) GetHidden() bool {
+	return f.Hidden
 }
 
 // Bool looks up the value of a local BoolFlag, returns
@@ -63,6 +69,7 @@ type BoolTFlag struct {
 	EnvVar      string
 	FilePath    string
 	Hidden      bool
+	Category    string
 	Destination *bool
 }
 
@@ -75,6 +82,11 @@ func (f BoolTFlag) String() string {
 // GetName returns the name of the flag
 func (f BoolTFlag) GetName() string {
 	return f.Name
+}
+
+// GetHidden lets us know if the flag is hidden or not
+func (f BoolTFlag) GetHidden() bool {
+	return f.Hidden
 }
 
 // BoolT looks up the value of a local BoolTFlag, returns
@@ -111,6 +123,7 @@ type DurationFlag struct {
 	EnvVar      string
 	FilePath    string
 	Hidden      bool
+	Category    string
 	Value       time.Duration
 	Destination *time.Duration
 }
@@ -124,6 +137,11 @@ func (f DurationFlag) String() string {
 // GetName returns the name of the flag
 func (f DurationFlag) GetName() string {
 	return f.Name
+}
+
+// GetHidden lets us know if the flag is hidden or not
+func (f DurationFlag) GetHidden() bool {
+	return f.Hidden
 }
 
 // Duration looks up the value of a local DurationFlag, returns
@@ -160,6 +178,7 @@ type Float64Flag struct {
 	EnvVar      string
 	FilePath    string
 	Hidden      bool
+	Category    string
 	Value       float64
 	Destination *float64
 }
@@ -173,6 +192,11 @@ func (f Float64Flag) String() string {
 // GetName returns the name of the flag
 func (f Float64Flag) GetName() string {
 	return f.Name
+}
+
+// GetHidden lets us know if the flag is hidden or not
+func (f Float64Flag) GetHidden() bool {
+	return f.Hidden
 }
 
 // Float64 looks up the value of a local Float64Flag, returns
@@ -209,6 +233,7 @@ type GenericFlag struct {
 	EnvVar   string
 	FilePath string
 	Hidden   bool
+	Category string
 	Value    Generic
 }
 
@@ -221,6 +246,11 @@ func (f GenericFlag) String() string {
 // GetName returns the name of the flag
 func (f GenericFlag) GetName() string {
 	return f.Name
+}
+
+// GetHidden lets us know if the flag is hidden or not
+func (f GenericFlag) GetHidden() bool {
+	return f.Hidden
 }
 
 // Generic looks up the value of a local GenericFlag, returns
@@ -257,6 +287,7 @@ type Int64Flag struct {
 	EnvVar      string
 	FilePath    string
 	Hidden      bool
+	Category    string
 	Value       int64
 	Destination *int64
 }
@@ -270,6 +301,11 @@ func (f Int64Flag) String() string {
 // GetName returns the name of the flag
 func (f Int64Flag) GetName() string {
 	return f.Name
+}
+
+// GetHidden lets us know if the flag is hidden or not
+func (f Int64Flag) GetHidden() bool {
+	return f.Hidden
 }
 
 // Int64 looks up the value of a local Int64Flag, returns
@@ -306,6 +342,7 @@ type IntFlag struct {
 	EnvVar      string
 	FilePath    string
 	Hidden      bool
+	Category    string
 	Value       int
 	Destination *int
 }
@@ -319,6 +356,11 @@ func (f IntFlag) String() string {
 // GetName returns the name of the flag
 func (f IntFlag) GetName() string {
 	return f.Name
+}
+
+// GetHidden lets us know if the flag is hidden or not
+func (f IntFlag) GetHidden() bool {
+	return f.Hidden
 }
 
 // Int looks up the value of a local IntFlag, returns
@@ -355,6 +397,7 @@ type IntSliceFlag struct {
 	EnvVar   string
 	FilePath string
 	Hidden   bool
+	Category string
 	Value    *IntSlice
 }
 
@@ -367,6 +410,11 @@ func (f IntSliceFlag) String() string {
 // GetName returns the name of the flag
 func (f IntSliceFlag) GetName() string {
 	return f.Name
+}
+
+// GetHidden lets us know if the flag is hidden or not
+func (f IntSliceFlag) GetHidden() bool {
+	return f.Hidden
 }
 
 // IntSlice looks up the value of a local IntSliceFlag, returns
@@ -403,6 +451,7 @@ type Int64SliceFlag struct {
 	EnvVar   string
 	FilePath string
 	Hidden   bool
+	Category string
 	Value    *Int64Slice
 }
 
@@ -415,6 +464,11 @@ func (f Int64SliceFlag) String() string {
 // GetName returns the name of the flag
 func (f Int64SliceFlag) GetName() string {
 	return f.Name
+}
+
+// GetHidden lets us know if the flag is hidden or not
+func (f Int64SliceFlag) GetHidden() bool {
+	return f.Hidden
 }
 
 // Int64Slice looks up the value of a local Int64SliceFlag, returns
@@ -451,6 +505,7 @@ type StringFlag struct {
 	EnvVar      string
 	FilePath    string
 	Hidden      bool
+	Category    string
 	Value       string
 	Destination *string
 }
@@ -464,6 +519,11 @@ func (f StringFlag) String() string {
 // GetName returns the name of the flag
 func (f StringFlag) GetName() string {
 	return f.Name
+}
+
+// GetHidden lets us know if the flag is hidden or not
+func (f StringFlag) GetHidden() bool {
+	return f.Hidden
 }
 
 // String looks up the value of a local StringFlag, returns
@@ -500,6 +560,7 @@ type StringSliceFlag struct {
 	EnvVar   string
 	FilePath string
 	Hidden   bool
+	Category string
 	Value    *StringSlice
 }
 
@@ -512,6 +573,11 @@ func (f StringSliceFlag) String() string {
 // GetName returns the name of the flag
 func (f StringSliceFlag) GetName() string {
 	return f.Name
+}
+
+// GetHidden lets us know if the flag is hidden or not
+func (f StringSliceFlag) GetHidden() bool {
+	return f.Hidden
 }
 
 // StringSlice looks up the value of a local StringSliceFlag, returns
@@ -548,6 +614,7 @@ type Uint64Flag struct {
 	EnvVar      string
 	FilePath    string
 	Hidden      bool
+	Category    string
 	Value       uint64
 	Destination *uint64
 }
@@ -561,6 +628,11 @@ func (f Uint64Flag) String() string {
 // GetName returns the name of the flag
 func (f Uint64Flag) GetName() string {
 	return f.Name
+}
+
+// GetHidden lets us know if the flag is hidden or not
+func (f Uint64Flag) GetHidden() bool {
+	return f.Hidden
 }
 
 // Uint64 looks up the value of a local Uint64Flag, returns
@@ -597,6 +669,7 @@ type UintFlag struct {
 	EnvVar      string
 	FilePath    string
 	Hidden      bool
+	Category    string
 	Value       uint
 	Destination *uint
 }
@@ -610,6 +683,11 @@ func (f UintFlag) String() string {
 // GetName returns the name of the flag
 func (f UintFlag) GetName() string {
 	return f.Name
+}
+
+// GetHidden lets us know if the flag is hidden or not
+func (f UintFlag) GetHidden() bool {
+	return f.Hidden
 }
 
 // Uint looks up the value of a local UintFlag, returns

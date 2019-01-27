@@ -1603,6 +1603,10 @@ func (c *customBoolFlag) GetName() string {
 	return c.Nombre
 }
 
+func (c *customBoolFlag) GetHidden() bool {
+	return false
+}
+
 func (c *customBoolFlag) Apply(set *flag.FlagSet) {
 	set.String(c.Nombre, c.Nombre, "")
 }

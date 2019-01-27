@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 """
 The flag types that ship with the cli library have many things in common, and
 so we can take advantage of the `go generate` command to create much of the
@@ -144,6 +144,7 @@ def _write_cli_flag_types(outfile, types):
             EnvVar string
             FilePath string
             Hidden bool
+            Category string
         """.format(**typedef))
 
         if typedef['value']:
@@ -168,6 +169,11 @@ def _write_cli_flag_types(outfile, types):
             // GetName returns the name of the flag
             func (f {name}Flag) GetName() string {{
                 return f.Name
+            }}
+
+            // GetHidden lets us know if the flag is hidden or not
+            func (f {name}Flag) GetHidden() bool {{
+                return f.Hidden
             }}
 
             // {name} looks up the value of a local {name}Flag, returns
