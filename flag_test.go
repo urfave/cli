@@ -1052,7 +1052,7 @@ func TestParseBoolShortOptionHandle(t *testing.T) {
 	a := App{
 		Commands: []Command{
 			{
-				Name: "foobar",
+				Name:                   "foobar",
 				UseShortOptionHandling: true,
 				Action: func(ctx *Context) error {
 					if ctx.Bool("serve") != true {
