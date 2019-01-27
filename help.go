@@ -54,12 +54,11 @@ CATEGORY:
    {{.Category}}{{end}}{{if .Description}}
 
 DESCRIPTION:
-   {{.Description}}{{end}}
-
+   {{.Description}}{{end}}{{if .VisibleFlagCategories}}
 OPTIONS:{{range .VisibleFlagCategories}}
   {{.Name}}
    {{range .VisibleFlags}}{{.}}
-   {{end}}{{end}}
+   {{end}}{{end}}{{end}}
 `
 
 // SubcommandHelpTemplate is the text template for the subcommand help topic.
