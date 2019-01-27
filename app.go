@@ -51,6 +51,8 @@ type App struct {
 	HideVersion bool
 	// Populate on app startup, only gettable through method Categories()
 	categories CommandCategories
+	// Populate on app startup, only gettable through method Categories()
+	flagCategories FlagCategories
 	// An action to execute when the bash-completion flag is set
 	BashComplete BashCompleteFunc
 	// An action to execute before any subcommands are run, but after the context is ready
@@ -164,7 +166,7 @@ func (a *App) Setup() {
 	}
 	sort.Sort(a.categories)
 
-	if a.Metadata == nil {
+if a.Metadata == nil {
 		a.Metadata = make(map[string]interface{})
 	}
 
@@ -190,6 +192,11 @@ func (a *App) Run(arguments []string) (err error) {
 	set, err := flagSet(a.Name, a.Flags)
 	if err != nil {
 		return err
+	}
+
+	a.flagCategories = FlagCategories{}
+	for _, flag := range a.Flags {
+		a.flagCategories = a.flagCategories.AddFlag(flag.GetCategory(), flag)
 	}
 
 	set.SetOutput(ioutil.Discard)
@@ -435,6 +442,11 @@ func (a *App) VisibleCommands() []Command {
 		}
 	}
 	return ret
+}
+
+// Categories returns a slice containing all the categories with the commands they contain
+func (a *App) FlagCategories() FlagCategories {
+	return a.flagCategories
 }
 
 // VisibleFlags returns a slice of the Flags with Hidden=false

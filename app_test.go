@@ -1607,6 +1607,10 @@ func (c *customBoolFlag) GetHidden() bool {
 	return false
 }
 
+func (c *customBoolFlag) GetCategory() string {
+	return ""
+}
+
 func (c *customBoolFlag) Apply(set *flag.FlagSet) {
 	set.String(c.Nombre, c.Nombre, "")
 }

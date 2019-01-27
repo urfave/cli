@@ -176,6 +176,11 @@ def _write_cli_flag_types(outfile, types):
                 return f.Hidden
             }}
 
+            // GetCategory lets us access the flag category
+            func (f {name}Flag) GetCategory() string {{
+                return f.Category
+            }}
+
             // {name} looks up the value of a local {name}Flag, returns
             // {context_default} if not found
             func (c *Context) {name}(name string) {context_type} {{

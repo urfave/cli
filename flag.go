@@ -73,6 +73,7 @@ type Flag interface {
 	// Apply Flag settings to the given flag set
 	Apply(*flag.FlagSet)
 	GetName() string
+	GetCategory() string
 	GetHidden() bool
 }
 

@@ -35,6 +35,11 @@ func (f BoolFlag) GetHidden() bool {
 	return f.Hidden
 }
 
+// GetCategory lets us access the flag category
+func (f BoolFlag) GetCategory() string {
+	return f.Category
+}
+
 // Bool looks up the value of a local BoolFlag, returns
 // false if not found
 func (c *Context) Bool(name string) bool {
@@ -87,6 +92,11 @@ func (f BoolTFlag) GetName() string {
 // GetHidden lets us know if the flag is hidden or not
 func (f BoolTFlag) GetHidden() bool {
 	return f.Hidden
+}
+
+// GetCategory lets us access the flag category
+func (f BoolTFlag) GetCategory() string {
+	return f.Category
 }
 
 // BoolT looks up the value of a local BoolTFlag, returns
@@ -144,6 +154,11 @@ func (f DurationFlag) GetHidden() bool {
 	return f.Hidden
 }
 
+// GetCategory lets us access the flag category
+func (f DurationFlag) GetCategory() string {
+	return f.Category
+}
+
 // Duration looks up the value of a local DurationFlag, returns
 // 0 if not found
 func (c *Context) Duration(name string) time.Duration {
@@ -199,6 +214,11 @@ func (f Float64Flag) GetHidden() bool {
 	return f.Hidden
 }
 
+// GetCategory lets us access the flag category
+func (f Float64Flag) GetCategory() string {
+	return f.Category
+}
+
 // Float64 looks up the value of a local Float64Flag, returns
 // 0 if not found
 func (c *Context) Float64(name string) float64 {
@@ -251,6 +271,11 @@ func (f GenericFlag) GetName() string {
 // GetHidden lets us know if the flag is hidden or not
 func (f GenericFlag) GetHidden() bool {
 	return f.Hidden
+}
+
+// GetCategory lets us access the flag category
+func (f GenericFlag) GetCategory() string {
+	return f.Category
 }
 
 // Generic looks up the value of a local GenericFlag, returns
@@ -308,6 +333,11 @@ func (f Int64Flag) GetHidden() bool {
 	return f.Hidden
 }
 
+// GetCategory lets us access the flag category
+func (f Int64Flag) GetCategory() string {
+	return f.Category
+}
+
 // Int64 looks up the value of a local Int64Flag, returns
 // 0 if not found
 func (c *Context) Int64(name string) int64 {
@@ -361,6 +391,11 @@ func (f IntFlag) GetName() string {
 // GetHidden lets us know if the flag is hidden or not
 func (f IntFlag) GetHidden() bool {
 	return f.Hidden
+}
+
+// GetCategory lets us access the flag category
+func (f IntFlag) GetCategory() string {
+	return f.Category
 }
 
 // Int looks up the value of a local IntFlag, returns
@@ -417,6 +452,11 @@ func (f IntSliceFlag) GetHidden() bool {
 	return f.Hidden
 }
 
+// GetCategory lets us access the flag category
+func (f IntSliceFlag) GetCategory() string {
+	return f.Category
+}
+
 // IntSlice looks up the value of a local IntSliceFlag, returns
 // nil if not found
 func (c *Context) IntSlice(name string) []int {
@@ -469,6 +509,11 @@ func (f Int64SliceFlag) GetName() string {
 // GetHidden lets us know if the flag is hidden or not
 func (f Int64SliceFlag) GetHidden() bool {
 	return f.Hidden
+}
+
+// GetCategory lets us access the flag category
+func (f Int64SliceFlag) GetCategory() string {
+	return f.Category
 }
 
 // Int64Slice looks up the value of a local Int64SliceFlag, returns
@@ -526,6 +571,11 @@ func (f StringFlag) GetHidden() bool {
 	return f.Hidden
 }
 
+// GetCategory lets us access the flag category
+func (f StringFlag) GetCategory() string {
+	return f.Category
+}
+
 // String looks up the value of a local StringFlag, returns
 // "" if not found
 func (c *Context) String(name string) string {
@@ -578,6 +628,11 @@ func (f StringSliceFlag) GetName() string {
 // GetHidden lets us know if the flag is hidden or not
 func (f StringSliceFlag) GetHidden() bool {
 	return f.Hidden
+}
+
+// GetCategory lets us access the flag category
+func (f StringSliceFlag) GetCategory() string {
+	return f.Category
 }
 
 // StringSlice looks up the value of a local StringSliceFlag, returns
@@ -635,6 +690,11 @@ func (f Uint64Flag) GetHidden() bool {
 	return f.Hidden
 }
 
+// GetCategory lets us access the flag category
+func (f Uint64Flag) GetCategory() string {
+	return f.Category
+}
+
 // Uint64 looks up the value of a local Uint64Flag, returns
 // 0 if not found
 func (c *Context) Uint64(name string) uint64 {
@@ -688,6 +748,11 @@ func (f UintFlag) GetName() string {
 // GetHidden lets us know if the flag is hidden or not
 func (f UintFlag) GetHidden() bool {
 	return f.Hidden
+}
+
+// GetCategory lets us access the flag category
+func (f UintFlag) GetCategory() string {
+	return f.Category
 }
 
 // Uint looks up the value of a local UintFlag, returns
