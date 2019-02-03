@@ -27,7 +27,7 @@ func init() {
 }
 
 type opCounts struct {
-	Total, BashComplete, OnUsageError, Before, CommandNotFound, Action, After, SubCommand int
+	Total, BashComplete, OnUsageError, Before, Prepare, CommandNotFound, Action, After, SubCommand int
 }
 
 func ExampleApp_Run() {
@@ -418,7 +418,8 @@ func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
 					Usage: "language for the greeting",
 				},
 			},
-			Before: func(_ *Context) error { return nil },
+			Before:  func(_ *Context) error { return nil },
+			Prepare: func(_ *Context) error { return nil },
 		},
 	}
 	a.Run([]string{"", "foo", "--lang", "spanish", "abcd"})
@@ -792,6 +793,98 @@ func TestApp_BeforeFunc(t *testing.T) {
 	}
 }
 
+func TestApp_PrepareFunc(t *testing.T) {
+	counts := &opCounts{}
+	prepareError := fmt.Errorf("fail")
+	var err error
+
+	app := NewApp()
+
+	app.Prepare = func(c *Context) error {
+		counts.Total++
+		counts.Prepare = counts.Total
+		s := c.String("opt")
+		if s == "fail" {
+			return prepareError
+		}
+
+		return nil
+	}
+
+	app.Commands = []Command{
+		{
+			Name: "sub",
+			Action: func(c *Context) error {
+				counts.Total++
+				counts.SubCommand = counts.Total
+				return nil
+			},
+		},
+	}
+
+	app.Flags = []Flag{
+		StringFlag{Name: "opt"},
+	}
+
+	// run with the Prepare() func succeeding
+	err = app.Run([]string{"command", "--opt", "succeed", "sub"})
+
+	if err != nil {
+		t.Fatalf("Run error: %s", err)
+	}
+
+	if counts.Prepare != 1 {
+		t.Errorf("Prepare() not executed when expected")
+	}
+
+	if counts.SubCommand != 2 {
+		t.Errorf("Subcommand not executed when expected")
+	}
+
+	// reset
+	counts = &opCounts{}
+
+	// run with the Prepare() func failing
+	err = app.Run([]string{"command", "--opt", "fail", "sub"})
+
+	// should be the same error produced by the Prepare func
+	if err != prepareError {
+		t.Errorf("Run error expected, but not received")
+	}
+
+	if counts.Prepare != 1 {
+		t.Errorf("Prepare() not executed when expected")
+	}
+
+	if counts.SubCommand != 0 {
+		t.Errorf("Subcommand executed when NOT expected")
+	}
+
+	// reset
+	counts = &opCounts{}
+
+	afterError := errors.New("fail again")
+	app.After = func(_ *Context) error {
+		return afterError
+	}
+
+	// run with the Prepare() func failing, wrapped by After()
+	err = app.Run([]string{"command", "--opt", "fail", "sub"})
+
+	// should be the same error produced by the Prepare func
+	if _, ok := err.(MultiError); !ok {
+		t.Errorf("MultiError expected, but not received")
+	}
+
+	if counts.Prepare != 1 {
+		t.Errorf("Prepare() not executed when expected")
+	}
+
+	if counts.SubCommand != 0 {
+		t.Errorf("Subcommand executed when NOT expected")
+	}
+}
+
 func TestApp_AfterFunc(t *testing.T) {
 	counts := &opCounts{}
 	afterError := fmt.Errorf("fail")
@@ -843,10 +936,10 @@ func TestApp_AfterFunc(t *testing.T) {
 	// reset
 	counts = &opCounts{}
 
-	// run with the Before() func failing
+	// run with the After() func failing
 	err = app.Run([]string{"command", "--opt", "fail", "sub"})
 
-	// should be the same error produced by the Before func
+	// should be the same error produced by the After func
 	if err != afterError {
 		t.Errorf("Run error expected, but not received")
 	}
@@ -974,6 +1067,21 @@ func TestApp_OrderOfOperations(t *testing.T) {
 	}
 
 	app.Before = beforeNoError
+
+	prepareNoError := func(c *Context) error {
+		counts.Total++
+		counts.Prepare = counts.Total
+		return nil
+	}
+
+	prepareError := func(c *Context) error {
+		counts.Total++
+		counts.Prepare = counts.Total
+		return errors.New("hay Prepare")
+	}
+
+	app.Prepare = prepareNoError
+
 	app.CommandNotFound = func(c *Context, command string) {
 		counts.Total++
 		counts.CommandNotFound = counts.Total
@@ -1032,20 +1140,36 @@ func TestApp_OrderOfOperations(t *testing.T) {
 	_ = app.Run([]string{"command", "foo"})
 	expect(t, counts.OnUsageError, 0)
 	expect(t, counts.Before, 1)
+	expect(t, counts.Prepare, 2)
 	expect(t, counts.CommandNotFound, 0)
-	expect(t, counts.Action, 2)
-	expect(t, counts.After, 3)
-	expect(t, counts.Total, 3)
+	expect(t, counts.Action, 3)
+	expect(t, counts.After, 4)
+	expect(t, counts.Total, 4)
 
 	resetCounts()
 
+	// Before will yield an error and lead prepare without running
 	app.Before = beforeError
 	_ = app.Run([]string{"command", "bar"})
 	expect(t, counts.OnUsageError, 0)
 	expect(t, counts.Before, 1)
+	expect(t, counts.Prepare, 0)
 	expect(t, counts.After, 2)
 	expect(t, counts.Total, 2)
 	app.Before = beforeNoError
+
+	resetCounts()
+
+	// Since we do not execute a Before we then run prepare and expect it will
+	// yield an error itself
+	app.Prepare = prepareError
+	_ = app.Run([]string{"command", "bar"})
+	expect(t, counts.OnUsageError, 0)
+	expect(t, counts.Before, 1)
+	expect(t, counts.Prepare, 2)
+	expect(t, counts.After, 3)
+	expect(t, counts.Total, 3)
+	app.Prepare = prepareNoError
 
 	resetCounts()
 
@@ -1053,8 +1177,9 @@ func TestApp_OrderOfOperations(t *testing.T) {
 	_ = app.Run([]string{"command", "bar"})
 	expect(t, counts.OnUsageError, 0)
 	expect(t, counts.Before, 1)
-	expect(t, counts.SubCommand, 2)
-	expect(t, counts.Total, 2)
+	expect(t, counts.Prepare, 2)
+	expect(t, counts.SubCommand, 3)
+	expect(t, counts.Total, 3)
 	app.After = afterNoError
 
 	resetCounts()
@@ -1066,9 +1191,10 @@ func TestApp_OrderOfOperations(t *testing.T) {
 	}
 	expect(t, counts.OnUsageError, 0)
 	expect(t, counts.Before, 1)
-	expect(t, counts.SubCommand, 2)
-	expect(t, counts.After, 3)
-	expect(t, counts.Total, 3)
+	expect(t, counts.Prepare, 2)
+	expect(t, counts.SubCommand, 3)
+	expect(t, counts.After, 4)
+	expect(t, counts.Total, 4)
 	app.After = afterNoError
 
 	resetCounts()
@@ -1078,9 +1204,10 @@ func TestApp_OrderOfOperations(t *testing.T) {
 	_ = app.Run([]string{"command"})
 	expect(t, counts.OnUsageError, 0)
 	expect(t, counts.Before, 1)
-	expect(t, counts.Action, 2)
-	expect(t, counts.After, 3)
-	expect(t, counts.Total, 3)
+	expect(t, counts.Prepare, 2)
+	expect(t, counts.Action, 3)
+	expect(t, counts.After, 4)
+	expect(t, counts.Total, 4)
 	app.Commands = oldCommands
 }
 
@@ -1485,6 +1612,7 @@ func TestApp_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 	app := NewApp()
 	app.Action = func(c *Context) error { return nil }
 	app.Before = func(c *Context) error { return fmt.Errorf("before error") }
+	app.Prepare = func(c *Context) error { return fmt.Errorf("prepare error") }
 	app.After = func(c *Context) error { return fmt.Errorf("after error") }
 
 	err := app.Run([]string{"foo"})
@@ -1494,6 +1622,9 @@ func TestApp_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 
 	if !strings.Contains(err.Error(), "before error") {
 		t.Errorf("expected text of error from Before method, but got none in \"%v\"", err)
+	}
+	if strings.Contains(err.Error(), "prepare error") {
+		t.Errorf("not expecting text of error from Prepare method, because Before errors before Prepare \"%v\"", err)
 	}
 	if !strings.Contains(err.Error(), "after error") {
 		t.Errorf("expected text of error from After method, but got none in \"%v\"", err)
@@ -1509,9 +1640,10 @@ func TestApp_Run_SubcommandDoesNotOverwriteErrorFromBefore(t *testing.T) {
 					Name: "sub",
 				},
 			},
-			Name:   "bar",
-			Before: func(c *Context) error { return fmt.Errorf("before error") },
-			After:  func(c *Context) error { return fmt.Errorf("after error") },
+			Name:    "bar",
+			Before:  func(c *Context) error { return fmt.Errorf("before error") },
+			Prepare: func(c *Context) error { return fmt.Errorf("prepare error") },
+			After:   func(c *Context) error { return fmt.Errorf("after error") },
 		},
 	}
 
@@ -1522,6 +1654,9 @@ func TestApp_Run_SubcommandDoesNotOverwriteErrorFromBefore(t *testing.T) {
 
 	if !strings.Contains(err.Error(), "before error") {
 		t.Errorf("expected text of error from Before method, but got none in \"%v\"", err)
+	}
+	if strings.Contains(err.Error(), "prepare error") {
+		t.Errorf("not expecting text of error from Prepare method, because Before had an error prior, but got none in \"%v\"", err)
 	}
 	if !strings.Contains(err.Error(), "after error") {
 		t.Errorf("expected text of error from After method, but got none in \"%v\"", err)

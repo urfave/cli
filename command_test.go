@@ -59,9 +59,9 @@ func TestCommandFlagParsing(t *testing.T) {
 
 func TestParseAndRunShortOpts(t *testing.T) {
 	cases := []struct {
-		testArgs               []string
-		expectedErr            error
-		expectedArgs           []string
+		testArgs     []string
+		expectedErr  error
+		expectedArgs []string
 	}{
 		{[]string{"foo", "test", "-a"}, nil, []string{}},
 		{[]string{"foo", "test", "-c", "arg1", "arg2"}, nil, []string{"arg1", "arg2"}},
@@ -71,18 +71,18 @@ func TestParseAndRunShortOpts(t *testing.T) {
 		{[]string{"foo", "test", "-cf"}, nil, []string{}},
 		{[]string{"foo", "test", "-acf"}, nil, []string{}},
 		{[]string{"foo", "test", "-invalid"}, errors.New("flag provided but not defined: -invalid"), []string{}},
-		{[]string{"foo", "test", "-acf", "arg1", "-invalid"}, nil, []string{"arg1" ,"-invalid"}},
+		{[]string{"foo", "test", "-acf", "arg1", "-invalid"}, nil, []string{"arg1", "-invalid"}},
 	}
 
 	var args []string
 	cmd := Command{
-		Name:                   "test",
-		Usage:                  "this is for testing",
-		Description:            "testing",
-		Action:                 func(c *Context) error {
-						args = c.Args()
-						return nil
-					},
+		Name:        "test",
+		Usage:       "this is for testing",
+		Description: "testing",
+		Action: func(c *Context) error {
+			args = c.Args()
+			return nil
+		},
 		SkipArgReorder:         true,
 		UseShortOptionHandling: true,
 		Flags: []Flag{
@@ -111,6 +111,9 @@ func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 			Before: func(c *Context) error {
 				return fmt.Errorf("before error")
 			},
+			Prepare: func(c *Context) error {
+				return fmt.Errorf("prepare error")
+			},
 			After: func(c *Context) error {
 				return fmt.Errorf("after error")
 			},
@@ -124,6 +127,39 @@ func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 
 	if !strings.Contains(err.Error(), "before error") {
 		t.Errorf("expected text of error from Before method, but got none in \"%v\"", err)
+	}
+	if strings.Contains(err.Error(), "prepare error") {
+		t.Errorf("not expecting text of error from Prepare method, because Before had an error prior, but got none in \"%v\"", err)
+	}
+	if !strings.Contains(err.Error(), "after error") {
+		t.Errorf("expected text of error from After method, but got none in \"%v\"", err)
+	}
+}
+
+func TestCommand_Run_PrepareWillGiveError(t *testing.T) {
+	app := NewApp()
+	app.Commands = []Command{
+		{
+			Name: "bar",
+			Before: func(c *Context) error {
+				return nil
+			},
+			Prepare: func(c *Context) error {
+				return fmt.Errorf("prepare error")
+			},
+			After: func(c *Context) error {
+				return fmt.Errorf("after error")
+			},
+		},
+	}
+
+	err := app.Run([]string{"foo", "bar"})
+	if err == nil {
+		t.Fatalf("expected to receive error from Run, got none")
+	}
+
+	if !strings.Contains(err.Error(), "prepare error") {
+		t.Errorf("expected text of error from Prepare method, but got none in \"%v\"", err)
 	}
 	if !strings.Contains(err.Error(), "after error") {
 		t.Errorf("expected text of error from After method, but got none in \"%v\"", err)
@@ -139,7 +175,7 @@ func TestCommand_Run_BeforeSavesMetadata(t *testing.T) {
 		{
 			Name: "bar",
 			Before: func(c *Context) error {
-				c.App.Metadata["msg"] = "hello world"
+				c.App.Metadata["msg"] = "hello before"
 				return nil
 			},
 			Action: func(c *Context) error {
@@ -166,7 +202,59 @@ func TestCommand_Run_BeforeSavesMetadata(t *testing.T) {
 		t.Fatalf("expected no error from Run, got %s", err)
 	}
 
-	expectedMsg := "hello world"
+	expectedMsg := "hello before"
+
+	if receivedMsgFromAction != expectedMsg {
+		t.Fatalf("expected msg from Action to match. Given: %q\nExpected: %q",
+			receivedMsgFromAction, expectedMsg)
+	}
+	if receivedMsgFromAfter != expectedMsg {
+		t.Fatalf("expected msg from After to match. Given: %q\nExpected: %q",
+			receivedMsgFromAction, expectedMsg)
+	}
+}
+
+func TestCommand_Run_PrepareSavesMetadata(t *testing.T) {
+	var receivedMsgFromAction string
+	var receivedMsgFromAfter string
+
+	app := NewApp()
+	app.Commands = []Command{
+		{
+			Name: "bar",
+			Before: func(c *Context) error {
+				c.App.Metadata["msg"] = "hello before"
+				return nil
+			},
+			Prepare: func(c *Context) error {
+				c.App.Metadata["msg"] = "hello prepare"
+				return nil
+			},
+			Action: func(c *Context) error {
+				msg, ok := c.App.Metadata["msg"]
+				if !ok {
+					return errors.New("msg not found")
+				}
+				receivedMsgFromAction = msg.(string)
+				return nil
+			},
+			After: func(c *Context) error {
+				msg, ok := c.App.Metadata["msg"]
+				if !ok {
+					return errors.New("msg not found")
+				}
+				receivedMsgFromAfter = msg.(string)
+				return nil
+			},
+		},
+	}
+
+	err := app.Run([]string{"foo", "bar"})
+	if err != nil {
+		t.Fatalf("expected no error from Run, got %s", err)
+	}
+
+	expectedMsg := "hello prepare"
 
 	if receivedMsgFromAction != expectedMsg {
 		t.Fatalf("expected msg from Action to match. Given: %q\nExpected: %q",
