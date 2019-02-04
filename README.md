@@ -662,6 +662,10 @@ func main() {
 }
 ```
 
+Consequently if you are using the `Before` as described above and you require further `Before`-like routines you can use
+`Prepare` and add your routines there. Additionally of note is that if any of the `Before` has errors the `Prepare`
+segment will not be called upon. Therefore execution flows such that `Before` is run before `Prepare`.
+
 #### Default Values for help output
 
 Sometimes it's useful to specify a flag's default help-text value within the flag declaration. This can be useful if the default value for a flag is a computed value. The default value can be set via the `DefaultText` struct field.
@@ -1261,6 +1265,10 @@ func main() {
           fmt.Fprintf(c.App.Writer, "brace for impact\n")
           return nil
         },
+        Prepare: func(c *cli.Context) error {
+          fmt.Fprintf(c.App.Writer, "we've almost made it!\n")
+          return nil
+        },
         After: func(c *cli.Context) error {
           fmt.Fprintf(c.App.Writer, "did we lose anyone?\n")
           return nil
@@ -1305,6 +1313,10 @@ func main() {
     },
     Before: func(c *cli.Context) error {
       fmt.Fprintf(c.App.Writer, "HEEEERE GOES\n")
+      return nil
+    },
+    Prepare: func(c *cli.Context) error {
+      fmt.Fprintf(c.App.Writer, "JUST ONE LAST BIT\n")
       return nil
     },
     After: func(c *cli.Context) error {
