@@ -31,6 +31,9 @@ type Command struct {
 	// An action to execute before any sub-subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no sub-subcommands are run
 	Before BeforeFunc
+	// An action to execute after Before is run, any subcommands are run, and after the context is ready
+	// It is run even if Before() panics, and if a non-nil error is returned, no subcommands are run
+	Prepare PrepareFunc
 	// An action to execute after any subcommands are run, but after the subcommand has finished
 	// It is run even if Action() panics
 	After AfterFunc
@@ -158,6 +161,15 @@ func (c Command) Run(ctx *Context) (err error) {
 		}
 	}
 
+	if c.Prepare != nil {
+		err = c.Prepare(context)
+		if err != nil {
+			ShowCommandHelp(context, c.Name)
+			context.App.handleExitCoder(context, err)
+			return err
+		}
+	}
+
 	if c.Action == nil {
 		c.Action = helpSubcommand.Action
 	}
@@ -266,7 +278,7 @@ func reorderArgs(args []string) []string {
 }
 
 func translateShortOptions(set *flag.FlagSet, flagArgs Args) []string {
-	allCharsFlags := func (s string) bool {
+	allCharsFlags := func(s string) bool {
 		for i := range s {
 			f := set.Lookup(string(s[i]))
 			if f == nil {
@@ -362,6 +374,7 @@ func (c Command) startApp(ctx *Context) error {
 
 	// set the actions
 	app.Before = c.Before
+	app.Prepare = c.Prepare
 	app.After = c.After
 	if c.Action != nil {
 		app.Action = c.Action

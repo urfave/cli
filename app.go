@@ -56,6 +56,9 @@ type App struct {
 	// An action to execute before any subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no subcommands are run
 	Before BeforeFunc
+	// An action to execute after Before is run, any subcommands are run, and after the context is ready
+	// It is run even if Before() panics, and if a non-nil error is returned, no subcommands are run
+	Prepare PrepareFunc
 	// An action to execute after any subcommands are run, but after the subcommand has finished
 	// It is run even if Action() panics
 	After AfterFunc
@@ -251,6 +254,17 @@ func (a *App) Run(arguments []string) (err error) {
 		}
 	}
 
+	if a.Prepare != nil {
+		prepareErr := a.Prepare(context)
+		if prepareErr != nil {
+			fmt.Fprintf(a.Writer, "%v\n\n", prepareErr)
+			ShowAppHelp(context)
+			a.handleExitCoder(context, prepareErr)
+			err = prepareErr
+			return err
+		}
+	}
+
 	args := context.Args()
 	if args.Present() {
 		name := args.First()
@@ -371,6 +385,15 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 		if beforeErr != nil {
 			a.handleExitCoder(context, beforeErr)
 			err = beforeErr
+			return err
+		}
+	}
+
+	if a.Prepare != nil {
+		prepareErr := a.Prepare(context)
+		if prepareErr != nil {
+			a.handleExitCoder(context, prepareErr)
+			err = prepareErr
 			return err
 		}
 	}

@@ -7,6 +7,11 @@ type BashCompleteFunc func(*Context)
 // the context is ready if a non-nil error is returned, no subcommands are run
 type BeforeFunc func(*Context) error
 
+// PrepareFunc is an action to execute after the before routuines, before any
+// subcommands are run, but after the context is ready if a non-nil error is
+// returned, no subcommands are run
+type PrepareFunc func(*Context) error
+
 // AfterFunc is an action to execute after any subcommands are run, but after the
 // subcommand has finished it is run even if Action() panics
 type AfterFunc func(*Context) error

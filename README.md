@@ -1334,6 +1334,10 @@ func main() {
         fmt.Fprintf(c.App.Writer, "brace for impact\n")
         return nil
       },
+      Prepare: func(c *cli.Context) error {
+        fmt.Fprintf(c.App.Writer, "we've almost made it!\n")
+        return nil
+      },
       After: func(c *cli.Context) error {
         fmt.Fprintf(c.App.Writer, "did we lose anyone?\n")
         return nil
@@ -1378,6 +1382,10 @@ func main() {
   }
   app.Before = func(c *cli.Context) error {
     fmt.Fprintf(c.App.Writer, "HEEEERE GOES\n")
+    return nil
+  }
+  app.Prepare = func(c *cli.Context) error {
+    fmt.Fprintf(c.App.Writer, "JUST ONE LAST BIT\n")
     return nil
   }
   app.After = func(c *cli.Context) error {
