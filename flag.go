@@ -110,6 +110,15 @@ func (f *StringSlice) Value() []string {
 
 // Apply populates the flag given the flag set and environment
 func (f StringSliceFlag) Apply(set *flag.FlagSet) {
+	var defval *StringSlice
+
+	defval, f.Value = f.Value, nil
+	defer func() {
+		if f.Value == nil {
+			f.Value = defval
+		}
+	}()
+
 	if f.EnvVar != "" {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
@@ -158,6 +167,15 @@ func (f *IntSlice) Value() []int {
 
 // Apply populates the flag given the flag set and environment
 func (f IntSliceFlag) Apply(set *flag.FlagSet) {
+	var defval *IntSlice
+
+	defval, f.Value = f.Value, nil
+	defer func() {
+		if f.Value == nil {
+			f.Value = defval
+		}
+	}()
+
 	if f.EnvVar != "" {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
@@ -209,6 +227,15 @@ func (f *Int64Slice) Value() []int64 {
 
 // Apply populates the flag given the flag set and environment
 func (f Int64SliceFlag) Apply(set *flag.FlagSet) {
+	var defval *Int64Slice
+
+	defval, f.Value = f.Value, nil
+	defer func() {
+		if f.Value == nil {
+			f.Value = defval
+		}
+	}()
+
 	if f.EnvVar != "" {
 		for _, envVar := range strings.Split(f.EnvVar, ",") {
 			envVar = strings.TrimSpace(envVar)
