@@ -61,8 +61,8 @@ workflows:
   version: 2
   testing:
     jobs:
-      - go1.6
-      - go1.7
-      - go1.8
+      # - go1.6
+      # - go1.7
+      # - go1.8
       - go1.11
       - latest
