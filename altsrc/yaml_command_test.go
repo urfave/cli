@@ -11,7 +11,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/urfave/cli"
+	"github.com/golib/cli"
 )
 
 func TestCommandYamlFileTest(t *testing.T) {

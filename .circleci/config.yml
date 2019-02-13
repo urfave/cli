@@ -1,0 +1,68 @@
+# Golang CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-go/ for more details
+version: 2
+defaults: &defaults
+  #### TEMPLATE_NOTE: go expects specific checkout path representing url
+  #### expecting it in the form of
+  ####   /go/src/github.com/circleci/go-tool
+  ####   /go/src/bitbucket.org/circleci/go-tool
+  working_directory: /go/glib/cli
+default_steps: &default_steps
+  steps:
+    - checkout
+
+    # specify any bash command here prefixed with `run: `
+    - run: go mod tidy
+    - run: go test -v -timeout 30s
+    - run: go test -v -timeout 30s -race
+jobs:
+  go1.6:
+    <<: *defaults
+    docker:
+      # specify the version
+      - image: golang:1.6
+
+    <<: *default_steps
+
+  go1.7:
+    <<: *defaults
+    docker:
+      # specify the version
+      - image: golang:1.7
+
+    <<: *default_steps
+
+  go1.8:
+    <<: *defaults
+    docker:
+      # specify the version
+      - image: circleci/golang:1.8
+
+    <<: *default_steps
+
+  go1.11:
+    <<: *defaults
+    docker:
+      # specify the version
+      - image: circleci/golang:1.11
+
+    <<: *default_steps
+
+  latest:
+    <<: *defaults
+    docker:
+      # specify the version
+      - image: circleci/golang:latest
+
+    <<: *default_steps
+
+workflows:
+  version: 2
+  testing:
+    jobs:
+      - go1.6
+      - go1.7
+      - go1.8
+      - go1.11
+      - latest

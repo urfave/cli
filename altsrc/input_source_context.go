@@ -3,7 +3,7 @@ package altsrc
 import (
 	"time"
 
-	"github.com/urfave/cli"
+	"github.com/golib/cli"
 )
 
 // InputSourceContext is an interface used to allow

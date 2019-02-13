@@ -1,17 +1,9 @@
 cli
 ===
 
-[![Build Status](https://travis-ci.org/urfave/cli.svg?branch=master)](https://travis-ci.org/urfave/cli)
-[![Windows Build Status](https://ci.appveyor.com/api/projects/status/rtgk5xufi932pb2v?svg=true)](https://ci.appveyor.com/project/urfave/cli)
-[![GoDoc](https://godoc.org/github.com/urfave/cli?status.svg)](https://godoc.org/github.com/urfave/cli)
-[![codebeat](https://codebeat.co/badges/0a8f30aa-f975-404b-b878-5fab3ae1cc5f)](https://codebeat.co/projects/github-com-urfave-cli)
-[![Go Report Card](https://goreportcard.com/badge/urfave/cli)](https://goreportcard.com/report/urfave/cli)
-[![top level coverage](https://gocover.io/_badge/github.com/urfave/cli?0 "top level coverage")](http://gocover.io/github.com/urfave/cli) /
-[![altsrc coverage](https://gocover.io/_badge/github.com/urfave/cli/altsrc?0 "altsrc coverage")](http://gocover.io/github.com/urfave/cli/altsrc)
+[![CircleCI](https://circleci.com/gh/golib/cli/tree/master.svg?style=svg)](https://circleci.com/gh/golib/cli/tree/master) [![Coverage](http://gocover.io/_badge/github.com/golib/cli?0)](http://gocover.io/github.com/golib/cli) [![GoDoc](https://godoc.org/github.com/golib/cli?status.svg)](http://godoc.org/github.com/golib/cli)
 
-**Notice:** This is the library formerly known as
-`github.com/codegangsta/cli` -- Github will automatically redirect requests
-to this repository, but we recommend updating your references for clarity.
+**Notice:** This is the library forked from `https://github.com/urfave/cli`
 
 cli is a simple, fast, and fun package for building command line apps in Go. The
 goal is to enable developers to write fast and distributable command line
@@ -65,7 +57,7 @@ the install instructions for Go](http://golang.org/doc/install.html).
 
 To install cli, simply run:
 ```
-$ go get github.com/urfave/cli
+$ go get github.com/golib/cli
 ```
 
 Make sure your `PATH` includes the `$GOPATH/bin` directory so your commands can

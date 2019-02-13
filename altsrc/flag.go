@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/urfave/cli"
+	"github.com/golib/cli"
 )
 
 // FlagInputSourceExtension is an extension interface of cli.Flag that
