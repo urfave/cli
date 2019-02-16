@@ -114,7 +114,7 @@ func (f StringSliceFlag) Apply(set *flag.FlagSet) {
 
 	defval, f.Value = f.Value, nil
 	defer func() {
-		if f.Value == nil {
+		if f.Value == nil || len(*f.Value) == 0 {
 			f.Value = defval
 		}
 	}()
@@ -171,7 +171,7 @@ func (f IntSliceFlag) Apply(set *flag.FlagSet) {
 
 	defval, f.Value = f.Value, nil
 	defer func() {
-		if f.Value == nil {
+		if f.Value == nil || len(*f.Value) == 0 {
 			f.Value = defval
 		}
 	}()
@@ -231,7 +231,7 @@ func (f Int64SliceFlag) Apply(set *flag.FlagSet) {
 
 	defval, f.Value = f.Value, nil
 	defer func() {
-		if f.Value == nil {
+		if f.Value == nil || len(*f.Value) == 0 {
 			f.Value = defval
 		}
 	}()
