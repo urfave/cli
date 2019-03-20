@@ -6,7 +6,14 @@ _cli_bash_autocomplete() {
     local cur opts base
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
-    opts=$( ${COMP_WORDS[@]:0:$COMP_CWORD} --generate-bash-completion )
+    if [[ $cur == -* ]]; then
+      opts=$( ${COMP_WORDS[@]:0:$COMP_CWORD} ${cur} --generate-bash-completion )
+    else
+      opts=$( ${COMP_WORDS[@]:0:$COMP_CWORD} --generate-bash-completion )
+    fi
+    if [[ "$opts1" == "$cur1" ]]; then
+      return 0
+    fi
     COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
     return 0
 }

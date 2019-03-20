@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"strings"
 	"text/tabwriter"
 	"text/template"
+	"unicode/utf8"
 )
 
 // AppHelpTemplate is the text template for the Default help topic.
@@ -152,19 +154,80 @@ func ShowAppHelp(c *Context) (err error) {
 	return nil
 }
 
+var shortFlagRegex = regexp.MustCompile(`^-`)
+
 // DefaultAppComplete prints the list of subcommands as the default app completion method
 func DefaultAppComplete(c *Context) {
-	for _, command := range c.App.Commands {
-		if command.Hidden {
-			continue
+	DefaultAppCompleteWithFlags(nil)(c)
+}
+
+func DefaultAppCompleteWithFlags(cmd *Command) func(c *Context) {
+	return func(c *Context) {
+		if len(os.Args) > 2 {
+			lastArg := os.Args[len(os.Args)-2]
+			if strings.HasPrefix(lastArg, "-") {
+				lastArg = shortFlagRegex.ReplaceAllString(lastArg, "")
+				lastArg = shortFlagRegex.ReplaceAllString(lastArg, "")
+				for _, flag := range c.App.Flags {
+					for _, name := range strings.Split(flag.GetName(), ",") {
+						name = strings.Trim(name, " ")
+						if strings.HasPrefix(name, lastArg) && lastArg != name {
+							count := utf8.RuneCountInString(name)
+							if count > 2 {
+								count = 2
+							}
+							fmt.Fprintf(c.App.Writer, "%s%s\n", strings.Repeat("-", count), name)
+						}
+					}
+				}
+				if cmd != nil {
+					for _, flag := range cmd.Flags {
+						for _, name := range strings.Split(flag.GetName(), ",") {
+							name = strings.Trim(name, " ")
+							if strings.HasPrefix(name, lastArg) && lastArg != name {
+								count := utf8.RuneCountInString(name)
+								if count > 2 {
+									count = 2
+								}
+								fmt.Fprintf(c.App.Writer, "%s%s\n", strings.Repeat("-", count), name)
+							}
+						}
+					}
+				}
+				return
+			}
 		}
-		if os.Getenv("_CLI_ZSH_AUTOCOMPLETE_HACK") == "1" {
-			for _, name := range command.Names() {
-				fmt.Fprintf(c.App.Writer, "%s:%s\n", name, command.Usage)
+		if cmd != nil {
+			for _, command := range cmd.Subcommands {
+				if command.Hidden {
+					continue
+				}
+				if os.Getenv("_CLI_ZSH_AUTOCOMPLETE_HACK") == "1" {
+					for _, name := range command.Names() {
+						fmt.Fprintf(c.App.Writer, "%s:%s\n", name, command.Usage)
+					}
+				} else {
+					for _, name := range command.Names() {
+						if name != "h" {
+							fmt.Fprintf(c.App.Writer, "%s\n", name)
+						}
+					}
+				}
 			}
 		} else {
-			for _, name := range command.Names() {
-				fmt.Fprintf(c.App.Writer, "%s\n", name)
+			for _, command := range c.App.Commands {
+				if command.Hidden {
+					continue
+				}
+				if os.Getenv("_CLI_ZSH_AUTOCOMPLETE_HACK") == "1" {
+					for _, name := range command.Names() {
+						fmt.Fprintf(c.App.Writer, "%s:%s\n", name, command.Usage)
+					}
+				} else {
+					for _, name := range command.Names() {
+						fmt.Fprintf(c.App.Writer, "%s\n", name)
+					}
+				}
 			}
 		}
 	}
