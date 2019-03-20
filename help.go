@@ -162,6 +162,22 @@ func DefaultAppComplete(c *Context) {
 }
 
 func DefaultAppCompleteWithFlags(cmd *Command) func(c *Context) {
+	cliArgContains := func(flagName string) bool {
+		for _, name := range strings.Split(flagName, ",") {
+			name = strings.Trim(name, " ")
+			count := utf8.RuneCountInString(name)
+			if count > 2 {
+				count = 2
+			}
+			flag := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
+			for _, a := range os.Args {
+				if a == flag {
+					return true
+				}
+			}
+		}
+		return false
+	}
 	return func(c *Context) {
 		if len(os.Args) > 2 {
 			lastArg := os.Args[len(os.Args)-2]
@@ -171,12 +187,13 @@ func DefaultAppCompleteWithFlags(cmd *Command) func(c *Context) {
 				for _, flag := range c.App.Flags {
 					for _, name := range strings.Split(flag.GetName(), ",") {
 						name = strings.Trim(name, " ")
-						if strings.HasPrefix(name, lastArg) && lastArg != name {
-							count := utf8.RuneCountInString(name)
-							if count > 2 {
-								count = 2
-							}
-							fmt.Fprintf(c.App.Writer, "%s%s\n", strings.Repeat("-", count), name)
+						count := utf8.RuneCountInString(name)
+						if count > 2 {
+							count = 2
+						}
+						flagCompletion := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
+						if strings.HasPrefix(name, lastArg) && lastArg != name && !cliArgContains(flag.GetName()) {
+							fmt.Fprintln(c.App.Writer, flagCompletion)
 						}
 					}
 				}
@@ -184,12 +201,13 @@ func DefaultAppCompleteWithFlags(cmd *Command) func(c *Context) {
 					for _, flag := range cmd.Flags {
 						for _, name := range strings.Split(flag.GetName(), ",") {
 							name = strings.Trim(name, " ")
-							if strings.HasPrefix(name, lastArg) && lastArg != name {
-								count := utf8.RuneCountInString(name)
-								if count > 2 {
-									count = 2
-								}
-								fmt.Fprintf(c.App.Writer, "%s%s\n", strings.Repeat("-", count), name)
+							count := utf8.RuneCountInString(name)
+							if count > 2 {
+								count = 2
+							}
+							flagCompletion := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
+							if strings.HasPrefix(name, lastArg) && lastArg != name && !cliArgContains(flag.GetName()) {
+								fmt.Fprintln(c.App.Writer, flagCompletion)
 							}
 						}
 					}
