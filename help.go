@@ -158,95 +158,80 @@ var shortFlagRegex = regexp.MustCompile(`^-`)
 
 // DefaultAppComplete prints the list of subcommands as the default app completion method
 func DefaultAppComplete(c *Context) {
-	DefaultAppCompleteWithFlags(nil)(c)
+	DefaultCompleteWithFlags(nil)(c)
 }
 
-func DefaultAppCompleteWithFlags(cmd *Command) func(c *Context) {
-	cliArgContains := func(flagName string) bool {
-		for _, name := range strings.Split(flagName, ",") {
+func printCommandSuggestions(commands []Command, writer io.Writer) {
+	for _, command := range commands {
+		if command.Hidden {
+			continue
+		}
+		if os.Getenv("_CLI_ZSH_AUTOCOMPLETE_HACK") == "1" {
+			for _, name := range command.Names() {
+				fmt.Fprintf(writer, "%s:%s\n", name, command.Usage)
+			}
+		} else {
+			for _, name := range command.Names() {
+				fmt.Fprintf(writer, "%s\n", name)
+			}
+		}
+	}
+}
+
+func cliArgContains(flagName string) bool {
+	for _, name := range strings.Split(flagName, ",") {
+		name = strings.Trim(name, " ")
+		count := utf8.RuneCountInString(name)
+		if count > 2 {
+			count = 2
+		}
+		flag := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
+		for _, a := range os.Args {
+			if a == flag {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
+	cur := shortFlagRegex.ReplaceAllString(lastArg, "")
+	cur = shortFlagRegex.ReplaceAllString(cur, "")
+	for _, flag := range flags {
+		for _, name := range strings.Split(flag.GetName(), ",") {
 			name = strings.Trim(name, " ")
 			count := utf8.RuneCountInString(name)
 			if count > 2 {
 				count = 2
 			}
-			flag := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
-			for _, a := range os.Args {
-				if a == flag {
-					return true
-				}
+			if strings.HasPrefix(lastArg, "--") && count == 1 {
+				continue
+			}
+			flagCompletion := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
+			if strings.HasPrefix(name, cur) && cur != name && !cliArgContains(flag.GetName()) {
+				fmt.Fprintln(writer, flagCompletion)
 			}
 		}
-		return false
 	}
+}
+
+func DefaultCompleteWithFlags(cmd *Command) func(c *Context) {
 	return func(c *Context) {
 		if len(os.Args) > 2 {
 			lastArg := os.Args[len(os.Args)-2]
 			if strings.HasPrefix(lastArg, "-") {
-				lastArg = shortFlagRegex.ReplaceAllString(lastArg, "")
-				lastArg = shortFlagRegex.ReplaceAllString(lastArg, "")
-				for _, flag := range c.App.Flags {
-					for _, name := range strings.Split(flag.GetName(), ",") {
-						name = strings.Trim(name, " ")
-						count := utf8.RuneCountInString(name)
-						if count > 2 {
-							count = 2
-						}
-						flagCompletion := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
-						if strings.HasPrefix(name, lastArg) && lastArg != name && !cliArgContains(flag.GetName()) {
-							fmt.Fprintln(c.App.Writer, flagCompletion)
-						}
-					}
-				}
+				printFlagSuggestions(lastArg, c.App.Flags, c.App.Writer)
 				if cmd != nil {
-					for _, flag := range cmd.Flags {
-						for _, name := range strings.Split(flag.GetName(), ",") {
-							name = strings.Trim(name, " ")
-							count := utf8.RuneCountInString(name)
-							if count > 2 {
-								count = 2
-							}
-							flagCompletion := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
-							if strings.HasPrefix(name, lastArg) && lastArg != name && !cliArgContains(flag.GetName()) {
-								fmt.Fprintln(c.App.Writer, flagCompletion)
-							}
-						}
-					}
+					printFlagSuggestions(lastArg, cmd.Flags, c.App.Writer)
 				}
 				return
 			}
 		}
 		if cmd != nil {
-			for _, command := range cmd.Subcommands {
-				if command.Hidden {
-					continue
-				}
-				if os.Getenv("_CLI_ZSH_AUTOCOMPLETE_HACK") == "1" {
-					for _, name := range command.Names() {
-						fmt.Fprintf(c.App.Writer, "%s:%s\n", name, command.Usage)
-					}
-				} else {
-					for _, name := range command.Names() {
-						if name != "h" {
-							fmt.Fprintf(c.App.Writer, "%s\n", name)
-						}
-					}
-				}
-			}
+			printCommandSuggestions(cmd.Subcommands, c.App.Writer)
 		} else {
-			for _, command := range c.App.Commands {
-				if command.Hidden {
-					continue
-				}
-				if os.Getenv("_CLI_ZSH_AUTOCOMPLETE_HACK") == "1" {
-					for _, name := range command.Names() {
-						fmt.Fprintf(c.App.Writer, "%s:%s\n", name, command.Usage)
-					}
-				} else {
-					for _, name := range command.Names() {
-						fmt.Fprintf(c.App.Writer, "%s\n", name)
-					}
-				}
-			}
+			printCommandSuggestions(c.App.Commands, c.App.Writer)
 		}
 	}
 }
@@ -309,9 +294,14 @@ func ShowCompletions(c *Context) {
 // ShowCommandCompletions prints the custom completions for a given command
 func ShowCommandCompletions(ctx *Context, command string) {
 	c := ctx.App.Command(command)
-	if c != nil && c.BashComplete != nil {
-		c.BashComplete(ctx)
+	if c != nil {
+		if c.BashComplete != nil {
+			c.BashComplete(ctx)
+		} else {
+			DefaultCompleteWithFlags(c)(ctx)
+		}
 	}
+
 }
 
 func printHelpCustom(out io.Writer, templ string, data interface{}, customFunc map[string]interface{}) {

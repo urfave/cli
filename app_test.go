@@ -221,6 +221,60 @@ func ExampleApp_Run_subcommandNoAction() {
 
 }
 
+func ExampleApp_Run_bashComplete_withShortFlag() {
+	os.Args = []string{"greet", "-", "--generate-bash-completion"}
+
+	app := NewApp()
+	app.Name = "greet"
+	app.EnableBashCompletion = true
+	app.Flags = []Flag{
+		IntFlag{
+			Name: "other,o",
+		},
+		StringFlag{
+			Name: "xyz,x",
+		},
+	}
+
+	app.Run(os.Args)
+	// Output:
+	// --other
+	// -o
+	// --xyz
+	// -x
+	// --help
+	// -h
+	// --version
+	// -v
+}
+
+func ExampleApp_Run_bashComplete_withLongFlag() {
+	os.Args = []string{"greet", "--s", "--generate-bash-completion"}
+
+	app := NewApp()
+	app.Name = "greet"
+	app.EnableBashCompletion = true
+	app.Flags = []Flag{
+		IntFlag{
+			Name: "other,o",
+		},
+		StringFlag{
+			Name: "xyz,x",
+		},
+		StringFlag{
+			Name: "some-flag,s",
+		},
+		StringFlag{
+			Name: "similar-flag",
+		},
+	}
+
+	app.Run(os.Args)
+	// Output:
+	// --some-flag
+	// --similar-flag
+}
+
 func ExampleApp_Run_bashComplete() {
 	// set args for examples sake
 	os.Args = []string{"greet", "--generate-bash-completion"}
