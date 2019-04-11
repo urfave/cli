@@ -199,6 +199,9 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 	cur := shortFlagRegex.ReplaceAllString(lastArg, "")
 	cur = shortFlagRegex.ReplaceAllString(cur, "")
 	for _, flag := range flags {
+		if bflag, ok := flag.(BoolFlag); ok && bflag.Hidden {
+			continue
+		}
 		for _, name := range strings.Split(flag.GetName(), ",") {
 			name = strings.Trim(name, " ")
 			count := utf8.RuneCountInString(name)
