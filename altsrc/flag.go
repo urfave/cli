@@ -94,7 +94,7 @@ func (f *StringSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputS
 				eachName(f.Name, func(name string) {
 					underlyingFlag := f.set.Lookup(f.Name)
 					if underlyingFlag != nil {
-						underlyingFlag.Value = &sliceValue
+						*(underlyingFlag.Value.(*cli.StringSlice)) = sliceValue
 					}
 				})
 			}
@@ -116,7 +116,7 @@ func (f *IntSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSour
 				eachName(f.Name, func(name string) {
 					underlyingFlag := f.set.Lookup(f.Name)
 					if underlyingFlag != nil {
-						underlyingFlag.Value = &sliceValue
+						*(underlyingFlag.Value.(*cli.IntSlice)) = sliceValue
 					}
 				})
 			}
