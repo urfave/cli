@@ -171,6 +171,11 @@ def _write_cli_flag_types(outfile, types):
                 return f.Name
             }}
 
+            // IsRequired returns the whether or not the flag is required
+            func (f {name}Flag) IsRequired() bool {{
+                return f.Required
+            }}
+
             // {name} looks up the value of a local {name}Flag, returns
             // {context_default} if not found
             func (c *Context) {name}(name string) {context_type} {{
