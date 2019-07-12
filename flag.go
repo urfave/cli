@@ -568,8 +568,8 @@ func (f DurationFlag) ApplyWithError(set *flag.FlagSet) error {
 		}
 		set.Duration(name, f.Value, f.Usage)
 	})
-	return nil
 
+	return nil
 }
 
 func (f DurationFlag) IsRequired() bool {
