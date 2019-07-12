@@ -196,16 +196,7 @@ func (a *App) Run(arguments []string) (err error) {
 	err = set.Parse(arguments[1:])
 	nerr := normalizeFlags(a.Flags, set)
 	cerr := checkRequiredFlags(a.Flags, set)
-
 	context := NewContext(a, set, nil)
-
-	// Define here so it closes over the above variables
-	showErrAndHelp := func(err error) {
-		fmt.Fprintln(a.Writer, err)
-		fmt.Fprintln(a.Writer)
-		ShowAppHelp(context)
-		fmt.Fprintln(a.Writer)
-	}
 
 	if nerr != nil {
 		fmt.Fprintln(a.Writer, nerr)
@@ -219,7 +210,7 @@ func (a *App) Run(arguments []string) (err error) {
 	}
 
 	if cerr != nil {
-		showErrAndHelp(cerr)
+		ShowAppHelp(context)
 		return cerr
 	}
 
@@ -345,7 +336,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	}
 
 	if cerr != nil {
-		showErrAndHelp(cerr)
+		ShowAppHelp(context)
 		return cerr
 	}
 
