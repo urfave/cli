@@ -332,7 +332,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 		} else {
 			ShowCommandHelp(ctx, context.Args().First())
 		}
-		fmt.Fprintln(a.Writer, err)
+		return nerr
 	}
 
 	if cerr != nil {
