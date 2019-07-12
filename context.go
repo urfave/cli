@@ -290,7 +290,7 @@ func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
 func checkRequiredFlags(flags []Flag, set *flag.FlagSet) error {
 	// If the help flag is included then none of the other flags are required.
 	for _, f := range flags {
-		if f.getName() == "help" {
+		if f.GetName() == "help" {
 			return nil
 		}
 	}
@@ -302,9 +302,9 @@ func checkRequiredFlags(flags []Flag, set *flag.FlagSet) error {
 
 	for _, f := range flags {
 		if f.IsRequired() {
-			key := strings.Split(f.getName(), ",")[0]
+			key := strings.Split(f.GetName(), ",")[0]
 			if !visited[key] {
-				return fmt.Errorf("Required flag %s not set", f.getName())
+				return fmt.Errorf("Required flag %s not set", f.GetName())
 			}
 		}
 	}
