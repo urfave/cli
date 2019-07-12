@@ -139,10 +139,6 @@ func (f GenericFlag) ApplyWithError(set *flag.FlagSet) error {
 	return nil
 }
 
-func (f GenericFlag) IsRequired() bool {
-	return f.Required
-}
-
 // StringSlice is an opaque type for []string to satisfy flag.Value and flag.Getter
 type StringSlice []string
 
@@ -198,10 +194,6 @@ func (f StringSliceFlag) ApplyWithError(set *flag.FlagSet) error {
 	})
 
 	return nil
-}
-
-func (f StringSliceFlag) IsRequired() bool {
-	return f.Required
 }
 
 // IntSlice is an opaque type for []int to satisfy flag.Value and flag.Getter
@@ -283,10 +275,6 @@ func (f *Int64Slice) String() string {
 	return fmt.Sprintf("%#v", *f)
 }
 
-func (f IntSliceFlag) IsRequired() bool {
-	return f.Required
-}
-
 // Value returns the slice of ints set by this flag
 func (f *Int64Slice) Value() []int64 {
 	return *f
@@ -333,10 +321,6 @@ func (f Int64SliceFlag) ApplyWithError(set *flag.FlagSet) error {
 // Ignores errors
 func (f BoolFlag) Apply(set *flag.FlagSet) {
 	f.ApplyWithError(set)
-}
-
-func (f BoolFlag) IsRequired() bool {
-	return f.Required
 }
 
 // ApplyWithError populates the flag given the flag set and environment
@@ -398,10 +382,6 @@ func (f BoolTFlag) ApplyWithError(set *flag.FlagSet) error {
 	return nil
 }
 
-func (f BoolTFlag) IsRequired() bool {
-	return f.Required
-}
-
 // Apply populates the flag given the flag set and environment
 // Ignores errors
 func (f StringFlag) Apply(set *flag.FlagSet) {
@@ -458,10 +438,6 @@ func (f Int64Flag) Apply(set *flag.FlagSet) {
 	f.ApplyWithError(set)
 }
 
-func (f StringFlag) IsRequired() bool {
-	return f.Required
-}
-
 // ApplyWithError populates the flag given the flag set and environment
 func (f Int64Flag) ApplyWithError(set *flag.FlagSet) error {
 	if envVal, ok := flagFromFileEnv(f.FilePath, f.EnvVar); ok {
@@ -510,10 +486,6 @@ func (f UintFlag) ApplyWithError(set *flag.FlagSet) error {
 	})
 
 	return nil
-}
-
-func (f IntFlag) IsRequired() bool {
-	return f.Required
 }
 
 // Apply populates the flag given the flag set and environment
@@ -572,10 +544,6 @@ func (f DurationFlag) ApplyWithError(set *flag.FlagSet) error {
 	return nil
 }
 
-func (f DurationFlag) IsRequired() bool {
-	return f.Required
-}
-
 // Apply populates the flag given the flag set and environment
 // Ignores errors
 func (f Float64Flag) Apply(set *flag.FlagSet) {
@@ -613,10 +581,6 @@ func visibleFlags(fl []Flag) []Flag {
 		}
 	}
 	return visible
-}
-
-func (f Float64Flag) IsRequired() bool {
-	return f.Required
 }
 
 func prefixFor(name string) (prefix string) {
