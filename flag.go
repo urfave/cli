@@ -72,8 +72,15 @@ type Flag interface {
 	fmt.Stringer
 	// Apply Flag settings to the given flag set
 	Apply(*flag.FlagSet)
-	IsRequired() bool
 	GetName() string
+}
+
+// RequiredFlag is an interface that allows us to return mark flags as required
+// it allows flags defined in this library to be marked as required in a backwards compatible fashion
+type RequiredFlag interface {
+	Flag
+
+	IsRequired() bool
 }
 
 // errorableFlag is an interface that allows us to return errors during apply
