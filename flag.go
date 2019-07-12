@@ -115,22 +115,6 @@ type Generic interface {
 	String() string
 }
 
-// GenericFlag is the flag type for types implementing Generic
-type GenericFlag struct {
-	Name     string
-	Value    Generic
-	Usage    string
-	EnvVar   string
-	Required bool
-}
-
-// String returns the string representation of the generic flag to display the
-// help text to the user (uses the String() method of the generic flag to show
-// the value)
-func (f GenericFlag) String() string {
-	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s%s \"%v\"\t%v", prefixFor(f.Name), f.Name, f.Value, f.Usage))
-}
-
 // Apply takes the flagset and calls Set on the generic flag with the value
 // provided by the user for parsing by the flag
 // Ignores parsing errors
@@ -176,20 +160,6 @@ func (f *StringSlice) String() string {
 // Value returns the slice of strings set by this flag
 func (f *StringSlice) Value() []string {
 	return *f
-}
-
-type StringSliceFlag struct {
-	Name     string
-	Value    *StringSlice
-	Usage    string
-	EnvVar   string
-	Required bool
-}
-
-func (f StringSliceFlag) String() string {
-	firstName := strings.Trim(strings.Split(f.Name, ",")[0], " ")
-	pref := prefixFor(firstName)
-	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s [%v]\t%v", prefixedNames(f.Name), pref+firstName+" option "+pref+firstName+" option", f.Usage))
 }
 
 // Get returns the slice of strings set by this flag
@@ -257,20 +227,6 @@ func (f *IntSlice) Value() []int {
 	return *f
 }
 
-type IntSliceFlag struct {
-	Name     string
-	Value    *IntSlice
-	Usage    string
-	EnvVar   string
-	Required bool
-}
-
-func (f IntSliceFlag) String() string {
-	firstName := strings.Trim(strings.Split(f.Name, ",")[0], " ")
-	pref := prefixFor(firstName)
-	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s [%v]\t%v", prefixedNames(f.Name), pref+firstName+" option "+pref+firstName+" option", f.Usage))
-}
-
 // Get returns the slice of ints set by this flag
 func (f *IntSlice) Get() interface{} {
 	return *f
@@ -331,17 +287,6 @@ func (f IntSliceFlag) IsRequired() bool {
 	return f.Required
 }
 
-type BoolFlag struct {
-	Name     string
-	Usage    string
-	EnvVar   string
-	Required bool
-}
-
-func (f BoolFlag) String() string {
-	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s\t%v", prefixedNames(f.Name), f.Usage))
-}
-
 // Value returns the slice of ints set by this flag
 func (f *Int64Slice) Value() []int64 {
 	return *f
@@ -392,17 +337,6 @@ func (f BoolFlag) Apply(set *flag.FlagSet) {
 
 func (f BoolFlag) IsRequired() bool {
 	return f.Required
-}
-
-type BoolTFlag struct {
-	Name     string
-	Usage    string
-	EnvVar   string
-	Required bool
-}
-
-func (f BoolTFlag) String() string {
-	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s\t%v", prefixedNames(f.Name), f.Usage))
 }
 
 // ApplyWithError populates the flag given the flag set and environment
@@ -468,14 +402,6 @@ func (f BoolTFlag) IsRequired() bool {
 	return f.Required
 }
 
-type StringFlag struct {
-	Name     string
-	Value    string
-	Usage    string
-	EnvVar   string
-	Required bool
-}
-
 // Apply populates the flag given the flag set and environment
 // Ignores errors
 func (f StringFlag) Apply(set *flag.FlagSet) {
@@ -536,18 +462,6 @@ func (f StringFlag) IsRequired() bool {
 	return f.Required
 }
 
-type IntFlag struct {
-	Name     string
-	Value    int
-	Usage    string
-	EnvVar   string
-	Required bool
-}
-
-func (f IntFlag) String() string {
-	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s \"%v\"\t%v", prefixedNames(f.Name), f.Value, f.Usage))
-}
-
 // ApplyWithError populates the flag given the flag set and environment
 func (f Int64Flag) ApplyWithError(set *flag.FlagSet) error {
 	if envVal, ok := flagFromFileEnv(f.FilePath, f.EnvVar); ok {
@@ -600,18 +514,6 @@ func (f UintFlag) ApplyWithError(set *flag.FlagSet) error {
 
 func (f IntFlag) IsRequired() bool {
 	return f.Required
-}
-
-type DurationFlag struct {
-	Name     string
-	Value    time.Duration
-	Usage    string
-	EnvVar   string
-	Required bool
-}
-
-func (f DurationFlag) String() string {
-	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s \"%v\"\t%v", prefixedNames(f.Name), f.Value, f.Usage))
 }
 
 // Apply populates the flag given the flag set and environment
@@ -667,22 +569,11 @@ func (f DurationFlag) ApplyWithError(set *flag.FlagSet) error {
 		set.Duration(name, f.Value, f.Usage)
 	})
 	return nil
+
 }
 
 func (f DurationFlag) IsRequired() bool {
 	return f.Required
-}
-
-type Float64Flag struct {
-	Name     string
-	Value    float64
-	Usage    string
-	EnvVar   string
-	Required bool
-}
-
-func (f Float64Flag) String() string {
-	return withHints(f.EnvVar, f.Required, fmt.Sprintf("%s \"%v\"\t%v", prefixedNames(f.Name), f.Value, f.Usage))
 }
 
 // Apply populates the flag given the flag set and environment
