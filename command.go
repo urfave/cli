@@ -262,37 +262,11 @@ func reorderArgs(args []string) []string {
 		}
 	}
 
-	// Define here so it closes over the above variables
-	showErrAndHelp := func(err error) {
-		fmt.Fprintln(ctx.App.Writer, err)
-		fmt.Fprintln(ctx.App.Writer)
-		ShowCommandHelp(ctx, c.Name)
-		fmt.Fprintln(ctx.App.Writer)
-	}
-
-	if err != nil {
-		showErrAndHelp(fmt.Errorf("Incorrect Usage."))
-		return err
-	}
-
-	nerr := normalizeFlags(c.Flags, set)
-	if nerr != nil {
-		showErrAndHelp(nerr)
-		return nerr
-	}
-
-	cerr := checkRequiredFlags(c.Flags, set)
-	if cerr != nil {
-		showErrAndHelp(cerr)
-		return cerr
-	}
-
-	context := NewContext(ctx.App, set, ctx.globalSet)
 	return append(flags, nonflags...)
 }
 
 func translateShortOptions(set *flag.FlagSet, flagArgs Args) []string {
-	allCharsFlags := func (s string) bool {
+	allCharsFlags := func(s string) bool {
 		for i := range s {
 			f := set.Lookup(string(s[i]))
 			if f == nil {
@@ -399,9 +373,6 @@ func (c Command) startApp(ctx *Context) error {
 	for index, cc := range app.Commands {
 		app.Commands[index].commandNamePath = []string{c.Name, cc.Name}
 	}
-
-	// set the writer to the original App's writer
-	app.Writer = ctx.App.Writer
 
 	return app.RunAsSubcommand(ctx)
 }
