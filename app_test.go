@@ -877,53 +877,124 @@ func TestAppNoHelpFlag(t *testing.T) {
 	}
 }
 
-func TestAppHelpPrinter(t *testing.T) {
+func TestRequiredFlagAppRunBehavior(t *testing.T) {
 	tdata := []struct {
-		testCase    string
-		flags       []Flag
-		appRunInput []string
+		testCase                 string
+		flags                    []Flag
+		appRunInput              []string
+		expectedHelpPrinter      bool
+		expectedAnError          bool
+		expectedFlagErrorPrinter bool
 	}{
 		{
-			testCase:    "prints_help_case_one",
-			appRunInput: []string{""},
+			// expectations:
+			//  - empty input shows the help message
+			// 	- empty input explicitly does not error
+			testCase:            "empty_input",
+			appRunInput:         []string{""},
+			expectedHelpPrinter: true,
+			expectedAnError:     false, // explicit false for readability (this is the default value)
 		},
 		{
-			testCase:    "prints_help_case_two",
-			appRunInput: []string{"-h"},
+			// expectations:
+			//  - empty input, when a required flag is present, shows the help message
+			// 	- empty input, when a required flag is present, errors
+			// 	- empty input, when a required flag is present, show the flag error message
+			testCase:                 "empty_input_with_required_flag",
+			appRunInput:              []string{""},
+			flags:                    []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+			expectedHelpPrinter:      true,
+			expectedAnError:          true,
+			expectedFlagErrorPrinter: true,
 		},
 		{
-			testCase:    "prints_help_case_three",
-			appRunInput: []string{"testCommand", "-h"},
+			// expectations:
+			//  - --help input, when a required flag is present, shows the help message
+			// 	- --help input, when a required flag is present, explicitly does not error
+			// 	- --help input, when a required flag is present, explicitly does not show the flag error message
+			testCase:                 "help_input_with_required_flag",
+			appRunInput:              []string{"command", "--help"},
+			flags:                    []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+			expectedHelpPrinter:      true,
+			expectedAnError:          false, // explicit false for readability (this is the default value)
+			expectedFlagErrorPrinter: false, // explicit false for readability (this is the default value)
 		},
 		{
-			testCase:    "prints_help_when_required_flag_is_present",
-			flags:       []Flag{StringFlag{Name: "flag", Required: true}},
-			appRunInput: []string{"testCommand", "-h"},
+			// expectations:
+			//  - optional input, when a required flag is present, shows the help message
+			// 	- optional input, when a required flag is present, errors
+			// 	- optional input, when a required flag is present, shows the flag error message
+			testCase:                 "optional_input_with_required_flag",
+			appRunInput:              []string{"command", "--optional", "cats"},
+			flags:                    []Flag{StringFlag{Name: "requiredFlag", Required: true}, StringFlag{Name: "optional"}},
+			expectedHelpPrinter:      true,
+			expectedAnError:          true,
+			expectedFlagErrorPrinter: true,
 		},
 	}
 	for _, test := range tdata {
 		t.Run(test.testCase, func(t *testing.T) {
+			// setup - undo showFlagError mock when finished
+			oldShowError := showFlagError
+			defer func() {
+				showFlagError = oldShowError
+			}()
+			// setup - mock showFlagError
+			var showErrorWasCalled = false
+			showFlagError = func(writer io.Writer, err ...interface{}) (int, error) {
+				showErrorWasCalled = true
+				return 0, nil
+			}
+			// setup - undo HelpPrinter mock when finished
 			oldPrinter := HelpPrinter
 			defer func() {
 				HelpPrinter = oldPrinter
 			}()
-
-			var wasCalled = false
+			// setup - mock HelpPrinter
+			var helpPrinterWasCalled = false
 			HelpPrinter = func(w io.Writer, template string, data interface{}) {
-				wasCalled = true
+				helpPrinterWasCalled = true
 			}
-
+			// setup - app
 			app := NewApp()
 			app.Flags = test.flags
+
+			// logic under test
 			err := app.Run(test.appRunInput)
 
-			if wasCalled == false {
-				t.Errorf("Help printer expected to be called, but was not")
+			// assertions
+			if test.expectedHelpPrinter && helpPrinterWasCalled == false {
+				t.Errorf("HelpPrinter expected to be called, but was not")
 			}
-			if err != nil {
+			if test.expectedFlagErrorPrinter && showErrorWasCalled == false {
+				t.Errorf("showFlagError expected to be called, but was not")
+			}
+			if test.expectedAnError && err == nil {
+				t.Errorf("expected an error, but there was none")
+			}
+			if !test.expectedAnError && err != nil {
 				t.Errorf("did not expected an error, but there was one: %s", err)
 			}
 		})
+	}
+}
+
+func TestAppHelpPrinter(t *testing.T) {
+	oldPrinter := HelpPrinter
+	defer func() {
+		HelpPrinter = oldPrinter
+	}()
+
+	var wasCalled = false
+	HelpPrinter = func(w io.Writer, template string, data interface{}) {
+		wasCalled = true
+	}
+
+	app := NewApp()
+	app.Run([]string{"-h"})
+
+	if wasCalled == false {
+		t.Errorf("Help printer expected to be called, but was not")
 	}
 }
 

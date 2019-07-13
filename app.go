@@ -10,6 +10,9 @@ import (
 	"time"
 )
 
+// printerFunc is the function signature for fmt.Fprintln
+type printerFunc func(io.Writer, ...interface{}) (int, error)
+
 var (
 	changeLogURL                    = "https://github.com/urfave/cli/blob/master/CHANGELOG.md"
 	appActionDeprecationURL         = fmt.Sprintf("%s#deprecated-cli-app-action-signature", changeLogURL)
@@ -20,6 +23,8 @@ var (
 	errInvalidActionType = NewExitError("ERROR invalid Action type. "+
 		fmt.Sprintf("Must be `func(*Context`)` or `func(*Context) error).  %s", contactSysadmin)+
 		fmt.Sprintf("See %s", appActionDeprecationURL), 2)
+
+	showFlagError printerFunc = fmt.Fprintln
 )
 
 // App is the main structure of a cli application. It is recommended that
@@ -195,7 +200,6 @@ func (a *App) Run(arguments []string) (err error) {
 	set.SetOutput(ioutil.Discard)
 	err = set.Parse(arguments[1:])
 	nerr := normalizeFlags(a.Flags, set)
-	cerr := checkRequiredFlags(a.Flags, set)
 	context := NewContext(a, set, nil)
 
 	if nerr != nil {
@@ -230,8 +234,9 @@ func (a *App) Run(arguments []string) (err error) {
 		return nil
 	}
 
+	cerr := checkRequiredFlags(a.Flags, set)
 	if cerr != nil {
-		fmt.Fprintln(a.Writer, cerr)
+		showFlagError(a.Writer, cerr)
 		ShowAppHelp(context)
 		return cerr
 	}
