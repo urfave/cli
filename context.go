@@ -305,7 +305,7 @@ func checkRequiredFlags(flags []Flag, set *flag.FlagSet) error {
 			if rf.IsRequired() {
 				key := strings.Split(f.GetName(), ",")[0]
 				if !visited[key] {
-					return fmt.Errorf("Required flag %s not set", f.GetName())
+					return fmt.Errorf("Required flag %q not set", f.GetName())
 				}
 			}
 		}
