@@ -888,7 +888,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 	}{
 		{
 			// expectations:
-			//  - empty input shows the help message
+			// 	- empty input shows the help message
 			// 	- empty input explicitly does not error
 			testCase:            "empty_input",
 			appRunInput:         []string{""},
@@ -897,7 +897,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 		},
 		{
 			// expectations:
-			//  - empty input, when a required flag is present, shows the help message
+			// 	- empty input, when a required flag is present, shows the help message
 			// 	- empty input, when a required flag is present, errors
 			// 	- empty input, when a required flag is present, show the flag error message
 			testCase:                 "empty_input_with_required_flag",
@@ -909,7 +909,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 		},
 		{
 			// expectations:
-			//  - --help input, when a required flag is present, shows the help message
+			// 	- --help input, when a required flag is present, shows the help message
 			// 	- --help input, when a required flag is present, explicitly does not error
 			// 	- --help input, when a required flag is present, explicitly does not show the flag error message
 			testCase:                 "help_input_with_required_flag",
@@ -921,7 +921,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 		},
 		{
 			// expectations:
-			//  - optional input, when a required flag is present, shows the help message
+			// 	- optional input, when a required flag is present, shows the help message
 			// 	- optional input, when a required flag is present, errors
 			// 	- optional input, when a required flag is present, shows the flag error message
 			testCase:                 "optional_input_with_required_flag",
