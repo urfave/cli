@@ -401,3 +401,107 @@ func TestContext_GlobalSet(t *testing.T) {
 	expect(t, c.GlobalInt("int"), 1)
 	expect(t, c.GlobalIsSet("int"), true)
 }
+
+func TestCheckRequiredFlags(t *testing.T) {
+	tdata := []struct {
+		testCase        string
+		parseInput      []string
+		flags           []Flag
+		expectedAnError bool
+	}{
+		{
+			testCase: "empty",
+		},
+		{
+			testCase: "optional",
+			flags: []Flag{
+				StringFlag{Name: "optionalFlag"},
+			},
+		},
+		{
+			testCase: "required",
+			flags: []Flag{
+				StringFlag{Name: "requiredFlag", Required: true},
+			},
+			expectedAnError: true,
+		},
+		{
+			testCase: "required_and_present",
+			flags: []Flag{
+				StringFlag{Name: "requiredFlag", Required: true},
+			},
+			parseInput: []string{"--requiredFlag", "myinput"},
+		},
+		{
+			testCase: "required_and_optional",
+			flags: []Flag{
+				StringFlag{Name: "requiredFlag", Required: true},
+				StringFlag{Name: "optionalFlag"},
+			},
+			expectedAnError: true,
+		},
+		{
+			testCase: "required_and_optional_and_optional_present",
+			flags: []Flag{
+				StringFlag{Name: "requiredFlag", Required: true},
+				StringFlag{Name: "optionalFlag"},
+			},
+			parseInput:      []string{"--optionalFlag", "myinput"},
+			expectedAnError: true,
+		},
+		{
+			testCase: "required_and_optional_and_required_present",
+			flags: []Flag{
+				StringFlag{Name: "requiredFlag", Required: true},
+				StringFlag{Name: "optionalFlag"},
+			},
+			parseInput: []string{"--requiredFlag", "myinput"},
+		},
+		{
+			testCase: "two_required",
+			flags: []Flag{
+				StringFlag{Name: "requiredFlag", Required: true},
+				StringFlag{Name: "requiredFlagTwo", Required: true},
+			},
+			expectedAnError: true,
+		},
+		{
+			testCase: "two_required_and_one_present",
+			flags: []Flag{
+				StringFlag{Name: "requiredFlag", Required: true},
+				StringFlag{Name: "requiredFlagTwo", Required: true},
+			},
+			parseInput:      []string{"--requiredFlag", "myinput"},
+			expectedAnError: true,
+		},
+		{
+			testCase: "two_required_and_both_present",
+			flags: []Flag{
+				StringFlag{Name: "requiredFlag", Required: true},
+				StringFlag{Name: "requiredFlagTwo", Required: true},
+			},
+			parseInput: []string{"--requiredFlag", "myinput", "--requiredFlagTwo", "myinput"},
+		},
+	}
+	for _, test := range tdata {
+		t.Run(test.testCase, func(t *testing.T) {
+			// setup
+			set := flag.NewFlagSet("test", 0)
+			for _, flags := range test.flags {
+				flags.Apply(set)
+			}
+			set.Parse(test.parseInput)
+
+			// logic under test
+			err := checkRequiredFlags(test.flags, set)
+
+			// assertions
+			if test.expectedAnError && err == nil {
+				t.Errorf("expected an error, but there was none")
+			}
+			if !test.expectedAnError && err != nil {
+				t.Errorf("did not expected an error, but there was one: %s", err)
+			}
+		})
+	}
+}
