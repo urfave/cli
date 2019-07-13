@@ -209,11 +209,6 @@ func (a *App) Run(arguments []string) (err error) {
 		return nil
 	}
 
-	if cerr != nil {
-		ShowAppHelp(context)
-		return cerr
-	}
-
 	if err != nil {
 		if a.OnUsageError != nil {
 			err := a.OnUsageError(context, err, false)
@@ -233,6 +228,12 @@ func (a *App) Run(arguments []string) (err error) {
 	if !a.HideVersion && checkVersion(context) {
 		ShowVersion(context)
 		return nil
+	}
+
+	if cerr != nil {
+		fmt.Fprintln(a.Writer, cerr)
+		ShowAppHelp(context)
+		return cerr
 	}
 
 	if a.After != nil {

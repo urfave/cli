@@ -878,21 +878,41 @@ func TestAppNoHelpFlag(t *testing.T) {
 }
 
 func TestAppHelpPrinter(t *testing.T) {
-	oldPrinter := HelpPrinter
-	defer func() {
-		HelpPrinter = oldPrinter
-	}()
-
-	var wasCalled = false
-	HelpPrinter = func(w io.Writer, template string, data interface{}) {
-		wasCalled = true
+	tdata := []struct {
+		testCase string
+		flags    []Flag
+	}{
+		{
+			testCase: "prints_help_and_does_not_error",
+		},
+		{
+			testCase: "prints_help_and_does_not_error_when_required_flag_is_present",
+			flags:    []Flag{StringFlag{Name: "flag", Required: true}},
+		},
 	}
+	for _, test := range tdata {
+		t.Run(test.testCase, func(t *testing.T) {
+			oldPrinter := HelpPrinter
+			defer func() {
+				HelpPrinter = oldPrinter
+			}()
 
-	app := NewApp()
-	app.Run([]string{"-h"})
+			var wasCalled = false
+			HelpPrinter = func(w io.Writer, template string, data interface{}) {
+				wasCalled = true
+			}
 
-	if wasCalled == false {
-		t.Errorf("Help printer expected to be called, but was not")
+			app := NewApp()
+			app.Flags = test.flags
+			err := app.Run([]string{"testCommand", "-h"})
+
+			if wasCalled == false {
+				t.Errorf("Help printer expected to be called, but was not")
+			}
+			if err != nil {
+				t.Errorf("did not expected an error, but there was one: %s", err)
+			}
+		})
 	}
 }
 
