@@ -879,15 +879,26 @@ func TestAppNoHelpFlag(t *testing.T) {
 
 func TestAppHelpPrinter(t *testing.T) {
 	tdata := []struct {
-		testCase string
-		flags    []Flag
+		testCase    string
+		flags       []Flag
+		appRunInput []string
 	}{
 		{
-			testCase: "prints_help_and_does_not_error",
+			testCase:    "prints_help_case_one",
+			appRunInput: []string{""},
 		},
 		{
-			testCase: "prints_help_and_does_not_error_when_required_flag_is_present",
-			flags:    []Flag{StringFlag{Name: "flag", Required: true}},
+			testCase:    "prints_help_case_two",
+			appRunInput: []string{"-h"},
+		},
+		{
+			testCase:    "prints_help_case_three",
+			appRunInput: []string{"testCommand", "-h"},
+		},
+		{
+			testCase:    "prints_help_when_required_flag_is_present",
+			flags:       []Flag{StringFlag{Name: "flag", Required: true}},
+			appRunInput: []string{"testCommand", "-h"},
 		},
 	}
 	for _, test := range tdata {
@@ -904,7 +915,7 @@ func TestAppHelpPrinter(t *testing.T) {
 
 			app := NewApp()
 			app.Flags = test.flags
-			err := app.Run([]string{"testCommand", "-h"})
+			err := app.Run(test.appRunInput)
 
 			if wasCalled == false {
 				t.Errorf("Help printer expected to be called, but was not")
