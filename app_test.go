@@ -877,6 +877,10 @@ func TestAppNoHelpFlag(t *testing.T) {
 	}
 }
 
+// TestRequiredFlagAppRunBehavior tests the app-wide behavior of required flags
+// and how they interact with the error response and help messages.
+// A different test (`TestCheckRequiredFlags`) exists for the more fine grain
+// behavior of required flags.
 func TestRequiredFlagAppRunBehavior(t *testing.T) {
 	tdata := []struct {
 		testCase                 string
