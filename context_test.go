@@ -3,6 +3,7 @@ package cli
 import (
 	"flag"
 	"os"
+	"strings"
 	"testing"
 	"time"
 )
@@ -404,10 +405,11 @@ func TestContext_GlobalSet(t *testing.T) {
 
 func TestCheckRequiredFlags(t *testing.T) {
 	tdata := []struct {
-		testCase        string
-		parseInput      []string
-		flags           []Flag
-		expectedAnError bool
+		testCase              string
+		parseInput            []string
+		flags                 []Flag
+		expectedAnError       bool
+		expectedErrorContents []string
 	}{
 		{
 			testCase: "empty",
@@ -423,7 +425,8 @@ func TestCheckRequiredFlags(t *testing.T) {
 			flags: []Flag{
 				StringFlag{Name: "requiredFlag", Required: true},
 			},
-			expectedAnError: true,
+			expectedAnError:       true,
+			expectedErrorContents: []string{"requiredFlag"},
 		},
 		{
 			testCase: "required_and_present",
@@ -460,10 +463,11 @@ func TestCheckRequiredFlags(t *testing.T) {
 		{
 			testCase: "two_required",
 			flags: []Flag{
-				StringFlag{Name: "requiredFlag", Required: true},
+				StringFlag{Name: "requiredFlagOne", Required: true},
 				StringFlag{Name: "requiredFlagTwo", Required: true},
 			},
-			expectedAnError: true,
+			expectedAnError:       true,
+			expectedErrorContents: []string{"requiredFlagOne", "requiredFlagTwo"},
 		},
 		{
 			testCase: "two_required_and_one_present",
@@ -501,6 +505,11 @@ func TestCheckRequiredFlags(t *testing.T) {
 			}
 			if !test.expectedAnError && err != nil {
 				t.Errorf("did not expected an error, but there was one: %s", err)
+			}
+			for _, errString := range test.expectedErrorContents {
+				if !strings.Contains(err.Error(), errString) {
+					t.Errorf("expected error %q to contain %q, but it didn't!", err.Error(), errString)
+				}
 			}
 		})
 	}

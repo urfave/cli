@@ -293,13 +293,32 @@ func checkRequiredFlags(flags []Flag, set *flag.FlagSet) error {
 		visited[f.Name] = true
 	})
 
+	var missingFlags []string
 	for _, f := range flags {
 		if rf, ok := f.(RequiredFlag); ok && rf.IsRequired() {
 			key := strings.Split(f.GetName(), ",")[0]
 			if !visited[key] {
-				return fmt.Errorf("Required flag %q not set", f.GetName())
+				missingFlags = append(missingFlags, f.GetName())
 			}
 		}
 	}
+
+	numberOfMissingFlags := len(missingFlags)
+	if numberOfMissingFlags == 1 {
+		return fmt.Errorf("Required flag %q not set", missingFlags[0])
+	}
+	if numberOfMissingFlags >= 2 {
+		var missingFlagsOutput string
+		for idx, f := range missingFlags {
+			// if not the last item, append with a ", "
+			if idx != numberOfMissingFlags-1 {
+				missingFlagsOutput = fmt.Sprintf("%s%s, ", missingFlagsOutput, f)
+			} else {
+				missingFlagsOutput = fmt.Sprintf("%s%s", missingFlagsOutput, f)
+			}
+		}
+		return fmt.Errorf("Required flags %q not set", missingFlagsOutput)
+	}
+
 	return nil
 }
