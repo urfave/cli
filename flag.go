@@ -75,8 +75,8 @@ type Flag interface {
 	GetName() string
 }
 
-// RequiredFlag is an interface that allows us to return mark flags as required
-// it allows flags defined in this library to be marked as required in a backwards compatible fashion
+// RequiredFlag is an interface that allows us to mark flags as required
+// it allows flags required flags to be backwards compatible with the Flag interface
 type RequiredFlag interface {
 	Flag
 
