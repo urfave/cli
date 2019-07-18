@@ -649,18 +649,6 @@ func withEnvHint(envVar, str string) string {
 	return str + envText
 }
 
-func withRequiredHint(isRequired bool, str string) string {
-	if isRequired {
-		return str + " (required)"
-	}
-
-	return str
-}
-
-func withHints(envVar string, isRequired bool, str string) string {
-	return withRequiredHint(isRequired, withEnvHint(envVar, str))
-}
-
 func withFileHint(filePath, str string) string {
 	fileText := ""
 	if filePath != "" {
