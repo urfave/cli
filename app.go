@@ -201,7 +201,6 @@ func (a *App) Run(arguments []string) (err error) {
 	err = set.Parse(arguments[1:])
 	nerr := normalizeFlags(a.Flags, set)
 	context := NewContext(a, set, nil)
-
 	if nerr != nil {
 		fmt.Fprintln(a.Writer, nerr)
 		ShowAppHelp(context)
