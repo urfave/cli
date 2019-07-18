@@ -327,7 +327,6 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	set.SetOutput(ioutil.Discard)
 	err = set.Parse(ctx.Args().Tail())
 	nerr := normalizeFlags(a.Flags, set)
-	cerr := checkRequiredFlags(a.Flags, set)
 	context := NewContext(a, set, ctx)
 
 	if nerr != nil {
@@ -341,8 +340,9 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 		return nerr
 	}
 
+	cerr := checkRequiredFlags(a.Flags, set)
 	if cerr != nil {
-		ShowAppHelp(context)
+		ShowSubcommandHelp(context)
 		return cerr
 	}
 

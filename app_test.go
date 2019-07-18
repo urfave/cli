@@ -892,20 +892,11 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 	}{
 		{
 			// expectations:
-			// 	- empty input shows the help message
-			// 	- empty input explicitly does not error
-			testCase:            "empty_input",
-			appRunInput:         []string{""},
-			expectedHelpPrinter: true,
-			expectedAnError:     false, // explicit false for readability (this is the default value)
-		},
-		{
-			// expectations:
 			// 	- empty input, when a required flag is present, shows the help message
 			// 	- empty input, when a required flag is present, errors
 			// 	- empty input, when a required flag is present, show the flag error message
 			testCase:                 "empty_input_with_required_flag",
-			appRunInput:              []string{""},
+			appRunInput:              []string{"command"},
 			flags:                    []Flag{StringFlag{Name: "requiredFlag", Required: true}},
 			expectedHelpPrinter:      true,
 			expectedAnError:          true,
@@ -966,12 +957,6 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 				Command{
 					Name:  "command",
 					Flags: test.flags,
-					Subcommands: []Command{
-						Command{
-							Name:  "subcommand",
-							Flags: test.flags,
-						},
-					},
 				},
 			}
 
