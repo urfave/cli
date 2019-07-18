@@ -962,6 +962,18 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			// setup - app
 			app := NewApp()
 			app.Flags = test.flags
+			app.Commands = []Command{
+				Command{
+					Name:  "command",
+					Flags: test.flags,
+					Subcommands: []Command{
+						Command{
+							Name:  "subcommand",
+							Flags: test.flags,
+						},
+					},
+				},
+			}
 
 			// logic under test
 			err := app.Run(test.appRunInput)
