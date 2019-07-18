@@ -913,9 +913,9 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 		},
 		{
 			// expectations:
-			// 	- --help input, when a required flag is present, shows the help message
-			// 	- --help input, when a required flag is present, explicitly does not error
-			// 	- --help input, when a required flag is present, explicitly does not show the flag error message
+			// 	- inputing --help, when a required flag is present, shows the help message
+			// 	- inputing --help, when a required flag is present, explicitly does not error
+			// 	- inputing --help, when a required flag is present, explicitly does not show the flag error message
 			testCase:                 "help_input_with_required_flag",
 			appRunInput:              []string{"command", "--help"},
 			flags:                    []Flag{StringFlag{Name: "requiredFlag", Required: true}},
@@ -925,9 +925,9 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 		},
 		{
 			// expectations:
-			// 	- optional input, when a required flag is present, shows the help message
-			// 	- optional input, when a required flag is present, errors
-			// 	- optional input, when a required flag is present, shows the flag error message
+			// 	- giving optional input, when a required flag is present, shows the help message
+			// 	- giving optional input, when a required flag is present, errors
+			// 	- giving optional input, when a required flag is present, shows the flag error message
 			testCase:                 "optional_input_with_required_flag",
 			appRunInput:              []string{"command", "--optional", "cats"},
 			flags:                    []Flag{StringFlag{Name: "requiredFlag", Required: true}, StringFlag{Name: "optional"}},
