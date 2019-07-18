@@ -342,6 +342,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 
 	cerr := checkRequiredFlags(a.Flags, set)
 	if cerr != nil {
+		showFlagError(a.Writer, cerr)
 		ShowSubcommandHelp(context)
 		return cerr
 	}
