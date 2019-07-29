@@ -339,13 +339,6 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 		return nerr
 	}
 
-	cerr := checkRequiredFlags(a.Flags, set)
-	if cerr != nil {
-		showFlagError(a.Writer, cerr)
-		ShowSubcommandHelp(context)
-		return cerr
-	}
-
 	if checkCompletions(context) {
 		return nil
 	}
@@ -369,6 +362,13 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 		if checkCommandHelp(ctx, context.Args().First()) {
 			return nil
 		}
+	}
+
+	cerr := checkRequiredFlags(a.Flags, set)
+	if cerr != nil {
+		showFlagError(a.Writer, cerr)
+		ShowSubcommandHelp(context)
+		return cerr
 	}
 
 	if a.After != nil {
