@@ -254,18 +254,23 @@ func TestContext_GlobalIsSet_fromEnv(t *testing.T) {
 		timeoutIsSet, tIsSet    bool
 		noEnvVarIsSet, nIsSet   bool
 		passwordIsSet, pIsSet   bool
+		passwordValue           string
 		unparsableIsSet, uIsSet bool
+		overrideIsSet, oIsSet   bool
+		overrideValue           string
 	)
 
 	clearenv()
 	os.Setenv("APP_TIMEOUT_SECONDS", "15.5")
-	os.Setenv("APP_PASSWORD", "")
+	os.Setenv("APP_PASSWORD", "badpass")
+	os.Setenv("APP_OVERRIDE", "overridden")
 	a := App{
 		Flags: []Flag{
 			Float64Flag{Name: "timeout, t", EnvVar: "APP_TIMEOUT_SECONDS"},
 			StringFlag{Name: "password, p", EnvVar: "APP_PASSWORD"},
 			Float64Flag{Name: "no-env-var, n"},
 			Float64Flag{Name: "unparsable, u", EnvVar: "APP_UNPARSABLE"},
+			StringFlag{Name: "overrides-default, o", Value: "default", EnvVar: "APP_OVERRIDE"},
 		},
 		Commands: []Command{
 			{
@@ -275,10 +280,14 @@ func TestContext_GlobalIsSet_fromEnv(t *testing.T) {
 					tIsSet = ctx.GlobalIsSet("t")
 					passwordIsSet = ctx.GlobalIsSet("password")
 					pIsSet = ctx.GlobalIsSet("p")
+					passwordValue = ctx.GlobalString("password")
 					unparsableIsSet = ctx.GlobalIsSet("unparsable")
 					uIsSet = ctx.GlobalIsSet("u")
 					noEnvVarIsSet = ctx.GlobalIsSet("no-env-var")
 					nIsSet = ctx.GlobalIsSet("n")
+					overrideIsSet = ctx.GlobalIsSet("overrides-default")
+					oIsSet = ctx.GlobalIsSet("o")
+					overrideValue = ctx.GlobalString("overrides-default")
 					return nil
 				},
 			},
@@ -291,8 +300,13 @@ func TestContext_GlobalIsSet_fromEnv(t *testing.T) {
 	expect(t, tIsSet, true)
 	expect(t, passwordIsSet, true)
 	expect(t, pIsSet, true)
+	expect(t, passwordValue, "badpass")
+	expect(t, unparsableIsSet, false)
 	expect(t, noEnvVarIsSet, false)
 	expect(t, nIsSet, false)
+	expect(t, overrideIsSet, true)
+	expect(t, oIsSet, true)
+	expect(t, overrideValue, "overridden")
 
 	os.Setenv("APP_UNPARSABLE", "foobar")
 	if err := a.Run([]string{"run"}); err != nil {
