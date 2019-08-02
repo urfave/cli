@@ -23,8 +23,6 @@ var (
 	errInvalidActionType = NewExitError("ERROR invalid Action type. "+
 		fmt.Sprintf("Must be `func(*Context`)` or `func(*Context) error).  %s", contactSysadmin)+
 		fmt.Sprintf("See %s", appActionDeprecationURL), 2)
-
-	showFlagError printerFunc = fmt.Fprintln
 )
 
 // App is the main structure of a cli application. It is recommended that
@@ -235,7 +233,7 @@ func (a *App) Run(arguments []string) (err error) {
 
 	cerr := checkRequiredFlags(a.Flags, set)
 	if cerr != nil {
-		showFlagError(a.Writer, cerr)
+		fmt.Fprintln(a.Writer, cerr)
 		ShowAppHelp(context)
 		return cerr
 	}
@@ -366,7 +364,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 
 	cerr := checkRequiredFlags(a.Flags, set)
 	if cerr != nil {
-		showFlagError(a.Writer, cerr)
+		fmt.Fprintln(a.Writer, cerr)
 		ShowSubcommandHelp(context)
 		return cerr
 	}

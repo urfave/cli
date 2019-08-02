@@ -137,7 +137,7 @@ func (c Command) Run(ctx *Context) (err error) {
 
 	cerr := checkRequiredFlags(c.Flags, set)
 	if cerr != nil {
-		showFlagError(context.App.Writer, cerr)
+		fmt.Fprintln(context.App.Writer, cerr)
 		ShowCommandHelp(context, c.Name)
 		return cerr
 	}
@@ -273,7 +273,7 @@ func reorderArgs(args []string) []string {
 }
 
 func translateShortOptions(set *flag.FlagSet, flagArgs Args) []string {
-	allCharsFlags := func (s string) bool {
+	allCharsFlags := func(s string) bool {
 		for i := range s {
 			f := set.Lookup(string(s[i]))
 			if f == nil {

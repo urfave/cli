@@ -913,17 +913,6 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 	}
 	for _, test := range tdata {
 		t.Run(test.testCase, func(t *testing.T) {
-			// setup - undo showFlagError mock when finished
-			oldShowError := showFlagError
-			defer func() {
-				showFlagError = oldShowError
-			}()
-			// setup - mock showFlagError
-			var showFlagErrorWasCalled = false
-			showFlagError = func(writer io.Writer, err ...interface{}) (int, error) {
-				showFlagErrorWasCalled = true
-				return 0, nil
-			}
 			// setup - undo HelpPrinter mock when finished
 			oldPrinter := HelpPrinter
 			defer func() {
@@ -947,9 +936,6 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			}
 			if test.expectedAnError && err == nil {
 				t.Errorf("expected an error, but there was none")
-			}
-			if test.expectedAnError && showFlagErrorWasCalled == false {
-				t.Errorf("showFlagError expected to be called, but was not")
 			}
 			if !test.expectedAnError && err != nil {
 				t.Errorf("did not expected an error, but there was one: %s", err)
