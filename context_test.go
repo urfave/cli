@@ -407,6 +407,7 @@ func TestCheckRequiredFlags(t *testing.T) {
 	tdata := []struct {
 		testCase              string
 		parseInput            []string
+		envVarInput           [2]string
 		flags                 []Flag
 		expectedAnError       bool
 		expectedErrorContents []string
@@ -436,6 +437,13 @@ func TestCheckRequiredFlags(t *testing.T) {
 			parseInput: []string{"--requiredFlag", "myinput"},
 		},
 		{
+			testCase: "required_and_present_via_env_var",
+			flags: []Flag{
+				StringFlag{Name: "requiredFlag", Required: true, EnvVar: "REQUIRED_FLAG"},
+			},
+			envVarInput: [2]string{"REQUIRED_FLAG", "true"},
+		},
+		{
 			testCase: "required_and_optional",
 			flags: []Flag{
 				StringFlag{Name: "requiredFlag", Required: true},
@@ -450,6 +458,15 @@ func TestCheckRequiredFlags(t *testing.T) {
 				StringFlag{Name: "optionalFlag"},
 			},
 			parseInput:      []string{"--optionalFlag", "myinput"},
+			expectedAnError: true,
+		},
+		{
+			testCase: "required_and_optional_and_optional_present_via_env_var",
+			flags: []Flag{
+				StringFlag{Name: "requiredFlag", Required: true},
+				StringFlag{Name: "optionalFlag", EnvVar: "OPTIONAL_FLAG"},
+			},
+			envVarInput:     [2]string{"OPTIONAL_FLAG", "true"},
 			expectedAnError: true,
 		},
 		{
@@ -495,8 +512,13 @@ func TestCheckRequiredFlags(t *testing.T) {
 				flags.Apply(set)
 			}
 			set.Parse(test.parseInput)
+			if test.envVarInput[0] != "" {
+				os.Clearenv()
+				os.Setenv(test.envVarInput[0], test.envVarInput[1])
+			}
 			ctx := &Context{}
 			context := NewContext(ctx.App, set, ctx)
+			context.Command.Flags = test.flags
 
 			// logic under test
 			err := checkRequiredFlags(test.flags, context)
