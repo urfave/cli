@@ -1002,6 +1002,9 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			if test.expectedAnError && err == nil {
 				t.Errorf("expected an error, but there was none")
 			}
+			if _, ok := err.(requiredFlagsErr); test.expectedAnError && !ok {
+				t.Errorf("expected a requiredFlagsErr, but got: %s", err)
+			}
 			if !test.expectedAnError && err != nil {
 				t.Errorf("did not expected an error, but there was one: %s", err)
 			}
