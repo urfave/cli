@@ -882,13 +882,14 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 		testCase        string
 		appFlags        []Flag
 		appRunInput     []string
+		appCommands     []Command
 		expectedAnError bool
 	}{
 		{
 			// expectations:
 			// 	- empty input, when a required flag is present, shows the help message
 			// 	- empty input, when a required flag is present, errors and shows the flag error message
-			testCase:        "empty_input_with_required_flag",
+			testCase:        "error_case_empty_input_with_required_flag",
 			appRunInput:     []string{"myCLI"},
 			appFlags:        []Flag{StringFlag{Name: "requiredFlag", Required: true}},
 			expectedAnError: true,
@@ -897,7 +898,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			// expectations:
 			// 	- inputing --help, when a required flag is present, shows the help message
 			// 	- inputing --help, when a required flag is present, does not error
-			testCase:    "help_input_with_required_flag",
+			testCase:    "valid_case_help_input_with_required_flag",
 			appRunInput: []string{"myCLI", "--help"},
 			appFlags:    []Flag{StringFlag{Name: "requiredFlag", Required: true}},
 		},
@@ -905,13 +906,13 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			// expectations:
 			// 	- giving optional input, when a required flag is present, shows the help message
 			// 	- giving optional input, when a required flag is present, errors and shows the flag error message
-			testCase:        "optional_input_with_required_flag",
+			testCase:        "error_case_optional_input_with_required_flag",
 			appRunInput:     []string{"myCLI", "--optional", "cats"},
 			appFlags:        []Flag{StringFlag{Name: "requiredFlag", Required: true}, StringFlag{Name: "optional"}},
 			expectedAnError: true,
 		},
 		{
-			testCase:    "required_flag_input",
+			testCase:    "valid_case_required_flag_input",
 			appRunInput: []string{"myCLI", "--requiredFlag", "cats"},
 			appFlags:    []Flag{StringFlag{Name: "requiredFlag", Required: true}},
 		},
@@ -931,6 +932,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			// setup - app
 			app := NewApp()
 			app.Flags = test.appFlags
+			app.Commands = test.appCommands
 
 			// logic under test
 			err := app.Run(test.appRunInput)
