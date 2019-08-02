@@ -495,9 +495,11 @@ func TestCheckRequiredFlags(t *testing.T) {
 				flags.Apply(set)
 			}
 			set.Parse(test.parseInput)
+			ctx := &Context{}
+			context := NewContext(ctx.App, set, ctx)
 
 			// logic under test
-			err := checkRequiredFlags(test.flags, set)
+			err := checkRequiredFlags(test.flags, context)
 
 			// assertions
 			if test.expectedAnError && err == nil {

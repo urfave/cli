@@ -309,17 +309,12 @@ func (e *errRequiredFlags) getMissingFlags() []string {
 	return e.missingFlags
 }
 
-func checkRequiredFlags(flags []Flag, set *flag.FlagSet) requiredFlagsErr {
-	visited := make(map[string]bool)
-	set.Visit(func(f *flag.Flag) {
-		visited[f.Name] = true
-	})
-
+func checkRequiredFlags(flags []Flag, context *Context) requiredFlagsErr {
 	var missingFlags []string
 	for _, f := range flags {
 		if rf, ok := f.(RequiredFlag); ok && rf.IsRequired() {
 			key := strings.Split(f.GetName(), ",")[0]
-			if !visited[key] {
+			if !context.IsSet(key) {
 				missingFlags = append(missingFlags, key)
 			}
 		}
