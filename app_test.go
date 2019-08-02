@@ -880,7 +880,7 @@ func TestAppNoHelpFlag(t *testing.T) {
 func TestRequiredFlagAppRunBehavior(t *testing.T) {
 	tdata := []struct {
 		testCase        string
-		flags           []Flag
+		appFlags        []Flag
 		appRunInput     []string
 		expectedAnError bool
 	}{
@@ -889,8 +889,8 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			// 	- empty input, when a required flag is present, shows the help message
 			// 	- empty input, when a required flag is present, errors and shows the flag error message
 			testCase:        "empty_input_with_required_flag",
-			appRunInput:     []string{"command"},
-			flags:           []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+			appRunInput:     []string{"myCLI"},
+			appFlags:        []Flag{StringFlag{Name: "requiredFlag", Required: true}},
 			expectedAnError: true,
 		},
 		{
@@ -898,17 +898,22 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			// 	- inputing --help, when a required flag is present, shows the help message
 			// 	- inputing --help, when a required flag is present, does not error
 			testCase:    "help_input_with_required_flag",
-			appRunInput: []string{"command", "--help"},
-			flags:       []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+			appRunInput: []string{"myCLI", "--help"},
+			appFlags:    []Flag{StringFlag{Name: "requiredFlag", Required: true}},
 		},
 		{
 			// expectations:
 			// 	- giving optional input, when a required flag is present, shows the help message
 			// 	- giving optional input, when a required flag is present, errors and shows the flag error message
 			testCase:        "optional_input_with_required_flag",
-			appRunInput:     []string{"command", "--optional", "cats"},
-			flags:           []Flag{StringFlag{Name: "requiredFlag", Required: true}, StringFlag{Name: "optional"}},
+			appRunInput:     []string{"myCLI", "--optional", "cats"},
+			appFlags:        []Flag{StringFlag{Name: "requiredFlag", Required: true}, StringFlag{Name: "optional"}},
 			expectedAnError: true,
+		},
+		{
+			testCase:    "required_flag_input",
+			appRunInput: []string{"myCLI", "--requiredFlag", "cats"},
+			appFlags:    []Flag{StringFlag{Name: "requiredFlag", Required: true}},
 		},
 	}
 	for _, test := range tdata {
@@ -925,7 +930,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			}
 			// setup - app
 			app := NewApp()
-			app.Flags = test.flags
+			app.Flags = test.appFlags
 
 			// logic under test
 			err := app.Run(test.appRunInput)
