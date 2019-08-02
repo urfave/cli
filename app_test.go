@@ -916,6 +916,25 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			appRunInput: []string{"myCLI", "--requiredFlag", "cats"},
 			appFlags:    []Flag{StringFlag{Name: "requiredFlag", Required: true}},
 		},
+		{
+			testCase:    "valid_case_required_flag_input_command",
+			appRunInput: []string{"myCLI", "myCommand", "--requiredFlag", "cats"},
+			appCommands: []Command{Command{
+				Name:  "myCommand",
+				Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+			}},
+		},
+		{
+			testCase:    "valid_case_required_flag_input_subcommand",
+			appRunInput: []string{"myCLI", "myCommand", "mySubCommand", "--requiredFlag", "cats"},
+			appCommands: []Command{Command{
+				Name: "myCommand",
+				Subcommands: []Command{Command{
+					Name:  "mySubCommand",
+					Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+				}},
+			}},
+		},
 	}
 	for _, test := range tdata {
 		t.Run(test.testCase, func(t *testing.T) {
