@@ -994,17 +994,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 	}
 	for _, test := range tdata {
 		t.Run(test.testCase, func(t *testing.T) {
-			// setup - undo HelpPrinter mock when finished
-			oldPrinter := HelpPrinter
-			defer func() {
-				HelpPrinter = oldPrinter
-			}()
-			// setup - mock HelpPrinter
-			var helpPrinterWasCalled = false
-			HelpPrinter = func(w io.Writer, template string, data interface{}) {
-				helpPrinterWasCalled = true
-			}
-			// setup - app
+			// setup
 			app := NewApp()
 			app.Flags = test.appFlags
 			app.Commands = test.appCommands
@@ -1013,9 +1003,6 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			err := app.Run(test.appRunInput)
 
 			// assertions
-			if helpPrinterWasCalled == false {
-				t.Errorf("HelpPrinter expected to be called, but was not")
-			}
 			if test.expectedAnError && err == nil {
 				t.Errorf("expected an error, but there was none")
 			}
