@@ -893,6 +893,27 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			appFlags:        []Flag{StringFlag{Name: "requiredFlag", Required: true}},
 			expectedAnError: true,
 		},
+		{
+			testCase:    "error_case_empty_input_with_required_flag",
+			appRunInput: []string{"myCLI", "myCommand"},
+			appCommands: []Command{Command{
+				Name:  "myCommand",
+				Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+			}},
+			expectedAnError: true,
+		},
+		{
+			testCase:    "error_case_empty_input_with_required_flag",
+			appRunInput: []string{"myCLI", "myCommand", "mySubCommand"},
+			appCommands: []Command{Command{
+				Name: "myCommand",
+				Subcommands: []Command{Command{
+					Name:  "mySubCommand",
+					Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+				}},
+			}},
+			expectedAnError: true,
+		},
 		// expectations:
 		// 	- inputing --help, when a required flag is present, does not error
 		{
