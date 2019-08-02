@@ -10,9 +10,6 @@ import (
 	"time"
 )
 
-// printerFunc is the function signature for fmt.Fprintln
-type printerFunc func(io.Writer, ...interface{}) (int, error)
-
 var (
 	changeLogURL                    = "https://github.com/urfave/cli/blob/master/CHANGELOG.md"
 	appActionDeprecationURL         = fmt.Sprintf("%s#deprecated-cli-app-action-signature", changeLogURL)
