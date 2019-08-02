@@ -320,7 +320,7 @@ func checkRequiredFlags(flags []Flag, set *flag.FlagSet) requiredFlagsErr {
 		if rf, ok := f.(RequiredFlag); ok && rf.IsRequired() {
 			key := strings.Split(f.GetName(), ",")[0]
 			if !visited[key] {
-				missingFlags = append(missingFlags, f.GetName())
+				missingFlags = append(missingFlags, key)
 			}
 		}
 	}

@@ -137,7 +137,6 @@ func (c Command) Run(ctx *Context) (err error) {
 
 	cerr := checkRequiredFlags(c.Flags, set)
 	if cerr != nil {
-		fmt.Fprintln(context.App.Writer, cerr)
 		ShowCommandHelp(context, c.Name)
 		return cerr
 	}

@@ -230,7 +230,6 @@ func (a *App) Run(arguments []string) (err error) {
 
 	cerr := checkRequiredFlags(a.Flags, set)
 	if cerr != nil {
-		fmt.Fprintln(a.Writer, cerr)
 		ShowAppHelp(context)
 		return cerr
 	}
@@ -361,7 +360,6 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 
 	cerr := checkRequiredFlags(a.Flags, set)
 	if cerr != nil {
-		fmt.Fprintln(a.Writer, cerr)
 		ShowSubcommandHelp(context)
 		return cerr
 	}
