@@ -885,8 +885,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 		appCommands     []Command
 		expectedAnError bool
 	}{
-		// expectations:
-		// 	- empty input, when a required flag is present, errors and shows the flag error message
+		// assertion: empty input, when a required flag is present, errors
 		{
 			testCase:        "error_case_empty_input_with_required_flag_on_app",
 			appRunInput:     []string{"myCLI"},
@@ -914,8 +913,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			}},
 			expectedAnError: true,
 		},
-		// expectations:
-		// 	- inputing --help, when a required flag is present, does not error
+		// assertion: inputing --help, when a required flag is present, does not error
 		{
 			testCase:    "valid_case_help_input_with_required_flag_on_app",
 			appRunInput: []string{"myCLI", "--help"},
@@ -940,9 +938,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 				}},
 			}},
 		},
-		// expectations:
-		// 	- giving optional input, when a required flag is present, shows the help message
-		// 	- giving optional input, when a required flag is present, errors and shows the flag error message
+		// assertion: giving optional input, when a required flag is present, errors
 		{
 			testCase:        "error_case_optional_input_with_required_flag_on_app",
 			appRunInput:     []string{"myCLI", "--optional", "cats"},
@@ -970,7 +966,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			}},
 			expectedAnError: true,
 		},
-		// valid input cases
+		// assertion: when a required flag is present, inputting that required flag does not error
 		{
 			testCase:    "valid_case_required_flag_input_on_app",
 			appRunInput: []string{"myCLI", "--requiredFlag", "cats"},
