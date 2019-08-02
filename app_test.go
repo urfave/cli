@@ -888,13 +888,13 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 		// expectations:
 		// 	- empty input, when a required flag is present, errors and shows the flag error message
 		{
-			testCase:        "error_case_empty_input_with_required_flag",
+			testCase:        "error_case_empty_input_with_required_flag_on_app",
 			appRunInput:     []string{"myCLI"},
 			appFlags:        []Flag{StringFlag{Name: "requiredFlag", Required: true}},
 			expectedAnError: true,
 		},
 		{
-			testCase:    "error_case_empty_input_with_required_flag",
+			testCase:    "error_case_empty_input_with_required_flag_on_command",
 			appRunInput: []string{"myCLI", "myCommand"},
 			appCommands: []Command{Command{
 				Name:  "myCommand",
@@ -903,7 +903,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			expectedAnError: true,
 		},
 		{
-			testCase:    "error_case_empty_input_with_required_flag",
+			testCase:    "error_case_empty_input_with_required_flag_on_subcommand",
 			appRunInput: []string{"myCLI", "myCommand", "mySubCommand"},
 			appCommands: []Command{Command{
 				Name: "myCommand",
@@ -917,12 +917,12 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 		// expectations:
 		// 	- inputing --help, when a required flag is present, does not error
 		{
-			testCase:    "valid_case_help_input_with_required_flag",
+			testCase:    "valid_case_help_input_with_required_flag_on_app",
 			appRunInput: []string{"myCLI", "--help"},
 			appFlags:    []Flag{StringFlag{Name: "requiredFlag", Required: true}},
 		},
 		{
-			testCase:    "valid_case_help_input_with_required_flag_command",
+			testCase:    "valid_case_help_input_with_required_flag_on_command",
 			appRunInput: []string{"myCLI", "myCommand", "--help"},
 			appCommands: []Command{Command{
 				Name:  "myCommand",
@@ -930,7 +930,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			}},
 		},
 		{
-			testCase:    "valid_case_help_input_with_required_flag_subcommand",
+			testCase:    "valid_case_help_input_with_required_flag_on_subcommand",
 			appRunInput: []string{"myCLI", "myCommand", "mySubCommand", "--help"},
 			appCommands: []Command{Command{
 				Name: "myCommand",
@@ -944,13 +944,13 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 		// 	- giving optional input, when a required flag is present, shows the help message
 		// 	- giving optional input, when a required flag is present, errors and shows the flag error message
 		{
-			testCase:        "error_case_optional_input_with_required_flag",
+			testCase:        "error_case_optional_input_with_required_flag_on_app",
 			appRunInput:     []string{"myCLI", "--optional", "cats"},
 			appFlags:        []Flag{StringFlag{Name: "requiredFlag", Required: true}, StringFlag{Name: "optional"}},
 			expectedAnError: true,
 		},
 		{
-			testCase:    "error_case_optional_input_with_required_flag_command",
+			testCase:    "error_case_optional_input_with_required_flag_on_command",
 			appRunInput: []string{"myCLI", "myCommand", "--optional", "cats"},
 			appCommands: []Command{Command{
 				Name:  "myCommand",
@@ -959,7 +959,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			expectedAnError: true,
 		},
 		{
-			testCase:    "error_case_optional_input_with_required_flag_subcommand",
+			testCase:    "error_case_optional_input_with_required_flag_on_subcommand",
 			appRunInput: []string{"myCLI", "myCommand", "mySubCommand", "--optional", "cats"},
 			appCommands: []Command{Command{
 				Name: "myCommand",
@@ -972,12 +972,12 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 		},
 		// valid input cases
 		{
-			testCase:    "valid_case_required_flag_input",
+			testCase:    "valid_case_required_flag_input_on_app",
 			appRunInput: []string{"myCLI", "--requiredFlag", "cats"},
 			appFlags:    []Flag{StringFlag{Name: "requiredFlag", Required: true}},
 		},
 		{
-			testCase:    "valid_case_required_flag_input_command",
+			testCase:    "valid_case_required_flag_input_on_command",
 			appRunInput: []string{"myCLI", "myCommand", "--requiredFlag", "cats"},
 			appCommands: []Command{Command{
 				Name:  "myCommand",
@@ -985,7 +985,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			}},
 		},
 		{
-			testCase:    "valid_case_required_flag_input_subcommand",
+			testCase:    "valid_case_required_flag_input_on_subcommand",
 			appRunInput: []string{"myCLI", "myCommand", "mySubCommand", "--requiredFlag", "cats"},
 			appCommands: []Command{Command{
 				Name: "myCommand",
