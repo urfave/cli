@@ -57,7 +57,7 @@ type Command struct {
 	// Boolean to hide this command from help or completion
 	Hidden bool
 	// Boolean to enable short-option handling so user can combine several
-	// single-character bool arguements into one
+	// single-character bool arguments into one
 	// i.e. foobar -o -v -> foobar -ov
 	UseShortOptionHandling bool
 
@@ -133,6 +133,12 @@ func (c Command) Run(ctx *Context) (err error) {
 
 	if checkCommandHelp(context, c.Name) {
 		return nil
+	}
+
+	cerr := checkRequiredFlags(c.Flags, context)
+	if cerr != nil {
+		ShowCommandHelp(context, c.Name)
+		return cerr
 	}
 
 	if c.After != nil {
