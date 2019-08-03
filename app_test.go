@@ -877,6 +877,145 @@ func TestAppNoHelpFlag(t *testing.T) {
 	}
 }
 
+func TestRequiredFlagAppRunBehavior(t *testing.T) {
+	tdata := []struct {
+		testCase        string
+		appFlags        []Flag
+		appRunInput     []string
+		appCommands     []Command
+		expectedAnError bool
+	}{
+		// assertion: empty input, when a required flag is present, errors
+		{
+			testCase:        "error_case_empty_input_with_required_flag_on_app",
+			appRunInput:     []string{"myCLI"},
+			appFlags:        []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+			expectedAnError: true,
+		},
+		{
+			testCase:    "error_case_empty_input_with_required_flag_on_command",
+			appRunInput: []string{"myCLI", "myCommand"},
+			appCommands: []Command{Command{
+				Name:  "myCommand",
+				Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+			}},
+			expectedAnError: true,
+		},
+		{
+			testCase:    "error_case_empty_input_with_required_flag_on_subcommand",
+			appRunInput: []string{"myCLI", "myCommand", "mySubCommand"},
+			appCommands: []Command{Command{
+				Name: "myCommand",
+				Subcommands: []Command{Command{
+					Name:  "mySubCommand",
+					Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+				}},
+			}},
+			expectedAnError: true,
+		},
+		// assertion: inputing --help, when a required flag is present, does not error
+		{
+			testCase:    "valid_case_help_input_with_required_flag_on_app",
+			appRunInput: []string{"myCLI", "--help"},
+			appFlags:    []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+		},
+		{
+			testCase:    "valid_case_help_input_with_required_flag_on_command",
+			appRunInput: []string{"myCLI", "myCommand", "--help"},
+			appCommands: []Command{Command{
+				Name:  "myCommand",
+				Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+			}},
+		},
+		{
+			testCase:    "valid_case_help_input_with_required_flag_on_subcommand",
+			appRunInput: []string{"myCLI", "myCommand", "mySubCommand", "--help"},
+			appCommands: []Command{Command{
+				Name: "myCommand",
+				Subcommands: []Command{Command{
+					Name:  "mySubCommand",
+					Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+				}},
+			}},
+		},
+		// assertion: giving optional input, when a required flag is present, errors
+		{
+			testCase:        "error_case_optional_input_with_required_flag_on_app",
+			appRunInput:     []string{"myCLI", "--optional", "cats"},
+			appFlags:        []Flag{StringFlag{Name: "requiredFlag", Required: true}, StringFlag{Name: "optional"}},
+			expectedAnError: true,
+		},
+		{
+			testCase:    "error_case_optional_input_with_required_flag_on_command",
+			appRunInput: []string{"myCLI", "myCommand", "--optional", "cats"},
+			appCommands: []Command{Command{
+				Name:  "myCommand",
+				Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}, StringFlag{Name: "optional"}},
+			}},
+			expectedAnError: true,
+		},
+		{
+			testCase:    "error_case_optional_input_with_required_flag_on_subcommand",
+			appRunInput: []string{"myCLI", "myCommand", "mySubCommand", "--optional", "cats"},
+			appCommands: []Command{Command{
+				Name: "myCommand",
+				Subcommands: []Command{Command{
+					Name:  "mySubCommand",
+					Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}, StringFlag{Name: "optional"}},
+				}},
+			}},
+			expectedAnError: true,
+		},
+		// assertion: when a required flag is present, inputting that required flag does not error
+		{
+			testCase:    "valid_case_required_flag_input_on_app",
+			appRunInput: []string{"myCLI", "--requiredFlag", "cats"},
+			appFlags:    []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+		},
+		{
+			testCase:    "valid_case_required_flag_input_on_command",
+			appRunInput: []string{"myCLI", "myCommand", "--requiredFlag", "cats"},
+			appCommands: []Command{Command{
+				Name:  "myCommand",
+				Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+			}},
+		},
+		{
+			testCase:    "valid_case_required_flag_input_on_subcommand",
+			appRunInput: []string{"myCLI", "myCommand", "mySubCommand", "--requiredFlag", "cats"},
+			appCommands: []Command{Command{
+				Name: "myCommand",
+				Subcommands: []Command{Command{
+					Name:  "mySubCommand",
+					Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+				}},
+			}},
+		},
+	}
+	for _, test := range tdata {
+		t.Run(test.testCase, func(t *testing.T) {
+			// setup
+			app := NewApp()
+			app.Flags = test.appFlags
+			app.Commands = test.appCommands
+
+			// logic under test
+			err := app.Run(test.appRunInput)
+
+			// assertions
+			if test.expectedAnError && err == nil {
+				t.Errorf("expected an error, but there was none")
+			}
+			if _, ok := err.(requiredFlagsErr); test.expectedAnError && !ok {
+				t.Errorf("expected a requiredFlagsErr, but got: %s", err)
+			}
+			if !test.expectedAnError && err != nil {
+				t.Errorf("did not expected an error, but there was one: %s", err)
+			}
+		})
+	}
+}
+
 func TestAppHelpPrinter(t *testing.T) {
 	oldPrinter := HelpPrinter
 	defer func() {

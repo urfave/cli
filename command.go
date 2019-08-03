@@ -135,6 +135,12 @@ func (c Command) Run(ctx *Context) (err error) {
 		return nil
 	}
 
+	cerr := checkRequiredFlags(c.Flags, context)
+	if cerr != nil {
+		ShowCommandHelp(context, c.Name)
+		return cerr
+	}
+
 	if c.After != nil {
 		defer func() {
 			afterErr := c.After(context)
