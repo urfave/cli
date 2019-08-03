@@ -5,7 +5,8 @@
     "value": false,
     "dest": true,
     "context_default": "false",
-    "parser": "strconv.ParseBool(f.Value.String())"
+    "parser": "strconv.ParseBool(f.Value.String())",
+    "valueString": "return \"\""
   },
   {
     "name": "BoolT",
@@ -14,7 +15,8 @@
     "dest": true,
     "doctail": " that is true by default",
     "context_default": "false",
-    "parser": "strconv.ParseBool(f.Value.String())"
+    "parser": "strconv.ParseBool(f.Value.String())",
+    "valueString": "return \"\""
   },
   {
     "name": "Duration",
@@ -23,7 +25,8 @@
     "dest": true,
     "doctail": " (see https://golang.org/pkg/time/#ParseDuration)",
     "context_default": "0",
-    "parser": "time.ParseDuration(f.Value.String())"
+    "parser": "time.ParseDuration(f.Value.String())",
+    "valueString": "return f.Value.String()"
   },
   {
     "name": "Float64",
@@ -31,7 +34,8 @@
     "value": true,
     "dest": true,
     "context_default": "0",
-    "parser": "strconv.ParseFloat(f.Value.String(), 64)"
+    "parser": "strconv.ParseFloat(f.Value.String(), 64)",
+    "valueString": "return fmt.Sprintf(\"%f\", f.Value)"
   },
   {
     "name": "Generic",
@@ -39,7 +43,8 @@
     "value": true,
     "dest": false,
     "context_default": "nil",
-    "context_type": "interface{}"
+    "context_type": "interface{}",
+    "valueString": "if f.Value != nil {\n\t\treturn f.Value.String()\n\t}\n\treturn \"\""
   },
   {
     "name": "Int64",
@@ -47,7 +52,8 @@
     "value": true,
     "dest": true,
     "context_default": "0",
-    "parser": "strconv.ParseInt(f.Value.String(), 0, 64)"
+    "parser": "strconv.ParseInt(f.Value.String(), 0, 64)",
+    "valueString": "return fmt.Sprintf(\"%d\", f.Value)"
   },
   {
     "name": "Int",
@@ -56,7 +62,8 @@
     "dest": true,
     "context_default": "0",
     "parser": "strconv.ParseInt(f.Value.String(), 0, 64)",
-    "parser_cast": "int(parsed)"
+    "parser_cast": "int(parsed)",
+    "valueString": "return fmt.Sprintf(\"%d\", f.Value)"
   },
   {
     "name": "IntSlice",
@@ -65,7 +72,8 @@
     "dest": false,
     "context_default": "nil",
     "context_type": "[]int",
-    "parser": "(f.Value.(*IntSlice)).Value(), error(nil)"
+    "parser": "(f.Value.(*IntSlice)).Value(), error(nil)",
+    "valueString": "if f.Value != nil {\n\t\treturn f.Value.String()\n\t}\n\treturn \"\""
   },
   {
     "name": "Int64Slice",
@@ -74,7 +82,8 @@
     "dest": false,
     "context_default": "nil",
     "context_type": "[]int64",
-    "parser": "(f.Value.(*Int64Slice)).Value(), error(nil)"
+    "parser": "(f.Value.(*Int64Slice)).Value(), error(nil)",
+    "valueString": "if f.Value != nil {\n\t\treturn f.Value.String()\n\t}\n\treturn \"\""
   },
   {
     "name": "String",
@@ -82,7 +91,8 @@
     "value": true,
     "dest": true,
     "context_default": "\"\"",
-    "parser": "f.Value.String(), error(nil)"
+    "parser": "f.Value.String(), error(nil)",
+    "valueString": "return f.Value"
   },
   {
     "name": "StringSlice",
@@ -91,7 +101,8 @@
     "dest": false,
     "context_default": "nil",
     "context_type": "[]string",
-    "parser": "(f.Value.(*StringSlice)).Value(), error(nil)"
+    "parser": "(f.Value.(*StringSlice)).Value(), error(nil)",
+    "valueString": "if f.Value != nil {\n\t\treturn f.Value.String()\n\t}\n\treturn \"\""
   },
   {
     "name": "Uint64",
@@ -99,7 +110,8 @@
     "value": true,
     "dest": true,
     "context_default": "0",
-    "parser": "strconv.ParseUint(f.Value.String(), 0, 64)"
+    "parser": "strconv.ParseUint(f.Value.String(), 0, 64)",
+    "valueString": "return fmt.Sprintf(\"%d\", f.Value)"
   },
   {
     "name": "Uint",
@@ -108,6 +120,7 @@
     "dest": true,
     "context_default": "0",
     "parser": "strconv.ParseUint(f.Value.String(), 0, 64)",
-    "parser_cast": "uint(parsed)"
+    "parser_cast": "uint(parsed)",
+    "valueString": "return fmt.Sprintf(\"%d\", f.Value)"
   }
 ]
