@@ -3,7 +3,7 @@ package altsrc
 import (
 	"flag"
 
-	"gopkg.in/urfave/cli.v1"
+	"github.com/urfave/cli"
 )
 
 // WARNING: This file is generated!

@@ -874,7 +874,7 @@ Will include:
 
 ```
 COMMANDS:
-    noop
+  noop
 
   Template actions:
     add
