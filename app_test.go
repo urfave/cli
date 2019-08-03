@@ -136,8 +136,8 @@ func ExampleApp_Run_appHelp() {
 	//    Oliver Allen <oliver@toyshop.com>
 	//
 	// COMMANDS:
-	//      describeit, d  use it to see a description
-	//      help, h        Shows a list of commands or help for one command
+	//    describeit, d  use it to see a description
+	//    help, h        Shows a list of commands or help for one command
 	//
 	// GLOBAL OPTIONS:
 	//    --name value   a name to say (default: "bob")
@@ -190,7 +190,7 @@ func ExampleApp_Run_noAction() {
 	//     [global options] command [command options] [arguments...]
 	//
 	// COMMANDS:
-	//      help, h  Shows a list of commands or help for one command
+	//    help, h  Shows a list of commands or help for one command
 	//
 	// GLOBAL OPTIONS:
 	//    --help, -h     show help
