@@ -4,6 +4,20 @@
 
 ## [Unreleased]
 
+## 1.21.0 - 2019-08-02
+
+### Fixed
+
+* 
+
+### Changed
+
+* 
+
+### Added
+
+* 
+
 ## 1.20.0 - 2017-08-10
 
 ### Fixed
@@ -407,7 +421,10 @@ signature of `func(*cli.Context) error`, as defined by `cli.ActionFunc`.
 ### Added
 - Initial implementation.
 
-[Unreleased]: https://github.com/urfave/cli/compare/v1.18.0...HEAD
+[Unreleased]: https://github.com/urfave/cli/compare/v1.21.0...HEAD
+[1.21.0]: https://github.com/urfave/cli/compare/v1.20.0...v1.21.0
+[1.20.0]: https://github.com/urfave/cli/compare/v1.19.0...v1.20.0
+[1.19.0]: https://github.com/urfave/cli/compare/v1.18.0...v1.19.0
 [1.18.0]: https://github.com/urfave/cli/compare/v1.17.0...v1.18.0
 [1.17.0]: https://github.com/urfave/cli/compare/v1.16.0...v1.17.0
 [1.16.0]: https://github.com/urfave/cli/compare/v1.15.0...v1.16.0
