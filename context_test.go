@@ -3,6 +3,7 @@ package cli
 import (
 	"flag"
 	"os"
+	"strings"
 	"testing"
 	"time"
 )
@@ -253,18 +254,23 @@ func TestContext_GlobalIsSet_fromEnv(t *testing.T) {
 		timeoutIsSet, tIsSet    bool
 		noEnvVarIsSet, nIsSet   bool
 		passwordIsSet, pIsSet   bool
+		passwordValue           string
 		unparsableIsSet, uIsSet bool
+		overrideIsSet, oIsSet   bool
+		overrideValue           string
 	)
 
 	clearenv()
 	os.Setenv("APP_TIMEOUT_SECONDS", "15.5")
-	os.Setenv("APP_PASSWORD", "")
+	os.Setenv("APP_PASSWORD", "badpass")
+	os.Setenv("APP_OVERRIDE", "overridden")
 	a := App{
 		Flags: []Flag{
 			Float64Flag{Name: "timeout, t", EnvVar: "APP_TIMEOUT_SECONDS"},
 			StringFlag{Name: "password, p", EnvVar: "APP_PASSWORD"},
 			Float64Flag{Name: "no-env-var, n"},
 			Float64Flag{Name: "unparsable, u", EnvVar: "APP_UNPARSABLE"},
+			StringFlag{Name: "overrides-default, o", Value: "default", EnvVar: "APP_OVERRIDE"},
 		},
 		Commands: []Command{
 			{
@@ -274,10 +280,14 @@ func TestContext_GlobalIsSet_fromEnv(t *testing.T) {
 					tIsSet = ctx.GlobalIsSet("t")
 					passwordIsSet = ctx.GlobalIsSet("password")
 					pIsSet = ctx.GlobalIsSet("p")
+					passwordValue = ctx.GlobalString("password")
 					unparsableIsSet = ctx.GlobalIsSet("unparsable")
 					uIsSet = ctx.GlobalIsSet("u")
 					noEnvVarIsSet = ctx.GlobalIsSet("no-env-var")
 					nIsSet = ctx.GlobalIsSet("n")
+					overrideIsSet = ctx.GlobalIsSet("overrides-default")
+					oIsSet = ctx.GlobalIsSet("o")
+					overrideValue = ctx.GlobalString("overrides-default")
 					return nil
 				},
 			},
@@ -290,8 +300,13 @@ func TestContext_GlobalIsSet_fromEnv(t *testing.T) {
 	expect(t, tIsSet, true)
 	expect(t, passwordIsSet, true)
 	expect(t, pIsSet, true)
+	expect(t, passwordValue, "badpass")
+	expect(t, unparsableIsSet, false)
 	expect(t, noEnvVarIsSet, false)
 	expect(t, nIsSet, false)
+	expect(t, overrideIsSet, true)
+	expect(t, oIsSet, true)
+	expect(t, overrideValue, "overridden")
 
 	os.Setenv("APP_UNPARSABLE", "foobar")
 	if err := a.Run([]string{"run"}); err != nil {
@@ -400,4 +415,140 @@ func TestContext_GlobalSet(t *testing.T) {
 	expect(t, c.Int("int"), 1)
 	expect(t, c.GlobalInt("int"), 1)
 	expect(t, c.GlobalIsSet("int"), true)
+}
+
+func TestCheckRequiredFlags(t *testing.T) {
+	tdata := []struct {
+		testCase              string
+		parseInput            []string
+		envVarInput           [2]string
+		flags                 []Flag
+		expectedAnError       bool
+		expectedErrorContents []string
+	}{
+		{
+			testCase: "empty",
+		},
+		{
+			testCase: "optional",
+			flags: []Flag{
+				StringFlag{Name: "optionalFlag"},
+			},
+		},
+		{
+			testCase: "required",
+			flags: []Flag{
+				StringFlag{Name: "requiredFlag", Required: true},
+			},
+			expectedAnError:       true,
+			expectedErrorContents: []string{"requiredFlag"},
+		},
+		{
+			testCase: "required_and_present",
+			flags: []Flag{
+				StringFlag{Name: "requiredFlag", Required: true},
+			},
+			parseInput: []string{"--requiredFlag", "myinput"},
+		},
+		{
+			testCase: "required_and_present_via_env_var",
+			flags: []Flag{
+				StringFlag{Name: "requiredFlag", Required: true, EnvVar: "REQUIRED_FLAG"},
+			},
+			envVarInput: [2]string{"REQUIRED_FLAG", "true"},
+		},
+		{
+			testCase: "required_and_optional",
+			flags: []Flag{
+				StringFlag{Name: "requiredFlag", Required: true},
+				StringFlag{Name: "optionalFlag"},
+			},
+			expectedAnError: true,
+		},
+		{
+			testCase: "required_and_optional_and_optional_present",
+			flags: []Flag{
+				StringFlag{Name: "requiredFlag", Required: true},
+				StringFlag{Name: "optionalFlag"},
+			},
+			parseInput:      []string{"--optionalFlag", "myinput"},
+			expectedAnError: true,
+		},
+		{
+			testCase: "required_and_optional_and_optional_present_via_env_var",
+			flags: []Flag{
+				StringFlag{Name: "requiredFlag", Required: true},
+				StringFlag{Name: "optionalFlag", EnvVar: "OPTIONAL_FLAG"},
+			},
+			envVarInput:     [2]string{"OPTIONAL_FLAG", "true"},
+			expectedAnError: true,
+		},
+		{
+			testCase: "required_and_optional_and_required_present",
+			flags: []Flag{
+				StringFlag{Name: "requiredFlag", Required: true},
+				StringFlag{Name: "optionalFlag"},
+			},
+			parseInput: []string{"--requiredFlag", "myinput"},
+		},
+		{
+			testCase: "two_required",
+			flags: []Flag{
+				StringFlag{Name: "requiredFlagOne", Required: true},
+				StringFlag{Name: "requiredFlagTwo", Required: true},
+			},
+			expectedAnError:       true,
+			expectedErrorContents: []string{"requiredFlagOne", "requiredFlagTwo"},
+		},
+		{
+			testCase: "two_required_and_one_present",
+			flags: []Flag{
+				StringFlag{Name: "requiredFlag", Required: true},
+				StringFlag{Name: "requiredFlagTwo", Required: true},
+			},
+			parseInput:      []string{"--requiredFlag", "myinput"},
+			expectedAnError: true,
+		},
+		{
+			testCase: "two_required_and_both_present",
+			flags: []Flag{
+				StringFlag{Name: "requiredFlag", Required: true},
+				StringFlag{Name: "requiredFlagTwo", Required: true},
+			},
+			parseInput: []string{"--requiredFlag", "myinput", "--requiredFlagTwo", "myinput"},
+		},
+	}
+	for _, test := range tdata {
+		t.Run(test.testCase, func(t *testing.T) {
+			// setup
+			set := flag.NewFlagSet("test", 0)
+			for _, flags := range test.flags {
+				flags.Apply(set)
+			}
+			set.Parse(test.parseInput)
+			if test.envVarInput[0] != "" {
+				os.Clearenv()
+				os.Setenv(test.envVarInput[0], test.envVarInput[1])
+			}
+			ctx := &Context{}
+			context := NewContext(ctx.App, set, ctx)
+			context.Command.Flags = test.flags
+
+			// logic under test
+			err := checkRequiredFlags(test.flags, context)
+
+			// assertions
+			if test.expectedAnError && err == nil {
+				t.Errorf("expected an error, but there was none")
+			}
+			if !test.expectedAnError && err != nil {
+				t.Errorf("did not expected an error, but there was one: %s", err)
+			}
+			for _, errString := range test.expectedErrorContents {
+				if !strings.Contains(err.Error(), errString) {
+					t.Errorf("expected error %q to contain %q, but it didn't!", err.Error(), errString)
+				}
+			}
+		})
+	}
 }
