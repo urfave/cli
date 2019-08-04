@@ -10,7 +10,7 @@ import (
 {{ range $i, $flag := .Flags }}
 // {{ $flag.Name }}Flag is a flag with type {{ $flag.Type }}{{ $flag.Doctail }}
 type {{ $flag.Name }}Flag struct {
-	Name        string
+	Name		string
 	Usage		string
 	EnvVar		string
 	FilePath	string
