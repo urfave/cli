@@ -7,6 +7,8 @@ import (
 	"github.com/shurcooL/vfsgen"
 	"log"
 	"net/http"
+	"os"
+	"time"
 )
 
 // zeroModTimeFileSystem is an http.FileSystem wrapper.
