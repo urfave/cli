@@ -6,7 +6,6 @@ import (
 	"flag"
     "github.com/urfave/cli"
 )
-
 {{ range $i, $flag := .Flags }}
 // {{ $flag.Name }}Flag is the flag type that wraps cli.{{ $flag.Name }}Flag to allow
 // for other values to be specified
@@ -33,4 +32,4 @@ func (f *{{ $flag.Name }}Flag) ApplyWithError(set *flag.FlagSet) error {
     f.set = set
     return f.{{ $flag.Name }}Flag.ApplyWithError(set)
 }
-{{- end }}
+{{ end }}

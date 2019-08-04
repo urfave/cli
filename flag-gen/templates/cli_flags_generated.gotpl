@@ -42,20 +42,20 @@ func (f {{ $flag.Name }}Flag) IsRequired() bool {
 
 // {{ $flag.Name }} looks up the value of a local {{ $flag.Name }}Flag, returns
 // {{ $flag.ContextDefault }} if not found
-func (c *Context) {{ $flag.Name }}(name string) {{ if ne .ContextType "" }} {{ $flag.ContextType }} {{ else }} {{ $flag.Type }} {{- end }} {
+func (c *Context) {{ $flag.Name }}(name string){{ if ne .ContextType "" }} {{ $flag.ContextType }} {{ else }} {{ $flag.Type }} {{- end }} {
     return lookup{{ $flag.Name }}(name, c.flagSet)
 }
 
 // Global{{ $flag.Name }} looks up the value of a global {{ $flag.Name }}Flag, returns
 // {{ $flag.ContextDefault }} if not found
-func (c *Context) Global{{ $flag.Name }}(name string) {{ if ne .ContextType "" }} {{ $flag.ContextType }} {{ else }} {{ $flag.Type }} {{- end }} {
+func (c *Context) Global{{ $flag.Name }}(name string){{ if ne .ContextType "" }} {{ $flag.ContextType }} {{ else }} {{ $flag.Type }} {{- end }} {
     if fs := lookupGlobalFlagSet(name, c); fs != nil {
         return lookup{{ $flag.Name }}(name, fs)
     }
     return {{ $flag.ContextDefault }}
 }
 
-func lookup{{ $flag.Name }}(name string, set *flag.FlagSet) {{ if ne .ContextType "" }} {{ $flag.ContextType }} {{ else }} {{ $flag.Type }} {{- end }} {
+func lookup{{ $flag.Name }}(name string, set *flag.FlagSet){{ if ne .ContextType "" }} {{ $flag.ContextType }} {{ else }} {{ $flag.Type }} {{- end }} {
     f := set.Lookup(name)
     if f != nil {
         {{ if ne .Parser "" }}parsed, err := {{ $flag.Parser }}{{ else }}parsed, err := f.Value, error(nil){{ end }}
@@ -66,4 +66,4 @@ func lookup{{ $flag.Name }}(name string, set *flag.FlagSet) {{ if ne .ContextTyp
     }
     return {{ $flag.ContextDefault }}
 }
-{{- end }}
+{{ end }}
