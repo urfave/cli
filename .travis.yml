@@ -13,7 +13,6 @@ cache:
     - node_modules
 
 before_script:
-  - go get github.com/urfave/cli/flag-gen || true
   - go get github.com/shurcooL/vfsgen || true
   - go get github.com/shurcooL/httpfs/union || true
   - go get github.com/urfave/gfmrun/... || true
@@ -23,12 +22,11 @@ before_script:
     fi
 
 script:
-  #- go generate ./... # to be uncommented after merge as we cannot compile the package which is not present in master
-  - ./runtests vet
-  - ./runtests test
-  - ./runtests gfmrun
-  - ./runtests toc
+  - go run build/build.go generate
+  - go run build/build.go vet
+  - go run build/build.go test
+  - go run build/build.go gfmrun
+  - go run build/build.go toc
 
 after_success:
-  - ./coverage.sh
   - bash <(curl -s https://codecov.io/bash)

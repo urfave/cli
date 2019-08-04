@@ -19,4 +19,4 @@
 //   }
 package cli
 
-//go:generate flag-generator
+//go:generate go run flag-gen/main.go flag-gen/assets_vfsdata.go

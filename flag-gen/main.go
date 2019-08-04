@@ -1,6 +1,6 @@
-//go:generate go run assets_generate.go
-
 package main
+
+//go:generate go run assets_generate.go
 
 import (
 	"encoding/json"
