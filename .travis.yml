@@ -13,6 +13,7 @@ cache:
     - node_modules
 
 before_script:
+  - go get github.com/urfave/cli/flag-gen || true
   - go get github.com/urfave/gfmrun/... || true
   - go get golang.org/x/tools/cmd/goimports
   - if [ ! -f node_modules/.bin/markdown-toc ] ; then
@@ -20,7 +21,7 @@ before_script:
     fi
 
 script:
-  - ./runtests gen
+  - go generate ./...
   - ./runtests vet
   - ./runtests test
   - ./runtests gfmrun
