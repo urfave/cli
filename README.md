@@ -679,6 +679,7 @@ from other file input sources.
 
 Currently supported input source formats:
 * YAML
+* JSON
 * TOML
 
 In order to get values for a flag from an alternate input source the following
@@ -701,7 +702,7 @@ the yaml input source for any flags that are defined on that command.  As a note
 the "load" flag used would also have to be defined on the command flags in order
 for this code snipped to work.
 
-Currently only YAML and JSON files are supported but developers can add support
+Currently only YAML, JSON, and TOML files are supported but developers can add support
 for other input sources by implementing the altsrc.InputSourceContext for their
 given sources.
 
