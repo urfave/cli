@@ -1,17 +1,15 @@
+//go:generate go run assets_generate.go
+
 package main
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/shurcooL/httpfs/union"
-	"github.com/shurcooL/vfsgen"
 	"github.com/urfave/cli"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"text/template"
-	"time"
 )
 
 type CliFlagInfo struct {
@@ -31,34 +29,6 @@ type FlagType struct {
 	ParserCast     string `json:"parser_cast"`
 }
 
-// zeroModTimeFileSystem is an http.FileSystem wrapper.
-// It exposes a filesystem exactly like Source, except
-// all file modification times are changed to zero.
-// See https://github.com/shurcooL/vfsgen/pull/40#issuecomment-355416103
-type zeroModTimeFileSystem struct {
-	Source http.FileSystem
-}
-
-func (fs zeroModTimeFileSystem) Open(name string) (http.File, error) {
-	f, err := fs.Source.Open(name)
-	return file{f}, err
-}
-
-type file struct {
-	http.File
-}
-
-func (f file) Stat() (os.FileInfo, error) {
-	fi, err := f.File.Stat()
-	return fileInfo{fi}, err
-}
-
-type fileInfo struct {
-	os.FileInfo
-}
-
-func (fi fileInfo) ModTime() time.Time { return time.Time{} }
-
 func main() {
 	app := cli.NewApp()
 
@@ -68,36 +38,17 @@ func main() {
 
 	app.Action = ActionFunc
 
-	err := GenerateAssets()
+	err := app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	err = app.Run(os.Args)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func GenerateAssets() error {
-	fs := zeroModTimeFileSystem{
-		Source: union.New(map[string]http.FileSystem{
-			"/templates": http.Dir("templates"),
-			"/source":    http.Dir("source"),
-		}),
-	}
-
-	return vfsgen.Generate(fs, vfsgen.Options{
-		PackageName:  "main",
-		VariableName: "fs",
-	})
 }
 
 func ActionFunc(_ *cli.Context) error {
 	var info CliFlagInfo
 	var tpl *template.Template
 
-	inFile, err := fs.Open("/source/flag-types.json")
+	inFile, err := assets.Open("/source/flag-types.json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -149,7 +100,7 @@ func ActionFunc(_ *cli.Context) error {
 }
 
 func ReadTemplate(packageName string) ([]byte, error) {
-	templateFile, err := fs.Open(fmt.Sprintf("/templates/%s_flags_generated.gotpl", packageName))
+	templateFile, err := assets.Open(fmt.Sprintf("/templates/%s_flags_generated.gotpl", packageName))
 	if err != nil {
 		return nil, err
 	}

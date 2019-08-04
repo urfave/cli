@@ -14,8 +14,8 @@ import (
 	"time"
 )
 
-// fs statically implements the virtual filesystem provided to vfsgen.
-var fs = func() http.FileSystem {
+// assets statically implements the virtual filesystem provided to vfsgen.
+var assets = func() http.FileSystem {
 	fs := vfsgen۰FS{
 		"/": &vfsgen۰DirInfo{
 			name:    "/",
