@@ -34,10 +34,6 @@ def main(sysargs=sys.argv[:]):
 
 
 def _test():
-    if check_output('go version'.split()).split()[2] < 'go1.2':
-        _run('go test -v .')
-        return
-
     coverprofiles = []
     for subpackage in ['', 'altsrc']:
         coverprofile = 'cli.coverprofile'

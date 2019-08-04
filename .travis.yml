@@ -5,23 +5,27 @@ osx_image: xcode8.3
 go: 1.11.x
 
 os:
-- linux
-- osx
+  - linux
+  - osx
 
 cache:
   directories:
-  - node_modules
+    - node_modules
 
 before_script:
-- go get github.com/urfave/gfmrun/... || true
-- go get golang.org/x/tools/cmd/goimports
-- if [ ! -f node_modules/.bin/markdown-toc ] ; then
+  - go get github.com/urfave/gfmrun/... || true
+  - go get golang.org/x/tools/cmd/goimports
+  - if [ ! -f node_modules/.bin/markdown-toc ] ; then
     npm install markdown-toc ;
-  fi
+    fi
 
 script:
-- ./runtests gen
-- ./runtests vet
-- ./runtests test
-- ./runtests gfmrun
-- ./runtests toc
+  - ./runtests gen
+  - ./runtests vet
+  - ./runtests test
+  - ./runtests gfmrun
+  - ./runtests toc
+
+after_success:
+  - ./coverage.sh
+  - bash <(curl -s https://codecov.io/bash)
