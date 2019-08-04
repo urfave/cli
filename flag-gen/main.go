@@ -32,9 +32,8 @@ type FlagType struct {
 func main() {
 	app := cli.NewApp()
 
-	app.Name = "fg"
+	app.Name = "flag-generator"
 	app.Usage = "Generate flag type code!"
-	app.Version = "v0.1.0"
 
 	app.Action = ActionFunc
 
