@@ -21,6 +21,6 @@ install:
 
 build_script:
   - go run build/build.go generate
-  - go rub build/build.go vet
-  - go rub build/build.go test
-  - go rub build/build.go gfmrun
+  - go run build/build.go vet
+  - go run build/build.go test
+  - go run build/build.go gfmrun

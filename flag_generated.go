@@ -10,13 +10,13 @@ import (
 
 // BoolFlag is a flag with type bool
 type BoolFlag struct {
-	Name        string
-	Usage       string
-	EnvVar      string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Destination *bool
+	Name		string
+	Usage		string
+	EnvVar		string
+	FilePath	string
+	Required	bool
+	Hidden		bool
+	Destination	*bool
 }
 
 // String returns a readable representation of this value
@@ -64,13 +64,13 @@ func lookupBool(name string, set *flag.FlagSet) bool {
 
 // BoolTFlag is a flag with type bool that is true by default
 type BoolTFlag struct {
-	Name        string
-	Usage       string
-	EnvVar      string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Destination *bool
+	Name		string
+	Usage		string
+	EnvVar		string
+	FilePath	string
+	Required	bool
+	Hidden		bool
+	Destination	*bool
 }
 
 // String returns a readable representation of this value
@@ -118,14 +118,14 @@ func lookupBoolT(name string, set *flag.FlagSet) bool {
 
 // DurationFlag is a flag with type time.Duration (see https://golang.org/pkg/time/#ParseDuration)
 type DurationFlag struct {
-	Name        string
-	Usage       string
-	EnvVar      string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       time.Duration
-	Destination *time.Duration
+	Name		string
+	Usage		string
+	EnvVar		string
+	FilePath	string
+	Required	bool
+	Hidden		bool
+	Value	time.Duration
+	Destination	*time.Duration
 }
 
 // String returns a readable representation of this value
@@ -173,14 +173,14 @@ func lookupDuration(name string, set *flag.FlagSet) time.Duration {
 
 // Float64Flag is a flag with type float64
 type Float64Flag struct {
-	Name        string
-	Usage       string
-	EnvVar      string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       float64
-	Destination *float64
+	Name		string
+	Usage		string
+	EnvVar		string
+	FilePath	string
+	Required	bool
+	Hidden		bool
+	Value	float64
+	Destination	*float64
 }
 
 // String returns a readable representation of this value
@@ -228,13 +228,13 @@ func lookupFloat64(name string, set *flag.FlagSet) float64 {
 
 // GenericFlag is a flag with type Generic
 type GenericFlag struct {
-	Name     string
-	Usage    string
-	EnvVar   string
-	FilePath string
-	Required bool
-	Hidden   bool
-	Value    Generic
+	Name		string
+	Usage		string
+	EnvVar		string
+	FilePath	string
+	Required	bool
+	Hidden		bool
+	Value	Generic
 }
 
 // String returns a readable representation of this value
@@ -282,14 +282,14 @@ func lookupGeneric(name string, set *flag.FlagSet) interface{} {
 
 // Int64Flag is a flag with type int64
 type Int64Flag struct {
-	Name        string
-	Usage       string
-	EnvVar      string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       int64
-	Destination *int64
+	Name		string
+	Usage		string
+	EnvVar		string
+	FilePath	string
+	Required	bool
+	Hidden		bool
+	Value	int64
+	Destination	*int64
 }
 
 // String returns a readable representation of this value
@@ -337,14 +337,14 @@ func lookupInt64(name string, set *flag.FlagSet) int64 {
 
 // IntFlag is a flag with type int
 type IntFlag struct {
-	Name        string
-	Usage       string
-	EnvVar      string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       int
-	Destination *int
+	Name		string
+	Usage		string
+	EnvVar		string
+	FilePath	string
+	Required	bool
+	Hidden		bool
+	Value	int
+	Destination	*int
 }
 
 // String returns a readable representation of this value
@@ -392,13 +392,13 @@ func lookupInt(name string, set *flag.FlagSet) int {
 
 // IntSliceFlag is a flag with type *IntSlice
 type IntSliceFlag struct {
-	Name     string
-	Usage    string
-	EnvVar   string
-	FilePath string
-	Required bool
-	Hidden   bool
-	Value    *IntSlice
+	Name		string
+	Usage		string
+	EnvVar		string
+	FilePath	string
+	Required	bool
+	Hidden		bool
+	Value	*IntSlice
 }
 
 // String returns a readable representation of this value
@@ -446,13 +446,13 @@ func lookupIntSlice(name string, set *flag.FlagSet) []int {
 
 // Int64SliceFlag is a flag with type *Int64Slice
 type Int64SliceFlag struct {
-	Name     string
-	Usage    string
-	EnvVar   string
-	FilePath string
-	Required bool
-	Hidden   bool
-	Value    *Int64Slice
+	Name		string
+	Usage		string
+	EnvVar		string
+	FilePath	string
+	Required	bool
+	Hidden		bool
+	Value	*Int64Slice
 }
 
 // String returns a readable representation of this value
@@ -500,14 +500,14 @@ func lookupInt64Slice(name string, set *flag.FlagSet) []int64 {
 
 // StringFlag is a flag with type string
 type StringFlag struct {
-	Name        string
-	Usage       string
-	EnvVar      string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       string
-	Destination *string
+	Name		string
+	Usage		string
+	EnvVar		string
+	FilePath	string
+	Required	bool
+	Hidden		bool
+	Value	string
+	Destination	*string
 }
 
 // String returns a readable representation of this value
@@ -555,13 +555,13 @@ func lookupString(name string, set *flag.FlagSet) string {
 
 // StringSliceFlag is a flag with type *StringSlice
 type StringSliceFlag struct {
-	Name     string
-	Usage    string
-	EnvVar   string
-	FilePath string
-	Required bool
-	Hidden   bool
-	Value    *StringSlice
+	Name		string
+	Usage		string
+	EnvVar		string
+	FilePath	string
+	Required	bool
+	Hidden		bool
+	Value	*StringSlice
 }
 
 // String returns a readable representation of this value
@@ -609,14 +609,14 @@ func lookupStringSlice(name string, set *flag.FlagSet) []string {
 
 // Uint64Flag is a flag with type uint64
 type Uint64Flag struct {
-	Name        string
-	Usage       string
-	EnvVar      string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       uint64
-	Destination *uint64
+	Name		string
+	Usage		string
+	EnvVar		string
+	FilePath	string
+	Required	bool
+	Hidden		bool
+	Value	uint64
+	Destination	*uint64
 }
 
 // String returns a readable representation of this value
@@ -664,14 +664,14 @@ func lookupUint64(name string, set *flag.FlagSet) uint64 {
 
 // UintFlag is a flag with type uint
 type UintFlag struct {
-	Name        string
-	Usage       string
-	EnvVar      string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       uint
-	Destination *uint
+	Name		string
+	Usage		string
+	EnvVar		string
+	FilePath	string
+	Required	bool
+	Hidden		bool
+	Value	uint
+	Destination	*uint
 }
 
 // String returns a readable representation of this value

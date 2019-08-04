@@ -4,19 +4,19 @@ package {{ .PackageName }}
 
 import (
 	"flag"
-    "github.com/urfave/cli"
+	"github.com/urfave/cli"
 )
 {{ range $i, $flag := .Flags }}
 // {{ $flag.Name }}Flag is the flag type that wraps cli.{{ $flag.Name }}Flag to allow
 // for other values to be specified
 type {{ $flag.Name }}Flag struct {
-    cli.{{ $flag.Name }}Flag
-    set *flag.FlagSet
+	cli.{{ $flag.Name }}Flag
+	set *flag.FlagSet
 }
 
 // New{{ $flag.Name }}Flag creates a new {{ $flag.Name }}Flag
 func New{{ $flag.Name }}Flag(fl cli.{{ $flag.Name }}Flag) *{{ $flag.Name }}Flag {
-    return &{{ $flag.Name }}Flag{ {{ $flag.Name }}Flag: fl, set: nil }
+	return &{{ $flag.Name }}Flag{ {{ $flag.Name }}Flag: fl, set: nil }
 }
 
 // Apply saves the flagSet for later usage calls, then calls
@@ -29,7 +29,7 @@ func (f *{{ $flag.Name }}Flag) Apply(set *flag.FlagSet) {
 // ApplyWithError saves the flagSet for later usage calls, then calls
 // the wrapped {{ $flag.Name }}Flag.ApplyWithError
 func (f *{{ $flag.Name }}Flag) ApplyWithError(set *flag.FlagSet) error {
-    f.set = set
-    return f.{{ $flag.Name }}Flag.ApplyWithError(set)
+	f.set = set
+	return f.{{ $flag.Name }}Flag.ApplyWithError(set)
 }
 {{ end }}
