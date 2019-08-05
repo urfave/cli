@@ -199,23 +199,27 @@ func cliArgContains(flagName string) bool {
 }
 
 func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
-	cur := shortFlagRegex.ReplaceAllString(lastArg, "")
-	cur = shortFlagRegex.ReplaceAllString(cur, "")
+	cur := strings.TrimPrefix(lastArg, "-")
+	cur = strings.TrimPrefix(cur, "-")
 	for _, flag := range flags {
 		if bflag, ok := flag.(BoolFlag); ok && bflag.Hidden {
 			continue
 		}
 		for _, name := range strings.Split(flag.GetName(), ",") {
-			name = strings.Trim(name, " ")
+			name = strings.TrimSpace(name)
+			// this will get total count utf8 letters in flag name
 			count := utf8.RuneCountInString(name)
 			if count > 2 {
-				count = 2
+				count = 2 // resuse this count to generate single - or -- in flag completion
 			}
+			// if flag name has more than one utf8 letter and last argument in cli has -- prefix then
+			// skip flag completion for short flags example -v or -x
 			if strings.HasPrefix(lastArg, "--") && count == 1 {
 				continue
 			}
-			flagCompletion := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
+			// match if last argument matches this flag and it is not repeated
 			if strings.HasPrefix(name, cur) && cur != name && !cliArgContains(flag.GetName()) {
+				flagCompletion := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
 				fmt.Fprintln(writer, flagCompletion)
 			}
 		}

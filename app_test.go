@@ -274,6 +274,35 @@ func ExampleApp_Run_bashComplete_withLongFlag() {
 	// --some-flag
 	// --similar-flag
 }
+func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
+	os.Args = []string{"greet", "--st", "--generate-bash-completion"}
+
+	app := NewApp()
+	app.Name = "greet"
+	app.EnableBashCompletion = true
+	app.Flags = []Flag{
+		IntFlag{
+			Name: "int-flag,i",
+		},
+		StringFlag{
+			Name: "string,s",
+		},
+		StringFlag{
+			Name: "string-flag-2",
+		},
+		StringFlag{
+			Name: "similar-flag",
+		},
+		StringFlag{
+			Name: "some-flag",
+		},
+	}
+
+	app.Run(os.Args)
+	// Output:
+	// --string
+	// --string-flag-2
+}
 
 func ExampleApp_Run_bashComplete() {
 	// set args for examples sake
