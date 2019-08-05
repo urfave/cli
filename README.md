@@ -902,14 +902,14 @@ import (
 func main() {
   app := cli.NewApp()
   app.Flags = []cli.Flag{
-    cli.BoolTFlag{
+    cli.BoolFlag{
       Name:  "ginger-crouton",
-      Usage: "is it in the soup?",
+      Usage: "Add ginger croutons to the soup",
     },
   }
   app.Action = func(ctx *cli.Context) error {
     if !ctx.Bool("ginger-crouton") {
-      return cli.NewExitError("it is not in the soup", 86)
+      return cli.NewExitError("Ginger croutons are not in the soup", 86)
     }
     return nil
   }
