@@ -1,11 +1,14 @@
 package cli
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"os"
+	"os/signal"
 	"reflect"
 	"strings"
+	"syscall"
 )
 
 // Context is a type that is passed through to
@@ -13,6 +16,7 @@ import (
 // can be used to retrieve context-specific args and
 // parsed command-line options.
 type Context struct {
+	context.Context
 	App           *App
 	Command       *Command
 	shellComplete bool
@@ -24,6 +28,14 @@ type Context struct {
 // NewContext creates a new context. For use in when invoking an App or Command action.
 func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
 	c := &Context{App: app, flagSet: set, parentContext: parentCtx}
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		defer cancel()
+		sigs := make(chan os.Signal, 1)
+		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+		<-sigs
+	}()
+	c.Context = ctx
 
 	if parentCtx != nil {
 		c.shellComplete = parentCtx.shellComplete
