@@ -183,7 +183,7 @@ func printCommandSuggestions(commands []Command, writer io.Writer) {
 
 func cliArgContains(flagName string) bool {
 	for _, name := range strings.Split(flagName, ",") {
-		name = strings.Trim(name, " ")
+		name = strings.TrimSpace(name)
 		count := utf8.RuneCountInString(name)
 		if count > 2 {
 			count = 2
