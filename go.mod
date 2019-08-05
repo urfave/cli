@@ -1,3 +1,3 @@
-module gopkg.in/urfave/fli.v2
+module gopkg.in/urfave/cli.v2
 
 go 1.12
