@@ -986,7 +986,7 @@ following syntax:
 $ cmd -som "Some message"
 ```
 
-If you enable the `UseShortOptionHandling`, then you must not use any flags that
+If you enable `UseShortOptionHandling`, then you must not use any flags that
 have a single leading `-` or this will result in failures. For example,
 `-option` can no longer be used. Flags with two leading dashes (such as
 `--options`) are still valid.
