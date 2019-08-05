@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"regexp"
 	"strings"
 	"text/tabwriter"
 	"text/template"
@@ -156,8 +155,6 @@ func ShowAppHelp(c *Context) (err error) {
 	HelpPrinterCustom(c.App.Writer, c.App.CustomAppHelpTemplate, c.App, customAppData())
 	return nil
 }
-
-var shortFlagRegex = regexp.MustCompile(`^-`)
 
 // DefaultAppComplete prints the list of subcommands as the default app completion method
 func DefaultAppComplete(c *Context) {
