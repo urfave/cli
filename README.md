@@ -38,6 +38,7 @@ applications in an expressive way.
   * [Subcommands](#subcommands)
   * [Subcommands categories](#subcommands-categories)
   * [Exit code](#exit-code)
+  * [Combining short options](#combining-short-options)
   * [Bash Completion](#bash-completion)
     + [Enabling](#enabling)
     + [Distribution](#distribution)
@@ -47,7 +48,6 @@ applications in an expressive way.
   * [Version Flag](#version-flag)
     + [Customization](#customization-2)
     + [Full API Example](#full-api-example)
-  * [Combining short Bool options](#combining-short-bool-options)
 - [Contribution Guidelines](#contribution-guidelines)
 
 <!-- tocstop -->
@@ -921,6 +921,76 @@ func main() {
 }
 ```
 
+### Combining short options
+
+Traditional use of options using their shortnames look like this:
+
+```
+$ cmd -s -o -m "Some message"
+```
+
+Suppose you want users to be able to combine options with their shortnames. This
+can be done using the `UseShortOptionHandling` bool in your app configuration,
+or for individual commands by attaching it to the command configuration. For
+example:
+
+<!-- {
+  "args": ["short", "&#45;som", "Some message"],
+  "output": "serve: true\noption: true\nmessage: Some message\n"
+} -->
+``` go
+package main
+
+import (
+  "fmt"
+  "log"
+  "os"
+
+  "github.com/urfave/cli"
+)
+
+func main() {
+  app := cli.NewApp()
+  app.UseShortOptionHandling = true
+  app.Commands = []cli.Command{
+    {
+      Name:  "short",
+      Usage: "complete a task on the list",
+      Flags: []cli.Flag{
+        cli.BoolFlag{Name: "serve, s"},
+        cli.BoolFlag{Name: "option, o"},
+        cli.StringFlag{Name: "message, m"},
+      },
+      Action: func(c *cli.Context) error {
+        fmt.Println("serve:", c.Bool("serve"))
+        fmt.Println("option:", c.Bool("option"))
+        fmt.Println("message:", c.String("message"))
+        return nil
+      },
+    },
+  }
+
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
+}
+```
+
+If your program has any number of bool flags such as `serve` and `option`, and
+optionally one non-bool flag `message`, with the short options of `-s`, `-o`,
+and `-m` respectively, setting `UseShortOptionHandling` will also support the
+following syntax:
+
+```
+$ cmd -som "Some message"
+```
+
+If you enable the `UseShortOptionHandling`, then you must not use any flags that
+have a single leading `-` or this will result in failures. For example,
+`-option` can no longer be used. Flags with two leading dashes (such as
+`--options`) are still valid.
+
 ### Bash Completion
 
 You can enable completion commands by setting the `EnableBashCompletion`
@@ -1372,6 +1442,7 @@ func main() {
     cli.Uint64Flag{Name: "bigage"},
   }
   app.EnableBashCompletion = true
+  app.UseShortOptionHandling = true
   app.HideHelp = false
   app.HideVersion = false
   app.BashComplete = func(c *cli.Context) {
@@ -1501,26 +1572,6 @@ func wopAction(c *cli.Context) error {
   return nil
 }
 ```
-
-### Combining short Bool options
-
-Traditional use of boolean options using their shortnames look like this:
-```
-# cmd foobar -s -o
-```
-
-Suppose you want users to be able to combine your bool options with their shortname.  This
-can be done using the **UseShortOptionHandling** bool in your commands.  Suppose your program
-has a two bool flags such as *serve* and *option* with the short options of *-o* and
-*-s* respectively. With **UseShortOptionHandling** set to *true*, a user can use a syntax
-like:
-```
-# cmd foobar -so
-```
-
-If you enable the **UseShortOptionHandling*, then you must not use any flags that have a single
-leading *-* or this will result in failures.  For example, **-option** can no longer be used.  Flags
-with two leading dashes (such as **--options**) are still valid.
 
 ## Contribution Guidelines
 
