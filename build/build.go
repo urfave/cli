@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-var packages []string
+var packages = []string{"cli", "altsrc"}
 
 func main() {
 	app := cli.NewApp()
@@ -42,8 +42,6 @@ func main() {
 			Action: GenActionFunc,
 		},
 	}
-
-	packages = []string{"cli", "altsrc"}
 
 	err := app.Run(os.Args)
 	if err != nil {
