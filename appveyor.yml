@@ -20,7 +20,7 @@ install:
   - go get -v -t ./...
 
 build_script:
-  - go run build/build.go generate
-  - go run build/build.go vet
-  - go run build/build.go test
-  - go run build/build.go gfmrun
+  - go run build.go generate
+  - go run build.go vet
+  - go run build.go test
+  - go run build.go gfmrun
