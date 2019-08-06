@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"flag"
 	"sort"
 	"testing"
@@ -260,5 +261,26 @@ func TestContext_lookupFlagSet(t *testing.T) {
 
 	if fs := lookupFlagSet("frob", ctx); fs != nil {
 		t.Fail()
+	}
+}
+
+// TestContextPropagation tests that
+// *cli.Context always has a valid
+// context.Context
+func TestContextPropagation(t *testing.T) {
+	ctx := NewContext(nil, nil, nil)
+	if ctx.Context == nil {
+		t.Fatal("expected a non nil context when no parent is present")
+	}
+	parent := NewContext(nil, nil, nil)
+	parent.Context = context.WithValue(context.Background(), "key", "val")
+	ctx = NewContext(nil, nil, parent)
+	val := ctx.Value("key")
+	if val == nil {
+		t.Fatal("expected a parent context to be inherited but got nil")
+	}
+	valstr, _ := val.(string)
+	if valstr != "val" {
+		t.Fatalf("expected the context value to be %q but got %q", "val", valstr)
 	}
 }
