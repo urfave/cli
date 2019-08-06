@@ -28,17 +28,21 @@ type Context struct {
 // NewContext creates a new context. For use in when invoking an App or Command action.
 func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
 	c := &Context{App: app, flagSet: set, parentContext: parentCtx}
-	ctx, cancel := context.WithCancel(context.Background())
-	go func() {
-		defer cancel()
-		sigs := make(chan os.Signal, 1)
-		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-		<-sigs
-	}()
-	c.Context = ctx
-
 	if parentCtx != nil {
+		if parentCtx.Context != nil {
+			parentCtx.Context = context.Background()
+		}
+		c.Context = parentCtx.Context
 		c.shellComplete = parentCtx.shellComplete
+	} else {
+		ctx, cancel := context.WithCancel(context.Background())
+		go func() {
+			defer cancel()
+			sigs := make(chan os.Signal, 1)
+			signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+			<-sigs
+		}()
+		c.Context = ctx
 	}
 
 	return c
