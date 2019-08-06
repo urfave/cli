@@ -29,7 +29,7 @@ type Context struct {
 func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
 	c := &Context{App: app, flagSet: set, parentContext: parentCtx}
 	if parentCtx != nil {
-		if parentCtx.Context != nil {
+		if parentCtx.Context == nil {
 			parentCtx.Context = context.Background()
 		}
 		c.Context = parentCtx.Context
