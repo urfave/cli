@@ -58,7 +58,7 @@ func TestActionFunc(c *cli.Context) error {
 		var packageName string
 
 		if pkg == "cli" {
-			packageName = fmt.Sprintf("github.com/urfave/cli")
+			packageName = "github.com/urfave/cli"
 		} else {
 			packageName = fmt.Sprintf("github.com/urfave/cli/%s", pkg)
 		}
