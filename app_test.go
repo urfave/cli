@@ -236,7 +236,7 @@ func ExampleApp_Run_shellComplete() {
 	os.Args = []string{"greet", fmt.Sprintf("--%s", genCompName())}
 
 	app := &App{
-		Name: "greet",
+		Name:                  "greet",
 		EnableShellCompletion: true,
 		Commands: []*Command{
 			{
@@ -525,6 +525,8 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 			},
 		},
 	}
+	var _ = parsedOption
+	var _ = firstArg
 
 	app.Run([]string{"", "cmd", "-p", "22", "-p", "80", "-ip", "8.8.8.8", "-ip", "8.8.4.4", "my-arg"})
 
