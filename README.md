@@ -679,6 +679,7 @@ from other file input sources.
 
 Currently supported input source formats:
 * YAML
+* JSON
 * TOML
 
 In order to get values for a flag from an alternate input source the following
@@ -701,7 +702,7 @@ the yaml input source for any flags that are defined on that command.  As a note
 the "load" flag used would also have to be defined on the command flags in order
 for this code snipped to work.
 
-Currently only YAML and JSON files are supported but developers can add support
+Currently only YAML, JSON, and TOML files are supported but developers can add support
 for other input sources by implementing the altsrc.InputSourceContext for their
 given sources.
 
@@ -901,14 +902,14 @@ import (
 func main() {
   app := cli.NewApp()
   app.Flags = []cli.Flag{
-    cli.BoolTFlag{
+    cli.BoolFlag{
       Name:  "ginger-crouton",
-      Usage: "is it in the soup?",
+      Usage: "Add ginger croutons to the soup",
     },
   }
   app.Action = func(ctx *cli.Context) error {
     if !ctx.Bool("ginger-crouton") {
-      return cli.NewExitError("it is not in the soup", 86)
+      return cli.NewExitError("Ginger croutons are not in the soup", 86)
     }
     return nil
   }
