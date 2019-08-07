@@ -2,7 +2,9 @@ language: go
 sudo: false
 dist: trusty
 osx_image: xcode8.3
-go: 1.11.x
+go:
+  - 1.11.x
+  - 1.12.x
 
 os:
   - linux
