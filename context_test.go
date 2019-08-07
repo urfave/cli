@@ -99,9 +99,9 @@ func TestContext_GlobalFloat64(t *testing.T) {
 
 func TestContext_Duration(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
-	set.Duration("myflag", time.Duration(12*time.Second), "doc")
+	set.Duration("myflag", 12*time.Second, "doc")
 	c := NewContext(nil, set, nil)
-	expect(t, c.Duration("myflag"), time.Duration(12*time.Second))
+	expect(t, c.Duration("myflag"), 12*time.Second)
 }
 
 func TestContext_String(t *testing.T) {
@@ -153,7 +153,7 @@ func TestContext_Args(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("myflag", false, "doc")
 	c := NewContext(nil, set, nil)
-	set.Parse([]string{"--myflag", "bat", "baz"})
+	_ = set.Parse([]string{"--myflag", "bat", "baz"})
 	expect(t, len(c.Args()), 2)
 	expect(t, c.Bool("myflag"), true)
 }
@@ -162,7 +162,7 @@ func TestContext_NArg(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("myflag", false, "doc")
 	c := NewContext(nil, set, nil)
-	set.Parse([]string{"--myflag", "bat", "baz"})
+	_ = set.Parse([]string{"--myflag", "bat", "baz"})
 	expect(t, c.NArg(), 2)
 }
 
@@ -174,8 +174,8 @@ func TestContext_IsSet(t *testing.T) {
 	globalSet.Bool("myflagGlobal", true, "doc")
 	globalCtx := NewContext(nil, globalSet, nil)
 	c := NewContext(nil, set, globalCtx)
-	set.Parse([]string{"--myflag", "bat", "baz"})
-	globalSet.Parse([]string{"--myflagGlobal", "bat", "baz"})
+	_ = set.Parse([]string{"--myflag", "bat", "baz"})
+	_ = globalSet.Parse([]string{"--myflagGlobal", "bat", "baz"})
 	expect(t, c.IsSet("myflag"), true)
 	expect(t, c.IsSet("otherflag"), false)
 	expect(t, c.IsSet("bogusflag"), false)
@@ -193,8 +193,8 @@ func TestContext_IsSet_fromEnv(t *testing.T) {
 	)
 
 	clearenv()
-	os.Setenv("APP_TIMEOUT_SECONDS", "15.5")
-	os.Setenv("APP_PASSWORD", "")
+	_ = os.Setenv("APP_TIMEOUT_SECONDS", "15.5")
+	_ = os.Setenv("APP_PASSWORD", "")
 	a := App{
 		Flags: []Flag{
 			Float64Flag{Name: "timeout, t", EnvVar: "APP_TIMEOUT_SECONDS"},
@@ -214,7 +214,7 @@ func TestContext_IsSet_fromEnv(t *testing.T) {
 			return nil
 		},
 	}
-	a.Run([]string{"run"})
+	_ = a.Run([]string{"run"})
 	expect(t, timeoutIsSet, true)
 	expect(t, tIsSet, true)
 	expect(t, passwordIsSet, true)
@@ -222,8 +222,8 @@ func TestContext_IsSet_fromEnv(t *testing.T) {
 	expect(t, noEnvVarIsSet, false)
 	expect(t, nIsSet, false)
 
-	os.Setenv("APP_UNPARSABLE", "foobar")
-	a.Run([]string{"run"})
+	_ = os.Setenv("APP_UNPARSABLE", "foobar")
+	_ = a.Run([]string{"run"})
 	expect(t, unparsableIsSet, false)
 	expect(t, uIsSet, false)
 }
@@ -237,8 +237,8 @@ func TestContext_GlobalIsSet(t *testing.T) {
 	globalSet.Bool("myflagGlobalUnset", true, "doc")
 	globalCtx := NewContext(nil, globalSet, nil)
 	c := NewContext(nil, set, globalCtx)
-	set.Parse([]string{"--myflag", "bat", "baz"})
-	globalSet.Parse([]string{"--myflagGlobal", "bat", "baz"})
+	_ = set.Parse([]string{"--myflag", "bat", "baz"})
+	_ = globalSet.Parse([]string{"--myflagGlobal", "bat", "baz"})
 	expect(t, c.GlobalIsSet("myflag"), false)
 	expect(t, c.GlobalIsSet("otherflag"), false)
 	expect(t, c.GlobalIsSet("bogusflag"), false)
@@ -261,9 +261,9 @@ func TestContext_GlobalIsSet_fromEnv(t *testing.T) {
 	)
 
 	clearenv()
-	os.Setenv("APP_TIMEOUT_SECONDS", "15.5")
-	os.Setenv("APP_PASSWORD", "badpass")
-	os.Setenv("APP_OVERRIDE", "overridden")
+	_ = os.Setenv("APP_TIMEOUT_SECONDS", "15.5")
+	_ = os.Setenv("APP_PASSWORD", "badpass")
+	_ = os.Setenv("APP_OVERRIDE", "overridden")
 	a := App{
 		Flags: []Flag{
 			Float64Flag{Name: "timeout, t", EnvVar: "APP_TIMEOUT_SECONDS"},
@@ -308,7 +308,7 @@ func TestContext_GlobalIsSet_fromEnv(t *testing.T) {
 	expect(t, oIsSet, true)
 	expect(t, overrideValue, "overridden")
 
-	os.Setenv("APP_UNPARSABLE", "foobar")
+	_ = os.Setenv("APP_UNPARSABLE", "foobar")
 	if err := a.Run([]string{"run"}); err != nil {
 		t.Logf("error running Run(): %+v", err)
 	}
@@ -324,8 +324,8 @@ func TestContext_NumFlags(t *testing.T) {
 	globalSet.Bool("myflagGlobal", true, "doc")
 	globalCtx := NewContext(nil, globalSet, nil)
 	c := NewContext(nil, set, globalCtx)
-	set.Parse([]string{"--myflag", "--otherflag=foo"})
-	globalSet.Parse([]string{"--myflagGlobal"})
+	_ = set.Parse([]string{"--myflag", "--otherflag=foo"})
+	_ = globalSet.Parse([]string{"--myflagGlobal"})
 	expect(t, c.NumFlags(), 2)
 }
 
@@ -341,7 +341,7 @@ func TestContext_GlobalFlag(t *testing.T) {
 		globalFlagSet = c.GlobalIsSet("global")
 		return nil
 	}
-	app.Run([]string{"command", "-g", "foo"})
+	_ = app.Run([]string{"command", "-g", "foo"})
 	expect(t, globalFlag, "foo")
 	expect(t, globalFlagSet, true)
 
@@ -379,7 +379,7 @@ func TestContext_GlobalFlagsInSubcommands(t *testing.T) {
 		},
 	}
 
-	app.Run([]string{"command", "-d", "foo", "-p", "bar"})
+	_ = app.Run([]string{"command", "-d", "foo", "-p", "bar"})
 
 	expect(t, subcommandRun, true)
 	expect(t, parentFlag, true)
@@ -391,7 +391,7 @@ func TestContext_Set(t *testing.T) {
 	c := NewContext(nil, set, nil)
 
 	expect(t, c.IsSet("int"), false)
-	c.Set("int", "1")
+	_ = c.Set("int", "1")
 	expect(t, c.Int("int"), 1)
 	expect(t, c.IsSet("int"), true)
 }
@@ -406,12 +406,12 @@ func TestContext_GlobalSet(t *testing.T) {
 	pc := NewContext(nil, gSet, nil)
 	c := NewContext(nil, set, pc)
 
-	c.Set("int", "1")
+	_ = c.Set("int", "1")
 	expect(t, c.Int("int"), 1)
 	expect(t, c.GlobalInt("int"), 5)
 
 	expect(t, c.GlobalIsSet("int"), false)
-	c.GlobalSet("int", "1")
+	_ = c.GlobalSet("int", "1")
 	expect(t, c.Int("int"), 1)
 	expect(t, c.GlobalInt("int"), 1)
 	expect(t, c.GlobalIsSet("int"), true)
@@ -525,10 +525,10 @@ func TestCheckRequiredFlags(t *testing.T) {
 			for _, flags := range test.flags {
 				flags.Apply(set)
 			}
-			set.Parse(test.parseInput)
+			_ = set.Parse(test.parseInput)
 			if test.envVarInput[0] != "" {
 				os.Clearenv()
-				os.Setenv(test.envVarInput[0], test.envVarInput[1])
+				_ = os.Setenv(test.envVarInput[0], test.envVarInput[1])
 			}
 			ctx := &Context{}
 			context := NewContext(ctx.App, set, ctx)

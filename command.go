@@ -125,9 +125,9 @@ func (c Command) Run(ctx *Context) (err error) {
 			context.App.handleExitCoder(context, err)
 			return err
 		}
-		fmt.Fprintln(context.App.Writer, "Incorrect Usage:", err.Error())
-		fmt.Fprintln(context.App.Writer)
-		ShowCommandHelp(context, c.Name)
+		_, _ = fmt.Fprintln(context.App.Writer, "Incorrect Usage:", err.Error())
+		_, _ = fmt.Fprintln(context.App.Writer)
+		_ = ShowCommandHelp(context, c.Name)
 		return err
 	}
 
@@ -137,7 +137,7 @@ func (c Command) Run(ctx *Context) (err error) {
 
 	cerr := checkRequiredFlags(c.Flags, context)
 	if cerr != nil {
-		ShowCommandHelp(context, c.Name)
+		_ = ShowCommandHelp(context, c.Name)
 		return cerr
 	}
 
@@ -158,7 +158,7 @@ func (c Command) Run(ctx *Context) (err error) {
 	if c.Before != nil {
 		err = c.Before(context)
 		if err != nil {
-			ShowCommandHelp(context, c.Name)
+			_ = ShowCommandHelp(context, c.Name)
 			context.App.handleExitCoder(context, err)
 			return err
 		}
@@ -272,7 +272,7 @@ func reorderArgs(args []string) []string {
 }
 
 func translateShortOptions(set *flag.FlagSet, flagArgs Args) []string {
-	allCharsFlags := func (s string) bool {
+	allCharsFlags := func(s string) bool {
 		for i := range s {
 			f := set.Lookup(string(s[i]))
 			if f == nil {
@@ -285,7 +285,7 @@ func translateShortOptions(set *flag.FlagSet, flagArgs Args) []string {
 	// separate combined flags
 	var flagArgsSeparated []string
 	for _, flagArg := range flagArgs {
-		if strings.HasPrefix(flagArg, "-") && strings.HasPrefix(flagArg, "--") == false && len(flagArg) > 2 {
+		if strings.HasPrefix(flagArg, "-") && !strings.HasPrefix(flagArg, "--") && len(flagArg) > 2 {
 			if !allCharsFlags(flagArg[1:]) {
 				flagArgsSeparated = append(flagArgsSeparated, flagArg)
 				continue
