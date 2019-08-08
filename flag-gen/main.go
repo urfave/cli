@@ -27,6 +27,7 @@ type FlagType struct {
 	ContextType    string `json:"context_type"`
 	Parser         string `json:"parser"`
 	ParserCast     string `json:"parser_cast"`
+	ValueString    string `json:"valueString"`
 }
 
 func main() {

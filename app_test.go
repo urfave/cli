@@ -1825,6 +1825,18 @@ func (c *customBoolFlag) GetName() string {
 	return c.Nombre
 }
 
+func (c *customBoolFlag) TakesValue() bool {
+	return false
+}
+
+func (c *customBoolFlag) GetValue() string {
+	return "value"
+}
+
+func (c *customBoolFlag) GetUsage() string {
+	return "usage"
+}
+
 func (c *customBoolFlag) Apply(set *flag.FlagSet) {
 	set.String(c.Nombre, c.Nombre, "")
 }
