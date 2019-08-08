@@ -4,6 +4,7 @@ package cli
 
 import (
 	"flag"
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -33,6 +34,22 @@ func (f BoolFlag) GetName() string {
 // IsRequired returns whether or not the flag is required
 func (f BoolFlag) IsRequired() bool {
 	return f.Required
+}
+
+// TakesValue returns true of the flag takes a value, otherwise false
+func (f BoolFlag) TakesValue() bool {
+	return false
+}
+
+// GetUsage returns the usage string for the flag
+func (f BoolFlag) GetUsage() string {
+	return f.Usage
+}
+
+// GetValue returns the flags value as string representation and an empty
+// string if the flag takes no value at all.
+func (f BoolFlag) GetValue() string {
+	return ""
 }
 
 // Bool looks up the value of a local BoolFlag, returns
@@ -87,6 +104,22 @@ func (f BoolTFlag) GetName() string {
 // IsRequired returns whether or not the flag is required
 func (f BoolTFlag) IsRequired() bool {
 	return f.Required
+}
+
+// TakesValue returns true of the flag takes a value, otherwise false
+func (f BoolTFlag) TakesValue() bool {
+	return false
+}
+
+// GetUsage returns the usage string for the flag
+func (f BoolTFlag) GetUsage() string {
+	return f.Usage
+}
+
+// GetValue returns the flags value as string representation and an empty
+// string if the flag takes no value at all.
+func (f BoolTFlag) GetValue() string {
+	return ""
 }
 
 // BoolT looks up the value of a local BoolTFlag, returns
@@ -144,6 +177,22 @@ func (f DurationFlag) IsRequired() bool {
 	return f.Required
 }
 
+// TakesValue returns true of the flag takes a value, otherwise false
+func (f DurationFlag) TakesValue() bool {
+	return true
+}
+
+// GetUsage returns the usage string for the flag
+func (f DurationFlag) GetUsage() string {
+	return f.Usage
+}
+
+// GetValue returns the flags value as string representation and an empty
+// string if the flag takes no value at all.
+func (f DurationFlag) GetValue() string {
+	return f.Value.String()
+}
+
 // Duration looks up the value of a local DurationFlag, returns
 // 0 if not found
 func (c *Context) Duration(name string) time.Duration {
@@ -199,6 +248,22 @@ func (f Float64Flag) IsRequired() bool {
 	return f.Required
 }
 
+// TakesValue returns true of the flag takes a value, otherwise false
+func (f Float64Flag) TakesValue() bool {
+	return true
+}
+
+// GetUsage returns the usage string for the flag
+func (f Float64Flag) GetUsage() string {
+	return f.Usage
+}
+
+// GetValue returns the flags value as string representation and an empty
+// string if the flag takes no value at all.
+func (f Float64Flag) GetValue() string {
+	return fmt.Sprintf("%f", f.Value)
+}
+
 // Float64 looks up the value of a local Float64Flag, returns
 // 0 if not found
 func (c *Context) Float64(name string) float64 {
@@ -251,6 +316,25 @@ func (f GenericFlag) GetName() string {
 // IsRequired returns whether or not the flag is required
 func (f GenericFlag) IsRequired() bool {
 	return f.Required
+}
+
+// TakesValue returns true of the flag takes a value, otherwise false
+func (f GenericFlag) TakesValue() bool {
+	return true
+}
+
+// GetUsage returns the usage string for the flag
+func (f GenericFlag) GetUsage() string {
+	return f.Usage
+}
+
+// GetValue returns the flags value as string representation and an empty
+// string if the flag takes no value at all.
+func (f GenericFlag) GetValue() string {
+	if f.Value != nil {
+		return f.Value.String()
+	}
+	return ""
 }
 
 // Generic looks up the value of a local GenericFlag, returns
@@ -308,6 +392,22 @@ func (f Int64Flag) IsRequired() bool {
 	return f.Required
 }
 
+// TakesValue returns true of the flag takes a value, otherwise false
+func (f Int64Flag) TakesValue() bool {
+	return true
+}
+
+// GetUsage returns the usage string for the flag
+func (f Int64Flag) GetUsage() string {
+	return f.Usage
+}
+
+// GetValue returns the flags value as string representation and an empty
+// string if the flag takes no value at all.
+func (f Int64Flag) GetValue() string {
+	return fmt.Sprintf("%d", f.Value)
+}
+
 // Int64 looks up the value of a local Int64Flag, returns
 // 0 if not found
 func (c *Context) Int64(name string) int64 {
@@ -361,6 +461,22 @@ func (f IntFlag) GetName() string {
 // IsRequired returns whether or not the flag is required
 func (f IntFlag) IsRequired() bool {
 	return f.Required
+}
+
+// TakesValue returns true of the flag takes a value, otherwise false
+func (f IntFlag) TakesValue() bool {
+	return true
+}
+
+// GetUsage returns the usage string for the flag
+func (f IntFlag) GetUsage() string {
+	return f.Usage
+}
+
+// GetValue returns the flags value as string representation and an empty
+// string if the flag takes no value at all.
+func (f IntFlag) GetValue() string {
+	return fmt.Sprintf("%d", f.Value)
 }
 
 // Int looks up the value of a local IntFlag, returns
@@ -417,6 +533,25 @@ func (f IntSliceFlag) IsRequired() bool {
 	return f.Required
 }
 
+// TakesValue returns true of the flag takes a value, otherwise false
+func (f IntSliceFlag) TakesValue() bool {
+	return true
+}
+
+// GetUsage returns the usage string for the flag
+func (f IntSliceFlag) GetUsage() string {
+	return f.Usage
+}
+
+// GetValue returns the flags value as string representation and an empty
+// string if the flag takes no value at all.
+func (f IntSliceFlag) GetValue() string {
+	if f.Value != nil {
+		return f.Value.String()
+	}
+	return ""
+}
+
 // IntSlice looks up the value of a local IntSliceFlag, returns
 // nil if not found
 func (c *Context) IntSlice(name string) []int {
@@ -469,6 +604,25 @@ func (f Int64SliceFlag) GetName() string {
 // IsRequired returns whether or not the flag is required
 func (f Int64SliceFlag) IsRequired() bool {
 	return f.Required
+}
+
+// TakesValue returns true of the flag takes a value, otherwise false
+func (f Int64SliceFlag) TakesValue() bool {
+	return true
+}
+
+// GetUsage returns the usage string for the flag
+func (f Int64SliceFlag) GetUsage() string {
+	return f.Usage
+}
+
+// GetValue returns the flags value as string representation and an empty
+// string if the flag takes no value at all.
+func (f Int64SliceFlag) GetValue() string {
+	if f.Value != nil {
+		return f.Value.String()
+	}
+	return ""
 }
 
 // Int64Slice looks up the value of a local Int64SliceFlag, returns
@@ -526,6 +680,22 @@ func (f StringFlag) IsRequired() bool {
 	return f.Required
 }
 
+// TakesValue returns true of the flag takes a value, otherwise false
+func (f StringFlag) TakesValue() bool {
+	return true
+}
+
+// GetUsage returns the usage string for the flag
+func (f StringFlag) GetUsage() string {
+	return f.Usage
+}
+
+// GetValue returns the flags value as string representation and an empty
+// string if the flag takes no value at all.
+func (f StringFlag) GetValue() string {
+	return f.Value
+}
+
 // String looks up the value of a local StringFlag, returns
 // "" if not found
 func (c *Context) String(name string) string {
@@ -578,6 +748,25 @@ func (f StringSliceFlag) GetName() string {
 // IsRequired returns whether or not the flag is required
 func (f StringSliceFlag) IsRequired() bool {
 	return f.Required
+}
+
+// TakesValue returns true of the flag takes a value, otherwise false
+func (f StringSliceFlag) TakesValue() bool {
+	return true
+}
+
+// GetUsage returns the usage string for the flag
+func (f StringSliceFlag) GetUsage() string {
+	return f.Usage
+}
+
+// GetValue returns the flags value as string representation and an empty
+// string if the flag takes no value at all.
+func (f StringSliceFlag) GetValue() string {
+	if f.Value != nil {
+		return f.Value.String()
+	}
+	return ""
 }
 
 // StringSlice looks up the value of a local StringSliceFlag, returns
@@ -635,6 +824,22 @@ func (f Uint64Flag) IsRequired() bool {
 	return f.Required
 }
 
+// TakesValue returns true of the flag takes a value, otherwise false
+func (f Uint64Flag) TakesValue() bool {
+	return true
+}
+
+// GetUsage returns the usage string for the flag
+func (f Uint64Flag) GetUsage() string {
+	return f.Usage
+}
+
+// GetValue returns the flags value as string representation and an empty
+// string if the flag takes no value at all.
+func (f Uint64Flag) GetValue() string {
+	return fmt.Sprintf("%d", f.Value)
+}
+
 // Uint64 looks up the value of a local Uint64Flag, returns
 // 0 if not found
 func (c *Context) Uint64(name string) uint64 {
@@ -690,6 +895,22 @@ func (f UintFlag) IsRequired() bool {
 	return f.Required
 }
 
+// TakesValue returns true of the flag takes a value, otherwise false
+func (f UintFlag) TakesValue() bool {
+	return true
+}
+
+// GetUsage returns the usage string for the flag
+func (f UintFlag) GetUsage() string {
+	return f.Usage
+}
+
+// GetValue returns the flags value as string representation and an empty
+// string if the flag takes no value at all.
+func (f UintFlag) GetValue() string {
+	return fmt.Sprintf("%d", f.Value)
+}
+
 // Uint looks up the value of a local UintFlag, returns
 // 0 if not found
 func (c *Context) Uint(name string) uint {
@@ -716,3 +937,4 @@ func lookupUint(name string, set *flag.FlagSet) uint {
 	}
 	return 0
 }
+
