@@ -120,6 +120,7 @@ func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {
 			f.Apply(set)
 		}
 	}
+	set.SetOutput(ioutil.Discard)
 	return set, nil
 }
 
