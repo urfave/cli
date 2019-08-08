@@ -1,9 +1,9 @@
 package cli
 
 import (
+	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -94,6 +94,10 @@ type App struct {
 	// cli.go uses text/template to render templates. You can
 	// render custom help text by setting this variable.
 	CustomAppHelpTemplate string
+	// Boolean to enable short-option handling so user can combine several
+	// single-character bool arguements into one
+	// i.e. foobar -o -v -> foobar -ov
+	UseShortOptionHandling bool
 
 	didSetup bool
 }
@@ -173,6 +177,14 @@ func (a *App) Setup() {
 	}
 }
 
+func (a *App) newFlagSet() (*flag.FlagSet, error) {
+	return flagSet(a.Name, a.Flags)
+}
+
+func (a *App) useShortOptionHandling() bool {
+	return a.UseShortOptionHandling
+}
+
 // Run is the entry point to the cli app. Parses the arguments slice and routes
 // to the proper flag/args combination
 func (a *App) Run(arguments []string) (err error) {
@@ -186,14 +198,12 @@ func (a *App) Run(arguments []string) (err error) {
 	// always appends the completion flag at the end of the command
 	shellComplete, arguments := checkShellCompleteFlag(a, arguments)
 
-	// parse flags
-	set, err := flagSet(a.Name, a.Flags)
+	_, err = a.newFlagSet()
 	if err != nil {
 		return err
 	}
 
-	set.SetOutput(ioutil.Discard)
-	err = set.Parse(arguments[1:])
+	set, err := parseIter(a, arguments[1:])
 	nerr := normalizeFlags(a.Flags, set)
 	context := NewContext(a, set, nil)
 	if nerr != nil {
@@ -311,14 +321,12 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	}
 	a.Commands = newCmds
 
-	// parse flags
-	set, err := flagSet(a.Name, a.Flags)
+	_, err = a.newFlagSet()
 	if err != nil {
 		return err
 	}
 
-	set.SetOutput(ioutil.Discard)
-	err = set.Parse(ctx.Args().Tail())
+	set, err := parseIter(a, ctx.Args().Tail())
 	nerr := normalizeFlags(a.Flags, set)
 	context := NewContext(a, set, ctx)
 

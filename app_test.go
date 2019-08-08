@@ -634,6 +634,94 @@ func TestApp_VisibleCommands(t *testing.T) {
 	}
 }
 
+func TestApp_UseShortOptionHandling(t *testing.T) {
+	var one, two bool
+	var name string
+	expected := "expectedName"
+
+	app := NewApp()
+	app.UseShortOptionHandling = true
+	app.Flags = []Flag{
+		BoolFlag{Name: "one, o"},
+		BoolFlag{Name: "two, t"},
+		StringFlag{Name: "name, n"},
+	}
+	app.Action = func(c *Context) error {
+		one = c.Bool("one")
+		two = c.Bool("two")
+		name = c.String("name")
+		return nil
+	}
+
+	app.Run([]string{"", "-on", expected})
+	expect(t, one, true)
+	expect(t, two, false)
+	expect(t, name, expected)
+}
+
+func TestApp_UseShortOptionHandlingCommand(t *testing.T) {
+	var one, two bool
+	var name string
+	expected := "expectedName"
+
+	app := NewApp()
+	app.UseShortOptionHandling = true
+	command := Command{
+		Name: "cmd",
+		Flags: []Flag{
+			BoolFlag{Name: "one, o"},
+			BoolFlag{Name: "two, t"},
+			StringFlag{Name: "name, n"},
+		},
+		Action: func(c *Context) error {
+			one = c.Bool("one")
+			two = c.Bool("two")
+			name = c.String("name")
+			return nil
+		},
+	}
+	app.Commands = []Command{command}
+
+	app.Run([]string{"", "cmd", "-on", expected})
+	expect(t, one, true)
+	expect(t, two, false)
+	expect(t, name, expected)
+}
+
+func TestApp_UseShortOptionHandlingSubCommand(t *testing.T) {
+	var one, two bool
+	var name string
+	expected := "expectedName"
+
+	app := NewApp()
+	app.UseShortOptionHandling = true
+	command := Command{
+		Name: "cmd",
+	}
+	subCommand := Command{
+		Name: "sub",
+		Flags: []Flag{
+			BoolFlag{Name: "one, o"},
+			BoolFlag{Name: "two, t"},
+			StringFlag{Name: "name, n"},
+		},
+		Action: func(c *Context) error {
+			one = c.Bool("one")
+			two = c.Bool("two")
+			name = c.String("name")
+			return nil
+		},
+	}
+	command.Subcommands = []Command{subCommand}
+	app.Commands = []Command{command}
+
+	err := app.Run([]string{"", "cmd", "sub", "-on", expected})
+	expect(t, err, nil)
+	expect(t, one, true)
+	expect(t, two, false)
+	expect(t, name, expected)
+}
+
 func TestApp_Float64Flag(t *testing.T) {
 	var meters float64
 
