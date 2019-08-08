@@ -83,6 +83,21 @@ type RequiredFlag interface {
 	IsRequired() bool
 }
 
+// DocGenerationFlag is an interface that allows documentation generation for the flag
+type DocGenerationFlag interface {
+	Flag
+
+	// TakesValue returns true of the flag takes a value, otherwise false
+	TakesValue() bool
+
+	// GetUsage returns the usage string for the flag
+	GetUsage() string
+
+	// GetValue returns the flags value as string representation and an empty
+	// string if the flag takes no value at all.
+	GetValue() string
+}
+
 // errorableFlag is an interface that allows us to return errors during apply
 // it allows flags defined in this library to return errors in a fashion backwards compatible
 // TODO remove in v2 and modify the existing Flag interface to return errors
