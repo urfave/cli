@@ -72,7 +72,7 @@ func (f *GenericFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourc
 			}
 			if value != nil {
 				eachName(f.Name, func(name string) {
-					f.set.Set(f.Name, value.String())
+					_ = f.set.Set(f.Name, value.String())
 				})
 			}
 		}
@@ -135,7 +135,7 @@ func (f *BoolFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceCo
 			}
 			if value {
 				eachName(f.Name, func(name string) {
-					f.set.Set(f.Name, strconv.FormatBool(value))
+					_ = f.set.Set(f.Name, strconv.FormatBool(value))
 				})
 			}
 		}
@@ -153,7 +153,7 @@ func (f *BoolTFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceC
 			}
 			if !value {
 				eachName(f.Name, func(name string) {
-					f.set.Set(f.Name, strconv.FormatBool(value))
+					_ = f.set.Set(f.Name, strconv.FormatBool(value))
 				})
 			}
 		}
@@ -171,7 +171,7 @@ func (f *StringFlag) ApplyInputSourceValue(context *cli.Context, isc InputSource
 			}
 			if value != "" {
 				eachName(f.Name, func(name string) {
-					f.set.Set(f.Name, value)
+					_ = f.set.Set(f.Name, value)
 				})
 			}
 		}
@@ -189,7 +189,7 @@ func (f *IntFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceCon
 			}
 			if value > 0 {
 				eachName(f.Name, func(name string) {
-					f.set.Set(f.Name, strconv.FormatInt(int64(value), 10))
+					_ = f.set.Set(f.Name, strconv.FormatInt(int64(value), 10))
 				})
 			}
 		}
@@ -207,7 +207,7 @@ func (f *DurationFlag) ApplyInputSourceValue(context *cli.Context, isc InputSour
 			}
 			if value > 0 {
 				eachName(f.Name, func(name string) {
-					f.set.Set(f.Name, value.String())
+					_ = f.set.Set(f.Name, value.String())
 				})
 			}
 		}
@@ -226,7 +226,7 @@ func (f *Float64Flag) ApplyInputSourceValue(context *cli.Context, isc InputSourc
 			if value > 0 {
 				floatStr := float64ToString(value)
 				eachName(f.Name, func(name string) {
-					f.set.Set(f.Name, floatStr)
+					_ = f.set.Set(f.Name, floatStr)
 				})
 			}
 		}

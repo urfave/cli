@@ -139,8 +139,8 @@ func (c *Context) GlobalIsSet(name string) bool {
 
 // FlagNames returns a slice of flag names used in this context.
 func (c *Context) FlagNames() (names []string) {
-	for _, flag := range c.Command.Flags {
-		name := strings.Split(flag.GetName(), ",")[0]
+	for _, f := range c.Command.Flags {
+		name := strings.Split(f.GetName(), ",")[0]
 		if name == "help" {
 			continue
 		}
@@ -151,8 +151,8 @@ func (c *Context) FlagNames() (names []string) {
 
 // GlobalFlagNames returns a slice of global flag names used by the app.
 func (c *Context) GlobalFlagNames() (names []string) {
-	for _, flag := range c.App.Flags {
-		name := strings.Split(flag.GetName(), ",")[0]
+	for _, f := range c.App.Flags {
+		name := strings.Split(f.GetName(), ",")[0]
 		if name == "help" || name == "version" {
 			continue
 		}
@@ -250,7 +250,7 @@ func copyFlag(name string, ff *flag.Flag, set *flag.FlagSet) {
 	switch ff.Value.(type) {
 	case *StringSlice:
 	default:
-		set.Set(name, ff.Value.String())
+		_ = set.Set(name, ff.Value.String())
 	}
 }
 

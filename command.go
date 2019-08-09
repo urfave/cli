@@ -128,9 +128,9 @@ func (c Command) Run(ctx *Context) (err error) {
 			context.App.handleExitCoder(context, err)
 			return err
 		}
-		fmt.Fprintln(context.App.Writer, "Incorrect Usage:", err.Error())
-		fmt.Fprintln(context.App.Writer)
-		ShowCommandHelp(context, c.Name)
+		_, _ = fmt.Fprintln(context.App.Writer, "Incorrect Usage:", err.Error())
+		_, _ = fmt.Fprintln(context.App.Writer)
+		_ = ShowCommandHelp(context, c.Name)
 		return err
 	}
 
@@ -140,7 +140,7 @@ func (c Command) Run(ctx *Context) (err error) {
 
 	cerr := checkRequiredFlags(c.Flags, context)
 	if cerr != nil {
-		ShowCommandHelp(context, c.Name)
+		_ = ShowCommandHelp(context, c.Name)
 		return cerr
 	}
 
@@ -161,7 +161,7 @@ func (c Command) Run(ctx *Context) (err error) {
 	if c.Before != nil {
 		err = c.Before(context)
 		if err != nil {
-			ShowCommandHelp(context, c.Name)
+			_ = ShowCommandHelp(context, c.Name)
 			context.App.handleExitCoder(context, err)
 			return err
 		}
