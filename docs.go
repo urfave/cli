@@ -34,7 +34,6 @@ func (a *App) ToMan() (string, error) {
 
 type cliTemplate struct {
 	App          *App
-	Date         string
 	Commands     []string
 	GlobalArgs   []string
 	SynopsisArgs []string
