@@ -28,6 +28,7 @@ type FlagType struct {
 	Parser         string `json:"parser"`
 	ParserCast     string `json:"parser_cast"`
 	ValueString    string `json:"valueString"`
+	TakesFile      bool   `json:"takes_file"`
 }
 
 func main() {
