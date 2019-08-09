@@ -11,9 +11,10 @@ import (
 )
 
 var (
-	changeLogURL                    = "https://github.com/urfave/cli/blob/master/CHANGELOG.md"
-	appActionDeprecationURL         = fmt.Sprintf("%s#deprecated-cli-app-action-signature", changeLogURL)
-	runAndExitOnErrorDeprecationURL = fmt.Sprintf("%s#deprecated-cli-app-runandexitonerror", changeLogURL)
+	changeLogURL            = "https://github.com/urfave/cli/blob/master/CHANGELOG.md"
+	appActionDeprecationURL = fmt.Sprintf("%s#deprecated-cli-app-action-signature", changeLogURL)
+	// unused variable. commented for now. will remove in future if agreed upon by everyone
+	//runAndExitOnErrorDeprecationURL = fmt.Sprintf("%s#deprecated-cli-app-runandexitonerror", changeLogURL)
 
 	contactSysadmin = "This is an error in the application.  Please contact the distributor of this application if this is not you."
 
@@ -142,7 +143,7 @@ func (a *App) Setup() {
 		a.Authors = append(a.Authors, Author{Name: a.Author, Email: a.Email})
 	}
 
-	newCmds := []Command{}
+	var newCmds []Command
 	for _, c := range a.Commands {
 		if c.HelpName == "" {
 			c.HelpName = fmt.Sprintf("%s %s", a.HelpName, c.Name)
@@ -207,8 +208,8 @@ func (a *App) Run(arguments []string) (err error) {
 	nerr := normalizeFlags(a.Flags, set)
 	context := NewContext(a, set, nil)
 	if nerr != nil {
-		fmt.Fprintln(a.Writer, nerr)
-		ShowAppHelp(context)
+		_, _ = fmt.Fprintln(a.Writer, nerr)
+		_ = ShowAppHelp(context)
 		return nerr
 	}
 	context.shellComplete = shellComplete
@@ -223,13 +224,13 @@ func (a *App) Run(arguments []string) (err error) {
 			a.handleExitCoder(context, err)
 			return err
 		}
-		fmt.Fprintf(a.Writer, "%s %s\n\n", "Incorrect Usage.", err.Error())
-		ShowAppHelp(context)
+		_, _ = fmt.Fprintf(a.Writer, "%s %s\n\n", "Incorrect Usage.", err.Error())
+		_ = ShowAppHelp(context)
 		return err
 	}
 
 	if !a.HideHelp && checkHelp(context) {
-		ShowAppHelp(context)
+		_ = ShowAppHelp(context)
 		return nil
 	}
 
@@ -240,7 +241,7 @@ func (a *App) Run(arguments []string) (err error) {
 
 	cerr := checkRequiredFlags(a.Flags, context)
 	if cerr != nil {
-		ShowAppHelp(context)
+		_ = ShowAppHelp(context)
 		return cerr
 	}
 
@@ -259,8 +260,8 @@ func (a *App) Run(arguments []string) (err error) {
 	if a.Before != nil {
 		beforeErr := a.Before(context)
 		if beforeErr != nil {
-			fmt.Fprintf(a.Writer, "%v\n\n", beforeErr)
-			ShowAppHelp(context)
+			_, _ = fmt.Fprintf(a.Writer, "%v\n\n", beforeErr)
+			_ = ShowAppHelp(context)
 			a.handleExitCoder(context, beforeErr)
 			err = beforeErr
 			return err
@@ -294,7 +295,7 @@ func (a *App) Run(arguments []string) (err error) {
 // code in the cli.ExitCoder
 func (a *App) RunAndExitOnError() {
 	if err := a.Run(os.Args); err != nil {
-		fmt.Fprintln(a.errWriter(), err)
+		_, _ = fmt.Fprintln(a.errWriter(), err)
 		OsExiter(1)
 	}
 }
@@ -331,12 +332,12 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	context := NewContext(a, set, ctx)
 
 	if nerr != nil {
-		fmt.Fprintln(a.Writer, nerr)
-		fmt.Fprintln(a.Writer)
+		_, _ = fmt.Fprintln(a.Writer, nerr)
+		_, _ = fmt.Fprintln(a.Writer)
 		if len(a.Commands) > 0 {
-			ShowSubcommandHelp(context)
+			_ = ShowSubcommandHelp(context)
 		} else {
-			ShowCommandHelp(ctx, context.Args().First())
+			_ = ShowCommandHelp(ctx, context.Args().First())
 		}
 		return nerr
 	}
@@ -351,8 +352,8 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 			a.handleExitCoder(context, err)
 			return err
 		}
-		fmt.Fprintf(a.Writer, "%s %s\n\n", "Incorrect Usage.", err.Error())
-		ShowSubcommandHelp(context)
+		_, _ = fmt.Fprintf(a.Writer, "%s %s\n\n", "Incorrect Usage.", err.Error())
+		_ = ShowSubcommandHelp(context)
 		return err
 	}
 
@@ -368,7 +369,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 
 	cerr := checkRequiredFlags(a.Flags, context)
 	if cerr != nil {
-		ShowSubcommandHelp(context)
+		_ = ShowSubcommandHelp(context)
 		return cerr
 	}
 
@@ -448,7 +449,7 @@ func (a *App) VisibleCategories() []*CommandCategory {
 
 // VisibleCommands returns a slice of the Commands with Hidden=false
 func (a *App) VisibleCommands() []Command {
-	ret := []Command{}
+	var ret []Command
 	for _, command := range a.Commands {
 		if !command.Hidden {
 			ret = append(ret, command)
