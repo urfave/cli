@@ -326,3 +326,24 @@ func checkRequiredFlags(flags []Flag, context *Context) requiredFlagsErr {
 
 	return nil
 }
+
+func validateFlags(flags []Flag, context *Context) error {
+	var invalidFlags []string
+	for _, f := range flags {
+		if vf, ok := f.(Validator); ok {
+			fName := strings.Split(f.GetName(), ",")
+			val := context.value(fName[0])
+
+			err := vf.Validate(val)
+			if err != nil {
+				invalidFlags = append(invalidFlags, err.Error())
+			}
+		}
+	}
+
+	if len(invalidFlags) > 0 {
+		return fmt.Errorf("%s", strings.Join(invalidFlags, "\n"))
+	}
+
+	return nil
+}

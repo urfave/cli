@@ -75,6 +75,15 @@ type Flag interface {
 	GetName() string
 }
 
+// Flags represents a collection of Flags
+type Flags []Flag
+
+type Validator interface {
+	Flag
+
+	Validate(interface{}) error
+}
+
 // RequiredFlag is an interface that allows us to mark flags as required
 // it allows flags required flags to be backwards compatible with the Flag interface
 type RequiredFlag interface {

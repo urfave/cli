@@ -245,6 +245,14 @@ func (a *App) Run(arguments []string) (err error) {
 		return cerr
 	}
 
+	// Validation Logic
+	verr := validateFlags(a.Flags, context)
+	if verr != nil {
+		_ = ShowAppHelp(context)
+		return verr
+	}
+
+
 	if a.After != nil {
 		defer func() {
 			if afterErr := a.After(context); afterErr != nil {
@@ -371,6 +379,13 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	if cerr != nil {
 		_ = ShowSubcommandHelp(context)
 		return cerr
+	}
+
+	// Validation Logic
+	verr := validateFlags(a.Flags, context)
+	if verr != nil {
+		_ = ShowAppHelp(context)
+		return verr
 	}
 
 	if a.After != nil {

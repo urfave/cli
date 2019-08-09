@@ -63,7 +63,8 @@
     "context_default": "0",
     "parser": "strconv.ParseInt(f.Value.String(), 0, 64)",
     "parser_cast": "int(parsed)",
-    "valueString": "return fmt.Sprintf(\"%d\", f.Value)"
+    "valueString": "return fmt.Sprintf(\"%d\", f.Value)",
+    "validator": ["max", "min", "custom"]
   },
   {
     "name": "IntSlice",
