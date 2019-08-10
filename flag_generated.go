@@ -5,6 +5,7 @@ package cli
 import (
 	"flag"
 	"fmt"
+	"regexp"
 	"strconv"
 	"time"
 )
@@ -222,14 +223,17 @@ func lookupDuration(name string, set *flag.FlagSet) time.Duration {
 
 // Float64Flag is a flag with type float64
 type Float64Flag struct {
-	Name        string
-	Usage       string
-	EnvVar      string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       float64
-	Destination *float64
+	Name            string
+	Usage           string
+	EnvVar          string
+	FilePath        string
+	Required        bool
+	Hidden          bool
+	Value           float64
+	Destination     *float64
+	Min             *float64
+	Max             *float64
+	CustomValidator func(float64) error
 }
 
 // String returns a readable representation of this value
@@ -264,6 +268,24 @@ func (f Float64Flag) GetValue() string {
 	return fmt.Sprintf("%f", f.Value)
 }
 
+// Validate returns an error if the flag does not pass the validation criteria
+// defined by the user
+func (f Float64Flag) Validate(val interface{}) error {
+	value := val.(float64)
+	if f.Min != nil && value < *f.Min {
+		return fmt.Errorf("value of %s flag should have a minimum value of %v. got %v", f.Name, *f.Min, value)
+	}
+	if f.Max != nil && value > *f.Max {
+		return fmt.Errorf("value of %s flag should have a maximum value of %v. got %v", f.Name, *f.Max, value)
+	}
+	if f.CustomValidator != nil {
+		if err := f.CustomValidator(value); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Float64 looks up the value of a local Float64Flag, returns
 // 0 if not found
 func (c *Context) Float64(name string) float64 {
@@ -293,13 +315,14 @@ func lookupFloat64(name string, set *flag.FlagSet) float64 {
 
 // GenericFlag is a flag with type Generic
 type GenericFlag struct {
-	Name     string
-	Usage    string
-	EnvVar   string
-	FilePath string
-	Required bool
-	Hidden   bool
-	Value    Generic
+	Name            string
+	Usage           string
+	EnvVar          string
+	FilePath        string
+	Required        bool
+	Hidden          bool
+	Value           Generic
+	CustomValidator func(Generic) error
 }
 
 // String returns a readable representation of this value
@@ -337,6 +360,18 @@ func (f GenericFlag) GetValue() string {
 	return ""
 }
 
+// Validate returns an error if the flag does not pass the validation criteria
+// defined by the user
+func (f GenericFlag) Validate(val interface{}) error {
+	value := val.(Generic)
+	if f.CustomValidator != nil {
+		if err := f.CustomValidator(value); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Generic looks up the value of a local GenericFlag, returns
 // nil if not found
 func (c *Context) Generic(name string) interface{} {
@@ -366,14 +401,17 @@ func lookupGeneric(name string, set *flag.FlagSet) interface{} {
 
 // Int64Flag is a flag with type int64
 type Int64Flag struct {
-	Name        string
-	Usage       string
-	EnvVar      string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       int64
-	Destination *int64
+	Name            string
+	Usage           string
+	EnvVar          string
+	FilePath        string
+	Required        bool
+	Hidden          bool
+	Value           int64
+	Destination     *int64
+	Min             *int64
+	Max             *int64
+	CustomValidator func(int64) error
 }
 
 // String returns a readable representation of this value
@@ -406,6 +444,24 @@ func (f Int64Flag) GetUsage() string {
 // string if the flag takes no value at all.
 func (f Int64Flag) GetValue() string {
 	return fmt.Sprintf("%d", f.Value)
+}
+
+// Validate returns an error if the flag does not pass the validation criteria
+// defined by the user
+func (f Int64Flag) Validate(val interface{}) error {
+	value := val.(int64)
+	if f.Min != nil && value < *f.Min {
+		return fmt.Errorf("value of %s flag should have a minimum value of %v. got %v", f.Name, *f.Min, value)
+	}
+	if f.Max != nil && value > *f.Max {
+		return fmt.Errorf("value of %s flag should have a maximum value of %v. got %v", f.Name, *f.Max, value)
+	}
+	if f.CustomValidator != nil {
+		if err := f.CustomValidator(value); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Int64 looks up the value of a local Int64Flag, returns
@@ -444,10 +500,10 @@ type IntFlag struct {
 	Required        bool
 	Hidden          bool
 	Value           int
-	Min             *int
-	Max             *int
-	CustomValidator func(int) error
 	Destination     *int
+	Max             *int
+	Min             *int
+	CustomValidator func(int) error
 }
 
 // String returns a readable representation of this value
@@ -482,17 +538,21 @@ func (f IntFlag) GetValue() string {
 	return fmt.Sprintf("%d", f.Value)
 }
 
+// Validate returns an error if the flag does not pass the validation criteria
+// defined by the user
 func (f IntFlag) Validate(val interface{}) error {
 	value := val.(int)
-
-	if f.Min != nil && value < *f.Min {
-		return fmt.Errorf("value of %s flag should have a minimum value of %d. got %d", f.Name, *f.Min, value)
-	}
-
 	if f.Max != nil && value > *f.Max {
-		return fmt.Errorf("value of %s flag should have a maximum value of %d. got %d", f.Name, *f.Max, value)
+		return fmt.Errorf("value of %s flag should have a maximum value of %v. got %v", f.Name, *f.Max, value)
 	}
-
+	if f.Min != nil && value < *f.Min {
+		return fmt.Errorf("value of %s flag should have a minimum value of %v. got %v", f.Name, *f.Min, value)
+	}
+	if f.CustomValidator != nil {
+		if err := f.CustomValidator(value); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -671,14 +731,16 @@ func lookupInt64Slice(name string, set *flag.FlagSet) []int64 {
 
 // StringFlag is a flag with type string
 type StringFlag struct {
-	Name        string
-	Usage       string
-	EnvVar      string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       string
-	Destination *string
+	Name            string
+	Usage           string
+	EnvVar          string
+	FilePath        string
+	Required        bool
+	Hidden          bool
+	Value           string
+	Destination     *string
+	Regexp          *regexp.Regexp
+	CustomValidator func(string) error
 }
 
 // String returns a readable representation of this value
@@ -711,6 +773,21 @@ func (f StringFlag) GetUsage() string {
 // string if the flag takes no value at all.
 func (f StringFlag) GetValue() string {
 	return f.Value
+}
+
+// Validate returns an error if the flag does not pass the validation criteria
+// defined by the user
+func (f StringFlag) Validate(val interface{}) error {
+	value := val.(string)
+	if f.Regexp != nil && !f.Regexp.MatchString(value) {
+		return fmt.Errorf("value of flag %s is not valid. got %v", f.GetName(), value)
+	}
+	if f.CustomValidator != nil {
+		if err := f.CustomValidator(value); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // String looks up the value of a local StringFlag, returns
@@ -815,14 +892,17 @@ func lookupStringSlice(name string, set *flag.FlagSet) []string {
 
 // Uint64Flag is a flag with type uint64
 type Uint64Flag struct {
-	Name        string
-	Usage       string
-	EnvVar      string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       uint64
-	Destination *uint64
+	Name            string
+	Usage           string
+	EnvVar          string
+	FilePath        string
+	Required        bool
+	Hidden          bool
+	Value           uint64
+	Destination     *uint64
+	Min             *uint64
+	Max             *uint64
+	CustomValidator func(uint64) error
 }
 
 // String returns a readable representation of this value
@@ -857,6 +937,24 @@ func (f Uint64Flag) GetValue() string {
 	return fmt.Sprintf("%d", f.Value)
 }
 
+// Validate returns an error if the flag does not pass the validation criteria
+// defined by the user
+func (f Uint64Flag) Validate(val interface{}) error {
+	value := val.(uint64)
+	if f.Min != nil && value < *f.Min {
+		return fmt.Errorf("value of %s flag should have a minimum value of %v. got %v", f.Name, *f.Min, value)
+	}
+	if f.Max != nil && value > *f.Max {
+		return fmt.Errorf("value of %s flag should have a maximum value of %v. got %v", f.Name, *f.Max, value)
+	}
+	if f.CustomValidator != nil {
+		if err := f.CustomValidator(value); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Uint64 looks up the value of a local Uint64Flag, returns
 // 0 if not found
 func (c *Context) Uint64(name string) uint64 {
@@ -886,14 +984,17 @@ func lookupUint64(name string, set *flag.FlagSet) uint64 {
 
 // UintFlag is a flag with type uint
 type UintFlag struct {
-	Name        string
-	Usage       string
-	EnvVar      string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       uint
-	Destination *uint
+	Name            string
+	Usage           string
+	EnvVar          string
+	FilePath        string
+	Required        bool
+	Hidden          bool
+	Value           uint
+	Destination     *uint
+	Min             *uint
+	Max             *uint
+	CustomValidator func(uint) error
 }
 
 // String returns a readable representation of this value
@@ -926,6 +1027,24 @@ func (f UintFlag) GetUsage() string {
 // string if the flag takes no value at all.
 func (f UintFlag) GetValue() string {
 	return fmt.Sprintf("%d", f.Value)
+}
+
+// Validate returns an error if the flag does not pass the validation criteria
+// defined by the user
+func (f UintFlag) Validate(val interface{}) error {
+	value := val.(uint)
+	if f.Min != nil && value < *f.Min {
+		return fmt.Errorf("value of %s flag should have a minimum value of %v. got %v", f.Name, *f.Min, value)
+	}
+	if f.Max != nil && value > *f.Max {
+		return fmt.Errorf("value of %s flag should have a maximum value of %v. got %v", f.Name, *f.Max, value)
+	}
+	if f.CustomValidator != nil {
+		if err := f.CustomValidator(value); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Uint looks up the value of a local UintFlag, returns

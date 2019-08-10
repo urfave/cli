@@ -6,7 +6,8 @@
     "dest": true,
     "context_default": "false",
     "parser": "strconv.ParseBool(f.Value.String())",
-    "valueString": "return \"\""
+    "value_string": "return \"\"",
+    "validators": []
   },
   {
     "name": "BoolT",
@@ -16,7 +17,8 @@
     "doctail": " that is true by default",
     "context_default": "false",
     "parser": "strconv.ParseBool(f.Value.String())",
-    "valueString": "return \"\""
+    "value_string": "return \"\"",
+    "validators": []
   },
   {
     "name": "Duration",
@@ -26,7 +28,8 @@
     "doctail": " (see https://golang.org/pkg/time/#ParseDuration)",
     "context_default": "0",
     "parser": "time.ParseDuration(f.Value.String())",
-    "valueString": "return f.Value.String()"
+    "value_string": "return f.Value.String()",
+    "validators": []
   },
   {
     "name": "Float64",
@@ -35,7 +38,12 @@
     "dest": true,
     "context_default": "0",
     "parser": "strconv.ParseFloat(f.Value.String(), 64)",
-    "valueString": "return fmt.Sprintf(\"%f\", f.Value)"
+    "value_string": "return fmt.Sprintf(\"%f\", f.Value)",
+    "validators": [
+      "min",
+      "max",
+      "custom"
+    ]
   },
   {
     "name": "Generic",
@@ -44,7 +52,10 @@
     "dest": false,
     "context_default": "nil",
     "context_type": "interface{}",
-    "valueString": "if f.Value != nil {\n\t\treturn f.Value.String()\n\t}\n\treturn \"\""
+    "value_string": "if f.Value != nil {\n\t\treturn f.Value.String()\n\t}\n\treturn \"\"",
+    "validators": [
+      "custom"
+    ]
   },
   {
     "name": "Int64",
@@ -53,7 +64,12 @@
     "dest": true,
     "context_default": "0",
     "parser": "strconv.ParseInt(f.Value.String(), 0, 64)",
-    "valueString": "return fmt.Sprintf(\"%d\", f.Value)"
+    "value_string": "return fmt.Sprintf(\"%d\", f.Value)",
+    "validators": [
+      "min",
+      "max",
+      "custom"
+    ]
   },
   {
     "name": "Int",
@@ -63,8 +79,12 @@
     "context_default": "0",
     "parser": "strconv.ParseInt(f.Value.String(), 0, 64)",
     "parser_cast": "int(parsed)",
-    "valueString": "return fmt.Sprintf(\"%d\", f.Value)",
-    "validator": ["max", "min", "custom"]
+    "value_string": "return fmt.Sprintf(\"%d\", f.Value)",
+    "validators": [
+      "max",
+      "min",
+      "custom"
+    ]
   },
   {
     "name": "IntSlice",
@@ -74,7 +94,8 @@
     "context_default": "nil",
     "context_type": "[]int",
     "parser": "(f.Value.(*IntSlice)).Value(), error(nil)",
-    "valueString": "if f.Value != nil {\n\t\treturn f.Value.String()\n\t}\n\treturn \"\""
+    "value_string": "if f.Value != nil {\n\t\treturn f.Value.String()\n\t}\n\treturn \"\"",
+    "validators": []
   },
   {
     "name": "Int64Slice",
@@ -84,7 +105,8 @@
     "context_default": "nil",
     "context_type": "[]int64",
     "parser": "(f.Value.(*Int64Slice)).Value(), error(nil)",
-    "valueString": "if f.Value != nil {\n\t\treturn f.Value.String()\n\t}\n\treturn \"\""
+    "value_string": "if f.Value != nil {\n\t\treturn f.Value.String()\n\t}\n\treturn \"\"",
+    "validators": []
   },
   {
     "name": "String",
@@ -93,7 +115,11 @@
     "dest": true,
     "context_default": "\"\"",
     "parser": "f.Value.String(), error(nil)",
-    "valueString": "return f.Value"
+    "value_string": "return f.Value",
+    "validators": [
+      "regexp",
+      "custom"
+    ]
   },
   {
     "name": "StringSlice",
@@ -103,7 +129,8 @@
     "context_default": "nil",
     "context_type": "[]string",
     "parser": "(f.Value.(*StringSlice)).Value(), error(nil)",
-    "valueString": "if f.Value != nil {\n\t\treturn f.Value.String()\n\t}\n\treturn \"\""
+    "value_string": "if f.Value != nil {\n\t\treturn f.Value.String()\n\t}\n\treturn \"\"",
+    "validators": []
   },
   {
     "name": "Uint64",
@@ -112,7 +139,12 @@
     "dest": true,
     "context_default": "0",
     "parser": "strconv.ParseUint(f.Value.String(), 0, 64)",
-    "valueString": "return fmt.Sprintf(\"%d\", f.Value)"
+    "value_string": "return fmt.Sprintf(\"%d\", f.Value)",
+    "validators": [
+      "min",
+      "max",
+      "custom"
+    ]
   },
   {
     "name": "Uint",
@@ -122,6 +154,11 @@
     "context_default": "0",
     "parser": "strconv.ParseUint(f.Value.String(), 0, 64)",
     "parser_cast": "uint(parsed)",
-    "valueString": "return fmt.Sprintf(\"%d\", f.Value)"
+    "value_string": "return fmt.Sprintf(\"%d\", f.Value)",
+    "validators": [
+      "min",
+      "max",
+      "custom"
+    ]
   }
 ]

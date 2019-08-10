@@ -5,23 +5,33 @@ package {{ .PackageName }}
 import (
 	"flag"
 	"fmt"
+	"regexp"
 	"strconv"
 	"time"
 )
 {{ range $i, $flag := .Flags }}
 // {{ $flag.Name }}Flag is a flag with type {{ $flag.Type }}{{ $flag.Doctail }}
 type {{ $flag.Name }}Flag struct {
-	Name		string
-	Usage		string
-	EnvVar		string
-	FilePath	string
-	Required	bool
-	Hidden		bool
+	Name			string
+	Usage			string
+	EnvVar			string
+	FilePath		string
+	Required		bool
+	Hidden			bool
 	{{- if eq $flag.Value true }}
-	Value	{{ $flag.Type }}
+	Value			{{ $flag.Type }}
 	{{- end }}
 	{{- if eq $flag.Destination true }}
-	Destination	*{{ $flag.Type }}
+	Destination		*{{ $flag.Type }}
+	{{- end }}
+	{{- range $i, $v := .Validators }}
+	{{- if eq $v "regexp" }}
+	{{ $v | title }} 			*regexp.Regexp
+	{{- else if eq $v "custom" }}
+	CustomValidator	func({{ $flag.Type }}) error
+	{{- else }}
+	{{ $v | title }}				*{{ $flag.Type }}
+	{{- end }}
 	{{- end }}
 }
 
@@ -56,6 +66,37 @@ func (f {{ $flag.Name }}Flag) GetUsage() string {
 func (f {{ $flag.Name }}Flag) GetValue() string {
 	{{ $flag.ValueString }}
 }
+
+{{- if .Validators }}
+// Validate returns an error if the flag does not pass the validation criteria
+// defined by the user
+func (f {{ $flag.Name }}Flag) Validate(val interface{}) error {
+	value := val.({{ $flag.Type }})
+
+	{{- range $i, $v := .Validators }}
+	{{- if eq $v "regexp" }}
+	if f.Regexp != nil && !f.Regexp.MatchString(value) {
+		return fmt.Errorf("value of flag %s is not valid. got %v", f.GetName(), value)
+	}
+	{{- else if eq $v "custom" }}
+	if f.CustomValidator != nil {
+		if err := f.CustomValidator(value); err != nil {
+			return err
+		}
+	}
+	{{- else if eq $v "min"}}
+	if f.Min != nil && value < *f.Min {
+		return fmt.Errorf("value of %s flag should have a minimum value of %v. got %v", f.Name, *f.Min, value)
+	}
+	{{- else if eq $v "max"}}
+	if f.Max != nil && value > *f.Max {
+		return fmt.Errorf("value of %s flag should have a maximum value of %v. got %v", f.Name, *f.Max, value)
+	}
+	{{- end }}
+	{{- end }}
+	return nil
+}
+{{- end }}
 
 // {{ $flag.Name }} looks up the value of a local {{ $flag.Name }}Flag, returns
 // {{ $flag.ContextDefault }} if not found

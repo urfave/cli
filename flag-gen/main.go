@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 	"text/template"
 )
 
@@ -18,16 +19,21 @@ type CliFlagInfo struct {
 }
 
 type FlagType struct {
-	Name           string `json:"name"`
-	Type           string `json:"type"`
-	Value          bool   `json:"value"`
-	Destination    bool   `json:"dest"`
-	Doctail        string `json:"doctail"`
-	ContextDefault string `json:"context_default"`
-	ContextType    string `json:"context_type"`
-	Parser         string `json:"parser"`
-	ParserCast     string `json:"parser_cast"`
-	ValueString    string `json:"valueString"`
+	Name           string   `json:"name"`
+	Type           string   `json:"type"`
+	Value          bool     `json:"value"`
+	Destination    bool     `json:"dest"`
+	Doctail        string   `json:"doctail"`
+	ContextDefault string   `json:"context_default"`
+	ContextType    string   `json:"context_type"`
+	Parser         string   `json:"parser"`
+	ParserCast     string   `json:"parser_cast"`
+	ValueString    string   `json:"value_string"`
+	Validators     []string `json:"validators"`
+}
+
+var funcMap = template.FuncMap{
+	"title": strings.Title,
 }
 
 func main() {
@@ -72,7 +78,7 @@ func ActionFunc(_ *cli.Context) error {
 			log.Fatal(err)
 		}
 
-		tpl = template.Must(template.New("").Parse(string(bytes)))
+		tpl = template.Must(template.New("").Funcs(funcMap).Parse(string(bytes)))
 
 		var outFile *os.File
 

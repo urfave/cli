@@ -738,6 +738,26 @@ func stringifyFlag(f Flag) string {
 		defaultValueString = ""
 	}
 
+	if val := fv.FieldByName("Min"); val.IsValid() {
+		needsPlaceholder = true
+		if defaultValueString != "" {
+			defaultValueString = defaultValueString[:len(defaultValueString)-1]
+			defaultValueString = fmt.Sprintf("%s, min: %v)", defaultValueString, val.Elem().Interface())
+		} else {
+			defaultValueString = fmt.Sprintf(" (min: %v)", val.Elem().Interface())
+		}
+	}
+
+	if val := fv.FieldByName("Max"); val.IsValid() {
+		needsPlaceholder = true
+		if defaultValueString != "" {
+			defaultValueString = defaultValueString[:len(defaultValueString)-1]
+			defaultValueString = fmt.Sprintf("%s, max: %v)", defaultValueString, val.Elem().Interface())
+		} else {
+			defaultValueString = fmt.Sprintf(" (max: %v)", val.Elem().Interface())
+		}
+	}
+
 	if needsPlaceholder && placeholder == "" {
 		placeholder = defaultPlaceholder
 	}
