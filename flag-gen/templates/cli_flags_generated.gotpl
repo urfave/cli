@@ -17,6 +17,7 @@ type {{ $flag.Name }}Flag struct {
 	FilePath	string
 	Required	bool
 	Hidden		bool
+	TakesFile	bool
 	{{- if eq $flag.Value true }}
 	Value	{{ $flag.Type }}
 	{{- end }}
