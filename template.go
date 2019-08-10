@@ -105,3 +105,17 @@ var MarkdownDocTemplate = `% {{ .App.Name }}(8) {{ .App.Description }}
 # COMMANDS
 {{ range $v := .Commands }}
 {{ $v }}{{ end }}{{ end }}`
+
+var FishCompletionTemplate = `# {{ .App.Name }} fish shell completion
+
+function __fish_{{ .App.Name }}_no_subcommand --description 'Test if there has been any subcommand yet'
+    for i in (commandline -opc)
+        if contains -- $i{{ range $v := .AllCommands }} {{ $v }}{{ end }}
+            return 1
+        end
+    end
+    return 0
+end
+
+{{ range $v := .Completions }}{{ $v }}
+{{ end }}`
