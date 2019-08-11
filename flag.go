@@ -738,7 +738,7 @@ func stringifyFlag(f Flag) string {
 		defaultValueString = ""
 	}
 
-	if val := fv.FieldByName("Min"); val.IsValid() {
+	if val := fv.FieldByName("Min"); val.IsValid() && val.Elem().IsValid() {
 		needsPlaceholder = true
 		if defaultValueString != "" {
 			defaultValueString = defaultValueString[:len(defaultValueString)-1]
@@ -748,7 +748,7 @@ func stringifyFlag(f Flag) string {
 		}
 	}
 
-	if val := fv.FieldByName("Max"); val.IsValid() {
+	if val := fv.FieldByName("Max"); val.IsValid() && val.Elem().IsValid() {
 		needsPlaceholder = true
 		if defaultValueString != "" {
 			defaultValueString = defaultValueString[:len(defaultValueString)-1]

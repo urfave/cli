@@ -1330,3 +1330,25 @@ func TestFlagFromFile(t *testing.T) {
 		}
 	}
 }
+
+var intFlagValidationTests = []struct {
+	name     string
+	value    int
+	min      int
+	max      int
+	expected string
+}{
+	{name: "age", value: 21, min: 18, max: 58, expected: "--age value\t(default: 21, min: 18, max: 58)"},
+	{name: "a", value: 21, min: 18, max: 58, expected: "-a value\t(default: 21, min: 18, max: 58)"},
+}
+
+func TestIntFlagValidationOutput(t *testing.T) {
+	for _, test := range intFlagValidationTests {
+		flag := IntFlag{Name: test.name, Value: test.value, Min: &test.min, Max: &test.max}
+		output := flag.String()
+
+		if output != test.expected {
+			t.Errorf("%s does not match %s", output, test.expected)
+		}
+	}
+}
