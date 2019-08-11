@@ -2166,3 +2166,57 @@ func TestHandleActionActuallyWorksWithActions(t *testing.T) {
 		t.Errorf("Function was not called")
 	}
 }
+
+func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
+	testCode := 104
+
+	app := NewApp()
+	app.Commands = []Command{
+		Command{
+			Name: "cmd",
+			Subcommands: []Command{
+				Command{
+					Name: "subcmd",
+					Action: func(c *Context) error {
+						return NewExitError("exit error", testCode)
+					},
+				},
+			},
+		},
+	}
+
+	// set user function as ExitErrHandler
+	var exitCodeFromExitErrHandler int
+	app.ExitErrHandler = func(c *Context, err error) {
+		if exitErr, ok := err.(ExitCoder); ok {
+			t.Log(exitErr)
+			exitCodeFromExitErrHandler = exitErr.ExitCode()
+		}
+	}
+
+	// keep and restore original OsExiter
+	origExiter := OsExiter
+	defer func() {
+		OsExiter = origExiter
+	}()
+
+	// set user function as OsExiter
+	var exitCodeFromOsExiter int
+	OsExiter = func(exitCode int) {
+		exitCodeFromOsExiter = exitCode
+	}
+
+	app.Run([]string{
+		"myapp",
+		"cmd",
+		"subcmd",
+	})
+
+	if exitCodeFromOsExiter != 0 {
+		t.Errorf("exitCodeFromOsExiter should not change, but its value is %v", exitCodeFromOsExiter)
+	}
+
+	if exitCodeFromExitErrHandler != testCode {
+		t.Errorf("exitCodeFromOsExiter valeu should be %v, but its value is %v", testCode, exitCodeFromExitErrHandler)
+	}
+}
