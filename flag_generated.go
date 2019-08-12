@@ -17,7 +17,6 @@ type BoolFlag struct {
 	FilePath	string
 	Required	bool
 	Hidden		bool
-	TakesFile	bool
 	Destination	*bool
 }
 
@@ -88,7 +87,6 @@ type BoolTFlag struct {
 	FilePath	string
 	Required	bool
 	Hidden		bool
-	TakesFile	bool
 	Destination	*bool
 }
 
@@ -159,7 +157,6 @@ type DurationFlag struct {
 	FilePath	string
 	Required	bool
 	Hidden		bool
-	TakesFile	bool
 	Value	time.Duration
 	Destination	*time.Duration
 }
@@ -231,7 +228,6 @@ type Float64Flag struct {
 	FilePath	string
 	Required	bool
 	Hidden		bool
-	TakesFile	bool
 	Value	float64
 	Destination	*float64
 }
@@ -303,7 +299,6 @@ type GenericFlag struct {
 	FilePath	string
 	Required	bool
 	Hidden		bool
-	TakesFile	bool
 	Value	Generic
 }
 
@@ -377,7 +372,6 @@ type Int64Flag struct {
 	FilePath	string
 	Required	bool
 	Hidden		bool
-	TakesFile	bool
 	Value	int64
 	Destination	*int64
 }
@@ -449,7 +443,6 @@ type IntFlag struct {
 	FilePath	string
 	Required	bool
 	Hidden		bool
-	TakesFile	bool
 	Value	int
 	Destination	*int
 }
@@ -521,7 +514,6 @@ type IntSliceFlag struct {
 	FilePath	string
 	Required	bool
 	Hidden		bool
-	TakesFile	bool
 	Value	*IntSlice
 }
 
@@ -595,7 +587,6 @@ type Int64SliceFlag struct {
 	FilePath	string
 	Required	bool
 	Hidden		bool
-	TakesFile	bool
 	Value	*Int64Slice
 }
 
@@ -669,7 +660,6 @@ type StringFlag struct {
 	FilePath	string
 	Required	bool
 	Hidden		bool
-	TakesFile	bool
 	Value	string
 	Destination	*string
 }
@@ -741,7 +731,6 @@ type StringSliceFlag struct {
 	FilePath	string
 	Required	bool
 	Hidden		bool
-	TakesFile	bool
 	Value	*StringSlice
 }
 
@@ -815,7 +804,6 @@ type Uint64Flag struct {
 	FilePath	string
 	Required	bool
 	Hidden		bool
-	TakesFile	bool
 	Value	uint64
 	Destination	*uint64
 }
@@ -887,7 +875,6 @@ type UintFlag struct {
 	FilePath	string
 	Required	bool
 	Hidden		bool
-	TakesFile	bool
 	Value	uint
 	Destination	*uint
 }
