@@ -96,6 +96,10 @@ type DocGenerationFlag interface {
 	// GetValue returns the flags value as string representation and an empty
 	// string if the flag takes no value at all.
 	GetValue() string
+
+	// GetTakesFile indicates that the command takes a file as input, which
+	// will be used for documentation and completion generation purposes.
+	GetTakesFile() bool
 }
 
 // errorableFlag is an interface that allows us to return errors during apply

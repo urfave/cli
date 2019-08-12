@@ -75,7 +75,7 @@ func (a *App) prepareFishCommands(
 
 		var completion strings.Builder
 		completion.WriteString(fmt.Sprintf(
-			"complete -c %s -f -n '%s' -a '%s'",
+			"complete -r -c %s -n '%s' -a '%s'",
 			a.Name,
 			a.fishSubcommandHelper(previousCommands),
 			strings.Join(command.Names(), " "),
@@ -126,10 +126,14 @@ func (a *App) prepareFishFlags(
 
 		var completion strings.Builder
 		completion.WriteString(fmt.Sprintf(
-			"complete -c %s -f -n '%s'",
+			"complete -c %s -n '%s'",
 			a.Name,
 			a.fishSubcommandHelper(previousCommands),
 		))
+
+		if !flag.GetTakesFile() {
+			completion.WriteString(" -f")
+		}
 
 		for idx, opt := range strings.Split(flag.GetName(), ",") {
 			if idx == 0 {
