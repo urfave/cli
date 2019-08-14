@@ -118,7 +118,6 @@ import (
   "github.com/urfave/cli"
 )
 
-Do not use the gopkg.in URL as it does not work for versions >= 1.21.0.
 
 
 ## Getting Started
