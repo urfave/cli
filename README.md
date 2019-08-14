@@ -110,7 +110,13 @@ import (
 
 ### Using `v1` releases
 
-Use the github URL to use the v1 branch.  This is illustrated in the Getting Started section below.
+$ go get github.com/urfave/cli
+
+package main
+
+import (
+  "github.com/urfave/cli"
+)
 
 Do not use the gopkg.in URL as it does not work for versions >= 1.21.0.
 
