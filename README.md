@@ -23,7 +23,7 @@ applications in an expressive way.
 - [Installation](#installation)
   * [Supported platforms](#supported-platforms)
   * [Using the `v2` branch](#using-the-v2-branch)
-  * [Pinning to the `v1` releases](#pinning-to-the-v1-releases)
+  * [Using `v1` releases](#using-v1-releases)
 - [Getting Started](#getting-started)
 - [Examples](#examples)
   * [Arguments](#arguments)
