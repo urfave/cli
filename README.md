@@ -108,25 +108,12 @@ import (
 ...
 ```
 
-### Pinning to the `v1` releases
+### Using `v1` releases
 
-Similarly to the section above describing use of the `v2` branch, if one wants
-to avoid any unexpected compatibility pains once `v2` becomes `master`, then
-pinning to `v1` is an acceptable option, e.g.:
+Use the github URL to use the v1 branch.  This is illustrated in the Getting Started section below.
 
-```
-$ go get gopkg.in/urfave/cli.v1
-```
+Do not use the gopkg.in URL as it does not work for versions >= 1.21.0.
 
-``` go
-...
-import (
-  "gopkg.in/urfave/cli.v1" // imports as package "cli"
-)
-...
-```
-
-This will pull the latest tagged `v1` release (e.g. `v1.18.1` at the time of writing).
 
 ## Getting Started
 
