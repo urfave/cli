@@ -110,14 +110,17 @@ import (
 
 ### Using `v1` releases
 
+```
 $ go get github.com/urfave/cli
+```
 
-package main
-
+```go
+...
 import (
   "github.com/urfave/cli"
 )
-
+...
+```
 
 
 ## Getting Started
