@@ -9,10 +9,6 @@ cli
 [![Go Report Card](https://goreportcard.com/badge/urfave/cli)](https://goreportcard.com/report/urfave/cli)
 [![codecov](https://codecov.io/gh/urfave/cli/branch/master/graph/badge.svg)](https://codecov.io/gh/urfave/cli)
 
-This is the library formerly known as `github.com/codegangsta/cli` -- Github
-will automatically redirect requests to this repository, but we recommend
-updating your references for clarity.
-
 cli is a simple, fast, and fun package for building command line apps in Go. The
 goal is to enable developers to write fast and distributable command line
 applications in an expressive way.
