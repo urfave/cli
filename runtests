@@ -34,10 +34,6 @@ def main(sysargs=sys.argv[:]):
 
 
 def _test():
-    if check_output('go version'.split()).split()[2] < 'go1.2':
-        _run('go test -v .')
-        return
-
     coverprofiles = []
     for subpackage in ['', 'altsrc']:
         coverprofile = 'cli.coverprofile'
@@ -57,10 +53,6 @@ def _test():
 
 
 def _gfmrun():
-    go_version = check_output('go version'.split()).split()[2]
-    if go_version < 'go1.3':
-        print('runtests: skip on {}'.format(go_version), file=sys.stderr)
-        return
     _run(['gfmrun', '-c', str(_gfmrun_count()), '-s', 'README.md'])
 
 
@@ -74,11 +66,6 @@ def _toc():
 
 
 def _gen():
-    go_version = check_output('go version'.split()).split()[2]
-    if go_version < 'go1.5':
-        print('runtests: skip on {}'.format(go_version), file=sys.stderr)
-        return
-
     _run('go generate ./...')
     _run('git diff --exit-code')
 
