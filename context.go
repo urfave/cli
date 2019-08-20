@@ -310,14 +310,22 @@ func (e *errRequiredFlags) Error() string {
 
 	var allErrors []string
 	numberOfMissingFlags := len(missingFlagNames)
-	if numberOfMissingFlags == 1 {
-		allErrors = append(allErrors, fmt.Sprintf("Required flag %q not set", missingFlagNames[0]))
-	} else {
-		joinedMissingFlags := strings.Join(missingFlagNames, ", ")
-		allErrors = append(allErrors, fmt.Sprintf("Required flags %q not set", joinedMissingFlags))
+	numberOfMissingReqErrFlags := len(missingFlagNamesReqErr)
+
+	if numberOfMissingFlags > 0 {
+		if numberOfMissingFlags == 1 {
+			allErrors = append(allErrors, fmt.Sprintf("Required flag %q not set", missingFlagNames[0]))
+		} else {
+			joinedMissingFlags := strings.Join(missingFlagNames, ", ")
+			allErrors = append(allErrors, fmt.Sprintf("Required flags %q not set", joinedMissingFlags))
+		}
 	}
 
-	// handle user defined errors and append
+	if numberOfMissingReqErrFlags > 0 {
+
+		// handle user defined errors and append
+
+	}
 
 	return strings.Join(allErrors, "\n")
 }
