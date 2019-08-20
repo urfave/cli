@@ -88,7 +88,7 @@ type RequiredFlag interface {
 type RequiredFlagsErr interface {
 	Flag
 
-	IsRequired() bool
+	FlagsErrRequired() bool
 }
 
 // DocGenerationFlag is an interface that allows documentation generation for the flag
