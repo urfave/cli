@@ -83,14 +83,13 @@ type RequiredFlag interface {
 	IsRequired() bool
 }
 
-// RequiredFlagsErr is an interface that allows users to redefine errors on required flags
+// RequiredFlagErr is an interface that allows users to redefine errors on required flags
 // it allows flags with user-defined errors to be backwards compatible with the Flag interface
 type RequiredFlagErr interface {
 	Flag
 
 	IsCustom() bool
 	GetMessage() string
-	HasInterpolation() bool
 }
 
 // DocGenerationFlag is an interface that allows documentation generation for the flag

@@ -10,9 +10,8 @@ import (
 )
 
 type FlagErr struct {
-	Custom      bool
-	Message     string
-	Interpolate bool
+	Custom  bool
+	Message string
 }
 
 // BoolFlag is a flag with type bool
@@ -136,11 +135,6 @@ func (f BoolTFlag) GetMessage() string {
 	return f.RequiredFlagErr.Message
 }
 
-// FlagsErrRequired returns whether or not the flag is required
-func (f BoolTFlag) FlagsErrRequired() bool {
-	return f.RequiredFlagsErr
-}
-
 // TakesValue returns true of the flag takes a value, otherwise false
 func (f BoolTFlag) TakesValue() bool {
 	return false
@@ -222,11 +216,6 @@ func (f DurationFlag) IsCustom() bool {
 // GetMessage returns the custom error message
 func (f DurationFlag) GetMessage() string {
 	return f.RequiredFlagErr.Message
-}
-
-// FlagsErrRequired returns whether or not the flag is required
-func (f DurationFlag) FlagsErrRequired() bool {
-	return f.RequiredFlagsErr
 }
 
 // TakesValue returns true of the flag takes a value, otherwise false

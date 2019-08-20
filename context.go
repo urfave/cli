@@ -289,68 +289,67 @@ func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
 
 type requiredFlagsErr interface {
 	error
-	getMissingFlags() map[string]bool
+	getMissingDefaultFlags() []string
+	getMissingCustomFlags() []string
 }
 
 type errRequiredFlags struct {
-	missingFlags map[string]bool
+	missingDefaultFlags []string
+	missingCustomFlags  []string
 }
 
 func (e *errRequiredFlags) Error() string {
-	var missingFlagNames []string
-	var missingFlagNamesReqErr []string
-
-	for k, v := range e.missingFlags {
-		if v == false {
-			missingFlagNames = append(missingFlagNames, k)
-		} else {
-			missingFlagNamesReqErr = append(missingFlagNamesReqErr, k)
-		}
-	}
-
 	var allErrors []string
-	numberOfMissingFlags := len(missingFlagNames)
-	numberOfMissingReqErrFlags := len(missingFlagNamesReqErr)
+	numberOfMissingFlags := len(e.missingDefaultFlags)
+	numberOfMissingReqErrFlags := len(e.missingCustomFlags)
 
 	if numberOfMissingFlags > 0 {
 		if numberOfMissingFlags == 1 {
-			allErrors = append(allErrors, fmt.Sprintf("Required flag %q not set", missingFlagNames[0]))
+			allErrors = append(allErrors, fmt.Sprintf("Required flag %q not set", e.missingDefaultFlags[0]))
 		} else {
-			joinedMissingFlags := strings.Join(missingFlagNames, ", ")
+			joinedMissingFlags := strings.Join(e.missingDefaultFlags, ", ")
 			allErrors = append(allErrors, fmt.Sprintf("Required flags %q not set", joinedMissingFlags))
 		}
 	}
 
 	if numberOfMissingReqErrFlags > 0 {
-
-		// handle user defined errors and append
-
+		for i := range e.missingCustomFlags {
+			allErrors = append(allErrors, e.missingCustomFlags[i])
+		}
 	}
 
 	return strings.Join(allErrors, "\n")
 }
 
-func (e *errRequiredFlags) getMissingFlags() map[string]bool {
-	return e.missingFlags
+func (e *errRequiredFlags) getMissingDefaultFlags() []string {
+	return e.missingDefaultFlags
+}
+
+func (e *errRequiredFlags) getMissingCustomFlags() []string {
+	return e.missingCustomFlags
 }
 
 func checkRequiredFlags(flags []Flag, context *Context) requiredFlagsErr {
-	missingFlags := make(map[string]bool)
+	var missingDefaultFlags []string
+	var missingCustomFlags []string
 	for _, f := range flags {
 		if rf, ok := f.(RequiredFlag); ok && rf.IsRequired() {
 			key := strings.Split(f.GetName(), ",")[0]
 			if !context.IsSet(key) {
-				if re, ok := f.(RequiredFlagsErr); ok && re.FlagsErrRequired() {
-					missingFlags[key] = true
+				if re, ok := f.(RequiredFlagErr); ok && re.IsCustom() {
+					missingCustomFlags = append(missingCustomFlags, re.GetMessage())
 				} else {
-					missingFlags[key] = false
+					missingDefaultFlags = append(missingDefaultFlags, key)
 				}
 			}
 		}
 	}
 
-	if len(missingFlags) != 0 {
-		return &errRequiredFlags{missingFlags: missingFlags}
+	if len(missingDefaultFlags) != 0 || len(missingCustomFlags) != 0 {
+		return &errRequiredFlags{
+			missingDefaultFlags: missingDefaultFlags,
+			missingCustomFlags:  missingCustomFlags,
+		}
 	}
 
 	return nil
