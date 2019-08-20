@@ -308,12 +308,18 @@ func (e *errRequiredFlags) Error() string {
 		}
 	}
 
+	var allErrors []string
 	numberOfMissingFlags := len(missingFlagNames)
 	if numberOfMissingFlags == 1 {
-		return fmt.Sprintf("Required flag %q not set", missingFlagNames[0])
+		allErrors = append(allErrors, fmt.Sprintf("Required flag %q not set", missingFlagNames[0]))
+	} else {
+		joinedMissingFlags := strings.Join(missingFlagNames, ", ")
+		allErrors = append(allErrors, fmt.Sprintf("Required flags %q not set", joinedMissingFlags))
 	}
-	joinedMissingFlags := strings.Join(missingFlagNames, ", ")
-	return fmt.Sprintf("Required flags %q not set", joinedMissingFlags)
+
+	// handle user defined errors and append
+
+	return strings.Join(allErrors, "\n")
 }
 
 func (e *errRequiredFlags) getMissingFlags() map[string]bool {
