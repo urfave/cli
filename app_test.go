@@ -47,7 +47,7 @@ func ExampleApp_Run() {
 	app.Author = "Harrison"
 	app.Email = "harrison@lolwut.com"
 	app.Authors = []Author{{Name: "Oliver Allen", Email: "oliver@toyshop.com"}}
-	app.Run(os.Args)
+	_ = app.Run(os.Args)
 	// Output:
 	// Hello Jeremy
 }
@@ -85,7 +85,7 @@ func ExampleApp_Run_subcommand() {
 		},
 	}
 
-	app.Run(os.Args)
+	_ = app.Run(os.Args)
 	// Output:
 	// Hello, Jeremy
 }
@@ -117,7 +117,7 @@ func ExampleApp_Run_appHelp() {
 			},
 		},
 	}
-	app.Run(os.Args)
+	_ = app.Run(os.Args)
 	// Output:
 	// NAME:
 	//    greet - A new cli application
@@ -136,8 +136,8 @@ func ExampleApp_Run_appHelp() {
 	//    Oliver Allen <oliver@toyshop.com>
 	//
 	// COMMANDS:
-	//      describeit, d  use it to see a description
-	//      help, h        Shows a list of commands or help for one command
+	//    describeit, d  use it to see a description
+	//    help, h        Shows a list of commands or help for one command
 	//
 	// GLOBAL OPTIONS:
 	//    --name value   a name to say (default: "bob")
@@ -166,7 +166,7 @@ func ExampleApp_Run_commandHelp() {
 			},
 		},
 	}
-	app.Run(os.Args)
+	_ = app.Run(os.Args)
 	// Output:
 	// NAME:
 	//    greet describeit - use it to see a description
@@ -181,7 +181,7 @@ func ExampleApp_Run_commandHelp() {
 func ExampleApp_Run_noAction() {
 	app := App{}
 	app.Name = "greet"
-	app.Run([]string{"greet"})
+	_ = app.Run([]string{"greet"})
 	// Output:
 	// NAME:
 	//    greet
@@ -190,7 +190,7 @@ func ExampleApp_Run_noAction() {
 	//     [global options] command [command options] [arguments...]
 	//
 	// COMMANDS:
-	//      help, h  Shows a list of commands or help for one command
+	//    help, h  Shows a list of commands or help for one command
 	//
 	// GLOBAL OPTIONS:
 	//    --help, -h     show help
@@ -208,7 +208,7 @@ func ExampleApp_Run_subcommandNoAction() {
 			Description: "This is how we describe describeit the function",
 		},
 	}
-	app.Run([]string{"greet", "describeit"})
+	_ = app.Run([]string{"greet", "describeit"})
 	// Output:
 	// NAME:
 	//     describeit - use it to see a description
@@ -219,6 +219,89 @@ func ExampleApp_Run_subcommandNoAction() {
 	// DESCRIPTION:
 	//    This is how we describe describeit the function
 
+}
+
+func ExampleApp_Run_bashComplete_withShortFlag() {
+	os.Args = []string{"greet", "-", "--generate-bash-completion"}
+
+	app := NewApp()
+	app.Name = "greet"
+	app.EnableBashCompletion = true
+	app.Flags = []Flag{
+		IntFlag{
+			Name: "other,o",
+		},
+		StringFlag{
+			Name: "xyz,x",
+		},
+	}
+
+	_ = app.Run(os.Args)
+	// Output:
+	// --other
+	// -o
+	// --xyz
+	// -x
+	// --help
+	// -h
+	// --version
+	// -v
+}
+
+func ExampleApp_Run_bashComplete_withLongFlag() {
+	os.Args = []string{"greet", "--s", "--generate-bash-completion"}
+
+	app := NewApp()
+	app.Name = "greet"
+	app.EnableBashCompletion = true
+	app.Flags = []Flag{
+		IntFlag{
+			Name: "other,o",
+		},
+		StringFlag{
+			Name: "xyz,x",
+		},
+		StringFlag{
+			Name: "some-flag,s",
+		},
+		StringFlag{
+			Name: "similar-flag",
+		},
+	}
+
+	_ = app.Run(os.Args)
+	// Output:
+	// --some-flag
+	// --similar-flag
+}
+func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
+	os.Args = []string{"greet", "--st", "--generate-bash-completion"}
+
+	app := NewApp()
+	app.Name = "greet"
+	app.EnableBashCompletion = true
+	app.Flags = []Flag{
+		IntFlag{
+			Name: "int-flag,i",
+		},
+		StringFlag{
+			Name: "string,s",
+		},
+		StringFlag{
+			Name: "string-flag-2",
+		},
+		StringFlag{
+			Name: "similar-flag",
+		},
+		StringFlag{
+			Name: "some-flag",
+		},
+	}
+
+	_ = app.Run(os.Args)
+	// Output:
+	// --string
+	// --string-flag-2
 }
 
 func ExampleApp_Run_bashComplete() {
@@ -249,7 +332,7 @@ func ExampleApp_Run_bashComplete() {
 		},
 	}
 
-	app.Run(os.Args)
+	_ = app.Run(os.Args)
 	// Output:
 	// describeit
 	// d
@@ -261,7 +344,7 @@ func ExampleApp_Run_bashComplete() {
 func ExampleApp_Run_zshComplete() {
 	// set args for examples sake
 	os.Args = []string{"greet", "--generate-bash-completion"}
-	os.Setenv("_CLI_ZSH_AUTOCOMPLETE_HACK", "1")
+	_ = os.Setenv("_CLI_ZSH_AUTOCOMPLETE_HACK", "1")
 
 	app := NewApp()
 	app.Name = "greet"
@@ -287,7 +370,7 @@ func ExampleApp_Run_zshComplete() {
 		},
 	}
 
-	app.Run(os.Args)
+	_ = app.Run(os.Args)
 	// Output:
 	// describeit:use it to see a description
 	// d:use it to see a description
@@ -361,7 +444,7 @@ func TestApp_CommandWithArgBeforeFlags(t *testing.T) {
 	}
 	app.Commands = []Command{command}
 
-	app.Run([]string{"", "cmd", "my-arg", "--option", "my-option"})
+	_ = app.Run([]string{"", "cmd", "my-arg", "--option", "my-option"})
 
 	expect(t, parsedOption, "my-option")
 	expect(t, firstArg, "my-arg")
@@ -391,7 +474,7 @@ func TestApp_CommandWithArgBeforeBoolFlags(t *testing.T) {
 	}
 	app.Commands = []Command{command}
 
-	app.Run([]string{"", "cmd", "my-arg", "--boolflag", "--option", "my-option", "-b", "--secondOption", "fancy-option"})
+	_ = app.Run([]string{"", "cmd", "my-arg", "--boolflag", "--option", "my-option", "-b", "--secondOption", "fancy-option"})
 
 	expect(t, parsedOption, "my-option")
 	expect(t, parsedSecondOption, "fancy-option")
@@ -421,7 +504,7 @@ func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
 			Before: func(_ *Context) error { return nil },
 		},
 	}
-	a.Run([]string{"", "foo", "--lang", "spanish", "abcd"})
+	_ = a.Run([]string{"", "foo", "--lang", "spanish", "abcd"})
 
 	expect(t, context.Args().Get(0), "abcd")
 	expect(t, context.String("lang"), "spanish")
@@ -436,7 +519,7 @@ func TestApp_RunAsSubCommandIncorrectUsage(t *testing.T) {
 	}
 
 	set := flag.NewFlagSet("", flag.ContinueOnError)
-	set.Parse([]string{"", "---foo"})
+	_ = set.Parse([]string{"", "---foo"})
 	c := &Context{flagSet: set}
 
 	err := a.RunAsSubcommand(c)
@@ -462,7 +545,7 @@ func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
 	}
 	app.Commands = []Command{command}
 
-	app.Run([]string{"", "cmd", "my-arg", "--option", "my-option", "--", "--notARealFlag"})
+	_ = app.Run([]string{"", "cmd", "my-arg", "--option", "my-option", "--", "--notARealFlag"})
 
 	expect(t, parsedOption, "my-option")
 	expect(t, args[0], "my-arg")
@@ -483,7 +566,7 @@ func TestApp_CommandWithDash(t *testing.T) {
 	}
 	app.Commands = []Command{command}
 
-	app.Run([]string{"", "cmd", "my-arg", "-"})
+	_ = app.Run([]string{"", "cmd", "my-arg", "-"})
 
 	expect(t, args[0], "my-arg")
 	expect(t, args[1], "-")
@@ -502,7 +585,7 @@ func TestApp_CommandWithNoFlagBeforeTerminator(t *testing.T) {
 	}
 	app.Commands = []Command{command}
 
-	app.Run([]string{"", "cmd", "my-arg", "--", "notAFlagAtAll"})
+	_ = app.Run([]string{"", "cmd", "my-arg", "--", "notAFlagAtAll"})
 
 	expect(t, args[0], "my-arg")
 	expect(t, args[1], "--")
@@ -551,6 +634,94 @@ func TestApp_VisibleCommands(t *testing.T) {
 	}
 }
 
+func TestApp_UseShortOptionHandling(t *testing.T) {
+	var one, two bool
+	var name string
+	expected := "expectedName"
+
+	app := NewApp()
+	app.UseShortOptionHandling = true
+	app.Flags = []Flag{
+		BoolFlag{Name: "one, o"},
+		BoolFlag{Name: "two, t"},
+		StringFlag{Name: "name, n"},
+	}
+	app.Action = func(c *Context) error {
+		one = c.Bool("one")
+		two = c.Bool("two")
+		name = c.String("name")
+		return nil
+	}
+
+	app.Run([]string{"", "-on", expected})
+	expect(t, one, true)
+	expect(t, two, false)
+	expect(t, name, expected)
+}
+
+func TestApp_UseShortOptionHandlingCommand(t *testing.T) {
+	var one, two bool
+	var name string
+	expected := "expectedName"
+
+	app := NewApp()
+	app.UseShortOptionHandling = true
+	command := Command{
+		Name: "cmd",
+		Flags: []Flag{
+			BoolFlag{Name: "one, o"},
+			BoolFlag{Name: "two, t"},
+			StringFlag{Name: "name, n"},
+		},
+		Action: func(c *Context) error {
+			one = c.Bool("one")
+			two = c.Bool("two")
+			name = c.String("name")
+			return nil
+		},
+	}
+	app.Commands = []Command{command}
+
+	app.Run([]string{"", "cmd", "-on", expected})
+	expect(t, one, true)
+	expect(t, two, false)
+	expect(t, name, expected)
+}
+
+func TestApp_UseShortOptionHandlingSubCommand(t *testing.T) {
+	var one, two bool
+	var name string
+	expected := "expectedName"
+
+	app := NewApp()
+	app.UseShortOptionHandling = true
+	command := Command{
+		Name: "cmd",
+	}
+	subCommand := Command{
+		Name: "sub",
+		Flags: []Flag{
+			BoolFlag{Name: "one, o"},
+			BoolFlag{Name: "two, t"},
+			StringFlag{Name: "name, n"},
+		},
+		Action: func(c *Context) error {
+			one = c.Bool("one")
+			two = c.Bool("two")
+			name = c.String("name")
+			return nil
+		},
+	}
+	command.Subcommands = []Command{subCommand}
+	app.Commands = []Command{command}
+
+	err := app.Run([]string{"", "cmd", "sub", "-on", expected})
+	expect(t, err, nil)
+	expect(t, one, true)
+	expect(t, two, false)
+	expect(t, name, expected)
+}
+
 func TestApp_Float64Flag(t *testing.T) {
 	var meters float64
 
@@ -563,7 +734,7 @@ func TestApp_Float64Flag(t *testing.T) {
 		return nil
 	}
 
-	app.Run([]string{"", "--height", "1.93"})
+	_ = app.Run([]string{"", "--height", "1.93"})
 	expect(t, meters, 1.93)
 }
 
@@ -586,7 +757,7 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 	}
 	app.Commands = []Command{command}
 
-	app.Run([]string{"", "cmd", "my-arg", "-p", "22", "-p", "80", "-ip", "8.8.8.8", "-ip", "8.8.4.4"})
+	_ = app.Run([]string{"", "cmd", "my-arg", "-p", "22", "-p", "80", "-ip", "8.8.8.8", "-ip", "8.8.4.4"})
 
 	IntsEquals := func(a, b []int) bool {
 		if len(a) != len(b) {
@@ -642,7 +813,7 @@ func TestApp_ParseSliceFlagsWithMissingValue(t *testing.T) {
 	}
 	app.Commands = []Command{command}
 
-	app.Run([]string{"", "cmd", "my-arg", "-a", "2", "-str", "A"})
+	_ = app.Run([]string{"", "cmd", "my-arg", "-a", "2", "-str", "A"})
 
 	var expectedIntSlice = []int{2}
 	var expectedStringSlice = []string{"A"}
@@ -877,6 +1048,145 @@ func TestAppNoHelpFlag(t *testing.T) {
 	}
 }
 
+func TestRequiredFlagAppRunBehavior(t *testing.T) {
+	tdata := []struct {
+		testCase        string
+		appFlags        []Flag
+		appRunInput     []string
+		appCommands     []Command
+		expectedAnError bool
+	}{
+		// assertion: empty input, when a required flag is present, errors
+		{
+			testCase:        "error_case_empty_input_with_required_flag_on_app",
+			appRunInput:     []string{"myCLI"},
+			appFlags:        []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+			expectedAnError: true,
+		},
+		{
+			testCase:    "error_case_empty_input_with_required_flag_on_command",
+			appRunInput: []string{"myCLI", "myCommand"},
+			appCommands: []Command{{
+				Name:  "myCommand",
+				Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+			}},
+			expectedAnError: true,
+		},
+		{
+			testCase:    "error_case_empty_input_with_required_flag_on_subcommand",
+			appRunInput: []string{"myCLI", "myCommand", "mySubCommand"},
+			appCommands: []Command{{
+				Name: "myCommand",
+				Subcommands: []Command{{
+					Name:  "mySubCommand",
+					Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+				}},
+			}},
+			expectedAnError: true,
+		},
+		// assertion: inputing --help, when a required flag is present, does not error
+		{
+			testCase:    "valid_case_help_input_with_required_flag_on_app",
+			appRunInput: []string{"myCLI", "--help"},
+			appFlags:    []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+		},
+		{
+			testCase:    "valid_case_help_input_with_required_flag_on_command",
+			appRunInput: []string{"myCLI", "myCommand", "--help"},
+			appCommands: []Command{{
+				Name:  "myCommand",
+				Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+			}},
+		},
+		{
+			testCase:    "valid_case_help_input_with_required_flag_on_subcommand",
+			appRunInput: []string{"myCLI", "myCommand", "mySubCommand", "--help"},
+			appCommands: []Command{{
+				Name: "myCommand",
+				Subcommands: []Command{{
+					Name:  "mySubCommand",
+					Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+				}},
+			}},
+		},
+		// assertion: giving optional input, when a required flag is present, errors
+		{
+			testCase:        "error_case_optional_input_with_required_flag_on_app",
+			appRunInput:     []string{"myCLI", "--optional", "cats"},
+			appFlags:        []Flag{StringFlag{Name: "requiredFlag", Required: true}, StringFlag{Name: "optional"}},
+			expectedAnError: true,
+		},
+		{
+			testCase:    "error_case_optional_input_with_required_flag_on_command",
+			appRunInput: []string{"myCLI", "myCommand", "--optional", "cats"},
+			appCommands: []Command{{
+				Name:  "myCommand",
+				Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}, StringFlag{Name: "optional"}},
+			}},
+			expectedAnError: true,
+		},
+		{
+			testCase:    "error_case_optional_input_with_required_flag_on_subcommand",
+			appRunInput: []string{"myCLI", "myCommand", "mySubCommand", "--optional", "cats"},
+			appCommands: []Command{{
+				Name: "myCommand",
+				Subcommands: []Command{{
+					Name:  "mySubCommand",
+					Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}, StringFlag{Name: "optional"}},
+				}},
+			}},
+			expectedAnError: true,
+		},
+		// assertion: when a required flag is present, inputting that required flag does not error
+		{
+			testCase:    "valid_case_required_flag_input_on_app",
+			appRunInput: []string{"myCLI", "--requiredFlag", "cats"},
+			appFlags:    []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+		},
+		{
+			testCase:    "valid_case_required_flag_input_on_command",
+			appRunInput: []string{"myCLI", "myCommand", "--requiredFlag", "cats"},
+			appCommands: []Command{{
+				Name:  "myCommand",
+				Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+			}},
+		},
+		{
+			testCase:    "valid_case_required_flag_input_on_subcommand",
+			appRunInput: []string{"myCLI", "myCommand", "mySubCommand", "--requiredFlag", "cats"},
+			appCommands: []Command{{
+				Name: "myCommand",
+				Subcommands: []Command{{
+					Name:  "mySubCommand",
+					Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+				}},
+			}},
+		},
+	}
+	for _, test := range tdata {
+		t.Run(test.testCase, func(t *testing.T) {
+			// setup
+			app := NewApp()
+			app.Flags = test.appFlags
+			app.Commands = test.appCommands
+
+			// logic under test
+			err := app.Run(test.appRunInput)
+
+			// assertions
+			if test.expectedAnError && err == nil {
+				t.Errorf("expected an error, but there was none")
+			}
+			if _, ok := err.(requiredFlagsErr); test.expectedAnError && !ok {
+				t.Errorf("expected a requiredFlagsErr, but got: %s", err)
+			}
+			if !test.expectedAnError && err != nil {
+				t.Errorf("did not expected an error, but there was one: %s", err)
+			}
+		})
+	}
+}
+
 func TestAppHelpPrinter(t *testing.T) {
 	oldPrinter := HelpPrinter
 	defer func() {
@@ -889,7 +1199,7 @@ func TestAppHelpPrinter(t *testing.T) {
 	}
 
 	app := NewApp()
-	app.Run([]string{"-h"})
+	_ = app.Run([]string{"-h"})
 
 	if wasCalled == false {
 		t.Errorf("Help printer expected to be called, but was not")
@@ -936,7 +1246,7 @@ func TestApp_CommandNotFound(t *testing.T) {
 		},
 	}
 
-	app.Run([]string{"command", "foo"})
+	_ = app.Run([]string{"command", "foo"})
 
 	expect(t, counts.CommandNotFound, 1)
 	expect(t, counts.SubCommand, 0)
@@ -1346,7 +1656,7 @@ func TestApp_Run_Categories(t *testing.T) {
 	buf := new(bytes.Buffer)
 	app.Writer = buf
 
-	app.Run([]string{"categories"})
+	_ = app.Run([]string{"categories"})
 
 	expect := CommandCategories{
 		&CommandCategory{
@@ -1603,6 +1913,18 @@ func (c *customBoolFlag) GetName() string {
 	return c.Nombre
 }
 
+func (c *customBoolFlag) TakesValue() bool {
+	return false
+}
+
+func (c *customBoolFlag) GetValue() string {
+	return "value"
+}
+
+func (c *customBoolFlag) GetUsage() string {
+	return "usage"
+}
+
 func (c *customBoolFlag) Apply(set *flag.FlagSet) {
 	set.String(c.Nombre, c.Nombre, "")
 }
@@ -1753,7 +2075,7 @@ func TestHandleExitCoder_Custom(t *testing.T) {
 	}
 
 	app.ExitErrHandler = func(_ *Context, _ error) {
-		fmt.Fprintln(ErrWriter, "I'm a Custom error handler, I print what I want!")
+		_, _ = fmt.Fprintln(ErrWriter, "I'm a Custom error handler, I print what I want!")
 	}
 
 	ctx := NewContext(app, fs, nil)
@@ -1772,14 +2094,14 @@ func TestHandleAction_WithUnknownPanic(t *testing.T) {
 
 	app := NewApp()
 	app.Action = func(ctx *Context) error {
-		fn(ctx)
+		_ = fn(ctx)
 		return nil
 	}
 	fs, err := flagSet(app.Name, app.Flags)
 	if err != nil {
 		t.Errorf("error creating FlagSet: %s", err)
 	}
-	HandleAction(app.Action, NewContext(app, fs, nil))
+	_ = HandleAction(app.Action, NewContext(app, fs, nil))
 }
 
 func TestShellCompletionForIncompleteFlags(t *testing.T) {
@@ -1797,12 +2119,12 @@ func TestShellCompletionForIncompleteFlags(t *testing.T) {
 			}
 
 			for _, name := range command.Names() {
-				fmt.Fprintln(ctx.App.Writer, name)
+				_, _ = fmt.Fprintln(ctx.App.Writer, name)
 			}
 		}
 
-		for _, flag := range ctx.App.Flags {
-			for _, name := range strings.Split(flag.GetName(), ",") {
+		for _, f := range ctx.App.Flags {
+			for _, name := range strings.Split(f.GetName(), ",") {
 				if name == BashCompletionFlag.GetName() {
 					continue
 				}
@@ -1810,9 +2132,9 @@ func TestShellCompletionForIncompleteFlags(t *testing.T) {
 				switch name = strings.TrimSpace(name); len(name) {
 				case 0:
 				case 1:
-					fmt.Fprintln(ctx.App.Writer, "-"+name)
+					_, _ = fmt.Fprintln(ctx.App.Writer, "-"+name)
 				default:
-					fmt.Fprintln(ctx.App.Writer, "--"+name)
+					_, _ = fmt.Fprintln(ctx.App.Writer, "--"+name)
 				}
 			}
 		}
@@ -1842,5 +2164,59 @@ func TestHandleActionActuallyWorksWithActions(t *testing.T) {
 
 	if !called {
 		t.Errorf("Function was not called")
+	}
+}
+
+func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
+	testCode := 104
+
+	app := NewApp()
+	app.Commands = []Command{
+		Command{
+			Name: "cmd",
+			Subcommands: []Command{
+				Command{
+					Name: "subcmd",
+					Action: func(c *Context) error {
+						return NewExitError("exit error", testCode)
+					},
+				},
+			},
+		},
+	}
+
+	// set user function as ExitErrHandler
+	var exitCodeFromExitErrHandler int
+	app.ExitErrHandler = func(c *Context, err error) {
+		if exitErr, ok := err.(ExitCoder); ok {
+			t.Log(exitErr)
+			exitCodeFromExitErrHandler = exitErr.ExitCode()
+		}
+	}
+
+	// keep and restore original OsExiter
+	origExiter := OsExiter
+	defer func() {
+		OsExiter = origExiter
+	}()
+
+	// set user function as OsExiter
+	var exitCodeFromOsExiter int
+	OsExiter = func(exitCode int) {
+		exitCodeFromOsExiter = exitCode
+	}
+
+	app.Run([]string{
+		"myapp",
+		"cmd",
+		"subcmd",
+	})
+
+	if exitCodeFromOsExiter != 0 {
+		t.Errorf("exitCodeFromOsExiter should not change, but its value is %v", exitCodeFromOsExiter)
+	}
+
+	if exitCodeFromExitErrHandler != testCode {
+		t.Errorf("exitCodeFromOsExiter valeu should be %v, but its value is %v", testCode, exitCodeFromExitErrHandler)
 	}
 }

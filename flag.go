@@ -75,6 +75,29 @@ type Flag interface {
 	GetName() string
 }
 
+// RequiredFlag is an interface that allows us to mark flags as required
+// it allows flags required flags to be backwards compatible with the Flag interface
+type RequiredFlag interface {
+	Flag
+
+	IsRequired() bool
+}
+
+// DocGenerationFlag is an interface that allows documentation generation for the flag
+type DocGenerationFlag interface {
+	Flag
+
+	// TakesValue returns true of the flag takes a value, otherwise false
+	TakesValue() bool
+
+	// GetUsage returns the usage string for the flag
+	GetUsage() string
+
+	// GetValue returns the flags value as string representation and an empty
+	// string if the flag takes no value at all.
+	GetValue() string
+}
+
 // errorableFlag is an interface that allows us to return errors during apply
 // it allows flags defined in this library to return errors in a fashion backwards compatible
 // TODO remove in v2 and modify the existing Flag interface to return errors
@@ -97,6 +120,7 @@ func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {
 			f.Apply(set)
 		}
 	}
+	set.SetOutput(ioutil.Discard)
 	return set, nil
 }
 
@@ -118,7 +142,7 @@ type Generic interface {
 // provided by the user for parsing by the flag
 // Ignores parsing errors
 func (f GenericFlag) Apply(set *flag.FlagSet) {
-	f.ApplyWithError(set)
+	_ = f.ApplyWithError(set)
 }
 
 // ApplyWithError takes the flagset and calls Set on the generic flag with the value
@@ -165,7 +189,7 @@ func (f *StringSlice) Get() interface{} {
 // Apply populates the flag given the flag set and environment
 // Ignores errors
 func (f StringSliceFlag) Apply(set *flag.FlagSet) {
-	f.ApplyWithError(set)
+	_ = f.ApplyWithError(set)
 }
 
 // ApplyWithError populates the flag given the flag set and environment
@@ -226,7 +250,7 @@ func (f *IntSlice) Get() interface{} {
 // Apply populates the flag given the flag set and environment
 // Ignores errors
 func (f IntSliceFlag) Apply(set *flag.FlagSet) {
-	f.ApplyWithError(set)
+	_ = f.ApplyWithError(set)
 }
 
 // ApplyWithError populates the flag given the flag set and environment
@@ -287,7 +311,7 @@ func (f *Int64Slice) Get() interface{} {
 // Apply populates the flag given the flag set and environment
 // Ignores errors
 func (f Int64SliceFlag) Apply(set *flag.FlagSet) {
-	f.ApplyWithError(set)
+	_ = f.ApplyWithError(set)
 }
 
 // ApplyWithError populates the flag given the flag set and environment
@@ -319,7 +343,7 @@ func (f Int64SliceFlag) ApplyWithError(set *flag.FlagSet) error {
 // Apply populates the flag given the flag set and environment
 // Ignores errors
 func (f BoolFlag) Apply(set *flag.FlagSet) {
-	f.ApplyWithError(set)
+	_ = f.ApplyWithError(set)
 }
 
 // ApplyWithError populates the flag given the flag set and environment
@@ -351,7 +375,7 @@ func (f BoolFlag) ApplyWithError(set *flag.FlagSet) error {
 // Apply populates the flag given the flag set and environment
 // Ignores errors
 func (f BoolTFlag) Apply(set *flag.FlagSet) {
-	f.ApplyWithError(set)
+	_ = f.ApplyWithError(set)
 }
 
 // ApplyWithError populates the flag given the flag set and environment
@@ -384,7 +408,7 @@ func (f BoolTFlag) ApplyWithError(set *flag.FlagSet) error {
 // Apply populates the flag given the flag set and environment
 // Ignores errors
 func (f StringFlag) Apply(set *flag.FlagSet) {
-	f.ApplyWithError(set)
+	_ = f.ApplyWithError(set)
 }
 
 // ApplyWithError populates the flag given the flag set and environment
@@ -407,7 +431,7 @@ func (f StringFlag) ApplyWithError(set *flag.FlagSet) error {
 // Apply populates the flag given the flag set and environment
 // Ignores errors
 func (f IntFlag) Apply(set *flag.FlagSet) {
-	f.ApplyWithError(set)
+	_ = f.ApplyWithError(set)
 }
 
 // ApplyWithError populates the flag given the flag set and environment
@@ -434,7 +458,7 @@ func (f IntFlag) ApplyWithError(set *flag.FlagSet) error {
 // Apply populates the flag given the flag set and environment
 // Ignores errors
 func (f Int64Flag) Apply(set *flag.FlagSet) {
-	f.ApplyWithError(set)
+	_ = f.ApplyWithError(set)
 }
 
 // ApplyWithError populates the flag given the flag set and environment
@@ -462,7 +486,7 @@ func (f Int64Flag) ApplyWithError(set *flag.FlagSet) error {
 // Apply populates the flag given the flag set and environment
 // Ignores errors
 func (f UintFlag) Apply(set *flag.FlagSet) {
-	f.ApplyWithError(set)
+	_ = f.ApplyWithError(set)
 }
 
 // ApplyWithError populates the flag given the flag set and environment
@@ -490,7 +514,7 @@ func (f UintFlag) ApplyWithError(set *flag.FlagSet) error {
 // Apply populates the flag given the flag set and environment
 // Ignores errors
 func (f Uint64Flag) Apply(set *flag.FlagSet) {
-	f.ApplyWithError(set)
+	_ = f.ApplyWithError(set)
 }
 
 // ApplyWithError populates the flag given the flag set and environment
@@ -501,7 +525,7 @@ func (f Uint64Flag) ApplyWithError(set *flag.FlagSet) error {
 			return fmt.Errorf("could not parse %s as uint64 value for flag %s: %s", envVal, f.Name, err)
 		}
 
-		f.Value = uint64(envValInt)
+		f.Value = envValInt
 	}
 
 	eachName(f.Name, func(name string) {
@@ -518,7 +542,7 @@ func (f Uint64Flag) ApplyWithError(set *flag.FlagSet) error {
 // Apply populates the flag given the flag set and environment
 // Ignores errors
 func (f DurationFlag) Apply(set *flag.FlagSet) {
-	f.ApplyWithError(set)
+	_ = f.ApplyWithError(set)
 }
 
 // ApplyWithError populates the flag given the flag set and environment
@@ -546,7 +570,7 @@ func (f DurationFlag) ApplyWithError(set *flag.FlagSet) error {
 // Apply populates the flag given the flag set and environment
 // Ignores errors
 func (f Float64Flag) Apply(set *flag.FlagSet) {
-	f.ApplyWithError(set)
+	_ = f.ApplyWithError(set)
 }
 
 // ApplyWithError populates the flag given the flag set and environment
@@ -557,7 +581,7 @@ func (f Float64Flag) ApplyWithError(set *flag.FlagSet) error {
 			return fmt.Errorf("could not parse %s as float64 value for flag %s: %s", envVal, f.Name, err)
 		}
 
-		f.Value = float64(envValFloat)
+		f.Value = envValFloat
 	}
 
 	eachName(f.Name, func(name string) {
@@ -572,11 +596,11 @@ func (f Float64Flag) ApplyWithError(set *flag.FlagSet) error {
 }
 
 func visibleFlags(fl []Flag) []Flag {
-	visible := []Flag{}
-	for _, flag := range fl {
-		field := flagValue(flag).FieldByName("Hidden")
+	var visible []Flag
+	for _, f := range fl {
+		field := flagValue(f).FieldByName("Hidden")
 		if !field.IsValid() || !field.Bool() {
-			visible = append(visible, flag)
+			visible = append(visible, f)
 		}
 	}
 	return visible
@@ -721,7 +745,7 @@ func stringifyFlag(f Flag) string {
 }
 
 func stringifyIntSliceFlag(f IntSliceFlag) string {
-	defaultVals := []string{}
+	var defaultVals []string
 	if f.Value != nil && len(f.Value.Value()) > 0 {
 		for _, i := range f.Value.Value() {
 			defaultVals = append(defaultVals, strconv.Itoa(i))
@@ -732,7 +756,7 @@ func stringifyIntSliceFlag(f IntSliceFlag) string {
 }
 
 func stringifyInt64SliceFlag(f Int64SliceFlag) string {
-	defaultVals := []string{}
+	var defaultVals []string
 	if f.Value != nil && len(f.Value.Value()) > 0 {
 		for _, i := range f.Value.Value() {
 			defaultVals = append(defaultVals, strconv.FormatInt(i, 10))
@@ -743,7 +767,7 @@ func stringifyInt64SliceFlag(f Int64SliceFlag) string {
 }
 
 func stringifyStringSliceFlag(f StringSliceFlag) string {
-	defaultVals := []string{}
+	var defaultVals []string
 	if f.Value != nil && len(f.Value.Value()) > 0 {
 		for _, s := range f.Value.Value() {
 			if len(s) > 0 {
