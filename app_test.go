@@ -1189,13 +1189,12 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 
 func TestAppRunPassThroughRegression(t *testing.T) {
 	tdata := []struct {
-		testCase        string
-		appFlags        []Flag
-		appRunInput     []string
-		appCommands     []Command
-		expectedAnError bool
+		testCase    string
+		appRunInput []string
+		appCommands []Command
 	}{
-		{ // docker run --rm ubuntu bash
+		{
+			testCase:    "test_case",
 			appRunInput: []string{"myCLI", "myCommand", "--someFlag", "someInput", "docker", "run", "--rm", "ubuntu", "bash"},
 			appCommands: []Command{{
 				Name:  "myCommand",
@@ -1207,17 +1206,13 @@ func TestAppRunPassThroughRegression(t *testing.T) {
 		t.Run(test.testCase, func(t *testing.T) {
 			// setup
 			app := NewApp()
-			app.Flags = test.appFlags
 			app.Commands = test.appCommands
 
 			// logic under test
 			err := app.Run(test.appRunInput)
 
 			// assertions
-			if test.expectedAnError && err == nil {
-				t.Errorf("expected an error, but there was none")
-			}
-			if !test.expectedAnError && err != nil {
+			if err != nil {
 				t.Errorf("did not expected an error, but there was one: %s", err)
 			}
 		})
