@@ -1187,6 +1187,43 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 	}
 }
 
+func TestAppRunPassThroughRegression(t *testing.T) {
+	tdata := []struct {
+		testCase        string
+		appFlags        []Flag
+		appRunInput     []string
+		appCommands     []Command
+		expectedAnError bool
+	}{
+		{ // docker run --rm ubuntu bash
+			appRunInput: []string{"myCLI", "myCommand", "--someFlag", "someInput", "docker", "run", "--rm", "ubuntu", "bash"},
+			appCommands: []Command{{
+				Name:  "myCommand",
+				Flags: []Flag{StringFlag{Name: "someFlag"}},
+			}},
+		},
+	}
+	for _, test := range tdata {
+		t.Run(test.testCase, func(t *testing.T) {
+			// setup
+			app := NewApp()
+			app.Flags = test.appFlags
+			app.Commands = test.appCommands
+
+			// logic under test
+			err := app.Run(test.appRunInput)
+
+			// assertions
+			if test.expectedAnError && err == nil {
+				t.Errorf("expected an error, but there was none")
+			}
+			if !test.expectedAnError && err != nil {
+				t.Errorf("did not expected an error, but there was one: %s", err)
+			}
+		})
+	}
+}
+
 func TestAppHelpPrinter(t *testing.T) {
 	oldPrinter := HelpPrinter
 	defer func() {
