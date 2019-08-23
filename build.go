@@ -6,12 +6,13 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"github.com/urfave/cli"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/urfave/cli"
 )
 
 var packages = []string{"cli", "altsrc"}
@@ -52,7 +53,13 @@ func main() {
 }
 
 func VetActionFunc(_ *cli.Context) error {
-	return exec.Command("go", "vet").Run()
+	cmd := exec.Command("go", "vet")
+
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
 }
 
 func TestActionFunc(c *cli.Context) error {
@@ -67,10 +74,13 @@ func TestActionFunc(c *cli.Context) error {
 
 		coverProfile := fmt.Sprintf("--coverprofile=%s.coverprofile", pkg)
 
-		err := exec.Command(
-			"go", "test", "-v", coverProfile, packageName,
-		).Run()
+		cmd := exec.Command("go", "test", "-v", coverProfile, packageName)
 
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+
+		err := cmd.Run()
 		if err != nil {
 			return err
 		}
@@ -142,16 +152,34 @@ func GfmrunActionFunc(_ *cli.Context) error {
 		return err
 	}
 
-	return exec.Command("gfmrun", "-c", fmt.Sprint(counter), "-s", "README.md").Run()
+	cmd := exec.Command("gfmrun", "-c", fmt.Sprint(counter), "-s", "README.md")
+
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
 }
 
 func TocActionFunc(_ *cli.Context) error {
-	err := exec.Command("node_modules/.bin/markdown-toc", "-i", "README.md").Run()
+	cmd := exec.Command("node_modules/.bin/markdown-toc", "-i", "README.md")
+
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	err := cmd.Run()
 	if err != nil {
 		return err
 	}
 
-	err = exec.Command("git", "diff", "--exit-code").Run()
+	cmd = exec.Command("git", "diff", "--exit-code")
+
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	err = cmd.Run()
 	if err != nil {
 		return err
 	}
@@ -160,17 +188,35 @@ func TocActionFunc(_ *cli.Context) error {
 }
 
 func GenActionFunc(_ *cli.Context) error {
-	err := exec.Command("go", "generate", "flag-gen/main.go").Run()
+	cmd := exec.Command("go", "generate", "flag-gen/main.go")
+
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	err := cmd.Run()
 	if err != nil {
 		return err
 	}
 
-	err = exec.Command("go", "generate", "cli.go").Run()
+	cmd = exec.Command("go", "generate", "cli.go")
+
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	err = cmd.Run()
 	if err != nil {
 		return err
 	}
 
-	err = exec.Command("git", "diff", "--exit-code").Run()
+	cmd = exec.Command("git", "diff", "--exit-code")
+
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	err = cmd.Run()
 	if err != nil {
 		return err
 	}
