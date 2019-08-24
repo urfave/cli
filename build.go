@@ -6,12 +6,13 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"github.com/urfave/cli"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/urfave/cli"
 )
 
 var packages = []string{"cli", "altsrc"}
@@ -51,8 +52,18 @@ func main() {
 	}
 }
 
+func runCmd(arg string, args ...string) error {
+	cmd := exec.Command(arg, args...)
+
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
+}
+
 func VetActionFunc(_ *cli.Context) error {
-	return exec.Command("go", "vet").Run()
+	return runCmd("go", "vet")
 }
 
 func TestActionFunc(c *cli.Context) error {
@@ -67,10 +78,7 @@ func TestActionFunc(c *cli.Context) error {
 
 		coverProfile := fmt.Sprintf("--coverprofile=%s.coverprofile", pkg)
 
-		err := exec.Command(
-			"go", "test", "-v", coverProfile, packageName,
-		).Run()
-
+		err := runCmd("go", "test", "-v", coverProfile, packageName)
 		if err != nil {
 			return err
 		}
@@ -142,16 +150,16 @@ func GfmrunActionFunc(_ *cli.Context) error {
 		return err
 	}
 
-	return exec.Command("gfmrun", "-c", fmt.Sprint(counter), "-s", "README.md").Run()
+	return runCmd("gfmrun", "-c", fmt.Sprint(counter), "-s", "README.md")
 }
 
 func TocActionFunc(_ *cli.Context) error {
-	err := exec.Command("node_modules/.bin/markdown-toc", "-i", "README.md").Run()
+	err := runCmd("node_modules/.bin/markdown-toc", "-i", "README.md")
 	if err != nil {
 		return err
 	}
 
-	err = exec.Command("git", "diff", "--exit-code").Run()
+	err = runCmd("git", "diff", "--exit-code")
 	if err != nil {
 		return err
 	}
@@ -160,17 +168,17 @@ func TocActionFunc(_ *cli.Context) error {
 }
 
 func GenActionFunc(_ *cli.Context) error {
-	err := exec.Command("go", "generate", "flag-gen/main.go").Run()
+	err := runCmd("go", "generate", "flag-gen/main.go")
 	if err != nil {
 		return err
 	}
 
-	err = exec.Command("go", "generate", "cli.go").Run()
+	err = runCmd("go", "generate", "cli.go")
 	if err != nil {
 		return err
 	}
 
-	err = exec.Command("git", "diff", "--exit-code").Run()
+	err = runCmd("git", "diff", "--exit-code")
 	if err != nil {
 		return err
 	}
