@@ -52,8 +52,8 @@ func main() {
 	}
 }
 
-func runCmd(args ...string) error {
-	cmd := exec.Command(args[0], args[1:]...)
+func runCmd(arg string, args ...string) error {
+	cmd := exec.Command(arg, args...)
 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
