@@ -60,7 +60,7 @@ organized, and expressive!
 
 ## Installation
 
-Make sure you have a working Go environment.  Go version 1.2+ is supported.  [See
+Make sure you have a working Go environment.  Go version 1.10+ is supported.  [See
 the install instructions for Go](http://golang.org/doc/install.html).
 
 To install cli, simply run:
