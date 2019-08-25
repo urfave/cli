@@ -1191,12 +1191,17 @@ func TestRegression(t *testing.T) {
 	// setup
 	app := NewApp()
 	app.Commands = []Command{{
-		Name:  "myCommand",
-		Flags: []Flag{StringFlag{Name: "someFlag"}},
+		Name: "command",
+		Flags: []Flag{
+			StringFlag{
+				Name: "flagone",
+			},
+		},
+		Action: func(c *Context) error { return nil },
 	}}
 
 	// logic under test
-	err := app.Run([]string{"myCLI", "myCommand", "--someFlag", "someInput", "docker", "run", "--rm", "ubuntu", "bash"})
+	err := app.Run([]string{"cli", "command", "--flagone", "flagvalue", "docker", "image", "ls", "--no-trunc"})
 
 	// assertions
 	if err != nil {
