@@ -190,7 +190,7 @@ func (c *Command) parseFlags(args Args) (*flag.FlagSet, error) {
 	}
 
 	if !c.SkipArgReorder {
-		args = reorderArgs(args)
+		args = reorderArgs(c.Flags, args)
 	}
 
 	set, err := parseIter(c, args)
@@ -214,34 +214,36 @@ func (c *Command) useShortOptionHandling() bool {
 	return c.UseShortOptionHandling
 }
 
-// reorderArgs moves all flags before arguments as this is what flag expects
-func reorderArgs(args []string) []string {
-	var nonflags, flags []string
+// reorderArgs moves all flags (reorderedFlags) before arguments (remainingArgs)
+// as this is what flag expects.
+func reorderArgs(commandFlags []Flag, args []string) []string {
+	var remainingArgs []string
+	var reorderedFlags []string
 
 	readFlagValue := false
 	for i, arg := range args {
 		if arg == "--" {
-			nonflags = append(nonflags, args[i:]...)
+			remainingArgs = append(remainingArgs, args[i:]...)
 			break
 		}
 
 		if readFlagValue && !strings.HasPrefix(arg, "-") && !strings.HasPrefix(arg, "--") {
 			readFlagValue = false
-			flags = append(flags, arg)
+			reorderedFlags = append(reorderedFlags, arg)
 			continue
 		}
 		readFlagValue = false
 
 		if arg != "-" && strings.HasPrefix(arg, "-") {
-			flags = append(flags, arg)
+			reorderedFlags = append(reorderedFlags, arg)
 
 			readFlagValue = !strings.Contains(arg, "=")
 		} else {
-			nonflags = append(nonflags, arg)
+			remainingArgs = append(remainingArgs, arg)
 		}
 	}
 
-	return append(flags, nonflags...)
+	return append(reorderedFlags, remainingArgs...)
 }
 
 // Names returns the names including short names and aliases.
