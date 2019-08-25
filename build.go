@@ -52,14 +52,18 @@ func main() {
 	}
 }
 
-func VetActionFunc(_ *cli.Context) error {
-	cmd := exec.Command("go", "vet")
+func runCmd(arg string, args ...string) error {
+	cmd := exec.Command(arg, args...)
 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
 	return cmd.Run()
+}
+
+func VetActionFunc(_ *cli.Context) error {
+	return runCmd("go", "vet")
 }
 
 func TestActionFunc(c *cli.Context) error {
@@ -74,13 +78,7 @@ func TestActionFunc(c *cli.Context) error {
 
 		coverProfile := fmt.Sprintf("--coverprofile=%s.coverprofile", pkg)
 
-		cmd := exec.Command("go", "test", "-v", coverProfile, packageName)
-
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-
-		err := cmd.Run()
+		err := runCmd("go", "test", "-v", coverProfile, packageName)
 		if err != nil {
 			return err
 		}
@@ -152,34 +150,16 @@ func GfmrunActionFunc(_ *cli.Context) error {
 		return err
 	}
 
-	cmd := exec.Command("gfmrun", "-c", fmt.Sprint(counter), "-s", "README.md")
-
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	return cmd.Run()
+	return runCmd("gfmrun", "-c", fmt.Sprint(counter), "-s", "README.md")
 }
 
 func TocActionFunc(_ *cli.Context) error {
-	cmd := exec.Command("node_modules/.bin/markdown-toc", "-i", "README.md")
-
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err := cmd.Run()
+	err := runCmd("node_modules/.bin/markdown-toc", "-i", "README.md")
 	if err != nil {
 		return err
 	}
 
-	cmd = exec.Command("git", "diff", "--exit-code")
-
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err = cmd.Run()
+	err = runCmd("git", "diff", "--exit-code")
 	if err != nil {
 		return err
 	}
@@ -188,35 +168,17 @@ func TocActionFunc(_ *cli.Context) error {
 }
 
 func GenActionFunc(_ *cli.Context) error {
-	cmd := exec.Command("go", "generate", "flag-gen/main.go")
-
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err := cmd.Run()
+	err := runCmd("go", "generate", "flag-gen/main.go")
 	if err != nil {
 		return err
 	}
 
-	cmd = exec.Command("go", "generate", "cli.go")
-
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err = cmd.Run()
+	err = runCmd("go", "generate", "cli.go")
 	if err != nil {
 		return err
 	}
 
-	cmd = exec.Command("git", "diff", "--exit-code")
-
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err = cmd.Run()
+	err = runCmd("git", "diff", "--exit-code")
 	if err != nil {
 		return err
 	}
