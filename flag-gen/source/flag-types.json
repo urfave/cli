@@ -6,7 +6,8 @@
     "dest": true,
     "context_default": "false",
     "parser": "strconv.ParseBool(f.Value.String())",
-    "valueString": "return \"\""
+    "valueString": "return \"\"",
+    "takes_file": false
   },
   {
     "name": "BoolT",
@@ -16,7 +17,8 @@
     "doctail": " that is true by default",
     "context_default": "false",
     "parser": "strconv.ParseBool(f.Value.String())",
-    "valueString": "return \"\""
+    "valueString": "return \"\"",
+    "takes_file": false
   },
   {
     "name": "Duration",
@@ -26,7 +28,8 @@
     "doctail": " (see https://golang.org/pkg/time/#ParseDuration)",
     "context_default": "0",
     "parser": "time.ParseDuration(f.Value.String())",
-    "valueString": "return f.Value.String()"
+    "valueString": "return f.Value.String()",
+    "takes_file": false
   },
   {
     "name": "Float64",
@@ -35,7 +38,8 @@
     "dest": true,
     "context_default": "0",
     "parser": "strconv.ParseFloat(f.Value.String(), 64)",
-    "valueString": "return fmt.Sprintf(\"%f\", f.Value)"
+    "valueString": "return fmt.Sprintf(\"%f\", f.Value)",
+    "takes_file": false
   },
   {
     "name": "Generic",
@@ -44,7 +48,8 @@
     "dest": false,
     "context_default": "nil",
     "context_type": "interface{}",
-    "valueString": "if f.Value != nil {\n\t\treturn f.Value.String()\n\t}\n\treturn \"\""
+    "valueString": "if f.Value != nil {\n\t\treturn f.Value.String()\n\t}\n\treturn \"\"",
+    "takes_file": true
   },
   {
     "name": "Int64",
@@ -53,7 +58,8 @@
     "dest": true,
     "context_default": "0",
     "parser": "strconv.ParseInt(f.Value.String(), 0, 64)",
-    "valueString": "return fmt.Sprintf(\"%d\", f.Value)"
+    "valueString": "return fmt.Sprintf(\"%d\", f.Value)",
+    "takes_file": false
   },
   {
     "name": "Int",
@@ -63,7 +69,8 @@
     "context_default": "0",
     "parser": "strconv.ParseInt(f.Value.String(), 0, 64)",
     "parser_cast": "int(parsed)",
-    "valueString": "return fmt.Sprintf(\"%d\", f.Value)"
+    "valueString": "return fmt.Sprintf(\"%d\", f.Value)",
+    "takes_file": false
   },
   {
     "name": "IntSlice",
@@ -73,7 +80,8 @@
     "context_default": "nil",
     "context_type": "[]int",
     "parser": "(f.Value.(*IntSlice)).Value(), error(nil)",
-    "valueString": "if f.Value != nil {\n\t\treturn f.Value.String()\n\t}\n\treturn \"\""
+    "valueString": "if f.Value != nil {\n\t\treturn f.Value.String()\n\t}\n\treturn \"\"",
+    "takes_file": false
   },
   {
     "name": "Int64Slice",
@@ -83,7 +91,8 @@
     "context_default": "nil",
     "context_type": "[]int64",
     "parser": "(f.Value.(*Int64Slice)).Value(), error(nil)",
-    "valueString": "if f.Value != nil {\n\t\treturn f.Value.String()\n\t}\n\treturn \"\""
+    "valueString": "if f.Value != nil {\n\t\treturn f.Value.String()\n\t}\n\treturn \"\"",
+    "takes_file": false
   },
   {
     "name": "String",
@@ -92,7 +101,8 @@
     "dest": true,
     "context_default": "\"\"",
     "parser": "f.Value.String(), error(nil)",
-    "valueString": "return f.Value"
+    "valueString": "return f.Value",
+    "takes_file": true
   },
   {
     "name": "StringSlice",
@@ -102,7 +112,8 @@
     "context_default": "nil",
     "context_type": "[]string",
     "parser": "(f.Value.(*StringSlice)).Value(), error(nil)",
-    "valueString": "if f.Value != nil {\n\t\treturn f.Value.String()\n\t}\n\treturn \"\""
+    "valueString": "if f.Value != nil {\n\t\treturn f.Value.String()\n\t}\n\treturn \"\"",
+    "takes_file": true
   },
   {
     "name": "Uint64",
@@ -111,7 +122,8 @@
     "dest": true,
     "context_default": "0",
     "parser": "strconv.ParseUint(f.Value.String(), 0, 64)",
-    "valueString": "return fmt.Sprintf(\"%d\", f.Value)"
+    "valueString": "return fmt.Sprintf(\"%d\", f.Value)",
+    "takes_file": false
   },
   {
     "name": "Uint",
@@ -121,6 +133,7 @@
     "context_default": "0",
     "parser": "strconv.ParseUint(f.Value.String(), 0, 64)",
     "parser_cast": "uint(parsed)",
-    "valueString": "return fmt.Sprintf(\"%d\", f.Value)"
+    "valueString": "return fmt.Sprintf(\"%d\", f.Value)",
+    "takes_file": false
   }
 ]
