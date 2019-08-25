@@ -124,16 +124,14 @@ func (a *App) prepareFishFlags(
 			continue
 		}
 
-		var completion strings.Builder
+		completion := &strings.Builder{}
 		completion.WriteString(fmt.Sprintf(
 			"complete -c %s -n '%s'",
 			a.Name,
 			a.fishSubcommandHelper(previousCommands),
 		))
 
-		if !flag.GetTakesFile() {
-			completion.WriteString(" -f")
-		}
+		fishAddFileFlag(f, completion)
 
 		for idx, opt := range strings.Split(flag.GetName(), ",") {
 			if idx == 0 {
@@ -160,6 +158,25 @@ func (a *App) prepareFishFlags(
 	}
 
 	return completions
+}
+
+func fishAddFileFlag(
+	flag Flag,
+	completion *strings.Builder,
+) {
+	addFileExclusionFlag := true
+	if f, ok := flag.(GenericFlag); ok && f.TakesFile {
+		addFileExclusionFlag = false
+	}
+	if f, ok := flag.(StringFlag); ok && f.TakesFile {
+		addFileExclusionFlag = false
+	}
+	if f, ok := flag.(StringSliceFlag); ok && f.TakesFile {
+		addFileExclusionFlag = false
+	}
+	if addFileExclusionFlag {
+		completion.WriteString(" -f")
+	}
 }
 
 func (a *App) fishSubcommandHelper(allCommands []string) string {

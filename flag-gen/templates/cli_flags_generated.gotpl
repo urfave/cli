@@ -60,12 +60,6 @@ func (f {{ $flag.Name }}Flag) GetValue() string {
 	{{ $flag.ValueString }}
 }
 
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f {{ $flag.Name }}Flag) GetTakesFile() bool {
-	{{ if eq $flag.TakesFile true }}return f.TakesFile{{ else }}return false{{ end }}
-}
-
 // {{ $flag.Name }} looks up the value of a local {{ $flag.Name }}Flag, returns
 // {{ $flag.ContextDefault }} if not found
 func (c *Context) {{ $flag.Name }}(name string) {{ if ne .ContextType "" }}{{ $flag.ContextType }}{{ else }}{{ $flag.Type }}{{- end }} {

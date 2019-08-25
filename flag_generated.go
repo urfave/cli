@@ -52,12 +52,6 @@ func (f BoolFlag) GetValue() string {
 	return ""
 }
 
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f BoolFlag) GetTakesFile() bool {
-	return false
-}
-
 // Bool looks up the value of a local BoolFlag, returns
 // false if not found
 func (c *Context) Bool(name string) bool {
@@ -126,12 +120,6 @@ func (f BoolTFlag) GetUsage() string {
 // string if the flag takes no value at all.
 func (f BoolTFlag) GetValue() string {
 	return ""
-}
-
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f BoolTFlag) GetTakesFile() bool {
-	return false
 }
 
 // BoolT looks up the value of a local BoolTFlag, returns
@@ -205,12 +193,6 @@ func (f DurationFlag) GetValue() string {
 	return f.Value.String()
 }
 
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f DurationFlag) GetTakesFile() bool {
-	return false
-}
-
 // Duration looks up the value of a local DurationFlag, returns
 // 0 if not found
 func (c *Context) Duration(name string) time.Duration {
@@ -280,12 +262,6 @@ func (f Float64Flag) GetUsage() string {
 // string if the flag takes no value at all.
 func (f Float64Flag) GetValue() string {
 	return fmt.Sprintf("%f", f.Value)
-}
-
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f Float64Flag) GetTakesFile() bool {
-	return false
 }
 
 // Float64 looks up the value of a local Float64Flag, returns
@@ -362,12 +338,6 @@ func (f GenericFlag) GetValue() string {
 	return ""
 }
 
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f GenericFlag) GetTakesFile() bool {
-	return f.TakesFile
-}
-
 // Generic looks up the value of a local GenericFlag, returns
 // nil if not found
 func (c *Context) Generic(name string) interface{} {
@@ -439,12 +409,6 @@ func (f Int64Flag) GetValue() string {
 	return fmt.Sprintf("%d", f.Value)
 }
 
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f Int64Flag) GetTakesFile() bool {
-	return false
-}
-
 // Int64 looks up the value of a local Int64Flag, returns
 // 0 if not found
 func (c *Context) Int64(name string) int64 {
@@ -514,12 +478,6 @@ func (f IntFlag) GetUsage() string {
 // string if the flag takes no value at all.
 func (f IntFlag) GetValue() string {
 	return fmt.Sprintf("%d", f.Value)
-}
-
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f IntFlag) GetTakesFile() bool {
-	return false
 }
 
 // Int looks up the value of a local IntFlag, returns
@@ -595,12 +553,6 @@ func (f IntSliceFlag) GetValue() string {
 	return ""
 }
 
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f IntSliceFlag) GetTakesFile() bool {
-	return false
-}
-
 // IntSlice looks up the value of a local IntSliceFlag, returns
 // nil if not found
 func (c *Context) IntSlice(name string) []int {
@@ -674,12 +626,6 @@ func (f Int64SliceFlag) GetValue() string {
 	return ""
 }
 
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f Int64SliceFlag) GetTakesFile() bool {
-	return false
-}
-
 // Int64Slice looks up the value of a local Int64SliceFlag, returns
 // nil if not found
 func (c *Context) Int64Slice(name string) []int64 {
@@ -750,12 +696,6 @@ func (f StringFlag) GetUsage() string {
 // string if the flag takes no value at all.
 func (f StringFlag) GetValue() string {
 	return f.Value
-}
-
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f StringFlag) GetTakesFile() bool {
-	return f.TakesFile
 }
 
 // String looks up the value of a local StringFlag, returns
@@ -832,12 +772,6 @@ func (f StringSliceFlag) GetValue() string {
 	return ""
 }
 
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f StringSliceFlag) GetTakesFile() bool {
-	return f.TakesFile
-}
-
 // StringSlice looks up the value of a local StringSliceFlag, returns
 // nil if not found
 func (c *Context) StringSlice(name string) []string {
@@ -909,12 +843,6 @@ func (f Uint64Flag) GetValue() string {
 	return fmt.Sprintf("%d", f.Value)
 }
 
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f Uint64Flag) GetTakesFile() bool {
-	return false
-}
-
 // Uint64 looks up the value of a local Uint64Flag, returns
 // 0 if not found
 func (c *Context) Uint64(name string) uint64 {
@@ -984,12 +912,6 @@ func (f UintFlag) GetUsage() string {
 // string if the flag takes no value at all.
 func (f UintFlag) GetValue() string {
 	return fmt.Sprintf("%d", f.Value)
-}
-
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f UintFlag) GetTakesFile() bool {
-	return false
 }
 
 // Uint looks up the value of a local UintFlag, returns
