@@ -6,7 +6,7 @@ import (
 
 // TestRegression tests a regression that was merged between versions 1.20.0 and 1.21.0
 // The included app.Run line worked in 1.20.0, and then was broken in 1.21.0.
-func TestRegression(t *testing.T) {
+func TestVersionOneTwoOneRegression(t *testing.T) {
 	// setup
 	app := NewApp()
 	app.Commands = []Command{{
