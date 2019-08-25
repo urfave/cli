@@ -1187,28 +1187,6 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 	}
 }
 
-func TestRegression(t *testing.T) {
-	// setup
-	app := NewApp()
-	app.Commands = []Command{{
-		Name: "command",
-		Flags: []Flag{
-			StringFlag{
-				Name: "flagone",
-			},
-		},
-		Action: func(c *Context) error { return nil },
-	}}
-
-	// logic under test
-	err := app.Run([]string{"cli", "command", "--flagone", "flagvalue", "docker", "image", "ls", "--no-trunc"})
-
-	// assertions
-	if err != nil {
-		t.Errorf("did not expected an error, but there was one: %s", err)
-	}
-}
-
 func TestAppHelpPrinter(t *testing.T) {
 	oldPrinter := HelpPrinter
 	defer func() {
