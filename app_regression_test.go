@@ -12,7 +12,6 @@ func TestVersionOneTwoOneRegression(t *testing.T) {
 		testCase    string
 		appRunInput []string
 	}{
-		// assertion: empty input, when a required flag is present, errors
 		{
 			testCase:    "with_dash_dash",
 			appRunInput: []string{"cli", "command", "--flagone", "flagvalue", "--", "docker", "image", "ls", "--no-trunc"},
