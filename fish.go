@@ -164,19 +164,21 @@ func fishAddFileFlag(
 	flag Flag,
 	completion *strings.Builder,
 ) {
-	addFileExclusionFlag := true
-	if f, ok := flag.(GenericFlag); ok && f.TakesFile {
-		addFileExclusionFlag = false
+	switch f := flag.(type) {
+	case GenericFlag:
+		if f.TakesFile {
+			return
+		}
+	case StringFlag:
+		if f.TakesFile {
+			return
+		}
+	case StringSliceFlag:
+		if f.TakesFile {
+			return
+		}
 	}
-	if f, ok := flag.(StringFlag); ok && f.TakesFile {
-		addFileExclusionFlag = false
-	}
-	if f, ok := flag.(StringSliceFlag); ok && f.TakesFile {
-		addFileExclusionFlag = false
-	}
-	if addFileExclusionFlag {
-		completion.WriteString(" -f")
-	}
+	completion.WriteString(" -f")
 }
 
 func (a *App) fishSubcommandHelper(allCommands []string) string {
