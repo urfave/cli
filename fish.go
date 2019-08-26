@@ -64,11 +64,7 @@ func (a *App) writeFishCompletionTemplate(w io.Writer) error {
 	})
 }
 
-func (a *App) prepareFishCommands(
-	commands []Command,
-	allCommands *[]string,
-	previousCommands []string,
-) []string {
+func (a *App) prepareFishCommands(commands []Command, allCommands *[]string, previousCommands []string) []string {
 	completions := []string{}
 	for i := range commands {
 		command := &commands[i]
@@ -113,10 +109,7 @@ func (a *App) prepareFishCommands(
 	return completions
 }
 
-func (a *App) prepareFishFlags(
-	flags []Flag,
-	previousCommands []string,
-) []string {
+func (a *App) prepareFishFlags(flags []Flag, previousCommands []string) []string {
 	completions := []string{}
 	for _, f := range flags {
 		flag, ok := f.(DocGenerationFlag)
@@ -160,10 +153,7 @@ func (a *App) prepareFishFlags(
 	return completions
 }
 
-func fishAddFileFlag(
-	flag Flag,
-	completion *strings.Builder,
-) {
+func fishAddFileFlag(flag Flag, completion *strings.Builder) {
 	switch f := flag.(type) {
 	case GenericFlag:
 		if f.TakesFile {
