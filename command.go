@@ -214,14 +214,18 @@ func (c *Command) useShortOptionHandling() bool {
 	return c.UseShortOptionHandling
 }
 
-// reorderArgs moves all flags (reorderedFlags) before arguments (remainingArgs)
-// as this is what flag expects.
+// reorderArgs moves all flags (via reorderedArgs) before the rest of
+// the arguments (remainingArgs) as this is what flag expects.
 func reorderArgs(commandFlags []Flag, args []string) []string {
 	var remainingArgs []string
-	var reorderedFlags []string
+	var reorderedArgs []string
 
 	readFlagValue := false
 	for i, arg := range args {
+
+		// dont reorder any args after a --
+		// read about -- here:
+		// https://unix.stackexchange.com/questions/11376/what-does-double-dash-mean-also-known-as-bare-double-dash
 		if arg == "--" {
 			remainingArgs = append(remainingArgs, args[i:]...)
 			break
@@ -229,21 +233,22 @@ func reorderArgs(commandFlags []Flag, args []string) []string {
 
 		if readFlagValue && !strings.HasPrefix(arg, "-") && !strings.HasPrefix(arg, "--") {
 			readFlagValue = false
-			reorderedFlags = append(reorderedFlags, arg)
+			reorderedArgs = append(reorderedArgs, arg)
 			continue
 		}
 		readFlagValue = false
 
 		if arg != "-" && strings.HasPrefix(arg, "-") {
-			reorderedFlags = append(reorderedFlags, arg)
+			reorderedArgs = append(reorderedArgs, arg)
 
 			readFlagValue = !strings.Contains(arg, "=")
-		} else {
-			remainingArgs = append(remainingArgs, arg)
+			continue
 		}
+
+		remainingArgs = append(remainingArgs, arg)
 	}
 
-	return append(reorderedFlags, remainingArgs...)
+	return append(reorderedArgs, remainingArgs...)
 }
 
 // Names returns the names including short names and aliases.
