@@ -9,7 +9,7 @@ function __fish_greet_no_subcommand --description 'Test if there has been any su
     return 0
 end
 
-complete -c greet -n '__fish_greet_no_subcommand' -l socket -s s -r -d 'some usage text'
+complete -c greet -n '__fish_greet_no_subcommand' -l socket -s s -r -d 'some \'usage\' text'
 complete -c greet -n '__fish_greet_no_subcommand' -f -l flag -s fl -s f -r
 complete -c greet -n '__fish_greet_no_subcommand' -f -l another-flag -s b -d 'another usage text'
 complete -c greet -n '__fish_greet_no_subcommand' -f -l help -s h -d 'show help'

@@ -11,7 +11,7 @@ func testApp() *App {
 	app.Flags = []Flag{
 		StringFlag{
 			Name:      "socket, s",
-			Usage:     "some usage text",
+			Usage:     "some 'usage' text",
 			Value:     "value",
 			TakesFile: true,
 		},
