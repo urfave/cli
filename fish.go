@@ -64,18 +64,14 @@ func (a *App) writeFishCompletionTemplate(w io.Writer) error {
 	})
 }
 
-func (a *App) prepareFishCommands(
-	commands []Command,
-	allCommands *[]string,
-	previousCommands []string,
-) []string {
+func (a *App) prepareFishCommands(commands []Command, allCommands *[]string, previousCommands []string) []string {
 	completions := []string{}
 	for i := range commands {
 		command := &commands[i]
 
 		var completion strings.Builder
 		completion.WriteString(fmt.Sprintf(
-			"complete -c %s -f -n '%s' -a '%s'",
+			"complete -r -c %s -n '%s' -a '%s'",
 			a.Name,
 			a.fishSubcommandHelper(previousCommands),
 			strings.Join(command.Names(), " "),
@@ -113,10 +109,7 @@ func (a *App) prepareFishCommands(
 	return completions
 }
 
-func (a *App) prepareFishFlags(
-	flags []Flag,
-	previousCommands []string,
-) []string {
+func (a *App) prepareFishFlags(flags []Flag, previousCommands []string) []string {
 	completions := []string{}
 	for _, f := range flags {
 		flag, ok := f.(DocGenerationFlag)
@@ -124,12 +117,14 @@ func (a *App) prepareFishFlags(
 			continue
 		}
 
-		var completion strings.Builder
+		completion := &strings.Builder{}
 		completion.WriteString(fmt.Sprintf(
-			"complete -c %s -f -n '%s'",
+			"complete -c %s -n '%s'",
 			a.Name,
 			a.fishSubcommandHelper(previousCommands),
 		))
+
+		fishAddFileFlag(f, completion)
 
 		for idx, opt := range strings.Split(flag.GetName(), ",") {
 			if idx == 0 {
@@ -156,6 +151,24 @@ func (a *App) prepareFishFlags(
 	}
 
 	return completions
+}
+
+func fishAddFileFlag(flag Flag, completion *strings.Builder) {
+	switch f := flag.(type) {
+	case GenericFlag:
+		if f.TakesFile {
+			return
+		}
+	case StringFlag:
+		if f.TakesFile {
+			return
+		}
+	case StringSliceFlag:
+		if f.TakesFile {
+			return
+		}
+	}
+	completion.WriteString(" -f")
 }
 
 func (a *App) fishSubcommandHelper(allCommands []string) string {
