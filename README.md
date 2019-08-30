@@ -560,6 +560,85 @@ Will result in help output like:
 --lang value, -l value  Language for the greeting (default: "english")
 ```
 
+#### Required Flags
+
+You can make a flag required by setting the `Required` field to `true`. If an end-user
+fails to provide a required flag, they will be shown a default error message, or a 
+custom message if one is defined. To define a custom error message for a required flag,
+set the `RequiredFlagErr` field equal to a `cli.FlagErr` struct with a `Custom` field of `true`
+and a `Message` field containing the custom error message. Default and custom error messages 
+can be mixed with default messages displayed before custom messages.
+
+For example this:
+
+```go
+package main
+
+import (
+  "log"
+  "os"
+  "strings"
+
+  "../cli"
+)
+
+func main() {
+  app := cli.NewApp()
+
+  app.Flags = []cli.Flag {
+    cli.StringFlag{
+      Name: "lang",
+      Value: "english",
+      Usage: "language for the greeting",
+      Required: true, 
+      RequiredFlagErr: cli.FlagErr{
+        Custom: true, 
+        Message: `There's a problem: "lang" is a required flag` ,
+      },
+    },
+    cli.StringFlag{
+      Name: "mood",
+      Value: "normal",
+      Usage: "emphasis for the greeting",
+      Required: true, 
+    },
+  }
+
+  app.Action = func(c *cli.Context) error {
+    name := "Nefertiti"
+    if c.NArg() > 0 {
+      name = c.Args().Get(0)
+    }
+    var output string
+    if c.String("lang") == "spanish" {
+      output = "Hola " + name
+    } else {
+      output = "Hello " + name
+    }
+
+    if c.String("mood") == "excited" {
+      output = strings.ToUpper(output)
+    }
+
+    return nil
+  }
+
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
+}
+```
+
+Creates an app that requires both `lang` and `mood` flags. If an attempt
+to run the app is made without either, the end-user will see the following
+prompts:
+
+```
+Required flag "mood" not set
+There's a problem: "lang" is a required flag
+```
+
 #### Values from the Environment
 
 You can also have the default value set from the environment via `EnvVar`.  e.g.
