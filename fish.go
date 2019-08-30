@@ -78,7 +78,8 @@ func (a *App) prepareFishCommands(commands []Command, allCommands *[]string, pre
 		))
 
 		if command.Usage != "" {
-			completion.WriteString(fmt.Sprintf(" -d '%s'", command.Usage))
+			completion.WriteString(fmt.Sprintf(" -d '%s'",
+				escapeSingleQuotes(command.Usage)))
 		}
 
 		if !command.HideHelp {
@@ -144,7 +145,8 @@ func (a *App) prepareFishFlags(flags []Flag, previousCommands []string) []string
 		}
 
 		if flag.GetUsage() != "" {
-			completion.WriteString(fmt.Sprintf(" -d '%s'", flag.GetUsage()))
+			completion.WriteString(fmt.Sprintf(" -d '%s'",
+				escapeSingleQuotes(flag.GetUsage())))
 		}
 
 		completions = append(completions, completion.String())
@@ -181,4 +183,8 @@ func (a *App) fishSubcommandHelper(allCommands []string) string {
 	}
 	return fishHelper
 
+}
+
+func escapeSingleQuotes(input string) string {
+	return strings.Replace(input, `'`, `\'`, -1)
 }
