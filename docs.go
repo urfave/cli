@@ -3,12 +3,11 @@ package cli
 import (
 	"bytes"
 	"fmt"
+	"github.com/cpuguy83/go-md2man/v2/md2man"
 	"io"
 	"sort"
 	"strings"
 	"text/template"
-
-	"github.com/cpuguy83/go-md2man/md2man"
 )
 
 // ToMarkdown creates a markdown string for the `*App`
