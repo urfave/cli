@@ -15,8 +15,8 @@
 * Clarify that altsrc supports both TOML and JSON in [urfave/cli/pull/774](https://github.com/urfave/cli/pull/774) via [@whereswaldon](https://github.com/whereswaldon)
 * Made the exit code example more clear in [urfave/cli/pull/823](https://github.com/urfave/cli/pull/823) via [@xordspar0](https://github.com/xordspar0)
 * Removed the use of python for internal flag generation in [urfave/cli/pull/836](https://github.com/urfave/cli/pull/836) via [@asahasrabuddhe](https://github.com/asahasrabuddhe)
-* Changed the supported go versions to `1.10`, `1.11`, `1.12` in [https://github.com/urfave/cli/pull/843](urfave/cli/pull/843) via [@lafriks](https://github.com/lafriks)
-* Changed the v1 releases section in the readme in [https://github.com/urfave/cli/pull/862](urfave/cli/pull/862) via [@russoj88](https://github.com/russoj88)
+* Changed the supported go versions to `1.10`, `1.11`, `1.12` in [urfave/cli/pull/843](https://github.com/urfave/cli/pull/843) via [@lafriks](https://github.com/lafriks)
+* Changed the v1 releases section in the readme in [urfave/cli/pull/862](https://github.com/urfave/cli/pull/862) via [@russoj88](https://github.com/russoj88)
 * Cleaned up go modules in [urfave/cli/pull/874](https://github.com/urfave/cli/pull/874) via [@saschagrunert](https://github.com/saschagrunert)
 
 ### Added
