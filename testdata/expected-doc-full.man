@@ -49,7 +49,7 @@ greet [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 \fB\-\-flag, \-\-fl, \-f\fP="":
 
 .PP
-\fB\-\-socket, \-s\fP="": some usage text (default: value)
+\fB\-\-socket, \-s\fP="": some 'usage' text (default: value)
 
 
 .SH COMMANDS

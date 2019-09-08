@@ -10,9 +10,10 @@ func testApp() *App {
 	app.Name = "greet"
 	app.Flags = []Flag{
 		StringFlag{
-			Name:  "socket, s",
-			Usage: "some usage text",
-			Value: "value",
+			Name:      "socket, s",
+			Usage:     "some 'usage' text",
+			Value:     "value",
+			TakesFile: true,
 		},
 		StringFlag{Name: "flag, fl, f"},
 		BoolFlag{
@@ -23,7 +24,10 @@ func testApp() *App {
 	app.Commands = []Command{{
 		Aliases: []string{"c"},
 		Flags: []Flag{
-			StringFlag{Name: "flag, fl, f"},
+			StringFlag{
+				Name:      "flag, fl, f",
+				TakesFile: true,
+			},
 			BoolFlag{
 				Name:  "another-flag, b",
 				Usage: "another usage text",
