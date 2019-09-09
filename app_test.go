@@ -1084,6 +1084,33 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			}},
 			expectedAnError: true,
 		},
+		{
+			testCase:        "error_case_empty_input_with_required_flag_and_custom_error_message_on_app",
+			appRunInput:     []string{"myCLI"},
+			appFlags:        []Flag{StringFlag{Name: "requiredFlag", Required: true, RequiredFlagErr: FlagErr{Custom: true, Message:`custom error`}}},
+			expectedAnError: true,
+		},
+		{
+			testCase:    "error_case_empty_input_with_required_flag_and_custom_error_message_on_command",
+			appRunInput: []string{"myCLI", "myCommand"},
+			appCommands: []Command{{
+				Name:  "myCommand",
+				Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true, RequiredFlagErr: FlagErr{Custom: true, Message:`custom error`}}},
+			}},
+			expectedAnError: true,
+		},
+		{
+			testCase:    "error_case_empty_input_with_required_flag_and_custom_error_message_on_subcommand",
+			appRunInput: []string{"myCLI", "myCommand", "mySubCommand"},
+			appCommands: []Command{{
+				Name: "myCommand",
+				Subcommands: []Command{{
+					Name:  "mySubCommand",
+					Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true, RequiredFlagErr: FlagErr{Custom: true, Message:`custom error`}}},
+				}},
+			}},
+			expectedAnError: true,
+		},
 		// assertion: inputing --help, when a required flag is present, does not error
 		{
 			testCase:    "valid_case_help_input_with_required_flag_on_app",
@@ -1106,6 +1133,30 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 				Subcommands: []Command{{
 					Name:  "mySubCommand",
 					Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+				}},
+			}},
+		},
+		{
+			testCase:    "valid_case_help_input_with_required_flag_and_custom_error_message_on_app",
+			appRunInput: []string{"myCLI", "--help"},
+			appFlags:    []Flag{StringFlag{Name: "requiredFlag", Required: true, RequiredFlagErr: FlagErr{Custom: true, Message:`custom error`}}},
+		},
+		{
+			testCase:    "valid_case_help_input_with_required_flag_and_custom_error_message_on_command",
+			appRunInput: []string{"myCLI", "myCommand", "--help"},
+			appCommands: []Command{{
+				Name:  "myCommand",
+				Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true, RequiredFlagErr: FlagErr{Custom: true, Message:`custom error`}}},
+			}},
+		},
+		{
+			testCase:    "valid_case_help_input_with_required_flag_and_custom_error_message_on_subcommand",
+			appRunInput: []string{"myCLI", "myCommand", "mySubCommand", "--help"},
+			appCommands: []Command{{
+				Name: "myCommand",
+				Subcommands: []Command{{
+					Name:  "mySubCommand",
+					Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true, RequiredFlagErr: FlagErr{Custom: true, Message:`custom error`}}},
 				}},
 			}},
 		},
@@ -1137,6 +1188,33 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			}},
 			expectedAnError: true,
 		},
+		{
+			testCase:        "error_case_optional_input_with_required_flag_and_custom_error_message_on_app",
+			appRunInput:     []string{"myCLI", "--optional", "cats"},
+			appFlags:        []Flag{StringFlag{Name: "requiredFlag", Required: true, RequiredFlagErr: FlagErr{Custom: true, Message:`custom error`}}, StringFlag{Name: "optional"}},
+			expectedAnError: true,
+		},
+		{
+			testCase:    "error_case_optional_input_with_required_flag_and_custom_error_message_on_command",
+			appRunInput: []string{"myCLI", "myCommand", "--optional", "cats"},
+			appCommands: []Command{{
+				Name:  "myCommand",
+				Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true, RequiredFlagErr: FlagErr{Custom: true, Message:`custom error`}}, StringFlag{Name: "optional"}},
+			}},
+			expectedAnError: true,
+		},
+		{
+			testCase:    "error_case_optional_input_with_required_flag_and_custom_error_message_on_subcommand",
+			appRunInput: []string{"myCLI", "myCommand", "mySubCommand", "--optional", "cats"},
+			appCommands: []Command{{
+				Name: "myCommand",
+				Subcommands: []Command{{
+					Name:  "mySubCommand",
+					Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true, RequiredFlagErr: FlagErr{Custom: true, Message:`custom error`}}, StringFlag{Name: "optional"}},
+				}},
+			}},
+			expectedAnError: true,
+		},
 		// assertion: when a required flag is present, inputting that required flag does not error
 		{
 			testCase:    "valid_case_required_flag_input_on_app",
@@ -1159,6 +1237,30 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 				Subcommands: []Command{{
 					Name:  "mySubCommand",
 					Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true}},
+				}},
+			}},
+		},
+		{
+			testCase:    "valid_case_required_flag_input_on_app_with_custom_error_message",
+			appRunInput: []string{"myCLI", "--requiredFlag", "cats"},
+			appFlags:    []Flag{StringFlag{Name: "requiredFlag", Required: true, RequiredFlagErr: FlagErr{Custom: true, Message:`custom error`}}, StringFlag{Name: "optional"}},
+		},
+		{
+			testCase:    "valid_case_required_flag_input_on_command_with_custom_error_message",
+			appRunInput: []string{"myCLI", "myCommand", "--requiredFlag", "cats"},
+			appCommands: []Command{{
+				Name:  "myCommand",
+				Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true, RequiredFlagErr: FlagErr{Custom: true, Message:`custom error`}}, StringFlag{Name: "optional"}},
+			}},
+		},
+		{
+			testCase:    "valid_case_required_flag_input_on_subcommand_with_custom_error_message",
+			appRunInput: []string{"myCLI", "myCommand", "mySubCommand", "--requiredFlag", "cats"},
+			appCommands: []Command{{
+				Name: "myCommand",
+				Subcommands: []Command{{
+					Name:  "mySubCommand",
+					Flags: []Flag{StringFlag{Name: "requiredFlag", Required: true, RequiredFlagErr: FlagErr{Custom: true, Message:`custom error`}}, StringFlag{Name: "optional"}},
 				}},
 			}},
 		},
