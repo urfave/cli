@@ -16,8 +16,6 @@ cache:
     - node_modules
 
 before_script:
-  - go get github.com/shurcooL/vfsgen || true
-  - go get github.com/shurcooL/httpfs/union || true
   - go get github.com/urfave/gfmrun/... || true
   - go get golang.org/x/tools/cmd/goimports
   - if [ ! -f node_modules/.bin/markdown-toc ] ; then
@@ -25,7 +23,6 @@ before_script:
     fi
 
 script:
-  - go run build.go generate
   - go run build.go vet
   - go run build.go test
   - go run build.go gfmrun
