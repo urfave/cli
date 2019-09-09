@@ -20,16 +20,14 @@ cache:
     - node_modules
 
 before_script:
-  - go get github.com/shurcooL/vfsgen || true
-  - go get github.com/shurcooL/httpfs/union || true
-  - go get github.com/urfave/gfmrun/... || true
+  - go get github.com/urfave/gfmrun/cmd/gfmrun
   - go get golang.org/x/tools/cmd/goimports
   - npm install markdown-toc
 
 script:
   - go run build.go generate
   - go run build.go vet
-  - go run build.go testm
+  - go run build.go test
   - go run build.go gfmrun
   - go run build.go toc
 
