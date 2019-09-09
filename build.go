@@ -40,10 +40,6 @@ func main() {
 			Name:   "toc",
 			Action: TocActionFunc,
 		},
-		cli.Command{
-			Name:   "generate",
-			Action: GenActionFunc,
-		},
 	}
 
 	err := app.Run(os.Args)
@@ -155,25 +151,6 @@ func GfmrunActionFunc(_ *cli.Context) error {
 
 func TocActionFunc(_ *cli.Context) error {
 	err := runCmd("node_modules/.bin/markdown-toc", "-i", "README.md")
-	if err != nil {
-		return err
-	}
-
-	err = runCmd("git", "diff", "--exit-code")
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func GenActionFunc(_ *cli.Context) error {
-	err := runCmd("go", "generate", "flag-gen/main.go")
-	if err != nil {
-		return err
-	}
-
-	err = runCmd("go", "generate", "cli.go")
 	if err != nil {
 		return err
 	}
