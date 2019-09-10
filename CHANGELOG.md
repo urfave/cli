@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+## [1.22.1] - 2019-09-10
+
+### Changed
+
+* Remove flag code generation logic, legacy python test runner in [urfave/cli/pull/883](https://github.com/urfave/cli/pull/883) via [@asahasrabuddhe](https://github.com/asahasrabuddhe)
+* Enable Go Modules support, drop support for `Go 1.10` add support for `Go 1.13` in [urfave/cli/pull/885](https://github.com/urfave/cli/pull/885) via [@asahasrabuddhe](https://github.com/asahasrabuddhe)
+
 ## [1.22.0] - 2019-09-07
 
 ### Fixed
