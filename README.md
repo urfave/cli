@@ -579,7 +579,7 @@ import (
   "os"
   "strings"
 
-  "../cli"
+  "github.com/urfave/cli"
 )
 
 func main() {
