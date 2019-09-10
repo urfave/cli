@@ -1,6 +1,6 @@
 module github.com/urfave/cli
 
-go 1.10
+go 1.11
 
 require (
 	github.com/BurntSushi/toml v0.3.1
