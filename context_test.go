@@ -525,7 +525,7 @@ func TestCheckRequiredFlags(t *testing.T) {
 			parseInput: []string{"-N", "asd", "-N", "qwe"},
 		},
 		{
-			testCase: "required_flag_with_short_name",
+			testCase: "required_flag_with_multiple_short_names",
 			flags: []Flag{
 				StringSliceFlag{Name: "names, N, n", Required: true},
 			},
