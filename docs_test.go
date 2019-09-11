@@ -53,6 +53,9 @@ func testApp() *App {
 		Usage:   "retrieve generic information",
 	}, {
 		Name: "some-command",
+	}, {
+		Name:   "hidden-command",
+		Hidden: true,
 	}}
 	app.UsageText = "app [first_arg] [second_arg]"
 	app.Usage = "Some app"
