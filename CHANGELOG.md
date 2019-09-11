@@ -6,6 +6,10 @@
 
 ## [1.22.1] - 2019-09-10
 
+### Fixed
+
+* Hide output of hidden commands on man pages in [urfave/cli/pull/889](https://github.com/urfave/cli/pull/889) via [@crosbymichael](https://github.com/crosbymichael)
+
 ### Changed
 
 * Remove flag code generation logic, legacy python test runner in [urfave/cli/pull/883](https://github.com/urfave/cli/pull/883) via [@asahasrabuddhe](https://github.com/asahasrabuddhe)
