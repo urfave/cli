@@ -468,7 +468,8 @@ signature of `func(*cli.Context) error`, as defined by `cli.ActionFunc`.
 ### Added
 - Initial implementation.
 
-[Unreleased]: https://github.com/urfave/cli/compare/v1.22.0...HEAD
+[Unreleased]: https://github.com/urfave/cli/compare/v1.22.1...HEAD
+[1.22.1]: https://github.com/urfave/cli/compare/v1.22.0...v1.22.1
 [1.22.0]: https://github.com/urfave/cli/compare/v1.21.0...v1.22.0
 [1.21.0]: https://github.com/urfave/cli/compare/v1.20.0...v1.21.0
 [1.20.0]: https://github.com/urfave/cli/compare/v1.19.1...v1.20.0
