@@ -325,7 +325,7 @@ func checkRequiredFlags(flags []Flag, context *Context) requiredFlagsErr {
 				}
 			}
 
-			if !flagPresent {
+			if !flagPresent && flagName != "" {
 				missingFlags = append(missingFlags, flagName)
 			}
 		}
