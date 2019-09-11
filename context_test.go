@@ -517,6 +517,20 @@ func TestCheckRequiredFlags(t *testing.T) {
 			},
 			parseInput: []string{"--requiredFlag", "myinput", "--requiredFlagTwo", "myinput"},
 		},
+		{
+			testCase: "required_flag_with_short_name",
+			flags: []Flag{
+				StringSliceFlag{Name: "names, N", Required: true},
+			},
+			parseInput: []string{"-N", "asd", "-N", "qwe"},
+		},
+		{
+			testCase: "required_flag_with_multiple_short_names",
+			flags: []Flag{
+				StringSliceFlag{Name: "names, N, n", Required: true},
+			},
+			parseInput: []string{"-n", "asd", "-n", "qwe"},
+		},
 	}
 	for _, test := range tdata {
 		t.Run(test.testCase, func(t *testing.T) {
