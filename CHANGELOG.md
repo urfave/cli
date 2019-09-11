@@ -9,6 +9,7 @@
 ### Fixed
 
 * Hide output of hidden commands on man pages in [urfave/cli/pull/889](https://github.com/urfave/cli/pull/889) via [@crosbymichael](https://github.com/crosbymichael)
+* Don't generate fish completion for hidden commands [urfave/cli/pull/891](https://github.com/urfave/891) via [@saschagrunert](https://github.com/saschagrunert)
 * Using short flag names for required flags throws an error in [urfave/cli/pull/890](https://github.com/urfave/cli/pull/890) via [@asahasrabuddhe](https://github.com/asahasrabuddhe)
 
 ### Changed
