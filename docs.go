@@ -57,6 +57,9 @@ func prepareCommands(commands []Command, level int) []string {
 	coms := []string{}
 	for i := range commands {
 		command := &commands[i]
+		if command.Hidden {
+			continue
+		}
 		usage := ""
 		if command.Usage != "" {
 			usage = command.Usage
