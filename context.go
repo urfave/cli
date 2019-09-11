@@ -313,9 +313,17 @@ func checkRequiredFlags(flags []Flag, context *Context) requiredFlagsErr {
 	var missingFlags []string
 	for _, f := range flags {
 		if rf, ok := f.(RequiredFlag); ok && rf.IsRequired() {
-			key := strings.Split(f.GetName(), ",")[0]
-			if !context.IsSet(key) {
-				missingFlags = append(missingFlags, key)
+			key := strings.Split(f.GetName(), ",")
+			if len(key) > 1 {
+				// has short name
+				if !context.IsSet(strings.TrimSpace(key[0])) && !context.IsSet(strings.TrimSpace(key[1])) {
+					missingFlags = append(missingFlags, key[0])
+				}
+			} else {
+				// does not have short name
+				if !context.IsSet(strings.TrimSpace(key[0])) {
+					missingFlags = append(missingFlags, key[0])
+				}
 			}
 		}
 	}
