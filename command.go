@@ -238,7 +238,7 @@ func reorderArgs(commandFlags []Flag, args []string) []string {
 		}
 		readFlagValue = false
 
-		if arg != "-" && strings.HasPrefix(arg, "-") {
+		if arg != "-" && strings.HasPrefix(arg, "-") && argIsFlag(commandFlags, arg) {
 			reorderedArgs = append(reorderedArgs, arg)
 
 			readFlagValue = !strings.Contains(arg, "=")
@@ -249,6 +249,18 @@ func reorderArgs(commandFlags []Flag, args []string) []string {
 	}
 
 	return append(reorderedArgs, remainingArgs...)
+}
+
+func argIsFlag(commandFlags []Flag, arg string) bool {
+	strippedArg := strings.ReplaceAll(arg, "-", "")
+	for _, flag := range commandFlags {
+		for _, key := range strings.Split(flag.GetName(), ",") {
+			if key == strippedArg {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // Names returns the names including short names and aliases.
