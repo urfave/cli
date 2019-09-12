@@ -4,6 +4,19 @@
 
 ## [Unreleased]
 
+## [1.22.1] - 2019-09-11
+
+### Fixed
+
+* Hide output of hidden commands on man pages in [urfave/cli/pull/889](https://github.com/urfave/cli/pull/889) via [@crosbymichael](https://github.com/crosbymichael)
+* Don't generate fish completion for hidden commands [urfave/cli/pull/891](https://github.com/urfave/891) via [@saschagrunert](https://github.com/saschagrunert)
+* Using short flag names for required flags throws an error in [urfave/cli/pull/890](https://github.com/urfave/cli/pull/890) via [@asahasrabuddhe](https://github.com/asahasrabuddhe)
+
+### Changed
+
+* Remove flag code generation logic, legacy python test runner in [urfave/cli/pull/883](https://github.com/urfave/cli/pull/883) via [@asahasrabuddhe](https://github.com/asahasrabuddhe)
+* Enable Go Modules support, drop support for `Go 1.10` add support for `Go 1.13` in [urfave/cli/pull/885](https://github.com/urfave/cli/pull/885) via [@asahasrabuddhe](https://github.com/asahasrabuddhe)
+
 ## [1.22.0] - 2019-09-07
 
 ### Fixed
@@ -457,7 +470,8 @@ signature of `func(*cli.Context) error`, as defined by `cli.ActionFunc`.
 ### Added
 - Initial implementation.
 
-[Unreleased]: https://github.com/urfave/cli/compare/v1.22.0...HEAD
+[Unreleased]: https://github.com/urfave/cli/compare/v1.22.1...HEAD
+[1.22.1]: https://github.com/urfave/cli/compare/v1.22.0...v1.22.1
 [1.22.0]: https://github.com/urfave/cli/compare/v1.21.0...v1.22.0
 [1.21.0]: https://github.com/urfave/cli/compare/v1.20.0...v1.21.0
 [1.20.0]: https://github.com/urfave/cli/compare/v1.19.1...v1.20.0
