@@ -18,7 +18,7 @@ func TestCommandFlagParsing(t *testing.T) {
 		UseShortOptionHandling bool
 	}{
 		// Test normal "not ignoring flags" flow
-		{[]string{"test-cmd", "blah", "blah", "-break"}, false, false, errors.New("flag provided but not defined: -break"), false},
+		{[]string{"test-cmd", "blah", "blah", "-break"}, false, false, nil, false},
 
 		// Test no arg reorder
 		{[]string{"test-cmd", "blah", "blah", "-break"}, false, true, nil, false},
