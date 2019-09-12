@@ -8,7 +8,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/cpuguy83/go-md2man/md2man"
+	"github.com/cpuguy83/go-md2man/v2/md2man"
 )
 
 // ToMarkdown creates a markdown string for the `*App`
@@ -57,6 +57,9 @@ func prepareCommands(commands []Command, level int) []string {
 	coms := []string{}
 	for i := range commands {
 		command := &commands[i]
+		if command.Hidden {
+			continue
+		}
 		usage := ""
 		if command.Usage != "" {
 			usage = command.Usage
