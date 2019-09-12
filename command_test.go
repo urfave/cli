@@ -11,38 +11,91 @@ import (
 
 func TestCommandFlagParsing(t *testing.T) {
 	cases := []struct {
-		testArgs        []string
-		skipFlagParsing bool
-		expectedErr     error
+		testArgs               []string
+		skipFlagParsing        bool
+		skipArgReorder         bool
+		expectedErr            error
+		UseShortOptionHandling bool
 	}{
 		// Test normal "not ignoring flags" flow
-		{[]string{"test-cmd", "-break", "blah", "blah"}, false, errors.New("flag provided but not defined: -break")},
+		{[]string{"test-cmd", "blah", "blah", "-break"}, false, false, errors.New("flag provided but not defined: -break"), false},
 
-		{[]string{"test-cmd", "blah", "blah"}, true, nil},   // Test SkipFlagParsing without any args that look like flags
-		{[]string{"test-cmd", "blah", "-break"}, true, nil}, // Test SkipFlagParsing with random flag arg
-		{[]string{"test-cmd", "blah", "-help"}, true, nil},  // Test SkipFlagParsing with "special" help flag arg
+		// Test no arg reorder
+		{[]string{"test-cmd", "blah", "blah", "-break"}, false, true, nil, false},
+		{[]string{"test-cmd", "blah", "blah", "-break", "ls", "-l"}, false, true, nil, true},
+
+		{[]string{"test-cmd", "blah", "blah"}, true, false, nil, false},   // Test SkipFlagParsing without any args that look like flags
+		{[]string{"test-cmd", "blah", "-break"}, true, false, nil, false}, // Test SkipFlagParsing with random flag arg
+		{[]string{"test-cmd", "blah", "-help"}, true, false, nil, false},  // Test SkipFlagParsing with "special" help flag arg
+		{[]string{"test-cmd", "blah"}, false, false, nil, true},           // Test UseShortOptionHandling
 	}
 
 	for _, c := range cases {
 		app := &App{Writer: ioutil.Discard}
 		set := flag.NewFlagSet("test", 0)
-		set.Parse(c.testArgs)
+		_ = set.Parse(c.testArgs)
 
 		context := NewContext(app, set, nil)
 
 		command := Command{
-			Name:            "test-cmd",
-			Aliases:         []string{"tc"},
-			Usage:           "this is for testing",
-			Description:     "testing",
-			Action:          func(_ *Context) error { return nil },
-			SkipFlagParsing: c.skipFlagParsing,
+			Name:                   "test-cmd",
+			Aliases:                []string{"tc"},
+			Usage:                  "this is for testing",
+			Description:            "testing",
+			Action:                 func(_ *Context) error { return nil },
+			SkipFlagParsing:        c.skipFlagParsing,
+			UseShortOptionHandling: c.UseShortOptionHandling,
 		}
 
 		err := command.Run(context)
 
 		expect(t, err, c.expectedErr)
 		expect(t, context.Args().Slice(), c.testArgs)
+	}
+}
+
+func TestParseAndRunShortOpts(t *testing.T) {
+	cases := []struct {
+		testArgs     []string
+		expectedErr  error
+		expectedArgs []string
+	}{
+		{[]string{"foo", "test", "-a"}, nil, []string{}},
+		{[]string{"foo", "test", "-c", "arg1", "arg2"}, nil, []string{"arg1", "arg2"}},
+		{[]string{"foo", "test", "-f"}, nil, []string{}},
+		{[]string{"foo", "test", "-ac", "--fgh"}, nil, []string{}},
+		{[]string{"foo", "test", "-af"}, nil, []string{}},
+		{[]string{"foo", "test", "-cf"}, nil, []string{}},
+		{[]string{"foo", "test", "-acf"}, nil, []string{}},
+		{[]string{"foo", "test", "-invalid"}, errors.New("flag provided but not defined: -invalid"), []string{}},
+		{[]string{"foo", "test", "-acf", "arg1", "-invalid"}, nil, []string{"arg1", "-invalid"}},
+	}
+
+	var args Args
+	cmd := Command{
+		Name:        "test",
+		Usage:       "this is for testing",
+		Description: "testing",
+		Action: func(c *Context) error {
+			args = c.Args()
+			return nil
+		},
+		UseShortOptionHandling: true,
+		Flags: []Flag{
+			&BoolFlag{Name: "abc", Aliases: []string{"a"}},
+			&BoolFlag{Name: "cde", Aliases: []string{"c"}},
+			&BoolFlag{Name: "fgh", Aliases: []string{"f"}},
+		},
+	}
+
+	for _, c := range cases {
+		app := NewApp()
+		app.Commands = []Command{cmd}
+
+		err := app.Run(c.testArgs)
+
+		expect(t, err, c.expectedErr)
+		expect(t, args, c.expectedArgs)
 	}
 }
 
@@ -236,5 +289,79 @@ func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
 	err := app.Run([]string{"foo", "bar", "baz"})
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestCommandFlagReordering(t *testing.T) {
+	cases := []struct {
+		testArgs      []string
+		expectedValue string
+		expectedArgs  []string
+		expectedErr   error
+	}{
+		{[]string{"some-exec", "some-command", "some-arg", "--flag", "foo"}, "foo", []string{"some-arg"}, nil},
+		{[]string{"some-exec", "some-command", "some-arg", "--flag=foo"}, "foo", []string{"some-arg"}, nil},
+		{[]string{"some-exec", "some-command", "--flag=foo", "some-arg"}, "foo", []string{"some-arg"}, nil},
+	}
+
+	for _, c := range cases {
+		value := ""
+		var args Args
+		app := &App{
+			Commands: []*Command{
+				{
+					Name: "some-command",
+					Flags: []Flag{
+						&StringFlag{Name: "flag"},
+					},
+					Action: func(c *Context) error {
+						fmt.Printf("%+v\n", c.String("flag"))
+						value = c.String("flag")
+						args = c.Args()
+						return nil
+					},
+				},
+			},
+		}
+
+		err := app.Run(c.testArgs)
+		expect(t, err, c.expectedErr)
+		expect(t, value, c.expectedValue)
+		expect(t, args, c.expectedArgs)
+	}
+}
+
+func TestCommandSkipFlagParsing(t *testing.T) {
+	cases := []struct {
+		testArgs     []string
+		expectedArgs []string
+		expectedErr  error
+	}{
+		{[]string{"some-exec", "some-command", "some-arg", "--flag", "foo"}, []string{"some-arg", "--flag", "foo"}, nil},
+		{[]string{"some-exec", "some-command", "some-arg", "--flag=foo"}, []string{"some-arg", "--flag=foo"}, nil},
+	}
+
+	for _, c := range cases {
+		var args Args
+		app := &App{
+			Commands: []*Command{
+				{
+					SkipFlagParsing: true,
+					Name:            "some-command",
+					Flags: []Flag{
+						&StringFlag{Name: "flag"},
+					},
+					Action: func(c *Context) error {
+						fmt.Printf("%+v\n", c.String("flag"))
+						args = c.Args()
+						return nil
+					},
+				},
+			},
+		}
+
+		err := app.Run(c.testArgs)
+		expect(t, err, c.expectedErr)
+		expect(t, args, c.expectedArgs)
 	}
 }

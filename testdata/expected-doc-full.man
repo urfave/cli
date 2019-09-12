@@ -1,0 +1,80 @@
+.nh
+.TH greet(8) 
+
+.SH Harrison
+
+.SH NAME
+.PP
+greet \- Some app
+
+
+.SH SYNOPSIS
+.PP
+greet
+
+.PP
+.RS
+
+.nf
+[\-\-another\-flag|\-b]
+[\-\-flag|\-\-fl|\-f]=[value]
+[\-\-socket|\-s]=[value]
+
+.fi
+.RE
+
+
+.SH DESCRIPTION
+.PP
+app [first\_arg] [second\_arg]
+
+.PP
+\fBUsage\fP:
+
+.PP
+.RS
+
+.nf
+greet [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
+
+.fi
+.RE
+
+
+.SH GLOBAL OPTIONS
+.PP
+\fB\-\-another\-flag, \-b\fP: another usage text
+
+.PP
+\fB\-\-flag, \-\-fl, \-f\fP="":
+
+.PP
+\fB\-\-socket, \-s\fP="": some 'usage' text (default: value)
+
+
+.SH COMMANDS
+.SH config, c
+.PP
+another usage test
+
+.PP
+\fB\-\-another\-flag, \-b\fP: another usage text
+
+.PP
+\fB\-\-flag, \-\-fl, \-f\fP="":
+
+.SS sub\-config, s, ss
+.PP
+another usage test
+
+.PP
+\fB\-\-sub\-command\-flag, \-s\fP: some usage text
+
+.PP
+\fB\-\-sub\-flag, \-\-sub\-fl, \-s\fP="":
+
+.SH info, i, in
+.PP
+retrieve generic information
+
+.SH some\-command

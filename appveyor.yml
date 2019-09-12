@@ -11,26 +11,17 @@ cache:
 
 environment:
   GOPATH: C:\gopath
-  GOVERSION: 1.8.x
-  PYTHON: C:\Python36-x64
-  PYTHON_VERSION: 3.6.x
-  PYTHON_ARCH: 64
+  GOVERSION: 1.11.x
 
 install:
-- set PATH=%GOPATH%\bin;C:\go\bin;%PATH%
-- go version
-- go env
-- go get github.com/urfave/gfmrun/...
-- rmdir c:\gopath\src\gopkg.in\urfave\cli.v2 /s /q
-- rmdir c:\gopath\pkg /s /q
-- git clone . c:\gopath\src\gopkg.in\urfave\cli.v2
-- go get -v -t ./...
-- if not exist node_modules\.bin\markdown-toc npm install markdown-toc
+  - set PATH=%GOPATH%\bin;C:\go\bin;%PATH%
+  - go version
+  - go env
+  - go get github.com/urfave/gfmrun/...
+  - go get -v -t ./...
 
 build_script:
-- python runtests vet
-- python runtests test
-- python runtests gfmrun
-- python cli-v1-to-v2 --selftest
-- python runtests migrations
-- python runtests toc
+  - go run build.go vet
+  - go run build.go test
+  - go run build.go gfmrun
+

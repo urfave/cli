@@ -3,12 +3,11 @@ package altsrc
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/urfave/cli/v2"
 	"io"
 	"io/ioutil"
 	"strings"
 	"time"
-
-	"gopkg.in/urfave/cli.v2"
 )
 
 // NewJSONSourceFromFlagFunc returns a func that takes a cli.Context
@@ -29,13 +28,8 @@ func NewJSONSourceFromFile(f string) (InputSourceContext, error) {
 	if err != nil {
 		return nil, err
 	}
-	s, err := newJSONSource(data)
-	if err != nil {
-		return nil, err
-	}
 
-	s.file = f
-	return s, nil
+	return NewJSONSource(data)
 }
 
 // NewJSONSourceFromReader returns an InputSourceContext suitable for
@@ -51,10 +45,6 @@ func NewJSONSourceFromReader(r io.Reader) (InputSourceContext, error) {
 // NewJSONSource returns an InputSourceContext suitable for retrieving
 // config variables from raw JSON data.
 func NewJSONSource(data []byte) (InputSourceContext, error) {
-	return newJSONSource(data)
-}
-
-func newJSONSource(data []byte) (*jsonSource, error) {
 	var deserialized map[string]interface{}
 	if err := json.Unmarshal(data, &deserialized); err != nil {
 		return nil, err
@@ -77,9 +67,9 @@ func (x *jsonSource) Int(name string) (int, error) {
 	case int:
 		return v, nil
 	case float64:
-		return int(float64(v)), nil
+		return int(v), nil
 	case float32:
-		return int(float32(v)), nil
+		return int(v), nil
 	}
 }
 

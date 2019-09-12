@@ -2,11 +2,10 @@ package altsrc
 
 import (
 	"fmt"
+	"github.com/urfave/cli/v2"
 	"reflect"
 	"strings"
 	"time"
-
-	"gopkg.in/urfave/cli.v2"
 )
 
 // MapInputSource implements InputSourceContext to return
@@ -23,15 +22,15 @@ func nestedVal(name string, tree map[interface{}]interface{}) (interface{}, bool
 	if sections := strings.Split(name, "."); len(sections) > 1 {
 		node := tree
 		for _, section := range sections[:len(sections)-1] {
-			if child, ok := node[section]; !ok {
+			child, ok := node[section]
+			if !ok {
 				return nil, false
-			} else {
-				if ctype, ok := child.(map[interface{}]interface{}); !ok {
-					return nil, false
-				} else {
-					node = ctype
-				}
 			}
+			ctype, ok := child.(map[interface{}]interface{})
+			if !ok {
+				return nil, false
+			}
+			node = ctype
 		}
 		if val, ok := node[sections[len(sections)-1]]; ok {
 			return val, true

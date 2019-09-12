@@ -7,20 +7,19 @@ package altsrc
 
 import (
 	"flag"
+	"github.com/urfave/cli/v2"
 	"io/ioutil"
 	"os"
 	"testing"
-
-	"gopkg.in/urfave/cli.v2"
 )
 
 func TestCommandTomFileTest(t *testing.T) {
-	app := (&cli.App{})
+	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
-	ioutil.WriteFile("current.toml", []byte("test = 15"), 0666)
+	_ = ioutil.WriteFile("current.toml", []byte("test = 15"), 0666)
 	defer os.Remove("current.toml")
 	test := []string{"test-cmd", "--load", "current.toml"}
-	set.Parse(test)
+	_ = set.Parse(test)
 
 	c := cli.NewContext(app, set, nil)
 
@@ -45,15 +44,15 @@ func TestCommandTomFileTest(t *testing.T) {
 }
 
 func TestCommandTomlFileTestGlobalEnvVarWins(t *testing.T) {
-	app := (&cli.App{})
+	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
-	ioutil.WriteFile("current.toml", []byte("test = 15"), 0666)
+	_ = ioutil.WriteFile("current.toml", []byte("test = 15"), 0666)
 	defer os.Remove("current.toml")
 
-	os.Setenv("THE_TEST", "10")
+	_ = os.Setenv("THE_TEST", "10")
 	defer os.Setenv("THE_TEST", "")
 	test := []string{"test-cmd", "--load", "current.toml"}
-	set.Parse(test)
+	_ = set.Parse(test)
 
 	c := cli.NewContext(app, set, nil)
 
@@ -79,15 +78,15 @@ func TestCommandTomlFileTestGlobalEnvVarWins(t *testing.T) {
 }
 
 func TestCommandTomlFileTestGlobalEnvVarWinsNested(t *testing.T) {
-	app := (&cli.App{})
+	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
-	ioutil.WriteFile("current.toml", []byte("[top]\ntest = 15"), 0666)
+	_ = ioutil.WriteFile("current.toml", []byte("[top]\ntest = 15"), 0666)
 	defer os.Remove("current.toml")
 
-	os.Setenv("THE_TEST", "10")
+	_ = os.Setenv("THE_TEST", "10")
 	defer os.Setenv("THE_TEST", "")
 	test := []string{"test-cmd", "--load", "current.toml"}
-	set.Parse(test)
+	_ = set.Parse(test)
 
 	c := cli.NewContext(app, set, nil)
 
@@ -113,13 +112,13 @@ func TestCommandTomlFileTestGlobalEnvVarWinsNested(t *testing.T) {
 }
 
 func TestCommandTomlFileTestSpecifiedFlagWins(t *testing.T) {
-	app := (&cli.App{})
+	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
-	ioutil.WriteFile("current.toml", []byte("test = 15"), 0666)
+	_ = ioutil.WriteFile("current.toml", []byte("test = 15"), 0666)
 	defer os.Remove("current.toml")
 
 	test := []string{"test-cmd", "--load", "current.toml", "--test", "7"}
-	set.Parse(test)
+	_ = set.Parse(test)
 
 	c := cli.NewContext(app, set, nil)
 
@@ -145,14 +144,14 @@ func TestCommandTomlFileTestSpecifiedFlagWins(t *testing.T) {
 }
 
 func TestCommandTomlFileTestSpecifiedFlagWinsNested(t *testing.T) {
-	app := (&cli.App{})
+	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
-	ioutil.WriteFile("current.toml", []byte(`[top]
+	_ = ioutil.WriteFile("current.toml", []byte(`[top]
   test = 15`), 0666)
 	defer os.Remove("current.toml")
 
 	test := []string{"test-cmd", "--load", "current.toml", "--top.test", "7"}
-	set.Parse(test)
+	_ = set.Parse(test)
 
 	c := cli.NewContext(app, set, nil)
 
@@ -178,13 +177,13 @@ func TestCommandTomlFileTestSpecifiedFlagWinsNested(t *testing.T) {
 }
 
 func TestCommandTomlFileTestDefaultValueFileWins(t *testing.T) {
-	app := (&cli.App{})
+	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
-	ioutil.WriteFile("current.toml", []byte("test = 15"), 0666)
+	_ = ioutil.WriteFile("current.toml", []byte("test = 15"), 0666)
 	defer os.Remove("current.toml")
 
 	test := []string{"test-cmd", "--load", "current.toml"}
-	set.Parse(test)
+	_ = set.Parse(test)
 
 	c := cli.NewContext(app, set, nil)
 
@@ -210,13 +209,13 @@ func TestCommandTomlFileTestDefaultValueFileWins(t *testing.T) {
 }
 
 func TestCommandTomlFileTestDefaultValueFileWinsNested(t *testing.T) {
-	app := (&cli.App{})
+	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
-	ioutil.WriteFile("current.toml", []byte("[top]\ntest = 15"), 0666)
+	_ = ioutil.WriteFile("current.toml", []byte("[top]\ntest = 15"), 0666)
 	defer os.Remove("current.toml")
 
 	test := []string{"test-cmd", "--load", "current.toml"}
-	set.Parse(test)
+	_ = set.Parse(test)
 
 	c := cli.NewContext(app, set, nil)
 
@@ -244,14 +243,14 @@ func TestCommandTomlFileTestDefaultValueFileWinsNested(t *testing.T) {
 func TestCommandTomlFileFlagHasDefaultGlobalEnvTomlSetGlobalEnvWins(t *testing.T) {
 	app := (&cli.App{})
 	set := flag.NewFlagSet("test", 0)
-	ioutil.WriteFile("current.toml", []byte("test = 15"), 0666)
+	_ = ioutil.WriteFile("current.toml", []byte("test = 15"), 0666)
 	defer os.Remove("current.toml")
 
-	os.Setenv("THE_TEST", "11")
+	_ = os.Setenv("THE_TEST", "11")
 	defer os.Setenv("THE_TEST", "")
 
 	test := []string{"test-cmd", "--load", "current.toml"}
-	set.Parse(test)
+	_ = set.Parse(test)
 
 	c := cli.NewContext(app, set, nil)
 
@@ -276,16 +275,16 @@ func TestCommandTomlFileFlagHasDefaultGlobalEnvTomlSetGlobalEnvWins(t *testing.T
 }
 
 func TestCommandTomlFileFlagHasDefaultGlobalEnvTomlSetGlobalEnvWinsNested(t *testing.T) {
-	app := (&cli.App{})
+	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
-	ioutil.WriteFile("current.toml", []byte("[top]\ntest = 15"), 0666)
+	_ = ioutil.WriteFile("current.toml", []byte("[top]\ntest = 15"), 0666)
 	defer os.Remove("current.toml")
 
-	os.Setenv("THE_TEST", "11")
+	_ = os.Setenv("THE_TEST", "11")
 	defer os.Setenv("THE_TEST", "")
 
 	test := []string{"test-cmd", "--load", "current.toml"}
-	set.Parse(test)
+	_ = set.Parse(test)
 
 	c := cli.NewContext(app, set, nil)
 

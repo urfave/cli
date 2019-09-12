@@ -15,7 +15,7 @@ func newCommandCategories() CommandCategories {
 }
 
 func (c *commandCategories) Less(i, j int) bool {
-	return (*c)[i].Name() < (*c)[j].Name()
+	return lexicographicLess((*c)[i].Name(),  (*c)[j].Name() )
 }
 
 func (c *commandCategories) Len() int {
@@ -35,7 +35,7 @@ func (c *commandCategories) AddCommand(category string, command *Command) {
 	}
 	newVal := commandCategories(append(*c,
 		&commandCategory{name: category, commands: []*Command{command}}))
-	(*c) = newVal
+	*c = newVal
 }
 
 func (c *commandCategories) Categories() []CommandCategory {
@@ -75,7 +75,7 @@ func (c *commandCategory) VisibleCommands() []*Command {
 		c.commands = []*Command{}
 	}
 
-	ret := []*Command{}
+	var ret []*Command
 	for _, command := range c.commands {
 		if !command.Hidden {
 			ret = append(ret, command)

@@ -3,13 +3,12 @@ package altsrc
 import (
 	"flag"
 	"fmt"
+	"github.com/urfave/cli/v2"
 	"os"
 	"runtime"
 	"strings"
 	"testing"
 	"time"
-
-	"gopkg.in/urfave/cli.v2"
 )
 
 type testApplyInputSource struct {
@@ -252,30 +251,30 @@ func TestDurationApplyInputSourceMethodSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
 		Flag:     NewDurationFlag(&cli.DurationFlag{Name: "test"}),
 		FlagName: "test",
-		MapValue: time.Duration(30 * time.Second),
+		MapValue: 30 * time.Second,
 	})
-	expect(t, time.Duration(30*time.Second), c.Duration("test"))
+	expect(t, 30*time.Second, c.Duration("test"))
 }
 
 func TestDurationApplyInputSourceMethodContextSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
 		Flag:               NewDurationFlag(&cli.DurationFlag{Name: "test"}),
 		FlagName:           "test",
-		MapValue:           time.Duration(30 * time.Second),
-		ContextValueString: time.Duration(15 * time.Second).String(),
+		MapValue:           30 * time.Second,
+		ContextValueString: (15 * time.Second).String(),
 	})
-	expect(t, time.Duration(15*time.Second), c.Duration("test"))
+	expect(t, 15*time.Second, c.Duration("test"))
 }
 
 func TestDurationApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
 		Flag:        NewDurationFlag(&cli.DurationFlag{Name: "test", EnvVars: []string{"TEST"}}),
 		FlagName:    "test",
-		MapValue:    time.Duration(30 * time.Second),
+		MapValue:    30 * time.Second,
 		EnvVarName:  "TEST",
-		EnvVarValue: time.Duration(15 * time.Second).String(),
+		EnvVarValue: (15 * time.Second).String(),
 	})
-	expect(t, time.Duration(15*time.Second), c.Duration("test"))
+	expect(t, 15*time.Second, c.Duration("test"))
 }
 
 func TestFloat64ApplyInputSourceMethodSet(t *testing.T) {
@@ -316,19 +315,19 @@ func runTest(t *testing.T, test testApplyInputSource) *cli.Context {
 	set := flag.NewFlagSet(test.FlagSetName, flag.ContinueOnError)
 	c := cli.NewContext(nil, set, nil)
 	if test.EnvVarName != "" && test.EnvVarValue != "" {
-		os.Setenv(test.EnvVarName, test.EnvVarValue)
+		_ = os.Setenv(test.EnvVarName, test.EnvVarValue)
 		defer os.Setenv(test.EnvVarName, "")
 	}
 
 	test.Flag.Apply(set)
 	if test.ContextValue != nil {
-		flag := set.Lookup(test.FlagName)
-		flag.Value = test.ContextValue
+		f := set.Lookup(test.FlagName)
+		f.Value = test.ContextValue
 	}
 	if test.ContextValueString != "" {
-		set.Set(test.FlagName, test.ContextValueString)
+		_ = set.Set(test.FlagName, test.ContextValueString)
 	}
-	test.Flag.ApplyInputSourceValue(c, inputSource)
+	_ = test.Flag.ApplyInputSourceValue(c, inputSource)
 
 	return c
 }

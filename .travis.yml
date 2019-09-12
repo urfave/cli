@@ -1,28 +1,35 @@
 language: go
 sudo: false
-dist: trusty
-osx_image: xcode8.3
-go: 1.11.x
+dist: bionic
+osx_image: xcode10
+go:
+  - 1.11.x
+  - 1.12.x
+  - 1.13.x
 
 os:
-- linux
-- osx
+  - linux
+  - osx
+
+env:
+  GO111MODULE=on
+  GOPROXY=https://proxy.golang.org
 
 cache:
   directories:
-  - node_modules
+    - node_modules
 
 before_script:
-- if [[ $(uname) == Darwin ]]; then
-    sudo pip2 install flake8;
-  else
-    pip install --user flake8;
-  fi
-- mkdir -p ${GOPATH%%:*}/src/gopkg.in/urfave
-- rm -rvf ${GOPATH%%:*}/src/gopkg.in/urfave/cli.v2
-- rm -rvf ${GOPATH%%:*}/pkg/*/gopkg.in/urfave/cli.v2.a
-- ln -sv ${TRAVIS_BUILD_DIR} ${GOPATH%%:*}/src/gopkg.in/urfave/cli.v2
+  - go get github.com/urfave/gfmrun/cmd/gfmrun
+  - go get golang.org/x/tools/cmd/goimports
+  - npm install markdown-toc
+  - go mod tidy
 
 script:
-- flake8 runtests cli-v1-to-v2 generate-flag-types
-- make all
+  - go run build.go vet
+  - go run build.go test
+  - go run build.go gfmrun
+  - go run build.go toc
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

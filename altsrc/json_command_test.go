@@ -2,11 +2,10 @@ package altsrc
 
 import (
 	"flag"
+	"github.com/urfave/cli/v2"
 	"io/ioutil"
 	"os"
 	"testing"
-
-	"gopkg.in/urfave/cli.v2"
 )
 
 const (
@@ -22,7 +21,7 @@ func TestCommandJSONFileTest(t *testing.T) {
 	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
 	test := []string{"test-cmd", "--load", fileName}
-	set.Parse(test)
+	_ = set.Parse(test)
 
 	c := cli.NewContext(app, set, nil)
 
@@ -52,11 +51,11 @@ func TestCommandJSONFileTestGlobalEnvVarWins(t *testing.T) {
 
 	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
-	os.Setenv("THE_TEST", "10")
+	_ = os.Setenv("THE_TEST", "10")
 	defer os.Setenv("THE_TEST", "")
 
 	test := []string{"test-cmd", "--load", fileName}
-	set.Parse(test)
+	_ = set.Parse(test)
 
 	c := cli.NewContext(app, set, nil)
 
@@ -87,11 +86,11 @@ func TestCommandJSONFileTestGlobalEnvVarWinsNested(t *testing.T) {
 
 	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
-	os.Setenv("THE_TEST", "10")
+	_ = os.Setenv("THE_TEST", "10")
 	defer os.Setenv("THE_TEST", "")
 
 	test := []string{"test-cmd", "--load", fileName}
-	set.Parse(test)
+	_ = set.Parse(test)
 
 	c := cli.NewContext(app, set, nil)
 
@@ -123,7 +122,7 @@ func TestCommandJSONFileTestSpecifiedFlagWins(t *testing.T) {
 	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
 	test := []string{"test-cmd", "--load", fileName, "--test", "7"}
-	set.Parse(test)
+	_ = set.Parse(test)
 
 	c := cli.NewContext(app, set, nil)
 
@@ -155,7 +154,7 @@ func TestCommandJSONFileTestSpecifiedFlagWinsNested(t *testing.T) {
 	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
 	test := []string{"test-cmd", "--load", fileName, "--top.test", "7"}
-	set.Parse(test)
+	_ = set.Parse(test)
 
 	c := cli.NewContext(app, set, nil)
 
@@ -187,7 +186,7 @@ func TestCommandJSONFileTestDefaultValueFileWins(t *testing.T) {
 	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
 	test := []string{"test-cmd", "--load", fileName}
-	set.Parse(test)
+	_ = set.Parse(test)
 
 	c := cli.NewContext(app, set, nil)
 
@@ -219,7 +218,7 @@ func TestCommandJSONFileTestDefaultValueFileWinsNested(t *testing.T) {
 	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
 	test := []string{"test-cmd", "--load", fileName}
-	set.Parse(test)
+	_ = set.Parse(test)
 
 	c := cli.NewContext(app, set, nil)
 
@@ -250,11 +249,11 @@ func TestCommandJSONFileFlagHasDefaultGlobalEnvJSONSetGlobalEnvWins(t *testing.T
 
 	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
-	os.Setenv("THE_TEST", "11")
+	_ = os.Setenv("THE_TEST", "11")
 	defer os.Setenv("THE_TEST", "")
 
 	test := []string{"test-cmd", "--load", fileName}
-	set.Parse(test)
+	_ = set.Parse(test)
 
 	c := cli.NewContext(app, set, nil)
 
@@ -284,11 +283,11 @@ func TestCommandJSONFileFlagHasDefaultGlobalEnvJSONSetGlobalEnvWinsNested(t *tes
 
 	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
-	os.Setenv("THE_TEST", "11")
+	_ = os.Setenv("THE_TEST", "11")
 	defer os.Setenv("THE_TEST", "")
 
 	test := []string{"test-cmd", "--load", fileName}
-	set.Parse(test)
+	_ = set.Parse(test)
 
 	c := cli.NewContext(app, set, nil)
 

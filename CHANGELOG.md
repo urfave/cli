@@ -39,11 +39,110 @@
 
 ### Removed
 
+## [1.22.1] - 2019-09-11
+
 ### Fixed
 
-### Deprecated
+* Hide output of hidden commands on man pages in [urfave/cli/pull/889](https://github.com/urfave/cli/pull/889) via [@crosbymichael](https://github.com/crosbymichael)
+* Don't generate fish completion for hidden commands [urfave/cli/pull/891](https://github.com/urfave/891) via [@saschagrunert](https://github.com/saschagrunert)
+* Using short flag names for required flags throws an error in [urfave/cli/pull/890](https://github.com/urfave/cli/pull/890) via [@asahasrabuddhe](https://github.com/asahasrabuddhe)
 
-### Security
+### Changed
+
+* Remove flag code generation logic, legacy python test runner in [urfave/cli/pull/883](https://github.com/urfave/cli/pull/883) via [@asahasrabuddhe](https://github.com/asahasrabuddhe)
+* Enable Go Modules support, drop support for `Go 1.10` add support for `Go 1.13` in [urfave/cli/pull/885](https://github.com/urfave/cli/pull/885) via [@asahasrabuddhe](https://github.com/asahasrabuddhe)
+
+## [1.22.0] - 2019-09-07
+
+### Fixed
+
+* Fix Subcommands not falling back to `app.ExitEventHandler` in [urfave/cli/pull/856](https://github.com/urfave/cli/pull/856) via [@FaranIdo](https://github.com/FaranIdo)
+
+### Changed
+
+* Clarify that altsrc supports both TOML and JSON in [urfave/cli/pull/774](https://github.com/urfave/cli/pull/774) via [@whereswaldon](https://github.com/whereswaldon)
+* Made the exit code example more clear in [urfave/cli/pull/823](https://github.com/urfave/cli/pull/823) via [@xordspar0](https://github.com/xordspar0)
+* Removed the use of python for internal flag generation in [urfave/cli/pull/836](https://github.com/urfave/cli/pull/836) via [@asahasrabuddhe](https://github.com/asahasrabuddhe)
+* Changed the supported go versions to `1.10`, `1.11`, `1.12` in [urfave/cli/pull/843](https://github.com/urfave/cli/pull/843) via [@lafriks](https://github.com/lafriks)
+* Changed the v1 releases section in the readme in [urfave/cli/pull/862](https://github.com/urfave/cli/pull/862) via [@russoj88](https://github.com/russoj88)
+* Cleaned up go modules in [urfave/cli/pull/874](https://github.com/urfave/cli/pull/874) via [@saschagrunert](https://github.com/saschagrunert)
+
+### Added
+
+* Added `UseShortOptionHandling` for combining short flags in [urfave/cli/pull/735](https://github.com/urfave/cli/pull/735) via [@rliebz](https://github.com/rliebz)
+* Added support for flags bash completion in [urfave/cli/pull/808](https://github.com/urfave/cli/pull/808) via [@yogeshlonkar](https://github.com/yogeshlonkar)
+* Added the `TakesFile` indicator to flag in [urfave/cli/pull/851](https://github.com/urfave/cli/pull/851) via [@saschagrunert](https://github.com/saschagrunert)
+* Added fish shell completion support in [urfave/cli/pull/848](https://github.com/urfave/cli/pull/848) via [@saschagrunert](https://github.com/saschagrunert)
+
+## [1.21.0] - 2019-08-02
+
+### Fixed
+
+* Fix using "slice" flag types with `EnvVar` in [urfave/cli/pull/687](https://github.com/urfave/cli/pull/687) via [@joshuarubin](https://github.com/joshuarubin)
+* Fix regression of `SkipFlagParsing` behavior in [urfave/cli/pull/697](https://github.com/urfave/cli/pull/697) via [@jszwedko](https://github.com/jszwedko)
+* Fix handling `ShortOptions` and `SkipArgReorder` in [urfave/cli/pull/686](https://github.com/urfave/cli/pull/686) via [@baude](https://github.com/baude)
+* Fix args reordering when bool flags are present in [urfave/cli/pull/712](https://github.com/urfave/cli/pull/712) via [@windler](https://github.com/windler)
+* Fix parsing of short options in [urfave/cli/pull/758](https://github.com/urfave/cli/pull/758) via [@vrothberg](https://github.com/vrothberg)
+* Fix unaligned indents for the command help messages in [urfave/cli/pull/806](https://github.com/urfave/cli/pull/806) via [@mingrammer](https://github.com/mingrammer)
+
+### Changed
+
+* Cleaned up help output in [urfave/cli/pull/664](https://github.com/urfave/cli/pull/664) via [@maguro](https://github.com/maguro)
+* Remove redundant nil checks in [urfave/cli/pull/773](https://github.com/urfave/cli/pull/773) via [@teresy](https://github.com/teresy)
+* Case is now considered when sorting strings in [urfave/cli/pull/676](https://github.com/urfave/cli/pull/676) via [@rliebz](https://github.com/rliebz)
+
+### Added
+
+* Added _"required flags"_ support in [urfave/cli/pull/819](https://github.com/urfave/cli/pull/819) via [@lynncyrin](https://github.com/lynncyrin/)
+* Backport JSON `InputSource` to v1 in [urfave/cli/pull/598](https://github.com/urfave/cli/pull/598) via [@jszwedko](https://github.com/jszwedko)
+* Allow more customization of flag help strings in [urfave/cli/pull/661](https://github.com/urfave/cli/pull/661) via [@rliebz](https://github.com/rliebz)
+* Allow custom `ExitError` handler function in [urfave/cli/pull/628](https://github.com/urfave/cli/pull/628) via [@phinnaeus](https://github.com/phinnaeus)
+* Allow loading a variable from a file in [urfave/cli/pull/675](https://github.com/urfave/cli/pull/675) via [@jmccann](https://github.com/jmccann)
+* Allow combining short bool names in [urfave/cli/pull/684](https://github.com/urfave/cli/pull/684) via [@baude](https://github.com/baude)
+* Added test coverage to context in [urfave/cli/pull/788](https://github.com/urfave/cli/pull/788) via [@benzvan](https://github.com/benzvan)
+* Added go module support in [urfave/cli/pull/831](https://github.com/urfave/cli/pull/831) via [@saschagrunert](https://github.com/saschagrunert)
+
+## [1.20.0] - 2017-08-10
+
+### Fixed
+
+* `HandleExitCoder` is now correctly iterates over all errors in
+  a `MultiError`. The exit code is the exit code of the last error or `1` if
+  there are no `ExitCoder`s in the `MultiError`.
+* Fixed YAML file loading on Windows (previously would fail validate the file path)
+* Subcommand `Usage`, `Description`, `ArgsUsage`, `OnUsageError` correctly
+  propogated
+* `ErrWriter` is now passed downwards through command structure to avoid the
+  need to redefine it
+* Pass `Command` context into `OnUsageError` rather than parent context so that
+  all fields are avaiable
+* Errors occuring in `Before` funcs are no longer double printed
+* Use `UsageText` in the help templates for commands and subcommands if
+  defined; otherwise build the usage as before (was previously ignoring this
+  field)
+* `IsSet` and `GlobalIsSet` now correctly return whether a flag is set if
+  a program calls `Set` or `GlobalSet` directly after flag parsing (would
+  previously only return `true` if the flag was set during parsing)
+
+### Changed
+
+* No longer exit the program on command/subcommand error if the error raised is
+  not an `OsExiter`. This exiting behavior was introduced in 1.19.0, but was
+  determined to be a regression in functionality. See [the
+  PR](https://github.com/urfave/cli/pull/595) for discussion.
+
+### Added
+
+* `CommandsByName` type was added to make it easy to sort `Command`s by name,
+  alphabetically
+* `altsrc` now handles loading of string and int arrays from TOML
+* Support for definition of custom help templates for `App` via
+  `CustomAppHelpTemplate`
+* Support for arbitrary key/value fields on `App` to be used with
+  `CustomAppHelpTemplate` via `ExtraInfo`
+* `HelpFlag`, `VersionFlag`, and `BashCompletionFlag` changed to explictly be
+  `cli.Flag`s allowing for the use of custom flags satisfying the `cli.Flag`
+  interface to be used.
 
 ## [1.19.1] - 2016-11-21
 ### Fixed
@@ -403,7 +502,13 @@ signature of `func(*cli.Context) error`, as defined by `cli.ActionFunc`.
 ### Added
 - Initial implementation.
 
-[Unreleased]: https://github.com/urfave/cli/compare/v1.18.0...HEAD
+[Unreleased]: https://github.com/urfave/cli/compare/v1.22.1...HEAD
+[1.22.1]: https://github.com/urfave/cli/compare/v1.22.0...v1.22.1
+[1.22.0]: https://github.com/urfave/cli/compare/v1.21.0...v1.22.0
+[1.21.0]: https://github.com/urfave/cli/compare/v1.20.0...v1.21.0
+[1.20.0]: https://github.com/urfave/cli/compare/v1.19.1...v1.20.0
+[1.19.1]: https://github.com/urfave/cli/compare/v1.19.0...v1.19.1
+[1.19.0]: https://github.com/urfave/cli/compare/v1.18.0...v1.19.0
 [1.18.0]: https://github.com/urfave/cli/compare/v1.17.0...v1.18.0
 [1.17.0]: https://github.com/urfave/cli/compare/v1.16.0...v1.17.0
 [1.16.0]: https://github.com/urfave/cli/compare/v1.15.0...v1.16.0

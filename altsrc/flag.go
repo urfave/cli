@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"syscall"
 
-	"gopkg.in/urfave/cli.v2"
+	"github.com/urfave/cli/v2"
 )
 
 // FlagInputSourceExtension is an extension interface of cli.Flag that
@@ -72,7 +72,7 @@ func (f *GenericFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourc
 			}
 			if value != nil {
 				for _, name := range f.Names() {
-					f.set.Set(name, value.String())
+					_ = f.set.Set(name, value.String())
 				}
 			}
 		}
@@ -135,7 +135,7 @@ func (f *BoolFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceCo
 			}
 			if value {
 				for _, name := range f.Names() {
-					f.set.Set(name, strconv.FormatBool(value))
+					_ = f.set.Set(name, strconv.FormatBool(value))
 				}
 			}
 		}
@@ -153,7 +153,7 @@ func (f *StringFlag) ApplyInputSourceValue(context *cli.Context, isc InputSource
 			}
 			if value != "" {
 				for _, name := range f.Names() {
-					f.set.Set(name, value)
+					_ = f.set.Set(name, value)
 				}
 			}
 		}
@@ -181,7 +181,7 @@ func (f *PathFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceCo
 						value = filepath.Join(filepath.Dir(basePathAbs), value)
 					}
 
-					f.set.Set(name, value)
+					_ = f.set.Set(name, value)
 				}
 			}
 		}
@@ -199,7 +199,7 @@ func (f *IntFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceCon
 			}
 			if value > 0 {
 				for _, name := range f.Names() {
-					f.set.Set(name, strconv.FormatInt(int64(value), 10))
+					_ = f.set.Set(name, strconv.FormatInt(int64(value), 10))
 				}
 			}
 		}
@@ -217,7 +217,7 @@ func (f *DurationFlag) ApplyInputSourceValue(context *cli.Context, isc InputSour
 			}
 			if value > 0 {
 				for _, name := range f.Names() {
-					f.set.Set(name, value.String())
+					_ = f.set.Set(name, value.String())
 				}
 			}
 		}
@@ -236,7 +236,7 @@ func (f *Float64Flag) ApplyInputSourceValue(context *cli.Context, isc InputSourc
 			if value > 0 {
 				floatStr := float64ToString(value)
 				for _, name := range f.Names() {
-					f.set.Set(name, floatStr)
+					_ = f.set.Set(name, floatStr)
 				}
 			}
 		}

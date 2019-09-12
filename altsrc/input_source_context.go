@@ -1,9 +1,8 @@
 package altsrc
 
 import (
+	"github.com/urfave/cli/v2"
 	"time"
-
-	"gopkg.in/urfave/cli.v2"
 )
 
 // InputSourceContext is an interface used to allow

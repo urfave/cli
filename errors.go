@@ -59,25 +59,33 @@ type ExitCoder interface {
 	ExitCode() int
 }
 
-type exitError struct {
+type ExitError struct {
 	exitCode int
 	message  interface{}
 }
 
-// Exit wraps a message and exit code into an ExitCoder suitable for handling by
-// HandleExitCoder
-func Exit(message interface{}, exitCode int) ExitCoder {
-	return &exitError{
+// NewExitError makes a new *ExitError
+func NewExitError(message interface{}, exitCode int) *ExitError {
+	return &ExitError{
 		exitCode: exitCode,
 		message:  message,
 	}
 }
 
-func (ee *exitError) Error() string {
+// Exit wraps a message and exit code into an ExitCoder suitable for handling by
+// HandleExitCoder
+func Exit(message interface{}, exitCode int) ExitCoder {
+	return &ExitError{
+		exitCode: exitCode,
+		message:  message,
+	}
+}
+
+func (ee *ExitError) Error() string {
 	return fmt.Sprintf("%v", ee.message)
 }
 
-func (ee *exitError) ExitCode() int {
+func (ee *ExitError) ExitCode() int {
 	return ee.exitCode
 }
 

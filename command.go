@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"sort"
@@ -23,8 +24,8 @@ type Command struct {
 	ArgsUsage string
 	// The category the command is part of
 	Category string
-	// The function to call when checking for shell command completions
-	ShellComplete ShellCompleteFunc
+	// The function to call when checking for bash command completions
+	BashComplete BashCompleteFunc
 	// An action to execute before any sub-subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no sub-subcommands are run
 	Before BeforeFunc
@@ -45,6 +46,10 @@ type Command struct {
 	HideHelp bool
 	// Boolean to hide this command from help or completion
 	Hidden bool
+	// Boolean to enable short-option handling so user can combine several
+	// single-character bool arguments into one
+	// i.e. foobar -o -v -> foobar -ov
+	UseShortOptionHandling bool
 
 	// Full name of command for help, defaults to full command name, including parent commands.
 	HelpName        string
@@ -63,7 +68,7 @@ func (c CommandsByName) Len() int {
 }
 
 func (c CommandsByName) Less(i, j int) bool {
-	return c[i].Name < c[j].Name
+	return lexicographicLess(c[i].Name, c[j].Name)
 }
 
 func (c CommandsByName) Swap(i, j int) {
@@ -90,9 +95,13 @@ func (c *Command) Run(ctx *Context) (err error) {
 		c.appendFlag(HelpFlag)
 	}
 
-	if ctx.App.EnableShellCompletion {
-		c.appendFlag(GenerateCompletionFlag)
+	if ctx.App.UseShortOptionHandling {
+		c.UseShortOptionHandling = true
 	}
+
+	//if ctx.App.EnableShellCompletion {
+	//	c.appendFlag(GenerateCompletionFlag)
+	//}
 
 	set, err := flagSet(c.Name, c.Flags)
 	if err != nil {
@@ -108,9 +117,9 @@ func (c *Command) Run(ctx *Context) (err error) {
 
 	nerr := normalizeFlags(c.Flags, set)
 	if nerr != nil {
-		fmt.Fprintln(ctx.App.Writer, nerr)
-		fmt.Fprintln(ctx.App.Writer)
-		ShowCommandHelp(ctx, c.Name)
+		_, _ = fmt.Fprintln(ctx.App.Writer, nerr)
+		_, _ = fmt.Fprintln(ctx.App.Writer)
+		_ = ShowCommandHelp(ctx, c.Name)
 		return nerr
 	}
 
@@ -126,14 +135,20 @@ func (c *Command) Run(ctx *Context) (err error) {
 			HandleExitCoder(err)
 			return err
 		}
-		fmt.Fprintln(context.App.Writer, "Incorrect Usage:", err.Error())
-		fmt.Fprintln(context.App.Writer)
-		ShowCommandHelp(context, c.Name)
+		_, _ = fmt.Fprintln(context.App.Writer, "Incorrect Usage:", err.Error())
+		_, _ = fmt.Fprintln(context.App.Writer)
+		_ = ShowCommandHelp(context, c.Name)
 		return err
 	}
 
 	if checkCommandHelp(context, c.Name) {
 		return nil
+	}
+
+	cerr := checkRequiredFlags(c.Flags, context)
+	if cerr != nil {
+		_ = ShowCommandHelp(context, c.Name)
+		return cerr
 	}
 
 	if c.After != nil {
@@ -170,6 +185,14 @@ func (c *Command) Run(ctx *Context) (err error) {
 		HandleExitCoder(err)
 	}
 	return err
+}
+
+func (c *Command) newFlagSet() (*flag.FlagSet, error) {
+	return flagSet(c.Name, c.Flags)
+}
+
+func (c *Command) useShortOptionHandling() bool {
+	return c.UseShortOptionHandling
 }
 
 // Names returns the names including short names and aliases.
@@ -217,6 +240,7 @@ func (c *Command) startApp(ctx *Context) error {
 	app.Compiled = ctx.App.Compiled
 	app.Writer = ctx.App.Writer
 	app.ErrWriter = ctx.App.ErrWriter
+	app.UseShortOptionHandling = ctx.App.UseShortOptionHandling
 
 	app.Categories = newCommandCategories()
 	for _, command := range c.Subcommands {
@@ -226,9 +250,9 @@ func (c *Command) startApp(ctx *Context) error {
 	sort.Sort(app.Categories.(*commandCategories))
 
 	// bash completion
-	app.EnableShellCompletion = ctx.App.EnableShellCompletion
-	if c.ShellComplete != nil {
-		app.ShellComplete = c.ShellComplete
+	app.EnableBashCompletion = ctx.App.EnableBashCompletion
+	if c.BashComplete != nil {
+		app.BashComplete = c.BashComplete
 	}
 
 	// set the actions
