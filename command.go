@@ -264,6 +264,7 @@ func argIsFlag(commandFlags []Flag, arg string) bool {
 			}
 		}
 	}
+	// return false if this arg was not one of our flags
 	return false
 }
 
