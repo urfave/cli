@@ -220,7 +220,7 @@ func reorderArgs(commandFlags []Flag, args []string) []string {
 	var remainingArgs []string
 	var reorderedArgs []string
 
-	readFlagValue := false
+	nextIndexMayContainValue := false
 	for i, arg := range args {
 
 		// dont reorder any args after a --
@@ -229,28 +229,30 @@ func reorderArgs(commandFlags []Flag, args []string) []string {
 		if arg == "--" {
 			remainingArgs = append(remainingArgs, args[i:]...)
 			break
-		}
 
-		if readFlagValue && !strings.HasPrefix(arg, "-") && !strings.HasPrefix(arg, "--") {
-			readFlagValue = false
-			reorderedArgs = append(reorderedArgs, arg)
-			continue
-		}
-		readFlagValue = false
-
-		if arg != "-" && strings.HasPrefix(arg, "-") && argIsFlag(commandFlags, arg) {
+			// checks if this arg is a value that should be re-ordered next to its associated flag
+		} else if nextIndexMayContainValue && !strings.HasPrefix(arg, "-") {
+			nextIndexMayContainValue = false
 			reorderedArgs = append(reorderedArgs, arg)
 
-			readFlagValue = !strings.Contains(arg, "=")
-			continue
-		}
+			// checks if this is an arg that should be re-ordered
+		} else if arg != "-" && strings.HasPrefix(arg, "-") && argIsFlag(commandFlags, arg) {
 
-		remainingArgs = append(remainingArgs, arg)
+			// we have determined that this is a flag that we should re-order
+			reorderedArgs = append(reorderedArgs, arg)
+			// if this arg does not contain a "=", then the next index may contain the value for this flag
+			nextIndexMayContainValue = !strings.Contains(arg, "=")
+
+			// simply append any remaining args
+		} else {
+			remainingArgs = append(remainingArgs, arg)
+		}
 	}
 
 	return append(reorderedArgs, remainingArgs...)
 }
 
+// argIsFlag checks if an arg is one of our command flags
 func argIsFlag(commandFlags []Flag, arg string) bool {
 	// this line turns `--flag` into `flag`
 	arg = strings.Replace(arg, "-", "", -1)
