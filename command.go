@@ -252,10 +252,11 @@ func reorderArgs(commandFlags []Flag, args []string) []string {
 }
 
 func argIsFlag(commandFlags []Flag, arg string) bool {
-	strippedArg := strings.ReplaceAll(arg, "-", "")
+	arg = strings.ReplaceAll(arg, "-", "")
+	arg = strings.Split(arg, "=")[0]
 	for _, flag := range commandFlags {
 		for _, key := range strings.Split(flag.GetName(), ",") {
-			if key == strippedArg {
+			if key == arg {
 				return true
 			}
 		}
