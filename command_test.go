@@ -52,7 +52,7 @@ func TestParseAndRunShortOpts(t *testing.T) {
 	cases := []struct {
 		testArgs     args
 		expectedErr  error
-		expectedArgs *args
+		expectedArgs Args
 	}{
 		{testArgs: args{"foo", "test", "-a"}, expectedErr: nil, expectedArgs: &args{}},
 		{testArgs: args{"foo", "test", "-c", "arg1", "arg2"}, expectedErr: nil, expectedArgs: &args{"arg1", "arg2"}},
@@ -61,28 +61,33 @@ func TestParseAndRunShortOpts(t *testing.T) {
 		{testArgs: args{"foo", "test", "-af"}, expectedErr: nil, expectedArgs: &args{}},
 		{testArgs: args{"foo", "test", "-cf"}, expectedErr: nil, expectedArgs: &args{}},
 		{testArgs: args{"foo", "test", "-acf"}, expectedErr: nil, expectedArgs: &args{}},
-		{testArgs: args{"foo", "test", "-invalid"}, expectedErr: errors.New("flag provided but not defined: -invalid"), expectedArgs: &args{}},
+		{testArgs: args{"foo", "test", "-invalid"}, expectedErr: errors.New("flag provided but not defined: -invalid"), expectedArgs: nil},
 		{testArgs: args{"foo", "test", "-acf", "arg1", "-invalid"}, expectedErr: nil, expectedArgs: &args{"arg1", "-invalid"}},
-	}
-
-	var args Args
-	cmd := &Command{
-		Name:        "test",
-		Usage:       "this is for testing",
-		Description: "testing",
-		Action: func(c *Context) error {
-			args = c.Args()
-			return nil
-		},
-		UseShortOptionHandling: true,
-		Flags: []Flag{
-			&BoolFlag{Name: "abc", Aliases: []string{"a"}},
-			&BoolFlag{Name: "cde", Aliases: []string{"c"}},
-			&BoolFlag{Name: "fgh", Aliases: []string{"f"}},
-		},
+		{testArgs: args{"foo", "test", "-acfi", "not-arg", "arg1", "-invalid"}, expectedErr: nil, expectedArgs: &args{"arg1", "-invalid"}},
+		{testArgs: args{"foo", "test", "-i", "ivalue"}, expectedErr: nil, expectedArgs: &args{}},
+		{testArgs: args{"foo", "test", "-i", "ivalue", "arg1"}, expectedErr: nil, expectedArgs: &args{"arg1"}},
+		{testArgs: args{"foo", "test", "-i"}, expectedErr: errors.New("flag needs an argument: -i"), expectedArgs: nil},
 	}
 
 	for _, c := range cases {
+		var args Args
+		cmd := &Command{
+			Name:        "test",
+			Usage:       "this is for testing",
+			Description: "testing",
+			Action: func(c *Context) error {
+				args = c.Args()
+				return nil
+			},
+			UseShortOptionHandling: true,
+			Flags: []Flag{
+				&BoolFlag{Name: "abc", Aliases: []string{"a"}},
+				&BoolFlag{Name: "cde", Aliases: []string{"c"}},
+				&BoolFlag{Name: "fgh", Aliases: []string{"f"}},
+				&StringFlag{Name: "ijk", Aliases:[]string{"i"}},
+			},
+		}
+
 		app := NewApp()
 		app.Commands = []*Command{cmd}
 

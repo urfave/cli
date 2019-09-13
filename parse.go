@@ -14,22 +14,17 @@ type iterativeParser interface {
 // iteratively catch parsing errors.  This way we achieve LR parsing without
 // transforming any arguments. Otherwise, there is no way we can discriminate
 // combined short options from common arguments that should be left untouched.
-func parseIter(ip iterativeParser, args []string) (*flag.FlagSet, error) {
+func parseIter(set *flag.FlagSet, ip iterativeParser, args []string) error {
 	for {
-		set, err := ip.newFlagSet()
-		if err != nil {
-			return nil, err
-		}
-
-		err = set.Parse(args)
+		err := set.Parse(args)
 		if !ip.useShortOptionHandling() || err == nil {
-			return set, err
+			return err
 		}
 
 		errStr := err.Error()
 		trimmed := strings.TrimPrefix(errStr, "flag provided but not defined: ")
 		if errStr == trimmed {
-			return nil, err
+			return err
 		}
 
 		// regenerate the initial args with the split short opts
@@ -42,7 +37,7 @@ func parseIter(ip iterativeParser, args []string) (*flag.FlagSet, error) {
 
 			shortOpts := splitShortOptions(set, trimmed)
 			if len(shortOpts) == 1 {
-				return nil, err
+				return err
 			}
 
 			// add each short option and all remaining arguments
@@ -50,6 +45,13 @@ func parseIter(ip iterativeParser, args []string) (*flag.FlagSet, error) {
 			newArgs = append(newArgs, args[i+1:]...)
 			args = newArgs
 		}
+
+		// Since custom parsing failed, replace the flag set before retrying
+		newSet, err := ip.newFlagSet()
+		if err != nil {
+			return err
+		}
+		*set = *newSet
 	}
 }
 

@@ -239,11 +239,11 @@ func ExampleApp_Run_bashComplete_withShortFlag() {
 	app.EnableBashCompletion = true
 	app.Flags = []Flag{
 		&IntFlag{
-			Name: "other",
+			Name:    "other",
 			Aliases: []string{"o"},
 		},
 		&StringFlag{
-			Name: "xyz",
+			Name:    "xyz",
 			Aliases: []string{"x"},
 		},
 	}
@@ -268,11 +268,11 @@ func ExampleApp_Run_bashComplete_withLongFlag() {
 	app.EnableBashCompletion = true
 	app.Flags = []Flag{
 		&IntFlag{
-			Name: "other",
+			Name:    "other",
 			Aliases: []string{"o"},
 		},
 		&StringFlag{
-			Name: "xyz",
+			Name:    "xyz",
 			Aliases: []string{"x"},
 		},
 		&StringFlag{
@@ -296,11 +296,11 @@ func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
 	app.EnableBashCompletion = true
 	app.Flags = []Flag{
 		&IntFlag{
-			Name: "int-flag",
+			Name:    "int-flag",
 			Aliases: []string{"i"},
 		},
 		&StringFlag{
-			Name: "string",
+			Name:    "string",
 			Aliases: []string{"s"},
 		},
 		&StringFlag{
@@ -326,7 +326,7 @@ func ExampleApp_Run_bashComplete() {
 	os.Args = []string{"greet", "--generate-bash-completion"}
 
 	app := &App{
-		Name:                  "greet",
+		Name:                 "greet",
 		EnableBashCompletion: true,
 		Commands: []*Command{
 			{
@@ -638,6 +638,17 @@ func TestApp_UseShortOptionHandling(t *testing.T) {
 	expect(t, name, expected)
 }
 
+func TestApp_UseShortOptionHandling_missing_value(t *testing.T) {
+	app := NewApp()
+	app.UseShortOptionHandling = true
+	app.Flags = []Flag{
+		&StringFlag{Name: "name", Aliases: []string{"n"}},
+	}
+
+	err := app.Run([]string{"", "-n"})
+	expect(t, err, errors.New("flag needs an argument: -n"))
+}
+
 func TestApp_UseShortOptionHandlingCommand(t *testing.T) {
 	var one, two bool
 	var name string
@@ -667,6 +678,21 @@ func TestApp_UseShortOptionHandlingCommand(t *testing.T) {
 	expect(t, name, expected)
 }
 
+func TestApp_UseShortOptionHandlingCommand_missing_value(t *testing.T) {
+	app := NewApp()
+	app.UseShortOptionHandling = true
+	command := &Command{
+		Name: "cmd",
+		Flags: []Flag{
+			&StringFlag{Name: "name", Aliases: []string{"n"}},
+		},
+	}
+	app.Commands = []*Command{command}
+
+	err := app.Run([]string{"", "cmd", "-n"})
+	expect(t, err, errors.New("flag needs an argument: -n"))
+}
+
 func TestApp_UseShortOptionHandlingSubCommand(t *testing.T) {
 	var one, two bool
 	var name string
@@ -692,13 +718,32 @@ func TestApp_UseShortOptionHandlingSubCommand(t *testing.T) {
 		},
 	}
 	command.Subcommands = []*Command{subCommand}
-	app.Commands =  []*Command{command}
+	app.Commands = []*Command{command}
 
 	err := app.Run([]string{"", "cmd", "sub", "-on", expected})
 	expect(t, err, nil)
 	expect(t, one, true)
 	expect(t, two, false)
 	expect(t, name, expected)
+}
+
+func TestApp_UseShortOptionHandlingSubCommand_missing_value(t *testing.T) {
+	app := NewApp()
+	app.UseShortOptionHandling = true
+	command := &Command{
+		Name: "cmd",
+	}
+	subCommand := &Command{
+		Name: "sub",
+		Flags: []Flag{
+			&StringFlag{Name: "name", Aliases: []string{"n"}},
+		},
+	}
+	command.Subcommands = []*Command{subCommand}
+	app.Commands = []*Command{command}
+
+	err := app.Run([]string{"", "cmd", "sub", "-n"})
+	expect(t, err, errors.New("flag needs an argument: -n"))
 }
 
 func TestApp_Float64Flag(t *testing.T) {

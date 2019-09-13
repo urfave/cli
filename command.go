@@ -175,16 +175,16 @@ func (c *Command) useShortOptionHandling() bool {
 }
 
 func (c *Command) parseFlags(args Args) (*flag.FlagSet, error) {
-	if c.SkipFlagParsing {
-		set, err := c.newFlagSet()
-		if err != nil {
-			return nil, err
-		}
+	set, err := c.newFlagSet()
+	if err != nil {
+		return nil, err
+	}
 
+	if c.SkipFlagParsing {
 		return set, set.Parse(append([]string{"--"}, args.Tail()...))
 	}
 
-	set, err := parseIter(c, args.Tail())
+	err = parseIter(set, c, args.Tail())
 	if err != nil {
 		return nil, err
 	}
