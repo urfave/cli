@@ -218,7 +218,6 @@ func (c *Command) useShortOptionHandling() bool {
 // the arguments (remainingArgs) as this is what flag expects.
 func reorderArgs(commandFlags []Flag, args []string) []string {
 	var remainingArgs, reorderedArgs []string
-	var reorderedArgs []string
 
 	nextIndexMayContainValue := false
 	for i, arg := range args {
