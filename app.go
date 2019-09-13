@@ -246,23 +246,18 @@ func (a *App) Run(arguments []string) (err error) {
 		return nil
 	}
 
-	if done, cerr := checkInitCompletion(context); done {
-		if cerr != nil {
-			err = cerr
-		} else {
-			return nil
-		}
-	}
+	//if done, cerr := checkInitCompletion(context); done {
+	//	if cerr != nil {
+	//		err = cerr
+	//	} else {
+	//		return nil
+	//	}
+	//}
 
 	if err != nil {
 		if a.OnUsageError != nil {
-			//<<<<<<< HEAD
-			err = a.OnUsageError(context, err, false)
-			HandleExitCoder(err)
-			//=======
-			//			err := a.OnUsageError(context, err, false)
-			//			a.handleExitCoder(context, err)
-			//>>>>>>> master
+			err := a.OnUsageError(context, err, false)
+			a.handleExitCoder(context, err)
 			return err
 		}
 		_, _ = fmt.Fprintf(a.Writer, "%s %s\n\n", "Incorrect Usage.", err.Error())
@@ -357,7 +352,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 		}
 	}
 
-	newCmds := []*Command{}
+	var newCmds []*Command
 	for _, c := range a.Commands {
 		if c.HelpName == "" {
 			c.HelpName = fmt.Sprintf("%s %s", a.HelpName, c.Name)
