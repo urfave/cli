@@ -14,7 +14,7 @@ import (
 	"runtime"
 	"strings"
 
-	"gopkg.in/urfave/cli.v2"
+	"github.com/urfave/cli/v2"
 
 	"gopkg.in/yaml.v2"
 )

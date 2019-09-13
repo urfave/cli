@@ -8,9 +8,7 @@ import (
 	"testing"
 )
 
-var (
-	wd, _ = os.Getwd()
-)
+var wd, _ = os.Getwd()
 
 func expect(t *testing.T, a interface{}, b interface{}) {
 	_, fn, line, _ := runtime.Caller(1)

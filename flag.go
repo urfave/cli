@@ -109,7 +109,7 @@ func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {
 	set := flag.NewFlagSet(name, flag.ContinueOnError)
 
 	for _, f := range flags {
-		//TODO remove in v2 when errorableFlag is removed
+		// TODO remove in v2 when errorableFlag is removed
 		if ef, ok := f.(errorableFlag); ok {
 			if err := ef.ApplyWithError(set); err != nil {
 				return nil, err

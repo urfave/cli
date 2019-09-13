@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"gopkg.in/urfave/cli.v2"
+	"github.com/urfave/cli/v2"
 )
 
 type testApplyInputSource struct {
@@ -180,6 +180,7 @@ func TestStringApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	})
 	expect(t, "goodbye", c.String("test"))
 }
+
 func TestPathApplyInputSourceMethodSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
 		Flag:       NewPathFlag(&cli.PathFlag{Name: "test"}),

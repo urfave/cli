@@ -362,7 +362,7 @@ func checkInitCompletion(c *Context) (bool, error) {
 }
 
 func bashCompletionCode(progName string) string {
-	var template = `_cli_bash_autocomplete() {
+	template := `_cli_bash_autocomplete() {
      local cur opts base;
      COMPREPLY=();
      cur="${COMP_WORDS[COMP_CWORD]}";
@@ -375,7 +375,7 @@ complete -F _cli_bash_autocomplete %s`
 }
 
 func zshCompletionCode(progName string) string {
-	var template = `autoload -U compinit && compinit;
+	template := `autoload -U compinit && compinit;
 autoload -U bashcompinit && bashcompinit;`
 
 	return template + "\n" + bashCompletionCode(progName)

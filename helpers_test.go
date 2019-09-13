@@ -8,9 +8,7 @@ import (
 	"testing"
 )
 
-var (
-	wd, _ = os.Getwd()
-)
+var wd, _ = os.Getwd()
 
 func init() {
 	os.Setenv("CLI_TEMPLATE_REPANIC", "1")

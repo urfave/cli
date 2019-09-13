@@ -61,7 +61,7 @@ func TestFlagsFromEnv(t *testing.T) {
 		return *s
 	}
 
-	var flagTests = []struct {
+	flagTests := []struct {
 		input     string
 		output    interface{}
 		flag      Flag
@@ -565,8 +565,10 @@ var int64SliceFlagTests = []struct {
 }{
 	{"heads", nil, NewInt64Slice(), "--heads value\t"},
 	{"H", nil, NewInt64Slice(), "-H value\t"},
-	{"heads", []string{"H"}, NewInt64Slice(int64(2), int64(17179869184)),
-		"--heads value, -H value\t(default: 2, 17179869184)"},
+	{
+		"heads", []string{"H"}, NewInt64Slice(int64(2), int64(17179869184)),
+		"--heads value, -H value\t(default: 2, 17179869184)",
+	},
 }
 
 func TestInt64SliceFlagHelpOutput(t *testing.T) {
@@ -652,8 +654,10 @@ var float64SliceFlagTests = []struct {
 }{
 	{"heads", nil, NewFloat64Slice(), "--heads value\t"},
 	{"H", nil, NewFloat64Slice(), "-H value\t"},
-	{"heads", []string{"H"}, NewFloat64Slice(float64(0.1234), float64(-10.5)),
-		"--heads value, -H value\t(default: 0.1234, -10.5)"},
+	{
+		"heads", []string{"H"}, NewFloat64Slice(float64(0.1234), float64(-10.5)),
+		"--heads value, -H value\t(default: 0.1234, -10.5)",
+	},
 }
 
 func TestFloat64SliceFlagHelpOutput(t *testing.T) {

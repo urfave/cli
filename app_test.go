@@ -228,7 +228,6 @@ func ExampleApp_Run_subcommandNoAction() {
 	//
 	// OPTIONS:
 	//    --help, -h  show help (default: false)
-
 }
 
 func ExampleApp_Run_shellComplete() {
@@ -525,8 +524,8 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 			},
 		},
 	}
-	var _ = parsedOption
-	var _ = firstArg
+	_ = parsedOption
+	_ = firstArg
 
 	app.Run([]string{"", "cmd", "-p", "22", "-p", "80", "-ip", "8.8.8.8", "-ip", "8.8.4.4", "my-arg"})
 
@@ -553,8 +552,8 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 		}
 		return true
 	}
-	var expectedIntSlice = []int{22, 80}
-	var expectedStringSlice = []string{"8.8.8.8", "8.8.4.4"}
+	expectedIntSlice := []int{22, 80}
+	expectedStringSlice := []string{"8.8.8.8", "8.8.4.4"}
 
 	if !IntsEquals(parsedIntSlice, expectedIntSlice) {
 		t.Errorf("%v does not match %v", parsedIntSlice, expectedIntSlice)
@@ -588,8 +587,8 @@ func TestApp_ParseSliceFlagsWithMissingValue(t *testing.T) {
 
 	app.Run([]string{"", "cmd", "-a", "2", "-str", "A", "my-arg"})
 
-	var expectedIntSlice = []int{2}
-	var expectedStringSlice = []string{"A"}
+	expectedIntSlice := []int{2}
+	expectedStringSlice := []string{"A"}
 
 	if parsedIntSlice[0] != expectedIntSlice[0] {
 		t.Errorf("%v does not match %v", parsedIntSlice[0], expectedIntSlice[0])
@@ -636,7 +635,6 @@ func TestApp_SetStdout(t *testing.T) {
 	}
 
 	err := app.Run([]string{"help"})
-
 	if err != nil {
 		t.Fatalf("Run error: %s", err)
 	}
@@ -824,7 +822,7 @@ func TestAppHelpPrinter(t *testing.T) {
 		HelpPrinter = oldPrinter
 	}()
 
-	var wasCalled = false
+	wasCalled := false
 	HelpPrinter = func(w io.Writer, template string, data interface{}) {
 		wasCalled = true
 	}
@@ -843,7 +841,7 @@ func TestApp_VersionPrinter(t *testing.T) {
 		VersionPrinter = oldPrinter
 	}()
 
-	var wasCalled = false
+	wasCalled := false
 	VersionPrinter = func(c *Context) {
 		wasCalled = true
 	}
@@ -1026,7 +1024,7 @@ func TestApp_OrderOfOperations(t *testing.T) {
 }
 
 func TestApp_Run_CommandWithSubcommandHasHelpTopic(t *testing.T) {
-	var subcommandHelpTopics = [][]string{
+	subcommandHelpTopics := [][]string{
 		{"command", "foo", "--help"},
 		{"command", "foo", "-h"},
 		{"command", "foo", "help"},
@@ -1056,7 +1054,6 @@ func TestApp_Run_CommandWithSubcommandHasHelpTopic(t *testing.T) {
 
 		app.Commands = []*Command{cmd}
 		err := app.Run(flagSet)
-
 		if err != nil {
 			t.Error(err)
 		}
@@ -1219,7 +1216,7 @@ func TestApp_Run_CommandSubcommandHelpName(t *testing.T) {
 }
 
 func TestApp_Run_Help(t *testing.T) {
-	var helpArguments = [][]string{{"boom", "--help"}, {"boom", "-h"}, {"boom", "help"}}
+	helpArguments := [][]string{{"boom", "--help"}, {"boom", "-h"}, {"boom", "help"}}
 
 	for _, args := range helpArguments {
 		buf := new(bytes.Buffer)
@@ -1251,7 +1248,7 @@ func TestApp_Run_Help(t *testing.T) {
 }
 
 func TestApp_Run_Version(t *testing.T) {
-	var versionArguments = [][]string{{"boom", "--version"}, {"boom", "-v"}}
+	versionArguments := [][]string{{"boom", "--version"}, {"boom", "-v"}}
 
 	for _, args := range versionArguments {
 		buf := new(bytes.Buffer)

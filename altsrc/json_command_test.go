@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"gopkg.in/urfave/cli.v2"
+	"github.com/urfave/cli/v2"
 )
 
 const (
@@ -38,7 +38,8 @@ func TestCommandJSONFileTest(t *testing.T) {
 		},
 		Flags: []cli.Flag{
 			NewIntFlag(&cli.IntFlag{Name: "test"}),
-			&cli.StringFlag{Name: "load"}},
+			&cli.StringFlag{Name: "load"},
+		},
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewJSONSourceFromFlagFunc("load"))
 	err := command.Run(c)
@@ -72,7 +73,8 @@ func TestCommandJSONFileTestGlobalEnvVarWins(t *testing.T) {
 		},
 		Flags: []cli.Flag{
 			NewIntFlag(&cli.IntFlag{Name: "test", EnvVars: []string{"THE_TEST"}}),
-			&cli.StringFlag{Name: "load"}},
+			&cli.StringFlag{Name: "load"},
+		},
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewJSONSourceFromFlagFunc("load"))
 
@@ -107,7 +109,8 @@ func TestCommandJSONFileTestGlobalEnvVarWinsNested(t *testing.T) {
 		},
 		Flags: []cli.Flag{
 			NewIntFlag(&cli.IntFlag{Name: "top.test", EnvVars: []string{"THE_TEST"}}),
-			&cli.StringFlag{Name: "load"}},
+			&cli.StringFlag{Name: "load"},
+		},
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewJSONSourceFromFlagFunc("load"))
 
@@ -139,7 +142,8 @@ func TestCommandJSONFileTestSpecifiedFlagWins(t *testing.T) {
 		},
 		Flags: []cli.Flag{
 			NewIntFlag(&cli.IntFlag{Name: "test"}),
-			&cli.StringFlag{Name: "load"}},
+			&cli.StringFlag{Name: "load"},
+		},
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewJSONSourceFromFlagFunc("load"))
 
@@ -171,7 +175,8 @@ func TestCommandJSONFileTestSpecifiedFlagWinsNested(t *testing.T) {
 		},
 		Flags: []cli.Flag{
 			NewIntFlag(&cli.IntFlag{Name: "top.test"}),
-			&cli.StringFlag{Name: "load"}},
+			&cli.StringFlag{Name: "load"},
+		},
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewJSONSourceFromFlagFunc("load"))
 
@@ -203,7 +208,8 @@ func TestCommandJSONFileTestDefaultValueFileWins(t *testing.T) {
 		},
 		Flags: []cli.Flag{
 			NewIntFlag(&cli.IntFlag{Name: "test", Value: 7}),
-			&cli.StringFlag{Name: "load"}},
+			&cli.StringFlag{Name: "load"},
+		},
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewJSONSourceFromFlagFunc("load"))
 
@@ -235,7 +241,8 @@ func TestCommandJSONFileTestDefaultValueFileWinsNested(t *testing.T) {
 		},
 		Flags: []cli.Flag{
 			NewIntFlag(&cli.IntFlag{Name: "top.test", Value: 7}),
-			&cli.StringFlag{Name: "load"}},
+			&cli.StringFlag{Name: "load"},
+		},
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewJSONSourceFromFlagFunc("load"))
 
@@ -270,7 +277,8 @@ func TestCommandJSONFileFlagHasDefaultGlobalEnvJSONSetGlobalEnvWins(t *testing.T
 		},
 		Flags: []cli.Flag{
 			NewIntFlag(&cli.IntFlag{Name: "test", Value: 7, EnvVars: []string{"THE_TEST"}}),
-			&cli.StringFlag{Name: "load"}},
+			&cli.StringFlag{Name: "load"},
+		},
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewJSONSourceFromFlagFunc("load"))
 	err := command.Run(c)
@@ -304,7 +312,8 @@ func TestCommandJSONFileFlagHasDefaultGlobalEnvJSONSetGlobalEnvWinsNested(t *tes
 		},
 		Flags: []cli.Flag{
 			NewIntFlag(&cli.IntFlag{Name: "top.test", Value: 7, EnvVars: []string{"THE_TEST"}}),
-			&cli.StringFlag{Name: "load"}},
+			&cli.StringFlag{Name: "load"},
+		},
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewJSONSourceFromFlagFunc("load"))
 	err := command.Run(c)

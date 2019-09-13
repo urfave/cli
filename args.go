@@ -2,9 +2,7 @@ package cli
 
 import "errors"
 
-var (
-	argsRangeErr = errors.New("index out of range")
-)
+var argsRangeErr = errors.New("index out of range")
 
 type Args interface {
 	// Get returns the nth argument, or else a blank string
