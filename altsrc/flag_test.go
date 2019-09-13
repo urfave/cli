@@ -319,7 +319,7 @@ func runTest(t *testing.T, test testApplyInputSource) *cli.Context {
 		defer os.Setenv(test.EnvVarName, "")
 	}
 
-	test.Flag.Apply(set)
+	_ = test.Flag.Apply(set)
 	if test.ContextValue != nil {
 		f := set.Lookup(test.FlagName)
 		f.Value = test.ContextValue

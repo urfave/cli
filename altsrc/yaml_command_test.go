@@ -7,10 +7,10 @@ package altsrc
 
 import (
 	"flag"
+	"github.com/urfave/cli/v2"
 	"io/ioutil"
 	"os"
 	"testing"
-	"github.com/urfave/cli/v2"
 )
 
 func TestCommandYamlFileTest(t *testing.T) {
