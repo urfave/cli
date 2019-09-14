@@ -659,6 +659,17 @@ func TestApp_UseShortOptionHandling(t *testing.T) {
 	expect(t, name, expected)
 }
 
+func TestApp_UseShortOptionHandling_missing_value(t *testing.T) {
+	app := NewApp()
+	app.UseShortOptionHandling = true
+	app.Flags = []Flag{
+		StringFlag{Name: "name, n"},
+	}
+
+	err := app.Run([]string{"", "-n"})
+	expect(t, err, errors.New("flag needs an argument: -n"))
+}
+
 func TestApp_UseShortOptionHandlingCommand(t *testing.T) {
 	var one, two bool
 	var name string
@@ -686,6 +697,21 @@ func TestApp_UseShortOptionHandlingCommand(t *testing.T) {
 	expect(t, one, true)
 	expect(t, two, false)
 	expect(t, name, expected)
+}
+
+func TestApp_UseShortOptionHandlingCommand_missing_value(t *testing.T) {
+	app := NewApp()
+	app.UseShortOptionHandling = true
+	command := Command{
+		Name: "cmd",
+		Flags: []Flag{
+			StringFlag{Name: "name, n"},
+		},
+	}
+	app.Commands = []Command{command}
+
+	err := app.Run([]string{"", "cmd", "-n"})
+	expect(t, err, errors.New("flag needs an argument: -n"))
 }
 
 func TestApp_UseShortOptionHandlingSubCommand(t *testing.T) {
@@ -720,6 +746,25 @@ func TestApp_UseShortOptionHandlingSubCommand(t *testing.T) {
 	expect(t, one, true)
 	expect(t, two, false)
 	expect(t, name, expected)
+}
+
+func TestApp_UseShortOptionHandlingSubCommand_missing_value(t *testing.T) {
+	app := NewApp()
+	app.UseShortOptionHandling = true
+	command := Command{
+		Name: "cmd",
+	}
+	subCommand := Command{
+		Name: "sub",
+		Flags: []Flag{
+			StringFlag{Name: "name, n"},
+		},
+	}
+	command.Subcommands = []Command{subCommand}
+	app.Commands = []Command{command}
+
+	err := app.Run([]string{"", "cmd", "sub", "-n"})
+	expect(t, err, errors.New("flag needs an argument: -n"))
 }
 
 func TestApp_Float64Flag(t *testing.T) {

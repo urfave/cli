@@ -70,29 +70,34 @@ func TestParseAndRunShortOpts(t *testing.T) {
 		{[]string{"foo", "test", "-af"}, nil, []string{}},
 		{[]string{"foo", "test", "-cf"}, nil, []string{}},
 		{[]string{"foo", "test", "-acf"}, nil, []string{}},
-		{[]string{"foo", "test", "-invalid"}, errors.New("flag provided but not defined: -invalid"), []string{}},
+		{[]string{"foo", "test", "-invalid"}, errors.New("flag provided but not defined: -invalid"), nil},
 		{[]string{"foo", "test", "-acf", "arg1", "-invalid"}, nil, []string{"arg1", "-invalid"}},
-	}
-
-	var args []string
-	cmd := Command{
-		Name:        "test",
-		Usage:       "this is for testing",
-		Description: "testing",
-		Action: func(c *Context) error {
-			args = c.Args()
-			return nil
-		},
-		SkipArgReorder:         true,
-		UseShortOptionHandling: true,
-		Flags: []Flag{
-			BoolFlag{Name: "abc, a"},
-			BoolFlag{Name: "cde, c"},
-			BoolFlag{Name: "fgh, f"},
-		},
+		{[]string{"foo", "test", "-acfi", "not-arg", "arg1", "-invalid"}, nil, []string{"arg1", "-invalid"}},
+		{[]string{"foo", "test", "-i", "ivalue"}, nil, []string{}},
+		{[]string{"foo", "test", "-i", "ivalue", "arg1"}, nil, []string{"arg1"}},
+		{[]string{"foo", "test", "-i"}, errors.New("flag needs an argument: -i"), nil},
 	}
 
 	for _, c := range cases {
+		var args []string
+		cmd := Command{
+			Name:        "test",
+			Usage:       "this is for testing",
+			Description: "testing",
+			Action: func(c *Context) error {
+				args = c.Args()
+				return nil
+			},
+			SkipArgReorder:         true,
+			UseShortOptionHandling: true,
+			Flags: []Flag{
+				BoolFlag{Name: "abc, a"},
+				BoolFlag{Name: "cde, c"},
+				BoolFlag{Name: "fgh, f"},
+				StringFlag{Name: "ijk, i"},
+			},
+		}
+
 		app := NewApp()
 		app.Commands = []Command{cmd}
 
