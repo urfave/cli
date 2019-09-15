@@ -118,7 +118,7 @@ func (f *Int64SliceFlag) Apply(set *flag.FlagSet) error {
 
 		for _, s := range strings.Split(val, ",") {
 			if err := f.Value.Set(strings.TrimSpace(s)); err != nil {
-				return fmt.Errorf("could not parse %s as int64 slice value for flag %s: %s", f.Value, f.Name, err)
+				return fmt.Errorf("could not parse %q as int64 slice value for flag %s: %s", val, f.Name, err)
 			}
 		}
 	}

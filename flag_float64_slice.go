@@ -118,7 +118,7 @@ func (f *Float64SliceFlag) Apply(set *flag.FlagSet) error {
 
 		for _, s := range strings.Split(val, ",") {
 			if err := f.Value.Set(strings.TrimSpace(s)); err != nil {
-				return fmt.Errorf("could not parse %s as float64 slice value for flag %s: %s", f.Value, f.Name, err)
+				return fmt.Errorf("could not parse %q as float64 slice value for flag %s: %s", f.Value, f.Name, err)
 			}
 		}
 	}

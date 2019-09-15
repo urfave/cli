@@ -52,7 +52,7 @@ func (f *UintFlag) Apply(set *flag.FlagSet) error {
 		if val != "" {
 			valInt, err := strconv.ParseUint(val, 0, 64)
 			if err != nil {
-				return fmt.Errorf("could not parse %s as uint value for flag %s: %s", val, f.Name, err)
+				return fmt.Errorf("could not parse %q as uint value for flag %s: %s", val, f.Name, err)
 			}
 
 			f.Value = uint(valInt)

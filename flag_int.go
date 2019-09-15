@@ -58,7 +58,7 @@ func (f *IntFlag) Apply(set *flag.FlagSet) error {
 		if val != "" {
 			valInt, err := strconv.ParseInt(val, 0, 64)
 			if err != nil {
-				return fmt.Errorf("could not parse %s as int value for flag %s: %s", val, f.Name, err)
+				return fmt.Errorf("could not parse %q as int value for flag %s: %s", val, f.Name, err)
 			}
 			f.Value = int(valInt)
 		}

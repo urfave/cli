@@ -13,7 +13,7 @@ var (
 )
 
 func init() {
-	os.Setenv("CLI_TEMPLATE_REPANIC", "1")
+	_ = os.Setenv("CLI_TEMPLATE_REPANIC", "1")
 }
 
 func expect(t *testing.T, a interface{}, b interface{}) {

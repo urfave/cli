@@ -30,20 +30,12 @@ applications in an expressive way.
     + [Values from the Environment](#values-from-the-environment)
     + [Values from files](#values-from-files)
     + [Values from alternate input sources (YAML, TOML, and others)](#values-from-alternate-input-sources-yaml-toml-and-others)
-<<<<<<< HEAD
-    + [Default Values for help output](#default-values-for-help-output)
-  * [Subcommands](#subcommands)
-  * [Subcommands categories](#subcommands-categories)
-  * [Exit code](#exit-code)
-  * [Shell Completion](#shell-completion)
-=======
     + [Precedence](#precedence)
   * [Subcommands](#subcommands)
   * [Subcommands categories](#subcommands-categories)
   * [Exit code](#exit-code)
   * [Combining short options](#combining-short-options)
   * [Bash Completion](#bash-completion)
->>>>>>> master
     + [Enabling](#enabling)
     + [Distribution](#distribution)
     + [Customization](#customization)
@@ -111,7 +103,6 @@ import (
 ...
 ```
 
-<<<<<<< HEAD
 **NOTE**: There is a [migrator (python) script](./cli-v1-to-v2) available to aid
 with the transition from the v1 to v2 API.
 
@@ -120,9 +111,6 @@ with the transition from the v1 to v2 API.
 Similarly to the section above describing use of the `v2` branch, if one wants
 to avoid any unexpected compatibility pains once `v2` becomes `master`, then
 pinning to `v1` is an acceptable option, e.g.:
-=======
-### Using `v1` releases
->>>>>>> master
 
 ```
 $ go get github.com/urfave/cli

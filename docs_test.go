@@ -16,7 +16,7 @@ func testApp() *App {
 			Value:     "value",
 			TakesFile: true,
 		},
-		&StringFlag{Name: "flag", Aliases: []string{" fl", "f"}},
+		&StringFlag{Name: "flag", Aliases: []string{"fl", "f"}},
 		&BoolFlag{
 			Name:    "another-flag",
 			Aliases: []string{"b"},
@@ -28,7 +28,7 @@ func testApp() *App {
 		Flags: []Flag{
 			&StringFlag{
 				Name:      "flag",
-				Aliases:   []string{" fl", "f"},
+				Aliases:   []string{"fl", "f"},
 				TakesFile: true,
 			},
 			&BoolFlag{
@@ -64,7 +64,7 @@ func testApp() *App {
 	}}
 	app.UsageText = "app [first_arg] [second_arg]"
 	app.Usage = "Some app"
-	app.Authors = []*Author{{Name: "Harrison", Email: "harrison@lolwut.com"}, {Name: "Oliver Allen", Email: "oliver@toyshop.com"}}
+	app.Authors = []*Author{{Name: "Harrison", Email: "harrison@lolwut.com"}}
 	return app
 }
 

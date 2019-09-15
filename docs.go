@@ -102,7 +102,7 @@ func prepareFlags(
 	sep, opener, closer, value string,
 	addDetails bool,
 ) []string {
-	args := []string{}
+	var args []string
 	for _, f := range flags {
 		flag, ok := f.(DocGenerationFlag)
 		if !ok {

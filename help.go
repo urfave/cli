@@ -10,75 +10,6 @@ import (
 	"unicode/utf8"
 )
 
-// AppHelpTemplate is the text template for the Default help topic.
-// cli.go uses text/template to render templates. You can
-// render custom help text by setting this variable.
-var AppHelpTemplate = `NAME:
-   {{.Name}}{{if .Usage}} - {{.Usage}}{{end}}
-
-USAGE:
-   {{if .UsageText}}{{.UsageText}}{{else}}{{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
-
-VERSION:
-   {{.Version}}{{end}}{{end}}{{if .Description}}
-
-DESCRIPTION:
-   {{.Description}}{{end}}{{if len .Authors}}
-
-AUTHOR{{with $length := len .Authors}}{{if ne 1 $length}}S{{end}}{{end}}:
-   {{range $index, $author := .Authors}}{{if $index}}
-   {{end}}{{$author}}{{end}}{{end}}{{if .VisibleCommands}}
-
-COMMANDS:{{range .VisibleCategories}}{{if .Name}}
-   {{.Name}}:{{end}}{{range .VisibleCommands}}
-     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
-
-GLOBAL OPTIONS:
-   {{range $index, $option := .VisibleFlags}}{{if $index}}
-   {{end}}{{$option}}{{end}}{{end}}{{if .Copyright}}
-
-COPYRIGHT:
-   {{.Copyright}}{{end}}
-`
-
-// CommandHelpTemplate is the text template for the command help topic.
-// cli.go uses text/template to render templates. You can
-// render custom help text by setting this variable.
-var CommandHelpTemplate = `NAME:
-   {{.HelpName}} - {{.Usage}}
-
-USAGE:
-   {{if .UsageText}}{{.UsageText}}{{else}}{{.HelpName}}{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Category}}
-
-CATEGORY:
-   {{.Category}}{{end}}{{if .Description}}
-
-DESCRIPTION:
-   {{.Description}}{{end}}{{if .VisibleFlags}}
-
-OPTIONS:
-   {{range .VisibleFlags}}{{.}}
-   {{end}}{{end}}
-`
-
-// SubcommandHelpTemplate is the text template for the subcommand help topic.
-// cli.go uses text/template to render templates. You can
-// render custom help text by setting this variable.
-var SubcommandHelpTemplate = `NAME:
-   {{.HelpName}} - {{if .Description}}{{.Description}}{{else}}{{.Usage}}{{end}}
-
-USAGE:
-   {{if .UsageText}}{{.UsageText}}{{else}}{{.HelpName}} command{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}
-
-COMMANDS:{{range .VisibleCategories}}{{if .Name}}
-   {{.Name}}:{{end}}{{range .VisibleCommands}}
-     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}
-{{end}}{{if .VisibleFlags}}
-OPTIONS:
-   {{range .VisibleFlags}}{{.}}
-   {{end}}{{end}}
-`
-
 var helpCommand = &Command{
 	Name:      "help",
 	Aliases:   []string{"h"},
@@ -157,7 +88,7 @@ func DefaultAppComplete(c *Context) {
 	DefaultCompleteWithFlags(nil)(c)
 }
 
-func printCommandSuggestions(commands []Command, writer io.Writer) {
+func printCommandSuggestions(commands []*Command, writer io.Writer) {
 	for _, command := range commands {
 		if command.Hidden {
 			continue
@@ -195,10 +126,10 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 	cur := strings.TrimPrefix(lastArg, "-")
 	cur = strings.TrimPrefix(cur, "-")
 	for _, flag := range flags {
-		if bflag, ok := flag.(BoolFlag); ok && bflag.Hidden {
+		if bflag, ok := flag.(*BoolFlag); ok && bflag.Hidden {
 			continue
 		}
-		for _, name := range strings.Split(flag.GetName(), ",") {
+		for _, name := range flag.Names(){
 			name = strings.TrimSpace(name)
 			// this will get total count utf8 letters in flag name
 			count := utf8.RuneCountInString(name)
@@ -211,7 +142,7 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 				continue
 			}
 			// match if last argument matches this flag and it is not repeated
-			if strings.HasPrefix(name, cur) && cur != name && !cliArgContains(flag.GetName()) {
+			if strings.HasPrefix(name, cur) && cur != name && !cliArgContains(name) {
 				flagCompletion := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
 				_, _ = fmt.Fprintln(writer, flagCompletion)
 			}
@@ -305,20 +236,13 @@ func ShowCompletions(c *Context) {
 // ShowCommandCompletions prints the custom completions for a given command
 func ShowCommandCompletions(ctx *Context, command string) {
 	c := ctx.App.Command(command)
-	//TODO: Resolve
-//<<<<<<< HEAD
-	if c != nil && c.ShellComplete != nil {
-		c.ShellComplete(ctx)
-//=======
-//	if c != nil {
-//		if c.BashComplete != nil {
-//			c.BashComplete(ctx)
-//		} else {
-//			DefaultCompleteWithFlags(c)(ctx)
-//		}
-//>>>>>>> master
+	if c != nil {
+		if c.BashComplete != nil {
+			c.BashComplete(ctx)
+		} else {
+			DefaultCompleteWithFlags(c)(ctx)
+		}
 	}
-
 }
 
 func printHelpCustom(out io.Writer, templ string, data interface{}, customFunc map[string]interface{}) {
@@ -387,14 +311,14 @@ func checkSubcommandHelp(c *Context) bool {
 }
 
 func checkShellCompleteFlag(a *App, arguments []string) (bool, []string) {
-	if !a.EnableShellCompletion {
+	if !a.EnableBashCompletion {
 		return false, arguments
 	}
 
 	pos := len(arguments) - 1
 	lastArg := arguments[pos]
 
-	if lastArg != "--"+genCompName() {
+	if lastArg != "--generate-bash-completion" {
 		return false, arguments
 	}
 
@@ -425,42 +349,4 @@ func checkCommandCompletions(c *Context, name string) bool {
 
 	ShowCommandCompletions(c, name)
 	return true
-}
-
-func checkInitCompletion(c *Context) (bool, error) {
-	if c.IsSet(InitCompletionFlag.Name) {
-		shell := c.String(InitCompletionFlag.Name)
-		progName := os.Args[0]
-		switch shell {
-		case "bash":
-			fmt.Print(bashCompletionCode(progName))
-			return true, nil
-		case "zsh":
-			fmt.Print(zshCompletionCode(progName))
-			return true, nil
-		default:
-			return false, fmt.Errorf("--init-completion value cannot be '%s'", shell)
-		}
-	}
-	return false, nil
-}
-
-func bashCompletionCode(progName string) string {
-	var template = `_cli_bash_autocomplete() {
-     local cur opts base;
-     COMPREPLY=();
-     cur="${COMP_WORDS[COMP_CWORD]}";
-     opts=$( ${COMP_WORDS[@]:0:$COMP_CWORD} --%s );
-     COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) );
-     return 0;
-};
-complete -F _cli_bash_autocomplete %s`
-	return fmt.Sprintf(template, genCompName(), progName)
-}
-
-func zshCompletionCode(progName string) string {
-	var template = `autoload -U compinit && compinit;
-autoload -U bashcompinit && bashcompinit;`
-
-	return template + "\n" + bashCompletionCode(progName)
 }

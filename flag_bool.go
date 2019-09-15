@@ -58,7 +58,7 @@ func (f *BoolFlag) Apply(set *flag.FlagSet) error {
 		if val != "" {
 			valBool, err := strconv.ParseBool(val)
 			if err != nil {
-				return fmt.Errorf("could not parse %s as bool value for flag %s: %s", val, f.Name, err)
+				return fmt.Errorf("could not parse %q as bool value for flag %s: %s", val, f.Name, err)
 			}
 			f.Value = valBool
 		}

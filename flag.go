@@ -235,7 +235,7 @@ func withEnvHint(envVars []string, str string) string {
 }
 
 func flagNames(f Flag) []string {
-	ret := []string{}
+	var ret []string
 
 	name := flagStringField(f, "Name")
 	aliases := flagStringSliceField(f, "Aliases")

@@ -112,7 +112,7 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
 		f.Value = &StringSlice{}
 		for _, s := range strings.Split(val, ",") {
 			if err := f.Value.Set(strings.TrimSpace(s)); err != nil {
-				return fmt.Errorf("could not parse %s as string value for flag %s: %s", val, f.Name, err)
+				return fmt.Errorf("could not parse %q as string value for flag %s: %s", val, f.Name, err)
 			}
 		}
 	}

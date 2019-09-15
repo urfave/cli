@@ -58,7 +58,7 @@ func (f *DurationFlag) Apply(set *flag.FlagSet) error {
 		if val != ""{
 			valDuration, err := time.ParseDuration(val)
 			if err != nil {
-				return fmt.Errorf("could not parse %s as duration value for flag %s: %s", val, f.Name, err)
+				return fmt.Errorf("could not parse %q as duration value for flag %s: %s", val, f.Name, err)
 			}
 			f.Value = valDuration
 		}

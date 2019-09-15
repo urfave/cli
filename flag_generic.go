@@ -65,7 +65,7 @@ func (f *GenericFlag) GetValue() string {
 func (f GenericFlag) Apply(set *flag.FlagSet) error {
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		if err := f.Value.Set(val); err != nil {
-			return fmt.Errorf("could not parse %s as value for flag %s: %s", val, f.Name, err)
+			return fmt.Errorf("could not parse %q as value for flag %s: %s", val, f.Name, err)
 		}
 	}
 

@@ -58,7 +58,7 @@ func (f *Float64Flag) Apply(set *flag.FlagSet) error {
 		if val != "" {
 			valFloat, err := strconv.ParseFloat(val, 10)
 			if err != nil {
-				return fmt.Errorf("could not parse %s as float64 value for flag %s: %s", val, f.Name, err)
+				return fmt.Errorf("could not parse %q as float64 value for flag %s: %s", val, f.Name, err)
 			}
 			f.Value = valFloat
 		}
