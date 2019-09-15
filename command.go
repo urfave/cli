@@ -3,7 +3,6 @@ package cli
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"sort"
 	"strings"
 )
@@ -99,29 +98,7 @@ func (c *Command) Run(ctx *Context) (err error) {
 		c.UseShortOptionHandling = true
 	}
 
-	//if ctx.App.EnableShellCompletion {
-	//	c.appendFlag(GenerateCompletionFlag)
-	//}
-
-	set, err := flagSet(c.Name, c.Flags)
-	if err != nil {
-		return err
-	}
-	set.SetOutput(ioutil.Discard)
-
-	if c.SkipFlagParsing {
-		err = set.Parse(append([]string{"--"}, ctx.Args().Tail()...))
-	} else {
-		err = set.Parse(ctx.Args().Tail())
-	}
-
-	nerr := normalizeFlags(c.Flags, set)
-	if nerr != nil {
-		_, _ = fmt.Fprintln(ctx.App.Writer, nerr)
-		_, _ = fmt.Fprintln(ctx.App.Writer)
-		_ = ShowCommandHelp(ctx, c.Name)
-		return nerr
-	}
+	set, err := c.parseFlags(ctx.Args())
 
 	context := NewContext(ctx.App, set, ctx)
 	context.Command = c
@@ -132,7 +109,7 @@ func (c *Command) Run(ctx *Context) (err error) {
 	if err != nil {
 		if c.OnUsageError != nil {
 			err = c.OnUsageError(context, err, false)
-			HandleExitCoder(err)
+			context.App.handleExitCoder(context, err)
 			return err
 		}
 		_, _ = fmt.Fprintln(context.App.Writer, "Incorrect Usage:", err.Error())
@@ -155,7 +132,7 @@ func (c *Command) Run(ctx *Context) (err error) {
 		defer func() {
 			afterErr := c.After(context)
 			if afterErr != nil {
-				HandleExitCoder(err)
+				context.App.handleExitCoder(context, err)
 				if err != nil {
 					err = newMultiError(err, afterErr)
 				} else {
@@ -168,8 +145,8 @@ func (c *Command) Run(ctx *Context) (err error) {
 	if c.Before != nil {
 		err = c.Before(context)
 		if err != nil {
-			ShowCommandHelp(context, c.Name)
-			HandleExitCoder(err)
+			_ = ShowCommandHelp(context, c.Name)
+			context.App.handleExitCoder(context, err)
 			return err
 		}
 	}
@@ -182,7 +159,7 @@ func (c *Command) Run(ctx *Context) (err error) {
 	err = c.Action(context)
 
 	if err != nil {
-		HandleExitCoder(err)
+		context.App.handleExitCoder(context, err)
 	}
 	return err
 }
@@ -193,6 +170,33 @@ func (c *Command) newFlagSet() (*flag.FlagSet, error) {
 
 func (c *Command) useShortOptionHandling() bool {
 	return c.UseShortOptionHandling
+}
+
+func (c *Command) parseFlags(args Args) (*flag.FlagSet, error) {
+	if c.SkipFlagParsing {
+		set, err := c.newFlagSet()
+		if err != nil {
+			return nil, err
+		}
+
+		return set, set.Parse(append([]string{"--"}, args.Tail()...))
+	}
+
+	//if !c.SkipArgReorder {
+	//	args = reorderArgs(args)
+	//}
+
+	set, err := parseIter(c, args.Tail())
+	if err != nil {
+		return nil, err
+	}
+
+	err = normalizeFlags(c.Flags, set)
+	if err != nil {
+		return nil, err
+	}
+
+	return set, nil
 }
 
 // Names returns the names including short names and aliases.
@@ -240,6 +244,7 @@ func (c *Command) startApp(ctx *Context) error {
 	app.Compiled = ctx.App.Compiled
 	app.Writer = ctx.App.Writer
 	app.ErrWriter = ctx.App.ErrWriter
+	app.ExitErrHandler = ctx.App.ExitErrHandler
 	app.UseShortOptionHandling = ctx.App.UseShortOptionHandling
 
 	app.Categories = newCommandCategories()
