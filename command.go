@@ -193,7 +193,12 @@ func (c *Command) parseFlags(args Args) (*flag.FlagSet, error) {
 		args = reorderArgs(c.Flags, args)
 	}
 
-	set, err := parseIter(c, args)
+	set, err := c.newFlagSet()
+	if err != nil {
+		return nil, err
+	}
+
+	err = parseIter(set, c, args)
 	if err != nil {
 		return nil, err
 	}
