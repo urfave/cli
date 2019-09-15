@@ -7,11 +7,13 @@ image: Visual Studio 2017
 clone_folder: c:\gopath\src\github.com\urfave\cli
 
 cache:
-- node_modules
+  - node_modules
 
 environment:
   GOPATH: C:\gopath
   GOVERSION: 1.11.x
+  GO111MODULE: on
+  GOPROXY: https://proxy.golang.org
 
 install:
   - set PATH=%GOPATH%\bin;C:\go\bin;%PATH%
