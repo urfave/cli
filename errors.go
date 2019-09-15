@@ -73,8 +73,8 @@ func NewExitError(message interface{}, exitCode int) ExitCoder {
 // HandleExitCoder
 func Exit(message interface{}, exitCode int) ExitCoder {
 	return &exitError{
-		exitCode: exitCode,
 		message:  message,
+		exitCode: exitCode,
 	}
 }
 
@@ -98,9 +98,9 @@ func HandleExitCoder(err error) {
 	if exitErr, ok := err.(ExitCoder); ok {
 		if err.Error() != "" {
 			if _, ok := exitErr.(ErrorFormatter); ok {
-				fmt.Fprintf(ErrWriter, "%+v\n", err)
+				_, _ = fmt.Fprintf(ErrWriter, "%+v\n", err)
 			} else {
-				fmt.Fprintln(ErrWriter, err)
+				_, _ = fmt.Fprintln(ErrWriter, err)
 			}
 		}
 		OsExiter(exitErr.ExitCode())

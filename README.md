@@ -138,7 +138,6 @@ discovery. So a cli app can be as little as one line of code in `main()`.
 package main
 
 import (
-  "log"
   "os"
 
   "github.com/urfave/cli/v2"
@@ -652,7 +651,7 @@ func main() {
   app := cli.NewApp()
 
   app.Flags = []cli.Flag {
-    cli.StringFlag{
+    &cli.StringFlag{
       Name: "password, p",
       Usage: "password for the mysql database",
       FilePath: "/etc/mysql/password",
@@ -754,6 +753,7 @@ For example this:
 package main
 
 import (
+  "log"	
   "os"
 
   "github.com/urfave/cli/v2"
@@ -943,13 +943,12 @@ func main() {
     Flags: []cli.Flag{
       &cli.BoolFlag{
         Name:  "ginger-crouton",
-        Value: true,
         Usage: "is it in the soup?",
       },
     },
     Action: func(ctx *cli.Context) error {
       if !ctx.Bool("ginger-crouton") {
-        return cli.Exit("it is not in the soup", 86)
+        return cli.Exit(Ginger croutons are not in the soup, 86)
       }
       return nil
     },
@@ -998,9 +997,9 @@ func main() {
       Name:  "short",
       Usage: "complete a task on the list",
       Flags: []cli.Flag{
-        cli.BoolFlag{Name: "serve, s"},
-        cli.BoolFlag{Name: "option, o"},
-        cli.StringFlag{Name: "message, m"},
+        &cli.BoolFlag{Name: "serve", Aliases: []string{"s"}},
+        &cli.BoolFlag{Name: "option", Aliases: []string{"o"}},
+        &cli.StringFlag{Name: "message", Aliases: []string{"m"}},
       },
       Action: func(c *cli.Context) error {
         fmt.Println("serve:", c.Bool("serve"))
@@ -1040,7 +1039,7 @@ show an app's subcommands, but you can write your own completion methods for
 the App or its subcommands.
 
 <!-- {
-  "args": ["complete", "&#45;&#45;generate&#45;completion"],
+  "args": ["complete", "&#45;&#45;generate&#45;bash&#45;completion"],
   "output": "laundry"
 } -->
 ``` go
@@ -1114,11 +1113,11 @@ to the name of their program (as above).
 
 #### Customization
 
-The default shell completion flag (`--generate-completion`) is defined as
-`cli.GenerateCompletionFlag`, and may be redefined if desired, e.g.:
+The default shell completion flag (`--generate-bash-completion`) is defined as
+`cli.EnableBashCompletion`, and may be redefined if desired, e.g.:
 
 <!-- {
-  "args": ["&#45;&#45;compgen"],
+  "args": ["&#45;&#45;generate&#45;bash&#45;completion"],
   "output": "wat\nhelp\nh"
 } -->
 ``` go
@@ -1132,13 +1131,8 @@ import (
 )
 
 func main() {
-  cli.GenerateCompletionFlag = &cli.BoolFlag{
-    Name:   "compgen",
-    Hidden: true,
-  }
-
   app := &cli.App{
-    EnableShellCompletion: true,
+    EnableBashCompletion: true,
     Commands: []*cli.Command{
       {
         Name: "wat",
@@ -1174,7 +1168,6 @@ package main
 
 import (
   "fmt"
-  "log"
   "io"
   "os"
 
@@ -1233,7 +1226,6 @@ setting `cli.HelpFlag`, e.g.:
 package main
 
 import (
-  "log"
   "os"
 
   "github.com/urfave/cli/v2"
@@ -1269,7 +1261,6 @@ setting `cli.VersionFlag`, e.g.:
 package main
 
 import (
-  "log"
   "os"
 
   "github.com/urfave/cli/v2"
@@ -1300,7 +1291,6 @@ package main
 
 import (
   "fmt"
-  "log"
   "os"
 
   "github.com/urfave/cli/v2"
@@ -1352,7 +1342,6 @@ func init() {
   cli.SubcommandHelpTemplate += "\nor something\n"
 
   cli.HelpFlag = &cli.BoolFlag{Name: "halp"}
-  cli.GenerateCompletionFlag = &cli.BoolFlag{Name: "compgen", Hidden: true}
   cli.VersionFlag = &cli.BoolFlag{Name: "print-version", Aliases: []string{"V"}}
 
   cli.HelpPrinter = func(w io.Writer, templ string, data interface{}) {
@@ -1432,7 +1421,7 @@ func main() {
         HideHelp:        false,
         Hidden:          false,
         HelpName:        "doo!",
-        ShellComplete: func(c *cli.Context) {
+        BashComplete: func(c *cli.Context) {
           fmt.Fprintf(c.App.Writer, "--better\n")
         },
         Before: func(c *cli.Context) error {
@@ -1475,10 +1464,10 @@ func main() {
       &cli.UintFlag{Name: "age"},
       &cli.Uint64Flag{Name: "bigage"},
     },
-    EnableShellCompletion: true,
+    EnableBashCompletion: true,
     HideHelp: false,
     HideVersion: false,
-    ShellComplete: func(c *cli.Context) {
+    BashComplete: func(c *cli.Context) {
       fmt.Fprintf(c.App.Writer, "lipstick\nkiss\nme\nlipstick\nringo\n")
     },
     Before: func(c *cli.Context) error {
