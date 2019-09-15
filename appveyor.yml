@@ -19,8 +19,8 @@ install:
   - set PATH=%GOPATH%\bin;C:\go\bin;%PATH%
   - go version
   - go env
-  - go get github.com/urfave/gfmrun/...
-  - go get -v -t ./...
+  - go get github.com/urfave/gfmrun/cmd/gfmrun
+  - go mod vendor
 
 build_script:
   - go run build.go vet
