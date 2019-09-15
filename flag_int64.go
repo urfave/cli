@@ -78,7 +78,10 @@ func (f *Int64Flag) Apply(set *flag.FlagSet) error {
 // Int64 looks up the value of a local Int64Flag, returns
 // 0 if not found
 func (c *Context) Int64(name string) int64 {
-	return lookupInt64(name, c.flagSet)
+	if fs := lookupFlagSet(name, c); fs != nil {
+		return lookupInt64(name, fs)
+	}
+	return 0
 }
 
 // GlobalInt64 looks up the value of a global Int64Flag, returns

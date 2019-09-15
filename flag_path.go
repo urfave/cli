@@ -7,7 +7,6 @@ type PathFlag struct {
 	Aliases     []string
 	Usage       string
 	EnvVars     []string
-	EnvVar      string
 	FilePath    string
 	Required    bool
 	Hidden      bool
@@ -58,7 +57,7 @@ func (f *PathFlag) Apply(set *flag.FlagSet) error {
 	for _, name := range f.Names() {
 		if f.Destination != nil {
 			set.StringVar(f.Destination, name, f.Value, f.Usage)
-			return
+			continue
 		}
 		set.String(name, f.Value, f.Usage)
 	}
@@ -69,7 +68,11 @@ func (f *PathFlag) Apply(set *flag.FlagSet) error {
 // String looks up the value of a local PathFlag, returns
 // "" if not found
 func (c *Context) Path(name string) string {
-	return lookupPath(name, c.flagSet)
+	if fs := lookupFlagSet(name, c); fs != nil {
+		return lookupPath(name, fs)
+	}
+
+	return ""
 }
 
 func lookupPath(name string, set *flag.FlagSet) string {

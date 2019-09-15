@@ -452,7 +452,7 @@ func TestCheckRequiredFlags(t *testing.T) {
 		{
 			testCase: "required_and_present_via_env_var",
 			flags: []Flag{
-				&StringFlag{Name: "requiredFlag", Required: true, EnvVar: "REQUIRED_FLAG"},
+				&StringFlag{Name: "requiredFlag", Required: true, EnvVars: []string{"REQUIRED_FLAG"}},
 			},
 			envVarInput: [2]string{"REQUIRED_FLAG", "true"},
 		},
@@ -477,7 +477,7 @@ func TestCheckRequiredFlags(t *testing.T) {
 			testCase: "required_and_optional_and_optional_present_via_env_var",
 			flags: []Flag{
 				&StringFlag{Name: "requiredFlag", Required: true},
-				&StringFlag{Name: "optionalFlag", EnvVar: "OPTIONAL_FLAG"},
+				&StringFlag{Name: "optionalFlag", EnvVars: []string{"OPTIONAL_FLAG"}},
 			},
 			envVarInput:     [2]string{"OPTIONAL_FLAG", "true"},
 			expectedAnError: true,
@@ -519,14 +519,14 @@ func TestCheckRequiredFlags(t *testing.T) {
 		{
 			testCase: "required_flag_with_short_name",
 			flags: []Flag{
-				&StringSliceFlag{Name: "names, N", Required: true},
+				&StringSliceFlag{Name: "names", Aliases: []string{"N"}, Required: true},
 			},
 			parseInput: []string{"-N", "asd", "-N", "qwe"},
 		},
 		{
 			testCase: "required_flag_with_multiple_short_names",
 			flags: []Flag{
-				&StringSliceFlag{Name: "names, N, n", Required: true},
+				&StringSliceFlag{Name: "names", Aliases: []string{"N", "n"}, Required: true},
 			},
 			parseInput: []string{"-n", "asd", "-n", "qwe"},
 		},
@@ -543,12 +543,12 @@ func TestCheckRequiredFlags(t *testing.T) {
 				os.Clearenv()
 				_ = os.Setenv(test.envVarInput[0], test.envVarInput[1])
 			}
-			ctx := &Context{}
-			context := NewContext(ctx.App, set, ctx)
-			context.Command.Flags = test.flags
+			c := &Context{}
+			ctx := NewContext(c.App, set, c)
+			ctx.Command.Flags = test.flags
 
 			// logic under test
-			err := checkRequiredFlags(test.flags, context)
+			err := checkRequiredFlags(test.flags, ctx)
 
 			// assertions
 			if test.expectedAnError && err == nil {

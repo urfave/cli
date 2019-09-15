@@ -24,8 +24,8 @@ var boolFlagTests = []struct {
 
 func TestBoolFlagHelpOutput(t *testing.T) {
 	for _, test := range boolFlagTests {
-		flag := &BoolFlag{Name: test.name}
-		output := flag.String()
+		fl := &BoolFlag{Name: test.name}
+		output := fl.String()
 
 		if output != test.expected {
 			t.Errorf("%q does not match %q", output, test.expected)
@@ -37,7 +37,7 @@ func TestBoolFlagApply_SetsAllNames(t *testing.T) {
 	v := false
 	fl := BoolFlag{Name: "wat", Aliases: []string{"W", "huh"}, Destination: &v}
 	set := flag.NewFlagSet("test", 0)
-	fl.Apply(set)
+	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--wat", "-W", "--huh"})
 	expect(t, err, nil)
@@ -113,16 +113,16 @@ func TestFlagsFromEnv(t *testing.T) {
 		{"foo,bar", &Parser{"foo", "bar"}, &GenericFlag{Name: "names", Value: &Parser{}, EnvVars: []string{"NAMES"}}, ""},
 	}
 
-//<<<<<<< HEAD
-//	for i, test := range flagTests {
-//		os.Clearenv()
-//		envVarSlice := reflect.Indirect(reflect.ValueOf(test.flag)).FieldByName("EnvVars").Slice(0, 1)
-//		os.Setenv(envVarSlice.Index(0).String(), test.input)
-//=======
+	//<<<<<<< HEAD
+	//	for i, test := range flagTests {
+	//		os.Clearenv()
+	//		envVarSlice := reflect.Indirect(reflect.ValueOf(test.flag)).FieldByName("EnvVars").Slice(0, 1)
+	//		os.Setenv(envVarSlice.Index(0).String(), test.input)
+	//=======
 	for i, test := range flagTests {
 		os.Clearenv()
 		_ = os.Setenv(reflect.ValueOf(test.flag).FieldByName("EnvVar").String(), test.input)
-//>>>>>>> master
+		//>>>>>>> master
 		a := App{
 			Flags: []Flag{test.flag},
 			Action: func(ctx *Context) error {
@@ -168,8 +168,8 @@ var stringFlagTests = []struct {
 
 func TestStringFlagHelpOutput(t *testing.T) {
 	for _, test := range stringFlagTests {
-		flag := &StringFlag{Name: test.name, Aliases: test.aliases, Usage: test.usage, Value: test.value}
-		output := flag.String()
+		fl := &StringFlag{Name: test.name, Aliases: test.aliases, Usage: test.usage, Value: test.value}
+		output := fl.String()
 
 		if output != test.expected {
 			t.Errorf("%q does not match %q", output, test.expected)
@@ -178,9 +178,9 @@ func TestStringFlagHelpOutput(t *testing.T) {
 }
 
 func TestStringFlagDefaultText(t *testing.T) {
-	flag := &StringFlag{Name: "foo", Aliases: nil, Usage: "amount of `foo` requested", Value: "none", DefaultText: "all of it"}
+	fl := &StringFlag{Name: "foo", Aliases: nil, Usage: "amount of `foo` requested", Value: "none", DefaultText: "all of it"}
 	expected := "--foo foo\tamount of foo requested (default: all of it)"
-	output := flag.String()
+	output := fl.String()
 
 	if output != expected {
 		t.Errorf("%q does not match %q", output, expected)
@@ -193,8 +193,8 @@ func TestStringFlagWithEnvVarHelpOutput(t *testing.T) {
 	_ = os.Setenv("APP_FOO", "derp")
 
 	for _, test := range stringFlagTests {
-		flag := &StringFlag{Name: test.name, Aliases: test.aliases, Value: test.value, EnvVars: []string{"APP_FOO"}}
-		output := flag.String()
+		fl := &StringFlag{Name: test.name, Aliases: test.aliases, Value: test.value, EnvVars: []string{"APP_FOO"}}
+		output := fl.String()
 
 		expectedSuffix := " [$APP_FOO]"
 		if runtime.GOOS == "windows" {
@@ -213,22 +213,22 @@ var prefixStringFlagTests = []struct {
 	prefixer FlagNamePrefixFunc
 	expected string
 }{
-	{"foo", "", "", func(a, b string) string {
+	{"foo", "", "", func(a []string, b string) string {
 		return fmt.Sprintf("name: %s, ph: %s", a, b)
 	}, "name: foo, ph: value\t"},
-	{"f", "", "", func(a, b string) string {
+	{"f", "", "", func(a []string, b string) string {
 		return fmt.Sprintf("name: %s, ph: %s", a, b)
 	}, "name: f, ph: value\t"},
-	{"f", "The total `foo` desired", "all", func(a, b string) string {
+	{"f", "The total `foo` desired", "all", func(a []string, b string) string {
 		return fmt.Sprintf("name: %s, ph: %s", a, b)
 	}, "name: f, ph: foo\tThe total foo desired (default: \"all\")"},
-	{"test", "", "Something", func(a, b string) string {
+	{"test", "", "Something", func(a []string, b string) string {
 		return fmt.Sprintf("name: %s, ph: %s", a, b)
 	}, "name: test, ph: value\t(default: \"Something\")"},
-	{"config,c", "Load configuration from `FILE`", "", func(a, b string) string {
+	{"config,c", "Load configuration from `FILE`", "", func(a []string, b string) string {
 		return fmt.Sprintf("name: %s, ph: %s", a, b)
 	}, "name: config,c, ph: FILE\tLoad configuration from FILE"},
-	{"config,c", "Load configuration from `CONFIG`", "config.json", func(a, b string) string {
+	{"config,c", "Load configuration from `CONFIG`", "config.json", func(a []string, b string) string {
 		return fmt.Sprintf("name: %s, ph: %s", a, b)
 	}, "name: config,c, ph: CONFIG\tLoad configuration from CONFIG (default: \"config.json\")"},
 }
@@ -240,8 +240,8 @@ func TestFlagNamePrefixer(t *testing.T) {
 
 	for _, test := range prefixStringFlagTests {
 		FlagNamePrefixer = test.prefixer
-		flag := StringFlag{Name: test.name, Usage: test.usage, Value: test.value}
-		output := flag.String()
+		fl := StringFlag{Name: test.name, Usage: test.usage, Value: test.value}
+		output := fl.String()
 		if output != test.expected {
 			t.Errorf("%q does not match %q", output, test.expected)
 		}
@@ -252,7 +252,7 @@ func TestStringFlagApply_SetsAllNames(t *testing.T) {
 	v := "mmm"
 	fl := StringFlag{Name: "hay", Aliases: []string{"H", "hayyy"}, Destination: &v}
 	set := flag.NewFlagSet("test", 0)
-	fl.Apply(set)
+	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--hay", "u", "-H", "yuu", "--hayyy", "YUUUU"})
 	expect(t, err, nil)
@@ -272,9 +272,8 @@ var pathFlagTests = []struct {
 
 func TestPathFlagHelpOutput(t *testing.T) {
 	for _, test := range pathFlagTests {
-		flag := &PathFlag{Name: test.name, Aliases: test.aliases, Usage: test.usage, Value: test.value}
-		output := flag.String()
-
+		fl := &PathFlag{Name: test.name, Aliases: test.aliases, Usage: test.usage, Value: test.value}
+		output := fl.String()
 
 		if output != test.expected {
 			t.Errorf("%q does not match %q", output, test.expected)
@@ -284,10 +283,10 @@ func TestPathFlagHelpOutput(t *testing.T) {
 
 func TestPathFlagWithEnvVarHelpOutput(t *testing.T) {
 	os.Clearenv()
-	os.Setenv("APP_PATH", "/path/to/file")
+	_ = os.Setenv("APP_PATH", "/path/to/file")
 	for _, test := range pathFlagTests {
-		flag := &PathFlag{Name: test.name, Aliases: test.aliases, Value: test.value, EnvVars: []string{"APP_PATH"}}
-		output := flag.String()
+		fl := &PathFlag{Name: test.name, Aliases: test.aliases, Value: test.value, EnvVars: []string{"APP_PATH"}}
+		output := fl.String()
 
 		expectedSuffix := " [$APP_PATH]"
 		if runtime.GOOS == "windows" {
@@ -303,7 +302,7 @@ func TestPathFlagApply_SetsAllNames(t *testing.T) {
 	v := "mmm"
 	fl := PathFlag{Name: "path", Aliases: []string{"p", "PATH"}, Destination: &v}
 	set := flag.NewFlagSet("test", 0)
-	fl.Apply(set)
+	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--path", "/path/to/file/path", "-p", "/path/to/file/p", "--PATH", "/path/to/file/PATH"})
 	expect(t, err, nil)
@@ -316,16 +315,16 @@ var envHintFlagTests = []struct {
 	hinter   FlagEnvHintFunc
 	expected string
 }{
-	{"foo", "", func(a, b string) string {
+	{"foo", "", func(a []string, b string) string {
 		return fmt.Sprintf("env: %s, str: %s", a, b)
 	}, "env: , str: --foo value\t"},
-	{"f", "", func(a, b string) string {
+	{"f", "", func(a []string, b string) string {
 		return fmt.Sprintf("env: %s, str: %s", a, b)
 	}, "env: , str: -f value\t"},
-	{"foo", "ENV_VAR", func(a, b string) string {
+	{"foo", "ENV_VAR", func(a []string, b string) string {
 		return fmt.Sprintf("env: %s, str: %s", a, b)
 	}, "env: ENV_VAR, str: --foo value\t"},
-	{"f", "ENV_VAR", func(a, b string) string {
+	{"f", "ENV_VAR", func(a []string, b string) string {
 		return fmt.Sprintf("env: %s, str: %s", a, b)
 	}, "env: ENV_VAR, str: -f value\t"},
 }
@@ -337,8 +336,8 @@ func TestFlagEnvHinter(t *testing.T) {
 
 	for _, test := range envHintFlagTests {
 		FlagEnvHinter = test.hinter
-		flag := StringFlag{Name: test.name, EnvVar: test.env}
-		output := flag.String()
+		fl := StringFlag{Name: test.name, EnvVars: []string{test.env}}
+		output := fl.String()
 		if output != test.expected {
 			t.Errorf("%q does not match %q", output, test.expected)
 		}
@@ -357,13 +356,12 @@ var stringSliceFlagTests = []struct {
 	{"f", nil, NewStringSlice("Lipstick"), "-f value\t(default: \"Lipstick\")"},
 	{"test", nil, NewStringSlice("Something"), "--test value\t(default: \"Something\")"},
 	{"dee", []string{"d"}, NewStringSlice("Inka", "Dinka", "dooo"), "--dee value, -d value\t(default: \"Inka\", \"Dinka\", \"dooo\")"},
-
 }
 
 func TestStringSliceFlagHelpOutput(t *testing.T) {
 	for _, test := range stringSliceFlagTests {
-		flag := &StringSliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value}
-		output := flag.String()
+		f := &StringSliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value}
+		output := f.String()
 
 		if output != test.expected {
 			t.Errorf("%q does not match %q", output, test.expected)
@@ -376,8 +374,8 @@ func TestStringSliceFlagWithEnvVarHelpOutput(t *testing.T) {
 	_ = os.Setenv("APP_QWWX", "11,4")
 
 	for _, test := range stringSliceFlagTests {
-		flag := &StringSliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value, EnvVars: []string{"APP_QWWX"}}
-		output := flag.String()
+		fl := &StringSliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value, EnvVars: []string{"APP_QWWX"}}
+		output := fl.String()
 
 		expectedSuffix := " [$APP_QWWX]"
 		if runtime.GOOS == "windows" {
@@ -392,7 +390,7 @@ func TestStringSliceFlagWithEnvVarHelpOutput(t *testing.T) {
 func TestStringSliceFlagApply_SetsAllNames(t *testing.T) {
 	fl := StringSliceFlag{Name: "goat", Aliases: []string{"G", "gooots"}}
 	set := flag.NewFlagSet("test", 0)
-	fl.Apply(set)
+	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--goat", "aaa", "-G", "bbb", "--gooots", "eeeee"})
 	expect(t, err, nil)
@@ -408,8 +406,8 @@ var intFlagTests = []struct {
 
 func TestIntFlagHelpOutput(t *testing.T) {
 	for _, test := range intFlagTests {
-		flag := &IntFlag{Name: test.name, Value: 9}
-		output := flag.String()
+		fl := &IntFlag{Name: test.name, Value: 9}
+		output := fl.String()
 
 		if output != test.expected {
 			t.Errorf("%s does not match %s", output, test.expected)
@@ -419,12 +417,11 @@ func TestIntFlagHelpOutput(t *testing.T) {
 
 func TestIntFlagWithEnvVarHelpOutput(t *testing.T) {
 	os.Clearenv()
-	os.Setenv("APP_BAR", "2")
 	_ = os.Setenv("APP_BAR", "2")
 
 	for _, test := range intFlagTests {
-		flag := &IntFlag{Name: test.name, EnvVars: []string{"APP_BAR"}}
-		output := flag.String()
+		fl := &IntFlag{Name: test.name, EnvVars: []string{"APP_BAR"}}
+		output := fl.String()
 
 		expectedSuffix := " [$APP_BAR]"
 		if runtime.GOOS == "windows" {
@@ -440,7 +437,7 @@ func TestIntFlagApply_SetsAllNames(t *testing.T) {
 	v := 3
 	fl := IntFlag{Name: "banana", Aliases: []string{"B", "banannanana"}, Destination: &v}
 	set := flag.NewFlagSet("test", 0)
-	fl.Apply(set)
+	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--banana", "1", "-B", "2", "--banannanana", "5"})
 	expect(t, err, nil)
@@ -457,8 +454,8 @@ var int64FlagTests = []struct {
 
 func TestInt64FlagHelpOutput(t *testing.T) {
 	for _, test := range int64FlagTests {
-		flag := Int64Flag{Name: test.name, Value: 8589934592}
-		output := flag.String()
+		fl := Int64Flag{Name: test.name, Value: 8589934592}
+		output := fl.String()
 
 		if output != test.expected {
 			t.Errorf("%s does not match %s", output, test.expected)
@@ -471,8 +468,8 @@ func TestInt64FlagWithEnvVarHelpOutput(t *testing.T) {
 	_ = os.Setenv("APP_BAR", "2")
 
 	for _, test := range int64FlagTests {
-		flag := IntFlag{Name: test.name, EnvVars: []string{"APP_BAR"}}
-		output := flag.String()
+		fl := IntFlag{Name: test.name, EnvVars: []string{"APP_BAR"}}
+		output := fl.String()
 
 		expectedSuffix := " [$APP_BAR]"
 		if runtime.GOOS == "windows" {
@@ -494,8 +491,8 @@ var uintFlagTests = []struct {
 
 func TestUintFlagHelpOutput(t *testing.T) {
 	for _, test := range uintFlagTests {
-		flag := UintFlag{Name: test.name, Value: 41}
-		output := flag.String()
+		fl := UintFlag{Name: test.name, Value: 41}
+		output := fl.String()
 
 		if output != test.expected {
 			t.Errorf("%s does not match %s", output, test.expected)
@@ -508,8 +505,8 @@ func TestUintFlagWithEnvVarHelpOutput(t *testing.T) {
 	_ = os.Setenv("APP_BAR", "2")
 
 	for _, test := range uintFlagTests {
-		flag := UintFlag{Name: test.name, EnvVars: []string{"APP_BAR"}}
-		output := flag.String()
+		fl := UintFlag{Name: test.name, EnvVars: []string{"APP_BAR"}}
+		output := fl.String()
 
 		expectedSuffix := " [$APP_BAR]"
 		if runtime.GOOS == "windows" {
@@ -531,8 +528,8 @@ var uint64FlagTests = []struct {
 
 func TestUint64FlagHelpOutput(t *testing.T) {
 	for _, test := range uint64FlagTests {
-		flag := Uint64Flag{Name: test.name, Value: 8589934582}
-		output := flag.String()
+		fl := Uint64Flag{Name: test.name, Value: 8589934582}
+		output := fl.String()
 
 		if output != test.expected {
 			t.Errorf("%s does not match %s", output, test.expected)
@@ -545,8 +542,8 @@ func TestUint64FlagWithEnvVarHelpOutput(t *testing.T) {
 	_ = os.Setenv("APP_BAR", "2")
 
 	for _, test := range uint64FlagTests {
-		flag := UintFlag{Name: test.name, EnvVars: []string{"APP_BAR"}}
-		output := flag.String()
+		fl := UintFlag{Name: test.name, EnvVars: []string{"APP_BAR"}}
+		output := fl.String()
 
 		expectedSuffix := " [$APP_BAR]"
 		if runtime.GOOS == "windows" {
@@ -568,8 +565,8 @@ var durationFlagTests = []struct {
 
 func TestDurationFlagHelpOutput(t *testing.T) {
 	for _, test := range durationFlagTests {
-		flag := &DurationFlag{Name: test.name, Value: 1 * time.Second}
-		output := flag.String()
+		fl := &DurationFlag{Name: test.name, Value: 1 * time.Second}
+		output := fl.String()
 
 		if output != test.expected {
 			t.Errorf("%q does not match %q", output, test.expected)
@@ -582,8 +579,8 @@ func TestDurationFlagWithEnvVarHelpOutput(t *testing.T) {
 	_ = os.Setenv("APP_BAR", "2h3m6s")
 
 	for _, test := range durationFlagTests {
-		flag := &DurationFlag{Name: test.name, EnvVars: []string{"APP_BAR"}}
-		output := flag.String()
+		fl := &DurationFlag{Name: test.name, EnvVars: []string{"APP_BAR"}}
+		output := fl.String()
 
 		expectedSuffix := " [$APP_BAR]"
 		if runtime.GOOS == "windows" {
@@ -599,7 +596,7 @@ func TestDurationFlagApply_SetsAllNames(t *testing.T) {
 	v := time.Second * 20
 	fl := DurationFlag{Name: "howmuch", Aliases: []string{"H", "whyyy"}, Destination: &v}
 	set := flag.NewFlagSet("test", 0)
-	fl.Apply(set)
+	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--howmuch", "30s", "-H", "5m", "--whyyy", "30h"})
 	expect(t, err, nil)
@@ -619,8 +616,8 @@ var intSliceFlagTests = []struct {
 
 func TestIntSliceFlagHelpOutput(t *testing.T) {
 	for _, test := range intSliceFlagTests {
-		flag := &IntSliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value}
-		output := flag.String()
+		fl := &IntSliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value}
+		output := fl.String()
 
 		if output != test.expected {
 			t.Errorf("%q does not match %q", output, test.expected)
@@ -633,8 +630,8 @@ func TestIntSliceFlagWithEnvVarHelpOutput(t *testing.T) {
 	_ = os.Setenv("APP_SMURF", "42,3")
 
 	for _, test := range intSliceFlagTests {
-		flag := &IntSliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value, EnvVars: []string{"APP_SMURF"}}
-		output := flag.String()
+		fl := &IntSliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value, EnvVars: []string{"APP_SMURF"}}
+		output := fl.String()
 
 		expectedSuffix := " [$APP_SMURF]"
 		if runtime.GOOS == "windows" {
@@ -649,7 +646,7 @@ func TestIntSliceFlagWithEnvVarHelpOutput(t *testing.T) {
 func TestIntSliceFlagApply_SetsAllNames(t *testing.T) {
 	fl := IntSliceFlag{Name: "bits", Aliases: []string{"B", "bips"}}
 	set := flag.NewFlagSet("test", 0)
-	fl.Apply(set)
+	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--bits", "23", "-B", "3", "--bips", "99"})
 	expect(t, err, nil)
@@ -669,8 +666,8 @@ var int64SliceFlagTests = []struct {
 
 func TestInt64SliceFlagHelpOutput(t *testing.T) {
 	for _, test := range int64SliceFlagTests {
-		flag := Int64SliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value}
-		output := flag.String()
+		fl := Int64SliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value}
+		output := fl.String()
 
 		if output != test.expected {
 			t.Errorf("%q does not match %q", output, test.expected)
@@ -683,8 +680,8 @@ func TestInt64SliceFlagWithEnvVarHelpOutput(t *testing.T) {
 	_ = os.Setenv("APP_SMURF", "42,17179869184")
 
 	for _, test := range int64SliceFlagTests {
-		flag := Int64SliceFlag{Name: test.name, Value: test.value, EnvVars: []string{"APP_SMURF"}}
-		output := flag.String()
+		fl := Int64SliceFlag{Name: test.name, Value: test.value, EnvVars: []string{"APP_SMURF"}}
+		output := fl.String()
 
 		expectedSuffix := " [$APP_SMURF]"
 		if runtime.GOOS == "windows" {
@@ -720,8 +717,8 @@ func TestFloat64FlagWithEnvVarHelpOutput(t *testing.T) {
 	_ = os.Setenv("APP_BAZ", "99.4")
 
 	for _, test := range float64FlagTests {
-		flag := &Float64Flag{Name: test.name, EnvVars: []string{"APP_BAZ"}}
-		output := flag.String()
+		fl := &Float64Flag{Name: test.name, EnvVars: []string{"APP_BAZ"}}
+		output := fl.String()
 
 		expectedSuffix := " [$APP_BAZ]"
 		if runtime.GOOS == "windows" {
@@ -737,7 +734,7 @@ func TestFloat64FlagApply_SetsAllNames(t *testing.T) {
 	v := 99.1
 	fl := Float64Flag{Name: "noodles", Aliases: []string{"N", "nurbles"}, Destination: &v}
 	set := flag.NewFlagSet("test", 0)
-	fl.Apply(set)
+	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--noodles", "1.3", "-N", "11", "--nurbles", "43.33333"})
 	expect(t, err, nil)
@@ -752,14 +749,14 @@ var float64SliceFlagTests = []struct {
 }{
 	{"heads", nil, NewFloat64Slice(), "--heads value\t"},
 	{"H", nil, NewFloat64Slice(), "-H value\t"},
-	{"heads", []string{"H"}, NewFloat64Slice(float64(0.1234), float64(-10.5)),
+	{"heads", []string{"H"}, NewFloat64Slice(0.1234, -10.5),
 		"--heads value, -H value\t(default: 0.1234, -10.5)"},
 }
 
 func TestFloat64SliceFlagHelpOutput(t *testing.T) {
 	for _, test := range float64SliceFlagTests {
-		flag := Float64SliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value}
-		output := flag.String()
+		fl := Float64SliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value}
+		output := fl.String()
 
 		if output != test.expected {
 			t.Errorf("%q does not match %q", output, test.expected)
@@ -769,10 +766,10 @@ func TestFloat64SliceFlagHelpOutput(t *testing.T) {
 
 func TestFloat64SliceFlagWithEnvVarHelpOutput(t *testing.T) {
 	os.Clearenv()
-	os.Setenv("APP_SMURF", "0.1234,-10.5")
+	_ = os.Setenv("APP_SMURF", "0.1234,-10.5")
 	for _, test := range float64SliceFlagTests {
-		flag := Float64SliceFlag{Name: test.name, Value: test.value, EnvVars: []string{"APP_SMURF"}}
-		output := flag.String()
+		fl := Float64SliceFlag{Name: test.name, Value: test.value, EnvVars: []string{"APP_SMURF"}}
+		output := fl.String()
 
 		expectedSuffix := " [$APP_SMURF]"
 		if runtime.GOOS == "windows" {
@@ -795,8 +792,8 @@ var genericFlagTests = []struct {
 
 func TestGenericFlagHelpOutput(t *testing.T) {
 	for _, test := range genericFlagTests {
-		flag := &GenericFlag{Name: test.name, Value: test.value, Usage: "test flag"}
-		output := flag.String()
+		fl := &GenericFlag{Name: test.name, Value: test.value, Usage: "test fl"}
+		output := fl.String()
 
 		if output != test.expected {
 			t.Errorf("%q does not match %q", output, test.expected)
@@ -809,8 +806,8 @@ func TestGenericFlagWithEnvVarHelpOutput(t *testing.T) {
 	_ = os.Setenv("APP_ZAP", "3")
 
 	for _, test := range genericFlagTests {
-		flag := &GenericFlag{Name: test.name, EnvVars: []string{"APP_ZAP"}}
-		output := flag.String()
+		fl := &GenericFlag{Name: test.name, EnvVars: []string{"APP_ZAP"}}
+		output := fl.String()
 
 		expectedSuffix := " [$APP_ZAP]"
 		if runtime.GOOS == "windows" {
@@ -825,7 +822,7 @@ func TestGenericFlagWithEnvVarHelpOutput(t *testing.T) {
 func TestGenericFlagApply_SetsAllNames(t *testing.T) {
 	fl := GenericFlag{Name: "orbs", Aliases: []string{"O", "obrs"}, Value: &Parser{}}
 	set := flag.NewFlagSet("test", 0)
-	fl.Apply(set)
+	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--orbs", "eleventy,3", "-O", "4,bloop", "--obrs", "19,s"})
 	expect(t, err, nil)
@@ -1424,8 +1421,8 @@ func TestParseBoolShortOptionHandle(t *testing.T) {
 					return nil
 				},
 				Flags: []Flag{
-					BoolFlag{Name: "serve, s"},
-					BoolFlag{Name: "option, o"},
+					&BoolFlag{Name: "serve", Aliases: []string{"s"}},
+					&BoolFlag{Name: "option", Aliases: []string{"o"}},
 				},
 			},
 		},
@@ -1471,7 +1468,7 @@ func TestParseMultiBoolFromEnv(t *testing.T) {
 
 func TestParseMultiBoolFromEnvCascade(t *testing.T) {
 	os.Clearenv()
-	os.Setenv("APP_DEBUG", "1")
+	_ = os.Setenv("APP_DEBUG", "1")
 	_ = (&App{
 		Flags: []Flag{
 			&BoolFlag{Name: "debug", Aliases: []string{"d"}, EnvVars: []string{"COMPAT_DEBUG", "APP_DEBUG"}},
@@ -1504,7 +1501,7 @@ func TestParseBoolTFromEnv(t *testing.T) {
 		_ = os.Setenv("DEBUG", test.input)
 		_ = (&App{
 			Flags: []Flag{
-				BoolTFlag{Name: "debug, d", EnvVar: "DEBUG"},
+				&BoolFlag{Name: "debug", Aliases: []string{"d"}, Value: true, EnvVars: []string{"DEBUG"}},
 			},
 			Action: func(ctx *Context) error {
 				if ctx.Bool("debug") != test.output {
@@ -1521,19 +1518,19 @@ func TestParseBoolTFromEnv(t *testing.T) {
 
 func TestParseMultiBoolT(t *testing.T) {
 	_ = (&App{
-			Flags: []Flag{
-				&BoolFlag{Name: "implode", Aliases: []string{"i"}, Value: true},
-			},
-			Action: func(ctx *Context) error {
-				if ctx.Bool("implode") {
-					t.Errorf("main name not set")
-				}
-				if ctx.Bool("i") {
-					t.Errorf("short name not set")
-				}
-				return nil
-			},
-		}).Run([]string{"run", "--implode=false"})
+		Flags: []Flag{
+			&BoolFlag{Name: "implode", Aliases: []string{"i"}, Value: true},
+		},
+		Action: func(ctx *Context) error {
+			if ctx.Bool("implode") {
+				t.Errorf("main name not set")
+			}
+			if ctx.Bool("i") {
+				t.Errorf("short name not set")
+			}
+			return nil
+		},
+	}).Run([]string{"run", "--implode=false"})
 }
 
 func TestParseMultiBoolTFromEnv(t *testing.T) {
@@ -1541,13 +1538,13 @@ func TestParseMultiBoolTFromEnv(t *testing.T) {
 	_ = os.Setenv("APP_DEBUG", "0")
 	_ = (&App{
 		Flags: []Flag{
-			&BoolTFlag{Name: "debug, d", EnvVar: "APP_DEBUG"},
+			&BoolFlag{Name: "debug", Aliases: []string{"d"}, Value: true, EnvVars: []string{"DEBUG"}},
 		},
 		Action: func(ctx *Context) error {
-			if ctx.BoolT("debug") != false {
+			if ctx.Bool("debug") != false {
 				t.Errorf("main name not set from env")
 			}
-			if ctx.BoolT("d") != false {
+			if ctx.Bool("d") != false {
 				t.Errorf("short name not set from env")
 			}
 			return nil
@@ -1560,13 +1557,13 @@ func TestParseMultiBoolTFromEnvCascade(t *testing.T) {
 	_ = os.Setenv("APP_DEBUG", "0")
 	_ = (&App{
 		Flags: []Flag{
-			&BoolTFlag{Name: "debug, d", EnvVar: "COMPAT_DEBUG,APP_DEBUG"},
+			&BoolFlag{Name: "debug", Aliases: []string{"d"}, Value: true, EnvVars: []string{"DEBUG"}},
 		},
 		Action: func(ctx *Context) error {
-			if ctx.BoolT("debug") != false {
+			if ctx.Bool("debug") != false {
 				t.Errorf("main name not set from env")
 			}
-			if ctx.BoolT("d") != false {
+			if ctx.Bool("d") != false {
 				t.Errorf("short name not set from env")
 			}
 			return nil
@@ -1675,14 +1672,14 @@ func TestFlagFromFile(t *testing.T) {
 
 	var filePathTests = []struct {
 		path     string
-		name     string
+		name     []string
 		expected string
 	}{
-		{"file-does-not-exist", "APP_BAR", ""},
-		{"file-does-not-exist", "APP_FOO", "123"},
-		{"file-does-not-exist", "APP_FOO,APP_BAR", "123"},
-		{temp.Name(), "APP_FOO", "123"},
-		{temp.Name(), "APP_BAR", "abc"},
+		{"file-does-not-exist", []string{"APP_BAR"}, ""},
+		{"file-does-not-exist", []string{"APP_FOO"}, "123"},
+		{"file-does-not-exist", []string{"APP_FOO", "APP_BAR"}, "123"},
+		{temp.Name(), []string{"APP_FOO"}, "123"},
+		{temp.Name(), []string{"APP_BAR"}, "abc"},
 	}
 
 	for _, filePathTest := range filePathTests {
@@ -1702,7 +1699,7 @@ func TestStringSlice_Serialized_Set(t *testing.T) {
 	}
 
 	sl1 := NewStringSlice("c", "d")
-	sl1.Set(ser0)
+	_ = sl1.Set(ser0)
 
 	if sl0.String() != sl1.String() {
 		t.Fatalf("pre and post serialization do not match: %v != %v", sl0, sl1)
@@ -1718,7 +1715,7 @@ func TestIntSlice_Serialized_Set(t *testing.T) {
 	}
 
 	sl1 := NewIntSlice(3, 4)
-	sl1.Set(ser0)
+	_ = sl1.Set(ser0)
 
 	if sl0.String() != sl1.String() {
 		t.Fatalf("pre and post serialization do not match: %v != %v", sl0, sl1)
@@ -1734,7 +1731,7 @@ func TestInt64Slice_Serialized_Set(t *testing.T) {
 	}
 
 	sl1 := NewInt64Slice(int64(3), int64(4))
-	sl1.Set(ser0)
+	_ = sl1.Set(ser0)
 
 	if sl0.String() != sl1.String() {
 		t.Fatalf("pre and post serialization do not match: %v != %v", sl0, sl1)

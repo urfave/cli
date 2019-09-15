@@ -79,7 +79,10 @@ func (f *Uint64Flag) GetValue() string {
 // Uint64 looks up the value of a local Uint64Flag, returns
 // 0 if not found
 func (c *Context) Uint64(name string) uint64 {
-	return lookupUint64(name, c.flagSet)
+	if fs := lookupFlagSet(name, c); fs != nil {
+		return lookupUint64(name, fs)
+	}
+	return 0
 }
 
 // GlobalUint64 looks up the value of a global Uint64Flag, returns

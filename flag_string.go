@@ -8,7 +8,6 @@ type StringFlag struct {
 	Aliases     []string
 	Usage       string
 	EnvVars     []string
-	EnvVar      string
 	FilePath    string
 	Required    bool
 	Hidden      bool
@@ -59,7 +58,7 @@ func (s *StringFlag) Apply(set *flag.FlagSet) error {
 	for _, name := range s.Names() {
 		if s.Destination != nil {
 			set.StringVar(s.Destination, name, s.Value, s.Usage)
-			return
+			continue
 		}
 		set.String(name, s.Value, s.Usage)
 	}
@@ -70,7 +69,10 @@ func (s *StringFlag) Apply(set *flag.FlagSet) error {
 // String looks up the value of a local StringFlag, returns
 // "" if not found
 func (c *Context) String(name string) string {
-	return lookupString(name, c.flagSet)
+	if fs := lookupFlagSet(name, c); fs != nil {
+		return lookupString(name, fs)
+	}
+	return ""
 }
 
 // GlobalString looks up the value of a global StringFlag, returns

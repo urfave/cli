@@ -23,7 +23,7 @@ type CommandNotFoundFunc func(*Context, string)
 // is displayed and the execution is interrupted.
 type OnUsageErrorFunc func(context *Context, err error, isSubcommand bool) error
 
-// ExitErrHandlerFunc is executed if provided in order to handle ExitError values
+// ExitErrHandlerFunc is executed if provided in order to handle exitError values
 // returned by Actions and Before/After functions.
 type ExitErrHandlerFunc func(context *Context, err error)
 

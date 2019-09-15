@@ -49,7 +49,8 @@ var BashCompletionFlag Flag = &BoolFlag{
 
 // VersionFlag prints the version for the application
 var VersionFlag Flag = &BoolFlag{
-	Name:  "version, v",
+	Name:  "version",
+	Aliases: []string{"v"},
 	Usage: "print the version",
 }
 
@@ -57,7 +58,8 @@ var VersionFlag Flag = &BoolFlag{
 // Set to nil to disable the flag.  The subcommand
 // will still be added unless HideHelp is set to true.
 var HelpFlag Flag = &BoolFlag{
-	Name:  "help, h",
+	Name:  "help",
+	Aliases: []string{"h"},
 	Usage: "show help",
 }
 

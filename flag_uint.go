@@ -79,7 +79,10 @@ func (f *UintFlag) GetValue() string {
 // Uint looks up the value of a local UintFlag, returns
 // 0 if not found
 func (c *Context) Uint(name string) uint {
-	return lookupUint(name, c.flagSet)
+	if fs := lookupFlagSet(name, c); fs != nil {
+		return lookupUint(name, fs)
+	}
+	return 0
 }
 
 // GlobalUint looks up the value of a global UintFlag, returns

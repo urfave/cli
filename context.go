@@ -33,6 +33,9 @@ func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
 		c.Context = parentCtx.Context
 		c.shellComplete = parentCtx.shellComplete
 	}
+
+	c.Command = &Command{}
+
 	if c.Context == nil {
 		ctx, cancel := context.WithCancel(context.Background())
 		go func() {
@@ -60,12 +63,17 @@ func (c *Context) Set(name, value string) error {
 // IsSet determines if the flag was actually set
 func (c *Context) IsSet(name string) bool {
 	if fs := lookupFlagSet(name, c); fs != nil {
-		isSet := false
-		fs.Visit(func(f *flag.Flag) {
-			if f.Name == name {
-				isSet = true
+		if fs := lookupFlagSet(name, c); fs != nil {
+			isSet := false
+			fs.Visit(func(f *flag.Flag) {
+				if f.Name == name {
+					isSet = true
+				}
+			})
+			if isSet {
+				return true
 			}
-		})
+		}
 
 		// XXX hack to support IsSet for flags with EnvVar
 		//
@@ -78,45 +86,28 @@ func (c *Context) IsSet(name string) bool {
 		// variables is available.
 		//
 		// See https://github.com/urfave/cli/issues/294 for additional discussion
-		flags := c.Command.Flags
-		if c.Command.Name == "" { // cannot == Command{} since it contains slice types
-			if c.App != nil {
-				flags = c.App.Flags
-			}
+		f := lookupFlag(name, c)
+		if f == nil {
+			return false
 		}
-		for _, f := range flags {
-			for _, name := range f.Names() {
-				if isSet, ok := c.setFlags[name]; isSet || !ok {
-					continue
-				}
 
-				val := reflect.ValueOf(f)
-				if val.Kind() == reflect.Ptr {
-					val = val.Elem()
-				}
-
-				filePathValue := val.FieldByName("FilePath")
-				if filePathValue.IsValid() {
-					eachName(filePathValue.String(), func(filePath string) {
-						if _, err := os.Stat(filePath); err == nil {
-							c.setFlags[name] = true
-							return
-						}
-					})
-				}
-
-				envVarValues := val.FieldByName("EnvVars")
-				if envVarValues.IsValid() {
-					for _, envVar := range envVarValues.Interface().([]string) {
-						envVar = strings.TrimSpace(envVar)
-						if _, ok := syscall.Getenv(envVar); ok {
-							c.setFlags[name] = true
-							continue
-						}
-					}
-				}
-			}
+		val := reflect.ValueOf(f)
+		if val.Kind() == reflect.Ptr {
+			val = val.Elem()
 		}
+
+		filePathValue := val.FieldByName("FilePath")
+		if !filePathValue.IsValid() {
+			return false
+		}
+
+		envVarValues := val.FieldByName("EnvVars")
+		if !envVarValues.IsValid() {
+			return false
+		}
+
+		_, ok := flagFromEnvOrFile(envVarValues.Interface().([]string), filePathValue.Interface().(string))
+		return ok
 	}
 
 	return false
