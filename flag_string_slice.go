@@ -69,6 +69,12 @@ type StringSliceFlag struct {
 	TakesFile   bool
 	Value       *StringSlice
 	DefaultText string
+	HasBeenSet  bool
+}
+
+// IsSet returns whether or not the flag has been set through env or file
+func (f *StringSliceFlag) IsSet() bool {
+	return f.HasBeenSet
 }
 
 // String returns a readable representation of this value
@@ -110,11 +116,14 @@ func (f *StringSliceFlag) GetValue() string {
 func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		f.Value = &StringSlice{}
+
 		for _, s := range strings.Split(val, ",") {
 			if err := f.Value.Set(strings.TrimSpace(s)); err != nil {
 				return fmt.Errorf("could not parse %q as string value for flag %s: %s", val, f.Name, err)
 			}
 		}
+
+		f.HasBeenSet = true
 	}
 
 	for _, name := range f.Names() {
@@ -135,15 +144,6 @@ func (c *Context) StringSlice(name string) []string {
 	}
 	return nil
 }
-
-// GlobalStringSlice looks up the value of a global StringSliceFlag, returns
-// nil if not found
-//func (c *Context) GlobalStringSlice(name string) []string {
-//	if fs := lookupGlobalFlagSet(name, c); fs != nil {
-//		return lookupStringSlice(name, fs)
-//	}
-//	return nil
-//}
 
 func lookupStringSlice(name string, set *flag.FlagSet) []string {
 	f := set.Lookup(name)

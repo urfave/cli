@@ -18,6 +18,12 @@ type Float64Flag struct {
 	Value       float64
 	DefaultText string
 	Destination *float64
+	HasBeenSet bool
+}
+
+// IsSet returns whether or not the flag has been set through env or file
+func (f *Float64Flag)IsSet() bool {
+	return f.HasBeenSet
 }
 
 // String returns a readable representation of this value
@@ -57,10 +63,13 @@ func (f *Float64Flag) Apply(set *flag.FlagSet) error {
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		if val != "" {
 			valFloat, err := strconv.ParseFloat(val, 10)
+
 			if err != nil {
 				return fmt.Errorf("could not parse %q as float64 value for flag %s: %s", val, f.Name, err)
 			}
+
 			f.Value = valFloat
+			f.HasBeenSet = true
 		}
 	}
 
@@ -83,15 +92,6 @@ func (c *Context) Float64(name string) float64 {
 	}
 	return 0
 }
-
-// GlobalFloat64 looks up the value of a global Float64Flag, returns
-// 0 if not found
-//func (c *Context) GlobalFloat64(name string) float64 {
-//	if fs := lookupGlobalFlagSet(name, c); fs != nil {
-//		return lookupFloat64(name, fs)
-//	}
-//	return 0
-//}
 
 func lookupFloat64(name string, set *flag.FlagSet) float64 {
 	f := set.Lookup(name)

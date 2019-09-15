@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"reflect"
 	"strings"
 	"syscall"
 )
@@ -91,23 +90,25 @@ func (c *Context) IsSet(name string) bool {
 			return false
 		}
 
-		val := reflect.ValueOf(f)
-		if val.Kind() == reflect.Ptr {
-			val = val.Elem()
-		}
+		//val := reflect.ValueOf(f)
+		//if val.Kind() == reflect.Ptr {
+		//	val = val.Elem()
+		//}
+		//
+		//filePathValue := val.FieldByName("FilePath")
+		//if !filePathValue.IsValid() {
+		//	return false
+		//}
+		//
+		//envVarValues := val.FieldByName("EnvVars")
+		//if !envVarValues.IsValid() {
+		//	return false
+		//}
+		//
+		//_, ok := flagFromEnvOrFile(envVarValues.Interface().([]string), filePathValue.Interface().(string))
+		//return ok
 
-		filePathValue := val.FieldByName("FilePath")
-		if !filePathValue.IsValid() {
-			return false
-		}
-
-		envVarValues := val.FieldByName("EnvVars")
-		if !envVarValues.IsValid() {
-			return false
-		}
-
-		_, ok := flagFromEnvOrFile(envVarValues.Interface().([]string), filePathValue.Interface().(string))
-		return ok
+		return f.IsSet()
 	}
 
 	return false

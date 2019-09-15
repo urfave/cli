@@ -74,6 +74,12 @@ type Float64SliceFlag struct {
 	Hidden      bool
 	Value       *Float64Slice
 	DefaultText string
+	HasBeenSet  bool
+}
+
+// IsSet returns whether or not the flag has been set through env or file
+func (f *Float64SliceFlag) IsSet() bool {
+	return f.HasBeenSet
 }
 
 // String returns a readable representation of this value
@@ -114,12 +120,16 @@ func (f *Float64SliceFlag) GetValue() string {
 // Apply populates the flag given the flag set and environment
 func (f *Float64SliceFlag) Apply(set *flag.FlagSet) error {
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
-		f.Value = &Float64Slice{}
+		if val != "" {
+			f.Value = &Float64Slice{}
 
-		for _, s := range strings.Split(val, ",") {
-			if err := f.Value.Set(strings.TrimSpace(s)); err != nil {
-				return fmt.Errorf("could not parse %q as float64 slice value for flag %s: %s", f.Value, f.Name, err)
+			for _, s := range strings.Split(val, ",") {
+				if err := f.Value.Set(strings.TrimSpace(s)); err != nil {
+					return fmt.Errorf("could not parse %q as float64 slice value for flag %s: %s", f.Value, f.Name, err)
+				}
 			}
+
+			f.HasBeenSet = true
 		}
 	}
 
@@ -141,15 +151,6 @@ func (c *Context) Float64Slice(name string) []float64 {
 	}
 	return nil
 }
-
-// GlobalFloat64Slice looks up the value of a global Float64SliceFlag, returns
-// nil if not found
-//func (c *Context) GlobalFloat64Slice(name string) []int {
-//	if fs := lookupGlobalFlagSet(name, c); fs != nil {
-//		return lookupFloat64Slice(name, fs)
-//	}
-//	return nil
-//}
 
 func lookupFloat64Slice(name string, set *flag.FlagSet) []float64 {
 	f := set.Lookup(name)

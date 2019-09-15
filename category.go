@@ -59,13 +59,6 @@ type commandCategory struct {
 	commands []*Command
 }
 
-func newCommandCategory(name string) *commandCategory {
-	return &commandCategory{
-		name:     name,
-		commands: []*Command{},
-	}
-}
-
 func (c *commandCategory) Name() string {
 	return c.name
 }

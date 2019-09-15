@@ -222,75 +222,6 @@ func TestContext_IsSet_fromEnv(t *testing.T) {
 	expect(t, uIsSet, false)
 }
 
-// XXX Corresponds to hack in context.IsSet for flags with EnvVar field
-// TODO: Should be moved to `flag_test` in v2
-//func TestContext_GlobalIsSet_fromEnv(t *testing.T) {
-//	var (
-//		timeoutIsSet, tIsSet    bool
-//		noEnvVarIsSet, nIsSet   bool
-//		passwordIsSet, pIsSet   bool
-//		passwordValue           string
-//		unparsableIsSet, uIsSet bool
-//		overrideIsSet, oIsSet   bool
-//		overrideValue           string
-//	)
-//
-//	os.Clearenv()
-//	_ = os.Setenv("APP_TIMEOUT_SECONDS", "15.5")
-//	_ = os.Setenv("APP_PASSWORD", "badpass")
-//	_ = os.Setenv("APP_OVERRIDE", "overridden")
-//	a := App{
-//		Flags: []Flag{
-//			Float64Flag{Name: "timeout, t", EnvVar: "APP_TIMEOUT_SECONDS"},
-//			StringFlag{Name: "password, p", EnvVar: "APP_PASSWORD"},
-//			Float64Flag{Name: "no-env-var, n"},
-//			Float64Flag{Name: "unparsable, u", EnvVar: "APP_UNPARSABLE"},
-//			StringFlag{Name: "overrides-default, o", Value: "default", EnvVar: "APP_OVERRIDE"},
-//		},
-//		Commands: []Command{
-//			{
-//				Name: "hello",
-//				Action: func(ctx *Context) error {
-//					timeoutIsSet = ctx.GlobalIsSet("timeout")
-//					tIsSet = ctx.GlobalIsSet("t")
-//					passwordIsSet = ctx.GlobalIsSet("password")
-//					pIsSet = ctx.GlobalIsSet("p")
-//					passwordValue = ctx.GlobalString("password")
-//					unparsableIsSet = ctx.GlobalIsSet("unparsable")
-//					uIsSet = ctx.GlobalIsSet("u")
-//					noEnvVarIsSet = ctx.GlobalIsSet("no-env-var")
-//					nIsSet = ctx.GlobalIsSet("n")
-//					overrideIsSet = ctx.GlobalIsSet("overrides-default")
-//					oIsSet = ctx.GlobalIsSet("o")
-//					overrideValue = ctx.GlobalString("overrides-default")
-//					return nil
-//				},
-//			},
-//		},
-//	}
-//	if err := a.Run([]string{"run", "hello"}); err != nil {
-//		t.Logf("error running Run(): %+v", err)
-//	}
-//	expect(t, timeoutIsSet, true)
-//	expect(t, tIsSet, true)
-//	expect(t, passwordIsSet, true)
-//	expect(t, pIsSet, true)
-//	expect(t, passwordValue, "badpass")
-//	expect(t, unparsableIsSet, false)
-//	expect(t, noEnvVarIsSet, false)
-//	expect(t, nIsSet, false)
-//	expect(t, overrideIsSet, true)
-//	expect(t, oIsSet, true)
-//	expect(t, overrideValue, "overridden")
-//
-//	_ = os.Setenv("APP_UNPARSABLE", "foobar")
-//	if err := a.Run([]string{"run"}); err != nil {
-//		t.Logf("error running Run(): %+v", err)
-//	}
-//	expect(t, unparsableIsSet, false)
-//	expect(t, uIsSet, false)
-//}
-
 func TestContext_NumFlags(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("myflag", false, "doc")
@@ -323,8 +254,8 @@ func TestContext_LocalFlagNames(t *testing.T) {
 	parentSet.Bool("top-flag", true, "doc")
 	parentCtx := NewContext(nil, parentSet, nil)
 	ctx := NewContext(nil, set, parentCtx)
-	set.Parse([]string{"--one-flag", "--two-flag=foo"})
-	parentSet.Parse([]string{"--top-flag"})
+	_ = set.Parse([]string{"--one-flag", "--two-flag=foo"})
+	_ = parentSet.Parse([]string{"--top-flag"})
 
 	actualFlags := ctx.LocalFlagNames()
 	sort.Strings(actualFlags)
@@ -340,8 +271,8 @@ func TestContext_FlagNames(t *testing.T) {
 	parentSet.Bool("top-flag", true, "doc")
 	parentCtx := NewContext(nil, parentSet, nil)
 	ctx := NewContext(nil, set, parentCtx)
-	set.Parse([]string{"--one-flag", "--two-flag=foo"})
-	parentSet.Parse([]string{"--top-flag"})
+	_ = set.Parse([]string{"--one-flag", "--two-flag=foo"})
+	_ = parentSet.Parse([]string{"--top-flag"})
 
 	actualFlags := ctx.FlagNames()
 	sort.Strings(actualFlags)
@@ -356,8 +287,8 @@ func TestContext_Lineage(t *testing.T) {
 	parentSet.Bool("top-flag", true, "doc")
 	parentCtx := NewContext(nil, parentSet, nil)
 	ctx := NewContext(nil, set, parentCtx)
-	set.Parse([]string{"--local-flag"})
-	parentSet.Parse([]string{"--top-flag"})
+	_ = set.Parse([]string{"--local-flag"})
+	_ = parentSet.Parse([]string{"--top-flag"})
 
 	lineage := ctx.Lineage()
 	expect(t, len(lineage), 2)
@@ -372,8 +303,8 @@ func TestContext_lookupFlagSet(t *testing.T) {
 	parentSet.Bool("top-flag", true, "doc")
 	parentCtx := NewContext(nil, parentSet, nil)
 	ctx := NewContext(nil, set, parentCtx)
-	set.Parse([]string{"--local-flag"})
-	parentSet.Parse([]string{"--top-flag"})
+	_ = set.Parse([]string{"--local-flag"})
+	_ = parentSet.Parse([]string{"--top-flag"})
 
 	fs := lookupFlagSet("top-flag", ctx)
 	expect(t, fs, parentCtx.flagSet)
@@ -534,15 +465,17 @@ func TestCheckRequiredFlags(t *testing.T) {
 	for _, test := range tdata {
 		t.Run(test.testCase, func(t *testing.T) {
 			// setup
-			set := flag.NewFlagSet("test", 0)
-			for _, flags := range test.flags {
-				flags.Apply(set)
-			}
-			_ = set.Parse(test.parseInput)
 			if test.envVarInput[0] != "" {
 				os.Clearenv()
 				_ = os.Setenv(test.envVarInput[0], test.envVarInput[1])
 			}
+
+			set := flag.NewFlagSet("test", 0)
+			for _, flags := range test.flags {
+				_ = flags.Apply(set)
+			}
+			_ = set.Parse(test.parseInput)
+
 			c := &Context{}
 			ctx := NewContext(c.App, set, c)
 			ctx.Command.Flags = test.flags
@@ -558,8 +491,10 @@ func TestCheckRequiredFlags(t *testing.T) {
 				t.Errorf("did not expected an error, but there was one: %s", err)
 			}
 			for _, errString := range test.expectedErrorContents {
-				if !strings.Contains(err.Error(), errString) {
-					t.Errorf("expected error %q to contain %q, but it didn't!", err.Error(), errString)
+				if err != nil {
+					if !strings.Contains(err.Error(), errString) {
+						t.Errorf("expected error %q to contain %q, but it didn't!", err.Error(), errString)
+					}
 				}
 			}
 		})

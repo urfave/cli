@@ -14,6 +14,12 @@ type PathFlag struct {
 	Value       string
 	DefaultText string
 	Destination *string
+	HasBeenSet  bool
+}
+
+// IsSet returns whether or not the flag has been set through env or file
+func (f *PathFlag) IsSet() bool {
+	return f.HasBeenSet
 }
 
 // String returns a readable representation of this value
@@ -52,6 +58,7 @@ func (f *PathFlag) GetValue() string {
 func (f *PathFlag) Apply(set *flag.FlagSet) error {
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		f.Value = val
+		f.HasBeenSet = true
 	}
 
 	for _, name := range f.Names() {

@@ -18,6 +18,12 @@ type UintFlag struct {
 	Value       uint
 	DefaultText string
 	Destination *uint
+	HasBeenSet  bool
+}
+
+// IsSet returns whether or not the flag has been set through env or file
+func (f *UintFlag) IsSet() bool {
+	return f.HasBeenSet
 }
 
 // String returns a readable representation of this value
@@ -56,6 +62,7 @@ func (f *UintFlag) Apply(set *flag.FlagSet) error {
 			}
 
 			f.Value = uint(valInt)
+			f.HasBeenSet = true
 		}
 	}
 
@@ -84,15 +91,6 @@ func (c *Context) Uint(name string) uint {
 	}
 	return 0
 }
-
-// GlobalUint looks up the value of a global UintFlag, returns
-// 0 if not found
-//func (c *Context) GlobalUint(name string) uint {
-//	if fs := lookupGlobalFlagSet(name, c); fs != nil {
-//		return lookupUint(name, fs)
-//	}
-//	return 0
-//}
 
 func lookupUint(name string, set *flag.FlagSet) uint {
 	f := set.Lookup(name)

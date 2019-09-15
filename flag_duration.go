@@ -18,6 +18,12 @@ type DurationFlag struct {
 	Value       time.Duration
 	DefaultText string
 	Destination *time.Duration
+	HasBeenSet  bool
+}
+
+// IsSet returns whether or not the flag has been set through env or file
+func (f *DurationFlag) IsSet() bool {
+	return f.HasBeenSet
 }
 
 // String returns a readable representation of this value
@@ -55,12 +61,15 @@ func (f *DurationFlag) GetValue() string {
 // Apply populates the flag given the flag set and environment
 func (f *DurationFlag) Apply(set *flag.FlagSet) error {
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
-		if val != ""{
+		if val != "" {
 			valDuration, err := time.ParseDuration(val)
+
 			if err != nil {
 				return fmt.Errorf("could not parse %q as duration value for flag %s: %s", val, f.Name, err)
 			}
+
 			f.Value = valDuration
+			f.HasBeenSet = true
 		}
 	}
 
@@ -82,14 +91,6 @@ func (c *Context) Duration(name string) time.Duration {
 	}
 	return 0
 }
-// GlobalDuration looks up the value of a global DurationFlag, returns
-// 0 if not found
-//func (c *Context) GlobalDuration(name string) time.Duration {
-//	if fs := lookupGlobalFlagSet(name, c); fs != nil {
-//		return lookupDuration(name, fs)
-//	}
-//	return 0
-//}
 
 func lookupDuration(name string, set *flag.FlagSet) time.Duration {
 	f := set.Lookup(name)

@@ -15,52 +15,59 @@ type StringFlag struct {
 	Value       string
 	DefaultText string
 	Destination *string
+	HasBeenSet  bool
+}
+
+// IsSet returns whether or not the flag has been set through env or file
+func (f *StringFlag) IsSet() bool {
+	return f.HasBeenSet
 }
 
 // String returns a readable representation of this value
 // (for usage defaults)
-func (s *StringFlag) String() string {
-	return FlagStringer(s)
+func (f *StringFlag) String() string {
+	return FlagStringer(f)
 }
 
 // Names returns the names of the flag
-func (s *StringFlag) Names() []string {
-	return flagNames(s)
+func (f *StringFlag) Names() []string {
+	return flagNames(f)
 }
 
 // IsRequired returns whether or not the flag is required
-func (s *StringFlag) IsRequired() bool {
-	return s.Required
+func (f *StringFlag) IsRequired() bool {
+	return f.Required
 }
 
 // TakesValue returns true of the flag takes a value, otherwise false
-func (s *StringFlag) TakesValue() bool {
+func (f *StringFlag) TakesValue() bool {
 	return true
 }
 
 // GetUsage returns the usage string for the flag
-func (s *StringFlag) GetUsage() string {
-	return s.Usage
+func (f *StringFlag) GetUsage() string {
+	return f.Usage
 }
 
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
-func (s *StringFlag) GetValue() string {
-	return s.Value
+func (f *StringFlag) GetValue() string {
+	return f.Value
 }
 
 // Apply populates the flag given the flag set and environment
-func (s *StringFlag) Apply(set *flag.FlagSet) error {
-	if val, ok := flagFromEnvOrFile(s.EnvVars, s.FilePath); ok {
-		s.Value = val
+func (f *StringFlag) Apply(set *flag.FlagSet) error {
+	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
+		f.Value = val
+		f.HasBeenSet = true
 	}
 
-	for _, name := range s.Names() {
-		if s.Destination != nil {
-			set.StringVar(s.Destination, name, s.Value, s.Usage)
+	for _, name := range f.Names() {
+		if f.Destination != nil {
+			set.StringVar(f.Destination, name, f.Value, f.Usage)
 			continue
 		}
-		set.String(name, s.Value, s.Usage)
+		set.String(name, f.Value, f.Usage)
 	}
 
 	return nil
@@ -74,15 +81,6 @@ func (c *Context) String(name string) string {
 	}
 	return ""
 }
-
-// GlobalString looks up the value of a global StringFlag, returns
-// "" if not found
-//func (c *Context) GlobalString(name string) string {
-//	if fs := lookupGlobalFlagSet(name, c); fs != nil {
-//		return lookupPath(name, fs)
-//	}
-//	return ""
-//}
 
 func lookupString(name string, set *flag.FlagSet) string {
 	f := set.Lookup(name)

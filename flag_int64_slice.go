@@ -74,6 +74,12 @@ type Int64SliceFlag struct {
 	Hidden      bool
 	Value       *Int64Slice
 	DefaultText string
+	HasBeenSet  bool
+}
+
+// IsSet returns whether or not the flag has been set through env or file
+func (f *Int64SliceFlag) IsSet() bool {
+	return f.HasBeenSet
 }
 
 // String returns a readable representation of this value
@@ -121,6 +127,8 @@ func (f *Int64SliceFlag) Apply(set *flag.FlagSet) error {
 				return fmt.Errorf("could not parse %q as int64 slice value for flag %s: %s", val, f.Name, err)
 			}
 		}
+
+		f.HasBeenSet = true
 	}
 
 	for _, name := range f.Names() {
@@ -141,15 +149,6 @@ func (c *Context) Int64Slice(name string) []int64 {
 	}
 	return nil
 }
-
-// GlobalInt64Slice looks up the value of a global Int64SliceFlag, returns
-// nil if not found
-//func (c *Context) GlobalInt64Slice(name string) []int {
-//	if fs := lookupGlobalFlagSet(name, c); fs != nil {
-//		return lookupInt64Slice(name, fs)
-//	}
-//	return nil
-//}
 
 func lookupInt64Slice(name string, set *flag.FlagSet) []int64 {
 	f := set.Lookup(name)

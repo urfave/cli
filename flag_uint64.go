@@ -18,6 +18,12 @@ type Uint64Flag struct {
 	Value       uint64
 	DefaultText string
 	Destination *uint64
+	HasBeenSet  bool
+}
+
+// IsSet returns whether or not the flag has been set through env or file
+func (f *Uint64Flag) IsSet() bool {
+	return f.HasBeenSet
 }
 
 // String returns a readable representation of this value
@@ -56,6 +62,7 @@ func (f *Uint64Flag) Apply(set *flag.FlagSet) error {
 			}
 
 			f.Value = valInt
+			f.HasBeenSet = true
 		}
 	}
 
@@ -84,15 +91,6 @@ func (c *Context) Uint64(name string) uint64 {
 	}
 	return 0
 }
-
-// GlobalUint64 looks up the value of a global Uint64Flag, returns
-// 0 if not found
-//func (c *Context) GlobalUint64(name string) uint64 {
-//	if fs := lookupGlobalFlagSet(name, c); fs != nil {
-//		return lookupUint64(name, fs)
-//	}
-//	return 0
-//}
 
 func lookupUint64(name string, set *flag.FlagSet) uint64 {
 	f := set.Lookup(name)

@@ -14,8 +14,6 @@ import (
 var (
 	changeLogURL            = "https://github.com/urfave/cli/blob/master/CHANGELOG.md"
 	appActionDeprecationURL = fmt.Sprintf("%s#deprecated-cli-app-action-signature", changeLogURL)
-	// unused variable. commented for now. will remove in future if agreed upon by everyone
-	//runAndExitOnErrorDeprecationURL = fmt.Sprintf("%s#deprecated-cli-app-runandexitonerror", changeLogURL)
 
 	contactSysadmin = "This is an error in the application.  Please contact the distributor of this application if this is not you."
 
@@ -89,7 +87,7 @@ type App struct {
 	// render custom help text by setting this variable.
 	CustomAppHelpTemplate string
 	// Boolean to enable short-option handling so user can combine several
-	// single-character bool arguements into one
+	// single-character bool arguments into one
 	// i.e. foobar -o -v -> foobar -ov
 	UseShortOptionHandling bool
 
@@ -182,11 +180,6 @@ func (a *App) Setup() {
 		}
 	}
 
-	//if a.EnableShellCompletion {
-	//	a.appendFlag(GenerateCompletionFlag)
-	//	a.appendFlag(InitCompletionFlag)
-	//}
-
 	if !a.HideVersion {
 		a.appendFlag(VersionFlag)
 	}
@@ -245,14 +238,6 @@ func (a *App) Run(arguments []string) (err error) {
 	if checkCompletions(context) {
 		return nil
 	}
-
-	//if done, cerr := checkInitCompletion(context); done {
-	//	if cerr != nil {
-	//		err = cerr
-	//	} else {
-	//		return nil
-	//	}
-	//}
 
 	if err != nil {
 		if a.OnUsageError != nil {
@@ -361,17 +346,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	}
 	a.Commands = newCmds
 
-	//<<<<<<< HEAD
-	//	// append flags
-	//	if a.EnableShellCompletion {
-	//		a.appendFlag(GenerateCompletionFlag)
-	//	}
-	//
-	//	// parse flags
-	//	set, err := flagSet(a.Name, a.Flags)
-	//=======
 	_, err = a.newFlagSet()
-	//>>>>>>> master
 	if err != nil {
 		return err
 	}

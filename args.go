@@ -1,11 +1,5 @@
 package cli
 
-import "errors"
-
-var (
-	argsRangeErr = errors.New("index out of range")
-)
-
 type Args interface {
 	// Get returns the nth argument, or else a blank string
 	Get(n int) string
@@ -55,6 +49,6 @@ func (a *args) Present() bool {
 
 func (a *args) Slice() []string {
 	ret := make([]string, len(*a))
-	copy(ret, []string(*a))
+	copy(ret, *a)
 	return ret
 }

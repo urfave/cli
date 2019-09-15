@@ -23,6 +23,12 @@ type GenericFlag struct {
 	TakesFile   bool
 	Value       Generic
 	DefaultText string
+	HasBeenSet  bool
+}
+
+// IsSet returns whether or not the flag has been set through env or file
+func (f *GenericFlag) IsSet() bool {
+	return f.HasBeenSet
 }
 
 // String returns a readable representation of this value
@@ -64,8 +70,12 @@ func (f *GenericFlag) GetValue() string {
 // provided by the user for parsing by the flag
 func (f GenericFlag) Apply(set *flag.FlagSet) error {
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
-		if err := f.Value.Set(val); err != nil {
-			return fmt.Errorf("could not parse %q as value for flag %s: %s", val, f.Name, err)
+		if val != "" {
+			if err := f.Value.Set(val); err != nil {
+				return fmt.Errorf("could not parse %q as value for flag %s: %s", val, f.Name, err)
+			}
+
+			f.HasBeenSet = true
 		}
 	}
 
@@ -79,17 +89,11 @@ func (f GenericFlag) Apply(set *flag.FlagSet) error {
 // Generic looks up the value of a local GenericFlag, returns
 // nil if not found
 func (c *Context) Generic(name string) interface{} {
-	return lookupGeneric(name, c.flagSet)
+	if fs := lookupFlagSet(name, c); fs != nil {
+		return lookupGeneric(name, fs)
+	}
+	return nil
 }
-
-// GlobalGeneric looks up the value of a global GenericFlag, returns
-// nil if not found
-//func (c *Context) GlobalGeneric(name string) interface{} {
-//	if fs := lookupGlobalFlagSet(name, c); fs != nil {
-//		return lookupGeneric(name, fs)
-//	}
-//	return nil
-//}
 
 func lookupGeneric(name string, set *flag.FlagSet) interface{} {
 	f := set.Lookup(name)

@@ -21,26 +21,6 @@ var (
 	commaWhitespace = regexp.MustCompile("[, ]+.*")
 )
 
-// GenerateCompletionFlag enables completion for all commands and subcommands
-//var GenerateCompletionFlag Flag = &BoolFlag{
-//	Name:   "generate-completion",
-//	Hidden: true,
-//}
-//
-//func genCompName() string {
-//	names := GenerateCompletionFlag.Names()
-//	if len(names) == 0 {
-//		return "generate-completion"
-//	}
-//	return names[0]
-//}
-//
-//// InitCompletionFlag generates completion code
-//var InitCompletionFlag = &StringFlag{
-//	Name:  "init-completion",
-//	Usage: "generate completion code. Value must be 'bash' or 'zsh'",
-//}
-
 // BashCompletionFlag enables bash-completion for all commands and subcommands
 var BashCompletionFlag Flag = &BoolFlag{
 	Name:   "generate-bash-completion",
@@ -49,18 +29,18 @@ var BashCompletionFlag Flag = &BoolFlag{
 
 // VersionFlag prints the version for the application
 var VersionFlag Flag = &BoolFlag{
-	Name:  "version",
+	Name:    "version",
 	Aliases: []string{"v"},
-	Usage: "print the version",
+	Usage:   "print the version",
 }
 
 // HelpFlag prints the help for all commands and subcommands.
 // Set to nil to disable the flag.  The subcommand
 // will still be added unless HideHelp is set to true.
 var HelpFlag Flag = &BoolFlag{
-	Name:  "help",
+	Name:    "help",
 	Aliases: []string{"h"},
-	Usage: "show help",
+	Usage:   "show help",
 }
 
 // FlagStringer converts a flag definition to a string. This is used by help
@@ -92,16 +72,12 @@ func (f FlagsByName) Len() int {
 }
 
 func (f FlagsByName) Less(i, j int) bool {
-	//<<<<<<< HEAD
 	if len(f[j].Names()) == 0 {
 		return false
 	} else if len(f[i].Names()) == 0 {
 		return true
 	}
-	return f[i].Names()[0] < f[j].Names()[0]
-	//=======
-	//	return lexicographicLess(f[i].GetName(), f[j].GetName())
-	//>>>>>>> master
+	return lexicographicLess(f[i].Names()[0], f[j].Names()[0])
 }
 
 func (f FlagsByName) Swap(i, j int) {
@@ -116,6 +92,7 @@ type Flag interface {
 	// Apply Flag settings to the given flag set
 	Apply(*flag.FlagSet) error
 	Names() []string
+	IsSet() bool
 }
 
 // RequiredFlag is an interface that allows us to mark flags as required
@@ -151,14 +128,6 @@ func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {
 	}
 	set.SetOutput(ioutil.Discard)
 	return set, nil
-}
-
-func eachName(longName string, fn func(string)) {
-	parts := strings.Split(longName, ",")
-	for _, name := range parts {
-		name = strings.Trim(name, " ")
-		fn(name)
-	}
 }
 
 func visibleFlags(fl []Flag) []Flag {

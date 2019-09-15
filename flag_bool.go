@@ -18,6 +18,12 @@ type BoolFlag struct {
 	Value       bool
 	DefaultText string
 	Destination *bool
+	HasBeenSet  bool
+}
+
+// IsSet returns whether or not the flag has been set through env or file
+func (f *BoolFlag) IsSet() bool {
+	return f.HasBeenSet
 }
 
 // String returns a readable representation of this value
@@ -57,10 +63,13 @@ func (f *BoolFlag) Apply(set *flag.FlagSet) error {
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		if val != "" {
 			valBool, err := strconv.ParseBool(val)
+
 			if err != nil {
 				return fmt.Errorf("could not parse %q as bool value for flag %s: %s", val, f.Name, err)
 			}
+
 			f.Value = valBool
+			f.HasBeenSet = true
 		}
 	}
 
@@ -84,16 +93,6 @@ func (c *Context) Bool(name string) bool {
 	return false
 }
 
-// GlobalBool looks up the value of a global BoolFlag, returns
-// false if not found
-//func (c *Context) GlobalBool(name string) bool {
-//	if fs := lookupGlobalFlagSet(name, c); fs != nil {
-//		return lookupBool(name, fs)
-//	}
-//	return false
-//}
-
-// TODO: Fix Duplicate
 func lookupBool(name string, set *flag.FlagSet) bool {
 	f := set.Lookup(name)
 	if f != nil {

@@ -1993,6 +1993,10 @@ func (c *customBoolFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
+func (c *customBoolFlag) IsSet() bool {
+	return false
+}
+
 func TestCustomFlagsUnused(t *testing.T) {
 	app := &App{
 		Flags: []Flag{&customBoolFlag{"custom"}},

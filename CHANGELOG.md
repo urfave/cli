@@ -13,6 +13,7 @@
 ### Changed
 - `Context.FlagNames` now returns all flags in the context lineage
 - `Context.IsSet` now considers the full context lineage
+- Added `IsSet` method to the `Flag` interface which allows us to detect whether or not a flag has been set
 
 ### Removed
 - the ability to specify `&StringSlice{...string}` or `&IntSlice{...int}`.
