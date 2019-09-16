@@ -148,15 +148,6 @@ func (c *Context) Int64Slice(name string) []int64 {
 	return lookupInt64Slice(name, c.flagSet)
 }
 
-// GlobalInt64Slice looks up the value of a global Int64SliceFlag, returns
-// nil if not found
-func (c *Context) GlobalInt64Slice(name string) []int64 {
-	if fs := lookupGlobalFlagSet(name, c); fs != nil {
-		return lookupInt64Slice(name, fs)
-	}
-	return nil
-}
-
 func lookupInt64Slice(name string, set *flag.FlagSet) []int64 {
 	f := set.Lookup(name)
 	if f != nil {
