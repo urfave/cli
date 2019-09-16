@@ -102,13 +102,14 @@ func prepareFlags(
 	sep, opener, closer, value string,
 	addDetails bool,
 ) []string {
-	var args []string
+	args := []string{}
 	for _, f := range flags {
 		flag, ok := f.(DocGenerationFlag)
 		if !ok {
 			continue
 		}
 		modifiedArg := opener
+
 		for _, s := range flag.Names() {
 			trimmed := strings.TrimSpace(s)
 			if len(modifiedArg) > len(opener) {

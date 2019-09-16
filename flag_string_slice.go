@@ -33,6 +33,7 @@ func (s *StringSlice) Set(value string) error {
 	}
 
 	s.slice = append(s.slice, value)
+
 	return nil
 }
 
@@ -132,6 +133,7 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
 		}
 		set.Var(f.Value, name, f.Usage)
 	}
+
 	return nil
 }
 

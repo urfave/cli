@@ -98,7 +98,6 @@ func (c *Context) FlagNames() []string {
 	var names []string
 	for _, ctx := range c.Lineage() {
 		ctx.flagSet.Visit(makeFlagNameVisitor(&names))
-
 	}
 	return names
 }

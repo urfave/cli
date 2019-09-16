@@ -229,21 +229,6 @@ var prefixStringFlagTests = []struct {
 	}, expected: "name: config,c, ph: CONFIG\tLoad configuration from CONFIG (default: \"config.json\")"},
 }
 
-//func TestFlagNamePrefixer(t *testing.T) {
-//	defer func() {
-//		FlagNamePrefixer = prefixedNames
-//	}()
-//
-//	for _, test := range prefixStringFlagTests {
-//		FlagNamePrefixer = test.prefixer
-//		fl := StringFlag{Name: test.name, Aliases: test.aliases, Usage: test.usage, Value: test.value}
-//		output := fl.String()
-//		if output != test.expected {
-//			t.Errorf("%q does not match %q", output, test.expected)
-//		}
-//	}
-//}
-
 func TestStringFlagApply_SetsAllNames(t *testing.T) {
 	v := "mmm"
 	fl := StringFlag{Name: "hay", Aliases: []string{"H", "hayyy"}, Destination: &v}

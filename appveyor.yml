@@ -12,15 +12,23 @@ cache:
 environment:
   GOPATH: C:\gopath
   GOVERSION: 1.11.x
+<<<<<<< HEAD
   GO111MODULE: on
   GOPROXY: https://proxy.golang.org
+=======
+>>>>>>> master
 
 install:
   - set PATH=%GOPATH%\bin;C:\go\bin;%PATH%
   - go version
   - go env
+<<<<<<< HEAD
   - go get github.com/urfave/gfmrun/cmd/gfmrun
   - go mod vendor
+=======
+  - go get github.com/urfave/gfmrun/...
+  - go get -v -t ./...
+>>>>>>> master
 
 build_script:
   - go run build.go vet

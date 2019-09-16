@@ -203,6 +203,5 @@ func jsonGetValue(key string, m map[string]interface{}) (interface{}, error) {
 
 type jsonSource struct {
 	file         string
-	deserialized map[string]interface {
-	}
+	deserialized map[string]interface{}
 }
