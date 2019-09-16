@@ -26,7 +26,7 @@ cli v1 manual
     + [Customization](#customization-1)
   * [Version Flag](#version-flag)
     + [Customization](#customization-2)
-    + [Full API Example FIX ME](#full-api-example)
+    + [Full API Example](#full-api-example)
 
 <!-- tocstop -->
 
