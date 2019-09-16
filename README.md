@@ -19,7 +19,7 @@ applications in an expressive way.
 - [Installation](#installation)
   * [Supported platforms](#supported-platforms)
   * [Using the `v2` branch](#using-the-v2-branch)
-  * [Pinning to the `v1` releases](#pinning-to-the-v1-releases)
+  * [Using `v1` releases](#using-v1-releases)
 - [Getting Started](#getting-started)
 - [Examples](#examples)
   * [Arguments](#arguments)
@@ -104,9 +104,6 @@ import (
 ...
 ```
 
-**NOTE**: There is a [migrator (python) script](./cli-v1-to-v2) available to aid
-with the transition from the v1 to v2 API.
-
 ### Pinning to the `v1` releases
 
 Similarly to the section above describing use of the `v2` branch, if one wants
@@ -120,7 +117,7 @@ $ go get github.com/urfave/cli
 ```go
 ...
 import (
-  "github.com/urfave/cli/v2"
+  "github.com/urfave/cli"
 )
 ...
 ```
@@ -710,11 +707,10 @@ Here is a more complete sample of a command using YAML support:
   "output": "&#45&#45;test value.*default: 0"
 } -->
 ``` go
-package notmain
+package main
 
 import (
   "fmt"
-  "log"
   "os"
 
   "github.com/urfave/cli/v2"
@@ -735,7 +731,7 @@ func main() {
     Before: altsrc.InitInputSourceWithContext(flags, altsrc.NewYamlSourceFromFlagFunc("load")),
     Flags: flags,
   }
-
+  
   app.Run(os.Args)
 }
 ```
@@ -949,7 +945,7 @@ func main() {
     },
     Action: func(ctx *cli.Context) error {
       if !ctx.Bool("ginger-crouton") {
-        return cli.Exit(Ginger croutons are not in the soup, 86)
+        return cli.Exit("Ginger croutons are not in the soup", 86)
       }
       return nil
     },
@@ -986,7 +982,7 @@ import (
   "fmt"
   "log"
   "os"
-
+  
   "github.com/urfave/cli/v2"
 )
 

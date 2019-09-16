@@ -241,7 +241,7 @@ func TestCommandTomlFileTestDefaultValueFileWinsNested(t *testing.T) {
 }
 
 func TestCommandTomlFileFlagHasDefaultGlobalEnvTomlSetGlobalEnvWins(t *testing.T) {
-	app := (&cli.App{})
+	app := &cli.App{}
 	set := flag.NewFlagSet("test", 0)
 	_ = ioutil.WriteFile("current.toml", []byte("test = 15"), 0666)
 	defer os.Remove("current.toml")

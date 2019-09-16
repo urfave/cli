@@ -28,7 +28,7 @@ func TestCommandFlagParsing(t *testing.T) {
 	for _, c := range cases {
 		app := &App{Writer: ioutil.Discard}
 		set := flag.NewFlagSet("test", 0)
-		set.Parse(c.testArgs)
+		_ = set.Parse(c.testArgs)
 
 		context := NewContext(app, set, nil)
 

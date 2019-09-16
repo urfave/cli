@@ -346,7 +346,6 @@ var stringSliceFlagTests = []struct {
 	value    *StringSlice
 	expected string
 }{
-
 	{"foo", nil, NewStringSlice(""), "--foo value\t"},
 	{"f", nil, NewStringSlice(""), "-f value\t"},
 	{"f", nil, NewStringSlice("Lipstick"), "-f value\t(default: \"Lipstick\")"},
@@ -1572,7 +1571,6 @@ func TestParseGenericFromEnv(t *testing.T) {
 	os.Clearenv()
 	_ = os.Setenv("APP_SERVE", "20,30")
 	_ = (&App{
-
 		Flags: []Flag{
 			&GenericFlag{
 				Name:    "serve",

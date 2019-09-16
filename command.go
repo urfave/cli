@@ -184,10 +184,6 @@ func (c *Command) parseFlags(args Args) (*flag.FlagSet, error) {
 		return set, set.Parse(append([]string{"--"}, args.Tail()...))
 	}
 
-	//if !c.SkipArgReorder {
-	//	args = reorderArgs(args)
-	//}
-
 	set, err := parseIter(c, args.Tail())
 	if err != nil {
 		return nil, err

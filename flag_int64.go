@@ -80,7 +80,6 @@ func (f *Int64Flag) Apply(set *flag.FlagSet) error {
 		}
 		set.Int64(name, f.Value, f.Usage)
 	}
-
 	return nil
 }
 

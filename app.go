@@ -11,16 +11,14 @@ import (
 	"time"
 )
 
-var (
-	changeLogURL            = "https://github.com/urfave/cli/blob/master/CHANGELOG.md"
-	appActionDeprecationURL = fmt.Sprintf("%s#deprecated-cli-app-action-signature", changeLogURL)
-
-	contactSysadmin = "This is an error in the application.  Please contact the distributor of this application if this is not you."
-
-	errInvalidActionType = NewExitError("ERROR invalid Action type. "+
-		fmt.Sprintf("Must be `func(*Context`)` or `func(*Context) error).  %s", contactSysadmin)+
-		fmt.Sprintf("See %s", appActionDeprecationURL), 2)
-)
+//var (
+//	changeLogURL            = "https://github.com/urfave/cli/blob/master/CHANGELOG.md"
+//	appActionDeprecationURL = fmt.Sprintf("%s#deprecated-cli-app-action-signature", changeLogURL)
+//	contactSysadmin = "This is an error in the application.  Please contact the distributor of this application if this is not you."
+//	errInvalidActionType = NewExitError("ERROR invalid Action type. "+
+//		fmt.Sprintf("Must be `func(*Context`)` or `func(*Context) error).  %s", contactSysadmin)+
+//		fmt.Sprintf("See %s", appActionDeprecationURL), 2)
+//)
 
 // App is the main structure of a cli application. It is recommended that
 // an app be created with the cli.NewApp() function
@@ -533,29 +531,4 @@ func (a *Author) String() string {
 	}
 
 	return fmt.Sprintf("%v%v", a.Name, e)
-}
-
-// DefaultAppComplete returns an ActionFunc to run a default command if non were passed.
-// Usage: `app.Action = cli.DefaultCommand("command")`
-func DefaultCommand(name string) ActionFunc {
-	return func(ctx *Context) error {
-		return ctx.App.Command(name).Run(ctx)
-	}
-}
-
-// HandleAction attempts to figure out which Action signature was used.  If
-// it's an ActionFunc or a func with the legacy signature for Action, the func
-// is run!
-func HandleAction(action interface{}, context *Context) (err error) {
-	switch a := action.(type) {
-	case ActionFunc:
-		return a(context)
-	case func(*Context) error:
-		return a(context)
-	case func(*Context): // deprecated function signature
-		a(context)
-		return nil
-	}
-
-	return errInvalidActionType
 }

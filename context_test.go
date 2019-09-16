@@ -3,12 +3,9 @@ package cli
 import (
 	"context"
 	"flag"
-
 	"sort"
-
 	"os"
 	"strings"
-
 	"testing"
 	"time"
 )
@@ -462,6 +459,7 @@ func TestCheckRequiredFlags(t *testing.T) {
 			parseInput: []string{"-n", "asd", "-n", "qwe"},
 		},
 	}
+
 	for _, test := range tdata {
 		t.Run(test.testCase, func(t *testing.T) {
 			// setup

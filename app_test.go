@@ -445,63 +445,6 @@ func TestApp_Setup_defaultsWriter(t *testing.T) {
 	expect(t, app.Writer, os.Stdout)
 }
 
-
-//func TestApp_CommandWithArgBeforeFlags(t *testing.T) {
-//	var parsedOption, firstArg string
-//
-//	app := NewApp()
-//	command := &Command{
-//		Name: "cmd",
-//		Flags: []Flag{
-//			&StringFlag{Name: "option", Value: "", Usage: "some option"},
-//		},
-//		Action: func(c *Context) error {
-//			parsedOption = c.String("option")
-//			firstArg = c.Args().First()
-//			return nil
-//		},
-//	}
-//	app.Commands = []*Command{command}
-//
-//	_ = app.Run([]string{"", "cmd", "my-arg", "--option", "my-option"})
-//
-//	expect(t, parsedOption, "my-option")
-//	expect(t, firstArg, "my-arg")
-//}
-//
-//func TestApp_CommandWithArgBeforeBoolFlags(t *testing.T) {
-//	var parsedOption, parsedSecondOption, firstArg string
-//	var parsedBool, parsedSecondBool bool
-//
-//	app := NewApp()
-//	command := &Command{
-//		Name: "cmd",
-//		Flags: []Flag{
-//			&StringFlag{Name: "option", Value: "", Usage: "some option"},
-//			&StringFlag{Name: "secondOption", Value: "", Usage: "another option"},
-//			&BoolFlag{Name: "boolflag", Usage: "some bool"},
-//			&BoolFlag{Name: "b", Usage: "another bool"},
-//		},
-//		Action: func(c *Context) error {
-//			parsedOption = c.String("option")
-//			parsedSecondOption = c.String("secondOption")
-//			parsedBool = c.Bool("boolflag")
-//			parsedSecondBool = c.Bool("b")
-//			firstArg = c.Args().First()
-//			return nil
-//		},
-//	}
-//	app.Commands = []*Command{command}
-//
-//	_ = app.Run([]string{"", "cmd", "my-arg", "--boolflag", "--option", "my-option", "-b", "--secondOption", "fancy-option"})
-//
-//	expect(t, parsedOption, "my-option")
-//	expect(t, parsedSecondOption, "fancy-option")
-//	expect(t, parsedBool, true)
-//	expect(t, parsedSecondBool, true)
-//	expect(t, firstArg, "my-arg")
-//}
-
 func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
 	var context *Context
 
@@ -2071,23 +2014,6 @@ func TestHandleExitCoder_Custom(t *testing.T) {
 	if !strings.Contains(output, "Custom") {
 		t.Fatalf("Expected Custom Behavior from Error Handler but got: %s", output)
 	}
-}
-
-func TestHandleAction_WithUnknownPanic(t *testing.T) {
-	defer func() { refute(t, recover(), nil) }()
-
-	var fn ActionFunc
-
-	app := NewApp()
-	app.Action = func(ctx *Context) error {
-		_ = fn(ctx)
-		return nil
-	}
-	fs, err := flagSet(app.Name, app.Flags)
-	if err != nil {
-		t.Errorf("error creating FlagSet: %s", err)
-	}
-	_ = HandleAction(app.Action, NewContext(app, fs, nil))
 }
 
 func TestShellCompletionForIncompleteFlags(t *testing.T) {

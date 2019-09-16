@@ -66,9 +66,9 @@ func (x *jsonSource) Int(name string) (int, error) {
 		return 0, fmt.Errorf("unexpected type %T for %q", i, name)
 	case int:
 		return v, nil
-	case float64:
-		return int(v), nil
 	case float32:
+		return int(v), nil
+	case float64:
 		return int(v), nil
 	}
 }
@@ -203,5 +203,6 @@ func jsonGetValue(key string, m map[string]interface{}) (interface{}, error) {
 
 type jsonSource struct {
 	file         string
-	deserialized map[string]interface{}
+	deserialized map[string]interface {
+	}
 }

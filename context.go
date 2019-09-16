@@ -74,39 +74,10 @@ func (c *Context) IsSet(name string) bool {
 			}
 		}
 
-		// XXX hack to support IsSet for flags with EnvVar
-		//
-		// There isn't an easy way to do this with the current implementation since
-		// whether a flag was set via an environment variable is very difficult to
-		// determine here. Instead, we intend to introduce a backwards incompatible
-		// change in version 2 to add `IsSet` to the Flag interface to push the
-		// responsibility closer to where the information required to determine
-		// whether a flag is set by non-standard means such as environment
-		// variables is available.
-		//
-		// See https://github.com/urfave/cli/issues/294 for additional discussion
 		f := lookupFlag(name, c)
 		if f == nil {
 			return false
 		}
-
-		//val := reflect.ValueOf(f)
-		//if val.Kind() == reflect.Ptr {
-		//	val = val.Elem()
-		//}
-		//
-		//filePathValue := val.FieldByName("FilePath")
-		//if !filePathValue.IsValid() {
-		//	return false
-		//}
-		//
-		//envVarValues := val.FieldByName("EnvVars")
-		//if !envVarValues.IsValid() {
-		//	return false
-		//}
-		//
-		//_, ok := flagFromEnvOrFile(envVarValues.Interface().([]string), filePathValue.Interface().(string))
-		//return ok
 
 		return f.IsSet()
 	}
@@ -131,30 +102,6 @@ func (c *Context) FlagNames() []string {
 	}
 	return names
 }
-
-// FlagNames returns a slice of flag names used in this context.
-//func (c *Context) FlagNames() (names []string) {
-//	for _, f := range c.Command.Flags {
-//		name := strings.Split(f.GetName(), ",")[0]
-//		if name == "help" {
-//			continue
-//		}
-//		names = append(names, name)
-//	}
-//	return
-//}
-
-// GlobalFlagNames returns a slice of global flag names used by the app.
-//func (c *Context) GlobalFlagNames() (names []string) {
-//	for _, f := range c.App.Flags {
-//		name := strings.Split(f.GetName(), ",")[0]
-//		if name == "help" || name == "version" {
-//			continue
-//		}
-//		names = append(names, name)
-//	}
-//	return names
-//}
 
 // Lineage returns *this* context and all of its ancestor contexts in order from
 // child to parent
@@ -310,6 +257,7 @@ func checkRequiredFlags(flags []Flag, context *Context) requiredFlagsErr {
 		if rf, ok := f.(RequiredFlag); ok && rf.IsRequired() {
 			var flagPresent bool
 			var flagName string
+
 			for _, key := range f.Names() {
 				if len(key) > 1 {
 					flagName = key

@@ -50,6 +50,7 @@ func (i *IntSlice) Set(value string) error {
 	}
 
 	i.slice = append(i.slice, int(tmp))
+
 	return nil
 }
 

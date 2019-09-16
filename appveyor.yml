@@ -26,4 +26,3 @@ build_script:
   - go run build.go vet
   - go run build.go test
   - go run build.go gfmrun
-

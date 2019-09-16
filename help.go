@@ -243,6 +243,7 @@ func ShowCommandCompletions(ctx *Context, command string) {
 			DefaultCompleteWithFlags(c)(ctx)
 		}
 	}
+
 }
 
 func printHelpCustom(out io.Writer, templ string, data interface{}, customFunc map[string]interface{}) {

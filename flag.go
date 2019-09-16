@@ -314,7 +314,7 @@ func stringifyIntSliceFlag(f *IntSliceFlag) string {
 	var defaultVals []string
 	if f.Value != nil && len(f.Value.Value()) > 0 {
 		for _, i := range f.Value.Value() {
-			defaultVals = append(defaultVals, fmt.Sprintf("%d", i))
+			defaultVals = append(defaultVals, strconv.Itoa(i))
 		}
 	}
 
@@ -346,7 +346,6 @@ func stringifyFloat64SliceFlag(f *Float64SliceFlag) string {
 
 func stringifyStringSliceFlag(f *StringSliceFlag) string {
 	var defaultVals []string
-
 	if f.Value != nil && len(f.Value.Value()) > 0 {
 		for _, s := range f.Value.Value() {
 			if len(s) > 0 {
