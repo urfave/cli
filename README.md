@@ -735,7 +735,6 @@ func main() {
 
 #### Default Values for help output
 
-<<<<<<< HEAD
 Sometimes it's useful to specify a flag's default help-text value within the flag declaration. This can be useful if the default value for a flag is a computed value. The default value can be set via the `DefaultText` struct field.
 
 For example this:
@@ -765,9 +764,7 @@ func main() {
       },
     },
   }
-
-=======
->>>>>>> master
+  
   err := app.Run(os.Args)
   if err != nil {
     log.Fatal(err)
@@ -775,15 +772,12 @@ func main() {
 }
 ```
 
-<<<<<<< HEAD
 Will result in help output like:
 
 ```
 --port value  Use a randomized port (default: random)
 ```
 
-=======
->>>>>>> master
 #### Precedence
 
 The precedence for flag value sources is as follows (highest to lowest):
@@ -885,7 +879,6 @@ import (
 )
 
 func main() {
-<<<<<<< HEAD
   app := &cli.App{
     Commands: []*cli.Command{
       {
@@ -899,21 +892,6 @@ func main() {
         Name:     "remove",
         Category: "template",
       },
-=======
-  app := cli.NewApp()
-
-  app.Commands = []cli.Command{
-    {
-      Name: "noop",
-    },
-    {
-      Name:     "add",
-      Category: "Template actions",
-    },
-    {
-      Name:     "remove",
-      Category: "Template actions",
->>>>>>> master
     },
   }
 
