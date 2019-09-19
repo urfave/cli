@@ -71,10 +71,9 @@ OPTIONS:
    {{end}}{{end}}
 `
 
-var MarkdownDocTemplate = `% {{ .App.Name }}(8) {{ .App.Description }}
-{{ range $Author := .App.Authors}}
-% {{ $Author.Name }}
-{{- end}}
+var MarkdownDocTemplate = `% {{ .App.Name }}(8){{ if .App.Description }} {{ .App.Description }}{{ end }}
+{{ range $a := .App.Authors }}
+% {{ $a }}{{ end }}
 
 # NAME
 

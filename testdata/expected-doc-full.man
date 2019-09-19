@@ -1,7 +1,10 @@
 .nh
-.TH greet(8) 
+.TH greet(8)
 
-.SH Harrison
+.SH Harrison harrison@lolwut.com
+\[la]mailto:harrison@lolwut.com\[ra]
+Oliver Allen oliver@toyshop.com
+\[la]mailto:oliver@toyshop.com\[ra]
 
 .SH NAME
 .PP
