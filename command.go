@@ -278,6 +278,7 @@ func argIsFlag(commandFlags []Flag, arg string) bool {
 	// look through all the flags, to see if the `arg` is one of our flags
 	for _, flag := range commandFlags {
 		for _, key := range strings.Split(flag.GetName(), ",") {
+			key := strings.TrimSpace(key)
 			if key == arg {
 				return true
 			}
