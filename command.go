@@ -240,8 +240,7 @@ func reorderArgs(commandFlags []Flag, args []string) []string {
 			reorderedArgs = append(reorderedArgs, arg)
 
 			// checks if this is an arg that should be re-ordered
-		} else if arg != "-" && strings.HasPrefix(arg, "-") && argIsFlag(commandFlags, arg) {
-
+		} else if argIsFlag(commandFlags, arg) {
 			// we have determined that this is a flag that we should re-order
 			reorderedArgs = append(reorderedArgs, arg)
 			// if this arg does not contain a "=", then the next index may contain the value for this flag
@@ -258,8 +257,18 @@ func reorderArgs(commandFlags []Flag, args []string) []string {
 
 // argIsFlag checks if an arg is one of our command flags
 func argIsFlag(commandFlags []Flag, arg string) bool {
+	// checks if this is just a `-`, and so definitely not a flag
+	if arg == "-" {
+		return false
+	}
 	// this line turns `--flag` into `flag`
-	arg = strings.Replace(arg, "-", "", -1)
+	if strings.HasPrefix(arg, "--") {
+		arg = strings.Replace(arg, "-", "", 2)
+	}
+	// this line turns `-flag` into `flag`
+	if strings.HasPrefix(arg, "-") {
+		arg = strings.Replace(arg, "-", "", 1)
+	}
 	// this line turns `flag=value` into `flag`
 	arg = strings.Split(arg, "=")[0]
 	// look through all the flags, to see if the `arg` is one of our flags
