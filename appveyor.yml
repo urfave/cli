@@ -13,6 +13,7 @@ environment:
   GOPATH: C:\gopath
   GOVERSION: 1.11.x
   GO111MODULE: on
+  GOFLAGS: -mod=readonly
   GOPROXY: https://proxy.golang.org
 
 install:
