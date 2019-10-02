@@ -261,6 +261,10 @@ func argIsFlag(commandFlags []Flag, arg string) bool {
 	if arg == "-" {
 		return false
 	}
+	// flags always start with a -
+	if !strings.HasPrefix(arg, "-") {
+		return false
+	}
 	// this line turns `--flag` into `flag`
 	if strings.HasPrefix(arg, "--") {
 		arg = strings.Replace(arg, "-", "", 2)
