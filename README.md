@@ -15,36 +15,42 @@ applications in an expressive way.
 
 <!-- toc -->
 
-- [Overview](#overview)
-- [Installation](#installation)
-  * [Supported platforms](#supported-platforms)
-  * [Using the `v2` branch](#using-the-v2-branch)
-  * [Using `v1` releases](#using-v1-releases)
-- [Getting Started](#getting-started)
-- [Examples](#examples)
-  * [Arguments](#arguments)
-  * [Flags](#flags)
-    + [Placeholder Values](#placeholder-values)
-    + [Alternate Names](#alternate-names)
-    + [Ordering](#ordering)
-    + [Values from the Environment](#values-from-the-environment)
-    + [Values from files](#values-from-files)
-    + [Values from alternate input sources (YAML, TOML, and others)](#values-from-alternate-input-sources-yaml-toml-and-others)
-    + [Precedence](#precedence)
-  * [Subcommands](#subcommands)
-  * [Subcommands categories](#subcommands-categories)
-  * [Exit code](#exit-code)
-  * [Combining short options](#combining-short-options)
-  * [Bash Completion](#bash-completion)
-    + [Enabling](#enabling)
-    + [Distribution](#distribution)
-    + [Customization](#customization)
-  * [Generated Help Text](#generated-help-text)
-    + [Customization](#customization-1)
-  * [Version Flag](#version-flag)
-    + [Customization](#customization-2)
-    + [Full API Example](#full-api-example)
-- [Contribution Guidelines](#contribution-guidelines)
+- [cli](#cli)
+  - [Overview](#overview)
+  - [Installation](#installation)
+    - [Supported platforms](#supported-platforms)
+    - [Using the `v2` branch](#using-the-v2-branch)
+    - [Using `v1` releases](#using-v1-releases)
+  - [Getting Started](#getting-started)
+  - [Examples](#examples)
+    - [Arguments](#arguments)
+    - [Flags](#flags)
+      - [Placeholder Values](#placeholder-values)
+      - [Alternate Names](#alternate-names)
+      - [Ordering](#ordering)
+      - [Values from the Environment](#values-from-the-environment)
+      - [Values from files](#values-from-files)
+      - [Values from alternate input sources (YAML, TOML, and others)](#values-from-alternate-input-sources-yaml-toml-and-others)
+      - [Precedence](#precedence)
+    - [Subcommands](#subcommands)
+    - [Subcommands categories](#subcommands-categories)
+    - [Exit code](#exit-code)
+    - [Combining short options](#combining-short-options)
+    - [Bash Completion](#bash-completion)
+      - [Default auto-completion](#default-auto-completion)
+      - [Custom auto-completion](#custom-auto-completion)
+      - [Enabling](#enabling)
+      - [Distribution and Persistent Autocompletion](#distribution-and-persistent-autocompletion)
+      - [Customization](#customization)
+      - [ZSH Support](#zsh-support)
+      - [ZSH default auto-complete example](#zsh-default-auto-complete-example)
+      - [ZSH custom auto-complete example](#zsh-custom-auto-complete-example)
+    - [Generated Help Text](#generated-help-text)
+      - [Customization](#customization-1)
+    - [Version Flag](#version-flag)
+      - [Customization](#customization-2)
+      - [Full API Example](#full-api-example)
+  - [Contribution Guidelines](#contribution-guidelines)
 
 <!-- tocstop -->
 
@@ -1058,6 +1064,7 @@ func main() {
 }
 
 ```
+![](https://media.giphy.com/media/S3gyjumR56IpDyH23r/giphy.gif)
 
 #### Custom auto-completion
 <!-- {
@@ -1107,6 +1114,7 @@ func main() {
   }
 }
 ```
+![](https://media.giphy.com/media/efIYFuQYnHktmduPnN/giphy.gif)
 
 #### Enabling
 
@@ -1204,6 +1212,10 @@ PROG=<myprogram>
 _CLI_ZSH_AUTOCOMPLETE_HACK=1
 source  path/to/autocomplete/zsh_autocomplete
 ```
+#### ZSH default auto-complete example
+![](https://media.giphy.com/media/jQyXOr5VnOj3NSjjCt/giphy.gif)
+#### ZSH custom auto-complete example
+![](https://media.giphy.com/media/kaNJxgXPPmhJNTE0Jb/giphy.gif)
 
 ### Generated Help Text
 
