@@ -987,10 +987,79 @@ have a single leading `-` or this will result in failures. For example,
 ### Bash Completion
 
 You can enable completion commands by setting the `EnableBashCompletion`
-flag on the `App` object.  By default, this setting will only auto-complete to
-show an app's subcommands, but you can write your own completion methods for
-the App or its subcommands.
+flag on the `App` object to `true`.  By default, this setting will allow 
+auto-completion for an app's subcommands, but you can write your own completion 
+methods for the App or its subcommands as well.
 
+#### Default auto-completion
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/urfave/cli"
+)
+
+func main() {
+	app := cli.NewApp()
+	app.EnableBashCompletion = true
+	app.Commands = []cli.Command{
+		{
+			Name:    "add",
+			Aliases: []string{"a"},
+			Usage:   "add a task to the list",
+			Action: func(c *cli.Context) error {
+				fmt.Println("added task: ", c.Args().First())
+				return nil
+			},
+		},
+		{
+			Name:    "complete",
+			Aliases: []string{"c"},
+			Usage:   "complete a task on the list",
+			Action: func(c *cli.Context) error {
+				fmt.Println("completed task: ", c.Args().First())
+				return nil
+			},
+		},
+		{
+			Name:    "template",
+			Aliases: []string{"t"},
+			Usage:   "options for task templates",
+			Subcommands: []cli.Command{
+				{
+					Name:  "add",
+					Usage: "add a new template",
+					Action: func(c *cli.Context) error {
+						fmt.Println("new task template: ", c.Args().First())
+						return nil
+					},
+				},
+				{
+					Name:  "remove",
+					Usage: "remove an existing template",
+					Action: func(c *cli.Context) error {
+						fmt.Println("removed task template: ", c.Args().First())
+						return nil
+					},
+				},
+			},
+		},
+	}
+
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+```
+
+#### Custom auto-completion
 <!-- {
   "args": ["complete", "&#45;&#45;generate&#45;bash&#45;completion"],
   "output": "laundry"
@@ -1041,26 +1110,48 @@ func main() {
 
 #### Enabling
 
-Source the `autocomplete/bash_autocomplete` file in your `.bashrc` file while
-setting the `PROG` variable to the name of your program:
+To enable autocompletion for the current shell session, a bash script, 
+`autocomplete/bash_autocomplete` is included in this repo.
 
-`PROG=myprogram source /.../cli/autocomplete/bash_autocomplete`
+To use `autocomplete/bash_autocomplete`, set an environment variable named `PROG` to 
+the name of your program, and then `source` the `autocomplete/bash_autocomplete` file.
 
-#### Distribution
+For example, if your cli program is called `myprogram`:
+
+`PROG=myprogram source path/to/cli/autocomplete/bash_autocomplete`
+
+Autocompletion is now enabled for the current shell, but will not persist to a new shell.
+
+#### Distribution and Persistent Autocompletion
 
 Copy `autocomplete/bash_autocomplete` into `/etc/bash_completion.d/` and rename
 it to the name of the program you wish to add autocomplete support for (or
 automatically install it there if you are distributing a package). Don't forget
-to source the file to make it active in the current shell.
+to source the file or restart your shell to activate the autocompletion.
 
 ```
-sudo cp src/bash_autocomplete /etc/bash_completion.d/<myprogram>
+sudo cp path/to/autocomplete/bash_autocomplete /etc/bash_completion.d/<myprogram>
 source /etc/bash_completion.d/<myprogram>
 ```
 
 Alternatively, you can just document that users should source the generic
-`autocomplete/bash_autocomplete` in their bash configuration with `$PROG` set
-to the name of their program (as above).
+`autocomplete/bash_autocomplete` and set `$PROG` within their bash configuration
+file, adding these lines:
+
+```
+PROG=<myprogram>
+source path/to/cli/autocomplete/bash_autocomplete
+```
+Keep in mind that if they are enabling autocompletion for more than one program, 
+they will need to set `PROG` and source `autocomplete/bash_autocomplete` for each 
+program, like so:
+
+```
+PROG=<program1>
+source path/to/cli/autocomplete/bash_autocomplete
+PROG=<program2>
+source path/to/cli/autocomplete/bash_autocomplete
+```
 
 #### Customization
 
@@ -1099,6 +1190,19 @@ func main() {
     log.Fatal(err)
   }
 }
+```
+
+#### ZSH Support
+Autocompletion for ZSH is also supported using the `autocomplete/zsh_autocomplete` 
+file included in this repo. Two environment variables are used, `PROG` and `_CLI_ZSH_AUTOCOMPLETE_HACK`. 
+Set `PROG` to the program name as before, set `_CLI_ZSH_AUTOCOMPLETE_HACK` to `1`, and then `source 
+path/to/autocomplete/zsh_autocomplete`. Adding the following lines to your ZSH configuration file (usually `.zshrc`) will allow 
+the autocompletion to persist across new shells:
+
+```
+PROG=<myprogram>
+_CLI_ZSH_AUTOCOMPLETE_HACK=1
+source  path/to/autocomplete/zsh_autocomplete
 ```
 
 ### Generated Help Text
