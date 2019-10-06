@@ -1110,7 +1110,7 @@ func main() {
 
 #### Enabling
 
-To enable autocompletion for the current shell session, a bash script, 
+To enable auto-completion for the current shell session, a bash script, 
 `autocomplete/bash_autocomplete` is included in this repo.
 
 To use `autocomplete/bash_autocomplete`, set an environment variable named `PROG` to 
@@ -1120,14 +1120,14 @@ For example, if your cli program is called `myprogram`:
 
 `PROG=myprogram source path/to/cli/autocomplete/bash_autocomplete`
 
-Autocompletion is now enabled for the current shell, but will not persist to a new shell.
+Auto-completion is now enabled for the current shell, but will not persist to a new shell.
 
 #### Distribution and Persistent Autocompletion
 
 Copy `autocomplete/bash_autocomplete` into `/etc/bash_completion.d/` and rename
-it to the name of the program you wish to add autocomplete support for (or
+it to the name of the program you wish to add auto-complete support for (or
 automatically install it there if you are distributing a package). Don't forget
-to source the file or restart your shell to activate the autocompletion.
+to source the file or restart your shell to activate the auto-completion.
 
 ```
 sudo cp path/to/autocomplete/bash_autocomplete /etc/bash_completion.d/<myprogram>
@@ -1142,7 +1142,7 @@ file, adding these lines:
 PROG=<myprogram>
 source path/to/cli/autocomplete/bash_autocomplete
 ```
-Keep in mind that if they are enabling autocompletion for more than one program, 
+Keep in mind that if they are enabling auto-completion for more than one program, 
 they will need to set `PROG` and source `autocomplete/bash_autocomplete` for each 
 program, like so:
 
@@ -1193,11 +1193,11 @@ func main() {
 ```
 
 #### ZSH Support
-Autocompletion for ZSH is also supported using the `autocomplete/zsh_autocomplete` 
+Auto-completion for ZSH is also supported using the `autocomplete/zsh_autocomplete` 
 file included in this repo. Two environment variables are used, `PROG` and `_CLI_ZSH_AUTOCOMPLETE_HACK`. 
-Set `PROG` to the program name as before, set `_CLI_ZSH_AUTOCOMPLETE_HACK` to `1`, and then `source 
-path/to/autocomplete/zsh_autocomplete`. Adding the following lines to your ZSH configuration file (usually `.zshrc`) will allow 
-the autocompletion to persist across new shells:
+Set `PROG` to the program name as before, set `_CLI_ZSH_AUTOCOMPLETE_HACK` to `1`, and 
+then `source path/to/autocomplete/zsh_autocomplete`. Adding the following lines to your ZSH 
+configuration file (usually `.zshrc`) will allow the auto-completion to persist across new shells:
 
 ```
 PROG=<myprogram>
