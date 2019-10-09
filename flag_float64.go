@@ -99,7 +99,7 @@ func (f *Float64Flag) ApplyInputSourceValue(context *Context, isc InputSourceCon
 				return err
 			}
 			if value > 0 {
-				floatStr := fmt.Sprintf("%v", f)
+				floatStr := fmt.Sprintf("%v", value)
 				for _, name := range f.Names() {
 					_ = f.set.Set(name, floatStr)
 				}

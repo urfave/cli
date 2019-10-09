@@ -1707,7 +1707,7 @@ func TestGenericApplyInputSourceValue(t *testing.T) {
 func TestGenericApplyInputSourceMethodContextSet(t *testing.T) {
 	p := &Parser{"abc", "def"}
 	c := runTest(t, testApplyInputSource{
-		Flag:               &GenericFlag{Name: "test", Value: &Parser{}},
+		Flag:               &GenericFlag{Name: "test", Value: &Parser{}, AlternateSource: true},
 		FlagName:           "test",
 		MapValue:           &Parser{"efg", "hig"},
 		ContextValueString: p.String(),
@@ -1732,7 +1732,7 @@ func TestGenericApplyInputSourceMethodEnvVarSet(t *testing.T) {
 
 func TestStringSliceApplyInputSourceValue(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:     &StringSliceFlag{Name: "test"},
+		Flag:     &StringSliceFlag{Name: "test", AlternateSource: true},
 		FlagName: "test",
 		MapValue: []interface{}{"hello", "world"},
 	})
@@ -1762,7 +1762,7 @@ func TestStringSliceApplyInputSourceMethodEnvVarSet(t *testing.T) {
 
 func TestIntSliceApplyInputSourceValue(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:     &IntSliceFlag{Name: "test"},
+		Flag:     &IntSliceFlag{Name: "test", AlternateSource: true},
 		FlagName: "test",
 		MapValue: []interface{}{1, 2},
 	})
@@ -1771,7 +1771,7 @@ func TestIntSliceApplyInputSourceValue(t *testing.T) {
 
 func TestIntSliceApplyInputSourceMethodContextSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:               &IntSliceFlag{Name: "test"},
+		Flag:               &IntSliceFlag{Name: "test", AlternateSource: true},
 		FlagName:           "test",
 		MapValue:           []interface{}{1, 2},
 		ContextValueString: "3",
@@ -1792,7 +1792,7 @@ func TestIntSliceApplyInputSourceMethodEnvVarSet(t *testing.T) {
 
 func TestBoolApplyInputSourceMethodSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:     &BoolFlag{Name: "test"},
+		Flag:     &BoolFlag{Name: "test", AlternateSource: true},
 		FlagName: "test",
 		MapValue: true,
 	})
@@ -1801,7 +1801,7 @@ func TestBoolApplyInputSourceMethodSet(t *testing.T) {
 
 func TestBoolApplyInputSourceMethodContextSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:               &BoolFlag{Name: "test"},
+		Flag:               &BoolFlag{Name: "test", AlternateSource: true},
 		FlagName:           "test",
 		MapValue:           false,
 		ContextValueString: "true",
@@ -1811,7 +1811,7 @@ func TestBoolApplyInputSourceMethodContextSet(t *testing.T) {
 
 func TestBoolApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:        &BoolFlag{Name: "test", EnvVars: []string{"TEST"}},
+		Flag:        &BoolFlag{Name: "test", EnvVars: []string{"TEST"}, AlternateSource: true},
 		FlagName:    "test",
 		MapValue:    false,
 		EnvVarName:  "TEST",
@@ -1822,7 +1822,7 @@ func TestBoolApplyInputSourceMethodEnvVarSet(t *testing.T) {
 
 func TestStringApplyInputSourceMethodSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:     &StringFlag{Name: "test"},
+		Flag:     &StringFlag{Name: "test", AlternateSource: true},
 		FlagName: "test",
 		MapValue: "hello",
 	})
@@ -1831,7 +1831,7 @@ func TestStringApplyInputSourceMethodSet(t *testing.T) {
 
 func TestStringApplyInputSourceMethodContextSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:               &StringFlag{Name: "test"},
+		Flag:               &StringFlag{Name: "test", AlternateSource: true},
 		FlagName:           "test",
 		MapValue:           "hello",
 		ContextValueString: "goodbye",
@@ -1851,7 +1851,7 @@ func TestStringApplyInputSourceMethodEnvVarSet(t *testing.T) {
 }
 func TestPathApplyInputSourceMethodSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:       &PathFlag{Name: "test"},
+		Flag:       &PathFlag{Name: "test", AlternateSource: true},
 		FlagName:   "test",
 		MapValue:   "hello",
 		SourcePath: "/path/to/source/file",
@@ -1866,7 +1866,7 @@ func TestPathApplyInputSourceMethodSet(t *testing.T) {
 
 func TestPathApplyInputSourceMethodContextSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:               &PathFlag{Name: "test"},
+		Flag:               &PathFlag{Name: "test", AlternateSource: true},
 		FlagName:           "test",
 		MapValue:           "hello",
 		ContextValueString: "goodbye",
@@ -1889,7 +1889,7 @@ func TestPathApplyInputSourceMethodEnvVarSet(t *testing.T) {
 
 func TestIntApplyInputSourceMethodSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:     &IntFlag{Name: "test"},
+		Flag:     &IntFlag{Name: "test", AlternateSource: true},
 		FlagName: "test",
 		MapValue: 15,
 	})
@@ -1898,7 +1898,7 @@ func TestIntApplyInputSourceMethodSet(t *testing.T) {
 
 func TestIntApplyInputSourceMethodContextSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:               &IntFlag{Name: "test"},
+		Flag:               &IntFlag{Name: "test", AlternateSource: true},
 		FlagName:           "test",
 		MapValue:           15,
 		ContextValueString: "7",
@@ -1919,7 +1919,7 @@ func TestIntApplyInputSourceMethodEnvVarSet(t *testing.T) {
 
 func TestDurationApplyInputSourceMethodSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:     &DurationFlag{Name: "test"},
+		Flag:     &DurationFlag{Name: "test", AlternateSource: true},
 		FlagName: "test",
 		MapValue: 30 * time.Second,
 	})
@@ -1928,7 +1928,7 @@ func TestDurationApplyInputSourceMethodSet(t *testing.T) {
 
 func TestDurationApplyInputSourceMethodContextSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:               &DurationFlag{Name: "test"},
+		Flag:               &DurationFlag{Name: "test", AlternateSource: true},
 		FlagName:           "test",
 		MapValue:           30 * time.Second,
 		ContextValueString: (15 * time.Second).String(),
@@ -1949,7 +1949,7 @@ func TestDurationApplyInputSourceMethodEnvVarSet(t *testing.T) {
 
 func TestFloat64ApplyInputSourceMethodSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:     &Float64Flag{Name: "test"},
+		Flag:     &Float64Flag{Name: "test", AlternateSource: true},
 		FlagName: "test",
 		MapValue: 1.3,
 	})
@@ -1958,7 +1958,7 @@ func TestFloat64ApplyInputSourceMethodSet(t *testing.T) {
 
 func TestFloat64ApplyInputSourceMethodContextSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
-		Flag:               &Float64Flag{Name: "test"},
+		Flag:               &Float64Flag{Name: "test", AlternateSource: true},
 		FlagName:           "test",
 		MapValue:           1.3,
 		ContextValueString: fmt.Sprintf("%v", 1.4),

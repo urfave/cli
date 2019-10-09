@@ -4,9 +4,7 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -15,7 +13,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var packages = []string{"cli", "altsrc"}
+const packageName = "github.com/urfave/cli/v2"
 
 func main() {
 	app := cli.NewApp()
@@ -63,63 +61,9 @@ func VetActionFunc(_ *cli.Context) error {
 }
 
 func TestActionFunc(c *cli.Context) error {
-	for _, pkg := range packages {
-		var packageName string
+	coverProfile := fmt.Sprintf("--coverprofile=coverage.txt")
 
-		if pkg == "cli" {
-			packageName = "github.com/urfave/cli/v2"
-		} else {
-			packageName = fmt.Sprintf("github.com/urfave/cli/v2/%s", pkg)
-		}
-
-		coverProfile := fmt.Sprintf("--coverprofile=%s.coverprofile", pkg)
-
-		err := runCmd("go", "test", "-v", coverProfile, packageName)
-		if err != nil {
-			return err
-		}
-	}
-
-	return testCleanup()
-}
-
-func testCleanup() error {
-	var out bytes.Buffer
-
-	for _, pkg := range packages {
-		file, err := os.Open(fmt.Sprintf("%s.coverprofile", pkg))
-		if err != nil {
-			return err
-		}
-
-		b, err := ioutil.ReadAll(file)
-		if err != nil {
-			return err
-		}
-
-		out.Write(b)
-		err = file.Close()
-		if err != nil {
-			return err
-		}
-
-		err = os.Remove(fmt.Sprintf("%s.coverprofile", pkg))
-		if err != nil {
-			return err
-		}
-	}
-
-	outFile, err := os.Create("coverage.txt")
-	if err != nil {
-		return err
-	}
-
-	_, err = out.WriteTo(outFile)
-	if err != nil {
-		return err
-	}
-
-	err = outFile.Close()
+	err := runCmd("go", "test", "-v", coverProfile, packageName)
 	if err != nil {
 		return err
 	}
