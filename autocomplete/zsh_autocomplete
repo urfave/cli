@@ -1,3 +1,5 @@
+#compdef $PROG
+
 _cli_zsh_autocomplete() {
 
   local -a opts
