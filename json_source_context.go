@@ -1,21 +1,25 @@
-package altsrc
+package cli
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/urfave/cli/v2"
 	"io"
 	"io/ioutil"
 	"strings"
 	"time"
 )
 
+type jsonSource struct {
+	file         string
+	deserialized map[string]interface{}
+}
+
 // NewJSONSourceFromFlagFunc returns a func that takes a cli.Context
 // and returns an InputSourceContext suitable for retrieving config
 // variables from a file containing JSON data with the file name defined
 // by the given flag.
-func NewJSONSourceFromFlagFunc(flag string) func(c *cli.Context) (InputSourceContext, error) {
-	return func(context *cli.Context) (InputSourceContext, error) {
+func NewJSONSourceFromFlagFunc(flag string) func(c *Context) (InputSourceContext, error) {
+	return func(context *Context) (InputSourceContext, error) {
 		return NewJSONSourceFromFile(context.String(flag))
 	}
 }
@@ -56,21 +60,16 @@ func (x *jsonSource) Source() string {
 	return x.file
 }
 
-func (x *jsonSource) Int(name string) (int, error) {
+func (x *jsonSource) Bool(name string) (bool, error) {
 	i, err := x.getValue(name)
 	if err != nil {
-		return 0, err
+		return false, err
 	}
-	switch v := i.(type) {
-	default:
-		return 0, fmt.Errorf("unexpected type %T for %q", i, name)
-	case int:
-		return v, nil
-	case float32:
-		return int(v), nil
-	case float64:
-		return int(v), nil
+	v, ok := false, false
+	if v, ok = i.(bool); !ok {
+		return v, fmt.Errorf("unexpected type %T for %q", i, name)
 	}
+	return v, nil
 }
 
 func (x *jsonSource) Duration(name string) (time.Duration, error) {
@@ -95,6 +94,119 @@ func (x *jsonSource) Float64(name string) (float64, error) {
 		return v, fmt.Errorf("unexpected type %T for %q", i, name)
 	}
 	return v, nil
+}
+
+func (x *jsonSource) Float64Slice(name string) ([]float64, error) {
+	i, err := x.getValue(name)
+	if err != nil {
+		return nil, err
+	}
+	switch v := i.(type) {
+	default:
+		return nil, fmt.Errorf("unexpected type %T for %q", i, name)
+	case []float64:
+		return v, nil
+	case []interface{}:
+		c := []float64{}
+		for _, s := range v {
+			if i2, ok := s.(float64); ok {
+				c = append(c, i2)
+			} else {
+				return c, fmt.Errorf("unexpected item type %T in %T for %q", s, c, name)
+			}
+		}
+		return c, nil
+	}
+}
+
+func (x *jsonSource) Generic(name string) (Generic, error) {
+	i, err := x.getValue(name)
+	if err != nil {
+		return nil, err
+	}
+	v, ok := (Generic)(nil), false
+	if v, ok = i.(Generic); !ok {
+		return v, fmt.Errorf("unexpected type %T for %q", i, name)
+	}
+	return v, nil
+}
+func (x *jsonSource) Int(name string) (int, error) {
+	i, err := x.getValue(name)
+	if err != nil {
+		return 0, err
+	}
+	switch v := i.(type) {
+	default:
+		return 0, fmt.Errorf("unexpected type %T for %q", i, name)
+	case int:
+		return v, nil
+	case float32:
+		return int(v), nil
+	case float64:
+		return int(v), nil
+	}
+}
+func (x *jsonSource) IntSlice(name string) ([]int, error) {
+	i, err := x.getValue(name)
+	if err != nil {
+		return nil, err
+	}
+	switch v := i.(type) {
+	default:
+		return nil, fmt.Errorf("unexpected type %T for %q", i, name)
+	case []int:
+		return v, nil
+	case []interface{}:
+		c := []int{}
+		for _, s := range v {
+			if i2, ok := s.(int); ok {
+				c = append(c, i2)
+			} else {
+				return c, fmt.Errorf("unexpected item type %T in %T for %q", s, c, name)
+			}
+		}
+		return c, nil
+	}
+}
+
+func (x *jsonSource) Int64(name string) (int64, error) {
+	i, err := x.getValue(name)
+	if err != nil {
+		return 0, err
+	}
+	switch v := i.(type) {
+	default:
+		return 0, fmt.Errorf("unexpected type %T for %q", i, name)
+	case int64:
+		return v, nil
+	case float32:
+		return int64(v), nil
+	case float64:
+		return int64(v), nil
+	}
+}
+
+func (x *jsonSource) Int64Slice(name string) ([]int64, error) {
+	i, err := x.getValue(name)
+	if err != nil {
+		return nil, err
+	}
+	switch v := i.(type) {
+	default:
+		return nil, fmt.Errorf("unexpected type %T for %q", i, name)
+	case []int64:
+		return v, nil
+	case []interface{}:
+		c := []int64{}
+		for _, s := range v {
+			if i2, ok := s.(int64); ok {
+				c = append(c, i2)
+			} else {
+				return c, fmt.Errorf("unexpected item type %T in %T for %q", s, c, name)
+			}
+		}
+		return c, nil
+	}
 }
 
 func (x *jsonSource) String(name string) (string, error) {
@@ -132,51 +244,38 @@ func (x *jsonSource) StringSlice(name string) ([]string, error) {
 	}
 }
 
-func (x *jsonSource) IntSlice(name string) ([]int, error) {
+func (x *jsonSource) Uint(name string) (uint, error) {
 	i, err := x.getValue(name)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	switch v := i.(type) {
 	default:
-		return nil, fmt.Errorf("unexpected type %T for %q", i, name)
-	case []int:
+		return 0, fmt.Errorf("unexpected type %T for %q", i, name)
+	case uint:
 		return v, nil
-	case []interface{}:
-		c := []int{}
-		for _, s := range v {
-			if i2, ok := s.(int); ok {
-				c = append(c, i2)
-			} else {
-				return c, fmt.Errorf("unexpected item type %T in %T for %q", s, c, name)
-			}
-		}
-		return c, nil
+	case float32:
+		return uint(v), nil
+	case float64:
+		return uint(v), nil
 	}
 }
 
-func (x *jsonSource) Generic(name string) (cli.Generic, error) {
+func (x *jsonSource) Uint64(name string) (uint64, error) {
 	i, err := x.getValue(name)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	v, ok := (cli.Generic)(nil), false
-	if v, ok = i.(cli.Generic); !ok {
-		return v, fmt.Errorf("unexpected type %T for %q", i, name)
+	switch v := i.(type) {
+	default:
+		return 0, fmt.Errorf("unexpected type %T for %q", i, name)
+	case uint64:
+		return v, nil
+	case float32:
+		return uint64(v), nil
+	case float64:
+		return uint64(v), nil
 	}
-	return v, nil
-}
-
-func (x *jsonSource) Bool(name string) (bool, error) {
-	i, err := x.getValue(name)
-	if err != nil {
-		return false, err
-	}
-	v, ok := false, false
-	if v, ok = i.(bool); !ok {
-		return v, fmt.Errorf("unexpected type %T for %q", i, name)
-	}
-	return v, nil
 }
 
 func (x *jsonSource) getValue(key string) (interface{}, error) {
@@ -199,9 +298,4 @@ func jsonGetValue(key string, m map[string]interface{}) (interface{}, error) {
 		}
 	}
 	return ret, nil
-}
-
-type jsonSource struct {
-	file         string
-	deserialized map[string]interface{}
 }

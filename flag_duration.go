@@ -8,17 +8,19 @@ import (
 
 // DurationFlag is a flag with type time.Duration (see https://golang.org/pkg/time/#ParseDuration)
 type DurationFlag struct {
-	Name        string
-	Aliases     []string
-	Usage       string
-	EnvVars     []string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       time.Duration
-	DefaultText string
-	Destination *time.Duration
-	HasBeenSet  bool
+	Name            string
+	Aliases         []string
+	Usage           string
+	EnvVars         []string
+	FilePath        string
+	Required        bool
+	Hidden          bool
+	Value           time.Duration
+	DefaultText     string
+	Destination     *time.Duration
+	HasBeenSet      bool
+	AlternateSource bool
+	set             *flag.FlagSet
 }
 
 // IsSet returns whether or not the flag has been set through env or file
@@ -60,6 +62,10 @@ func (f *DurationFlag) GetValue() string {
 
 // Apply populates the flag given the flag set and environment
 func (f *DurationFlag) Apply(set *flag.FlagSet) error {
+	if f.AlternateSource {
+		f.set = set
+	}
+
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		if val != "" {
 			valDuration, err := time.ParseDuration(val)
@@ -80,6 +86,25 @@ func (f *DurationFlag) Apply(set *flag.FlagSet) error {
 		}
 		set.Duration(name, f.Value, f.Usage)
 	}
+	return nil
+}
+
+// ApplyInputSourceValue applies a Duration value to the flagSet if required
+func (f *DurationFlag) ApplyInputSourceValue(context *Context, isc InputSourceContext) error {
+	if f.set != nil {
+		if !context.IsSet(f.Name) {
+			value, err := isc.Duration(f.Name)
+			if err != nil {
+				return err
+			}
+			if value > 0 {
+				for _, name := range f.Names() {
+					_ = f.set.Set(name, value.String())
+				}
+			}
+		}
+	}
+
 	return nil
 }
 

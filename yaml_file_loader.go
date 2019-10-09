@@ -1,4 +1,4 @@
-package altsrc
+package cli
 
 import (
 	"fmt"
@@ -8,8 +8,6 @@ import (
 	"os"
 	"runtime"
 	"strings"
-
-	"github.com/urfave/cli/v2"
 
 	"gopkg.in/yaml.v2"
 )
@@ -31,8 +29,8 @@ func NewYamlSourceFromFile(file string) (InputSourceContext, error) {
 }
 
 // NewYamlSourceFromFlagFunc creates a new Yaml InputSourceContext from a provided flag name and source context.
-func NewYamlSourceFromFlagFunc(flagFileName string) func(context *cli.Context) (InputSourceContext, error) {
-	return func(context *cli.Context) (InputSourceContext, error) {
+func NewYamlSourceFromFlagFunc(flagFileName string) func(context *Context) (InputSourceContext, error) {
+	return func(context *Context) (InputSourceContext, error) {
 		filePath := context.String(flagFileName)
 		return NewYamlSourceFromFile(filePath)
 	}

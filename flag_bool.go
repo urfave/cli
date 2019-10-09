@@ -8,17 +8,19 @@ import (
 
 // BoolFlag is a flag with type bool
 type BoolFlag struct {
-	Name        string
-	Aliases     []string
-	Usage       string
-	EnvVars     []string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       bool
-	DefaultText string
-	Destination *bool
-	HasBeenSet  bool
+	Name            string
+	Aliases         []string
+	Usage           string
+	EnvVars         []string
+	FilePath        string
+	Required        bool
+	Hidden          bool
+	Value           bool
+	DefaultText     string
+	Destination     *bool
+	HasBeenSet      bool
+	AlternateSource bool
+	set             *flag.FlagSet
 }
 
 // IsSet returns whether or not the flag has been set through env or file
@@ -60,6 +62,10 @@ func (f *BoolFlag) GetValue() string {
 
 // Apply populates the flag given the flag set and environment
 func (f *BoolFlag) Apply(set *flag.FlagSet) error {
+	if f.AlternateSource {
+		f.set = set
+	}
+
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		if val != "" {
 			valBool, err := strconv.ParseBool(val)
@@ -79,6 +85,25 @@ func (f *BoolFlag) Apply(set *flag.FlagSet) error {
 			continue
 		}
 		set.Bool(name, f.Value, f.Usage)
+	}
+
+	return nil
+}
+
+// ApplyInputSourceValue applies a Bool value to the flagSet if required
+func (f *BoolFlag) ApplyInputSourceValue(context *Context, isc InputSourceContext) error {
+	if f.set != nil {
+		if !context.IsSet(f.Name) {
+			value, err := isc.Bool(f.Name)
+			if err != nil {
+				return err
+			}
+			if value {
+				for _, name := range f.Names() {
+					_ = f.set.Set(name, strconv.FormatBool(value))
+				}
+			}
+		}
 	}
 
 	return nil

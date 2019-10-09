@@ -65,16 +65,18 @@ func (f *Float64Slice) Get() interface{} {
 
 // Float64SliceFlag is a flag with type *Float64Slice
 type Float64SliceFlag struct {
-	Name        string
-	Aliases     []string
-	Usage       string
-	EnvVars     []string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       *Float64Slice
-	DefaultText string
-	HasBeenSet  bool
+	Name            string
+	Aliases         []string
+	Usage           string
+	EnvVars         []string
+	FilePath        string
+	Required        bool
+	Hidden          bool
+	Value           *Float64Slice
+	DefaultText     string
+	HasBeenSet      bool
+	AlternateSource bool
+	set             *flag.FlagSet
 }
 
 // IsSet returns whether or not the flag has been set through env or file
@@ -138,6 +140,29 @@ func (f *Float64SliceFlag) Apply(set *flag.FlagSet) error {
 			f.Value = &Float64Slice{}
 		}
 		set.Var(f.Value, name, f.Usage)
+	}
+
+	return nil
+}
+
+// ApplyInputSourceValue applies a Float64Slice value if required
+func (f *Float64SliceFlag) ApplyInputSourceValue(context *Context, isc InputSourceContext) error {
+	if f.set != nil {
+		if !context.IsSet(f.Name) {
+			value, err := isc.Float64Slice(f.Name)
+			if err != nil {
+				return err
+			}
+			if value != nil {
+				var sliceValue = NewFloat64Slice(value...)
+				for _, name := range f.Names() {
+					underlyingFlag := f.set.Lookup(name)
+					if underlyingFlag != nil {
+						underlyingFlag.Value = sliceValue
+					}
+				}
+			}
+		}
 	}
 
 	return nil

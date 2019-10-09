@@ -8,21 +8,23 @@ import (
 
 // Float64Flag is a flag with type float64
 type Float64Flag struct {
-	Name        string
-	Aliases     []string
-	Usage       string
-	EnvVars     []string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       float64
-	DefaultText string
-	Destination *float64
-	HasBeenSet bool
+	Name            string
+	Aliases         []string
+	Usage           string
+	EnvVars         []string
+	FilePath        string
+	Required        bool
+	Hidden          bool
+	Value           float64
+	DefaultText     string
+	Destination     *float64
+	HasBeenSet      bool
+	AlternateSource bool
+	set             *flag.FlagSet
 }
 
 // IsSet returns whether or not the flag has been set through env or file
-func (f *Float64Flag)IsSet() bool {
+func (f *Float64Flag) IsSet() bool {
 	return f.HasBeenSet
 }
 
@@ -60,6 +62,10 @@ func (f *Float64Flag) GetValue() string {
 
 // Apply populates the flag given the flag set and environment
 func (f *Float64Flag) Apply(set *flag.FlagSet) error {
+	if f.AlternateSource {
+		f.set = set
+	}
+
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		if val != "" {
 			valFloat, err := strconv.ParseFloat(val, 10)
@@ -79,6 +85,26 @@ func (f *Float64Flag) Apply(set *flag.FlagSet) error {
 			continue
 		}
 		set.Float64(name, f.Value, f.Usage)
+	}
+
+	return nil
+}
+
+// ApplyInputSourceValue applies a Float64 value to the flagSet if required
+func (f *Float64Flag) ApplyInputSourceValue(context *Context, isc InputSourceContext) error {
+	if f.set != nil {
+		if !context.IsSet(f.Name) {
+			value, err := isc.Float64(f.Name)
+			if err != nil {
+				return err
+			}
+			if value > 0 {
+				floatStr := fmt.Sprintf("%v", f)
+				for _, name := range f.Names() {
+					_ = f.set.Set(name, floatStr)
+				}
+			}
+		}
 	}
 
 	return nil

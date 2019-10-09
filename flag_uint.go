@@ -8,17 +8,19 @@ import (
 
 // UintFlag is a flag with type uint
 type UintFlag struct {
-	Name        string
-	Aliases     []string
-	Usage       string
-	EnvVars     []string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       uint
-	DefaultText string
-	Destination *uint
-	HasBeenSet  bool
+	Name            string
+	Aliases         []string
+	Usage           string
+	EnvVars         []string
+	FilePath        string
+	Required        bool
+	Hidden          bool
+	Value           uint
+	DefaultText     string
+	Destination     *uint
+	HasBeenSet      bool
+	AlternateSource bool
+	set             *flag.FlagSet
 }
 
 // IsSet returns whether or not the flag has been set through env or file
@@ -54,6 +56,10 @@ func (f *UintFlag) GetUsage() string {
 
 // Apply populates the flag given the flag set and environment
 func (f *UintFlag) Apply(set *flag.FlagSet) error {
+	if f.AlternateSource {
+		f.set = set
+	}
+
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		if val != "" {
 			valInt, err := strconv.ParseUint(val, 0, 64)
@@ -72,6 +78,25 @@ func (f *UintFlag) Apply(set *flag.FlagSet) error {
 			continue
 		}
 		set.Uint(name, f.Value, f.Usage)
+	}
+
+	return nil
+}
+
+// ApplyInputSourceValue applies a int value to the flagSet if required
+func (f *UintFlag) ApplyInputSourceValue(context *Context, isc InputSourceContext) error {
+	if f.set != nil {
+		if !context.IsSet(f.Name) {
+			value, err := isc.Uint(f.Name)
+			if err != nil {
+				return err
+			}
+			if value > 0 {
+				for _, name := range f.Names() {
+					_ = f.set.Set(name, strconv.FormatInt(int64(value), 10))
+				}
+			}
+		}
 	}
 
 	return nil

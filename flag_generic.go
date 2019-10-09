@@ -13,17 +13,19 @@ type Generic interface {
 
 // GenericFlag is a flag with type Generic
 type GenericFlag struct {
-	Name        string
-	Aliases     []string
-	Usage       string
-	EnvVars     []string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	TakesFile   bool
-	Value       Generic
-	DefaultText string
-	HasBeenSet  bool
+	Name            string
+	Aliases         []string
+	Usage           string
+	EnvVars         []string
+	FilePath        string
+	Required        bool
+	Hidden          bool
+	TakesFile       bool
+	Value           Generic
+	DefaultText     string
+	HasBeenSet      bool
+	AlternateSource bool
+	set             *flag.FlagSet
 }
 
 // IsSet returns whether or not the flag has been set through env or file
@@ -69,6 +71,10 @@ func (f *GenericFlag) GetValue() string {
 // Apply takes the flagset and calls Set on the generic flag with the value
 // provided by the user for parsing by the flag
 func (f GenericFlag) Apply(set *flag.FlagSet) error {
+	if f.AlternateSource {
+		f.set = set
+	}
+
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		if val != "" {
 			if err := f.Value.Set(val); err != nil {
@@ -81,6 +87,26 @@ func (f GenericFlag) Apply(set *flag.FlagSet) error {
 
 	for _, name := range f.Names() {
 		set.Var(f.Value, name, f.Usage)
+	}
+
+	return nil
+}
+
+
+// ApplyInputSourceValue applies a generic value to the flagSet if required
+func (f *GenericFlag) ApplyInputSourceValue(context *Context, isc InputSourceContext) error {
+	if f.set != nil {
+		if !context.IsSet(f.Name) {
+			value, err := isc.Generic(f.Name)
+			if err != nil {
+				return err
+			}
+			if value != nil {
+				for _, name := range f.Names() {
+					_ = f.set.Set(name, value.String())
+				}
+			}
+		}
 	}
 
 	return nil

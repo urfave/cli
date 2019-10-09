@@ -118,6 +118,61 @@ type DocGenerationFlag interface {
 	GetValue() string
 }
 
+// FlagInputSourceExtension is an extension interface of cli.Flag that
+// allows a value to be set on the existing parsed flags.
+type FlagInputSourceExtension interface {
+	Flag
+
+	// ApplyInputSourceValue applies a value to the flagSet of the cli.Flag if required
+	ApplyInputSourceValue(context *Context, isc InputSourceContext) error
+}
+
+// ApplyInputSourceValues iterates over all provided flags and
+// executes ApplyInputSourceValue on flags implementing the
+// FlagInputSourceExtension interface to initialize these flags
+// to an alternate input source.
+func ApplyInputSourceValues(context *Context, inputSourceContext InputSourceContext, flags []Flag) error {
+	for _, f := range flags {
+		inputSourceExtendedFlag, isType := f.(FlagInputSourceExtension)
+		if isType {
+			err := inputSourceExtendedFlag.ApplyInputSourceValue(context, inputSourceContext)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// InitInputSource is used to to setup an InputSourceContext on a Command Before method. It will create a new
+// input source based on the func provided. If there is no error it will then apply the new input source to any flags
+// that are supported by the input source
+func InitInputSource(flags []Flag, createInputSource func() (InputSourceContext, error)) BeforeFunc {
+	return func(context *Context) error {
+		inputSource, err := createInputSource()
+		if err != nil {
+			return fmt.Errorf("Unable to create input source: inner error: \n'%v'", err.Error())
+		}
+
+		return ApplyInputSourceValues(context, inputSource, flags)
+	}
+}
+
+// InitInputSourceWithContext is used to to setup an InputSourceContext on a Command Before method. It will create a new
+// input source based on the func provided with potentially using existing Context values to initialize itself. If there is
+// no error it will then apply the new input source to any flags that are supported by the input source
+func InitInputSourceWithContext(flags []Flag, createInputSource func(context *Context) (InputSourceContext, error)) BeforeFunc {
+	return func(context *Context) error {
+		inputSource, err := createInputSource(context)
+		if err != nil {
+			return fmt.Errorf("Unable to create input source with context: inner error: \n'%v'", err.Error())
+		}
+
+		return ApplyInputSourceValues(context, inputSource, flags)
+	}
+}
+
 func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {
 	set := flag.NewFlagSet(name, flag.ContinueOnError)
 

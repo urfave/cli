@@ -66,16 +66,18 @@ func (i *Int64Slice) Get() interface{} {
 
 // Int64SliceFlag is a flag with type *Int64Slice
 type Int64SliceFlag struct {
-	Name        string
-	Aliases     []string
-	Usage       string
-	EnvVars     []string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       *Int64Slice
-	DefaultText string
-	HasBeenSet  bool
+	Name            string
+	Aliases         []string
+	Usage           string
+	EnvVars         []string
+	FilePath        string
+	Required        bool
+	Hidden          bool
+	Value           *Int64Slice
+	DefaultText     string
+	HasBeenSet      bool
+	AlternateSource bool
+	set             *flag.FlagSet
 }
 
 // IsSet returns whether or not the flag has been set through env or file
@@ -120,6 +122,10 @@ func (f *Int64SliceFlag) GetValue() string {
 
 // Apply populates the flag given the flag set and environment
 func (f *Int64SliceFlag) Apply(set *flag.FlagSet) error {
+	if f.AlternateSource {
+		f.set = set
+	}
+
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		f.Value = &Int64Slice{}
 
@@ -137,6 +143,29 @@ func (f *Int64SliceFlag) Apply(set *flag.FlagSet) error {
 			f.Value = &Int64Slice{}
 		}
 		set.Var(f.Value, name, f.Usage)
+	}
+
+	return nil
+}
+
+// ApplyInputSourceValue applies a IntSlice value if required
+func (f *Int64SliceFlag) ApplyInputSourceValue(context *Context, isc InputSourceContext) error {
+	if f.set != nil {
+		if !context.IsSet(f.Name) {
+			value, err := isc.Int64Slice(f.Name)
+			if err != nil {
+				return err
+			}
+			if value != nil {
+				var sliceValue = NewInt64Slice(value...)
+				for _, name := range f.Names() {
+					underlyingFlag := f.set.Lookup(name)
+					if underlyingFlag != nil {
+						underlyingFlag.Value = sliceValue
+					}
+				}
+			}
+		}
 	}
 
 	return nil

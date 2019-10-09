@@ -1,20 +1,25 @@
 package cli
 
-import "flag"
+import (
+	"flag"
+	"path/filepath"
+)
 
 type PathFlag struct {
-	Name        string
-	Aliases     []string
-	Usage       string
-	EnvVars     []string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	TakesFile   bool
-	Value       string
-	DefaultText string
-	Destination *string
-	HasBeenSet  bool
+	Name            string
+	Aliases         []string
+	Usage           string
+	EnvVars         []string
+	FilePath        string
+	Required        bool
+	Hidden          bool
+	TakesFile       bool
+	Value           string
+	DefaultText     string
+	Destination     *string
+	HasBeenSet      bool
+	AlternateSource bool
+	set             *flag.FlagSet
 }
 
 // IsSet returns whether or not the flag has been set through env or file
@@ -56,6 +61,10 @@ func (f *PathFlag) GetValue() string {
 
 // Apply populates the flag given the flag set and environment
 func (f *PathFlag) Apply(set *flag.FlagSet) error {
+	if f.AlternateSource {
+		f.set = set
+	}
+
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		f.Value = val
 		f.HasBeenSet = true
@@ -67,6 +76,35 @@ func (f *PathFlag) Apply(set *flag.FlagSet) error {
 			continue
 		}
 		set.String(name, f.Value, f.Usage)
+	}
+
+	return nil
+}
+
+// ApplyInputSourceValue applies a String value to the flagSet if required
+func (f *PathFlag) ApplyInputSourceValue(context *Context, isc InputSourceContext) error {
+	if f.set != nil {
+		if !context.IsSet(f.Name) {
+			value, err := isc.String(f.Name)
+			if err != nil {
+				return err
+			}
+			if value != "" {
+				for _, name := range f.Names() {
+
+					if !filepath.IsAbs(value) && isc.Source() != "" {
+						basePathAbs, err := filepath.Abs(isc.Source())
+						if err != nil {
+							return err
+						}
+
+						value = filepath.Join(filepath.Dir(basePathAbs), value)
+					}
+
+					_ = f.set.Set(name, value)
+				}
+			}
+		}
 	}
 
 	return nil

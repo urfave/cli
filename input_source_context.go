@@ -1,9 +1,6 @@
-package altsrc
+package cli
 
-import (
-	"github.com/urfave/cli/v2"
-	"time"
-)
+import "time"
 
 // InputSourceContext is an interface used to allow
 // other input sources to be implemented as needed.
@@ -13,12 +10,17 @@ import (
 type InputSourceContext interface {
 	Source() string
 
-	Int(name string) (int, error)
+	Bool(name string) (bool, error)
 	Duration(name string) (time.Duration, error)
 	Float64(name string) (float64, error)
+	Float64Slice(name string) ([]float64, error)
+	Generic(name string) (Generic, error)
+	Int(name string) (int, error)
+	IntSlice(name string) ([]int, error)
+	Int64(name string) (int64, error)
+	Int64Slice(name string) ([]int64, error)
 	String(name string) (string, error)
 	StringSlice(name string) ([]string, error)
-	IntSlice(name string) ([]int, error)
-	Generic(name string) (cli.Generic, error)
-	Bool(name string) (bool, error)
+	Uint(name string) (uint, error)
+	Uint64(name string) (uint64, error)
 }

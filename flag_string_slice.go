@@ -60,17 +60,19 @@ func (s *StringSlice) Get() interface{} {
 
 // StringSliceFlag is a flag with type *StringSlice
 type StringSliceFlag struct {
-	Name        string
-	Aliases     []string
-	Usage       string
-	EnvVars     []string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	TakesFile   bool
-	Value       *StringSlice
-	DefaultText string
-	HasBeenSet  bool
+	Name            string
+	Aliases         []string
+	Usage           string
+	EnvVars         []string
+	FilePath        string
+	Required        bool
+	Hidden          bool
+	TakesFile       bool
+	Value           *StringSlice
+	DefaultText     string
+	HasBeenSet      bool
+	AlternateSource bool
+	set             *flag.FlagSet
 }
 
 // IsSet returns whether or not the flag has been set through env or file
@@ -115,6 +117,10 @@ func (f *StringSliceFlag) GetValue() string {
 
 // Apply populates the flag given the flag set and environment
 func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
+	if f.AlternateSource {
+		f.set = set
+	}
+
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		f.Value = &StringSlice{}
 
@@ -134,6 +140,28 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
 		set.Var(f.Value, name, f.Usage)
 	}
 
+	return nil
+}
+
+// ApplyInputSourceValue applies a StringSlice value to the flagSet if required
+func (f *StringSliceFlag) ApplyInputSourceValue(context *Context, isc InputSourceContext) error {
+	if f.set != nil {
+		if !context.IsSet(f.Name) {
+			value, err := isc.StringSlice(f.Name)
+			if err != nil {
+				return err
+			}
+			if value != nil {
+				var sliceValue = NewStringSlice(value...)
+				for _, name := range f.Names() {
+					underlyingFlag := f.set.Lookup(name)
+					if underlyingFlag != nil {
+						underlyingFlag.Value = sliceValue
+					}
+				}
+			}
+		}
+	}
 	return nil
 }
 

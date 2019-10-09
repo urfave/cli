@@ -1,4 +1,4 @@
-package altsrc
+package cli
 
 import (
 	"testing"

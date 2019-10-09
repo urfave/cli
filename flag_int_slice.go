@@ -77,16 +77,18 @@ func (i *IntSlice) Get() interface{} {
 
 // IntSliceFlag is a flag with type *IntSlice
 type IntSliceFlag struct {
-	Name        string
-	Aliases     []string
-	Usage       string
-	EnvVars     []string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       *IntSlice
-	DefaultText string
-	HasBeenSet  bool
+	Name            string
+	Aliases         []string
+	Usage           string
+	EnvVars         []string
+	FilePath        string
+	Required        bool
+	Hidden          bool
+	Value           *IntSlice
+	DefaultText     string
+	HasBeenSet      bool
+	AlternateSource bool
+	set             *flag.FlagSet
 }
 
 // IsSet returns whether or not the flag has been set through env or file
@@ -131,6 +133,10 @@ func (f *IntSliceFlag) GetValue() string {
 
 // Apply populates the flag given the flag set and environment
 func (f *IntSliceFlag) Apply(set *flag.FlagSet) error {
+	if f.AlternateSource {
+		f.set = set
+	}
+
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		f.Value = &IntSlice{}
 
@@ -148,6 +154,29 @@ func (f *IntSliceFlag) Apply(set *flag.FlagSet) error {
 			f.Value = &IntSlice{}
 		}
 		set.Var(f.Value, name, f.Usage)
+	}
+
+	return nil
+}
+
+// ApplyInputSourceValue applies a IntSlice value if required
+func (f *IntSliceFlag) ApplyInputSourceValue(context *Context, isc InputSourceContext) error {
+	if f.set != nil {
+		if !context.IsSet(f.Name) {
+			value, err := isc.IntSlice(f.Name)
+			if err != nil {
+				return err
+			}
+			if value != nil {
+				var sliceValue = NewIntSlice(value...)
+				for _, name := range f.Names() {
+					underlyingFlag := f.set.Lookup(name)
+					if underlyingFlag != nil {
+						underlyingFlag.Value = sliceValue
+					}
+				}
+			}
+		}
 	}
 
 	return nil
