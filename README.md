@@ -691,7 +691,7 @@ The code above will use the "load" string as a flag name to get the file name of
 a yaml file from the cli.Context.  It will then use that file name to initialize
 the yaml input source for any flags that are defined on that command.  As a note
 the "load" flag used would also have to be defined on the command flags in order
-for this code snipped to work.
+for this code snippet to work.
 
 Currently only YAML, JSON, and TOML files are supported but developers can add support
 for other input sources by implementing the altsrc.InputSourceContext for their
