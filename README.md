@@ -13,6 +13,13 @@ cli is a simple, fast, and fun package for building command line apps in Go. The
 goal is to enable developers to write fast and distributable command line
 applications in an expressive way.
 
+## Usage Documentation
+
+Usage documentation exists for each major version
+
+- `v1` - [./docs/v1/manual.md](./docs/v1/manual.md)
+- `v2` - 🚧 documentation for `v2` is WIP 🚧
+
 ## Installation
 
 Make sure you have a working Go environment.  Go version 1.10+ is supported.  [See
