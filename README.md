@@ -51,7 +51,7 @@ import (
 **Warning**: `v2` is in a pre-release state.
 
 ```
-$ go get gopkg.in/urfave/cli.v2
+$ go get github.com/urfave/cli.v2
 ```
 
 ```go
