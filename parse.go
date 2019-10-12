@@ -28,6 +28,7 @@ func parseIter(set *flag.FlagSet, ip iterativeParser, args []string) error {
 		}
 
 		// regenerate the initial args with the split short opts
+		argsWereSplit := false
 		for i, arg := range args {
 			// skip args that are not part of the error message
 			if name := strings.TrimLeft(arg, "-"); name != trimmed {
@@ -42,7 +43,14 @@ func parseIter(set *flag.FlagSet, ip iterativeParser, args []string) error {
 
 			// swap current argument with the split version
 			args = append(args[:i], append(shortOpts, args[i+1:]...)...)
+			argsWereSplit = true
 			break
+		}
+
+		// This should be an impossible to reach code path, but in case the arg
+		// splitting failed to happen, this will prevent infinite loops
+		if !argsWereSplit {
+			return err
 		}
 
 		// Since custom parsing failed, replace the flag set before retrying
