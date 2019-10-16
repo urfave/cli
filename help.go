@@ -47,13 +47,15 @@ type helpPrinter func(w io.Writer, templ string, data interface{})
 // Prints help for the App or Command with custom template function.
 type helpPrinterCustom func(w io.Writer, templ string, data interface{}, customFunc map[string]interface{})
 
-// HelpPrinter is a function that writes the help output. If not set a default
-// is used. The function signature is:
-// func(w io.Writer, templ string, data interface{})
+// HelpPrinter is a function that writes the help output. If not set explicitly,
+// this calls HelpPrinterCustom using only the default template functions.
 var HelpPrinter helpPrinter = printHelp
 
-// HelpPrinterCustom is same as HelpPrinter but
-// takes a custom function for template function map.
+// HelpPrinterCustom is a function that writes the help output. If not set
+// explicitly, a default is used.
+//
+// The customFuncs map will be combined with a default template.FuncMap to
+// allow using arbitrary functions in template rendering.
 var HelpPrinterCustom helpPrinterCustom = printHelpCustom
 
 // VersionPrinter prints the version for the App
@@ -240,11 +242,11 @@ func ShowCommandCompletions(ctx *Context, command string) {
 
 }
 
-func printHelpCustom(out io.Writer, templ string, data interface{}, customFunc map[string]interface{}) {
+func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs map[string]interface{}) {
 	funcMap := template.FuncMap{
 		"join": strings.Join,
 	}
-	for key, value := range customFunc {
+	for key, value := range customFuncs {
 		funcMap[key] = value
 	}
 
