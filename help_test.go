@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"io"
 	"runtime"
 	"strings"
 	"testing"
@@ -207,6 +208,179 @@ func TestShowAppHelp_CommandAliases(t *testing.T) {
 
 	if !strings.Contains(output.String(), "frobbly, fr, frob") {
 		t.Errorf("expected output to include all command aliases; got: %q", output.String())
+	}
+}
+
+func TestShowCommandHelp_HelpPrinter(t *testing.T) {
+	doublecho := func(text string) string {
+		return text + " " + text
+	}
+
+	tests := []struct {
+		name         string
+		template     string
+		printer      helpPrinter
+		command      string
+		wantTemplate string
+		wantOutput   string
+	}{
+		{
+			name:     "no-command",
+			template: "",
+			printer: func(w io.Writer, templ string, data interface{}) {
+				fmt.Fprint(w, "yo")
+			},
+			command:      "",
+			wantTemplate: SubcommandHelpTemplate,
+			wantOutput:   "yo",
+		},
+		{
+			name:     "standard-command",
+			template: "",
+			printer: func(w io.Writer, templ string, data interface{}) {
+				fmt.Fprint(w, "yo")
+			},
+			command:      "my-command",
+			wantTemplate: CommandHelpTemplate,
+			wantOutput:   "yo",
+		},
+		{
+			name:     "custom-template-command",
+			template: "{{doublecho .Name}}",
+			printer: func(w io.Writer, templ string, data interface{}) {
+				// Pass a custom function to ensure it gets used
+				fm := map[string]interface{}{"doublecho": doublecho}
+				HelpPrinterCustom(w, templ, data, fm)
+			},
+			command:      "my-command",
+			wantTemplate: "{{doublecho .Name}}",
+			wantOutput:   "my-command my-command",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func(old helpPrinter) {
+				HelpPrinter = old
+			}(HelpPrinter)
+			HelpPrinter = func(w io.Writer, templ string, data interface{}) {
+				if templ != tt.wantTemplate {
+					t.Errorf("want template:\n%s\ngot template:\n%s", tt.wantTemplate, templ)
+				}
+
+				tt.printer(w, templ, data)
+			}
+
+			var buf bytes.Buffer
+			app := &App{
+				Name:   "my-app",
+				Writer: &buf,
+				Commands: []Command{
+					{
+						Name:               "my-command",
+						CustomHelpTemplate: tt.template,
+					},
+				},
+			}
+
+			err := app.Run([]string{"my-app", "help", tt.command})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			got := buf.String()
+			if got != tt.wantOutput {
+				t.Errorf("want output %q, got %q", tt.wantOutput, got)
+			}
+		})
+	}
+}
+func TestShowCommandHelp_HelpPrinterCustom(t *testing.T) {
+	doublecho := func(text string) string {
+		return text + " " + text
+	}
+
+	tests := []struct {
+		name         string
+		template     string
+		printer      helpPrinterCustom
+		command      string
+		wantTemplate string
+		wantOutput   string
+	}{
+		{
+			name:     "no-command",
+			template: "",
+			printer: func(w io.Writer, templ string, data interface{}, fm map[string]interface{}) {
+				fmt.Fprint(w, "yo")
+			},
+			command:      "",
+			wantTemplate: SubcommandHelpTemplate,
+			wantOutput:   "yo",
+		},
+		{
+			name:     "standard-command",
+			template: "",
+			printer: func(w io.Writer, templ string, data interface{}, fm map[string]interface{}) {
+				fmt.Fprint(w, "yo")
+			},
+			command:      "my-command",
+			wantTemplate: CommandHelpTemplate,
+			wantOutput:   "yo",
+		},
+		{
+			name:     "custom-template-command",
+			template: "{{doublecho .Name}}",
+			printer: func(w io.Writer, templ string, data interface{}, _ map[string]interface{}) {
+				// Pass a custom function to ensure it gets used
+				fm := map[string]interface{}{"doublecho": doublecho}
+				printHelpCustom(w, templ, data, fm)
+			},
+			command:      "my-command",
+			wantTemplate: "{{doublecho .Name}}",
+			wantOutput:   "my-command my-command",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func(old helpPrinterCustom) {
+				HelpPrinterCustom = old
+			}(HelpPrinterCustom)
+			HelpPrinterCustom = func(w io.Writer, templ string, data interface{}, fm map[string]interface{}) {
+				if fm != nil {
+					t.Error("unexpected function map passed")
+				}
+
+				if templ != tt.wantTemplate {
+					t.Errorf("want template:\n%s\ngot template:\n%s", tt.wantTemplate, templ)
+				}
+
+				tt.printer(w, templ, data, fm)
+			}
+
+			var buf bytes.Buffer
+			app := &App{
+				Name:   "my-app",
+				Writer: &buf,
+				Commands: []Command{
+					{
+						Name:               "my-command",
+						CustomHelpTemplate: tt.template,
+					},
+				},
+			}
+
+			err := app.Run([]string{"my-app", "help", tt.command})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			got := buf.String()
+			if got != tt.wantOutput {
+				t.Errorf("want output %q, got %q", tt.wantOutput, got)
+			}
+		})
 	}
 }
 
