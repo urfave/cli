@@ -49,13 +49,16 @@ type helpPrinterCustom func(w io.Writer, templ string, data interface{}, customF
 
 // HelpPrinter is a function that writes the help output. If not set explicitly,
 // this calls HelpPrinterCustom using only the default template functions.
+//
+// If custom logic for printing help is required, this function can be
+// overridden. If the ExtraInfo field is defined on an App, this function
+// should not be modified, as HelpPrinterCustom will be used directly in order
+// to capture the extra information.
 var HelpPrinter helpPrinter = printHelp
 
-// HelpPrinterCustom is a function that writes the help output. If not set
-// explicitly, a default is used.
-//
-// The customFuncs map will be combined with a default template.FuncMap to
-// allow using arbitrary functions in template rendering.
+// HelpPrinterCustom is a function that writes the help output. It is used as
+// the default implementation of HelpPrinter, and may be called directly if
+// the ExtraInfo field is set on an App.
 var HelpPrinterCustom helpPrinterCustom = printHelpCustom
 
 // VersionPrinter prints the version for the App
@@ -68,20 +71,24 @@ func ShowAppHelpAndExit(c *Context, exitCode int) {
 }
 
 // ShowAppHelp is an action that displays the help.
-func ShowAppHelp(c *Context) (err error) {
-	if c.App.CustomAppHelpTemplate == "" {
-		HelpPrinter(c.App.Writer, AppHelpTemplate, c.App)
-		return
+func ShowAppHelp(c *Context) error {
+	template := c.App.CustomAppHelpTemplate
+	if template == "" {
+		template = AppHelpTemplate
 	}
+
+	if c.App.ExtraInfo == nil {
+		HelpPrinter(c.App.Writer, template, c.App)
+		return nil
+	}
+
 	customAppData := func() map[string]interface{} {
-		if c.App.ExtraInfo == nil {
-			return nil
-		}
 		return map[string]interface{}{
 			"ExtraInfo": c.App.ExtraInfo,
 		}
 	}
-	HelpPrinterCustom(c.App.Writer, c.App.CustomAppHelpTemplate, c.App, customAppData())
+	HelpPrinterCustom(c.App.Writer, template, c.App, customAppData())
+
 	return nil
 }
 
@@ -242,6 +249,10 @@ func ShowCommandCompletions(ctx *Context, command string) {
 
 }
 
+// printHelpCustom is the default implementation of HelpPrinterCustom.
+//
+// The customFuncs map will be combined with a default template.FuncMap to
+// allow using arbitrary functions in template rendering.
 func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs map[string]interface{}) {
 	funcMap := template.FuncMap{
 		"join": strings.Join,
