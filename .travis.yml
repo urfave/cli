@@ -12,9 +12,7 @@ os:
   - osx
 
 env:
-  - GO111MODULE=on
-  - GOFLAGS=-mod=readonly
-  - GOPROXY=https://proxy.golang.org
+  GO111MODULE=on GOFLAGS=-mod=readonly GOPROXY=https://proxy.golang.org
 
 cache:
   directories:
