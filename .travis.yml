@@ -23,6 +23,7 @@ before_script:
   - go get golang.org/x/tools/cmd/goimports
   - npm install markdown-toc
   - go mod tidy
+  - go mod vendor
 
 script:
   - go run build.go vet

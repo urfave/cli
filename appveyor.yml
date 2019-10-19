@@ -23,6 +23,7 @@ install:
   - go get github.com/urfave/gfmrun/cmd/gfmrun
   - go get golang.org/x/tools/cmd/goimports
   - go mod tidy
+  - go mod vendor
 
 build_script:
   - go run build.go vet
