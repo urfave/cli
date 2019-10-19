@@ -21,7 +21,7 @@ install:
   - go version
   - go env
   - go get github.com/urfave/gfmrun/cmd/gfmrun
-  - go mod vendor
+  - go get golang.org/x/tools/cmd/goimports
 
 build_script:
   - go run build.go vet
