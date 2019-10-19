@@ -47,8 +47,8 @@ type App struct {
 	HideHelp bool
 	// Boolean to hide built-in version flag and the VERSION section of help
 	HideVersion bool
-	// Categories contains the categorized commands and is populated on app startup
-	Categories CommandCategories
+	// categories contains the categorized commands and is populated on app startup
+	categories CommandCategories
 	// An action to execute when the shell completion flag is set
 	BashComplete BashCompleteFunc
 	// An action to execute before any subcommands are run, but after the context is ready
@@ -182,11 +182,11 @@ func (a *App) Setup() {
 		a.appendFlag(VersionFlag)
 	}
 
-	a.Categories = newCommandCategories()
+	a.categories = newCommandCategories()
 	for _, command := range a.Commands {
-		a.Categories.AddCommand(command.Category, command)
+		a.categories.AddCommand(command.Category, command)
 	}
-	sort.Sort(a.Categories.(*commandCategories))
+	sort.Sort(a.categories.(*commandCategories))
 
 	if a.Metadata == nil {
 		a.Metadata = make(map[string]interface{})
@@ -449,7 +449,7 @@ func (a *App) Command(name string) *Command {
 // Hidden=false
 func (a *App) VisibleCategories() []CommandCategory {
 	ret := []CommandCategory{}
-	for _, category := range a.Categories.Categories() {
+	for _, category := range a.categories.Categories() {
 		if visible := func() CommandCategory {
 			if len(category.VisibleCommands()) > 0 {
 				return category

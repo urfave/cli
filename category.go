@@ -3,7 +3,7 @@ package cli
 type CommandCategories interface {
 	// AddCommand adds a command to a category, creating a new category if necessary.
 	AddCommand(category string, command *Command)
-	// Categories returns a copy of the category slice
+	// categories returns a copy of the category slice
 	Categories() []CommandCategory
 }
 

@@ -245,12 +245,12 @@ func (c *Command) startApp(ctx *Context) error {
 	app.ExitErrHandler = ctx.App.ExitErrHandler
 	app.UseShortOptionHandling = ctx.App.UseShortOptionHandling
 
-	app.Categories = newCommandCategories()
+	app.categories = newCommandCategories()
 	for _, command := range c.Subcommands {
-		app.Categories.AddCommand(command.Category, command)
+		app.categories.AddCommand(command.Category, command)
 	}
 
-	sort.Sort(app.Categories.(*commandCategories))
+	sort.Sort(app.categories.(*commandCategories))
 
 	// bash completion
 	app.EnableBashCompletion = ctx.App.EnableBashCompletion
