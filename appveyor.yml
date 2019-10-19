@@ -14,6 +14,7 @@ environment:
   GOVERSION: 1.11.x
   GO111MODULE: on
   GOPROXY: https://proxy.golang.org
+  GOFLAGS: -mod=readonly
 
 install:
   - set PATH=%GOPATH%\bin;C:\go\bin;%PATH%
