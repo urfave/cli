@@ -18,7 +18,7 @@ func TestCommandFlagParsing(t *testing.T) {
 		UseShortOptionHandling bool
 	}{
 		// Test normal "not ignoring flags" flow
-		{[]string{"test-cmd", "blah", "blah", "-break"}, false, false, errors.New("flag provided but not defined: -break"), false},
+		{[]string{"test-cmd", "blah", "blah", "-break"}, false, false, nil, false},
 
 		// Test no arg reorder
 		{[]string{"test-cmd", "blah", "blah", "-break"}, false, true, nil, false},
@@ -70,8 +70,13 @@ func TestParseAndRunShortOpts(t *testing.T) {
 		{[]string{"foo", "test", "-af"}, nil, []string{}},
 		{[]string{"foo", "test", "-cf"}, nil, []string{}},
 		{[]string{"foo", "test", "-acf"}, nil, []string{}},
+		{[]string{"foo", "test", "--acf"}, errors.New("flag provided but not defined: -acf"), nil},
 		{[]string{"foo", "test", "-invalid"}, errors.New("flag provided but not defined: -invalid"), nil},
+		{[]string{"foo", "test", "-acf", "-invalid"}, errors.New("flag provided but not defined: -invalid"), nil},
+		{[]string{"foo", "test", "--invalid"}, errors.New("flag provided but not defined: -invalid"), nil},
+		{[]string{"foo", "test", "-acf", "--invalid"}, errors.New("flag provided but not defined: -invalid"), nil},
 		{[]string{"foo", "test", "-acf", "arg1", "-invalid"}, nil, []string{"arg1", "-invalid"}},
+		{[]string{"foo", "test", "-acf", "arg1", "--invalid"}, nil, []string{"arg1", "--invalid"}},
 		{[]string{"foo", "test", "-acfi", "not-arg", "arg1", "-invalid"}, nil, []string{"arg1", "-invalid"}},
 		{[]string{"foo", "test", "-i", "ivalue"}, nil, []string{}},
 		{[]string{"foo", "test", "-i", "ivalue", "arg1"}, nil, []string{"arg1"}},
