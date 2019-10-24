@@ -29,6 +29,8 @@ script:
   - go run build.go test
   - go run build.go gfmrun docs/v1/manual.md
   - go run build.go toc docs/v1/manual.md
+  - go run build.go gfmrun docs/v2/manual.md
+  - go run build.go toc docs/v2/manual.md
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
