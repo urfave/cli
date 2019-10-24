@@ -26,4 +26,4 @@ install:
 build_script:
   - go run build.go vet
   - go run build.go test
-  - go run build.go gfmrun
+  - go run build.go gfmrun docs/v1/manual.md

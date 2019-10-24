@@ -18,7 +18,14 @@ func TestCommandFlagParsing(t *testing.T) {
 	}{
 		// Test normal "not ignoring flags" flow
 		{testArgs: []string{"test-cmd", "-break", "blah", "blah"}, skipFlagParsing: false, useShortOptionHandling: false, expectedErr: errors.New("flag provided but not defined: -break")},
-
+		{[]string{"test-cmd", "blah", "blah", "-break"}, false, false, nil, false},
+		// Test no arg reorder
+		{[]string{"test-cmd", "blah", "blah", "-break"}, false, true, nil, false},
+		{[]string{"test-cmd", "blah", "blah", "-break", "ls", "-l"}, false, true, nil, true},
+		{[]string{"test-cmd", "blah", "blah"}, true, false, nil, false},                                                            // Test SkipFlagParsing without any args that look like flags
+		{[]string{"test-cmd", "blah", "-break"}, true, false, nil, false},                                                          // Test SkipFlagParsing with random flag arg
+		{[]string{"test-cmd", "blah", "-help"}, true, false, nil, false},                                                           // Test SkipFlagParsing with "special" help flag arg
+		{[]string{"test-cmd", "blah"}, false, false, nil, true},                                                                    // Test UseShortOptionHandling
 		{testArgs: []string{"test-cmd", "blah", "blah"}, skipFlagParsing: true, useShortOptionHandling: false, expectedErr: nil},   // Test SkipFlagParsing without any args that look like flags
 		{testArgs: []string{"test-cmd", "blah", "-break"}, skipFlagParsing: true, useShortOptionHandling: false, expectedErr: nil}, // Test SkipFlagParsing with random flag arg
 		{testArgs: []string{"test-cmd", "blah", "-help"}, skipFlagParsing: true, useShortOptionHandling: false, expectedErr: nil},  // Test SkipFlagParsing with "special" help flag arg
