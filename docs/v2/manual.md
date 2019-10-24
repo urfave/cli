@@ -28,7 +28,6 @@ cli v2 manual
   * [Version Flag](#version-flag)
     + [Customization](#customization-2)
   * [Full API Example](#full-api-example)
-- [Contribution Guidelines](#contribution-guidelines)
 
 <!-- tocstop -->
 
@@ -1488,7 +1487,3 @@ func wopAction(c *cli.Context) error {
   return nil
 }
 ```
-
-## Contribution Guidelines
-
-See [./CONTRIBUTING.md](./CONTRIBUTING.md)
