@@ -145,8 +145,11 @@
   `cli.Flag`s allowing for the use of custom flags satisfying the `cli.Flag`
   interface to be used.
 
+
 ## [1.19.1] - 2016-11-21
+
 ### Fixed
+
 - Fixes regression introduced in 1.19.0 where using an `ActionFunc` as
   the `Action` for a command would cause it to error rather than calling the
   function. Should not have a affected declarative cases using `func(c
