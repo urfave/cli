@@ -137,7 +137,6 @@ func GfmrunActionFunc(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
 
 	var counter int
 	scanner := bufio.NewScanner(file)
@@ -145,6 +144,11 @@ func GfmrunActionFunc(c *cli.Context) error {
 		if strings.Contains(scanner.Text(), "package main") {
 			counter++
 		}
+	}
+
+	err = file.Close()
+	if err != nil {
+		return err
 	}
 
 	err = scanner.Err()
