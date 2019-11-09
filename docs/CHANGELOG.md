@@ -2,7 +2,34 @@
 
 **ATTN**: This project uses [semantic versioning](http://semver.org/).
 
-## [Unreleased]
+## 2.0.0 - (unreleased 2.x series)
+### Added
+- `NewStringSlice` and `NewIntSlice` for creating their related types
+- `Float64SliceFlag` for unmarshaling a list of floats from the user
+- `Context.Lineage` to get all contexts from current up to global
+- `Context.LocalFlagNames` to get the flag names from *only* the current context
+- `BoolFlag.Value` to handle both default-false and default-true
+
+### Changed
+- `Context.FlagNames` now returns all flags in the context lineage
+- `Context.IsSet` now considers the full context lineage
+- Added `IsSet` method to the `Flag` interface which allows us to detect whether or not a flag has been set
+
+### Removed
+- the ability to specify `&StringSlice{...string}` or `&IntSlice{...int}`.
+- adapter code for deprecated `Action` func signature
+- deprecated `App.Author`, `App.Email`, and `Command.ShortName` fields
+- All `Context.Global*` methods, as the non-global versions now traverse up
+  the context lineage automatically.
+- `Context.Parent` method, as this is now available via `Context.Lineage`
+- `BoolTFlag` and related code, as this is now available via `BoolFlag.Value`
+
+## [Unreleased] - (1.x series)
+### Added
+
+### Changed
+
+### Removed
 
 ## [1.22.1] - 2019-09-11
 

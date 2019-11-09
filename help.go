@@ -10,7 +10,7 @@ import (
 	"unicode/utf8"
 )
 
-var helpCommand = Command{
+var helpCommand = &Command{
 	Name:      "help",
 	Aliases:   []string{"h"},
 	Usage:     "Shows a list of commands or help for one command",
@@ -26,7 +26,7 @@ var helpCommand = Command{
 	},
 }
 
-var helpSubcommand = Command{
+var helpSubcommand = &Command{
 	Name:      "help",
 	Aliases:   []string{"h"},
 	Usage:     "Shows a list of commands or help for one command",
@@ -97,7 +97,7 @@ func DefaultAppComplete(c *Context) {
 	DefaultCompleteWithFlags(nil)(c)
 }
 
-func printCommandSuggestions(commands []Command, writer io.Writer) {
+func printCommandSuggestions(commands []*Command, writer io.Writer) {
 	for _, command := range commands {
 		if command.Hidden {
 			continue
@@ -135,10 +135,10 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 	cur := strings.TrimPrefix(lastArg, "-")
 	cur = strings.TrimPrefix(cur, "-")
 	for _, flag := range flags {
-		if bflag, ok := flag.(BoolFlag); ok && bflag.Hidden {
+		if bflag, ok := flag.(*BoolFlag); ok && bflag.Hidden {
 			continue
 		}
-		for _, name := range strings.Split(flag.GetName(), ",") {
+		for _, name := range flag.Names(){
 			name = strings.TrimSpace(name)
 			// this will get total count utf8 letters in flag name
 			count := utf8.RuneCountInString(name)
@@ -151,7 +151,7 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 				continue
 			}
 			// match if last argument matches this flag and it is not repeated
-			if strings.HasPrefix(name, cur) && cur != name && !cliArgContains(flag.GetName()) {
+			if strings.HasPrefix(name, cur) && cur != name && !cliArgContains(name) {
 				flagCompletion := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
 				_, _ = fmt.Fprintln(writer, flagCompletion)
 			}
@@ -207,7 +207,7 @@ func ShowCommandHelp(ctx *Context, command string) error {
 	}
 
 	if ctx.App.CommandNotFound == nil {
-		return NewExitError(fmt.Sprintf("No help topic for '%v'", command), 3)
+		return Exit(fmt.Sprintf("No help topic for '%v'", command), 3)
 	}
 
 	ctx.App.CommandNotFound(ctx, command)
@@ -216,7 +216,15 @@ func ShowCommandHelp(ctx *Context, command string) error {
 
 // ShowSubcommandHelp prints help for the given subcommand
 func ShowSubcommandHelp(c *Context) error {
-	return ShowCommandHelp(c, c.Command.Name)
+	if c == nil {
+		return nil
+	}
+
+	if c.Command != nil {
+		return ShowCommandHelp(c, c.Command.Name)
+	}
+
+	return ShowCommandHelp(c, "")
 }
 
 // ShowVersion prints the version number of the App
@@ -263,6 +271,7 @@ func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs 
 
 	w := tabwriter.NewWriter(out, 1, 8, 2, ' ', 0)
 	t := template.Must(template.New("help").Funcs(funcMap).Parse(templ))
+
 	err := t.Execute(w, data)
 	if err != nil {
 		// If the writer is closed, t.Execute will fail, and there's nothing
@@ -281,24 +290,20 @@ func printHelp(out io.Writer, templ string, data interface{}) {
 
 func checkVersion(c *Context) bool {
 	found := false
-	if VersionFlag.GetName() != "" {
-		eachName(VersionFlag.GetName(), func(name string) {
-			if c.GlobalBool(name) || c.Bool(name) {
-				found = true
-			}
-		})
+	for _, name := range VersionFlag.Names() {
+		if c.Bool(name) {
+			found = true
+		}
 	}
 	return found
 }
 
 func checkHelp(c *Context) bool {
 	found := false
-	if HelpFlag.GetName() != "" {
-		eachName(HelpFlag.GetName(), func(name string) {
-			if c.GlobalBool(name) || c.Bool(name) {
-				found = true
-			}
-		})
+	for _, name := range HelpFlag.Names() {
+		if c.Bool(name) {
+			found = true
+		}
 	}
 	return found
 }
@@ -329,7 +334,7 @@ func checkShellCompleteFlag(a *App, arguments []string) (bool, []string) {
 	pos := len(arguments) - 1
 	lastArg := arguments[pos]
 
-	if lastArg != "--"+BashCompletionFlag.GetName() {
+	if lastArg != "--generate-bash-completion" {
 		return false, arguments
 	}
 

@@ -3,12 +3,11 @@ package altsrc
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/urfave/cli/v2"
 	"io"
 	"io/ioutil"
 	"strings"
 	"time"
-
-	"github.com/urfave/cli"
 )
 
 // NewJSONSourceFromFlagFunc returns a func that takes a cli.Context
@@ -29,6 +28,7 @@ func NewJSONSourceFromFile(f string) (InputSourceContext, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return NewJSONSource(data)
 }
 
@@ -52,6 +52,10 @@ func NewJSONSource(data []byte) (InputSourceContext, error) {
 	return &jsonSource{deserialized: deserialized}, nil
 }
 
+func (x *jsonSource) Source() string {
+	return x.file
+}
+
 func (x *jsonSource) Int(name string) (int, error) {
 	i, err := x.getValue(name)
 	if err != nil {
@@ -62,10 +66,10 @@ func (x *jsonSource) Int(name string) (int, error) {
 		return 0, fmt.Errorf("unexpected type %T for %q", i, name)
 	case int:
 		return v, nil
-	case float64:
-		return int(float64(v)), nil
 	case float32:
-		return int(float32(v)), nil
+		return int(v), nil
+	case float64:
+		return int(v), nil
 	}
 }
 
@@ -175,12 +179,6 @@ func (x *jsonSource) Bool(name string) (bool, error) {
 	return v, nil
 }
 
-// since this source appears to require all configuration to be specified, the
-// concept of a boolean defaulting to true seems inconsistent with no defaults
-func (x *jsonSource) BoolT(name string) (bool, error) {
-	return false, fmt.Errorf("unsupported type BoolT for JSONSource")
-}
-
 func (x *jsonSource) getValue(key string) (interface{}, error) {
 	return jsonGetValue(key, x.deserialized)
 }
@@ -204,5 +202,6 @@ func jsonGetValue(key string, m map[string]interface{}) (interface{}, error) {
 }
 
 type jsonSource struct {
+	file         string
 	deserialized map[string]interface{}
 }

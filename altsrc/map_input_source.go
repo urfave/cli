@@ -2,16 +2,16 @@ package altsrc
 
 import (
 	"fmt"
+	"github.com/urfave/cli/v2"
 	"reflect"
 	"strings"
 	"time"
-
-	"github.com/urfave/cli"
 )
 
 // MapInputSource implements InputSourceContext to return
 // data from the map that is loaded.
 type MapInputSource struct {
+	file     string
 	valueMap map[interface{}]interface{}
 }
 
@@ -37,6 +37,11 @@ func nestedVal(name string, tree map[interface{}]interface{}) (interface{}, bool
 		}
 	}
 	return nil, false
+}
+
+// Source returns the path of the source file
+func (fsm *MapInputSource) Source() string {
+	return fsm.file
 }
 
 // Int returns an int from the map if it exists otherwise returns 0
@@ -65,22 +70,26 @@ func (fsm *MapInputSource) Int(name string) (int, error) {
 func (fsm *MapInputSource) Duration(name string) (time.Duration, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if exists {
-		otherValue, isType := otherGenericValue.(time.Duration)
-		if !isType {
-			return 0, incorrectTypeForFlagError(name, "duration", otherGenericValue)
-		}
-		return otherValue, nil
+		return castDuration(name, otherGenericValue)
 	}
 	nestedGenericValue, exists := nestedVal(name, fsm.valueMap)
 	if exists {
-		otherValue, isType := nestedGenericValue.(time.Duration)
-		if !isType {
-			return 0, incorrectTypeForFlagError(name, "duration", nestedGenericValue)
-		}
-		return otherValue, nil
+		return castDuration(name, nestedGenericValue)
 	}
 
 	return 0, nil
+}
+
+func castDuration(name string, value interface{}) (time.Duration, error) {
+	if otherValue, isType := value.(time.Duration); isType {
+		return otherValue, nil
+	}
+	otherStringValue, isType := value.(string)
+	parsedValue, err := time.ParseDuration(otherStringValue)
+	if !isType || err != nil {
+		return 0, incorrectTypeForFlagError(name, "duration", value)
+	}
+	return parsedValue, nil
 }
 
 // Float64 returns an float64 from the map if it exists otherwise returns 0
@@ -227,28 +236,6 @@ func (fsm *MapInputSource) Bool(name string) (bool, error) {
 	}
 
 	return false, nil
-}
-
-// BoolT returns an bool from the map otherwise returns true
-func (fsm *MapInputSource) BoolT(name string) (bool, error) {
-	otherGenericValue, exists := fsm.valueMap[name]
-	if exists {
-		otherValue, isType := otherGenericValue.(bool)
-		if !isType {
-			return true, incorrectTypeForFlagError(name, "bool", otherGenericValue)
-		}
-		return otherValue, nil
-	}
-	nestedGenericValue, exists := nestedVal(name, fsm.valueMap)
-	if exists {
-		otherValue, isType := nestedGenericValue.(bool)
-		if !isType {
-			return true, incorrectTypeForFlagError(name, "bool", nestedGenericValue)
-		}
-		return otherValue, nil
-	}
-
-	return true, nil
 }
 
 func incorrectTypeForFlagError(name, expectedTypeName string, value interface{}) error {

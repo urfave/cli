@@ -9,88 +9,87 @@ import (
 // DurationFlag is a flag with type time.Duration (see https://golang.org/pkg/time/#ParseDuration)
 type DurationFlag struct {
 	Name        string
+	Aliases     []string
 	Usage       string
-	EnvVar      string
+	EnvVars     []string
 	FilePath    string
 	Required    bool
 	Hidden      bool
 	Value       time.Duration
+	DefaultText string
 	Destination *time.Duration
+	HasBeenSet  bool
+}
+
+// IsSet returns whether or not the flag has been set through env or file
+func (f *DurationFlag) IsSet() bool {
+	return f.HasBeenSet
 }
 
 // String returns a readable representation of this value
 // (for usage defaults)
-func (f DurationFlag) String() string {
+func (f *DurationFlag) String() string {
 	return FlagStringer(f)
 }
 
-// GetName returns the name of the flag
-func (f DurationFlag) GetName() string {
-	return f.Name
+// Names returns the names of the flag
+func (f *DurationFlag) Names() []string {
+	return flagNames(f)
 }
 
 // IsRequired returns whether or not the flag is required
-func (f DurationFlag) IsRequired() bool {
+func (f *DurationFlag) IsRequired() bool {
 	return f.Required
 }
 
 // TakesValue returns true of the flag takes a value, otherwise false
-func (f DurationFlag) TakesValue() bool {
+func (f *DurationFlag) TakesValue() bool {
 	return true
 }
 
 // GetUsage returns the usage string for the flag
-func (f DurationFlag) GetUsage() string {
+func (f *DurationFlag) GetUsage() string {
 	return f.Usage
 }
 
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
-func (f DurationFlag) GetValue() string {
+func (f *DurationFlag) GetValue() string {
 	return f.Value.String()
+}
+
+// Apply populates the flag given the flag set and environment
+func (f *DurationFlag) Apply(set *flag.FlagSet) error {
+	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
+		if val != "" {
+			valDuration, err := time.ParseDuration(val)
+
+			if err != nil {
+				return fmt.Errorf("could not parse %q as duration value for flag %s: %s", val, f.Name, err)
+			}
+
+			f.Value = valDuration
+			f.HasBeenSet = true
+		}
+	}
+
+	for _, name := range f.Names() {
+		if f.Destination != nil {
+			set.DurationVar(f.Destination, name, f.Value, f.Usage)
+			continue
+		}
+		set.Duration(name, f.Value, f.Usage)
+	}
+	return nil
 }
 
 // Duration looks up the value of a local DurationFlag, returns
 // 0 if not found
 func (c *Context) Duration(name string) time.Duration {
-	return lookupDuration(name, c.flagSet)
-}
-
-// GlobalDuration looks up the value of a global DurationFlag, returns
-// 0 if not found
-func (c *Context) GlobalDuration(name string) time.Duration {
-	if fs := lookupGlobalFlagSet(name, c); fs != nil {
+	if fs := lookupFlagSet(name, c); fs != nil {
 		return lookupDuration(name, fs)
 	}
 	return 0
-}
-
-// Apply populates the flag given the flag set and environment
-// Ignores errors
-func (f DurationFlag) Apply(set *flag.FlagSet) {
-	_ = f.ApplyWithError(set)
-}
-
-// ApplyWithError populates the flag given the flag set and environment
-func (f DurationFlag) ApplyWithError(set *flag.FlagSet) error {
-	if envVal, ok := flagFromFileEnv(f.FilePath, f.EnvVar); ok {
-		envValDuration, err := time.ParseDuration(envVal)
-		if err != nil {
-			return fmt.Errorf("could not parse %s as duration for flag %s: %s", envVal, f.Name, err)
-		}
-
-		f.Value = envValDuration
-	}
-
-	eachName(f.Name, func(name string) {
-		if f.Destination != nil {
-			set.DurationVar(f.Destination, name, f.Value, f.Usage)
-			return
-		}
-		set.Duration(name, f.Value, f.Usage)
-	})
-
-	return nil
 }
 
 func lookupDuration(name string, set *flag.FlagSet) time.Duration {
