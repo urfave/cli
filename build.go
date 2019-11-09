@@ -146,6 +146,11 @@ func GfmrunActionFunc(c *cli.Context) error {
 		}
 	}
 
+	err = file.Close()
+	if err != nil {
+		return err
+	}
+
 	err = scanner.Err()
 	if err != nil {
 		return err
