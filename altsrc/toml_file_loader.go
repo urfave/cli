@@ -1,8 +1,3 @@
-// Disabling building of toml support in cases where golang is 1.0 or 1.1
-// as the encoding library is not implemented or supported.
-
-// +build go1.2
-
 package altsrc
 
 import (
@@ -10,7 +5,7 @@ import (
 	"reflect"
 
 	"github.com/BurntSushi/toml"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 type tomlMap struct {
@@ -28,7 +23,7 @@ func unmarshalMap(i interface{}) (ret map[interface{}]interface{}, err error) {
 		case reflect.String:
 			ret[key] = val.(string)
 		case reflect.Int:
-			ret[key] = int(val.(int))
+			ret[key] = val.(int)
 		case reflect.Int8:
 			ret[key] = int(val.(int8))
 		case reflect.Int16:
@@ -50,7 +45,7 @@ func unmarshalMap(i interface{}) (ret map[interface{}]interface{}, err error) {
 		case reflect.Float32:
 			ret[key] = float64(val.(float32))
 		case reflect.Float64:
-			ret[key] = float64(val.(float64))
+			ret[key] = val.(float64)
 		case reflect.Map:
 			if tmp, err := unmarshalMap(val); err == nil {
 				ret[key] = tmp
@@ -86,7 +81,7 @@ func NewTomlSourceFromFile(file string) (InputSourceContext, error) {
 	if err := readCommandToml(tsc.FilePath, &results); err != nil {
 		return nil, fmt.Errorf("Unable to load TOML file '%s': inner error: \n'%v'", tsc.FilePath, err.Error())
 	}
-	return &MapInputSource{valueMap: results.Map}, nil
+	return &MapInputSource{file: file, valueMap: results.Map}, nil
 }
 
 // NewTomlSourceFromFlagFunc creates a new TOML InputSourceContext from a provided flag name and source context.

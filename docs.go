@@ -53,10 +53,9 @@ func (a *App) writeDocTemplate(w io.Writer) error {
 	})
 }
 
-func prepareCommands(commands []Command, level int) []string {
-	coms := []string{}
-	for i := range commands {
-		command := &commands[i]
+func prepareCommands(commands []*Command, level int) []string {
+	var coms []string
+	for _, command := range commands {
 		if command.Hidden {
 			continue
 		}
@@ -110,7 +109,8 @@ func prepareFlags(
 			continue
 		}
 		modifiedArg := opener
-		for _, s := range strings.Split(flag.GetName(), ",") {
+
+		for _, s := range flag.Names() {
 			trimmed := strings.TrimSpace(s)
 			if len(modifiedArg) > len(opener) {
 				modifiedArg += sep
