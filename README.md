@@ -18,7 +18,7 @@ applications in an expressive way.
 Usage documentation exists for each major version
 
 - `v1` - [./docs/v1/manual.md](./docs/v1/manual.md)
-- `v2` - 🚧 documentation for `v2` is WIP 🚧
+- `v2` - [./docs/v2/manual.md](./docs/v2/manual.md)
 
 ## Installation
 
@@ -55,7 +55,7 @@ import (
 
 ### Using `v2` releases
 
-**Warning**: `v2` is in a pre-release state.
+**Warning**: `v2` is in a beta state.
 
 ```
 $ go get github.com/urfave/cli.v2
