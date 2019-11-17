@@ -2,8 +2,14 @@
 
 **ATTN**: This project uses [semantic versioning](http://semver.org/).
 
-## 2.0.0 - (unreleased 2.x series)
+## Unreleased - 2.X series
+
+View [unreleaseed 2.X] series changes.
+
+## [2.0.0] - 2019-11-17
+
 ### Added
+
 - `NewStringSlice` and `NewIntSlice` for creating their related types
 - `Float64SliceFlag` for unmarshaling a list of floats from the user
 - `Context.Lineage` to get all contexts from current up to global
@@ -11,11 +17,13 @@
 - `BoolFlag.Value` to handle both default-false and default-true
 
 ### Changed
+
 - `Context.FlagNames` now returns all flags in the context lineage
 - `Context.IsSet` now considers the full context lineage
 - Added `IsSet` method to the `Flag` interface which allows us to detect whether or not a flag has been set
 
 ### Removed
+
 - the ability to specify `&StringSlice{...string}` or `&IntSlice{...int}`.
 - adapter code for deprecated `Action` func signature
 - deprecated `App.Author`, `App.Email`, and `Command.ShortName` fields
@@ -24,12 +32,19 @@
 - `Context.Parent` method, as this is now available via `Context.Lineage`
 - `BoolTFlag` and related code, as this is now available via `BoolFlag.Value`
 
-## [Unreleased] - (1.x series)
-### Added
+## Unreleased - 1.22.X series
+
+View [unreleaseed 1.22.X] series changes.
+
+## [1.22.2] - 2019-11-17
+
+### Fixed
+
+- TODO
 
 ### Changed
 
-### Removed
+* TODO
 
 ## [1.22.1] - 2019-09-11
 
@@ -497,7 +512,11 @@ signature of `func(*cli.Context) error`, as defined by `cli.ActionFunc`.
 ### Added
 - Initial implementation.
 
-[Unreleased]: https://github.com/urfave/cli/compare/v1.22.1...HEAD
+[unreleaseed 2.X]: https://github.com/urfave/cli/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/urfave/cli/compare/v1.22.2...v2.0.0
+
+[unreleaseed 1.22.X]: https://github.com/urfave/cli/compare/v1.22.2...v1
+[1.22.2]: https://github.com/urfave/cli/compare/v1.22.1...v1.22.2
 [1.22.1]: https://github.com/urfave/cli/compare/v1.22.0...v1.22.1
 [1.22.0]: https://github.com/urfave/cli/compare/v1.21.0...v1.22.0
 [1.21.0]: https://github.com/urfave/cli/compare/v1.20.0...v1.21.0
