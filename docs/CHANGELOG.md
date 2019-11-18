@@ -40,11 +40,15 @@ View [unreleased 1.22.X] series changes.
 
 ### Fixed
 
-- TODO
+- Fix v1.21.0 pass through regression in [urfave/cli/pull/872](https://github.com/urfave/cli/pull/872) via [@lynncyrin](https://github.com/lynncyrin)
+- Fix infinite loop when parsing invalid flags for apps with short option handling in [urfave/cli/pull/911](https://github.com/urfave/cli/pull/911) via [@rliebz](https://github.com/rliebz)
+- Fix zsh autocomplete in [urfave/cli/pull/906](https://github.com/urfave/cli/pull/906) via [@gnowxilef](https://github.com/gnowxilef)
+- Fix typo in `DocGenerationFlag.TakesValue()` docstring in [urfave/cli/pull/902](https://github.com/urfave/cli/pull/902) via [@benmoose](https://github.com/benmoose)
+- Avoid panic for missing flag value in [urfave/cli/pull/893](https://github.com/urfave/cli/pull/893) via [@rliebz](https://github.com/rliebz)
 
 ### Changed
 
-* TODO
+- Simplify `HelpPrinter` and `CustomHelpPrinter` behaviors in [urfave/cli/pull/912](https://github.com/urfave/cli/pull/912) via [@rliebz](https://github.com/rliebz)
 
 ## [1.22.1] - 2019-09-11
 
