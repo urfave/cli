@@ -15,10 +15,40 @@ applications in an expressive way.
 
 ## Usage Documentation
 
-Usage documentation exists for each major version
+Usage documentation exists for each major version. Don't know what version you're on? You're probably using the version from the `master` branch, which is currently `v2`.
 
-- `v1` - [./docs/v1/manual.md](./docs/v1/manual.md)
 - `v2` - [./docs/v2/manual.md](./docs/v2/manual.md)
+- `v1` - [./docs/v1/manual.md](./docs/v1/manual.md)
+
+### Using `v2` releases
+
+**Warning**: `v2` is in a beta state.
+
+```
+$ go get github.com/urfave/cli.v2
+```
+
+```go
+...
+import (
+  "github.com/urfave/cli/v2" // imports as package "cli"
+)
+...
+```
+
+### Using `v1` releases
+
+```
+$ go get github.com/urfave/cli
+```
+
+```go
+...
+import (
+  "github.com/urfave/cli"
+)
+...
+```
 
 ## Installation
 
@@ -38,33 +68,3 @@ export PATH=$PATH:$GOPATH/bin
 cli is tested against multiple versions of Go on Linux, and against the latest
 released version of Go on OS X and Windows.  For full details, see
 [`./.travis.yml`](./.travis.yml) and [`./appveyor.yml`](./appveyor.yml).
-
-### Using `v1` releases
-
-```
-$ go get github.com/urfave/cli
-```
-
-```go
-...
-import (
-  "github.com/urfave/cli"
-)
-...
-```
-
-### Using `v2` releases
-
-**Warning**: `v2` is in a beta state.
-
-```
-$ go get github.com/urfave/cli.v2
-```
-
-```go
-...
-import (
-  "github.com/urfave/cli.v2" // imports as package "cli"
-)
-...
-```
