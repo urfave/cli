@@ -8,29 +8,48 @@ View [unreleased 2.X] series changes.
 
 ## [2.0.0] - 2019-11-17
 
+The V2 changes were all shipped in [urfave/cli/pull/892](https://github.com/urfave/cli/pull/892), which was created with the effort of over a dozen participants! They are:
+
+- [@asahasrabuddhe](https://github.com/asahasrabuddhe)
+- [@meatballhat](https://github.com/meatballhat)
+- [@jszwedko](https://github.com/jszwedko)
+- [@lynncyrin](https://github.com/lynncyrin)
+- [@AudriusButkevicius](https://github.com/AudriusButkevicius)
+- [@saschagrunert](https://github.com/saschagrunert)
+- [@rliebz](https://github.com/rliebz)
+- [@johnweldon](https://github.com/johnweldon)
+- [@nlewo](https://github.com/nlewo)
+- [@grubernaut](https://github.com/grubernaut)
+- [@OneOfOne](https://github.com/OneOfOne)
+- [@VMitov](https://github.com/VMitov)
+- [@cbranch](https://github.com/cbranch)
+- [@marwan-at-work](https://github.com/marwan-at-work)
+- [@uudashr](https://github.com/uudashr)
+- [@bfreis](https://github.com/bfreis)
+
 ### Added
 
-- `NewStringSlice` and `NewIntSlice` for creating their related types
-- `Float64SliceFlag` for unmarshaling a list of floats from the user
-- `Context.Lineage` to get all contexts from current up to global
-- `Context.LocalFlagNames` to get the flag names from *only* the current context
-- `BoolFlag.Value` to handle both default-false and default-true
+- Added `NewStringSlice` and `NewIntSlice` for creating their related types
+- Added `Float64SliceFlag` for unmarshaling a list of floats from the user
+- Added `Context.Lineage` to get all contexts from current up to global
+- Added `Context.LocalFlagNames` to get the flag names from *only* the current context
+- Added `BoolFlag.Value` to handle both default-false and default-true
+- Added `IsSet` method to the `Flag` interface which allows us to detect whether or not a flag has been set
 
 ### Changed
 
 - `Context.FlagNames` now returns all flags in the context lineage
 - `Context.IsSet` now considers the full context lineage
-- Added `IsSet` method to the `Flag` interface which allows us to detect whether or not a flag has been set
 
 ### Removed
 
-- the ability to specify `&StringSlice{...string}` or `&IntSlice{...int}`.
-- adapter code for deprecated `Action` func signature
-- deprecated `App.Author`, `App.Email`, and `Command.ShortName` fields
-- All `Context.Global*` methods, as the non-global versions now traverse up
+- Removed the ability to specify `&StringSlice{...string}` or `&IntSlice{...int}`.
+- Removed adapter code for deprecated `Action` func signature
+- Deprecated `App.Author`, `App.Email`, and `Command.ShortName` fields
+- Removed all `Context.Global*` methods, as the non-global versions now traverse up
   the context lineage automatically.
-- `Context.Parent` method, as this is now available via `Context.Lineage`
-- `BoolTFlag` and related code, as this is now available via `BoolFlag.Value`
+- Removed `Context.Parent` method, as this is now available via `Context.Lineage`
+- Removed `BoolTFlag` and related code, as this is now available via `BoolFlag.Value`
 
 ## Unreleased - 1.22.X series
 
