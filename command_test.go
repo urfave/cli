@@ -18,7 +18,6 @@ func TestCommandFlagParsing(t *testing.T) {
 	}{
 		// Test normal "not ignoring flags" flow
 		{testArgs: []string{"test-cmd", "-break", "blah", "blah"}, skipFlagParsing: false, useShortOptionHandling: false, expectedErr: errors.New("flag provided but not defined: -break")},
-
 		{testArgs: []string{"test-cmd", "blah", "blah"}, skipFlagParsing: true, useShortOptionHandling: false, expectedErr: nil},   // Test SkipFlagParsing without any args that look like flags
 		{testArgs: []string{"test-cmd", "blah", "-break"}, skipFlagParsing: true, useShortOptionHandling: false, expectedErr: nil}, // Test SkipFlagParsing with random flag arg
 		{testArgs: []string{"test-cmd", "blah", "-help"}, skipFlagParsing: true, useShortOptionHandling: false, expectedErr: nil},  // Test SkipFlagParsing with "special" help flag arg
@@ -61,8 +60,13 @@ func TestParseAndRunShortOpts(t *testing.T) {
 		{testArgs: args{"foo", "test", "-af"}, expectedErr: nil, expectedArgs: &args{}},
 		{testArgs: args{"foo", "test", "-cf"}, expectedErr: nil, expectedArgs: &args{}},
 		{testArgs: args{"foo", "test", "-acf"}, expectedErr: nil, expectedArgs: &args{}},
+		{testArgs: args{"foo", "test", "--acf"}, expectedErr: errors.New("flag provided but not defined: -acf"), expectedArgs: nil},
 		{testArgs: args{"foo", "test", "-invalid"}, expectedErr: errors.New("flag provided but not defined: -invalid"), expectedArgs: nil},
+		{testArgs: args{"foo", "test", "-acf", "-invalid"}, expectedErr: errors.New("flag provided but not defined: -invalid"), expectedArgs: nil},
+		{testArgs: args{"foo", "test", "--invalid"}, expectedErr: errors.New("flag provided but not defined: -invalid"), expectedArgs: nil},
+		{testArgs: args{"foo", "test", "-acf", "--invalid"}, expectedErr: errors.New("flag provided but not defined: -invalid"), expectedArgs: nil},
 		{testArgs: args{"foo", "test", "-acf", "arg1", "-invalid"}, expectedErr: nil, expectedArgs: &args{"arg1", "-invalid"}},
+		{testArgs: args{"foo", "test", "-acf", "arg1", "--invalid"}, expectedErr: nil, expectedArgs: &args{"arg1", "--invalid"}},
 		{testArgs: args{"foo", "test", "-acfi", "not-arg", "arg1", "-invalid"}, expectedErr: nil, expectedArgs: &args{"arg1", "-invalid"}},
 		{testArgs: args{"foo", "test", "-i", "ivalue"}, expectedErr: nil, expectedArgs: &args{}},
 		{testArgs: args{"foo", "test", "-i", "ivalue", "arg1"}, expectedErr: nil, expectedArgs: &args{"arg1"}},
@@ -84,7 +88,7 @@ func TestParseAndRunShortOpts(t *testing.T) {
 				&BoolFlag{Name: "abc", Aliases: []string{"a"}},
 				&BoolFlag{Name: "cde", Aliases: []string{"c"}},
 				&BoolFlag{Name: "fgh", Aliases: []string{"f"}},
-				&StringFlag{Name: "ijk", Aliases:[]string{"i"}},
+				&StringFlag{Name: "ijk", Aliases: []string{"i"}},
 			},
 		}
 

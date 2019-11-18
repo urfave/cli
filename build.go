@@ -71,8 +71,13 @@ func TestActionFunc(c *cli.Context) error {
 	return nil
 }
 
-func GfmrunActionFunc(_ *cli.Context) error {
-	file, err := os.Open("README.md")
+func GfmrunActionFunc(c *cli.Context) error {
+	filename := c.Args().Get(0)
+	if filename == "" {
+		filename = "README.md"
+	}
+
+	file, err := os.Open(filename)
 	if err != nil {
 		return err
 	}
@@ -85,16 +90,26 @@ func GfmrunActionFunc(_ *cli.Context) error {
 		}
 	}
 
+	err = file.Close()
+	if err != nil {
+		return err
+	}
+
 	err = scanner.Err()
 	if err != nil {
 		return err
 	}
 
-	return runCmd("gfmrun", "-c", fmt.Sprint(counter), "-s", "README.md")
+	return runCmd("gfmrun", "-c", fmt.Sprint(counter), "-s", filename)
 }
 
-func TocActionFunc(_ *cli.Context) error {
-	err := runCmd("node_modules/.bin/markdown-toc", "-i", "README.md")
+func TocActionFunc(c *cli.Context) error {
+	filename := c.Args().Get(0)
+	if filename == "" {
+		filename = "README.md"
+	}
+
+	err := runCmd("node_modules/.bin/markdown-toc", "-i", filename)
 	if err != nil {
 		return err
 	}

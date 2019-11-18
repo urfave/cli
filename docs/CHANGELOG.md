@@ -17,15 +17,6 @@
 
 ### Removed
 - the ability to specify `&StringSlice{...string}` or `&IntSlice{...int}`.
-  To migrate to the new API, you may choose to run [the migrator
-  (python) script](./cli-v1-to-v2).
-- The optimistic reordering of arguments and flags introduced by
-  https://github.com/urfave/cli/pull/36. This behavior only worked when
-  all arguments appeared before all flags, but caused [weird issues with boolean
-  flags](https://github.com/urfave/cli/issues/103) and [reordering of the
-  arguments](https://github.com/urfave/cli/issues/355) when the user
-  attempted to mix flags and arguments. Given the trade-offs we removed support
-  for this reordering.
 - adapter code for deprecated `Action` func signature
 - deprecated `App.Author`, `App.Email`, and `Command.ShortName` fields
 - All `Context.Global*` methods, as the non-global versions now traverse up
@@ -145,8 +136,11 @@
   `cli.Flag`s allowing for the use of custom flags satisfying the `cli.Flag`
   interface to be used.
 
+
 ## [1.19.1] - 2016-11-21
+
 ### Fixed
+
 - Fixes regression introduced in 1.19.0 where using an `ActionFunc` as
   the `Action` for a command would cause it to error rather than calling the
   function. Should not have a affected declarative cases using `func(c

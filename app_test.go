@@ -1719,8 +1719,8 @@ func TestApp_Run_Categories(t *testing.T) {
 		},
 	})
 
-	if !reflect.DeepEqual(app.Categories, &expect) {
-		t.Fatalf("expected categories %#v, to equal %#v", app.Categories, &expect)
+	if !reflect.DeepEqual(app.categories, &expect) {
+		t.Fatalf("expected categories %#v, to equal %#v", app.categories, &expect)
 	}
 
 	output := buf.String()
