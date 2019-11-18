@@ -4,7 +4,7 @@
 
 ## Unreleased - 2.X series
 
-View [unreleaseed 2.X] series changes.
+View [unreleased 2.X] series changes.
 
 ## [2.0.0] - 2019-11-17
 
@@ -34,7 +34,7 @@ View [unreleaseed 2.X] series changes.
 
 ## Unreleased - 1.22.X series
 
-View [unreleaseed 1.22.X] series changes.
+View [unreleased 1.22.X] series changes.
 
 ## [1.22.2] - 2019-11-17
 
@@ -512,10 +512,10 @@ signature of `func(*cli.Context) error`, as defined by `cli.ActionFunc`.
 ### Added
 - Initial implementation.
 
-[unreleaseed 2.X]: https://github.com/urfave/cli/compare/v2.0.0...HEAD
+[unreleased 2.X]: https://github.com/urfave/cli/compare/v2.0.0...HEAD
 [2.0.0]: https://github.com/urfave/cli/compare/v1.22.2...v2.0.0
 
-[unreleaseed 1.22.X]: https://github.com/urfave/cli/compare/v1.22.2...v1
+[unreleased 1.22.X]: https://github.com/urfave/cli/compare/v1.22.2...v1
 [1.22.2]: https://github.com/urfave/cli/compare/v1.22.1...v1.22.2
 [1.22.1]: https://github.com/urfave/cli/compare/v1.22.0...v1.22.1
 [1.22.0]: https://github.com/urfave/cli/compare/v1.21.0...v1.22.0
