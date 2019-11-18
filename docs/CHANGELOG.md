@@ -10,22 +10,7 @@ View [unreleased 2.X] series changes.
 
 The V2 changes were all shipped in [urfave/cli/pull/892](https://github.com/urfave/cli/pull/892), which was created with the effort of over a dozen participants! They are:
 
-- [@asahasrabuddhe](https://github.com/asahasrabuddhe)
-- [@meatballhat](https://github.com/meatballhat)
-- [@jszwedko](https://github.com/jszwedko)
-- [@lynncyrin](https://github.com/lynncyrin)
-- [@AudriusButkevicius](https://github.com/AudriusButkevicius)
-- [@saschagrunert](https://github.com/saschagrunert)
-- [@rliebz](https://github.com/rliebz)
-- [@johnweldon](https://github.com/johnweldon)
-- [@nlewo](https://github.com/nlewo)
-- [@grubernaut](https://github.com/grubernaut)
-- [@OneOfOne](https://github.com/OneOfOne)
-- [@VMitov](https://github.com/VMitov)
-- [@cbranch](https://github.com/cbranch)
-- [@marwan-at-work](https://github.com/marwan-at-work)
-- [@uudashr](https://github.com/uudashr)
-- [@bfreis](https://github.com/bfreis)
+[@asahasrabuddhe](https://github.com/asahasrabuddhe), [@meatballhat](https://github.com/meatballhat), [@jszwedko](https://github.com/jszwedko), [@lynncyrin](https://github.com/lynncyrin), [@AudriusButkevicius](https://github.com/AudriusButkevicius), [@saschagrunert](https://github.com/saschagrunert), [@rliebz](https://github.com/rliebz), [@johnweldon](https://github.com/johnweldon), [@nlewo](https://github.com/nlewo), [@grubernaut](https://github.com/grubernaut), [@OneOfOne](https://github.com/OneOfOne), [@VMitov](https://github.com/VMitov), [@cbranch](https://github.com/cbranch), [@marwan-at-work](https://github.com/marwan-at-work), [@uudashr](https://github.com/uudashr), [@bfreis](https://github.com/bfreis)
 
 ### Added
 
