@@ -22,7 +22,7 @@ Usage documentation exists for each major version. Don't know what version you'r
 
 ### Using `v2` releases
 
-**Warning**: `v2` is in a beta state.
+**Note**: `v2` is in an early post-ship state may need bug fixing! Report any issues you find with v2 [here](https://github.com/urfave/cli/issues/new/choose).
 
 ```
 $ go get github.com/urfave/cli/v2
