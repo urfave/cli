@@ -64,7 +64,10 @@ func testApp() *App {
 	}}
 	app.UsageText = "app [first_arg] [second_arg]"
 	app.Usage = "Some app"
-	app.Authors = []*Author{{Name: "Harrison", Email: "harrison@lolwut.com"}}
+	app.Authors = []*Author{
+		{Name: "Harrison", Email: "harrison@lolwut.com"},
+		{Name: "Oliver Allen", Email: "oliver@toyshop.com"},
+	}
 	return app
 }
 
@@ -110,6 +113,19 @@ func TestToMarkdownNoCommands(t *testing.T) {
 	// Then
 	expect(t, err, nil)
 	expectFileContent(t, "testdata/expected-doc-no-commands.md", res)
+}
+
+func TestToMarkdownNoAuthors(t *testing.T) {
+	// Given
+	app := testApp()
+	app.Authors = []*Author{}
+
+	// When
+	res, err := app.ToMarkdown()
+
+	// Then
+	expect(t, err, nil)
+	expectFileContent(t, "testdata/expected-doc-no-authors.md", res)
 }
 
 func TestToMan(t *testing.T) {
