@@ -2,34 +2,57 @@
 
 **ATTN**: This project uses [semantic versioning](http://semver.org/).
 
-## 2.0.0 - (unreleased 2.x series)
-### Added
-- `NewStringSlice` and `NewIntSlice` for creating their related types
-- `Float64SliceFlag` for unmarshaling a list of floats from the user
-- `Context.Lineage` to get all contexts from current up to global
-- `Context.LocalFlagNames` to get the flag names from *only* the current context
-- `BoolFlag.Value` to handle both default-false and default-true
+## Unreleased - 2.X series
 
-### Changed
-- `Context.FlagNames` now returns all flags in the context lineage
-- `Context.IsSet` now considers the full context lineage
+View [unreleased 2.X] series changes.
+
+## [2.0.0] - 2019-11-17
+
+The V2 changes were all shipped in [urfave/cli/pull/892](https://github.com/urfave/cli/pull/892), which was created with the effort of over a dozen participants! They are:
+
+[@asahasrabuddhe](https://github.com/asahasrabuddhe), [@meatballhat](https://github.com/meatballhat), [@jszwedko](https://github.com/jszwedko), [@lynncyrin](https://github.com/lynncyrin), [@AudriusButkevicius](https://github.com/AudriusButkevicius), [@saschagrunert](https://github.com/saschagrunert), [@rliebz](https://github.com/rliebz), [@johnweldon](https://github.com/johnweldon), [@nlewo](https://github.com/nlewo), [@grubernaut](https://github.com/grubernaut), [@OneOfOne](https://github.com/OneOfOne), [@VMitov](https://github.com/VMitov), [@cbranch](https://github.com/cbranch), [@marwan-at-work](https://github.com/marwan-at-work), [@uudashr](https://github.com/uudashr), [@bfreis](https://github.com/bfreis)
+
+### Added
+
+- Added `NewStringSlice` and `NewIntSlice` for creating their related types
+- Added `Float64SliceFlag` for unmarshaling a list of floats from the user
+- Added `Context.Lineage` to get all contexts from current up to global
+- Added `Context.LocalFlagNames` to get the flag names from *only* the current context
+- Added `BoolFlag.Value` to handle both default-false and default-true
 - Added `IsSet` method to the `Flag` interface which allows us to detect whether or not a flag has been set
 
-### Removed
-- the ability to specify `&StringSlice{...string}` or `&IntSlice{...int}`.
-- adapter code for deprecated `Action` func signature
-- deprecated `App.Author`, `App.Email`, and `Command.ShortName` fields
-- All `Context.Global*` methods, as the non-global versions now traverse up
-  the context lineage automatically.
-- `Context.Parent` method, as this is now available via `Context.Lineage`
-- `BoolTFlag` and related code, as this is now available via `BoolFlag.Value`
+### Changed
 
-## [Unreleased] - (1.x series)
-### Added
+- `Context.FlagNames` now returns all flags in the context lineage
+- `Context.IsSet` now considers the full context lineage
+
+### Removed
+
+- Removed the ability to specify `&StringSlice{...string}` or `&IntSlice{...int}`.
+- Removed adapter code for deprecated `Action` func signature
+- Deprecated `App.Author`, `App.Email`, and `Command.ShortName` fields
+- Removed all `Context.Global*` methods, as the non-global versions now traverse up
+  the context lineage automatically.
+- Removed `Context.Parent` method, as this is now available via `Context.Lineage`
+- Removed `BoolTFlag` and related code, as this is now available via `BoolFlag.Value`
+
+## Unreleased - 1.22.X series
+
+View [unreleased 1.22.X] series changes.
+
+## [1.22.2] - 2019-11-17
+
+### Fixed
+
+- Fix v1.21.0 pass through regression in [urfave/cli/pull/872](https://github.com/urfave/cli/pull/872) via [@lynncyrin](https://github.com/lynncyrin)
+- Fix infinite loop when parsing invalid flags for apps with short option handling in [urfave/cli/pull/911](https://github.com/urfave/cli/pull/911) via [@rliebz](https://github.com/rliebz)
+- Fix zsh autocomplete in [urfave/cli/pull/906](https://github.com/urfave/cli/pull/906) via [@gnowxilef](https://github.com/gnowxilef)
+- Fix typo in `DocGenerationFlag.TakesValue()` docstring in [urfave/cli/pull/902](https://github.com/urfave/cli/pull/902) via [@benmoose](https://github.com/benmoose)
+- Avoid panic for missing flag value in [urfave/cli/pull/893](https://github.com/urfave/cli/pull/893) via [@rliebz](https://github.com/rliebz)
 
 ### Changed
 
-### Removed
+- Simplify `HelpPrinter` and `CustomHelpPrinter` behaviors in [urfave/cli/pull/912](https://github.com/urfave/cli/pull/912) via [@rliebz](https://github.com/rliebz)
 
 ## [1.22.1] - 2019-09-11
 
@@ -497,7 +520,11 @@ signature of `func(*cli.Context) error`, as defined by `cli.ActionFunc`.
 ### Added
 - Initial implementation.
 
-[Unreleased]: https://github.com/urfave/cli/compare/v1.22.1...HEAD
+[unreleased 2.X]: https://github.com/urfave/cli/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/urfave/cli/compare/v1.22.2...v2.0.0
+
+[unreleased 1.22.X]: https://github.com/urfave/cli/compare/v1.22.2...v1
+[1.22.2]: https://github.com/urfave/cli/compare/v1.22.1...v1.22.2
 [1.22.1]: https://github.com/urfave/cli/compare/v1.22.0...v1.22.1
 [1.22.0]: https://github.com/urfave/cli/compare/v1.21.0...v1.22.0
 [1.21.0]: https://github.com/urfave/cli/compare/v1.20.0...v1.21.0
