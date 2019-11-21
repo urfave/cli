@@ -121,8 +121,8 @@ func TestFlagsFromEnv(t *testing.T) {
 		a := App{
 			Flags: []Flag{test.flag},
 			Action: func(ctx *Context) error {
-				if !reflect.DeepEqual(ctx.value(test.flag.Names()[0]), test.output) {
-					t.Errorf("ex:%01d expected %q to be parsed as %#v, instead was %#v", i, test.input, test.output, ctx.value(test.flag.Names()[0]))
+				if !reflect.DeepEqual(ctx.Value(test.flag.Names()[0]), test.output) {
+					t.Errorf("ex:%01d expected %q to be parsed as %#v, instead was %#v", i, test.input, test.output, ctx.Value(test.flag.Names()[0]))
 				}
 				return nil
 			},
