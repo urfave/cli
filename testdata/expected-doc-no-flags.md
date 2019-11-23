@@ -1,6 +1,7 @@
-% greet(8) 
+% greet(8)
 
-% Harrison
+% Harrison <harrison@lolwut.com>
+% Oliver Allen <oliver@toyshop.com>
 
 # NAME
 
