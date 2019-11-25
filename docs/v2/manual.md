@@ -1404,17 +1404,6 @@ func main() {
       cli.ShowSubcommandHelp(c)
       cli.ShowVersion(c)
 
-      categories := c.App.Categories
-      categories.AddCommand("sounds", &cli.Command{
-        Name: "bloop",
-      })
-
-      for _, category := range c.App.Categories.Categories() {
-        fmt.Fprintf(c.App.Writer, "%s\n", category.Name)
-        fmt.Fprintf(c.App.Writer, "%#v\n", category.VisibleCommands())
-        fmt.Fprintf(c.App.Writer, "%#v\n", category.VisibleCommands())
-      }
-
       fmt.Printf("%#v\n", c.App.Command("doo"))
       if c.Bool("infinite") {
         c.App.Run([]string{"app", "doo", "wop"})
