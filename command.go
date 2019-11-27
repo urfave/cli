@@ -184,9 +184,8 @@ func (c *Command) parseFlags(args Args, shellComplete bool) (*flag.FlagSet, erro
 		return set, set.Parse(append([]string{"--"}, args.Tail()...))
 	}
 
-	err = parseIter(set, c, args.Tail())
-	// Continue parsing flags on failure during shell completion
-	if err != nil && !shellComplete {
+	err = parseIter(set, c, args.Tail(), shellComplete)
+	if err != nil {
 		return nil, err
 	}
 

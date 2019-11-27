@@ -11,19 +11,24 @@ type iterativeParser interface {
 }
 
 // To enable short-option handling (e.g., "-it" vs "-i -t") we have to
-// iteratively catch parsing errors.  This way we achieve LR parsing without
+// iteratively catch parsing errors. This way we achieve LR parsing without
 // transforming any arguments. Otherwise, there is no way we can discriminate
 // combined short options from common arguments that should be left untouched.
-func parseIter(set *flag.FlagSet, ip iterativeParser, args []string) error {
+// Pass `ignoreErrors` to continue parsing options on failure, for example
+// during shell completion when the user-supplied options may be incomplete.
+func parseIter(set *flag.FlagSet, ip iterativeParser, args []string, ignoreErrors bool) error {
 	for {
 		err := set.Parse(args)
 		if !ip.useShortOptionHandling() || err == nil {
+			if ignoreErrors {
+				return nil
+			}
 			return err
 		}
 
 		errStr := err.Error()
 		trimmed := strings.TrimPrefix(errStr, "flag provided but not defined: -")
-		if errStr == trimmed {
+		if !ignoreErrors && errStr == trimmed {
 			return err
 		}
 
