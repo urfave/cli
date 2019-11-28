@@ -81,6 +81,7 @@ func GfmrunActionFunc(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
 	var counter int
 	scanner := bufio.NewScanner(file)

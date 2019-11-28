@@ -25,7 +25,7 @@ Usage documentation exists for each major version. Don't know what version you'r
 **Warning**: `v2` is in a beta state.
 
 ```
-$ go get github.com/urfave/cli.v2
+$ go get github.com/urfave/cli/v2
 ```
 
 ```go
