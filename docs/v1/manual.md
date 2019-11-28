@@ -150,19 +150,16 @@ cli also generates neat help text:
 ```
 $ greet help
 NAME:
-    greet - fight the loneliness!
+   greet - fight the loneliness!
 
 USAGE:
-    greet [global options] command [command options] [arguments...]
-
-VERSION:
-    0.0.0
+   main [global options] command [command options] [arguments...]
 
 COMMANDS:
-    help, h  Shows a list of commands or help for one command
+   help, h  Shows a list of commands or help for one command
 
-GLOBAL OPTIONS
-    --version Shows version information
+GLOBAL OPTIONS:
+   --help, -h  show help
 ```
 
 ### Arguments
