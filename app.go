@@ -121,7 +121,6 @@ func NewApp() *App {
 		HelpName:     filepath.Base(os.Args[0]),
 		Usage:        "A new cli application",
 		UsageText:    "",
-		Version:      "0.0.0",
 		BashComplete: DefaultAppComplete,
 		Action:       helpCommand.Action,
 		Compiled:     compileTime(),
@@ -157,6 +156,10 @@ func (a *App) Setup() {
 		if (HelpFlag != BoolFlag{}) {
 			a.appendFlag(HelpFlag)
 		}
+	}
+
+	if a.Version == "" {
+		a.HideVersion = true
 	}
 
 	if !a.HideVersion {
