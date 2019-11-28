@@ -119,6 +119,7 @@ func NewApp() *App {
 		Action:       helpCommand.Action,
 		Compiled:     compileTime(),
 		Writer:       os.Stdout,
+		InterruptHandlerFunc: func(c *Context) {},
 	}
 }
 
@@ -154,6 +155,10 @@ func (a *App) Setup() {
 
 	if a.Action == nil {
 		a.Action = helpCommand.Action
+	}
+
+	if a.InterruptHandlerFunc == nil {
+		a.InterruptHandlerFunc = func(context *Context) {}
 	}
 
 	if a.Compiled == (time.Time{}) {
