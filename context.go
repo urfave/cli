@@ -38,10 +38,15 @@ func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
 	if c.Context == nil {
 		ctx, cancel := context.WithCancel(context.Background())
 		go func() {
+			// wait for context cancellation
+			<-ctx.Done()
+			os.Exit(1)
+		}()
+		go func() {
 			defer cancel()
-			sigs := make(chan os.Signal, 1)
-			signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-			<-sigs
+			signals := make(chan os.Signal, 1)
+			signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+			<-signals
 		}()
 		c.Context = ctx
 	}
