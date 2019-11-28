@@ -155,14 +155,11 @@ NAME:
 USAGE:
     greet [global options] command [command options] [arguments...]
 
-VERSION:
-    0.0.0
-
 COMMANDS:
     help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS
-    --version Shows version information
+    --help, -h  show help (default: false)
 ```
 
 ### Arguments
