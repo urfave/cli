@@ -18,6 +18,7 @@ cli v2 manual
   * [Subcommands](#subcommands)
   * [Subcommands categories](#subcommands-categories)
   * [Exit code](#exit-code)
+  * [Handling Interrupts](handling-interrupts)
   * [Combining short options](#combining-short-options)
   * [Bash Completion](#bash-completion)
     + [Enabling](#enabling)
@@ -865,6 +866,46 @@ func main() {
   }
 }
 ```
+
+### Handling Interrupts
+
+This library supports customized handling of application behaviour when an interrupt signal (ctrl+c) is received. To control this behaviour, you can define the application's `InterruptHandler` function as shown below:
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+	"time"
+
+	"github.com/urfave/cli/v2"
+)
+
+func main() {
+	app := &cli.App{
+		Name:  "long",
+		Usage: "this takes a lot of time!",
+		Action: func(c *cli.Context) error {
+			fmt.Println("working...")
+			time.Sleep(10 * time.Second)
+			return nil
+		},
+	}
+
+	app.InterruptHandlerFunc = func(c *cli.Context) {
+		fmt.Println("received interrupt")
+	}
+
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
+By default, this function does not do anything. It is the user's responsiblity to implement this function to define appropriate behaviour for their application.
 
 ### Combining short options
 

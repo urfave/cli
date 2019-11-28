@@ -40,7 +40,7 @@ func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
 		go func() {
 			// wait for context cancellation
 			<-ctx.Done()
-			os.Exit(1)
+			app.InterruptHandlerFunc(c)
 		}()
 		go func() {
 			defer cancel()

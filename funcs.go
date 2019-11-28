@@ -42,3 +42,7 @@ type FlagEnvHintFunc func(envVars []string, str string) string
 // FlagFileHintFunc is used by the default FlagStringFunc to annotate flag help
 // with the file path details.
 type FlagFileHintFunc func(filePath, str string) string
+
+// InterruptHandlerFunc is used to define the behaviour when a program is interrupted
+// using Control+C
+type InterruptHandlerFunc func(*Context)

@@ -88,6 +88,10 @@ type App struct {
 	// single-character bool arguments into one
 	// i.e. foobar -o -v -> foobar -ov
 	UseShortOptionHandling bool
+	// This function is automatically executed when the context is cancelled due to the program
+	// receiving an interrupt signal (Control+C). This function can be overridden to implement
+	// desired behaviour in such a scenario
+	InterruptHandlerFunc InterruptHandlerFunc
 
 	didSetup bool
 }
