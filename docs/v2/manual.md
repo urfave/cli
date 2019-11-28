@@ -18,7 +18,7 @@ cli v2 manual
   * [Subcommands](#subcommands)
   * [Subcommands categories](#subcommands-categories)
   * [Exit code](#exit-code)
-  * [Handling Interrupts](handling-interrupts)
+  * [Handling Interrupts](#handling-interrupts)
   * [Combining short options](#combining-short-options)
   * [Bash Completion](#bash-completion)
     + [Enabling](#enabling)
