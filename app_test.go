@@ -193,8 +193,7 @@ func ExampleApp_Run_noAction() {
 	//    help, h  Shows a list of commands or help for one command
 	//
 	// GLOBAL OPTIONS:
-	//    --help, -h     show help
-	//    --version, -v  print the version
+	//    --help, -h  show help
 }
 
 func ExampleApp_Run_subcommandNoAction() {
@@ -244,8 +243,6 @@ func ExampleApp_Run_bashComplete_withShortFlag() {
 	// -x
 	// --help
 	// -h
-	// --version
-	// -v
 }
 
 func ExampleApp_Run_bashComplete_withLongFlag() {
