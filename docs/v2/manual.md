@@ -872,6 +872,7 @@ This library supports customized handling of application behaviour when an inter
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -883,7 +884,7 @@ import (
 func main() {
 	app := &cli.App{
 		Name:  "long",
-		Usage: "this takes a lot of time!",
+		Usage: "this takes a long time to finish",
 		Action: func(c *cli.Context) error {
 			fmt.Println("working...")
 			time.Sleep(10 * time.Second)
@@ -891,8 +892,28 @@ func main() {
 		},
 	}
 
-	app.InterruptHandlerFunc = func(c *cli.Context) {
-		fmt.Println("received interrupt")
+	app.Flags = []cli.Flag{
+		&cli.IntFlag{
+			Name: "count",
+		},
+	}
+
+	signalCount := 1
+	app.InterruptHandler = func(c *cli.Context, cancelFunc context.CancelFunc) {
+		go func() {
+			<-c.Done()
+			os.Exit(1)
+		}()
+
+		count := c.Int("count")
+		if signalCount < count {
+			fmt.Println("received interrupt")
+		} else {
+			fmt.Println("signal count exceeded, quitting")
+			cancelFunc()
+		}
+
+		signalCount++
 	}
 
 	err := app.Run(os.Args)
@@ -900,6 +921,7 @@ func main() {
 		log.Fatal(err)
 	}
 }
+
 ```
 
 By default, this function does not do anything. It is the user's responsiblity to implement this function to define appropriate behaviour for their application.
