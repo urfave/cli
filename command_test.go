@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bytes"
 	"errors"
 	"flag"
 	"fmt"
@@ -328,4 +329,50 @@ func TestCommandSkipFlagParsing(t *testing.T) {
 		expect(t, err, c.expectedErr)
 		expect(t, args, c.expectedArgs)
 	}
+}
+
+func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
+	cases := []struct {
+		testArgs    args
+		expectedOut string
+	}{
+		{testArgs: args{"--undefined"}, expectedOut: "found 0 args"},
+		{testArgs: args{"--number"}, expectedOut: "found 0 args"},
+		{testArgs: args{"--number", "fourty-two"}, expectedOut: "found 0 args"},
+		{testArgs: args{"--number", "42"}, expectedOut: "found 0 args"},
+		{testArgs: args{"--number", "42", "newArg"}, expectedOut: "found 1 args"},
+	}
+
+	for _, c := range cases {
+		var outputBuffer bytes.Buffer
+		app := &App{
+			Writer:               &outputBuffer,
+			EnableBashCompletion: true,
+			Commands: []*Command{
+				{
+					Name:  "bar",
+					Usage: "this is for testing",
+					Flags: []Flag{
+						&IntFlag{
+							Name:  "number",
+							Usage: "A number to parse",
+						},
+					},
+					BashComplete: func(c *Context) {
+						fmt.Fprintf(c.App.Writer, "found %d args", c.NArg())
+					},
+				},
+			},
+		}
+
+		osArgs := args{"foo", "bar"}
+		osArgs = append(osArgs, c.testArgs...)
+		osArgs = append(osArgs, "--generate-bash-completion")
+
+		err := app.Run(osArgs)
+		stdout := outputBuffer.String()
+		expect(t, err, nil)
+		expect(t, stdout, c.expectedOut)
+	}
+
 }
