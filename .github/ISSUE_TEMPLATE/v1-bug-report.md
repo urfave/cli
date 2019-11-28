@@ -13,6 +13,13 @@ assignees: lynncyrin
 * [ ] Did you check the manual for your release? The v1 manual is [here](https://github.com/urfave/cli/blob/master/docs/v1/manual.md)
 * [ ] Did you perform a search about this problem? Here's the [Github guide](https://help.github.com/en/github/managing-your-work-on-github/using-search-to-filter-issues-and-pull-requests) about searching.
 
+## Packaging Setup
+
+- [ ] My project is using go modules.
+- [ ] My project is using vendoring.
+- [ ] My project is automatically downloading the latest version.
+- [ ] I am unsure of what my packaging setup is.
+
 ## Describe the bug
 
 A clear and concise description of what the bug is.
