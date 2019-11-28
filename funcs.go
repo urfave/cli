@@ -1,5 +1,7 @@
 package cli
 
+import "context"
+
 // BashCompleteFunc is an action to execute when the shell completion flag is set
 type BashCompleteFunc func(*Context)
 
@@ -43,6 +45,6 @@ type FlagEnvHintFunc func(envVars []string, str string) string
 // with the file path details.
 type FlagFileHintFunc func(filePath, str string) string
 
-// InterruptHandlerFunc is used to define the behaviour when a program is interrupted
+// InterruptHandler is used to define the behaviour when a program is interrupted
 // using Control+C
-type InterruptHandlerFunc func(*Context)
+type InterruptHandlerFunc func(*Context, context.CancelFunc)

@@ -37,16 +37,13 @@ func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
 
 	if c.Context == nil {
 		ctx, cancel := context.WithCancel(context.Background())
+		signals := make(chan os.Signal, 1)
 		go func() {
-			// wait for context cancellation
-			<-ctx.Done()
-			app.InterruptHandlerFunc(c)
-		}()
-		go func() {
-			defer cancel()
-			signals := make(chan os.Signal, 1)
-			signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
-			<-signals
+			for {
+				signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+				<-signals
+				c.App.InterruptHandler(c, cancel)
+			}
 		}()
 		c.Context = ctx
 	}

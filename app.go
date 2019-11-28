@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io"
@@ -91,7 +92,7 @@ type App struct {
 	// This function is automatically executed when the context is cancelled due to the program
 	// receiving an interrupt signal (Control+C). This function can be overridden to implement
 	// desired behaviour in such a scenario
-	InterruptHandlerFunc InterruptHandlerFunc
+	InterruptHandler InterruptHandlerFunc
 
 	didSetup bool
 }
@@ -110,15 +111,15 @@ func compileTime() time.Time {
 // Usage, Version and Action.
 func NewApp() *App {
 	return &App{
-		Name:         filepath.Base(os.Args[0]),
-		HelpName:     filepath.Base(os.Args[0]),
-		Usage:        "A new cli application",
-		UsageText:    "",
-		BashComplete: DefaultAppComplete,
-		Action:       helpCommand.Action,
-		Compiled:     compileTime(),
-		Writer:       os.Stdout,
-		InterruptHandlerFunc: func(c *Context) {},
+		Name:             filepath.Base(os.Args[0]),
+		HelpName:         filepath.Base(os.Args[0]),
+		Usage:            "A new cli application",
+		UsageText:        "",
+		BashComplete:     DefaultAppComplete,
+		Action:           helpCommand.Action,
+		Compiled:         compileTime(),
+		Writer:           os.Stdout,
+		InterruptHandler: func(*Context, context.CancelFunc) {},
 	}
 }
 
@@ -156,8 +157,8 @@ func (a *App) Setup() {
 		a.Action = helpCommand.Action
 	}
 
-	if a.InterruptHandlerFunc == nil {
-		a.InterruptHandlerFunc = func(context *Context) {}
+	if a.InterruptHandler == nil {
+		a.InterruptHandler = func(*Context, context.CancelFunc) {}
 	}
 
 	if a.Compiled == (time.Time{}) {
