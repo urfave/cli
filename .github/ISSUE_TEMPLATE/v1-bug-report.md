@@ -7,10 +7,6 @@ assignees: lynncyrin
 
 ---
 
-## my urfave/cli version is
-
-_**( Put the version of urfave/cli that you are using here )**_
-
 ## Checklist
 
 * [ ] Are you running the latest v1 release? The list of releases is [here](https://github.com/urfave/cli/releases).
@@ -58,4 +54,10 @@ We'd love to have more contributors on this project! If the fix for this bug is 
 
 ```
 # paste `go env` output in here
+```
+
+## Run `go list -u -m all` and paste its output here
+
+```
+# paste `go list -u -m all` output in here
 ```
