@@ -7,10 +7,6 @@ assignees: ''
 
 ---
 
-## my urfave/cli version is
-
-_**( Put the version of urfave/cli that you are using here )**_
-
 ## Checklist
 
 * [ ] Are you running the latest v2 release? The list of releases is [here](https://github.com/urfave/cli/releases).
