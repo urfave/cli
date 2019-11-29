@@ -8,7 +8,7 @@
 
 _(fill-in or delete this section)_
 
-<!--- 
+<!--
   What goal is this change working towards?
   If this PR fixes one of more issues, list them here.
   One line each, like so:
@@ -20,7 +20,7 @@ _(fill-in or delete this section)_
 
 _(fill-in or delete this section)_
 
-<!---
+<!--
   Provide a bullet pointed summary of how each file was changed.
   Briefly explain any decisions you made with respect to the changes.
 -->
@@ -29,7 +29,9 @@ _(fill-in or delete this section)_
 
 _(fill-in or delete this section)_
 
-<!--- Describe how you tested this change. -->
+<!--
+  Describe how you tested this change.
+-->
 
 ## Reviewer Guidelines
 
