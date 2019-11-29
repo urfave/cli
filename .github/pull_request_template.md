@@ -41,12 +41,3 @@ _(fill-in or delete this section)_
    Is there any particular feedback you would / wouldn't like?
    Which parts of the code should reviewers focus on?
 -->
-
-## Out of Scope / Future Work
-
-_(fill-in or delete this section)_
-
-<!--
-  Is this work closely related to any previous PRs?
-  Will there be more PRs in this series?
--->
