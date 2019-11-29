@@ -1,4 +1,4 @@
-<!---
+<!--
   This template provides some ideas of things to include in your PR description.
   To start, try providing a short summary of your changes in the Title above.
   If a section of the PR template does not apply to this PR, then delete that section.
