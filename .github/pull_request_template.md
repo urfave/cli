@@ -16,6 +16,17 @@ _(fill-in or delete this section)_
     Fixes #39
 -->
 
+## Release Notes
+
+_(fill-in or delete this section)_
+
+<!--
+  If this PR makes user facing changes, please describe them here.
+  This description will be copied into the release notes, whenever
+  the next version is released. Keep this section short, and
+  focus on high level changes.
+-->
+
 ## Changes
 
 _(fill-in or delete this section)_
@@ -23,6 +34,8 @@ _(fill-in or delete this section)_
 <!--
   Provide a bullet pointed summary of how each file was changed.
   Briefly explain any decisions you made with respect to the changes.
+  Include anything here that you didn't include in *Release Notes*
+  above, such as changes to CI or changes to internal methods.
 -->
 
 ## Testing
