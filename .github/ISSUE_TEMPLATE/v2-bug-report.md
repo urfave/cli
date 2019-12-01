@@ -17,12 +17,12 @@ _**( Put the version of urfave/cli that you are using here )**_
 * [ ] Did you check the manual for your release? The v2 manual is [here](https://github.com/urfave/cli/blob/master/docs/v2/manual.md)
 * [ ] Did you perform a search about this problem? Here's the [Github guide](https://help.github.com/en/github/managing-your-work-on-github/using-search-to-filter-issues-and-pull-requests) about searching.
 
-## Packaging Setup
+## Dependency Management
 
 - [ ] My project is using go modules.
 - [ ] My project is using vendoring.
 - [ ] My project is automatically downloading the latest version.
-- [ ] I am unsure of what my packaging setup is.
+- [ ] I am unsure of what my dependency management setup is.
 
 ## Describe the bug
 
