@@ -1,21 +1,22 @@
-name: Build and Test
+name: Run Tests
 
 on:
   pull_request:
     branches:
       master
 
+env:
+  GO111MODULE: on
+  GOPROXY: https://proxy.golang.org
+
 jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
         go: [1.11, 1.12, 1.13]
-    name: Test on ${{ matrix.os }} @ Go ${{ matrix.go }}
+    name: ${{ matrix.os }} @ Go ${{ matrix.go }}
     runs-on: ${{ matrix.os }}
-    env:
-      GO111MODULE: on
-      GOPROXY: https://proxy.golang.org
     steps:
       - name: Set up Go ${{ matrix.go }}
         uses: actions/setup-go@v1
@@ -37,6 +38,7 @@ jobs:
         run: |
           go get github.com/urfave/gfmrun/cmd/gfmrun
           go get golang.org/x/tools/cmd/goimports
+          go get ./...
           npm install markdown-toc
 
       - name: Run Tests
