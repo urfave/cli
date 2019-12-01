@@ -12,6 +12,9 @@ jobs:
     env:
       GO111MODULE: on
       GOPROXY: https://proxy.golang.org
+    uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
     steps:
       - name: Install Dependencies
         run: |
