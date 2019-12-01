@@ -12,10 +12,11 @@ jobs:
     env:
       GO111MODULE: on
       GOPROXY: https://proxy.golang.org
-    uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v1
+          with:
+            fetch-depth: 1
       - name: Install Dependencies
         run: |
           go get github.com/urfave/gfmrun/cmd/gfmrun
