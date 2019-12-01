@@ -22,10 +22,8 @@ Usage documentation exists for each major version. Don't know what version you'r
 
 ### Using `v2` releases
 
-**Warning**: `v2` is in a beta state.
-
 ```
-$ go get github.com/urfave/cli/v2
+$ GO111MODULE=on go get github.com/urfave/cli/v2
 ```
 
 ```go
