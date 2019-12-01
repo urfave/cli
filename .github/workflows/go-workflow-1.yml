@@ -6,20 +6,26 @@ on:
       master
 
 jobs:
-  test1:
-    name: Test @ Go 1.11
-    runs-on: ubuntu-latest
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        go: [1.11, 1.12, 1.13]
+    name: Test on ${{ matrix.os }} @ Go ${{ matrix.go }}
+    runs-on: ${{ matrix.os }}
     env:
       GO111MODULE: on
       GOPROXY: https://proxy.golang.org
     steps:
-      - name: Set up Go 1.11
+      - name: Set up Go ${{ matrix.go }}
         uses: actions/setup-go@v1
         with:
-          go-version: 1.11
+          go-version: ${{ matrix.go }}
 
       - name: Checkout Code
         uses: actions/checkout@v1
+        with:
+          ref: ${{ github.ref }}
 
       - name: Install Dependencies
         run: |
@@ -29,62 +35,7 @@ jobs:
 
       - name: Run Tests
         run: |
-          go run build.go vet
-          go run build.go test
-          go run build.go gfmrun docs/v2/manual.md
-          go run build.go toc docs/v2/manual.md
-  test2:
-    name: Test @ Go 1.12
-    runs-on: ubuntu-latest
-    env:
-      GO111MODULE: on
-      GOPROXY: https://proxy.golang.org
-    steps:
-      - name: Set up Go 1.12
-        uses: actions/setup-go@v1
-        with:
-          go-version: 1.12
-
-      - name: Checkout Code
-        uses: actions/checkout@v1
-
-      - name: Install Dependencies
-        run: |
-          go get github.com/urfave/gfmrun/cmd/gfmrun
-          go get golang.org/x/tools/cmd/goimports
-          npm install markdown-toc
-
-      - name: Run Tests
-        run: |
-          go run build.go vet
-          go run build.go test
-          go run build.go gfmrun docs/v2/manual.md
-          go run build.go toc docs/v2/manual.md
-  test3:
-    name: Test @ Go 1.13
-    runs-on: ubuntu-latest
-    env:
-      GO111MODULE: on
-      GOPROXY: https://proxy.golang.org
-    steps:
-      - name: Set up Go 1.13
-        uses: actions/setup-go@v1
-        with:
-          go-version: 1.13
-
-      - name: Checkout Code
-        uses: actions/checkout@v1
-        with:
-          ref: $GITHUB_REF
-
-      - name: Install Dependencies
-        run: |
-          go get github.com/urfave/gfmrun/cmd/gfmrun
-          go get golang.org/x/tools/cmd/goimports
-          npm install markdown-toc
-
-      - name: Run Tests
-        run: |
+          ls -la
           go run build.go vet
           go run build.go test
           go run build.go gfmrun docs/v2/manual.md
