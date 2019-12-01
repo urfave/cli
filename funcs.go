@@ -43,6 +43,6 @@ type FlagEnvHintFunc func(envVars []string, str string) string
 // with the file path details.
 type FlagFileHintFunc func(filePath, str string) string
 
-// InterruptHandler is used to define the behaviour when a program is interrupted
+// InterruptHandlerFunc is used to define the behaviour when a program is interrupted
 // using Control+C
 type InterruptHandlerFunc func(*Context)
