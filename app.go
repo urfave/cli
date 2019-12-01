@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"io"
@@ -119,7 +118,7 @@ func NewApp() *App {
 		Action:           helpCommand.Action,
 		Compiled:         compileTime(),
 		Writer:           os.Stdout,
-		InterruptHandler: func(*Context, context.CancelFunc) {},
+		InterruptHandler: CancelContextOnInterrupt,
 	}
 }
 
@@ -158,7 +157,7 @@ func (a *App) Setup() {
 	}
 
 	if a.InterruptHandler == nil {
-		a.InterruptHandler = func(*Context, context.CancelFunc) {}
+		a.InterruptHandler = CancelContextOnInterrupt
 	}
 
 	if a.Compiled == (time.Time{}) {
