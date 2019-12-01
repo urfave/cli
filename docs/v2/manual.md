@@ -866,65 +866,123 @@ func main() {
 
 ### Handling Interrupts
 
-This library supports customized handling of application behaviour when an interrupt signal (ctrl+c) is received. To control this behaviour, you can define the application's `InterruptHandler` function as shown below:
+This library supports customized handling of application behaviour when an interrupt signal (ctrl+c) is received. Out of the box, the library supports the following methods of handling interrupts:
 
-```go
-package main
+1. `CancelContextOnInterrupt` (default): This is the default InterruptHandler used by the library. It will simply cancel the context. As the user, it's your responsibility to propagate this context properly in your application.
 
-import (
-	"context"
-	"fmt"
-	"log"
-	"os"
-	"time"
+   ```go
+   package main
+   
+   import (
+   	"fmt"
+   	"github.com/urfave/cli/v2"
+   	"log"
+   	"os"
+   	"time"
+   )
+   
+   func main() {
+   	app := &cli.App{
+   		Name:  "long",
+   		Usage: "this takes a long time to finish",
+   		Action: func(c *cli.Context) error {
+   			go func() {
+   				// wait for context cancellation
+   				<- c.Done()
+   				// context cancelled, do something...
+   			}()
+   
+   			fmt.Println("working...")
+   			time.Sleep(10 * time.Second)
+   			return nil
+   		},
+   	}
+   
+   	err := app.Run(os.Args)
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+   }
+   ```
 
-	"github.com/urfave/cli/v2"
-)
+2. `ExitOnInterrupt`: This handler will cancel the context and exit the application with an exit code of 1.
 
-func main() {
-	app := &cli.App{
-		Name:  "long",
-		Usage: "this takes a long time to finish",
-		Action: func(c *cli.Context) error {
-			fmt.Println("working...")
-			time.Sleep(10 * time.Second)
-			return nil
-		},
-	}
+   ```go
+   package main
+   
+   import (
+   	"fmt"
+   	"github.com/urfave/cli/v2"
+   	"log"
+   	"os"
+   	"time"
+   )
+   
+   func main() {
+   	app := &cli.App{
+   		Name:  "long",
+   		Usage: "this takes a long time to finish",
+   		Action: func(c *cli.Context) error {
+   			fmt.Println("working...")
+   			time.Sleep(10 * time.Second)
+   			return nil
+   		},
+       // use ExitOnInterrupt handler
+   		InterruptHandler: cli.ExitOnInterrupt,
+   	}
+   
+   	err := app.Run(os.Args)
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+   }
+   ```
 
-	app.Flags = []cli.Flag{
-		&cli.IntFlag{
-			Name: "count",
-		},
-	}
+3. You can also implement your own version of the InterruptHandler and use it for your application. The following example demonstrates a custom InterruptHandler that waits for the interrupt signal to be received 5 times before cancelling the context.
 
-	signalCount := 1
-	app.InterruptHandler = func(c *cli.Context, cancelFunc context.CancelFunc) {
-		go func() {
-			<-c.Done()
-			os.Exit(1)
-		}()
-
-		count := c.Int("count")
-		if signalCount < count {
-			fmt.Println("received interrupt")
-		} else {
-			fmt.Println("signal count exceeded, quitting")
-			cancelFunc()
-		}
-
-		signalCount++
-	}
-
-	err := app.Run(os.Args)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-```
-
-By default, this function does not do anything. It is the user's responsiblity to implement this function to define appropriate behaviour for their application.
+   ```go
+   package main
+   
+   import (
+   	"fmt"
+   	"github.com/urfave/cli/v2"
+   	"log"
+   	"os"
+   	"time"
+   )
+   
+   func main() {
+   	count := 1
+   	app := &cli.App{
+   		Name:  "long",
+   		Usage: "this takes a long time to finish",
+   		Action: func(c *cli.Context) error {
+   			fmt.Println("working...")
+   			time.Sleep(10 * time.Second)
+   			return nil
+   		},
+   		InterruptHandler: func(ctx *cli.Context) {
+   			go func() {
+   				<-ctx.Done()
+   				os.Exit(1)
+   			}()
+   
+   			fmt.Printf("received ctrl+c %d time(s)\n", count)
+   			count++
+   
+   			if count > 5 {
+   				fmt.Println("cancelling context...")
+   				ctx.Cancel()
+   			}
+   		},
+   	}
+   
+   	err := app.Run(os.Args)
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+   }
+   ```
 
 ### Combining short options
 
