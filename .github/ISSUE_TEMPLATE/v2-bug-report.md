@@ -47,9 +47,14 @@ If you can reproduce this issue with a public CI system, please link a failing b
 ## Want to fix this yourself?
 
 We'd love to have more contributors on this project! If the fix for this bug is easily explained and very small, free free to create a pull request for it.
+## Run `go version` and paste its output here
+
+```
+# paste `go version` output in here
+```
 
 ## Run `go env` and paste its output here
 
 ```
-# paste it in here
+# paste `go env` output in here
 ```
