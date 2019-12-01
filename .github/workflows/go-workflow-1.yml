@@ -22,6 +22,12 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
 
+      - name: Set GOPATH and PATH
+        run: |
+          echo "##[set-env name=GOPATH;]$(dirname $GITHUB_WORKSPACE)"
+          echo "##[add-path]$(dirname $GITHUB_WORKSPACE)/bin"
+        shell: bash
+
       - name: Checkout Code
         uses: actions/checkout@v1
         with:
