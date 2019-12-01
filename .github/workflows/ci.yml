@@ -48,3 +48,7 @@ jobs:
           go run build.go test
           go run build.go gfmrun docs/v2/manual.md
           go run build.go toc docs/v2/manual.md
+
+      - name: Send Coverage Report
+        if: success()
+        run: bash <(curl -s https://codecov.io/bash)
