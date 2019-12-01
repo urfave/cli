@@ -13,10 +13,14 @@ jobs:
       GO111MODULE: on
       GOPROXY: https://proxy.golang.org
     steps:
+      - name: Set up Go 1.11
+          uses: actions/setup-go@v1
+          with:
+            go-version: 1.11
+
       - name: Checkout Code
         uses: actions/checkout@v1
-          with:
-            fetch-depth: 1
+
       - name: Install Dependencies
         run: |
           go get github.com/urfave/gfmrun/cmd/gfmrun
