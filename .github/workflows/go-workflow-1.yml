@@ -1,0 +1,25 @@
+name: v2 Test @ Go 1.11
+
+on:
+  pull_request:
+    branches:
+      master
+
+jobs:
+  test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Dependencies
+        run: |
+          go get github.com/urfave/gfmrun/cmd/gfmrun
+          go get golang/x/tools/cmd/goimports
+          npm install markdown-toc
+          go mod tidy
+
+      - name: Run Tests
+        run: |
+          go run build.go vet
+          go run build.go test
+          go run build.go gfmrun docs/v2/manual.md
+          go run build.go toc docs/v2/manual.md
