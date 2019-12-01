@@ -18,6 +18,7 @@ import (
 type Context struct {
 	context.Context
 	App           *App
+	Cancel        context.CancelFunc
 	Command       *Command
 	shellComplete bool
 	setFlags      map[string]bool
@@ -38,14 +39,15 @@ func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
 	if c.Context == nil {
 		ctx, cancel := context.WithCancel(context.Background())
 		signals := make(chan os.Signal, 1)
+		signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 		go func() {
 			for {
-				signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 				<-signals
-				c.App.InterruptHandler(c, cancel)
+				c.App.InterruptHandler(c)
 			}
 		}()
 		c.Context = ctx
+		c.Cancel = cancel
 	}
 
 	return c
