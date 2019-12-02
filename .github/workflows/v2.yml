@@ -13,7 +13,7 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
         go: [1.11, 1.12, 1.13]
     name: ${{ matrix.os }} @ Go ${{ matrix.go }}
     runs-on: ${{ matrix.os }}
@@ -51,4 +51,6 @@ jobs:
 
       - name: Send Coverage Report
         if: success()
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: bash <(curl -s https://codecov.io/bash)
