@@ -89,6 +89,8 @@ func (c *Command) FullName() string {
 func (c *Command) Run(ctx *Context) (err error) {
 	if len(c.Subcommands) > 0 {
 		return c.startApp(ctx)
+	} else {
+		ctx.App.CommandName = fmt.Sprintf("%s %s", ctx.App.Name, c.Name)
 	}
 
 	if !c.HideHelp && HelpFlag != nil {
@@ -216,6 +218,8 @@ func (c *Command) startApp(ctx *Context) error {
 	app := &App{
 		Metadata: ctx.App.Metadata,
 		Name:     fmt.Sprintf("%s %s", ctx.App.Name, c.Name),
+		ProgramName: ctx.App.Name,
+		CommandName: fmt.Sprintf("%s %s", ctx.App.Name, c.Name),
 	}
 
 	if c.HelpName == "" {
