@@ -443,7 +443,7 @@ func TestSubCommand_Name_ProgramName_CommandName(t *testing.T) {
 
 		err := app.Run(c.testArgs)
 		if err != nil {
-			log.Fatal()
+			log.Fatal(err)
 		}
 	}
 }
