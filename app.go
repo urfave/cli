@@ -28,9 +28,10 @@ var (
 type App struct {
 	// The name of the program. Defaults to path.Base(os.Args[0])
 	Name string
-	//
+	// The name of the program. Defaults to path.Base(os.Args[0])
 	ProgramName string
-	//
+	// The name of the current running command. In case of a sub-command, this variable would also contain
+	// the names of its parents.
 	CommandName string
 	// Full name of command for help, defaults to Name
 	HelpName string
