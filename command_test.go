@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"strings"
 	"testing"
 )
@@ -369,5 +370,80 @@ func TestCommandSkipFlagParsing(t *testing.T) {
 		err := app.Run(c.testArgs)
 		expect(t, err, c.expectedErr)
 		expect(t, args, c.expectedArgs)
+	}
+}
+
+func TestSubCommand_Name_ProgramName_CommandName(t *testing.T) {
+	cases := []struct {
+		testArgs       []string
+		expectedOutput []string
+	}{
+		{
+			testArgs:       []string{""},
+			expectedOutput: []string{"myprogramname", "", ""},
+		},
+		{
+			testArgs:       []string{"foo"},
+			expectedOutput: []string{"myprogramname", "foo", ""},
+		},
+		{
+			testArgs:       []string{"foo", "bar"},
+			expectedOutput: []string{"myprogramname", "foo", "bar"},
+		},
+		{
+			testArgs:       []string{"foo", "bar", "baz"},
+			expectedOutput: []string{"myprogramname", "foo", "bar", "baz"},
+		},
+	}
+
+	for _, c := range cases {
+		var output []string
+		app := &App{
+			Name: "myprogramname",
+			Action: func(c *Context) error {
+				fmt.Println("c.App.Name for app.Action is", c.App.Name)
+				fmt.Println("c.App.ProgramName for app.Action is", c.App.ProgramName)
+				fmt.Println("c.App.CommandName for app.Action is", c.App.CommandName)
+				return nil
+			},
+			Commands: []Command{
+				{
+					Name: "foo",
+					Action: func(c *Context) error {
+						output = append(output, c.App.Name)
+						output = append(output, c.App.ProgramName)
+						output = append(output, c.App.CommandName)
+						return nil
+					},
+					Subcommands: []Command{
+						{
+							Name: "bar",
+							Action: func(c *Context) error {
+								output = append(output, c.App.Name)
+								output = append(output, c.App.ProgramName)
+								output = append(output, c.App.CommandName)
+								return nil
+							},
+							Subcommands: []Command{
+								{
+									Name: "baz",
+									Action: func(c *Context) error {
+										output = append(output, c.App.Name)
+										output = append(output, c.App.ProgramName)
+										output = append(output, c.App.CommandName)
+										return nil
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		err := app.Run(c.testArgs)
+		if err != nil {
+			log.Fatal()
+		}
 	}
 }
