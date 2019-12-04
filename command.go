@@ -100,6 +100,8 @@ type Commands []Command
 func (c Command) Run(ctx *Context) (err error) {
 	if len(c.Subcommands) > 0 {
 		return c.startApp(ctx)
+	} else {
+		ctx.App.CommandName = fmt.Sprintf("%s %s", ctx.App.CommandName, c.Name)
 	}
 
 	if !c.HideHelp && (HelpFlag != BoolFlag{}) {
@@ -315,6 +317,9 @@ func (c Command) startApp(ctx *Context) error {
 	app.ExitErrHandler = ctx.App.ExitErrHandler
 	// set the name and usage
 	app.Name = fmt.Sprintf("%s %s", ctx.App.Name, c.Name)
+	app.ProgramName = ctx.App.Name
+	app.CommandName = fmt.Sprintf("%s %s", ctx.App.Name, c.Name)
+
 	if c.HelpName == "" {
 		app.HelpName = c.HelpName
 	} else {

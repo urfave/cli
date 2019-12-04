@@ -28,6 +28,10 @@ var (
 type App struct {
 	// The name of the program. Defaults to path.Base(os.Args[0])
 	Name string
+	//
+	ProgramName string
+	//
+	CommandName string
 	// Full name of command for help, defaults to Name
 	HelpName string
 	// Description of the program.
