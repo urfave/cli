@@ -223,7 +223,6 @@ func (c *Command) startApp(ctx *Context) error {
 
 	lineage := ctx.Lineage()
 	app.ProgramName = lineage[len(lineage)-1].App.Name
-	ctx.App.ProgramName = lineage[len(lineage)-1].App.Name
 
 	if c.HelpName == "" {
 		app.HelpName = c.HelpName
