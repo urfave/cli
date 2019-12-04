@@ -219,7 +219,7 @@ func (c *Command) startApp(ctx *Context) error {
 		Metadata: ctx.App.Metadata,
 		Name:     fmt.Sprintf("%s %s", ctx.App.Name, c.Name),
 		ProgramName: ctx.App.Name,
-		CommandName: fmt.Sprintf("%s %s", ctx.App.Name, c.Name),
+		CommandName: fmt.Sprintf("%s %s", ctx.App.ProgramName, c.Name),
 	}
 
 	if c.HelpName == "" {
