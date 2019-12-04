@@ -136,6 +136,10 @@ func (a *App) Setup() {
 		a.Name = filepath.Base(os.Args[0])
 	}
 
+	if a.Name != "" && a.ProgramName == "" {
+		a.ProgramName = a.Name
+	}
+
 	if a.HelpName == "" {
 		a.HelpName = filepath.Base(os.Args[0])
 	}
@@ -427,6 +431,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 		name := args.First()
 		c := a.Command(name)
 		if c != nil {
+
 			return c.Run(context)
 		}
 	}

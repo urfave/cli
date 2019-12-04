@@ -383,31 +383,32 @@ func TestSubCommand_Name_ProgramName_CommandName(t *testing.T) {
 		expectedOutput []string
 	}{
 		{
-			testArgs:       []string{""},
-			expectedOutput: []string{"myprogramname", "", ""},
+			testArgs:       []string{"cmd"},
+			expectedOutput: []string{"myprogramname", "myprogramname", ""},
 		},
 		{
-			testArgs:       []string{"foo"},
-			expectedOutput: []string{"myprogramname", "foo", ""},
+			testArgs:       []string{"cmd", "foo"},
+			expectedOutput: []string{"myprogramname foo", "myprogramname", "myprogramname foo"},
 		},
 		{
-			testArgs:       []string{"foo", "bar"},
-			expectedOutput: []string{"myprogramname", "foo", "bar"},
+			testArgs:       []string{"cmd", "foo", "bar"},
+			expectedOutput: []string{"myprogramname foo bar", "myprogramname", "myprogramname foo bar"},
 		},
 		{
-			testArgs:       []string{"foo", "bar", "baz"},
-			expectedOutput: []string{"myprogramname", "foo", "bar", "baz"},
+			testArgs:       []string{"cmd", "foo", "bar", "baz"},
+			expectedOutput: []string{"myprogramname foo bar", "myprogramname", "myprogramname foo bar baz"},
 		},
 	}
 
 	for _, c := range cases {
 		var output []string
+
 		app := &App{
 			Name: "myprogramname",
 			Action: func(c *Context) error {
-				fmt.Println("c.App.Name for app.Action is", c.App.Name)
-				fmt.Println("c.App.ProgramName for app.Action is", c.App.ProgramName)
-				fmt.Println("c.App.CommandName for app.Action is", c.App.CommandName)
+				output = append(output, c.App.Name)
+				output = append(output, c.App.ProgramName)
+				output = append(output, c.App.CommandName)
 				return nil
 			},
 			Commands: []*Command{
@@ -449,5 +450,10 @@ func TestSubCommand_Name_ProgramName_CommandName(t *testing.T) {
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		if !equal(output, c.expectedOutput) {
+			t.Errorf("want %v, got %v", c.expectedOutput, output)
+		}
+
 	}
 }

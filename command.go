@@ -89,9 +89,9 @@ func (c *Command) FullName() string {
 func (c *Command) Run(ctx *Context) (err error) {
 	if len(c.Subcommands) > 0 {
 		return c.startApp(ctx)
-	} else {
-		ctx.App.CommandName = fmt.Sprintf("%s %s", ctx.App.Name, c.Name)
 	}
+
+	ctx.App.CommandName = fmt.Sprintf("%s %s", ctx.App.CommandName, c.Name)
 
 	if !c.HideHelp && HelpFlag != nil {
 		// append help to flags
@@ -216,11 +216,14 @@ func (c *Command) HasName(name string) bool {
 
 func (c *Command) startApp(ctx *Context) error {
 	app := &App{
-		Metadata: ctx.App.Metadata,
-		Name:     fmt.Sprintf("%s %s", ctx.App.Name, c.Name),
-		ProgramName: ctx.App.Name,
-		CommandName: fmt.Sprintf("%s %s", ctx.App.ProgramName, c.Name),
+		Metadata:    ctx.App.Metadata,
+		Name:        fmt.Sprintf("%s %s", ctx.App.Name, c.Name),
+		CommandName: fmt.Sprintf("%s %s", ctx.App.Name, c.Name),
 	}
+
+	lineage := ctx.Lineage()
+	app.ProgramName = lineage[len(lineage)-1].App.Name
+	ctx.App.ProgramName = lineage[len(lineage)-1].App.Name
 
 	if c.HelpName == "" {
 		app.HelpName = c.HelpName
