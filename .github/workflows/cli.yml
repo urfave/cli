@@ -3,8 +3,8 @@ name: Run Tests
 on:
   pull_request:
     branches:
-      master
-      v1
+      - master
+      - v1
 
 env:
   GO111MODULE: on
