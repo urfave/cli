@@ -3,6 +3,7 @@ name: Run Tests
 on:
   pull_request:
     branches:
+      master
       v1
 
 env:
@@ -36,17 +37,24 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          go get github.com/urfave/gfmrun/cmd/gfmrun
-          go get golang.org/x/tools/cmd/goimports
-          go mod tidy
+          curl -s https://api.github.com/repos/urfave/gfmrun/releases/latest | grep gfmrun-linux-amd64 | grep download | cut -d '"' -f 4 | wget -O $(dirname $GITHUB_WORKSPACE)/bin/gfmrun -i -
           npm install markdown-toc
 
-      - name: Run Tests
+      - name: Run Tests (v1)
+        if: contains(github.ref, 'v1')
         run: |
           go run build.go vet
           go run build.go test
           go run build.go gfmrun docs/v1/manual.md
           go run build.go toc docs/v1/manual.md
+
+      - name: Run Tests (v2)
+        if: contains(github.ref, 'master')
+        run: |
+          go run build.go vet
+          go run build.go test
+          go run build.go gfmrun docs/v2/manual.md
+          go run build.go toc docs/v2/manual.md
 
       - name: Send Coverage Report
         if: success()
