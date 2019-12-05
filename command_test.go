@@ -450,6 +450,5 @@ func TestSubCommand_Name_ProgramName_CommandName(t *testing.T) {
 		if !equal(output, c.expectedOutput) {
 			t.Errorf("want %v, got %v", c.expectedOutput, output)
 		}
-
 	}
 }
