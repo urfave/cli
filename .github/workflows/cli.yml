@@ -37,7 +37,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          curl -s https://api.github.com/repos/urfave/gfmrun/releases/latest | grep gfmrun-linux-amd64 | grep download | cut -d '"' -f 4 | wget -O $(dirname $GOPATH)/bin/gfmrun -i -
+          curl -s https://api.github.com/repos/urfave/gfmrun/releases/latest | grep gfmrun-linux-amd64 | grep download | cut -d '"' -f 4 | wget -O $GOPATH/bin/gfmrun -i -
           npm install markdown-toc
 
       - name: Run Tests (v1)
