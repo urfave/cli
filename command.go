@@ -317,8 +317,8 @@ func (c Command) startApp(ctx *Context) error {
 	app.ExitErrHandler = ctx.App.ExitErrHandler
 	// set the name and usage
 	app.Name = fmt.Sprintf("%s %s", ctx.App.Name, c.Name)
-	app.ProgramName = ctx.App.Name
-	app.CommandName = fmt.Sprintf("%s %s", ctx.App.ProgramName, c.Name)
+	app.ProgramName = ctx.App.ProgramName
+	app.CommandName = fmt.Sprintf("%s %s", ctx.App.Name, c.Name)
 
 	if c.HelpName == "" {
 		app.HelpName = c.HelpName

@@ -143,6 +143,10 @@ func (a *App) Setup() {
 
 	a.didSetup = true
 
+	if a.Name != "" && a.ProgramName == "" {
+		a.ProgramName = a.Name
+	}
+
 	if a.Author != "" || a.Email != "" {
 		a.Authors = append(a.Authors, Author{Name: a.Author, Email: a.Email})
 	}
