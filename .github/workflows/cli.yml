@@ -14,7 +14,7 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         go: [1.11, 1.12, 1.13]
     name: ${{ matrix.os }} @ Go ${{ matrix.go }}
     runs-on: ${{ matrix.os }}
@@ -48,6 +48,14 @@ jobs:
         run: |
           mkdir -p $GOPATH/bin
           curl -s https://api.github.com/repos/urfave/gfmrun/releases/latest | grep gfmrun-darwin-amd64 | grep download | cut -d '"' -f 4 | wget -O $GOPATH/bin/gfmrun -i -
+          chmod +x $GOPATH/bin/gfmrun
+          npm install markdown-toc
+
+      - name: Install Dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          mkdir -p $GOPATH/bin
+          curl -s https://api.github.com/repos/urfave/gfmrun/releases/latest | grep gfmrun-windows-amd64 | grep download | cut -d '"' -f 4 | wget -O $GOPATH/bin/gfmrun -i -
           chmod +x $GOPATH/bin/gfmrun
           npm install markdown-toc
 
