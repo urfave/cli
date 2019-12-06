@@ -57,16 +57,32 @@ jobs:
           curl -L -o gfmrun.exe "https://github.com/urfave/gfmrun/releases/download/v1.2.14/gfmrun-windows-amd64-v1.2.14.exe"
           npm install markdown-toc
 
-      - name: Run Tests (v1)
-        if: contains(github.base_ref, 'v1')
+      - name: Run Tests (v1) (Linux/Mac)
+        if: contains(github.base_ref, 'v1') && matrix.os != 'windows-latest'
         run: |
           go run build.go vet
           go run build.go test
           go run build.go gfmrun docs/v1/manual.md
           go run build.go toc docs/v1/manual.md
 
-      - name: Run Tests (v2)
-        if: contains(github.base_ref, 'master')
+      - name: Run Tests (v1) (Windows)
+        if: contains(github.base_ref, 'v1') && matrix.os == 'windows-latest'
+        run: |
+          go run build.go vet
+          go run build.go test
+          go run build.go gfmrun docs\v1\manual.md
+          go run build.go toc docs\v1\manual.md
+
+      - name: Run Tests (v2) (Linux/Mac)
+        if: contains(github.base_ref, 'master') && matrix.os != 'windows-latest'
+        run: |
+          go run build.go vet
+          go run build.go test
+          go run build.go gfmrun docs/v2/manual.md
+          go run build.go toc docs/v2/manual.md
+
+      - name: Run Tests (v2) (Windows)
+        if: contains(github.base_ref, 'master') && matrix.os == 'windows-latest'
         run: |
           go run build.go vet
           go run build.go test
