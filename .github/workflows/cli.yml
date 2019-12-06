@@ -6,10 +6,6 @@ on:
       - master
       - v1
 
-env:
-  GO111MODULE: on
-  GOPROXY: https://proxy.golang.org
-
 jobs:
   test:
     strategy:
@@ -24,9 +20,11 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
 
-      - name: Set GOPATH and PATH
+      - name: Set GOPATH, PATH and ENV
         run: |
           echo "::set-env name=GOPATH::$(dirname $GITHUB_WORKSPACE)"
+          echo "::set-env name=GO111MODULE::on"
+          echo "::set-env name=GOPROXY::https://proxy.golang.org,direct"
           echo "::add-path::$(dirname $GITHUB_WORKSPACE)/bin"
         shell: bash
 
