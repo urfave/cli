@@ -54,8 +54,9 @@ jobs:
       - name: Install Dependencies (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          md $GOPATH\bin
-          curl -L -o $GOPATH\bin\gfmrun.exe "https://github.com/urfave/gfmrun/releases/download/v1.2.14/gfmrun-windows-amd64-v1.2.14.exe"
+          set path=%path%;%GITHUB_WORKSPACE%\bin
+          md %GITHUB_WORKSPACE%\bin
+          curl -L -o %GITHUB_WORKSPACE%\bin\gfmrun.exe "https://github.com/urfave/gfmrun/releases/download/v1.2.14/gfmrun-windows-amd64-v1.2.14.exe"
           npm install markdown-toc
 
       - name: Run Tests (v1)
