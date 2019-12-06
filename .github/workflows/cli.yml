@@ -35,14 +35,22 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
-      - name: Install Dependencies
+      - name: Install Dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           mkdir -p $GOPATH/bin
           curl -s https://api.github.com/repos/urfave/gfmrun/releases/latest | grep gfmrun-linux-amd64 | grep download | cut -d '"' -f 4 | wget -O $GOPATH/bin/gfmrun -i -
           npm install markdown-toc
 
+      - name: Install Dependencies (Mac)
+          if: matrix.os == 'ubuntu-latest'
+          run: |
+            mkdir -p $GOPATH/bin
+            curl -s https://api.github.com/repos/urfave/gfmrun/releases/latest | grep gfmrun-darwin-amd64 | grep download | cut -d '"' -f 4 | wget -O $GOPATH/bin/gfmrun -i -
+            npm install markdown-toc
+
       - name: Run Tests (v1)
-        if: contains(github.ref, 'v1')
+        if: contains(github.base_ref, 'v1')
         run: |
           go run build.go vet
           go run build.go test
@@ -50,7 +58,7 @@ jobs:
           go run build.go toc docs/v1/manual.md
 
       - name: Run Tests (v2)
-        if: contains(github.ref, 'master')
+        if: contains(github.base_ref, 'master')
         run: |
           go run build.go vet
           go run build.go test
