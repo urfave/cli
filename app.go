@@ -208,13 +208,13 @@ func (a *App) useShortOptionHandling() bool {
 // Run is the entry point to the cli app. Parses the arguments slice and routes
 // to the proper flag/args combination
 func (a *App) Run(arguments []string) (err error) {
-	return a.RunWithContext(context.Background(), arguments)
+	return a.RunContext(context.Background(), arguments)
 }
 
-// RunWithContext is like Run except it takes a Context that will be
+// RunContext is like Run except it takes a Context that will be
 // passed to its commands and sub-commands. Through this, you can
 // propagate timeouts and cancellation requests
-func (a *App) RunWithContext(ctx context.Context, arguments []string) (err error) {
+func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 	a.Setup()
 
 	// handle the completion flag separately from the flagset since
