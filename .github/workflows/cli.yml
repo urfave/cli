@@ -40,6 +40,7 @@ jobs:
         run: |
           mkdir -p $GOPATH/bin
           curl -s https://api.github.com/repos/urfave/gfmrun/releases/latest | grep gfmrun-linux-amd64 | grep download | cut -d '"' -f 4 | wget -O $GOPATH/bin/gfmrun -i -
+          chmod +x $GOPATH/bin/gfmrun
           npm install markdown-toc
 
       - name: Install Dependencies (Mac)
@@ -47,6 +48,7 @@ jobs:
           run: |
             mkdir -p $GOPATH/bin
             curl -s https://api.github.com/repos/urfave/gfmrun/releases/latest | grep gfmrun-darwin-amd64 | grep download | cut -d '"' -f 4 | wget -O $GOPATH/bin/gfmrun -i -
+            chmod +x $GOPATH/bin/gfmrun
             npm install markdown-toc
 
       - name: Run Tests (v1)
