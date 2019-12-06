@@ -39,7 +39,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           mkdir -p $GOPATH/bin
-          curl -s https://api.github.com/repos/urfave/gfmrun/releases/latest | grep gfmrun-linux-amd64 | grep download | cut -d '"' -f 4 | wget -O $GOPATH/bin/gfmrun -i -
+          curl -L -o $GOPATH/bin/gfmrun "https://github.com/urfave/gfmrun/releases/download/v1.2.14/gfmrun-linux-amd64-v1.2.14"
           chmod +x $GOPATH/bin/gfmrun
           npm install markdown-toc
 
@@ -47,7 +47,7 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: |
           mkdir -p $GOPATH/bin
-          curl -s https://api.github.com/repos/urfave/gfmrun/releases/latest | grep gfmrun-darwin-amd64 | grep download | cut -d '"' -f 4 | wget -O $GOPATH/bin/gfmrun -i -
+          curl -L -o $GOPATH/bin/gfmrun "https://github.com/urfave/gfmrun/releases/download/v1.2.14/gfmrun-darwin-amd64-v1.2.14"
           chmod +x $GOPATH/bin/gfmrun
           npm install markdown-toc
 
@@ -55,10 +55,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           md $GOPATH/bin
-          choco install curl
-          choco install wget
-          choco install gnuwin32-coreutils.install
-          curl -s https://api.github.com/repos/urfave/gfmrun/releases/latest | grep gfmrun-windows-amd64 | grep download | cut -d "\"" -f 4 | wget -O $GOPATH/bin/gfmrun -i -
+          curl -L -o $GOPATH/bin/gfmrun "https://github.com/urfave/gfmrun/releases/download/v1.2.14/gfmrun-windows-amd64-v1.2.14.exe"
           npm install markdown-toc
 
       - name: Run Tests (v1)
