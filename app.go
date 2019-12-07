@@ -191,6 +191,15 @@ func (a *App) useShortOptionHandling() bool {
 func (a *App) Run(arguments []string) (err error) {
 	a.Setup()
 
+	commandNames := make(map[string]bool)
+	for _, c := range a.Commands {
+		_, exists := commandNames[c.Name]
+		if exists {
+			return fmt.Errorf("list of commands contains duplicate Name: %s", c.Name)
+		}
+		commandNames[c.Name] = true
+	}
+
 	// handle the completion flag separately from the flagset since
 	// completion could be attempted after a flag, but before its value was put
 	// on the command line. this causes the flagset to interpret the completion
