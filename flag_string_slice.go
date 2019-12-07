@@ -32,14 +32,14 @@ func (f *StringSlice) Get() interface{} {
 
 // StringSliceFlag is a flag with type *StringSlice
 type StringSliceFlag struct {
-	Name      string
-	Usage     string
-	EnvVar    string
-	FilePath  string
-	Required  bool
-	Hidden    bool
-	TakesFile bool
-	Value     *StringSlice
+	Name       string
+	Usage      string
+	EnvVar     string
+	FilePath   string
+	Required   bool
+	Hidden     bool
+	TakesFile  bool
+	Value      *StringSlice
 }
 
 // String returns a readable representation of this value
@@ -85,19 +85,21 @@ func (f StringSliceFlag) Apply(set *flag.FlagSet) {
 
 // ApplyWithError populates the flag given the flag set and environment
 func (f StringSliceFlag) ApplyWithError(set *flag.FlagSet) error {
+	newVal := &StringSlice{}
+
 	if envVal, ok := flagFromFileEnv(f.FilePath, f.EnvVar); ok {
-		newVal := &StringSlice{}
 		for _, s := range strings.Split(envVal, ",") {
 			s = strings.TrimSpace(s)
 			if err := newVal.Set(s); err != nil {
 				return fmt.Errorf("could not parse %s as string value for flag %s: %s", envVal, f.Name, err)
 			}
 		}
-		if f.Value == nil {
-			f.Value = newVal
-		} else {
-			*f.Value = *newVal
-		}
+	}
+
+	if f.Value == nil {
+		f.Value = newVal
+	} else {
+		*f.Value = *newVal
 	}
 
 	eachName(f.Name, func(name string) {

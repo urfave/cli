@@ -89,19 +89,21 @@ func (f IntSliceFlag) Apply(set *flag.FlagSet) {
 
 // ApplyWithError populates the flag given the flag set and environment
 func (f IntSliceFlag) ApplyWithError(set *flag.FlagSet) error {
+	newVal := &IntSlice{}
+
 	if envVal, ok := flagFromFileEnv(f.FilePath, f.EnvVar); ok {
-		newVal := &IntSlice{}
 		for _, s := range strings.Split(envVal, ",") {
 			s = strings.TrimSpace(s)
 			if err := newVal.Set(s); err != nil {
 				return fmt.Errorf("could not parse %s as int slice value for flag %s: %s", envVal, f.Name, err)
 			}
 		}
-		if f.Value == nil {
-			f.Value = newVal
-		} else {
-			*f.Value = *newVal
-		}
+	}
+
+	if f.Value == nil {
+		f.Value = newVal
+	} else {
+		*f.Value = *newVal
 	}
 
 	eachName(f.Name, func(name string) {
