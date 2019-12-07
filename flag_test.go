@@ -1330,3 +1330,32 @@ func TestFlagFromFile(t *testing.T) {
 		}
 	}
 }
+
+func TestSliceFlag_WithDefaults(t *testing.T) {
+	a := &App{
+		Flags: []Flag{
+			StringSliceFlag{Name: "names, n", Value: &StringSlice{"john"}},
+			IntSliceFlag{Name: "userIds, u", Value: &IntSlice{3}},
+			Int64SliceFlag{Name: "phoneNumbers, p", Value: &Int64Slice{123456789}},
+		},
+		Action: func(ctx *Context) error {
+			expect(t, len(ctx.StringSlice("n")), 2)
+			for _, name := range ctx.StringSlice("names") {
+				expect(t, name != "john", true)
+			}
+
+			expect(t, len(ctx.IntSlice("u")), 2)
+			for _, userId := range ctx.IntSlice("userIds") {
+				expect(t, userId != 3, true)
+			}
+
+			expect(t, len(ctx.Int64Slice("p")), 1)
+			for _, phoneNumber := range ctx.Int64Slice("phoneNumbers") {
+				expect(t, phoneNumber != 123456789, true)
+			}
+			return nil
+		},
+	}
+
+	_ = a.Run([]string{"", "-n", "jane", "-n", "bob", "-u", "5", "-u", "10", "-p", "987654321"})
+}
