@@ -87,6 +87,12 @@ func (c *Context) IsSet(name string) bool {
 		for _, f := range flags {
 			eachName(f.GetName(), func(name string) {
 				if isSet, ok := c.setFlags[name]; isSet || !ok {
+					if isSet {
+						eachName(f.GetName(), func(name string) {
+							c.setFlags[name] = true
+						})
+					}
+
 					return
 				}
 
