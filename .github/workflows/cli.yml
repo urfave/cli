@@ -26,8 +26,8 @@ jobs:
 
       - name: Set GOPATH and PATH
         run: |
-          echo "##[set-env name=GOPATH;]$(dirname $GITHUB_WORKSPACE)"
-          echo "##[add-path]$(dirname $GITHUB_WORKSPACE)/bin"
+          echo "::set-env name=GOPATH::$(dirname $GITHUB_WORKSPACE)"
+          echo "::add-path::$(dirname $GITHUB_WORKSPACE)/bin"
         shell: bash
 
       - name: Checkout Code
@@ -38,7 +38,8 @@ jobs:
       - name: Install Dependencies
         run: |
           mkdir -p $GOPATH/bin
-          curl -s https://api.github.com/repos/urfave/gfmrun/releases/latest | grep gfmrun-linux-amd64 | grep download | cut -d '"' -f 4 | wget -O $GOPATH/bin/gfmrun -i -
+          curl -L -o $GOPATH/bin/gfmrun "https://github.com/urfave/gfmrun/releases/download/v1.2.14/gfmrun-$(go env GOOS)-amd64-v1.2.14"
+          chmod +x $GOPATH/bin/gfmrun
           npm install markdown-toc
 
       - name: Run Tests (v1)
