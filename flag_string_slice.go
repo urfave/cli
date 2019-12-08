@@ -17,7 +17,7 @@ func (f *StringSlice) Set(value string) error {
 
 // String returns a readable representation of this value (for usage defaults)
 func (f *StringSlice) String() string {
-	return fmt.Sprintf("%s", *f)
+	return strings.Join(*f, ",")
 }
 
 // Value returns the slice of strings set by this flag
@@ -85,21 +85,19 @@ func (f StringSliceFlag) Apply(set *flag.FlagSet) {
 
 // ApplyWithError populates the flag given the flag set and environment
 func (f StringSliceFlag) ApplyWithError(set *flag.FlagSet) error {
-	newVal := &StringSlice{}
-
 	if envVal, ok := flagFromFileEnv(f.FilePath, f.EnvVar); ok {
+		newVal := &StringSlice{}
 		for _, s := range strings.Split(envVal, ",") {
 			s = strings.TrimSpace(s)
 			if err := newVal.Set(s); err != nil {
 				return fmt.Errorf("could not parse %s as string value for flag %s: %s", envVal, f.Name, err)
 			}
 		}
-	}
-
-	if f.Value == nil {
-		f.Value = newVal
-	} else {
-		*f.Value = *newVal
+		if f.Value == nil {
+			f.Value = newVal
+		} else {
+			*f.Value = *newVal
+		}
 	}
 
 	eachName(f.Name, func(name string) {
@@ -134,7 +132,51 @@ func lookupStringSlice(name string, set *flag.FlagSet) []string {
 		if err != nil {
 			return nil
 		}
+		// extract default value from the flag
+		var defaultVal []string
+		for _, v := range strings.Split(f.DefValue, ",") {
+			defaultVal = append(defaultVal, v)
+		}
+		// if the current value is not equal to the default value
+		// remove the default values from the flag
+		if !isStringSliceEqual(parsed, defaultVal) {
+			for _, v := range defaultVal {
+				parsed = removeFromStringSlice(parsed, v)
+			}
+		}
 		return parsed
 	}
 	return nil
+}
+
+func removeFromStringSlice(slice []string, val string) (newVal []string) {
+	var count int
+	for _, v := range slice {
+		if v == val {
+			newVal = slice[count+1:]
+			return
+		}
+		newVal = append(newVal, v)
+		count++
+	}
+	return
+}
+
+func isStringSliceEqual(newValue, defaultValue []string) bool {
+	// If one is nil, the other must also be nil.
+	if (newValue == nil) != (defaultValue == nil) {
+		return false
+	}
+
+	if len(newValue) != len(defaultValue) {
+		return false
+	}
+
+	for i, v := range newValue {
+		if v != defaultValue[i] {
+			return false
+		}
+	}
+
+	return true
 }

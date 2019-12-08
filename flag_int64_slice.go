@@ -22,7 +22,12 @@ func (f *Int64Slice) Set(value string) error {
 
 // String returns a readable representation of this value (for usage defaults)
 func (f *Int64Slice) String() string {
-	return fmt.Sprintf("%#v", *f)
+	slice := make([]string, len(*f))
+	for i, v := range *f {
+		slice[i] = strconv.FormatInt(v, 10)
+	}
+
+	return strings.Join(slice, ",")
 }
 
 // Value returns the slice of ints set by this flag
@@ -89,21 +94,19 @@ func (f Int64SliceFlag) Apply(set *flag.FlagSet) {
 
 // ApplyWithError populates the flag given the flag set and environment
 func (f Int64SliceFlag) ApplyWithError(set *flag.FlagSet) error {
-	newVal := &Int64Slice{}
-
 	if envVal, ok := flagFromFileEnv(f.FilePath, f.EnvVar); ok {
+		newVal := &Int64Slice{}
 		for _, s := range strings.Split(envVal, ",") {
 			s = strings.TrimSpace(s)
 			if err := newVal.Set(s); err != nil {
 				return fmt.Errorf("could not parse %s as int64 slice value for flag %s: %s", envVal, f.Name, err)
 			}
 		}
-	}
-
-	if f.Value == nil {
-		f.Value = newVal
-	} else {
-		*f.Value = *newVal
+		if f.Value == nil {
+			f.Value = newVal
+		} else {
+			*f.Value = *newVal
+		}
 	}
 
 	eachName(f.Name, func(name string) {
@@ -112,6 +115,7 @@ func (f Int64SliceFlag) ApplyWithError(set *flag.FlagSet) error {
 		}
 		set.Var(f.Value, name, f.Usage)
 	})
+
 	return nil
 }
 
@@ -137,7 +141,52 @@ func lookupInt64Slice(name string, set *flag.FlagSet) []int64 {
 		if err != nil {
 			return nil
 		}
+		// extract default value from the flag
+		var defaultVal []int64
+		for _, v := range strings.Split(f.DefValue, ",") {
+			iV, _ := strconv.ParseInt(v, 10, 64)
+			defaultVal = append(defaultVal, iV)
+		}
+		// if the current value is not equal to the default value
+		// remove the default values from the flag
+		if !isInt64SliceEqual(parsed, defaultVal) {
+			for _, v := range defaultVal {
+				parsed = removeFromInt64Slice(parsed, v)
+			}
+		}
 		return parsed
 	}
 	return nil
+}
+
+func removeFromInt64Slice(slice []int64, val int64) (newVal []int64) {
+	var count int
+	for _, v := range slice {
+		if v == val {
+			newVal = slice[count+1:]
+			return
+		}
+		newVal = append(newVal, v)
+		count++
+	}
+	return
+}
+
+func isInt64SliceEqual(newValue, defaultValue []int64) bool {
+	// If one is nil, the other must also be nil.
+	if (newValue == nil) != (defaultValue == nil) {
+		return false
+	}
+
+	if len(newValue) != len(defaultValue) {
+		return false
+	}
+
+	for i, v := range newValue {
+		if v != defaultValue[i] {
+			return false
+		}
+	}
+
+	return true
 }
