@@ -191,13 +191,22 @@ func (a *App) useShortOptionHandling() bool {
 func (a *App) Run(arguments []string) (err error) {
 	a.Setup()
 
-	commandNames := make(map[string]bool)
+	commandNamesWithoutDuplicates := make(map[string]bool)
 	for _, c := range a.Commands {
-		_, exists := commandNames[c.Name]
-		if exists {
+		_, cExists := commandNamesWithoutDuplicates[c.Name]
+		if cExists {
 			return fmt.Errorf("list of commands contains duplicate Name: %s", c.Name)
 		}
-		commandNames[c.Name] = true
+		commandNamesWithoutDuplicates[c.Name] = true
+
+		subCommandNamesWithoutDuplicates := make(map[string]bool)
+		for _, s := range c.Subcommands {
+			_, sExists := subCommandNamesWithoutDuplicates[s.Name]
+			if sExists {
+				return fmt.Errorf("list of child commands of %s contains duplicate Name: %s", c.Name, s.Name)
+			}
+			subCommandNamesWithoutDuplicates[s.Name] = true
+		}
 	}
 
 	// handle the completion flag separately from the flagset since
