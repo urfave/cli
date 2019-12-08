@@ -2265,3 +2265,35 @@ func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
 		t.Errorf("exitCodeFromOsExiter valeu should be %v, but its value is %v", testCode, exitCodeFromExitErrHandler)
 	}
 }
+
+func TestDuplicateCommandName(t *testing.T) {
+	duplicateCommandName := "hello"
+	os.Args = []string{"say", duplicateCommandName}
+	app := NewApp()
+	app.Name = "say"
+	app.Commands = []Command{
+		{
+			Name: duplicateCommandName,
+			Action: func(c *Context) error {
+				fmt.Println("Hello")
+				return nil
+			},
+		},
+		{
+			Name: duplicateCommandName,
+			Action: func(c *Context) error {
+				fmt.Println("Hello duplicate")
+				return nil
+			},
+		},
+	}
+
+	err := app.Run(os.Args)
+	if err == nil {
+		t.Fatalf("expected to receive error from Run, got none")
+	}
+
+	if err.Error() != fmt.Sprintf("list of commands contains duplicate Name: %s", duplicateCommandName) {
+		t.Errorf("received error did not match expectation")
+	}
+}
