@@ -59,7 +59,7 @@ jobs:
           go run build.go toc docs/v2/manual.md
 
       - name: Send Coverage Report
-        if: success()
+        if: success() && matrix.go == 1.13 && matrix.os == 'ubuntu-latest'
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: bash <(curl -s https://codecov.io/bash)
