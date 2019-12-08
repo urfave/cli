@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bytes"
 	"io/ioutil"
 	"testing"
 )
@@ -73,6 +74,8 @@ func testApp() *App {
 
 func expectFileContent(t *testing.T, file, expected string) {
 	data, err := ioutil.ReadFile(file)
+	// Ignore windows line endings
+	expected = string(bytes.ReplaceAll([]byte(expected), []byte("\r\n"), []byte("\n")))
 	expect(t, err, nil)
 	expect(t, string(data), expected)
 }
