@@ -2297,3 +2297,40 @@ func TestDuplicateCommandName(t *testing.T) {
 		t.Errorf("received error did not match expectation")
 	}
 }
+
+func TestDuplicateSubcommandName(t *testing.T) {
+	duplicateSubcommandName := "word"
+	os.Args = []string{"say", "kind", duplicateSubcommandName}
+	app := NewApp()
+	app.Name = "say"
+	app.Commands = []Command{
+		{
+			Name: "kind",
+			Subcommands: []Command{
+				{
+					Name: duplicateSubcommandName,
+					Action: func(c *Context) error {
+						fmt.Println("please")
+						return nil
+					},
+				},
+				{
+					Name: duplicateSubcommandName,
+					Action: func(c *Context) error {
+						fmt.Println("thanks")
+						return nil
+					},
+				},
+			},
+		},
+	}
+
+	err := app.Run(os.Args)
+	if err == nil {
+		t.Fatalf("expected to receive error from Run, got none")
+	}
+
+	if err.Error() != fmt.Sprintf("list of child commands of %s contains duplicate Name: %s", "kind", duplicateSubcommandName) {
+		t.Errorf("received error did not match expectation")
+	}
+}
