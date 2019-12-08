@@ -1332,30 +1332,94 @@ func TestFlagFromFile(t *testing.T) {
 }
 
 func TestSliceFlag_WithDefaults(t *testing.T) {
-	a := &App{
-		Flags: []Flag{
-			StringSliceFlag{Name: "names, n", Value: &StringSlice{"john"}},
-			IntSliceFlag{Name: "userIds, u", Value: &IntSlice{3}},
-			Int64SliceFlag{Name: "phoneNumbers, p", Value: &Int64Slice{123456789}},
+	tests := []struct {
+		args   []string
+		app    *App
+	}{
+		{
+			args: []string{""},
+			app: &App{
+				Flags: []Flag{
+					StringSliceFlag{Name: "names, n", Value: &StringSlice{"john"}},
+					IntSliceFlag{Name: "userIds, u", Value: &IntSlice{3}},
+					Int64SliceFlag{Name: "phoneNumbers, p", Value: &Int64Slice{123456789}},
+				},
+				Action: func(ctx *Context) error {
+					expect(t, len(ctx.StringSlice("n")), 1)
+					for _, name := range ctx.StringSlice("names") {
+						expect(t, name == "john", true)
+					}
+
+					expect(t, len(ctx.IntSlice("u")), 1)
+					for _, userId := range ctx.IntSlice("userIds") {
+						expect(t, userId == 3, true)
+					}
+
+					expect(t, len(ctx.Int64Slice("p")), 1)
+					for _, phoneNumber := range ctx.Int64Slice("phoneNumbers") {
+						expect(t, phoneNumber == 123456789, true)
+					}
+					return nil
+				},
+			},
 		},
-		Action: func(ctx *Context) error {
-			expect(t, len(ctx.StringSlice("n")), 2)
-			for _, name := range ctx.StringSlice("names") {
-				expect(t, name != "john", true)
-			}
+		{
+			args: []string{"", "-n", "jane", "-n", "bob", "-u", "5", "-u", "10", "-p", "987654321"},
+			app: &App{
+				Flags: []Flag{
+					StringSliceFlag{Name: "names, n", Value: &StringSlice{"john"}},
+					IntSliceFlag{Name: "userIds, u", Value: &IntSlice{3}},
+					Int64SliceFlag{Name: "phoneNumbers, p", Value: &Int64Slice{123456789}},
+				},
+				Action: func(ctx *Context) error {
+					expect(t, len(ctx.StringSlice("n")), 2)
+					for _, name := range ctx.StringSlice("names") {
+						expect(t, name != "john", true)
+					}
 
-			expect(t, len(ctx.IntSlice("u")), 2)
-			for _, userId := range ctx.IntSlice("userIds") {
-				expect(t, userId != 3, true)
-			}
+					expect(t, len(ctx.IntSlice("u")), 2)
+					for _, userId := range ctx.IntSlice("userIds") {
+						expect(t, userId != 3, true)
+					}
 
-			expect(t, len(ctx.Int64Slice("p")), 1)
-			for _, phoneNumber := range ctx.Int64Slice("phoneNumbers") {
-				expect(t, phoneNumber != 123456789, true)
-			}
-			return nil
+					expect(t, len(ctx.Int64Slice("p")), 1)
+					for _, phoneNumber := range ctx.Int64Slice("phoneNumbers") {
+						expect(t, phoneNumber != 123456789, true)
+					}
+					return nil
+				},
+			},
+		},
+		{
+			args: []string{"", "--names", "john", "--userIds", "3", "--phoneNumbers", "123456789"},
+			app: &App{
+				Flags: []Flag{
+					StringSliceFlag{Name: "names, n", Value: &StringSlice{"john"}},
+					IntSliceFlag{Name: "userIds, u", Value: &IntSlice{3}},
+					Int64SliceFlag{Name: "phoneNumbers, p", Value: &Int64Slice{123456789}},
+				},
+				Action: func(ctx *Context) error {
+					expect(t, len(ctx.StringSlice("n")), 1)
+					for _, name := range ctx.StringSlice("names") {
+						expect(t, name == "john", true)
+					}
+
+					expect(t, len(ctx.IntSlice("u")), 1)
+					for _, userId := range ctx.IntSlice("userIds") {
+						expect(t, userId == 3, true)
+					}
+
+					expect(t, len(ctx.Int64Slice("p")), 1)
+					for _, phoneNumber := range ctx.Int64Slice("phoneNumbers") {
+						expect(t, phoneNumber == 123456789, true)
+					}
+					return nil
+				},
+			},
 		},
 	}
 
-	_ = a.Run([]string{"", "-n", "jane", "-n", "bob", "-u", "5", "-u", "10", "-p", "987654321"})
+	for _, tt := range tests {
+		_ = tt.app.Run(tt.args)
+	}
 }
