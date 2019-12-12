@@ -6,53 +6,58 @@ import (
 	"time"
 )
 
-
-// timestamp wrap to satisfy golang's flag interface.
-type timestampWrap struct {
+// Timestamp wrap to satisfy golang's flag interface.
+type Timestamp struct {
 	timestamp *time.Time
 	hasBeenSet bool
 	layout 	   string
 }
 
+// Timestamp constructor
+func NewTimestamp(timestamp time.Time) *Timestamp {
+	return &Timestamp{timestamp: &timestamp}
+}
+
 // Set the timestamp value directly
-func (t *timestampWrap) SetTimestamp(value time.Time) {
+func (t *Timestamp) SetTimestamp(value time.Time) {
 	if !t.hasBeenSet {
 		t.timestamp = &value
 		t.hasBeenSet = true
 	}
 }
 // Set the timestamp string layout for future parsing
-func (t *timestampWrap) SetLayout(layout string) {
+func (t *Timestamp) SetLayout(layout string) {
 	t.layout = layout
 }
 
 // Parses the string value to timestamp
-func (t *timestampWrap) Set(value string) error {
+func (t *Timestamp) Set(value string) error {
 	timestamp, err := time.Parse(t.layout, value)
 	if err != nil {
 		return err
 	}
 
 	t.timestamp = &timestamp
+	t.hasBeenSet = true
 	return nil
 }
 
 // String returns a readable representation of this value (for usage defaults)
-func (t *timestampWrap) String() string {
+func (t *Timestamp) String() string {
 	return fmt.Sprintf("%#v", t.timestamp)
 }
 
 // Value returns the timestamp value stored in the flag
-func (t *timestampWrap) Value() *time.Time {
+func (t *Timestamp) Value() *time.Time {
 	return t.timestamp
 }
 
 // Get returns the flag structure
-func (t *timestampWrap) Get() interface{} {
+func (t *Timestamp) Get() interface{} {
 	return *t
 }
 
-// TimestampFlag is a flag with type protobuf.timestamp
+// TimestampFlag is a flag with type time
 type TimestampFlag struct {
 	Name        string
 	Aliases     []string
@@ -62,7 +67,7 @@ type TimestampFlag struct {
 	Required    bool
 	Hidden      bool
 	Layout 	    string
-	Value       timestampWrap
+	Value       *Timestamp
 	DefaultText string
 	HasBeenSet  bool
 }
@@ -98,16 +103,32 @@ func (f *TimestampFlag) GetUsage() string {
 	return f.Usage
 }
 
-// GetValue returns the flag value
-func (f *TimestampFlag) GetValue() *time.Time {
-	return f.Value.timestamp
+// GetValue returns the flags value as string representation and an empty
+// string if the flag takes no value at all.
+func (f *TimestampFlag) GetValue() string {
+	if f.Value != nil {
+		return f.Value.timestamp.String()
+	}
+	return ""
 }
 
 // Apply populates the flag given the flag set and environment
 func (f *TimestampFlag) Apply(set *flag.FlagSet) error {
+	if f.Layout == "" {
+		return fmt.Errorf("timestamp Layout is required")
+	}
+	f.Value = &Timestamp{}
+	f.Value.SetLayout(f.Layout)
+
+	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
+		if err := f.Value.Set(val); err != nil {
+			return fmt.Errorf("could not parse %q as timestamp value for flag %s: %s", val, f.Name, err)
+		}
+		f.HasBeenSet = true
+	}
+
 	for _, name := range f.Names() {
-		f.Value.SetLayout(f.Layout)
-		set.Var(&f.Value, name, f.Usage)
+		set.Var(f.Value, name, f.Usage)
 	}
 	return nil
 }
@@ -124,7 +145,7 @@ func (c *Context) Timestamp(name string) *time.Time {
 func lookupTimestamp(name string, set *flag.FlagSet) *time.Time {
 	f := set.Lookup(name)
 	if f != nil {
-		return (f.Value.(*timestampWrap)).Value()
+		return (f.Value.(*Timestamp)).Value()
 	}
 	return nil
 }

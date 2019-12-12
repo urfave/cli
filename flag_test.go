@@ -121,8 +121,8 @@ func TestFlagsFromEnv(t *testing.T) {
 		a := App{
 			Flags: []Flag{test.flag},
 			Action: func(ctx *Context) error {
-				if !reflect.DeepEqual(ctx.Value(test.flag.Names()[0]), test.output) {
-					t.Errorf("ex:%01d expected %q to be parsed as %#v, instead was %#v", i, test.input, test.output, ctx.Value(test.flag.Names()[0]))
+				if !reflect.DeepEqual(ctx.value(test.flag.Names()[0]), test.output) {
+					t.Errorf("ex:%01d expected %q to be parsed as %#v, instead was %#v", i, test.input, test.output, ctx.value(test.flag.Names()[0]))
 				}
 				return nil
 			},
@@ -1676,5 +1676,31 @@ func TestInt64Slice_Serialized_Set(t *testing.T) {
 
 	if sl0.String() != sl1.String() {
 		t.Fatalf("pre and post serialization do not match: %v != %v", sl0, sl1)
+	}
+}
+
+func TestTimestamp_set(t *testing.T) {
+	ts := Timestamp{
+		timestamp:  nil,
+		hasBeenSet: false,
+		layout:     "Jan 2, 2006 at 3:04pm (MST)",
+	}
+
+	time1 := "Feb 3, 2013 at 7:54pm (PST)"
+	if err := ts.Set(time1); err != nil {
+		t.Fatalf("Failed to parse time %s with layout %s", time1, ts.layout)
+	}
+	if ts.hasBeenSet == false {
+		t.Fatalf("hasBeenSet is not true after setting a time")
+	}
+
+	ts.hasBeenSet = false
+	ts.SetLayout(time.RFC3339)
+	time2 := "2006-01-02T15:04:05Z"
+	if err := ts.Set(time2); err != nil {
+		t.Fatalf("Failed to parse time %s with layout %s", time2, ts.layout)
+	}
+	if ts.hasBeenSet == false {
+		t.Fatalf("hasBeenSet is not true after setting a time")
 	}
 }
