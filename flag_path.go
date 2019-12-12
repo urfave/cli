@@ -72,7 +72,7 @@ func (f *PathFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
-// String looks up the value of a local PathFlag, returns
+// Path looks up the value of a local PathFlag, returns
 // "" if not found
 func (c *Context) Path(name string) string {
 	if fs := lookupFlagSet(name, c); fs != nil {
