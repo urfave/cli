@@ -5,10 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"os"
-	"os/signal"
 	"strings"
-	"syscall"
 )
 
 // Context is a type that is passed through to
@@ -36,14 +33,7 @@ func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
 	c.Command = &Command{}
 
 	if c.Context == nil {
-		ctx, cancel := context.WithCancel(context.Background())
-		go func() {
-			defer cancel()
-			sigs := make(chan os.Signal, 1)
-			signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-			<-sigs
-		}()
-		c.Context = ctx
+		c.Context = context.Background()
 	}
 
 	return c
