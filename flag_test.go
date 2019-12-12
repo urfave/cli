@@ -1704,3 +1704,32 @@ func TestTimestamp_set(t *testing.T) {
 		t.Fatalf("hasBeenSet is not true after setting a time")
 	}
 }
+
+func TestTimestampFlagApply(t *testing.T) {
+	expectedResult, _ :=  time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: time.RFC3339}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
+	expect(t, err, nil)
+	expect(t, *fl.Value.timestamp, expectedResult)
+}
+
+func TestTimestampFlagApply_Fail_Parse_Wrong_Layout(t *testing.T) {
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: "randomlayout"}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
+	expect(t, err, fmt.Errorf("invalid value \"2006-01-02T15:04:05Z\" for flag -time: parsing time \"2006-01-02T15:04:05Z\" as \"randomlayout\": cannot parse \"2006-01-02T15:04:05Z\" as \"randomlayout\""))
+}
+
+func TestTimestampFlagApply_Fail_Parse_Wrong_Time(t *testing.T) {
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: "Jan 2, 2006 at 3:04pm (MST)"}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
+	expect(t, err, fmt.Errorf("invalid value \"2006-01-02T15:04:05Z\" for flag -time: parsing time \"2006-01-02T15:04:05Z\" as \"Jan 2, 2006 at 3:04pm (MST)\": cannot parse \"2006-01-02T15:04:05Z\" as \"Jan\""))
+}
