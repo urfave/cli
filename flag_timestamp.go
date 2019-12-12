@@ -8,9 +8,9 @@ import (
 
 // Timestamp wrap to satisfy golang's flag interface.
 type Timestamp struct {
-	timestamp *time.Time
+	timestamp  *time.Time
 	hasBeenSet bool
-	layout 	   string
+	layout     string
 }
 
 // Timestamp constructor
@@ -25,6 +25,7 @@ func (t *Timestamp) SetTimestamp(value time.Time) {
 		t.hasBeenSet = true
 	}
 }
+
 // Set the timestamp string layout for future parsing
 func (t *Timestamp) SetLayout(layout string) {
 	t.layout = layout
@@ -66,7 +67,7 @@ type TimestampFlag struct {
 	FilePath    string
 	Required    bool
 	Hidden      bool
-	Layout 	    string
+	Layout      string
 	Value       *Timestamp
 	DefaultText string
 	HasBeenSet  bool
