@@ -48,7 +48,7 @@ func (m *multiError) Errors() []error {
 	return errs
 }
 
-// ErrorFormatter is the interface that will format the error output
+// ErrorFormatter is the interface that will suitably format the error output
 type ErrorFormatter interface {
 	Format(s fmt.State, verb rune)
 }
