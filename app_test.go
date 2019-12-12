@@ -1451,7 +1451,6 @@ func TestApp_Run_CommandWithSubcommandHasHelpTopic(t *testing.T) {
 		}
 
 		output := buf.String()
-		//t.Logf("output: %q\n", buf.Bytes())
 
 		if strings.Contains(output, "No help topic for") {
 			t.Errorf("expect a help topic, got none: \n%q", output)
@@ -1718,7 +1717,6 @@ func TestApp_Run_Categories(t *testing.T) {
 	}
 
 	output := buf.String()
-	//t.Logf("output: %q\n", buf.Bytes())
 
 	if !strings.Contains(output, "1:\n     command1") {
 		t.Errorf("want buffer to include category %q, did not: \n%q", "1:\n     command1", output)
