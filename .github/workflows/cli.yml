@@ -61,5 +61,5 @@ jobs:
       - name: Send Coverage Report
         if: success() && matrix.go == 1.13 && matrix.os == 'ubuntu-latest'
         env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          CODECOV_TOKEN: fa7ff1caed3c43c68ae994495a6469d8
         run: bash <(curl -s https://codecov.io/bash)
