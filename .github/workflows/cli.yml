@@ -58,8 +58,9 @@ jobs:
           go run build.go gfmrun docs/v2/manual.md
           go run build.go toc docs/v2/manual.md
 
-      - name: Send Coverage Report
-        if: success()
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        run: bash <(curl -s https://codecov.io/bash)
+      - name: Upload coverage to Codecov
+        if: success() && matrix.go == 1.13 && matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v1
+        with:
+          token: 0a8cc73b-bb7c-480b-8626-38a461643761
+          fail_ci_if_error: true
