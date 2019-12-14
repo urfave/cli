@@ -20,7 +20,6 @@ install:
   - go version
   - go env
   - go get github.com/urfave/gfmrun/cmd/gfmrun
-  - go get golang.org/x/tools/cmd/goimports
   - go mod tidy
 
 build_script:
