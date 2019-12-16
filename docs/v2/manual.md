@@ -1364,6 +1364,8 @@ func main() {
       &cli.StringFlag{Name: "dance-move", Aliases: []string{"d"}},
       &cli.StringSliceFlag{Name: "names", Aliases: []string{"N"}},
       &cli.UintFlag{Name: "age"},
+      &cli.TimestampFlag{Name: "meeting", Layout:  "2006-01-02T15:04:05"},
+      &cli.TimestampFlag{Name: "birthday", Layout:  "2006-01-02"},
       &cli.Uint64Flag{Name: "bigage"},
     },
     EnableBashCompletion: true,
