@@ -1188,6 +1188,12 @@ func main() {
 }
 ```
 
+In this example the flag could be used like so : 
+
+`myapp --meeting 2019-08-12T15:04:05`
+
+side note : quotes may be necessary around the date depending on your layout (if you have spaces for instance)
+
 
 #### Customization
 
