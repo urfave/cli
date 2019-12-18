@@ -1150,6 +1150,45 @@ The default version flag (`-v/--version`) is defined as `cli.VersionFlag`, which
 is checked by the cli internals in order to print the `App.Version` via
 `cli.VersionPrinter` and break execution.
 
+
+### Timestamp Flag
+
+Using the timestamp flag is simple, You can look at time.Parse to get layout examples : https://golang.org/pkg/time/#example_Parse 
+
+<!-- {
+  "args": ["&#45;&#45;meeting", "2019-08-12T15:04:05"],
+  "output": "\"2019-08-12 15:04:05 +0000 UTC\""
+} -->
+``` go
+package main
+
+import (
+  "fmt"
+  "log"
+  "os"
+
+  "github.com/urfave/cli/v2"
+)
+
+func main() {
+  app := &cli.App{
+    Flags: []cli.Flag {
+      &cli.TimestampFlag{Name: "meeting", Layout: "2006-01-02T15:04:05"},
+    },
+    Action: func(c *cli.Context) error {
+      fmt.Printf("%#v",c.Timestamp("meeting").String())
+      return nil
+    },
+  }
+
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
+}
+```
+
+
 #### Customization
 
 The default flag may be customized to something other than `-v/--version` by
