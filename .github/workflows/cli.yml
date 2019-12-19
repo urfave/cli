@@ -45,19 +45,20 @@ jobs:
           chmod +x $GOPATH/bin/gfmrun
           npm install markdown-toc
 
-      - name: Run Tests (v1)
-        if: contains(github.base_ref, 'v1')
+      - name: Run Tests
         run: |
           go run build.go vet
           go run build.go test
+
+      - name: Run Tests (v1)
+        if: contains(github.base_ref, 'v1')
+        run: |
           go run build.go gfmrun docs/v1/manual.md
           go run build.go toc docs/v1/manual.md
 
       - name: Run Tests (v2)
         if: contains(github.base_ref, 'master')
         run: |
-          go run build.go vet
-          go run build.go test
           go run build.go gfmrun docs/v2/manual.md
           go run build.go toc docs/v2/manual.md
 
