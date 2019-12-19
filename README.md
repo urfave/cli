@@ -64,5 +64,5 @@ export PATH=$PATH:$GOPATH/bin
 ### Supported platforms
 
 cli is tested against multiple versions of Go on Linux, and against the latest
-released version of Go on OS X and Windows.  For full details, see
-[`./.travis.yml`](./.travis.yml) and [`./appveyor.yml`](./appveyor.yml).
+released version of Go on OS X and Windows. This project uses Github Actions for
+builds. For more build info, please look at the [./.github/workflows/cli.yml](https://github.com/urfave/cli/blob/master/.github/workflows/cli.yml).
