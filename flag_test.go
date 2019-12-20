@@ -1678,3 +1678,58 @@ func TestInt64Slice_Serialized_Set(t *testing.T) {
 		t.Fatalf("pre and post serialization do not match: %v != %v", sl0, sl1)
 	}
 }
+
+func TestTimestamp_set(t *testing.T) {
+	ts := Timestamp{
+		timestamp:  nil,
+		hasBeenSet: false,
+		layout:     "Jan 2, 2006 at 3:04pm (MST)",
+	}
+
+	time1 := "Feb 3, 2013 at 7:54pm (PST)"
+	if err := ts.Set(time1); err != nil {
+		t.Fatalf("Failed to parse time %s with layout %s", time1, ts.layout)
+	}
+	if ts.hasBeenSet == false {
+		t.Fatalf("hasBeenSet is not true after setting a time")
+	}
+
+	ts.hasBeenSet = false
+	ts.SetLayout(time.RFC3339)
+	time2 := "2006-01-02T15:04:05Z"
+	if err := ts.Set(time2); err != nil {
+		t.Fatalf("Failed to parse time %s with layout %s", time2, ts.layout)
+	}
+	if ts.hasBeenSet == false {
+		t.Fatalf("hasBeenSet is not true after setting a time")
+	}
+}
+
+func TestTimestampFlagApply(t *testing.T) {
+	expectedResult, _ :=  time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: time.RFC3339}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
+	expect(t, err, nil)
+	expect(t, *fl.Value.timestamp, expectedResult)
+}
+
+func TestTimestampFlagApply_Fail_Parse_Wrong_Layout(t *testing.T) {
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: "randomlayout"}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
+	expect(t, err, fmt.Errorf("invalid value \"2006-01-02T15:04:05Z\" for flag -time: parsing time \"2006-01-02T15:04:05Z\" as \"randomlayout\": cannot parse \"2006-01-02T15:04:05Z\" as \"randomlayout\""))
+}
+
+func TestTimestampFlagApply_Fail_Parse_Wrong_Time(t *testing.T) {
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: "Jan 2, 2006 at 3:04pm (MST)"}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
+	expect(t, err, fmt.Errorf("invalid value \"2006-01-02T15:04:05Z\" for flag -time: parsing time \"2006-01-02T15:04:05Z\" as \"Jan 2, 2006 at 3:04pm (MST)\": cannot parse \"2006-01-02T15:04:05Z\" as \"Jan\""))
+}
