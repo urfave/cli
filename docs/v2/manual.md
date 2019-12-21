@@ -649,6 +649,9 @@ does not provide a required flag, they will be shown an error message.
 
 Take for example this app that reqiures the `lang` flag:
 
+<!-- {
+  "error": "Required flag \"lang\" not set"
+} -->
 ```go
 package main
 
@@ -673,7 +676,6 @@ func main() {
   }
 
   app.Action = func(c *cli.Context) error {
-
     var output string
     if c.String("lang") == "spanish" {
       output = "Hola"
@@ -681,7 +683,6 @@ func main() {
       output = "Hello"
     }
     fmt.Println(output)
-
     return nil
   }
 
