@@ -13,7 +13,6 @@ cli v2 manual
     + [Values from the Environment](#values-from-the-environment)
     + [Values from files](#values-from-files)
     + [Values from alternate input sources (YAML, TOML, and others)](#values-from-alternate-input-sources-yaml-toml-and-others)
-    + [Required flags](#required)
     + [Default Values for help output](#default-values-for-help-output)
     + [Precedence](#precedence)
   * [Subcommands](#subcommands)
