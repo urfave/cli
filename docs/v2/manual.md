@@ -1,8 +1,6 @@
 cli v2 manual
 ===
 
-todo
-
 <!-- toc -->
 
 - [Getting Started](#getting-started)
