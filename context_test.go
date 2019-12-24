@@ -380,8 +380,8 @@ func TestContextAttributeAccessing(t *testing.T) {
 	for _, test := range tdata {
 		t.Run(test.testCase, func(t *testing.T) {
 			// setup
-			set := flag.NewFlagSet("test", 0)
-			set.Bool(test.setBoolInput, false, "doc")
+			set := flag.NewFlagSet("some-flag-set-name", 0)
+			set.Bool(test.setBoolInput, false, "usage documentation")
 			ctx := NewContext(nil, set, test.newContextInput)
 
 			// logic under test
@@ -389,7 +389,7 @@ func TestContextAttributeAccessing(t *testing.T) {
 
 			// assertions
 			if value != false {
-				t.Errorf("expected test.value to be false, but it was not")
+				t.Errorf("expected \"value\" to be false, but it was not")
 			}
 		})
 	}
