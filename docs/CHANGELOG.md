@@ -6,6 +6,25 @@
 
 View [unreleased 2.X] series changes.
 
+## [2.1.0] - 2019-12-24
+
+### Fixed
+
+* Fixed some golint errors in [urfave/cli/pull/988](https://github.com/urfave/cli/pull/988) via [@liamchampton](https://github.com/liamchampton)
+* Fixed a panic with flag completion [urfave/cli/pull/946](https://github.com/urfave/cli/pull/946) via [@unRob](https://github.com/unRob)
+
+### Changed
+
+* Changed docs generation to use visible flags in [urfave/cli/pull/999](https://github.com/urfave/cli/pull/999) via [@subpop](https://github.com/subpop)
+* Changed `App.Run` to use an optional context for timeouts and cancellation in [urfave/cli/pull/975](https://github.com/urfave/cli/pull/975) via [@marwan-at-work](https://github.com/marwan-at-work)
+* Changed version info to be hidden if the user has not defined a version in [urfave/cli/pull/955](https://github.com/urfave/cli/pull/955) via [@asahasrabuddhe](https://github.com/asahasrabuddhe)
+* Changed docs generation to take into account multiple authors in [urfave/cli/pull/900](https://github.com/urfave/cli/pull/900) via [@saschagrunert](https://github.com/saschagrunert)
+* Changed context to expose a `Value` accessor in [urfave/cli/pull/741](https://github.com/urfave/cli/pull/741) via [@corruptmemory](https://github.com/corruptmemory)
+
+### Added
+
+* Added timestamp flag in [urfave/cli/pull/987](https://github.com/urfave/cli/pull/987) via [@drov0](https://github.com/drov0)
+
 ## [2.0.0] - 2019-11-17
 
 The V2 changes were all shipped in [urfave/cli/pull/892](https://github.com/urfave/cli/pull/892), which was created with the effort of over a dozen participants! They are:
@@ -520,7 +539,8 @@ signature of `func(*cli.Context) error`, as defined by `cli.ActionFunc`.
 ### Added
 - Initial implementation.
 
-[unreleased 2.X]: https://github.com/urfave/cli/compare/v2.0.0...HEAD
+[unreleased 2.X]: https://github.com/urfave/cli/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/urfave/cli/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/urfave/cli/compare/v1.22.2...v2.0.0
 
 [unreleased 1.22.X]: https://github.com/urfave/cli/compare/v1.22.2...v1
