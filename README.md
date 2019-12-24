@@ -1,7 +1,6 @@
 cli
 ===
 
-[![Build Status](https://travis-ci.org/urfave/cli.svg?branch=master)](https://travis-ci.org/urfave/cli)
 [![Windows Build Status](https://ci.appveyor.com/api/projects/status/rtgk5xufi932pb2v?svg=true)](https://ci.appveyor.com/project/urfave/cli)
 
 [![GoDoc](https://godoc.org/github.com/urfave/cli?status.svg)](https://godoc.org/github.com/urfave/cli)
@@ -20,6 +19,12 @@ Usage documentation exists for each major version. Don't know what version you'r
 - `v2` - [./docs/v2/manual.md](./docs/v2/manual.md)
 - `v1` - [./docs/v1/manual.md](./docs/v1/manual.md)
 
+## Installation
+
+Make sure you have a working Go environment.  Go version 1.11+ is supported. [See the install instructions for Go](http://golang.org/doc/install.html).
+
+Go Modules are strongly recommended when using this package. [See the go blog guide on using Go Modules](https://blog.golang.org/using-go-modules).
+
 ### Using `v2` releases
 
 ```
@@ -37,7 +42,7 @@ import (
 ### Using `v1` releases
 
 ```
-$ go get github.com/urfave/cli
+$ GO111MODULE=on go get github.com/urfave/cli
 ```
 
 ```go
@@ -47,11 +52,6 @@ import (
 )
 ...
 ```
-
-## Installation
-
-Make sure you have a working Go environment.  Go version 1.10+ is supported.  [See
-the install instructions for Go](http://golang.org/doc/install.html).
 
 ### GOPATH
 
