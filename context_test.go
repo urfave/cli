@@ -293,6 +293,13 @@ func TestContext_Lineage(t *testing.T) {
 	expect(t, lineage[1], parentCtx)
 }
 
+func TestContext_BackgroundContextAttributeAccessing(t *testing.T) {
+	parentContext := context.Background()
+	ctx := NewContext(nil, nil, &Context{Context: parentContext})
+	value := ctx.Bool("some-bool")
+	expect(t, value, false)
+}
+
 func TestContext_lookupFlagSet(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("local-flag", false, "doc")
