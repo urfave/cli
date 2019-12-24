@@ -1401,54 +1401,54 @@ func main() {
       cli.ShowSubcommandHelp(c)
       cli.ShowVersion(c)
 
-			fmt.Printf("%#v\n", c.App.Command("doo"))
-			// // uncomment when https://github.com/urfave/cli/pull/1014 is released
-			// if c.Bool("infinite") {
-			// 	c.App.Run([]string{"app", "doo", "wop"})
-			// }
+      fmt.Printf("%#v\n", c.App.Command("doo"))
+      // // uncomment when https://github.com/urfave/cli/pull/1014 is released
+      // if c.Bool("infinite") {
+      // 	c.App.Run([]string{"app", "doo", "wop"})
+      // }
 
-			// // uncomment when https://github.com/urfave/cli/pull/1014 is released
-			// if c.Bool("forevar") {
-			// 	c.App.RunAsSubcommand(c)
-			// }
-			c.App.Setup()
-			fmt.Printf("%#v\n", c.App.VisibleCategories())
-			fmt.Printf("%#v\n", c.App.VisibleCommands())
-			fmt.Printf("%#v\n", c.App.VisibleFlags())
+      // // uncomment when https://github.com/urfave/cli/pull/1014 is released
+      // if c.Bool("forevar") {
+      // 	c.App.RunAsSubcommand(c)
+      // }
+      c.App.Setup()
+      fmt.Printf("%#v\n", c.App.VisibleCategories())
+      fmt.Printf("%#v\n", c.App.VisibleCommands())
+      fmt.Printf("%#v\n", c.App.VisibleFlags())
 
-			fmt.Printf("%#v\n", c.Args().First())
-			if c.Args().Len() > 0 {
-				fmt.Printf("%#v\n", c.Args().Get(1))
-			}
-			fmt.Printf("%#v\n", c.Args().Present())
-			fmt.Printf("%#v\n", c.Args().Tail())
+      fmt.Printf("%#v\n", c.Args().First())
+      if c.Args().Len() > 0 {
+        fmt.Printf("%#v\n", c.Args().Get(1))
+      }
+      fmt.Printf("%#v\n", c.Args().Present())
+      fmt.Printf("%#v\n", c.Args().Tail())
 
-			set := flag.NewFlagSet("contrive", 0)
-			nc := cli.NewContext(c.App, set, c)
+      set := flag.NewFlagSet("contrive", 0)
+      nc := cli.NewContext(c.App, set, c)
 
-			// // uncomment when https://github.com/urfave/cli/pull/1014 is released
-			// fmt.Printf("%#v\n", nc.Args())
-			// fmt.Printf("%#v\n", nc.Bool("nope"))
-			// fmt.Printf("%#v\n", !nc.Bool("nerp"))
-			// fmt.Printf("%#v\n", nc.Duration("howlong"))
-			// fmt.Printf("%#v\n", nc.Float64("hay"))
-			// fmt.Printf("%#v\n", nc.Generic("bloop"))
-			// fmt.Printf("%#v\n", nc.Int64("bonk"))
-			// fmt.Printf("%#v\n", nc.Int64Slice("burnks"))
-			// fmt.Printf("%#v\n", nc.Int("bips"))
-			// fmt.Printf("%#v\n", nc.IntSlice("blups"))
-			// fmt.Printf("%#v\n", nc.String("snurt"))
-			// fmt.Printf("%#v\n", nc.StringSlice("snurkles"))
-			// fmt.Printf("%#v\n", nc.Uint("flub"))
-			// fmt.Printf("%#v\n", nc.Uint64("florb"))
+      // // uncomment when https://github.com/urfave/cli/pull/1014 is released
+      // fmt.Printf("%#v\n", nc.Args())
+      // fmt.Printf("%#v\n", nc.Bool("nope"))
+      // fmt.Printf("%#v\n", !nc.Bool("nerp"))
+      // fmt.Printf("%#v\n", nc.Duration("howlong"))
+      // fmt.Printf("%#v\n", nc.Float64("hay"))
+      // fmt.Printf("%#v\n", nc.Generic("bloop"))
+      // fmt.Printf("%#v\n", nc.Int64("bonk"))
+      // fmt.Printf("%#v\n", nc.Int64Slice("burnks"))
+      // fmt.Printf("%#v\n", nc.Int("bips"))
+      // fmt.Printf("%#v\n", nc.IntSlice("blups"))
+      // fmt.Printf("%#v\n", nc.String("snurt"))
+      // fmt.Printf("%#v\n", nc.StringSlice("snurkles"))
+      // fmt.Printf("%#v\n", nc.Uint("flub"))
+      // fmt.Printf("%#v\n", nc.Uint64("florb"))
 
-			// // uncomment when https://github.com/urfave/cli/pull/1014 is released
-			// fmt.Printf("%#v\n", nc.FlagNames())
-			// fmt.Printf("%#v\n", nc.IsSet("wat"))
-			// fmt.Printf("%#v\n", nc.Set("wat", "nope"))
-			// fmt.Printf("%#v\n", nc.NArg())
-			// fmt.Printf("%#v\n", nc.NumFlags())
-			// fmt.Printf("%#v\n", nc.Lineage()[1])
+      // // uncomment when https://github.com/urfave/cli/pull/1014 is released
+      // fmt.Printf("%#v\n", nc.FlagNames())
+      // fmt.Printf("%#v\n", nc.IsSet("wat"))
+      // fmt.Printf("%#v\n", nc.Set("wat", "nope"))
+      // fmt.Printf("%#v\n", nc.NArg())
+      // fmt.Printf("%#v\n", nc.NumFlags())
+      // fmt.Printf("%#v\n", nc.Lineage()[1])
       nc.Set("wat", "also-nope")
 
       ec := cli.Exit("ohwell", 86)
