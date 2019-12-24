@@ -370,9 +370,33 @@ func TestContextAttributeAccessing(t *testing.T) {
 			newContextInput: nil,
 		},
 		{
-			testCase:        "empty_set_bool_and_present_ctx_bool_with_background_context",
+			testCase:        "present_set_bool_and_present_ctx_bool_with_background_context",
 			setBoolInput:    "",
 			ctxBoolInput:    "ctx-bool",
+			newContextInput: &Context{Context: context.Background()},
+		},
+		{
+			testCase:        "present_set_bool_and_present_ctx_bool",
+			setBoolInput:    "ctx-bool",
+			ctxBoolInput:    "ctx-bool",
+			newContextInput: nil,
+		},
+		{
+			testCase:        "present_set_bool_and_present_ctx_bool_with_background_context",
+			setBoolInput:    "ctx-bool",
+			ctxBoolInput:    "ctx-bool",
+			newContextInput: &Context{Context: context.Background()},
+		},
+		{
+			testCase:        "present_set_bool_and_different_ctx_bool",
+			setBoolInput:    "ctx-bool",
+			ctxBoolInput:    "not-ctx-bool",
+			newContextInput: nil,
+		},
+		{
+			testCase:        "present_set_bool_and_different_ctx_bool_with_background_context",
+			setBoolInput:    "ctx-bool",
+			ctxBoolInput:    "not-ctx-bool",
 			newContextInput: &Context{Context: context.Background()},
 		},
 	}
