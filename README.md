@@ -20,6 +20,12 @@ Usage documentation exists for each major version. Don't know what version you'r
 - `v2` - [./docs/v2/manual.md](./docs/v2/manual.md)
 - `v1` - [./docs/v1/manual.md](./docs/v1/manual.md)
 
+## Installation
+
+Make sure you have a working Go environment.  Go version 1.11+ is supported. [See the install instructions for Go](http://golang.org/doc/install.html).
+
+Go Modules are strongly recommended when using this package. [See the go blog guide on using Go Modules](https://blog.golang.org/using-go-modules).
+
 ### Using `v2` releases
 
 ```
@@ -37,7 +43,7 @@ import (
 ### Using `v1` releases
 
 ```
-$ go get github.com/urfave/cli
+$ GO111MODULE=on go get github.com/urfave/cli
 ```
 
 ```go
@@ -47,11 +53,6 @@ import (
 )
 ...
 ```
-
-## Installation
-
-Make sure you have a working Go environment.  Go version 1.10+ is supported.  [See
-the install instructions for Go](http://golang.org/doc/install.html).
 
 ### GOPATH
 
