@@ -293,13 +293,6 @@ func TestContext_Lineage(t *testing.T) {
 	expect(t, lineage[1], parentCtx)
 }
 
-func TestContext_BackgroundContextAttributeAccessing(t *testing.T) {
-	parentContext := context.Background()
-	ctx := NewContext(nil, nil, &Context{Context: parentContext})
-	value := ctx.Bool("some-bool")
-	expect(t, value, false)
-}
-
 func TestContext_lookupFlagSet(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("local-flag", false, "doc")
@@ -348,6 +341,57 @@ func TestContextPropagation(t *testing.T) {
 	ctx = NewContext(nil, nil, parent)
 	if ctx.Context == nil {
 		t.Fatal("expected context to not be nil even if the parent's context is nil")
+	}
+}
+
+func TestContextAttributeAccessing(t *testing.T) {
+	tdata := []struct {
+		testCase        string
+		setBoolInput    string
+		ctxBoolInput    string
+		newContextInput *Context
+	}{
+		{
+			testCase:        "empty",
+			setBoolInput:    "",
+			ctxBoolInput:    "",
+			newContextInput: nil,
+		},
+		{
+			testCase:        "empty_with_background_context",
+			setBoolInput:    "",
+			ctxBoolInput:    "",
+			newContextInput: &Context{Context: context.Background()},
+		},
+		{
+			testCase:        "empty_set_bool_and_present_ctx_bool",
+			setBoolInput:    "",
+			ctxBoolInput:    "ctx-bool",
+			newContextInput: nil,
+		},
+		{
+			testCase:        "empty_set_bool_and_present_ctx_bool_with_background_context",
+			setBoolInput:    "",
+			ctxBoolInput:    "ctx-bool",
+			newContextInput: &Context{Context: context.Background()},
+		},
+	}
+
+	for _, test := range tdata {
+		t.Run(test.testCase, func(t *testing.T) {
+			// setup
+			set := flag.NewFlagSet("test", 0)
+			set.Bool(test.setBoolInput, false, "doc")
+			ctx := NewContext(nil, set, test.newContextInput)
+
+			// logic under test
+			value := ctx.Bool(test.ctxBoolInput)
+
+			// assertions
+			if value != false {
+				t.Errorf("expected test.value to be false, but it was not")
+			}
+		})
 	}
 }
 
