@@ -8,6 +8,8 @@ View [unreleased 2.X] series changes.
 
 ## [2.1.0] - 2019-12-24
 
+These release notes were written for the git hash [ae84df4cef4a2a6f1a0cb1d41ea0f3af8755e5a8](https://github.com/urfave/cli/tree/ae84df4cef4a2a6f1a0cb1d41ea0f3af8755e5a8)
+
 ### Fixed
 
 * Fixed some golint errors in [urfave/cli/pull/988](https://github.com/urfave/cli/pull/988) via [@liamchampton](https://github.com/liamchampton)
