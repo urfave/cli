@@ -28,6 +28,9 @@ func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
 	if parentCtx != nil {
 		c.Context = parentCtx.Context
 		c.shellComplete = parentCtx.shellComplete
+		if parentCtx.flagSet == nil {
+			parentCtx.flagSet = &flag.FlagSet{}
+		}
 	}
 
 	c.Command = &Command{}
