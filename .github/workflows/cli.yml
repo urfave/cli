@@ -11,6 +11,7 @@ on:
       - v1
 
 jobs:
+
   test:
     strategy:
       matrix:
@@ -37,48 +38,10 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
-      - name: Install Dependencies (Linux / MacOS)
-        if: matrix.os != 'windows-latest'
-        run: |
-          mkdir -p $GOPATH/bin
-          curl -L -o $GOPATH/bin/gfmrun "https://github.com/urfave/gfmrun/releases/download/v1.2.14/gfmrun-$(go env GOOS)-amd64-v1.2.14"
-          chmod +x $GOPATH/bin/gfmrun
-          npm install markdown-toc
-
-      - name: Install Dependencies (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          curl -L -o gfmrun.exe "https://github.com/urfave/gfmrun/releases/download/v1.2.14/gfmrun-windows-amd64-v1.2.14.exe"
-          npm install markdown-toc
-
       - name: Run Tests
         run: |
           go run build.go vet
           go run build.go test
-
-      - name: Run Tests (v1) (Linux / MacOS)
-        if: contains(github.base_ref, 'v1') && matrix.os != 'windows-latest'
-        run: |
-          go run build.go gfmrun docs/v1/manual.md
-          go run build.go toc docs/v1/manual.md
-
-      - name: Run Tests (v1) (Windows)
-        if: contains(github.base_ref, 'v1') && matrix.os == 'windows-latest'
-        run: |
-          go run build.go gfmrun docs\v1\manual.md
-          go run build.go toc docs\v1\manual.md
-
-      - name: Run Tests (v2) (Linux / MacOS)
-        if: contains(github.base_ref, 'master') && matrix.os != 'windows-latest'
-        run: |
-          go run build.go gfmrun docs/v2/manual.md
-          go run build.go toc docs/v2/manual.md
-
-      - name: Run Tests (v2) (Windows)
-        if: contains(github.base_ref, 'master') && matrix.os == 'windows-latest'
-        run: |
-          go run build.go gfmrun docs/v2/manual.md
-          go run build.go toc docs/v2/manual.md
 
       - name: Upload coverage to Codecov
         if: success() && matrix.go == 1.13 && matrix.os == 'ubuntu-latest'
@@ -86,3 +49,48 @@ jobs:
         with:
           token: 0a8cc73b-bb7c-480b-8626-38a461643761
           fail_ci_if_error: true
+
+  test-docs:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        go: [1.13]
+    name: test-docs
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Set up Go ${{ matrix.go }}
+        uses: actions/setup-go@v1
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Set GOPATH, PATH and ENV
+        run: |
+          echo "::set-env name=GOPATH::$(dirname $GITHUB_WORKSPACE)"
+          echo "::set-env name=GO111MODULE::on"
+          echo "::set-env name=GOPROXY::https://proxy.golang.org"
+          echo "::add-path::$(dirname $GITHUB_WORKSPACE)/bin"
+        shell: bash
+
+      - name: Checkout Code
+        uses: actions/checkout@v1
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Install Dependencies
+        run: |
+          mkdir -p $GOPATH/bin
+          curl -L -o $GOPATH/bin/gfmrun "https://github.com/urfave/gfmrun/releases/download/v1.2.14/gfmrun-$(go env GOOS)-amd64-v1.2.14"
+          chmod +x $GOPATH/bin/gfmrun
+          npm install markdown-toc
+
+      - name: Run Tests (v1)
+        if: contains(github.base_ref, 'v1')
+        run: |
+          go run build.go gfmrun docs/v1/manual.md
+          go run build.go toc docs/v1/manual.md
+
+      - name: Run Tests (v2)
+        if: contains(github.base_ref, 'master')
+        run: |
+          go run build.go gfmrun docs/v2/manual.md
+          go run build.go toc docs/v2/manual.md
