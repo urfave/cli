@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"reflect"
 	"strings"
@@ -2121,7 +2120,7 @@ func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
 	var exitCodeFromExitErrHandler int
 	app.ExitErrHandler = func(c *Context, err error) {
 		if exitErr, ok := err.(ExitCoder); ok {
-			log.Print(exitErr)
+			t.Log(exitErr)
 			exitCodeFromExitErrHandler = exitErr.ExitCode()
 		}
 	}

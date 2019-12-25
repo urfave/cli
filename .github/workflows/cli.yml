@@ -1,6 +1,10 @@
 name: Run Tests
 
 on:
+  push:
+    branches:
+      - master
+      - v1
   pull_request:
     branches:
       - master
@@ -47,40 +51,38 @@ jobs:
           curl -L -o gfmrun.exe "https://github.com/urfave/gfmrun/releases/download/v1.2.14/gfmrun-windows-amd64-v1.2.14.exe"
           npm install markdown-toc
 
-      - name: Run Tests (v1) (Linux / MacOS)
-        if: contains(github.base_ref, 'v1') && matrix.os != 'windows-latest'
+      - name: Run Tests
         run: |
           go run build.go vet
           go run build.go test
+
+      - name: Run Tests (v1) (Linux / MacOS)
+        if: contains(github.base_ref, 'v1') && matrix.os != 'windows-latest'
+        run: |
           go run build.go gfmrun docs/v1/manual.md
           go run build.go toc docs/v1/manual.md
 
       - name: Run Tests (v1) (Windows)
         if: contains(github.base_ref, 'v1') && matrix.os == 'windows-latest'
         run: |
-          go run build.go vet
-          go run build.go test
           go run build.go gfmrun docs\v1\manual.md
           go run build.go toc docs\v1\manual.md
 
       - name: Run Tests (v2) (Linux / MacOS)
         if: contains(github.base_ref, 'master') && matrix.os != 'windows-latest'
         run: |
-          go run build.go vet
-          go run build.go test
           go run build.go gfmrun docs/v2/manual.md
           go run build.go toc docs/v2/manual.md
 
       - name: Run Tests (v2) (Windows)
         if: contains(github.base_ref, 'master') && matrix.os == 'windows-latest'
         run: |
-          go run build.go vet
-          go run build.go test
           go run build.go gfmrun docs/v2/manual.md
           go run build.go toc docs/v2/manual.md
 
-      - name: Send Coverage Report
-        if: success()
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        run: bash <(curl -s https://codecov.io/bash)
+      - name: Upload coverage to Codecov
+        if: success() && matrix.go == 1.13 && matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v1
+        with:
+          token: 0a8cc73b-bb7c-480b-8626-38a461643761
+          fail_ci_if_error: true

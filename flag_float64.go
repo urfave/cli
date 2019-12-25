@@ -18,11 +18,11 @@ type Float64Flag struct {
 	Value       float64
 	DefaultText string
 	Destination *float64
-	HasBeenSet bool
+	HasBeenSet  bool
 }
 
 // IsSet returns whether or not the flag has been set through env or file
-func (f *Float64Flag)IsSet() bool {
+func (f *Float64Flag) IsSet() bool {
 	return f.HasBeenSet
 }
 

@@ -23,6 +23,10 @@ func testApp() *App {
 			Aliases: []string{"b"},
 			Usage:   "another usage text",
 		},
+		&BoolFlag{
+			Name:   "hidden-flag",
+			Hidden: true,
+		},
 	}
 	app.Commands = []*Command{{
 		Aliases: []string{"c"},
