@@ -344,6 +344,81 @@ func TestContextPropagation(t *testing.T) {
 	}
 }
 
+func TestContextAttributeAccessing(t *testing.T) {
+	tdata := []struct {
+		testCase        string
+		setBoolInput    string
+		ctxBoolInput    string
+		newContextInput *Context
+	}{
+		{
+			testCase:        "empty",
+			setBoolInput:    "",
+			ctxBoolInput:    "",
+			newContextInput: nil,
+		},
+		{
+			testCase:        "empty_with_background_context",
+			setBoolInput:    "",
+			ctxBoolInput:    "",
+			newContextInput: &Context{Context: context.Background()},
+		},
+		{
+			testCase:        "empty_set_bool_and_present_ctx_bool",
+			setBoolInput:    "",
+			ctxBoolInput:    "ctx-bool",
+			newContextInput: nil,
+		},
+		{
+			testCase:        "present_set_bool_and_present_ctx_bool_with_background_context",
+			setBoolInput:    "",
+			ctxBoolInput:    "ctx-bool",
+			newContextInput: &Context{Context: context.Background()},
+		},
+		{
+			testCase:        "present_set_bool_and_present_ctx_bool",
+			setBoolInput:    "ctx-bool",
+			ctxBoolInput:    "ctx-bool",
+			newContextInput: nil,
+		},
+		{
+			testCase:        "present_set_bool_and_present_ctx_bool_with_background_context",
+			setBoolInput:    "ctx-bool",
+			ctxBoolInput:    "ctx-bool",
+			newContextInput: &Context{Context: context.Background()},
+		},
+		{
+			testCase:        "present_set_bool_and_different_ctx_bool",
+			setBoolInput:    "ctx-bool",
+			ctxBoolInput:    "not-ctx-bool",
+			newContextInput: nil,
+		},
+		{
+			testCase:        "present_set_bool_and_different_ctx_bool_with_background_context",
+			setBoolInput:    "ctx-bool",
+			ctxBoolInput:    "not-ctx-bool",
+			newContextInput: &Context{Context: context.Background()},
+		},
+	}
+
+	for _, test := range tdata {
+		t.Run(test.testCase, func(t *testing.T) {
+			// setup
+			set := flag.NewFlagSet("some-flag-set-name", 0)
+			set.Bool(test.setBoolInput, false, "usage documentation")
+			ctx := NewContext(nil, set, test.newContextInput)
+
+			// logic under test
+			value := ctx.Bool(test.ctxBoolInput)
+
+			// assertions
+			if value != false {
+				t.Errorf("expected \"value\" to be false, but it was not")
+			}
+		})
+	}
+}
+
 func TestCheckRequiredFlags(t *testing.T) {
 	tdata := []struct {
 		testCase              string
