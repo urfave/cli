@@ -31,7 +31,7 @@ greet [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 **--another-flag, -b**: another usage text
 
-**--flag, --fl, -f**="": 
+**--flag, --fl, -f**="":
 
 **--socket, -s**="": some 'usage' text (default: value)
 
