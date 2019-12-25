@@ -13,6 +13,7 @@ cli v2 manual
     + [Values from the Environment](#values-from-the-environment)
     + [Values from files](#values-from-files)
     + [Values from alternate input sources (YAML, TOML, and others)](#values-from-alternate-input-sources-yaml-toml-and-others)
+    + [Required Flags](#required-flags)
     + [Default Values for help output](#default-values-for-help-output)
     + [Precedence](#precedence)
   * [Subcommands](#subcommands)
@@ -639,6 +640,63 @@ func main() {
 
   app.Run(os.Args)
 }
+```
+
+#### Required Flags
+
+You can make a flag required by setting the `Required` field to `true`. If a user
+does not provide a required flag, they will be shown an error message.
+
+Take for example this app that reqiures the `lang` flag:
+
+<!-- {
+  "error": "Required flag \"lang\" not set"
+} -->
+```go
+package main
+
+import (
+  "log"
+  "os"
+  "strings"
+
+  "github.com/urfave/cli"
+)
+
+func main() {
+  app := cli.NewApp()
+
+  app.Flags = []cli.Flag {
+    cli.StringFlag{
+      Name: "lang",
+      Value: "english",
+      Usage: "language for the greeting",
+      Required: true,
+    },
+  }
+
+  app.Action = func(c *cli.Context) error {
+    var output string
+    if c.String("lang") == "spanish" {
+      output = "Hola"
+    } else {
+      output = "Hello"
+    }
+    fmt.Println(output)
+    return nil
+  }
+
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
+}
+```
+
+If the app is run without the `lang` flag, the user will see the following message
+
+```
+Required flag "lang" not set
 ```
 
 #### Default Values for help output
