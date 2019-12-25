@@ -6,6 +6,12 @@
 
 View [unreleased 2.X] series changes.
 
+## [2.1.1] - 2019-12-24
+
+### Fixed
+
+* Fixed a `Context` regression introduced in `v2.1.0` in [urfave/cli/pull/1014](https://github.com/urfave/cli/pull/1014) via [@lynncyrin](https://github.com/lynncyrin)
+
 ## [2.1.0] - 2019-12-24
 
 These release notes were written for the git hash [ae84df4cef4a2a6f1a0cb1d41ea0f3af8755e5a8](https://github.com/urfave/cli/tree/ae84df4cef4a2a6f1a0cb1d41ea0f3af8755e5a8)
@@ -541,7 +547,8 @@ signature of `func(*cli.Context) error`, as defined by `cli.ActionFunc`.
 ### Added
 - Initial implementation.
 
-[unreleased 2.X]: https://github.com/urfave/cli/compare/v2.1.0...HEAD
+[unreleased 2.X]: https://github.com/urfave/cli/compare/v2.1.1...HEAD
+[2.1.1]: https://github.com/urfave/cli/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/urfave/cli/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/urfave/cli/compare/v1.22.2...v2.0.0
 
