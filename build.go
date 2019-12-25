@@ -10,7 +10,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"runtime"
 	"strings"
 
 	"github.com/urfave/cli/v2"
@@ -158,11 +157,7 @@ func GfmrunActionFunc(c *cli.Context) error {
 		return err
 	}
 
-	if runtime.GOOS == "windows" {
-		return runCmd("gfmrun.exe", "-c", fmt.Sprint(counter), "-s", filename)
-	} else {
-		return runCmd("gfmrun", "-c", fmt.Sprint(counter), "-s", filename)
-	}
+	return runCmd("gfmrun", "-c", fmt.Sprint(counter), "-s", filename)
 }
 
 func TocActionFunc(c *cli.Context) error {
