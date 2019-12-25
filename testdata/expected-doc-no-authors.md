@@ -29,7 +29,7 @@ greet [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 **--another-flag, -b**: another usage text
 
-**--flag, --fl, -f**="":
+**--flag, --fl, -f**="": 
 
 **--socket, -s**="": some 'usage' text (default: value)
 
@@ -42,7 +42,7 @@ another usage test
 
 **--another-flag, -b**: another usage text
 
-**--flag, --fl, -f**="":
+**--flag, --fl, -f**="": 
 
 ### sub-config, s, ss
 
@@ -50,7 +50,7 @@ another usage test
 
 **--sub-command-flag, -s**: some usage text
 
-**--sub-flag, --sub-fl, -s**="":
+**--sub-flag, --sub-fl, -s**="": 
 
 ## info, i, in
 
