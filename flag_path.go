@@ -30,7 +30,7 @@ func (f *PathFlag) String() string {
 
 // Names returns the names of the flag
 func (f *PathFlag) Names() []string {
-	return flagNames(f)
+	return flagNames(f.Name, f.Aliases)
 }
 
 // IsRequired returns whether or not the flag is required
