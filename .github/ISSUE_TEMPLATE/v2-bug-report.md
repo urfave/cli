@@ -28,6 +28,10 @@ _**( Put the version of urfave/cli that you are using here )**_
 
 A clear and concise description of what the bug is.
 
+## To reproduce
+
+Describe the steps or code required to reproduce the behavior
+
 ## Observed behavior
 
 What did you see happen immediately after the reproduction steps above?
