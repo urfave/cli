@@ -261,19 +261,19 @@ func flagValue(f Flag) reflect.Value {
 func stringifyFlag(f Flag) string {
 	fv := flagValue(f)
 
-	switch f.(type) {
+	switch f := f.(type) {
 	case *IntSliceFlag:
 		return withEnvHint(flagStringSliceField(f, "EnvVars"),
-			stringifyIntSliceFlag(f.(*IntSliceFlag)))
+			stringifyIntSliceFlag(f))
 	case *Int64SliceFlag:
 		return withEnvHint(flagStringSliceField(f, "EnvVars"),
-			stringifyInt64SliceFlag(f.(*Int64SliceFlag)))
+			stringifyInt64SliceFlag(f))
 	case *Float64SliceFlag:
 		return withEnvHint(flagStringSliceField(f, "EnvVars"),
-			stringifyFloat64SliceFlag(f.(*Float64SliceFlag)))
+			stringifyFloat64SliceFlag(f))
 	case *StringSliceFlag:
 		return withEnvHint(flagStringSliceField(f, "EnvVars"),
-			stringifyStringSliceFlag(f.(*StringSliceFlag)))
+			stringifyStringSliceFlag(f))
 	}
 
 	placeholder, usage := unquoteUsage(fv.FieldByName("Usage").String())
