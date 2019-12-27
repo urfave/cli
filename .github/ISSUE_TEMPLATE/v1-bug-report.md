@@ -32,9 +32,13 @@ A clear and concise description of what the bug is.
 
 Describe the steps or code required to reproduce the behavior
 
+## Observed behavior
+
+What did you see happen immediately after the reproduction steps above?
+
 ## Expected behavior
 
-A clear and concise description of what you expected to happen.
+What would you have expected to happen immediately after the reproduction steps above?
 
 ## Additional context
 
