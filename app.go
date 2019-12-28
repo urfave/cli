@@ -186,11 +186,28 @@ func (a *App) useShortOptionHandling() bool {
 	return a.UseShortOptionHandling
 }
 
-// Run is the entry point to the cli app. Parses the arguments slice and routes
-// to the proper flag/args combination
-func (a *App) Run(arguments []string) (err error) {
-	a.Setup()
+func validateDuplicateSubcommandNames(subcommands []Command, parentCommandName string) error {
+	subcommandNamesWithoutDuplicates := make(map[string]bool)
+	for _, s := range subcommands {
+		_, sExists := subcommandNamesWithoutDuplicates[s.Name]
+		if sExists {
+			return fmt.Errorf("Your command %q contains multiple subcommands with the Name %q. Having multiple subcommands with the same name results in ambiguous behavior, so please make sure each subcommand in your command has a unique name.", parentCommandName, s.Name)
+		}
+		subcommandNamesWithoutDuplicates[s.Name] = true
+	}
 
+	for _, s := range subcommands {
+		if len(s.Subcommands) > 0 {
+			err := validateDuplicateSubcommandNames(s.Subcommands, s.Name)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (a *App) validateDuplicateCommandNames() error {
 	commandNamesWithoutDuplicates := make(map[string]bool)
 	for _, c := range a.Commands {
 		_, cExists := commandNamesWithoutDuplicates[c.Name]
@@ -199,14 +216,22 @@ func (a *App) Run(arguments []string) (err error) {
 		}
 		commandNamesWithoutDuplicates[c.Name] = true
 
-		subCommandNamesWithoutDuplicates := make(map[string]bool)
-		for _, s := range c.Subcommands {
-			_, sExists := subCommandNamesWithoutDuplicates[s.Name]
-			if sExists {
-				return fmt.Errorf("Your command %q contains multiple subcommands with the Name %q. Having multiple subcommands with the same name results in ambiguous behavior, so please make sure each subcommand in your command has a unique name.", c.Name, s.Name)
-			}
-			subCommandNamesWithoutDuplicates[s.Name] = true
+		err := validateDuplicateSubcommandNames(c.Subcommands, c.Name)
+		if err != nil {
+			return err
 		}
+	}
+	return nil
+}
+
+// Run is the entry point to the cli app. Parses the arguments slice and routes
+// to the proper flag/args combination
+func (a *App) Run(arguments []string) (err error) {
+	a.Setup()
+
+	err = a.validateDuplicateCommandNames()
+	if err != nil {
+		return err
 	}
 
 	// handle the completion flag separately from the flagset since

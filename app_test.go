@@ -2334,3 +2334,55 @@ func TestDuplicateSubcommandName(t *testing.T) {
 		t.Errorf("received error did not match expectation")
 	}
 }
+
+func TestDuplicateSubcommandName2(t *testing.T) {
+	os.Args = []string{"appname", "commandname", "subcommandname1", "subcommandname11"}
+	app := NewApp()
+	app.Name = "appname"
+	app.Commands = []Command{
+		{
+			Name: "commandname",
+			Subcommands: []Command{
+				{
+					Name: "subcommandname1",
+					Action: func(c *Context) error {
+						fmt.Println("this is subcommandname1")
+						return nil
+					},
+					Subcommands: []Command{
+						{
+							Name: "subcommandname11",
+							Action: func(c *Context) error {
+								fmt.Println("this is subcommandname11")
+								return nil
+							},
+						},
+						{
+							Name: "subcommandname11",
+							Action: func(c *Context) error {
+								fmt.Println("this is subcommandname11")
+								return nil
+							},
+						},
+					},
+				},
+				{
+					Name: "subcommandname2",
+					Action: func(c *Context) error {
+						fmt.Println("this is subcommandname2")
+						return nil
+					},
+				},
+			},
+		},
+	}
+
+	err := app.Run(os.Args)
+	if err == nil {
+		t.Fatalf("expected to receive error from Run, got none")
+	}
+
+	if err.Error() != fmt.Sprintf("Your command %q contains multiple subcommands with the Name %q. Having multiple subcommands with the same name results in ambiguous behavior, so please make sure each subcommand in your command has a unique name.", "subcommandname1", "subcommandname11") {
+		t.Errorf("received error did not match expectation")
+	}
+}
