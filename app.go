@@ -195,7 +195,7 @@ func (a *App) Run(arguments []string) (err error) {
 	for _, c := range a.Commands {
 		_, cExists := commandNamesWithoutDuplicates[c.Name]
 		if cExists {
-			return fmt.Errorf("list of commands contains duplicate Name: %s", c.Name)
+			return fmt.Errorf("Your app contains multiple commands with the Name %q. Having multiple commands with the same name results in ambiguous behavior, so please make sure each command in your app has a unique name.", c.Name)
 		}
 		commandNamesWithoutDuplicates[c.Name] = true
 
