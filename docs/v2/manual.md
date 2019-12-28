@@ -1215,7 +1215,7 @@ Using the timestamp flag is simple, You can look at time.Parse to get layout exa
 
 <!-- {
   "args": ["&#45;&#45;meeting", "2019-08-12T15:04:05"],
-  "output": "\"2019-08-12 15:04:05 +0000 UTC\""
+  "output": "\"2019-08-12 15:04:05 +0000 UTC\"
 } -->
 ``` go
 package main
