@@ -203,7 +203,7 @@ func (a *App) Run(arguments []string) (err error) {
 		for _, s := range c.Subcommands {
 			_, sExists := subCommandNamesWithoutDuplicates[s.Name]
 			if sExists {
-				return fmt.Errorf("list of child commands of %s contains duplicate Name: %s", c.Name, s.Name)
+				return fmt.Errorf("Your command %q contains multiple subcommands with the Name %q. Having multiple subcommands with the same name results in ambiguous behavior, so please make sure each subcommand in your command has a unique name.", c.Name, s.Name)
 			}
 			subCommandNamesWithoutDuplicates[s.Name] = true
 		}
