@@ -2293,7 +2293,7 @@ func TestDuplicateCommandName(t *testing.T) {
 		t.Fatalf("expected to receive error from Run, got none")
 	}
 
-	if err.Error() != fmt.Sprintf("list of commands contains duplicate Name: %s", duplicateCommandName) {
+	if err.Error() != fmt.Sprintf("Your app contains multiple commands with the Name %q. Having multiple commands with the same name results in ambiguous behavior, so please make sure each command in your app has a unique name.", duplicateCommandName) {
 		t.Errorf("received error did not match expectation")
 	}
 }
@@ -2330,7 +2330,7 @@ func TestDuplicateSubcommandName(t *testing.T) {
 		t.Fatalf("expected to receive error from Run, got none")
 	}
 
-	if err.Error() != fmt.Sprintf("list of child commands of %s contains duplicate Name: %s", "kind", duplicateSubcommandName) {
+	if err.Error() != fmt.Sprintf("Your command %q contains multiple subcommands with the Name %q. Having multiple subcommands with the same name results in ambiguous behavior, so please make sure each subcommand in your command has a unique name.", "kind", duplicateSubcommandName) {
 		t.Errorf("received error did not match expectation")
 	}
 }
