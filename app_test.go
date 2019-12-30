@@ -2414,6 +2414,32 @@ var duplicateCommandNamesTestsExpectedToError = map[string]struct {
 		},
 		fmt.Sprintf("Your app contains multiple commands with the Name %q. Having multiple commands with the same name results in ambiguous behavior, so please make sure each command in your app has a unique name.", "hello"),
 	},
+	"duplicate subcommand name": {
+		[]string{"say", "kind", "word"},
+		"appname",
+		[]Command{
+			{
+				Name: "kind",
+				Subcommands: []Command{
+					{
+						Name: "word",
+						Action: func(c *Context) error {
+							fmt.Println("please")
+							return nil
+						},
+					},
+					{
+						Name: "word",
+						Action: func(c *Context) error {
+							fmt.Println("thanks")
+							return nil
+						},
+					},
+				},
+			},
+		},
+		fmt.Sprintf("Your command %q contains multiple subcommands with the Name %q. Having multiple subcommands with the same name results in ambiguous behavior, so please make sure each subcommand in your command has a unique name.", "kind", "word"),
+	},
 }
 
 func TestCheckDuplicateCommandNames(t *testing.T) {
