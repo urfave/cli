@@ -2412,7 +2412,7 @@ var duplicateCommandNamesTestsExpectedToError = map[string]struct {
 				},
 			},
 		},
-		fmt.Sprintf("Yousr app contains multiple commands with the Name %q. Having multiple commands with the same name results in ambiguous behavior, so please make sure each command in your app has a unique name.", "hello"),
+		fmt.Sprintf("Your app contains multiple commands with the Name %q. Having multiple commands with the same name results in ambiguous behavior, so please make sure each command in your app has a unique name.", "hello"),
 	},
 }
 
