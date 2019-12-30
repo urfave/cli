@@ -2,10 +2,11 @@ package altsrc
 
 import (
 	"fmt"
-	"github.com/urfave/cli/v2"
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/urfave/cli/v2"
 )
 
 // MapInputSource implements InputSourceContext to return
