@@ -2412,7 +2412,7 @@ var duplicateCommandNamesTestsExpectedToError = map[string]struct {
 				},
 			},
 		},
-		fmt.Sprintf("Your app contains multiple commands with the Name %q. Having multiple commands with the same name results in ambiguous behavior, so please make sure each command in your app has a unique name.", "hello"),
+		fmt.Sprintf("Yousr app contains multiple commands with the Name %q. Having multiple commands with the same name results in ambiguous behavior, so please make sure each command in your app has a unique name.", "hello"),
 	},
 }
 
@@ -2429,7 +2429,7 @@ func TestCheckDuplicateCommandNames(t *testing.T) {
 		}
 
 		if err.Error() != tt.expectedErrString {
-			t.Errorf("%s: expected: %s got: %s", testName, err.Error(), tt.expectedErrString)
+			t.Errorf("%s: \nexpected: %s \ngot: %s", testName, err.Error(), tt.expectedErrString)
 		}
 	}
 }
