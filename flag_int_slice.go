@@ -102,7 +102,7 @@ func (f *IntSliceFlag) String() string {
 
 // Names returns the names of the flag
 func (f *IntSliceFlag) Names() []string {
-	return flagNames(f)
+	return flagNames(f.Name, f.Aliases)
 }
 
 // IsRequired returns whether or not the flag is required
