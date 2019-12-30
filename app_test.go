@@ -2414,7 +2414,7 @@ var duplicateCommandNamesTestsExpectedToError = map[string]struct {
 		},
 		fmt.Sprintf("Your app contains multiple commands with the Name %q. Having multiple commands with the same name results in ambiguous behavior, so please make sure each command in your app has a unique name.", "hello"),
 	},
-	"duplicate subcommand name": {
+	"duplicate subcommand name on command level": {
 		[]string{"say", "kind", "word"},
 		"appname",
 		[]Command{
@@ -2439,6 +2439,48 @@ var duplicateCommandNamesTestsExpectedToError = map[string]struct {
 			},
 		},
 		fmt.Sprintf("Your command %q contains multiple subcommands with the Name %q. Having multiple subcommands with the same name results in ambiguous behavior, so please make sure each subcommand in your command has a unique name.", "kind", "word"),
+	},
+	"duplicate subcommand name on subcommand level": {
+		[]string{"appname", "commandname", "subcommandname1", "subcommandname11"},
+		"appname",
+		[]Command{
+			{
+				Name: "commandname",
+				Subcommands: []Command{
+					{
+						Name: "subcommandname1",
+						Action: func(c *Context) error {
+							fmt.Println("this is subcommandname1")
+							return nil
+						},
+						Subcommands: []Command{
+							{
+								Name: "subcommandname11",
+								Action: func(c *Context) error {
+									fmt.Println("this is subcommandname11")
+									return nil
+								},
+							},
+							{
+								Name: "subcommandname11",
+								Action: func(c *Context) error {
+									fmt.Println("this is subcommandname11")
+									return nil
+								},
+							},
+						},
+					},
+					{
+						Name: "subcommandname2",
+						Action: func(c *Context) error {
+							fmt.Println("this is subcommandname2")
+							return nil
+						},
+					},
+				},
+			},
+		},
+		fmt.Sprintf("Your command %q contains multiple subcommands with the Name %q. Having multiple subcommands with the same name results in ambiguous behavior, so please make sure each subcommand in your command has a unique name.", "subcommandname1", "subcommandname11"),
 	},
 }
 
