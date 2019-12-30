@@ -2335,7 +2335,7 @@ func TestDuplicateSubcommandName(t *testing.T) {
 	}
 }
 
-func TestDuplicateSubcommandName2(t *testing.T) {
+func TestDuplicateSubcommandNameOnSubcommandLevel(t *testing.T) {
 	os.Args = []string{"appname", "commandname", "subcommandname1", "subcommandname11"}
 	app := NewApp()
 	app.Name = "appname"
