@@ -186,7 +186,7 @@ func (a *App) useShortOptionHandling() bool {
 	return a.UseShortOptionHandling
 }
 
-func validateDuplicateSubcommandNames(subcommands []Command, parentCommandName string) error {
+func checkDuplicateSubcommandNames(subcommands []Command, parentCommandName string) error {
 	subcommandNamesWithoutDuplicates := make(map[string]bool)
 	for _, s := range subcommands {
 		_, sExists := subcommandNamesWithoutDuplicates[s.Name]
@@ -198,7 +198,7 @@ func validateDuplicateSubcommandNames(subcommands []Command, parentCommandName s
 
 	for _, s := range subcommands {
 		if len(s.Subcommands) > 0 {
-			err := validateDuplicateSubcommandNames(s.Subcommands, s.Name)
+			err := checkDuplicateSubcommandNames(s.Subcommands, s.Name)
 			if err != nil {
 				return err
 			}
@@ -207,7 +207,7 @@ func validateDuplicateSubcommandNames(subcommands []Command, parentCommandName s
 	return nil
 }
 
-func (a *App) validateDuplicateCommandNames() error {
+func (a *App) checkDuplicateCommandNames() error {
 	commandNamesWithoutDuplicates := make(map[string]bool)
 	for _, c := range a.Commands {
 		_, cExists := commandNamesWithoutDuplicates[c.Name]
@@ -216,7 +216,7 @@ func (a *App) validateDuplicateCommandNames() error {
 		}
 		commandNamesWithoutDuplicates[c.Name] = true
 
-		err := validateDuplicateSubcommandNames(c.Subcommands, c.Name)
+		err := checkDuplicateSubcommandNames(c.Subcommands, c.Name)
 		if err != nil {
 			return err
 		}
@@ -229,7 +229,7 @@ func (a *App) validateDuplicateCommandNames() error {
 func (a *App) Run(arguments []string) (err error) {
 	a.Setup()
 
-	err = a.validateDuplicateCommandNames()
+	err = a.checkDuplicateCommandNames()
 	if err != nil {
 		return err
 	}
