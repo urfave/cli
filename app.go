@@ -191,6 +191,7 @@ func checkDuplicateSubcommandNames(subcommands []Command, parentCommandName stri
 	for _, s := range subcommands {
 		_, sExists := subcommandNamesWithoutDuplicates[s.Name]
 		if sExists {
+			// @todo: update the following error message to take into account that the parent command may be a subcommand
 			return fmt.Errorf("Your command %q contains multiple subcommands with the Name %q. Having multiple subcommands with the same name results in ambiguous behavior, so please make sure each subcommand in your command has a unique name.", parentCommandName, s.Name)
 		}
 		subcommandNamesWithoutDuplicates[s.Name] = true
