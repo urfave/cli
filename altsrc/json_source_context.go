@@ -3,11 +3,12 @@ package altsrc
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/urfave/cli/v2"
 	"io"
 	"io/ioutil"
 	"strings"
 	"time"
+
+	"github.com/urfave/cli/v2"
 )
 
 // NewJSONSourceFromFlagFunc returns a func that takes a cli.Context
