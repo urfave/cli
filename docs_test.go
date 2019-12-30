@@ -6,7 +6,7 @@ import (
 )
 
 func testApp() *App {
-	app := NewApp()
+	app := newTestApp()
 	app.Name = "greet"
 	app.Flags = []Flag{
 		&StringFlag{
