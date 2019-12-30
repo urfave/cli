@@ -2386,3 +2386,50 @@ func TestDuplicateSubcommandNameOnSubcommandLevel(t *testing.T) {
 		t.Errorf("received error did not match expectation")
 	}
 }
+
+var duplicateCommandNamesTestsExpectedToError = map[string]struct {
+	args              []string
+	appName           string
+	commands          []Command
+	expectedErrString string
+}{
+	"duplicate command name": {
+		[]string{"say", "hello"},
+		"appname",
+		[]Command{
+			{
+				Name: "hello",
+				Action: func(c *Context) error {
+					fmt.Println("Hello")
+					return nil
+				},
+			},
+			{
+				Name: "hello",
+				Action: func(c *Context) error {
+					fmt.Println("Hello duplicate")
+					return nil
+				},
+			},
+		},
+		fmt.Sprintf("Your app contains multiple commands with the Name %q. Having multiple commands with the same name results in ambiguous behavior, so please make sure each command in your app has a unique name.", "hello"),
+	},
+}
+
+func TestCheckDuplicateCommandNames(t *testing.T) {
+	for testName, tt := range duplicateCommandNamesTestsExpectedToError {
+		os.Args = tt.args
+		app := NewApp()
+		app.Name = tt.appName
+		app.Commands = tt.commands
+
+		err := app.Run(os.Args)
+		if err == nil {
+			t.Fatalf("%s: expected to receive error, got none", testName)
+		}
+
+		if err.Error() != tt.expectedErrString {
+			t.Errorf("%s: expected: %s got: %s", testName, err.Error(), tt.expectedErrString)
+		}
+	}
+}
