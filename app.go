@@ -208,9 +208,9 @@ func checkDuplicateSubcommandNames(subcommands []Command, parentCommandName stri
 	return nil
 }
 
-func (a *App) checkDuplicateCommandNames() error {
+func checkDuplicateCommandNames(commands []Command) error {
 	commandNamesWithoutDuplicates := make(map[string]bool)
-	for _, c := range a.Commands {
+	for _, c := range commands {
 		_, cExists := commandNamesWithoutDuplicates[c.Name]
 		if cExists {
 			return fmt.Errorf("Your app contains multiple commands with the Name %q. Having multiple commands with the same name results in ambiguous behavior, so please make sure each command in your app has a unique name.", c.Name)
@@ -230,7 +230,7 @@ func (a *App) checkDuplicateCommandNames() error {
 func (a *App) Run(arguments []string) (err error) {
 	a.Setup()
 
-	err = a.checkDuplicateCommandNames()
+	err = checkDuplicateCommandNames(a.Commands)
 	if err != nil {
 		return err
 	}

@@ -2266,238 +2266,73 @@ func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
 	}
 }
 
-func TestDuplicateCommandName(t *testing.T) {
-	duplicateCommandName := "hello"
-	os.Args = []string{"say", duplicateCommandName}
-	app := NewApp()
-	app.Name = "say"
-	app.Commands = []Command{
-		{
-			Name: duplicateCommandName,
-			Action: func(c *Context) error {
-				fmt.Println("Hello")
-				return nil
-			},
-		},
-		{
-			Name: duplicateCommandName,
-			Action: func(c *Context) error {
-				fmt.Println("Hello duplicate")
-				return nil
-			},
-		},
-	}
-
-	err := app.Run(os.Args)
-	if err == nil {
-		t.Fatalf("expected to receive error from Run, got none")
-	}
-
-	if err.Error() != fmt.Sprintf("Your app contains multiple commands with the Name %q. Having multiple commands with the same name results in ambiguous behavior, so please make sure each command in your app has a unique name.", duplicateCommandName) {
-		t.Errorf("received error did not match expectation")
-	}
-}
-
-func TestDuplicateSubcommandName(t *testing.T) {
-	duplicateSubcommandName := "word"
-	os.Args = []string{"say", "kind", duplicateSubcommandName}
-	app := NewApp()
-	app.Name = "say"
-	app.Commands = []Command{
-		{
-			Name: "kind",
-			Subcommands: []Command{
+func TestCheckDuplicateCommandNames(t *testing.T) {
+	var testData = map[string]struct {
+		commands          []Command
+		expectedErrString string
+	}{
+		"duplicate command name": {
+			[]Command{
 				{
-					Name: duplicateSubcommandName,
-					Action: func(c *Context) error {
-						fmt.Println("please")
-						return nil
-					},
+					Name: "hello",
 				},
 				{
-					Name: duplicateSubcommandName,
-					Action: func(c *Context) error {
-						fmt.Println("thanks")
-						return nil
-					},
+					Name: "hello",
 				},
 			},
+			fmt.Sprintf("Your app contains multiple commands with the Name %q. Having multiple commands with the same name results in ambiguous behavior, so please make sure each command in your app has a unique name.", "hello"),
 		},
-	}
-
-	err := app.Run(os.Args)
-	if err == nil {
-		t.Fatalf("expected to receive error from Run, got none")
-	}
-
-	if err.Error() != fmt.Sprintf("Your command %q contains multiple subcommands with the Name %q. Having multiple subcommands with the same name results in ambiguous behavior, so please make sure each subcommand in your command has a unique name.", "kind", duplicateSubcommandName) {
-		t.Errorf("received error did not match expectation")
-	}
-}
-
-func TestDuplicateSubcommandNameOnSubcommandLevel(t *testing.T) {
-	os.Args = []string{"appname", "commandname", "subcommandname1", "subcommandname11"}
-	app := NewApp()
-	app.Name = "appname"
-	app.Commands = []Command{
-		{
-			Name: "commandname",
-			Subcommands: []Command{
+		"duplicate subcommand name on command level": {
+			[]Command{
 				{
-					Name: "subcommandname1",
-					Action: func(c *Context) error {
-						fmt.Println("this is subcommandname1")
-						return nil
-					},
+					Name: "kind",
 					Subcommands: []Command{
 						{
-							Name: "subcommandname11",
-							Action: func(c *Context) error {
-								fmt.Println("this is subcommandname11")
-								return nil
+							Name: "word",
+						},
+						{
+							Name: "word",
+						},
+					},
+				},
+			},
+			fmt.Sprintf("Your command %q contains multiple subcommands with the Name %q. Having multiple subcommands with the same name results in ambiguous behavior, so please make sure each subcommand in your command has a unique name.", "kind", "word"),
+		},
+		"duplicate subcommand name on subcommand level": {
+			[]Command{
+				{
+					Name: "commandname",
+					Subcommands: []Command{
+						{
+							Name: "subcommandname1",
+							Subcommands: []Command{
+								{
+									Name: "subcommandname11",
+								},
+								{
+									Name: "subcommandname11",
+								},
 							},
 						},
 						{
-							Name: "subcommandname11",
-							Action: func(c *Context) error {
-								fmt.Println("this is subcommandname11")
-								return nil
-							},
+							Name: "subcommandname2",
 						},
 					},
 				},
-				{
-					Name: "subcommandname2",
-					Action: func(c *Context) error {
-						fmt.Println("this is subcommandname2")
-						return nil
-					},
-				},
 			},
+			fmt.Sprintf("Your command %q contains multiple subcommands with the Name %q. Having multiple subcommands with the same name results in ambiguous behavior, so please make sure each subcommand in your command has a unique name.", "subcommandname1", "subcommandname11"),
 		},
 	}
 
-	err := app.Run(os.Args)
-	if err == nil {
-		t.Fatalf("expected to receive error from Run, got none")
-	}
+	for testName, td := range testData {
 
-	if err.Error() != fmt.Sprintf("Your command %q contains multiple subcommands with the Name %q. Having multiple subcommands with the same name results in ambiguous behavior, so please make sure each subcommand in your command has a unique name.", "subcommandname1", "subcommandname11") {
-		t.Errorf("received error did not match expectation")
-	}
-}
-
-var duplicateCommandNamesTestsExpectedToError = map[string]struct {
-	args              []string
-	appName           string
-	commands          []Command
-	expectedErrString string
-}{
-	"duplicate command name": {
-		[]string{"say", "hello"},
-		"appname",
-		[]Command{
-			{
-				Name: "hello",
-				Action: func(c *Context) error {
-					fmt.Println("Hello")
-					return nil
-				},
-			},
-			{
-				Name: "hello",
-				Action: func(c *Context) error {
-					fmt.Println("Hello duplicate")
-					return nil
-				},
-			},
-		},
-		fmt.Sprintf("Your app contains multiple commands with the Name %q. Having multiple commands with the same name results in ambiguous behavior, so please make sure each command in your app has a unique name.", "hello"),
-	},
-	"duplicate subcommand name on command level": {
-		[]string{"say", "kind", "word"},
-		"appname",
-		[]Command{
-			{
-				Name: "kind",
-				Subcommands: []Command{
-					{
-						Name: "word",
-						Action: func(c *Context) error {
-							fmt.Println("please")
-							return nil
-						},
-					},
-					{
-						Name: "word",
-						Action: func(c *Context) error {
-							fmt.Println("thanks")
-							return nil
-						},
-					},
-				},
-			},
-		},
-		fmt.Sprintf("Your command %q contains multiple subcommands with the Name %q. Having multiple subcommands with the same name results in ambiguous behavior, so please make sure each subcommand in your command has a unique name.", "kind", "word"),
-	},
-	"duplicate subcommand name on subcommand level": {
-		[]string{"appname", "commandname", "subcommandname1", "subcommandname11"},
-		"appname",
-		[]Command{
-			{
-				Name: "commandname",
-				Subcommands: []Command{
-					{
-						Name: "subcommandname1",
-						Action: func(c *Context) error {
-							fmt.Println("this is subcommandname1")
-							return nil
-						},
-						Subcommands: []Command{
-							{
-								Name: "subcommandname11",
-								Action: func(c *Context) error {
-									fmt.Println("this is subcommandname11")
-									return nil
-								},
-							},
-							{
-								Name: "subcommandname11",
-								Action: func(c *Context) error {
-									fmt.Println("this is subcommandname11")
-									return nil
-								},
-							},
-						},
-					},
-					{
-						Name: "subcommandname2",
-						Action: func(c *Context) error {
-							fmt.Println("this is subcommandname2")
-							return nil
-						},
-					},
-				},
-			},
-		},
-		fmt.Sprintf("Your command %q contains multiple subcommands with the Name %q. Having multiple subcommands with the same name results in ambiguous behavior, so please make sure each subcommand in your command has a unique name.", "subcommandname1", "subcommandname11"),
-	},
-}
-
-func TestCheckDuplicateCommandNames(t *testing.T) {
-	for testName, tt := range duplicateCommandNamesTestsExpectedToError {
-		os.Args = tt.args
-		app := NewApp()
-		app.Name = tt.appName
-		app.Commands = tt.commands
-
-		err := app.Run(os.Args)
+		err := checkDuplicateCommandNames(td.commands)
 		if err == nil {
 			t.Fatalf("%s: expected to receive error, got none", testName)
 		}
 
-		if err.Error() != tt.expectedErrString {
-			t.Errorf("%s: \nexpected: %s \ngot: %s", testName, err.Error(), tt.expectedErrString)
+		if err.Error() != td.expectedErrString {
+			t.Errorf("%s: \nexpected: %s \ngot: %s", testName, err.Error(), td.expectedErrString)
 		}
 	}
 }
