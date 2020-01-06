@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"reflect"
 	"sort"
 	"time"
 )
@@ -483,16 +482,6 @@ func (a *App) VisibleCommands() []*Command {
 // VisibleFlags returns a slice of the Flags with Hidden=false
 func (a *App) VisibleFlags() []Flag {
 	return visibleFlags(a.Flags)
-}
-
-func (a *App) hasFlag(flag Flag) bool {
-	for _, f := range a.Flags {
-		if reflect.DeepEqual(flag, f) {
-			return true
-		}
-	}
-
-	return false
 }
 
 func (a *App) errWriter() io.Writer {

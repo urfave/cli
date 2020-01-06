@@ -3,11 +3,12 @@ package altsrc
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/urfave/cli/v2"
 	"io"
 	"io/ioutil"
 	"strings"
 	"time"
+
+	"github.com/urfave/cli/v2"
 )
 
 // NewJSONSourceFromFlagFunc returns a func that takes a cli.Context
@@ -78,9 +79,9 @@ func (x *jsonSource) Duration(name string) (time.Duration, error) {
 	if err != nil {
 		return 0, err
 	}
-	v, ok := (time.Duration)(0), false
-	if v, ok = i.(time.Duration); !ok {
-		return v, fmt.Errorf("unexpected type %T for %q", i, name)
+	v, ok := i.(time.Duration)
+	if !ok {
+		return 0, fmt.Errorf("unexpected type %T for %q", i, name)
 	}
 	return v, nil
 }
@@ -90,9 +91,9 @@ func (x *jsonSource) Float64(name string) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	v, ok := (float64)(0), false
-	if v, ok = i.(float64); !ok {
-		return v, fmt.Errorf("unexpected type %T for %q", i, name)
+	v, ok := i.(float64)
+	if !ok {
+		return 0, fmt.Errorf("unexpected type %T for %q", i, name)
 	}
 	return v, nil
 }
@@ -102,9 +103,9 @@ func (x *jsonSource) String(name string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	v, ok := "", false
-	if v, ok = i.(string); !ok {
-		return v, fmt.Errorf("unexpected type %T for %q", i, name)
+	v, ok := i.(string)
+	if !ok {
+		return "", fmt.Errorf("unexpected type %T for %q", i, name)
 	}
 	return v, nil
 }
@@ -160,9 +161,9 @@ func (x *jsonSource) Generic(name string) (cli.Generic, error) {
 	if err != nil {
 		return nil, err
 	}
-	v, ok := (cli.Generic)(nil), false
-	if v, ok = i.(cli.Generic); !ok {
-		return v, fmt.Errorf("unexpected type %T for %q", i, name)
+	v, ok := i.(cli.Generic)
+	if !ok {
+		return nil, fmt.Errorf("unexpected type %T for %q", i, name)
 	}
 	return v, nil
 }
@@ -172,9 +173,9 @@ func (x *jsonSource) Bool(name string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	v, ok := false, false
-	if v, ok = i.(bool); !ok {
-		return v, fmt.Errorf("unexpected type %T for %q", i, name)
+	v, ok := i.(bool)
+	if !ok {
+		return false, fmt.Errorf("unexpected type %T for %q", i, name)
 	}
 	return v, nil
 }

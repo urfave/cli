@@ -17,7 +17,6 @@ type Context struct {
 	App           *App
 	Command       *Command
 	shellComplete bool
-	setFlags      map[string]bool
 	flagSet       *flag.FlagSet
 	parentContext *Context
 }
