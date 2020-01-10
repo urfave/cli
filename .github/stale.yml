@@ -14,7 +14,7 @@ onlyLabels: []
 exemptLabels:
   - pinned
   - security
-  - "type: maintenance" 
+  - "kind/maintenance" 
 
 # Set to true to ignore issues in a project (defaults to false)
 exemptProjects: false
@@ -26,7 +26,7 @@ exemptMilestones: false
 exemptAssignees: false
 
 # Label to use when marking as stale
-staleLabel: "status: stale"
+staleLabel: "status/stale"
 
 # Comment to post when marking as stale. Set to `false` to disable
 markComment: >
