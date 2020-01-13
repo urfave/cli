@@ -3,12 +3,13 @@ package altsrc
 import (
 	"flag"
 	"fmt"
-	"github.com/urfave/cli/v2"
 	"os"
 	"runtime"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/urfave/cli/v2"
 )
 
 type testApplyInputSource struct {
