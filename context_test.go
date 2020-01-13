@@ -3,8 +3,8 @@ package cli
 import (
 	"context"
 	"flag"
-	"os"
 	"sort"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -328,7 +328,7 @@ func TestContextPropagation(t *testing.T) {
 	parent := NewContext(nil, nil, nil)
 	parent.Context = context.WithValue(context.Background(), "key", "val")
 	ctx := NewContext(nil, nil, parent)
-	val := ctx.Context.Value("key")
+	val := ctx.Value("key")
 	if val == nil {
 		t.Fatal("expected a parent context to be inherited but got nil")
 	}
