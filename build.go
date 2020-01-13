@@ -166,7 +166,7 @@ func TocActionFunc(c *cli.Context) error {
 		filename = "README.md"
 	}
 
-	err := runCmd("npx markdown-toc", "-i", filename)
+	err := runCmd("markdown-toc", "-i", filename)
 	if err != nil {
 		return err
 	}
