@@ -68,7 +68,7 @@ jobs:
         with:
           node-version: 12.x
 
-      - name: - name: Set GOPATH, PATH and ENV
+      - name: Set GOPATH, PATH and ENV
         run: |
           echo "::set-env name=GOPATH::$(dirname $GITHUB_WORKSPACE)"
           echo "::set-env name=GO111MODULE::on"
