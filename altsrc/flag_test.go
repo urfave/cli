@@ -189,7 +189,7 @@ func TestPathApplyInputSourceMethodSet(t *testing.T) {
 
 	expected := "/path/to/source/hello"
 	if runtime.GOOS == "windows" {
-		expected = `C:\path\to\source\hello`
+		expected = `D:\path\to\source\hello`
 	}
 	expect(t, expected, c.String("test"))
 }
