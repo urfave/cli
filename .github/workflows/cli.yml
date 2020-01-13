@@ -28,6 +28,11 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
 
+      - name: Use Node.js 10.x
+          uses: actions/setup-node@v1
+          with:
+            node-version: 10.x
+
       - name: Set GOPATH and PATH
         run: |
           echo "::set-env name=GOPATH::$(dirname $GITHUB_WORKSPACE)"
