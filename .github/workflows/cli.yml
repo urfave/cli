@@ -28,6 +28,11 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
 
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
       - name: Set GOPATH and PATH
         run: |
           echo "::set-env name=GOPATH::$(dirname $GITHUB_WORKSPACE)"
@@ -44,7 +49,7 @@ jobs:
           mkdir -p $GOPATH/bin
           curl -L -o $GOPATH/bin/gfmrun "https://github.com/urfave/gfmrun/releases/download/v1.2.14/gfmrun-$(go env GOOS)-amd64-v1.2.14"
           chmod +x $GOPATH/bin/gfmrun
-          npm install markdown-toc
+          npm install -g markdown-toc@1.2.0
 
       - name: Run Tests
         run: |
