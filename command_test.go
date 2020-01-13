@@ -93,7 +93,7 @@ func TestParseAndRunShortOpts(t *testing.T) {
 			},
 		}
 
-		app := NewApp()
+		app := newTestApp()
 		app.Commands = []*Command{cmd}
 
 		err := app.Run(c.testArgs)
@@ -116,6 +116,7 @@ func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 				},
 			},
 		},
+		Writer: ioutil.Discard,
 	}
 
 	err := app.Run([]string{"foo", "bar"})
@@ -317,12 +318,12 @@ func TestCommandSkipFlagParsing(t *testing.T) {
 						&StringFlag{Name: "flag"},
 					},
 					Action: func(c *Context) error {
-						fmt.Printf("%+v\n", c.String("flag"))
 						args = c.Args()
 						return nil
 					},
 				},
 			},
+			Writer: ioutil.Discard,
 		}
 
 		err := app.Run(c.testArgs)

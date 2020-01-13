@@ -203,11 +203,8 @@ func withEnvHint(envVars []string, str string) string {
 	return str + envText
 }
 
-func flagNames(f Flag) []string {
+func flagNames(name string, aliases []string) []string {
 	var ret []string
-
-	name := flagStringField(f, "Name")
-	aliases := flagStringSliceField(f, "Aliases")
 
 	for _, part := range append([]string{name}, aliases...) {
 		// v1 -> v2 migration warning zone:
@@ -229,17 +226,6 @@ func flagStringSliceField(f Flag, name string) []string {
 	}
 
 	return []string{}
-}
-
-func flagStringField(f Flag, name string) string {
-	fv := flagValue(f)
-	field := fv.FieldByName(name)
-
-	if field.IsValid() {
-		return field.String()
-	}
-
-	return ""
 }
 
 func withFileHint(filePath, str string) string {
