@@ -1,5 +1,4 @@
-% greet(8)
-
+% greet 8
 
 # NAME
 
