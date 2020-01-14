@@ -51,17 +51,13 @@ jobs:
           fail_ci_if_error: true
 
   test-docs:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        go: [1.13]
     name: test-docs
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
-      - name: Set up Go ${{ matrix.go }}
+      - name: Set up Go 1.13
         uses: actions/setup-go@v1
         with:
-          go-version: ${{ matrix.go }}
+          go-version: 1.13
 
       - name: Use Node.js 12.x
         uses: actions/setup-node@v1
