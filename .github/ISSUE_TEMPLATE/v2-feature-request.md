@@ -2,7 +2,7 @@
 name: v2 feature request
 about: Suggest an improvement for v2
 title: 'v2 feature: ( your feature title goes here )'
-labels: 'type: feature, version: v2, status: triage'
+labels: 'type/feature, area/v2, status/triage'
 assignees: ''
 
 ---

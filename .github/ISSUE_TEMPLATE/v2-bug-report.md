@@ -2,7 +2,7 @@
 name: v2 bug report
 about: Create a report to help us fix v2 bugs
 title: 'v2 bug: ( your bug title goes here )'
-labels: 'type: bug, version: v2, status: triage'
+labels: 'kind/bug, area/v2, status/triage'
 assignees: ''
 
 ---
