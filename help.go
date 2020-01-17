@@ -8,6 +8,8 @@ import (
 	"text/tabwriter"
 	"text/template"
 	"unicode/utf8"
+
+	"github.com/nsf/termbox-go"
 )
 
 var helpCommand = &Command{
@@ -263,7 +265,9 @@ func ShowCommandCompletions(ctx *Context, command string) {
 // allow using arbitrary functions in template rendering.
 func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs map[string]interface{}) {
 	funcMap := template.FuncMap{
-		"join": strings.Join,
+		"join":   strings.Join,
+		"wrap":   wrap,
+		"offset": offset,
 	}
 	for key, value := range customFuncs {
 		funcMap[key] = value
@@ -365,4 +369,38 @@ func checkCommandCompletions(c *Context, name string) bool {
 
 	ShowCommandCompletions(c, name)
 	return true
+}
+
+func wrap(input string, offset int) string {
+	if err := termbox.Init(); err != nil {
+		return input
+	}
+	w, _ := termbox.Size()
+	termbox.Close()
+
+	if w > offset && len(input) > w-offset {
+		lineWidth := w - offset
+		words := strings.Fields(strings.TrimSpace(input))
+		if len(words) == 0 {
+			return input
+		}
+		wrapped := words[0]
+		spaceLeft := lineWidth - len(wrapped)
+		for _, word := range words[1:] {
+			if len(word)+1 > spaceLeft {
+				wrapped += "\n" + strings.Repeat(" ", offset) + word
+				spaceLeft = lineWidth - len(word)
+			} else {
+				wrapped += " " + word
+				spaceLeft -= 1 + len(word)
+			}
+		}
+		return wrapped
+	}
+
+	return input
+}
+
+func offset(input string, fixed int) int {
+	return len(input) + fixed
 }
