@@ -3,7 +3,7 @@ name: v1 bug report
 about: Create a report to help us fix v1 bugs
 title: 'v1 bug: ( your bug title goes here )'
 labels: 'kind/bug, status/triage, area/v1'
-assignees: lynncyrin
+assignees: ''
 
 ---
 
