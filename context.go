@@ -10,7 +10,7 @@ import (
 )
 
 // Context is an interface that is passed through to
-// each Handler action in a cli application. defaultContext
+// each Handler action in a cli application. It
 // can be used to retrieve context-specific args and
 // parsed command-line options.
 type Context interface {
@@ -80,42 +80,52 @@ func NewContext(app *App, set *flag.FlagSet, parentCtx Context) Context {
 	return c
 }
 
-func NewParentContext(ctx context.Context) Context {
+// NewWrappedContext creates a Context which wraps context.Context
+func NewWrappedContext(ctx context.Context) Context {
 	return &defaultContext{context: ctx}
 }
 
+// Returns the App associated with the current context
 func (c *defaultContext) App() *App {
 	return c.app
 }
 
+// Associates a command with the current context
 func (c *defaultContext) SetCommand(command *Command) {
 	c.command = command
 }
 
+// Returns the Command associated with the current context
 func (c *defaultContext) Command() *Command {
 	return c.command
 }
 
+// Returns the context.Context wrapped inside the current context
 func (c *defaultContext) Context() context.Context {
 	return c.context
 }
 
+// Returns the parent of the current context
 func (c *defaultContext) ParentContext() Context {
 	return c.parentContext
 }
 
+// Sets the shellComplete boolean for the current context
 func (c *defaultContext) SetShellComplete(shellComplete bool) {
 	c.shellComplete = shellComplete
 }
 
+// Returns the value of shellComplete boolean for the current context
 func (c *defaultContext) ShellComplete() bool {
 	return c.shellComplete
 }
 
+// Associates a flagset with the current context
 func (c *defaultContext) SetFlagSet(set *flag.FlagSet) {
 	c.flagSet = set
 }
 
+// Returns the flagset associated with the current context
 func (c *defaultContext) FlagSet() *flag.FlagSet {
 	return c.flagSet
 }

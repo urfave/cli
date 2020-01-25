@@ -49,7 +49,7 @@ func InitInputSource(flags []cli.Flag, createInputSource func() (InputSourceCont
 }
 
 // InitInputSourceWithContext is used to to setup an InputSourceContext on a cli.Command Before method. It will create a new
-// input source based on the func provided with potentially using existing cli.defaultContext values to initialize itself. If there is
+// input source based on the func provided with potentially using existing cli.Context values to initialize itself. If there is
 // no error it will then apply the new input source to any flags that are supported by the input source
 func InitInputSourceWithContext(flags []cli.Flag, createInputSource func(context cli.Context) (InputSourceContext, error)) cli.BeforeFunc {
 	return func(context cli.Context) error {

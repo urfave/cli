@@ -11,7 +11,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-// NewJSONSourceFromFlagFunc returns a func that takes a cli.defaultContext
+// NewJSONSourceFromFlagFunc returns a func that takes a cli.Context
 // and returns an InputSourceContext suitable for retrieving config
 // variables from a file containing JSON data with the file name defined
 // by the given flag.

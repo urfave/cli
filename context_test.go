@@ -322,10 +322,9 @@ func TestNonNilContext(t *testing.T) {
 }
 
 // TestContextPropagation tests that
-// *cli.defaultContext always has a valid
-// context.defaultContext
+// cli.Context always has a valid context.Context
 func TestContextPropagation(t *testing.T) {
-	parent := NewContext(nil, nil, NewParentContext(context.WithValue(context.Background(), "key", "val")))
+	parent := NewContext(nil, nil, NewWrappedContext(context.WithValue(context.Background(), "key", "val")))
 	ctx := NewContext(nil, nil, parent)
 	val := ctx.Context().Value("key")
 	if val == nil {
