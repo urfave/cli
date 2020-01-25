@@ -528,4 +528,3 @@ func (a *Author) String() string {
 
 	return fmt.Sprintf("%v%v", a.Name, e)
 }
-
