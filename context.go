@@ -43,7 +43,7 @@ func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
 
 // NumFlags returns the number of flags set
 func (c *Context) NumFlags() int {
-	return c.flagSet.NFlag()
+			return c.flagSet.NFlag()
 }
 
 // Set sets a context flag to a value.
