@@ -39,7 +39,7 @@ func ExampleApp_Run() {
 		Flags: []Flag{
 			&StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
 		},
-		Action: func(c *Context) error {
+		Action: func(c Context) error {
 			fmt.Printf("Hello %v\n", c.String("name"))
 			return nil
 		},
@@ -47,7 +47,7 @@ func ExampleApp_Run() {
 		Authors:   []*Author{{Name: "Oliver Allen", Email: "oliver@toyshop.example.com"}},
 	}
 
-	app.Run(os.Args)
+	_ = app.Run(os.Args)
 	// Output:
 	// Hello Jeremy
 }
@@ -76,7 +76,7 @@ func ExampleApp_Run_subcommand() {
 								Usage: "Name of the person to greet",
 							},
 						},
-						Action: func(c *Context) error {
+						Action: func(c Context) error {
 							fmt.Println("Hello,", c.String("name"))
 							return nil
 						},
@@ -112,7 +112,7 @@ func ExampleApp_Run_appHelp() {
 				Aliases:     []string{"d"},
 				Usage:       "use it to see a description",
 				Description: "This is how we describe describeit the function",
-				Action: func(c *Context) error {
+				Action: func(c Context) error {
 					fmt.Printf("i like to describe things")
 					return nil
 				},
@@ -162,7 +162,7 @@ func ExampleApp_Run_commandHelp() {
 				Aliases:     []string{"d"},
 				Usage:       "use it to see a description",
 				Description: "This is how we describe describeit the function",
-				Action: func(c *Context) error {
+				Action: func(c Context) error {
 					fmt.Printf("i like to describe things")
 					return nil
 				},
@@ -328,7 +328,7 @@ func ExampleApp_Run_bashComplete() {
 				Aliases:     []string{"d"},
 				Usage:       "use it to see a description",
 				Description: "This is how we describe describeit the function",
-				Action: func(c *Context) error {
+				Action: func(c Context) error {
 					fmt.Printf("i like to describe things")
 					return nil
 				},
@@ -336,7 +336,7 @@ func ExampleApp_Run_bashComplete() {
 				Name:        "next",
 				Usage:       "next example",
 				Description: "more stuff to see when generating shell completion",
-				Action: func(c *Context) error {
+				Action: func(c Context) error {
 					fmt.Printf("the next example")
 					return nil
 				},
@@ -367,7 +367,7 @@ func ExampleApp_Run_zshComplete() {
 			Aliases:     []string{"d"},
 			Usage:       "use it to see a description",
 			Description: "This is how we describe describeit the function",
-			Action: func(c *Context) error {
+			Action: func(c Context) error {
 				fmt.Printf("i like to describe things")
 				return nil
 			},
@@ -375,7 +375,7 @@ func ExampleApp_Run_zshComplete() {
 			Name:        "next",
 			Usage:       "next example",
 			Description: "more stuff to see when generating bash completion",
-			Action: func(c *Context) error {
+			Action: func(c Context) error {
 				fmt.Printf("the next example")
 				return nil
 			},
@@ -395,7 +395,7 @@ func TestApp_Run(t *testing.T) {
 	s := ""
 
 	app := &App{
-		Action: func(c *Context) error {
+		Action: func(c Context) error {
 			s = s + c.Args().First()
 			return nil
 		},
@@ -440,13 +440,13 @@ func TestApp_Setup_defaultsWriter(t *testing.T) {
 }
 
 func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
-	var context *Context
+	var context Context
 
 	a := &App{
 		Commands: []*Command{
 			{
 				Name: "foo",
-				Action: func(c *Context) error {
+				Action: func(c Context) error {
 					context = c
 					return nil
 				},
@@ -457,7 +457,7 @@ func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
 						Usage: "language for the greeting",
 					},
 				},
-				Before: func(_ *Context) error { return nil },
+				Before: func(_ Context) error { return nil },
 			},
 		},
 	}
@@ -478,7 +478,7 @@ func TestApp_RunAsSubCommandIncorrectUsage(t *testing.T) {
 
 	set := flag.NewFlagSet("", flag.ContinueOnError)
 	_ = set.Parse([]string{"", "---foo"})
-	c := &Context{flagSet: set}
+	c := &defaultContext{flagSet: set}
 
 	err := a.RunAsSubcommand(c)
 
@@ -496,7 +496,7 @@ func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
 				Flags: []Flag{
 					&StringFlag{Name: "option", Value: "", Usage: "some option"},
 				},
-				Action: func(c *Context) error {
+				Action: func(c Context) error {
 					parsedOption = c.String("option")
 					args = c.Args()
 					return nil
@@ -520,7 +520,7 @@ func TestApp_CommandWithDash(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "cmd",
-				Action: func(c *Context) error {
+				Action: func(c Context) error {
 					args = c.Args()
 					return nil
 				},
@@ -541,7 +541,7 @@ func TestApp_CommandWithNoFlagBeforeTerminator(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "cmd",
-				Action: func(c *Context) error {
+				Action: func(c Context) error {
 					args = c.Args()
 					return nil
 				},
@@ -562,13 +562,13 @@ func TestApp_VisibleCommands(t *testing.T) {
 			{
 				Name:     "frob",
 				HelpName: "foo frob",
-				Action:   func(_ *Context) error { return nil },
+				Action:   func(_ Context) error { return nil },
 			},
 			{
 				Name:     "frib",
 				HelpName: "foo frib",
 				Hidden:   true,
-				Action:   func(_ *Context) error { return nil },
+				Action:   func(_ Context) error { return nil },
 			},
 		},
 	}
@@ -619,7 +619,7 @@ func TestApp_UseShortOptionHandling(t *testing.T) {
 		&BoolFlag{Name: "two", Aliases: []string{"t"}},
 		&StringFlag{Name: "name", Aliases: []string{"n"}},
 	}
-	app.Action = func(c *Context) error {
+	app.Action = func(c Context) error {
 		one = c.Bool("one")
 		two = c.Bool("two")
 		name = c.String("name")
@@ -657,7 +657,7 @@ func TestApp_UseShortOptionHandlingCommand(t *testing.T) {
 			&BoolFlag{Name: "two", Aliases: []string{"t"}},
 			&StringFlag{Name: "name", Aliases: []string{"n"}},
 		},
-		Action: func(c *Context) error {
+		Action: func(c Context) error {
 			one = c.Bool("one")
 			two = c.Bool("two")
 			name = c.String("name")
@@ -704,7 +704,7 @@ func TestApp_UseShortOptionHandlingSubCommand(t *testing.T) {
 			&BoolFlag{Name: "two", Aliases: []string{"t"}},
 			&StringFlag{Name: "name", Aliases: []string{"n"}},
 		},
-		Action: func(c *Context) error {
+		Action: func(c Context) error {
 			one = c.Bool("one")
 			two = c.Bool("two")
 			name = c.String("name")
@@ -747,7 +747,7 @@ func TestApp_Float64Flag(t *testing.T) {
 		Flags: []Flag{
 			&Float64Flag{Name: "height", Value: 1.5, Usage: "Set the height, in meters"},
 		},
-		Action: func(c *Context) error {
+		Action: func(c Context) error {
 			meters = c.Float64("height")
 			return nil
 		},
@@ -769,7 +769,7 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 					&IntSliceFlag{Name: "p", Value: NewIntSlice(), Usage: "set one or more ip addr"},
 					&StringSliceFlag{Name: "ip", Value: NewStringSlice(), Usage: "set one or more ports to open"},
 				},
-				Action: func(c *Context) error {
+				Action: func(c Context) error {
 					parsedIntSlice = c.IntSlice("p")
 					parsedStringSlice = c.StringSlice("ip")
 					return nil
@@ -827,7 +827,7 @@ func TestApp_ParseSliceFlagsWithMissingValue(t *testing.T) {
 					&IntSliceFlag{Name: "a", Usage: "set numbers"},
 					&StringSliceFlag{Name: "str", Usage: "set strings"},
 				},
-				Action: func(c *Context) error {
+				Action: func(c Context) error {
 					parsedIntSlice = c.IntSlice("a")
 					parsedStringSlice = c.StringSlice("str")
 					return nil
@@ -884,7 +884,7 @@ func TestApp_BeforeFunc(t *testing.T) {
 	var err error
 
 	app := &App{
-		Before: func(c *Context) error {
+		Before: func(c Context) error {
 			counts.Total++
 			counts.Before = counts.Total
 			s := c.String("opt")
@@ -897,7 +897,7 @@ func TestApp_BeforeFunc(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "sub",
-				Action: func(c *Context) error {
+				Action: func(c Context) error {
 					counts.Total++
 					counts.SubCommand = counts.Total
 					return nil
@@ -948,7 +948,7 @@ func TestApp_BeforeFunc(t *testing.T) {
 	counts = &opCounts{}
 
 	afterError := errors.New("fail again")
-	app.After = func(_ *Context) error {
+	app.After = func(_ Context) error {
 		return afterError
 	}
 
@@ -975,7 +975,7 @@ func TestApp_AfterFunc(t *testing.T) {
 	var err error
 
 	app := &App{
-		After: func(c *Context) error {
+		After: func(c Context) error {
 			counts.Total++
 			counts.After = counts.Total
 			s := c.String("opt")
@@ -988,7 +988,7 @@ func TestApp_AfterFunc(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "sub",
-				Action: func(c *Context) error {
+				Action: func(c Context) error {
 					counts.Total++
 					counts.SubCommand = counts.Total
 					return nil
@@ -1216,7 +1216,7 @@ func TestApp_VersionPrinter(t *testing.T) {
 	}()
 
 	var wasCalled = false
-	VersionPrinter = func(c *Context) {
+	VersionPrinter = func(c Context) {
 		wasCalled = true
 	}
 
@@ -1232,14 +1232,14 @@ func TestApp_VersionPrinter(t *testing.T) {
 func TestApp_CommandNotFound(t *testing.T) {
 	counts := &opCounts{}
 	app := &App{
-		CommandNotFound: func(c *Context, command string) {
+		CommandNotFound: func(c Context, command string) {
 			counts.Total++
 			counts.CommandNotFound = counts.Total
 		},
 		Commands: []*Command{
 			{
 				Name: "bar",
-				Action: func(c *Context) error {
+				Action: func(c Context) error {
 					counts.Total++
 					counts.SubCommand = counts.Total
 					return nil
@@ -1262,11 +1262,11 @@ func TestApp_OrderOfOperations(t *testing.T) {
 
 	app := &App{
 		EnableBashCompletion: true,
-		BashComplete: func(c *Context) {
+		BashComplete: func(c Context) {
 			counts.Total++
 			counts.ShellComplete = counts.Total
 		},
-		OnUsageError: func(c *Context, err error, isSubcommand bool) error {
+		OnUsageError: func(c Context, err error, isSubcommand bool) error {
 			counts.Total++
 			counts.OnUsageError = counts.Total
 			return errors.New("hay OnUsageError")
@@ -1274,31 +1274,31 @@ func TestApp_OrderOfOperations(t *testing.T) {
 		Writer: ioutil.Discard,
 	}
 
-	beforeNoError := func(c *Context) error {
+	beforeNoError := func(c Context) error {
 		counts.Total++
 		counts.Before = counts.Total
 		return nil
 	}
 
-	beforeError := func(c *Context) error {
+	beforeError := func(c Context) error {
 		counts.Total++
 		counts.Before = counts.Total
 		return errors.New("hay Before")
 	}
 
 	app.Before = beforeNoError
-	app.CommandNotFound = func(c *Context, command string) {
+	app.CommandNotFound = func(c Context, command string) {
 		counts.Total++
 		counts.CommandNotFound = counts.Total
 	}
 
-	afterNoError := func(c *Context) error {
+	afterNoError := func(c Context) error {
 		counts.Total++
 		counts.After = counts.Total
 		return nil
 	}
 
-	afterError := func(c *Context) error {
+	afterError := func(c Context) error {
 		counts.Total++
 		counts.After = counts.Total
 		return errors.New("hay After")
@@ -1308,7 +1308,7 @@ func TestApp_OrderOfOperations(t *testing.T) {
 	app.Commands = []*Command{
 		{
 			Name: "bar",
-			Action: func(c *Context) error {
+			Action: func(c Context) error {
 				counts.Total++
 				counts.SubCommand = counts.Total
 				return nil
@@ -1316,7 +1316,7 @@ func TestApp_OrderOfOperations(t *testing.T) {
 		},
 	}
 
-	app.Action = func(c *Context) error {
+	app.Action = func(c Context) error {
 		counts.Total++
 		counts.Action = counts.Total
 		return nil
@@ -1423,7 +1423,7 @@ func TestApp_Run_CommandWithSubcommandHasHelpTopic(t *testing.T) {
 				Name:        "foo",
 				Description: "descriptive wall of text about how it does foo things",
 				Subcommands: []*Command{subCmdBar, subCmdBaz},
-				Action:      func(c *Context) error { return nil },
+				Action:      func(c Context) error { return nil },
 			}
 
 			app.Commands = []*Command{cmd}
@@ -1602,7 +1602,7 @@ func TestApp_Run_Help(t *testing.T) {
 				Name:   "boom",
 				Usage:  "make an explosive entrance",
 				Writer: buf,
-				Action: func(c *Context) error {
+				Action: func(c Context) error {
 					buf.WriteString("boom I say!")
 					return nil
 				},
@@ -1635,7 +1635,7 @@ func TestApp_Run_Version(t *testing.T) {
 				Usage:   "make an explosive entrance",
 				Version: "0.1.0",
 				Writer:  buf,
-				Action: func(c *Context) error {
+				Action: func(c Context) error {
 					buf.WriteString("boom I say!")
 					return nil
 				},
@@ -1816,9 +1816,9 @@ func TestApp_VisibleCategories(t *testing.T) {
 
 func TestApp_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 	app := &App{
-		Action: func(c *Context) error { return nil },
-		Before: func(c *Context) error { return fmt.Errorf("before error") },
-		After:  func(c *Context) error { return fmt.Errorf("after error") },
+		Action: func(c Context) error { return nil },
+		Before: func(c Context) error { return fmt.Errorf("before error") },
+		After:  func(c Context) error { return fmt.Errorf("after error") },
 		Writer: ioutil.Discard,
 	}
 
@@ -1845,8 +1845,8 @@ func TestApp_Run_SubcommandDoesNotOverwriteErrorFromBefore(t *testing.T) {
 					},
 				},
 				Name:   "bar",
-				Before: func(c *Context) error { return fmt.Errorf("before error") },
-				After:  func(c *Context) error { return fmt.Errorf("after error") },
+				Before: func(c Context) error { return fmt.Errorf("before error") },
+				After:  func(c Context) error { return fmt.Errorf("after error") },
 			},
 		},
 	}
@@ -1869,7 +1869,7 @@ func TestApp_OnUsageError_WithWrongFlagValue(t *testing.T) {
 		Flags: []Flag{
 			&IntFlag{Name: "flag"},
 		},
-		OnUsageError: func(c *Context, err error, isSubcommand bool) error {
+		OnUsageError: func(c Context, err error, isSubcommand bool) error {
 			if isSubcommand {
 				t.Errorf("Expect no subcommand")
 			}
@@ -1900,7 +1900,7 @@ func TestApp_OnUsageError_WithWrongFlagValue_ForSubcommand(t *testing.T) {
 		Flags: []Flag{
 			&IntFlag{Name: "flag"},
 		},
-		OnUsageError: func(c *Context, err error, isSubcommand bool) error {
+		OnUsageError: func(c Context, err error, isSubcommand bool) error {
 			if isSubcommand {
 				t.Errorf("Expect subcommand")
 			}
@@ -2029,7 +2029,7 @@ func TestHandleExitCoder_Custom(t *testing.T) {
 		t.Errorf("error creating FlagSet: %s", err)
 	}
 
-	app.ExitErrHandler = func(_ *Context, _ error) {
+	app.ExitErrHandler = func(_ Context, _ error) {
 		_, _ = fmt.Fprintln(ErrWriter, "I'm a Custom error handler, I print what I want!")
 	}
 
@@ -2050,18 +2050,18 @@ func TestShellCompletionForIncompleteFlags(t *testing.T) {
 			},
 		},
 		EnableBashCompletion: true,
-		BashComplete: func(ctx *Context) {
-			for _, command := range ctx.App.Commands {
+		BashComplete: func(ctx Context) {
+			for _, command := range ctx.App().Commands {
 				if command.Hidden {
 					continue
 				}
 
 				for _, name := range command.Names() {
-					_, _ = fmt.Fprintln(ctx.App.Writer, name)
+					_, _ = fmt.Fprintln(ctx.App().Writer, name)
 				}
 			}
 
-			for _, fl := range ctx.App.Flags {
+			for _, fl := range ctx.App().Flags {
 				for _, name := range fl.Names() {
 					if name == BashCompletionFlag.Names()[0] {
 						continue
@@ -2070,14 +2070,14 @@ func TestShellCompletionForIncompleteFlags(t *testing.T) {
 					switch name = strings.TrimSpace(name); len(name) {
 					case 0:
 					case 1:
-						_, _ = fmt.Fprintln(ctx.App.Writer, "-"+name)
+						_, _ = fmt.Fprintln(ctx.App().Writer, "-"+name)
 					default:
-						_, _ = fmt.Fprintln(ctx.App.Writer, "--"+name)
+						_, _ = fmt.Fprintln(ctx.App().Writer, "--"+name)
 					}
 				}
 			}
 		},
-		Action: func(ctx *Context) error {
+		Action: func(ctx Context) error {
 			return fmt.Errorf("should not get here")
 		},
 		Writer: ioutil.Discard,
@@ -2098,7 +2098,7 @@ func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
 			Subcommands: []*Command{
 				{
 					Name: "subcmd",
-					Action: func(c *Context) error {
+					Action: func(c Context) error {
 						return NewExitError("exit error", testCode)
 					},
 				},
@@ -2108,7 +2108,7 @@ func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
 
 	// set user function as ExitErrHandler
 	var exitCodeFromExitErrHandler int
-	app.ExitErrHandler = func(c *Context, err error) {
+	app.ExitErrHandler = func(c Context, err error) {
 		if exitErr, ok := err.(ExitCoder); ok {
 			exitCodeFromExitErrHandler = exitErr.ExitCode()
 		}

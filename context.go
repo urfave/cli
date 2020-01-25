@@ -6,53 +6,132 @@ import (
 	"flag"
 	"fmt"
 	"strings"
+	"time"
 )
 
-// Context is a type that is passed through to
-// each Handler action in a cli application. Context
+// Context is an interface that is passed through to
+// each Handler action in a cli application. defaultContext
 // can be used to retrieve context-specific args and
 // parsed command-line options.
-type Context struct {
-	context.Context
-	App           *App
-	Command       *Command
+type Context interface {
+	// Functions to be able to manage Context type
+	App() *App
+	SetCommand(command *Command)
+	Command() *Command
+	Context() context.Context
+	ParentContext() Context
+	SetShellComplete(shellComplete bool)
+	ShellComplete() bool
+	SetFlagSet(set *flag.FlagSet)
+	FlagSet() *flag.FlagSet
+	NumFlags() int
+	Set(name, value string) error
+	IsSet(name string) bool
+	LocalFlagNames() []string
+	FlagNames() []string
+	Lineage() []Context
+	Value(name string) interface{}
+	Args() Args
+	NArg() int
+	// Functions for each flag type supported by the cli
+	Timestamp(name string) *time.Time
+	Generic(name string) interface{}
+	Bool(name string) bool
+	Float64(name string) float64
+	String(name string) string
+	Int64Slice(name string) []int64
+	Uint64(name string) uint64
+	StringSlice(name string) []string
+	Int64(name string) int64
+	Float64Slice(name string) []float64
+	Duration(name string) time.Duration
+	IntSlice(name string) []int
+	Int(name string) int
+	Path(name string) string
+	Uint(name string) uint
+}
+
+type defaultContext struct {
+	context       context.Context
+	app           *App
+	command       *Command
 	shellComplete bool
 	flagSet       *flag.FlagSet
-	parentContext *Context
+	parentContext Context
 }
 
 // NewContext creates a new context. For use in when invoking an App or Command action.
-func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
-	c := &Context{App: app, flagSet: set, parentContext: parentCtx}
+func NewContext(app *App, set *flag.FlagSet, parentCtx Context) Context {
+	c := &defaultContext{app: app, flagSet: set, parentContext: parentCtx}
 	if parentCtx != nil {
-		c.Context = parentCtx.Context
-		c.shellComplete = parentCtx.shellComplete
-		if parentCtx.flagSet == nil {
-			parentCtx.flagSet = &flag.FlagSet{}
+		c.context = parentCtx.Context()
+		c.shellComplete = parentCtx.ShellComplete()
+		if parentCtx.FlagSet() == nil {
+			parentCtx.SetFlagSet(&flag.FlagSet{})
 		}
 	}
 
-	c.Command = &Command{}
+	c.command = &Command{}
 
-	if c.Context == nil {
-		c.Context = context.Background()
+	if c.context == nil {
+		c.context = context.Background()
 	}
 
 	return c
 }
 
+func NewParentContext(ctx context.Context) Context {
+	return &defaultContext{context: ctx}
+}
+
+func (c *defaultContext) App() *App {
+	return c.app
+}
+
+func (c *defaultContext) SetCommand(command *Command) {
+	c.command = command
+}
+
+func (c *defaultContext) Command() *Command {
+	return c.command
+}
+
+func (c *defaultContext) Context() context.Context {
+	return c.context
+}
+
+func (c *defaultContext) ParentContext() Context {
+	return c.parentContext
+}
+
+func (c *defaultContext) SetShellComplete(shellComplete bool) {
+	c.shellComplete = shellComplete
+}
+
+func (c *defaultContext) ShellComplete() bool {
+	return c.shellComplete
+}
+
+func (c *defaultContext) SetFlagSet(set *flag.FlagSet) {
+	c.flagSet = set
+}
+
+func (c *defaultContext) FlagSet() *flag.FlagSet {
+	return c.flagSet
+}
+
 // NumFlags returns the number of flags set
-func (c *Context) NumFlags() int {
+func (c *defaultContext) NumFlags() int {
 	return c.flagSet.NFlag()
 }
 
 // Set sets a context flag to a value.
-func (c *Context) Set(name, value string) error {
+func (c *defaultContext) Set(name, value string) error {
 	return c.flagSet.Set(name, value)
 }
 
 // IsSet determines if the flag was actually set
-func (c *Context) IsSet(name string) bool {
+func (c *defaultContext) IsSet(name string) bool {
 	if fs := lookupFlagSet(name, c); fs != nil {
 		if fs := lookupFlagSet(name, c); fs != nil {
 			isSet := false
@@ -78,7 +157,7 @@ func (c *Context) IsSet(name string) bool {
 }
 
 // LocalFlagNames returns a slice of flag names used in this context.
-func (c *Context) LocalFlagNames() []string {
+func (c *defaultContext) LocalFlagNames() []string {
 	var names []string
 	c.flagSet.Visit(makeFlagNameVisitor(&names))
 	return names
@@ -86,20 +165,20 @@ func (c *Context) LocalFlagNames() []string {
 
 // FlagNames returns a slice of flag names used by the this context and all of
 // its parent contexts.
-func (c *Context) FlagNames() []string {
+func (c *defaultContext) FlagNames() []string {
 	var names []string
 	for _, ctx := range c.Lineage() {
-		ctx.flagSet.Visit(makeFlagNameVisitor(&names))
+		ctx.FlagSet().Visit(makeFlagNameVisitor(&names))
 	}
 	return names
 }
 
 // Lineage returns *this* context and all of its ancestor contexts in order from
 // child to parent
-func (c *Context) Lineage() []*Context {
-	var lineage []*Context
+func (c *defaultContext) Lineage() []Context {
+	var lineage []Context
 
-	for cur := c; cur != nil; cur = cur.parentContext {
+	for cur := Context(c); cur != nil; cur = cur.ParentContext() {
 		lineage = append(lineage, cur)
 	}
 
@@ -107,28 +186,28 @@ func (c *Context) Lineage() []*Context {
 }
 
 // Value returns the value of the flag corresponding to `name`
-func (c *Context) Value(name string) interface{} {
+func (c *defaultContext) Value(name string) interface{} {
 	return c.flagSet.Lookup(name).Value.(flag.Getter).Get()
 }
 
 // Args returns the command line arguments associated with the context.
-func (c *Context) Args() Args {
+func (c *defaultContext) Args() Args {
 	ret := args(c.flagSet.Args())
 	return &ret
 }
 
 // NArg returns the number of the command line arguments.
-func (c *Context) NArg() int {
+func (c *defaultContext) NArg() int {
 	return c.Args().Len()
 }
 
-func lookupFlag(name string, ctx *Context) Flag {
+func lookupFlag(name string, ctx *defaultContext) Flag {
 	for _, c := range ctx.Lineage() {
-		if c.Command == nil {
+		if c.Command() == nil {
 			continue
 		}
 
-		for _, f := range c.Command.Flags {
+		for _, f := range c.Command().Flags {
 			for _, n := range f.Names() {
 				if n == name {
 					return f
@@ -137,8 +216,8 @@ func lookupFlag(name string, ctx *Context) Flag {
 		}
 	}
 
-	if ctx.App != nil {
-		for _, f := range ctx.App.Flags {
+	if ctx.App() != nil {
+		for _, f := range ctx.App().Flags {
 			for _, n := range f.Names() {
 				if n == name {
 					return f
@@ -150,10 +229,10 @@ func lookupFlag(name string, ctx *Context) Flag {
 	return nil
 }
 
-func lookupFlagSet(name string, ctx *Context) *flag.FlagSet {
+func lookupFlagSet(name string, ctx Context) *flag.FlagSet {
 	for _, c := range ctx.Lineage() {
-		if f := c.flagSet.Lookup(name); f != nil {
-			return c.flagSet
+		if f := c.FlagSet().Lookup(name); f != nil {
+			return c.FlagSet()
 		}
 	}
 
@@ -242,7 +321,7 @@ func (e *errRequiredFlags) getMissingFlags() []string {
 	return e.missingFlags
 }
 
-func checkRequiredFlags(flags []Flag, context *Context) requiredFlagsErr {
+func checkRequiredFlags(flags []Flag, context Context) requiredFlagsErr {
 	var missingFlags []string
 	for _, f := range flags {
 		if rf, ok := f.(RequiredFlag); ok && rf.IsRequired() {

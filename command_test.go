@@ -37,7 +37,7 @@ func TestCommandFlagParsing(t *testing.T) {
 			Aliases:         []string{"tc"},
 			Usage:           "this is for testing",
 			Description:     "testing",
-			Action:          func(_ *Context) error { return nil },
+			Action:          func(_ Context) error { return nil },
 			SkipFlagParsing: c.skipFlagParsing,
 		}
 
@@ -80,7 +80,7 @@ func TestParseAndRunShortOpts(t *testing.T) {
 			Name:        "test",
 			Usage:       "this is for testing",
 			Description: "testing",
-			Action: func(c *Context) error {
+			Action: func(c Context) error {
 				args = c.Args()
 				return nil
 			},
@@ -108,10 +108,10 @@ func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "bar",
-				Before: func(c *Context) error {
+				Before: func(c Context) error {
 					return fmt.Errorf("before error")
 				},
-				After: func(c *Context) error {
+				After: func(c Context) error {
 					return fmt.Errorf("after error")
 				},
 			},
@@ -140,20 +140,20 @@ func TestCommand_Run_BeforeSavesMetadata(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "bar",
-				Before: func(c *Context) error {
-					c.App.Metadata["msg"] = "hello world"
+				Before: func(c Context) error {
+					c.App().Metadata["msg"] = "hello world"
 					return nil
 				},
-				Action: func(c *Context) error {
-					msg, ok := c.App.Metadata["msg"]
+				Action: func(c Context) error {
+					msg, ok := c.App().Metadata["msg"]
 					if !ok {
 						return errors.New("msg not found")
 					}
 					receivedMsgFromAction = msg.(string)
 					return nil
 				},
-				After: func(c *Context) error {
-					msg, ok := c.App.Metadata["msg"]
+				After: func(c Context) error {
+					msg, ok := c.App().Metadata["msg"]
 					if !ok {
 						return errors.New("msg not found")
 					}
@@ -189,8 +189,8 @@ func TestCommand_OnUsageError_hasCommandContext(t *testing.T) {
 				Flags: []Flag{
 					&IntFlag{Name: "flag"},
 				},
-				OnUsageError: func(c *Context, err error, _ bool) error {
-					return fmt.Errorf("intercepted in %s: %s", c.Command.Name, err.Error())
+				OnUsageError: func(c Context, err error, _ bool) error {
+					return fmt.Errorf("intercepted in %s: %s", c.Command().Name, err.Error())
 				},
 			},
 		},
@@ -214,7 +214,7 @@ func TestCommand_OnUsageError_WithWrongFlagValue(t *testing.T) {
 				Flags: []Flag{
 					&IntFlag{Name: "flag"},
 				},
-				OnUsageError: func(c *Context, err error, _ bool) error {
+				OnUsageError: func(c Context, err error, _ bool) error {
 					if !strings.HasPrefix(err.Error(), "invalid value \"wrong\"") {
 						t.Errorf("Expect an invalid value error, but got \"%v\"", err)
 					}
@@ -247,7 +247,7 @@ func TestCommand_OnUsageError_WithSubcommand(t *testing.T) {
 				Flags: []Flag{
 					&IntFlag{Name: "flag"},
 				},
-				OnUsageError: func(c *Context, err error, _ bool) error {
+				OnUsageError: func(c Context, err error, _ bool) error {
 					if !strings.HasPrefix(err.Error(), "invalid value \"wrong\"") {
 						t.Errorf("Expect an invalid value error, but got \"%v\"", err)
 					}
@@ -278,8 +278,8 @@ func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
 					{
 						Name:  "baz",
 						Usage: "this is for testing",
-						Action: func(c *Context) error {
-							if c.App.ErrWriter != ioutil.Discard {
+						Action: func(c Context) error {
+							if c.App().ErrWriter != ioutil.Discard {
 								return fmt.Errorf("ErrWriter not passed")
 							}
 
@@ -317,7 +317,7 @@ func TestCommandSkipFlagParsing(t *testing.T) {
 					Flags: []Flag{
 						&StringFlag{Name: "flag"},
 					},
-					Action: func(c *Context) error {
+					Action: func(c Context) error {
 						args = c.Args()
 						return nil
 					},
@@ -359,8 +359,8 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 							Usage: "A number to parse",
 						},
 					},
-					BashComplete: func(c *Context) {
-						fmt.Fprintf(c.App.Writer, "found %d args", c.NArg())
+					BashComplete: func(c Context) {
+						fmt.Fprintf(c.App().Writer, "found %d args", c.NArg())
 					},
 				},
 			},

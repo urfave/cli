@@ -16,7 +16,7 @@ var (
 	appActionDeprecationURL = fmt.Sprintf("%s#deprecated-cli-app-action-signature", changeLogURL)
 	contactSysadmin         = "This is an error in the application.  Please contact the distributor of this application if this is not you."
 	errInvalidActionType    = NewExitError("ERROR invalid Action type. "+
-		fmt.Sprintf("Must be `func(*Context`)` or `func(*Context) error).  %s", contactSysadmin)+
+		fmt.Sprintf("Must be `func(Context`)` or `func(Context) error).  %s", contactSysadmin)+
 		fmt.Sprintf("See %s", appActionDeprecationURL), 2)
 )
 
@@ -210,7 +210,7 @@ func (a *App) Run(arguments []string) (err error) {
 	return a.RunContext(context.Background(), arguments)
 }
 
-// RunContext is like Run except it takes a Context that will be
+// RunContext is like Run except it takes aContext that will be
 // passed to its commands and sub-commands. Through this, you can
 // propagate timeouts and cancellation requests
 func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
@@ -231,48 +231,48 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 
 	err = parseIter(set, a, arguments[1:], shellComplete)
 	nerr := normalizeFlags(a.Flags, set)
-	context := NewContext(a, set, &Context{Context: ctx})
+	cntxt := NewContext(a, set, NewParentContext(ctx))
 	if nerr != nil {
 		_, _ = fmt.Fprintln(a.Writer, nerr)
-		_ = ShowAppHelp(context)
+		_ = ShowAppHelp(cntxt)
 		return nerr
 	}
-	context.shellComplete = shellComplete
+	cntxt.SetShellComplete(shellComplete)
 
-	if checkCompletions(context) {
+	if checkCompletions(cntxt) {
 		return nil
 	}
 
 	if err != nil {
 		if a.OnUsageError != nil {
-			err := a.OnUsageError(context, err, false)
-			a.handleExitCoder(context, err)
+			err := a.OnUsageError(cntxt, err, false)
+			a.handleExitCoder(cntxt, err)
 			return err
 		}
 		_, _ = fmt.Fprintf(a.Writer, "%s %s\n\n", "Incorrect Usage.", err.Error())
-		_ = ShowAppHelp(context)
+		_ = ShowAppHelp(cntxt)
 		return err
 	}
 
-	if !a.HideHelp && checkHelp(context) {
-		_ = ShowAppHelp(context)
+	if !a.HideHelp && checkHelp(cntxt) {
+		_ = ShowAppHelp(cntxt)
 		return nil
 	}
 
-	if !a.HideVersion && checkVersion(context) {
-		ShowVersion(context)
+	if !a.HideVersion && checkVersion(cntxt) {
+		ShowVersion(cntxt)
 		return nil
 	}
 
-	cerr := checkRequiredFlags(a.Flags, context)
-	if cerr != nil {
-		_ = ShowAppHelp(context)
-		return cerr
+	requiredFlagsErr := checkRequiredFlags(a.Flags, cntxt)
+	if requiredFlagsErr != nil {
+		_ = ShowAppHelp(cntxt)
+		return requiredFlagsErr
 	}
 
 	if a.After != nil {
 		defer func() {
-			if afterErr := a.After(context); afterErr != nil {
+			if afterErr := a.After(cntxt); afterErr != nil {
 				if err != nil {
 					err = newMultiError(err, afterErr)
 				} else {
@@ -283,22 +283,22 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 	}
 
 	if a.Before != nil {
-		beforeErr := a.Before(context)
+		beforeErr := a.Before(cntxt)
 		if beforeErr != nil {
 			_, _ = fmt.Fprintf(a.Writer, "%v\n\n", beforeErr)
-			_ = ShowAppHelp(context)
-			a.handleExitCoder(context, beforeErr)
+			_ = ShowAppHelp(cntxt)
+			a.handleExitCoder(cntxt, beforeErr)
 			err = beforeErr
 			return err
 		}
 	}
 
-	args := context.Args()
+	args := cntxt.Args()
 	if args.Present() {
 		name := args.First()
 		c := a.Command(name)
 		if c != nil {
-			return c.Run(context)
+			return c.Run(cntxt)
 		}
 	}
 
@@ -307,9 +307,9 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 	}
 
 	// Run default Action
-	err = a.Action(context)
+	err = a.Action(cntxt)
 
-	a.handleExitCoder(context, err)
+	a.handleExitCoder(cntxt, err)
 	return err
 }
 
@@ -327,7 +327,7 @@ func (a *App) RunAndExitOnError() {
 
 // RunAsSubcommand invokes the subcommand given the context, parses ctx.Args() to
 // generate command-specific flags
-func (a *App) RunAsSubcommand(ctx *Context) (err error) {
+func (a *App) RunAsSubcommand(ctx Context) (err error) {
 	a.Setup()
 
 	// append help to commands
@@ -355,57 +355,57 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 		return err
 	}
 
-	err = parseIter(set, a, ctx.Args().Tail(), ctx.shellComplete)
+	err = parseIter(set, a, ctx.Args().Tail(), ctx.ShellComplete())
 	nerr := normalizeFlags(a.Flags, set)
-	context := NewContext(a, set, ctx)
+	cntxt := NewContext(a, set, ctx)
 
 	if nerr != nil {
 		_, _ = fmt.Fprintln(a.Writer, nerr)
 		_, _ = fmt.Fprintln(a.Writer)
 		if len(a.Commands) > 0 {
-			_ = ShowSubcommandHelp(context)
+			_ = ShowSubcommandHelp(cntxt)
 		} else {
-			_ = ShowCommandHelp(ctx, context.Args().First())
+			_ = ShowCommandHelp(ctx, cntxt.Args().First())
 		}
 		return nerr
 	}
 
-	if checkCompletions(context) {
+	if checkCompletions(cntxt) {
 		return nil
 	}
 
 	if err != nil {
 		if a.OnUsageError != nil {
-			err = a.OnUsageError(context, err, true)
-			a.handleExitCoder(context, err)
+			err = a.OnUsageError(cntxt, err, true)
+			a.handleExitCoder(cntxt, err)
 			return err
 		}
 		_, _ = fmt.Fprintf(a.Writer, "%s %s\n\n", "Incorrect Usage.", err.Error())
-		_ = ShowSubcommandHelp(context)
+		_ = ShowSubcommandHelp(cntxt)
 		return err
 	}
 
 	if len(a.Commands) > 0 {
-		if checkSubcommandHelp(context) {
+		if checkSubcommandHelp(cntxt) {
 			return nil
 		}
 	} else {
-		if checkCommandHelp(ctx, context.Args().First()) {
+		if checkCommandHelp(ctx, cntxt.Args().First()) {
 			return nil
 		}
 	}
 
-	cerr := checkRequiredFlags(a.Flags, context)
+	cerr := checkRequiredFlags(a.Flags, cntxt)
 	if cerr != nil {
-		_ = ShowSubcommandHelp(context)
+		_ = ShowSubcommandHelp(cntxt)
 		return cerr
 	}
 
 	if a.After != nil {
 		defer func() {
-			afterErr := a.After(context)
+			afterErr := a.After(cntxt)
 			if afterErr != nil {
-				a.handleExitCoder(context, err)
+				a.handleExitCoder(cntxt, err)
 				if err != nil {
 					err = newMultiError(err, afterErr)
 				} else {
@@ -416,27 +416,27 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	}
 
 	if a.Before != nil {
-		beforeErr := a.Before(context)
+		beforeErr := a.Before(cntxt)
 		if beforeErr != nil {
-			a.handleExitCoder(context, beforeErr)
+			a.handleExitCoder(cntxt, beforeErr)
 			err = beforeErr
 			return err
 		}
 	}
 
-	args := context.Args()
+	args := cntxt.Args()
 	if args.Present() {
 		name := args.First()
 		c := a.Command(name)
 		if c != nil {
-			return c.Run(context)
+			return c.Run(cntxt)
 		}
 	}
 
 	// Run default Action
-	err = a.Action(context)
+	err = a.Action(cntxt)
 
-	a.handleExitCoder(context, err)
+	a.handleExitCoder(cntxt, err)
 	return err
 }
 
@@ -505,7 +505,7 @@ func (a *App) appendCommand(c *Command) {
 	}
 }
 
-func (a *App) handleExitCoder(context *Context, err error) {
+func (a *App) handleExitCoder(context Context, err error) {
 	if a.ExitErrHandler != nil {
 		a.ExitErrHandler(context, err)
 	} else {
@@ -529,19 +529,3 @@ func (a *Author) String() string {
 	return fmt.Sprintf("%v%v", a.Name, e)
 }
 
-// HandleAction attempts to figure out which Action signature was used.  If
-// it's an ActionFunc or a func with the legacy signature for Action, the func
-// is run!
-func HandleAction(action interface{}, context *Context) (err error) {
-	switch a := action.(type) {
-	case ActionFunc:
-		return a(context)
-	case func(*Context) error:
-		return a(context)
-	case func(*Context): // deprecated function signature
-		a(context)
-		return nil
-	}
-
-	return errInvalidActionType
-}

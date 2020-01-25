@@ -86,7 +86,7 @@ func (c *Command) FullName() string {
 }
 
 // Run invokes the command given the context, parses ctx.Args() to generate command-specific flags
-func (c *Command) Run(ctx *Context) (err error) {
+func (c *Command) Run(ctx Context) (err error) {
 	if len(c.Subcommands) > 0 {
 		return c.startApp(ctx)
 	}
@@ -96,14 +96,14 @@ func (c *Command) Run(ctx *Context) (err error) {
 		c.appendFlag(HelpFlag)
 	}
 
-	if ctx.App.UseShortOptionHandling {
+	if ctx.App().UseShortOptionHandling {
 		c.UseShortOptionHandling = true
 	}
 
-	set, err := c.parseFlags(ctx.Args(), ctx.shellComplete)
+	set, err := c.parseFlags(ctx.Args(), ctx.ShellComplete())
 
-	context := NewContext(ctx.App, set, ctx)
-	context.Command = c
+	context := NewContext(ctx.App(), set, ctx)
+	context.SetCommand(c)
 	if checkCommandCompletions(context, c.Name) {
 		return nil
 	}
@@ -111,11 +111,11 @@ func (c *Command) Run(ctx *Context) (err error) {
 	if err != nil {
 		if c.OnUsageError != nil {
 			err = c.OnUsageError(context, err, false)
-			context.App.handleExitCoder(context, err)
+			context.App().handleExitCoder(context, err)
 			return err
 		}
-		_, _ = fmt.Fprintln(context.App.Writer, "Incorrect Usage:", err.Error())
-		_, _ = fmt.Fprintln(context.App.Writer)
+		_, _ = fmt.Fprintln(context.App().Writer, "Incorrect Usage:", err.Error())
+		_, _ = fmt.Fprintln(context.App().Writer)
 		_ = ShowCommandHelp(context, c.Name)
 		return err
 	}
@@ -134,7 +134,7 @@ func (c *Command) Run(ctx *Context) (err error) {
 		defer func() {
 			afterErr := c.After(context)
 			if afterErr != nil {
-				context.App.handleExitCoder(context, err)
+				context.App().handleExitCoder(context, err)
 				if err != nil {
 					err = newMultiError(err, afterErr)
 				} else {
@@ -148,7 +148,7 @@ func (c *Command) Run(ctx *Context) (err error) {
 		err = c.Before(context)
 		if err != nil {
 			_ = ShowCommandHelp(context, c.Name)
-			context.App.handleExitCoder(context, err)
+			context.App().handleExitCoder(context, err)
 			return err
 		}
 	}
@@ -157,11 +157,11 @@ func (c *Command) Run(ctx *Context) (err error) {
 		c.Action = helpSubcommand.Action
 	}
 
-	context.Command = c
+	context.SetCommand(c)
 	err = c.Action(context)
 
 	if err != nil {
-		context.App.handleExitCoder(context, err)
+		context.App().handleExitCoder(context, err)
 	}
 	return err
 }
@@ -212,10 +212,10 @@ func (c *Command) HasName(name string) bool {
 	return false
 }
 
-func (c *Command) startApp(ctx *Context) error {
+func (c *Command) startApp(ctx Context) error {
 	app := &App{
-		Metadata: ctx.App.Metadata,
-		Name:     fmt.Sprintf("%s %s", ctx.App.Name, c.Name),
+		Metadata: ctx.App().Metadata,
+		Name:     fmt.Sprintf("%s %s", ctx.App().Name, c.Name),
 	}
 
 	if c.HelpName == "" {
@@ -229,7 +229,7 @@ func (c *Command) startApp(ctx *Context) error {
 	app.ArgsUsage = c.ArgsUsage
 
 	// set CommandNotFound
-	app.CommandNotFound = ctx.App.CommandNotFound
+	app.CommandNotFound = ctx.App().CommandNotFound
 	app.CustomAppHelpTemplate = c.CustomHelpTemplate
 
 	// set the flags and commands
@@ -237,13 +237,13 @@ func (c *Command) startApp(ctx *Context) error {
 	app.Flags = c.Flags
 	app.HideHelp = c.HideHelp
 
-	app.Version = ctx.App.Version
-	app.HideVersion = ctx.App.HideVersion
-	app.Compiled = ctx.App.Compiled
-	app.Writer = ctx.App.Writer
-	app.ErrWriter = ctx.App.ErrWriter
-	app.ExitErrHandler = ctx.App.ExitErrHandler
-	app.UseShortOptionHandling = ctx.App.UseShortOptionHandling
+	app.Version = ctx.App().Version
+	app.HideVersion = ctx.App().HideVersion
+	app.Compiled = ctx.App().Compiled
+	app.Writer = ctx.App().Writer
+	app.ErrWriter = ctx.App().ErrWriter
+	app.ExitErrHandler = ctx.App().ExitErrHandler
+	app.UseShortOptionHandling = ctx.App().UseShortOptionHandling
 
 	app.categories = newCommandCategories()
 	for _, command := range c.Subcommands {
@@ -253,7 +253,7 @@ func (c *Command) startApp(ctx *Context) error {
 	sort.Sort(app.categories.(*commandCategories))
 
 	// bash completion
-	app.EnableBashCompletion = ctx.App.EnableBashCompletion
+	app.EnableBashCompletion = ctx.App().EnableBashCompletion
 	if c.BashComplete != nil {
 		app.BashComplete = c.BashComplete
 	}

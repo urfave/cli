@@ -69,7 +69,7 @@ func Test_Help_Custom_Flags(t *testing.T) {
 		Flags: []Flag{
 			&BoolFlag{Name: "foo", Aliases: []string{"h"}},
 		},
-		Action: func(ctx *Context) error {
+		Action: func(ctx Context) error {
 			if ctx.Bool("h") != true {
 				t.Errorf("custom help flag not set")
 			}
@@ -100,7 +100,7 @@ func Test_Version_Custom_Flags(t *testing.T) {
 		Flags: []Flag{
 			&BoolFlag{Name: "foo", Aliases: []string{"v"}},
 		},
-		Action: func(ctx *Context) error {
+		Action: func(ctx Context) error {
 			if ctx.Bool("v") != true {
 				t.Errorf("custom version flag not set")
 			}
@@ -194,7 +194,7 @@ func TestShowAppHelp_CommandAliases(t *testing.T) {
 			{
 				Name:    "frobbly",
 				Aliases: []string{"fr", "frob"},
-				Action: func(ctx *Context) error {
+				Action: func(ctx Context) error {
 					return nil
 				},
 			},
@@ -390,7 +390,7 @@ func TestShowCommandHelp_CommandAliases(t *testing.T) {
 			{
 				Name:    "frobbly",
 				Aliases: []string{"fr", "frob", "bork"},
-				Action: func(ctx *Context) error {
+				Action: func(ctx Context) error {
 					return nil
 				},
 			},
@@ -416,7 +416,7 @@ func TestShowSubcommandHelp_CommandAliases(t *testing.T) {
 			{
 				Name:    "frobbly",
 				Aliases: []string{"fr", "frob", "bork"},
-				Action: func(ctx *Context) error {
+				Action: func(ctx Context) error {
 					return nil
 				},
 			},
@@ -437,7 +437,7 @@ func TestShowCommandHelp_Customtemplate(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "frobbly",
-				Action: func(ctx *Context) error {
+				Action: func(ctx Context) error {
 					return nil
 				},
 				HelpName: "foo frobbly",
@@ -523,14 +523,14 @@ func TestShowAppHelp_HiddenCommand(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "frobbly",
-				Action: func(ctx *Context) error {
+				Action: func(ctx Context) error {
 					return nil
 				},
 			},
 			{
 				Name:   "secretfrob",
 				Hidden: true,
-				Action: func(ctx *Context) error {
+				Action: func(ctx Context) error {
 					return nil
 				},
 			},
@@ -693,14 +693,14 @@ func TestShowAppHelp_CustomAppTemplate(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "frobbly",
-				Action: func(ctx *Context) error {
+				Action: func(ctx Context) error {
 					return nil
 				},
 			},
 			{
 				Name:   "secretfrob",
 				Hidden: true,
-				Action: func(ctx *Context) error {
+				Action: func(ctx Context) error {
 					return nil
 				},
 			},

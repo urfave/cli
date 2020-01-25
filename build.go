@@ -58,11 +58,11 @@ func runCmd(arg string, args ...string) error {
 	return cmd.Run()
 }
 
-func VetActionFunc(_ *cli.Context) error {
+func VetActionFunc(_ cli.Context) error {
 	return runCmd("go", "vet")
 }
 
-func TestActionFunc(c *cli.Context) error {
+func TestActionFunc(c cli.Context) error {
 	for _, pkg := range packages {
 		var packageName string
 
@@ -127,7 +127,7 @@ func testCleanup() error {
 	return nil
 }
 
-func GfmrunActionFunc(c *cli.Context) error {
+func GfmrunActionFunc(c cli.Context) error {
 	filename := c.Args().Get(0)
 	if filename == "" {
 		filename = "README.md"
@@ -160,7 +160,7 @@ func GfmrunActionFunc(c *cli.Context) error {
 	return runCmd("gfmrun", "-c", fmt.Sprint(counter), "-s", filename)
 }
 
-func TocActionFunc(c *cli.Context) error {
+func TocActionFunc(c cli.Context) error {
 	filename := c.Args().Get(0)
 	if filename == "" {
 		filename = "README.md"

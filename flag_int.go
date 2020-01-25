@@ -86,7 +86,7 @@ func (f *IntFlag) Apply(set *flag.FlagSet) error {
 
 // Int looks up the value of a local IntFlag, returns
 // 0 if not found
-func (c *Context) Int(name string) int {
+func (c *defaultContext) Int(name string) int {
 	if fs := lookupFlagSet(name, c); fs != nil {
 		return lookupInt(name, fs)
 	}

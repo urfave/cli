@@ -26,13 +26,13 @@ func TestNewContext(t *testing.T) {
 	globalCtx := NewContext(nil, globalSet, nil)
 	command := &Command{Name: "mycommand"}
 	c := NewContext(nil, set, globalCtx)
-	c.Command = command
+	c.SetCommand(command)
 	expect(t, c.Int("myflag"), 12)
 	expect(t, c.Int64("myflagInt64"), int64(12))
 	expect(t, c.Uint("myflagUint"), uint(93))
 	expect(t, c.Uint64("myflagUint64"), uint64(93))
 	expect(t, c.Float64("myflag64"), float64(17))
-	expect(t, c.Command.Name, "mycommand")
+	expect(t, c.Command().Name, "mycommand")
 }
 
 func TestContext_Int(t *testing.T) {
@@ -193,7 +193,7 @@ func TestContext_IsSet_fromEnv(t *testing.T) {
 			&Float64Flag{Name: "unparsable", Aliases: []string{"u"}, EnvVars: []string{"APP_UNPARSABLE"}},
 			&Float64Flag{Name: "no-env-var", Aliases: []string{"n"}},
 		},
-		Action: func(ctx *Context) error {
+		Action: func(ctx Context) error {
 			timeoutIsSet = ctx.IsSet("timeout")
 			tIsSet = ctx.IsSet("t")
 			passwordIsSet = ctx.IsSet("password")
@@ -304,10 +304,10 @@ func TestContext_lookupFlagSet(t *testing.T) {
 	_ = parentSet.Parse([]string{"--top-flag"})
 
 	fs := lookupFlagSet("top-flag", ctx)
-	expect(t, fs, parentCtx.flagSet)
+	expect(t, fs, parentCtx.FlagSet())
 
 	fs = lookupFlagSet("local-flag", ctx)
-	expect(t, fs, ctx.flagSet)
+	expect(t, fs, ctx.FlagSet())
 
 	if fs := lookupFlagSet("frob", ctx); fs != nil {
 		t.Fail()
@@ -316,19 +316,18 @@ func TestContext_lookupFlagSet(t *testing.T) {
 
 func TestNonNilContext(t *testing.T) {
 	ctx := NewContext(nil, nil, nil)
-	if ctx.Context == nil {
+	if ctx.Context() == nil {
 		t.Fatal("expected a non nil context when no parent is present")
 	}
 }
 
 // TestContextPropagation tests that
-// *cli.Context always has a valid
-// context.Context
+// *cli.defaultContext always has a valid
+// context.defaultContext
 func TestContextPropagation(t *testing.T) {
-	parent := NewContext(nil, nil, nil)
-	parent.Context = context.WithValue(context.Background(), "key", "val")
+	parent := NewContext(nil, nil, NewParentContext(context.WithValue(context.Background(), "key", "val")))
 	ctx := NewContext(nil, nil, parent)
-	val := ctx.Context.Value("key")
+	val := ctx.Context().Value("key")
 	if val == nil {
 		t.Fatal("expected a parent context to be inherited but got nil")
 	}
@@ -337,9 +336,8 @@ func TestContextPropagation(t *testing.T) {
 		t.Fatalf("expected the context value to be %q but got %q", "val", valstr)
 	}
 	parent = NewContext(nil, nil, nil)
-	parent.Context = nil
 	ctx = NewContext(nil, nil, parent)
-	if ctx.Context == nil {
+	if ctx.Context() == nil {
 		t.Fatal("expected context to not be nil even if the parent's context is nil")
 	}
 }
@@ -349,7 +347,7 @@ func TestContextAttributeAccessing(t *testing.T) {
 		testCase        string
 		setBoolInput    string
 		ctxBoolInput    string
-		newContextInput *Context
+		newContextInput Context
 	}{
 		{
 			testCase:        "empty",
@@ -361,7 +359,7 @@ func TestContextAttributeAccessing(t *testing.T) {
 			testCase:        "empty_with_background_context",
 			setBoolInput:    "",
 			ctxBoolInput:    "",
-			newContextInput: &Context{Context: context.Background()},
+			newContextInput: &defaultContext{context: context.Background()},
 		},
 		{
 			testCase:        "empty_set_bool_and_present_ctx_bool",
@@ -373,7 +371,7 @@ func TestContextAttributeAccessing(t *testing.T) {
 			testCase:        "present_set_bool_and_present_ctx_bool_with_background_context",
 			setBoolInput:    "",
 			ctxBoolInput:    "ctx-bool",
-			newContextInput: &Context{Context: context.Background()},
+			newContextInput: &defaultContext{context: context.Background()},
 		},
 		{
 			testCase:        "present_set_bool_and_present_ctx_bool",
@@ -385,7 +383,7 @@ func TestContextAttributeAccessing(t *testing.T) {
 			testCase:        "present_set_bool_and_present_ctx_bool_with_background_context",
 			setBoolInput:    "ctx-bool",
 			ctxBoolInput:    "ctx-bool",
-			newContextInput: &Context{Context: context.Background()},
+			newContextInput: &defaultContext{context: context.Background()},
 		},
 		{
 			testCase:        "present_set_bool_and_different_ctx_bool",
@@ -397,7 +395,7 @@ func TestContextAttributeAccessing(t *testing.T) {
 			testCase:        "present_set_bool_and_different_ctx_bool_with_background_context",
 			setBoolInput:    "ctx-bool",
 			ctxBoolInput:    "not-ctx-bool",
-			newContextInput: &Context{Context: context.Background()},
+			newContextInput: &defaultContext{context: context.Background()},
 		},
 	}
 
@@ -549,9 +547,9 @@ func TestCheckRequiredFlags(t *testing.T) {
 			}
 			_ = set.Parse(test.parseInput)
 
-			c := &Context{}
-			ctx := NewContext(c.App, set, c)
-			ctx.Command.Flags = test.flags
+			c := &defaultContext{}
+			ctx := NewContext(c.App(), set, c)
+			ctx.Command().Flags = test.flags
 
 			// logic under test
 			err := checkRequiredFlags(test.flags, ctx)

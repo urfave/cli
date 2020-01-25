@@ -308,7 +308,7 @@ func TestFloat64ApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	expect(t, 1.4, c.Float64("test"))
 }
 
-func runTest(t *testing.T, test testApplyInputSource) *cli.Context {
+func runTest(t *testing.T, test testApplyInputSource) cli.Context {
 	inputSource := &MapInputSource{
 		file:     test.SourcePath,
 		valueMap: map[interface{}]interface{}{test.FlagName: test.MapValue},

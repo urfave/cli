@@ -10,7 +10,7 @@
 //     app := &cli.App{
 //			 Name: "greet",
 //			 Usage: "say a greeting",
-//			 Action: func(c *cli.Context) error {
+//			 Action: func(c *cli.defaultContext) error {
 //				 fmt.Println("Greetings")
 //				 return nil
 //			 },
@@ -19,5 +19,3 @@
 //     app.Run(os.Args)
 //   }
 package cli
-
-//go:generate go run flag-gen/main.go flag-gen/assets_vfsdata.go

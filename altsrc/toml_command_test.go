@@ -24,7 +24,7 @@ func TestCommandTomFileTest(t *testing.T) {
 		Aliases:     []string{"tc"},
 		Usage:       "this is for testing",
 		Description: "testing",
-		Action: func(c *cli.Context) error {
+		Action: func(c cli.Context) error {
 			val := c.Int("test")
 			expect(t, val, 15)
 			return nil
@@ -57,7 +57,7 @@ func TestCommandTomlFileTestGlobalEnvVarWins(t *testing.T) {
 		Aliases:     []string{"tc"},
 		Usage:       "this is for testing",
 		Description: "testing",
-		Action: func(c *cli.Context) error {
+		Action: func(c cli.Context) error {
 			val := c.Int("test")
 			expect(t, val, 10)
 			return nil
@@ -91,7 +91,7 @@ func TestCommandTomlFileTestGlobalEnvVarWinsNested(t *testing.T) {
 		Aliases:     []string{"tc"},
 		Usage:       "this is for testing",
 		Description: "testing",
-		Action: func(c *cli.Context) error {
+		Action: func(c cli.Context) error {
 			val := c.Int("top.test")
 			expect(t, val, 10)
 			return nil
@@ -123,7 +123,7 @@ func TestCommandTomlFileTestSpecifiedFlagWins(t *testing.T) {
 		Aliases:     []string{"tc"},
 		Usage:       "this is for testing",
 		Description: "testing",
-		Action: func(c *cli.Context) error {
+		Action: func(c cli.Context) error {
 			val := c.Int("test")
 			expect(t, val, 7)
 			return nil
@@ -156,7 +156,7 @@ func TestCommandTomlFileTestSpecifiedFlagWinsNested(t *testing.T) {
 		Aliases:     []string{"tc"},
 		Usage:       "this is for testing",
 		Description: "testing",
-		Action: func(c *cli.Context) error {
+		Action: func(c cli.Context) error {
 			val := c.Int("top.test")
 			expect(t, val, 7)
 			return nil
@@ -188,7 +188,7 @@ func TestCommandTomlFileTestDefaultValueFileWins(t *testing.T) {
 		Aliases:     []string{"tc"},
 		Usage:       "this is for testing",
 		Description: "testing",
-		Action: func(c *cli.Context) error {
+		Action: func(c cli.Context) error {
 			val := c.Int("test")
 			expect(t, val, 15)
 			return nil
@@ -220,7 +220,7 @@ func TestCommandTomlFileTestDefaultValueFileWinsNested(t *testing.T) {
 		Aliases:     []string{"tc"},
 		Usage:       "this is for testing",
 		Description: "testing",
-		Action: func(c *cli.Context) error {
+		Action: func(c cli.Context) error {
 			val := c.Int("top.test")
 			expect(t, val, 15)
 			return nil
@@ -255,7 +255,7 @@ func TestCommandTomlFileFlagHasDefaultGlobalEnvTomlSetGlobalEnvWins(t *testing.T
 		Aliases:     []string{"tc"},
 		Usage:       "this is for testing",
 		Description: "testing",
-		Action: func(c *cli.Context) error {
+		Action: func(c cli.Context) error {
 			val := c.Int("test")
 			expect(t, val, 11)
 			return nil
@@ -289,7 +289,7 @@ func TestCommandTomlFileFlagHasDefaultGlobalEnvTomlSetGlobalEnvWinsNested(t *tes
 		Aliases:     []string{"tc"},
 		Usage:       "this is for testing",
 		Description: "testing",
-		Action: func(c *cli.Context) error {
+		Action: func(c cli.Context) error {
 			val := c.Int("top.test")
 			expect(t, val, 11)
 			return nil
