@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"context"
+	ctx "context"
 	"errors"
 	"flag"
 	"fmt"
@@ -18,7 +18,7 @@ type Context interface {
 	App() *App
 	SetCommand(command *Command)
 	Command() *Command
-	Context() context.Context
+	Context() ctx.Context
 	ParentContext() Context
 	SetShellComplete(shellComplete bool)
 	ShellComplete() bool
@@ -51,8 +51,8 @@ type Context interface {
 	Uint(name string) uint
 }
 
-type defaultContext struct {
-	context       context.Context
+type cliContext struct {
+	context       ctx.Context
 	app           *App
 	command       *Command
 	shellComplete bool
@@ -62,7 +62,7 @@ type defaultContext struct {
 
 // NewContext creates a new context. For use in when invoking an App or Command action.
 func NewContext(app *App, set *flag.FlagSet, parentCtx Context) Context {
-	c := &defaultContext{app: app, flagSet: set, parentContext: parentCtx}
+	c := &cliContext{app: app, flagSet: set, parentContext: parentCtx}
 	if parentCtx != nil {
 		c.context = parentCtx.Context()
 		c.shellComplete = parentCtx.ShellComplete()
@@ -74,74 +74,74 @@ func NewContext(app *App, set *flag.FlagSet, parentCtx Context) Context {
 	c.command = &Command{}
 
 	if c.context == nil {
-		c.context = context.Background()
+		c.context = ctx.Background()
 	}
 
 	return c
 }
 
-// NewWrappedContext creates a Context which wraps context.Context
-func NewWrappedContext(ctx context.Context) Context {
-	return &defaultContext{context: ctx}
+// NewWrappedContext creates a Context which wraps ctx.Context
+func NewWrappedContext(context ctx.Context) Context {
+	return &cliContext{context: context}
 }
 
 // Returns the App associated with the current context
-func (c *defaultContext) App() *App {
+func (c *cliContext) App() *App {
 	return c.app
 }
 
 // Associates a command with the current context
-func (c *defaultContext) SetCommand(command *Command) {
+func (c *cliContext) SetCommand(command *Command) {
 	c.command = command
 }
 
 // Returns the Command associated with the current context
-func (c *defaultContext) Command() *Command {
+func (c *cliContext) Command() *Command {
 	return c.command
 }
 
 // Returns the context.Context wrapped inside the current context
-func (c *defaultContext) Context() context.Context {
+func (c *cliContext) Context() ctx.Context {
 	return c.context
 }
 
 // Returns the parent of the current context
-func (c *defaultContext) ParentContext() Context {
+func (c *cliContext) ParentContext() Context {
 	return c.parentContext
 }
 
 // Sets the shellComplete boolean for the current context
-func (c *defaultContext) SetShellComplete(shellComplete bool) {
+func (c *cliContext) SetShellComplete(shellComplete bool) {
 	c.shellComplete = shellComplete
 }
 
 // Returns the value of shellComplete boolean for the current context
-func (c *defaultContext) ShellComplete() bool {
+func (c *cliContext) ShellComplete() bool {
 	return c.shellComplete
 }
 
 // Associates a flagset with the current context
-func (c *defaultContext) SetFlagSet(set *flag.FlagSet) {
+func (c *cliContext) SetFlagSet(set *flag.FlagSet) {
 	c.flagSet = set
 }
 
 // Returns the flagset associated with the current context
-func (c *defaultContext) FlagSet() *flag.FlagSet {
+func (c *cliContext) FlagSet() *flag.FlagSet {
 	return c.flagSet
 }
 
 // NumFlags returns the number of flags set
-func (c *defaultContext) NumFlags() int {
+func (c *cliContext) NumFlags() int {
 	return c.flagSet.NFlag()
 }
 
 // Set sets a context flag to a value.
-func (c *defaultContext) Set(name, value string) error {
+func (c *cliContext) Set(name, value string) error {
 	return c.flagSet.Set(name, value)
 }
 
 // IsSet determines if the flag was actually set
-func (c *defaultContext) IsSet(name string) bool {
+func (c *cliContext) IsSet(name string) bool {
 	if fs := lookupFlagSet(name, c); fs != nil {
 		if fs := lookupFlagSet(name, c); fs != nil {
 			isSet := false
@@ -167,7 +167,7 @@ func (c *defaultContext) IsSet(name string) bool {
 }
 
 // LocalFlagNames returns a slice of flag names used in this context.
-func (c *defaultContext) LocalFlagNames() []string {
+func (c *cliContext) LocalFlagNames() []string {
 	var names []string
 	c.flagSet.Visit(makeFlagNameVisitor(&names))
 	return names
@@ -175,7 +175,7 @@ func (c *defaultContext) LocalFlagNames() []string {
 
 // FlagNames returns a slice of flag names used by the this context and all of
 // its parent contexts.
-func (c *defaultContext) FlagNames() []string {
+func (c *cliContext) FlagNames() []string {
 	var names []string
 	for _, ctx := range c.Lineage() {
 		ctx.FlagSet().Visit(makeFlagNameVisitor(&names))
@@ -185,7 +185,7 @@ func (c *defaultContext) FlagNames() []string {
 
 // Lineage returns *this* context and all of its ancestor contexts in order from
 // child to parent
-func (c *defaultContext) Lineage() []Context {
+func (c *cliContext) Lineage() []Context {
 	var lineage []Context
 
 	for cur := Context(c); cur != nil; cur = cur.ParentContext() {
@@ -196,22 +196,22 @@ func (c *defaultContext) Lineage() []Context {
 }
 
 // Value returns the value of the flag corresponding to `name`
-func (c *defaultContext) Value(name string) interface{} {
+func (c *cliContext) Value(name string) interface{} {
 	return c.flagSet.Lookup(name).Value.(flag.Getter).Get()
 }
 
 // Args returns the command line arguments associated with the context.
-func (c *defaultContext) Args() Args {
+func (c *cliContext) Args() Args {
 	ret := args(c.flagSet.Args())
 	return &ret
 }
 
 // NArg returns the number of the command line arguments.
-func (c *defaultContext) NArg() int {
+func (c *cliContext) NArg() int {
 	return c.Args().Len()
 }
 
-func lookupFlag(name string, ctx *defaultContext) Flag {
+func lookupFlag(name string, ctx *cliContext) Flag {
 	for _, c := range ctx.Lineage() {
 		if c.Command() == nil {
 			continue

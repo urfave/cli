@@ -135,7 +135,7 @@ func (f *TimestampFlag) Apply(set *flag.FlagSet) error {
 }
 
 // Timestamp gets the timestamp from a flag name
-func (c *defaultContext) Timestamp(name string) *time.Time {
+func (c *cliContext) Timestamp(name string) *time.Time {
 	if fs := lookupFlagSet(name, c); fs != nil {
 		return lookupTimestamp(name, fs)
 	}

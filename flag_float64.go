@@ -86,7 +86,7 @@ func (f *Float64Flag) Apply(set *flag.FlagSet) error {
 
 // Float64 looks up the value of a local Float64Flag, returns
 // 0 if not found
-func (c *defaultContext) Float64(name string) float64 {
+func (c *cliContext) Float64(name string) float64 {
 	if fs := lookupFlagSet(name, c); fs != nil {
 		return lookupFloat64(name, fs)
 	}

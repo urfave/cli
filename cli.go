@@ -10,7 +10,7 @@
 //     app := &cli.App{
 //			 Name: "greet",
 //			 Usage: "say a greeting",
-//			 Action: func(c *cli.defaultContext) error {
+//			 Action: func(c *cli.cliContext) error {
 //				 fmt.Println("Greetings")
 //				 return nil
 //			 },

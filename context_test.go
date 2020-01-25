@@ -358,7 +358,7 @@ func TestContextAttributeAccessing(t *testing.T) {
 			testCase:        "empty_with_background_context",
 			setBoolInput:    "",
 			ctxBoolInput:    "",
-			newContextInput: &defaultContext{context: context.Background()},
+			newContextInput: &cliContext{context: context.Background()},
 		},
 		{
 			testCase:        "empty_set_bool_and_present_ctx_bool",
@@ -370,7 +370,7 @@ func TestContextAttributeAccessing(t *testing.T) {
 			testCase:        "present_set_bool_and_present_ctx_bool_with_background_context",
 			setBoolInput:    "",
 			ctxBoolInput:    "ctx-bool",
-			newContextInput: &defaultContext{context: context.Background()},
+			newContextInput: &cliContext{context: context.Background()},
 		},
 		{
 			testCase:        "present_set_bool_and_present_ctx_bool",
@@ -382,7 +382,7 @@ func TestContextAttributeAccessing(t *testing.T) {
 			testCase:        "present_set_bool_and_present_ctx_bool_with_background_context",
 			setBoolInput:    "ctx-bool",
 			ctxBoolInput:    "ctx-bool",
-			newContextInput: &defaultContext{context: context.Background()},
+			newContextInput: &cliContext{context: context.Background()},
 		},
 		{
 			testCase:        "present_set_bool_and_different_ctx_bool",
@@ -394,7 +394,7 @@ func TestContextAttributeAccessing(t *testing.T) {
 			testCase:        "present_set_bool_and_different_ctx_bool_with_background_context",
 			setBoolInput:    "ctx-bool",
 			ctxBoolInput:    "not-ctx-bool",
-			newContextInput: &defaultContext{context: context.Background()},
+			newContextInput: &cliContext{context: context.Background()},
 		},
 	}
 
@@ -546,7 +546,7 @@ func TestCheckRequiredFlags(t *testing.T) {
 			}
 			_ = set.Parse(test.parseInput)
 
-			c := &defaultContext{}
+			c := &cliContext{}
 			ctx := NewContext(c.App(), set, c)
 			ctx.Command().Flags = test.flags
 

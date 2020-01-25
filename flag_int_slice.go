@@ -155,7 +155,7 @@ func (f *IntSliceFlag) Apply(set *flag.FlagSet) error {
 
 // IntSlice looks up the value of a local IntSliceFlag, returns
 // nil if not found
-func (c *defaultContext) IntSlice(name string) []int {
+func (c *cliContext) IntSlice(name string) []int {
 	if fs := lookupFlagSet(name, c); fs != nil {
 		return lookupIntSlice(name, c.flagSet)
 	}

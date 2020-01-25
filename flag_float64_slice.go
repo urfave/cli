@@ -145,7 +145,7 @@ func (f *Float64SliceFlag) Apply(set *flag.FlagSet) error {
 
 // Float64Slice looks up the value of a local Float64SliceFlag, returns
 // nil if not found
-func (c *defaultContext) Float64Slice(name string) []float64 {
+func (c *cliContext) Float64Slice(name string) []float64 {
 	if fs := lookupFlagSet(name, c); fs != nil {
 		return lookupFloat64Slice(name, fs)
 	}

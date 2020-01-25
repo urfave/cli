@@ -75,7 +75,7 @@ func (f *StringFlag) Apply(set *flag.FlagSet) error {
 
 // String looks up the value of a local StringFlag, returns
 // "" if not found
-func (c *defaultContext) String(name string) string {
+func (c *cliContext) String(name string) string {
 	if fs := lookupFlagSet(name, c); fs != nil {
 		return lookupString(name, fs)
 	}

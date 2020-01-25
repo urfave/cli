@@ -478,7 +478,7 @@ func TestApp_RunAsSubCommandIncorrectUsage(t *testing.T) {
 
 	set := flag.NewFlagSet("", flag.ContinueOnError)
 	_ = set.Parse([]string{"", "---foo"})
-	c := &defaultContext{flagSet: set}
+	c := &cliContext{flagSet: set}
 
 	err := a.RunAsSubcommand(c)
 
