@@ -38,6 +38,14 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
+      - name: GOFMT Check
+        run: |
+          if [ -z $(gofmt -l .) ]; then
+            exit 0
+          else
+            exit 1
+          fi
+
       - name: Run Tests
         run: |
           go run build.go vet
