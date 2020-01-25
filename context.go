@@ -1,7 +1,7 @@
 package cli
 
 import (
-	ctx "context"
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -18,7 +18,7 @@ type Context interface {
 	App() *App
 	SetCommand(command *Command)
 	Command() *Command
-	Context() ctx.Context
+	Context() context.Context
 	ParentContext() Context
 	SetShellComplete(shellComplete bool)
 	ShellComplete() bool
@@ -52,7 +52,7 @@ type Context interface {
 }
 
 type cliContext struct {
-	context       ctx.Context
+	context       context.Context
 	app           *App
 	command       *Command
 	shellComplete bool
@@ -74,14 +74,14 @@ func NewContext(app *App, set *flag.FlagSet, parentCtx Context) Context {
 	c.command = &Command{}
 
 	if c.context == nil {
-		c.context = ctx.Background()
+		c.context = context.Background()
 	}
 
 	return c
 }
 
 // NewWrappedContext creates a Context which wraps ctx.Context
-func NewWrappedContext(context ctx.Context) Context {
+func NewWrappedContext(context context.Context) Context {
 	return &cliContext{context: context}
 }
 
@@ -101,7 +101,7 @@ func (c *cliContext) Command() *Command {
 }
 
 // Returns the context.Context wrapped inside the current context
-func (c *cliContext) Context() ctx.Context {
+func (c *cliContext) Context() context.Context {
 	return c.context
 }
 
