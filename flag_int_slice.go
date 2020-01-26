@@ -159,17 +159,13 @@ func lookupIntSlice(name string, set *flag.FlagSet) []int {
 	return nil
 }
 
-func removeFromIntSlice(slice []int, val int) (newVal []int) {
-	var count int
-	for _, v := range slice {
+func removeFromIntSlice(slice []int, val int) []int {
+	for i, v := range slice {
 		if v == val {
-			newVal = slice[count+1:]
-			return
+			return append(slice[:i], slice[i+1:]...)
 		}
-		newVal = append(newVal, v)
-		count++
 	}
-	return
+	return slice
 }
 
 func isIntSliceEqual(newValue, defaultValue []int) bool {
