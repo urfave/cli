@@ -1234,7 +1234,7 @@ func main() {
       &cli.TimestampFlag{Name: "meeting", Layout: "2006-01-02T15:04:05"},
     },
     Action: func(c *cli.Context) error {
-      fmt.Printf("%v",c.Timestamp("meeting").String())
+      fmt.Println(c.Timestamp("meeting").String())
       return nil
     },
   }
