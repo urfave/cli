@@ -40,12 +40,7 @@ jobs:
 
       - name: GOFMT Check
         if: matrix.go == 1.13 && matrix.os == 'ubuntu-latest'
-        run: |
-          if [ -z $(gofmt -l .) ]; then
-            exit 0
-          else
-            exit 1
-          fi
+        run: test -z $(gofmt -l .)
 
       - name: Run Tests
         run: |
