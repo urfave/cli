@@ -149,11 +149,9 @@ func (c *Context) StringSlice(name string) []string {
 func lookupStringSlice(name string, set *flag.FlagSet) []string {
 	f := set.Lookup(name)
 	if f != nil {
-		parsed, err := (f.Value.(*StringSlice)).Value(), error(nil)
-		if err != nil {
-			return nil
+		if slice, ok := f.Value.(*StringSlice); ok {
+			return slice.Value()
 		}
-		return parsed
 	}
 	return nil
 }

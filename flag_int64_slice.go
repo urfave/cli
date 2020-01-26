@@ -151,11 +151,9 @@ func (c *Context) Int64Slice(name string) []int64 {
 func lookupInt64Slice(name string, set *flag.FlagSet) []int64 {
 	f := set.Lookup(name)
 	if f != nil {
-		parsed, err := (f.Value.(*Int64Slice)).Value(), error(nil)
-		if err != nil {
-			return nil
+		if slice, ok := f.Value.(*Int64Slice); ok {
+			return slice.Value()
 		}
-		return parsed
 	}
 	return nil
 }
