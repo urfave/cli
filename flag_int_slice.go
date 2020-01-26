@@ -137,24 +137,28 @@ func (c *Context) GlobalIntSlice(name string) []int {
 func lookupIntSlice(name string, set *flag.FlagSet) []int {
 	f := set.Lookup(name)
 	if f != nil {
-		parsed, err := (f.Value.(*IntSlice)).Value(), error(nil)
-		if err != nil {
-			return nil
-		}
-		// extract default value from the flag
-		var defaultVal []int
-		for _, v := range strings.Split(f.DefValue, ",") {
-			iV, _ := strconv.Atoi(v)
-			defaultVal = append(defaultVal, iV)
-		}
-		// if the current value is not equal to the default value
-		// remove the default values from the flag
-		if !isIntSliceEqual(parsed, defaultVal) {
-			for _, v := range defaultVal {
-				parsed = removeFromIntSlice(parsed, v)
+		if value, ok := f.Value.(*IntSlice); ok {
+			// extract the slice from asserted value
+			slice := value.Value()
+
+			// extract default value from the flag
+			var defaultVal []int
+			for _, v := range strings.Split(f.DefValue, ",") {
+				intValue, err := strconv.Atoi(v)
+				if err != nil {
+					panic(err)
+				}
+				defaultVal = append(defaultVal, intValue)
 			}
+			// if the current value is not equal to the default value
+			// remove the default values from the flag
+			if !isIntSliceEqual(slice, defaultVal) {
+				for _, v := range defaultVal {
+					slice = removeFromIntSlice(slice, v)
+				}
+			}
+			return slice
 		}
-		return parsed
 	}
 	return nil
 }

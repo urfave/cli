@@ -137,24 +137,28 @@ func (c *Context) GlobalInt64Slice(name string) []int64 {
 func lookupInt64Slice(name string, set *flag.FlagSet) []int64 {
 	f := set.Lookup(name)
 	if f != nil {
-		parsed, err := (f.Value.(*Int64Slice)).Value(), error(nil)
-		if err != nil {
-			return nil
-		}
-		// extract default value from the flag
-		var defaultVal []int64
-		for _, v := range strings.Split(f.DefValue, ",") {
-			iV, _ := strconv.ParseInt(v, 10, 64)
-			defaultVal = append(defaultVal, iV)
-		}
-		// if the current value is not equal to the default value
-		// remove the default values from the flag
-		if !isInt64SliceEqual(parsed, defaultVal) {
-			for _, v := range defaultVal {
-				parsed = removeFromInt64Slice(parsed, v)
+		if value, ok := f.Value.(*Int64Slice); ok {
+			// extract the slice from asserted value
+			parsed := value.Value()
+
+			// extract default value from the flag
+			var defaultVal []int64
+			for _, v := range strings.Split(f.DefValue, ",") {
+				int64Value, err := strconv.ParseInt(v, 10, 64)
+				if err != nil {
+					panic(err)
+				}
+				defaultVal = append(defaultVal, int64Value)
 			}
+			// if the current value is not equal to the default value
+			// remove the default values from the flag
+			if !isInt64SliceEqual(parsed, defaultVal) {
+				for _, v := range defaultVal {
+					parsed = removeFromInt64Slice(parsed, v)
+				}
+			}
+			return parsed
 		}
-		return parsed
 	}
 	return nil
 }
