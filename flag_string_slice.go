@@ -32,14 +32,14 @@ func (f *StringSlice) Get() interface{} {
 
 // StringSliceFlag is a flag with type *StringSlice
 type StringSliceFlag struct {
-	Name       string
-	Usage      string
-	EnvVar     string
-	FilePath   string
-	Required   bool
-	Hidden     bool
-	TakesFile  bool
-	Value      *StringSlice
+	Name      string
+	Usage     string
+	EnvVar    string
+	FilePath  string
+	Required  bool
+	Hidden    bool
+	TakesFile bool
+	Value     *StringSlice
 }
 
 // String returns a readable representation of this value
@@ -149,17 +149,13 @@ func lookupStringSlice(name string, set *flag.FlagSet) []string {
 	return nil
 }
 
-func removeFromStringSlice(slice []string, val string) (newVal []string) {
-	var count int
-	for _, v := range slice {
+func removeFromStringSlice(slice []string, val string) []string {
+	for i, v := range slice {
 		if v == val {
-			newVal = slice[count+1:]
-			return
+			return append(slice[:i], slice[i+1:]...)
 		}
-		newVal = append(newVal, v)
-		count++
 	}
-	return
+	return slice
 }
 
 func isStringSliceEqual(newValue, defaultValue []string) bool {
