@@ -1276,7 +1276,7 @@ func main() {
 
 ### Timestamp Flag
 
-Using the timestamp flag is simple, You can look at time.Parse to get layout examples : https://golang.org/pkg/time/#example_Parse 
+Using the timestamp flag is simple. Please refer to [`time.Parse`](https://golang.org/pkg/time/#example_Parse) to get possible formats.
 
 <!-- {
   "args": ["&#45;&#45;meeting", "2019-08-12T15:04:05"],
@@ -1311,11 +1311,11 @@ func main() {
 }
 ```
 
-In this example the flag could be used like so : 
+In this example the flag could be used like this : 
 
 `myapp --meeting 2019-08-12T15:04:05`
 
-side note : quotes may be necessary around the date depending on your layout (if you have spaces for instance)
+Side note: quotes may be necessary around the date depending on your layout (if you have spaces for instance)
 
 ### Full API Example
 
