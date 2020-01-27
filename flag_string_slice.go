@@ -128,25 +128,27 @@ func (c *Context) GlobalStringSlice(name string) []string {
 func lookupStringSlice(name string, set *flag.FlagSet) []string {
 	f := set.Lookup(name)
 	if f != nil {
-		if value, ok := f.Value.(*StringSlice); ok {
-			// extract the slice from asserted value
-			slice := value.Value()
-
-			// extract default value from the flag
-			var defaultVal []string
-			for _, v := range strings.Split(f.DefValue, ",") {
-				defaultVal = append(defaultVal, v)
-			}
-
-			// if the current value is not equal to the default value
-			// remove the default values from the flag
-			if !isStringSliceEqual(slice, defaultVal) {
-				for _, v := range defaultVal {
-					slice = removeFromStringSlice(slice, v)
-				}
-			}
-			return slice
+		value, ok := f.Value.(*StringSlice)
+		if !ok {
+			return nil
 		}
+		// extract the slice from asserted value
+		slice := value.Value()
+
+		// extract default value from the flag
+		var defaultVal []string
+		for _, v := range strings.Split(f.DefValue, ",") {
+			defaultVal = append(defaultVal, v)
+		}
+
+		// if the current value is not equal to the default value
+		// remove the default values from the flag
+		if !isStringSliceEqual(slice, defaultVal) {
+			for _, v := range defaultVal {
+				slice = removeFromStringSlice(slice, v)
+			}
+		}
+		return slice
 	}
 	return nil
 }
