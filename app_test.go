@@ -1567,7 +1567,8 @@ func TestApp_Run_CommandSubcommandHelpName(t *testing.T) {
 	}
 	cmd := &Command{
 		Name:        "foo",
-		Description: "foo commands",
+		Usage:       "foo commands",
+		Description: "This is a description",
 		Subcommands: []*Command{subCmd},
 	}
 	app.Commands = []*Command{cmd}
@@ -1580,6 +1581,11 @@ func TestApp_Run_CommandSubcommandHelpName(t *testing.T) {
 	output := buf.String()
 
 	expected := "base foo - foo commands"
+	if !strings.Contains(output, expected) {
+		t.Errorf("expected %q in output: %q", expected, output)
+	}
+
+	expected = "DESCRIPTION:\n   This is a description\n"
 	if !strings.Contains(output, expected) {
 		t.Errorf("expected %q in output: %q", expected, output)
 	}
