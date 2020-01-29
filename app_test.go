@@ -1221,7 +1221,7 @@ func TestApp_VersionPrinter(t *testing.T) {
 	}
 
 	app := &App{}
-	ctx := NewContext(app, nil, nil)
+	ctx := NewContext().WithApp(app)
 	ShowVersion(ctx)
 
 	if wasCalled == false {
@@ -2013,7 +2013,7 @@ func TestHandleExitCoder_Default(t *testing.T) {
 		t.Errorf("error creating FlagSet: %s", err)
 	}
 
-	ctx := NewContext(app, fs, nil)
+	ctx := NewContext().WithApp(app).WithFlagset(fs)
 	app.handleExitCoder(ctx, NewExitError("Default Behavior Error", 42))
 
 	output := fakeErrWriter.String()
@@ -2033,7 +2033,7 @@ func TestHandleExitCoder_Custom(t *testing.T) {
 		_, _ = fmt.Fprintln(ErrWriter, "I'm a Custom error handler, I print what I want!")
 	}
 
-	ctx := NewContext(app, fs, nil)
+	ctx := NewContext().WithApp(app).WithFlagset(fs)
 	app.handleExitCoder(ctx, NewExitError("Default Behavior Error", 42))
 
 	output := fakeErrWriter.String()

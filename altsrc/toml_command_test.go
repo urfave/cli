@@ -17,7 +17,7 @@ func TestCommandTomFileTest(t *testing.T) {
 	test := []string{"test-cmd", "--load", "current.toml"}
 	_ = set.Parse(test)
 
-	c := cli.NewContext(app, set, nil)
+	c := cli.NewContext().WithApp(app).WithFlagset(set)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -50,7 +50,7 @@ func TestCommandTomlFileTestGlobalEnvVarWins(t *testing.T) {
 	test := []string{"test-cmd", "--load", "current.toml"}
 	_ = set.Parse(test)
 
-	c := cli.NewContext(app, set, nil)
+	c := cli.NewContext().WithApp(app).WithFlagset(set)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -84,7 +84,7 @@ func TestCommandTomlFileTestGlobalEnvVarWinsNested(t *testing.T) {
 	test := []string{"test-cmd", "--load", "current.toml"}
 	_ = set.Parse(test)
 
-	c := cli.NewContext(app, set, nil)
+	c := cli.NewContext().WithApp(app).WithFlagset(set)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -116,7 +116,7 @@ func TestCommandTomlFileTestSpecifiedFlagWins(t *testing.T) {
 	test := []string{"test-cmd", "--load", "current.toml", "--test", "7"}
 	_ = set.Parse(test)
 
-	c := cli.NewContext(app, set, nil)
+	c := cli.NewContext().WithApp(app).WithFlagset(set)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -149,7 +149,7 @@ func TestCommandTomlFileTestSpecifiedFlagWinsNested(t *testing.T) {
 	test := []string{"test-cmd", "--load", "current.toml", "--top.test", "7"}
 	_ = set.Parse(test)
 
-	c := cli.NewContext(app, set, nil)
+	c := cli.NewContext().WithApp(app).WithFlagset(set)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -181,7 +181,7 @@ func TestCommandTomlFileTestDefaultValueFileWins(t *testing.T) {
 	test := []string{"test-cmd", "--load", "current.toml"}
 	_ = set.Parse(test)
 
-	c := cli.NewContext(app, set, nil)
+	c := cli.NewContext().WithApp(app).WithFlagset(set)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -213,7 +213,7 @@ func TestCommandTomlFileTestDefaultValueFileWinsNested(t *testing.T) {
 	test := []string{"test-cmd", "--load", "current.toml"}
 	_ = set.Parse(test)
 
-	c := cli.NewContext(app, set, nil)
+	c := cli.NewContext().WithApp(app).WithFlagset(set)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -248,7 +248,7 @@ func TestCommandTomlFileFlagHasDefaultGlobalEnvTomlSetGlobalEnvWins(t *testing.T
 	test := []string{"test-cmd", "--load", "current.toml"}
 	_ = set.Parse(test)
 
-	c := cli.NewContext(app, set, nil)
+	c := cli.NewContext().WithApp(app).WithFlagset(set)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -282,7 +282,7 @@ func TestCommandTomlFileFlagHasDefaultGlobalEnvTomlSetGlobalEnvWinsNested(t *tes
 	test := []string{"test-cmd", "--load", "current.toml"}
 	_ = set.Parse(test)
 
-	c := cli.NewContext(app, set, nil)
+	c := cli.NewContext().WithApp(app).WithFlagset(set)
 
 	command := &cli.Command{
 		Name:        "test-cmd",

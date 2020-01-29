@@ -314,7 +314,7 @@ func runTest(t *testing.T, test testApplyInputSource) cli.Context {
 		valueMap: map[interface{}]interface{}{test.FlagName: test.MapValue},
 	}
 	set := flag.NewFlagSet(test.FlagSetName, flag.ContinueOnError)
-	c := cli.NewContext(nil, set, nil)
+	c := cli.NewContext().WithFlagset(set)
 	if test.EnvVarName != "" && test.EnvVarValue != "" {
 		_ = os.Setenv(test.EnvVarName, test.EnvVarValue)
 		defer os.Setenv(test.EnvVarName, "")

@@ -30,7 +30,7 @@ func TestCommandFlagParsing(t *testing.T) {
 		set := flag.NewFlagSet("test", 0)
 		_ = set.Parse(c.testArgs)
 
-		context := NewContext(app, set, nil)
+		context := NewContext().WithApp(app).WithFlagset(set)
 
 		command := Command{
 			Name:            "test-cmd",

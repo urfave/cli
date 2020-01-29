@@ -231,7 +231,8 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 
 	err = parseIter(set, a, arguments[1:], shellComplete)
 	nerr := normalizeFlags(a.Flags, set)
-	cntxt := NewContext(a, set, NewWrappedContext(ctx))
+	//cntxt := NewContext(a, set, NewWrappedContext(ctx))
+	cntxt := NewContext().WithApp(a).WithFlagset(set).WithContext(ctx)
 	if nerr != nil {
 		_, _ = fmt.Fprintln(a.Writer, nerr)
 		_ = ShowAppHelp(cntxt)
@@ -357,7 +358,8 @@ func (a *App) RunAsSubcommand(ctx Context) (err error) {
 
 	err = parseIter(set, a, ctx.Args().Tail(), ctx.ShellComplete())
 	nerr := normalizeFlags(a.Flags, set)
-	cntxt := NewContext(a, set, ctx)
+	//cntxt := NewContext(a, set, ctx)
+	cntxt := NewContext().WithApp(a).WithFlagset(set).WithParent(ctx)
 
 	if nerr != nil {
 		_, _ = fmt.Fprintln(a.Writer, nerr)

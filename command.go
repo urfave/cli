@@ -102,8 +102,9 @@ func (c *Command) Run(ctx Context) (err error) {
 
 	set, err := c.parseFlags(ctx.Args(), ctx.ShellComplete())
 
-	context := NewContext(ctx.App(), set, ctx)
-	context.SetCommand(c)
+	//context := NewContext(ctx.App(), set, ctx)
+	context := NewContext().WithApp(ctx.App()).WithFlagset(set).WithParent(ctx)
+	context.setCommand(c)
 	if checkCommandCompletions(context, c.Name) {
 		return nil
 	}
@@ -157,7 +158,7 @@ func (c *Command) Run(ctx Context) (err error) {
 		c.Action = helpSubcommand.Action
 	}
 
-	context.SetCommand(c)
+	context.setCommand(c)
 	err = c.Action(context)
 
 	if err != nil {

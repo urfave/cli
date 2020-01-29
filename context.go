@@ -14,9 +14,15 @@ import (
 // can be used to retrieve context-specific args and
 // parsed command-line options.
 type Context interface {
+	// New Methods (WIP)
+	WithContext(context context.Context) Context
+	WithParent(parent Context) Context
+	WithApp(app *App) Context
+	WithCommand(command *Command) Context
+	WithFlagset(set *flag.FlagSet) Context
 	// Functions to be able to manage Context type
 	App() *App
-	SetCommand(command *Command)
+	setCommand(command *Command)
 	Command() *Command
 	Context() context.Context
 	ParentContext() Context
@@ -32,6 +38,7 @@ type Context interface {
 	Lineage() []Context
 	Value(name string) interface{}
 	Args() Args
+	// Deprecated: Use context.Args().Len() instead
 	NArg() int
 	// Functions for each flag type supported by the cli
 	Timestamp(name string) *time.Time
@@ -60,29 +67,46 @@ type cliContext struct {
 	parentContext Context
 }
 
-// NewContext creates a new context. For use in when invoking an App or Command action.
-func NewContext(app *App, set *flag.FlagSet, parentCtx Context) Context {
-	c := &cliContext{app: app, flagSet: set, parentContext: parentCtx}
-	if parentCtx != nil {
-		c.context = parentCtx.Context()
-		c.shellComplete = parentCtx.ShellComplete()
-		if parentCtx.FlagSet() == nil {
-			parentCtx.SetFlagSet(&flag.FlagSet{})
-		}
+func NewContext() Context {
+	return &cliContext{
+		context: context.Background(),
+		command: &Command{},
 	}
+}
 
-	c.command = &Command{}
+func (c *cliContext) WithContext(context context.Context) Context {
+	c.context = context
 
-	if c.context == nil {
-		c.context = context.Background()
+	return c
+}
+
+func (c *cliContext) WithParent(parent Context) Context {
+	c.parentContext = parent
+
+	if parent != nil {
+		c.context = parent.Context()
+		c.shellComplete = parent.ShellComplete()
+		if parent.FlagSet() == nil {
+			parent.SetFlagSet(&flag.FlagSet{})
+		}
 	}
 
 	return c
 }
 
-// NewWrappedContext creates a Context which wraps ctx.Context
-func NewWrappedContext(context context.Context) Context {
-	return &cliContext{context: context}
+func (c *cliContext) WithApp(app *App) Context {
+	c.app = app
+	return c
+}
+
+func (c *cliContext) WithCommand(command *Command) Context {
+	c.command = command
+	return c
+}
+
+func (c *cliContext) WithFlagset(set *flag.FlagSet) Context {
+	c.flagSet = set
+	return c
 }
 
 // Returns the App associated with the current context
@@ -91,7 +115,7 @@ func (c *cliContext) App() *App {
 }
 
 // Associates a command with the current context
-func (c *cliContext) SetCommand(command *Command) {
+func (c *cliContext) setCommand(command *Command) {
 	c.command = command
 }
 
@@ -207,6 +231,7 @@ func (c *cliContext) Args() Args {
 }
 
 // NArg returns the number of the command line arguments.
+// Deprecated: Use context.Args().Len() instead
 func (c *cliContext) NArg() int {
 	return c.Args().Len()
 }

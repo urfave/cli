@@ -14,7 +14,7 @@ func Test_ShowAppHelp_NoAuthor(t *testing.T) {
 	output := new(bytes.Buffer)
 	app := &App{Writer: output}
 
-	c := NewContext(app, nil, nil)
+	c := NewContext().WithApp(app)
 
 	_ = ShowAppHelp(c)
 
@@ -29,7 +29,7 @@ func Test_ShowAppHelp_NoVersion(t *testing.T) {
 
 	app.Version = ""
 
-	c := NewContext(app, nil, nil)
+	c := NewContext().WithApp(app)
 
 	_ = ShowAppHelp(c)
 
@@ -44,7 +44,7 @@ func Test_ShowAppHelp_HideVersion(t *testing.T) {
 
 	app.HideVersion = true
 
-	c := NewContext(app, nil, nil)
+	c := NewContext().WithApp(app)
 
 	_ = ShowAppHelp(c)
 
@@ -121,7 +121,7 @@ func Test_helpCommand_Action_ErrorIfNoTopic(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	_ = set.Parse([]string{"foo"})
 
-	c := NewContext(app, set, nil)
+	c := NewContext().WithApp(app).WithFlagset(set)
 
 	err := helpCommand.Action(c)
 
@@ -166,7 +166,7 @@ func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	_ = set.Parse([]string{"foo"})
 
-	c := NewContext(app, set, nil)
+	c := NewContext().WithApp(app).WithFlagset(set)
 
 	err := helpSubcommand.Action(c)
 
