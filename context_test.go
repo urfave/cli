@@ -25,8 +25,7 @@ func TestNewContext(t *testing.T) {
 	globalSet.Float64("myflag64", float64(47), "doc")
 	globalCtx := NewContext().WithFlagset(globalSet)
 	command := &Command{Name: "mycommand"}
-	c := NewContext().WithFlagset(set).WithParent(globalCtx)
-	c.setCommand(command)
+	c := NewContext().WithFlagset(set).WithParent(globalCtx).WithCommand(command)
 	expect(t, c.Int("myflag"), 12)
 	expect(t, c.Int64("myflagInt64"), int64(12))
 	expect(t, c.Uint("myflagUint"), uint(93))

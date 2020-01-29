@@ -22,7 +22,6 @@ type Context interface {
 	WithFlagset(set *flag.FlagSet) Context
 	// Functions to be able to manage Context type
 	App() *App
-	setCommand(command *Command)
 	Command() *Command
 	Context() context.Context
 	ParentContext() Context
