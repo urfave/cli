@@ -17,7 +17,7 @@ func TestCommandYamlFileTest(t *testing.T) {
 	test := []string{"test-cmd", "--load", "current.yaml"}
 	_ = set.Parse(test)
 
-	c := cli.NewContext().WithApp(app).WithFlagset(set)
+	c := cli.NewContext().WithApp(app).WithFlagSet(set)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -50,7 +50,7 @@ func TestCommandYamlFileTestGlobalEnvVarWins(t *testing.T) {
 	test := []string{"test-cmd", "--load", "current.yaml"}
 	_ = set.Parse(test)
 
-	c := cli.NewContext().WithApp(app).WithFlagset(set)
+	c := cli.NewContext().WithApp(app).WithFlagSet(set)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -85,7 +85,7 @@ func TestCommandYamlFileTestGlobalEnvVarWinsNested(t *testing.T) {
 	test := []string{"test-cmd", "--load", "current.yaml"}
 	_ = set.Parse(test)
 
-	c := cli.NewContext().WithApp(app).WithFlagset(set)
+	c := cli.NewContext().WithApp(app).WithFlagSet(set)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -117,7 +117,7 @@ func TestCommandYamlFileTestSpecifiedFlagWins(t *testing.T) {
 	test := []string{"test-cmd", "--load", "current.yaml", "--test", "7"}
 	_ = set.Parse(test)
 
-	c := cli.NewContext().WithApp(app).WithFlagset(set)
+	c := cli.NewContext().WithApp(app).WithFlagSet(set)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -150,7 +150,7 @@ func TestCommandYamlFileTestSpecifiedFlagWinsNested(t *testing.T) {
 	test := []string{"test-cmd", "--load", "current.yaml", "--top.test", "7"}
 	_ = set.Parse(test)
 
-	c := cli.NewContext().WithApp(app).WithFlagset(set)
+	c := cli.NewContext().WithApp(app).WithFlagSet(set)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -182,7 +182,7 @@ func TestCommandYamlFileTestDefaultValueFileWins(t *testing.T) {
 	test := []string{"test-cmd", "--load", "current.yaml"}
 	_ = set.Parse(test)
 
-	c := cli.NewContext().WithApp(app).WithFlagset(set)
+	c := cli.NewContext().WithApp(app).WithFlagSet(set)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -215,7 +215,7 @@ func TestCommandYamlFileTestDefaultValueFileWinsNested(t *testing.T) {
 	test := []string{"test-cmd", "--load", "current.yaml"}
 	_ = set.Parse(test)
 
-	c := cli.NewContext().WithApp(app).WithFlagset(set)
+	c := cli.NewContext().WithApp(app).WithFlagSet(set)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -250,7 +250,7 @@ func TestCommandYamlFileFlagHasDefaultGlobalEnvYamlSetGlobalEnvWins(t *testing.T
 	test := []string{"test-cmd", "--load", "current.yaml"}
 	_ = set.Parse(test)
 
-	c := cli.NewContext().WithApp(app).WithFlagset(set)
+	c := cli.NewContext().WithApp(app).WithFlagSet(set)
 
 	command := &cli.Command{
 		Name:        "test-cmd",
@@ -285,7 +285,7 @@ func TestCommandYamlFileFlagHasDefaultGlobalEnvYamlSetGlobalEnvWinsNested(t *tes
 	test := []string{"test-cmd", "--load", "current.yaml"}
 	_ = set.Parse(test)
 
-	c := cli.NewContext().WithApp(app).WithFlagset(set)
+	c := cli.NewContext().WithApp(app).WithFlagSet(set)
 
 	command := &cli.Command{
 		Name:        "test-cmd",

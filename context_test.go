@@ -23,9 +23,9 @@ func TestNewContext(t *testing.T) {
 	globalSet.Uint("myflagUint", uint(33), "doc")
 	globalSet.Uint64("myflagUint64", uint64(33), "doc")
 	globalSet.Float64("myflag64", float64(47), "doc")
-	globalCtx := NewContext().WithFlagset(globalSet)
+	globalCtx := NewContext().WithFlagSet(globalSet)
 	command := &Command{Name: "mycommand"}
-	c := NewContext().WithFlagset(set).WithParent(globalCtx).WithCommand(command)
+	c := NewContext().WithFlagSet(set).WithParent(globalCtx).WithCommand(command)
 	expect(t, c.Int("myflag"), 12)
 	expect(t, c.Int64("myflagInt64"), int64(12))
 	expect(t, c.Uint("myflagUint"), uint(93))
@@ -39,8 +39,8 @@ func TestContext_Int(t *testing.T) {
 	set.Int("myflag", 12, "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Int("top-flag", 13, "doc")
-	parentCtx := NewContext().WithFlagset(parentSet)
-	c := NewContext().WithFlagset(set).WithParent(parentCtx)
+	parentCtx := NewContext().WithFlagSet(parentSet)
+	c := NewContext().WithFlagSet(set).WithParent(parentCtx)
 	expect(t, c.Int("myflag"), 12)
 	expect(t, c.Int("top-flag"), 13)
 }
@@ -50,8 +50,8 @@ func TestContext_Int64(t *testing.T) {
 	set.Int64("myflagInt64", 12, "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Int64("top-flag", 13, "doc")
-	parentCtx := NewContext().WithFlagset(parentSet)
-	c := NewContext().WithFlagset(set).WithParent(parentCtx)
+	parentCtx := NewContext().WithFlagSet(parentSet)
+	c := NewContext().WithFlagSet(set).WithParent(parentCtx)
 	expect(t, c.Int64("myflagInt64"), int64(12))
 	expect(t, c.Int64("top-flag"), int64(13))
 }
@@ -61,8 +61,8 @@ func TestContext_Uint(t *testing.T) {
 	set.Uint("myflagUint", uint(13), "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Uint("top-flag", uint(14), "doc")
-	parentCtx := NewContext().WithFlagset(parentSet)
-	c := NewContext().WithFlagset(set).WithParent(parentCtx)
+	parentCtx := NewContext().WithFlagSet(parentSet)
+	c := NewContext().WithFlagSet(set).WithParent(parentCtx)
 	expect(t, c.Uint("myflagUint"), uint(13))
 	expect(t, c.Uint("top-flag"), uint(14))
 }
@@ -72,8 +72,8 @@ func TestContext_Uint64(t *testing.T) {
 	set.Uint64("myflagUint64", uint64(9), "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Uint64("top-flag", uint64(10), "doc")
-	parentCtx := NewContext().WithFlagset(parentSet)
-	c := NewContext().WithFlagset(set).WithParent(parentCtx)
+	parentCtx := NewContext().WithFlagSet(parentSet)
+	c := NewContext().WithFlagSet(set).WithParent(parentCtx)
 	expect(t, c.Uint64("myflagUint64"), uint64(9))
 	expect(t, c.Uint64("top-flag"), uint64(10))
 }
@@ -83,8 +83,8 @@ func TestContext_Float64(t *testing.T) {
 	set.Float64("myflag", float64(17), "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Float64("top-flag", float64(18), "doc")
-	parentCtx := NewContext().WithFlagset(parentSet)
-	c := NewContext().WithFlagset(set).WithParent(parentCtx)
+	parentCtx := NewContext().WithFlagSet(parentSet)
+	c := NewContext().WithFlagSet(set).WithParent(parentCtx)
 	expect(t, c.Float64("myflag"), float64(17))
 	expect(t, c.Float64("top-flag"), float64(18))
 }
@@ -95,9 +95,9 @@ func TestContext_Duration(t *testing.T) {
 
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Duration("top-flag", 13*time.Second, "doc")
-	parentCtx := NewContext().WithFlagset(parentSet)
+	parentCtx := NewContext().WithFlagSet(parentSet)
 
-	c := NewContext().WithFlagset(set).WithParent(parentCtx)
+	c := NewContext().WithFlagSet(set).WithParent(parentCtx)
 	expect(t, c.Duration("myflag"), 12*time.Second)
 	expect(t, c.Duration("top-flag"), 13*time.Second)
 }
@@ -107,8 +107,8 @@ func TestContext_String(t *testing.T) {
 	set.String("myflag", "hello world", "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.String("top-flag", "hai veld", "doc")
-	parentCtx := NewContext().WithFlagset(parentSet)
-	c := NewContext().WithFlagset(set).WithParent(parentCtx)
+	parentCtx := NewContext().WithFlagSet(parentSet)
+	c := NewContext().WithFlagSet(set).WithParent(parentCtx)
 	expect(t, c.String("myflag"), "hello world")
 	expect(t, c.String("top-flag"), "hai veld")
 }
@@ -118,8 +118,8 @@ func TestContext_Path(t *testing.T) {
 	set.String("path", "path/to/file", "path to file")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.String("top-path", "path/to/top/file", "doc")
-	parentCtx := NewContext().WithFlagset(parentSet)
-	c := NewContext().WithFlagset(set).WithParent(parentCtx)
+	parentCtx := NewContext().WithFlagSet(parentSet)
+	c := NewContext().WithFlagSet(set).WithParent(parentCtx)
 	expect(t, c.Path("path"), "path/to/file")
 	expect(t, c.Path("top-path"), "path/to/top/file")
 }
@@ -129,8 +129,8 @@ func TestContext_Bool(t *testing.T) {
 	set.Bool("myflag", false, "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Bool("top-flag", true, "doc")
-	parentCtx := NewContext().WithFlagset(parentSet)
-	c := NewContext().WithFlagset(set).WithParent(parentCtx)
+	parentCtx := NewContext().WithFlagSet(parentSet)
+	c := NewContext().WithFlagSet(set).WithParent(parentCtx)
 	expect(t, c.Bool("myflag"), false)
 	expect(t, c.Bool("top-flag"), true)
 }
@@ -138,7 +138,7 @@ func TestContext_Bool(t *testing.T) {
 func TestContext_Args(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("myflag", false, "doc")
-	c := NewContext().WithFlagset(set)
+	c := NewContext().WithFlagSet(set)
 	_ = set.Parse([]string{"--myflag", "bat", "baz"})
 	expect(t, c.Args().Len(), 2)
 	expect(t, c.Bool("myflag"), true)
@@ -147,7 +147,7 @@ func TestContext_Args(t *testing.T) {
 func TestContext_NArg(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("myflag", false, "doc")
-	c := NewContext().WithFlagset(set)
+	c := NewContext().WithFlagSet(set)
 	_ = set.Parse([]string{"--myflag", "bat", "baz"})
 	expect(t, c.NArg(), 2)
 }
@@ -159,8 +159,8 @@ func TestContext_IsSet(t *testing.T) {
 	set.String("three-flag", "hello world", "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Bool("top-flag", true, "doc")
-	parentCtx := NewContext().WithFlagset(parentSet)
-	ctx := NewContext().WithFlagset(set).WithParent(parentCtx)
+	parentCtx := NewContext().WithFlagSet(parentSet)
+	ctx := NewContext().WithFlagSet(set).WithParent(parentCtx)
 
 	_ = set.Parse([]string{"--one-flag", "--two-flag", "--three-flag", "frob"})
 	_ = parentSet.Parse([]string{"--top-flag"})
@@ -224,8 +224,8 @@ func TestContext_NumFlags(t *testing.T) {
 	set.String("otherflag", "hello world", "doc")
 	globalSet := flag.NewFlagSet("test", 0)
 	globalSet.Bool("myflagGlobal", true, "doc")
-	globalCtx := NewContext().WithFlagset(globalSet)
-	c := NewContext().WithFlagset(set).WithParent(globalCtx)
+	globalCtx := NewContext().WithFlagSet(globalSet)
+	c := NewContext().WithFlagSet(set).WithParent(globalCtx)
 	_ = set.Parse([]string{"--myflag", "--otherflag=foo"})
 	_ = globalSet.Parse([]string{"--myflagGlobal"})
 	expect(t, c.NumFlags(), 2)
@@ -234,7 +234,7 @@ func TestContext_NumFlags(t *testing.T) {
 func TestContext_Set(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Int("int", 5, "an int")
-	c := NewContext().WithFlagset(set)
+	c := NewContext().WithFlagSet(set)
 
 	expect(t, c.IsSet("int"), false)
 	_ = c.Set("int", "1")
@@ -248,8 +248,8 @@ func TestContext_LocalFlagNames(t *testing.T) {
 	set.String("two-flag", "hello world", "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Bool("top-flag", true, "doc")
-	parentCtx := NewContext().WithFlagset(parentSet)
-	ctx := NewContext().WithFlagset(set).WithParent(parentCtx)
+	parentCtx := NewContext().WithFlagSet(parentSet)
+	ctx := NewContext().WithFlagSet(set).WithParent(parentCtx)
 	_ = set.Parse([]string{"--one-flag", "--two-flag=foo"})
 	_ = parentSet.Parse([]string{"--top-flag"})
 
@@ -265,7 +265,7 @@ func TestContext_FlagNames(t *testing.T) {
 	set.String("two-flag", "hello world", "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Bool("top-flag", true, "doc")
-	parentCtx := NewContext().WithFlagset(parentSet)
+	parentCtx := NewContext().WithFlagSet(parentSet)
 	ctx := NewContext().WithFlagset(set).WithParent(parentCtx)
 	_ = set.Parse([]string{"--one-flag", "--two-flag=foo"})
 	_ = parentSet.Parse([]string{"--top-flag"})
@@ -281,8 +281,8 @@ func TestContext_Lineage(t *testing.T) {
 	set.Bool("local-flag", false, "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Bool("top-flag", true, "doc")
-	parentCtx := NewContext().WithFlagset(parentSet)
-	ctx := NewContext().WithFlagset(set).WithParent(parentCtx)
+	parentCtx := NewContext().WithFlagSet(parentSet)
+	ctx := NewContext().WithFlagSet(set).WithParent(parentCtx)
 	_ = set.Parse([]string{"--local-flag"})
 	_ = parentSet.Parse([]string{"--top-flag"})
 
@@ -297,8 +297,8 @@ func TestContext_lookupFlagSet(t *testing.T) {
 	set.Bool("local-flag", false, "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Bool("top-flag", true, "doc")
-	parentCtx := NewContext().WithFlagset(parentSet)
-	ctx := NewContext().WithFlagset(set).WithParent(parentCtx)
+	parentCtx := NewContext().WithFlagSet(parentSet)
+	ctx := NewContext().WithFlagSet(set).WithParent(parentCtx)
 	_ = set.Parse([]string{"--local-flag"})
 	_ = parentSet.Parse([]string{"--top-flag"})
 
@@ -402,7 +402,7 @@ func TestContextAttributeAccessing(t *testing.T) {
 			// setup
 			set := flag.NewFlagSet("some-flag-set-name", 0)
 			set.Bool(test.setBoolInput, false, "usage documentation")
-			ctx := NewContext().WithFlagset(set).WithParent(test.newContextInput)
+			ctx := NewContext().WithFlagSet(set).WithParent(test.newContextInput)
 
 			// logic under test
 			value := ctx.Bool(test.ctxBoolInput)
@@ -546,7 +546,7 @@ func TestCheckRequiredFlags(t *testing.T) {
 			_ = set.Parse(test.parseInput)
 
 			c := &cliContext{}
-			ctx := NewContext().WithApp(c.App()).WithFlagset(set).WithParent(c)
+			ctx := NewContext().WithApp(c.App()).WithFlagSet(set).WithParent(c)
 			ctx.Command().Flags = test.flags
 
 			// logic under test

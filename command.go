@@ -103,7 +103,7 @@ func (c *Command) Run(ctx Context) (err error) {
 	set, err := c.parseFlags(ctx.Args(), ctx.ShellComplete())
 
 	//context := NewContext(ctx.App(), set, ctx)
-	context := NewContext().WithApp(ctx.App()).WithFlagset(set).WithParent(ctx).WithCommand(c)
+	context := NewContext().WithApp(ctx.App()).WithFlagSet(set).WithParent(ctx).WithCommand(c)
 	if checkCommandCompletions(context, c.Name) {
 		return nil
 	}

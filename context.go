@@ -14,32 +14,36 @@ import (
 // can be used to retrieve context-specific args and
 // parsed command-line options.
 type Context interface {
-	// New Methods (WIP)
 	WithContext(context context.Context) Context
 	WithParent(parent Context) Context
 	WithApp(app *App) Context
 	WithCommand(command *Command) Context
-	WithFlagset(set *flag.FlagSet) Context
-	// Functions to be able to manage Context type
+	WithFlagSet(set *flag.FlagSet) Context
+	Parent() Context
+	Lineage() []Context
 	App() *App
 	Command() *Command
 	Context() context.Context
-	ParentContext() Context
 	SetShellComplete(shellComplete bool)
 	ShellComplete() bool
 	SetFlagSet(set *flag.FlagSet)
+	FlagSetManager
+	FlagValues
+}
+
+type FlagSetManager interface {
 	FlagSet() *flag.FlagSet
 	NumFlags() int
 	Set(name, value string) error
 	IsSet(name string) bool
-	LocalFlagNames() []string
-	FlagNames() []string
-	Lineage() []Context
-	Value(name string) interface{}
 	Args() Args
 	// Deprecated: Use context.Args().Len() instead
 	NArg() int
-	// Functions for each flag type supported by the cli
+}
+
+type FlagValues interface {
+	LocalFlagNames() []string
+	FlagNames() []string
 	Timestamp(name string) *time.Time
 	Generic(name string) interface{}
 	Bool(name string) bool
@@ -55,6 +59,7 @@ type Context interface {
 	Int(name string) int
 	Path(name string) string
 	Uint(name string) uint
+	Value(name string) interface{}
 }
 
 type cliContext struct {
@@ -103,7 +108,7 @@ func (c *cliContext) WithCommand(command *Command) Context {
 	return c
 }
 
-func (c *cliContext) WithFlagset(set *flag.FlagSet) Context {
+func (c *cliContext) WithFlagSet(set *flag.FlagSet) Context {
 	c.flagSet = set
 	return c
 }
@@ -129,7 +134,7 @@ func (c *cliContext) Context() context.Context {
 }
 
 // Returns the parent of the current context
-func (c *cliContext) ParentContext() Context {
+func (c *cliContext) Parent() Context {
 	return c.parentContext
 }
 
@@ -211,7 +216,7 @@ func (c *cliContext) FlagNames() []string {
 func (c *cliContext) Lineage() []Context {
 	var lineage []Context
 
-	for cur := Context(c); cur != nil; cur = cur.ParentContext() {
+	for cur := Context(c); cur != nil; cur = cur.Parent() {
 		lineage = append(lineage, cur)
 	}
 

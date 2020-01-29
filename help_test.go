@@ -121,7 +121,7 @@ func Test_helpCommand_Action_ErrorIfNoTopic(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	_ = set.Parse([]string{"foo"})
 
-	c := NewContext().WithApp(app).WithFlagset(set)
+	c := NewContext().WithApp(app).WithFlagSet(set)
 
 	err := helpCommand.Action(c)
 
@@ -166,7 +166,7 @@ func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	_ = set.Parse([]string{"foo"})
 
-	c := NewContext().WithApp(app).WithFlagset(set)
+	c := NewContext().WithApp(app).WithFlagSet(set)
 
 	err := helpSubcommand.Action(c)
 
