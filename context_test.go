@@ -266,7 +266,7 @@ func TestContext_FlagNames(t *testing.T) {
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Bool("top-flag", true, "doc")
 	parentCtx := NewContext().WithFlagSet(parentSet)
-	ctx := NewContext().WithFlagset(set).WithParent(parentCtx)
+	ctx := NewContext().WithFlagSet(set).WithParent(parentCtx)
 	_ = set.Parse([]string{"--one-flag", "--two-flag=foo"})
 	_ = parentSet.Parse([]string{"--top-flag"})
 
