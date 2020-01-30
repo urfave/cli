@@ -28,6 +28,7 @@ cli v2 manual
     + [Customization](#customization-1)
   * [Version Flag](#version-flag)
     + [Customization](#customization-2)
+  * [Timestamp Flag](#timestamp-flag)
   * [Full API Example](#full-api-example)
 
 <!-- tocstop -->
@@ -1272,6 +1273,49 @@ func main() {
   app.Run(os.Args)
 }
 ```
+
+### Timestamp Flag
+
+Using the timestamp flag is simple. Please refer to [`time.Parse`](https://golang.org/pkg/time/#example_Parse) to get possible formats.
+
+<!-- {
+  "args": ["&#45;&#45;meeting", "2019-08-12T15:04:05"],
+  "output": "2019\\-08\\-12 15\\:04\\:05 \\+0000 UTC"
+} -->
+``` go
+package main
+
+import (
+  "fmt"
+  "log"
+  "os"
+
+  "github.com/urfave/cli/v2"
+)
+
+func main() {
+  app := &cli.App{
+    Flags: []cli.Flag {
+      &cli.TimestampFlag{Name: "meeting", Layout: "2006-01-02T15:04:05"},
+    },
+    Action: func(c *cli.Context) error {
+      fmt.Printf("%s", c.Timestamp("meeting").String())
+      return nil
+    },
+  }
+
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
+}
+```
+
+In this example the flag could be used like this : 
+
+`myapp --meeting 2019-08-12T15:04:05`
+
+Side note: quotes may be necessary around the date depending on your layout (if you have spaces for instance)
 
 ### Full API Example
 
