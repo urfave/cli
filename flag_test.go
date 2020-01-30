@@ -2027,7 +2027,7 @@ func TestFloat64ApplyInputSourceMethodEnvVarSet(t *testing.T) {
 }
 
 func runTest(t *testing.T, test testApplyInputSource) *Context {
-	inputSource := &MapInputSource{
+	inputSource := &mapInputSource{
 		file:     test.SourcePath,
 		valueMap: map[interface{}]interface{}{test.FlagName: test.MapValue},
 	}

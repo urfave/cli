@@ -6,7 +6,7 @@ import (
 )
 
 func TestMapDuration(t *testing.T) {
-	inputSource := &MapInputSource{
+	inputSource := &mapInputSource{
 		file: "test",
 		valueMap: map[interface{}]interface{}{
 			"duration_of_duration_type": time.Minute,

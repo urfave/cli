@@ -7,20 +7,20 @@ import (
 	"time"
 )
 
-// MapInputSource implements InputSourceContext to return
+// mapInputSource implements FlagInputSourceExtension to return
 // data from the map that is loaded.
-type MapInputSource struct {
+type mapInputSource struct {
 	file     string
 	valueMap map[interface{}]interface{}
 }
 
 // Source returns the path of the source file
-func (fsm *MapInputSource) Source() string {
+func (fsm *mapInputSource) Source() string {
 	return fsm.file
 }
 
 // Bool returns an bool from the map otherwise returns false
-func (fsm *MapInputSource) Bool(name string) (bool, error) {
+func (fsm *mapInputSource) Bool(name string) (bool, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if exists {
 		otherValue, isType := otherGenericValue.(bool)
@@ -42,7 +42,7 @@ func (fsm *MapInputSource) Bool(name string) (bool, error) {
 }
 
 // Duration returns a duration from the map if it exists otherwise returns 0
-func (fsm *MapInputSource) Duration(name string) (time.Duration, error) {
+func (fsm *mapInputSource) Duration(name string) (time.Duration, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if exists {
 		return castDuration(name, otherGenericValue)
@@ -68,7 +68,7 @@ func castDuration(name string, value interface{}) (time.Duration, error) {
 }
 
 // Float64 returns an float64 from the map if it exists otherwise returns 0
-func (fsm *MapInputSource) Float64(name string) (float64, error) {
+func (fsm *mapInputSource) Float64(name string) (float64, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if exists {
 		otherValue, isType := otherGenericValue.(float64)
@@ -90,7 +90,7 @@ func (fsm *MapInputSource) Float64(name string) (float64, error) {
 }
 
 // Float64Slice returns an []float64 from the map if it exists otherwise returns nil
-func (fsm *MapInputSource) Float64Slice(name string) ([]float64, error) {
+func (fsm *mapInputSource) Float64Slice(name string) ([]float64, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if !exists {
 		otherGenericValue, exists = nestedVal(name, fsm.valueMap)
@@ -119,7 +119,7 @@ func (fsm *MapInputSource) Float64Slice(name string) ([]float64, error) {
 }
 
 // Generic returns an cli.Generic from the map if it exists otherwise returns nil
-func (fsm *MapInputSource) Generic(name string) (Generic, error) {
+func (fsm *mapInputSource) Generic(name string) (Generic, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if exists {
 		otherValue, isType := otherGenericValue.(Generic)
@@ -141,7 +141,7 @@ func (fsm *MapInputSource) Generic(name string) (Generic, error) {
 }
 
 // Int returns an int from the map if it exists otherwise returns 0
-func (fsm *MapInputSource) Int(name string) (int, error) {
+func (fsm *mapInputSource) Int(name string) (int, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if exists {
 		otherValue, isType := otherGenericValue.(int)
@@ -163,7 +163,7 @@ func (fsm *MapInputSource) Int(name string) (int, error) {
 }
 
 // IntSlice returns an []int from the map if it exists otherwise returns nil
-func (fsm *MapInputSource) IntSlice(name string) ([]int, error) {
+func (fsm *mapInputSource) IntSlice(name string) ([]int, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if !exists {
 		otherGenericValue, exists = nestedVal(name, fsm.valueMap)
@@ -192,7 +192,7 @@ func (fsm *MapInputSource) IntSlice(name string) ([]int, error) {
 }
 
 // Int64 returns an int64 from the map if it exists otherwise returns 0
-func (fsm *MapInputSource) Int64(name string) (int64, error) {
+func (fsm *mapInputSource) Int64(name string) (int64, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if exists {
 		otherValue, isType := otherGenericValue.(int64)
@@ -214,7 +214,7 @@ func (fsm *MapInputSource) Int64(name string) (int64, error) {
 }
 
 // Int64Slice returns an []int64 from the map if it exists otherwise returns nil
-func (fsm *MapInputSource) Int64Slice(name string) ([]int64, error) {
+func (fsm *mapInputSource) Int64Slice(name string) ([]int64, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if !exists {
 		otherGenericValue, exists = nestedVal(name, fsm.valueMap)
@@ -243,7 +243,7 @@ func (fsm *MapInputSource) Int64Slice(name string) ([]int64, error) {
 }
 
 // String returns a string from the map if it exists otherwise returns an empty string
-func (fsm *MapInputSource) String(name string) (string, error) {
+func (fsm *mapInputSource) String(name string) (string, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if exists {
 		otherValue, isType := otherGenericValue.(string)
@@ -265,7 +265,7 @@ func (fsm *MapInputSource) String(name string) (string, error) {
 }
 
 // StringSlice returns an []string from the map if it exists otherwise returns nil
-func (fsm *MapInputSource) StringSlice(name string) ([]string, error) {
+func (fsm *mapInputSource) StringSlice(name string) ([]string, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if !exists {
 		otherGenericValue, exists = nestedVal(name, fsm.valueMap)
@@ -294,7 +294,7 @@ func (fsm *MapInputSource) StringSlice(name string) ([]string, error) {
 }
 
 // Uint returns an uint from the map if it exists otherwise returns 0
-func (fsm *MapInputSource) Uint(name string) (uint, error) {
+func (fsm *mapInputSource) Uint(name string) (uint, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if exists {
 		otherValue, isType := otherGenericValue.(uint)
@@ -316,7 +316,7 @@ func (fsm *MapInputSource) Uint(name string) (uint, error) {
 }
 
 // Uint64 returns an uint64 from the map if it exists otherwise returns 0
-func (fsm *MapInputSource) Uint64(name string) (uint64, error) {
+func (fsm *mapInputSource) Uint64(name string) (uint64, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if exists {
 		otherValue, isType := otherGenericValue.(uint64)
