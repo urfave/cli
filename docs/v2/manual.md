@@ -13,6 +13,7 @@ cli v2 manual
     + [Values from the Environment](#values-from-the-environment)
     + [Values from files](#values-from-files)
     + [Values from alternate input sources (YAML, TOML, and others)](#values-from-alternate-input-sources-yaml-toml-and-others)
+    + [Required Flags](#required-flags)
     + [Default Values for help output](#default-values-for-help-output)
     + [Precedence](#precedence)
   * [Subcommands](#subcommands)
@@ -27,6 +28,7 @@ cli v2 manual
     + [Customization](#customization-1)
   * [Version Flag](#version-flag)
     + [Customization](#customization-2)
+  * [Timestamp Flag](#timestamp-flag)
   * [Full API Example](#full-api-example)
 
 <!-- tocstop -->
@@ -641,6 +643,63 @@ func main() {
 }
 ```
 
+#### Required Flags
+
+You can make a flag required by setting the `Required` field to `true`. If a user
+does not provide a required flag, they will be shown an error message.
+
+Take for example this app that reqiures the `lang` flag:
+
+<!-- {
+  "error": "Required flag \"lang\" not set"
+} -->
+```go
+package main
+
+import (
+  "log"
+  "os"
+  "strings"
+
+  "github.com/urfave/cli"
+)
+
+func main() {
+  app := cli.NewApp()
+
+  app.Flags = []cli.Flag {
+    cli.StringFlag{
+      Name: "lang",
+      Value: "english",
+      Usage: "language for the greeting",
+      Required: true,
+    },
+  }
+
+  app.Action = func(c *cli.Context) error {
+    var output string
+    if c.String("lang") == "spanish" {
+      output = "Hola"
+    } else {
+      output = "Hello"
+    }
+    fmt.Println(output)
+    return nil
+  }
+
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
+}
+```
+
+If the app is run without the `lang` flag, the user will see the following message
+
+```
+Required flag "lang" not set
+```
+
 #### Default Values for help output
 
 Sometimes it's useful to specify a flag's default help-text value within the flag declaration. This can be useful if the default value for a flag is a computed value. The default value can be set via the `DefaultText` struct field.
@@ -1215,6 +1274,49 @@ func main() {
 }
 ```
 
+### Timestamp Flag
+
+Using the timestamp flag is simple. Please refer to [`time.Parse`](https://golang.org/pkg/time/#example_Parse) to get possible formats.
+
+<!-- {
+  "args": ["&#45;&#45;meeting", "2019-08-12T15:04:05"],
+  "output": "2019\\-08\\-12 15\\:04\\:05 \\+0000 UTC"
+} -->
+``` go
+package main
+
+import (
+  "fmt"
+  "log"
+  "os"
+
+  "github.com/urfave/cli/v2"
+)
+
+func main() {
+  app := &cli.App{
+    Flags: []cli.Flag {
+      &cli.TimestampFlag{Name: "meeting", Layout: "2006-01-02T15:04:05"},
+    },
+    Action: func(c *cli.Context) error {
+      fmt.Printf("%s", c.Timestamp("meeting").String())
+      return nil
+    },
+  }
+
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
+}
+```
+
+In this example the flag could be used like this : 
+
+`myapp --meeting 2019-08-12T15:04:05`
+
+Side note: quotes may be necessary around the date depending on your layout (if you have spaces for instance)
+
 ### Full API Example
 
 **Notice**: This is a contrived (functioning) example meant strictly for API
@@ -1403,11 +1505,11 @@ func main() {
 
       fmt.Printf("%#v\n", c.App.Command("doo"))
       if c.Bool("infinite") {
-        c.App.Run([]string{"app", "doo", "wop"})
+      	c.App.Run([]string{"app", "doo", "wop"})
       }
 
       if c.Bool("forevar") {
-        c.App.RunAsSubcommand(c)
+      	c.App.RunAsSubcommand(c)
       }
       c.App.Setup()
       fmt.Printf("%#v\n", c.App.VisibleCategories())
@@ -1445,7 +1547,6 @@ func main() {
       fmt.Printf("%#v\n", nc.NArg())
       fmt.Printf("%#v\n", nc.NumFlags())
       fmt.Printf("%#v\n", nc.Lineage()[1])
-
       nc.Set("wat", "also-nope")
 
       ec := cli.Exit("ohwell", 86)

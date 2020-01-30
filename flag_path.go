@@ -35,7 +35,7 @@ func (f *PathFlag) String() string {
 
 // Names returns the names of the flag
 func (f *PathFlag) Names() []string {
-	return flagNames(f)
+	return flagNames(f.Name, f.Aliases)
 }
 
 // IsRequired returns whether or not the flag is required
@@ -110,7 +110,7 @@ func (f *PathFlag) ApplyInputSourceValue(context *Context, isc InputSourceContex
 	return nil
 }
 
-// String looks up the value of a local PathFlag, returns
+// Path looks up the value of a local PathFlag, returns
 // "" if not found
 func (c *Context) Path(name string) string {
 	if fs := lookupFlagSet(name, c); fs != nil {

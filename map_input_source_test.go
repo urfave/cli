@@ -20,6 +20,6 @@ func TestMapDuration(t *testing.T) {
 	d, err = inputSource.Duration("duration_of_string_type")
 	expect(t, time.Minute, d)
 	expect(t, nil, err)
-	d, err = inputSource.Duration("duration_of_int_type")
+	_, err = inputSource.Duration("duration_of_int_type")
 	refute(t, nil, err)
 }

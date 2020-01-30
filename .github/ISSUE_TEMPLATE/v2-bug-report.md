@@ -2,7 +2,7 @@
 name: v2 bug report
 about: Create a report to help us fix v2 bugs
 title: 'v2 bug: ( your bug title goes here )'
-labels: 'type: bug, version: v2, status: triage'
+labels: 'kind/bug, area/v2, status/triage'
 assignees: ''
 
 ---
@@ -32,9 +32,13 @@ A clear and concise description of what the bug is.
 
 Describe the steps or code required to reproduce the behavior
 
+## Observed behavior
+
+What did you see happen immediately after the reproduction steps above?
+
 ## Expected behavior
 
-A clear and concise description of what you expected to happen.
+What would you have expected to happen immediately after the reproduction steps above?
 
 ## Additional context
 
@@ -47,9 +51,14 @@ If you can reproduce this issue with a public CI system, please link a failing b
 ## Want to fix this yourself?
 
 We'd love to have more contributors on this project! If the fix for this bug is easily explained and very small, free free to create a pull request for it.
+## Run `go version` and paste its output here
+
+```
+# paste `go version` output in here
+```
 
 ## Run `go env` and paste its output here
 
 ```
-# paste it in here
+# paste `go env` output in here
 ```

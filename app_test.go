@@ -612,7 +612,7 @@ func TestApp_UseShortOptionHandling(t *testing.T) {
 	var name string
 	expected := "expectedName"
 
-	app := NewApp()
+	app := newTestApp()
 	app.UseShortOptionHandling = true
 	app.Flags = []Flag{
 		&BoolFlag{Name: "one", Aliases: []string{"o"}},
@@ -633,7 +633,7 @@ func TestApp_UseShortOptionHandling(t *testing.T) {
 }
 
 func TestApp_UseShortOptionHandling_missing_value(t *testing.T) {
-	app := NewApp()
+	app := newTestApp()
 	app.UseShortOptionHandling = true
 	app.Flags = []Flag{
 		&StringFlag{Name: "name", Aliases: []string{"n"}},
@@ -648,7 +648,7 @@ func TestApp_UseShortOptionHandlingCommand(t *testing.T) {
 	var name string
 	expected := "expectedName"
 
-	app := NewApp()
+	app := newTestApp()
 	app.UseShortOptionHandling = true
 	command := &Command{
 		Name: "cmd",
@@ -673,7 +673,7 @@ func TestApp_UseShortOptionHandlingCommand(t *testing.T) {
 }
 
 func TestApp_UseShortOptionHandlingCommand_missing_value(t *testing.T) {
-	app := NewApp()
+	app := newTestApp()
 	app.UseShortOptionHandling = true
 	command := &Command{
 		Name: "cmd",
@@ -692,7 +692,7 @@ func TestApp_UseShortOptionHandlingSubCommand(t *testing.T) {
 	var name string
 	expected := "expectedName"
 
-	app := NewApp()
+	app := newTestApp()
 	app.UseShortOptionHandling = true
 	command := &Command{
 		Name: "cmd",
@@ -722,7 +722,7 @@ func TestApp_UseShortOptionHandlingSubCommand(t *testing.T) {
 }
 
 func TestApp_UseShortOptionHandlingSubCommand_missing_value(t *testing.T) {
-	app := NewApp()
+	app := newTestApp()
 	app.UseShortOptionHandling = true
 	command := &Command{
 		Name: "cmd",
@@ -859,30 +859,12 @@ func TestApp_DefaultStdout(t *testing.T) {
 	}
 }
 
-type mockWriter struct {
-	written []byte
-}
-
-func (fw *mockWriter) Write(p []byte) (n int, err error) {
-	if fw.written == nil {
-		fw.written = p
-	} else {
-		fw.written = append(fw.written, p...)
-	}
-
-	return len(p), nil
-}
-
-func (fw *mockWriter) GetWritten() (b []byte) {
-	return fw.written
-}
-
 func TestApp_SetStdout(t *testing.T) {
-	w := &mockWriter{}
+	var w bytes.Buffer
 
 	app := &App{
 		Name:   "test",
-		Writer: w,
+		Writer: &w,
 	}
 
 	err := app.Run([]string{"help"})
@@ -891,7 +873,7 @@ func TestApp_SetStdout(t *testing.T) {
 		t.Fatalf("Run error: %s", err)
 	}
 
-	if len(w.written) == 0 {
+	if w.Len() == 0 {
 		t.Error("App did not write output to desired writer.")
 	}
 }
@@ -925,6 +907,7 @@ func TestApp_BeforeFunc(t *testing.T) {
 		Flags: []Flag{
 			&StringFlag{Name: "opt"},
 		},
+		Writer: ioutil.Discard,
 	}
 
 	// run with the Before() func succeeding
@@ -1186,7 +1169,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 	for _, test := range tdata {
 		t.Run(test.testCase, func(t *testing.T) {
 			// setup
-			app := NewApp()
+			app := newTestApp()
 			app.Flags = test.appFlags
 			app.Commands = test.appCommands
 
@@ -1280,7 +1263,6 @@ func TestApp_OrderOfOperations(t *testing.T) {
 	app := &App{
 		EnableBashCompletion: true,
 		BashComplete: func(c *Context) {
-			_, _ = fmt.Fprintf(os.Stderr, "---> BashComplete(%#v)\n", c)
 			counts.Total++
 			counts.ShellComplete = counts.Total
 		},
@@ -1289,6 +1271,7 @@ func TestApp_OrderOfOperations(t *testing.T) {
 			counts.OnUsageError = counts.Total
 			return errors.New("hay OnUsageError")
 		},
+		Writer: ioutil.Discard,
 	}
 
 	beforeNoError := func(c *Context) error {
@@ -1422,50 +1405,50 @@ func TestApp_Run_CommandWithSubcommandHasHelpTopic(t *testing.T) {
 	}
 
 	for _, flagSet := range subcommandHelpTopics {
-		t.Logf("==> checking with flags %v", flagSet)
+		t.Run(fmt.Sprintf("checking with flags %v", flagSet), func(t *testing.T) {
 
-		app := &App{}
-		buf := new(bytes.Buffer)
-		app.Writer = buf
+			app := &App{}
+			buf := new(bytes.Buffer)
+			app.Writer = buf
 
-		subCmdBar := &Command{
-			Name:  "bar",
-			Usage: "does bar things",
-		}
-		subCmdBaz := &Command{
-			Name:  "baz",
-			Usage: "does baz things",
-		}
-		cmd := &Command{
-			Name:        "foo",
-			Description: "descriptive wall of text about how it does foo things",
-			Subcommands: []*Command{subCmdBar, subCmdBaz},
-			Action:      func(c *Context) error { return nil },
-		}
-
-		app.Commands = []*Command{cmd}
-		err := app.Run(flagSet)
-
-		if err != nil {
-			t.Error(err)
-		}
-
-		output := buf.String()
-		//t.Logf("output: %q\n", buf.Bytes())
-
-		if strings.Contains(output, "No help topic for") {
-			t.Errorf("expect a help topic, got none: \n%q", output)
-		}
-
-		for _, shouldContain := range []string{
-			cmd.Name, cmd.Description,
-			subCmdBar.Name, subCmdBar.Usage,
-			subCmdBaz.Name, subCmdBaz.Usage,
-		} {
-			if !strings.Contains(output, shouldContain) {
-				t.Errorf("want help to contain %q, did not: \n%q", shouldContain, output)
+			subCmdBar := &Command{
+				Name:  "bar",
+				Usage: "does bar things",
 			}
-		}
+			subCmdBaz := &Command{
+				Name:  "baz",
+				Usage: "does baz things",
+			}
+			cmd := &Command{
+				Name:        "foo",
+				Description: "descriptive wall of text about how it does foo things",
+				Subcommands: []*Command{subCmdBar, subCmdBaz},
+				Action:      func(c *Context) error { return nil },
+			}
+
+			app.Commands = []*Command{cmd}
+			err := app.Run(flagSet)
+
+			if err != nil {
+				t.Error(err)
+			}
+
+			output := buf.String()
+
+			if strings.Contains(output, "No help topic for") {
+				t.Errorf("expect a help topic, got none: \n%q", output)
+			}
+
+			for _, shouldContain := range []string{
+				cmd.Name, cmd.Description,
+				subCmdBar.Name, subCmdBar.Usage,
+				subCmdBaz.Name, subCmdBaz.Usage,
+			} {
+				if !strings.Contains(output, shouldContain) {
+					t.Errorf("want help to contain %q, did not: \n%q", shouldContain, output)
+				}
+			}
+		})
 	}
 }
 
@@ -1584,7 +1567,8 @@ func TestApp_Run_CommandSubcommandHelpName(t *testing.T) {
 	}
 	cmd := &Command{
 		Name:        "foo",
-		Description: "foo commands",
+		Usage:       "foo commands",
+		Description: "This is a description",
 		Subcommands: []*Command{subCmd},
 	}
 	app.Commands = []*Command{cmd}
@@ -1601,6 +1585,11 @@ func TestApp_Run_CommandSubcommandHelpName(t *testing.T) {
 		t.Errorf("expected %q in output: %q", expected, output)
 	}
 
+	expected = "DESCRIPTION:\n   This is a description\n"
+	if !strings.Contains(output, expected) {
+		t.Errorf("expected %q in output: %q", expected, output)
+	}
+
 	expected = "base foo command [command options] [arguments...]"
 	if !strings.Contains(output, expected) {
 		t.Errorf("expected %q in output: %q", expected, output)
@@ -1611,31 +1600,31 @@ func TestApp_Run_Help(t *testing.T) {
 	var helpArguments = [][]string{{"boom", "--help"}, {"boom", "-h"}, {"boom", "help"}}
 
 	for _, args := range helpArguments {
-		buf := new(bytes.Buffer)
+		t.Run(fmt.Sprintf("checking with arguments %v", args), func(t *testing.T) {
 
-		t.Logf("==> checking with arguments %v", args)
+			buf := new(bytes.Buffer)
 
-		app := &App{
-			Name:   "boom",
-			Usage:  "make an explosive entrance",
-			Writer: buf,
-			Action: func(c *Context) error {
-				buf.WriteString("boom I say!")
-				return nil
-			},
-		}
+			app := &App{
+				Name:   "boom",
+				Usage:  "make an explosive entrance",
+				Writer: buf,
+				Action: func(c *Context) error {
+					buf.WriteString("boom I say!")
+					return nil
+				},
+			}
 
-		err := app.Run(args)
-		if err != nil {
-			t.Error(err)
-		}
+			err := app.Run(args)
+			if err != nil {
+				t.Error(err)
+			}
 
-		output := buf.String()
-		t.Logf("output: %q\n", buf.Bytes())
+			output := buf.String()
 
-		if !strings.Contains(output, "boom - make an explosive entrance") {
-			t.Errorf("want help to contain %q, did not: \n%q", "boom - make an explosive entrance", output)
-		}
+			if !strings.Contains(output, "boom - make an explosive entrance") {
+				t.Errorf("want help to contain %q, did not: \n%q", "boom - make an explosive entrance", output)
+			}
+		})
 	}
 }
 
@@ -1643,32 +1632,32 @@ func TestApp_Run_Version(t *testing.T) {
 	var versionArguments = [][]string{{"boom", "--version"}, {"boom", "-v"}}
 
 	for _, args := range versionArguments {
-		buf := new(bytes.Buffer)
+		t.Run(fmt.Sprintf("checking with arguments %v", args), func(t *testing.T) {
 
-		t.Logf("==> checking with arguments %v", args)
+			buf := new(bytes.Buffer)
 
-		app := &App{
-			Name:    "boom",
-			Usage:   "make an explosive entrance",
-			Version: "0.1.0",
-			Writer:  buf,
-			Action: func(c *Context) error {
-				buf.WriteString("boom I say!")
-				return nil
-			},
-		}
+			app := &App{
+				Name:    "boom",
+				Usage:   "make an explosive entrance",
+				Version: "0.1.0",
+				Writer:  buf,
+				Action: func(c *Context) error {
+					buf.WriteString("boom I say!")
+					return nil
+				},
+			}
 
-		err := app.Run(args)
-		if err != nil {
-			t.Error(err)
-		}
+			err := app.Run(args)
+			if err != nil {
+				t.Error(err)
+			}
 
-		output := buf.String()
-		t.Logf("output: %q\n", buf.Bytes())
+			output := buf.String()
 
-		if !strings.Contains(output, "0.1.0") {
-			t.Errorf("want version to contain %q, did not: \n%q", "0.1.0", output)
-		}
+			if !strings.Contains(output, "0.1.0") {
+				t.Errorf("want version to contain %q, did not: \n%q", "0.1.0", output)
+			}
+		})
 	}
 }
 
@@ -1718,7 +1707,6 @@ func TestApp_Run_Categories(t *testing.T) {
 	}
 
 	output := buf.String()
-	//t.Logf("output: %q\n", buf.Bytes())
 
 	if !strings.Contains(output, "1:\n     command1") {
 		t.Errorf("want buffer to include category %q, did not: \n%q", "1:\n     command1", output)
@@ -1837,6 +1825,7 @@ func TestApp_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 		Action: func(c *Context) error { return nil },
 		Before: func(c *Context) error { return fmt.Errorf("before error") },
 		After:  func(c *Context) error { return fmt.Errorf("after error") },
+		Writer: ioutil.Discard,
 	}
 
 	err := app.Run([]string{"foo"})
@@ -1981,7 +1970,8 @@ func (c *customBoolFlag) IsSet() bool {
 
 func TestCustomFlagsUnused(t *testing.T) {
 	app := &App{
-		Flags: []Flag{&customBoolFlag{"custom"}},
+		Flags:  []Flag{&customBoolFlag{"custom"}},
+		Writer: ioutil.Discard,
 	}
 
 	err := app.Run([]string{"foo"})
@@ -1992,7 +1982,8 @@ func TestCustomFlagsUnused(t *testing.T) {
 
 func TestCustomFlagsUsed(t *testing.T) {
 	app := &App{
-		Flags: []Flag{&customBoolFlag{"custom"}},
+		Flags:  []Flag{&customBoolFlag{"custom"}},
+		Writer: ioutil.Discard,
 	}
 
 	err := app.Run([]string{"foo", "--custom=bar"})
@@ -2002,7 +1993,9 @@ func TestCustomFlagsUsed(t *testing.T) {
 }
 
 func TestCustomHelpVersionFlags(t *testing.T) {
-	app := &App{}
+	app := &App{
+		Writer: ioutil.Discard,
+	}
 
 	// Be sure to reset the global flags
 	defer func(helpFlag Flag, versionFlag Flag) {
@@ -2020,7 +2013,7 @@ func TestCustomHelpVersionFlags(t *testing.T) {
 }
 
 func TestHandleExitCoder_Default(t *testing.T) {
-	app := NewApp()
+	app := newTestApp()
 	fs, err := flagSet(app.Name, app.Flags)
 	if err != nil {
 		t.Errorf("error creating FlagSet: %s", err)
@@ -2036,7 +2029,7 @@ func TestHandleExitCoder_Default(t *testing.T) {
 }
 
 func TestHandleExitCoder_Custom(t *testing.T) {
-	app := NewApp()
+	app := newTestApp()
 	fs, err := flagSet(app.Name, app.Flags)
 	if err != nil {
 		t.Errorf("error creating FlagSet: %s", err)
@@ -2093,6 +2086,7 @@ func TestShellCompletionForIncompleteFlags(t *testing.T) {
 		Action: func(ctx *Context) error {
 			return fmt.Errorf("should not get here")
 		},
+		Writer: ioutil.Discard,
 	}
 	err := app.Run([]string{"", "--test-completion", "--" + "generate-bash-completion"})
 	if err != nil {
@@ -2103,7 +2097,7 @@ func TestShellCompletionForIncompleteFlags(t *testing.T) {
 func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
 	testCode := 104
 
-	app := NewApp()
+	app := newTestApp()
 	app.Commands = []*Command{
 		{
 			Name: "cmd",
@@ -2122,7 +2116,6 @@ func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
 	var exitCodeFromExitErrHandler int
 	app.ExitErrHandler = func(c *Context, err error) {
 		if exitErr, ok := err.(ExitCoder); ok {
-			t.Log(exitErr)
 			exitCodeFromExitErrHandler = exitErr.ExitCode()
 		}
 	}
@@ -2152,4 +2145,10 @@ func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
 	if exitCodeFromExitErrHandler != testCode {
 		t.Errorf("exitCodeFromOsExiter valeu should be %v, but its value is %v", testCode, exitCodeFromExitErrHandler)
 	}
+}
+
+func newTestApp() *App {
+	a := NewApp()
+	a.Writer = ioutil.Discard
+	return a
 }

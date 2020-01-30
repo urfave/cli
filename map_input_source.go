@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/urfave/cli/v2"
 )
 
 // MapInputSource implements InputSourceContext to return

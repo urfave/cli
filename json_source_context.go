@@ -77,9 +77,9 @@ func (x *jsonSource) Duration(name string) (time.Duration, error) {
 	if err != nil {
 		return 0, err
 	}
-	v, ok := (time.Duration)(0), false
-	if v, ok = i.(time.Duration); !ok {
-		return v, fmt.Errorf("unexpected type %T for %q", i, name)
+	v, ok := i.(time.Duration)
+	if !ok {
+		return 0, fmt.Errorf("unexpected type %T for %q", i, name)
 	}
 	return v, nil
 }
@@ -89,9 +89,9 @@ func (x *jsonSource) Float64(name string) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	v, ok := (float64)(0), false
-	if v, ok = i.(float64); !ok {
-		return v, fmt.Errorf("unexpected type %T for %q", i, name)
+	v, ok := i.(float64)
+	if !ok {
+		return 0, fmt.Errorf("unexpected type %T for %q", i, name)
 	}
 	return v, nil
 }
@@ -130,6 +130,7 @@ func (x *jsonSource) Generic(name string) (Generic, error) {
 	}
 	return v, nil
 }
+
 func (x *jsonSource) Int(name string) (int, error) {
 	i, err := x.getValue(name)
 	if err != nil {

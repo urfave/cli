@@ -2,8 +2,8 @@
 name: v1 bug report
 about: Create a report to help us fix v1 bugs
 title: 'v1 bug: ( your bug title goes here )'
-labels: 'type: bug, status: triage, version: v1'
-assignees: lynncyrin
+labels: 'kind/bug, status/triage, area/v1'
+assignees: ''
 
 ---
 
@@ -32,9 +32,13 @@ A clear and concise description of what the bug is.
 
 Describe the steps or code required to reproduce the behavior
 
+## Observed behavior
+
+What did you see happen immediately after the reproduction steps above?
+
 ## Expected behavior
 
-A clear and concise description of what you expected to happen.
+What would you have expected to happen immediately after the reproduction steps above?
 
 ## Additional context
 
@@ -48,8 +52,14 @@ If you can reproduce this issue with a public CI system, please link a failing b
 
 We'd love to have more contributors on this project! If the fix for this bug is easily explained and very small, free free to create a pull request for it. You'll want to base the PR off the `v1` branch, all `v1` bug fix releases will be made from that branch.
 
+## Run `go version` and paste its output here
+
+```
+# paste `go version` output in here
+```
+
 ## Run `go env` and paste its output here
 
 ```
-# paste it in here
+# paste `go env` output in here
 ```

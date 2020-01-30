@@ -1,12 +1,13 @@
 package cli
 
 import (
+	"bytes"
 	"io/ioutil"
 	"testing"
 )
 
 func testApp() *App {
-	app := NewApp()
+	app := newTestApp()
 	app.Name = "greet"
 	app.Flags = []Flag{
 		&StringFlag{
@@ -21,6 +22,10 @@ func testApp() *App {
 			Name:    "another-flag",
 			Aliases: []string{"b"},
 			Usage:   "another usage text",
+		},
+		&BoolFlag{
+			Name:   "hidden-flag",
+			Hidden: true,
 		},
 	}
 	app.Commands = []*Command{{
@@ -73,6 +78,9 @@ func testApp() *App {
 
 func expectFileContent(t *testing.T, file, expected string) {
 	data, err := ioutil.ReadFile(file)
+	// Ignore windows line endings
+	// TODO: Replace with bytes.ReplaceAll when support for Go 1.11 is dropped
+	data = bytes.Replace(data, []byte("\r\n"), []byte("\n"), -1)
 	expect(t, err, nil)
 	expect(t, string(data), expected)
 }
