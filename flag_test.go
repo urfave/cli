@@ -342,7 +342,7 @@ func TestFlagEnvHinter(t *testing.T) {
 
 var fileHintFlagTests = []struct {
 	name     string
-	path      string
+	path     string
 	hinter   FlagFileHintFunc
 	expected string
 }{
