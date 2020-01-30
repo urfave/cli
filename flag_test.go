@@ -210,23 +210,38 @@ var prefixStringFlagTests = []struct {
 	expected string
 }{
 	{name: "foo", usage: "", value: "", prefixer: func(a []string, b string) string {
-		return fmt.Sprintf("name: %s, ph: %s", a, b)
+		return fmt.Sprintf("name: %s, ph: %s", strings.Join(a, ","), b)
 	}, expected: "name: foo, ph: value\t"},
 	{name: "f", usage: "", value: "", prefixer: func(a []string, b string) string {
-		return fmt.Sprintf("name: %s, ph: %s", a, b)
+		return fmt.Sprintf("name: %s, ph: %s", strings.Join(a, ","), b)
 	}, expected: "name: f, ph: value\t"},
 	{name: "f", usage: "The total `foo` desired", value: "all", prefixer: func(a []string, b string) string {
-		return fmt.Sprintf("name: %s, ph: %s", a, b)
+		return fmt.Sprintf("name: %s, ph: %s", strings.Join(a, ","), b)
 	}, expected: "name: f, ph: foo\tThe total foo desired (default: \"all\")"},
 	{name: "test", usage: "", value: "Something", prefixer: func(a []string, b string) string {
-		return fmt.Sprintf("name: %s, ph: %s", a, b)
+		return fmt.Sprintf("name: %s, ph: %s", strings.Join(a, ","), b)
 	}, expected: "name: test, ph: value\t(default: \"Something\")"},
 	{name: "config", aliases: []string{"c"}, usage: "Load configuration from `FILE`", value: "", prefixer: func(a []string, b string) string {
-		return fmt.Sprintf("name: %s, ph: %s", a, b)
+		return fmt.Sprintf("name: %s, ph: %s", strings.Join(a, ","), b)
 	}, expected: "name: config,c, ph: FILE\tLoad configuration from FILE"},
 	{name: "config", aliases: []string{"c"}, usage: "Load configuration from `CONFIG`", value: "config.json", prefixer: func(a []string, b string) string {
-		return fmt.Sprintf("name: %s, ph: %s", a, b)
+		return fmt.Sprintf("name: %s, ph: %s", strings.Join(a, ","), b)
 	}, expected: "name: config,c, ph: CONFIG\tLoad configuration from CONFIG (default: \"config.json\")"},
+}
+
+func TestFlagNamePrefixer(t *testing.T) {
+	defer func() {
+		FlagNamePrefixer = prefixedNames
+	}()
+
+	for _, test := range prefixStringFlagTests {
+		FlagNamePrefixer = test.prefixer
+		flag := StringFlag{Name: test.name, Aliases: test.aliases, Usage: test.usage, Value: test.value}
+		output := flag.String()
+		if output != test.expected {
+			t.Errorf("%q does not match %q", output, test.expected)
+		}
+	}
 }
 
 func TestStringFlagApply_SetsAllNames(t *testing.T) {
