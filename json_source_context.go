@@ -124,11 +124,11 @@ func (x *jsonSource) Generic(name string) (Generic, error) {
 	if err != nil {
 		return nil, err
 	}
-	v, ok := (Generic)(nil), false
-	if v, ok = i.(Generic); !ok {
+	if v, ok := i.(Generic); !ok {
 		return v, fmt.Errorf("unexpected type %T for %q", i, name)
+	} else {
+		return v, nil
 	}
-	return v, nil
 }
 
 func (x *jsonSource) Int(name string) (int, error) {

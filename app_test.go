@@ -47,7 +47,7 @@ func ExampleApp_Run() {
 		Authors:   []*Author{{Name: "Oliver Allen", Email: "oliver@toyshop.example.com"}},
 	}
 
-	app.Run(os.Args)
+	_ = app.Run(os.Args)
 	// Output:
 	// Hello Jeremy
 }

@@ -312,33 +312,68 @@ var envHintFlagTests = []struct {
 	expected string
 }{
 	{"foo", "", func(a []string, b string) string {
-		return fmt.Sprintf("env: %s, str: %s", a, b)
+		return fmt.Sprintf("env: %s, str: %s", strings.Join(a, ","), b)
 	}, "env: , str: --foo value\t"},
 	{"f", "", func(a []string, b string) string {
-		return fmt.Sprintf("env: %s, str: %s", a, b)
+		return fmt.Sprintf("env: %s, str: %s", strings.Join(a, ","), b)
 	}, "env: , str: -f value\t"},
 	{"foo", "ENV_VAR", func(a []string, b string) string {
-		return fmt.Sprintf("env: %s, str: %s", a, b)
+		return fmt.Sprintf("env: %s, str: %s", strings.Join(a, ","), b)
 	}, "env: ENV_VAR, str: --foo value\t"},
 	{"f", "ENV_VAR", func(a []string, b string) string {
-		return fmt.Sprintf("env: %s, str: %s", a, b)
+		return fmt.Sprintf("env: %s, str: %s", strings.Join(a, ","), b)
 	}, "env: ENV_VAR, str: -f value\t"},
 }
 
-//func TestFlagEnvHinter(t *testing.T) {
-//	defer func() {
-//		FlagEnvHinter = withEnvHint
-//	}()
-//
-//	for _, test := range envHintFlagTests {
-//		FlagEnvHinter = test.hinter
-//		fl := StringFlag{Name: test.name, EnvVars: []string{test.env}}
-//		output := fl.String()
-//		if output != test.expected {
-//			t.Errorf("%q does not match %q", output, test.expected)
-//		}
-//	}
-//}
+func TestFlagEnvHinter(t *testing.T) {
+	defer func() {
+		FlagEnvHinter = withEnvHint
+	}()
+
+	for _, test := range envHintFlagTests {
+		FlagEnvHinter = test.hinter
+		fl := StringFlag{Name: test.name, EnvVars: []string{test.env}}
+		output := fl.String()
+		if output != test.expected {
+			t.Errorf("%q does not match %q", output, test.expected)
+		}
+	}
+}
+
+var fileHintFlagTests = []struct {
+	name     string
+	path      string
+	hinter   FlagFileHintFunc
+	expected string
+}{
+	{"foo", "", func(a string, b string) string {
+		return fmt.Sprintf("path: %s, str: %s", a, b)
+	}, "path: , str: --foo value\t"},
+	{"f", "", func(a string, b string) string {
+		return fmt.Sprintf("path: %s, str: %s", a, b)
+	}, "path: , str: -f value\t"},
+	{"foo", "/home/ajitem", func(a string, b string) string {
+		return fmt.Sprintf("path: %s, str: %s", a, b)
+	}, "path: /home/ajitem, str: --foo value\t"},
+	{"f", "/Users/ajitem/Documents", func(a string, b string) string {
+		return fmt.Sprintf("path: %s, str: %s", a, b)
+	}, "path: /Users/ajitem/Documents, str: -f value\t"},
+}
+
+func TestFlagFileHinter(t *testing.T) {
+	defer func() {
+		FlagFileHinter = withFileHint
+	}()
+
+	for _, test := range fileHintFlagTests {
+		FlagFileHinter = test.hinter
+		fl := StringFlag{Name: test.name, TakesFile: true, FilePath: test.path}
+		output := fl.String()
+		if output != test.expected {
+			t.Errorf("%q does not match %q", output, test.expected)
+		}
+	}
+}
 
 var stringSliceFlagTests = []struct {
 	name     string

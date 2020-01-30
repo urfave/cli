@@ -243,7 +243,7 @@ func prefixedNames(names []string, placeholder string) string {
 
 func withEnvHint(envVars []string, str string) string {
 	envText := ""
-	if envVars != nil && len(envVars) > 0 {
+	if len(envVars) > 0 {
 		prefix := "$"
 		suffix := ""
 		sep := ", $"
@@ -304,17 +304,33 @@ func stringifyFlag(f Flag) string {
 
 	switch f := f.(type) {
 	case *IntSliceFlag:
-		return withEnvHint(flagStringSliceField(f, "EnvVars"),
-			stringifyIntSliceFlag(f))
+		return FlagFileHinter(
+			fv.FieldByName("FilePath").String(),
+			FlagEnvHinter(flagStringSliceField(f, "EnvVars"),
+				stringifyIntSliceFlag(f),
+			),
+		)
 	case *Int64SliceFlag:
-		return withEnvHint(flagStringSliceField(f, "EnvVars"),
-			stringifyInt64SliceFlag(f))
+		return FlagFileHinter(
+			fv.FieldByName("FilePath").String(),
+			FlagEnvHinter(flagStringSliceField(f, "EnvVars"),
+				stringifyInt64SliceFlag(f),
+			),
+		)
 	case *Float64SliceFlag:
-		return withEnvHint(flagStringSliceField(f, "EnvVars"),
-			stringifyFloat64SliceFlag(f))
+		return FlagFileHinter(
+			fv.FieldByName("FilePath").String(),
+			FlagEnvHinter(flagStringSliceField(f, "EnvVars"),
+				stringifyFloat64SliceFlag(f),
+			),
+		)
 	case *StringSliceFlag:
-		return withEnvHint(flagStringSliceField(f, "EnvVars"),
-			stringifyStringSliceFlag(f))
+		return FlagFileHinter(
+			fv.FieldByName("FilePath").String(),
+			FlagEnvHinter(flagStringSliceField(f, "EnvVars"),
+				stringifyStringSliceFlag(f),
+			),
+		)
 	}
 
 	placeholder, usage := unquoteUsage(fv.FieldByName("Usage").String())
@@ -347,8 +363,13 @@ func stringifyFlag(f Flag) string {
 
 	usageWithDefault := strings.TrimSpace(usage + defaultValueString)
 
-	return withEnvHint(flagStringSliceField(f, "EnvVars"),
-		fmt.Sprintf("%s\t%s", FlagNamePrefixer(f.Names(), placeholder), usageWithDefault))
+	return FlagFileHinter(
+		fv.FieldByName("FilePath").String(),
+		FlagEnvHinter(
+			flagStringSliceField(f, "EnvVars"),
+			fmt.Sprintf("%s\t%s", FlagNamePrefixer(f.Names(), placeholder), usageWithDefault),
+		),
+	)
 }
 
 func stringifyIntSliceFlag(f *IntSliceFlag) string {
