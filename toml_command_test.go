@@ -5,8 +5,6 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
-
-	"github.com/urfave/cli/v2"
 )
 
 func TestCommandTomFileTest(t *testing.T) {

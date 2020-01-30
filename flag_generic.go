@@ -92,7 +92,6 @@ func (f *GenericFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
-
 // ApplyInputSourceValue applies a generic value to the flagSet if required
 func (f *GenericFlag) ApplyInputSourceValue(context *Context, isc InputSourceContext) error {
 	if f.set != nil {

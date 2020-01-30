@@ -5,8 +5,6 @@ import (
 	"reflect"
 	"strings"
 	"time"
-
-	"github.com/urfave/cli/v2"
 )
 
 // MapInputSource implements InputSourceContext to return
@@ -119,7 +117,6 @@ func (fsm *MapInputSource) Float64Slice(name string) ([]float64, error) {
 
 	return float64Slice, nil
 }
-
 
 // Generic returns an cli.Generic from the map if it exists otherwise returns nil
 func (fsm *MapInputSource) Generic(name string) (Generic, error) {
