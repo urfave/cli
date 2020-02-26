@@ -67,6 +67,14 @@ The V2 changes were all shipped in [urfave/cli/pull/892](https://github.com/urfa
 
 View [unreleased 1.22.X] series changes.
 
+## [1.22.3] - 2020-02-25
+
+### Fixed
+
+- String flag no longer persists the default value if the flag is explicitly initialized in [urfave/cli/pull/981](https://github.com/urfave/cli/pull/981) via [@asahasrabuddhe](https://github.com/asahasrabuddhe)
+- `context.IsSet()` returns `true` or `false` correctly regardless of whether the short name or the full name of the flag is passed to it in [urfave/cli/pull/978](https://github.com/urfave/cli/pull/978) via [@asahasrabuddhe](https://github.com/asahasrabuddhe)
+- Hide version if the version is not set by the user in [urfave/cli/pull/954](https://github.com/urfave/cli/pull/954) via [@asahasrabuddhe](https://github.com/asahasrabuddhe)
+
 ## [1.22.2] - 2019-11-17
 
 ### Fixed
@@ -552,7 +560,8 @@ signature of `func(*cli.Context) error`, as defined by `cli.ActionFunc`.
 [2.1.0]: https://github.com/urfave/cli/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/urfave/cli/compare/v1.22.2...v2.0.0
 
-[unreleased 1.22.X]: https://github.com/urfave/cli/compare/v1.22.2...v1
+[unreleased 1.22.X]: https://github.com/urfave/cli/compare/v1.22.3...v1
+[1.22.3]: https://github.com/urfave/cli/compare/v1.22.2...v1.22.3
 [1.22.2]: https://github.com/urfave/cli/compare/v1.22.1...v1.22.2
 [1.22.1]: https://github.com/urfave/cli/compare/v1.22.0...v1.22.1
 [1.22.0]: https://github.com/urfave/cli/compare/v1.21.0...v1.22.0
