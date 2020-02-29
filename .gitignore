@@ -3,5 +3,5 @@
 node_modules/
 vendor
 .idea
-internal/example/built-example
+internal/*/built-example
 coverage.txt

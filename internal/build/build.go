@@ -189,34 +189,39 @@ func TocActionFunc(c *cli.Context) error {
 // of https://github.com/urfave/cli/issues/1057
 func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 	const (
-		sourceFilePath       = "./internal/example/example.go"
-		builtFilePath        = "./internal/example/built-example"
-		desiredMinBinarySize = 3.3
-		desiredMaxBinarySize = 3.8
+		cliSourceFilePath    = "./internal/example-cli/example-cli.go"
+		cliBuiltFilePath     = "./internal/example-cli/built-example"
+		helloSourceFilePath  = "./internal/example-hello-world/example-hello-world.go"
+		helloBuiltFilePath   = "./internal/example-hello-world/built-example"
+		desiredMinBinarySize = 2.1
+		desiredMaxBinarySize = 2.6
 		badNewsEmoji         = "🚨"
 		goodNewsEmoji        = "✨"
 		checksPassedEmoji    = "✅"
 		mbStringFormatter    = "%.1fMB"
 	)
 
-	// build example binary
-	err = runCmd("go", "build", "-o", builtFilePath, "-ldflags", "-s -w", sourceFilePath)
+	// get cli example size
+	cliSize, err := getSize(cliSourceFilePath, cliBuiltFilePath)
 	if err != nil {
 		return err
 	}
 
-	// get file info
-	fileInfo, err := os.Stat(builtFilePath)
+	// get hello world size
+	helloSize, err := getSize(helloSourceFilePath, helloBuiltFilePath)
 	if err != nil {
 		return err
 	}
+
+	// The CLI size diff is the number we are interested in.
+	// This tells us how much our CLI package contributes to the binary size.
+	cliSizeDiff := cliSize - helloSize
 
 	// get human readable size, in MB with one decimal place.
 	// example output is: 35.2MB. (note: this simply an example)
 	// that output is much easier to reason about than the `35223432`
 	// that you would see output without the rounding
-	fileSize := fileInfo.Size()
-	fileSizeInMB := float64(fileSize) / float64(1000000)
+	fileSizeInMB := float64(cliSizeDiff) / float64(1000000)
 	roundedFileSize := math.Round(fileSizeInMB*10) / 10
 	roundedFileSizeString := fmt.Sprintf(mbStringFormatter, roundedFileSize)
 
@@ -263,4 +268,25 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 	}
 
 	return nil
+}
+
+func getSize(sourcePath string, builtPath string) (size int64, err error) {
+	// build example binary
+	err = runCmd("go", "build", "-o", builtPath, "-ldflags", "-s -w", sourcePath)
+	if err != nil {
+		fmt.Println("issue getting size for example binary")
+		return 0, err
+	}
+
+	// get file info
+	fileInfo, err := os.Stat(builtPath)
+	if err != nil {
+		fmt.Println("issue getting size for example binary")
+		return 0, err
+	}
+
+	// size!
+	size = fileInfo.Size()
+
+	return size, nil
 }
