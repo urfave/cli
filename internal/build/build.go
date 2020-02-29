@@ -1,5 +1,3 @@
-//+build ignore
-
 package main
 
 import (
@@ -39,6 +37,10 @@ func main() {
 		{
 			Name:   "toc",
 			Action: TocActionFunc,
+		},
+		{
+			Name:   "check-binary-size",
+			Action: checkBinarySizeActionFunc,
 		},
 	}
 
@@ -171,6 +173,15 @@ func TocActionFunc(c *cli.Context) error {
 		return err
 	}
 
+	err = runCmd("git", "diff", "--exit-code")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 	err = runCmd("git", "diff", "--exit-code")
 	if err != nil {
 		return err

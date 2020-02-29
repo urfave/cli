@@ -46,6 +46,7 @@ jobs:
         run: |
           go run internal/build/build.go vet
           go run internal/build/build.go test
+          go run internal/build/build.go check-binary-size
 
       - name: Upload coverage to Codecov
         if: success() && matrix.go == 1.13 && matrix.os == 'ubuntu-latest'
