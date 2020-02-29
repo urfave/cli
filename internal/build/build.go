@@ -216,7 +216,8 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 	// that output is much easier to reason about than the `35223432`
 	// that you would see output without the rounding
 	fileSize := fileInfo.Size()
-	roundedFileSize := math.Round(float64(fileSize)/float64(1000000)*10) / 10
+	fileSizeInMB := float64(fileSize) / float64(1000000)
+	roundedFileSize := math.Round(fileSizeInMB*10) / 10
 	roundedFileSizeString := fmt.Sprintf(mbStringFormatter, roundedFileSize)
 
 	// check against bounds
