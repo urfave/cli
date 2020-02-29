@@ -1,3 +1,5 @@
+// example hello world used for binary size checking
+
 package main
 
 import "fmt"
