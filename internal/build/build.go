@@ -184,6 +184,9 @@ func TocActionFunc(c *cli.Context) error {
 	return nil
 }
 
+// checkBinarySizeActionFunc checks the size of an example binary to ensure that we are keeping size down
+// this was originally inspired by https://github.com/urfave/cli/issues/1055, and followed up on as a part
+// of https://github.com/urfave/cli/issues/1057
 func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 	const (
 		sourceFilePath = "./internal/example/example.go"
