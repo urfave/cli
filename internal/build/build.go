@@ -191,8 +191,8 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 	const (
 		sourceFilePath       = "./internal/example/example.go"
 		builtFilePath        = "./internal/example/built-example"
-		desiredMinBinarySize = 4.5
-		desiredMaxBinarySize = 5.0
+		desiredMinBinarySize = 3.5
+		desiredMaxBinarySize = 4.0
 		badNewsEmoji         = "🚨"
 		goodNewsEmoji        = "✨"
 		checksPassedEmoji    = "✅"
@@ -200,7 +200,7 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 	)
 
 	// build example binary
-	err = runCmd("go", "build", "-ldflags=\"-s -w\"", "-o", builtFilePath, sourceFilePath)
+	err = runCmd("go", "build", "-o", builtFilePath, "-ldflags", "-s -w", sourceFilePath)
 	if err != nil {
 		return err
 	}
