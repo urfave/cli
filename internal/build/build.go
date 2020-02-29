@@ -191,7 +191,7 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 	const (
 		sourceFilePath       = "./internal/example/example.go"
 		builtFilePath        = "./internal/example/built-example"
-		desiredMinBinarySize = 4.8
+		desiredMinBinarySize = 4.7
 		desiredMaxBinarySize = 5.0
 		badNewsEmoji         = "🚨"
 		goodNewsEmoji        = "✨"
