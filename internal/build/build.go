@@ -184,10 +184,24 @@ func TocActionFunc(c *cli.Context) error {
 }
 
 func checkBinarySizeActionFunc(c *cli.Context) (err error) {
-	err = runCmd("git", "diff", "--exit-code")
+	const (
+		sourceFilePath = "./internal/example/example.go"
+		builtFilePath  = "./internal/example/built-example"
+	)
+
+	err = runCmd("go", "build", "-o", builtFilePath, sourceFilePath)
 	if err != nil {
 		return err
 	}
+
+	fileInfo, err := os.Stat(builtFilePath)
+	if err != nil {
+		return err
+	}
+	fileSize := fileInfo.Size()
+
+	// show the file size
+	fmt.Println(fileSize)
 
 	return nil
 }
