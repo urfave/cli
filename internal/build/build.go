@@ -205,7 +205,7 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 		return err
 	}
 
-	// get file into
+	// get file info
 	fileInfo, err := os.Stat(builtFilePath)
 	if err != nil {
 		return err
