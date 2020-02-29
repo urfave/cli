@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math"
 	"os"
 	"os/exec"
 	"strings"
@@ -199,9 +200,11 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 		return err
 	}
 	fileSize := fileInfo.Size()
+	fileSizeMB := float64(fileSize) / float64(1000000)
+	roundedFileSizeMB := math.Round(fileSizeMB*10) / 10
 
 	// show the file size
-	fmt.Println(fileSize)
+	fmt.Println(fmt.Sprintf("current binary size is: %.1fMB", roundedFileSizeMB))
 
 	return nil
 }
