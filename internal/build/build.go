@@ -189,8 +189,14 @@ func TocActionFunc(c *cli.Context) error {
 // of https://github.com/urfave/cli/issues/1057
 func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 	const (
-		sourceFilePath = "./internal/example/example.go"
-		builtFilePath  = "./internal/example/built-example"
+		sourceFilePath       = "./internal/example/example.go"
+		builtFilePath        = "./internal/example/built-example"
+		desiredMinBinarySize = 4.7
+		desiredMaxBinarySize = 5.0
+		badNewsEmoji         = "🚨"
+		goodNewsEmoji        = "✨"
+		checksPassedEmoji    = "✅"
+		mbStringFormatter    = "%.1fMB"
 	)
 
 	// build example binary
@@ -211,10 +217,28 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 	// that you would see output without the rounding
 	fileSize := fileInfo.Size()
 	roundedFileSize := math.Round(float64(fileSize)/float64(1000000)*10) / 10
-	roundedFileSizeString := fmt.Sprintf("%.1fMB", roundedFileSize)
+	roundedFileSizeString := fmt.Sprintf(mbStringFormatter, roundedFileSize)
 
-	// show the file size
-	fmt.Println(fmt.Sprintf("current binary size is: %s", roundedFileSizeString))
+	// check against bounds
+	isLessThanDesiredMin := roundedFileSize < desiredMinBinarySize
+	isMoreThanDesiredMax := roundedFileSize > desiredMaxBinarySize
+	desiredMinSizeString := fmt.Sprintf(mbStringFormatter, desiredMinBinarySize)
+	desiredMaxSizeString := fmt.Sprintf(mbStringFormatter, desiredMaxBinarySize)
+
+	// show guidance
+	fmt.Println(fmt.Sprintf("\n%s is the current binary size", roundedFileSizeString))
+	if isLessThanDesiredMin {
+		fmt.Println(fmt.Sprintf("  %s current binary size is %s", goodNewsEmoji, desiredMinSizeString))
+		os.Exit(1)
+	} else {
+		fmt.Println(fmt.Sprintf("  %s %s is the target minium size", checksPassedEmoji, desiredMinSizeString))
+	}
+	if isMoreThanDesiredMax {
+		fmt.Println(fmt.Sprintf("  %s current binary size is %s", badNewsEmoji, desiredMaxSizeString))
+		os.Exit(1)
+	} else {
+		fmt.Println(fmt.Sprintf("  %s %s is the target maximum size", checksPassedEmoji, desiredMaxSizeString))
+	}
 
 	return nil
 }
