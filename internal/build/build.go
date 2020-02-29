@@ -190,21 +190,28 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 		builtFilePath  = "./internal/example/built-example"
 	)
 
+	// build example binary
 	err = runCmd("go", "build", "-o", builtFilePath, sourceFilePath)
 	if err != nil {
 		return err
 	}
 
+	// get file into
 	fileInfo, err := os.Stat(builtFilePath)
 	if err != nil {
 		return err
 	}
+
+	// get human readable size, in MB with one decimal place.
+	// example output is: 35.2MB.
+	// that output is much easier to reason about than the `35223432`
+	// that you would see output without the rounding
 	fileSize := fileInfo.Size()
-	fileSizeMB := float64(fileSize) / float64(1000000)
-	roundedFileSizeMB := math.Round(fileSizeMB*10) / 10
+	roundedFileSize := math.Round(float64(fileSize)/float64(1000000)*10) / 10
+	roundedFileSizeString := fmt.Sprintf("%.1fMB", roundedFileSize)
 
 	// show the file size
-	fmt.Println(fmt.Sprintf("current binary size is: %.1fMB", roundedFileSizeMB))
+	fmt.Println(fmt.Sprintf("current binary size is: %s", roundedFileSizeString))
 
 	return nil
 }
