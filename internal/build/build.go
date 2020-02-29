@@ -200,7 +200,7 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 	)
 
 	// build example binary
-	err = runCmd("go", "build", "-o", builtFilePath, sourceFilePath)
+	err = runCmd("go", "build", "-ldflags=\"-s -w\"", "-o", builtFilePath, sourceFilePath)
 	if err != nil {
 		return err
 	}
