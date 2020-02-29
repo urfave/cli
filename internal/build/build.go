@@ -206,7 +206,7 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 	}
 
 	// get human readable size, in MB with one decimal place.
-	// example output is: 35.2MB.
+	// example output is: 35.2MB. (note: this simply an example)
 	// that output is much easier to reason about than the `35223432`
 	// that you would see output without the rounding
 	fileSize := fileInfo.Size()
