@@ -59,7 +59,7 @@ func TestFlagsFromEnv(t *testing.T) {
 
 	newSetStringSlice := func(defaults ...string) StringSlice {
 		s := NewStringSlice(defaults...)
-		s.hasBeenSet = true
+		s.hasBeenSet = false
 		return *s
 	}
 
@@ -917,6 +917,47 @@ func TestParseMultiStringSliceWithDefaults(t *testing.T) {
 	}).Run([]string{"run", "-s", "10", "-s", "20"})
 }
 
+func TestParseMultiStringSliceWithDestination(t *testing.T) {
+	dest := &StringSlice{}
+	_ = (&App{
+		Flags: []Flag{
+			&StringSliceFlag{Name: "serve", Aliases: []string{"s"}, Destination: dest},
+		},
+		Action: func(ctx *Context) error {
+			expected := []string{"10", "20"}
+			if !reflect.DeepEqual(dest.slice, expected) {
+				t.Errorf("main name not set: %v != %v", expected, ctx.StringSlice("serve"))
+			}
+			if !reflect.DeepEqual(dest.slice, expected) {
+				t.Errorf("short name not set: %v != %v", expected, ctx.StringSlice("s"))
+			}
+			return nil
+		},
+	}).Run([]string{"run", "-s", "10", "-s", "20"})
+}
+
+func TestParseMultiStringSliceWithDestinationAndEnv(t *testing.T) {
+	os.Clearenv()
+	_ = os.Setenv("APP_INTERVALS", "20,30,40")
+
+	dest := &StringSlice{}
+	_ = (&App{
+		Flags: []Flag{
+			&StringSliceFlag{Name: "serve", Aliases: []string{"s"}, Destination: dest, EnvVars: []string{"APP_INTERVALS"}},
+		},
+		Action: func(ctx *Context) error {
+			expected := []string{"10", "20"}
+			if !reflect.DeepEqual(dest.slice, expected) {
+				t.Errorf("main name not set: %v != %v", expected, ctx.StringSlice("serve"))
+			}
+			if !reflect.DeepEqual(dest.slice, expected) {
+				t.Errorf("short name not set: %v != %v", expected, ctx.StringSlice("s"))
+			}
+			return nil
+		},
+	}).Run([]string{"run", "-s", "10", "-s", "20"})
+}
+
 func TestParseMultiStringSliceWithDefaultsUnset(t *testing.T) {
 	_ = (&App{
 		Flags: []Flag{
@@ -1007,6 +1048,27 @@ func TestParseMultiStringSliceFromEnvCascadeWithDefaults(t *testing.T) {
 				t.Errorf("main name not set from env")
 			}
 			if !reflect.DeepEqual(ctx.StringSlice("i"), []string{"20", "30", "40"}) {
+				t.Errorf("short name not set from env")
+			}
+			return nil
+		},
+	}).Run([]string{"run"})
+}
+
+func TestParseMultiStringSliceFromEnvWithDestination(t *testing.T) {
+	os.Clearenv()
+	_ = os.Setenv("APP_INTERVALS", "20,30,40")
+
+	dest := &StringSlice{}
+	_ = (&App{
+		Flags: []Flag{
+			&StringSliceFlag{Name: "intervals", Aliases: []string{"i"}, Destination: dest, EnvVars: []string{"APP_INTERVALS"}},
+		},
+		Action: func(ctx *Context) error {
+			if !reflect.DeepEqual(dest.slice, []string{"20", "30", "40"}) {
+				t.Errorf("main name not set from env")
+			}
+			if !reflect.DeepEqual(dest.slice, []string{"20", "30", "40"}) {
 				t.Errorf("short name not set from env")
 			}
 			return nil
