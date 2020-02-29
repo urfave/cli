@@ -1,3 +1,5 @@
+// local build script file, similar to a makefile or collection of bash scripts in other projects
+
 package main
 
 import (
