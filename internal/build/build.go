@@ -191,7 +191,7 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 	const (
 		sourceFilePath       = "./internal/example/example.go"
 		builtFilePath        = "./internal/example/built-example"
-		desiredMinBinarySize = 4.7
+		desiredMinBinarySize = 4.5
 		desiredMaxBinarySize = 5.0
 		badNewsEmoji         = "🚨"
 		goodNewsEmoji        = "✨"
@@ -233,7 +233,7 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 		fmt.Println(fmt.Sprintf("  %s %s is the target min size", goodNewsEmoji, desiredMinSizeString))
 		fmt.Println("") // visual spacing
 		fmt.Println("     The binary is smaller than the target min size, which is great news!")
-		fmt.Println("     That means that whatever you've done is shrinking the binary size.")
+		fmt.Println("     That means that your changes are shrinking the binary size.")
 		fmt.Println("     You'll want to go into ./internal/build/build.go and decrease")
 		fmt.Println("     the desiredMinBinarySize, and also probably decrease the ")
 		fmt.Println("     desiredMaxBinarySize by the same amount. That will ensure that")
@@ -246,6 +246,16 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 	// show guidance for max size
 	if isMoreThanDesiredMax {
 		fmt.Println(fmt.Sprintf("  %s %s is the target max size", badNewsEmoji, desiredMaxSizeString))
+		fmt.Println("") // visual spacing
+		fmt.Println("     The binary is larger than the target max size.")
+		fmt.Println("     That means that your changes are increasing the binary size.")
+		fmt.Println("     The first thing you'll want to do is ask your yourself")
+		fmt.Println("     Is this change worth increasing the binary size?")
+		fmt.Println("     Larger binary sizes for this package can dissuade its use.")
+		fmt.Println("     If this change is worth the increase, then we can up the")
+		fmt.Println("     desired max binary size. To do that you'll want to go into")
+		fmt.Println("     ./internal/build/build.go and increase the desiredMaxBinarySize,")
+		fmt.Println("     and increase the desiredMinBinarySize by the same amount.")
 		fmt.Println("") // visual spacing
 		os.Exit(1)
 	} else {
