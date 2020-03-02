@@ -42,10 +42,14 @@ jobs:
         if: matrix.go == 1.13 && matrix.os == 'ubuntu-latest'
         run: test -z $(gofmt -l .)
 
-      - name: Run Tests
-        run: |
-          go run build.go vet
-          go run build.go test
+      - name: vet
+        run: go run internal/build/build.go vet
+
+      - name: test
+        run: go run internal/build/build.go test
+
+      - name: check-binary-size
+        run: go run internal/build/build.go check-binary-size
 
       - name: Upload coverage to Codecov
         if: success() && matrix.go == 1.13 && matrix.os == 'ubuntu-latest'
@@ -91,11 +95,11 @@ jobs:
       - name: Run Tests (v1)
         if: contains(github.base_ref, 'v1')
         run: |
-          go run build.go gfmrun docs/v1/manual.md
-          go run build.go toc docs/v1/manual.md
+          go run internal/build/build.go gfmrun docs/v1/manual.md
+          go run internal/build/build.go toc docs/v1/manual.md
 
       - name: Run Tests (v2)
         if: contains(github.base_ref, 'master')
         run: |
-          go run build.go gfmrun docs/v2/manual.md
-          go run build.go toc docs/v2/manual.md
+          go run internal/build/build.go gfmrun docs/v2/manual.md
+          go run internal/build/build.go toc docs/v2/manual.md
