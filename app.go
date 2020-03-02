@@ -57,6 +57,8 @@ type App struct {
 	// An action to execute after any subcommands are run, but after the subcommand has finished
 	// It is run even if Action() panics
 	After AfterFunc
+	// Should the help message be displayed in case of error in the Before action
+	ShowHelpOnBeforeError bool
 	// The action to execute when no subcommands are specified
 	Action ActionFunc
 	// Execute this function if the proper command cannot be found
@@ -286,7 +288,9 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 		beforeErr := a.Before(context)
 		if beforeErr != nil {
 			_, _ = fmt.Fprintf(a.Writer, "%v\n\n", beforeErr)
-			_ = ShowAppHelp(context)
+			if a.ShowHelpOnBeforeError {
+				_ = ShowAppHelp(context)
+			}
 			a.handleExitCoder(context, beforeErr)
 			err = beforeErr
 			return err
