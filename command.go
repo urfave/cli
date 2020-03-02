@@ -31,8 +31,8 @@ type Command struct {
 	// An action to execute after any subcommands are run, but after the subcommand has finished
 	// It is run even if Action() panics
 	After AfterFunc
-	// Should the help message be displayed in case of error in the Before action
-	ShowHelpOnBeforeError bool
+	// Should the help message be hidden in case of error in the Before action
+	HideHelpOnBeforeError bool
 	// The function to call when this command is invoked
 	Action ActionFunc
 	// Execute this function if a usage error occurs.
@@ -149,7 +149,7 @@ func (c *Command) Run(ctx *Context) (err error) {
 	if c.Before != nil {
 		err = c.Before(context)
 		if err != nil {
-			if c.ShowHelpOnBeforeError {
+			if !c.HideHelpOnBeforeError {
 				_ = ShowCommandHelp(context, c.Name)
 			}
 			context.App.handleExitCoder(context, err)
