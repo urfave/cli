@@ -244,6 +244,10 @@ func flagValue(f Flag) reflect.Value {
 	return fv
 }
 
+func formatDefault(format string) string {
+	return " (default: " + format + ")"
+}
+
 func stringifyFlag(f Flag) string {
 	fv := flagValue(f)
 
@@ -269,20 +273,20 @@ func stringifyFlag(f Flag) string {
 	val := fv.FieldByName("Value")
 	if val.IsValid() {
 		needsPlaceholder = val.Kind() != reflect.Bool
-		defaultValueString = fmt.Sprintf(" (default: %v)", val.Interface())
+		defaultValueString = fmt.Sprintf(formatDefault("%v"), val.Interface())
 
 		if val.Kind() == reflect.String && val.String() != "" {
-			defaultValueString = fmt.Sprintf(" (default: %q)", val.String())
+			defaultValueString = fmt.Sprintf(formatDefault("%q"), val.String())
 		}
 	}
 
 	helpText := fv.FieldByName("DefaultText")
 	if helpText.IsValid() && helpText.String() != "" {
 		needsPlaceholder = val.Kind() != reflect.Bool
-		defaultValueString = fmt.Sprintf(" (default: %s)", helpText.String())
+		defaultValueString = fmt.Sprintf(formatDefault("%s"), helpText.String())
 	}
 
-	if defaultValueString == " (default: )" {
+	if defaultValueString == formatDefault("") {
 		defaultValueString = ""
 	}
 
@@ -351,7 +355,7 @@ func stringifySliceFlag(usage string, names, defaultVals []string) string {
 
 	defaultVal := ""
 	if len(defaultVals) > 0 {
-		defaultVal = fmt.Sprintf(" (default: %s)", strings.Join(defaultVals, ", "))
+		defaultVal = fmt.Sprintf(formatDefault("%s"), strings.Join(defaultVals, ", "))
 	}
 
 	usageWithDefault := strings.TrimSpace(fmt.Sprintf("%s%s", usage, defaultVal))
