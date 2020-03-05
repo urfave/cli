@@ -43,8 +43,11 @@ type App struct {
 	Flags []Flag
 	// Boolean to enable bash completion commands
 	EnableBashCompletion bool
-	// Boolean to hide built-in help command
+	// Boolean to hide built-in help command and help flag
 	HideHelp bool
+	// Boolean to hide built-in help command but keep help flag.
+	// Ignored if HideHelp is true.
+	HideHelpCommand bool
 	// Boolean to hide built-in version flag and the VERSION section of help
 	HideVersion bool
 	// categories contains the categorized commands and is populated on app startup
@@ -170,7 +173,9 @@ func (a *App) Setup() {
 	a.Commands = newCommands
 
 	if a.Command(helpCommand.Name) == nil && !a.HideHelp {
-		a.appendCommand(helpCommand)
+		if !a.HideHelpCommand {
+			a.appendCommand(helpCommand)
+		}
 
 		if HelpFlag != nil {
 			a.appendFlag(HelpFlag)
@@ -328,18 +333,8 @@ func (a *App) RunAndExitOnError() {
 // RunAsSubcommand invokes the subcommand given the context, parses ctx.Args() to
 // generate command-specific flags
 func (a *App) RunAsSubcommand(ctx *Context) (err error) {
+	// Setup also handles HideHelp and HideHelpCommand
 	a.Setup()
-
-	// append help to commands
-	if len(a.Commands) > 0 {
-		if a.Command(helpCommand.Name) == nil && !a.HideHelp {
-			a.appendCommand(helpCommand)
-
-			if HelpFlag != nil {
-				a.appendFlag(HelpFlag)
-			}
-		}
-	}
 
 	var newCmds []*Command
 	for _, c := range a.Commands {

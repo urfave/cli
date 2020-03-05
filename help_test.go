@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"runtime"
 	"strings"
 	"testing"
@@ -760,5 +761,149 @@ VERSION:
 	if !strings.Contains(output.String(), "VERSION:") ||
 		!strings.Contains(output.String(), "2.0.0") {
 		t.Errorf("expected output to include \"VERSION:, 2.0.0\"; got: %q", output.String())
+	}
+}
+
+func TestHideHelpCommand(t *testing.T) {
+	app := &App{
+		HideHelpCommand: true,
+		Writer:          ioutil.Discard,
+	}
+
+	err := app.Run([]string{"foo", "help"})
+	if err == nil {
+		t.Fatalf("expected a non-nil error")
+	}
+	if !strings.Contains(err.Error(), "No help topic for 'help'") {
+		t.Errorf("Run returned unexpected error: %v", err)
+	}
+
+	err = app.Run([]string{"foo", "--help"})
+	if err != nil {
+		t.Errorf("Run returned unexpected error: %v", err)
+	}
+}
+
+func TestHideHelpCommand_False(t *testing.T) {
+	app := &App{
+		HideHelpCommand: false,
+		Writer:          ioutil.Discard,
+	}
+
+	err := app.Run([]string{"foo", "help"})
+	if err != nil {
+		t.Errorf("Run returned unexpected error: %v", err)
+	}
+
+	err = app.Run([]string{"foo", "--help"})
+	if err != nil {
+		t.Errorf("Run returned unexpected error: %v", err)
+	}
+}
+
+func TestHideHelpCommand_WithHideHelp(t *testing.T) {
+	app := &App{
+		HideHelp:        true, // effective (hides both command and flag)
+		HideHelpCommand: true, // ignored
+		Writer:          ioutil.Discard,
+	}
+
+	err := app.Run([]string{"foo", "help"})
+	if err == nil {
+		t.Fatalf("expected a non-nil error")
+	}
+	if !strings.Contains(err.Error(), "No help topic for 'help'") {
+		t.Errorf("Run returned unexpected error: %v", err)
+	}
+
+	err = app.Run([]string{"foo", "--help"})
+	if err == nil {
+		t.Fatalf("expected a non-nil error")
+	}
+	if !strings.Contains(err.Error(), "flag: help requested") {
+		t.Errorf("Run returned unexpected error: %v", err)
+	}
+}
+
+func newContextFromStringSlice(ss []string) *Context {
+	set := flag.NewFlagSet("", flag.ContinueOnError)
+	_ = set.Parse(ss)
+	return &Context{flagSet: set}
+}
+
+func TestHideHelpCommand_RunAsSubcommand(t *testing.T) {
+	app := &App{
+		HideHelpCommand: true,
+		Writer:          ioutil.Discard,
+		Commands: []*Command{
+			{
+				Name: "dummy",
+			},
+		},
+	}
+
+	err := app.RunAsSubcommand(newContextFromStringSlice([]string{"", "help"}))
+	if err == nil {
+		t.Fatalf("expected a non-nil error")
+	}
+	if !strings.Contains(err.Error(), "No help topic for 'help'") {
+		t.Errorf("Run returned unexpected error: %v", err)
+	}
+
+	err = app.RunAsSubcommand(newContextFromStringSlice([]string{"", "--help"}))
+	if err != nil {
+		t.Errorf("Run returned unexpected error: %v", err)
+	}
+}
+
+func TestHideHelpCommand_RunAsSubcommand_False(t *testing.T) {
+	app := &App{
+		HideHelpCommand: false,
+		Writer:          ioutil.Discard,
+		Commands: []*Command{
+			{
+				Name: "dummy",
+			},
+		},
+	}
+
+	err := app.RunAsSubcommand(newContextFromStringSlice([]string{"", "help"}))
+	if err != nil {
+		t.Errorf("Run returned unexpected error: %v", err)
+	}
+
+	err = app.RunAsSubcommand(newContextFromStringSlice([]string{"", "--help"}))
+	if err != nil {
+		t.Errorf("Run returned unexpected error: %v", err)
+	}
+}
+
+func TestHideHelpCommand_WithSubcommands(t *testing.T) {
+	app := &App{
+		Writer: ioutil.Discard,
+		Commands: []*Command{
+			{
+				Name: "dummy",
+				Subcommands: []*Command{
+					{
+						Name: "dummy2",
+					},
+				},
+				HideHelpCommand: true,
+			},
+		},
+	}
+
+	err := app.Run([]string{"foo", "dummy", "help"})
+	if err == nil {
+		t.Fatalf("expected a non-nil error")
+	}
+	if !strings.Contains(err.Error(), "No help topic for 'help'") {
+		t.Errorf("Run returned unexpected error: %v", err)
+	}
+
+	err = app.Run([]string{"foo", "dummy", "--help"})
+	if err != nil {
+		t.Errorf("Run returned unexpected error: %v", err)
 	}
 }
