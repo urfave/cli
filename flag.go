@@ -36,7 +36,7 @@ var VersionFlag Flag = &BoolFlag{
 
 // HelpFlag prints the help for all commands and subcommands.
 // Set to nil to disable the flag.  The subcommand
-// will still be added unless HideHelp is set to true.
+// will still be added unless HideHelp or HideHelpCommand is set to true.
 var HelpFlag Flag = &BoolFlag{
 	Name:    "help",
 	Aliases: []string{"h"},
