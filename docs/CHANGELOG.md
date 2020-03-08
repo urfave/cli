@@ -6,6 +6,42 @@
 
 View [unreleased 2.X] series changes.
 
+## [2.2.0] - 2020-03-08
+
+These release notes were written for the git hash [d648edd48d89ef3a841b1ec75c2ebbd4de5f748f](https://github.com/urfave/cli/tree/d648edd48d89ef3a841b1ec75c2ebbd4de5f748f)
+
+https://github.com/urfave/cli/pull/1083 AkihiroSuda
+
+https://github.com/urfave/cli/pull/1078 davidsbond
+
+https://github.com/urfave/cli/pull/1062 zhsj
+
+https://github.com/urfave/cli/pull/1059 masonj188
+
+https://github.com/urfave/cli/pull/997 drov0
+
+https://github.com/urfave/cli/pull/1054 itchyny
+
+https://github.com/urfave/cli/pull/1049 saschagrunert
+
+https://github.com/urfave/cli/pull/1041 saschagrunert
+
+https://github.com/urfave/cli/pull/1024 vkd
+
+https://github.com/urfave/cli/pull/1008 lynncyrin
+
+### Fixed
+
+* 
+
+### Changed
+
+* 
+
+### Added
+
+* 
+
 ## [2.1.1] - 2019-12-24
 
 ### Fixed
