@@ -10,37 +10,24 @@ View [unreleased 2.X] series changes.
 
 These release notes were written for the git hash [d648edd48d89ef3a841b1ec75c2ebbd4de5f748f](https://github.com/urfave/cli/tree/d648edd48d89ef3a841b1ec75c2ebbd4de5f748f)
 
-https://github.com/urfave/cli/pull/1083 AkihiroSuda
-
-https://github.com/urfave/cli/pull/1078 davidsbond
-
-https://github.com/urfave/cli/pull/1062 zhsj
-
-https://github.com/urfave/cli/pull/1059 masonj188
-
-https://github.com/urfave/cli/pull/997 drov0
-
-https://github.com/urfave/cli/pull/1054 itchyny
-
-https://github.com/urfave/cli/pull/1049 saschagrunert
-
-https://github.com/urfave/cli/pull/1041 saschagrunert
-
-https://github.com/urfave/cli/pull/1024 vkd
-
-https://github.com/urfave/cli/pull/1008 lynncyrin
-
 ### Fixed
 
-* 
+* Fixed zsh completion scripts in [urfave/cli/pull/1062](https://github.com/urfave/cli/pull/1062) via [@zhsj](https://github.com/zhsj)
+* Fixed description of subcommand to be more consistent in [urfave/cli/pull/1054](https://github.com/urfave/cli/pull/1054) via [@itchyny](https://github.com/itchyny)
+* Fixed possible runtime panic in slice parsing in [https://github.com/urfave/cli/pull/1049](https://github.com/urfave/cli/pull/1049) via [@saschagrunert](https://github.com/saschagrunert)
+* Fixed invalid man page header generation in [urfave/cli/pull/1041](https://github.com/urfave/cli/pull/1041) via [@saschagrunert](https://github.com/saschagrunert)
 
 ### Changed
 
-* 
+* Improved auto-completion instructions and added example gifs in [urfave/cli/pull/1059](https://github.com/urfave/cli/pull/1059) via [@masonj188](https://github.com/masonj188)
+* Removed the author from generated man pages in [urfave/cli/pull/1041](https://github.com/urfave/cli/pull/1041) via [@saschagrunert](https://github.com/saschagrunert)
 
 ### Added
 
-* 
+* Added destination field to `StringSliceFlag` in [urfave/cli/pull/1078](https://github.com/urfave/cli/pull/1078) via [@davidsbond](https://github.com/davidsbond)
+* Added `HideHelpCommand`. While `HideHelp` hides both `help` command and `--help` flag, `HideHelpCommand` only hides `help` command and leave `--help` flag as-is in [urfave/cli/pull/1083](https://github.com/urfave/cli/pull/1083) via [@AkihiroSuda](https://github.com/AkihiroSuda)
+* Added timestampFlag docs in [urfave/cli/pull/997](https://github.com/urfave/cli/pull/997) via [@drov0](https://github.com/drov0)
+* Added required flags documentation in [urfave/cli/pull/1008](https://github.com/urfave/cli/pull/1008) via [@lynncyrin](https://github.com/lynncyrin), [@anberns](https://github.com/anberns)
 
 ## [2.1.1] - 2019-12-24
 
@@ -591,7 +578,8 @@ signature of `func(*cli.Context) error`, as defined by `cli.ActionFunc`.
 ### Added
 - Initial implementation.
 
-[unreleased 2.X]: https://github.com/urfave/cli/compare/v2.1.1...HEAD
+[unreleased 2.X]: https://github.com/urfave/cli/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/urfave/cli/compare/v2.1.1...v2.2.0
 [2.1.1]: https://github.com/urfave/cli/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/urfave/cli/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/urfave/cli/compare/v1.22.2...v2.0.0
