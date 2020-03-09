@@ -19,9 +19,9 @@ Usage documentation exists for each major version. Don't know what version you'r
 
 ## Installation
 
-Using the package requires a working Go environment. [See the install instructions for Go](http://golang.org/doc/install.html).
+Using this package requires a working Go environment. [See the install instructions for Go](http://golang.org/doc/install.html).
 
-Go Modules are strongly recommended when using this package. [See the go blog guide on using Go Modules](https://blog.golang.org/using-go-modules).
+Go Modules are required when using this package. [See the go blog guide on using Go Modules](https://blog.golang.org/using-go-modules).
 
 ### Using `v2` releases
 
