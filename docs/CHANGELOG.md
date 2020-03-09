@@ -14,7 +14,7 @@ These release notes were written for the git hash [d648edd48d89ef3a841b1ec75c2eb
 
 * Fixed zsh completion scripts in [urfave/cli/pull/1062](https://github.com/urfave/cli/pull/1062) via [@zhsj](https://github.com/zhsj)
 * Fixed description of subcommand to be more consistent in [urfave/cli/pull/1054](https://github.com/urfave/cli/pull/1054) via [@itchyny](https://github.com/itchyny)
-* Fixed possible runtime panic in slice parsing in [https://github.com/urfave/cli/pull/1049](https://github.com/urfave/cli/pull/1049) via [@saschagrunert](https://github.com/saschagrunert)
+* Fixed possible runtime panic in slice parsing in [urfave/cli/pull/1049](https://github.com/urfave/cli/pull/1049) via [@saschagrunert](https://github.com/saschagrunert)
 * Fixed invalid man page header generation in [urfave/cli/pull/1041](https://github.com/urfave/cli/pull/1041) via [@saschagrunert](https://github.com/saschagrunert)
 
 ### Changed
