@@ -90,9 +90,9 @@ func NewTomlSourceFromFlagFunc(flagFileName string) func(context *cli.Context) (
 		if context.IsSet(flagFileName) {
 			filePath := context.String(flagFileName)
 			return NewTomlSourceFromFile(filePath)
-		} else {
-			return defaultInputSource()
 		}
+
+		return defaultInputSource()
 	}
 }
 

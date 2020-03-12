@@ -36,9 +36,9 @@ func NewYamlSourceFromFlagFunc(flagFileName string) func(context *cli.Context) (
 		if context.IsSet(flagFileName) {
 			filePath := context.String(flagFileName)
 			return NewYamlSourceFromFile(filePath)
-		} else {
-			return defaultInputSource()
 		}
+
+		return defaultInputSource()
 	}
 }
 

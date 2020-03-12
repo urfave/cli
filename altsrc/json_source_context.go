@@ -19,9 +19,9 @@ func NewJSONSourceFromFlagFunc(flag string) func(c *cli.Context) (InputSourceCon
 	return func(context *cli.Context) (InputSourceContext, error) {
 		if context.IsSet(flag) {
 			return NewJSONSourceFromFile(context.String(flag))
-		} else {
-			return defaultInputSource()
 		}
+
+		return defaultInputSource()
 	}
 }
 
