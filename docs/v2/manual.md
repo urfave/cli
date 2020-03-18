@@ -664,9 +664,7 @@ package main
 import (
   "log"
   "os"
-  "strings"
-
-  "github.com/urfave/cli"
+  "github.com/urfave/cli/v2"
 )
 
 func main() {
@@ -1012,12 +1010,12 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 func main() {
 	app := cli.NewApp()
 	app.EnableBashCompletion = true
-	app.Commands = []cli.Command{
+	app.Commands = []*cli.Command{
 		{
 			Name:    "add",
 			Aliases: []string{"a"},
@@ -1040,7 +1038,7 @@ func main() {
 			Name:    "template",
 			Aliases: []string{"t"},
 			Usage:   "options for task templates",
-			Subcommands: []cli.Command{
+			Subcommands: []*cli.Command{
 				{
 					Name:  "add",
 					Usage: "add a new template",
