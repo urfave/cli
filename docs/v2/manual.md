@@ -1475,16 +1475,14 @@ Shell command to find them all: `fgrep -rl github.com/urfave/cli *`
 
 Change `Name: "foo, f` to "Name: "foo", Aliases: []string{"f"}`
 
-OLD:
-
+* OLD:
 ```
 cli.StringFlag{
   Name: "config, cfg"
 }
 ```
 
-NEW:
-
+* NEW:
 ```
 cli.StringFlag{
     Name: "config",
