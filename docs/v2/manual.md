@@ -1575,13 +1575,14 @@ Compiler messages you might see:
 
 #### Everything else
 
-Compile the code and worth through any errors it finds. Most should
+Compile the code and work through any errors. Most should
 relate to issues listed above.
 
-Once it compiles, test the command. Make sure `-h` displays help
-properly, then try various flags and subcommands.
+Once it compiles, test the command. Review the output of `-h` or any
+help messages to verify they match the intended flags and subcommands.
+Then test the program itself.
 
-If you find anything not covered by this document please let us know
+If you find any issues not covered by this document please let us know
 by submitting a comment on
 [Issue 921](https://github.com/urfave/cli/issues/921)
 so that others can benefit.
