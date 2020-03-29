@@ -34,6 +34,7 @@ cli v2 manual
   * [Version Flag](#version-flag)
     + [Customization](#customization-2)
   * [Timestamp Flag](#timestamp-flag)
+  * [Migration Guide: v1 to v2](#migration-guide-v1-to-v2)
   * [Full API Example](#full-api-example)
 
 <!-- tocstop -->
@@ -1424,15 +1425,16 @@ In this example the flag could be used like this :
 
 Side note: quotes may be necessary around the date depending on your layout (if you have spaces for instance)
 
-### Converting from v1 to v2
+### Migration Guide: v1 to v2
 
-v2 has a number of breaking changes but converting is straightforward:
-make the changes documented below then resolve any compiler errors.
-Typically this is sufficient.
+v2 has a number of breaking changes but converting is relatively
+straightforward: make the changes documented below then resolve any
+compiler errors.  We hope this will be sufficient for most typical
+users.
 
 If you find any issues not covered by this document, please post a
 comment on [Issue 921](https://github.com/urfave/cli/issues/921) or
-consider sending a PR.
+consider sending a PR to help improve this guide.
 
 #### Flags before args
 
@@ -1498,10 +1500,10 @@ Example:
 
 Compiler messages you might see:
 
-`
+```
 commands/commands.go:56:30: cannot convert commands (type []cli.Command) to type cli.CommandsByName
 commands/commands.go:57:15: cannot use commands (type []cli.Command) as type []*cli.Command in assignment
-`
+```
 
 #### Lists of commands should be pointers
 
@@ -1513,9 +1515,9 @@ now be pointers.
 
 Compiler messages you might see:
 
-`
+```
 ./commands.go:32:34: cannot use cli.Command literal (type cli.Command) as type *cli.Command in argument to
-`
+```
 
 #### cli.Flag changed
 
@@ -1527,10 +1529,10 @@ If you make a list of flags, add a `&` in front of each
 item.   cli.BoolFlag, cli.StringFlag, etc.
 
 * OLD:
-`
+```
         app.Flags = []cli.Flag{
                cli.BoolFlag{
-`
+```
 
 * NEW:
 ```
@@ -1554,9 +1556,9 @@ now pointers.
 
 Compiler messages you might see:
 
-`
+```
 commands/commands.go:28:19: cannot use c (type *cli.Command) as type cli.Command in append
-`
+```
 
 #### Actions returns errors
 
