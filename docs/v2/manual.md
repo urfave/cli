@@ -35,6 +35,15 @@ cli v2 manual
     + [Customization](#customization-2)
   * [Timestamp Flag](#timestamp-flag)
   * [Migration Guide: v1 to v2](#migration-guide-v1-to-v2)
+      [Flags before args](#flags-before-args)
+      [Import string changed](#import-string-changed)
+      [Flag aliases are done differently.](#flag-aliases-are-done-differently)
+      [Commands are now lists of pointers](#commands-are-now-lists-of-pointers)
+      [Lists of commands should be pointers](#lists-of-commands-should-be-pointers)
+      [cli.Flag changed](#cliflag-changed)
+      [Appending Commands](#appending-commands)
+      [Actions returns errors](#actions-returns-errors)
+      [Everything else](#everything-else)
   * [Full API Example](#full-api-example)
 
 <!-- tocstop -->
