@@ -1438,7 +1438,7 @@ Side note: quotes may be necessary around the date depending on your layout (if 
 
 v2 has a number of breaking changes but converting is relatively
 straightforward: make the changes documented below then resolve any
-compiler errors.  We hope this will be sufficient for most typical
+compiler errors. We hope this will be sufficient for most typical
 users.
 
 If you find any issues not covered by this document, please post a
@@ -1447,7 +1447,7 @@ consider sending a PR to help improve this guide.
 
 #### Flags before args
 
-In v2 flags must come before args.  This is more POSIX-compliant.  You
+In v2 flags must come before args. This is more POSIX-compliant.  You
 may need to update scripts, user documentation, etc.
 
 This will work:
@@ -1473,17 +1473,17 @@ Shell command to find them all: `fgrep -rl github.com/urfave/cli *`
 
 #### Flag aliases are done differently.
 
-Change `Name: "foo, f` to "Name: "foo", Aliases: []string{"f"}`
+Change `Name: "foo, f"` to `Name: "foo", Aliases: []string{"f"}`
 
 * OLD:
-```
+```go
 cli.StringFlag{
   Name: "config, cfg"
 }
 ```
 
 * NEW:
-```
+```go
 cli.StringFlag{
     Name: "config",
     Aliases: []string{"cfg"},
@@ -1508,8 +1508,8 @@ Example:
 Compiler messages you might see:
 
 ```
-commands/commands.go:56:30: cannot convert commands (type []cli.Command) to type cli.CommandsByName
-commands/commands.go:57:15: cannot use commands (type []cli.Command) as type []*cli.Command in assignment
+cannot convert commands (type []cli.Command) to type cli.CommandsByName
+cannot use commands (type []cli.Command) as type []*cli.Command in assignment
 ```
 
 #### Lists of commands should be pointers
@@ -1523,7 +1523,7 @@ now be pointers.
 Compiler messages you might see:
 
 ```
-./commands.go:32:34: cannot use cli.Command literal (type cli.Command) as type *cli.Command in argument to
+cannot use cli.Command literal (type cli.Command) as type *cli.Command in argument to
 ```
 
 #### cli.Flag changed
@@ -1536,13 +1536,13 @@ If you make a list of flags, add a `&` in front of each
 item.   cli.BoolFlag, cli.StringFlag, etc.
 
 * OLD:
-```
+```go
         app.Flags = []cli.Flag{
                cli.BoolFlag{
 ```
 
 * NEW:
-```
+```go
         app.Flags = []cli.Flag{
                &cli.BoolFlag{
 ```
@@ -1564,7 +1564,7 @@ now pointers.
 Compiler messages you might see:
 
 ```
-commands/commands.go:28:19: cannot use c (type *cli.Command) as type cli.Command in append
+cannot use c (type *cli.Command) as type cli.Command in append
 ```
 
 #### Actions returns errors
@@ -1577,7 +1577,7 @@ A command's `Action:` now returns an `error`.
 Compiler messages you might see:
 
 ```
-./commands.go:35:2: cannot use func literal (type func(*cli.Context)) as type cli.ActionFunc in field value
+cannot use func literal (type func(*cli.Context)) as type cli.ActionFunc in field value
 ```
 
 #### Everything else
