@@ -29,10 +29,11 @@ _(REQUIRED)_
 
 _(REQUIRED)_
 <!--
-  If this PR fixes one of more issues, list them here.
-  One line each, like so:
-    Fixes #123
-    Fixes #39
+If this PR fixes one of more issues, list them here.
+One line each, like so:
+
+Fixes #123
+Fixes #39
 -->
 
 ## Special notes for your reviewer:
