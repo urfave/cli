@@ -1,6 +1,16 @@
 Migration Guide: v1 to v2
 ===
 
+
+v2 has a number of breaking changes but converting is relatively
+straightforward: make the changes documented below then resolve any
+compiler errors. We hope this will be sufficient for most typical
+users.
+
+If you find any issues not covered by this document, please post a
+comment on [Issue 921](https://github.com/urfave/cli/issues/921) or
+consider sending a PR to help improve this guide.
+
 <!-- toc -->
 
   * [Flags before args](#flags-before-args)
@@ -15,15 +25,6 @@ Migration Guide: v1 to v2
   * [Full API Example](#full-api-example)
 
 <!-- tocstop -->
-
-v2 has a number of breaking changes but converting is relatively
-straightforward: make the changes documented below then resolve any
-compiler errors. We hope this will be sufficient for most typical
-users.
-
-If you find any issues not covered by this document, please post a
-comment on [Issue 921](https://github.com/urfave/cli/issues/921) or
-consider sending a PR to help improve this guide.
 
 # Flags before args
 
@@ -72,6 +73,46 @@ cli.StringFlag{
 
 Sadly v2 doesn't warn you if a comma is in the name.
 
+# Actions returns errors
+
+A command's `Action:` now returns an `error`.
+
+* OLD: `Action: func(c *cli.Context) {`
+* NEW: `Action: func(c *cli.Context) error {`
+
+Compiler messages you might see:
+
+```
+cannot use func literal (type func(*cli.Context)) as type cli.ActionFunc in field value
+```
+
+# cli.Flag changed
+
+`cli.Flag` is now a list of pointers.
+
+What this means to you:
+
+If you make a list of flags, add a `&` in front of each
+item.   cli.BoolFlag, cli.StringFlag, etc.
+
+* OLD:
+```go
+        app.Flags = []cli.Flag{
+               cli.BoolFlag{
+```
+
+* NEW:
+```go
+        app.Flags = []cli.Flag{
+               &cli.BoolFlag{
+```
+
+Compiler messages you might see:
+
+```
+	cli.StringFlag does not implement cli.Flag (Apply method has pointer receiver)
+```
+
 # Commands are now lists of pointers
 
 Occurrences of `[]Command` have been changed to `[]*Command`.
@@ -106,33 +147,6 @@ Compiler messages you might see:
 cannot use cli.Command literal (type cli.Command) as type *cli.Command in argument to
 ```
 
-# cli.Flag changed
-
-`cli.Flag` is now a list of pointers.
-
-What this means to you:
-
-If you make a list of flags, add a `&` in front of each
-item.   cli.BoolFlag, cli.StringFlag, etc.
-
-* OLD:
-```go
-        app.Flags = []cli.Flag{
-               cli.BoolFlag{
-```
-
-* NEW:
-```go
-        app.Flags = []cli.Flag{
-               &cli.BoolFlag{
-```
-
-Compiler messages you might see:
-
-```
-	cli.StringFlag does not implement cli.Flag (Apply method has pointer receiver)
-```
-
 # Appending Commands
 
 Appending to a list of commands needs to be changed since the list is
@@ -145,19 +159,6 @@ Compiler messages you might see:
 
 ```
 cannot use c (type *cli.Command) as type cli.Command in append
-```
-
-# Actions returns errors
-
-A command's `Action:` now returns an `error`.
-
-* OLD: `Action: func(c *cli.Context) {`
-* NEW: `Action: func(c *cli.Context) error {`
-
-Compiler messages you might see:
-
-```
-cannot use func literal (type func(*cli.Context)) as type cli.ActionFunc in field value
 ```
 
 # Everything else
