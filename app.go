@@ -163,6 +163,10 @@ func (a *App) Setup() {
 		a.Writer = os.Stdout
 	}
 
+	if a.ErrWriter == nil {
+		a.ErrWriter = os.Stderr
+	}
+
 	var newCommands []*Command
 
 	for _, c := range a.Commands {
@@ -195,10 +199,6 @@ func (a *App) Setup() {
 
 	if a.Metadata == nil {
 		a.Metadata = make(map[string]interface{})
-	}
-
-	if a.Writer == nil {
-		a.Writer = os.Stdout
 	}
 }
 
@@ -326,7 +326,7 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 // code in the cli.ExitCoder
 func (a *App) RunAndExitOnError() {
 	if err := a.Run(os.Args); err != nil {
-		_, _ = fmt.Fprintln(a.errWriter(), err)
+		_, _ = fmt.Fprintln(a.ErrWriter, err)
 		OsExiter(1)
 	}
 }
@@ -478,15 +478,6 @@ func (a *App) VisibleCommands() []*Command {
 // VisibleFlags returns a slice of the Flags with Hidden=false
 func (a *App) VisibleFlags() []Flag {
 	return visibleFlags(a.Flags)
-}
-
-func (a *App) errWriter() io.Writer {
-	// When the app ErrWriter is nil use the package level one.
-	if a.ErrWriter == nil {
-		return ErrWriter
-	}
-
-	return a.ErrWriter
 }
 
 func (a *App) appendFlag(fl Flag) {
