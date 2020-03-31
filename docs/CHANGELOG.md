@@ -90,6 +90,12 @@ The V2 changes were all shipped in [urfave/cli/pull/892](https://github.com/urfa
 
 View [unreleased 1.22.X] series changes.
 
+## [1.22.4] - 2020-02-25
+
+### Fixed
+
+- Fixed a panic with flag completion in [urfave/cli/pull/1101](https://github.com/urfave/cli/pull/1101) via [@unRob](https://github.com/unRob), [@VirrageS](https://github.com/VirrageS)
+
 ## [1.22.3] - 2020-02-25
 
 ### Fixed
@@ -584,7 +590,8 @@ signature of `func(*cli.Context) error`, as defined by `cli.ActionFunc`.
 [2.1.0]: https://github.com/urfave/cli/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/urfave/cli/compare/v1.22.2...v2.0.0
 
-[unreleased 1.22.X]: https://github.com/urfave/cli/compare/v1.22.3...v1
+[unreleased 1.22.X]: https://github.com/urfave/cli/compare/v1.22.4...v1
+[1.22.4]: https://github.com/urfave/cli/compare/v1.22.3...v1.22.4
 [1.22.3]: https://github.com/urfave/cli/compare/v1.22.2...v1.22.3
 [1.22.2]: https://github.com/urfave/cli/compare/v1.22.1...v1.22.2
 [1.22.1]: https://github.com/urfave/cli/compare/v1.22.0...v1.22.1
