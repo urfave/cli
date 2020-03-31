@@ -90,7 +90,7 @@ The V2 changes were all shipped in [urfave/cli/pull/892](https://github.com/urfa
 
 View [unreleased 1.22.X] series changes.
 
-## [1.22.4] - 2020-02-25
+## [1.22.4] - 2020-03-31
 
 ### Fixed
 
