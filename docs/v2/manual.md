@@ -34,16 +34,6 @@ cli v2 manual
   * [Version Flag](#version-flag)
     + [Customization](#customization-2)
   * [Timestamp Flag](#timestamp-flag)
-  * [Migration Guide: v1 to v2](#migration-guide-v1-to-v2)
-    + [Flags before args](#flags-before-args)
-    + [Import string changed](#import-string-changed)
-    + [Flag aliases are done differently.](#flag-aliases-are-done-differently)
-    + [Commands are now lists of pointers](#commands-are-now-lists-of-pointers)
-    + [Lists of commands should be pointers](#lists-of-commands-should-be-pointers)
-    + [cli.Flag changed](#cliflag-changed)
-    + [Appending Commands](#appending-commands)
-    + [Actions returns errors](#actions-returns-errors)
-    + [Everything else](#everything-else)
   * [Full API Example](#full-api-example)
 
 <!-- tocstop -->
@@ -1434,20 +1424,19 @@ In this example the flag could be used like this :
 
 Side note: quotes may be necessary around the date depending on your layout (if you have spaces for instance)
 
-### Migration Guide: v1 to v2
+### Converting from v1 to v2
 
-v2 has a number of breaking changes but converting is relatively
-straightforward: make the changes documented below then resolve any
-compiler errors. We hope this will be sufficient for most typical
-users.
+v2 has a number of breaking changes but converting is straightforward:
+make the changes documented below then resolve any compiler errors.
+Typically this is sufficient.
 
 If you find any issues not covered by this document, please post a
 comment on [Issue 921](https://github.com/urfave/cli/issues/921) or
-consider sending a PR to help improve this guide.
+consider sending a PR.
 
 #### Flags before args
 
-In v2 flags must come before args. This is more POSIX-compliant.  You
+In v2 flags must come before args.  This is more POSIX-compliant.  You
 may need to update scripts, user documentation, etc.
 
 This will work:
@@ -1473,17 +1462,19 @@ Shell command to find them all: `fgrep -rl github.com/urfave/cli *`
 
 #### Flag aliases are done differently.
 
-Change `Name: "foo, f"` to `Name: "foo", Aliases: []string{"f"}`
+Change `Name: "foo, f` to "Name: "foo", Aliases: []string{"f"}`
 
-* OLD:
-```go
+OLD:
+
+```
 cli.StringFlag{
   Name: "config, cfg"
 }
 ```
 
-* NEW:
-```go
+NEW:
+
+```
 cli.StringFlag{
     Name: "config",
     Aliases: []string{"cfg"},
@@ -1507,10 +1498,10 @@ Example:
 
 Compiler messages you might see:
 
-```
-cannot convert commands (type []cli.Command) to type cli.CommandsByName
-cannot use commands (type []cli.Command) as type []*cli.Command in assignment
-```
+`
+commands/commands.go:56:30: cannot convert commands (type []cli.Command) to type cli.CommandsByName
+commands/commands.go:57:15: cannot use commands (type []cli.Command) as type []*cli.Command in assignment
+`
 
 #### Lists of commands should be pointers
 
@@ -1522,9 +1513,9 @@ now be pointers.
 
 Compiler messages you might see:
 
-```
-cannot use cli.Command literal (type cli.Command) as type *cli.Command in argument to
-```
+`
+./commands.go:32:34: cannot use cli.Command literal (type cli.Command) as type *cli.Command in argument to
+`
 
 #### cli.Flag changed
 
@@ -1536,13 +1527,13 @@ If you make a list of flags, add a `&` in front of each
 item.   cli.BoolFlag, cli.StringFlag, etc.
 
 * OLD:
-```go
+`
         app.Flags = []cli.Flag{
                cli.BoolFlag{
-```
+`
 
 * NEW:
-```go
+```
         app.Flags = []cli.Flag{
                &cli.BoolFlag{
 ```
@@ -1563,9 +1554,9 @@ now pointers.
 
 Compiler messages you might see:
 
-```
-cannot use c (type *cli.Command) as type cli.Command in append
-```
+`
+commands/commands.go:28:19: cannot use c (type *cli.Command) as type cli.Command in append
+`
 
 #### Actions returns errors
 
@@ -1577,19 +1568,18 @@ A command's `Action:` now returns an `error`.
 Compiler messages you might see:
 
 ```
-cannot use func literal (type func(*cli.Context)) as type cli.ActionFunc in field value
+./commands.go:35:2: cannot use func literal (type func(*cli.Context)) as type cli.ActionFunc in field value
 ```
 
 #### Everything else
 
-Compile the code and work through any errors. Most should
+Compile the code and worth through any errors it finds. Most should
 relate to issues listed above.
 
-Once it compiles, test the command. Review the output of `-h` or any
-help messages to verify they match the intended flags and subcommands.
-Then test the program itself.
+Once it compiles, test the command. Make sure `-h` displays help
+properly, then try various flags and subcommands.
 
-If you find any issues not covered by this document please let us know
+If you find anything not covered by this document please let us know
 by submitting a comment on
 [Issue 921](https://github.com/urfave/cli/issues/921)
 so that others can benefit.
