@@ -118,6 +118,7 @@ func NewApp() *App {
 		Action:       helpCommand.Action,
 		Compiled:     compileTime(),
 		Writer:       os.Stdout,
+		ErrWriter:    os.Stderr,
 	}
 }
 
