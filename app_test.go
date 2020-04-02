@@ -2152,3 +2152,34 @@ func newTestApp() *App {
 	a.Writer = ioutil.Discard
 	return a
 }
+
+func TestSetupInitializesBothWriters(t *testing.T) {
+	a := &App{}
+
+	a.Setup()
+
+	if a.ErrWriter != os.Stderr {
+		t.Errorf("expected a.ErrWriter to be os.Stderr")
+	}
+
+	if a.Writer != os.Stdout {
+		t.Errorf("expected a.Writer to be os.Stdout")
+	}
+}
+
+func TestSetupInitializesOnlyNilWriters(t *testing.T) {
+	wr := &bytes.Buffer{}
+	a := &App{
+		ErrWriter: wr,
+	}
+
+	a.Setup()
+
+	if a.ErrWriter != wr {
+		t.Errorf("expected a.ErrWriter to be a *bytes.Buffer instance")
+	}
+
+	if a.Writer != os.Stdout {
+		t.Errorf("expected a.Writer to be os.Stdout")
+	}
+}
