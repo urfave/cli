@@ -3,7 +3,7 @@ cli v2 manual
 
 <!-- toc -->
 
-- [Migrating From v1](#migrating-from-v1)
+- [Migrating From Older Releases](#migrating-from-older-releases)
 - [Getting Started](#getting-started)
 - [Examples](#examples)
   * [Arguments](#arguments)
