@@ -17,6 +17,10 @@ Usage documentation exists for each major version. Don't know what version you'r
 - `v2` - [./docs/v2/manual.md](./docs/v2/manual.md)
 - `v1` - [./docs/v1/manual.md](./docs/v1/manual.md)
 
+Guides for migrating to newer versions:
+
+- `v1-to-v2` - [./docs/migrate-v1-to-v2.md](./docs/migrate-v1-to-v2.md)
+
 ## Installation
 
 Using this package requires a working Go environment. [See the install instructions for Go](http://golang.org/doc/install.html).
