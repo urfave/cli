@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
@@ -190,7 +191,13 @@ func TestPathApplyInputSourceMethodSet(t *testing.T) {
 
 	expected := "/path/to/source/hello"
 	if runtime.GOOS == "windows" {
-		expected = `D:\path\to\source\hello`
+		var err error
+		// Prepend the corresponding drive letter (or UNC path?), and change
+		// to windows-style path:
+		expected, err = filepath.Abs(expected)
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 	expect(t, expected, c.String("test"))
 }
