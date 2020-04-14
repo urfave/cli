@@ -14,6 +14,8 @@ import (
 	"time"
 )
 
+var osTempDir = os.TempDir()
+
 var boolFlagTests = []struct {
 	name     string
 	expected string
@@ -1662,7 +1664,7 @@ func TestFlagFromFile(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("APP_FOO", "123")
 
-	temp, err := ioutil.TempFile("", "urfave_cli_test")
+	temp, err := ioutil.TempFile(osTempDir, "urfave_cli_test")
 	if err != nil {
 		t.Error(err)
 		return
