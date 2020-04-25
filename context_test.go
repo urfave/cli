@@ -183,6 +183,7 @@ func TestContext_IsSet_fromEnv(t *testing.T) {
 		unparsableIsSet, uIsSet bool
 	)
 
+	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("APP_TIMEOUT_SECONDS", "15.5")
 	_ = os.Setenv("APP_PASSWORD", "")
@@ -539,6 +540,7 @@ func TestCheckRequiredFlags(t *testing.T) {
 		t.Run(test.testCase, func(t *testing.T) {
 			// setup
 			if test.envVarInput[0] != "" {
+				defer resetEnv(os.Environ())
 				os.Clearenv()
 				_ = os.Setenv(test.envVarInput[0], test.envVarInput[1])
 			}
