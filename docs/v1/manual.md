@@ -221,7 +221,7 @@ func main() {
   app := cli.NewApp()
 
   app.Flags = []cli.Flag {
-    cli.StringFlag{
+    &cli.StringFlag{
       Name: "lang",
       Value: "english",
       Usage: "language for the greeting",
@@ -271,7 +271,7 @@ func main() {
   app := cli.NewApp()
 
   app.Flags = []cli.Flag {
-    cli.StringFlag{
+    &cli.StringFlag{
       Name:        "lang",
       Value:       "english",
       Usage:       "language for the greeting",
@@ -326,7 +326,7 @@ func main() {
   app := cli.NewApp()
 
   app.Flags = []cli.Flag{
-    cli.StringFlag{
+    &cli.StringFlag{
       Name:  "config, c",
       Usage: "Load configuration from `FILE`",
     },
@@ -371,7 +371,7 @@ func main() {
   app := cli.NewApp()
 
   app.Flags = []cli.Flag {
-    cli.StringFlag{
+    &cli.StringFlag{
       Name: "lang, l",
       Value: "english",
       Usage: "language for the greeting",
@@ -416,12 +416,12 @@ func main() {
   app := cli.NewApp()
 
   app.Flags = []cli.Flag {
-    cli.StringFlag{
+    &cli.StringFlag{
       Name: "lang, l",
       Value: "english",
       Usage: "Language for the greeting",
     },
-    cli.StringFlag{
+    &cli.StringFlag{
       Name: "config, c",
       Usage: "Load configuration from `FILE`",
     },
@@ -485,7 +485,7 @@ func main() {
   app := cli.NewApp()
 
   app.Flags = []cli.Flag {
-    cli.StringFlag{
+    &cli.StringFlag{
       Name: "lang, l",
       Value: "english",
       Usage: "language for the greeting",
@@ -521,7 +521,7 @@ func main() {
   app := cli.NewApp()
 
   app.Flags = []cli.Flag {
-    cli.StringFlag{
+    &cli.StringFlag{
       Name: "lang, l",
       Value: "english",
       Usage: "language for the greeting",
@@ -558,7 +558,7 @@ func main() {
   app := cli.NewApp()
 
   app.Flags = []cli.Flag {
-    cli.StringFlag{
+    &cli.StringFlag{
       Name: "password, p",
       Usage: "password for the mysql database",
       FilePath: "/etc/mysql/password",
@@ -631,8 +631,8 @@ func main() {
   app := cli.NewApp()
 
   flags := []cli.Flag{
-    altsrc.NewIntFlag(cli.IntFlag{Name: "test"}),
-    cli.StringFlag{Name: "load"},
+    &altsrc.NewIntFlag(cli.IntFlag{Name: "test"}),
+    &cli.StringFlag{Name: "load"},
   }
 
   app.Action = func(c *cli.Context) error {
@@ -807,7 +807,7 @@ import (
 func main() {
   app := cli.NewApp()
   app.Flags = []cli.Flag{
-    cli.BoolFlag{
+    &cli.BoolFlag{
       Name:  "ginger-crouton",
       Usage: "Add ginger croutons to the soup",
     },
@@ -862,9 +862,9 @@ func main() {
       Name:  "short",
       Usage: "complete a task on the list",
       Flags: []cli.Flag{
-        cli.BoolFlag{Name: "serve, s"},
-        cli.BoolFlag{Name: "option, o"},
-        cli.StringFlag{Name: "message, m"},
+        &cli.BoolFlag{Name: "serve, s"},
+        &cli.BoolFlag{Name: "option, o"},
+        &cli.StringFlag{Name: "message, m"},
       },
       Action: func(c *cli.Context) error {
         fmt.Println("serve:", c.Bool("serve"))
@@ -1291,7 +1291,7 @@ func main() {
       Description: "no really, there is a lot of dooing to be done",
       ArgsUsage:   "[arrgh]",
       Flags: []cli.Flag{
-        cli.BoolFlag{Name: "forever, forevvarr"},
+        &cli.BoolFlag{Name: "forever, forevvarr"},
       },
       Subcommands: cli.Commands{
         cli.Command{
@@ -1332,19 +1332,19 @@ func main() {
     },
   }
   app.Flags = []cli.Flag{
-    cli.BoolFlag{Name: "fancy"},
-    cli.BoolTFlag{Name: "fancier"},
-    cli.DurationFlag{Name: "howlong, H", Value: time.Second * 3},
-    cli.Float64Flag{Name: "howmuch"},
-    cli.GenericFlag{Name: "wat", Value: &genericType{}},
-    cli.Int64Flag{Name: "longdistance"},
-    cli.Int64SliceFlag{Name: "intervals"},
-    cli.IntFlag{Name: "distance"},
-    cli.IntSliceFlag{Name: "times"},
-    cli.StringFlag{Name: "dance-move, d"},
-    cli.StringSliceFlag{Name: "names, N"},
-    cli.UintFlag{Name: "age"},
-    cli.Uint64Flag{Name: "bigage"},
+    &cli.BoolFlag{Name: "fancy"},
+    &cli.BoolTFlag{Name: "fancier"},
+    &cli.DurationFlag{Name: "howlong, H", Value: time.Second * 3},
+    &cli.Float64Flag{Name: "howmuch"},
+    &cli.GenericFlag{Name: "wat", Value: &genericType{}},
+    &cli.Int64Flag{Name: "longdistance"},
+    &cli.Int64SliceFlag{Name: "intervals"},
+    &cli.IntFlag{Name: "distance"},
+    &cli.IntSliceFlag{Name: "times"},
+    &cli.StringFlag{Name: "dance-move, d"},
+    &cli.StringSliceFlag{Name: "names, N"},
+    &cli.UintFlag{Name: "age"},
+    &cli.Uint64Flag{Name: "bigage"},
   }
   app.EnableBashCompletion = true
   app.UseShortOptionHandling = true
