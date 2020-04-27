@@ -1196,6 +1196,28 @@ func TestParseMultiIntSlice(t *testing.T) {
 	}).Run([]string{"run", "-s", "10", "-s", "20"})
 }
 
+func TestParseMultiIntSliceCommaSeperated(t *testing.T) {
+	//Need to check for error since the parsing fails before it gets into the Action
+	//Then this test will fail without being noticed
+	err := (&App{
+		Flags: []Flag{
+			&IntSliceFlag{Name: "serve", Aliases: []string{"s"}, Value: NewIntSlice()},
+		},
+		Action: func(ctx *Context) error {
+			if !reflect.DeepEqual(ctx.IntSlice("serve"), []int{10, 20}) {
+				t.Errorf("main name not set")
+			}
+			if !reflect.DeepEqual(ctx.IntSlice("s"), []int{10, 20}) {
+				t.Errorf("short name not set")
+			}
+			return nil
+		},
+	}).Run([]string{"run", "-s", "10,20"})
+	if err != nil {
+		t.Errorf("failed to parse flags : %s", err)
+	}
+}
+
 func TestParseMultiIntSliceWithDefaults(t *testing.T) {
 	_ = (&App{
 		Flags: []Flag{
@@ -1308,6 +1330,28 @@ func TestParseMultiInt64Slice(t *testing.T) {
 			return nil
 		},
 	}).Run([]string{"run", "-s", "10", "-s", "17179869184"})
+}
+
+func TestParseMultiInt64SliceCommaSeperated(t *testing.T) {
+	//Need to check for error since the parsing fails before it gets into the Action
+	//Then this test will fail without being noticed
+	err := (&App{
+		Flags: []Flag{
+			&Int64SliceFlag{Name: "serve", Aliases: []string{"s"}, Value: NewInt64Slice()},
+		},
+		Action: func(ctx *Context) error {
+			if !reflect.DeepEqual(ctx.Int64Slice("serve"), []int64{10, 17179869184}) {
+				t.Errorf("main name not set")
+			}
+			if !reflect.DeepEqual(ctx.Int64Slice("s"), []int64{10, 17179869184}) {
+				t.Errorf("short name not set")
+			}
+			return nil
+		},
+	}).Run([]string{"run", "-s", "10,17179869184"})
+	if err != nil {
+		t.Errorf("failed to parse flags : %s", err)
+	}
 }
 
 func TestParseMultiInt64SliceFromEnv(t *testing.T) {

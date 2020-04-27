@@ -33,6 +33,18 @@ func (i *Int64Slice) Set(value string) error {
 		return nil
 	}
 
+	if strings.Contains(value, ",") {
+		values := strings.Split(value, ",")
+		for _, v := range values {
+			tmp, err := strconv.ParseInt(v, 0, 64)
+			if err != nil {
+				return err
+			}
+			i.slice = append(i.slice, tmp)
+		}
+		return nil
+	}
+
 	tmp, err := strconv.ParseInt(value, 0, 64)
 	if err != nil {
 		return err
