@@ -1488,6 +1488,28 @@ func TestParseMultiFloat64Slice(t *testing.T) {
 	}).Run([]string{"run", "-i", "0.1", "-i", "-10.5"})
 }
 
+func TestParseMultiFloat64SliceCommaSeperated(t *testing.T) {
+	//Need to check for error since the parsing fails before it gets into the Action
+	//Then this test will fail without being noticed
+	err := (&App{
+		Flags: []Flag{
+			&Float64SliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: NewFloat64Slice()},
+		},
+		Action: func(ctx *Context) error {
+			if !reflect.DeepEqual(ctx.Float64Slice("intervals"), []float64{0.1, -10.5}) {
+				t.Errorf("main name not set from env")
+			}
+			if !reflect.DeepEqual(ctx.Float64Slice("i"), []float64{0.1, -10.5}) {
+				t.Errorf("short name not set from env")
+			}
+			return nil
+		},
+	}).Run([]string{"run", "-i", "0.1,-10.5"})
+	if err != nil {
+		t.Errorf("failed to parse flags : %s", err)
+	}
+}
+
 func TestParseMultiFloat64SliceWithDefaults(t *testing.T) {
 	_ = (&App{
 		Flags: []Flag{
