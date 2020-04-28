@@ -1471,6 +1471,57 @@ func TestParseMultiFloat64FromEnvCascade(t *testing.T) {
 	}).Run([]string{"run"})
 }
 
+func TestParseMultiFloat64Slice(t *testing.T) {
+	_ = (&App{
+		Flags: []Flag{
+			&Float64SliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: NewFloat64Slice()},
+		},
+		Action: func(ctx *Context) error {
+			if !reflect.DeepEqual(ctx.Float64Slice("intervals"), []float64{0.1, -10.5}) {
+				t.Errorf("main name not set from env")
+			}
+			if !reflect.DeepEqual(ctx.Float64Slice("i"), []float64{0.1, -10.5}) {
+				t.Errorf("short name not set from env")
+			}
+			return nil
+		},
+	}).Run([]string{"run", "-i", "0.1", "-i", "-10.5"})
+}
+
+func TestParseMultiFloat64SliceWithDefaults(t *testing.T) {
+	_ = (&App{
+		Flags: []Flag{
+			&Float64SliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: NewFloat64Slice(2.3, -3.4)},
+		},
+		Action: func(ctx *Context) error {
+			if !reflect.DeepEqual(ctx.Float64Slice("intervals"), []float64{0.1, -10.5}) {
+				t.Errorf("main name not set from env")
+			}
+			if !reflect.DeepEqual(ctx.Float64Slice("i"), []float64{0.1, -10.5}) {
+				t.Errorf("short name not set from env")
+			}
+			return nil
+		},
+	}).Run([]string{"run", "-i", "0.1", "-i", "-10.5"})
+}
+
+func TestParseMultiFloat64SliceWithDefaultsUnset(t *testing.T) {
+	_ = (&App{
+		Flags: []Flag{
+			&Float64SliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: NewFloat64Slice(2.3, -3.4)},
+		},
+		Action: func(ctx *Context) error {
+			if !reflect.DeepEqual(ctx.Float64Slice("intervals"), []float64{2.3, -3.4}) {
+				t.Errorf("main name not set from env")
+			}
+			if !reflect.DeepEqual(ctx.Float64Slice("i"), []float64{2.3, -3.4}) {
+				t.Errorf("short name not set from env")
+			}
+			return nil
+		},
+	}).Run([]string{"run"})
+}
+
 func TestParseMultiFloat64SliceFromEnv(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
