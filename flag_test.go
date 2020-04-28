@@ -1196,7 +1196,7 @@ func TestParseMultiIntSlice(t *testing.T) {
 	}).Run([]string{"run", "-s", "10", "-s", "20"})
 }
 
-func TestParseMultiIntSliceCommaSeperated(t *testing.T) {
+func TestParseMultiIntSliceCommaSeparated(t *testing.T) {
 	//Need to check for error since the parsing fails before it gets into the Action
 	//Then this test will fail without being noticed
 	err := (&App{
@@ -1332,7 +1332,7 @@ func TestParseMultiInt64Slice(t *testing.T) {
 	}).Run([]string{"run", "-s", "10", "-s", "17179869184"})
 }
 
-func TestParseMultiInt64SliceCommaSeperated(t *testing.T) {
+func TestParseMultiInt64SliceCommaSeparated(t *testing.T) {
 	//Need to check for error since the parsing fails before it gets into the Action
 	//Then this test will fail without being noticed
 	err := (&App{
@@ -1488,7 +1488,7 @@ func TestParseMultiFloat64Slice(t *testing.T) {
 	}).Run([]string{"run", "-i", "0.1", "-i", "-10.5"})
 }
 
-func TestParseMultiFloat64SliceCommaSeperated(t *testing.T) {
+func TestParseMultiFloat64SliceCommaSeparated(t *testing.T) {
 	//Need to check for error since the parsing fails before it gets into the Action
 	//Then this test will fail without being noticed
 	err := (&App{
