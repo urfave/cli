@@ -27,7 +27,18 @@ Using this package requires a working Go environment. [See the install instructi
 
 Go Modules are required when using this package. [See the go blog guide on using Go Modules](https://blog.golang.org/using-go-modules).
 
-### Using `v2` releases
+### Golang version 1.14 
+
+- In the files using `cli`, use this import statement :
+```go
+...
+import (
+  "github.com/urfave/cli/v2" // imports as package "cli"
+)
+...
+```
+
+### Using `v2` releases with older go versions
 
 ```
 $ GO111MODULE=on go get github.com/urfave/cli/v2
@@ -41,7 +52,7 @@ import (
 ...
 ```
 
-### Using `v1` releases
+### Using `v1` releases with older go versions
 
 ```
 $ GO111MODULE=on go get github.com/urfave/cli
