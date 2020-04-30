@@ -141,6 +141,8 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
 		}
 
 		if f.Destination != nil {
+			f.Destination.slice = make([]string, len(f.Value.slice))
+			copy(f.Destination.slice, f.Value.slice)
 			set.Var(f.Destination, name, f.Usage)
 			continue
 		}
