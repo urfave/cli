@@ -386,6 +386,18 @@ func TestStringSliceFlagApply_SetsAllNames(t *testing.T) {
 	expect(t, err, nil)
 }
 
+func TestStringSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
+	defValue := []string{"UA", "US"}
+
+	fl := StringSliceFlag{Name: "country", Value: NewStringSlice(defValue...), Destination: NewStringSlice("CA")}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{})
+	expect(t, err, nil)
+	expect(t, defValue, fl.Destination.Value())
+}
+
 var intFlagTests = []struct {
 	name     string
 	expected string
