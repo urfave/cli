@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"reflect"
 	"strings"
@@ -2182,4 +2183,39 @@ func TestSetupInitializesOnlyNilWriters(t *testing.T) {
 	if a.Writer != os.Stdout {
 		t.Errorf("expected a.Writer to be os.Stdout")
 	}
+}
+
+func TestApp_StringSliceFlag_When_defualtValueSetInDestination(t *testing.T) {
+	type config struct {
+		ActualOutput StringSlice
+	}
+	cfg := new(config)
+
+	ExpectedOutput := new(StringSlice)
+	ExpectedOutput.slice = []string{"CA", "US"}
+
+	// ExpectedOutput := new(StringSlice)
+	// ExpectedOutput.slice = []string{"CA"}
+
+	// ExpectedOutput := new(StringSlice)
+	// ExpectedOutput.slice = []string{"US"}
+
+	app := NewApp()
+	app.Flags = []Flag{
+		&StringSliceFlag{
+			Name:        "country",
+			Aliases:     []string{"c"},
+			Value:       NewStringSlice("CA", "US"),
+			Destination: &cfg.ActualOutput,
+		},
+	}
+	app.Action = func(c *Context) error {
+		log.Printf("%+v", cfg)
+		return nil
+	}
+	_ = app.Run(os.Args)
+	// _ = app.Run([]string{"", "-c", "CA"})
+	// _ = app.Run([]string{"", "-c", "US"})
+
+	expect(t, ExpectedOutput.slice, cfg.ActualOutput.slice)
 }
