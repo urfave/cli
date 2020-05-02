@@ -576,6 +576,14 @@ func TestCheckRequiredFlags(t *testing.T) {
 			},
 			parseInput: []string{"-n", "asd", "-n", "qwe"},
 		},
+		{
+			testCase: "required_flag_with_short_alias_not_printed_on_error",
+			expectedAnError: true,
+			expectedErrorContents: []string{"Required flag \"names\" not set"},
+			flags: []Flag{
+				StringSliceFlag{Name: "names, n", Required: true},
+			},
+		},
 	}
 	for _, test := range tdata {
 		t.Run(test.testCase, func(t *testing.T) {
