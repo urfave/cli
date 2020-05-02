@@ -2183,3 +2183,63 @@ func TestSetupInitializesOnlyNilWriters(t *testing.T) {
 		t.Errorf("expected a.Writer to be os.Stdout")
 	}
 }
+
+func TestApp_PreventDefaultPrint_When_BoolFlag(t *testing.T) {
+
+	app := App{
+		Name:  "greet",
+		Usage: "fight the loneliness!",
+		Flags: []Flag{
+			&BoolFlag{
+				Name:             "verbose",
+				Aliases:          []string{"v"},
+				Usage:            "Increase verbosity",
+				ShowDefaultValue: true,
+				DefaultText:      "default text",
+			},
+			&BoolFlag{
+				Name:             "extract",
+				Aliases:          []string{"e"},
+				Usage:            "Extract only, do not execute the service",
+				ShowDefaultValue: false,
+			},
+			&BoolFlag{
+				Name:    "keep",
+				Aliases: []string{"k"},
+				Usage:   " Do not delete the temp dir after execution",
+			},
+			&StringFlag{
+				Name:  "lang",
+				Value: "english",
+				Usage: "language for the greeting",
+			},
+		},
+
+		Action: func(c *Context) error {
+			return nil
+		},
+	}
+
+	err := app.Run([]string{"", "-h"})
+	if err != nil {
+		t.Error(err)
+	}
+	/*
+		OUTPUT :
+			NAME:
+			greet - fight the loneliness!
+
+			USAGE:
+			debug.test [global options] command [command options] [arguments...]
+
+			COMMANDS:
+			help, h  Shows a list of commands or help for one command
+
+			GLOBAL OPTIONS:
+			--verbose, -v  Increase verbosity (default: default text)
+			--extract, -e  Extract only, do not execute the service
+			--keep, -k     Do not delete the temp dir after execution
+			--lang value   language for the greeting (default: "english")
+			--help, -h     show help
+	*/
+}

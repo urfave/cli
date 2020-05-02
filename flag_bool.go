@@ -8,17 +8,18 @@ import (
 
 // BoolFlag is a flag with type bool
 type BoolFlag struct {
-	Name        string
-	Aliases     []string
-	Usage       string
-	EnvVars     []string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       bool
-	DefaultText string
-	Destination *bool
-	HasBeenSet  bool
+	Name             string
+	Aliases          []string
+	Usage            string
+	EnvVars          []string
+	FilePath         string
+	Required         bool
+	Hidden           bool
+	Value            bool
+	DefaultText      string
+	Destination      *bool
+	HasBeenSet       bool
+	ShowDefaultValue bool
 }
 
 // IsSet returns whether or not the flag has been set through env or file
