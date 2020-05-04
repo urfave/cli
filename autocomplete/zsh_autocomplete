@@ -13,6 +13,8 @@ _cli_zsh_autocomplete() {
 
   if [[ "${opts[1]}" != "" ]]; then
     _describe 'values' opts
+  else
+    _files
   fi
 
   return
