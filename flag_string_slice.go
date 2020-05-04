@@ -142,6 +142,9 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
 
 		if f.Destination != nil {
 			set.Var(f.Destination, name, f.Usage)
+			for _, v := range f.Value.Value(){
+				f.Destination.Set(v)
+			}
 			continue
 		}
 
