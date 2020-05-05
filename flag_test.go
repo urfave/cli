@@ -347,6 +347,19 @@ var stringSliceFlagTests = []struct {
 	{"dee", []string{"d"}, NewStringSlice("Inka", "Dinka", "dooo"), "--dee value, -d value\t(default: \"Inka\", \"Dinka\", \"dooo\")"},
 }
 
+func TestStringSliceFlagDefaultValue(t *testing.T) {
+	destination := new(StringSlice)
+	defaultValue := NewStringSlice("foo")
+	fl := StringSliceFlag{Name: "goat", Aliases: []string{"G", "gooots"}, Value: defaultValue, Destination: destination}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{""})
+	expect(t, err, nil)
+
+	expect(t, destination.slice, defaultValue.slice)
+}
+
 func TestStringSliceFlagHelpOutput(t *testing.T) {
 	for _, test := range stringSliceFlagTests {
 		f := &StringSliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value}
