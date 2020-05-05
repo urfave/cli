@@ -2185,10 +2185,27 @@ func TestSetupInitializesOnlyNilWriters(t *testing.T) {
 }
 
 func TestApp_PreventDefaultPrint_When_BoolFlag(t *testing.T) {
+	var actualOutput bytes.Buffer
+
+	expectedOutputSlice := strings.Fields(`NAME:
+	greet - fight the loneliness!
+	   
+  USAGE:
+	cli.test [global options] command [command options] [arguments...]
+  
+  COMMANDS:
+	help, h  Shows a list of commands or help for one command
+  
+  GLOBAL OPTIONS:
+	--verbose, -v  Increase verbosity (default: default text)
+	--extract, -e  Extract only, do not execute the service
+	--keep, -k     Do not delete the temp dir after execution
+	--help, -h     show help`)
 
 	app := App{
-		Name:  "greet",
-		Usage: "fight the loneliness!",
+		Name:   "greet",
+		Usage:  "fight the loneliness!",
+		Writer: &actualOutput,
 		Flags: []Flag{
 			&BoolFlag{
 				Name:             "verbose",
@@ -2208,11 +2225,6 @@ func TestApp_PreventDefaultPrint_When_BoolFlag(t *testing.T) {
 				Aliases: []string{"k"},
 				Usage:   " Do not delete the temp dir after execution",
 			},
-			&StringFlag{
-				Name:  "lang",
-				Value: "english",
-				Usage: "language for the greeting",
-			},
 		},
 
 		Action: func(c *Context) error {
@@ -2220,17 +2232,20 @@ func TestApp_PreventDefaultPrint_When_BoolFlag(t *testing.T) {
 		},
 	}
 
-	err := app.Run([]string{"", "-h"})
-	if err != nil {
-		t.Error(err)
+	_ = app.Run([]string{"", "-h"})
+
+	actualOutputSlice := strings.Fields(actualOutput.String())
+	if !equal(actualOutputSlice, expectedOutputSlice, t) {
+		t.Errorf("Actual output does not match with expected output")
 	}
+
 	/*
 		OUTPUT :
 			NAME:
 			greet - fight the loneliness!
 
 			USAGE:
-			debug.test [global options] command [command options] [arguments...]
+			cli.test [global options] command [command options] [arguments...]
 
 			COMMANDS:
 			help, h  Shows a list of commands or help for one command
@@ -2239,7 +2254,21 @@ func TestApp_PreventDefaultPrint_When_BoolFlag(t *testing.T) {
 			--verbose, -v  Increase verbosity (default: default text)
 			--extract, -e  Extract only, do not execute the service
 			--keep, -k     Do not delete the temp dir after execution
-			--lang value   language for the greeting (default: "english")
 			--help, -h     show help
 	*/
+}
+
+// Equal tells whether a and b contain the same elements.
+// A nil argument is equivalent to an empty slice.
+func equal(a, b []string, t *testing.T) bool {
+	if len(a) != len(b) {
+		t.Errorf("Length mismatch")
+		return false
+	}
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
 }
