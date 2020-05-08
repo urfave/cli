@@ -2191,7 +2191,7 @@ func TestApp_PreventDefaultPrint_When_BoolFlag(t *testing.T) {
    greet - fight the loneliness!
 
 USAGE:
-   cli.test [global options] command [command options] [arguments...]
+   [global options] command [command options] [arguments...]
 
 COMMANDS:
    help, h  Shows a list of commands or help for one command
@@ -2251,7 +2251,7 @@ GLOBAL OPTIONS:
 			greet - fight the loneliness!
 
 			USAGE:
-			cli.test [global options] command [command options] [arguments...]
+			[global options] command [command options] [arguments...]
 
 			COMMANDS:
 			help, h  Shows a list of commands or help for one command
