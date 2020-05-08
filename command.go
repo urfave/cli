@@ -234,7 +234,7 @@ func reorderArgs(commandFlags []Flag, args []string) []string {
 			break
 
 			// checks if this arg is a value that should be re-ordered next to its associated flag
-		} else if nextIndexMayContainValue && !strings.HasPrefix(arg, "-") {
+		} else if nextIndexMayContainValue && !argIsFlag(commandFlags, arg) {
 			nextIndexMayContainValue = false
 			reorderedArgs = append(reorderedArgs, arg)
 
