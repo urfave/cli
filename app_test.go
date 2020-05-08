@@ -2187,20 +2187,21 @@ func TestSetupInitializesOnlyNilWriters(t *testing.T) {
 func TestApp_PreventDefaultPrint_When_BoolFlag(t *testing.T) {
 	var actualOutput bytes.Buffer
 
-	expectedOutputSlice := strings.Fields(`NAME:
-	greet - fight the loneliness!
-	   
-  USAGE:
-	cli.test [global options] command [command options] [arguments...]
-  
-  COMMANDS:
-	help, h  Shows a list of commands or help for one command
-  
-  GLOBAL OPTIONS:
-	--verbose, -v  Increase verbosity (default: default text)
-	--extract, -e  Extract only, do not execute the service
-	--keep, -k     Do not delete the temp dir after execution
-	--help, -h     show help`)
+	expectedOutput := `NAME:
+   greet - fight the loneliness!
+
+USAGE:
+   cli.test [global options] command [command options] [arguments...]
+
+COMMANDS:
+   help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --verbose, -v  Increase verbosity
+   --extract, -e  Extract only, do not execute the service
+   --keep, -k     Do not delete the temp dir after execution (default: false)
+   --help, -h     show help (default: false)
+`
 
 	app := App{
 		Name:   "greet",
@@ -2211,14 +2212,14 @@ func TestApp_PreventDefaultPrint_When_BoolFlag(t *testing.T) {
 				Name:             "verbose",
 				Aliases:          []string{"v"},
 				Usage:            "Increase verbosity",
-				ShowDefaultValue: true,
+				HideDefaultValue: true,
 				DefaultText:      "default text",
 			},
 			&BoolFlag{
 				Name:             "extract",
 				Aliases:          []string{"e"},
 				Usage:            "Extract only, do not execute the service",
-				ShowDefaultValue: false,
+				HideDefaultValue: true,
 			},
 			&BoolFlag{
 				Name:    "keep",
@@ -2232,10 +2233,15 @@ func TestApp_PreventDefaultPrint_When_BoolFlag(t *testing.T) {
 		},
 	}
 
-	_ = app.Run([]string{"", "-h"})
+	err := app.Run([]string{"", "-h"})
+	if err != nil {
+		t.Errorf("Run returned unexpected error: %v", err)
+	}
 
-	actualOutputSlice := strings.Fields(actualOutput.String())
-	if !equal(actualOutputSlice, expectedOutputSlice, t) {
+	actualOutputLines := strings.Split(actualOutput.String(), "\n")
+	expectedOutputLines := strings.Split(expectedOutput, "\n")
+
+	if !equal(actualOutputLines, expectedOutputLines, t) {
 		t.Errorf("Actual output does not match with expected output")
 	}
 
@@ -2251,22 +2257,20 @@ func TestApp_PreventDefaultPrint_When_BoolFlag(t *testing.T) {
 			help, h  Shows a list of commands or help for one command
 
 			GLOBAL OPTIONS:
-			--verbose, -v  Increase verbosity (default: default text)
+			--verbose, -v  Increase verbosity
 			--extract, -e  Extract only, do not execute the service
-			--keep, -k     Do not delete the temp dir after execution
-			--help, -h     show help
+			--keep, -k     Do not delete the temp dir after execution (default: false)
+			--help, -h     show help (default: false)
 	*/
 }
 
-// Equal tells whether a and b contain the same elements.
-// A nil argument is equivalent to an empty slice.
-func equal(a, b []string, t *testing.T) bool {
-	if len(a) != len(b) {
-		t.Errorf("Length mismatch")
+func equal(actualOutputLines, expectedOutputLines []string, t *testing.T) bool {
+	if len(actualOutputLines) != len(expectedOutputLines) {
+		t.Errorf("Length mismatch when run TestApp_PreventDefaultPrint_When_BoolFlag")
 		return false
 	}
-	for i, v := range a {
-		if v != b[i] {
+	for i, line := range actualOutputLines {
+		if line != expectedOutputLines[i] {
 			return false
 		}
 	}
