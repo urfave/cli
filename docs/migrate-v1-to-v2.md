@@ -16,6 +16,7 @@ consider sending a PR to help improve this guide.
   * [Flags before args](#flags-before-args)
   * [Import string changed](#import-string-changed)
   * [Flag aliases are done differently.](#flag-aliases-are-done-differently)
+  * [EnvVar is now a list (EnvVars)](#envvar-is-now-a-list-envvars)
   * [Commands are now lists of pointers](#commands-are-now-lists-of-pointers)
   * [Lists of commands should be pointers](#lists-of-commands-should-be-pointers)
   * [cli.Flag changed](#cliflag-changed)
@@ -59,19 +60,38 @@ Change `Name: "foo, f"` to `Name: "foo", Aliases: []string{"f"}`
 * OLD:
 ```go
 cli.StringFlag{
-  Name: "config, cfg"
+        Name: "config, cfg"
 }
 ```
 
 * NEW:
 ```go
 cli.StringFlag{
-    Name: "config",
-    Aliases: []string{"cfg"},
+        Name: "config",
+        Aliases: []string{"cfg"},
 }
 ```
 
 Sadly v2 doesn't warn you if a comma is in the name.
+(https://github.com/urfave/cli/issues/1103)
+
+# EnvVar is now a list (EnvVars)
+
+Change `EnvVar: "XXXXX"` to `EnvVars: []string{"XXXXX"}` (plural).
+
+* OLD:
+```go
+cli.StringFlag{
+        EnvVar: "APP_LANG"
+}
+```
+
+* NEW:
+```go
+cli.StringFlag{
+        EnvVars: []string{"APP_LANG"}
+}
+```
 
 # Actions returns errors
 
