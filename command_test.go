@@ -140,6 +140,17 @@ func TestParseAndRunHyphenValues(t *testing.T) {
 		{[]string{"foo", "test", "--opt", "--opt-value", "argz", "arga"}, []string{"argz", "arga"}, "--opt-value"},
 		{[]string{"foo", "test", "argz", "--opt", "--opt-value"}, []string{"argz"}, "--opt-value"},
 		{[]string{"foo", "test", "argz", "--opt", "--opt-value", "arga"}, []string{"argz", "arga"}, "--opt-value"},
+
+		// Tests below test handling of the "--" delimiter
+		{[]string{"foo", "test", "--", "--opt", "--opt-value", "argz"}, []string{"--opt", "--opt-value", "argz"}, ""},
+		{[]string{"foo", "test", "--", "argz", "--opt", "--opt-value", "arga"}, []string{"argz", "--opt", "--opt-value", "arga"}, ""},
+		{[]string{"foo", "test", "argz", "--", "--opt", "--opt-value", "arga"}, []string{"argz", "--opt", "--opt-value", "arga"}, ""},
+		{[]string{"foo", "test", "argz", "--opt", "--", "--opt-value", "arga"}, []string{"argz", "--opt-value", "arga"}, "--"},
+
+		// first "--" is an option-value for "--opt", second "--" is the delimiter indicating the end of options.
+		{[]string{"foo", "test", "argz", "--opt", "--", "--", "--opt2", "--opt-value", "arga"}, []string{"argz", "--opt2", "--opt-value", "arga"}, "--"},
+		{[]string{"foo", "test", "argz", "--opt", "--opt-value", "--", "arga"}, []string{"argz", "arga"}, "--opt-value"},
+		{[]string{"foo", "test", "argz", "--opt", "--opt-value", "arga", "--"}, []string{"argz", "arga"}, "--opt-value"},
 	}
 
 	for _, tc := range cases {
@@ -161,6 +172,7 @@ func TestParseAndRunHyphenValues(t *testing.T) {
 				},
 				Flags: []Flag{
 					StringFlag{Name:  "opt"},
+					StringFlag{Name:  "opt2"},
 				},
 			}
 
