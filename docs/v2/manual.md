@@ -1222,6 +1222,23 @@ source  path/to/autocomplete/zsh_autocomplete
 #### ZSH custom auto-complete example
 ![](/docs/v2/images/custom-zsh-autocomplete.gif)
 
+#### PowerShell Support
+Auto-completion for PowerShell is also supported using the `autocomplete/powershell_autocomplete.ps1` 
+file included in this repo. 
+
+Rename the script to `<my program>.ps1` and move it anywhere in your file system.
+The location of script does not matter, only the file name of the script has to match
+the your program's binary name. 
+
+To activate it, enter `& path/to/autocomplete/<my program>.ps1`
+
+To persist across new shells, open the PowerShell profile (with `code $profile` or `notepad $profile`)
+and add the line:
+```
+& path/to/autocomplete/<my program>.ps1
+```
+
+
 ### Generated Help Text
 
 The default help flag (`-h/--help`) is defined as `cli.HelpFlag` and is checked
