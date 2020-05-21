@@ -120,6 +120,10 @@ func (f *TimestampFlag) Apply(set *flag.FlagSet) error {
 	}
 	f.Value.SetLayout(f.Layout)
 
+	if f.Value == nil {
+		f.Value = &Timestamp{}
+	}
+
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		if err := f.Value.Set(val); err != nil {
 			return fmt.Errorf("could not parse %q as timestamp value for flag %s: %s", val, f.Name, err)
