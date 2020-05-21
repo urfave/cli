@@ -45,7 +45,7 @@ func (t *Timestamp) Set(value string) error {
 
 // String returns a readable representation of this value (for usage defaults)
 func (t *Timestamp) String() string {
-	return fmt.Sprintf("%#v", t.timestamp)
+	return fmt.Sprintf(t.timestamp.Format(t.layout))
 }
 
 // Value returns the timestamp value stored in the flag
