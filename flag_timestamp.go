@@ -45,7 +45,7 @@ func (t *Timestamp) Set(value string) error {
 
 // String returns a readable representation of this value (for usage defaults)
 func (t *Timestamp) String() string {
-	return fmt.Sprintf(t.timestamp.Format(t.layout))
+	return fmt.Sprintf("%#v", t.timestamp)
 }
 
 // Value returns the timestamp value stored in the flag
@@ -115,14 +115,14 @@ func (f *TimestampFlag) GetValue() string {
 
 // Apply populates the flag given the flag set and environment
 func (f *TimestampFlag) Apply(set *flag.FlagSet) error {
+	if f.Value == nil {
+		f.Value = &Timestamp{}
+	}
+
 	if f.Layout == "" {
 		return fmt.Errorf("timestamp Layout is required")
 	}
 	f.Value.SetLayout(f.Layout)
-
-	if f.Value == nil {
-		f.Value = &Timestamp{}
-	}
 
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		if err := f.Value.Set(val); err != nil {
