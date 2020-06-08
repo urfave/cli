@@ -30,6 +30,7 @@ cli v2 manual
     + [ZSH Support](#zsh-support)
     + [ZSH default auto-complete example](#zsh-default-auto-complete-example)
     + [ZSH custom auto-complete example](#zsh-custom-auto-complete-example)
+    + [PowerShell Support](#powershell-support)
   * [Generated Help Text](#generated-help-text)
     + [Customization](#customization-1)
   * [Version Flag](#version-flag)
