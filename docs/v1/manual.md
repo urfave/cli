@@ -221,7 +221,7 @@ func main() {
   app := cli.NewApp()
 
   app.Flags = []cli.Flag {
-    cli.StringFlag{
+    &cli.StringFlag{
       Name: "lang",
       Value: "english",
       Usage: "language for the greeting",
