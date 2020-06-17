@@ -386,11 +386,10 @@ func TestCommand_NoVersionFlagOnCommands(t *testing.T) {
 				Name:        "bar",
 				Usage:       "this is for testing",
 				Subcommands: []*Command{{}}, // some subcommand
+				HideHelp:    true,
 				Action: func(c *Context) error {
-					for _, f := range c.App.VisibleFlags() {
-						if f == VersionFlag {
-							t.Fatalf("unexpected version flag")
-						}
+					if len(c.App.VisibleFlags()) != 0 {
+						t.Fatalf("unexpected flag on command")
 					}
 					return nil
 				},
