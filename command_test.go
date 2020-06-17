@@ -377,3 +377,27 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 	}
 
 }
+
+func TestCommand_NoVersionFlagOnCommands(t *testing.T) {
+	app := &App{
+		Version: "some version",
+		Commands: []*Command{
+			{
+				Name:        "bar",
+				Usage:       "this is for testing",
+				Subcommands: []*Command{{}}, // some subcommand
+				Action: func(c *Context) error {
+					for _, f := range c.App.VisibleFlags() {
+						if f == VersionFlag {
+							t.Fatalf("unexpected version flag")
+						}
+					}
+					return nil
+				},
+			},
+		},
+	}
+
+	err := app.Run([]string{"foo", "bar"})
+	expect(t, err, nil)
+}
