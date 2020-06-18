@@ -389,9 +389,31 @@ func TestCommand_NoVersionFlagOnCommands(t *testing.T) {
 				HideHelp:    true,
 				Action: func(c *Context) error {
 					if len(c.App.VisibleFlags()) != 0 {
-						t.Fatalf("unexpected flag on command")
+						t.Fatal("unexpected flag on command")
 					}
 					return nil
+				},
+			},
+		},
+	}
+
+	err := app.Run([]string{"foo", "bar"})
+	expect(t, err, nil)
+}
+
+func TestCommand_CanAddVFlagOnCommands(t *testing.T) {
+	app := &App{
+		Version: "some version",
+		Writer:  ioutil.Discard,
+		Commands: []*Command{
+			{
+				Name:        "bar",
+				Usage:       "this is for testing",
+				Subcommands: []*Command{{}}, // some subcommand
+				Flags: []Flag{
+					&BoolFlag{
+						Name: "v",
+					},
 				},
 			},
 		},
