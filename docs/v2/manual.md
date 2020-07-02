@@ -661,7 +661,7 @@ func main() {
 You can make a flag required by setting the `Required` field to `true`. If a user
 does not provide a required flag, they will be shown an error message.
 
-Take for example this app that reqiures the `lang` flag:
+Take for example this app that requires the `lang` flag:
 
 <!-- {
   "error": "Required flag \"lang\" not set"
