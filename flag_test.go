@@ -1836,6 +1836,17 @@ func TestTimestampFlagApply(t *testing.T) {
 	expect(t, *fl.Value.timestamp, expectedResult)
 }
 
+func TestTimestampFlagApplyValue(t *testing.T) {
+	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: time.RFC3339, Value: NewTimestamp(expectedResult)}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{""})
+	expect(t, err, nil)
+	expect(t, *fl.Value.timestamp, expectedResult)
+}
+
 func TestTimestampFlagApply_Fail_Parse_Wrong_Layout(t *testing.T) {
 	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: "randomlayout"}
 	set := flag.NewFlagSet("test", 0)
