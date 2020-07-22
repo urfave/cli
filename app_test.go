@@ -2262,3 +2262,22 @@ func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
 		t.Errorf("exitCodeFromOsExiter valeu should be %v, but its value is %v", testCode, exitCodeFromExitErrHandler)
 	}
 }
+
+func TestApp_RequiredFlagExitError(t *testing.T) {
+
+	app := NewApp()
+	app.Flags = []Flag{
+		StringFlag{Name: "required", Required: true, Usage: "this flag is required"},
+	}
+	var exitCodeFromOsExiter int
+	OsExiter = func(exitCode int) {
+		exitCodeFromOsExiter = exitCode
+	}
+
+	app.Action = func(c *Context) error {
+		return nil
+	}
+
+	_ = app.Run([]string{""})
+	expect(t, exitCodeFromOsExiter, ExitCodeMissingFlag)
+}

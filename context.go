@@ -298,6 +298,7 @@ func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
 type requiredFlagsErr interface {
 	error
 	getMissingFlags() []string
+	ExitCode() int
 }
 
 type errRequiredFlags struct {
@@ -315,6 +316,12 @@ func (e *errRequiredFlags) Error() string {
 
 func (e *errRequiredFlags) getMissingFlags() []string {
 	return e.missingFlags
+}
+
+const ExitCodeMissingFlag = 127
+
+func (e *errRequiredFlags) ExitCode() int {
+	return ExitCodeMissingFlag
 }
 
 func checkRequiredFlags(flags []Flag, context *Context) requiredFlagsErr {

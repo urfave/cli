@@ -244,6 +244,7 @@ func (a *App) Run(arguments []string) (err error) {
 
 	cerr := checkRequiredFlags(a.Flags, context)
 	if cerr != nil {
+		a.handleExitCoder(context, cerr)
 		_ = ShowAppHelp(context)
 		return cerr
 	}
