@@ -60,12 +60,12 @@ func (f *BoolFlag) GetValue() string {
 
 // Apply populates the flag given the flag set and environment
 func (f *BoolFlag) Apply(set *flag.FlagSet) error {
-	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
+	if val, ok, source := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		if val != "" {
 			valBool, err := strconv.ParseBool(val)
 
 			if err != nil {
-				return fmt.Errorf("could not parse %q as bool value for flag %s: %s", val, f.Name, err)
+				return fmt.Errorf("could not parse %q as bool value %s for flag %s: %s", val, source, f.Name, err)
 			}
 
 			f.Value = valBool

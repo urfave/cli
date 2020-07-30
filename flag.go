@@ -372,17 +372,17 @@ func hasFlag(flags []Flag, fl Flag) bool {
 	return false
 }
 
-func flagFromEnvOrFile(envVars []string, filePath string) (val string, ok bool) {
+func flagFromEnvOrFile(envVars []string, filePath string) (val string, ok bool, source string) {
 	for _, envVar := range envVars {
 		envVar = strings.TrimSpace(envVar)
 		if val, ok := syscall.Getenv(envVar); ok {
-			return val, true
+			return val, true, fmt.Sprintf("from environment variable %q", envVar)
 		}
 	}
 	for _, fileVar := range strings.Split(filePath, ",") {
 		if data, err := ioutil.ReadFile(fileVar); err == nil {
-			return string(data), true
+			return string(data), true, fmt.Sprintf("from file %q", filePath)
 		}
 	}
-	return "", false
+	return "", false, ""
 }

@@ -54,11 +54,11 @@ func (f *UintFlag) GetUsage() string {
 
 // Apply populates the flag given the flag set and environment
 func (f *UintFlag) Apply(set *flag.FlagSet) error {
-	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
+	if val, ok, source := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		if val != "" {
 			valInt, err := strconv.ParseUint(val, 0, 64)
 			if err != nil {
-				return fmt.Errorf("could not parse %q as uint value for flag %s: %s", val, f.Name, err)
+				return fmt.Errorf("could not parse %q as uint value %s for flag %s: %s", val, source, f.Name, err)
 			}
 
 			f.Value = uint(valInt)
