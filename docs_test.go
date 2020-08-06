@@ -67,6 +67,41 @@ func testApp() *App {
 	}, {
 		Name:   "hidden-command",
 		Hidden: true,
+	}, {
+		Aliases: []string{"u"},
+		Flags: []Flag{
+			&StringFlag{
+				Name:      "flag",
+				Aliases:   []string{"fl", "f"},
+				TakesFile: true,
+			},
+			&BoolFlag{
+				Name:    "another-flag",
+				Aliases: []string{"b"},
+				Usage:   "another usage text",
+			},
+		},
+		Name:  "usage",
+		Usage: "standard usage text",
+		UsageText: `
+Usage for the usage text
+- formatted:  Based on the specified ConfigMap and summon secrets.yml
+- list:       Inspect the environment for a specific process running on a Pod
+- for_effect: Compare 'namespace' environment with 'local'
+`,
+		Subcommands: []*Command{{
+			Aliases: []string{"su"},
+			Flags: []Flag{
+				&BoolFlag{
+					Name:    "sub-command-flag",
+					Aliases: []string{"s"},
+					Usage:   "some usage text",
+				},
+			},
+			Name:      "sub-usage",
+			Usage:     "standard usage text",
+			UsageText: "Single line of UsageText",
+		}},
 	}}
 	app.UsageText = "app [first_arg] [second_arg]"
 	app.Usage = "Some app"

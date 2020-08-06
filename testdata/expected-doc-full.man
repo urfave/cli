@@ -76,3 +76,39 @@ another usage test
 retrieve generic information
 
 .SH some\-command
+.SH usage, u
+.PP
+standard usage text
+
+.PP
+.RS
+
+.nf
+Usage for the usage text
+\- formatted:  Based on the specified ConfigMap and summon secrets.yml
+\- list:       Inspect the environment for a specific process running on a Pod
+\- for\_effect: Compare 'namespace' environment with 'local'
+
+.fi
+.RE
+
+.PP
+\fB\-\-another\-flag, \-b\fP: another usage text
+
+.PP
+\fB\-\-flag, \-\-fl, \-f\fP="":
+
+.SS sub\-usage, su
+.PP
+standard usage text
+
+.PP
+.RS
+
+.PP
+Single line of UsageText
+
+.RE
+
+.PP
+\fB\-\-sub\-command\-flag, \-s\fP: some usage text
