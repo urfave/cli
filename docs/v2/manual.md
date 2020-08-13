@@ -425,14 +425,17 @@ import (
 func main() {
   app := &cli.App{
     Flags: []cli.Flag{
-      &cli.StringFlag{
-        Name:  "lang, l",
-        Value: "english",
-        Usage: "Language for the greeting",
-      },
-      &cli.StringFlag{
-        Name:  "config, c",
-        Usage: "Load configuration from `FILE`",
+        &cli.StringFlag{
+            Name:    "lang",
+            Aliases: []string{"l"},
+            Value:   "english",
+            Usage:   "Language for the greeting",
+        },
+        &cli.StringFlag{
+            Name:    "config",
+            Aliases: []string{"c"},
+            Usage:   "Load configuration from `FILE`",
+        },
       },
     },
     Commands: []*cli.Command{
@@ -570,7 +573,8 @@ func main() {
 
   app.Flags = []cli.Flag {
     &cli.StringFlag{
-      Name: "password, p",
+      Name: "password",
+      Aliases: []string{"p"},
       Usage: "password for the mysql database",
       FilePath: "/etc/mysql/password",
     },
@@ -1309,7 +1313,8 @@ import (
 
 func main() {
   cli.HelpFlag = &cli.BoolFlag{
-    Name: "haaaaalp", Aliases: []string{"halp"},
+    Name: "haaaaalp",
+    Aliases: []string{"halp"},
     Usage: "HALP",
     EnvVars: []string{"SHOW_HALP", "HALPPLZ"},
   }
@@ -1344,7 +1349,8 @@ import (
 
 func main() {
   cli.VersionFlag = &cli.BoolFlag{
-    Name: "print-version", Aliases: []string{"V"},
+    Name: "print-version",
+    Aliases: []string{"V"},
     Usage: "print only the version",
   }
 
