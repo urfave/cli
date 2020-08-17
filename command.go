@@ -61,6 +61,9 @@ type Command struct {
 	// cli.go uses text/template to render templates. You can
 	// render custom help text by setting this variable.
 	CustomHelpTemplate string
+
+	// Other custom info
+	Metadata map[string]interface{}
 }
 
 type Commands []*Command
