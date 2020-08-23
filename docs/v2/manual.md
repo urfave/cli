@@ -436,7 +436,6 @@ func main() {
             Aliases: []string{"c"},
             Usage:   "Load configuration from `FILE`",
         },
-      },
     },
     Commands: []*cli.Command{
       {
