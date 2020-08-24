@@ -124,7 +124,9 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
 	}
 
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
-		f.Value = &StringSlice{}
+		if f.Value == nil {
+			f.Value = &StringSlice{}
+		}
 		destination := f.Value
 		if f.Destination != nil {
 			destination = f.Destination
