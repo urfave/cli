@@ -214,6 +214,12 @@ func ShowCommandHelp(ctx *Context, command string) error {
 	return nil
 }
 
+// ShowSubcommandHelpAndExit - Prints help for the given subcommand and exits with exit code.
+func ShowSubcommandHelpAndExit(c *Context, exitCode int) {
+	_ = ShowSubcommandHelp(c)
+	os.Exit(exitCode)
+}
+
 // ShowSubcommandHelp prints help for the given subcommand
 func ShowSubcommandHelp(c *Context) error {
 	if c == nil {
