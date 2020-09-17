@@ -164,9 +164,10 @@ func DefaultCompleteWithFlags(cmd *Command) func(c *Context) {
 		if len(os.Args) > 2 {
 			lastArg := os.Args[len(os.Args)-2]
 			if strings.HasPrefix(lastArg, "-") {
-				printFlagSuggestions(lastArg, c.App.Flags, c.App.Writer)
 				if cmd != nil {
 					printFlagSuggestions(lastArg, cmd.Flags, c.App.Writer)
+				} else {
+					printFlagSuggestions(lastArg, c.App.Flags, c.App.Writer)
 				}
 				return
 			}
