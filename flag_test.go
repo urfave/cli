@@ -386,6 +386,20 @@ func TestStringSliceFlagApply_SetsAllNames(t *testing.T) {
 	expect(t, err, nil)
 }
 
+func TestStringSliceFlagApply_UsesEnvValues(t *testing.T) {
+	defer resetEnv(os.Environ())
+	os.Clearenv()
+	_ = os.Setenv("MY_GOAT", "vincent van goat,scape goat")
+	var val StringSlice
+	fl := StringSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: &val}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse(nil)
+	expect(t, err, nil)
+	expect(t, val.Value(), NewStringSlice("vincent van goat", "scape goat").Value())
+}
+
 func TestStringSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 	defValue := []string{"UA", "US"}
 
