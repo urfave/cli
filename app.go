@@ -72,6 +72,8 @@ type App struct {
 	Authors []*Author
 	// Copyright of the binary if any
 	Copyright string
+	// Reader reader to write input to (useful for tests)
+	Reader io.Reader
 	// Writer writer to write output to
 	Writer io.Writer
 	// ErrWriter writes error output
@@ -117,6 +119,7 @@ func NewApp() *App {
 		BashComplete: DefaultAppComplete,
 		Action:       helpCommand.Action,
 		Compiled:     compileTime(),
+		Reader:       os.Stdin,
 		Writer:       os.Stdout,
 		ErrWriter:    os.Stderr,
 	}
@@ -158,6 +161,10 @@ func (a *App) Setup() {
 
 	if a.Compiled == (time.Time{}) {
 		a.Compiled = compileTime()
+	}
+
+	if a.Reader == nil {
+		a.Reader = os.Stdin
 	}
 
 	if a.Writer == nil {
