@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"reflect"
 	"strings"
 	"text/template"
 )
@@ -158,24 +159,17 @@ func (a *App) prepareFishFlags(flags []Flag, previousCommands []string) []string
 }
 
 func fishAddFileFlag(flag Flag, completion *strings.Builder) {
-	switch f := flag.(type) {
-	case *GenericFlag:
-		if f.TakesFile {
-			return
-		}
-	case *StringFlag:
-		if f.TakesFile {
-			return
-		}
-	case *StringSliceFlag:
-		if f.TakesFile {
-			return
-		}
-	case *PathFlag:
-		if f.TakesFile {
+	val := reflect.ValueOf(flag)
+	// if flag is a non-nil pointer to a struct...
+	if val.Kind() != reflect.Invalid && val.Elem().Kind() == reflect.Struct {
+		field := val.Elem().FieldByName("TakesFile")
+		// if flag's underlying type has a bool field called TakesFile, whose value is true...
+		if field.Kind() == reflect.Bool && field.Bool() {
+			// don't append '-f'
 			return
 		}
 	}
+	// append '-f', indicating that arguments to this flag are *not* meant to be file paths
 	completion.WriteString(" -f")
 }
 
