@@ -386,6 +386,20 @@ func TestStringSliceFlagApply_SetsAllNames(t *testing.T) {
 	expect(t, err, nil)
 }
 
+func TestStringSliceFlagApply_UsesEnvValues(t *testing.T) {
+	defer resetEnv(os.Environ())
+	os.Clearenv()
+	_ = os.Setenv("MY_GOAT", "vincent van goat,scape goat")
+	var val StringSlice
+	fl := StringSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: &val}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse(nil)
+	expect(t, err, nil)
+	expect(t, val.Value(), NewStringSlice("vincent van goat", "scape goat").Value())
+}
+
 func TestStringSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 	defValue := []string{"UA", "US"}
 
@@ -1832,6 +1846,17 @@ func TestTimestampFlagApply(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
+	expect(t, err, nil)
+	expect(t, *fl.Value.timestamp, expectedResult)
+}
+
+func TestTimestampFlagApplyValue(t *testing.T) {
+	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: time.RFC3339, Value: NewTimestamp(expectedResult)}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{""})
 	expect(t, err, nil)
 	expect(t, *fl.Value.timestamp, expectedResult)
 }
