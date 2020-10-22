@@ -16,7 +16,7 @@ type MapInputSource struct {
 	valueMap map[interface{}]interface{}
 }
 
-//NewMapInputSource create a new MapInputSource type
+// NewMapInputSource creates a new MapInputSource for implementing custom input sources.
 func NewMapInputSource(file string, valueMap map[interface{}]interface{}) *MapInputSource {
 	return &MapInputSource{file: file, valueMap: valueMap}
 }
