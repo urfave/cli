@@ -433,6 +433,12 @@ func TestApp_Command(t *testing.T) {
 	}
 }
 
+func TestApp_Setup_defaultsReader(t *testing.T) {
+	app := &App{}
+	app.Setup()
+	expect(t, app.Reader, os.Stdin)
+}
+
 func TestApp_Setup_defaultsWriter(t *testing.T) {
 	app := &App{}
 	app.Setup()
@@ -850,12 +856,44 @@ func TestApp_ParseSliceFlagsWithMissingValue(t *testing.T) {
 	}
 }
 
+func TestApp_DefaultStdin(t *testing.T) {
+	app := &App{}
+	app.Setup()
+
+	if app.Reader != os.Stdin {
+		t.Error("Default input reader not set.")
+	}
+}
+
 func TestApp_DefaultStdout(t *testing.T) {
 	app := &App{}
 	app.Setup()
 
 	if app.Writer != os.Stdout {
 		t.Error("Default output writer not set.")
+	}
+}
+
+func TestApp_SetStdin(t *testing.T) {
+	buf := make([]byte, 12)
+
+	app := &App{
+		Name:   "test",
+		Reader: strings.NewReader("Hello World!"),
+		Action: func(c *Context) error {
+			_, err := c.App.Reader.Read(buf)
+			return err
+		},
+	}
+
+	err := app.Run([]string{"help"})
+
+	if err != nil {
+		t.Fatalf("Run error: %s", err)
+	}
+
+	if string(buf) != "Hello World!" {
+		t.Error("App did not read input from desired reader.")
 	}
 }
 
