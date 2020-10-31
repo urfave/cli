@@ -30,6 +30,7 @@ cli v2 manual
     + [ZSH Support](#zsh-support)
     + [ZSH default auto-complete example](#zsh-default-auto-complete-example)
     + [ZSH custom auto-complete example](#zsh-custom-auto-complete-example)
+    + [PowerShell Support](#powershell-support)
   * [Generated Help Text](#generated-help-text)
     + [Customization](#customization-1)
   * [Version Flag](#version-flag)
@@ -1224,6 +1225,23 @@ source  path/to/autocomplete/zsh_autocomplete
 ![](/docs/v2/images/default-zsh-autocomplete.gif)
 #### ZSH custom auto-complete example
 ![](/docs/v2/images/custom-zsh-autocomplete.gif)
+
+#### PowerShell Support
+Auto-completion for PowerShell is also supported using the `autocomplete/powershell_autocomplete.ps1` 
+file included in this repo. 
+
+Rename the script to `<my program>.ps1` and move it anywhere in your file system.
+The location of script does not matter, only the file name of the script has to match
+the your program's binary name. 
+
+To activate it, enter `& path/to/autocomplete/<my program>.ps1`
+
+To persist across new shells, open the PowerShell profile (with `code $profile` or `notepad $profile`)
+and add the line:
+```
+& path/to/autocomplete/<my program>.ps1
+```
+
 
 ### Generated Help Text
 
