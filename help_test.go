@@ -54,6 +54,22 @@ func Test_ShowAppHelp_HideVersion(t *testing.T) {
 	}
 }
 
+func Test_ShowAppHelp_MultiLineDescription(t *testing.T) {
+	output := new(bytes.Buffer)
+	app := &App{Writer: output}
+
+	app.HideVersion = true
+	app.Description = "multi\n  line"
+
+	c := NewContext(app, nil, nil)
+
+	_ = ShowAppHelp(c)
+
+	if !bytes.Contains(output.Bytes(), []byte("DESCRIPTION:\n   multi\n     line")) {
+		t.Errorf("expected\n%s\nto include\n%s", output.String(), "DESCRIPTION:\n   multi\n     line")
+	}
+}
+
 func Test_Help_Custom_Flags(t *testing.T) {
 	oldFlag := HelpFlag
 	defer func() {
