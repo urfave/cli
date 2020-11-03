@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        go: [1.12, 1.13, 1.14]
+        go: [1.13, 1.14, 1.15]
     name: ${{ matrix.os }} @ Go ${{ matrix.go }}
     runs-on: ${{ matrix.os }}
     steps:
@@ -39,7 +39,7 @@ jobs:
           ref: ${{ github.ref }}
 
       - name: GOFMT Check
-        if: matrix.go == 1.14 && matrix.os == 'ubuntu-latest'
+        if: matrix.go == 1.15 && matrix.os == 'ubuntu-latest'
         run: test -z $(gofmt -l .)
 
       - name: vet
@@ -62,10 +62,10 @@ jobs:
     name: test-docs
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Go 1.14
+      - name: Set up Go 1.15
         uses: actions/setup-go@v1
         with:
-          go-version: 1.14
+          go-version: 1.15
 
       - name: Use Node.js 12.x
         uses: actions/setup-node@v1
