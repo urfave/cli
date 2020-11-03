@@ -140,7 +140,7 @@ func (a *App) Setup() {
 	}
 
 	if a.HelpName == "" {
-		a.HelpName = filepath.Base(os.Args[0])
+		a.HelpName = a.Name
 	}
 
 	if a.Usage == "" {
