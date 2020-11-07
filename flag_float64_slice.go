@@ -119,13 +119,13 @@ func (f *Float64SliceFlag) GetValue() string {
 
 // Apply populates the flag given the flag set and environment
 func (f *Float64SliceFlag) Apply(set *flag.FlagSet) error {
-	if val, ok, source := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
+	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
 		if val != "" {
 			f.Value = &Float64Slice{}
 
 			for _, s := range strings.Split(val, ",") {
 				if err := f.Value.Set(strings.TrimSpace(s)); err != nil {
-					return fmt.Errorf("could not parse %q as float64 slice value %s for flag %s: %s", f.Value, source, f.Name, err)
+					return fmt.Errorf("could not parse %q as float64 slice value from %s for flag %s: %s", f.Value, source, f.Name, err)
 				}
 			}
 

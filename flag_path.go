@@ -56,8 +56,7 @@ func (f *PathFlag) GetValue() string {
 
 // Apply populates the flag given the flag set and environment
 func (f *PathFlag) Apply(set *flag.FlagSet) error {
-	// TODO: how to report the source of parse errors?
-	if val, ok, _ := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
+	if val, _, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
 		f.Value = val
 		f.HasBeenSet = true
 	}

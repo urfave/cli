@@ -131,12 +131,12 @@ func (f *IntSliceFlag) GetValue() string {
 
 // Apply populates the flag given the flag set and environment
 func (f *IntSliceFlag) Apply(set *flag.FlagSet) error {
-	if val, ok, source := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
+	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
 		f.Value = &IntSlice{}
 
 		for _, s := range strings.Split(val, ",") {
 			if err := f.Value.Set(strings.TrimSpace(s)); err != nil {
-				return fmt.Errorf("could not parse %q as int slice value %s for flag %s: %s", val, source, f.Name, err)
+				return fmt.Errorf("could not parse %q as int slice value from %s for flag %s: %s", val, source, f.Name, err)
 			}
 		}
 

@@ -372,17 +372,20 @@ func hasFlag(flags []Flag, fl Flag) bool {
 	return false
 }
 
-func flagFromEnvOrFile(envVars []string, filePath string) (val string, ok bool, source string) {
+// Return the first value from a list of environment variables and files
+// (which may or may not exist), a description of where the value was found,
+// and a boolean which is true if a value was found.
+func flagFromEnvOrFile(envVars []string, filePath string) (value string, fromWhere string, found bool) {
 	for _, envVar := range envVars {
 		envVar = strings.TrimSpace(envVar)
-		if val, ok := syscall.Getenv(envVar); ok {
-			return val, true, fmt.Sprintf("from environment variable %q", envVar)
+		if value, found := syscall.Getenv(envVar); found {
+			return value, fmt.Sprintf("environment variable %q", envVar), true
 		}
 	}
 	for _, fileVar := range strings.Split(filePath, ",") {
 		if data, err := ioutil.ReadFile(fileVar); err == nil {
-			return string(data), true, fmt.Sprintf("from file %q", filePath)
+			return string(data), fmt.Sprintf("file %q", filePath), true
 		}
 	}
-	return "", false, ""
+	return "", "", false
 }

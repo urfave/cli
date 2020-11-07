@@ -60,12 +60,12 @@ func (f *IntFlag) GetValue() string {
 
 // Apply populates the flag given the flag set and environment
 func (f *IntFlag) Apply(set *flag.FlagSet) error {
-	if val, ok, source := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
+	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
 		if val != "" {
 			valInt, err := strconv.ParseInt(val, 0, 64)
 
 			if err != nil {
-				return fmt.Errorf("could not parse %q as int value %s for flag %s: %s", val, source, f.Name, err)
+				return fmt.Errorf("could not parse %q as int value from %s for flag %s: %s", val, source, f.Name, err)
 			}
 
 			f.Value = int(valInt)
