@@ -751,7 +751,7 @@ VERSION:
 	}
 
 	output := &bytes.Buffer{}
-	app.Writer = output
+	app.ErrWriter = output
 	_ = app.Run([]string{"app", "--help"})
 
 	if strings.Contains(output.String(), "secretfrob") {

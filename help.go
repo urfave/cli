@@ -87,7 +87,7 @@ func ShowAppHelp(c *Context) error {
 			"ExtraInfo": c.App.ExtraInfo,
 		}
 	}
-	HelpPrinterCustom(c.App.Writer, tpl, c.App, customAppData())
+	HelpPrinterCustom(c.App.ErrWriter, tpl, c.App, customAppData())
 
 	return nil
 }

@@ -2271,7 +2271,7 @@ func TestPrintFunctions(t *testing.T) {
 
 func assertBufferAndReset(t *testing.T, buffer *bytes.Buffer, want string) {
 	if got := buffer.String(); got != want {
-		t.Errorf("%s: wantPrint: %q got: %q", t.Name(), want, got)
+		t.Errorf("%s: want: %q got: %q", t.Name(), want, got)
 	}
 
 	buffer.Reset()
