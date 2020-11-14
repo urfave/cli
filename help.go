@@ -122,8 +122,8 @@ func ShowAppHelp(cCtx *Context) error {
 		tpl = AppHelpTemplate
 	}
 
-	if cCtx.App.ExtraInfo == nil {
-		HelpPrinter(cCtx.App.Writer, tpl, cCtx.App)
+	if c.App.ExtraInfo == nil {
+		HelpPrinter(c.App.ErrWriter, tpl, c.App)
 		return nil
 	}
 
@@ -132,7 +132,7 @@ func ShowAppHelp(cCtx *Context) error {
 			"ExtraInfo": cCtx.App.ExtraInfo,
 		}
 	}
-	HelpPrinterCustom(cCtx.App.Writer, tpl, cCtx.App, customAppData())
+	HelpPrinterCustom(cCtx.App.ErrWriter, tpl, cCtx.App, customAppData())
 
 	return nil
 }
@@ -210,10 +210,16 @@ func DefaultCompleteWithFlags(cmd *Command) func(cCtx *Context) {
 			lastArg := os.Args[len(os.Args)-2]
 
 			if strings.HasPrefix(lastArg, "-") {
+<<<<<<< HEAD
 				if cmd != nil {
 					printFlagSuggestions(lastArg, cmd.Flags, cCtx.App.Writer)
 
 					return
+=======
+				printFlagSuggestions(lastArg, c.App.Flags, c.App.ErrWriter)
+				if cmd != nil {
+					printFlagSuggestions(lastArg, cmd.Flags, c.App.ErrWriter)
+>>>>>>> errors and diagnostics should go to ErrWriter
 				}
 
 				printFlagSuggestions(lastArg, cCtx.App.Flags, cCtx.App.Writer)
@@ -223,8 +229,14 @@ func DefaultCompleteWithFlags(cmd *Command) func(cCtx *Context) {
 		}
 
 		if cmd != nil {
+<<<<<<< HEAD
 			printCommandSuggestions(cmd.Subcommands, cCtx.App.Writer)
 			return
+=======
+			printCommandSuggestions(cmd.Subcommands, c.App.ErrWriter)
+		} else {
+			printCommandSuggestions(c.App.Commands, c.App.ErrWriter)
+>>>>>>> errors and diagnostics should go to ErrWriter
 		}
 
 		printCommandSuggestions(cCtx.App.Commands, cCtx.App.Writer)
@@ -261,7 +273,7 @@ func ShowCommandHelp(ctx *Context, command string) error {
 				}
 			}
 
-			HelpPrinter(ctx.App.Writer, templ, c)
+			HelpPrinter(ctx.App.ErrWriter, templ, c)
 
 			return nil
 		}
@@ -303,7 +315,7 @@ func ShowVersion(cCtx *Context) {
 }
 
 func printVersion(cCtx *Context) {
-	_, _ = fmt.Fprintf(cCtx.App.Writer, "%v version %v\n", cCtx.App.Name, cCtx.App.Version)
+	_, _ = fmt.Fprintf(cCtx.App.ErrWriter, "%v version %v\n", cCtx.App.Name, cCtx.App.Version)
 }
 
 // ShowCompletions prints the lists of commands within a given context

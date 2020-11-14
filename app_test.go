@@ -101,6 +101,7 @@ func ExampleApp_Run_appHelp() {
 		Name:        "greet",
 		Version:     "0.1.0",
 		Description: "This is how we describe greet the app",
+		ErrWriter:   os.Stdout,
 		Authors: []*Author{
 			{Name: "Harrison", Email: "harrison@lolwut.com"},
 			{Name: "Oliver Allen", Email: "oliver@toyshop.com"},
@@ -154,7 +155,8 @@ func ExampleApp_Run_commandHelp() {
 	os.Args = []string{"greet", "h", "describeit"}
 
 	app := &App{
-		Name: "greet",
+		Name:      "greet",
+		ErrWriter: os.Stdout,
 		Flags: []Flag{
 			&StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
 		},
@@ -187,9 +189,11 @@ func ExampleApp_Run_commandHelp() {
 }
 
 func ExampleApp_Run_noAction() {
-	app := App{}
+	output := new(bytes.Buffer)
+	app := App{ErrWriter: output}
 	app.Name = "greet"
 	_ = app.Run([]string{"greet"})
+	fmt.Println(output.String())
 	// Output:
 	// NAME:
 	//    greet - A new cli application
@@ -215,6 +219,7 @@ func ExampleApp_Run_subcommandNoAction() {
 				Description: "This is how we describe describeit the function",
 			},
 		},
+		ErrWriter: os.Stdout,
 	}
 	_ = app.Run([]string{"greet", "describeit"})
 	// Output:
@@ -239,6 +244,7 @@ func ExampleApp_Run_bashComplete_withShortFlag() {
 	app := NewApp()
 	app.Name = "greet"
 	app.EnableBashCompletion = true
+	app.ErrWriter = os.Stdout
 	app.Flags = []Flag{
 		&IntFlag{
 			Name:    "other",
@@ -267,6 +273,7 @@ func ExampleApp_Run_bashComplete_withLongFlag() {
 	app := NewApp()
 	app.Name = "greet"
 	app.EnableBashCompletion = true
+	app.ErrWriter = os.Stdout
 	app.Flags = []Flag{
 		&IntFlag{
 			Name:    "other",
@@ -296,6 +303,7 @@ func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
 	app := NewApp()
 	app.Name = "greet"
 	app.EnableBashCompletion = true
+	app.ErrWriter = os.Stdout
 	app.Flags = []Flag{
 		&IntFlag{
 			Name:    "int-flag",
@@ -329,6 +337,7 @@ func ExampleApp_Run_bashComplete() {
 	app := &App{
 		Name:                 "greet",
 		EnableBashCompletion: true,
+		ErrWriter:            os.Stdout,
 		Commands: []*Command{
 			{
 				Name:        "describeit",
@@ -368,6 +377,7 @@ func ExampleApp_Run_zshComplete() {
 	app := NewApp()
 	app.Name = "greet"
 	app.EnableBashCompletion = true
+	app.ErrWriter = os.Stdout
 	app.Commands = []*Command{
 		{
 			Name:        "describeit",
@@ -1244,8 +1254,8 @@ func TestApp_SetStdout(t *testing.T) {
 		t.Fatalf("Run error: %s", err)
 	}
 
-	if w.Len() == 0 {
-		t.Error("App did not write output to desired writer.")
+	if w.Len() != 0 {
+		t.Error("App wrote help screen to the wrong stream.")
 	}
 }
 
@@ -1278,7 +1288,7 @@ func TestApp_BeforeFunc(t *testing.T) {
 		Flags: []Flag{
 			&StringFlag{Name: "opt"},
 		},
-		Writer: ioutil.Discard,
+		ErrWriter: ioutil.Discard,
 	}
 
 	// run with the Before() func succeeding
@@ -1856,7 +1866,7 @@ func TestApp_Run_CommandWithSubcommandHasHelpTopic(t *testing.T) {
 
 			app := &App{}
 			buf := new(bytes.Buffer)
-			app.Writer = buf
+			app.ErrWriter = buf
 
 			subCmdBar := &Command{
 				Name:  "bar",
@@ -1902,7 +1912,7 @@ func TestApp_Run_CommandWithSubcommandHasHelpTopic(t *testing.T) {
 func TestApp_Run_SubcommandFullPath(t *testing.T) {
 	app := &App{}
 	buf := new(bytes.Buffer)
-	app.Writer = buf
+	app.ErrWriter = buf
 	app.Name = "command"
 	subCmd := &Command{
 		Name:  "bar",
@@ -1935,7 +1945,7 @@ func TestApp_Run_SubcommandFullPath(t *testing.T) {
 func TestApp_Run_SubcommandHelpName(t *testing.T) {
 	app := &App{}
 	buf := new(bytes.Buffer)
-	app.Writer = buf
+	app.ErrWriter = buf
 	app.Name = "command"
 	subCmd := &Command{
 		Name:     "bar",
@@ -1970,7 +1980,7 @@ func TestApp_Run_SubcommandHelpName(t *testing.T) {
 func TestApp_Run_CommandHelpName(t *testing.T) {
 	app := &App{}
 	buf := new(bytes.Buffer)
-	app.Writer = buf
+	app.ErrWriter = buf
 	app.Name = "command"
 	subCmd := &Command{
 		Name:  "bar",
@@ -2005,7 +2015,7 @@ func TestApp_Run_CommandHelpName(t *testing.T) {
 func TestApp_Run_CommandSubcommandHelpName(t *testing.T) {
 	app := &App{}
 	buf := new(bytes.Buffer)
-	app.Writer = buf
+	app.ErrWriter = buf
 	app.Name = "base"
 	subCmd := &Command{
 		Name:     "bar",
@@ -2087,10 +2097,10 @@ func TestApp_Run_Help(t *testing.T) {
 			buf := new(bytes.Buffer)
 
 			app := &App{
-				Name:     "boom",
-				Usage:    "make an explosive entrance",
-				Writer:   buf,
-				HideHelp: tt.hideHelp,
+				Name:      "boom",
+				Usage:     "make an explosive entrance",
+				ErrWriter: buf,
+				HideHelp:  tt.hideHelp,
 				Action: func(c *Context) error {
 					buf.WriteString("boom I say!")
 					return nil
@@ -2120,10 +2130,10 @@ func TestApp_Run_Version(t *testing.T) {
 			buf := new(bytes.Buffer)
 
 			app := &App{
-				Name:    "boom",
-				Usage:   "make an explosive entrance",
-				Version: "0.1.0",
-				Writer:  buf,
+				Name:      "boom",
+				Usage:     "make an explosive entrance",
+				Version:   "0.1.0",
+				ErrWriter: buf,
 				Action: func(c *Context) error {
 					buf.WriteString("boom I say!")
 					return nil
@@ -2164,7 +2174,7 @@ func TestApp_Run_Categories(t *testing.T) {
 				Category: "2",
 			},
 		},
-		Writer: buf,
+		ErrWriter: buf,
 	}
 
 	_ = app.Run([]string{"categories"})

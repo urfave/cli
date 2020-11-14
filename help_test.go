@@ -14,7 +14,7 @@ import (
 
 func Test_ShowAppHelp_NoAuthor(t *testing.T) {
 	output := new(bytes.Buffer)
-	app := &App{Writer: output}
+	app := &App{ErrWriter: output}
 
 	c := NewContext(app, nil, nil)
 
@@ -27,7 +27,7 @@ func Test_ShowAppHelp_NoAuthor(t *testing.T) {
 
 func Test_ShowAppHelp_NoVersion(t *testing.T) {
 	output := new(bytes.Buffer)
-	app := &App{Writer: output}
+	app := &App{ErrWriter: output}
 
 	app.Version = ""
 
@@ -42,7 +42,7 @@ func Test_ShowAppHelp_NoVersion(t *testing.T) {
 
 func Test_ShowAppHelp_HideVersion(t *testing.T) {
 	output := new(bytes.Buffer)
-	app := &App{Writer: output}
+	app := &App{ErrWriter: output}
 
 	app.HideVersion = true
 
@@ -57,7 +57,7 @@ func Test_ShowAppHelp_HideVersion(t *testing.T) {
 
 func Test_ShowAppHelp_MultiLineDescription(t *testing.T) {
 	output := new(bytes.Buffer)
-	app := &App{Writer: output}
+	app := &App{ErrWriter: output}
 
 	app.HideVersion = true
 	app.Description = "multi\n  line"
@@ -95,7 +95,7 @@ func Test_Help_Custom_Flags(t *testing.T) {
 		},
 	}
 	output := new(bytes.Buffer)
-	app.Writer = output
+	app.ErrWriter = output
 	_ = app.Run([]string{"test", "-h"})
 	if output.Len() > 0 {
 		t.Errorf("unexpected output: %s", output.String())
@@ -126,7 +126,7 @@ func Test_Version_Custom_Flags(t *testing.T) {
 		},
 	}
 	output := new(bytes.Buffer)
-	app.Writer = output
+	app.ErrWriter = output
 	_ = app.Run([]string{"test", "-v"})
 	if output.Len() > 0 {
 		t.Errorf("unexpected output: %s", output.String())
@@ -164,7 +164,7 @@ func Test_helpCommand_Action_ErrorIfNoTopic(t *testing.T) {
 func Test_helpCommand_InHelpOutput(t *testing.T) {
 	app := &App{}
 	output := &bytes.Buffer{}
-	app.Writer = output
+	app.ErrWriter = output
 	_ = app.Run([]string{"test", "--help"})
 
 	s := output.String()
@@ -220,7 +220,7 @@ func TestShowAppHelp_CommandAliases(t *testing.T) {
 	}
 
 	output := &bytes.Buffer{}
-	app.Writer = output
+	app.ErrWriter = output
 	_ = app.Run([]string{"foo", "--help"})
 
 	if !strings.Contains(output.String(), "frobbly, fr, frob") {
@@ -290,8 +290,8 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 
 			var buf bytes.Buffer
 			app := &App{
-				Name:   "my-app",
-				Writer: &buf,
+				Name:      "my-app",
+				ErrWriter: &buf,
 				Commands: []*Command{
 					{
 						Name:               "my-command",
@@ -379,8 +379,9 @@ func TestShowCommandHelp_HelpPrinterCustom(t *testing.T) {
 
 			var buf bytes.Buffer
 			app := &App{
-				Name:   "my-app",
-				Writer: &buf,
+				Name:      "my-app",
+				Writer:    &buf,
+				ErrWriter: &buf,
 				Commands: []*Command{
 					{
 						Name:               "my-command",
@@ -416,7 +417,7 @@ func TestShowCommandHelp_CommandAliases(t *testing.T) {
 	}
 
 	output := &bytes.Buffer{}
-	app.Writer = output
+	app.ErrWriter = output
 	_ = app.Run([]string{"foo", "help", "fr"})
 
 	if !strings.Contains(output.String(), "frobbly") {
@@ -494,7 +495,7 @@ func TestShowSubcommandHelp_CommandAliases(t *testing.T) {
 	}
 
 	output := &bytes.Buffer{}
-	app.Writer = output
+	app.ErrWriter = output
 	_ = app.Run([]string{"foo", "help"})
 
 	if !strings.Contains(output.String(), "frobbly, fr, frob, bork") {
@@ -528,7 +529,7 @@ EXAMPLES:
 		},
 	}
 	output := &bytes.Buffer{}
-	app.Writer = output
+	app.ErrWriter = output
 	_ = app.Run([]string{"foo", "help", "frobbly"})
 
 	if strings.Contains(output.String(), "2. Frobbly runs without this param locally.") {
@@ -555,7 +556,7 @@ func TestShowSubcommandHelp_CommandUsageText(t *testing.T) {
 	}
 
 	output := &bytes.Buffer{}
-	app.Writer = output
+	app.ErrWriter = output
 
 	_ = app.Run([]string{"foo", "frobbly", "--help"})
 
@@ -610,7 +611,7 @@ func TestShowSubcommandHelp_SubcommandUsageText(t *testing.T) {
 	}
 
 	output := &bytes.Buffer{}
-	app.Writer = output
+	app.ErrWriter = output
 	_ = app.Run([]string{"foo", "frobbly", "bobbly", "--help"})
 
 	if !strings.Contains(output.String(), "this is usage text") {
@@ -672,7 +673,7 @@ func TestShowAppHelp_HiddenCommand(t *testing.T) {
 	}
 
 	output := &bytes.Buffer{}
-	app.Writer = output
+	app.ErrWriter = output
 	_ = app.Run([]string{"app", "--help"})
 
 	if strings.Contains(output.String(), "secretfrob") {
@@ -734,7 +735,7 @@ func TestShowAppHelp_HelpPrinter(t *testing.T) {
 			var buf bytes.Buffer
 			app := &App{
 				Name:                  "my-app",
-				Writer:                &buf,
+				ErrWriter:             &buf,
 				CustomAppHelpTemplate: tt.template,
 			}
 
@@ -805,7 +806,7 @@ func TestShowAppHelp_HelpPrinterCustom(t *testing.T) {
 			var buf bytes.Buffer
 			app := &App{
 				Name:                  "my-app",
-				Writer:                &buf,
+				ErrWriter:             &buf,
 				CustomAppHelpTemplate: tt.template,
 			}
 
@@ -868,7 +869,7 @@ VERSION:
 	}
 
 	output := &bytes.Buffer{}
-	app.Writer = output
+	app.ErrWriter = output
 	_ = app.Run([]string{"app", "--help"})
 
 	if strings.Contains(output.String(), "secretfrob") {
@@ -986,7 +987,7 @@ App UsageText`,
 func TestHideHelpCommand(t *testing.T) {
 	app := &App{
 		HideHelpCommand: true,
-		Writer:          ioutil.Discard,
+		ErrWriter:       ioutil.Discard,
 	}
 
 	err := app.Run([]string{"foo", "help"})
@@ -1006,7 +1007,7 @@ func TestHideHelpCommand(t *testing.T) {
 func TestHideHelpCommand_False(t *testing.T) {
 	app := &App{
 		HideHelpCommand: false,
-		Writer:          ioutil.Discard,
+		ErrWriter:       ioutil.Discard,
 	}
 
 	err := app.Run([]string{"foo", "help"})
@@ -1024,7 +1025,7 @@ func TestHideHelpCommand_WithHideHelp(t *testing.T) {
 	app := &App{
 		HideHelp:        true, // effective (hides both command and flag)
 		HideHelpCommand: true, // ignored
-		Writer:          ioutil.Discard,
+		ErrWriter:       ioutil.Discard,
 	}
 
 	err := app.Run([]string{"foo", "help"})
@@ -1053,7 +1054,7 @@ func newContextFromStringSlice(ss []string) *Context {
 func TestHideHelpCommand_RunAsSubcommand(t *testing.T) {
 	app := &App{
 		HideHelpCommand: true,
-		Writer:          ioutil.Discard,
+		ErrWriter:       ioutil.Discard,
 		Commands: []*Command{
 			{
 				Name: "dummy",
@@ -1078,7 +1079,7 @@ func TestHideHelpCommand_RunAsSubcommand(t *testing.T) {
 func TestHideHelpCommand_RunAsSubcommand_False(t *testing.T) {
 	app := &App{
 		HideHelpCommand: false,
-		Writer:          ioutil.Discard,
+		ErrWriter:       ioutil.Discard,
 		Commands: []*Command{
 			{
 				Name: "dummy",
@@ -1099,7 +1100,7 @@ func TestHideHelpCommand_RunAsSubcommand_False(t *testing.T) {
 
 func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 	app := &App{
-		Writer: ioutil.Discard,
+		ErrWriter: ioutil.Discard,
 		Commands: []*Command{
 			{
 				Name: "dummy",
