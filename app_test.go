@@ -2221,3 +2221,58 @@ func TestSetupInitializesOnlyNilWriters(t *testing.T) {
 		t.Errorf("expected a.Writer to be os.Stdout")
 	}
 }
+
+func TestPrintFunctions(t *testing.T) {
+	type args []interface{}
+
+	stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
+	testcases := []struct {
+		name        string
+		args        args
+		wantPrint   string
+		wantPrintln string
+	}{
+		{"errors", args{"%s", errors.New("test"), errors.New("print")}, "%stest print", "%s test print\n"},
+		{"string and error", args{"%s", "test", errors.New("print")}, "%stestprint", "%s test print\n"},
+		{"strings", args{"%s", "test", "print"}, "%stestprint", "%s test print\n"},
+		{"numerical", args{"%s", 0xA15, "print"}, "%s2581print", "%s 2581 print\n"},
+	}
+
+	a := &App{
+		Writer:    stdout,
+		ErrWriter: stderr,
+	}
+
+	for _, tt := range testcases {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			a.Print(tt.args...)
+			assertBufferAndReset(t, stdout, tt.wantPrint)
+
+			a.PrintErr(tt.args...)
+			assertBufferAndReset(t, stderr, tt.wantPrint)
+
+			a.Println(tt.args...)
+			assertBufferAndReset(t, stdout, tt.wantPrintln)
+
+			a.PrintErrln(tt.args...)
+			assertBufferAndReset(t, stderr, tt.wantPrintln)
+		})
+	}
+
+	want := "test 0.2553 invalid argument"
+
+	a.Printf("%s %.4f %v", "test", 0.2553, os.ErrInvalid)
+	assertBufferAndReset(t, stdout, want)
+
+	a.PrintErrf("%s %.4f %v", "test", 0.2553, os.ErrInvalid)
+	assertBufferAndReset(t, stderr, want)
+}
+
+func assertBufferAndReset(t *testing.T, buffer *bytes.Buffer, want string) {
+	if got := buffer.String(); got != want {
+		t.Errorf("%s: wantPrint: %q got: %q", t.Name(), want, got)
+	}
+
+	buffer.Reset()
+}

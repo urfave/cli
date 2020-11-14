@@ -486,6 +486,34 @@ func (a *App) VisibleFlags() []Flag {
 	return visibleFlags(a.Flags)
 }
 
+// Printf formats according to a format specifier and writes to App.Writer.
+// Errors are suppressed.
+func (a *App) Printf(format string, args ...interface{}) { printfFn(a.Writer, format, args...) }
+
+// Print formats using the default formats for its operands and writes to App.Writer.
+// Spaces are added between operands when neither is a string.
+// Errors are suppressed.
+func (a *App) Print(args ...interface{}) { printFn(a.Writer, false, args...) }
+
+// Println formats using the default formats for its operands and writes to App.Writer.
+// Spaces are always added between operands and a newline is appended.
+// Errors are suppressed.
+func (a *App) Println(args ...interface{}) { printFn(a.Writer, true, args...) }
+
+// PrintErrf formats according to a format specifier and writes to App.ErrWriter.
+// Errors are suppressed.
+func (a *App) PrintErrf(format string, args ...interface{}) { printfFn(a.ErrWriter, format, args...) }
+
+// PrintErr formats using the default formats for its operands and writes to App.ErrWriter.
+// Spaces are added between operands when neither is a string.
+// Errors are suppressed.
+func (a *App) PrintErr(args ...interface{}) { printFn(a.ErrWriter, false, args...) }
+
+// PrintErrln formats using the default formats for its operands and writes to App.ErrWriter.
+// Spaces are always added between operands and a newline is appended.
+// Errors are suppressed.
+func (a *App) PrintErrln(args ...interface{}) { printFn(a.ErrWriter, true, args...) }
+
 func (a *App) appendFlag(fl Flag) {
 	if !hasFlag(a.Flags, fl) {
 		a.Flags = append(a.Flags, fl)
@@ -537,4 +565,25 @@ func HandleAction(action interface{}, context *Context) (err error) {
 	}
 
 	return errInvalidActionType
+}
+
+func printfFn(w io.Writer, format string, args ...interface{}) {
+	if w == nil {
+		return
+	}
+
+	_, _ = fmt.Fprintf(w, format, args...)
+}
+
+func printFn(w io.Writer, trailingNewLine bool, args ...interface{}) {
+	if w == nil {
+		return
+	}
+
+	if trailingNewLine {
+		_, _ = fmt.Fprintln(w, args...)
+		return
+	}
+
+	_, _ = fmt.Fprint(w, args...)
 }
