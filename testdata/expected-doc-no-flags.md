@@ -47,12 +47,16 @@ retrieve generic information
 
 standard usage text
 
-```
-Usage for the usage text
-- formatted:  Based on the specified ConfigMap and summon secrets.yml
-- list:       Inspect the environment for a specific process running on a Pod
-- for_effect: Compare 'namespace' environment with 'local'
-```
+    Usage for the usage text
+    - formatted:  Based on the specified ConfigMap and summon secrets.yml
+    - list:       Inspect the environment for a specific process running on a Pod
+    - for_effect: Compare 'namespace' environment with 'local'
+    
+    ```
+    func() { ... }
+    ```
+    
+    Should be a part of the same code block
 
 **--another-flag, -b**: another usage text
 

@@ -158,32 +158,37 @@ func flagDetails(flag DocGenerationFlag) string {
 }
 
 func prepareUsageText(command *Command) string {
-	usageText := ""
-	if command.UsageText != "" {
-		// Remove leading and trailing newlines
-		preparedUsageText := strings.TrimSuffix(command.UsageText, "\n")
-		preparedUsageText = strings.TrimPrefix(preparedUsageText, "\n")
-
-		if strings.Contains(preparedUsageText, "\n") {
-			// Format multi-line string as a code block
-			usageText = fmt.Sprintf("```\n%s\n```\n", preparedUsageText)
-		} else {
-			// Style a single line as a note
-			usageText = fmt.Sprintf(">%s\n", preparedUsageText)
-		}
+	if command.UsageText == "" {
+		return ""
 	}
+
+	// Remove leading and trailing newlines
+	preparedUsageText := strings.Trim(command.UsageText, "\n")
+
+	var usageText string
+	if strings.Contains(preparedUsageText, "\n") {
+		// Format multi-line string as a code block using the 4 space schema to allow for embedded markdown such
+		// that it will not break the continuous code block.
+		for _, ln := range strings.Split(preparedUsageText, "\n") {
+			usageText += fmt.Sprintf("    %s\n", ln)
+		}
+	} else {
+		// Style a single line as a note
+		usageText = fmt.Sprintf(">%s\n", preparedUsageText)
+	}
+
 	return usageText
 }
 
 func prepareUsage(command *Command, usageText string) string {
-	usage := ""
-	if command.Usage != "" {
-		usage = fmt.Sprintf("%s\n", command.Usage)
+	if command.Usage == "" {
+		return ""
 	}
 
+	usage := command.Usage + "\n"
 	// Add a newline to the Usage IFF there is a UsageText
-	if usageText != "" && usage != "" {
-		usage = fmt.Sprintf("%s\n", usage)
+	if usageText != "" {
+		usage += "\n"
 	}
 
 	return usage

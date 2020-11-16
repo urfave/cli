@@ -89,6 +89,12 @@ Usage for the usage text
 \- list:       Inspect the environment for a specific process running on a Pod
 \- for\_effect: Compare 'namespace' environment with 'local'
 
+```
+func() { ... }
+```
+
+Should be a part of the same code block
+
 .fi
 .RE
 
