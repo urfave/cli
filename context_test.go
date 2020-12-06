@@ -136,6 +136,17 @@ func TestContext_Bool(t *testing.T) {
 	expect(t, c.Bool("top-flag"), true)
 }
 
+func TestContext_Value(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Int("myflag", 12, "doc")
+	parentSet := flag.NewFlagSet("test", 0)
+	parentSet.Int("top-flag", 13, "doc")
+	parentCtx := NewContext(nil, parentSet, nil)
+	c := NewContext(nil, set, parentCtx)
+	expect(t, c.Value("myflag"), 12)
+	expect(t, c.Value("top-flag"), 13)
+}
+
 func TestContext_Args(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("myflag", false, "doc")
