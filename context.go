@@ -108,7 +108,10 @@ func (c *Context) Lineage() []*Context {
 
 // Value returns the value of the flag corresponding to `name`
 func (c *Context) Value(name string) interface{} {
-	return c.flagSet.Lookup(name).Value.(flag.Getter).Get()
+	if fs := lookupFlagSet(name, c); fs != nil {
+		return fs.Lookup(name).Value.(flag.Getter).Get()
+	}
+	return nil
 }
 
 // Args returns the command line arguments associated with the context.
