@@ -145,6 +145,7 @@ func TestContext_Value(t *testing.T) {
 	c := NewContext(nil, set, parentCtx)
 	expect(t, c.Value("myflag"), 12)
 	expect(t, c.Value("top-flag"), 13)
+	expect(t, c.Value("unknown-flag"), nil)
 }
 
 func TestContext_Args(t *testing.T) {
