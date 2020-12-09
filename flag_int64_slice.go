@@ -145,7 +145,10 @@ func (f *Int64SliceFlag) Apply(set *flag.FlagSet) error {
 // Int64Slice looks up the value of a local Int64SliceFlag, returns
 // nil if not found
 func (c *Context) Int64Slice(name string) []int64 {
-	return lookupInt64Slice(name, c.flagSet)
+	if fs := lookupFlagSet(name, c); fs != nil {
+		return lookupInt64Slice(name, fs)
+	}
+	return nil
 }
 
 func lookupInt64Slice(name string, set *flag.FlagSet) []int64 {
