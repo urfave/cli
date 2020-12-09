@@ -674,6 +674,29 @@ func TestIntSliceFlagApply_SetsAllNames(t *testing.T) {
 	expect(t, err, nil)
 }
 
+func TestIntSliceFlagApply_ParentContext(t *testing.T) {
+	_ = (&App{
+		Flags: []Flag{
+			&IntSliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: NewIntSlice(1, 2, 3)},
+		},
+		Commands: []*Command{
+			{
+				Name: "child",
+				Action: func(ctx *Context) error {
+					expected := []int{1, 2, 3}
+					if !reflect.DeepEqual(ctx.IntSlice("numbers"), expected) {
+						t.Errorf("child context unable to view parent flag: %v != %v", expected, ctx.IntSlice("numbers"))
+					}
+					if !reflect.DeepEqual(ctx.IntSlice("n"), expected) {
+						t.Errorf("child context unable to view parent flag: %v != %v", expected, ctx.IntSlice("n"))
+					}
+					return nil
+				},
+			},
+		},
+	}).Run([]string{"run", "child"})
+}
+
 var int64SliceFlagTests = []struct {
 	name     string
 	aliases  []string
@@ -714,6 +737,29 @@ func TestInt64SliceFlagWithEnvVarHelpOutput(t *testing.T) {
 			t.Errorf("%q does not end with"+expectedSuffix, output)
 		}
 	}
+}
+
+func TestInt64SliceFlagApply_ParentContext(t *testing.T) {
+	_ = (&App{
+		Flags: []Flag{
+			&Int64SliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: NewInt64Slice(1, 2, 3)},
+		},
+		Commands: []*Command{
+			{
+				Name: "child",
+				Action: func(ctx *Context) error {
+					expected := []int64{1, 2, 3}
+					if !reflect.DeepEqual(ctx.Int64Slice("numbers"), expected) {
+						t.Errorf("child context unable to view parent flag: %v != %v", expected, ctx.Int64Slice("numbers"))
+					}
+					if !reflect.DeepEqual(ctx.Int64Slice("n"), expected) {
+						t.Errorf("child context unable to view parent flag: %v != %v", expected, ctx.Int64Slice("n"))
+					}
+					return nil
+				},
+			},
+		},
+	}).Run([]string{"run", "child"})
 }
 
 var float64FlagTests = []struct {
