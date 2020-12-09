@@ -697,6 +697,22 @@ func TestIntSliceFlagApply_ParentContext(t *testing.T) {
 	}).Run([]string{"run", "child"})
 }
 
+func TestIntSliceFlag_SetFromParentContext(t *testing.T) {
+	fl := &IntSliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: NewIntSlice(1, 2, 3, 4)}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+	ctx := &Context{
+		parentContext: &Context{
+			flagSet: set,
+		},
+		flagSet: flag.NewFlagSet("empty", 0),
+	}
+	expected := []int{1, 2, 3, 4}
+	if !reflect.DeepEqual(ctx.IntSlice("numbers"), expected) {
+		t.Errorf("child context unable to view parent flag: %v != %v", expected, ctx.IntSlice("numbers"))
+	}
+}
+
 var int64SliceFlagTests = []struct {
 	name     string
 	aliases  []string
