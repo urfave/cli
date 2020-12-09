@@ -649,7 +649,7 @@ func main() {
 
   app := &cli.App{
     Action: func(c *cli.Context) error {
-      fmt.Println("yaml ist rad")
+      fmt.Println("--test value.*default: 0")
       return nil
     },
     Before: altsrc.InitInputSourceWithContext(flags, altsrc.NewYamlSourceFromFlagFunc("load")),
