@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"strings"
 	"text/tabwriter"
 	"text/template"
@@ -378,7 +379,8 @@ func checkCommandCompletions(c *Context, name string) bool {
 
 func indent(spaces int, v string) string {
 	pad := strings.Repeat(" ", spaces)
-	return pad + strings.Replace(v, "\n", "\n"+pad, -1)
+	regex := regexp.MustCompile("\n +\n")
+	return pad + regex.ReplaceAllString(strings.Replace(v, "\n", "\n"+pad, -1), "\n\n")
 }
 
 func nindent(spaces int, v string) string {
