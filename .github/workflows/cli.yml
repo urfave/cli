@@ -15,13 +15,15 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        go: [1.13, 1.14, 1.15]
+        go: [1.13, 1.14, 1.15, 1.16.0-beta1]
     name: ${{ matrix.os }} @ Go ${{ matrix.go }}
     runs-on: ${{ matrix.os }}
     steps:
       - name: Set up Go ${{ matrix.go }}
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v2
         with:
+          # allow to run against pre-releases
+          stable: false 
           go-version: ${{ matrix.go }}
 
       - name: Set GOPATH, PATH and ENV
