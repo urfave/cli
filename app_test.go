@@ -897,6 +897,39 @@ func TestApp_SetStdin(t *testing.T) {
 	}
 }
 
+func TestApp_SetStdin_Subcommand(t *testing.T) {
+	buf := make([]byte, 12)
+
+	app := &App{
+		Name:   "test",
+		Reader: strings.NewReader("Hello World!"),
+		Commands: []*Command{
+			{
+				Name: "command",
+				Subcommands: []*Command{
+					{
+						Name: "subcommand",
+						Action: func(c *Context) error {
+							_, err := c.App.Reader.Read(buf)
+							return err
+						},
+					},
+				},
+			},
+		},
+	}
+
+	err := app.Run([]string{"test", "command", "subcommand"})
+
+	if err != nil {
+		t.Fatalf("Run error: %s", err)
+	}
+
+	if string(buf) != "Hello World!" {
+		t.Error("App did not read input from desired reader.")
+	}
+}
+
 func TestApp_SetStdout(t *testing.T) {
 	var w bytes.Buffer
 
