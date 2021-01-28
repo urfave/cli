@@ -15,31 +15,39 @@ import (
 // The function errors if either parsing or writing of the string fails.
 func (a *App) ToMarkdown() (string, error) {
 	var w bytes.Buffer
-	if err := a.writeDocTemplate(&w); err != nil {
+	if err := a.writeDocTemplate(&w, 8); err != nil {
 		return "", err
 	}
 	return w.String(), nil
 }
 
-// ToMan creates a man page string for the `*App`
+// ToMan creates a man page string with section number for the `*App`
 // The function errors if either parsing or writing of the string fails.
-func (a *App) ToMan() (string, error) {
+func (a *App) ToManWithSection(sectionNumber int) (string, error) {
 	var w bytes.Buffer
-	if err := a.writeDocTemplate(&w); err != nil {
+	if err := a.writeDocTemplate(&w, sectionNumber); err != nil {
 		return "", err
 	}
 	man := md2man.Render(w.Bytes())
 	return string(man), nil
 }
 
+// ToMan creates a man page string for the `*App`
+// The function errors if either parsing or writing of the string fails.
+func (a *App) ToMan() (string, error) {
+	man, err := a.ToManWithSection(8)
+	return man, err
+}
+
 type cliTemplate struct {
 	App          *App
+	SectionNum   int
 	Commands     []string
 	GlobalArgs   []string
 	SynopsisArgs []string
 }
 
-func (a *App) writeDocTemplate(w io.Writer) error {
+func (a *App) writeDocTemplate(w io.Writer, sectionNum int) error {
 	const name = "cli"
 	t, err := template.New(name).Parse(MarkdownDocTemplate)
 	if err != nil {
@@ -47,6 +55,7 @@ func (a *App) writeDocTemplate(w io.Writer) error {
 	}
 	return t.ExecuteTemplate(w, name, &cliTemplate{
 		App:          a,
+		SectionNum:   sectionNum,
 		Commands:     prepareCommands(a.Commands, 0),
 		GlobalArgs:   prepareArgsWithValues(a.VisibleFlags()),
 		SynopsisArgs: prepareArgsSynopsis(a.VisibleFlags()),

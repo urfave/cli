@@ -74,7 +74,7 @@ OPTIONS:
    {{end}}{{end}}
 `
 
-var MarkdownDocTemplate = `% {{ .App.Name }} 8
+var MarkdownDocTemplate = `% {{ .App.Name }} {{ .SectionNum }}
 
 # NAME
 

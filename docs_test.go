@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"errors"
 	"io/ioutil"
 	"testing"
 )
@@ -142,6 +143,33 @@ func TestToMan(t *testing.T) {
 
 	// When
 	res, err := app.ToMan()
+
+	// Then
+	expect(t, err, nil)
+	expectFileContent(t, "testdata/expected-doc-full.man", res)
+}
+
+func TestToManParseError(t *testing.T) {
+	// Given
+	app := testApp()
+
+	// When
+	// temporarily change the global variable for testing
+	tmp := MarkdownDocTemplate
+	MarkdownDocTemplate = `{{ .App.Name`
+	_, err := app.ToMan()
+	MarkdownDocTemplate = tmp
+
+	// Then
+	expect(t, err, errors.New(`template: cli:1: unclosed action`))
+}
+
+func TestToManWithSection(t *testing.T) {
+	// Given
+	app := testApp()
+
+	// When
+	res, err := app.ToManWithSection(8)
 
 	// Then
 	expect(t, err, nil)
