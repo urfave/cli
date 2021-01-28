@@ -243,6 +243,7 @@ func (c *Command) startApp(ctx *Context) error {
 	app.Version = ctx.App.Version
 	app.HideVersion = true
 	app.Compiled = ctx.App.Compiled
+	app.Reader = ctx.App.Reader
 	app.Writer = ctx.App.Writer
 	app.ErrWriter = ctx.App.ErrWriter
 	app.ExitErrHandler = ctx.App.ExitErrHandler

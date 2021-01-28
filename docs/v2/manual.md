@@ -627,7 +627,7 @@ given sources.
 Here is a more complete sample of a command using YAML support:
 
 <!-- {
-  "args": ["test-cmd", "&#45;&#45;help"],
+  "args": ["&#45;&#45;help"],
   "output": "&#45&#45;test value.*default: 0"
 } -->
 ``` go
