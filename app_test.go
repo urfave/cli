@@ -193,6 +193,7 @@ func ExampleApp_Run_noAction() {
 	app := App{ErrWriter: output}
 	app.Name = "greet"
 	_ = app.Run([]string{"greet"})
+	fmt.Println(output.String())
 	// Output:
 	// NAME:
 	//    greet - A new cli application
