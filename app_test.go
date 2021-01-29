@@ -1244,8 +1244,8 @@ func TestApp_SetStdout(t *testing.T) {
 	var w bytes.Buffer
 
 	app := &App{
-		Name:   "test",
-		Writer: &w,
+		Name:      "test",
+		ErrWriter: &w,
 	}
 
 	err := app.Run([]string{"help"})
@@ -1254,8 +1254,8 @@ func TestApp_SetStdout(t *testing.T) {
 		t.Fatalf("Run error: %s", err)
 	}
 
-	if w.Len() != 0 {
-		t.Error("App wrote help screen to the wrong stream.")
+	if w.Len() == 0 {
+		t.Error("App did not write output to desired writer.")
 	}
 }
 
