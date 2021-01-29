@@ -340,11 +340,11 @@ var stringSliceFlagTests = []struct {
 	value    *StringSlice
 	expected string
 }{
-	{"foo", nil, NewStringSlice(""), "--foo value\t"},
-	{"f", nil, NewStringSlice(""), "-f value\t"},
-	{"f", nil, NewStringSlice("Lipstick"), "-f value\t(default: \"Lipstick\")"},
-	{"test", nil, NewStringSlice("Something"), "--test value\t(default: \"Something\")"},
-	{"dee", []string{"d"}, NewStringSlice("Inka", "Dinka", "dooo"), "--dee value, -d value\t(default: \"Inka\", \"Dinka\", \"dooo\")"},
+	{"foo", nil, NewStringSlice(""), "--foo value\t(accepts multiple inputs)"},
+	{"f", nil, NewStringSlice(""), "-f value\t(accepts multiple inputs)"},
+	{"f", nil, NewStringSlice("Lipstick"), "-f value\t(default: \"Lipstick\")\t(accepts multiple inputs)"},
+	{"test", nil, NewStringSlice("Something"), "--test value\t(default: \"Something\")\t(accepts multiple inputs)"},
+	{"dee", []string{"d"}, NewStringSlice("Inka", "Dinka", "dooo"), "--dee value, -d value\t(default: \"Inka\", \"Dinka\", \"dooo\")\t(accepts multiple inputs)"},
 }
 
 func TestStringSliceFlagHelpOutput(t *testing.T) {
@@ -630,9 +630,9 @@ var intSliceFlagTests = []struct {
 	value    *IntSlice
 	expected string
 }{
-	{"heads", nil, NewIntSlice(), "--heads value\t"},
-	{"H", nil, NewIntSlice(), "-H value\t"},
-	{"H", []string{"heads"}, NewIntSlice(9, 3), "-H value, --heads value\t(default: 9, 3)"},
+	{"heads", nil, NewIntSlice(), "--heads value\t(accepts multiple inputs)"},
+	{"H", nil, NewIntSlice(), "-H value\t(accepts multiple inputs)"},
+	{"H", []string{"heads"}, NewIntSlice(9, 3), "-H value, --heads value\t(default: 9, 3)\t(accepts multiple inputs)"},
 }
 
 func TestIntSliceFlagHelpOutput(t *testing.T) {
@@ -719,10 +719,10 @@ var int64SliceFlagTests = []struct {
 	value    *Int64Slice
 	expected string
 }{
-	{"heads", nil, NewInt64Slice(), "--heads value\t"},
-	{"H", nil, NewInt64Slice(), "-H value\t"},
+	{"heads", nil, NewInt64Slice(), "--heads value\t(accepts multiple inputs)"},
+	{"H", nil, NewInt64Slice(), "-H value\t(accepts multiple inputs)"},
 	{"heads", []string{"H"}, NewInt64Slice(int64(2), int64(17179869184)),
-		"--heads value, -H value\t(default: 2, 17179869184)"},
+		"--heads value, -H value\t(default: 2, 17179869184)\t(accepts multiple inputs)"},
 }
 
 func TestInt64SliceFlagHelpOutput(t *testing.T) {
@@ -864,10 +864,10 @@ var float64SliceFlagTests = []struct {
 	value    *Float64Slice
 	expected string
 }{
-	{"heads", nil, NewFloat64Slice(), "--heads value\t"},
-	{"H", nil, NewFloat64Slice(), "-H value\t"},
+	{"heads", nil, NewFloat64Slice(), "--heads value\t(accepts multiple inputs)"},
+	{"H", nil, NewFloat64Slice(), "-H value\t(accepts multiple inputs)"},
 	{"heads", []string{"H"}, NewFloat64Slice(0.1234, -10.5),
-		"--heads value, -H value\t(default: 0.1234, -10.5)"},
+		"--heads value, -H value\t(default: 0.1234, -10.5)\t(accepts multiple inputs)"},
 }
 
 func TestFloat64SliceFlagHelpOutput(t *testing.T) {

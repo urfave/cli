@@ -359,7 +359,11 @@ func stringifySliceFlag(usage string, names, defaultVals []string) string {
 	}
 
 	usageWithDefault := strings.TrimSpace(fmt.Sprintf("%s%s", usage, defaultVal))
-	return fmt.Sprintf("%s\t%s", prefixedNames(names, placeholder), usageWithDefault)
+	multiInputString := "(accepts multiple inputs)"
+	if usageWithDefault != "" {
+		multiInputString = "\t" + multiInputString
+	}
+	return fmt.Sprintf("%s\t%s%s", prefixedNames(names, placeholder), usageWithDefault, multiInputString)
 }
 
 func hasFlag(flags []Flag, fl Flag) bool {
