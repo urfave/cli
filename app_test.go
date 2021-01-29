@@ -356,7 +356,7 @@ func ExampleApp_Run_bashComplete() {
 func ExampleApp_Run_zshComplete() {
 	// set args for examples sake
 	os.Args = []string{"greet", "--generate-bash-completion"}
-	_ = os.Setenv("_CLI_ZSH_AUTOCOMPLETE_HACK", "1")
+	_ = os.Setenv("SHELL", "/usr/bin/zsh")
 
 	app := NewApp()
 	app.Name = "greet"
