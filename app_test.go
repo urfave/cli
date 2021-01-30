@@ -316,7 +316,6 @@ func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
 
 func ExampleApp_Run_bashComplete() {
 	// set args for examples sake
-	// set args for examples sake
 	os.Args = []string{"greet", "--generate-bash-completion"}
 
 	app := &App{
