@@ -189,11 +189,9 @@ func ExampleApp_Run_commandHelp() {
 }
 
 func ExampleApp_Run_noAction() {
-	output := new(bytes.Buffer)
-	app := App{ErrWriter: output}
+	app := App{ErrWriter: os.Stdout}
 	app.Name = "greet"
 	_ = app.Run([]string{"greet"})
-	fmt.Println(output.String())
 	// Output:
 	// NAME:
 	//    greet - A new cli application
