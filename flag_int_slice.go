@@ -19,6 +19,16 @@ func NewIntSlice(defaults ...int) *IntSlice {
 	return &IntSlice{slice: append([]int{}, defaults...)}
 }
 
+// clone allocate a copy of self object
+func (i *IntSlice) clone() *IntSlice {
+	n := &IntSlice{
+		slice:      make([]int, len(i.slice)),
+		hasBeenSet: i.hasBeenSet,
+	}
+	copy(n.slice, i.slice)
+	return n
+}
+
 // TODO: Consistently have specific Set function for Int64 and Float64 ?
 // SetInt directly adds an integer to the list of values
 func (i *IntSlice) SetInt(value int) {
@@ -143,11 +153,12 @@ func (f *IntSliceFlag) Apply(set *flag.FlagSet) error {
 		f.HasBeenSet = true
 	}
 
+	if f.Value == nil {
+		f.Value = &IntSlice{}
+	}
+	copyValue := f.Value.clone()
 	for _, name := range f.Names() {
-		if f.Value == nil {
-			f.Value = &IntSlice{}
-		}
-		set.Var(f.Value, name, f.Usage)
+		set.Var(copyValue, name, f.Usage)
 	}
 
 	return nil

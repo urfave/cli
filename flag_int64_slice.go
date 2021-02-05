@@ -19,6 +19,16 @@ func NewInt64Slice(defaults ...int64) *Int64Slice {
 	return &Int64Slice{slice: append([]int64{}, defaults...)}
 }
 
+// clone allocate a copy of self object
+func (i *Int64Slice) clone() *Int64Slice {
+	n := &Int64Slice{
+		slice:      make([]int64, len(i.slice)),
+		hasBeenSet: i.hasBeenSet,
+	}
+	copy(n.slice, i.slice)
+	return n
+}
+
 // Set parses the value into an integer and appends it to the list of values
 func (i *Int64Slice) Set(value string) error {
 	if !i.hasBeenSet {
@@ -132,11 +142,12 @@ func (f *Int64SliceFlag) Apply(set *flag.FlagSet) error {
 		f.HasBeenSet = true
 	}
 
+	if f.Value == nil {
+		f.Value = &Int64Slice{}
+	}
+	copyValue := f.Value.clone()
 	for _, name := range f.Names() {
-		if f.Value == nil {
-			f.Value = &Int64Slice{}
-		}
-		set.Var(f.Value, name, f.Usage)
+		set.Var(copyValue, name, f.Usage)
 	}
 
 	return nil
