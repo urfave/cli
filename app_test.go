@@ -735,19 +735,43 @@ func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
 				},
 				Flags: []Flag{
 					&StringFlag{
-						Name:  "lang",
-						Value: "english",
-						Usage: "language for the greeting",
+						Name:    "lang",
+						Aliases: []string{"language"},
+						Value:   "english",
+						Usage:   "language for the greeting",
 					},
 				},
 				Before: func(_ *Context) error { return nil },
 			},
 		},
 	}
-	_ = a.Run([]string{"", "foo", "--lang", "spanish", "abcd"})
+	err := a.Run([]string{"", "foo", "--lang", "spanish", "abcd"})
 
+	expect(t, err, nil)
 	expect(t, cCtx.Args().Get(0), "abcd")
 	expect(t, cCtx.String("lang"), "spanish")
+
+	err = a.Run([]string{"", "foo", "--lang", "spanish", "--language", "french", "abcd"})
+
+	expect(t, err.Error(), "Cannot use two forms of the same flag: language lang")
+}
+
+func TestApp_RunAsSubCommandIncorrectUsage(t *testing.T) {
+	a := App{
+		Name: "cmd",
+		Flags: []Flag{
+			&StringFlag{Name: "--foo"},
+		},
+		Writer: bytes.NewBufferString(""),
+	}
+
+	set := flag.NewFlagSet("", flag.ContinueOnError)
+	_ = set.Parse([]string{"", "---foo"})
+	c := &Context{flagSet: set}
+
+	err := a.RunAsSubcommand(c)
+
+	expect(t, err, errors.New("bad flag syntax: ---foo"))
 }
 
 func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {

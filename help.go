@@ -210,36 +210,24 @@ func DefaultCompleteWithFlags(cmd *Command) func(cCtx *Context) {
 			lastArg := os.Args[len(os.Args)-2]
 
 			if strings.HasPrefix(lastArg, "-") {
-<<<<<<< HEAD
 				if cmd != nil {
-					printFlagSuggestions(lastArg, cmd.Flags, cCtx.App.Writer)
+					printFlagSuggestions(lastArg, cmd.Flags, cCtx.App.ErrWriter)
 
 					return
-=======
-				printFlagSuggestions(lastArg, c.App.Flags, c.App.ErrWriter)
-				if cmd != nil {
-					printFlagSuggestions(lastArg, cmd.Flags, c.App.ErrWriter)
->>>>>>> errors and diagnostics should go to ErrWriter
 				}
 
-				printFlagSuggestions(lastArg, cCtx.App.Flags, cCtx.App.Writer)
+				printFlagSuggestions(lastArg, cCtx.App.Flags, cCtx.App.ErrWriter)
 
 				return
 			}
 		}
 
 		if cmd != nil {
-<<<<<<< HEAD
-			printCommandSuggestions(cmd.Subcommands, cCtx.App.Writer)
+			printCommandSuggestions(cmd.Subcommands, cCtx.App.ErrWriter)
 			return
-=======
-			printCommandSuggestions(cmd.Subcommands, c.App.ErrWriter)
-		} else {
-			printCommandSuggestions(c.App.Commands, c.App.ErrWriter)
->>>>>>> errors and diagnostics should go to ErrWriter
 		}
 
-		printCommandSuggestions(cCtx.App.Commands, cCtx.App.Writer)
+		printCommandSuggestions(cCtx.App.Commands, cCtx.App.ErrWriter)
 	}
 }
 
