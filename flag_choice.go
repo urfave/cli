@@ -1,9 +1,12 @@
 package cli
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 )
+
+var errParse = errors.New("parse error")
 
 // Choice Defines an Choice.
 type Choice interface {
@@ -69,6 +72,7 @@ type ChoiceFlag struct {
 	Usage       string
 	DefaultText string
 	Required    bool
+	Destination *Choice
 	HasBeenSet  bool
 }
 
@@ -89,6 +93,10 @@ func (f *ChoiceFlag) Apply(set *flag.FlagSet) error {
 	}
 
 	for _, name := range f.Names() {
+		if f.Destination != nil {
+			set.Var(newChoiceValue(f.Decoder, f.Value, f.Destination), name, f.Usage)
+			continue
+		}
 		set.Var(f.Value, name, f.Usage)
 	}
 
@@ -137,3 +145,32 @@ func (c *Context) Choice(name string) Choice {
 	}
 	return nil
 }
+
+type choiceValue struct {
+	value   *Choice
+	decoder ChoiceDecoder
+}
+
+func newChoiceValue(decoder ChoiceDecoder, val Choice, p *Choice) *choiceValue {
+	*p = val
+	return &choiceValue{
+		value:   p,
+		decoder: decoder,
+	}
+}
+
+func (c *choiceValue) Set(s string) error {
+	v, err := c.decoder.FromString(s)
+	if err != nil {
+		err = errParse
+	}
+	*c = choiceValue{
+		value:   &v,
+		decoder: c.decoder,
+	}
+	return err
+}
+
+func (c *choiceValue) Get() interface{} { return c.value }
+
+func (c *choiceValue) String() string { return (*c.value).String() }
