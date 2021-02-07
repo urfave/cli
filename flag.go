@@ -264,6 +264,9 @@ func stringifyFlag(f Flag) string {
 	case *StringSliceFlag:
 		return withEnvHint(flagStringSliceField(f, "EnvVars"),
 			stringifyStringSliceFlag(f))
+	case *ChoiceFlag:
+		return withEnvHint(flagStringSliceField(f, "EnvVars"),
+			stringifyChoiceFlag(f))
 	}
 
 	placeholder, usage := unquoteUsage(fv.FieldByName("Usage").String())
@@ -364,6 +367,33 @@ func stringifySliceFlag(usage string, names, defaultVals []string) string {
 		multiInputString = "\t" + multiInputString
 	}
 	return fmt.Sprintf("%s\t%s%s", prefixedNames(names, placeholder), usageWithDefault, multiInputString)
+}
+
+func stringifyChoiceFlag(f *ChoiceFlag) string {
+	placeholder, usage := unquoteUsage(f.Usage)
+
+	defaultValueString := ""
+	if f.Value != nil {
+		if v := f.Value.Value(); v != nil {
+			defaultValueString = fmt.Sprintf(formatDefault("%q"), v.String())
+		}
+	}
+
+	if placeholder == "" {
+		placeholder = defaultPlaceholder
+	}
+
+	supportedValues := fmt.Sprintf(" (supported values: %s)", strings.Join(quoteStrings(f.Decoder.Strings()), ", "))
+	usageWithDefault := strings.TrimSpace(usage + defaultValueString)
+	return fmt.Sprintf("%s\t%s", prefixedNames(f.Names(), placeholder), usageWithDefault+supportedValues)
+}
+
+func quoteStrings(ss []string) []string {
+	out := make([]string, len(ss))
+	for i, s := range ss {
+		out[i] = "\"" + s + "\""
+	}
+	return out
 }
 
 func hasFlag(flags []Flag, fl Flag) bool {

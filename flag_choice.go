@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"log"
 )
 
 var errParse = errors.New("parse error")
@@ -20,10 +21,9 @@ type ChoiceDecoder interface {
 }
 
 // NewChoiceHolder Initializes a new instance of ChoiceHolder.
-func NewChoiceHolder(value Choice, decoder ChoiceDecoder) *ChoiceHolder {
+func NewChoiceHolder(value Choice) *ChoiceHolder {
 	return &ChoiceHolder{
-		value:   value,
-		decoder: decoder,
+		value: value,
 	}
 }
 
@@ -34,10 +34,14 @@ type ChoiceHolder struct {
 	hasBeenSet bool
 }
 
+func (h *ChoiceHolder) init(decoder ChoiceDecoder) {
+	h.decoder = decoder
+}
+
 // String Returns the string representation of the Choice it holds.
 func (h *ChoiceHolder) String() string {
 	if h.value == nil {
-		return "unsupported"
+		return ""
 	}
 	return h.value.String()
 }
@@ -78,19 +82,29 @@ type ChoiceFlag struct {
 
 // String Describes the Flag to the caller.
 func (f *ChoiceFlag) String() string {
-	return fmt.Sprintf("%s (supported values: %s)", FlagStringer(f), f.Decoder.Strings())
+	return FlagStringer(f)
 }
 
 // Apply the value of the Flag to the cli.
 func (f *ChoiceFlag) Apply(set *flag.FlagSet) error {
+	if f.Decoder == nil {
+		return fmt.Errorf("decoder must be provided for ChoiceFlag")
+	}
+
+	if f.Value == nil {
+		f.Value = NewChoiceHolder(nil)
+	}
+
 	if v, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		v, err := f.Decoder.FromString(v)
 		if err != nil {
 			return fmt.Errorf("supported values: %s", f.Decoder.Strings())
 		}
-		f.Value = NewChoiceHolder(v, f.Decoder)
+		f.Value = NewChoiceHolder(v)
 		f.HasBeenSet = true
 	}
+
+	f.Value.init(f.Decoder)
 
 	for _, name := range f.Names() {
 		if f.Destination != nil {
@@ -100,9 +114,6 @@ func (f *ChoiceFlag) Apply(set *flag.FlagSet) error {
 		set.Var(f.Value, name, f.Usage)
 	}
 
-	if f.DefaultText == "" {
-		f.DefaultText = f.Value.String()
-	}
 	return nil
 }
 
@@ -160,17 +171,20 @@ func newChoiceValue(decoder ChoiceDecoder, val Choice, p *Choice) *choiceValue {
 }
 
 func (c *choiceValue) Set(s string) error {
+	log.Printf("called: %s", s)
 	v, err := c.decoder.FromString(s)
 	if err != nil {
 		err = errParse
 	}
-	*c = choiceValue{
-		value:   &v,
-		decoder: c.decoder,
-	}
+	*c.value = v
 	return err
 }
 
-func (c *choiceValue) Get() interface{} { return c.value }
+func (c *choiceValue) Get() interface{} { return *c.value }
 
-func (c *choiceValue) String() string { return (*c.value).String() }
+func (c *choiceValue) String() string {
+	if c.value == nil {
+		return ""
+	}
+	return (*c.value).String()
+}
