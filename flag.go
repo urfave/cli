@@ -374,14 +374,14 @@ func stringifyChoiceFlag(f *ChoiceFlag) string {
 
 	defaultValueString := ""
 	if v := f.Value; v != nil {
-		defaultValueString = fmt.Sprintf(formatDefault("%q"), f.Decoder.ToString(v))
+		defaultValueString = fmt.Sprintf(formatDefault("%q"), f.Choice.ToString(v))
 	}
 
 	if placeholder == "" {
 		placeholder = defaultPlaceholder
 	}
 
-	supportedValues := fmt.Sprintf(" (supported values: %s)", strings.Join(quoteStrings(f.Decoder.Strings()), ", "))
+	supportedValues := fmt.Sprintf(" (supported values: %s)", strings.Join(quoteStrings(f.Choice.Strings()), ", "))
 	usageWithDefault := strings.TrimSpace(usage + defaultValueString)
 	return fmt.Sprintf("%s\t%s", prefixedNames(f.Names(), placeholder), usageWithDefault+supportedValues)
 }
