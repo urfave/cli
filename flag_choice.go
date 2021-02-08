@@ -4,79 +4,94 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
 )
 
 var errParse = errors.New("parse error")
 
-// Choice Defines an Choice.
+// Choice Defines the definition of a choice.
 type Choice interface {
-	fmt.Stringer
-}
+	// FromString Returns a Choice value from string.
+	FromString(s string) interface{}
 
-// ChoiceDecoder A decoder that decodes to Choice.
-type ChoiceDecoder interface {
-	FromString(s string) (Choice, error)
+	// ToString Returns the string representation of the given Choice value.
+	ToString(i interface{}) string
+
+	// Strings Returns all possible Choice values as string representation.
 	Strings() []string
 }
 
-// NewChoiceHolder Initializes a new instance of ChoiceHolder.
-func NewChoiceHolder(value Choice) *ChoiceHolder {
-	return &ChoiceHolder{
-		value: value,
+// NewStringChoiceDecoder Initializes a new instance of Choice that takes a list of strings used as choices.
+func NewStringChoiceDecoder(ss ...string) Choice {
+	c := make(map[string]interface{}, len(ss))
+	for _, s := range ss {
+		c[s] = s
+	}
+	return NewChoiceDecoder(c)
+}
+
+// Choices Maps a unique string value to any value.
+type Choices map[string]interface{}
+
+// NewChoiceDecoder Initializes a new default implementation of Choice.
+// The provided Choices need to have unique values.
+func NewChoiceDecoder(v Choices) Choice {
+	out := new(defaultChoiceDecoder)
+	out.init(v)
+	return out
+}
+
+type defaultChoiceDecoder struct {
+	vMap map[string]interface{}
+	sMap map[interface{}]string
+	ss   []string
+}
+
+func (d *defaultChoiceDecoder) init(v Choices) {
+	d.vMap = v
+
+	d.sMap = make(map[interface{}]string, len(v))
+	for k, v := range v {
+		d.sMap[v] = k
+	}
+
+	d.ss = make([]string, len(v))
+	i := 0
+	for k := range v {
+		d.ss[i] = k
+		i++
 	}
 }
 
-// ChoiceHolder Holds an Choice value.
-type ChoiceHolder struct {
-	value      Choice
-	decoder    ChoiceDecoder
-	hasBeenSet bool
-}
-
-func (h *ChoiceHolder) init(decoder ChoiceDecoder) {
-	h.decoder = decoder
-}
-
-// String Returns the string representation of the Choice it holds.
-func (h *ChoiceHolder) String() string {
-	if h.value == nil {
-		return ""
+func (d *defaultChoiceDecoder) FromString(s string) interface{} {
+	if v, ok := d.vMap[s]; ok {
+		return v
 	}
-	return h.value.String()
-}
-
-// Set the Choice based on its string representation.
-func (h *ChoiceHolder) Set(s string) (err error) {
-	if h.value, err = h.decoder.FromString(s); err != nil {
-		return err
-	}
-	h.hasBeenSet = true
 	return nil
 }
 
-// Value returns the Choice.
-func (h *ChoiceHolder) Value() Choice {
-	return h.value
+func (d *defaultChoiceDecoder) ToString(v interface{}) string {
+	if v, ok := d.sMap[v]; ok {
+		return v
+	}
+	return ""
 }
 
-// Get Returns a copy of ChoiceHolder.
-func (h ChoiceHolder) Get() interface{} {
-	return h
+func (d *defaultChoiceDecoder) Strings() []string {
+	return d.ss
 }
 
 // ChoiceFlag A cli Flag that holds a Choice.
 type ChoiceFlag struct {
 	Name        string
 	Aliases     []string
-	Value       *ChoiceHolder
-	Decoder     ChoiceDecoder
+	Value       interface{}
+	Decoder     Choice
 	EnvVars     []string
 	FilePath    string
 	Usage       string
 	DefaultText string
 	Required    bool
-	Destination *Choice
+	Destination *interface{}
 	HasBeenSet  bool
 }
 
@@ -91,27 +106,21 @@ func (f *ChoiceFlag) Apply(set *flag.FlagSet) error {
 		return fmt.Errorf("decoder must be provided for ChoiceFlag")
 	}
 
-	if f.Value == nil {
-		f.Value = NewChoiceHolder(nil)
-	}
-
 	if v, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
-		v, err := f.Decoder.FromString(v)
-		if err != nil {
-			return fmt.Errorf("supported values: %s", f.Decoder.Strings())
+		v := f.Decoder.FromString(v)
+		if v == nil {
+			return errParse
 		}
-		f.Value = NewChoiceHolder(v)
+		f.Value = v
 		f.HasBeenSet = true
 	}
 
-	f.Value.init(f.Decoder)
-
 	for _, name := range f.Names() {
 		if f.Destination != nil {
-			set.Var(newChoiceValue(f.Decoder, f.Value, f.Destination), name, f.Usage)
+			set.Var(newChoiceValueSwap(f.Decoder, f.Value, f.Destination), name, f.Usage)
 			continue
 		}
-		set.Var(f.Value, name, f.Usage)
+		set.Var(newChoiceValue(f.Decoder, f.Value), name, f.Usage)
 	}
 
 	return nil
@@ -144,25 +153,29 @@ func (f *ChoiceFlag) GetUsage() string {
 
 // GetValue Returns the current value of this cli.Flag.
 func (f *ChoiceFlag) GetValue() string {
-	return f.Value.String()
+	return f.Decoder.ToString(f.Value)
 }
 
 // Choice looks up the value of a local ChoiceFlag.
 // Returns nil if not found.
-func (c *Context) Choice(name string) Choice {
+func (c *Context) Choice(name string) interface{} {
 	v := c.Value(name)
-	if h, ok := v.(ChoiceHolder); ok {
+	if h, ok := v.(choiceValue); ok {
 		return h.Value()
 	}
 	return nil
 }
 
 type choiceValue struct {
-	value   *Choice
-	decoder ChoiceDecoder
+	value   *interface{}
+	decoder Choice
 }
 
-func newChoiceValue(decoder ChoiceDecoder, val Choice, p *Choice) *choiceValue {
+func newChoiceValue(decoder Choice, val interface{}) *choiceValue {
+	return &choiceValue{decoder: decoder, value: &val}
+}
+
+func newChoiceValueSwap(decoder Choice, val interface{}, p *interface{}) *choiceValue {
 	*p = val
 	return &choiceValue{
 		value:   p,
@@ -171,20 +184,24 @@ func newChoiceValue(decoder ChoiceDecoder, val Choice, p *Choice) *choiceValue {
 }
 
 func (c *choiceValue) Set(s string) error {
-	log.Printf("called: %s", s)
-	v, err := c.decoder.FromString(s)
-	if err != nil {
-		err = errParse
-	}
+	v := c.decoder.FromString(s)
 	*c.value = v
-	return err
+	if v == nil {
+		return errParse
+	}
+	return nil
 }
 
-func (c *choiceValue) Get() interface{} { return *c.value }
+func (c choiceValue) Get() interface{} { return c }
 
 func (c *choiceValue) String() string {
 	if c.value == nil {
 		return ""
 	}
-	return (*c.value).String()
+	if v := *c.value; v != nil {
+		return c.decoder.ToString(v)
+	}
+	return ""
 }
+
+func (c *choiceValue) Value() interface{} { return *c.value }

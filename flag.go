@@ -373,10 +373,8 @@ func stringifyChoiceFlag(f *ChoiceFlag) string {
 	placeholder, usage := unquoteUsage(f.Usage)
 
 	defaultValueString := ""
-	if f.Value != nil {
-		if v := f.Value.Value(); v != nil {
-			defaultValueString = fmt.Sprintf(formatDefault("%q"), v.String())
-		}
+	if v := f.Value; v != nil {
+		defaultValueString = fmt.Sprintf(formatDefault("%q"), f.Decoder.ToString(v))
 	}
 
 	if placeholder == "" {
