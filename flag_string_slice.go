@@ -32,7 +32,9 @@ func (s *StringSlice) Set(value string) error {
 		return nil
 	}
 
-	s.slice = append(s.slice, value)
+	for _, t := range flagSplitMultiValues(value) {
+		s.slice = append(s.slice, strings.TrimSpace(t))
+	}
 
 	return nil
 }
@@ -132,7 +134,7 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
 			destination = f.Destination
 		}
 
-		for _, s := range strings.Split(val, ",") {
+		for _, s := range flagSplitMultiValues(val) {
 			if err := destination.Set(strings.TrimSpace(s)); err != nil {
 				return fmt.Errorf("could not parse %q as string value for flag %s: %s", val, f.Name, err)
 			}

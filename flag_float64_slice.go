@@ -33,12 +33,14 @@ func (f *Float64Slice) Set(value string) error {
 		return nil
 	}
 
-	tmp, err := strconv.ParseFloat(value, 64)
-	if err != nil {
-		return err
-	}
+	for _, s := range flagSplitMultiValues(value) {
+		tmp, err := strconv.ParseFloat(strings.TrimSpace(s), 64)
+		if err != nil {
+			return err
+		}
 
-	f.slice = append(f.slice, tmp)
+		f.slice = append(f.slice, tmp)
+	}
 	return nil
 }
 

@@ -14,6 +14,7 @@ cli v2 manual
     + [Values from the Environment](#values-from-the-environment)
     + [Values from files](#values-from-files)
     + [Values from alternate input sources (YAML, TOML, and others)](#values-from-alternate-input-sources-yaml-toml-and-others)
+    + [Muti values](#multi-values)
     + [Required Flags](#required-flags)
     + [Default Values for help output](#default-values-for-help-output)
     + [Precedence](#precedence)
@@ -658,6 +659,51 @@ func main() {
 
   app.Run(os.Args)
 }
+```
+
+#### Multi values
+
+Slice flags(Float64SliceFlag, Int64SliceFlag, IntSliceFlag, StringSliceFlag) are designed to accept multi values.
+
+Here is a sample of setting multi values for slice flags:
+
+<!-- {
+	"output": "0-float64Sclice cli.Float64Slice{slice:[]float64{13.3, 14.4, 15.5, 16.6}, hasBeenSet:true}\n1-int64Sclice cli.Int64Slice{slice:[]int64{13, 14, 15, 16}, hasBeenSet:true}\n2-intSclice cli.IntSlice{slice:[]int{13, 14, 15, 16}, hasBeenSet:true}\n3-stringSclice cli.StringSlice{slice:[]string{"parsed1", "parsed2", "parsed3", "parsed4"}, hasBeenSet:true}",
+} -->
+```
+package main
+
+import (
+  "fmt"
+  "os"
+  "github.com/urfave/cli/v2"
+)
+
+func main() {
+	os.Args = []string{"multi_values",
+		"--stringSclice", "parsed1,parsed2", "--stringSclice", "parsed3,parsed4",
+		"--float64Sclice", "13.3,14.4", "--float64Sclice", "15.5,16.6",
+		"--int64Sclice", "13,14", "--int64Sclice", "15,16",
+		"--intSclice", "13,14", "--intSclice", "15,16",
+	}
+	app := cli.NewApp()
+	app.Name = "multi_values"
+	app.Flags = []cli.Flag{
+		&cli.StringSliceFlag{Name: "stringSclice"},
+		&cli.Float64SliceFlag{Name: "float64Sclice"},
+		&cli.Int64SliceFlag{Name: "int64Sclice"},
+		&cli.IntSliceFlag{Name: "intSclice"},
+	}
+	app.Action = func(ctx *cli.Context) error {
+		for i, v := range ctx.FlagNames() {
+			fmt.Printf("%d-%s %#v\n", i, v, ctx.Value(v))
+		}
+		return ctx.Err()
+	}
+
+	_ = app.Run(os.Args)
+}
+
 ```
 
 #### Required Flags
