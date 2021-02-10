@@ -152,7 +152,6 @@ func TestFlagsFromEnv(t *testing.T) {
 				t.Errorf("expected error to match %q, got none", test.errRegexp)
 			} else {
 				if matched, _ := regexp.MatchString(test.errRegexp, err.Error()); !matched {
-					fmt.Printf("%s\n%s\n", test.errRegexp, err.Error())
 					t.Errorf("expected error to match %q, got error %s", test.errRegexp, err)
 				}
 			}
