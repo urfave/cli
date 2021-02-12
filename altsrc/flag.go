@@ -64,7 +64,7 @@ func InitInputSourceWithContext(flags []cli.Flag, createInputSource func(context
 
 // ApplyInputSourceValue applies a generic value to the flagSet if required
 func (f *GenericFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
+	if context != nil {
 		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) {
 			value, err := isc.Generic(f.GenericFlag.Name)
 			if err != nil {
@@ -72,7 +72,7 @@ func (f *GenericFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourc
 			}
 			if value != nil {
 				for _, name := range f.Names() {
-					_ = f.set.Set(name, value.String())
+					_ = context.Set(name, value.String())
 				}
 			}
 		}
@@ -83,7 +83,7 @@ func (f *GenericFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourc
 
 // ApplyInputSourceValue applies a StringSlice value to the flagSet if required
 func (f *StringSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
+	if context != nil {
 		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) {
 			value, err := isc.StringSlice(f.StringSliceFlag.Name)
 			if err != nil {
@@ -94,6 +94,7 @@ func (f *StringSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputS
 				for _, name := range f.Names() {
 					underlyingFlag := f.set.Lookup(name)
 					if underlyingFlag != nil {
+						context.Set(name, sliceValue.Serialize())
 						underlyingFlag.Value = &sliceValue
 					}
 				}
@@ -105,7 +106,7 @@ func (f *StringSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputS
 
 // ApplyInputSourceValue applies a IntSlice value if required
 func (f *IntSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
+	if context != nil {
 		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) {
 			value, err := isc.IntSlice(f.IntSliceFlag.Name)
 			if err != nil {
@@ -116,6 +117,7 @@ func (f *IntSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSour
 				for _, name := range f.Names() {
 					underlyingFlag := f.set.Lookup(name)
 					if underlyingFlag != nil {
+						context.Set(name, sliceValue.Serialize())
 						underlyingFlag.Value = &sliceValue
 					}
 				}
@@ -127,7 +129,7 @@ func (f *IntSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSour
 
 // ApplyInputSourceValue applies a Bool value to the flagSet if required
 func (f *BoolFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
+	if context != nil {
 		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) {
 			value, err := isc.Bool(f.BoolFlag.Name)
 			if err != nil {
@@ -135,7 +137,7 @@ func (f *BoolFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceCo
 			}
 			if value {
 				for _, name := range f.Names() {
-					_ = f.set.Set(name, strconv.FormatBool(value))
+					_ = context.Set(name, strconv.FormatBool(value))
 				}
 			}
 		}
@@ -145,7 +147,7 @@ func (f *BoolFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceCo
 
 // ApplyInputSourceValue applies a String value to the flagSet if required
 func (f *StringFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
+	if context != nil {
 		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) {
 			value, err := isc.String(f.StringFlag.Name)
 			if err != nil {
@@ -153,7 +155,7 @@ func (f *StringFlag) ApplyInputSourceValue(context *cli.Context, isc InputSource
 			}
 			if value != "" {
 				for _, name := range f.Names() {
-					_ = f.set.Set(name, value)
+					_ = context.Set(name, value)
 				}
 			}
 		}
@@ -163,7 +165,7 @@ func (f *StringFlag) ApplyInputSourceValue(context *cli.Context, isc InputSource
 
 // ApplyInputSourceValue applies a Path value to the flagSet if required
 func (f *PathFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
+	if context != nil {
 		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) {
 			value, err := isc.String(f.PathFlag.Name)
 			if err != nil {
@@ -181,7 +183,7 @@ func (f *PathFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceCo
 						value = filepath.Join(filepath.Dir(basePathAbs), value)
 					}
 
-					_ = f.set.Set(name, value)
+					_ = context.Set(name, value)
 				}
 			}
 		}
@@ -191,7 +193,7 @@ func (f *PathFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceCo
 
 // ApplyInputSourceValue applies a int value to the flagSet if required
 func (f *IntFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
+	if context != nil {
 		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) {
 			value, err := isc.Int(f.IntFlag.Name)
 			if err != nil {
@@ -199,7 +201,7 @@ func (f *IntFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceCon
 			}
 			if value > 0 {
 				for _, name := range f.Names() {
-					_ = f.set.Set(name, strconv.FormatInt(int64(value), 10))
+					_ = context.Set(name, strconv.FormatInt(int64(value), 10))
 				}
 			}
 		}
@@ -209,7 +211,7 @@ func (f *IntFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceCon
 
 // ApplyInputSourceValue applies a Duration value to the flagSet if required
 func (f *DurationFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
+	if context != nil {
 		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) {
 			value, err := isc.Duration(f.DurationFlag.Name)
 			if err != nil {
@@ -217,7 +219,7 @@ func (f *DurationFlag) ApplyInputSourceValue(context *cli.Context, isc InputSour
 			}
 			if value > 0 {
 				for _, name := range f.Names() {
-					_ = f.set.Set(name, value.String())
+					_ = context.Set(name, value.String())
 				}
 			}
 		}
@@ -227,7 +229,7 @@ func (f *DurationFlag) ApplyInputSourceValue(context *cli.Context, isc InputSour
 
 // ApplyInputSourceValue applies a Float64 value to the flagSet if required
 func (f *Float64Flag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
+	if context != nil {
 		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) {
 			value, err := isc.Float64(f.Float64Flag.Name)
 			if err != nil {
@@ -236,7 +238,7 @@ func (f *Float64Flag) ApplyInputSourceValue(context *cli.Context, isc InputSourc
 			if value > 0 {
 				floatStr := float64ToString(value)
 				for _, name := range f.Names() {
-					_ = f.set.Set(name, floatStr)
+					_ = context.Set(name, floatStr)
 				}
 			}
 		}
