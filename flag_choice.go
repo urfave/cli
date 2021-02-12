@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"reflect"
 )
 
 var errParse = errors.New("parse error")
@@ -91,7 +92,7 @@ type ChoiceFlag struct {
 	Usage       string
 	DefaultText string
 	Required    bool
-	Destination *interface{}
+	Destination interface{}
 	HasBeenSet  bool
 }
 
@@ -117,7 +118,11 @@ func (f *ChoiceFlag) Apply(set *flag.FlagSet) error {
 
 	for _, name := range f.Names() {
 		if f.Destination != nil {
-			set.Var(newChoiceValueSwap(f.Choice, f.Value, f.Destination), name, f.Usage)
+			v, err := newChoiceValueSwap(f.Choice, f.Value, f.Destination)
+			if err != nil {
+				return fmt.Errorf("failed to initialize new choice value swap: %w", err)
+			}
+			set.Var(v, name, f.Usage)
 			continue
 		}
 		set.Var(newChoiceValue(f.Choice, f.Value), name, f.Usage)
@@ -167,41 +172,60 @@ func (c *Context) Choice(name string) interface{} {
 }
 
 type choiceValue struct {
-	value  *interface{}
+	value  reflect.Value
 	choice Choice
 }
 
 func newChoiceValue(choice Choice, val interface{}) *choiceValue {
-	return &choiceValue{choice: choice, value: &val}
+	return &choiceValue{choice: choice, value: reflect.ValueOf(val)}
 }
 
-func newChoiceValueSwap(choice Choice, val interface{}, p *interface{}) *choiceValue {
-	*p = val
-	return &choiceValue{
-		value:  p,
-		choice: choice,
+func newChoiceValueSwap(choice Choice, val interface{}, p interface{}) (*choiceValue, error) {
+	pV := reflect.ValueOf(p)
+
+	if pV.Kind() != reflect.Ptr {
+		return nil, fmt.Errorf("destination must be a ptr, not %s", pV.Type())
 	}
+
+	if pV.IsNil() {
+		return nil, fmt.Errorf("destination must not be nil")
+	}
+
+	if val != nil {
+		pV.Elem().Set(reflect.ValueOf(val))
+	}
+
+	return &choiceValue{
+		value:  pV,
+		choice: choice,
+	}, nil
 }
 
 func (c *choiceValue) Set(s string) error {
-	v := c.choice.FromString(s)
-	*c.value = v
-	if v == nil {
-		return errParse
+	if !c.value.IsValid() || c.value.IsZero() || c.value.IsNil() {
+		return nil
 	}
-	return nil
+
+	if v := c.choice.FromString(s); v != nil {
+		c.value.Elem().Set(reflect.ValueOf(v))
+		return nil
+	}
+
+	return errParse
 }
 
 func (c choiceValue) Get() interface{} { return c }
 
 func (c *choiceValue) String() string {
-	if c.value == nil {
+	if !c.value.IsValid() || c.value.IsZero() || c.value.IsNil() {
 		return ""
 	}
-	if v := *c.value; v != nil {
-		return c.choice.ToString(v)
-	}
-	return ""
+	return c.choice.ToString(c.value.Elem().Interface())
 }
 
-func (c *choiceValue) Value() interface{} { return *c.value }
+func (c *choiceValue) Value() interface{} {
+	if !c.value.IsValid() || c.value.IsZero() || c.value.IsNil() {
+		return nil
+	}
+	return c.value.Elem().Interface()
+}
