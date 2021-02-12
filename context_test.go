@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"flag"
+	"fmt"
 	"os"
 	"sort"
 	"strings"
@@ -199,17 +200,494 @@ func TestContext_IsSet(t *testing.T) {
 	set.String("three-flag", "hello world", "doc")
 	parentSet := flag.NewFlagSet("test", 0)
 	parentSet.Bool("top-flag", true, "doc")
-	parentCtx := NewContext(nil, parentSet, nil)
-	ctx := NewContext(nil, set, parentCtx)
-
 	_ = set.Parse([]string{"--one-flag", "--two-flag", "--three-flag", "frob"})
 	_ = parentSet.Parse([]string{"--top-flag"})
+
+	parentCtx := NewContext(nil, parentSet, nil)
+	ctx := NewContext(nil, set, parentCtx)
 
 	expect(t, ctx.IsSet("one-flag"), true)
 	expect(t, ctx.IsSet("two-flag"), true)
 	expect(t, ctx.IsSet("three-flag"), true)
 	expect(t, ctx.IsSet("top-flag"), true)
 	expect(t, ctx.IsSet("bogus"), false)
+}
+
+// TestContext_ResolveFlag tests flag resolution scenarios
+// uses IntFlag for simplicity, we have separate per-type tests in TestRepeatedFlags
+// and more specific IsSet tests in TestContext_IsDeepSet
+func TestContext_ResolveFlag(t *testing.T) {
+	buildApp := func(action ActionFunc) *App {
+		return &App{
+			Flags: []Flag{
+				&IntFlag{Name: "top-flag", Aliases: []string{"tf"}, EnvVars: []string{"TOP_FLAG"}},
+				&IntFlag{Name: "dupe-flag", EnvVars: []string{"DUPE_FLAG"}, Value: 3},
+				&IntFlag{Name: "top-def", Value: 7},
+				&IntFlag{Name: "top-min"},
+			},
+			Commands: []*Command{
+				{
+					Name: "child",
+					Flags: []Flag{
+						&IntFlag{Name: "child-flag", Aliases: []string{"cf"}, EnvVars: []string{"CHILD_FLAG"}},
+						&IntFlag{Name: "child-def", Value: 9},
+						&IntFlag{Name: "child-min"},
+						&IntFlag{Name: "dupe-flag", EnvVars: []string{"DUPE_FLAG"}, Value: 3},
+					},
+					Action: action,
+				},
+			},
+			Action: action,
+		}
+	}
+
+	testCases := []struct {
+		name     string
+		args     string
+		env      map[string]string
+		expected map[string]int
+	}{
+		{
+			name:     "no args",
+			args:     "",
+			expected: map[string]int{"top-min": 0, "top-def": 7},
+		},
+		{
+			name:     "just app arg",
+			args:     "--top-min=123",
+			expected: map[string]int{"top-min": 123},
+		},
+		{
+			name: "simple child with app flag set via env",
+			args: "child --child-min=222",
+			env: map[string]string{
+				"TOP_FLAG": "99",
+			},
+			expected: map[string]int{"top-flag": 99, "tf": 99, "child-min": 222},
+		},
+		{
+			name: "duplicate flag defined on the app",
+			args: "--dupe-flag=222 child",
+			env: map[string]string{
+				"DUPE_FLAG": "99", // should be ignored in favor of cmd line flag
+			},
+			expected: map[string]int{"dupe-flag": 222},
+		},
+		{
+			name: "duplicate flag defined at multiple levels",
+			args: "--dupe-flag=111 child --dupe-flag=222",
+			env: map[string]string{
+				"DUPE_FLAG": "99", // should be ignored in favor of cmd line flag
+			},
+			expected: map[string]int{"dupe-flag": 222},
+		},
+		{
+			name: "child with all values coming from env",
+			args: "child",
+			env: map[string]string{
+				"TOP_FLAG":  "99",
+				"DUPE_FLAG": "222",
+			},
+			expected: map[string]int{"top-flag": 99, "tf": 99, "dupe-flag": 222, "child-def": 9},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			a := buildApp(func(ctx *Context) error {
+				whoami := ctx.Command.Name
+				if whoami == "" {
+					whoami = "app"
+				}
+				for _, flagName := range []string{"top-flag", "tf", "top-def", "top-mim", "child-flag", "cf", "child-def", "child-mim", "dupe-flag"} {
+					expected, ok := tc.expected[flagName]
+					if ok {
+						actual := ctx.Int(flagName)
+						if actual != expected {
+							t.Errorf("%s(%s): '%s' expected(%d) != actual(%d)", tc.name, whoami, flagName, expected, actual)
+						}
+					} else {
+						if ctx.IsSet(flagName) {
+							t.Errorf("%s(%s): '%s' expected to be missing, but IsSet() returned true!", tc.name, whoami, flagName)
+						}
+					}
+				}
+				return nil
+			})
+
+			// setup the app (use same action for both parent and child, only one will run!
+
+			// setup env
+			os.Clearenv()
+			if tc.env != nil {
+				for key, val := range tc.env {
+					_ = os.Setenv(key, val)
+				}
+			}
+
+			// run it!
+			args := strings.Split(tc.args, " ")
+			_ = a.Run(append([]string{"the-app"}, args...))
+		})
+	}
+}
+
+func TestContext_IsDeepSet(t *testing.T) {
+	testCases := []struct {
+		name     string
+		args     string
+		env      map[string]string
+		expected []string
+	}{
+		{
+			name:     "no args",
+			args:     "",
+			expected: []string{"top-min"},
+		}, {
+			name:     "just app arg",
+			args:     "--top-min=a",
+			expected: []string{"top-min"},
+		},
+		{
+			name:     "simple child",
+			args:     "child --child-min=a",
+			expected: []string{"child-min"},
+		},
+		{
+			name:     "simple child with app args",
+			args:     "--tf child --child-min=a",
+			expected: []string{"top-flag", "tf", "child-min"},
+		},
+		{
+			name: "simple child with app flag set via env",
+			args: "child --child-min=a",
+			env: map[string]string{
+				"TOP_FLAG": "on",
+			},
+			expected: []string{"top-flag", "tf", "child-min"},
+		},
+		{
+			name:     "dupe set on app only",
+			args:     "--dupe-flag=1",
+			expected: []string{"dupe-flag"},
+		},
+		{
+			name:     "dupe set on child only",
+			args:     "child --dupe-flag=1",
+			expected: []string{"dupe-flag"},
+		},
+		{
+			name:     "dupe set on app, read from child",
+			args:     "--dupe-flag=1 child",
+			expected: []string{"dupe-flag"},
+		},
+		{
+			name:     "dupe set on both",
+			args:     "--dupe-flag=7 child --dupe-flag=1",
+			expected: []string{"dupe-flag"},
+		},
+		{
+			name: "dupe set on app from env, read form child",
+			args: "child",
+			env: map[string]string{
+				"DUPE_FLAG": "1",
+			},
+			expected: []string{"dupe-flag"},
+		},
+		{
+			name: "dupe set on child from env",
+			args: "child",
+			env: map[string]string{
+				"CHILD_DUPE_FLAG": "1",
+			},
+			expected: []string{"dupe-flag"},
+		},
+		{
+			name: "dupe set on child from env",
+			args: "child",
+			env: map[string]string{
+				"CHILD_DUPE_FLAG": "1",
+			},
+			expected: []string{"dupe-flag"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			expectedFlags := make(map[string]bool)
+			for _, f := range tc.expected {
+				expectedFlags[f] = true
+			}
+			action := func(ctx *Context) error {
+				whoami := ctx.Command.Name
+				if whoami == "" {
+					whoami = "app"
+				}
+				for _, flagName := range []string{"top-flag", "tf", "top-def", "top-mim", "child-flag", "cf", "child-def", "child-mim", "dupe-flag"} {
+					expected := expectedFlags[flagName]
+					actual := ctx.IsSet(flagName)
+					if expected != actual {
+						t.Errorf("%s(%s): '%s' expected(%v) != actual(%v)", tc.name, whoami, flagName, expected, actual)
+					}
+				}
+				return nil
+			}
+
+			// setup the app (use same action for both parent and child, only one will run!
+			a := App{
+				Flags: []Flag{
+					&BoolFlag{Name: "top-flag", Aliases: []string{"tf"}, EnvVars: []string{"TOP_FLAG"}},
+					&IntFlag{Name: "dupe-flag", EnvVars: []string{"DUPE_FLAG"}},
+					&StringFlag{Name: "top-def", Value: "default"},
+					&StringFlag{Name: "top-min"},
+				},
+				Commands: []*Command{
+					{
+						Name: "child",
+						Flags: []Flag{
+							&BoolFlag{Name: "child-flag", Aliases: []string{"cf"}, EnvVars: []string{"CHILD_FLAG"}},
+							&StringFlag{Name: "child-def", Value: "default"},
+							&StringFlag{Name: "child-min"},
+							&IntFlag{Name: "dupe-flag", EnvVars: []string{"CHILD_DUPE_FLAG"}},
+						},
+						Action: action,
+					},
+				},
+				Action: action,
+			}
+			// setup env
+			os.Clearenv()
+			if tc.env != nil {
+				for key, val := range tc.env {
+					_ = os.Setenv(key, val)
+				}
+			}
+
+			// run it!
+			args := strings.Split(tc.args, " ")
+			_ = a.Run(append([]string{"the-app"}, args...))
+		})
+	}
+}
+
+func TestRepeatedFlags(t *testing.T) {
+	testCases := []struct {
+		flag  func() Flag
+		args  string
+		check func(t *testing.T, c *Context)
+		zero  func(t *testing.T, c *Context)
+	}{
+		{
+			flag: func() Flag { return &StringFlag{Name: "f"} },
+			args: "-f s",
+			check: func(t *testing.T, c *Context) {
+				expect(t, c.String("f"), "s")
+			},
+			zero: func(t *testing.T, c *Context) {
+				expect(t, c.String("f"), "")
+			},
+		},
+		{
+			flag: func() Flag { return &StringFlag{Name: "f", Value: "bar"} },
+			args: "-f foo",
+			check: func(t *testing.T, c *Context) {
+				expect(t, c.String("f"), "foo")
+			},
+			zero: func(t *testing.T, c *Context) {
+				expect(t, c.String("f"), "bar")
+			},
+		},
+		{
+			flag: func() Flag { return &BoolFlag{Name: "f"} },
+			args: "-f",
+			check: func(t *testing.T, c *Context) {
+				expect(t, c.Bool("f"), true)
+			},
+			zero: func(t *testing.T, c *Context) {
+				expect(t, c.Bool("f"), false)
+			},
+		},
+		{
+			flag: func() Flag { return &DurationFlag{Name: "f"} },
+			args: "-f 1s",
+			check: func(t *testing.T, c *Context) {
+				expect(t, c.Duration("f"), time.Second)
+			},
+			zero: func(t *testing.T, c *Context) {
+				expect(t, c.Duration("f"), time.Duration(0))
+			},
+		},
+		{
+			flag: func() Flag { return &Float64Flag{Name: "f"} },
+			args: "-f 7.7",
+			check: func(t *testing.T, c *Context) {
+				expect(t, c.Float64("f"), 7.7)
+			},
+			zero: func(t *testing.T, c *Context) {
+				expect(t, c.Float64("f"), 0.0)
+			},
+		},
+		{
+			flag: func() Flag { return &Float64SliceFlag{Name: "f"} },
+			args: "-f 7.7 -f 6.6",
+			check: func(t *testing.T, c *Context) {
+				expect(t, c.Float64Slice("f"), []float64{7.7, 6.6})
+			},
+			zero: func(t *testing.T, c *Context) {
+				expect(t, len(c.Float64Slice("f")), 0)
+			},
+		},
+		{
+			flag: func() Flag { return &IntFlag{Name: "f"} },
+			args: "-f 7",
+			check: func(t *testing.T, c *Context) {
+				expect(t, c.Int("f"), 7)
+			},
+			zero: func(t *testing.T, c *Context) {
+				expect(t, c.Int("f"), 0)
+			},
+		},
+		{
+			flag: func() Flag { return &Int64Flag{Name: "f"} },
+			args: "-f 77",
+			check: func(t *testing.T, c *Context) {
+				expect(t, c.Int64("f"), int64(77))
+			},
+			zero: func(t *testing.T, c *Context) {
+				expect(t, c.Int64("f"), int64(0))
+			},
+		},
+		{
+			flag: func() Flag { return &Int64SliceFlag{Name: "f"} },
+			args: "-f 77 -f -888",
+			check: func(t *testing.T, c *Context) {
+				expect(t, c.Int64Slice("f"), []int64{77, -888})
+			},
+			zero: func(t *testing.T, c *Context) {
+				expect(t, len(c.Int64Slice("f")), 0)
+			},
+		},
+		{
+			flag: func() Flag { return &IntSliceFlag{Name: "f"} },
+			args: "-f 77 -f -888",
+			check: func(t *testing.T, c *Context) {
+				expect(t, c.IntSlice("f"), []int{77, -888})
+			},
+			zero: func(t *testing.T, c *Context) {
+				expect(t, len(c.IntSlice("f")), 0)
+			},
+		},
+		{
+			flag: func() Flag { return &PathFlag{Name: "f"} },
+			args: "-f /path",
+			check: func(t *testing.T, c *Context) {
+				expect(t, c.Path("f"), "/path")
+			},
+			zero: func(t *testing.T, c *Context) {
+				expect(t, c.Path("f"), "")
+			},
+		},
+		{
+			flag: func() Flag { return &StringSliceFlag{Name: "f"} },
+			args: "-f aaa -f bbb",
+			check: func(t *testing.T, c *Context) {
+				expect(t, c.StringSlice("f"), []string{"aaa", "bbb"})
+			},
+			zero: func(t *testing.T, c *Context) {
+				expect(t, len(c.StringSlice("f")), 0)
+			},
+		},
+		{
+			flag: func() Flag { return &TimestampFlag{Name: "f", Layout: time.RFC3339} },
+			args: "-f 2006-01-02T15:04:05Z",
+			check: func(t *testing.T, c *Context) {
+				expected, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
+				expect(t, c.Timestamp("f").UnixNano(), expected.UnixNano())
+			},
+			zero: func(t *testing.T, c *Context) {
+				expect(t, c.Timestamp("f"), (*time.Time)(nil))
+			},
+		},
+		{
+			flag: func() Flag { return &UintFlag{Name: "f"} },
+			args: "-f 77",
+			check: func(t *testing.T, c *Context) {
+				expect(t, c.Uint("f"), uint(77))
+			},
+			zero: func(t *testing.T, c *Context) {
+				expect(t, c.Uint("f"), uint(0))
+			},
+		},
+		{
+			flag: func() Flag { return &Uint64Flag{Name: "f"} },
+			args: "-f 77",
+			check: func(t *testing.T, c *Context) {
+				expect(t, c.Uint64("f"), uint64(77))
+			},
+			zero: func(t *testing.T, c *Context) {
+				expect(t, c.Uint64("f"), uint64(0))
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%T", tc.flag()), func(t *testing.T) {
+			checkValue := func(c *Context) error {
+				tc.check(t, c)
+				return nil
+			}
+			checkZero := func(c *Context) error {
+				tc.zero(t, c)
+				return nil
+			}
+			buildApp := func(action ActionFunc) *App {
+				return &App{
+					Flags: []Flag{
+						tc.flag(),
+					},
+					Action: action,
+					Commands: []*Command{
+						{
+							Name: "one",
+							Flags: []Flag{
+								tc.flag(),
+							},
+							Action: action,
+							Subcommands: []*Command{
+								{
+									Name: "two",
+									Flags: []Flag{
+										tc.flag(),
+									},
+									Action: action,
+								},
+							},
+						},
+					},
+				}
+			}
+
+			flagArgs := strings.Split(tc.args, " ")
+			var baseArgs []string
+			for _, c := range []string{"the-app", "one", "two"} {
+				baseArgs = append(baseArgs, c)
+
+				// try without the flag
+				_ = buildApp(checkZero).Run(baseArgs)
+
+				// try flag in different positions
+				for i := 1; i <= len(baseArgs); i++ {
+					thisRunArgs := make([]string, i)
+					copy(thisRunArgs, baseArgs[:i])
+					thisRunArgs = append(thisRunArgs, flagArgs...)
+					thisRunArgs = append(thisRunArgs, baseArgs[i:]...)
+					fmt.Println(thisRunArgs)
+
+					_ = buildApp(checkValue).Run(thisRunArgs)
+				}
+			}
+		})
+	}
 }
 
 // XXX Corresponds to hack in context.IsSet for flags with EnvVar field

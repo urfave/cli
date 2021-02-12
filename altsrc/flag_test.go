@@ -679,7 +679,7 @@ func runTest(t *testing.T, test testApplyInputSource) *cli.Context {
 		f.Value = test.ContextValue
 	}
 	if test.ContextValueString != "" {
-		_ = set.Set(test.FlagName, test.ContextValueString)
+		_ = c.Set(test.FlagName, test.ContextValueString)
 	}
 	_ = test.Flag.ApplyInputSourceValue(c, inputSource)
 

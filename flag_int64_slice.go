@@ -187,15 +187,11 @@ func (f *Int64SliceFlag) RunAction(c *Context) error {
 
 // Int64Slice looks up the value of a local Int64SliceFlag, returns
 // nil if not found
-func (cCtx *Context) Int64Slice(name string) []int64 {
-	if fs := cCtx.lookupFlagSet(name); fs != nil {
-		return lookupInt64Slice(name, fs)
-	}
-	return nil
+func (c *Context) Int64Slice(name string) []int64 {
+	return lookupInt64Slice(c.resolveFlagDeep(name))
 }
 
-func lookupInt64Slice(name string, set *flag.FlagSet) []int64 {
-	f := set.Lookup(name)
+func lookupInt64Slice(f *flag.Flag) []int64 {
 	if f != nil {
 		if slice, ok := unwrapFlagValue(f.Value).(*Int64Slice); ok {
 			return slice.Value()

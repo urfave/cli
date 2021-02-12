@@ -85,15 +85,11 @@ func (f *IntFlag) RunAction(c *Context) error {
 
 // Int looks up the value of a local IntFlag, returns
 // 0 if not found
-func (cCtx *Context) Int(name string) int {
-	if fs := cCtx.lookupFlagSet(name); fs != nil {
-		return lookupInt(name, fs)
-	}
-	return 0
+func (c *Context) Int(name string) int {
+	return lookupInt(c.resolveFlagDeep(name))
 }
 
-func lookupInt(name string, set *flag.FlagSet) int {
-	f := set.Lookup(name)
+func lookupInt(f *flag.Flag) int {
 	if f != nil {
 		parsed, err := strconv.ParseInt(f.Value.String(), 0, 64)
 		if err != nil {

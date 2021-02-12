@@ -109,15 +109,11 @@ func (f *GenericFlag) RunAction(c *Context) error {
 
 // Generic looks up the value of a local GenericFlag, returns
 // nil if not found
-func (cCtx *Context) Generic(name string) interface{} {
-	if fs := cCtx.lookupFlagSet(name); fs != nil {
-		return lookupGeneric(name, fs)
-	}
-	return nil
+func (c *Context) Generic(name string) interface{} {
+	return lookupGeneric(c.resolveFlagDeep(name))
 }
 
-func lookupGeneric(name string, set *flag.FlagSet) interface{} {
-	f := set.Lookup(name)
+func lookupGeneric(f *flag.Flag) interface{} {
 	if f != nil {
 		parsed, err := f.Value, error(nil)
 		if err != nil {

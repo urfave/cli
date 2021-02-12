@@ -84,15 +84,11 @@ func (f *Uint64Flag) Get(ctx *Context) uint64 {
 
 // Uint64 looks up the value of a local Uint64Flag, returns
 // 0 if not found
-func (cCtx *Context) Uint64(name string) uint64 {
-	if fs := cCtx.lookupFlagSet(name); fs != nil {
-		return lookupUint64(name, fs)
-	}
-	return 0
+func (c *Context) Uint64(name string) uint64 {
+	return lookupUint64(c.resolveFlagDeep(name))
 }
 
-func lookupUint64(name string, set *flag.FlagSet) uint64 {
-	f := set.Lookup(name)
+func lookupUint64(f *flag.Flag) uint64 {
 	if f != nil {
 		parsed, err := strconv.ParseUint(f.Value.String(), 0, 64)
 		if err != nil {

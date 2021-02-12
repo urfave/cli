@@ -84,15 +84,11 @@ func (f *DurationFlag) RunAction(c *Context) error {
 
 // Duration looks up the value of a local DurationFlag, returns
 // 0 if not found
-func (cCtx *Context) Duration(name string) time.Duration {
-	if fs := cCtx.lookupFlagSet(name); fs != nil {
-		return lookupDuration(name, fs)
-	}
-	return 0
+func (c *Context) Duration(name string) time.Duration {
+	return lookupDuration(c.resolveFlagDeep(name))
 }
 
-func lookupDuration(name string, set *flag.FlagSet) time.Duration {
-	f := set.Lookup(name)
+func lookupDuration(f *flag.Flag) time.Duration {
 	if f != nil {
 		parsed, err := time.ParseDuration(f.Value.String())
 		if err != nil {

@@ -183,16 +183,12 @@ func (f *TimestampFlag) RunAction(c *Context) error {
 }
 
 // Timestamp gets the timestamp from a flag name
-func (cCtx *Context) Timestamp(name string) *time.Time {
-	if fs := cCtx.lookupFlagSet(name); fs != nil {
-		return lookupTimestamp(name, fs)
-	}
-	return nil
+func (c *Context) Timestamp(name string) *time.Time {
+	return lookupTimestamp(c.resolveFlagDeep(name))
 }
 
 // Fetches the timestamp value from the local timestampWrap
-func lookupTimestamp(name string, set *flag.FlagSet) *time.Time {
-	f := set.Lookup(name)
+func lookupTimestamp(f *flag.Flag) *time.Time {
 	if f != nil {
 		return (f.Value.(*Timestamp)).Value()
 	}

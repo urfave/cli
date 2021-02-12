@@ -81,15 +81,11 @@ func (f *Float64Flag) RunAction(c *Context) error {
 
 // Float64 looks up the value of a local Float64Flag, returns
 // 0 if not found
-func (cCtx *Context) Float64(name string) float64 {
-	if fs := cCtx.lookupFlagSet(name); fs != nil {
-		return lookupFloat64(name, fs)
-	}
-	return 0
+func (c *Context) Float64(name string) float64 {
+	return lookupFloat64(c.resolveFlagDeep(name))
 }
 
-func lookupFloat64(name string, set *flag.FlagSet) float64 {
-	f := set.Lookup(name)
+func lookupFloat64(f *flag.Flag) float64 {
 	if f != nil {
 		parsed, err := strconv.ParseFloat(f.Value.String(), 64)
 		if err != nil {
