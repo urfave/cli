@@ -21,9 +21,18 @@ type Choice interface {
 	Strings() []string
 }
 
+// NewStringerChoice Initializes a new instance of Choice that takes a list of fmt.Stringer instances used as choices.
+func NewStringerChoice(ss ...fmt.Stringer) Choice {
+	c := make(Choices, len(ss))
+	for _, s := range ss {
+		c[s.String()] = s
+	}
+	return NewChoice(c)
+}
+
 // NewStringChoice Initializes a new instance of Choice that takes a list of strings used as choices.
 func NewStringChoice(ss ...string) Choice {
-	c := make(map[string]interface{}, len(ss))
+	c := make(Choices, len(ss))
 	for _, s := range ss {
 		c[s] = s
 	}
