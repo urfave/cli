@@ -177,11 +177,12 @@ func (a *App) Setup() {
 
 	var newCommands []*Command
 
-	for _, c := range a.Commands {
-		if c.HelpName == "" {
-			c.HelpName = fmt.Sprintf("%s %s", a.HelpName, c.Name)
+	for _, command := range a.Commands {
+		newCommand := *command // only mutate a shallow copy of the command to avoid data race in parallel tests
+		if newCommand.HelpName == "" {
+			newCommand.HelpName = fmt.Sprintf("%s %s", a.HelpName, newCommand.Name)
 		}
-		newCommands = append(newCommands, c)
+		newCommands = append(newCommands, &newCommand)
 	}
 	a.Commands = newCommands
 
