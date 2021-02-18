@@ -79,7 +79,7 @@ func TestActionFunc(c *cli.Context) error {
 
 		coverProfile := fmt.Sprintf("--coverprofile=%s.coverprofile", pkg)
 
-		err := runCmd("go", "test", "-v", coverProfile, packageName)
+		err := runCmd("go", "test", "-race", "-v", coverProfile, packageName)
 		if err != nil {
 			return err
 		}
