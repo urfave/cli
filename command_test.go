@@ -422,3 +422,24 @@ func TestCommand_CanAddVFlagOnCommands(t *testing.T) {
 	err := app.Run([]string{"foo", "bar"})
 	expect(t, err, nil)
 }
+
+func TestDataRaceSharedCommands(t *testing.T) {
+	// Verifies fix for https://github.com/urfave/cli/issues/1242
+	commands := []*Command{
+		{Name: "bar"},
+	}
+
+	t.Run("first run", func(t *testing.T) {
+		t.Parallel()
+		app := NewApp()
+		app.Commands = commands
+		_ = app.Run([]string{"foo", "bar"})
+	})
+
+	t.Run("second run", func(t *testing.T) {
+		t.Parallel()
+		app := NewApp()
+		app.Commands = commands
+		_ = app.Run([]string{"foo", "bar"})
+	})
+}
