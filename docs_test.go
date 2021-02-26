@@ -309,7 +309,7 @@ func Test_prepareUsage(t *testing.T) {
 		res := prepareUsage(&cmd, "")
 
 		// Then
-		expect(t, res, cmd.Usage + "\n")
+		expect(t, res, cmd.Usage+"\n")
 	})
 
 	t.Run("simple Usage with UsageText", func(t *testing.T) {
@@ -320,6 +320,6 @@ func Test_prepareUsage(t *testing.T) {
 		res := prepareUsage(&cmd, "a non-empty string")
 
 		// Then
-		expect(t, res, cmd.Usage + "\n\n")
+		expect(t, res, cmd.Usage+"\n\n")
 	})
 }
