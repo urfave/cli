@@ -114,6 +114,54 @@ func TestParseAndRunShortOpts(t *testing.T) {
 	}
 }
 
+func TestParseAndRunCollectUnknownFlags(t *testing.T) {
+	cases := []struct {
+		testArgs     []string
+		expectedUnknownArgs []string
+	}{
+		{[]string{"foo", "test", "-a"}, nil},
+		{[]string{"foo", "test", "-a", "--sss", "test-blah"}, nil},
+		{[]string{"foo", "test", "-unknown","-a"}, []string{"-unknown"}},
+		{[]string{"foo", "test", "-unknown", "-unknown", "-a"}, []string{"-unknown", "-unknown"}},
+		{[]string{"foo", "test", "-unknown","arg1","-a"}, []string{"-unknown", "arg1"}},
+		{[]string{"foo", "test", "-unknown","arg1", "arg2","-a"}, []string{"-unknown", "arg1", "arg2"}},
+		{[]string{"foo", "test", "-unknown","arg1", "-unknown", "arg2","-a"}, []string{"-unknown", "arg1","-unknown", "arg2"}},
+		{[]string{"foo", "test", "-unknown", "arg1", "-a", "-unknown", "arg2"}, []string{"-unknown", "arg1","-unknown", "arg2"}},
+		{[]string{"foo", "test", "-a", "-unknown"}, []string{"-unknown"}},
+		{[]string{"foo", "test", "-a", "-unknown", "arg1"}, []string{"-unknown", "arg1"}},
+		{[]string{"foo", "test", "-a", "-unknown", "arg1", "arg2"}, []string{"-unknown", "arg1", "arg2"}},
+		{[]string{"foo", "test", "-a", "-unknown","arg1", "-unknown", "arg2","-a"}, []string{"-unknown","arg1", "-unknown", "arg2"}},
+		{[]string{"foo", "test", "-a", "-unknown","arg1", "-unknown", "arg2","-a", "-s", "blah"}, []string{"-unknown","arg1", "-unknown", "arg2"}},
+		{[]string{"foo", "test", "-a", "--unknown","arg1"}, []string{"--unknown","arg1"}},
+	}
+
+	for _, c := range cases {
+		var unKnownArgs []string
+		cmd := Command{
+			Name:        "test",
+			Usage:       "this is for testing",
+			Description: "testing",
+			Action: func(ctx *Context) error {
+				unKnownArgs = ctx.Command.UnknownArgs
+				return nil
+			},
+			SkipArgReorder:         true,
+			CollectUnknownFlags: true,
+			Flags: []Flag{
+				BoolFlag{Name: "aaa, a"},
+				StringFlag{Name: "sss, s"},
+
+			},
+		}
+		app := NewApp()
+		app.Commands = []Command{cmd}
+		err := app.Run(c.testArgs)
+		expect(t, err, nil)
+		expect(t, unKnownArgs, c.expectedUnknownArgs)
+	}
+
+}
+
 func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 	app := NewApp()
 	app.Commands = []Command{

@@ -60,6 +60,14 @@ type Command struct {
 	// i.e. foobar -o -v -> foobar -ov
 	UseShortOptionHandling bool
 
+	// CollectUnknownFlags will ignore unknown flags and continue parsing
+	// rest of the flags. All unknown args will be put into UnknownArgs.
+	CollectUnknownFlags bool
+
+	// UnknownArgs stores all the unknown arguments if CollectUnknownFlags
+	// is set to `true`
+	UnknownArgs []string
+
 	// Full name of command for help, defaults to full command name, including parent commands.
 	HelpName        string
 	commandNamePath []string
@@ -216,6 +224,15 @@ func (c *Command) newFlagSet() (*flag.FlagSet, error) {
 
 func (c *Command) useShortOptionHandling() bool {
 	return c.UseShortOptionHandling
+}
+
+func (c *Command) collectUnusedFlags() bool {
+	return c.CollectUnknownFlags
+}
+
+
+func (c *Command) setUnusedFlags(args []string) {
+	 c.UnknownArgs = args
 }
 
 // reorderArgs moves all flags (via reorderedArgs) before the rest of

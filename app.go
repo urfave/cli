@@ -100,6 +100,14 @@ type App struct {
 	// i.e. foobar -o -v -> foobar -ov
 	UseShortOptionHandling bool
 
+	// CollectUnknownFlags will ignore unknown flags and continue parsing
+	// rest of the flags. All unknown args will be put into UnknownArgs.
+	CollectUnknownFlags bool
+
+	// UnknownArgs stores all the unknown arguments if CollectUnknownFlags
+	// is set to `true`
+	UnknownArgs []string
+
 	didSetup bool
 }
 
@@ -187,6 +195,15 @@ func (a *App) newFlagSet() (*flag.FlagSet, error) {
 
 func (a *App) useShortOptionHandling() bool {
 	return a.UseShortOptionHandling
+}
+
+func (a *App) collectUnusedFlags() bool {
+	return a.CollectUnknownFlags
+}
+
+
+func (a *App) setUnusedFlags(args []string) {
+	a.UnknownArgs = args
 }
 
 // Run is the entry point to the cli app. Parses the arguments slice and routes
