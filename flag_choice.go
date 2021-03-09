@@ -211,12 +211,12 @@ func newChoiceValueSwap(choice Choice, val interface{}, p interface{}) (*choiceV
 }
 
 func (c *choiceValue) Set(s string) error {
-	if !c.value.IsValid() || c.value.IsZero() || c.value.IsNil() {
+	if !c.value.IsValid() || isNil(c.value) {
 		return nil
 	}
 
 	if v := c.choice.FromString(s); v != nil {
-		c.value.Elem().Set(reflect.ValueOf(v))
+		setValue(c.value, v)
 		return nil
 	}
 
@@ -226,15 +226,42 @@ func (c *choiceValue) Set(s string) error {
 func (c choiceValue) Get() interface{} { return c }
 
 func (c *choiceValue) String() string {
-	if !c.value.IsValid() || c.value.IsZero() || c.value.IsNil() {
+	if !c.value.IsValid() || isNil(c.value) {
 		return ""
 	}
-	return c.choice.ToString(c.value.Elem().Interface())
+	return c.choice.ToString(interfaceOf(c.value))
 }
 
 func (c *choiceValue) Value() interface{} {
-	if !c.value.IsValid() || c.value.IsZero() || c.value.IsNil() {
+	if !c.value.IsValid() || isNil(c.value) {
 		return nil
 	}
-	return c.value.Elem().Interface()
+	return interfaceOf(c.value)
+}
+
+func isNil(v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Slice, reflect.Ptr:
+		return v.IsNil()
+	default:
+		return false
+	}
+}
+
+func interfaceOf(v reflect.Value) interface{} {
+	switch v.Kind() {
+	case reflect.Interface, reflect.Ptr:
+		return v.Elem().Interface()
+	default:
+		return v.Interface()
+	}
+}
+
+func setValue(v reflect.Value, val interface{}) {
+	switch v.Kind() {
+	case reflect.Interface, reflect.Ptr:
+		v.Elem().Set(reflect.ValueOf(val))
+	default:
+		v.Set(reflect.ValueOf(val))
+	}
 }
