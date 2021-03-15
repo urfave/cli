@@ -227,6 +227,7 @@ func (c *Command) startApp(ctx *Context) error {
 	}
 
 	app.Usage = c.Usage
+	app.UsageText = c.UsageText
 	app.Description = c.Description
 	app.ArgsUsage = c.ArgsUsage
 
