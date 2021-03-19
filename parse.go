@@ -106,8 +106,6 @@ func parseIter(set *flag.FlagSet, ip iterativeParser, args []string, shellComple
 				}
 				if unknown {
 					unusedArgs = append(unusedArgs, arg)
-				} else {
-					newArgs = append(newArgs, arg)
 				}
 			}
 			args = newArgs
