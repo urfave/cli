@@ -52,6 +52,11 @@ func (f *Uint64Flag) GetUsage() string {
 	return f.Usage
 }
 
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *Uint64Flag) IsVisible() bool {
+	return !f.Hidden
+}
+
 // Apply populates the flag given the flag set and environment
 func (f *Uint64Flag) Apply(set *flag.FlagSet) error {
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
