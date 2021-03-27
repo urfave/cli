@@ -1,6 +1,9 @@
 package cli
 
-import "flag"
+import (
+	"flag"
+	"fmt"
+)
 
 // StringFlag is a flag with type string
 type StringFlag struct {
@@ -58,6 +61,22 @@ func (f *StringFlag) GetValue() string {
 // IsVisible returns true if the flag is not hidden, otherwise false
 func (f *StringFlag) IsVisible() bool {
 	return !f.Hidden
+}
+
+// GetDefaultText returns the default text for this flag
+func (f *StringFlag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	if f.Value == "" {
+		return f.Value
+	}
+	return fmt.Sprintf("%q", f.Value)
+}
+
+// GetEnvVars returns the env vars for this flag
+func (f *StringFlag) GetEnvVars() []string {
+	return f.EnvVars
 }
 
 // Apply populates the flag given the flag set and environment

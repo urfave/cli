@@ -107,7 +107,7 @@ func (f *IntSliceFlag) IsSet() bool {
 // String returns a readable representation of this value
 // (for usage defaults)
 func (f *IntSliceFlag) String() string {
-	return FlagStringer(f)
+	return withEnvHint(f.GetEnvVars(), stringifyIntSliceFlag(f))
 }
 
 // Names returns the names of the flag
@@ -142,6 +142,19 @@ func (f *IntSliceFlag) GetValue() string {
 // IsVisible returns true if the flag is not hidden, otherwise false
 func (f *IntSliceFlag) IsVisible() bool {
 	return !f.Hidden
+}
+
+// GetDefaultText returns the default text for this flag
+func (f *IntSliceFlag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	return f.GetValue()
+}
+
+// GetEnvVars returns the env vars for this flag
+func (f *IntSliceFlag) GetEnvVars() []string {
+	return f.EnvVars
 }
 
 // Apply populates the flag given the flag set and environment

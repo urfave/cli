@@ -1,6 +1,9 @@
 package cli
 
-import "flag"
+import (
+	"flag"
+	"fmt"
+)
 
 type PathFlag struct {
 	Name        string
@@ -57,6 +60,22 @@ func (f *PathFlag) GetValue() string {
 // IsVisible returns true if the flag is not hidden, otherwise false
 func (f *PathFlag) IsVisible() bool {
 	return !f.Hidden
+}
+
+// GetDefaultText returns the default text for this flag
+func (f *PathFlag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	if f.Value == "" {
+		return f.Value
+	}
+	return fmt.Sprintf("%q", f.Value)
+}
+
+// GetEnvVars returns the env vars for this flag
+func (f *PathFlag) GetEnvVars() []string {
+	return f.EnvVars
 }
 
 // Apply populates the flag given the flag set and environment

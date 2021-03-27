@@ -95,7 +95,7 @@ func (f *Float64SliceFlag) IsSet() bool {
 // String returns a readable representation of this value
 // (for usage defaults)
 func (f *Float64SliceFlag) String() string {
-	return FlagStringer(f)
+	return withEnvHint(f.GetEnvVars(), stringifyFloat64SliceFlag(f))
 }
 
 // Names returns the names of the flag
@@ -130,6 +130,19 @@ func (f *Float64SliceFlag) GetValue() string {
 // IsVisible returns true if the flag is not hidden, otherwise false
 func (f *Float64SliceFlag) IsVisible() bool {
 	return !f.Hidden
+}
+
+// GetDefaultText returns the default text for this flag
+func (f *Float64SliceFlag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	return f.GetValue()
+}
+
+// GetEnvVars returns the env vars for this flag
+func (f *Float64SliceFlag) GetEnvVars() []string {
+	return f.EnvVars
 }
 
 // Apply populates the flag given the flag set and environment

@@ -55,7 +55,20 @@ func (f *Float64Flag) GetUsage() string {
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *Float64Flag) GetValue() string {
-	return fmt.Sprintf("%f", f.Value)
+	return fmt.Sprintf("%v", f.Value)
+}
+
+// GetDefaultText returns the default text for this flag
+func (f *Float64Flag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	return f.GetValue()
+}
+
+// GetEnvVars returns the env vars for this flag
+func (f *Float64Flag) GetEnvVars() []string {
+	return f.EnvVars
 }
 
 // IsVisible returns true if the flag is not hidden, otherwise false

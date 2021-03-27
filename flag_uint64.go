@@ -88,6 +88,19 @@ func (f *Uint64Flag) GetValue() string {
 	return fmt.Sprintf("%d", f.Value)
 }
 
+// GetDefaultText returns the default text for this flag
+func (f *Uint64Flag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	return f.GetValue()
+}
+
+// GetEnvVars returns the env vars for this flag
+func (f *Uint64Flag) GetEnvVars() []string {
+	return f.EnvVars
+}
+
 // Uint64 looks up the value of a local Uint64Flag, returns
 // 0 if not found
 func (c *Context) Uint64(name string) uint64 {
