@@ -123,8 +123,13 @@ func TestFlagsFromEnv(t *testing.T) {
 	for i, test := range flagTests {
 		defer resetEnv(os.Environ())
 		os.Clearenv()
-		envVarSlice := reflect.Indirect(reflect.ValueOf(test.flag)).FieldByName("EnvVars").Slice(0, 1)
-		_ = os.Setenv(envVarSlice.Index(0).String(), test.input)
+
+		f, ok := test.flag.(DocGenerationFlag)
+		if !ok {
+			t.Errorf("flag %v needs to implement DocGenerationFlag to retrieve env vars", test.flag)
+		}
+		envVarSlice := f.GetEnvVars()
+		_ = os.Setenv(envVarSlice[0], test.input)
 
 		a := App{
 			Flags: []Flag{test.flag},
