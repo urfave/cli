@@ -46,8 +46,9 @@ func parseIter(set *flag.FlagSet, ip iterativeParser, args []string, shellComple
 				return err
 			}
 
-			// swap current argument with the split version
-			args = append(args[:i], append(shortOpts, args[i+1:]...)...)
+			// Start processing only from failed argument and not
+			// from beginning
+			args = append(shortOpts, args[i+1:]...)
 			argsWereSplit = true
 			break
 		}
