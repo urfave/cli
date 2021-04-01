@@ -19,6 +19,7 @@ type IntFlag struct {
 	DefaultText string
 	Destination *int
 	HasBeenSet  bool
+	Validator   IntValidator
 }
 
 // IsSet returns whether or not the flag has been set through env or file
@@ -73,7 +74,13 @@ func (f *IntFlag) Apply(set *flag.FlagSet) error {
 				return fmt.Errorf("could not parse %q as int value for flag %s: %s", val, f.Name, err)
 			}
 
-			f.Value = int(valInt)
+			value := int(valInt)
+			if f.Validator != nil {
+				if err := f.Validator.ValidateInt(int(valInt)); err != nil {
+					return NewFlagValidationError(f.Name, err)
+				}
+			}
+			f.Value = value
 			f.HasBeenSet = true
 		}
 	}
@@ -87,6 +94,14 @@ func (f *IntFlag) Apply(set *flag.FlagSet) error {
 	}
 
 	return nil
+}
+
+// Validate validates the given int flag based on the context
+func (f *IntFlag) Validate(c *Context) error {
+	if f.Validator == nil {
+		return nil
+	}
+	return f.Validator.ValidateInt(c.Int(f.Name))
 }
 
 // Int looks up the value of a local IntFlag, returns

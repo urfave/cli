@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"flag"
+	"fmt"
 	"os"
 	"sort"
 	"strings"
@@ -577,6 +578,92 @@ func TestCheckRequiredFlags(t *testing.T) {
 
 			// logic under test
 			err := ctx.checkRequiredFlags(test.flags)
+
+			// assertions
+			if test.expectedAnError && err == nil {
+				t.Errorf("expected an error, but there was none")
+			}
+			if !test.expectedAnError && err != nil {
+				t.Errorf("did not expected an error, but there was one: %s", err)
+			}
+			for _, errString := range test.expectedErrorContents {
+				if err != nil {
+					if !strings.Contains(err.Error(), errString) {
+						t.Errorf("expected error %q to contain %q, but it didn't!", err.Error(), errString)
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestValidateFlags(t *testing.T) {
+	tdata := []struct {
+		testCase              string
+		parseInput            []string
+		envVarInput           [2]string
+		flags                 []Flag
+		expectedAnError       bool
+		expectedErrorContents []string
+	}{
+		{
+			testCase: "empty",
+		},
+		{
+			testCase: "int_validate_1",
+			flags: []Flag{
+				&IntFlag{Name: "intFlag", Validator: IntLT(11)},
+			},
+			expectedAnError:       true,
+			expectedErrorContents: []string{fmt.Sprintf(gteFmt, 11, 11)},
+			parseInput:            []string{"--intFlag", "11"},
+		},
+		{
+			testCase: "int_validate_2",
+			flags: []Flag{
+				&IntFlag{Name: "intFlag", Validator: IntLT(11)},
+			},
+			parseInput: []string{"--intFlag", "10"},
+		},
+		{
+			testCase: "int_slice_validate_1",
+			flags: []Flag{
+				&IntSliceFlag{Name: "intSliceFlag", Validator: IntSliceLenGT(2)},
+			},
+			expectedAnError:       true,
+			expectedErrorContents: []string{fmt.Sprintf(sliceLenFmt+lteFmt, 1, 2)},
+			parseInput:            []string{"--intSliceFlag", "11"},
+		},
+		{
+			testCase: "int_slice_validate_2",
+			flags: []Flag{
+				&IntSliceFlag{Name: "intSliceFlag", Validator: IntSliceLenLT(2)},
+			},
+			parseInput: []string{"--intSliceFlag", "10"},
+		},
+	}
+
+	for _, test := range tdata {
+		t.Run(test.testCase, func(t *testing.T) {
+			// setup
+			if test.envVarInput[0] != "" {
+				defer resetEnv(os.Environ())
+				os.Clearenv()
+				_ = os.Setenv(test.envVarInput[0], test.envVarInput[1])
+			}
+
+			set := flag.NewFlagSet("test", 0)
+			for _, flags := range test.flags {
+				_ = flags.Apply(set)
+			}
+			_ = set.Parse(test.parseInput)
+
+			c := &Context{}
+			ctx := NewContext(c.App, set, c)
+			ctx.Command.Flags = test.flags
+
+			// logic under test
+			err := validateFlags(test.flags, ctx)
 
 			// assertions
 			if test.expectedAnError && err == nil {

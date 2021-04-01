@@ -69,6 +69,32 @@ func (e *errRequiredFlags) getMissingFlags() []string {
 	return e.missingFlags
 }
 
+// FlagValidationError is an encapsulation for flag validation errors
+// which implements the multiError interface. Note that it doesnt need
+// to be explicitly defined.
+type FlagValidationError struct {
+	// the flag name
+	FlagName string
+
+	// the error strings, there could be multiple in case of slices
+	Errs MultiError
+}
+
+func NewFlagValidationError(flagName string, err ...error) FlagValidationError {
+	return FlagValidationError{
+		FlagName: flagName,
+		Errs:     newMultiError(err...),
+	}
+}
+
+func (fve FlagValidationError) Error() string {
+	return fmt.Sprintf("Flag %s validation failed due to %v", fve.FlagName, fve.Errs.Error())
+}
+
+func (fve FlagValidationError) Errors() []error {
+	return fve.Errs.Errors()
+}
+
 // ErrorFormatter is the interface that will suitably format the error output
 type ErrorFormatter interface {
 	Format(s fmt.State, verb rune)

@@ -284,6 +284,10 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 		return cerr
 	}
 
+	if verr := validateFlags(a.Flags, context); verr != nil {
+		return verr
+	}
+
 	if a.After != nil {
 		defer func() {
 			if afterErr := a.After(context); afterErr != nil {

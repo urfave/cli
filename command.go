@@ -133,6 +133,10 @@ func (c *Command) Run(ctx *Context) (err error) {
 		return cerr
 	}
 
+	if verr := validateFlags(c.Flags, context); verr != nil {
+		return verr
+	}
+
 	if c.After != nil {
 		defer func() {
 			afterErr := c.After(context)

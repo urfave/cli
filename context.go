@@ -206,3 +206,18 @@ func makeFlagNameVisitor(names *[]string) func(*flag.Flag) {
 		}
 	}
 }
+
+func validateFlags(flags []Flag, ctx *Context) error {
+	var errors []error
+	for _, f := range flags {
+		if vf, ok := f.(Validator); ok {
+			if err := vf.Validate(ctx); err != nil {
+				errors = append(errors, err)
+			}
+		}
+	}
+	if len(errors) > 0 {
+		return newMultiError(errors...)
+	}
+	return nil
+}

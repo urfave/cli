@@ -97,6 +97,7 @@ type IntSliceFlag struct {
 	Value       *IntSlice
 	DefaultText string
 	HasBeenSet  bool
+	Validator   IntSliceValidator
 }
 
 // IsSet returns whether or not the flag has been set through env or file
@@ -155,6 +156,12 @@ func (f *IntSliceFlag) Apply(set *flag.FlagSet) error {
 			}
 		}
 
+		if f.Validator != nil {
+			if err := f.Validator.ValidateIntSlice(f.Value.Value()); err != nil {
+				return NewFlagValidationError(f.Name, err)
+			}
+		}
+
 		f.HasBeenSet = true
 	}
 
@@ -167,6 +174,14 @@ func (f *IntSliceFlag) Apply(set *flag.FlagSet) error {
 	}
 
 	return nil
+}
+
+// Validate validates the given int slice flag based on the context
+func (f *IntSliceFlag) Validate(c *Context) error {
+	if f.Validator == nil {
+		return nil
+	}
+	return f.Validator.ValidateIntSlice(c.IntSlice(f.Name))
 }
 
 // IntSlice looks up the value of a local IntSliceFlag, returns
