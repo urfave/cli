@@ -138,7 +138,7 @@ func (f *TimestampFlag) Apply(set *flag.FlagSet) error {
 
 // Timestamp gets the timestamp from a flag name
 func (c *Context) Timestamp(name string) *time.Time {
-	if fs := lookupFlagSet(name, c); fs != nil {
+	if fs := c.lookupFlagSet(name); fs != nil {
 		return lookupTimestamp(name, fs)
 	}
 	return nil
