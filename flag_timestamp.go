@@ -71,6 +71,7 @@ type TimestampFlag struct {
 	Value       *Timestamp
 	DefaultText string
 	HasBeenSet  bool
+	Destination *Timestamp
 }
 
 // IsSet returns whether or not the flag has been set through env or file
@@ -123,6 +124,10 @@ func (f *TimestampFlag) Apply(set *flag.FlagSet) error {
 	}
 	f.Value.SetLayout(f.Layout)
 
+	if f.Destination != nil {
+		f.Destination.SetLayout(f.Layout)
+	}
+
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		if err := f.Value.Set(val); err != nil {
 			return fmt.Errorf("could not parse %q as timestamp value for flag %s: %s", val, f.Name, err)
@@ -131,6 +136,11 @@ func (f *TimestampFlag) Apply(set *flag.FlagSet) error {
 	}
 
 	for _, name := range f.Names() {
+		if f.Destination != nil {
+			set.Var(f.Destination, name, f.Usage)
+			continue
+		}
+
 		set.Var(f.Value, name, f.Usage)
 	}
 	return nil
