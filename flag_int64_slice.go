@@ -128,6 +128,11 @@ func (f *Int64SliceFlag) GetValue() string {
 	return ""
 }
 
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *Int64SliceFlag) IsVisible() bool {
+	return !f.Hidden
+}
+
 // Apply populates the flag given the flag set and environment
 func (f *Int64SliceFlag) Apply(set *flag.FlagSet) error {
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {

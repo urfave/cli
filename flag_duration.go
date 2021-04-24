@@ -58,6 +58,11 @@ func (f *DurationFlag) GetValue() string {
 	return f.Value.String()
 }
 
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *DurationFlag) IsVisible() bool {
+	return !f.Hidden
+}
+
 // Apply populates the flag given the flag set and environment
 func (f *DurationFlag) Apply(set *flag.FlagSet) error {
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {

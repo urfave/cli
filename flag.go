@@ -119,6 +119,14 @@ type DocGenerationFlag interface {
 	GetValue() string
 }
 
+// VisibleFlag is an interface that allows to check if a flag is visible
+type VisibleFlag interface {
+	Flag
+
+	// IsVisible returns true if the flag is not hidden, otherwise false
+	IsVisible() bool
+}
+
 func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {
 	set := flag.NewFlagSet(name, flag.ContinueOnError)
 
@@ -176,8 +184,7 @@ func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
 func visibleFlags(fl []Flag) []Flag {
 	var visible []Flag
 	for _, f := range fl {
-		field := flagValue(f).FieldByName("Hidden")
-		if !field.IsValid() || !field.Bool() {
+		if vf, ok := f.(VisibleFlag); ok && vf.IsVisible() {
 			visible = append(visible, f)
 		}
 	}

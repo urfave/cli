@@ -66,6 +66,11 @@ func (f *GenericFlag) GetValue() string {
 	return ""
 }
 
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *GenericFlag) IsVisible() bool {
+	return !f.Hidden
+}
+
 // Apply takes the flagset and calls Set on the generic flag with the value
 // provided by the user for parsing by the flag
 func (f GenericFlag) Apply(set *flag.FlagSet) error {
