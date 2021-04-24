@@ -278,7 +278,7 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 		return nil
 	}
 
-	cerr := checkRequiredFlags(a.Flags, context)
+	cerr := context.checkRequiredFlags(a.Flags)
 	if cerr != nil {
 		_ = ShowAppHelp(context)
 		return cerr
@@ -397,7 +397,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 		}
 	}
 
-	cerr := checkRequiredFlags(a.Flags, context)
+	cerr := context.checkRequiredFlags(a.Flags)
 	if cerr != nil {
 		_ = ShowSubcommandHelp(context)
 		return cerr

@@ -316,13 +316,13 @@ func TestContext_lookupFlagSet(t *testing.T) {
 	_ = set.Parse([]string{"--local-flag"})
 	_ = parentSet.Parse([]string{"--top-flag"})
 
-	fs := lookupFlagSet("top-flag", ctx)
+	fs := ctx.lookupFlagSet("top-flag")
 	expect(t, fs, parentCtx.flagSet)
 
-	fs = lookupFlagSet("local-flag", ctx)
+	fs = ctx.lookupFlagSet("local-flag")
 	expect(t, fs, ctx.flagSet)
 
-	if fs := lookupFlagSet("frob", ctx); fs != nil {
+	if fs := ctx.lookupFlagSet("frob"); fs != nil {
 		t.Fail()
 	}
 }
@@ -576,7 +576,7 @@ func TestCheckRequiredFlags(t *testing.T) {
 			ctx.Command.Flags = test.flags
 
 			// logic under test
-			err := checkRequiredFlags(test.flags, ctx)
+			err := ctx.checkRequiredFlags(test.flags)
 
 			// assertions
 			if test.expectedAnError && err == nil {

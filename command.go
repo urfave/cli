@@ -127,7 +127,7 @@ func (c *Command) Run(ctx *Context) (err error) {
 		return nil
 	}
 
-	cerr := checkRequiredFlags(c.Flags, context)
+	cerr := context.checkRequiredFlags(c.Flags)
 	if cerr != nil {
 		_ = ShowCommandHelp(context, c.Name)
 		return cerr
