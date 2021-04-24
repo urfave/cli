@@ -86,7 +86,7 @@ func (f *DurationFlag) Apply(set *flag.FlagSet) error {
 // Duration looks up the value of a local DurationFlag, returns
 // 0 if not found
 func (c *Context) Duration(name string) time.Duration {
-	if fs := lookupFlagSet(name, c); fs != nil {
+	if fs := c.lookupFlagSet(name); fs != nil {
 		return lookupDuration(name, fs)
 	}
 	return 0

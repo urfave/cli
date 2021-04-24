@@ -87,7 +87,7 @@ func (f *BoolFlag) Apply(set *flag.FlagSet) error {
 // Bool looks up the value of a local BoolFlag, returns
 // false if not found
 func (c *Context) Bool(name string) bool {
-	if fs := lookupFlagSet(name, c); fs != nil {
+	if fs := c.lookupFlagSet(name); fs != nil {
 		return lookupBool(name, fs)
 	}
 	return false

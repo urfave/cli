@@ -2038,3 +2038,15 @@ func TestFlagDefaultValue(t *testing.T) {
 		}
 	}
 }
+
+func TestTimestampFlagApply_WithDestination(t *testing.T) {
+	var destination Timestamp
+	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: time.RFC3339, Destination: &destination}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
+	expect(t, err, nil)
+	expect(t, *fl.Destination.timestamp, expectedResult)
+}
