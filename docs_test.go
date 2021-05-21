@@ -67,6 +67,47 @@ func testApp() *App {
 	}, {
 		Name:   "hidden-command",
 		Hidden: true,
+	}, {
+		Aliases: []string{"u"},
+		Flags: []Flag{
+			&StringFlag{
+				Name:      "flag",
+				Aliases:   []string{"fl", "f"},
+				TakesFile: true,
+			},
+			&BoolFlag{
+				Name:    "another-flag",
+				Aliases: []string{"b"},
+				Usage:   "another usage text",
+			},
+		},
+		Name:  "usage",
+		Usage: "standard usage text",
+		UsageText: `
+Usage for the usage text
+- formatted:  Based on the specified ConfigMap and summon secrets.yml
+- list:       Inspect the environment for a specific process running on a Pod
+- for_effect: Compare 'namespace' environment with 'local'
+
+` + "```" + `
+func() { ... }
+` + "```" + `
+
+Should be a part of the same code block
+`,
+		Subcommands: []*Command{{
+			Aliases: []string{"su"},
+			Flags: []Flag{
+				&BoolFlag{
+					Name:    "sub-command-flag",
+					Aliases: []string{"s"},
+					Usage:   "some usage text",
+				},
+			},
+			Name:      "sub-usage",
+			Usage:     "standard usage text",
+			UsageText: "Single line of UsageText",
+		}},
 	}}
 	app.UsageText = "app [first_arg] [second_arg]"
 	app.Usage = "Some app"
@@ -174,4 +215,111 @@ func TestToManWithSection(t *testing.T) {
 	// Then
 	expect(t, err, nil)
 	expectFileContent(t, "testdata/expected-doc-full.man", res)
+}
+
+func Test_prepareUsageText(t *testing.T) {
+	t.Run("no UsageText provided", func(t *testing.T) {
+		// Given
+		cmd := Command{}
+
+		// When
+		res := prepareUsageText(&cmd)
+
+		// Then
+		expect(t, res, "")
+	})
+
+	t.Run("single line UsageText", func(t *testing.T) {
+		// Given
+		cmd := Command{UsageText: "Single line usage text"}
+
+		// When
+		res := prepareUsageText(&cmd)
+
+		// Then
+		expect(t, res, ">Single line usage text\n")
+	})
+
+	t.Run("multiline UsageText", func(t *testing.T) {
+		// Given
+		cmd := Command{
+			UsageText: `
+Usage for the usage text
+- Should be a part of the same code block
+`,
+		}
+
+		// When
+		res := prepareUsageText(&cmd)
+
+		// Then
+		test := `    Usage for the usage text
+    - Should be a part of the same code block
+`
+		expect(t, res, test)
+	})
+
+	t.Run("multiline UsageText has formatted embedded markdown", func(t *testing.T) {
+		// Given
+		cmd := Command{
+			UsageText: `
+Usage for the usage text
+
+` + "```" + `
+func() { ... }
+` + "```" + `
+
+Should be a part of the same code block
+`,
+		}
+
+		// When
+		res := prepareUsageText(&cmd)
+
+		// Then
+		test := `    Usage for the usage text
+    
+    ` + "```" + `
+    func() { ... }
+    ` + "```" + `
+    
+    Should be a part of the same code block
+`
+		expect(t, res, test)
+	})
+}
+
+func Test_prepareUsage(t *testing.T) {
+	t.Run("no Usage provided", func(t *testing.T) {
+		// Given
+		cmd := Command{}
+
+		// When
+		res := prepareUsage(&cmd, "")
+
+		// Then
+		expect(t, res, "")
+	})
+
+	t.Run("simple Usage", func(t *testing.T) {
+		// Given
+		cmd := Command{Usage: "simple usage text"}
+
+		// When
+		res := prepareUsage(&cmd, "")
+
+		// Then
+		expect(t, res, cmd.Usage+"\n")
+	})
+
+	t.Run("simple Usage with UsageText", func(t *testing.T) {
+		// Given
+		cmd := Command{Usage: "simple usage text"}
+
+		// When
+		res := prepareUsage(&cmd, "a non-empty string")
+
+		// Then
+		expect(t, res, cmd.Usage+"\n\n")
+	})
 }
