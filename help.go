@@ -424,6 +424,20 @@ func checkSubcommandHelp(cCtx *Context) bool {
 	return false
 }
 
+// help or h can be used as a command not just as a flag. This causes
+// checkRequiredFlags to return an error if the required flags are not set
+func checkHelpArguments(arguments []string) bool {
+	for _, arg := range arguments {
+		for _, help := range HelpFlag.Names() {
+			if help == arg {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 func checkShellCompleteFlag(a *App, arguments []string) (bool, []string) {
 	if !a.EnableBashCompletion {
 		return false, arguments

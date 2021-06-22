@@ -102,6 +102,39 @@ func Test_Help_Custom_Flags(t *testing.T) {
 	}
 }
 
+func Test_Help_Required_Flags_Does_Not_Error(t *testing.T) {
+	oldFlag := HelpFlag
+	defer func() {
+		HelpFlag = oldFlag
+	}()
+
+	app := App{
+		Flags: []Flag{
+			&StringFlag{Name: "foo", Required: true},
+		},
+	}
+
+	output := new(bytes.Buffer)
+	app.Writer = output
+
+	tests := []struct {
+		helpFlag string
+	}{
+		{"-help"},
+		{"-h"},
+		{"help"},
+		{"h"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.helpFlag, func(t *testing.T) {
+			err := app.Run([]string{"test", tt.helpFlag})
+			if err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}
+
 func Test_Version_Custom_Flags(t *testing.T) {
 	oldFlag := VersionFlag
 	defer func() {
