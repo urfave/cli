@@ -24,7 +24,7 @@ greet
 
 .SH DESCRIPTION
 .PP
-app [first\_arg] [second\_arg]
+Description of the application.
 
 .PP
 \fBUsage\fP:
@@ -33,7 +33,7 @@ app [first\_arg] [second\_arg]
 .RS
 
 .nf
-greet [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
+app [first\_arg] [second\_arg]
 
 .fi
 .RE

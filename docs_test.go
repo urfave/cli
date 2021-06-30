@@ -110,6 +110,7 @@ Should be a part of the same code block
 		}},
 	}}
 	app.UsageText = "app [first_arg] [second_arg]"
+	app.Description = `Description of the application.`
 	app.Usage = "Some app"
 	app.Authors = []*Author{
 		{Name: "Harrison", Email: "harrison@lolwut.com"},
@@ -176,6 +177,19 @@ func TestToMarkdownNoAuthors(t *testing.T) {
 	// Then
 	expect(t, err, nil)
 	expectFileContent(t, "testdata/expected-doc-no-authors.md", res)
+}
+
+func TestToMarkdownNoUsageText(t *testing.T) {
+	// Given
+	app := testApp()
+	app.UsageText = ""
+
+	// When
+	res, err := app.ToMarkdown()
+
+	// Then
+	expect(t, err, nil)
+	expectFileContent(t, "testdata/expected-doc-no-usagetext.md", res)
 }
 
 func TestToMan(t *testing.T) {
