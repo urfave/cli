@@ -86,16 +86,18 @@ var MarkdownDocTemplate = `% {{ .App.Name }} {{ .SectionNum }}
 {{ if .SynopsisArgs }}
 ` + "```" + `
 {{ range $v := .SynopsisArgs }}{{ $v }}{{ end }}` + "```" + `
-{{ end }}{{ if .App.UsageText }}
+{{ end }}{{ if .App.Description }}
 # DESCRIPTION
 
-{{ .App.UsageText }}
+{{ .App.Description }}
 {{ end }}
 **Usage**:
 
-` + "```" + `
+` + "```" + `{{ if .App.UsageText }}
+{{ .App.UsageText }}
+{{ else }}
 {{ .App.Name }} [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
-` + "```" + `
+{{ end }}` + "```" + `
 {{ if .GlobalArgs }}
 # GLOBAL OPTIONS
 {{ range $v := .GlobalArgs }}
