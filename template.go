@@ -21,8 +21,8 @@ AUTHOR{{with $length := len .Authors}}{{if ne 1 $length}}S{{end}}{{end}}:
 
 COMMANDS:{{range .VisibleCategories}}{{if .Name}}
    {{.Name}}:{{range .VisibleCommands}}
-     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{range .VisibleCommands}}
-   {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
+     {{join .Names ", "}}{{"\t"}}{{replaceAll .Usage "\n" "\n       "}}{{end}}{{else}}{{range .VisibleCommands}}
+   {{join .Names ", "}}{{"\t"}}{{replaceAll .Usage "\n" "\n     "}}{{end}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
 
 GLOBAL OPTIONS:
    {{range $index, $option := .VisibleFlags}}{{if $index}}
@@ -36,7 +36,7 @@ COPYRIGHT:
 // cli.go uses text/template to render templates. You can
 // render custom help text by setting this variable.
 var CommandHelpTemplate = `NAME:
-   {{.HelpName}} - {{.Usage}}
+   {{.HelpName}} - {{replaceAll .Usage "\n" "\n     "}}
 
 USAGE:
    {{if .UsageText}}{{.UsageText | nindent 3 | trim}}{{else}}{{.HelpName}}{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Category}}
@@ -66,8 +66,8 @@ DESCRIPTION:
 
 COMMANDS:{{range .VisibleCategories}}{{if .Name}}
    {{.Name}}:{{range .VisibleCommands}}
-     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{range .VisibleCommands}}
-   {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
+     {{join .Names ", "}}{{"\t"}}{{replaceAll .Usage "\n" "\n       "}}{{end}}{{else}}{{range .VisibleCommands}}
+   {{join .Names ", "}}{{"\t"}}{{replaceAll .Usage "\n" "\n     "}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
 
 OPTIONS:
    {{range .VisibleFlags}}{{.}}

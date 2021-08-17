@@ -269,10 +269,11 @@ func ShowCommandCompletions(ctx *Context, command string) {
 // allow using arbitrary functions in template rendering.
 func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs map[string]interface{}) {
 	funcMap := template.FuncMap{
-		"join":    strings.Join,
-		"indent":  indent,
-		"nindent": nindent,
-		"trim":    strings.TrimSpace,
+		"join":       strings.Join,
+		"indent":     indent,
+		"nindent":    nindent,
+		"trim":       strings.TrimSpace,
+		"replaceAll": strings.ReplaceAll,
 	}
 	for key, value := range customFuncs {
 		funcMap[key] = value

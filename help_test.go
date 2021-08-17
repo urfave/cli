@@ -251,6 +251,29 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 			wantOutput:   "yo",
 		},
 		{
+			name:         "no-command-full",
+			template:     "",
+			printer:      HelpPrinter,
+			command:      "",
+			wantTemplate: SubcommandHelpTemplate,
+			wantOutput: `NAME:
+   my-app - A new cli application
+
+USAGE:
+   my-app command [command options] [arguments...]
+
+COMMANDS:
+   my-command  lorem ipsum
+     dolor sit
+     amet
+   help, h  Shows a list of commands or help for one command
+
+OPTIONS:
+   --help, -h  show help (default: false)
+   
+`,
+		},
+		{
 			name:     "standard-command",
 			template: "",
 			printer: func(w io.Writer, templ string, data interface{}) {
@@ -259,6 +282,21 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 			command:      "my-command",
 			wantTemplate: CommandHelpTemplate,
 			wantOutput:   "yo",
+		},
+		{
+			name:         "standard-command-full",
+			template:     "",
+			printer:      HelpPrinter,
+			command:      "my-command",
+			wantTemplate: CommandHelpTemplate,
+			wantOutput: `NAME:
+   my-app my-command - lorem ipsum
+     dolor sit
+     amet
+
+USAGE:
+   my-app my-command [arguments...]
+`,
 		},
 		{
 			name:     "custom-template-command",
@@ -294,6 +332,7 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 				Commands: []*Command{
 					{
 						Name:               "my-command",
+						Usage:              "lorem ipsum\ndolor sit\namet",
 						CustomHelpTemplate: tt.template,
 					},
 				},
