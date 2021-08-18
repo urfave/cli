@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/urfave/cli/v2"
@@ -223,7 +224,7 @@ func jsonGetValue(key string, m map[string]interface{}) (interface{}, error) {
 	keys := strings.Split(key, ".")
 	for ix, k := range keys {
 		if ret, ok = working[k]; !ok {
-			return ret, fmt.Errorf("missing key %q", key)
+			return ret, syscall.ENOENT
 		}
 		if working, ok = ret.(map[string]interface{}); !ok {
 			if ix < len(keys)-1 {
