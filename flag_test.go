@@ -170,10 +170,10 @@ var stringFlagTests = []struct {
 	value    string
 	expected string
 }{
-	{"foo", nil, "", "", "--foo value\t"},
-	{"f", nil, "", "", "-f value\t"},
+	{"foo", nil, "", "", "--foo string\t"},
+	{"f", nil, "", "", "-f string\t"},
 	{"f", nil, "The total `foo` desired", "all", "-f foo\tThe total foo desired (default: \"all\")"},
-	{"test", nil, "", "Something", "--test value\t(default: \"Something\")"},
+	{"test", nil, "", "Something", "--test string\t(default: \"Something\")"},
 	{"config", []string{"c"}, "Load configuration from `FILE`", "", "--config FILE, -c FILE\tLoad configuration from FILE"},
 	{"config", []string{"c"}, "Load configuration from `CONFIG`", "config.json", "--config CONFIG, -c CONFIG\tLoad configuration from CONFIG (default: \"config.json\")"},
 }
@@ -264,7 +264,7 @@ var pathFlagTests = []struct {
 	value    string
 	expected string
 }{
-	{"f", nil, "", "", "-f value\t"},
+	{"f", nil, "", "", "-f string\t"},
 	{"f", nil, "Path is the `path` of file", "/path/to/file", "-f path\tPath is the path of file (default: \"/path/to/file\")"},
 }
 
@@ -349,11 +349,11 @@ var stringSliceFlagTests = []struct {
 	value    *StringSlice
 	expected string
 }{
-	{"foo", nil, NewStringSlice(""), "--foo value\t(accepts multiple inputs)"},
-	{"f", nil, NewStringSlice(""), "-f value\t(accepts multiple inputs)"},
-	{"f", nil, NewStringSlice("Lipstick"), "-f value\t(default: \"Lipstick\")\t(accepts multiple inputs)"},
-	{"test", nil, NewStringSlice("Something"), "--test value\t(default: \"Something\")\t(accepts multiple inputs)"},
-	{"dee", []string{"d"}, NewStringSlice("Inka", "Dinka", "dooo"), "--dee value, -d value\t(default: \"Inka\", \"Dinka\", \"dooo\")\t(accepts multiple inputs)"},
+	{"foo", nil, NewStringSlice(""), "--foo strings\t(accepts multiple inputs)"},
+	{"f", nil, NewStringSlice(""), "-f strings\t(accepts multiple inputs)"},
+	{"f", nil, NewStringSlice("Lipstick"), "-f strings\t(default: \"Lipstick\")\t(accepts multiple inputs)"},
+	{"test", nil, NewStringSlice("Something"), "--test strings\t(default: \"Something\")\t(accepts multiple inputs)"},
+	{"dee", []string{"d"}, NewStringSlice("Inka", "Dinka", "dooo"), "--dee strings, -d strings\t(default: \"Inka\", \"Dinka\", \"dooo\")\t(accepts multiple inputs)"},
 }
 
 func TestStringSliceFlagHelpOutput(t *testing.T) {
@@ -425,8 +425,8 @@ var intFlagTests = []struct {
 	name     string
 	expected string
 }{
-	{"hats", "--hats value\t(default: 9)"},
-	{"H", "-H value\t(default: 9)"},
+	{"hats", "--hats int\t(default: 9)"},
+	{"H", "-H int\t(default: 9)"},
 }
 
 func TestIntFlagHelpOutput(t *testing.T) {
@@ -474,8 +474,8 @@ var int64FlagTests = []struct {
 	name     string
 	expected string
 }{
-	{"hats", "--hats value\t(default: 8589934592)"},
-	{"H", "-H value\t(default: 8589934592)"},
+	{"hats", "--hats int64\t(default: 8589934592)"},
+	{"H", "-H int64\t(default: 8589934592)"},
 }
 
 func TestInt64FlagHelpOutput(t *testing.T) {
@@ -512,8 +512,8 @@ var uintFlagTests = []struct {
 	name     string
 	expected string
 }{
-	{"nerfs", "--nerfs value\t(default: 41)"},
-	{"N", "-N value\t(default: 41)"},
+	{"nerfs", "--nerfs uint\t(default: 41)"},
+	{"N", "-N uint\t(default: 41)"},
 }
 
 func TestUintFlagHelpOutput(t *testing.T) {
@@ -550,8 +550,8 @@ var uint64FlagTests = []struct {
 	name     string
 	expected string
 }{
-	{"gerfs", "--gerfs value\t(default: 8589934582)"},
-	{"G", "-G value\t(default: 8589934582)"},
+	{"gerfs", "--gerfs uint64\t(default: 8589934582)"},
+	{"G", "-G uint64\t(default: 8589934582)"},
 }
 
 func TestUint64FlagHelpOutput(t *testing.T) {
@@ -588,8 +588,8 @@ var durationFlagTests = []struct {
 	name     string
 	expected string
 }{
-	{"hooting", "--hooting value\t(default: 1s)"},
-	{"H", "-H value\t(default: 1s)"},
+	{"hooting", "--hooting int64\t(default: 1s)"},
+	{"H", "-H int64\t(default: 1s)"},
 }
 
 func TestDurationFlagHelpOutput(t *testing.T) {
@@ -639,9 +639,9 @@ var intSliceFlagTests = []struct {
 	value    *IntSlice
 	expected string
 }{
-	{"heads", nil, NewIntSlice(), "--heads value\t(accepts multiple inputs)"},
-	{"H", nil, NewIntSlice(), "-H value\t(accepts multiple inputs)"},
-	{"H", []string{"heads"}, NewIntSlice(9, 3), "-H value, --heads value\t(default: 9, 3)\t(accepts multiple inputs)"},
+	{"heads", nil, NewIntSlice(), "--heads ints\t(accepts multiple inputs)"},
+	{"H", nil, NewIntSlice(), "-H ints\t(accepts multiple inputs)"},
+	{"H", []string{"heads"}, NewIntSlice(9, 3), "-H ints, --heads ints\t(default: 9, 3)\t(accepts multiple inputs)"},
 }
 
 func TestIntSliceFlagHelpOutput(t *testing.T) {
@@ -728,10 +728,10 @@ var int64SliceFlagTests = []struct {
 	value    *Int64Slice
 	expected string
 }{
-	{"heads", nil, NewInt64Slice(), "--heads value\t(accepts multiple inputs)"},
-	{"H", nil, NewInt64Slice(), "-H value\t(accepts multiple inputs)"},
+	{"heads", nil, NewInt64Slice(), "--heads int64s\t(accepts multiple inputs)"},
+	{"H", nil, NewInt64Slice(), "-H int64s\t(accepts multiple inputs)"},
 	{"heads", []string{"H"}, NewInt64Slice(int64(2), int64(17179869184)),
-		"--heads value, -H value\t(default: 2, 17179869184)\t(accepts multiple inputs)"},
+		"--heads int64s, -H int64s\t(default: 2, 17179869184)\t(accepts multiple inputs)"},
 }
 
 func TestInt64SliceFlagHelpOutput(t *testing.T) {
@@ -822,8 +822,8 @@ var float64FlagTests = []struct {
 	name     string
 	expected string
 }{
-	{"hooting", "--hooting value\t(default: 0.1)"},
-	{"H", "-H value\t(default: 0.1)"},
+	{"hooting", "--hooting float64\t(default: 0.1)"},
+	{"H", "-H float64\t(default: 0.1)"},
 }
 
 func TestFloat64FlagHelpOutput(t *testing.T) {
@@ -873,10 +873,10 @@ var float64SliceFlagTests = []struct {
 	value    *Float64Slice
 	expected string
 }{
-	{"heads", nil, NewFloat64Slice(), "--heads value\t(accepts multiple inputs)"},
-	{"H", nil, NewFloat64Slice(), "-H value\t(accepts multiple inputs)"},
+	{"heads", nil, NewFloat64Slice(), "--heads float64s\t(accepts multiple inputs)"},
+	{"H", nil, NewFloat64Slice(), "-H float64s\t(accepts multiple inputs)"},
 	{"heads", []string{"H"}, NewFloat64Slice(0.1234, -10.5),
-		"--heads value, -H value\t(default: 0.1234, -10.5)\t(accepts multiple inputs)"},
+		"--heads float64s, -H float64s\t(default: 0.1234, -10.5)\t(accepts multiple inputs)"},
 }
 
 func TestFloat64SliceFlagHelpOutput(t *testing.T) {
@@ -913,8 +913,8 @@ var genericFlagTests = []struct {
 	value    Generic
 	expected string
 }{
-	{"toads", &Parser{"abc", "def"}, "--toads value\ttest flag (default: abc,def)"},
-	{"t", &Parser{"abc", "def"}, "-t value\ttest flag (default: abc,def)"},
+	{"toads", &Parser{"abc", "def"}, "--toads interface\ttest flag (default: abc,def)"},
+	{"t", &Parser{"abc", "def"}, "-t interface\ttest flag (default: abc,def)"},
 }
 
 func TestGenericFlagHelpOutput(t *testing.T) {
@@ -1996,31 +1996,31 @@ func TestFlagDefaultValue(t *testing.T) {
 			name:    "stringSclice",
 			flag:    &StringSliceFlag{Name: "flag", Value: NewStringSlice("default1", "default2")},
 			toParse: []string{"--flag", "parsed"},
-			expect: `--flag value	(default: "default1", "default2")	(accepts multiple inputs)`,
+			expect: `--flag strings	(default: "default1", "default2")	(accepts multiple inputs)`,
 		},
 		&flagDefaultTestCase{
 			name:    "float64Sclice",
 			flag:    &Float64SliceFlag{Name: "flag", Value: NewFloat64Slice(1.1, 2.2)},
 			toParse: []string{"--flag", "13.3"},
-			expect: `--flag value	(default: 1.1, 2.2)	(accepts multiple inputs)`,
+			expect: `--flag float64s	(default: 1.1, 2.2)	(accepts multiple inputs)`,
 		},
 		&flagDefaultTestCase{
 			name:    "int64Sclice",
 			flag:    &Int64SliceFlag{Name: "flag", Value: NewInt64Slice(1, 2)},
 			toParse: []string{"--flag", "13"},
-			expect: `--flag value	(default: 1, 2)	(accepts multiple inputs)`,
+			expect: `--flag int64s	(default: 1, 2)	(accepts multiple inputs)`,
 		},
 		&flagDefaultTestCase{
 			name:    "intSclice",
 			flag:    &IntSliceFlag{Name: "flag", Value: NewIntSlice(1, 2)},
 			toParse: []string{"--flag", "13"},
-			expect: `--flag value	(default: 1, 2)	(accepts multiple inputs)`,
+			expect: `--flag ints	(default: 1, 2)	(accepts multiple inputs)`,
 		},
 		&flagDefaultTestCase{
 			name:    "string",
 			flag:    &StringFlag{Name: "flag", Value: "default"},
 			toParse: []string{"--flag", "parsed"},
-			expect: `--flag value	(default: "default")`,
+			expect: `--flag string	(default: "default")`,
 		},
 		&flagDefaultTestCase{
 			name:    "bool",
@@ -2032,7 +2032,7 @@ func TestFlagDefaultValue(t *testing.T) {
 			name:    "uint64",
 			flag:    &Uint64Flag{Name: "flag", Value: 1},
 			toParse: []string{"--flag", "13"},
-			expect: `--flag value	(default: 1)`,
+			expect: `--flag uint64	(default: 1)`,
 		},
 	}
 	for i, v := range cases {
