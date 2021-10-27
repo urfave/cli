@@ -1,5 +1,3 @@
-% greet 8
-
 # NAME
 
 greet - Some app
