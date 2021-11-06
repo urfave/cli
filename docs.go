@@ -15,7 +15,7 @@ import (
 // The function errors if either parsing or writing of the string fails.
 func (a *App) ToMarkdown() (string, error) {
 	var w bytes.Buffer
-	if err := a.writeDocTemplate(&w, 8); err != nil {
+	if err := a.writeDocTemplate(&w, 0); err != nil {
 		return "", err
 	}
 	return w.String(), nil

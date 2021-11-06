@@ -74,9 +74,9 @@ OPTIONS:
    {{end}}{{end}}
 `
 
-var MarkdownDocTemplate = `% {{ .App.Name }} {{ .SectionNum }}
+var MarkdownDocTemplate = `{{if gt .SectionNum 0}}% {{ .App.Name }} {{ .SectionNum }}
 
-# NAME
+{{end}}# NAME
 
 {{ .App.Name }}{{ if .App.Usage }} - {{ .App.Usage }}{{ end }}
 
