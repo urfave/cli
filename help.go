@@ -189,7 +189,14 @@ func ShowCommandHelpAndExit(c *Context, command string, code int) {
 func ShowCommandHelp(ctx *Context, command string) error {
 	// show the subcommand help for a command with subcommands
 	if command == "" {
-		HelpPrinter(ctx.App.Writer, SubcommandHelpTemplate, ctx.App)
+		// If the command == "", this maybe a subcommand. Check to see if the context
+		// has a non nil *cli.App and if that has a template defined, use it.
+		templ := SubcommandHelpTemplate
+		if ctx.App != nil && ctx.App.CustomAppHelpTemplate != "" {
+			templ = ctx.App.CustomAppHelpTemplate
+		}
+
+		HelpPrinter(ctx.App.Writer, templ, ctx.App)
 		return nil
 	}
 
