@@ -36,7 +36,7 @@ COPYRIGHT:
 // cli.go uses text/template to render templates. You can
 // render custom help text by setting this variable.
 var CommandHelpTemplate = `NAME:
-   {{.HelpName}} - {{.Usage}}
+   {{.Name}} - {{.Usage}}
 
 USAGE:
    {{if .UsageText}}{{.UsageText | nindent 3 | trim}}{{else}}{{.HelpName}}{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Category}}
@@ -56,7 +56,7 @@ OPTIONS:
 // cli.go uses text/template to render templates. You can
 // render custom help text by setting this variable.
 var SubcommandHelpTemplate = `NAME:
-   {{.HelpName}} - {{.Usage}}
+   {{.Name}} - {{.Usage}}
 
 USAGE:
    {{if .UsageText}}{{.UsageText | nindent 3 | trim}}{{else}}{{.HelpName}} command{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Description}}
