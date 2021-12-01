@@ -221,9 +221,9 @@ func (c *Command) startApp(ctx *Context) error {
 	}
 
 	if c.HelpName == "" {
-		app.HelpName = c.HelpName
-	} else {
 		app.HelpName = app.Name
+	} else {
+		app.HelpName = c.HelpName
 	}
 
 	app.Usage = c.Usage
