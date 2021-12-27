@@ -181,6 +181,48 @@ Compiler messages you might see:
 cannot use c (type *cli.Command) as type cli.Command in append
 ```
 
+# GlobalString, GlobalBool and its likes are deprecated
+
+Use simply `String` instead of `GlobalString`, `Bool` instead of `GlobalBool` 
+
+# BoolTFlag and BoolT are deprecated
+
+BoolTFlag was a Bool Flag with its default value set to true and BoolT was used to find any BoolTFlag used locally, so both are deprecated.
+
+* OLD: 
+
+```go
+cli.BoolTFlag{
+		Name:   FlagName,
+		Usage:  FlagUsage,
+		EnvVar: "FLAG_ENV_VAR",
+}
+```
+* NEW: 
+```go
+cli.BoolFlag{
+		Name:   FlagName,
+		Value:  true,
+		Usage:  FlagUsage,
+		EnvVar: "FLAG_ENV_VAR",
+}
+```
+
+
+# &cli.StringSlice{""} replaced with cli.NewStringSlice("")
+
+Example: 
+
+* OLD: 
+
+```go
+Value: &cli.StringSlice{""},
+```
+* NEW: 
+```go
+Value: cli.NewStringSlice(""),
+}
+```
 # Everything else
 
 Compile the code and work through any errors. Most should
