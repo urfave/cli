@@ -181,6 +181,10 @@ Compiler messages you might see:
 cannot use c (type *cli.Command) as type cli.Command in append
 ```
 
+# Replace deprecated functions
+
+`cli.NewExitError()` is deprecated.  Use `cli.Exit()` instead.  ([Staticcheck](https://staticcheck.io/) detects this automatically and recommends replacement code.)
+
 # Everything else
 
 Compile the code and work through any errors. Most should
