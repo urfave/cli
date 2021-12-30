@@ -223,6 +223,10 @@ Value: &cli.StringSlice{""},
 Value: cli.NewStringSlice(""),
 }
 ```
+# Replace deprecated functions
+
+`cli.NewExitError()` is deprecated.  Use `cli.Exit()` instead.  ([Staticcheck](https://staticcheck.io/) detects this automatically and recommends replacement code.)
+
 # Everything else
 
 Compile the code and work through any errors. Most should
