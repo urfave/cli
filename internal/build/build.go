@@ -194,7 +194,7 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 		helloSourceFilePath  = "./internal/example-hello-world/example-hello-world.go"
 		helloBuiltFilePath   = "./internal/example-hello-world/built-example"
 		desiredMinBinarySize = 1.9
-		desiredMaxBinarySize = 2.1
+		desiredMaxBinarySize = 2.2
 		badNewsEmoji         = "🚨"
 		goodNewsEmoji        = "✨"
 		checksPassedEmoji    = "✅"
