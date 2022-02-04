@@ -90,10 +90,7 @@ func (c *Context) String(name string) string {
 func lookupString(name string, set *flag.FlagSet) string {
 	f := set.Lookup(name)
 	if f != nil {
-		parsed, err := f.Value.String(), error(nil)
-		if err != nil {
-			return ""
-		}
+		parsed := f.Value.String()
 		return parsed
 	}
 	return ""
