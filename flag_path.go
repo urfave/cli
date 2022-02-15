@@ -67,6 +67,15 @@ func (f *PathFlag) Get(ctx *Context) string {
 	return ctx.Path(f.Name)
 }
 
+// RunAction executes flag action if set
+func (f *PathFlag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.Path(f.Name))
+	}
+
+	return nil
+}
+
 // Path looks up the value of a local PathFlag, returns
 // "" if not found
 func (cCtx *Context) Path(name string) string {

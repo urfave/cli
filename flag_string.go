@@ -65,6 +65,15 @@ func (f *StringFlag) Get(ctx *Context) string {
 	return ctx.String(f.Name)
 }
 
+// RunAction executes flag action if set
+func (f *StringFlag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.String(f.Name))
+	}
+
+	return nil
+}
+
 // String looks up the value of a local StringFlag, returns
 // "" if not found
 func (cCtx *Context) String(name string) string {

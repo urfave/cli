@@ -70,6 +70,15 @@ func (f *DurationFlag) Get(ctx *Context) time.Duration {
 	return ctx.Duration(f.Name)
 }
 
+// RunAction executes flag action if set
+func (f *DurationFlag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.Duration(f.Name))
+	}
+
+	return nil
+}
+
 // Duration looks up the value of a local DurationFlag, returns
 // 0 if not found
 func (cCtx *Context) Duration(name string) time.Duration {

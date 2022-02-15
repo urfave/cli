@@ -181,6 +181,15 @@ func (f *Float64SliceFlag) stringify() string {
 	return stringifySliceFlag(f.Usage, f.Names(), defaultVals)
 }
 
+// RunAction executes flag action if set
+func (f *Float64SliceFlag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.Float64Slice(f.Name))
+	}
+
+	return nil
+}
+
 // Float64Slice looks up the value of a local Float64SliceFlag, returns
 // nil if not found
 func (cCtx *Context) Float64Slice(name string) []float64 {

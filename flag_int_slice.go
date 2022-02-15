@@ -92,6 +92,29 @@ func (i *IntSlice) Get() interface{} {
 	return *i
 }
 
+<<<<<<< HEAD
+=======
+// IntSliceFlag is a flag with type *IntSlice
+type IntSliceFlag struct {
+	Name        string
+	Aliases     []string
+	Usage       string
+	EnvVars     []string
+	FilePath    string
+	Required    bool
+	Hidden      bool
+	Value       *IntSlice
+	DefaultText string
+	HasBeenSet  bool
+	Action      func(*Context, []int) error
+}
+
+// IsSet returns whether or not the flag has been set through env or file
+func (f *IntSliceFlag) IsSet() bool {
+	return f.HasBeenSet
+}
+
+>>>>>>> e132f01 (feat: flag action)
 // String returns a readable representation of this value
 // (for usage defaults)
 func (f *IntSliceFlag) String() string {
@@ -174,9 +197,19 @@ func (f *IntSliceFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
+<<<<<<< HEAD
 // Get returns the flag’s value in the given Context.
 func (f *IntSliceFlag) Get(ctx *Context) []int {
 	return ctx.IntSlice(f.Name)
+=======
+// RunAction executes flag action if set
+func (f *IntSliceFlag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.IntSlice(f.Name))
+	}
+
+	return nil
+>>>>>>> e132f01 (feat: flag action)
 }
 
 func (f *IntSliceFlag) stringify() string {

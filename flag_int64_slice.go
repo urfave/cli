@@ -179,6 +179,15 @@ func (f *Int64SliceFlag) stringify() string {
 	return stringifySliceFlag(f.Usage, f.Names(), defaultVals)
 }
 
+// RunAction executes flag action if set
+func (f *Int64SliceFlag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.Int64Slice(f.Name))
+	}
+
+	return nil
+}
+
 // Int64Slice looks up the value of a local Int64SliceFlag, returns
 // nil if not found
 func (cCtx *Context) Int64Slice(name string) []int64 {

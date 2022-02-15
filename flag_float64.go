@@ -70,6 +70,15 @@ func (f *Float64Flag) Get(ctx *Context) float64 {
 	return ctx.Float64(f.Name)
 }
 
+// RunAction executes flag action if set
+func (f *Float64Flag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.Float64(f.Name))
+	}
+
+	return nil
+}
+
 // Float64 looks up the value of a local Float64Flag, returns
 // 0 if not found
 func (cCtx *Context) Float64(name string) float64 {

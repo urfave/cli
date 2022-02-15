@@ -171,6 +171,15 @@ func (f *StringSliceFlag) stringify() string {
 	return stringifySliceFlag(f.Usage, f.Names(), defaultVals)
 }
 
+// RunAction executes flag action if set
+func (f *StringSliceFlag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.StringSlice(f.Name))
+	}
+
+	return nil
+}
+
 // StringSlice looks up the value of a local StringSliceFlag, returns
 // nil if not found
 func (cCtx *Context) StringSlice(name string) []string {
