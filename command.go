@@ -165,6 +165,10 @@ func (c *Command) Run(ctx *Context) (err error) {
 		}
 	}
 
+	if err = runFlagActions(cCtx, c.Flags); err != nil {
+		return err
+	}
+
 	if c.Action == nil {
 		c.Action = helpSubcommand.Action
 	}

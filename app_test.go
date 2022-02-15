@@ -2357,6 +2357,10 @@ func (c *customBoolFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
+func (c *customBoolFlag) RunAction(*Context) error {
+	return nil
+}
+
 func (c *customBoolFlag) IsSet() bool {
 	return false
 }
@@ -2594,5 +2598,68 @@ func TestSetupInitializesOnlyNilWriters(t *testing.T) {
 
 	if a.Writer != os.Stdout {
 		t.Errorf("expected a.Writer to be os.Stdout")
+	}
+}
+
+func TestFlagAction(t *testing.T) {
+	r := []string{}
+	actionFunc := func(c *Context, s string) error {
+		r = append(r, s)
+		return nil
+	}
+
+	app := &App{
+		Name:   "command",
+		Writer: io.Discard,
+		Flags:  []Flag{&StringFlag{Name: "flag", Action: actionFunc}},
+		Commands: []*Command{
+			{
+				Name:  "command1",
+				Flags: []Flag{&StringFlag{Name: "flag1", Aliases: []string{"f1"}, Action: actionFunc}},
+				Subcommands: []*Command{
+					{
+						Name:  "command2",
+						Flags: []Flag{&StringFlag{Name: "flag2", Action: actionFunc}},
+					},
+				},
+			},
+		},
+	}
+
+	tests := []struct {
+		args []string
+		exp  []string
+	}{
+		{
+			args: []string{"command", "--flag=f"},
+			exp:  []string{"f"},
+		},
+		{
+			args: []string{"command", "command1", "-f1=f1", "command2"},
+			exp:  []string{"f1"},
+		},
+		{
+			args: []string{"command", "command1", "-f1=f1", "command2", "--flag2=f2"},
+			exp:  []string{"f1", "f2"},
+		},
+		{
+			args: []string{"command", "--flag=f", "command1", "-flag1=f1"},
+			exp:  []string{"f", "f1"},
+		},
+		{
+			args: []string{"command", "--flag=f", "command1", "-f1=f1"},
+			exp:  []string{"f", "f1"},
+		},
+		{
+			args: []string{"command", "--flag=f", "command1", "-f1=f1", "command2", "--flag2=f2"},
+			exp:  []string{"f", "f1", "f2"},
+		},
+	}
+
+	for _, test := range tests {
+		r = []string{}
+		err := app.Run(test.args)
+		expect(t, err, nil)
+		expect(t, r, test.exp)
 	}
 }

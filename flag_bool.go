@@ -72,6 +72,15 @@ func (f *BoolFlag) GetDefaultText() string {
 	return fmt.Sprintf("%v", f.Value)
 }
 
+// RunAction executes flag action if set
+func (f *BoolFlag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.Bool(f.Name))
+	}
+
+	return nil
+}
+
 // Apply populates the flag given the flag set and environment
 func (f *BoolFlag) Apply(set *flag.FlagSet) error {
 	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {

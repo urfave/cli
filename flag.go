@@ -122,6 +122,8 @@ type Flag interface {
 	// GetValue returns the flags value as string representation and an empty
 	// string if the flag takes no value at all.
 	GetValue() string
+
+	RunAction(*Context) error
 }
 
 // Countable is an interface to enable detection of flag values which support

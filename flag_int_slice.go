@@ -162,6 +162,15 @@ func (f *IntSliceFlag) stringify() string {
 	return stringifySliceFlag(f.Usage, f.Names(), defaultVals)
 }
 
+// RunAction executes flag action if set
+func (f *IntSliceFlag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.IntSlice(f.Name))
+	}
+
+	return nil
+}
+
 // IntSlice looks up the value of a local IntSliceFlag, returns
 // nil if not found
 func (cCtx *Context) IntSlice(name string) []int {

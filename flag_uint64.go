@@ -42,6 +42,15 @@ func (f *Uint64Flag) Get(ctx *Context) uint64 {
 	return ctx.Uint64(f.Name)
 }
 
+// RunAction executes flag action if set
+func (f *Uint64Flag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.Uint64(f.Name))
+	}
+
+	return nil
+}
+
 // Uint64 looks up the value of a local Uint64Flag, returns
 // 0 if not found
 func (cCtx *Context) Uint64(name string) uint64 {

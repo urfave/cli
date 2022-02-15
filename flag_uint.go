@@ -42,6 +42,15 @@ func (f *UintFlag) Get(ctx *Context) uint {
 	return ctx.Uint(f.Name)
 }
 
+// RunAction executes flag action if set
+func (f *UintFlag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.Uint(f.Name))
+	}
+
+	return nil
+}
+
 // Uint looks up the value of a local UintFlag, returns
 // 0 if not found
 func (cCtx *Context) Uint(name string) uint {
