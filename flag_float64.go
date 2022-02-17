@@ -67,8 +67,7 @@ func (f *Float64Flag) IsVisible() bool {
 func (f *Float64Flag) Apply(set *flag.FlagSet) error {
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		if val != "" {
-			valFloat, err := strconv.ParseFloat(val, 10)
-
+			valFloat, err := strconv.ParseFloat(val, 64)
 			if err != nil {
 				return fmt.Errorf("could not parse %q as float64 value for flag %s: %s", val, f.Name, err)
 			}
