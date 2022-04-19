@@ -103,6 +103,11 @@ Should be a part of the same code block
 					Aliases: []string{"s"},
 					Usage:   "some usage text",
 				},
+				&StringFlag{
+					Name:   "sub-command-hidden-flag",
+					Usage:  "some hidden usage text",
+					Hidden: true,
+				},
 			},
 			Name:      "sub-usage",
 			Usage:     "standard usage text",
