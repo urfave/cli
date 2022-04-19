@@ -2,7 +2,7 @@
 
 function __fish_greet_no_subcommand --description 'Test if there has been any subcommand yet'
     for i in (commandline -opc)
-        if contains -- $i config c sub-config s ss info i in some-command
+        if contains -- $i config c sub-config s ss info i in some-command usage u sub-usage su
             return 1
         end
     end
@@ -12,6 +12,7 @@ end
 complete -c greet -n '__fish_greet_no_subcommand' -l socket -s s -r -d 'some \'usage\' text'
 complete -c greet -n '__fish_greet_no_subcommand' -f -l flag -s fl -s f -r
 complete -c greet -n '__fish_greet_no_subcommand' -f -l another-flag -s b -d 'another usage text'
+complete -c greet -n '__fish_greet_no_subcommand' -l logfile -r
 complete -c greet -n '__fish_greet_no_subcommand' -f -l help -s h -d 'show help'
 complete -c greet -n '__fish_greet_no_subcommand' -f -l version -s v -d 'print the version'
 complete -c greet -n '__fish_seen_subcommand_from config c' -f -l help -s h -d 'show help'
@@ -26,3 +27,10 @@ complete -c greet -n '__fish_seen_subcommand_from info i in' -f -l help -s h -d 
 complete -r -c greet -n '__fish_greet_no_subcommand' -a 'info i in' -d 'retrieve generic information'
 complete -c greet -n '__fish_seen_subcommand_from some-command' -f -l help -s h -d 'show help'
 complete -r -c greet -n '__fish_greet_no_subcommand' -a 'some-command'
+complete -c greet -n '__fish_seen_subcommand_from usage u' -f -l help -s h -d 'show help'
+complete -r -c greet -n '__fish_greet_no_subcommand' -a 'usage u' -d 'standard usage text'
+complete -c greet -n '__fish_seen_subcommand_from usage u' -l flag -s fl -s f -r
+complete -c greet -n '__fish_seen_subcommand_from usage u' -f -l another-flag -s b -d 'another usage text'
+complete -c greet -n '__fish_seen_subcommand_from sub-usage su' -f -l help -s h -d 'show help'
+complete -r -c greet -n '__fish_seen_subcommand_from usage u' -a 'sub-usage su' -d 'standard usage text'
+complete -c greet -n '__fish_seen_subcommand_from sub-usage su' -f -l sub-command-flag -s s -d 'some usage text'

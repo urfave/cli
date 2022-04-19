@@ -54,6 +54,22 @@ func Test_ShowAppHelp_HideVersion(t *testing.T) {
 	}
 }
 
+func Test_ShowAppHelp_MultiLineDescription(t *testing.T) {
+	output := new(bytes.Buffer)
+	app := &App{Writer: output}
+
+	app.HideVersion = true
+	app.Description = "multi\n  line"
+
+	c := NewContext(app, nil, nil)
+
+	_ = ShowAppHelp(c)
+
+	if !bytes.Contains(output.Bytes(), []byte("DESCRIPTION:\n   multi\n     line")) {
+		t.Errorf("expected\n%s\nto include\n%s", output.String(), "DESCRIPTION:\n   multi\n     line")
+	}
+}
+
 func Test_Help_Custom_Flags(t *testing.T) {
 	oldFlag := HelpFlag
 	defer func() {
@@ -495,6 +511,36 @@ func TestShowSubcommandHelp_CommandUsageText(t *testing.T) {
 	}
 }
 
+func TestShowSubcommandHelp_MultiLine_CommandUsageText(t *testing.T) {
+	app := &App{
+		Commands: []*Command{
+			{
+				Name: "frobbly",
+				UsageText: `This is a
+multi
+line
+UsageText`,
+			},
+		},
+	}
+
+	output := &bytes.Buffer{}
+	app.Writer = output
+
+	_ = app.Run([]string{"foo", "frobbly", "--help"})
+
+	expected := `USAGE:
+   This is a
+   multi
+   line
+   UsageText
+`
+
+	if !strings.Contains(output.String(), expected) {
+		t.Errorf("expected output to include usage text; got: %q", output.String())
+	}
+}
+
 func TestShowSubcommandHelp_SubcommandUsageText(t *testing.T) {
 	app := &App{
 		Commands: []*Command{
@@ -515,6 +561,40 @@ func TestShowSubcommandHelp_SubcommandUsageText(t *testing.T) {
 	_ = app.Run([]string{"foo", "frobbly", "bobbly", "--help"})
 
 	if !strings.Contains(output.String(), "this is usage text") {
+		t.Errorf("expected output to include usage text; got: %q", output.String())
+	}
+}
+
+func TestShowSubcommandHelp_MultiLine_SubcommandUsageText(t *testing.T) {
+	app := &App{
+		Commands: []*Command{
+			{
+				Name: "frobbly",
+				Subcommands: []*Command{
+					{
+						Name: "bobbly",
+						UsageText: `This is a
+multi
+line
+UsageText`,
+					},
+				},
+			},
+		},
+	}
+
+	output := &bytes.Buffer{}
+	app.Writer = output
+	_ = app.Run([]string{"foo", "frobbly", "bobbly", "--help"})
+
+	expected := `USAGE:
+   This is a
+   multi
+   line
+   UsageText
+`
+
+	if !strings.Contains(output.String(), expected) {
 		t.Errorf("expected output to include usage text; got: %q", output.String())
 	}
 }
@@ -761,6 +841,56 @@ VERSION:
 	if !strings.Contains(output.String(), "VERSION:") ||
 		!strings.Contains(output.String(), "2.0.0") {
 		t.Errorf("expected output to include \"VERSION:, 2.0.0\"; got: %q", output.String())
+	}
+}
+
+func TestShowAppHelp_UsageText(t *testing.T) {
+	app := &App{
+		UsageText: "This is a sinlge line of UsageText",
+		Commands: []*Command{
+			{
+				Name: "frobbly",
+			},
+		},
+	}
+
+	output := &bytes.Buffer{}
+	app.Writer = output
+
+	_ = app.Run([]string{"foo"})
+
+	if !strings.Contains(output.String(), "This is a sinlge line of UsageText") {
+		t.Errorf("expected output to include usage text; got: %q", output.String())
+	}
+}
+
+func TestShowAppHelp_MultiLine_UsageText(t *testing.T) {
+	app := &App{
+		UsageText: `This is a
+multi
+line
+App UsageText`,
+		Commands: []*Command{
+			{
+				Name: "frobbly",
+			},
+		},
+	}
+
+	output := &bytes.Buffer{}
+	app.Writer = output
+
+	_ = app.Run([]string{"foo"})
+
+	expected := `USAGE:
+   This is a
+   multi
+   line
+   App UsageText
+`
+
+	if !strings.Contains(output.String(), expected) {
+		t.Errorf("expected output to include usage text; got: %q", output.String())
 	}
 }
 

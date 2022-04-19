@@ -316,7 +316,6 @@ func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
 
 func ExampleApp_Run_bashComplete() {
 	// set args for examples sake
-	// set args for examples sake
 	os.Args = []string{"greet", "--generate-bash-completion"}
 
 	app := &App{
@@ -433,6 +432,12 @@ func TestApp_Command(t *testing.T) {
 	}
 }
 
+func TestApp_Setup_defaultsReader(t *testing.T) {
+	app := &App{}
+	app.Setup()
+	expect(t, app.Reader, os.Stdin)
+}
+
 func TestApp_Setup_defaultsWriter(t *testing.T) {
 	app := &App{}
 	app.Setup()
@@ -471,18 +476,18 @@ func TestApp_RunAsSubCommandIncorrectUsage(t *testing.T) {
 	a := App{
 		Name: "cmd",
 		Flags: []Flag{
-			&StringFlag{Name: "--foo"},
+			&StringFlag{Name: "foo"},
 		},
 		Writer: bytes.NewBufferString(""),
 	}
 
 	set := flag.NewFlagSet("", flag.ContinueOnError)
-	_ = set.Parse([]string{"", "---foo"})
+	_ = set.Parse([]string{"", "-bar"})
 	c := &Context{flagSet: set}
 
 	err := a.RunAsSubcommand(c)
 
-	expect(t, err, errors.New("bad flag syntax: ---foo"))
+	expect(t, err.Error(), "flag provided but not defined: -bar")
 }
 
 func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
@@ -850,12 +855,77 @@ func TestApp_ParseSliceFlagsWithMissingValue(t *testing.T) {
 	}
 }
 
+func TestApp_DefaultStdin(t *testing.T) {
+	app := &App{}
+	app.Setup()
+
+	if app.Reader != os.Stdin {
+		t.Error("Default input reader not set.")
+	}
+}
+
 func TestApp_DefaultStdout(t *testing.T) {
 	app := &App{}
 	app.Setup()
 
 	if app.Writer != os.Stdout {
 		t.Error("Default output writer not set.")
+	}
+}
+
+func TestApp_SetStdin(t *testing.T) {
+	buf := make([]byte, 12)
+
+	app := &App{
+		Name:   "test",
+		Reader: strings.NewReader("Hello World!"),
+		Action: func(c *Context) error {
+			_, err := c.App.Reader.Read(buf)
+			return err
+		},
+	}
+
+	err := app.Run([]string{"help"})
+
+	if err != nil {
+		t.Fatalf("Run error: %s", err)
+	}
+
+	if string(buf) != "Hello World!" {
+		t.Error("App did not read input from desired reader.")
+	}
+}
+
+func TestApp_SetStdin_Subcommand(t *testing.T) {
+	buf := make([]byte, 12)
+
+	app := &App{
+		Name:   "test",
+		Reader: strings.NewReader("Hello World!"),
+		Commands: []*Command{
+			{
+				Name: "command",
+				Subcommands: []*Command{
+					{
+						Name: "subcommand",
+						Action: func(c *Context) error {
+							_, err := c.App.Reader.Read(buf)
+							return err
+						},
+					},
+				},
+			},
+		},
+	}
+
+	err := app.Run([]string{"test", "command", "subcommand"})
+
+	if err != nil {
+		t.Fatalf("Run error: %s", err)
+	}
+
+	if string(buf) != "Hello World!" {
+		t.Error("App did not read input from desired reader.")
 	}
 }
 

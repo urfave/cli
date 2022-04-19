@@ -3,7 +3,7 @@
 
 .SH NAME
 .PP
-greet \- Some app
+greet - Some app
 
 
 .SH SYNOPSIS
@@ -14,9 +14,9 @@ greet
 .RS
 
 .nf
-[\-\-another\-flag|\-b]
-[\-\-flag|\-\-fl|\-f]=[value]
-[\-\-socket|\-s]=[value]
+[--another-flag|-b]
+[--flag|--fl|-f]=[value]
+[--socket|-s]=[value]
 
 .fi
 .RE
@@ -24,7 +24,7 @@ greet
 
 .SH DESCRIPTION
 .PP
-app [first\_arg] [second\_arg]
+Description of the application.
 
 .PP
 \fBUsage\fP:
@@ -33,7 +33,7 @@ app [first\_arg] [second\_arg]
 .RS
 
 .nf
-greet [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
+app [first_arg] [second_arg]
 
 .fi
 .RE
@@ -41,13 +41,13 @@ greet [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 .SH GLOBAL OPTIONS
 .PP
-\fB\-\-another\-flag, \-b\fP: another usage text
+\fB--another-flag, -b\fP: another usage text
 
 .PP
-\fB\-\-flag, \-\-fl, \-f\fP="":
+\fB--flag, --fl, -f\fP="":
 
 .PP
-\fB\-\-socket, \-s\fP="": some 'usage' text (default: value)
+\fB--socket, -s\fP="": some 'usage' text (default: value)
 
 
 .SH COMMANDS
@@ -56,23 +56,65 @@ greet [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 another usage test
 
 .PP
-\fB\-\-another\-flag, \-b\fP: another usage text
+\fB--another-flag, -b\fP: another usage text
 
 .PP
-\fB\-\-flag, \-\-fl, \-f\fP="":
+\fB--flag, --fl, -f\fP="":
 
-.SS sub\-config, s, ss
+.SS sub-config, s, ss
 .PP
 another usage test
 
 .PP
-\fB\-\-sub\-command\-flag, \-s\fP: some usage text
+\fB--sub-command-flag, -s\fP: some usage text
 
 .PP
-\fB\-\-sub\-flag, \-\-sub\-fl, \-s\fP="":
+\fB--sub-flag, --sub-fl, -s\fP="":
 
 .SH info, i, in
 .PP
 retrieve generic information
 
-.SH some\-command
+.SH some-command
+.SH usage, u
+.PP
+standard usage text
+
+.PP
+.RS
+
+.nf
+Usage for the usage text
+- formatted:  Based on the specified ConfigMap and summon secrets.yml
+- list:       Inspect the environment for a specific process running on a Pod
+- for_effect: Compare 'namespace' environment with 'local'
+
+```
+func() { ... }
+```
+
+Should be a part of the same code block
+
+.fi
+.RE
+
+.PP
+\fB--another-flag, -b\fP: another usage text
+
+.PP
+\fB--flag, --fl, -f\fP="":
+
+.SS sub-usage, su
+.PP
+standard usage text
+
+.PP
+.RS
+
+.PP
+Single line of UsageText
+
+.RE
+
+.PP
+\fB--sub-command-flag, -s\fP: some usage text
