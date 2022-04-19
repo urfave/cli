@@ -27,7 +27,6 @@ jobs:
       - name: Set GOPATH, PATH and ENV
         run: |
           echo "GOPATH=$(dirname $GITHUB_WORKSPACE)" >> $GITHUB_ENV
-          echo "GO111MODULE=on" >> $GITHUB_ENV
           echo "GOPROXY=https://proxy.golang.org" >> $GITHUB_ENV
           echo "$(dirname $GITHUB_WORKSPACE)/bin" >> $GITHUB_PATH
         shell: bash
@@ -74,7 +73,6 @@ jobs:
       - name: Set GOPATH, PATH and ENV
         run: |
           echo "GOPATH=$(dirname $GITHUB_WORKSPACE)" >> $GITHUB_ENV
-          echo "GO111MODULE=on" >> $GITHUB_ENV
           echo "GOPROXY=https://proxy.golang.org" >> $GITHUB_ENV
           echo "$(dirname $GITHUB_WORKSPACE)/bin" >> $GITHUB_PATH
         shell: bash
