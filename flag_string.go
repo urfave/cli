@@ -62,7 +62,7 @@ func (f *StringFlag) IsVisible() bool {
 
 // Apply populates the flag given the flag set and environment
 func (f *StringFlag) Apply(set *flag.FlagSet) error {
-	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
+	if val, _, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
 		f.Value = val
 		f.HasBeenSet = true
 	}
