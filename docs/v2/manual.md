@@ -3,6 +3,7 @@ cli v2 manual
 
 <!-- toc -->
 
+- [Migrating From Older Releases](#migrating-from-older-releases)
 - [Getting Started](#getting-started)
 - [Examples](#examples)
   * [Arguments](#arguments)
@@ -29,6 +30,7 @@ cli v2 manual
     + [ZSH Support](#zsh-support)
     + [ZSH default auto-complete example](#zsh-default-auto-complete-example)
     + [ZSH custom auto-complete example](#zsh-custom-auto-complete-example)
+    + [PowerShell Support](#powershell-support)
   * [Generated Help Text](#generated-help-text)
     + [Customization](#customization-1)
   * [Version Flag](#version-flag)
@@ -38,6 +40,13 @@ cli v2 manual
   * [Full API Example](#full-api-example)
 
 <!-- tocstop -->
+
+## Migrating From Older Releases
+
+There are a small set of breaking changes between v1 and v2.
+Converting is relatively straightforward and typically takes less than
+an hour. Specific steps are included in
+[Migration Guide: v1 to v2](../migrate-v1-to-v2.md). Also see the [pkg.go.dev docs](https://pkg.go.dev/github.com/urfave/cli/v2) for v2 API documentation.
 
 ## Getting Started
 
@@ -300,7 +309,7 @@ func main() {
 }
 ```
 
-See full list of flags at http://godoc.org/github.com/urfave/cli
+See full list of flags at https://pkg.go.dev/github.com/urfave/cli/v2
 
 #### Placeholder Values
 
@@ -418,15 +427,17 @@ import (
 func main() {
   app := &cli.App{
     Flags: []cli.Flag{
-      &cli.StringFlag{
-        Name:  "lang, l",
-        Value: "english",
-        Usage: "Language for the greeting",
-      },
-      &cli.StringFlag{
-        Name:  "config, c",
-        Usage: "Load configuration from `FILE`",
-      },
+        &cli.StringFlag{
+            Name:    "lang",
+            Aliases: []string{"l"},
+            Value:   "english",
+            Usage:   "Language for the greeting",
+        },
+        &cli.StringFlag{
+            Name:    "config",
+            Aliases: []string{"c"},
+            Usage:   "Load configuration from `FILE`",
+        },
     },
     Commands: []*cli.Command{
       {
@@ -504,7 +515,7 @@ func main() {
 ```
 
 If `EnvVars` contains more than one string, the first environment variable that
-resolves is used as the default.
+resolves is used.
 
 <!-- {
   "args": ["&#45;&#45;help"],
@@ -563,7 +574,8 @@ func main() {
 
   app.Flags = []cli.Flag {
     &cli.StringFlag{
-      Name: "password, p",
+      Name: "password",
+      Aliases: []string{"p"},
       Usage: "password for the mysql database",
       FilePath: "/etc/mysql/password",
     },
@@ -616,7 +628,7 @@ given sources.
 Here is a more complete sample of a command using YAML support:
 
 <!-- {
-  "args": ["test-cmd", "&#45;&#45;help"],
+  "args": ["&#45;&#45;help"],
   "output": "&#45&#45;test value.*default: 0"
 } -->
 ``` go
@@ -638,7 +650,7 @@ func main() {
 
   app := &cli.App{
     Action: func(c *cli.Context) error {
-      fmt.Println("yaml ist rad")
+      fmt.Println("--test value.*default: 0")
       return nil
     },
     Before: altsrc.InitInputSourceWithContext(flags, altsrc.NewYamlSourceFromFlagFunc("load")),
@@ -654,7 +666,7 @@ func main() {
 You can make a flag required by setting the `Required` field to `true`. If a user
 does not provide a required flag, they will be shown an error message.
 
-Take for example this app that reqiures the `lang` flag:
+Take for example this app that requires the `lang` flag:
 
 <!-- {
   "error": "Required flag \"lang\" not set"
@@ -665,9 +677,7 @@ package main
 import (
   "log"
   "os"
-  "strings"
-
-  "github.com/urfave/cli"
+  "github.com/urfave/cli/v2"
 )
 
 func main() {
@@ -1013,12 +1023,12 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 func main() {
 	app := cli.NewApp()
 	app.EnableBashCompletion = true
-	app.Commands = []cli.Command{
+	app.Commands = []*cli.Command{
 		{
 			Name:    "add",
 			Aliases: []string{"a"},
@@ -1041,7 +1051,7 @@ func main() {
 			Name:    "template",
 			Aliases: []string{"t"},
 			Usage:   "options for task templates",
-			Subcommands: []cli.Command{
+			Subcommands: []*cli.Command{
 				{
 					Name:  "add",
 					Usage: "add a new template",
@@ -1217,6 +1227,23 @@ source  path/to/autocomplete/zsh_autocomplete
 #### ZSH custom auto-complete example
 ![](/docs/v2/images/custom-zsh-autocomplete.gif)
 
+#### PowerShell Support
+Auto-completion for PowerShell is also supported using the `autocomplete/powershell_autocomplete.ps1` 
+file included in this repo. 
+
+Rename the script to `<my program>.ps1` and move it anywhere in your file system.
+The location of script does not matter, only the file name of the script has to match
+the your program's binary name. 
+
+To activate it, enter `& path/to/autocomplete/<my program>.ps1`
+
+To persist across new shells, open the PowerShell profile (with `code $profile` or `notepad $profile`)
+and add the line:
+```
+& path/to/autocomplete/<my program>.ps1
+```
+
+
 ### Generated Help Text
 
 The default help flag (`-h/--help`) is defined as `cli.HelpFlag` and is checked
@@ -1304,7 +1331,8 @@ import (
 
 func main() {
   cli.HelpFlag = &cli.BoolFlag{
-    Name: "haaaaalp", Aliases: []string{"halp"},
+    Name: "haaaaalp",
+    Aliases: []string{"halp"},
     Usage: "HALP",
     EnvVars: []string{"SHOW_HALP", "HALPPLZ"},
   }
@@ -1339,7 +1367,8 @@ import (
 
 func main() {
   cli.VersionFlag = &cli.BoolFlag{
-    Name: "print-version", Aliases: []string{"V"},
+    Name: "print-version",
+    Aliases: []string{"V"},
     Usage: "print only the version",
   }
 

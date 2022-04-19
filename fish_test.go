@@ -7,6 +7,10 @@ import (
 func TestFishCompletion(t *testing.T) {
 	// Given
 	app := testApp()
+	app.Flags = append(app.Flags, &PathFlag{
+		Name:      "logfile",
+		TakesFile: true,
+	})
 
 	// When
 	res, err := app.ToFishCompletion()
