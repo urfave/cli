@@ -116,7 +116,7 @@ func (c Command) Run(ctx *Context) (err error) {
 		c.UseShortOptionHandling = true
 	}
 
-	set, err := c.parseFlags(ctx.Args().Tail())
+	set, err := c.parseFlags(ctx.Args().Tail(), ctx.shellComplete)
 
 	context := NewContext(ctx.App, set, ctx)
 	context.Command = c
@@ -163,7 +163,6 @@ func (c Command) Run(ctx *Context) (err error) {
 	if c.Before != nil {
 		err = c.Before(context)
 		if err != nil {
-			_ = ShowCommandHelp(context, c.Name)
 			context.App.handleExitCoder(context, err)
 			return err
 		}
@@ -181,7 +180,7 @@ func (c Command) Run(ctx *Context) (err error) {
 	return err
 }
 
-func (c *Command) parseFlags(args Args) (*flag.FlagSet, error) {
+func (c *Command) parseFlags(args Args, shellComplete bool) (*flag.FlagSet, error) {
 	if c.SkipFlagParsing {
 		set, err := c.newFlagSet()
 		if err != nil {
@@ -200,7 +199,7 @@ func (c *Command) parseFlags(args Args) (*flag.FlagSet, error) {
 		return nil, err
 	}
 
-	err = parseIter(set, c, args)
+	err = parseIter(set, c, args, shellComplete)
 	if err != nil {
 		return nil, err
 	}

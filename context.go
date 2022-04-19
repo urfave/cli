@@ -87,6 +87,14 @@ func (c *Context) IsSet(name string) bool {
 		for _, f := range flags {
 			eachName(f.GetName(), func(name string) {
 				if isSet, ok := c.setFlags[name]; isSet || !ok {
+					// Check if a flag is set
+					if isSet {
+						// If the flag is set, also set its other aliases
+						eachName(f.GetName(), func(name string) {
+							c.setFlags[name] = true
+						})
+					}
+
 					return
 				}
 
@@ -316,11 +324,12 @@ func checkRequiredFlags(flags []Flag, context *Context) requiredFlagsErr {
 			var flagPresent bool
 			var flagName string
 			for _, key := range strings.Split(f.GetName(), ",") {
+				key = strings.TrimSpace(key)
 				if len(key) > 1 {
 					flagName = key
 				}
 
-				if context.IsSet(strings.TrimSpace(key)) {
+				if context.IsSet(key) {
 					flagPresent = true
 				}
 			}

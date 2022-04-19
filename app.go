@@ -216,7 +216,7 @@ func (a *App) Run(arguments []string) (err error) {
 		return err
 	}
 
-	err = parseIter(set, a, arguments[1:])
+	err = parseIter(set, a, arguments[1:], shellComplete)
 	nerr := normalizeFlags(a.Flags, set)
 	context := NewContext(a, set, nil)
 	if nerr != nil {
@@ -272,8 +272,6 @@ func (a *App) Run(arguments []string) (err error) {
 	if a.Before != nil {
 		beforeErr := a.Before(context)
 		if beforeErr != nil {
-			_, _ = fmt.Fprintf(a.Writer, "%v\n\n", beforeErr)
-			_ = ShowAppHelp(context)
 			a.handleExitCoder(context, beforeErr)
 			err = beforeErr
 			return err
@@ -339,7 +337,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 		return err
 	}
 
-	err = parseIter(set, a, ctx.Args().Tail())
+	err = parseIter(set, a, ctx.Args().Tail(), ctx.shellComplete)
 	nerr := normalizeFlags(a.Flags, set)
 	context := NewContext(a, set, ctx)
 

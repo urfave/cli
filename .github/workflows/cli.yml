@@ -1,0 +1,65 @@
+name: Run Tests
+
+on:
+  pull_request:
+    branches:
+      - master
+      - v1
+
+env:
+  GO111MODULE: on
+  GOPROXY: https://proxy.golang.org
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        go: [1.11, 1.12, 1.13]
+    name: ${{ matrix.os }} @ Go ${{ matrix.go }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Set up Go ${{ matrix.go }}
+        uses: actions/setup-go@v1
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Set GOPATH and PATH
+        run: |
+          echo "::set-env name=GOPATH::$(dirname $GITHUB_WORKSPACE)"
+          echo "::add-path::$(dirname $GITHUB_WORKSPACE)/bin"
+        shell: bash
+
+      - name: Checkout Code
+        uses: actions/checkout@v1
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Install Dependencies
+        run: |
+          mkdir -p $GOPATH/bin
+          curl -L -o $GOPATH/bin/gfmrun "https://github.com/urfave/gfmrun/releases/download/v1.2.14/gfmrun-$(go env GOOS)-amd64-v1.2.14"
+          chmod +x $GOPATH/bin/gfmrun
+          npm install markdown-toc
+
+      - name: Run Tests (v1)
+        if: contains(github.base_ref, 'v1')
+        run: |
+          go run build.go vet
+          go run build.go test
+          go run build.go gfmrun docs/v1/manual.md
+          go run build.go toc docs/v1/manual.md
+
+      - name: Run Tests (v2)
+        if: contains(github.base_ref, 'master')
+        run: |
+          go run build.go vet
+          go run build.go test
+          go run build.go gfmrun docs/v2/manual.md
+          go run build.go toc docs/v2/manual.md
+
+      - name: Send Coverage Report
+        if: success()
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: bash <(curl -s https://codecov.io/bash)

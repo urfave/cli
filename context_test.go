@@ -182,6 +182,51 @@ func TestContext_IsSet(t *testing.T) {
 	expect(t, c.IsSet("myflagGlobal"), false)
 }
 
+func TestContext_IsSet_ShortAndFull_FlagNames(t *testing.T) {
+	var (
+		numberIsSet, nIsSet bool
+		tempIsSet, tIsSet bool
+		usernameIsSet, uIsSet bool
+		debugIsSet, dIsSet bool
+	)
+
+	a := App {
+		Flags: []Flag{
+			IntFlag{Name: "number, n"},
+			Float64Flag{Name: "temp, t"},
+			StringFlag{Name: "username, u"},
+			BoolFlag{Name: "debug, d"},
+		},
+		Action: func(ctx *Context) error {
+			numberIsSet = ctx.IsSet("number")
+			nIsSet = ctx.IsSet("n")
+			tempIsSet = ctx.IsSet("temp")
+			tIsSet = ctx.IsSet("t")
+			usernameIsSet = ctx.IsSet("username")
+			uIsSet = ctx.IsSet("u")
+			debugIsSet = ctx.IsSet("debug")
+			dIsSet = ctx.IsSet("d")
+			return nil
+		},
+	}
+
+	tests := []struct {
+		args[]string
+	}{
+		{args: []string{"", "--number", "5", "--temp", "5.2", "--username", "ajitem", "--debug"}},
+		{args: []string{"", "-n", "5", "-t", "5.2", "-u", "ajitem", "-d"}},
+	}
+
+	for _, tt := range tests {
+		_ = a.Run(tt.args)
+
+		expect(t, numberIsSet == nIsSet, true)
+		expect(t, tempIsSet == tIsSet, true)
+		expect(t, usernameIsSet == uIsSet, true)
+		expect(t, debugIsSet == dIsSet, true)
+	}
+}
+
 // XXX Corresponds to hack in context.IsSet for flags with EnvVar field
 // Should be moved to `flag_test` in v2
 func TestContext_IsSet_fromEnv(t *testing.T) {
@@ -530,6 +575,14 @@ func TestCheckRequiredFlags(t *testing.T) {
 				StringSliceFlag{Name: "names, N, n", Required: true},
 			},
 			parseInput: []string{"-n", "asd", "-n", "qwe"},
+		},
+		{
+			testCase: "required_flag_with_short_alias_not_printed_on_error",
+			expectedAnError: true,
+			expectedErrorContents: []string{"Required flag \"names\" not set"},
+			flags: []Flag{
+				StringSliceFlag{Name: "names, n", Required: true},
+			},
 		},
 	}
 	for _, test := range tdata {
