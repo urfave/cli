@@ -29,7 +29,7 @@ jobs:
           echo "GOPATH=$(dirname $GITHUB_WORKSPACE)" >> $GITHUB_ENV
           echo "GO111MODULE=on" >> $GITHUB_ENV
           echo "GOPROXY=https://proxy.golang.org" >> $GITHUB_ENV
-          echo "$(dirname $GITHUB_WORKSPACE)/bin" >> $GITHUB_PATH
+          echo "${GITHUB_WORKSPACE}/.local/bin" >> $GITHUB_PATH
         shell: bash
 
       - name: Checkout Code
@@ -75,7 +75,7 @@ jobs:
           echo "GOPATH=$(dirname $GITHUB_WORKSPACE)" >> $GITHUB_ENV
           echo "GO111MODULE=on" >> $GITHUB_ENV
           echo "GOPROXY=https://proxy.golang.org" >> $GITHUB_ENV
-          echo "$(dirname $GITHUB_WORKSPACE)/bin" >> $GITHUB_PATH
+          echo "${GITHUB_WORKSPACE}/.local/bin" >> $GITHUB_PATH
         shell: bash
 
       - name: Checkout Code
@@ -85,9 +85,9 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          mkdir -p $GOPATH/bin
-          curl -L -o $GOPATH/bin/gfmrun "https://github.com/urfave/gfmrun/releases/download/v1.2.14/gfmrun-$(go env GOOS)-amd64-v1.2.14"
-          chmod +x $GOPATH/bin/gfmrun
+          mkdir -p "${GITHUB_WORKSPACE}/.local/bin" && \
+          curl -fsSL -o "${GITHUB_WORKSPACE}/.local/bin/gfmrun" "https://github.com/urfave/gfmrun/releases/download/v1.3.0/gfmrun-$(go env GOOS)-$(go env goarch)-v1.3.0" && \
+          chmod +x "${GITHUB_WORKSPACE}/.local/bin/gfmrun" && \
           npm install -g markdown-toc@1.2.0
 
       - name: Run Tests (v1)
