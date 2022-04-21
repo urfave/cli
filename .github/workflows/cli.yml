@@ -3,12 +3,12 @@ name: Run Tests
 on:
   push:
     branches:
-      - master
+      - v3-dev-main
     tags:
-      - v2.*
+      - v3.*
   pull_request:
     branches:
-      - master
+      - v3-dev-main
 
 jobs:
   test:
