@@ -1,5 +1,3 @@
-% greet 8
-
 # NAME
 
 greet - Some app
@@ -16,12 +14,12 @@ greet
 
 # DESCRIPTION
 
-app [first_arg] [second_arg]
+Description of the application.
 
 **Usage**:
 
 ```
-greet [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
+app [first_arg] [second_arg]
 ```
 
 # GLOBAL OPTIONS

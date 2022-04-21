@@ -7,13 +7,13 @@ var AppHelpTemplate = `NAME:
    {{.Name}}{{if .Usage}} - {{.Usage}}{{end}}
 
 USAGE:
-   {{if .UsageText}}{{.UsageText}}{{else}}{{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
+   {{if .UsageText}}{{.UsageText | nindent 3 | trim}}{{else}}{{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
 
 VERSION:
    {{.Version}}{{end}}{{end}}{{if .Description}}
 
 DESCRIPTION:
-   {{.Description}}{{end}}{{if len .Authors}}
+   {{.Description | nindent 3 | trim}}{{end}}{{if len .Authors}}
 
 AUTHOR{{with $length := len .Authors}}{{if ne 1 $length}}S{{end}}{{end}}:
    {{range $index, $author := .Authors}}{{if $index}}
@@ -39,13 +39,13 @@ var CommandHelpTemplate = `NAME:
    {{.HelpName}} - {{.Usage}}
 
 USAGE:
-   {{if .UsageText}}{{.UsageText}}{{else}}{{.HelpName}}{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Category}}
+   {{if .UsageText}}{{.UsageText | nindent 3 | trim}}{{else}}{{.HelpName}}{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Category}}
 
 CATEGORY:
    {{.Category}}{{end}}{{if .Description}}
 
 DESCRIPTION:
-   {{.Description}}{{end}}{{if .VisibleFlags}}
+   {{.Description | nindent 3 | trim}}{{end}}{{if .VisibleFlags}}
 
 OPTIONS:
    {{range .VisibleFlags}}{{.}}
@@ -59,10 +59,10 @@ var SubcommandHelpTemplate = `NAME:
    {{.HelpName}} - {{.Usage}}
 
 USAGE:
-   {{if .UsageText}}{{.UsageText}}{{else}}{{.HelpName}} command{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Description}}
+   {{if .UsageText}}{{.UsageText | nindent 3 | trim}}{{else}}{{.HelpName}} command{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Description}}
 
 DESCRIPTION:
-   {{.Description}}{{end}}
+   {{.Description | nindent 3 | trim}}{{end}}
 
 COMMANDS:{{range .VisibleCategories}}{{if .Name}}
    {{.Name}}:{{range .VisibleCommands}}
@@ -74,9 +74,9 @@ OPTIONS:
    {{end}}{{end}}
 `
 
-var MarkdownDocTemplate = `% {{ .App.Name }} 8
+var MarkdownDocTemplate = `{{if gt .SectionNum 0}}% {{ .App.Name }} {{ .SectionNum }}
 
-# NAME
+{{end}}# NAME
 
 {{ .App.Name }}{{ if .App.Usage }} - {{ .App.Usage }}{{ end }}
 
@@ -86,16 +86,18 @@ var MarkdownDocTemplate = `% {{ .App.Name }} 8
 {{ if .SynopsisArgs }}
 ` + "```" + `
 {{ range $v := .SynopsisArgs }}{{ $v }}{{ end }}` + "```" + `
-{{ end }}{{ if .App.UsageText }}
+{{ end }}{{ if .App.Description }}
 # DESCRIPTION
 
-{{ .App.UsageText }}
+{{ .App.Description }}
 {{ end }}
 **Usage**:
 
-` + "```" + `
+` + "```" + `{{ if .App.UsageText }}
+{{ .App.UsageText }}
+{{ else }}
 {{ .App.Name }} [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
-` + "```" + `
+{{ end }}` + "```" + `
 {{ if .GlobalArgs }}
 # GLOBAL OPTIONS
 {{ range $v := .GlobalArgs }}

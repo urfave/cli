@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	changeLogURL            = "https://github.com/urfave/cli/blob/master/docs/CHANGELOG.md"
+	changeLogURL            = "https://github.com/urfave/cli/blob/main/docs/CHANGELOG.md"
 	appActionDeprecationURL = fmt.Sprintf("%s#deprecated-cli-app-action-signature", changeLogURL)
 	contactSysadmin         = "This is an error in the application.  Please contact the distributor of this application if this is not you."
 	errInvalidActionType    = NewExitError("ERROR invalid Action type. "+
@@ -64,7 +64,7 @@ type App struct {
 	Action ActionFunc
 	// Execute this function if the proper command cannot be found
 	CommandNotFound CommandNotFoundFunc
-	// Execute this function if an usage error occurs
+	// Execute this function if a usage error occurs
 	OnUsageError OnUsageErrorFunc
 	// Compilation date
 	Compiled time.Time
@@ -72,6 +72,8 @@ type App struct {
 	Authors []*Author
 	// Copyright of the binary if any
 	Copyright string
+	// Reader reader to write input to (useful for tests)
+	Reader io.Reader
 	// Writer writer to write output to
 	Writer io.Writer
 	// ErrWriter writes error output
@@ -117,6 +119,7 @@ func NewApp() *App {
 		BashComplete: DefaultAppComplete,
 		Action:       helpCommand.Action,
 		Compiled:     compileTime(),
+		Reader:       os.Stdin,
 		Writer:       os.Stdout,
 		ErrWriter:    os.Stderr,
 	}
@@ -137,7 +140,7 @@ func (a *App) Setup() {
 	}
 
 	if a.HelpName == "" {
-		a.HelpName = filepath.Base(os.Args[0])
+		a.HelpName = a.Name
 	}
 
 	if a.Usage == "" {
@@ -158,6 +161,10 @@ func (a *App) Setup() {
 
 	if a.Compiled == (time.Time{}) {
 		a.Compiled = compileTime()
+	}
+
+	if a.Reader == nil {
+		a.Reader = os.Stdin
 	}
 
 	if a.Writer == nil {
@@ -271,7 +278,7 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 		return nil
 	}
 
-	cerr := checkRequiredFlags(a.Flags, context)
+	cerr := context.checkRequiredFlags(a.Flags)
 	if cerr != nil {
 		_ = ShowAppHelp(context)
 		return cerr
@@ -321,7 +328,7 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 // RunAndExitOnError calls .Run() and exits non-zero if an error was returned
 //
 // Deprecated: instead you should return an error that fulfills cli.ExitCoder
-// to cli.App.Run. This will cause the application to exit with the given eror
+// to cli.App.Run. This will cause the application to exit with the given error
 // code in the cli.ExitCoder
 func (a *App) RunAndExitOnError() {
 	if err := a.Run(os.Args); err != nil {
@@ -390,7 +397,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 		}
 	}
 
-	cerr := checkRequiredFlags(a.Flags, context)
+	cerr := context.checkRequiredFlags(a.Flags)
 	if cerr != nil {
 		_ = ShowSubcommandHelp(context)
 		return cerr

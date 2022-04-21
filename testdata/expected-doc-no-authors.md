@@ -1,5 +1,3 @@
-% greet 8
-
 # NAME
 
 greet - Some app
@@ -16,12 +14,12 @@ greet
 
 # DESCRIPTION
 
-app [first_arg] [second_arg]
+Description of the application.
 
 **Usage**:
 
 ```
-greet [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
+app [first_arg] [second_arg]
 ```
 
 # GLOBAL OPTIONS
@@ -58,3 +56,29 @@ retrieve generic information
 ## some-command
 
 
+## usage, u
+
+standard usage text
+
+    Usage for the usage text
+    - formatted:  Based on the specified ConfigMap and summon secrets.yml
+    - list:       Inspect the environment for a specific process running on a Pod
+    - for_effect: Compare 'namespace' environment with 'local'
+    
+    ```
+    func() { ... }
+    ```
+    
+    Should be a part of the same code block
+
+**--another-flag, -b**: another usage text
+
+**--flag, --fl, -f**="": 
+
+### sub-usage, su
+
+standard usage text
+
+>Single line of UsageText
+
+**--sub-command-flag, -s**: some usage text

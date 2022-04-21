@@ -16,6 +16,11 @@ type MapInputSource struct {
 	valueMap map[interface{}]interface{}
 }
 
+// NewMapInputSource creates a new MapInputSource for implementing custom input sources.
+func NewMapInputSource(file string, valueMap map[interface{}]interface{}) *MapInputSource {
+	return &MapInputSource{file: file, valueMap: valueMap}
+}
+
 // nestedVal checks if the name has '.' delimiters.
 // If so, it tries to traverse the tree by the '.' delimited sections to find
 // a nested value for the key.
