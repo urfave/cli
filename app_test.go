@@ -546,8 +546,7 @@ func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
 
 	expect(t, parsedOption, "my-option")
 	expect(t, args[0], "my-arg")
-	expect(t, args[1], "--")
-	expect(t, args[2], "--notARealFlag")
+	expect(t, args[1], "--notARealFlag")
 }
 
 func TestApp_CommandWithDash(t *testing.T) {
@@ -585,8 +584,7 @@ func TestApp_CommandWithNoFlagBeforeTerminator(t *testing.T) {
 	_ = app.Run([]string{"", "cmd", "my-arg", "--", "notAFlagAtAll"})
 
 	expect(t, args[0], "my-arg")
-	expect(t, args[1], "--")
-	expect(t, args[2], "notAFlagAtAll")
+	expect(t, args[1], "notAFlagAtAll")
 }
 
 func TestApp_VisibleCommands(t *testing.T) {
