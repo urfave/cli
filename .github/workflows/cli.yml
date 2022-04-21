@@ -71,9 +71,9 @@ jobs:
 
       - name: Install Dependencies
         run:
-          mkdir -p "${GITHUB_WORKSPACE}/.local/bin" && \
-          curl -fsSL -o "${GITHUB_WORKSPACE}/.local/bin/gfmrun" "https://github.com/urfave/gfmrun/releases/download/v1.3.0/gfmrun-$(go env GOOS)-$(go env GOARCH)-v1.3.0" && \
-          chmod +x "${GITHUB_WORKSPACE}/.local/bin/gfmrun" && \
+          mkdir -p "${GITHUB_WORKSPACE}/.local/bin" &&
+          curl -fsSL -o "${GITHUB_WORKSPACE}/.local/bin/gfmrun" "https://github.com/urfave/gfmrun/releases/download/v1.3.0/gfmrun-$(go env GOOS)-$(go env GOARCH)-v1.3.0" &&
+          chmod +x "${GITHUB_WORKSPACE}/.local/bin/gfmrun" &&
           npm install -g markdown-toc@1.2.0
 
       - name: gfmrun
