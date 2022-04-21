@@ -114,6 +114,83 @@ func TestParseAndRunShortOpts(t *testing.T) {
 	}
 }
 
+// test-case for https://github.com/urfave/cli/issues/1092
+func TestParseAndRunHyphenValues(t *testing.T) {
+	cases := []struct {
+		testArgs     []string
+		expectedArgs []string
+		expectedOpt string
+	}{
+		{[]string{"foo", "test", "argz"}, []string{"argz"}, ""},
+		{[]string{"foo", "test", "argz", "arga"}, []string{"argz", "arga"}, ""},
+		{[]string{"foo", "test", "--opt", "opt-value"}, []string{}, "opt-value"},
+		{[]string{"foo", "test", "--opt", "opt-value", "argz"}, []string{"argz"}, "opt-value"},
+		{[]string{"foo", "test", "--opt", "opt-value", "argz", "arga"}, []string{"argz", "arga"}, "opt-value"},
+		{[]string{"foo", "test", "argz", "--opt", "opt-value"}, []string{"argz"}, "opt-value"},
+		{[]string{"foo", "test", "argz", "--opt", "opt-value", "arga"}, []string{"argz", "arga"}, "opt-value"},
+
+		{[]string{"foo", "test", "--opt", "-opt-value"}, []string{}, "-opt-value"},
+		{[]string{"foo", "test", "--opt", "-opt-value", "argz"}, []string{"argz"}, "-opt-value"},
+		{[]string{"foo", "test", "--opt", "-opt-value", "argz", "arga"}, []string{"argz", "arga"}, "-opt-value"},
+		{[]string{"foo", "test", "argz", "--opt", "-opt-value"}, []string{"argz"}, "-opt-value"},
+		{[]string{"foo", "test", "argz", "--opt", "-opt-value", "arga"}, []string{"argz", "arga"}, "-opt-value"},
+
+		{[]string{"foo", "test", "--opt", "--opt-value"}, []string{}, "--opt-value"},
+		{[]string{"foo", "test", "--opt", "--opt-value", "argz"}, []string{"argz"}, "--opt-value"},
+		{[]string{"foo", "test", "--opt", "--opt-value", "argz", "arga"}, []string{"argz", "arga"}, "--opt-value"},
+		{[]string{"foo", "test", "argz", "--opt", "--opt-value"}, []string{"argz"}, "--opt-value"},
+		{[]string{"foo", "test", "argz", "--opt", "--opt-value", "arga"}, []string{"argz", "arga"}, "--opt-value"},
+
+		// Tests below test handling of the "--" delimiter
+		{[]string{"foo", "test", "--", "--opt", "--opt-value", "argz"}, []string{"--opt", "--opt-value", "argz"}, ""},
+		{[]string{"foo", "test", "--", "argz", "--opt", "--opt-value", "arga"}, []string{"argz", "--opt", "--opt-value", "arga"}, ""},
+		{[]string{"foo", "test", "argz", "--", "--opt", "--opt-value", "arga"}, []string{"argz", "--opt", "--opt-value", "arga"}, ""},
+		{[]string{"foo", "test", "argz", "--opt", "--", "--opt-value", "arga"}, []string{"argz", "--opt-value", "arga"}, "--"},
+
+		// first "--" is an option-value for "--opt", second "--" is the delimiter indicating the end of options.
+		{[]string{"foo", "test", "argz", "--opt", "--", "--", "--opt2", "--opt-value", "arga"}, []string{"argz", "--opt2", "--opt-value", "arga"}, "--"},
+		{[]string{"foo", "test", "argz", "--opt", "--opt-value", "--", "arga"}, []string{"argz", "arga"}, "--opt-value"},
+		{[]string{"foo", "test", "argz", "--opt", "--opt-value", "arga", "--"}, []string{"argz", "arga"}, "--opt-value"},
+	}
+
+	for _, tc := range cases {
+		tc := tc
+		t.Run(strings.Join(tc.testArgs, "_"), func(t *testing.T){
+			var (
+				args []string
+				opt string
+			)
+
+			cmd := Command{
+				Name:        "test",
+				Usage:       "this is for testing",
+				Description: "testing",
+				Action: func(c *Context) error {
+					args = c.Args()
+					opt = c.String("opt")
+					return nil
+				},
+				Flags: []Flag{
+					StringFlag{Name:  "opt"},
+					StringFlag{Name:  "opt2"},
+				},
+			}
+
+			app := NewApp()
+			app.Writer = ioutil.Discard
+			app.ErrWriter = ioutil.Discard
+			app.Commands = []Command{cmd}
+
+			err := app.Run(tc.testArgs)
+
+			expect(t, err, nil)
+			expect(t, args, tc.expectedArgs)
+			expect(t, opt, tc.expectedOpt)
+		})
+
+	}
+}
+
 func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 	app := NewApp()
 	app.Commands = []Command{
