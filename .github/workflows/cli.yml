@@ -4,30 +4,25 @@ on:
   pull_request:
     branches:
       - v1
-
-env:
-  GO111MODULE: on
-  GOPROXY: https://proxy.golang.org
+  push:
+    branches:
+      - v1
+    tags:
+      - v1.*
 
 jobs:
   test:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        go: [1.11, 1.12, 1.13]
+        go: [^1.15, ^1.16]
     name: ${{ matrix.os }} @ Go ${{ matrix.go }}
     runs-on: ${{ matrix.os }}
     steps:
       - name: Set up Go ${{ matrix.go }}
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
-
-      - name: Set GOPATH and PATH
-        run: |
-          echo "::set-env name=GOPATH::$(dirname $GITHUB_WORKSPACE)"
-          echo "::add-path::$(dirname $GITHUB_WORKSPACE)/bin"
-        shell: bash
 
       - name: Checkout Code
         uses: actions/checkout@v1
@@ -39,7 +34,7 @@ jobs:
 
       - name: Run Tests (v1)
         if: contains(github.base_ref, 'v1')
-        run: |
-          go run build.go vet
-          go run build.go test
+        run:
+          go run build.go vet &&
+          go run build.go test &&
           go run build.go toc docs/v1/manual.md
