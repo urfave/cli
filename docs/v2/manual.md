@@ -674,8 +674,10 @@ Take for example this app that requires the `lang` flag:
 package main
 
 import (
+  "fmt"
   "log"
   "os"
+
   "github.com/urfave/cli/v2"
 )
 
