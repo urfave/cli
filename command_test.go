@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"strings"
 	"testing"
 )
@@ -371,85 +370,6 @@ func TestCommandSkipFlagParsing(t *testing.T) {
 		err := app.Run(c.testArgs)
 		expect(t, err, c.expectedErr)
 		expect(t, args, c.expectedArgs)
-	}
-}
-
-func TestSubCommand_Name_ProgramName_CommandName(t *testing.T) {
-	cases := []struct {
-		testArgs       []string
-		expectedOutput []string
-	}{
-		{
-			testArgs:       []string{"cmd"},
-			expectedOutput: []string{"myprogramname", "myprogramname", ""},
-		},
-		{
-			testArgs:       []string{"cmd", "foo"},
-			expectedOutput: []string{"myprogramname foo", "myprogramname", "myprogramname foo"},
-		},
-		{
-			testArgs:       []string{"cmd", "foo", "bar"},
-			expectedOutput: []string{"myprogramname foo bar", "myprogramname", "myprogramname foo bar"},
-		},
-		{
-			testArgs:       []string{"cmd", "foo", "bar", "baz"},
-			expectedOutput: []string{"myprogramname foo bar", "myprogramname", "myprogramname foo bar baz"},
-		},
-	}
-
-	for _, c := range cases {
-		var output []string
-
-		app := &App{
-			Name: "myprogramname",
-			Action: func(c *Context) error {
-				output = append(output, c.App.Name)
-				output = append(output, c.App.ProgramName)
-				output = append(output, c.App.CommandName)
-				return nil
-			},
-			Commands: []Command{
-				{
-					Name: "foo",
-					Action: func(c *Context) error {
-						output = append(output, c.App.Name)
-						output = append(output, c.App.ProgramName)
-						output = append(output, c.App.CommandName)
-						return nil
-					},
-					Subcommands: []Command{
-						{
-							Name: "bar",
-							Action: func(c *Context) error {
-								output = append(output, c.App.Name)
-								output = append(output, c.App.ProgramName)
-								output = append(output, c.App.CommandName)
-								return nil
-							},
-							Subcommands: []Command{
-								{
-									Name: "baz",
-									Action: func(c *Context) error {
-										output = append(output, c.App.Name)
-										output = append(output, c.App.ProgramName)
-										output = append(output, c.App.CommandName)
-										return nil
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		}
-		err := app.Run(c.testArgs)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if !equal(output, c.expectedOutput) {
-			t.Errorf("want %v, got %v", c.expectedOutput, output)
-		}
 	}
 }
 

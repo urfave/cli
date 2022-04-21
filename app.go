@@ -28,11 +28,6 @@ var (
 type App struct {
 	// The name of the program. Defaults to path.Base(os.Args[0])
 	Name string
-	// The name of the program. Defaults to path.Base(os.Args[0])
-	ProgramName string
-	// The name of the current running command. In case of a sub-command, this variable would also contain
-	// the names of its parents.
-	CommandName string
 	// Full name of command for help, defaults to Name
 	HelpName string
 	// Description of the program.
@@ -142,10 +137,6 @@ func (a *App) Setup() {
 	}
 
 	a.didSetup = true
-
-	if a.Name != "" && a.ProgramName == "" {
-		a.ProgramName = a.Name
-	}
 
 	if a.Author != "" || a.Email != "" {
 		a.Authors = append(a.Authors, Author{Name: a.Author, Email: a.Email})
