@@ -15,7 +15,13 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        go: [1.15.x, 1.16.x]
+        go:
+          - 1.16.x
+          # NOTE: tests fail with panic at
+          # TestApp_RunAsSubCommandIncorrectUsage on these
+          # versions:
+          # - 1.17.x
+          # - 1.18.x
     name: ${{ matrix.os }} @ Go ${{ matrix.go }}
     runs-on: ${{ matrix.os }}
     steps:
