@@ -34,7 +34,7 @@ func (f *BoolFlag) String() string {
 
 // Names returns the names of the flag
 func (f *BoolFlag) Names() []string {
-	return flagNames(f)
+	return flagNames(f.Name, f.Aliases)
 }
 
 // IsRequired returns whether or not the flag is required
@@ -56,6 +56,11 @@ func (f *BoolFlag) GetUsage() string {
 // string if the flag takes no value at all.
 func (f *BoolFlag) GetValue() string {
 	return ""
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *BoolFlag) IsVisible() bool {
+	return !f.Hidden
 }
 
 // Apply populates the flag given the flag set and environment
@@ -87,7 +92,7 @@ func (f *BoolFlag) Apply(set *flag.FlagSet) error {
 // Bool looks up the value of a local BoolFlag, returns
 // false if not found
 func (c *Context) Bool(name string) bool {
-	if fs := lookupFlagSet(name, c); fs != nil {
+	if fs := c.lookupFlagSet(name); fs != nil {
 		return lookupBool(name, fs)
 	}
 	return false

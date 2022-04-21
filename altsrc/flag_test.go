@@ -3,12 +3,14 @@ package altsrc
 import (
 	"flag"
 	"fmt"
-	"github.com/urfave/cli/v2"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/urfave/cli/v2"
 )
 
 type testApplyInputSource struct {
@@ -189,7 +191,13 @@ func TestPathApplyInputSourceMethodSet(t *testing.T) {
 
 	expected := "/path/to/source/hello"
 	if runtime.GOOS == "windows" {
-		expected = `C:\path\to\source\hello`
+		var err error
+		// Prepend the corresponding drive letter (or UNC path?), and change
+		// to windows-style path:
+		expected, err = filepath.Abs(expected)
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 	expect(t, expected, c.String("test"))
 }

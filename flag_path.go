@@ -30,7 +30,7 @@ func (f *PathFlag) String() string {
 
 // Names returns the names of the flag
 func (f *PathFlag) Names() []string {
-	return flagNames(f)
+	return flagNames(f.Name, f.Aliases)
 }
 
 // IsRequired returns whether or not the flag is required
@@ -54,6 +54,11 @@ func (f *PathFlag) GetValue() string {
 	return f.Value
 }
 
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *PathFlag) IsVisible() bool {
+	return !f.Hidden
+}
+
 // Apply populates the flag given the flag set and environment
 func (f *PathFlag) Apply(set *flag.FlagSet) error {
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
@@ -72,10 +77,10 @@ func (f *PathFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
-// String looks up the value of a local PathFlag, returns
+// Path looks up the value of a local PathFlag, returns
 // "" if not found
 func (c *Context) Path(name string) string {
-	if fs := lookupFlagSet(name, c); fs != nil {
+	if fs := c.lookupFlagSet(name); fs != nil {
 		return lookupPath(name, fs)
 	}
 

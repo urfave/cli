@@ -34,7 +34,7 @@ func (f *IntFlag) String() string {
 
 // Names returns the names of the flag
 func (f *IntFlag) Names() []string {
-	return flagNames(f)
+	return flagNames(f.Name, f.Aliases)
 }
 
 // IsRequired returns whether or not the flag is required
@@ -56,6 +56,11 @@ func (f *IntFlag) GetUsage() string {
 // string if the flag takes no value at all.
 func (f *IntFlag) GetValue() string {
 	return fmt.Sprintf("%d", f.Value)
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *IntFlag) IsVisible() bool {
+	return !f.Hidden
 }
 
 // Apply populates the flag given the flag set and environment
@@ -87,7 +92,7 @@ func (f *IntFlag) Apply(set *flag.FlagSet) error {
 // Int looks up the value of a local IntFlag, returns
 // 0 if not found
 func (c *Context) Int(name string) int {
-	if fs := lookupFlagSet(name, c); fs != nil {
+	if fs := c.lookupFlagSet(name); fs != nil {
 		return lookupInt(name, fs)
 	}
 	return 0

@@ -3,6 +3,7 @@ cli v2 manual
 
 <!-- toc -->
 
+- [Migrating From Older Releases](#migrating-from-older-releases)
 - [Getting Started](#getting-started)
 - [Examples](#examples)
   * [Arguments](#arguments)
@@ -13,6 +14,7 @@ cli v2 manual
     + [Values from the Environment](#values-from-the-environment)
     + [Values from files](#values-from-files)
     + [Values from alternate input sources (YAML, TOML, and others)](#values-from-alternate-input-sources-yaml-toml-and-others)
+    + [Required Flags](#required-flags)
     + [Default Values for help output](#default-values-for-help-output)
     + [Precedence](#precedence)
   * [Subcommands](#subcommands)
@@ -20,16 +22,30 @@ cli v2 manual
   * [Exit code](#exit-code)
   * [Combining short options](#combining-short-options)
   * [Bash Completion](#bash-completion)
+    + [Default auto-completion](#default-auto-completion)
+    + [Custom auto-completion](#custom-auto-completion)
     + [Enabling](#enabling)
-    + [Distribution](#distribution)
+    + [Distribution and Persistent Autocompletion](#distribution-and-persistent-autocompletion)
     + [Customization](#customization)
+    + [ZSH Support](#zsh-support)
+    + [ZSH default auto-complete example](#zsh-default-auto-complete-example)
+    + [ZSH custom auto-complete example](#zsh-custom-auto-complete-example)
+    + [PowerShell Support](#powershell-support)
   * [Generated Help Text](#generated-help-text)
     + [Customization](#customization-1)
   * [Version Flag](#version-flag)
     + [Customization](#customization-2)
+  * [Timestamp Flag](#timestamp-flag)
   * [Full API Example](#full-api-example)
 
 <!-- tocstop -->
+
+## Migrating From Older Releases
+
+There are a small set of breaking changes between v1 and v2.
+Converting is relatively straightforward and typically takes less than
+an hour. Specific steps are included in
+[Migration Guide: v1 to v2](../migrate-v1-to-v2.md). Also see the [pkg.go.dev docs](https://pkg.go.dev/github.com/urfave/cli/v2) for v2 API documentation.
 
 ## Getting Started
 
@@ -292,7 +308,7 @@ func main() {
 }
 ```
 
-See full list of flags at http://godoc.org/github.com/urfave/cli
+See full list of flags at https://pkg.go.dev/github.com/urfave/cli/v2
 
 #### Placeholder Values
 
@@ -410,15 +426,17 @@ import (
 func main() {
   app := &cli.App{
     Flags: []cli.Flag{
-      &cli.StringFlag{
-        Name:  "lang, l",
-        Value: "english",
-        Usage: "Language for the greeting",
-      },
-      &cli.StringFlag{
-        Name:  "config, c",
-        Usage: "Load configuration from `FILE`",
-      },
+        &cli.StringFlag{
+            Name:    "lang",
+            Aliases: []string{"l"},
+            Value:   "english",
+            Usage:   "Language for the greeting",
+        },
+        &cli.StringFlag{
+            Name:    "config",
+            Aliases: []string{"c"},
+            Usage:   "Load configuration from `FILE`",
+        },
     },
     Commands: []*cli.Command{
       {
@@ -496,7 +514,7 @@ func main() {
 ```
 
 If `EnvVars` contains more than one string, the first environment variable that
-resolves is used as the default.
+resolves is used.
 
 <!-- {
   "args": ["&#45;&#45;help"],
@@ -555,7 +573,8 @@ func main() {
 
   app.Flags = []cli.Flag {
     &cli.StringFlag{
-      Name: "password, p",
+      Name: "password",
+      Aliases: []string{"p"},
       Usage: "password for the mysql database",
       FilePath: "/etc/mysql/password",
     },
@@ -608,7 +627,7 @@ given sources.
 Here is a more complete sample of a command using YAML support:
 
 <!-- {
-  "args": ["test-cmd", "&#45;&#45;help"],
+  "args": ["&#45;&#45;help"],
   "output": "&#45&#45;test value.*default: 0"
 } -->
 ``` go
@@ -630,7 +649,7 @@ func main() {
 
   app := &cli.App{
     Action: func(c *cli.Context) error {
-      fmt.Println("yaml ist rad")
+      fmt.Println("--test value.*default: 0")
       return nil
     },
     Before: altsrc.InitInputSourceWithContext(flags, altsrc.NewYamlSourceFromFlagFunc("load")),
@@ -639,6 +658,63 @@ func main() {
 
   app.Run(os.Args)
 }
+```
+
+#### Required Flags
+
+You can make a flag required by setting the `Required` field to `true`. If a user
+does not provide a required flag, they will be shown an error message.
+
+Take for example this app that requires the `lang` flag:
+
+<!-- {
+  "error": "Required flag \"lang\" not set"
+} -->
+```go
+package main
+
+import (
+  "fmt"
+  "log"
+  "os"
+
+  "github.com/urfave/cli/v2"
+)
+
+func main() {
+  app := cli.NewApp()
+
+  app.Flags = []cli.Flag {
+    &cli.StringFlag{
+      Name: "lang",
+      Value: "english",
+      Usage: "language for the greeting",
+      Required: true,
+    },
+  }
+
+  app.Action = func(c *cli.Context) error {
+    var output string
+    if c.String("lang") == "spanish" {
+      output = "Hola"
+    } else {
+      output = "Hello"
+    }
+    fmt.Println(output)
+    return nil
+  }
+
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
+}
+```
+
+If the app is run without the `lang` flag, the user will see the following message
+
+```
+Required flag "lang" not set
 ```
 
 #### Default Values for help output
@@ -936,10 +1012,75 @@ have a single leading `-` or this will result in failures. For example,
 ### Bash Completion
 
 You can enable completion commands by setting the `EnableBashCompletion`
-flag on the `App` object.  By default, this setting will only auto-complete to
-show an app's subcommands, but you can write your own completion methods for
-the App or its subcommands.
+flag on the `App` object to `true`.  By default, this setting will allow auto-completion 
+for an app's subcommands, but you can write your own completion methods for
+the App or its subcommands as well.
 
+#### Default auto-completion
+
+```go
+package main
+import (
+	"fmt"
+	"log"
+	"os"
+	"github.com/urfave/cli/v2"
+)
+func main() {
+	app := cli.NewApp()
+	app.EnableBashCompletion = true
+	app.Commands = []*cli.Command{
+		{
+			Name:    "add",
+			Aliases: []string{"a"},
+			Usage:   "add a task to the list",
+			Action: func(c *cli.Context) error {
+				fmt.Println("added task: ", c.Args().First())
+				return nil
+			},
+		},
+		{
+			Name:    "complete",
+			Aliases: []string{"c"},
+			Usage:   "complete a task on the list",
+			Action: func(c *cli.Context) error {
+				fmt.Println("completed task: ", c.Args().First())
+				return nil
+			},
+		},
+		{
+			Name:    "template",
+			Aliases: []string{"t"},
+			Usage:   "options for task templates",
+			Subcommands: []*cli.Command{
+				{
+					Name:  "add",
+					Usage: "add a new template",
+					Action: func(c *cli.Context) error {
+						fmt.Println("new task template: ", c.Args().First())
+						return nil
+					},
+				},
+				{
+					Name:  "remove",
+					Usage: "remove an existing template",
+					Action: func(c *cli.Context) error {
+						fmt.Println("removed task template: ", c.Args().First())
+						return nil
+					},
+				},
+			},
+		},
+	}
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+```
+![](/docs/v2/images/default-bash-autocomplete.gif)
+
+#### Custom auto-completion
 <!-- {
   "args": ["complete", "&#45;&#45;generate&#45;bash&#45;completion"],
   "output": "laundry"
@@ -988,30 +1129,52 @@ func main() {
   }
 }
 ```
+![](/docs/v2/images/custom-bash-autocomplete.gif)
 
 #### Enabling
 
-Source the `autocomplete/bash_autocomplete` file in your .bashrc file while setting the `PROG` variable to the name of your program:
+To enable auto-completion for the current shell session, a bash script,
+`autocomplete/bash_autocomplete` is included in this repo.
 
-```
-PROG=myprogram source /.../cli/autocomplete/bash_autocomplete
-```
+To use `autocomplete/bash_autocomplete` set an environment variable named `PROG` to 
+the name of your program and then `source` the `autocomplete/bash_autocomplete` file.
 
-#### Distribution
+For example, if your cli program is called `myprogram`:
+
+`PROG=myprogram source path/to/cli/autocomplete/bash_autocomplete`
+
+Auto-completion is now enabled for the current shell, but will not persist into a new shell.
+
+#### Distribution and Persistent Autocompletion
 
 Copy `autocomplete/bash_autocomplete` into `/etc/bash_completion.d/` and rename
 it to the name of the program you wish to add autocomplete support for (or
 automatically install it there if you are distributing a package). Don't forget
-to source the file to make it active in the current shell.
+to source the file or restart your shell to activate the auto-completion.
 
 ```
-sudo cp src/bash_autocomplete /etc/bash_completion.d/<myprogram>
+sudo cp path/to/autocomplete/bash_autocomplete /etc/bash_completion.d/<myprogram>
 source /etc/bash_completion.d/<myprogram>
 ```
 
-Alternatively, you can just document that users should source the generic
-`autocomplete/bash_autocomplete` in their bash configuration with `$PROG` set
-to the name of their program (as above).
+Alternatively, you can just document that users should `source` the generic
+`autocomplete/bash_autocomplete` and set `$PROG` within their bash configuration 
+file, adding these lines:
+
+```
+PROG=<myprogram>
+source path/to/cli/autocomplete/bash_autocomplete
+```
+Keep in mind that if they are enabling auto-completion for more than one program, 
+they will need to set `PROG` and source `autocomplete/bash_autocomplete` for each 
+program, like so:
+
+```
+PROG=<program1>
+source path/to/cli/autocomplete/bash_autocomplete
+PROG=<program2>
+source path/to/cli/autocomplete/bash_autocomplete
+```
 
 #### Customization
 
@@ -1047,6 +1210,40 @@ func main() {
   }
 }
 ```
+
+#### ZSH Support
+Auto-completion for ZSH is also supported using the `autocomplete/zsh_autocomplete` 
+file included in this repo. Two environment variables are used, `PROG` and `_CLI_ZSH_AUTOCOMPLETE_HACK`. 
+Set `PROG` to the program name as before, set `_CLI_ZSH_AUTOCOMPLETE_HACK` to `1`, and 
+then `source path/to/autocomplete/zsh_autocomplete`. Adding the following lines to your ZSH 
+configuration file (usually `.zshrc`) will allow the auto-completion to persist across new shells:
+
+```
+PROG=<myprogram>
+_CLI_ZSH_AUTOCOMPLETE_HACK=1
+source  path/to/autocomplete/zsh_autocomplete
+```
+#### ZSH default auto-complete example
+![](/docs/v2/images/default-zsh-autocomplete.gif)
+#### ZSH custom auto-complete example
+![](/docs/v2/images/custom-zsh-autocomplete.gif)
+
+#### PowerShell Support
+Auto-completion for PowerShell is also supported using the `autocomplete/powershell_autocomplete.ps1` 
+file included in this repo. 
+
+Rename the script to `<my program>.ps1` and move it anywhere in your file system.
+The location of script does not matter, only the file name of the script has to match
+the your program's binary name. 
+
+To activate it, enter `& path/to/autocomplete/<my program>.ps1`
+
+To persist across new shells, open the PowerShell profile (with `code $profile` or `notepad $profile`)
+and add the line:
+```
+& path/to/autocomplete/<my program>.ps1
+```
+
 
 ### Generated Help Text
 
@@ -1135,7 +1332,8 @@ import (
 
 func main() {
   cli.HelpFlag = &cli.BoolFlag{
-    Name: "haaaaalp", Aliases: []string{"halp"},
+    Name: "haaaaalp",
+    Aliases: []string{"halp"},
     Usage: "HALP",
     EnvVars: []string{"SHOW_HALP", "HALPPLZ"},
   }
@@ -1170,7 +1368,8 @@ import (
 
 func main() {
   cli.VersionFlag = &cli.BoolFlag{
-    Name: "print-version", Aliases: []string{"V"},
+    Name: "print-version",
+    Aliases: []string{"V"},
     Usage: "print only the version",
   }
 
@@ -1214,6 +1413,49 @@ func main() {
   app.Run(os.Args)
 }
 ```
+
+### Timestamp Flag
+
+Using the timestamp flag is simple. Please refer to [`time.Parse`](https://golang.org/pkg/time/#example_Parse) to get possible formats.
+
+<!-- {
+  "args": ["&#45;&#45;meeting", "2019-08-12T15:04:05"],
+  "output": "2019\\-08\\-12 15\\:04\\:05 \\+0000 UTC"
+} -->
+``` go
+package main
+
+import (
+  "fmt"
+  "log"
+  "os"
+
+  "github.com/urfave/cli/v2"
+)
+
+func main() {
+  app := &cli.App{
+    Flags: []cli.Flag {
+      &cli.TimestampFlag{Name: "meeting", Layout: "2006-01-02T15:04:05"},
+    },
+    Action: func(c *cli.Context) error {
+      fmt.Printf("%s", c.Timestamp("meeting").String())
+      return nil
+    },
+  }
+
+  err := app.Run(os.Args)
+  if err != nil {
+    log.Fatal(err)
+  }
+}
+```
+
+In this example the flag could be used like this : 
+
+`myapp --meeting 2019-08-12T15:04:05`
+
+Side note: quotes may be necessary around the date depending on your layout (if you have spaces for instance)
 
 ### Full API Example
 
@@ -1403,11 +1645,11 @@ func main() {
 
       fmt.Printf("%#v\n", c.App.Command("doo"))
       if c.Bool("infinite") {
-        c.App.Run([]string{"app", "doo", "wop"})
+      	c.App.Run([]string{"app", "doo", "wop"})
       }
 
       if c.Bool("forevar") {
-        c.App.RunAsSubcommand(c)
+      	c.App.RunAsSubcommand(c)
       }
       c.App.Setup()
       fmt.Printf("%#v\n", c.App.VisibleCategories())
@@ -1445,7 +1687,6 @@ func main() {
       fmt.Printf("%#v\n", nc.NArg())
       fmt.Printf("%#v\n", nc.NumFlags())
       fmt.Printf("%#v\n", nc.Lineage()[1])
-
       nc.Set("wat", "also-nope")
 
       ec := cli.Exit("ohwell", 86)

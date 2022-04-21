@@ -94,7 +94,7 @@ func TestParseAndRunShortOpts(t *testing.T) {
 			},
 		}
 
-		app := NewApp()
+		app := newTestApp()
 		app.Commands = []*Command{cmd}
 
 		err := app.Run(c.testArgs)
@@ -117,6 +117,7 @@ func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 				},
 			},
 		},
+		Writer: ioutil.Discard,
 	}
 
 	err := app.Run([]string{"foo", "bar"})
@@ -318,12 +319,12 @@ func TestCommandSkipFlagParsing(t *testing.T) {
 						&StringFlag{Name: "flag"},
 					},
 					Action: func(c *Context) error {
-						fmt.Printf("%+v\n", c.String("flag"))
 						args = c.Args()
 						return nil
 					},
 				},
 			},
+			Writer: ioutil.Discard,
 		}
 
 		err := app.Run(c.testArgs)
@@ -456,4 +457,49 @@ func TestSubCommand_Name_ProgramName_CommandName(t *testing.T) {
 		}
 
 	}
+}
+
+func TestCommand_NoVersionFlagOnCommands(t *testing.T) {
+	app := &App{
+		Version: "some version",
+		Commands: []*Command{
+			{
+				Name:        "bar",
+				Usage:       "this is for testing",
+				Subcommands: []*Command{{}}, // some subcommand
+				HideHelp:    true,
+				Action: func(c *Context) error {
+					if len(c.App.VisibleFlags()) != 0 {
+						t.Fatal("unexpected flag on command")
+					}
+					return nil
+				},
+			},
+		},
+	}
+
+	err := app.Run([]string{"foo", "bar"})
+	expect(t, err, nil)
+}
+
+func TestCommand_CanAddVFlagOnCommands(t *testing.T) {
+	app := &App{
+		Version: "some version",
+		Writer:  ioutil.Discard,
+		Commands: []*Command{
+			{
+				Name:        "bar",
+				Usage:       "this is for testing",
+				Subcommands: []*Command{{}}, // some subcommand
+				Flags: []Flag{
+					&BoolFlag{
+						Name: "v",
+					},
+				},
+			},
+		},
+	}
+
+	err := app.Run([]string{"foo", "bar"})
+	expect(t, err, nil)
 }

@@ -34,7 +34,7 @@ func (f *DurationFlag) String() string {
 
 // Names returns the names of the flag
 func (f *DurationFlag) Names() []string {
-	return flagNames(f)
+	return flagNames(f.Name, f.Aliases)
 }
 
 // IsRequired returns whether or not the flag is required
@@ -56,6 +56,11 @@ func (f *DurationFlag) GetUsage() string {
 // string if the flag takes no value at all.
 func (f *DurationFlag) GetValue() string {
 	return f.Value.String()
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *DurationFlag) IsVisible() bool {
+	return !f.Hidden
 }
 
 // Apply populates the flag given the flag set and environment
@@ -86,7 +91,7 @@ func (f *DurationFlag) Apply(set *flag.FlagSet) error {
 // Duration looks up the value of a local DurationFlag, returns
 // 0 if not found
 func (c *Context) Duration(name string) time.Duration {
-	if fs := lookupFlagSet(name, c); fs != nil {
+	if fs := c.lookupFlagSet(name); fs != nil {
 		return lookupDuration(name, fs)
 	}
 	return 0

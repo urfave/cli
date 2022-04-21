@@ -27,6 +27,7 @@ cli v1 manual
   * [Version Flag](#version-flag)
     + [Customization](#customization-2)
     + [Full API Example](#full-api-example)
+  * [Migrating to V2](#migrating-to-v2)
 
 <!-- tocstop -->
 
@@ -611,7 +612,7 @@ given sources.
 Here is a more complete sample of a command using YAML support:
 
 <!-- {
-  "args": ["test-cmd", "&#45;&#45;help"],
+  "args": ["&#45;&#45;help"],
   "output": "&#45&#45;test value.*default: 0"
 } -->
 ``` go
@@ -1476,3 +1477,10 @@ func wopAction(c *cli.Context) error {
   return nil
 }
 ```
+
+## Migrating to V2
+
+There are a small set of breaking changes between v1 and v2.
+Converting is relatively straightforward and typically takes less than
+an hour. Specific steps are included in
+[Migration Guide: v1 to v2](../migrate-v1-to-v2.md).

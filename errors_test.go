@@ -67,6 +67,26 @@ func TestHandleExitCoder_MultiErrorWithExitCoder(t *testing.T) {
 	expect(t, called, true)
 }
 
+func TestHandleExitCoder_MultiErrorWithoutExitCoder(t *testing.T) {
+	exitCode := 0
+	called := false
+
+	OsExiter = func(rc int) {
+		if !called {
+			exitCode = rc
+			called = true
+		}
+	}
+
+	defer func() { OsExiter = fakeOsExiter }()
+
+	err := newMultiError(errors.New("wowsa"), errors.New("egad"))
+	HandleExitCoder(err)
+
+	expect(t, exitCode, 1)
+	expect(t, called, true)
+}
+
 // make a stub to not import pkg/errors
 type ErrorWithFormat struct {
 	error

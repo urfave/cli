@@ -34,7 +34,7 @@ func (f *UintFlag) String() string {
 
 // Names returns the names of the flag
 func (f *UintFlag) Names() []string {
-	return flagNames(f)
+	return flagNames(f.Name, f.Aliases)
 }
 
 // IsRequired returns whether or not the flag is required
@@ -50,6 +50,11 @@ func (f *UintFlag) TakesValue() bool {
 // GetUsage returns the usage string for the flag
 func (f *UintFlag) GetUsage() string {
 	return f.Usage
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *UintFlag) IsVisible() bool {
+	return !f.Hidden
 }
 
 // Apply populates the flag given the flag set and environment
@@ -86,7 +91,7 @@ func (f *UintFlag) GetValue() string {
 // Uint looks up the value of a local UintFlag, returns
 // 0 if not found
 func (c *Context) Uint(name string) uint {
-	if fs := lookupFlagSet(name, c); fs != nil {
+	if fs := c.lookupFlagSet(name); fs != nil {
 		return lookupUint(name, fs)
 	}
 	return 0

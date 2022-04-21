@@ -1,13 +1,10 @@
 cli
 ===
 
-[![Build Status](https://travis-ci.org/urfave/cli.svg?branch=master)](https://travis-ci.org/urfave/cli)
-[![Windows Build Status](https://ci.appveyor.com/api/projects/status/rtgk5xufi932pb2v?svg=true)](https://ci.appveyor.com/project/urfave/cli)
-
-[![GoDoc](https://godoc.org/github.com/urfave/cli?status.svg)](https://godoc.org/github.com/urfave/cli)
+[![GoDoc](https://godoc.org/github.com/urfave/cli?status.svg)](https://pkg.go.dev/github.com/urfave/cli/v2)
 [![codebeat](https://codebeat.co/badges/0a8f30aa-f975-404b-b878-5fab3ae1cc5f)](https://codebeat.co/projects/github-com-urfave-cli)
 [![Go Report Card](https://goreportcard.com/badge/urfave/cli)](https://goreportcard.com/report/urfave/cli)
-[![codecov](https://codecov.io/gh/urfave/cli/branch/master/graph/badge.svg)](https://codecov.io/gh/urfave/cli)
+[![codecov](https://codecov.io/gh/urfave/cli/branch/main/graph/badge.svg)](https://codecov.io/gh/urfave/cli)
 
 cli is a simple, fast, and fun package for building command line apps in Go. The
 goal is to enable developers to write fast and distributable command line
@@ -15,15 +12,25 @@ applications in an expressive way.
 
 ## Usage Documentation
 
-Usage documentation exists for each major version. Don't know what version you're on? You're probably using the version from the `master` branch, which is currently `v2`.
+Usage documentation exists for each major version. Don't know what version you're on? You're probably using the version from the `main` branch, which is currently `v2`.
 
 - `v2` - [./docs/v2/manual.md](./docs/v2/manual.md)
 - `v1` - [./docs/v1/manual.md](./docs/v1/manual.md)
 
+Guides for migrating to newer versions:
+
+- `v1-to-v2` - [./docs/migrate-v1-to-v2.md](./docs/migrate-v1-to-v2.md)
+
+## Installation
+
+Using this package requires a working Go environment. [See the install instructions for Go](http://golang.org/doc/install.html).
+
+Go Modules are required when using this package. [See the go blog guide on using Go Modules](https://blog.golang.org/using-go-modules).
+
 ### Using `v2` releases
 
 ```
-$ GO111MODULE=on go get github.com/urfave/cli/v2
+$ go get github.com/urfave/cli/v2
 ```
 
 ```go
@@ -48,11 +55,6 @@ import (
 ...
 ```
 
-## Installation
-
-Make sure you have a working Go environment.  Go version 1.10+ is supported.  [See
-the install instructions for Go](http://golang.org/doc/install.html).
-
 ### GOPATH
 
 Make sure your `PATH` includes the `$GOPATH/bin` directory so your commands can
@@ -64,5 +66,5 @@ export PATH=$PATH:$GOPATH/bin
 ### Supported platforms
 
 cli is tested against multiple versions of Go on Linux, and against the latest
-released version of Go on OS X and Windows.  For full details, see
-[`./.travis.yml`](./.travis.yml) and [`./appveyor.yml`](./appveyor.yml).
+released version of Go on OS X and Windows. This project uses Github Actions for
+builds. To see our currently supported go versions and platforms, look at the [./.github/workflows/cli.yml](https://github.com/urfave/cli/blob/main/.github/workflows/cli.yml).

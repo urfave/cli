@@ -2,10 +2,11 @@ package altsrc
 
 import (
 	"fmt"
-	"github.com/urfave/cli/v2"
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/urfave/cli/v2"
 )
 
 // MapInputSource implements InputSourceContext to return
@@ -13,6 +14,11 @@ import (
 type MapInputSource struct {
 	file     string
 	valueMap map[interface{}]interface{}
+}
+
+// NewMapInputSource creates a new MapInputSource for implementing custom input sources.
+func NewMapInputSource(file string, valueMap map[interface{}]interface{}) *MapInputSource {
+	return &MapInputSource{file: file, valueMap: valueMap}
 }
 
 // nestedVal checks if the name has '.' delimiters.

@@ -112,6 +112,8 @@ func TestContext_String(t *testing.T) {
 	c := NewContext(nil, set, parentCtx)
 	expect(t, c.String("myflag"), "hello world")
 	expect(t, c.String("top-flag"), "hai veld")
+	c = NewContext(nil, nil, parentCtx)
+	expect(t, c.String("top-flag"), "hai veld")
 }
 
 func TestContext_Path(t *testing.T) {
@@ -134,6 +136,18 @@ func TestContext_Bool(t *testing.T) {
 	c := NewContext(nil, set, parentCtx)
 	expect(t, c.Bool("myflag"), false)
 	expect(t, c.Bool("top-flag"), true)
+}
+
+func TestContext_Value(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Int("myflag", 12, "doc")
+	parentSet := flag.NewFlagSet("test", 0)
+	parentSet.Int("top-flag", 13, "doc")
+	parentCtx := NewContext(nil, parentSet, nil)
+	c := NewContext(nil, set, parentCtx)
+	expect(t, c.Value("myflag"), 12)
+	expect(t, c.Value("top-flag"), 13)
+	expect(t, c.Value("unknown-flag"), nil)
 }
 
 func TestContext_Args(t *testing.T) {
@@ -183,6 +197,7 @@ func TestContext_IsSet_fromEnv(t *testing.T) {
 		unparsableIsSet, uIsSet bool
 	)
 
+	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("APP_TIMEOUT_SECONDS", "15.5")
 	_ = os.Setenv("APP_PASSWORD", "")
@@ -303,13 +318,13 @@ func TestContext_lookupFlagSet(t *testing.T) {
 	_ = set.Parse([]string{"--local-flag"})
 	_ = parentSet.Parse([]string{"--top-flag"})
 
-	fs := lookupFlagSet("top-flag", ctx)
+	fs := ctx.lookupFlagSet("top-flag")
 	expect(t, fs, parentCtx.flagSet)
 
-	fs = lookupFlagSet("local-flag", ctx)
+	fs = ctx.lookupFlagSet("local-flag")
 	expect(t, fs, ctx.flagSet)
 
-	if fs := lookupFlagSet("frob", ctx); fs != nil {
+	if fs := ctx.lookupFlagSet("frob"); fs != nil {
 		t.Fail()
 	}
 }
@@ -341,6 +356,81 @@ func TestContextPropagation(t *testing.T) {
 	ctx = NewContext(nil, nil, parent)
 	if ctx.Context == nil {
 		t.Fatal("expected context to not be nil even if the parent's context is nil")
+	}
+}
+
+func TestContextAttributeAccessing(t *testing.T) {
+	tdata := []struct {
+		testCase        string
+		setBoolInput    string
+		ctxBoolInput    string
+		newContextInput *Context
+	}{
+		{
+			testCase:        "empty",
+			setBoolInput:    "",
+			ctxBoolInput:    "",
+			newContextInput: nil,
+		},
+		{
+			testCase:        "empty_with_background_context",
+			setBoolInput:    "",
+			ctxBoolInput:    "",
+			newContextInput: &Context{Context: context.Background()},
+		},
+		{
+			testCase:        "empty_set_bool_and_present_ctx_bool",
+			setBoolInput:    "",
+			ctxBoolInput:    "ctx-bool",
+			newContextInput: nil,
+		},
+		{
+			testCase:        "present_set_bool_and_present_ctx_bool_with_background_context",
+			setBoolInput:    "",
+			ctxBoolInput:    "ctx-bool",
+			newContextInput: &Context{Context: context.Background()},
+		},
+		{
+			testCase:        "present_set_bool_and_present_ctx_bool",
+			setBoolInput:    "ctx-bool",
+			ctxBoolInput:    "ctx-bool",
+			newContextInput: nil,
+		},
+		{
+			testCase:        "present_set_bool_and_present_ctx_bool_with_background_context",
+			setBoolInput:    "ctx-bool",
+			ctxBoolInput:    "ctx-bool",
+			newContextInput: &Context{Context: context.Background()},
+		},
+		{
+			testCase:        "present_set_bool_and_different_ctx_bool",
+			setBoolInput:    "ctx-bool",
+			ctxBoolInput:    "not-ctx-bool",
+			newContextInput: nil,
+		},
+		{
+			testCase:        "present_set_bool_and_different_ctx_bool_with_background_context",
+			setBoolInput:    "ctx-bool",
+			ctxBoolInput:    "not-ctx-bool",
+			newContextInput: &Context{Context: context.Background()},
+		},
+	}
+
+	for _, test := range tdata {
+		t.Run(test.testCase, func(t *testing.T) {
+			// setup
+			set := flag.NewFlagSet("some-flag-set-name", 0)
+			set.Bool(test.setBoolInput, false, "usage documentation")
+			ctx := NewContext(nil, set, test.newContextInput)
+
+			// logic under test
+			value := ctx.Bool(test.ctxBoolInput)
+
+			// assertions
+			if value != false {
+				t.Errorf("expected \"value\" to be false, but it was not")
+			}
+		})
 	}
 }
 
@@ -458,12 +548,21 @@ func TestCheckRequiredFlags(t *testing.T) {
 			},
 			parseInput: []string{"-n", "asd", "-n", "qwe"},
 		},
+		{
+			testCase:              "required_flag_with_short_alias_not_printed_on_error",
+			expectedAnError:       true,
+			expectedErrorContents: []string{"Required flag \"names\" not set"},
+			flags: []Flag{
+				&StringSliceFlag{Name: "names, n", Required: true},
+			},
+		},
 	}
 
 	for _, test := range tdata {
 		t.Run(test.testCase, func(t *testing.T) {
 			// setup
 			if test.envVarInput[0] != "" {
+				defer resetEnv(os.Environ())
 				os.Clearenv()
 				_ = os.Setenv(test.envVarInput[0], test.envVarInput[1])
 			}
@@ -479,7 +578,7 @@ func TestCheckRequiredFlags(t *testing.T) {
 			ctx.Command.Flags = test.flags
 
 			// logic under test
-			err := checkRequiredFlags(test.flags, ctx)
+			err := ctx.checkRequiredFlags(test.flags)
 
 			// assertions
 			if test.expectedAnError && err == nil {

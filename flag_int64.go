@@ -34,7 +34,7 @@ func (f *Int64Flag) String() string {
 
 // Names returns the names of the flag
 func (f *Int64Flag) Names() []string {
-	return flagNames(f)
+	return flagNames(f.Name, f.Aliases)
 }
 
 // IsRequired returns whether or not the flag is required
@@ -56,6 +56,11 @@ func (f *Int64Flag) GetUsage() string {
 // string if the flag takes no value at all.
 func (f *Int64Flag) GetValue() string {
 	return fmt.Sprintf("%d", f.Value)
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *Int64Flag) IsVisible() bool {
+	return !f.Hidden
 }
 
 // Apply populates the flag given the flag set and environment
@@ -86,7 +91,7 @@ func (f *Int64Flag) Apply(set *flag.FlagSet) error {
 // Int64 looks up the value of a local Int64Flag, returns
 // 0 if not found
 func (c *Context) Int64(name string) int64 {
-	if fs := lookupFlagSet(name, c); fs != nil {
+	if fs := c.lookupFlagSet(name); fs != nil {
 		return lookupInt64(name, fs)
 	}
 	return 0

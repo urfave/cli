@@ -6,6 +6,56 @@
 
 View [unreleased 2.X] series changes.
 
+## [2.2.0] - 2020-03-08
+
+These release notes were written for the git hash [d648edd48d89ef3a841b1ec75c2ebbd4de5f748f](https://github.com/urfave/cli/tree/d648edd48d89ef3a841b1ec75c2ebbd4de5f748f)
+
+### Fixed
+
+* Fixed zsh completion scripts in [urfave/cli/pull/1062](https://github.com/urfave/cli/pull/1062) via [@zhsj](https://github.com/zhsj)
+* Fixed description of subcommand to be more consistent in [urfave/cli/pull/1054](https://github.com/urfave/cli/pull/1054) via [@itchyny](https://github.com/itchyny)
+* Fixed possible runtime panic in slice parsing in [urfave/cli/pull/1049](https://github.com/urfave/cli/pull/1049) via [@saschagrunert](https://github.com/saschagrunert)
+* Fixed invalid man page header generation in [urfave/cli/pull/1041](https://github.com/urfave/cli/pull/1041) via [@saschagrunert](https://github.com/saschagrunert)
+
+### Changed
+
+* Improved auto-completion instructions and added example gifs in [urfave/cli/pull/1059](https://github.com/urfave/cli/pull/1059) via [@masonj188](https://github.com/masonj188)
+* Removed the author from generated man pages in [urfave/cli/pull/1041](https://github.com/urfave/cli/pull/1041) via [@saschagrunert](https://github.com/saschagrunert)
+
+### Added
+
+* Added destination field to `StringSliceFlag` in [urfave/cli/pull/1078](https://github.com/urfave/cli/pull/1078) via [@davidsbond](https://github.com/davidsbond)
+* Added `HideHelpCommand`. While `HideHelp` hides both `help` command and `--help` flag, `HideHelpCommand` only hides `help` command and leave `--help` flag as-is in [urfave/cli/pull/1083](https://github.com/urfave/cli/pull/1083) via [@AkihiroSuda](https://github.com/AkihiroSuda)
+* Added timestampFlag docs in [urfave/cli/pull/997](https://github.com/urfave/cli/pull/997) via [@drov0](https://github.com/drov0)
+* Added required flags documentation in [urfave/cli/pull/1008](https://github.com/urfave/cli/pull/1008) via [@lynncyrin](https://github.com/lynncyrin), [@anberns](https://github.com/anberns)
+
+## [2.1.1] - 2019-12-24
+
+### Fixed
+
+* Fixed a `Context` regression introduced in `v2.1.0` in [urfave/cli/pull/1014](https://github.com/urfave/cli/pull/1014) via [@lynncyrin](https://github.com/lynncyrin)
+
+## [2.1.0] - 2019-12-24
+
+These release notes were written for the git hash [ae84df4cef4a2a6f1a0cb1d41ea0f3af8755e5a8](https://github.com/urfave/cli/tree/ae84df4cef4a2a6f1a0cb1d41ea0f3af8755e5a8)
+
+### Fixed
+
+* Fixed some golint errors in [urfave/cli/pull/988](https://github.com/urfave/cli/pull/988) via [@liamchampton](https://github.com/liamchampton)
+* Fixed a panic with flag completion [urfave/cli/pull/946](https://github.com/urfave/cli/pull/946) via [@unRob](https://github.com/unRob)
+
+### Changed
+
+* Changed docs generation to use visible flags in [urfave/cli/pull/999](https://github.com/urfave/cli/pull/999) via [@subpop](https://github.com/subpop)
+* Changed `App.Run` to use an optional context for timeouts and cancellation in [urfave/cli/pull/975](https://github.com/urfave/cli/pull/975) via [@marwan-at-work](https://github.com/marwan-at-work)
+* Changed version info to be hidden if the user has not defined a version in [urfave/cli/pull/955](https://github.com/urfave/cli/pull/955) via [@asahasrabuddhe](https://github.com/asahasrabuddhe)
+* Changed docs generation to take into account multiple authors in [urfave/cli/pull/900](https://github.com/urfave/cli/pull/900) via [@saschagrunert](https://github.com/saschagrunert)
+* Changed context to expose a `Value` accessor in [urfave/cli/pull/741](https://github.com/urfave/cli/pull/741) via [@corruptmemory](https://github.com/corruptmemory)
+
+### Added
+
+* Added timestamp flag in [urfave/cli/pull/987](https://github.com/urfave/cli/pull/987) via [@drov0](https://github.com/drov0)
+
 ## [2.0.0] - 2019-11-17
 
 The V2 changes were all shipped in [urfave/cli/pull/892](https://github.com/urfave/cli/pull/892), which was created with the effort of over a dozen participants! They are:
@@ -39,6 +89,20 @@ The V2 changes were all shipped in [urfave/cli/pull/892](https://github.com/urfa
 ## Unreleased - 1.22.X series
 
 View [unreleased 1.22.X] series changes.
+
+## [1.22.4] - 2020-03-31
+
+### Fixed
+
+- Fixed a panic with flag completion in [urfave/cli/pull/1101](https://github.com/urfave/cli/pull/1101) via [@unRob](https://github.com/unRob), [@VirrageS](https://github.com/VirrageS)
+
+## [1.22.3] - 2020-02-25
+
+### Fixed
+
+- String flag no longer persists the default value if the flag is explicitly initialized in [urfave/cli/pull/981](https://github.com/urfave/cli/pull/981) via [@asahasrabuddhe](https://github.com/asahasrabuddhe)
+- `context.IsSet()` returns `true` or `false` correctly regardless of whether the short name or the full name of the flag is passed to it in [urfave/cli/pull/978](https://github.com/urfave/cli/pull/978) via [@asahasrabuddhe](https://github.com/asahasrabuddhe)
+- Hide version if the version is not set by the user in [urfave/cli/pull/954](https://github.com/urfave/cli/pull/954) via [@asahasrabuddhe](https://github.com/asahasrabuddhe)
 
 ## [1.22.2] - 2019-11-17
 
@@ -520,10 +584,15 @@ signature of `func(*cli.Context) error`, as defined by `cli.ActionFunc`.
 ### Added
 - Initial implementation.
 
-[unreleased 2.X]: https://github.com/urfave/cli/compare/v2.0.0...HEAD
+[unreleased 2.X]: https://github.com/urfave/cli/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/urfave/cli/compare/v2.1.1...v2.2.0
+[2.1.1]: https://github.com/urfave/cli/compare/v2.1.0...v2.1.1
+[2.1.0]: https://github.com/urfave/cli/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/urfave/cli/compare/v1.22.2...v2.0.0
 
-[unreleased 1.22.X]: https://github.com/urfave/cli/compare/v1.22.2...v1
+[unreleased 1.22.X]: https://github.com/urfave/cli/compare/v1.22.4...v1
+[1.22.4]: https://github.com/urfave/cli/compare/v1.22.3...v1.22.4
+[1.22.3]: https://github.com/urfave/cli/compare/v1.22.2...v1.22.3
 [1.22.2]: https://github.com/urfave/cli/compare/v1.22.1...v1.22.2
 [1.22.1]: https://github.com/urfave/cli/compare/v1.22.0...v1.22.1
 [1.22.0]: https://github.com/urfave/cli/compare/v1.21.0...v1.22.0
