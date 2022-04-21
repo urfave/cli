@@ -193,8 +193,7 @@ func ExampleApp_Run_noAction() {
 	//    help, h  Shows a list of commands or help for one command
 	//
 	// GLOBAL OPTIONS:
-	//    --help, -h     show help
-	//    --version, -v  print the version
+	//    --help, -h  show help
 }
 
 func ExampleApp_Run_subcommandNoAction() {
@@ -244,8 +243,6 @@ func ExampleApp_Run_bashComplete_withShortFlag() {
 	// -x
 	// --help
 	// -h
-	// --version
-	// -v
 }
 
 func ExampleApp_Run_bashComplete_withLongFlag() {
@@ -549,8 +546,7 @@ func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
 
 	expect(t, parsedOption, "my-option")
 	expect(t, args[0], "my-arg")
-	expect(t, args[1], "--")
-	expect(t, args[2], "--notARealFlag")
+	expect(t, args[1], "--notARealFlag")
 }
 
 func TestApp_CommandWithDash(t *testing.T) {
@@ -588,8 +584,7 @@ func TestApp_CommandWithNoFlagBeforeTerminator(t *testing.T) {
 	_ = app.Run([]string{"", "cmd", "my-arg", "--", "notAFlagAtAll"})
 
 	expect(t, args[0], "my-arg")
-	expect(t, args[1], "--")
-	expect(t, args[2], "notAFlagAtAll")
+	expect(t, args[1], "notAFlagAtAll")
 }
 
 func TestApp_VisibleCommands(t *testing.T) {

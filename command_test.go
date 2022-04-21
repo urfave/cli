@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bytes"
 	"errors"
 	"flag"
 	"fmt"
@@ -110,6 +111,83 @@ func TestParseAndRunShortOpts(t *testing.T) {
 
 		expect(t, err, c.expectedErr)
 		expect(t, args, c.expectedArgs)
+	}
+}
+
+// test-case for https://github.com/urfave/cli/issues/1092
+func TestParseAndRunHyphenValues(t *testing.T) {
+	cases := []struct {
+		testArgs     []string
+		expectedArgs []string
+		expectedOpt string
+	}{
+		{[]string{"foo", "test", "argz"}, []string{"argz"}, ""},
+		{[]string{"foo", "test", "argz", "arga"}, []string{"argz", "arga"}, ""},
+		{[]string{"foo", "test", "--opt", "opt-value"}, []string{}, "opt-value"},
+		{[]string{"foo", "test", "--opt", "opt-value", "argz"}, []string{"argz"}, "opt-value"},
+		{[]string{"foo", "test", "--opt", "opt-value", "argz", "arga"}, []string{"argz", "arga"}, "opt-value"},
+		{[]string{"foo", "test", "argz", "--opt", "opt-value"}, []string{"argz"}, "opt-value"},
+		{[]string{"foo", "test", "argz", "--opt", "opt-value", "arga"}, []string{"argz", "arga"}, "opt-value"},
+
+		{[]string{"foo", "test", "--opt", "-opt-value"}, []string{}, "-opt-value"},
+		{[]string{"foo", "test", "--opt", "-opt-value", "argz"}, []string{"argz"}, "-opt-value"},
+		{[]string{"foo", "test", "--opt", "-opt-value", "argz", "arga"}, []string{"argz", "arga"}, "-opt-value"},
+		{[]string{"foo", "test", "argz", "--opt", "-opt-value"}, []string{"argz"}, "-opt-value"},
+		{[]string{"foo", "test", "argz", "--opt", "-opt-value", "arga"}, []string{"argz", "arga"}, "-opt-value"},
+
+		{[]string{"foo", "test", "--opt", "--opt-value"}, []string{}, "--opt-value"},
+		{[]string{"foo", "test", "--opt", "--opt-value", "argz"}, []string{"argz"}, "--opt-value"},
+		{[]string{"foo", "test", "--opt", "--opt-value", "argz", "arga"}, []string{"argz", "arga"}, "--opt-value"},
+		{[]string{"foo", "test", "argz", "--opt", "--opt-value"}, []string{"argz"}, "--opt-value"},
+		{[]string{"foo", "test", "argz", "--opt", "--opt-value", "arga"}, []string{"argz", "arga"}, "--opt-value"},
+
+		// Tests below test handling of the "--" delimiter
+		{[]string{"foo", "test", "--", "--opt", "--opt-value", "argz"}, []string{"--opt", "--opt-value", "argz"}, ""},
+		{[]string{"foo", "test", "--", "argz", "--opt", "--opt-value", "arga"}, []string{"argz", "--opt", "--opt-value", "arga"}, ""},
+		{[]string{"foo", "test", "argz", "--", "--opt", "--opt-value", "arga"}, []string{"argz", "--opt", "--opt-value", "arga"}, ""},
+		{[]string{"foo", "test", "argz", "--opt", "--", "--opt-value", "arga"}, []string{"argz", "--opt-value", "arga"}, "--"},
+
+		// first "--" is an option-value for "--opt", second "--" is the delimiter indicating the end of options.
+		{[]string{"foo", "test", "argz", "--opt", "--", "--", "--opt2", "--opt-value", "arga"}, []string{"argz", "--opt2", "--opt-value", "arga"}, "--"},
+		{[]string{"foo", "test", "argz", "--opt", "--opt-value", "--", "arga"}, []string{"argz", "arga"}, "--opt-value"},
+		{[]string{"foo", "test", "argz", "--opt", "--opt-value", "arga", "--"}, []string{"argz", "arga"}, "--opt-value"},
+	}
+
+	for _, tc := range cases {
+		tc := tc
+		t.Run(strings.Join(tc.testArgs, "_"), func(t *testing.T){
+			var (
+				args []string
+				opt string
+			)
+
+			cmd := Command{
+				Name:        "test",
+				Usage:       "this is for testing",
+				Description: "testing",
+				Action: func(c *Context) error {
+					args = c.Args()
+					opt = c.String("opt")
+					return nil
+				},
+				Flags: []Flag{
+					StringFlag{Name:  "opt"},
+					StringFlag{Name:  "opt2"},
+				},
+			}
+
+			app := NewApp()
+			app.Writer = ioutil.Discard
+			app.ErrWriter = ioutil.Discard
+			app.Commands = []Command{cmd}
+
+			err := app.Run(tc.testArgs)
+
+			expect(t, err, nil)
+			expect(t, args, tc.expectedArgs)
+			expect(t, opt, tc.expectedOpt)
+		})
+
 	}
 }
 
@@ -369,5 +447,51 @@ func TestCommandSkipFlagParsing(t *testing.T) {
 		err := app.Run(c.testArgs)
 		expect(t, err, c.expectedErr)
 		expect(t, args, c.expectedArgs)
+	}
+}
+
+func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
+	cases := []struct {
+		testArgs    []string
+		expectedOut string
+	}{
+		{testArgs: []string{"--undefined"}, expectedOut: "found 0 args | flag 'number' set: false"},
+		{testArgs: []string{"--number"}, expectedOut: "found 0 args | flag 'number' set: false"},
+		{testArgs: []string{"--number", "fourty-two"}, expectedOut: "found 0 args | flag 'number' set: false"},
+		{testArgs: []string{"--number", "42"}, expectedOut: "found 0 args | flag 'number' set: true"},
+		{testArgs: []string{"--number", "42", "newArg"}, expectedOut: "found 1 args | flag 'number' set: true"},
+		{testArgs: []string{"--undefined", "--number", "42", "newArg"}, expectedOut: "found 1 args | flag 'number' set: true"},
+	}
+
+	for _, c := range cases {
+		var outputBuffer bytes.Buffer
+		app := &App{
+			Writer:               &outputBuffer,
+			EnableBashCompletion: true,
+			Commands: []Command{
+				{
+					Name:  "bar",
+					Usage: "this is for testing",
+					Flags: []Flag{
+						&IntFlag{
+							Name:  "number",
+							Usage: "A number to parse",
+						},
+					},
+					BashComplete: func(c *Context) {
+						fmt.Fprintf(c.App.Writer, "found %d args | flag 'number' set: %t", c.NArg(), c.IsSet("number"))
+					},
+				},
+			},
+		}
+
+		osArgs := []string{"foo", "bar"}
+		osArgs = append(osArgs, c.testArgs...)
+		osArgs = append(osArgs, "--generate-bash-completion")
+
+		err := app.Run(osArgs)
+		stdout := outputBuffer.String()
+		expect(t, err, nil)
+		expect(t, stdout, c.expectedOut)
 	}
 }

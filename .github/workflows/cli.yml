@@ -1,0 +1,43 @@
+name: Run Tests
+
+on:
+  pull_request:
+    branches:
+      - v1
+  push:
+    branches:
+      - v1
+    tags:
+      - v1.*
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        go:
+          - 1.16.x
+          # NOTE: tests fail with panic at
+          # TestApp_RunAsSubCommandIncorrectUsage on these
+          # versions:
+          # - 1.17.x
+          # - 1.18.x
+    name: ${{ matrix.os }} @ Go ${{ matrix.go }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Set up Go ${{ matrix.go }}
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run: npm install markdown-toc
+
+      - name: Run Tests
+        run:
+          go run build.go vet &&
+          go run build.go test &&
+          go run build.go toc docs/v1/manual.md
