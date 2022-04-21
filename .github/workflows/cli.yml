@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        go: [^1.15, ^1.16]
+        go: [1.15.x, 1.16.x]
     name: ${{ matrix.os }} @ Go ${{ matrix.go }}
     runs-on: ${{ matrix.os }}
     steps:
@@ -25,15 +25,12 @@ jobs:
           go-version: ${{ matrix.go }}
 
       - name: Checkout Code
-        uses: actions/checkout@v1
-        with:
-          ref: ${{ github.ref }}
+        uses: actions/checkout@v3
 
       - name: Install Dependencies
         run: npm install markdown-toc
 
-      - name: Run Tests (v1)
-        if: contains(github.base_ref, 'v1')
+      - name: Run Tests
         run:
           go run build.go vet &&
           go run build.go test &&
