@@ -39,6 +39,8 @@ type Command struct {
 	Subcommands []*Command
 	// List of flags to parse
 	Flags []Flag
+	// List of all flag categories
+	FlagCategories FlagCategories
 	// Treat all flags as normal arguments if true
 	SkipFlagParsing bool
 	// Boolean to hide built-in help command and help flag
@@ -278,6 +280,11 @@ func (c *Command) startApp(ctx *Context) error {
 	}
 
 	return app.RunAsSubcommand(ctx)
+}
+
+// Categories returns a slice containing all the categories with the commands they contain
+func (c Command) VisibleFlagCategories() FlagCategories {
+	return c.FlagCategories
 }
 
 // VisibleFlags returns a slice of the Flags with Hidden=false
