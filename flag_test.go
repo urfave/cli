@@ -1068,6 +1068,14 @@ func TestFloat64FlagApply_SetsAllNames(t *testing.T) {
 	expect(t, v, float64(43.33333))
 }
 
+func TestFloat64FlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Float64("myflag", 1.23, "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &Float64Flag{Name: "myflag"}
+	expect(t, f.ValueFromContext(ctx), 1.23)
+}
+
 var float64SliceFlagTests = []struct {
 	name     string
 	aliases  []string
