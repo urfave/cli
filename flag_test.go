@@ -1173,6 +1173,14 @@ func TestGenericFlagApply_SetsAllNames(t *testing.T) {
 	expect(t, err, nil)
 }
 
+func TestGenericFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Var(&Parser{"abc", "def"}, "myflag", "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &GenericFlag{Name: "myflag"}
+	expect(t, f.ValueFromContext(ctx), &Parser{"abc", "def"})
+}
+
 func TestParseMultiString(t *testing.T) {
 	_ = (&App{
 		Flags: []Flag{
