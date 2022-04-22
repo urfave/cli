@@ -18,6 +18,16 @@ func NewStringSlice(defaults ...string) *StringSlice {
 	return &StringSlice{slice: append([]string{}, defaults...)}
 }
 
+// clone allocate a copy of self object
+func (s *StringSlice) clone() *StringSlice {
+	n := &StringSlice{
+		slice:      make([]string, len(s.slice)),
+		hasBeenSet: s.hasBeenSet,
+	}
+	copy(n.slice, s.slice)
+	return n
+}
+
 // Set appends the string value to the list of values
 func (s *StringSlice) Set(value string) error {
 	if !s.hasBeenSet {
@@ -82,7 +92,7 @@ func (f *StringSliceFlag) IsSet() bool {
 // String returns a readable representation of this value
 // (for usage defaults)
 func (f *StringSliceFlag) String() string {
-	return FlagStringer(f)
+	return withEnvHint(f.GetEnvVars(), stringifyStringSliceFlag(f))
 }
 
 // Names returns the names of the flag
@@ -112,6 +122,24 @@ func (f *StringSliceFlag) GetValue() string {
 		return f.Value.String()
 	}
 	return ""
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *StringSliceFlag) IsVisible() bool {
+	return !f.Hidden
+}
+
+// GetDefaultText returns the default text for this flag
+func (f *StringSliceFlag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	return f.GetValue()
+}
+
+// GetEnvVars returns the env vars for this flag
+func (f *StringSliceFlag) GetEnvVars() []string {
+	return f.EnvVars
 }
 
 // Apply populates the flag given the flag set and environment
@@ -144,17 +172,15 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
 		f.HasBeenSet = true
 	}
 
+	if f.Value == nil {
+		f.Value = &StringSlice{}
+	}
+	setValue := f.Destination
+	if f.Destination == nil {
+		setValue = f.Value.clone()
+	}
 	for _, name := range f.Names() {
-		if f.Value == nil {
-			f.Value = &StringSlice{}
-		}
-
-		if f.Destination != nil {
-			set.Var(f.Destination, name, f.Usage)
-			continue
-		}
-
-		set.Var(f.Value, name, f.Usage)
+		set.Var(setValue, name, f.Usage)
 	}
 
 	return nil
@@ -163,7 +189,7 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
 // StringSlice looks up the value of a local StringSliceFlag, returns
 // nil if not found
 func (c *Context) StringSlice(name string) []string {
-	if fs := lookupFlagSet(name, c); fs != nil {
+	if fs := c.lookupFlagSet(name); fs != nil {
 		return lookupStringSlice(name, fs)
 	}
 	return nil

@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	changeLogURL            = "https://github.com/urfave/cli/blob/master/docs/CHANGELOG.md"
+	changeLogURL            = "https://github.com/urfave/cli/blob/main/docs/CHANGELOG.md"
 	appActionDeprecationURL = fmt.Sprintf("%s#deprecated-cli-app-action-signature", changeLogURL)
 	contactSysadmin         = "This is an error in the application.  Please contact the distributor of this application if this is not you."
 	errInvalidActionType    = NewExitError("ERROR invalid Action type. "+
@@ -278,7 +278,7 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 		return nil
 	}
 
-	cerr := checkRequiredFlags(a.Flags, context)
+	cerr := context.checkRequiredFlags(a.Flags)
 	if cerr != nil {
 		_ = ShowAppHelp(context)
 		return cerr
@@ -397,7 +397,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 		}
 	}
 
-	cerr := checkRequiredFlags(a.Flags, context)
+	cerr := context.checkRequiredFlags(a.Flags)
 	if cerr != nil {
 		_ = ShowSubcommandHelp(context)
 		return cerr

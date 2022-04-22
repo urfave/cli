@@ -316,7 +316,6 @@ func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
 
 func ExampleApp_Run_bashComplete() {
 	// set args for examples sake
-	// set args for examples sake
 	os.Args = []string{"greet", "--generate-bash-completion"}
 
 	app := &App{
@@ -477,18 +476,18 @@ func TestApp_RunAsSubCommandIncorrectUsage(t *testing.T) {
 	a := App{
 		Name: "cmd",
 		Flags: []Flag{
-			&StringFlag{Name: "--foo"},
+			&StringFlag{Name: "foo"},
 		},
 		Writer: bytes.NewBufferString(""),
 	}
 
 	set := flag.NewFlagSet("", flag.ContinueOnError)
-	_ = set.Parse([]string{"", "---foo"})
+	_ = set.Parse([]string{"", "-bar"})
 	c := &Context{flagSet: set}
 
 	err := a.RunAsSubcommand(c)
 
-	expect(t, err, errors.New("bad flag syntax: ---foo"))
+	expect(t, err.Error(), "flag provided but not defined: -bar")
 }
 
 func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {

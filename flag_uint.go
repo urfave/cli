@@ -52,6 +52,11 @@ func (f *UintFlag) GetUsage() string {
 	return f.Usage
 }
 
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *UintFlag) IsVisible() bool {
+	return !f.Hidden
+}
+
 // Apply populates the flag given the flag set and environment
 func (f *UintFlag) Apply(set *flag.FlagSet) error {
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
@@ -83,10 +88,23 @@ func (f *UintFlag) GetValue() string {
 	return fmt.Sprintf("%d", f.Value)
 }
 
+// GetDefaultText returns the default text for this flag
+func (f *UintFlag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	return f.GetValue()
+}
+
+// GetEnvVars returns the env vars for this flag
+func (f *UintFlag) GetEnvVars() []string {
+	return f.EnvVars
+}
+
 // Uint looks up the value of a local UintFlag, returns
 // 0 if not found
 func (c *Context) Uint(name string) uint {
-	if fs := lookupFlagSet(name, c); fs != nil {
+	if fs := c.lookupFlagSet(name); fs != nil {
 		return lookupUint(name, fs)
 	}
 	return 0

@@ -52,15 +52,21 @@ func TestBoolFlagApply_SetsAllNames(t *testing.T) {
 }
 
 func TestFlagsFromEnv(t *testing.T) {
+	newSetFloat64Slice := func(defaults ...float64) Float64Slice {
+		s := NewFloat64Slice(defaults...)
+		s.hasBeenSet = false
+		return *s
+	}
+
 	newSetIntSlice := func(defaults ...int) IntSlice {
 		s := NewIntSlice(defaults...)
-		s.hasBeenSet = true
+		s.hasBeenSet = false
 		return *s
 	}
 
 	newSetInt64Slice := func(defaults ...int64) Int64Slice {
 		s := NewInt64Slice(defaults...)
-		s.hasBeenSet = true
+		s.hasBeenSet = false
 		return *s
 	}
 
@@ -96,6 +102,9 @@ func TestFlagsFromEnv(t *testing.T) {
 		{"1.2", 0, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2" as int value for flag seconds: .*`},
 		{"foobar", 0, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as int value for flag seconds: .*`},
 
+		{"1.0,2", newSetFloat64Slice(1, 2), &Float64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
+		{"foobar", newSetFloat64Slice(), &Float64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "\[\]float64{}" as float64 slice value for flag seconds: .*`},
+
 		{"1,2", newSetIntSlice(1, 2), &IntSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
 		{"1.2,2", newSetIntSlice(), &IntSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2,2" as int slice value for flag seconds: .*`},
 		{"foobar", newSetIntSlice(), &IntSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as int slice value for flag seconds: .*`},
@@ -123,8 +132,13 @@ func TestFlagsFromEnv(t *testing.T) {
 	for i, test := range flagTests {
 		defer resetEnv(os.Environ())
 		os.Clearenv()
-		envVarSlice := reflect.Indirect(reflect.ValueOf(test.flag)).FieldByName("EnvVars").Slice(0, 1)
-		_ = os.Setenv(envVarSlice.Index(0).String(), test.input)
+
+		f, ok := test.flag.(DocGenerationFlag)
+		if !ok {
+			t.Errorf("flag %v needs to implement DocGenerationFlag to retrieve env vars", test.flag)
+		}
+		envVarSlice := f.GetEnvVars()
+		_ = os.Setenv(envVarSlice[0], test.input)
 
 		a := App{
 			Flags: []Flag{test.flag},
@@ -151,6 +165,183 @@ func TestFlagsFromEnv(t *testing.T) {
 				t.Errorf("expected no error got %q", err)
 			}
 		}
+	}
+}
+
+type nodocFlag struct {
+	Flag
+
+	Name string
+}
+
+func TestFlagStringifying(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		fl       Flag
+		expected string
+	}{
+		{
+			name:     "bool-flag",
+			fl:       &BoolFlag{Name: "vividly"},
+			expected: "--vividly\t(default: false)",
+		},
+		{
+			name:     "bool-flag-with-default-text",
+			fl:       &BoolFlag{Name: "wildly", DefaultText: "scrambled"},
+			expected: "--wildly\t(default: scrambled)",
+		},
+		{
+			name:     "duration-flag",
+			fl:       &DurationFlag{Name: "scream-for"},
+			expected: "--scream-for value\t(default: 0s)",
+		},
+		{
+			name:     "duration-flag-with-default-text",
+			fl:       &DurationFlag{Name: "feels-about", DefaultText: "whimsically"},
+			expected: "--feels-about value\t(default: whimsically)",
+		},
+		{
+			name:     "float64-flag",
+			fl:       &Float64Flag{Name: "arduous"},
+			expected: "--arduous value\t(default: 0)",
+		},
+		{
+			name:     "float64-flag-with-default-text",
+			fl:       &Float64Flag{Name: "filibuster", DefaultText: "42"},
+			expected: "--filibuster value\t(default: 42)",
+		},
+		{
+			name:     "float64-slice-flag",
+			fl:       &Float64SliceFlag{Name: "pizzas"},
+			expected: "--pizzas value\t",
+		},
+		{
+			name:     "float64-slice-flag-with-default-text",
+			fl:       &Float64SliceFlag{Name: "pepperonis", DefaultText: "shaved"},
+			expected: "--pepperonis value\t(default: shaved)",
+		},
+		{
+			name:     "generic-flag",
+			fl:       &GenericFlag{Name: "yogurt"},
+			expected: "--yogurt value\t",
+		},
+		{
+			name:     "generic-flag-with-default-text",
+			fl:       &GenericFlag{Name: "ricotta", DefaultText: "plops"},
+			expected: "--ricotta value\t(default: plops)",
+		},
+		{
+			name:     "int-flag",
+			fl:       &IntFlag{Name: "grubs"},
+			expected: "--grubs value\t(default: 0)",
+		},
+		{
+			name:     "int-flag-with-default-text",
+			fl:       &IntFlag{Name: "poisons", DefaultText: "11ty"},
+			expected: "--poisons value\t(default: 11ty)",
+		},
+		{
+			name:     "int-slice-flag",
+			fl:       &IntSliceFlag{Name: "pencils"},
+			expected: "--pencils value\t",
+		},
+		{
+			name:     "int-slice-flag-with-default-text",
+			fl:       &IntFlag{Name: "pens", DefaultText: "-19"},
+			expected: "--pens value\t(default: -19)",
+		},
+		{
+			name:     "int64-flag",
+			fl:       &Int64Flag{Name: "flume"},
+			expected: "--flume value\t(default: 0)",
+		},
+		{
+			name:     "int64-flag-with-default-text",
+			fl:       &Int64Flag{Name: "shattering", DefaultText: "22"},
+			expected: "--shattering value\t(default: 22)",
+		},
+		{
+			name:     "int64-slice-flag",
+			fl:       &Int64SliceFlag{Name: "drawers"},
+			expected: "--drawers value\t",
+		},
+		{
+			name:     "int64-slice-flag-with-default-text",
+			fl:       &Int64SliceFlag{Name: "handles", DefaultText: "-2"},
+			expected: "--handles value\t(default: -2)",
+		},
+		{
+			name:     "path-flag",
+			fl:       &PathFlag{Name: "soup"},
+			expected: "--soup value\t",
+		},
+		{
+			name:     "path-flag-with-default-text",
+			fl:       &PathFlag{Name: "stew", DefaultText: "charred/beans"},
+			expected: "--stew value\t(default: charred/beans)",
+		},
+		{
+			name:     "string-flag",
+			fl:       &StringFlag{Name: "arf-sound"},
+			expected: "--arf-sound value\t",
+		},
+		{
+			name:     "string-flag-with-default-text",
+			fl:       &StringFlag{Name: "woof-sound", DefaultText: "urp"},
+			expected: "--woof-sound value\t(default: urp)",
+		},
+		{
+			name:     "string-slice-flag",
+			fl:       &StringSliceFlag{Name: "meow-sounds"},
+			expected: "--meow-sounds value\t",
+		},
+		{
+			name:     "string-slice-flag-with-default-text",
+			fl:       &StringSliceFlag{Name: "moo-sounds", DefaultText: "awoo"},
+			expected: "--moo-sounds value\t(default: awoo)",
+		},
+		{
+			name:     "timestamp-flag",
+			fl:       &TimestampFlag{Name: "eating"},
+			expected: "--eating value\t",
+		},
+		{
+			name:     "timestamp-flag-with-default-text",
+			fl:       &TimestampFlag{Name: "sleeping", DefaultText: "earlier"},
+			expected: "--sleeping value\t(default: earlier)",
+		},
+		{
+			name:     "uint-flag",
+			fl:       &UintFlag{Name: "jars"},
+			expected: "--jars value\t(default: 0)",
+		},
+		{
+			name:     "uint-flag-with-default-text",
+			fl:       &UintFlag{Name: "bottles", DefaultText: "99"},
+			expected: "--bottles value\t(default: 99)",
+		},
+		{
+			name:     "uint64-flag",
+			fl:       &Uint64Flag{Name: "cans"},
+			expected: "--cans value\t(default: 0)",
+		},
+		{
+			name:     "uint64-flag-with-default-text",
+			fl:       &UintFlag{Name: "tubes", DefaultText: "13"},
+			expected: "--tubes value\t(default: 13)",
+		},
+		{
+			name:     "nodoc-flag",
+			fl:       &nodocFlag{Name: "scarecrow"},
+			expected: "",
+		},
+	} {
+		t.Run(tc.name, func(ct *testing.T) {
+			s := stringifyFlag(tc.fl)
+			if s != tc.expected {
+				ct.Errorf("stringified flag %q does not match expected %q", s, tc.expected)
+			}
+		})
 	}
 }
 
@@ -340,11 +531,11 @@ var stringSliceFlagTests = []struct {
 	value    *StringSlice
 	expected string
 }{
-	{"foo", nil, NewStringSlice(""), "--foo value\t"},
-	{"f", nil, NewStringSlice(""), "-f value\t"},
-	{"f", nil, NewStringSlice("Lipstick"), "-f value\t(default: \"Lipstick\")"},
-	{"test", nil, NewStringSlice("Something"), "--test value\t(default: \"Something\")"},
-	{"dee", []string{"d"}, NewStringSlice("Inka", "Dinka", "dooo"), "--dee value, -d value\t(default: \"Inka\", \"Dinka\", \"dooo\")"},
+	{"foo", nil, NewStringSlice(""), "--foo value\t(accepts multiple inputs)"},
+	{"f", nil, NewStringSlice(""), "-f value\t(accepts multiple inputs)"},
+	{"f", nil, NewStringSlice("Lipstick"), "-f value\t(default: \"Lipstick\")\t(accepts multiple inputs)"},
+	{"test", nil, NewStringSlice("Something"), "--test value\t(default: \"Something\")\t(accepts multiple inputs)"},
+	{"dee", []string{"d"}, NewStringSlice("Inka", "Dinka", "dooo"), "--dee value, -d value\t(default: \"Inka\", \"Dinka\", \"dooo\")\t(accepts multiple inputs)"},
 }
 
 func TestStringSliceFlagHelpOutput(t *testing.T) {
@@ -630,9 +821,9 @@ var intSliceFlagTests = []struct {
 	value    *IntSlice
 	expected string
 }{
-	{"heads", nil, NewIntSlice(), "--heads value\t"},
-	{"H", nil, NewIntSlice(), "-H value\t"},
-	{"H", []string{"heads"}, NewIntSlice(9, 3), "-H value, --heads value\t(default: 9, 3)"},
+	{"heads", nil, NewIntSlice(), "--heads value\t(accepts multiple inputs)"},
+	{"H", nil, NewIntSlice(), "-H value\t(accepts multiple inputs)"},
+	{"H", []string{"heads"}, NewIntSlice(9, 3), "-H value, --heads value\t(default: 9, 3)\t(accepts multiple inputs)"},
 }
 
 func TestIntSliceFlagHelpOutput(t *testing.T) {
@@ -674,16 +865,55 @@ func TestIntSliceFlagApply_SetsAllNames(t *testing.T) {
 	expect(t, err, nil)
 }
 
+func TestIntSliceFlagApply_ParentContext(t *testing.T) {
+	_ = (&App{
+		Flags: []Flag{
+			&IntSliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: NewIntSlice(1, 2, 3)},
+		},
+		Commands: []*Command{
+			{
+				Name: "child",
+				Action: func(ctx *Context) error {
+					expected := []int{1, 2, 3}
+					if !reflect.DeepEqual(ctx.IntSlice("numbers"), expected) {
+						t.Errorf("child context unable to view parent flag: %v != %v", expected, ctx.IntSlice("numbers"))
+					}
+					if !reflect.DeepEqual(ctx.IntSlice("n"), expected) {
+						t.Errorf("child context unable to view parent flag: %v != %v", expected, ctx.IntSlice("n"))
+					}
+					return nil
+				},
+			},
+		},
+	}).Run([]string{"run", "child"})
+}
+
+func TestIntSliceFlag_SetFromParentContext(t *testing.T) {
+	fl := &IntSliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: NewIntSlice(1, 2, 3, 4)}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+	ctx := &Context{
+		parentContext: &Context{
+			flagSet: set,
+		},
+		flagSet: flag.NewFlagSet("empty", 0),
+	}
+	expected := []int{1, 2, 3, 4}
+	if !reflect.DeepEqual(ctx.IntSlice("numbers"), expected) {
+		t.Errorf("child context unable to view parent flag: %v != %v", expected, ctx.IntSlice("numbers"))
+	}
+}
+
 var int64SliceFlagTests = []struct {
 	name     string
 	aliases  []string
 	value    *Int64Slice
 	expected string
 }{
-	{"heads", nil, NewInt64Slice(), "--heads value\t"},
-	{"H", nil, NewInt64Slice(), "-H value\t"},
+	{"heads", nil, NewInt64Slice(), "--heads value\t(accepts multiple inputs)"},
+	{"H", nil, NewInt64Slice(), "-H value\t(accepts multiple inputs)"},
 	{"heads", []string{"H"}, NewInt64Slice(int64(2), int64(17179869184)),
-		"--heads value, -H value\t(default: 2, 17179869184)"},
+		"--heads value, -H value\t(default: 2, 17179869184)\t(accepts multiple inputs)"},
 }
 
 func TestInt64SliceFlagHelpOutput(t *testing.T) {
@@ -713,6 +943,60 @@ func TestInt64SliceFlagWithEnvVarHelpOutput(t *testing.T) {
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%q does not end with"+expectedSuffix, output)
 		}
+	}
+}
+
+func TestInt64SliceFlagApply_ParentContext(t *testing.T) {
+	_ = (&App{
+		Flags: []Flag{
+			&Int64SliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: NewInt64Slice(1, 2, 3)},
+		},
+		Commands: []*Command{
+			{
+				Name: "child",
+				Action: func(ctx *Context) error {
+					expected := []int64{1, 2, 3}
+					if !reflect.DeepEqual(ctx.Int64Slice("numbers"), expected) {
+						t.Errorf("child context unable to view parent flag: %v != %v", expected, ctx.Int64Slice("numbers"))
+					}
+					if !reflect.DeepEqual(ctx.Int64Slice("n"), expected) {
+						t.Errorf("child context unable to view parent flag: %v != %v", expected, ctx.Int64Slice("n"))
+					}
+					return nil
+				},
+			},
+		},
+	}).Run([]string{"run", "child"})
+}
+
+func TestInt64SliceFlag_SetFromParentContext(t *testing.T) {
+	fl := &Int64SliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: NewInt64Slice(1, 2, 3, 4)}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+	ctx := &Context{
+		parentContext: &Context{
+			flagSet: set,
+		},
+		flagSet: flag.NewFlagSet("empty", 0),
+	}
+	expected := []int64{1, 2, 3, 4}
+	if !reflect.DeepEqual(ctx.Int64Slice("numbers"), expected) {
+		t.Errorf("child context unable to view parent flag: %v != %v", expected, ctx.Int64Slice("numbers"))
+	}
+}
+func TestInt64SliceFlag_ReturnNil(t *testing.T) {
+	fl := &Int64SliceFlag{}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+	ctx := &Context{
+		parentContext: &Context{
+			flagSet: set,
+		},
+		flagSet: flag.NewFlagSet("empty", 0),
+	}
+	expected := []int64(nil)
+	if !reflect.DeepEqual(ctx.Int64Slice("numbers"), expected) {
+		t.Errorf("child context unable to view parent flag: %v != %v", expected, ctx.Int64Slice("numbers"))
 	}
 }
 
@@ -771,10 +1055,10 @@ var float64SliceFlagTests = []struct {
 	value    *Float64Slice
 	expected string
 }{
-	{"heads", nil, NewFloat64Slice(), "--heads value\t"},
-	{"H", nil, NewFloat64Slice(), "-H value\t"},
+	{"heads", nil, NewFloat64Slice(), "--heads value\t(accepts multiple inputs)"},
+	{"H", nil, NewFloat64Slice(), "-H value\t(accepts multiple inputs)"},
 	{"heads", []string{"H"}, NewFloat64Slice(0.1234, -10.5),
-		"--heads value, -H value\t(default: 0.1234, -10.5)"},
+		"--heads value, -H value\t(default: 0.1234, -10.5)\t(accepts multiple inputs)"},
 }
 
 func TestFloat64SliceFlagHelpOutput(t *testing.T) {
@@ -1879,4 +2163,81 @@ func TestTimestampFlagApply_Fail_Parse_Wrong_Time(t *testing.T) {
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
 	expect(t, err, fmt.Errorf("invalid value \"2006-01-02T15:04:05Z\" for flag -time: parsing time \"2006-01-02T15:04:05Z\" as \"Jan 2, 2006 at 3:04pm (MST)\": cannot parse \"2006-01-02T15:04:05Z\" as \"Jan\""))
+}
+
+type flagDefaultTestCase struct {
+	name    string
+	flag    Flag
+	toParse []string
+	expect  string
+}
+
+func TestFlagDefaultValue(t *testing.T) {
+	cases := []*flagDefaultTestCase{
+		&flagDefaultTestCase{
+			name:    "stringSclice",
+			flag:    &StringSliceFlag{Name: "flag", Value: NewStringSlice("default1", "default2")},
+			toParse: []string{"--flag", "parsed"},
+			expect: `--flag value	(default: "default1", "default2")	(accepts multiple inputs)`,
+		},
+		&flagDefaultTestCase{
+			name:    "float64Sclice",
+			flag:    &Float64SliceFlag{Name: "flag", Value: NewFloat64Slice(1.1, 2.2)},
+			toParse: []string{"--flag", "13.3"},
+			expect: `--flag value	(default: 1.1, 2.2)	(accepts multiple inputs)`,
+		},
+		&flagDefaultTestCase{
+			name:    "int64Sclice",
+			flag:    &Int64SliceFlag{Name: "flag", Value: NewInt64Slice(1, 2)},
+			toParse: []string{"--flag", "13"},
+			expect: `--flag value	(default: 1, 2)	(accepts multiple inputs)`,
+		},
+		&flagDefaultTestCase{
+			name:    "intSclice",
+			flag:    &IntSliceFlag{Name: "flag", Value: NewIntSlice(1, 2)},
+			toParse: []string{"--flag", "13"},
+			expect: `--flag value	(default: 1, 2)	(accepts multiple inputs)`,
+		},
+		&flagDefaultTestCase{
+			name:    "string",
+			flag:    &StringFlag{Name: "flag", Value: "default"},
+			toParse: []string{"--flag", "parsed"},
+			expect: `--flag value	(default: "default")`,
+		},
+		&flagDefaultTestCase{
+			name:    "bool",
+			flag:    &BoolFlag{Name: "flag", Value: true},
+			toParse: []string{"--flag", "false"},
+			expect: `--flag	(default: true)`,
+		},
+		&flagDefaultTestCase{
+			name:    "uint64",
+			flag:    &Uint64Flag{Name: "flag", Value: 1},
+			toParse: []string{"--flag", "13"},
+			expect: `--flag value	(default: 1)`,
+		},
+	}
+	for i, v := range cases {
+		set := flag.NewFlagSet("test", 0)
+		set.SetOutput(ioutil.Discard)
+		_ = v.flag.Apply(set)
+		if err := set.Parse(v.toParse); err != nil {
+			t.Error(err)
+		}
+		if got := v.flag.String(); got != v.expect {
+			t.Errorf("TestFlagDefaultValue %d %s\nexpect:%s\ngot:%s", i, v.name, v.expect, got)
+		}
+	}
+}
+
+func TestTimestampFlagApply_WithDestination(t *testing.T) {
+	var destination Timestamp
+	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: time.RFC3339, Destination: &destination}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
+	expect(t, err, nil)
+	expect(t, *fl.Destination.timestamp, expectedResult)
 }
