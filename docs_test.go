@@ -1,3 +1,6 @@
+//go:build cli_docs
+// +build cli_docs
+
 package cli
 
 import (

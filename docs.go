@@ -1,3 +1,6 @@
+//go:build cli_docs
+// +build cli_docs
+
 package cli
 
 import (
@@ -13,6 +16,8 @@ import (
 
 // ToMarkdown creates a markdown string for the `*App`
 // The function errors if either parsing or writing of the string fails.
+//
+// To use this functionality, you need to have cli_docs build flag set.
 func (a *App) ToMarkdown() (string, error) {
 	var w bytes.Buffer
 	if err := a.writeDocTemplate(&w); err != nil {
@@ -23,6 +28,8 @@ func (a *App) ToMarkdown() (string, error) {
 
 // ToMan creates a man page string for the `*App`
 // The function errors if either parsing or writing of the string fails.
+//
+// To use this functionality, you need to have cli_docs build flag set.
 func (a *App) ToMan() (string, error) {
 	var w bytes.Buffer
 	if err := a.writeDocTemplate(&w); err != nil {
