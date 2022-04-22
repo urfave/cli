@@ -1117,6 +1117,14 @@ func TestFloat64SliceFlagWithEnvVarHelpOutput(t *testing.T) {
 	}
 }
 
+func TestFloat64SliceFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Var(NewFloat64Slice(1.23, 4.56), "myflag", "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &Float64SliceFlag{Name: "myflag"}
+	expect(t, f.ValueFromContext(ctx), []float64{1.23, 4.56})
+}
+
 var genericFlagTests = []struct {
 	name     string
 	value    Generic
