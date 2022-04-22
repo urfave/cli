@@ -709,6 +709,14 @@ func TestInt64FlagWithEnvVarHelpOutput(t *testing.T) {
 	}
 }
 
+func TestInt64FlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Int64("myflag", 42, "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &Int64Flag{Name: "myflag"}
+	expect(t, f.ValueFromContext(ctx), int64(42))
+}
+
 var uintFlagTests = []struct {
 	name     string
 	expected string
