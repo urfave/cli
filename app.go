@@ -185,8 +185,10 @@ func (a *App) Setup() {
 		}
 
 		fc := FlagCategories{}
-		for _, flag := range c.Flags {
-			fc = fc.AddFlag(flag.GetCategory(), flag)
+		for _, fl := range c.Flags {
+			if cf, ok := fl.(CategorizableFlag); ok {
+				fc = fc.AddFlag(cf.GetCategory(), cf)
+			}
 		}
 
 		sort.Sort(fc)

@@ -19,6 +19,7 @@ type Uint64Flag struct {
 	DefaultText string
 	Destination *uint64
 	HasBeenSet  bool
+	Category    string
 }
 
 // IsSet returns whether or not the flag has been set through env or file
@@ -50,6 +51,11 @@ func (f *Uint64Flag) TakesValue() bool {
 // GetUsage returns the usage string for the flag
 func (f *Uint64Flag) GetUsage() string {
 	return f.Usage
+}
+
+// GetCategory returns the category for the flag
+func (f *Uint64Flag) GetCategory() string {
+	return f.Category
 }
 
 // IsVisible returns true if the flag is not hidden, otherwise false

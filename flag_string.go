@@ -19,6 +19,7 @@ type StringFlag struct {
 	DefaultText string
 	Destination *string
 	HasBeenSet  bool
+	Category    string
 }
 
 // IsSet returns whether or not the flag has been set through env or file
@@ -50,6 +51,11 @@ func (f *StringFlag) TakesValue() bool {
 // GetUsage returns the usage string for the flag
 func (f *StringFlag) GetUsage() string {
 	return f.Usage
+}
+
+// GetCategory returns the category for the flag
+func (f *StringFlag) GetCategory() string {
+	return f.Category
 }
 
 // GetValue returns the flags value as string representation and an empty

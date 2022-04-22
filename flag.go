@@ -94,8 +94,6 @@ type Flag interface {
 	Apply(*flag.FlagSet) error
 	Names() []string
 	IsSet() bool
-	GetCategory() string
-	GetHidden() bool
 }
 
 // RequiredFlag is an interface that allows us to mark flags as required
@@ -133,6 +131,14 @@ type VisibleFlag interface {
 
 	// IsVisible returns true if the flag is not hidden, otherwise false
 	IsVisible() bool
+}
+
+// CategorizableFlag is an interface that allows us to potentially
+// use a flag in a categorized representation.
+type CategorizableFlag interface {
+	VisibleFlag
+
+	GetCategory() string
 }
 
 func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {

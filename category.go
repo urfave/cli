@@ -84,7 +84,7 @@ type FlagCategories []*FlagCategory
 // FlagCategory is a category containing commands.
 type FlagCategory struct {
 	Name  string
-	Flags Flags
+	Flags []Flag
 }
 
 func (f FlagCategories) Less(i, j int) bool {
@@ -111,11 +111,13 @@ func (f FlagCategories) AddFlag(category string, flag Flag) FlagCategories {
 }
 
 // VisibleFlags returns a slice of the Flags with Hidden=false
-func (c *FlagCategory) VisibleFlags() []Flag {
-	ret := []Flag{}
-	for _, flag := range c.Flags {
-		if !flag.GetHidden() {
-			ret = append(ret, flag)
+func (c *FlagCategory) VisibleFlags() []VisibleFlag {
+	ret := []VisibleFlag{}
+	for _, fl := range c.Flags {
+		if vf, ok := fl.(VisibleFlag); ok {
+			if vf.IsVisible() {
+				ret = append(ret, vf)
+			}
 		}
 	}
 	return ret
