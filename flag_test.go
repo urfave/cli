@@ -1035,6 +1035,14 @@ func TestInt64SliceFlag_ReturnNil(t *testing.T) {
 	}
 }
 
+func TestInt64SliceFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Var(NewInt64Slice(1, 2, 3), "myflag", "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &Int64SliceFlag{Name: "myflag"}
+	expect(t, f.ValueFromContext(ctx), []int64{1, 2, 3})
+}
+
 var float64FlagTests = []struct {
 	name     string
 	expected string
