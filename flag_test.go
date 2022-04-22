@@ -939,6 +939,14 @@ func TestIntSliceFlag_SetFromParentContext(t *testing.T) {
 	}
 }
 
+func TestIntSliceFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Var(NewIntSlice(1, 2, 3), "myflag", "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &IntSliceFlag{Name: "myflag"}
+	expect(t, f.ValueFromContext(ctx), []int{1, 2, 3})
+}
+
 var int64SliceFlagTests = []struct {
 	name     string
 	aliases  []string
