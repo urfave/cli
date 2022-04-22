@@ -15,15 +15,18 @@ consider sending a PR to help improve this guide.
 
   * [Flags before args](#flags-before-args)
   * [Import string changed](#import-string-changed)
-  * [Flag aliases are done differently.](#flag-aliases-are-done-differently)
+  * [Flag aliases are done differently](#flag-aliases-are-done-differently)
   * [EnvVar is now a list (EnvVars)](#envvar-is-now-a-list-envvars)
+  * [Actions returns errors](#actions-returns-errors)
+  * [cli.Flag changed](#cliflag-changed)
   * [Commands are now lists of pointers](#commands-are-now-lists-of-pointers)
   * [Lists of commands should be pointers](#lists-of-commands-should-be-pointers)
-  * [cli.Flag changed](#cliflag-changed)
   * [Appending Commands](#appending-commands)
-  * [Actions returns errors](#actions-returns-errors)
+  * [GlobalString, GlobalBool and its likes are deprecated](#globalstring-globalbool-and-its-likes-are-deprecated)
+  * [BoolTFlag and BoolT are deprecated](#booltflag-and-boolt-are-deprecated)
+  * [&cli.StringSlice{""} replaced with cli.NewStringSlice("")](#clistringslice-replaced-with-clinewstringslice)
+  * [Replace deprecated functions](#replace-deprecated-functions)
   * [Everything else](#everything-else)
-  * [Full API Example](#full-api-example)
 
 <!-- tocstop -->
 
@@ -53,7 +56,7 @@ Check each file for this and make the change.
 
 Shell command to find them all: `fgrep -rl github.com/urfave/cli *`
 
-# Flag aliases are done differently.
+# Flag aliases are done differently
 
 Change `Name: "foo, f"` to `Name: "foo", Aliases: []string{"f"}`
 
@@ -180,6 +183,52 @@ Compiler messages you might see:
 ```
 cannot use c (type *cli.Command) as type cli.Command in append
 ```
+
+# GlobalString, GlobalBool and its likes are deprecated
+
+Use simply `String` instead of `GlobalString`, `Bool` instead of `GlobalBool` 
+
+# BoolTFlag and BoolT are deprecated
+
+BoolTFlag was a Bool Flag with its default value set to true and BoolT was used to find any BoolTFlag used locally, so both are deprecated.
+
+* OLD: 
+
+```go
+cli.BoolTFlag{
+		Name:   FlagName,
+		Usage:  FlagUsage,
+		EnvVar: "FLAG_ENV_VAR",
+}
+```
+* NEW: 
+```go
+cli.BoolFlag{
+		Name:   FlagName,
+		Value:  true,
+		Usage:  FlagUsage,
+		EnvVar: "FLAG_ENV_VAR",
+}
+```
+
+
+# &cli.StringSlice{""} replaced with cli.NewStringSlice("")
+
+Example: 
+
+* OLD: 
+
+```go
+Value: &cli.StringSlice{""},
+```
+* NEW: 
+```go
+Value: cli.NewStringSlice(""),
+}
+```
+# Replace deprecated functions
+
+`cli.NewExitError()` is deprecated.  Use `cli.Exit()` instead.  ([Staticcheck](https://staticcheck.io/) detects this automatically and recommends replacement code.)
 
 # Everything else
 

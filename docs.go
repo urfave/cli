@@ -15,7 +15,7 @@ import (
 // The function errors if either parsing or writing of the string fails.
 func (a *App) ToMarkdown() (string, error) {
 	var w bytes.Buffer
-	if err := a.writeDocTemplate(&w, 8); err != nil {
+	if err := a.writeDocTemplate(&w, 0); err != nil {
 		return "", err
 	}
 	return w.String(), nil
@@ -68,15 +68,16 @@ func prepareCommands(commands []*Command, level int) []string {
 		if command.Hidden {
 			continue
 		}
-		usage := ""
-		if command.Usage != "" {
-			usage = command.Usage
-		}
 
-		prepared := fmt.Sprintf("%s %s\n\n%s\n",
+		usageText := prepareUsageText(command)
+
+		usage := prepareUsage(command, usageText)
+
+		prepared := fmt.Sprintf("%s %s\n\n%s%s",
 			strings.Repeat("#", level+2),
 			strings.Join(command.Names(), ", "),
 			usage,
+			usageText,
 		)
 
 		flags := prepareArgsWithValues(command.Flags)
@@ -154,4 +155,41 @@ func flagDetails(flag DocGenerationFlag) string {
 		description += " (default: " + value + ")"
 	}
 	return ": " + description
+}
+
+func prepareUsageText(command *Command) string {
+	if command.UsageText == "" {
+		return ""
+	}
+
+	// Remove leading and trailing newlines
+	preparedUsageText := strings.Trim(command.UsageText, "\n")
+
+	var usageText string
+	if strings.Contains(preparedUsageText, "\n") {
+		// Format multi-line string as a code block using the 4 space schema to allow for embedded markdown such
+		// that it will not break the continuous code block.
+		for _, ln := range strings.Split(preparedUsageText, "\n") {
+			usageText += fmt.Sprintf("    %s\n", ln)
+		}
+	} else {
+		// Style a single line as a note
+		usageText = fmt.Sprintf(">%s\n", preparedUsageText)
+	}
+
+	return usageText
+}
+
+func prepareUsage(command *Command, usageText string) string {
+	if command.Usage == "" {
+		return ""
+	}
+
+	usage := command.Usage + "\n"
+	// Add a newline to the Usage IFF there is a UsageText
+	if usageText != "" {
+		usage += "\n"
+	}
+
+	return usage
 }

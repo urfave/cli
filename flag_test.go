@@ -52,15 +52,21 @@ func TestBoolFlagApply_SetsAllNames(t *testing.T) {
 }
 
 func TestFlagsFromEnv(t *testing.T) {
+	newSetFloat64Slice := func(defaults ...float64) Float64Slice {
+		s := NewFloat64Slice(defaults...)
+		s.hasBeenSet = false
+		return *s
+	}
+
 	newSetIntSlice := func(defaults ...int) IntSlice {
 		s := NewIntSlice(defaults...)
-		s.hasBeenSet = true
+		s.hasBeenSet = false
 		return *s
 	}
 
 	newSetInt64Slice := func(defaults ...int64) Int64Slice {
 		s := NewInt64Slice(defaults...)
-		s.hasBeenSet = true
+		s.hasBeenSet = false
 		return *s
 	}
 
@@ -95,6 +101,9 @@ func TestFlagsFromEnv(t *testing.T) {
 		{"1", 1, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
 		{"1.2", 0, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2" as int value for flag seconds: .*`},
 		{"foobar", 0, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as int value for flag seconds: .*`},
+
+		{"1.0,2", newSetFloat64Slice(1, 2), &Float64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
+		{"foobar", newSetFloat64Slice(), &Float64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "\[\]float64{}" as float64 slice value for flag seconds: .*`},
 
 		{"1,2", newSetIntSlice(1, 2), &IntSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
 		{"1.2,2", newSetIntSlice(), &IntSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2,2" as int slice value for flag seconds: .*`},

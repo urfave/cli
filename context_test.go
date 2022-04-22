@@ -112,6 +112,8 @@ func TestContext_String(t *testing.T) {
 	c := NewContext(nil, set, parentCtx)
 	expect(t, c.String("myflag"), "hello world")
 	expect(t, c.String("top-flag"), "hai veld")
+	c = NewContext(nil, nil, parentCtx)
+	expect(t, c.String("top-flag"), "hai veld")
 }
 
 func TestContext_Path(t *testing.T) {

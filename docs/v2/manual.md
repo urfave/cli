@@ -514,7 +514,7 @@ func main() {
 ```
 
 If `EnvVars` contains more than one string, the first environment variable that
-resolves is used as the default.
+resolves is used.
 
 <!-- {
   "args": ["&#45;&#45;help"],
@@ -674,8 +674,10 @@ Take for example this app that requires the `lang` flag:
 package main
 
 import (
+  "fmt"
   "log"
   "os"
+
   "github.com/urfave/cli/v2"
 )
 

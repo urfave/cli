@@ -157,6 +157,9 @@ func (f *Int64SliceFlag) Apply(set *flag.FlagSet) error {
 			}
 		}
 
+		// Set this to false so that we reset the slice if we then set values from
+		// flags that have already been set by the environment.
+		f.Value.hasBeenSet = false
 		f.HasBeenSet = true
 	}
 
