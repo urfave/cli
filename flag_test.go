@@ -2264,6 +2264,15 @@ func TestTimestampFlagApply_Fail_Parse_Wrong_Time(t *testing.T) {
 	expect(t, err, fmt.Errorf("invalid value \"2006-01-02T15:04:05Z\" for flag -time: parsing time \"2006-01-02T15:04:05Z\" as \"Jan 2, 2006 at 3:04pm (MST)\": cannot parse \"2006-01-02T15:04:05Z\" as \"Jan\""))
 }
 
+func TestTimestampFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	now := time.Now()
+	set.Var(NewTimestamp(now), "myflag", "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &TimestampFlag{Name: "myflag"}
+	expect(t, f.ValueFromContext(ctx), &now)
+}
+
 type flagDefaultTestCase struct {
 	name    string
 	flag    Flag
