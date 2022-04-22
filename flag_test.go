@@ -630,6 +630,14 @@ func TestStringSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 	expect(t, defValue, fl.Destination.Value())
 }
 
+func TestStringSliceFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Var(NewStringSlice("a", "b", "c"), "myflag", "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &StringSliceFlag{Name: "myflag"}
+	expect(t, f.ValueFromContext(ctx), []string{"a", "b", "c"})
+}
+
 var intFlagTests = []struct {
 	name     string
 	expected string

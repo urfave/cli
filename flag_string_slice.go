@@ -186,6 +186,11 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
+// ValueFromContext returns the flag’s value in the given Context.
+func (f *StringSliceFlag) ValueFromContext(ctx *Context) []string {
+	return ctx.StringSlice(f.Name)
+}
+
 // StringSlice looks up the value of a local StringSliceFlag, returns
 // nil if not found
 func (c *Context) StringSlice(name string) []string {
