@@ -501,6 +501,14 @@ func TestPathFlagApply_SetsAllNames(t *testing.T) {
 	expect(t, v, "/path/to/file/PATH")
 }
 
+func TestPathFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.String("myflag", "/my/path", "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &PathFlag{Name: "myflag"}
+	expect(t, f.ValueFromContext(ctx), "/my/path")
+}
+
 var envHintFlagTests = []struct {
 	name     string
 	env      string
