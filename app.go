@@ -52,7 +52,7 @@ type App struct {
 	HideVersion bool
 	// categories contains the categorized commands and is populated on app startup
 	categories CommandCategories
-	// Populate on app startup, only gettable through method Categories()
+	// flagCategories contains the categorized flags and is populated on app startup
 	flagCategories FlagCategories
 	// An action to execute when the shell completion flag is set
 	BashComplete BashCompleteFunc
@@ -216,6 +216,14 @@ func (a *App) Setup() {
 		a.categories.AddCommand(command.Category, command)
 	}
 	sort.Sort(a.categories.(*commandCategories))
+
+	a.flagCategories = FlagCategories{}
+	for _, fl := range a.Flags {
+		if cf, ok := fl.(CategorizableFlag); ok {
+			a.flagCategories.AddFlag(cf.GetCategory(), cf)
+		}
+	}
+	sort.Sort(a.flagCategories)
 
 	if a.Metadata == nil {
 		a.Metadata = make(map[string]interface{})

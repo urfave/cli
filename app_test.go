@@ -1789,20 +1789,23 @@ func TestApp_VisibleCategories(t *testing.T) {
 		HideHelp: true,
 		Commands: []*Command{
 			{
-				Name:     "command1",
-				Category: "1",
-				HelpName: "foo command1",
-				Hidden:   true,
+				Name:           "command1",
+				Category:       "1",
+				HelpName:       "foo command1",
+				Hidden:         true,
+				FlagCategories: FlagCategories{},
 			},
 			{
-				Name:     "command2",
-				Category: "2",
-				HelpName: "foo command2",
+				Name:           "command2",
+				Category:       "2",
+				HelpName:       "foo command2",
+				FlagCategories: FlagCategories{},
 			},
 			{
-				Name:     "command3",
-				Category: "3",
-				HelpName: "foo command3",
+				Name:           "command3",
+				Category:       "3",
+				HelpName:       "foo command3",
+				FlagCategories: FlagCategories{},
 			},
 		},
 	}
@@ -1830,21 +1833,24 @@ func TestApp_VisibleCategories(t *testing.T) {
 		HideHelp: true,
 		Commands: []*Command{
 			{
-				Name:     "command1",
-				Category: "1",
-				HelpName: "foo command1",
-				Hidden:   true,
+				Name:           "command1",
+				Category:       "1",
+				HelpName:       "foo command1",
+				Hidden:         true,
+				FlagCategories: FlagCategories{},
 			},
 			{
-				Name:     "command2",
-				Category: "2",
-				HelpName: "foo command2",
-				Hidden:   true,
+				Name:           "command2",
+				Category:       "2",
+				HelpName:       "foo command2",
+				Hidden:         true,
+				FlagCategories: FlagCategories{},
 			},
 			{
-				Name:     "command3",
-				Category: "3",
-				HelpName: "foo command3",
+				Name:           "command3",
+				Category:       "3",
+				HelpName:       "foo command3",
+				FlagCategories: FlagCategories{},
 			},
 		},
 	}
@@ -1866,28 +1872,39 @@ func TestApp_VisibleCategories(t *testing.T) {
 		HideHelp: true,
 		Commands: []*Command{
 			{
-				Name:     "command1",
-				Category: "1",
-				HelpName: "foo command1",
-				Hidden:   true,
+				Name:           "command1",
+				Category:       "1",
+				HelpName:       "foo command1",
+				Hidden:         true,
+				FlagCategories: FlagCategories{},
 			},
 			{
-				Name:     "command2",
-				Category: "2",
-				HelpName: "foo command2",
-				Hidden:   true,
+				Name:           "command2",
+				Category:       "2",
+				HelpName:       "foo command2",
+				Hidden:         true,
+				FlagCategories: FlagCategories{},
 			},
 			{
-				Name:     "command3",
-				Category: "3",
-				HelpName: "foo command3",
-				Hidden:   true,
+				Name:           "command3",
+				Category:       "3",
+				HelpName:       "foo command3",
+				Hidden:         true,
+				FlagCategories: FlagCategories{},
 			},
 		},
 	}
 
 	app.Setup()
 	expect(t, []CommandCategory{}, app.VisibleCategories())
+}
+
+func TestApp_VisibleFlagCategories(t *testing.T) {
+	app := &App{}
+	vfc := app.VisibleFlagCategories()
+	if len(vfc) != 0 {
+		t.Errorf("unexpected visible flag categories %+v", vfc)
+	}
 }
 
 func TestApp_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
