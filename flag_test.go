@@ -51,6 +51,17 @@ func TestBoolFlagApply_SetsAllNames(t *testing.T) {
 	expect(t, v, true)
 }
 
+func TestBoolFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Bool("trueflag", true, "doc")
+	set.Bool("falseflag", false, "doc")
+	ctx := NewContext(nil, set, nil)
+	tf := &BoolFlag{Name: "trueflag"}
+	ff := &BoolFlag{Name: "falseflag"}
+	expect(t, tf.ValueFromContext(ctx), true)
+	expect(t, ff.ValueFromContext(ctx), false)
+}
+
 func TestFlagsFromEnv(t *testing.T) {
 	newSetFloat64Slice := func(defaults ...float64) Float64Slice {
 		s := NewFloat64Slice(defaults...)

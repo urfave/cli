@@ -102,6 +102,11 @@ func (f *BoolFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
+// ValueFromContext returns the flag’s value in the given Context.
+func (f *BoolFlag) ValueFromContext(ctx *Context) bool {
+	return ctx.Bool(f.Name)
+}
+
 // Bool looks up the value of a local BoolFlag, returns
 // false if not found
 func (c *Context) Bool(name string) bool {
