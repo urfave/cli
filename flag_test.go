@@ -450,6 +450,14 @@ func TestStringFlagApply_SetsAllNames(t *testing.T) {
 	expect(t, v, "YUUUU")
 }
 
+func TestStringFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.String("myflag", "foobar", "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &StringFlag{Name: "myflag"}
+	expect(t, f.ValueFromContext(ctx), "foobar")
+}
+
 var pathFlagTests = []struct {
 	name     string
 	aliases  []string

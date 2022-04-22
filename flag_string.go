@@ -97,6 +97,11 @@ func (f *StringFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
+// ValueFromContext returns the flag’s value in the given Context.
+func (f *StringFlag) ValueFromContext(ctx *Context) string {
+	return ctx.String(f.Name)
+}
+
 // String looks up the value of a local StringFlag, returns
 // "" if not found
 func (c *Context) String(name string) string {
