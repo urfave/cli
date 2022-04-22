@@ -826,6 +826,14 @@ func TestDurationFlagApply_SetsAllNames(t *testing.T) {
 	expect(t, v, time.Hour*30)
 }
 
+func TestDurationFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Duration("myflag", 42*time.Second, "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &DurationFlag{Name: "myflag"}
+	expect(t, f.ValueFromContext(ctx), 42*time.Second)
+}
+
 var intSliceFlagTests = []struct {
 	name     string
 	aliases  []string

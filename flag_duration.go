@@ -101,6 +101,11 @@ func (f *DurationFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
+// ValueFromContext returns the flag’s value in the given Context.
+func (f *DurationFlag) ValueFromContext(ctx *Context) time.Duration {
+	return ctx.Duration(f.Name)
+}
+
 // Duration looks up the value of a local DurationFlag, returns
 // 0 if not found
 func (c *Context) Duration(name string) time.Duration {
