@@ -117,6 +117,12 @@ type DocGenerationFlag interface {
 	// GetValue returns the flags value as string representation and an empty
 	// string if the flag takes no value at all.
 	GetValue() string
+
+	// GetDefaultText returns the default text for this flag
+	GetDefaultText() string
+
+	// GetEnvVars returns the env vars for this flag
+	GetEnvVars() []string
 }
 
 // VisibleFlag is an interface that allows to check if a flag is visible
@@ -299,55 +305,29 @@ func formatDefault(format string) string {
 }
 
 func stringifyFlag(f Flag) string {
-	fv := flagValue(f)
-
-	switch f := f.(type) {
-	case *IntSliceFlag:
-		return withEnvHint(flagStringSliceField(f, "EnvVars"),
-			stringifyIntSliceFlag(f))
-	case *Int64SliceFlag:
-		return withEnvHint(flagStringSliceField(f, "EnvVars"),
-			stringifyInt64SliceFlag(f))
-	case *Float64SliceFlag:
-		return withEnvHint(flagStringSliceField(f, "EnvVars"),
-			stringifyFloat64SliceFlag(f))
-	case *StringSliceFlag:
-		return withEnvHint(flagStringSliceField(f, "EnvVars"),
-			stringifyStringSliceFlag(f))
+	// enforce DocGeneration interface on flags to avoid reflection
+	df, ok := f.(DocGenerationFlag)
+	if !ok {
+		return ""
 	}
 
-	placeholder, usage := unquoteUsage(fv.FieldByName("Usage").String())
-
-	needsPlaceholder := false
-	defaultValueString := ""
-	val := fv.FieldByName("Value")
-	if val.IsValid() {
-		needsPlaceholder = val.Kind() != reflect.Bool
-		defaultValueString = fmt.Sprintf(formatDefault("%v"), val.Interface())
-
-		if val.Kind() == reflect.String && val.String() != "" {
-			defaultValueString = fmt.Sprintf(formatDefault("%q"), val.String())
-		}
-	}
-
-	helpText := fv.FieldByName("DefaultText")
-	if helpText.IsValid() && helpText.String() != "" {
-		needsPlaceholder = val.Kind() != reflect.Bool
-		defaultValueString = fmt.Sprintf(formatDefault("%s"), helpText.String())
-	}
-
-	if defaultValueString == formatDefault("") {
-		defaultValueString = ""
-	}
+	placeholder, usage := unquoteUsage(df.GetUsage())
+	needsPlaceholder := df.TakesValue()
 
 	if needsPlaceholder && placeholder == "" {
 		placeholder = defaultPlaceholder
 	}
 
+	defaultValueString := ""
+
+	if s := df.GetDefaultText(); s != "" {
+		defaultValueString = fmt.Sprintf(formatDefault("%s"), s)
+	}
+
 	usageWithDefault := strings.TrimSpace(usage + defaultValueString)
 
-	return withEnvHint(flagStringSliceField(f, "EnvVars"),
-		fmt.Sprintf("%s\t%s", prefixedNames(f.Names(), placeholder), usageWithDefault))
+	return withEnvHint(df.GetEnvVars(),
+		fmt.Sprintf("%s\t%s", prefixedNames(df.Names(), placeholder), usageWithDefault))
 }
 
 func stringifyIntSliceFlag(f *IntSliceFlag) string {
