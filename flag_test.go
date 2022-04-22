@@ -663,6 +663,14 @@ func TestIntFlagApply_SetsAllNames(t *testing.T) {
 	expect(t, v, 5)
 }
 
+func TestIntFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Int("myflag", 42, "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &IntFlag{Name: "myflag"}
+	expect(t, f.ValueFromContext(ctx), 42)
+}
+
 var int64FlagTests = []struct {
 	name     string
 	expected string
