@@ -168,6 +168,183 @@ func TestFlagsFromEnv(t *testing.T) {
 	}
 }
 
+type nodocFlag struct {
+	Flag
+
+	Name string
+}
+
+func TestFlagStringifying(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		fl       Flag
+		expected string
+	}{
+		{
+			name:     "bool-flag",
+			fl:       &BoolFlag{Name: "vividly"},
+			expected: "--vividly\t(default: false)",
+		},
+		{
+			name:     "bool-flag-with-default-text",
+			fl:       &BoolFlag{Name: "wildly", DefaultText: "scrambled"},
+			expected: "--wildly\t(default: scrambled)",
+		},
+		{
+			name:     "duration-flag",
+			fl:       &DurationFlag{Name: "scream-for"},
+			expected: "--scream-for value\t(default: 0s)",
+		},
+		{
+			name:     "duration-flag-with-default-text",
+			fl:       &DurationFlag{Name: "feels-about", DefaultText: "whimsically"},
+			expected: "--feels-about value\t(default: whimsically)",
+		},
+		{
+			name:     "float64-flag",
+			fl:       &Float64Flag{Name: "arduous"},
+			expected: "--arduous value\t(default: 0)",
+		},
+		{
+			name:     "float64-flag-with-default-text",
+			fl:       &Float64Flag{Name: "filibuster", DefaultText: "42"},
+			expected: "--filibuster value\t(default: 42)",
+		},
+		{
+			name:     "float64-slice-flag",
+			fl:       &Float64SliceFlag{Name: "pizzas"},
+			expected: "--pizzas value\t",
+		},
+		{
+			name:     "float64-slice-flag-with-default-text",
+			fl:       &Float64SliceFlag{Name: "pepperonis", DefaultText: "shaved"},
+			expected: "--pepperonis value\t(default: shaved)",
+		},
+		{
+			name:     "generic-flag",
+			fl:       &GenericFlag{Name: "yogurt"},
+			expected: "--yogurt value\t",
+		},
+		{
+			name:     "generic-flag-with-default-text",
+			fl:       &GenericFlag{Name: "ricotta", DefaultText: "plops"},
+			expected: "--ricotta value\t(default: plops)",
+		},
+		{
+			name:     "int-flag",
+			fl:       &IntFlag{Name: "grubs"},
+			expected: "--grubs value\t(default: 0)",
+		},
+		{
+			name:     "int-flag-with-default-text",
+			fl:       &IntFlag{Name: "poisons", DefaultText: "11ty"},
+			expected: "--poisons value\t(default: 11ty)",
+		},
+		{
+			name:     "int-slice-flag",
+			fl:       &IntSliceFlag{Name: "pencils"},
+			expected: "--pencils value\t",
+		},
+		{
+			name:     "int-slice-flag-with-default-text",
+			fl:       &IntFlag{Name: "pens", DefaultText: "-19"},
+			expected: "--pens value\t(default: -19)",
+		},
+		{
+			name:     "int64-flag",
+			fl:       &Int64Flag{Name: "flume"},
+			expected: "--flume value\t(default: 0)",
+		},
+		{
+			name:     "int64-flag-with-default-text",
+			fl:       &Int64Flag{Name: "shattering", DefaultText: "22"},
+			expected: "--shattering value\t(default: 22)",
+		},
+		{
+			name:     "int64-slice-flag",
+			fl:       &Int64SliceFlag{Name: "drawers"},
+			expected: "--drawers value\t",
+		},
+		{
+			name:     "int64-slice-flag-with-default-text",
+			fl:       &Int64SliceFlag{Name: "handles", DefaultText: "-2"},
+			expected: "--handles value\t(default: -2)",
+		},
+		{
+			name:     "path-flag",
+			fl:       &PathFlag{Name: "soup"},
+			expected: "--soup value\t",
+		},
+		{
+			name:     "path-flag-with-default-text",
+			fl:       &PathFlag{Name: "stew", DefaultText: "charred/beans"},
+			expected: "--stew value\t(default: charred/beans)",
+		},
+		{
+			name:     "string-flag",
+			fl:       &StringFlag{Name: "arf-sound"},
+			expected: "--arf-sound value\t",
+		},
+		{
+			name:     "string-flag-with-default-text",
+			fl:       &StringFlag{Name: "woof-sound", DefaultText: "urp"},
+			expected: "--woof-sound value\t(default: urp)",
+		},
+		{
+			name:     "string-slice-flag",
+			fl:       &StringSliceFlag{Name: "meow-sounds"},
+			expected: "--meow-sounds value\t",
+		},
+		{
+			name:     "string-slice-flag-with-default-text",
+			fl:       &StringSliceFlag{Name: "moo-sounds", DefaultText: "awoo"},
+			expected: "--moo-sounds value\t(default: awoo)",
+		},
+		{
+			name:     "timestamp-flag",
+			fl:       &TimestampFlag{Name: "eating"},
+			expected: "--eating value\t",
+		},
+		{
+			name:     "timestamp-flag-with-default-text",
+			fl:       &TimestampFlag{Name: "sleeping", DefaultText: "earlier"},
+			expected: "--sleeping value\t(default: earlier)",
+		},
+		{
+			name:     "uint-flag",
+			fl:       &UintFlag{Name: "jars"},
+			expected: "--jars value\t(default: 0)",
+		},
+		{
+			name:     "uint-flag-with-default-text",
+			fl:       &UintFlag{Name: "bottles", DefaultText: "99"},
+			expected: "--bottles value\t(default: 99)",
+		},
+		{
+			name:     "uint64-flag",
+			fl:       &Uint64Flag{Name: "cans"},
+			expected: "--cans value\t(default: 0)",
+		},
+		{
+			name:     "uint64-flag-with-default-text",
+			fl:       &UintFlag{Name: "tubes", DefaultText: "13"},
+			expected: "--tubes value\t(default: 13)",
+		},
+		{
+			name:     "nodoc-flag",
+			fl:       &nodocFlag{Name: "scarecrow"},
+			expected: "",
+		},
+	} {
+		t.Run(tc.name, func(ct *testing.T) {
+			s := stringifyFlag(tc.fl)
+			if s != tc.expected {
+				ct.Errorf("stringified flag %q does not match expected %q", s, tc.expected)
+			}
+		})
+	}
+}
+
 var stringFlagTests = []struct {
 	name     string
 	aliases  []string
