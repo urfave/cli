@@ -2063,17 +2063,19 @@ func TestTimestampFlagApply_WithDestination(t *testing.T) {
 // Test issue #1254
 // StringSlice() with UseShortOptionHandling causes duplicated entries, depending on the ordering of the flags
 func TestSliceShortOptionHandle(t *testing.T) {
-	_ = (&App{
+	wasCalled := false
+	err := (&App{
 		Commands: []*Command{
 			{
 				Name:                   "foobar",
 				UseShortOptionHandling: true,
 				Action: func(ctx *Context) error {
+					wasCalled = true
 					if ctx.Bool("i") != true {
-						t.Errorf("bool i not set")
+						t.Error("bool i not set")
 					}
 					if ctx.Bool("t") != true {
-						t.Errorf("bool i not set")
+						t.Error("bool i not set")
 					}
 					ss := ctx.StringSlice("net")
 					if !reflect.DeepEqual(ss, []string{"foo"}) {
@@ -2089,4 +2091,10 @@ func TestSliceShortOptionHandle(t *testing.T) {
 			},
 		},
 	}).Run([]string{"run", "foobar", "--net=foo", "-it"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !wasCalled {
+		t.Fatal("Action callback was never called")
+	}
 }
