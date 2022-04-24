@@ -68,3 +68,7 @@ export PATH=$PATH:$GOPATH/bin
 cli is tested against multiple versions of Go on Linux, and against the latest
 released version of Go on OS X and Windows. This project uses Github Actions for
 builds. To see our currently supported go versions and platforms, look at the [./.github/workflows/cli.yml](https://github.com/urfave/cli/blob/main/.github/workflows/cli.yml).
+
+## License
+
+See [`LICENSE`](./LICENSE)
