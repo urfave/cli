@@ -8,10 +8,10 @@ To that end, the overall goal of the release process is to send
 changes out into the world as close to the time the commits were
 merged to the `main` branch as possible. In this way, the community
 of humans depending on this library are able to make use of the
-changes they need **quickly**, which means they should'nt have to
+changes they need **quickly**, which means they shouldn't have to
 maintain long-lived forks of the project, which means they can get
 back to focusing on the work on which they want to focus. This also
-means that the @urfave/cli team should be ablo to focus on
+means that the @urfave/cli team should be able to focus on
 delivering a steadily improving product with significantly eased
 ability to associate bugs and regressions with specific releases.
 
