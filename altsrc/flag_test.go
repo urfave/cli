@@ -321,6 +321,15 @@ func TestFloat64ApplyInputSourceMethodSetNegativeValue(t *testing.T) {
 	expect(t, -1.3, c.Float64("test"))
 }
 
+func TestFloat64ApplyInputSourceMethodSetNegativeValueNotSet(t *testing.T) {
+	c := runTest(t, testApplyInputSource{
+		Flag:     NewFloat64Flag(&cli.Float64Flag{Name: "test1"}),
+		FlagName: "test1",
+		// dont set map value
+	})
+	expect(t, 0.0, c.Float64("test1"))
+}
+
 func TestFloat64ApplyInputSourceMethodContextSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
 		Flag:               NewFloat64Flag(&cli.Float64Flag{Name: "test"}),
