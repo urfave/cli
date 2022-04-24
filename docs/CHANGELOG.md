@@ -1,6 +1,6 @@
-> This document is no longer being actively maintained. Please see the
+> :warning: This document is no longer being actively maintained. Please see the
 > [releases page](https://github.com/urfave/cli/releases) for all release notes
-> and related hypermedia for releases > 1.22.5+, 2.3.0+ and more.
+> and related hypermedia for releases `>= 1.22.5`, `>= 2.3.0`.
 
 ---
 
