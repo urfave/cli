@@ -98,8 +98,8 @@ func (f *PathFlag) Apply(set *flag.FlagSet) error {
 
 // Path looks up the value of a local PathFlag, returns
 // "" if not found
-func (c *Context) Path(name string) string {
-	if fs := c.lookupFlagSet(name); fs != nil {
+func (cCtx *Context) Path(name string) string {
+	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return lookupPath(name, fs)
 	}
 

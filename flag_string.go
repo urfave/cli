@@ -99,8 +99,8 @@ func (f *StringFlag) Apply(set *flag.FlagSet) error {
 
 // String looks up the value of a local StringFlag, returns
 // "" if not found
-func (c *Context) String(name string) string {
-	if fs := c.lookupFlagSet(name); fs != nil {
+func (cCtx *Context) String(name string) string {
+	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return lookupString(name, fs)
 	}
 	return ""
