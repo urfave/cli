@@ -197,10 +197,8 @@ func (f *IntFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContex
 			if err != nil {
 				return err
 			}
-			if value > 0 {
-				for _, name := range f.Names() {
-					_ = f.set.Set(name, strconv.FormatInt(int64(value), 10))
-				}
+			for _, name := range f.Names() {
+				_ = f.set.Set(name, strconv.FormatInt(int64(value), 10))
 			}
 		}
 	}
@@ -215,10 +213,8 @@ func (f *DurationFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceC
 			if err != nil {
 				return err
 			}
-			if value > 0 {
-				for _, name := range f.Names() {
-					_ = f.set.Set(name, value.String())
-				}
+			for _, name := range f.Names() {
+				_ = f.set.Set(name, value.String())
 			}
 		}
 	}
@@ -233,11 +229,9 @@ func (f *Float64Flag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceCo
 			if err != nil {
 				return err
 			}
-			if value > 0 {
-				floatStr := float64ToString(value)
-				for _, name := range f.Names() {
-					_ = f.set.Set(name, floatStr)
-				}
+			floatStr := float64ToString(value)
+			for _, name := range f.Names() {
+				_ = f.set.Set(name, floatStr)
 			}
 		}
 	}

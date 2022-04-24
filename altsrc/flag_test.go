@@ -234,6 +234,15 @@ func TestIntApplyInputSourceMethodSet(t *testing.T) {
 	expect(t, 15, c.Int("test"))
 }
 
+func TestIntApplyInputSourceMethodSetNegativeValue(t *testing.T) {
+	c := runTest(t, testApplyInputSource{
+		Flag:     NewIntFlag(&cli.IntFlag{Name: "test"}),
+		FlagName: "test",
+		MapValue: -1,
+	})
+	expect(t, -1, c.Int("test"))
+}
+
 func TestIntApplyInputSourceMethodContextSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
 		Flag:               NewIntFlag(&cli.IntFlag{Name: "test"}),
@@ -264,6 +273,15 @@ func TestDurationApplyInputSourceMethodSet(t *testing.T) {
 	expect(t, 30*time.Second, c.Duration("test"))
 }
 
+func TestDurationApplyInputSourceMethodSetNegativeValue(t *testing.T) {
+	c := runTest(t, testApplyInputSource{
+		Flag:     NewDurationFlag(&cli.DurationFlag{Name: "test"}),
+		FlagName: "test",
+		MapValue: -30 * time.Second,
+	})
+	expect(t, -30*time.Second, c.Duration("test"))
+}
+
 func TestDurationApplyInputSourceMethodContextSet(t *testing.T) {
 	c := runTest(t, testApplyInputSource{
 		Flag:               NewDurationFlag(&cli.DurationFlag{Name: "test"}),
@@ -292,6 +310,24 @@ func TestFloat64ApplyInputSourceMethodSet(t *testing.T) {
 		MapValue: 1.3,
 	})
 	expect(t, 1.3, c.Float64("test"))
+}
+
+func TestFloat64ApplyInputSourceMethodSetNegativeValue(t *testing.T) {
+	c := runTest(t, testApplyInputSource{
+		Flag:     NewFloat64Flag(&cli.Float64Flag{Name: "test"}),
+		FlagName: "test",
+		MapValue: -1.3,
+	})
+	expect(t, -1.3, c.Float64("test"))
+}
+
+func TestFloat64ApplyInputSourceMethodSetNegativeValueNotSet(t *testing.T) {
+	c := runTest(t, testApplyInputSource{
+		Flag:     NewFloat64Flag(&cli.Float64Flag{Name: "test1"}),
+		FlagName: "test1",
+		// dont set map value
+	})
+	expect(t, 0.0, c.Float64("test1"))
 }
 
 func TestFloat64ApplyInputSourceMethodContextSet(t *testing.T) {
