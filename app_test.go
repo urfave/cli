@@ -445,14 +445,14 @@ func TestApp_Setup_defaultsWriter(t *testing.T) {
 }
 
 func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
-	var context *Context
+	var cCtx *Context
 
 	a := &App{
 		Commands: []*Command{
 			{
 				Name: "foo",
 				Action: func(c *Context) error {
-					context = c
+					cCtx = c
 					return nil
 				},
 				Flags: []Flag{
@@ -468,8 +468,8 @@ func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
 	}
 	_ = a.Run([]string{"", "foo", "--lang", "spanish", "abcd"})
 
-	expect(t, context.Args().Get(0), "abcd")
-	expect(t, context.String("lang"), "spanish")
+	expect(t, cCtx.Args().Get(0), "abcd")
+	expect(t, cCtx.String("lang"), "spanish")
 }
 
 func TestApp_RunAsSubCommandIncorrectUsage(t *testing.T) {

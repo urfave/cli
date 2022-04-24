@@ -16,9 +16,9 @@ import (
 // variables from a file containing JSON data with the file name defined
 // by the given flag.
 func NewJSONSourceFromFlagFunc(flag string) func(c *cli.Context) (InputSourceContext, error) {
-	return func(context *cli.Context) (InputSourceContext, error) {
-		if context.IsSet(flag) {
-			return NewJSONSourceFromFile(context.String(flag))
+	return func(cCtx *cli.Context) (InputSourceContext, error) {
+		if cCtx.IsSet(flag) {
+			return NewJSONSourceFromFile(cCtx.String(flag))
 		}
 
 		return defaultInputSource()

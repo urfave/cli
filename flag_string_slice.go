@@ -188,8 +188,8 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
 
 // StringSlice looks up the value of a local StringSliceFlag, returns
 // nil if not found
-func (c *Context) StringSlice(name string) []string {
-	if fs := c.lookupFlagSet(name); fs != nil {
+func (cCtx *Context) StringSlice(name string) []string {
+	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return lookupStringSlice(name, fs)
 	}
 	return nil
