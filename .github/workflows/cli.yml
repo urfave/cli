@@ -37,11 +37,17 @@ jobs:
       - name: vet
         run: go run internal/build/build.go vet
 
+      - name: test with tags
+        run: go run internal/build/build.go -tags urfave_cli_no_docs test
+
       - name: test
         run: go run internal/build/build.go test
 
       - name: check-binary-size
         run: go run internal/build/build.go check-binary-size
+
+      - name: check-binary-size with tags (informational only)
+        run: go run internal/build/build.go -tags urfave_cli_no_docs check-binary-size || true
 
       - name: Upload coverage to Codecov
         if: success() && matrix.go == '1.18.x' && matrix.os == 'ubuntu-latest'
