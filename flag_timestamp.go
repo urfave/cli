@@ -164,8 +164,8 @@ func (f *TimestampFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
-// ValueFromContext returns the flag’s value in the given Context.
-func (f *TimestampFlag) ValueFromContext(ctx *Context) *time.Time {
+// Get returns the flag’s value in the given Context.
+func (f *TimestampFlag) Get(ctx *Context) *time.Time {
 	return ctx.Timestamp(f.Name)
 }
 

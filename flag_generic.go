@@ -104,8 +104,8 @@ func (f GenericFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
-// ValueFromContext returns the flag’s value in the given Context.
-func (f *GenericFlag) ValueFromContext(ctx *Context) interface{} {
+// Get returns the flag’s value in the given Context.
+func (f *GenericFlag) Get(ctx *Context) interface{} {
 	return ctx.Generic(f.Name)
 }
 

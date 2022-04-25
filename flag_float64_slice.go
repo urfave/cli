@@ -175,8 +175,8 @@ func (f *Float64SliceFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
-// ValueFromContext returns the flag’s value in the given Context.
-func (f *Float64SliceFlag) ValueFromContext(ctx *Context) []float64 {
+// Get returns the flag’s value in the given Context.
+func (f *Float64SliceFlag) Get(ctx *Context) []float64 {
 	return ctx.Float64Slice(f.Name)
 }
 

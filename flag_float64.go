@@ -101,8 +101,8 @@ func (f *Float64Flag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
-// ValueFromContext returns the flag’s value in the given Context.
-func (f *Float64Flag) ValueFromContext(ctx *Context) float64 {
+// Get returns the flag’s value in the given Context.
+func (f *Float64Flag) Get(ctx *Context) float64 {
 	return ctx.Float64(f.Name)
 }
 

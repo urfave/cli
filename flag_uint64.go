@@ -101,8 +101,8 @@ func (f *Uint64Flag) GetEnvVars() []string {
 	return f.EnvVars
 }
 
-// ValueFromContext returns the flag’s value in the given Context.
-func (f *Uint64Flag) ValueFromContext(ctx *Context) uint64 {
+// Get returns the flag’s value in the given Context.
+func (f *Uint64Flag) Get(ctx *Context) uint64 {
 	return ctx.Uint64(f.Name)
 }
 

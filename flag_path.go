@@ -96,8 +96,8 @@ func (f *PathFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
-// ValueFromContext returns the flag’s value in the given Context.
-func (f *PathFlag) ValueFromContext(ctx *Context) string {
+// Get returns the flag’s value in the given Context.
+func (f *PathFlag) Get(ctx *Context) string {
 	return ctx.Path(f.Name)
 }
 

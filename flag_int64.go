@@ -101,8 +101,8 @@ func (f *Int64Flag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
-// ValueFromContext returns the flag’s value in the given Context.
-func (f *Int64Flag) ValueFromContext(ctx *Context) int64 {
+// Get returns the flag’s value in the given Context.
+func (f *Int64Flag) Get(ctx *Context) int64 {
 	return ctx.Int64(f.Name)
 }
 

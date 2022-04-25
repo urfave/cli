@@ -102,8 +102,8 @@ func (f *IntFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
-// ValueFromContext returns the flag’s value in the given Context.
-func (f *IntFlag) ValueFromContext(ctx *Context) int {
+// Get returns the flag’s value in the given Context.
+func (f *IntFlag) Get(ctx *Context) int {
 	return ctx.Int(f.Name)
 }
 

@@ -186,8 +186,8 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
-// ValueFromContext returns the flag’s value in the given Context.
-func (f *StringSliceFlag) ValueFromContext(ctx *Context) []string {
+// Get returns the flag’s value in the given Context.
+func (f *StringSliceFlag) Get(ctx *Context) []string {
 	return ctx.StringSlice(f.Name)
 }
 

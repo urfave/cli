@@ -101,8 +101,8 @@ func (f *UintFlag) GetEnvVars() []string {
 	return f.EnvVars
 }
 
-// ValueFromContext returns the flag’s value in the given Context.
-func (f *UintFlag) ValueFromContext(ctx *Context) uint {
+// Get returns the flag’s value in the given Context.
+func (f *UintFlag) Get(ctx *Context) uint {
 	return ctx.Uint(f.Name)
 }
 
