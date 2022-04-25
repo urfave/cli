@@ -55,6 +55,16 @@ import (
 ...
 ```
 
+### Build tags
+
+You can use the following build tags:
+
+#### `urfave_cli_no_docs`
+
+When set, this removes `ToMarkdown` and `ToMan` methods, so your application
+won't be able to call those. This reduces the resulting binary size by about
+300-400 KB (measured using Go 1.18.1 on Linux/amd64), due to less dependencies.
+
 ### GOPATH
 
 Make sure your `PATH` includes the `$GOPATH/bin` directory so your commands can
