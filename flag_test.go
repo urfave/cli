@@ -400,7 +400,7 @@ func TestStringFlagWithEnvVarHelpOutput(t *testing.T) {
 	}
 }
 
-var prefixStringFlagTests = []struct {
+var _ = []struct {
 	name     string
 	aliases  []string
 	usage    string
@@ -490,7 +490,7 @@ func TestPathFlagApply_SetsAllNames(t *testing.T) {
 	expect(t, v, "/path/to/file/PATH")
 }
 
-var envHintFlagTests = []struct {
+var _ = []struct {
 	name     string
 	env      string
 	hinter   FlagEnvHintFunc
@@ -2174,43 +2174,43 @@ type flagDefaultTestCase struct {
 
 func TestFlagDefaultValue(t *testing.T) {
 	cases := []*flagDefaultTestCase{
-		&flagDefaultTestCase{
+		{
 			name:    "stringSclice",
 			flag:    &StringSliceFlag{Name: "flag", Value: NewStringSlice("default1", "default2")},
 			toParse: []string{"--flag", "parsed"},
 			expect: `--flag value	(default: "default1", "default2")	(accepts multiple inputs)`,
 		},
-		&flagDefaultTestCase{
+		{
 			name:    "float64Sclice",
 			flag:    &Float64SliceFlag{Name: "flag", Value: NewFloat64Slice(1.1, 2.2)},
 			toParse: []string{"--flag", "13.3"},
 			expect: `--flag value	(default: 1.1, 2.2)	(accepts multiple inputs)`,
 		},
-		&flagDefaultTestCase{
+		{
 			name:    "int64Sclice",
 			flag:    &Int64SliceFlag{Name: "flag", Value: NewInt64Slice(1, 2)},
 			toParse: []string{"--flag", "13"},
 			expect: `--flag value	(default: 1, 2)	(accepts multiple inputs)`,
 		},
-		&flagDefaultTestCase{
+		{
 			name:    "intSclice",
 			flag:    &IntSliceFlag{Name: "flag", Value: NewIntSlice(1, 2)},
 			toParse: []string{"--flag", "13"},
 			expect: `--flag value	(default: 1, 2)	(accepts multiple inputs)`,
 		},
-		&flagDefaultTestCase{
+		{
 			name:    "string",
 			flag:    &StringFlag{Name: "flag", Value: "default"},
 			toParse: []string{"--flag", "parsed"},
 			expect: `--flag value	(default: "default")`,
 		},
-		&flagDefaultTestCase{
+		{
 			name:    "bool",
 			flag:    &BoolFlag{Name: "flag", Value: true},
 			toParse: []string{"--flag", "false"},
 			expect: `--flag	(default: true)`,
 		},
-		&flagDefaultTestCase{
+		{
 			name:    "uint64",
 			flag:    &Uint64Flag{Name: "flag", Value: 1},
 			toParse: []string{"--flag", "13"},
