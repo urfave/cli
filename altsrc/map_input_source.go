@@ -244,8 +244,7 @@ func (fsm *MapInputSource) Bool(name string) (bool, error) {
 	return false, nil
 }
 
-// IsSet returns the truth of the key's existence in the map
-func (fsm *MapInputSource) IsSet(name string) bool {
+func (fsm *MapInputSource) isSet(name string) bool {
 	if _, exists := fsm.valueMap[name]; exists {
 		return exists
 	}

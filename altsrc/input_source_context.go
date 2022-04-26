@@ -14,7 +14,6 @@ import (
 type InputSourceContext interface {
 	Source() string
 
-	IsSet(name string) bool
 	Int(name string) (int, error)
 	Duration(name string) (time.Duration, error)
 	Float64(name string) (float64, error)
@@ -23,4 +22,6 @@ type InputSourceContext interface {
 	IntSlice(name string) ([]int, error)
 	Generic(name string) (cli.Generic, error)
 	Bool(name string) (bool, error)
+
+	isSet(name string) bool
 }

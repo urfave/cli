@@ -184,7 +184,7 @@ func (x *jsonSource) Bool(name string) (bool, error) {
 	return v, nil
 }
 
-func (x *jsonSource) IsSet(name string) bool {
+func (x *jsonSource) isSet(name string) bool {
 	_, err := x.getValue(name)
 	return err == nil
 }
