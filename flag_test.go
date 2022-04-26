@@ -2230,6 +2230,54 @@ func TestFlagDefaultValue(t *testing.T) {
 	}
 }
 
+type flagValueTestCase struct {
+	name    string
+	flag    Flag
+	toParse []string
+	expect  string
+}
+
+func TestFlagValue(t *testing.T) {
+	cases := []*flagValueTestCase{
+		&flagValueTestCase{
+			name:    "stringSclice",
+			flag:    &StringSliceFlag{Name: "flag", Value: NewStringSlice("default1", "default2")},
+			toParse: []string{"--flag", "parsed,parsed2", "--flag", "parsed3,parsed4"},
+			expect:  `[parsed parsed2 parsed3 parsed4]`,
+		},
+		&flagValueTestCase{
+			name:    "float64Sclice",
+			flag:    &Float64SliceFlag{Name: "flag", Value: NewFloat64Slice(1.1, 2.2)},
+			toParse: []string{"--flag", "13.3,14.4", "--flag", "15.5,16.6"},
+			expect:  `[]float64{13.3, 14.4, 15.5, 16.6}`,
+		},
+		&flagValueTestCase{
+			name:    "int64Sclice",
+			flag:    &Int64SliceFlag{Name: "flag", Value: NewInt64Slice(1, 2)},
+			toParse: []string{"--flag", "13,14", "--flag", "15,16"},
+			expect:  `[]int64{13, 14, 15, 16}`,
+		},
+		&flagValueTestCase{
+			name:    "intSclice",
+			flag:    &IntSliceFlag{Name: "flag", Value: NewIntSlice(1, 2)},
+			toParse: []string{"--flag", "13,14", "--flag", "15,16"},
+			expect:  `[]int{13, 14, 15, 16}`,
+		},
+	}
+	for i, v := range cases {
+		set := flag.NewFlagSet("test", 0)
+		set.SetOutput(ioutil.Discard)
+		_ = v.flag.Apply(set)
+		if err := set.Parse(v.toParse); err != nil {
+			t.Error(err)
+		}
+		f := set.Lookup("flag")
+		if got := f.Value.String(); got != v.expect {
+			t.Errorf("TestFlagValue %d-%s\nexpect:%s\ngot:%s", i, v.name, v.expect, got)
+		}
+	}
+}
+
 func TestTimestampFlagApply_WithDestination(t *testing.T) {
 	var destination Timestamp
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
