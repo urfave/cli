@@ -244,6 +244,19 @@ func (fsm *MapInputSource) Bool(name string) (bool, error) {
 	return false, nil
 }
 
+// IsSet returns the truth of the key's existence in the map
+func (fsm *MapInputSource) IsSet(name string) bool {
+	if _, exists := fsm.valueMap[name]; exists {
+		return exists
+	}
+
+	if _, exists := nestedVal(name, fsm.valueMap); exists {
+		return exists
+	}
+
+	return false
+}
+
 func incorrectTypeForFlagError(name, expectedTypeName string, value interface{}) error {
 	valueType := reflect.TypeOf(value)
 	valueTypeName := ""

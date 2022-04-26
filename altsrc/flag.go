@@ -64,16 +64,14 @@ func InitInputSourceWithContext(flags []cli.Flag, createInputSource func(cCtx *c
 
 // ApplyInputSourceValue applies a generic value to the flagSet if required
 func (f *GenericFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
-		if !cCtx.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) {
-			value, err := isc.Generic(f.GenericFlag.Name)
-			if err != nil {
-				return err
-			}
-			if value != nil {
-				for _, name := range f.Names() {
-					_ = f.set.Set(name, value.String())
-				}
+	if f.set != nil && !cCtx.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) && isc.IsSet(f.GenericFlag.Name) {
+		value, err := isc.Generic(f.GenericFlag.Name)
+		if err != nil {
+			return err
+		}
+		if value != nil {
+			for _, name := range f.Names() {
+				_ = f.set.Set(name, value.String())
 			}
 		}
 	}
@@ -83,19 +81,17 @@ func (f *GenericFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceCo
 
 // ApplyInputSourceValue applies a StringSlice value to the flagSet if required
 func (f *StringSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
-		if !cCtx.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) {
-			value, err := isc.StringSlice(f.StringSliceFlag.Name)
-			if err != nil {
-				return err
-			}
-			if value != nil {
-				var sliceValue cli.StringSlice = *(cli.NewStringSlice(value...))
-				for _, name := range f.Names() {
-					underlyingFlag := f.set.Lookup(name)
-					if underlyingFlag != nil {
-						underlyingFlag.Value = &sliceValue
-					}
+	if f.set != nil && !cCtx.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) && isc.IsSet(f.StringSliceFlag.Name) {
+		value, err := isc.StringSlice(f.StringSliceFlag.Name)
+		if err != nil {
+			return err
+		}
+		if value != nil {
+			var sliceValue cli.StringSlice = *(cli.NewStringSlice(value...))
+			for _, name := range f.Names() {
+				underlyingFlag := f.set.Lookup(name)
+				if underlyingFlag != nil {
+					underlyingFlag.Value = &sliceValue
 				}
 			}
 		}
@@ -105,19 +101,17 @@ func (f *StringSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSour
 
 // ApplyInputSourceValue applies a IntSlice value if required
 func (f *IntSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
-		if !cCtx.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) {
-			value, err := isc.IntSlice(f.IntSliceFlag.Name)
-			if err != nil {
-				return err
-			}
-			if value != nil {
-				var sliceValue cli.IntSlice = *(cli.NewIntSlice(value...))
-				for _, name := range f.Names() {
-					underlyingFlag := f.set.Lookup(name)
-					if underlyingFlag != nil {
-						underlyingFlag.Value = &sliceValue
-					}
+	if f.set != nil && !cCtx.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) && isc.IsSet(f.IntSliceFlag.Name) {
+		value, err := isc.IntSlice(f.IntSliceFlag.Name)
+		if err != nil {
+			return err
+		}
+		if value != nil {
+			var sliceValue cli.IntSlice = *(cli.NewIntSlice(value...))
+			for _, name := range f.Names() {
+				underlyingFlag := f.set.Lookup(name)
+				if underlyingFlag != nil {
+					underlyingFlag.Value = &sliceValue
 				}
 			}
 		}
@@ -127,16 +121,14 @@ func (f *IntSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceC
 
 // ApplyInputSourceValue applies a Bool value to the flagSet if required
 func (f *BoolFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
-		if !cCtx.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) {
-			value, err := isc.Bool(f.BoolFlag.Name)
-			if err != nil {
-				return err
-			}
-			if value {
-				for _, name := range f.Names() {
-					_ = f.set.Set(name, strconv.FormatBool(value))
-				}
+	if f.set != nil && !cCtx.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) && isc.IsSet(f.BoolFlag.Name) {
+		value, err := isc.Bool(f.BoolFlag.Name)
+		if err != nil {
+			return err
+		}
+		if value {
+			for _, name := range f.Names() {
+				_ = f.set.Set(name, strconv.FormatBool(value))
 			}
 		}
 	}
@@ -145,16 +137,14 @@ func (f *BoolFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceConte
 
 // ApplyInputSourceValue applies a String value to the flagSet if required
 func (f *StringFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
-		if !(cCtx.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) {
-			value, err := isc.String(f.StringFlag.Name)
-			if err != nil {
-				return err
-			}
-			if value != "" {
-				for _, name := range f.Names() {
-					_ = f.set.Set(name, value)
-				}
+	if f.set != nil && !(cCtx.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) && isc.IsSet(f.StringFlag.Name) {
+		value, err := isc.String(f.StringFlag.Name)
+		if err != nil {
+			return err
+		}
+		if value != "" {
+			for _, name := range f.Names() {
+				_ = f.set.Set(name, value)
 			}
 		}
 	}
@@ -163,26 +153,24 @@ func (f *StringFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceCon
 
 // ApplyInputSourceValue applies a Path value to the flagSet if required
 func (f *PathFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
-		if !(cCtx.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) {
-			value, err := isc.String(f.PathFlag.Name)
-			if err != nil {
-				return err
-			}
-			if value != "" {
-				for _, name := range f.Names() {
+	if f.set != nil && !(cCtx.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) && isc.IsSet(f.PathFlag.Name) {
+		value, err := isc.String(f.PathFlag.Name)
+		if err != nil {
+			return err
+		}
+		if value != "" {
+			for _, name := range f.Names() {
 
-					if !filepath.IsAbs(value) && isc.Source() != "" {
-						basePathAbs, err := filepath.Abs(isc.Source())
-						if err != nil {
-							return err
-						}
-
-						value = filepath.Join(filepath.Dir(basePathAbs), value)
+				if !filepath.IsAbs(value) && isc.Source() != "" {
+					basePathAbs, err := filepath.Abs(isc.Source())
+					if err != nil {
+						return err
 					}
 
-					_ = f.set.Set(name, value)
+					value = filepath.Join(filepath.Dir(basePathAbs), value)
 				}
+
+				_ = f.set.Set(name, value)
 			}
 		}
 	}
@@ -191,15 +179,13 @@ func (f *PathFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceConte
 
 // ApplyInputSourceValue applies a int value to the flagSet if required
 func (f *IntFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
-		if !(cCtx.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) {
-			value, err := isc.Int(f.IntFlag.Name)
-			if err != nil {
-				return err
-			}
-			for _, name := range f.Names() {
-				_ = f.set.Set(name, strconv.FormatInt(int64(value), 10))
-			}
+	if f.set != nil && !(cCtx.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) && isc.IsSet(f.IntFlag.Name) {
+		value, err := isc.Int(f.IntFlag.Name)
+		if err != nil {
+			return err
+		}
+		for _, name := range f.Names() {
+			_ = f.set.Set(name, strconv.FormatInt(int64(value), 10))
 		}
 	}
 	return nil
@@ -207,15 +193,13 @@ func (f *IntFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContex
 
 // ApplyInputSourceValue applies a Duration value to the flagSet if required
 func (f *DurationFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
-		if !(cCtx.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) {
-			value, err := isc.Duration(f.DurationFlag.Name)
-			if err != nil {
-				return err
-			}
-			for _, name := range f.Names() {
-				_ = f.set.Set(name, value.String())
-			}
+	if f.set != nil && !(cCtx.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) && isc.IsSet(f.DurationFlag.Name) {
+		value, err := isc.Duration(f.DurationFlag.Name)
+		if err != nil {
+			return err
+		}
+		for _, name := range f.Names() {
+			_ = f.set.Set(name, value.String())
 		}
 	}
 	return nil
@@ -223,16 +207,14 @@ func (f *DurationFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceC
 
 // ApplyInputSourceValue applies a Float64 value to the flagSet if required
 func (f *Float64Flag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error {
-	if f.set != nil {
-		if !(cCtx.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) {
-			value, err := isc.Float64(f.Float64Flag.Name)
-			if err != nil {
-				return err
-			}
-			floatStr := float64ToString(value)
-			for _, name := range f.Names() {
-				_ = f.set.Set(name, floatStr)
-			}
+	if f.set != nil && !(cCtx.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) && isc.IsSet(f.Float64Flag.Name) {
+		value, err := isc.Float64(f.Float64Flag.Name)
+		if err != nil {
+			return err
+		}
+		floatStr := float64ToString(value)
+		for _, name := range f.Names() {
+			_ = f.set.Set(name, floatStr)
 		}
 	}
 	return nil
