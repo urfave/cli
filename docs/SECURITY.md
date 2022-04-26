@@ -23,5 +23,5 @@ communications to be decided via email. The `urfave/cli` maintainer
 team comprises volunteers who contribute when possible, so please
 have patience :bow:
 
-[^1]: The `v1.22.x` series will only receive bug fixes until `v1`
-  is deemed entirely unsupported
+[^1]: The `v1.22.x` series will receive bug fixes and security
+  patches only.
