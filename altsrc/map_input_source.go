@@ -249,11 +249,8 @@ func (fsm *MapInputSource) isSet(name string) bool {
 		return exists
 	}
 
-	if _, exists := nestedVal(name, fsm.valueMap); exists {
-		return exists
-	}
-
-	return false
+	_, exists := nestedVal(name, fsm.valueMap)
+	return exists
 }
 
 func incorrectTypeForFlagError(name, expectedTypeName string, value interface{}) error {
