@@ -43,12 +43,14 @@ func (i *Int64Slice) Set(value string) error {
 		return nil
 	}
 
-	tmp, err := strconv.ParseInt(value, 0, 64)
-	if err != nil {
-		return err
-	}
+	for _, s := range flagSplitMultiValues(value) {
+		tmp, err := strconv.ParseInt(strings.TrimSpace(s), 0, 64)
+		if err != nil {
+			return err
+		}
 
-	i.slice = append(i.slice, tmp)
+		i.slice = append(i.slice, tmp)
+	}
 
 	return nil
 }
@@ -151,7 +153,7 @@ func (f *Int64SliceFlag) Apply(set *flag.FlagSet) error {
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		f.Value = &Int64Slice{}
 
-		for _, s := range strings.Split(val, ",") {
+		for _, s := range flagSplitMultiValues(val) {
 			if err := f.Value.Set(strings.TrimSpace(s)); err != nil {
 				return fmt.Errorf("could not parse %q as int64 slice value for flag %s: %s", val, f.Name, err)
 			}

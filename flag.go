@@ -402,3 +402,7 @@ func flagFromEnvOrFile(envVars []string, filePath string) (val string, ok bool) 
 	}
 	return "", false
 }
+
+func flagSplitMultiValues(val string) []string {
+	return strings.Split(val, ",")
+}

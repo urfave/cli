@@ -390,6 +390,40 @@ func ExampleApp_Run_zshComplete() {
 	// h:Shows a list of commands or help for one command
 }
 
+func ExampleApp_Run_sliceValues() {
+	// set args for examples sake
+	os.Args = []string{"multi_values",
+		"--stringSclice", "parsed1,parsed2", "--stringSclice", "parsed3,parsed4",
+		"--float64Sclice", "13.3,14.4", "--float64Sclice", "15.5,16.6",
+		"--int64Sclice", "13,14", "--int64Sclice", "15,16",
+		"--intSclice", "13,14", "--intSclice", "15,16",
+	}
+	app := NewApp()
+	app.Name = "multi_values"
+	app.Flags = []Flag{
+		&StringSliceFlag{Name: "stringSclice"},
+		&Float64SliceFlag{Name: "float64Sclice"},
+		&Int64SliceFlag{Name: "int64Sclice"},
+		&IntSliceFlag{Name: "intSclice"},
+	}
+	app.Action = func(ctx *Context) error {
+		for i, v := range ctx.FlagNames() {
+			fmt.Printf("%d-%s %#v\n", i, v, ctx.Value(v))
+		}
+		err := ctx.Err()
+		fmt.Println("error:", err)
+		return err
+	}
+
+	_ = app.Run(os.Args)
+	// Output:
+	// 0-float64Sclice cli.Float64Slice{slice:[]float64{13.3, 14.4, 15.5, 16.6}, hasBeenSet:true}
+	// 1-int64Sclice cli.Int64Slice{slice:[]int64{13, 14, 15, 16}, hasBeenSet:true}
+	// 2-intSclice cli.IntSlice{slice:[]int{13, 14, 15, 16}, hasBeenSet:true}
+	// 3-stringSclice cli.StringSlice{slice:[]string{"parsed1", "parsed2", "parsed3", "parsed4"}, hasBeenSet:true}
+	// error: <nil>
+}
+
 func TestApp_Run(t *testing.T) {
 	s := ""
 
