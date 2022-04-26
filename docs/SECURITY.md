@@ -5,12 +5,12 @@ policy! :tada: :lock:
 
 ## Supported Versions
 
-| Version   | Supported          |
-| --------- | ------------------ |
-| >= 2.3.x  | :white_check_mark: |
-| < 2.3     | :x:                |
-| >= 1.22.x | :white_check_mark: |
-| < 1.22    | :x:                |
+| Version      | Supported                             |
+| ------------ | ------------------------------------- |
+| `>= v2.3.x`  | :white_check_mark:                    |
+| `< v2.3`     | :x:                                   |
+| `>= v1.22.x` | :white_check_mark: :lady_beetle: [^1] |
+| `< v1.22`    | :x:                                   |
 
 ## Reporting a Vulnerability
 
@@ -22,3 +22,6 @@ You should expect a response within 48 hours and further
 communications to be decided via email. The `urfave/cli` maintainer
 team comprises volunteers who contribute when possible, so please
 have patience :bow:
+
+[^1]: The `v1.22.x` series will only receive bug fixes until `v1`
+  is deemed entirely unsupported
