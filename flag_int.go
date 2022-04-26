@@ -109,8 +109,8 @@ func (f *IntFlag) Get(ctx *Context) int {
 
 // Int looks up the value of a local IntFlag, returns
 // 0 if not found
-func (c *Context) Int(name string) int {
-	if fs := c.lookupFlagSet(name); fs != nil {
+func (cCtx *Context) Int(name string) int {
+	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return lookupInt(name, fs)
 	}
 	return 0

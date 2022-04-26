@@ -108,8 +108,8 @@ func (f *UintFlag) Get(ctx *Context) uint {
 
 // Uint looks up the value of a local UintFlag, returns
 // 0 if not found
-func (c *Context) Uint(name string) uint {
-	if fs := c.lookupFlagSet(name); fs != nil {
+func (cCtx *Context) Uint(name string) uint {
+	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return lookupUint(name, fs)
 	}
 	return 0

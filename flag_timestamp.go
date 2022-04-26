@@ -170,8 +170,8 @@ func (f *TimestampFlag) Get(ctx *Context) *time.Time {
 }
 
 // Timestamp gets the timestamp from a flag name
-func (c *Context) Timestamp(name string) *time.Time {
-	if fs := c.lookupFlagSet(name); fs != nil {
+func (cCtx *Context) Timestamp(name string) *time.Time {
+	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return lookupTimestamp(name, fs)
 	}
 	return nil

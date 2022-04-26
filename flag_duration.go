@@ -108,8 +108,8 @@ func (f *DurationFlag) Get(ctx *Context) time.Duration {
 
 // Duration looks up the value of a local DurationFlag, returns
 // 0 if not found
-func (c *Context) Duration(name string) time.Duration {
-	if fs := c.lookupFlagSet(name); fs != nil {
+func (cCtx *Context) Duration(name string) time.Duration {
+	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return lookupDuration(name, fs)
 	}
 	return 0

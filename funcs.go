@@ -21,11 +21,11 @@ type CommandNotFoundFunc func(*Context, string)
 // customized usage error messages.  This function is able to replace the
 // original error messages.  If this function is not set, the "Incorrect usage"
 // is displayed and the execution is interrupted.
-type OnUsageErrorFunc func(context *Context, err error, isSubcommand bool) error
+type OnUsageErrorFunc func(cCtx *Context, err error, isSubcommand bool) error
 
 // ExitErrHandlerFunc is executed if provided in order to handle exitError values
 // returned by Actions and Before/After functions.
-type ExitErrHandlerFunc func(context *Context, err error)
+type ExitErrHandlerFunc func(cCtx *Context, err error)
 
 // FlagStringFunc is used by the help generation to display a flag, which is
 // expected to be a single line.

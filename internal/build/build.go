@@ -46,6 +46,12 @@ func main() {
 			Action: checkBinarySizeActionFunc,
 		},
 	}
+	app.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:  "tags",
+			Usage: "set build tags",
+		},
+	}
 
 	err := app.Run(os.Args)
 	if err != nil {
@@ -68,6 +74,8 @@ func VetActionFunc(_ *cli.Context) error {
 }
 
 func TestActionFunc(c *cli.Context) error {
+	tags := c.String("tags")
+
 	for _, pkg := range packages {
 		var packageName string
 
@@ -79,7 +87,7 @@ func TestActionFunc(c *cli.Context) error {
 
 		coverProfile := fmt.Sprintf("--coverprofile=%s.coverprofile", pkg)
 
-		err := runCmd("go", "test", "-v", coverProfile, packageName)
+		err := runCmd("go", "test", "-tags", tags, "-v", coverProfile, packageName)
 		if err != nil {
 			return err
 		}
@@ -201,14 +209,16 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 		mbStringFormatter    = "%.1fMB"
 	)
 
+	tags := c.String("tags")
+
 	// get cli example size
-	cliSize, err := getSize(cliSourceFilePath, cliBuiltFilePath)
+	cliSize, err := getSize(cliSourceFilePath, cliBuiltFilePath, tags)
 	if err != nil {
 		return err
 	}
 
 	// get hello world size
-	helloSize, err := getSize(helloSourceFilePath, helloBuiltFilePath)
+	helloSize, err := getSize(helloSourceFilePath, helloBuiltFilePath, tags)
 	if err != nil {
 		return err
 	}
@@ -270,9 +280,9 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 	return nil
 }
 
-func getSize(sourcePath string, builtPath string) (size int64, err error) {
+func getSize(sourcePath string, builtPath string, tags string) (size int64, err error) {
 	// build example binary
-	err = runCmd("go", "build", "-o", builtPath, "-ldflags", "-s -w", sourcePath)
+	err = runCmd("go", "build", "-tags", tags, "-o", builtPath, "-ldflags", "-s -w", sourcePath)
 	if err != nil {
 		fmt.Println("issue getting size for example binary")
 		return 0, err

@@ -111,8 +111,8 @@ func (f *GenericFlag) Get(ctx *Context) interface{} {
 
 // Generic looks up the value of a local GenericFlag, returns
 // nil if not found
-func (c *Context) Generic(name string) interface{} {
-	if fs := c.lookupFlagSet(name); fs != nil {
+func (cCtx *Context) Generic(name string) interface{} {
+	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return lookupGeneric(name, fs)
 	}
 	return nil

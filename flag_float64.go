@@ -108,8 +108,8 @@ func (f *Float64Flag) Get(ctx *Context) float64 {
 
 // Float64 looks up the value of a local Float64Flag, returns
 // 0 if not found
-func (c *Context) Float64(name string) float64 {
-	if fs := c.lookupFlagSet(name); fs != nil {
+func (cCtx *Context) Float64(name string) float64 {
+	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return lookupFloat64(name, fs)
 	}
 	return 0
