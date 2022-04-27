@@ -34,4 +34,5 @@ jobs:
         run: |
           go run build.go vet
           go run build.go test
+          go run build.go -tags urfave_cli_no_docs test
           go run build.go toc docs/v1/manual.md

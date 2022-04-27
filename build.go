@@ -41,6 +41,12 @@ func main() {
 			Action: TocActionFunc,
 		},
 	}
+	app.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:  "tags",
+			Usage: "set build tags",
+		},
+	}
 
 	err := app.Run(os.Args)
 	if err != nil {
@@ -63,6 +69,8 @@ func VetActionFunc(_ *cli.Context) error {
 }
 
 func TestActionFunc(c *cli.Context) error {
+	tags := c.String("tags")
+
 	for _, pkg := range packages {
 		var packageName string
 
@@ -74,7 +82,7 @@ func TestActionFunc(c *cli.Context) error {
 
 		coverProfile := fmt.Sprintf("--coverprofile=%s.coverprofile", pkg)
 
-		err := runCmd("go", "test", "-v", coverProfile, packageName)
+		err := runCmd("go", "test", "-tags", tags, "-v", coverProfile, packageName)
 		if err != nil {
 			return err
 		}
