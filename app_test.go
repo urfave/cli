@@ -508,6 +508,14 @@ func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
 }
 
 func TestApp_RunAsSubCommandIncorrectUsage(t *testing.T) {
+	// Go 1.17+ panics when invalid flag is given.
+	// Catch it here and consider the test passed.
+	defer func() {
+		if err := recover(); err == nil {
+			t.Fatal("expected error, got nothing")
+		}
+	}()
+
 	a := App{
 		Flags: []Flag{
 			StringFlag{Name: "--foo"},
