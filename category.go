@@ -81,7 +81,7 @@ func (c *commandCategory) VisibleCommands() []*Command {
 // FlagCategories is a slice of *FlagCategory.
 type FlagCategories []*FlagCategory
 
-// FlagCategory is a category containing commands.
+// FlagCategory is a category containing flags.
 type FlagCategory struct {
 	Name  string
 	Flags []Flag
