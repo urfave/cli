@@ -244,6 +244,15 @@ func (fsm *MapInputSource) Bool(name string) (bool, error) {
 	return false, nil
 }
 
+func (fsm *MapInputSource) isSet(name string) bool {
+	if _, exists := fsm.valueMap[name]; exists {
+		return exists
+	}
+
+	_, exists := nestedVal(name, fsm.valueMap)
+	return exists
+}
+
 func incorrectTypeForFlagError(name, expectedTypeName string, value interface{}) error {
 	valueType := reflect.TypeOf(value)
 	valueTypeName := ""

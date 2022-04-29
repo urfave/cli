@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"reflect"
 	"regexp"
 	"runtime"
 	"strconv"
@@ -252,7 +251,7 @@ func prefixedNames(names []string, placeholder string) string {
 
 func withEnvHint(envVars []string, str string) string {
 	envText := ""
-	if envVars != nil && len(envVars) > 0 {
+	if len(envVars) > 0 {
 		prefix := "$"
 		suffix := ""
 		sep := ", $"
@@ -281,31 +280,12 @@ func flagNames(name string, aliases []string) []string {
 	return ret
 }
 
-func flagStringSliceField(f Flag, name string) []string {
-	fv := flagValue(f)
-	field := fv.FieldByName(name)
-
-	if field.IsValid() {
-		return field.Interface().([]string)
-	}
-
-	return []string{}
-}
-
 func withFileHint(filePath, str string) string {
 	fileText := ""
 	if filePath != "" {
 		fileText = fmt.Sprintf(" [%s]", filePath)
 	}
 	return str + fileText
-}
-
-func flagValue(f Flag) reflect.Value {
-	fv := reflect.ValueOf(f)
-	for fv.Kind() == reflect.Ptr {
-		fv = reflect.Indirect(fv)
-	}
-	return fv
 }
 
 func formatDefault(format string) string {
@@ -429,4 +409,8 @@ func flagFromEnvOrFile(envVars []string, filePath string) (val string, ok bool) 
 		}
 	}
 	return "", false
+}
+
+func flagSplitMultiValues(val string) []string {
+	return strings.Split(val, ",")
 }
