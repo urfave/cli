@@ -9,8 +9,10 @@ import (
 	"io/ioutil"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 var (
@@ -2581,65 +2583,258 @@ func TestSetupInitializesOnlyNilWriters(t *testing.T) {
 	}
 }
 
-func TestFlagAction(t *testing.T) {
-	r := []string{}
-	actionFunc := func(c *Context, s string) error {
-		r = append(r, s)
-		return nil
-	}
+type stringGeneric struct {
+	value string
+}
 
+func (s *stringGeneric) Set(value string) error {
+	s.value = value
+	return nil
+}
+
+func (s *stringGeneric) String() string {
+	return s.value
+}
+
+func TestFlagAction(t *testing.T) {
+	stringFlag := &StringFlag{
+		Name: "f_string",
+		Action: func(c *Context, v string) error {
+			c.App.Writer.Write([]byte(v + " "))
+			return nil
+		},
+	}
 	app := &App{
-		Name:   "command",
-		Writer: io.Discard,
-		Flags:  []Flag{&StringFlag{Name: "flag", Action: actionFunc}},
+		Name: "app",
 		Commands: []*Command{
 			{
-				Name:  "command1",
-				Flags: []Flag{&StringFlag{Name: "flag1", Aliases: []string{"f1"}, Action: actionFunc}},
+				Name:   "c1",
+				Flags:  []Flag{stringFlag},
+				Action: func(ctx *Context) error { return nil },
 				Subcommands: []*Command{
 					{
-						Name:  "command2",
-						Flags: []Flag{&StringFlag{Name: "flag2", Action: actionFunc}},
+						Name:   "sub1",
+						Action: func(ctx *Context) error { return nil },
+						Flags:  []Flag{stringFlag},
 					},
 				},
 			},
 		},
+		Flags: []Flag{
+			stringFlag,
+			&StringSliceFlag{
+				Name: "f_string_slice",
+				Action: func(c *Context, v []string) error {
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&BoolFlag{
+				Name: "f_bool",
+				Action: func(c *Context, v bool) error {
+					c.App.Writer.Write([]byte(fmt.Sprintf("%t ", v)))
+					return nil
+				},
+			},
+			&DurationFlag{
+				Name: "f_duration",
+				Action: func(c *Context, v time.Duration) error {
+					c.App.Writer.Write([]byte(v.String() + " "))
+					return nil
+				},
+			},
+			&Float64Flag{
+				Name: "f_float64",
+				Action: func(c *Context, v float64) error {
+					c.App.Writer.Write([]byte(strconv.FormatFloat(v, 'f', -1, 64) + " "))
+					return nil
+				},
+			},
+			&Float64SliceFlag{
+				Name: "f_float64_slice",
+				Action: func(c *Context, v []float64) error {
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&GenericFlag{
+				Name:  "f_generic",
+				Value: new(stringGeneric),
+				Action: func(c *Context, v interface{}) error {
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&IntFlag{
+				Name: "f_int",
+				Action: func(c *Context, v int) error {
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&IntSliceFlag{
+				Name: "f_int_slice",
+				Action: func(c *Context, v []int) error {
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&Int64Flag{
+				Name: "f_int64",
+				Action: func(c *Context, v int64) error {
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&Int64SliceFlag{
+				Name: "f_int64_slice",
+				Action: func(c *Context, v []int64) error {
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&PathFlag{
+				Name: "f_path",
+				Action: func(c *Context, v string) error {
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&TimestampFlag{
+				Name:   "f_timestamp",
+				Layout: "2006-01-02 15:04:05",
+				Action: func(c *Context, v *time.Time) error {
+					c.App.Writer.Write([]byte(v.Format(time.RFC3339) + " "))
+					return nil
+				},
+			},
+			&UintFlag{
+				Name: "f_uint",
+				Action: func(c *Context, v uint) error {
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&Uint64Flag{
+				Name: "f_uint64",
+				Action: func(c *Context, v uint64) error {
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+		},
+		Action: func(ctx *Context) error { return nil },
 	}
 
 	tests := []struct {
+		name string
 		args []string
-		exp  []string
+		exp  string
 	}{
 		{
-			args: []string{"command", "--flag=f"},
-			exp:  []string{"f"},
+			name: "flag_empty",
+			args: []string{"app"},
+			exp:  "",
 		},
 		{
-			args: []string{"command", "command1", "-f1=f1", "command2"},
-			exp:  []string{"f1"},
+			name: "flag_string",
+			args: []string{"app", "--f_string=string"},
+			exp:  "string ",
 		},
 		{
-			args: []string{"command", "command1", "-f1=f1", "command2", "--flag2=f2"},
-			exp:  []string{"f1", "f2"},
+			name: "flag_string_slice",
+			args: []string{"app", "--f_string_slice=s1,s2,s3"},
+			exp:  "[s1 s2 s3] ",
 		},
 		{
-			args: []string{"command", "--flag=f", "command1", "-flag1=f1"},
-			exp:  []string{"f", "f1"},
+			name: "flag_bool",
+			args: []string{"app", "--f_bool"},
+			exp:  "true ",
 		},
 		{
-			args: []string{"command", "--flag=f", "command1", "-f1=f1"},
-			exp:  []string{"f", "f1"},
+			name: "flag_duration",
+			args: []string{"app", "--f_duration=1h30m20s"},
+			exp:  "1h30m20s ",
 		},
 		{
-			args: []string{"command", "--flag=f", "command1", "-f1=f1", "command2", "--flag2=f2"},
-			exp:  []string{"f", "f1", "f2"},
+			name: "flag_float64",
+			args: []string{"app", "--f_float64=3.14159"},
+			exp:  "3.14159 ",
+		},
+		{
+			name: "flag_float64_slice",
+			args: []string{"app", "--f_float64_slice=1.1,2.2,3.3"},
+			exp:  "[1.1 2.2 3.3] ",
+		},
+		{
+			name: "flag_generic",
+			args: []string{"app", "--f_generic=1"},
+			exp:  "1 ",
+		},
+		{
+			name: "flag_int",
+			args: []string{"app", "--f_int=1"},
+			exp:  "1 ",
+		},
+		{
+			name: "flag_int_slice",
+			args: []string{"app", "--f_int_slice=1,2,3"},
+			exp:  "[1 2 3] ",
+		},
+		{
+			name: "flag_int64",
+			args: []string{"app", "--f_int64=1"},
+			exp:  "1 ",
+		},
+		{
+			name: "flag_int64_slice",
+			args: []string{"app", "--f_int64_slice=1,2,3"},
+			exp:  "[1 2 3] ",
+		},
+		{
+			name: "flag_path",
+			args: []string{"app", "--f_path=/root"},
+			exp:  "/root ",
+		},
+		{
+			name: "flag_timestamp",
+			args: []string{"app", "--f_timestamp", "2022-05-01 02:26:20"},
+			exp:  "2022-05-01T02:26:20Z ",
+		},
+		{
+			name: "flag_uint",
+			args: []string{"app", "--f_uint=1"},
+			exp:  "1 ",
+		},
+		{
+			name: "flag_uint64",
+			args: []string{"app", "--f_uint64=1"},
+			exp:  "1 ",
+		},
+		{
+			name: "command_flag",
+			args: []string{"app", "c1", "--f_string=c1"},
+			exp:  "c1 ",
+		},
+		{
+			name: "subCommand_flag",
+			args: []string{"app", "c1", "sub1", "--f_string=sub1"},
+			exp:  "sub1 ",
+		},
+		{
+			name: "mixture",
+			args: []string{"app", "--f_string=app", "--f_uint=1", "--f_int_slice=1,2,3", "--f_duration=1h30m20s", "c1", "--f_string=c1", "sub1", "--f_string=sub1"},
+			exp:  "app 1h30m20s [1 2 3] 1 c1 sub1 ",
 		},
 	}
 
 	for _, test := range tests {
-		r = []string{}
-		err := app.Run(test.args)
-		expect(t, err, nil)
-		expect(t, r, test.exp)
+		t.Run(test.name, func(t *testing.T) {
+			buf := new(bytes.Buffer)
+			app.Writer = buf
+			err := app.Run(test.args)
+			expect(t, err, nil)
+			expect(t, buf.String(), test.exp)
+		})
 	}
 }
