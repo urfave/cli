@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 	"runtime"
 	"strings"
 	"testing"
@@ -1035,5 +1036,87 @@ func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 	err = app.Run([]string{"foo", "dummy", "--help"})
 	if err != nil {
 		t.Errorf("Run returned unexpected error: %v", err)
+	}
+}
+
+func TestDefaultCompleteWithFlags(t *testing.T) {
+	origArgv := os.Args
+
+	t.Cleanup(func() {
+		os.Args = origArgv
+	})
+
+	for _, tc := range []struct {
+		name     string
+		c        *Context
+		cmd      *Command
+		argv     []string
+		expected string
+	}{
+		{
+			name:     "empty",
+			c:        &Context{App: &App{}},
+			cmd:      &Command{},
+			argv:     []string{"prog", "cmd"},
+			expected: "",
+		},
+		{
+			name: "typical-flag-suggestion",
+			c: &Context{App: &App{
+				Name: "cmd",
+				Flags: []Flag{
+					&BoolFlag{Name: "happiness"},
+					&Int64Flag{Name: "everybody-jump-on"},
+				},
+				Commands: []*Command{
+					{Name: "putz"},
+				},
+			}},
+			cmd: &Command{
+				Flags: []Flag{
+					&BoolFlag{Name: "excitement"},
+					&StringFlag{Name: "hat-shape"},
+				},
+			},
+			argv:     []string{"cmd", "--e", "--generate-bash-completion"},
+			expected: "--excitement\n",
+		},
+		{
+			name: "typical-command-suggestion",
+			c: &Context{App: &App{
+				Name: "cmd",
+				Flags: []Flag{
+					&BoolFlag{Name: "happiness"},
+					&Int64Flag{Name: "everybody-jump-on"},
+				},
+			}},
+			cmd: &Command{
+				Name: "putz",
+				Subcommands: []*Command{
+					{Name: "futz"},
+				},
+				Flags: []Flag{
+					&BoolFlag{Name: "excitement"},
+					&StringFlag{Name: "hat-shape"},
+				},
+			},
+			argv:     []string{"cmd", "--generate-bash-completion"},
+			expected: "futz\n",
+		},
+	} {
+		t.Run(tc.name, func(ct *testing.T) {
+			writer := &bytes.Buffer{}
+			tc.c.App.Writer = writer
+
+			os.Args = tc.argv
+			f := DefaultCompleteWithFlags(tc.cmd)
+			f(tc.c)
+
+			written := writer.String()
+
+			if written != tc.expected {
+				ct.Errorf("written help does not match expected %q != %q", written, tc.expected)
+			}
+		})
 	}
 }

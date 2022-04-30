@@ -132,8 +132,13 @@ func TestFlagsFromEnv(t *testing.T) {
 	for i, test := range flagTests {
 		defer resetEnv(os.Environ())
 		os.Clearenv()
-		envVarSlice := reflect.Indirect(reflect.ValueOf(test.flag)).FieldByName("EnvVars").Slice(0, 1)
-		_ = os.Setenv(envVarSlice.Index(0).String(), test.input)
+
+		f, ok := test.flag.(DocGenerationFlag)
+		if !ok {
+			t.Errorf("flag %v needs to implement DocGenerationFlag to retrieve env vars", test.flag)
+		}
+		envVarSlice := f.GetEnvVars()
+		_ = os.Setenv(envVarSlice[0], test.input)
 
 		a := App{
 			Flags: []Flag{test.flag},
@@ -160,6 +165,183 @@ func TestFlagsFromEnv(t *testing.T) {
 				t.Errorf("expected no error got %q", err)
 			}
 		}
+	}
+}
+
+type nodocFlag struct {
+	Flag
+
+	Name string
+}
+
+func TestFlagStringifying(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		fl       Flag
+		expected string
+	}{
+		{
+			name:     "bool-flag",
+			fl:       &BoolFlag{Name: "vividly"},
+			expected: "--vividly\t(default: false)",
+		},
+		{
+			name:     "bool-flag-with-default-text",
+			fl:       &BoolFlag{Name: "wildly", DefaultText: "scrambled"},
+			expected: "--wildly\t(default: scrambled)",
+		},
+		{
+			name:     "duration-flag",
+			fl:       &DurationFlag{Name: "scream-for"},
+			expected: "--scream-for value\t(default: 0s)",
+		},
+		{
+			name:     "duration-flag-with-default-text",
+			fl:       &DurationFlag{Name: "feels-about", DefaultText: "whimsically"},
+			expected: "--feels-about value\t(default: whimsically)",
+		},
+		{
+			name:     "float64-flag",
+			fl:       &Float64Flag{Name: "arduous"},
+			expected: "--arduous value\t(default: 0)",
+		},
+		{
+			name:     "float64-flag-with-default-text",
+			fl:       &Float64Flag{Name: "filibuster", DefaultText: "42"},
+			expected: "--filibuster value\t(default: 42)",
+		},
+		{
+			name:     "float64-slice-flag",
+			fl:       &Float64SliceFlag{Name: "pizzas"},
+			expected: "--pizzas value\t",
+		},
+		{
+			name:     "float64-slice-flag-with-default-text",
+			fl:       &Float64SliceFlag{Name: "pepperonis", DefaultText: "shaved"},
+			expected: "--pepperonis value\t(default: shaved)",
+		},
+		{
+			name:     "generic-flag",
+			fl:       &GenericFlag{Name: "yogurt"},
+			expected: "--yogurt value\t",
+		},
+		{
+			name:     "generic-flag-with-default-text",
+			fl:       &GenericFlag{Name: "ricotta", DefaultText: "plops"},
+			expected: "--ricotta value\t(default: plops)",
+		},
+		{
+			name:     "int-flag",
+			fl:       &IntFlag{Name: "grubs"},
+			expected: "--grubs value\t(default: 0)",
+		},
+		{
+			name:     "int-flag-with-default-text",
+			fl:       &IntFlag{Name: "poisons", DefaultText: "11ty"},
+			expected: "--poisons value\t(default: 11ty)",
+		},
+		{
+			name:     "int-slice-flag",
+			fl:       &IntSliceFlag{Name: "pencils"},
+			expected: "--pencils value\t",
+		},
+		{
+			name:     "int-slice-flag-with-default-text",
+			fl:       &IntFlag{Name: "pens", DefaultText: "-19"},
+			expected: "--pens value\t(default: -19)",
+		},
+		{
+			name:     "int64-flag",
+			fl:       &Int64Flag{Name: "flume"},
+			expected: "--flume value\t(default: 0)",
+		},
+		{
+			name:     "int64-flag-with-default-text",
+			fl:       &Int64Flag{Name: "shattering", DefaultText: "22"},
+			expected: "--shattering value\t(default: 22)",
+		},
+		{
+			name:     "int64-slice-flag",
+			fl:       &Int64SliceFlag{Name: "drawers"},
+			expected: "--drawers value\t",
+		},
+		{
+			name:     "int64-slice-flag-with-default-text",
+			fl:       &Int64SliceFlag{Name: "handles", DefaultText: "-2"},
+			expected: "--handles value\t(default: -2)",
+		},
+		{
+			name:     "path-flag",
+			fl:       &PathFlag{Name: "soup"},
+			expected: "--soup value\t",
+		},
+		{
+			name:     "path-flag-with-default-text",
+			fl:       &PathFlag{Name: "stew", DefaultText: "charred/beans"},
+			expected: "--stew value\t(default: charred/beans)",
+		},
+		{
+			name:     "string-flag",
+			fl:       &StringFlag{Name: "arf-sound"},
+			expected: "--arf-sound value\t",
+		},
+		{
+			name:     "string-flag-with-default-text",
+			fl:       &StringFlag{Name: "woof-sound", DefaultText: "urp"},
+			expected: "--woof-sound value\t(default: urp)",
+		},
+		{
+			name:     "string-slice-flag",
+			fl:       &StringSliceFlag{Name: "meow-sounds"},
+			expected: "--meow-sounds value\t",
+		},
+		{
+			name:     "string-slice-flag-with-default-text",
+			fl:       &StringSliceFlag{Name: "moo-sounds", DefaultText: "awoo"},
+			expected: "--moo-sounds value\t(default: awoo)",
+		},
+		{
+			name:     "timestamp-flag",
+			fl:       &TimestampFlag{Name: "eating"},
+			expected: "--eating value\t",
+		},
+		{
+			name:     "timestamp-flag-with-default-text",
+			fl:       &TimestampFlag{Name: "sleeping", DefaultText: "earlier"},
+			expected: "--sleeping value\t(default: earlier)",
+		},
+		{
+			name:     "uint-flag",
+			fl:       &UintFlag{Name: "jars"},
+			expected: "--jars value\t(default: 0)",
+		},
+		{
+			name:     "uint-flag-with-default-text",
+			fl:       &UintFlag{Name: "bottles", DefaultText: "99"},
+			expected: "--bottles value\t(default: 99)",
+		},
+		{
+			name:     "uint64-flag",
+			fl:       &Uint64Flag{Name: "cans"},
+			expected: "--cans value\t(default: 0)",
+		},
+		{
+			name:     "uint64-flag-with-default-text",
+			fl:       &UintFlag{Name: "tubes", DefaultText: "13"},
+			expected: "--tubes value\t(default: 13)",
+		},
+		{
+			name:     "nodoc-flag",
+			fl:       &nodocFlag{Name: "scarecrow"},
+			expected: "",
+		},
+	} {
+		t.Run(tc.name, func(ct *testing.T) {
+			s := stringifyFlag(tc.fl)
+			if s != tc.expected {
+				ct.Errorf("stringified flag %q does not match expected %q", s, tc.expected)
+			}
+		})
 	}
 }
 
@@ -218,7 +400,7 @@ func TestStringFlagWithEnvVarHelpOutput(t *testing.T) {
 	}
 }
 
-var prefixStringFlagTests = []struct {
+var _ = []struct {
 	name     string
 	aliases  []string
 	usage    string
@@ -308,7 +490,7 @@ func TestPathFlagApply_SetsAllNames(t *testing.T) {
 	expect(t, v, "/path/to/file/PATH")
 }
 
-var envHintFlagTests = []struct {
+var _ = []struct {
 	name     string
 	env      string
 	hinter   FlagEnvHintFunc
@@ -1992,43 +2174,43 @@ type flagDefaultTestCase struct {
 
 func TestFlagDefaultValue(t *testing.T) {
 	cases := []*flagDefaultTestCase{
-		&flagDefaultTestCase{
+		{
 			name:    "stringSclice",
 			flag:    &StringSliceFlag{Name: "flag", Value: NewStringSlice("default1", "default2")},
 			toParse: []string{"--flag", "parsed"},
 			expect: `--flag value	(default: "default1", "default2")	(accepts multiple inputs)`,
 		},
-		&flagDefaultTestCase{
+		{
 			name:    "float64Sclice",
 			flag:    &Float64SliceFlag{Name: "flag", Value: NewFloat64Slice(1.1, 2.2)},
 			toParse: []string{"--flag", "13.3"},
 			expect: `--flag value	(default: 1.1, 2.2)	(accepts multiple inputs)`,
 		},
-		&flagDefaultTestCase{
+		{
 			name:    "int64Sclice",
 			flag:    &Int64SliceFlag{Name: "flag", Value: NewInt64Slice(1, 2)},
 			toParse: []string{"--flag", "13"},
 			expect: `--flag value	(default: 1, 2)	(accepts multiple inputs)`,
 		},
-		&flagDefaultTestCase{
+		{
 			name:    "intSclice",
 			flag:    &IntSliceFlag{Name: "flag", Value: NewIntSlice(1, 2)},
 			toParse: []string{"--flag", "13"},
 			expect: `--flag value	(default: 1, 2)	(accepts multiple inputs)`,
 		},
-		&flagDefaultTestCase{
+		{
 			name:    "string",
 			flag:    &StringFlag{Name: "flag", Value: "default"},
 			toParse: []string{"--flag", "parsed"},
 			expect: `--flag value	(default: "default")`,
 		},
-		&flagDefaultTestCase{
+		{
 			name:    "bool",
 			flag:    &BoolFlag{Name: "flag", Value: true},
 			toParse: []string{"--flag", "false"},
 			expect: `--flag	(default: true)`,
 		},
-		&flagDefaultTestCase{
+		{
 			name:    "uint64",
 			flag:    &Uint64Flag{Name: "flag", Value: 1},
 			toParse: []string{"--flag", "13"},
@@ -2048,6 +2230,54 @@ func TestFlagDefaultValue(t *testing.T) {
 	}
 }
 
+type flagValueTestCase struct {
+	name    string
+	flag    Flag
+	toParse []string
+	expect  string
+}
+
+func TestFlagValue(t *testing.T) {
+	cases := []*flagValueTestCase{
+		&flagValueTestCase{
+			name:    "stringSclice",
+			flag:    &StringSliceFlag{Name: "flag", Value: NewStringSlice("default1", "default2")},
+			toParse: []string{"--flag", "parsed,parsed2", "--flag", "parsed3,parsed4"},
+			expect:  `[parsed parsed2 parsed3 parsed4]`,
+		},
+		&flagValueTestCase{
+			name:    "float64Sclice",
+			flag:    &Float64SliceFlag{Name: "flag", Value: NewFloat64Slice(1.1, 2.2)},
+			toParse: []string{"--flag", "13.3,14.4", "--flag", "15.5,16.6"},
+			expect:  `[]float64{13.3, 14.4, 15.5, 16.6}`,
+		},
+		&flagValueTestCase{
+			name:    "int64Sclice",
+			flag:    &Int64SliceFlag{Name: "flag", Value: NewInt64Slice(1, 2)},
+			toParse: []string{"--flag", "13,14", "--flag", "15,16"},
+			expect:  `[]int64{13, 14, 15, 16}`,
+		},
+		&flagValueTestCase{
+			name:    "intSclice",
+			flag:    &IntSliceFlag{Name: "flag", Value: NewIntSlice(1, 2)},
+			toParse: []string{"--flag", "13,14", "--flag", "15,16"},
+			expect:  `[]int{13, 14, 15, 16}`,
+		},
+	}
+	for i, v := range cases {
+		set := flag.NewFlagSet("test", 0)
+		set.SetOutput(ioutil.Discard)
+		_ = v.flag.Apply(set)
+		if err := set.Parse(v.toParse); err != nil {
+			t.Error(err)
+		}
+		f := set.Lookup("flag")
+		if got := f.Value.String(); got != v.expect {
+			t.Errorf("TestFlagValue %d-%s\nexpect:%s\ngot:%s", i, v.name, v.expect, got)
+		}
+	}
+}
+
 func TestTimestampFlagApply_WithDestination(t *testing.T) {
 	var destination Timestamp
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
@@ -2058,4 +2288,43 @@ func TestTimestampFlagApply_WithDestination(t *testing.T) {
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
 	expect(t, err, nil)
 	expect(t, *fl.Destination.timestamp, expectedResult)
+}
+
+// Test issue #1254
+// StringSlice() with UseShortOptionHandling causes duplicated entries, depending on the ordering of the flags
+func TestSliceShortOptionHandle(t *testing.T) {
+	wasCalled := false
+	err := (&App{
+		Commands: []*Command{
+			{
+				Name:                   "foobar",
+				UseShortOptionHandling: true,
+				Action: func(ctx *Context) error {
+					wasCalled = true
+					if ctx.Bool("i") != true {
+						t.Error("bool i not set")
+					}
+					if ctx.Bool("t") != true {
+						t.Error("bool i not set")
+					}
+					ss := ctx.StringSlice("net")
+					if !reflect.DeepEqual(ss, []string{"foo"}) {
+						t.Errorf("Got different slice(%v) than expected", ss)
+					}
+					return nil
+				},
+				Flags: []Flag{
+					&StringSliceFlag{Name: "net"},
+					&BoolFlag{Name: "i"},
+					&BoolFlag{Name: "t"},
+				},
+			},
+		},
+	}).Run([]string{"run", "foobar", "--net=foo", "-it"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !wasCalled {
+		t.Fatal("Action callback was never called")
+	}
 }

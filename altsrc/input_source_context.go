@@ -22,4 +22,6 @@ type InputSourceContext interface {
 	IntSlice(name string) ([]int, error)
 	Generic(name string) (cli.Generic, error)
 	Bool(name string) (bool, error)
+
+	isSet(name string) bool
 }
