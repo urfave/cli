@@ -25,8 +25,8 @@ COMMANDS:{{range .VisibleCategories}}{{if .Name}}
    {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{end}}{{end}}{{end}}{{if .VisibleFlagCategories}}
 
 GLOBAL OPTIONS:{{range .VisibleFlagCategories}}
-   {{.Name}}
-   {{range .VisibleFlags}}{{.}}
+   {{if .Name}}{{.Name}}
+   {{end}}{{range .Flags}}{{.}}
    {{end}}{{end}}{{else}}{{if .VisibleFlags}}
 
 GLOBAL OPTIONS:
@@ -53,8 +53,8 @@ DESCRIPTION:
    {{.Description | nindent 3 | trim}}{{end}}{{if .VisibleFlagCategories}}
 
 OPTIONS:{{range .VisibleFlagCategories}}
-   {{.Name}}
-   {{range .VisibleFlags}}{{.}}
+   {{if .Name}}{{.Name}}
+   {{end}}{{range .Flags}}{{.}}
    {{end}}{{end}}{{else}}{{if .VisibleFlags}}
 
 OPTIONS:

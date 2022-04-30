@@ -142,8 +142,8 @@ func ExampleApp_Run_appHelp() {
 	//    help, h        Shows a list of commands or help for one command
 	//
 	// GLOBAL OPTIONS:
-	//    --name value   a name to say (default: "bob")
 	//    --help, -h     show help (default: false)
+	//    --name value   a name to say (default: "bob")
 	//    --version, -v  print the version (default: false)
 }
 
@@ -1823,23 +1823,20 @@ func TestApp_VisibleCategories(t *testing.T) {
 		HideHelp: true,
 		Commands: []*Command{
 			{
-				Name:           "command1",
-				Category:       "1",
-				HelpName:       "foo command1",
-				Hidden:         true,
-				FlagCategories: FlagCategories{},
+				Name:     "command1",
+				Category: "1",
+				HelpName: "foo command1",
+				Hidden:   true,
 			},
 			{
-				Name:           "command2",
-				Category:       "2",
-				HelpName:       "foo command2",
-				FlagCategories: FlagCategories{},
+				Name:     "command2",
+				Category: "2",
+				HelpName: "foo command2",
 			},
 			{
-				Name:           "command3",
-				Category:       "3",
-				HelpName:       "foo command3",
-				FlagCategories: FlagCategories{},
+				Name:     "command3",
+				Category: "3",
+				HelpName: "foo command3",
 			},
 		},
 	}
@@ -1867,24 +1864,21 @@ func TestApp_VisibleCategories(t *testing.T) {
 		HideHelp: true,
 		Commands: []*Command{
 			{
-				Name:           "command1",
-				Category:       "1",
-				HelpName:       "foo command1",
-				Hidden:         true,
-				FlagCategories: FlagCategories{},
+				Name:     "command1",
+				Category: "1",
+				HelpName: "foo command1",
+				Hidden:   true,
 			},
 			{
-				Name:           "command2",
-				Category:       "2",
-				HelpName:       "foo command2",
-				Hidden:         true,
-				FlagCategories: FlagCategories{},
+				Name:     "command2",
+				Category: "2",
+				HelpName: "foo command2",
+				Hidden:   true,
 			},
 			{
-				Name:           "command3",
-				Category:       "3",
-				HelpName:       "foo command3",
-				FlagCategories: FlagCategories{},
+				Name:     "command3",
+				Category: "3",
+				HelpName: "foo command3",
 			},
 		},
 	}
@@ -1906,25 +1900,22 @@ func TestApp_VisibleCategories(t *testing.T) {
 		HideHelp: true,
 		Commands: []*Command{
 			{
-				Name:           "command1",
-				Category:       "1",
-				HelpName:       "foo command1",
-				Hidden:         true,
-				FlagCategories: FlagCategories{},
+				Name:     "command1",
+				Category: "1",
+				HelpName: "foo command1",
+				Hidden:   true,
 			},
 			{
-				Name:           "command2",
-				Category:       "2",
-				HelpName:       "foo command2",
-				Hidden:         true,
-				FlagCategories: FlagCategories{},
+				Name:     "command2",
+				Category: "2",
+				HelpName: "foo command2",
+				Hidden:   true,
 			},
 			{
-				Name:           "command3",
-				Category:       "3",
-				HelpName:       "foo command3",
-				Hidden:         true,
-				FlagCategories: FlagCategories{},
+				Name:     "command3",
+				Category: "3",
+				HelpName: "foo command3",
+				Hidden:   true,
 			},
 		},
 	}

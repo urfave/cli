@@ -184,15 +184,14 @@ func (a *App) Setup() {
 			c.HelpName = fmt.Sprintf("%s %s", a.HelpName, c.Name)
 		}
 
-		fc := FlagCategories{}
+		fc := newFlagCategories()
 		for _, fl := range c.Flags {
 			if cf, ok := fl.(CategorizableFlag); ok {
-				fc = fc.AddFlag(cf.GetCategory(), cf)
+				fc.AddFlag(cf.GetCategory(), cf)
 			}
 		}
 
-		sort.Sort(fc)
-		c.FlagCategories = fc
+		c.flagCategories = fc
 		newCommands = append(newCommands, c)
 	}
 	a.Commands = newCommands
@@ -217,13 +216,12 @@ func (a *App) Setup() {
 	}
 	sort.Sort(a.categories.(*commandCategories))
 
-	a.flagCategories = FlagCategories{}
+	a.flagCategories = newFlagCategories()
 	for _, fl := range a.Flags {
 		if cf, ok := fl.(CategorizableFlag); ok {
 			a.flagCategories.AddFlag(cf.GetCategory(), cf)
 		}
 	}
-	sort.Sort(a.flagCategories)
 
 	if a.Metadata == nil {
 		a.Metadata = make(map[string]interface{})
@@ -501,9 +499,12 @@ func (a *App) VisibleCommands() []*Command {
 	return ret
 }
 
-// Categories returns a slice containing all the categories with the commands they contain
-func (a *App) VisibleFlagCategories() FlagCategories {
-	return a.flagCategories
+// VisibleFlagCategories returns a slice containing all the categories with the flags they contain
+func (a *App) VisibleFlagCategories() []VisibleFlagCategory {
+	if a.flagCategories == nil {
+		a.flagCategories = newFlagCategories()
+	}
+	return a.flagCategories.VisibleCategories()
 }
 
 // VisibleFlags returns a slice of the Flags with Hidden=false
