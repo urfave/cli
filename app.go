@@ -664,8 +664,10 @@ func runFlagActions(c *Context, fs []Flag) error {
 			}
 		}
 		if isSet {
-			if err := f.RunAction(c); err != nil {
-				return err
+			if af, ok := f.(ActionableFlag); ok {
+				if err := af.RunAction(c); err != nil {
+					return err
+				}
 			}
 		}
 	}
