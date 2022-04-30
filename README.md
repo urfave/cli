@@ -4,7 +4,7 @@ cli
 [![GoDoc](https://godoc.org/github.com/urfave/cli?status.svg)](https://pkg.go.dev/github.com/urfave/cli/v2)
 [![codebeat](https://codebeat.co/badges/0a8f30aa-f975-404b-b878-5fab3ae1cc5f)](https://codebeat.co/projects/github-com-urfave-cli)
 [![Go Report Card](https://goreportcard.com/badge/urfave/cli)](https://goreportcard.com/report/urfave/cli)
-[![codecov](https://codecov.io/gh/urfave/cli/branch/master/graph/badge.svg)](https://codecov.io/gh/urfave/cli)
+[![codecov](https://codecov.io/gh/urfave/cli/branch/main/graph/badge.svg)](https://codecov.io/gh/urfave/cli)
 
 cli is a simple, fast, and fun package for building command line apps in Go. The
 goal is to enable developers to write fast and distributable command line
@@ -12,7 +12,7 @@ applications in an expressive way.
 
 ## Usage Documentation
 
-Usage documentation exists for each major version. Don't know what version you're on? You're probably using the version from the `master` branch, which is currently `v2`.
+Usage documentation exists for each major version. Don't know what version you're on? You're probably using the version from the `main` branch, which is currently `v2`.
 
 - `v2` - [./docs/v2/manual.md](./docs/v2/manual.md)
 - `v1` - [./docs/v1/manual.md](./docs/v1/manual.md)
@@ -30,7 +30,7 @@ Go Modules are required when using this package. [See the go blog guide on using
 ### Using `v2` releases
 
 ```
-$ GO111MODULE=on go get github.com/urfave/cli/v2
+$ go get github.com/urfave/cli/v2
 ```
 
 ```go
@@ -44,7 +44,7 @@ import (
 ### Using `v1` releases
 
 ```
-$ GO111MODULE=on go get github.com/urfave/cli
+$ go get github.com/urfave/cli
 ```
 
 ```go
@@ -54,6 +54,16 @@ import (
 )
 ...
 ```
+
+### Build tags
+
+You can use the following build tags:
+
+#### `urfave_cli_no_docs`
+
+When set, this removes `ToMarkdown` and `ToMan` methods, so your application
+won't be able to call those. This reduces the resulting binary size by about
+300-400 KB (measured using Go 1.18.1 on Linux/amd64), due to less dependencies.
 
 ### GOPATH
 
@@ -67,4 +77,8 @@ export PATH=$PATH:$GOPATH/bin
 
 cli is tested against multiple versions of Go on Linux, and against the latest
 released version of Go on OS X and Windows. This project uses Github Actions for
-builds. To see our currently supported go versions and platforms, look at the [./.github/workflows/cli.yml](https://github.com/urfave/cli/blob/master/.github/workflows/cli.yml).
+builds. To see our currently supported go versions and platforms, look at the [./.github/workflows/cli.yml](https://github.com/urfave/cli/blob/main/.github/workflows/cli.yml).
+
+## License
+
+See [`LICENSE`](./LICENSE)

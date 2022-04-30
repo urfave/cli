@@ -7,5 +7,5 @@ import (
 )
 
 func main() {
-	(&cli.App{}).Run([]string{})
+	(&cli.App{}).Run([]string{""})
 }

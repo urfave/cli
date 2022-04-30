@@ -43,12 +43,14 @@ func (i *Int64Slice) Set(value string) error {
 		return nil
 	}
 
-	tmp, err := strconv.ParseInt(value, 0, 64)
-	if err != nil {
-		return err
-	}
+	for _, s := range flagSplitMultiValues(value) {
+		tmp, err := strconv.ParseInt(strings.TrimSpace(s), 0, 64)
+		if err != nil {
+			return err
+		}
 
-	i.slice = append(i.slice, tmp)
+		i.slice = append(i.slice, tmp)
+	}
 
 	return nil
 }
@@ -96,7 +98,7 @@ func (f *Int64SliceFlag) IsSet() bool {
 // String returns a readable representation of this value
 // (for usage defaults)
 func (f *Int64SliceFlag) String() string {
-	return FlagStringer(f)
+	return withEnvHint(f.GetEnvVars(), stringifyInt64SliceFlag(f))
 }
 
 // Names returns the names of the flag
@@ -133,12 +135,25 @@ func (f *Int64SliceFlag) IsVisible() bool {
 	return !f.Hidden
 }
 
+// GetDefaultText returns the default text for this flag
+func (f *Int64SliceFlag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	return f.GetValue()
+}
+
+// GetEnvVars returns the env vars for this flag
+func (f *Int64SliceFlag) GetEnvVars() []string {
+	return f.EnvVars
+}
+
 // Apply populates the flag given the flag set and environment
 func (f *Int64SliceFlag) Apply(set *flag.FlagSet) error {
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		f.Value = &Int64Slice{}
 
-		for _, s := range strings.Split(val, ",") {
+		for _, s := range flagSplitMultiValues(val) {
 			if err := f.Value.Set(strings.TrimSpace(s)); err != nil {
 				return fmt.Errorf("could not parse %q as int64 slice value for flag %s: %s", val, f.Name, err)
 			}
@@ -163,8 +178,8 @@ func (f *Int64SliceFlag) Apply(set *flag.FlagSet) error {
 
 // Int64Slice looks up the value of a local Int64SliceFlag, returns
 // nil if not found
-func (c *Context) Int64Slice(name string) []int64 {
-	if fs := c.lookupFlagSet(name); fs != nil {
+func (cCtx *Context) Int64Slice(name string) []int64 {
+	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return lookupInt64Slice(name, fs)
 	}
 	return nil

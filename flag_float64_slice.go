@@ -43,12 +43,14 @@ func (f *Float64Slice) Set(value string) error {
 		return nil
 	}
 
-	tmp, err := strconv.ParseFloat(value, 64)
-	if err != nil {
-		return err
-	}
+	for _, s := range flagSplitMultiValues(value) {
+		tmp, err := strconv.ParseFloat(strings.TrimSpace(s), 64)
+		if err != nil {
+			return err
+		}
 
-	f.slice = append(f.slice, tmp)
+		f.slice = append(f.slice, tmp)
+	}
 	return nil
 }
 
@@ -95,7 +97,7 @@ func (f *Float64SliceFlag) IsSet() bool {
 // String returns a readable representation of this value
 // (for usage defaults)
 func (f *Float64SliceFlag) String() string {
-	return FlagStringer(f)
+	return withEnvHint(f.GetEnvVars(), stringifyFloat64SliceFlag(f))
 }
 
 // Names returns the names of the flag
@@ -132,13 +134,26 @@ func (f *Float64SliceFlag) IsVisible() bool {
 	return !f.Hidden
 }
 
+// GetDefaultText returns the default text for this flag
+func (f *Float64SliceFlag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	return f.GetValue()
+}
+
+// GetEnvVars returns the env vars for this flag
+func (f *Float64SliceFlag) GetEnvVars() []string {
+	return f.EnvVars
+}
+
 // Apply populates the flag given the flag set and environment
 func (f *Float64SliceFlag) Apply(set *flag.FlagSet) error {
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		if val != "" {
 			f.Value = &Float64Slice{}
 
-			for _, s := range strings.Split(val, ",") {
+			for _, s := range flagSplitMultiValues(val) {
 				if err := f.Value.Set(strings.TrimSpace(s)); err != nil {
 					return fmt.Errorf("could not parse %q as float64 slice value for flag %s: %s", f.Value, f.Name, err)
 				}
@@ -164,8 +179,8 @@ func (f *Float64SliceFlag) Apply(set *flag.FlagSet) error {
 
 // Float64Slice looks up the value of a local Float64SliceFlag, returns
 // nil if not found
-func (c *Context) Float64Slice(name string) []float64 {
-	if fs := c.lookupFlagSet(name); fs != nil {
+func (cCtx *Context) Float64Slice(name string) []float64 {
+	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return lookupFloat64Slice(name, fs)
 	}
 	return nil

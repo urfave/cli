@@ -42,7 +42,9 @@ func (s *StringSlice) Set(value string) error {
 		return nil
 	}
 
-	s.slice = append(s.slice, value)
+	for _, t := range flagSplitMultiValues(value) {
+		s.slice = append(s.slice, strings.TrimSpace(t))
+	}
 
 	return nil
 }
@@ -92,7 +94,7 @@ func (f *StringSliceFlag) IsSet() bool {
 // String returns a readable representation of this value
 // (for usage defaults)
 func (f *StringSliceFlag) String() string {
-	return FlagStringer(f)
+	return withEnvHint(f.GetEnvVars(), stringifyStringSliceFlag(f))
 }
 
 // Names returns the names of the flag
@@ -129,6 +131,19 @@ func (f *StringSliceFlag) IsVisible() bool {
 	return !f.Hidden
 }
 
+// GetDefaultText returns the default text for this flag
+func (f *StringSliceFlag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	return f.GetValue()
+}
+
+// GetEnvVars returns the env vars for this flag
+func (f *StringSliceFlag) GetEnvVars() []string {
+	return f.EnvVars
+}
+
 // Apply populates the flag given the flag set and environment
 func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
 
@@ -147,7 +162,7 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
 			destination = f.Destination
 		}
 
-		for _, s := range strings.Split(val, ",") {
+		for _, s := range flagSplitMultiValues(val) {
 			if err := destination.Set(strings.TrimSpace(s)); err != nil {
 				return fmt.Errorf("could not parse %q as string value for flag %s: %s", val, f.Name, err)
 			}
@@ -175,8 +190,8 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
 
 // StringSlice looks up the value of a local StringSliceFlag, returns
 // nil if not found
-func (c *Context) StringSlice(name string) []string {
-	if fs := c.lookupFlagSet(name); fs != nil {
+func (cCtx *Context) StringSlice(name string) []string {
+	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return lookupStringSlice(name, fs)
 	}
 	return nil

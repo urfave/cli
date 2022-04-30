@@ -63,6 +63,19 @@ func (f *BoolFlag) IsVisible() bool {
 	return !f.Hidden
 }
 
+// GetDefaultText returns the default text for this flag
+func (f *BoolFlag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	return fmt.Sprintf("%v", f.Value)
+}
+
+// GetEnvVars returns the env vars for this flag
+func (f *BoolFlag) GetEnvVars() []string {
+	return f.EnvVars
+}
+
 // Apply populates the flag given the flag set and environment
 func (f *BoolFlag) Apply(set *flag.FlagSet) error {
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
@@ -91,8 +104,8 @@ func (f *BoolFlag) Apply(set *flag.FlagSet) error {
 
 // Bool looks up the value of a local BoolFlag, returns
 // false if not found
-func (c *Context) Bool(name string) bool {
-	if fs := c.lookupFlagSet(name); fs != nil {
+func (cCtx *Context) Bool(name string) bool {
+	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return lookupBool(name, fs)
 	}
 	return false

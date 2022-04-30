@@ -1,6 +1,9 @@
 package cli
 
-import "flag"
+import (
+	"flag"
+	"fmt"
+)
 
 type PathFlag struct {
 	Name        string
@@ -59,6 +62,22 @@ func (f *PathFlag) IsVisible() bool {
 	return !f.Hidden
 }
 
+// GetDefaultText returns the default text for this flag
+func (f *PathFlag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	if f.Value == "" {
+		return f.Value
+	}
+	return fmt.Sprintf("%q", f.Value)
+}
+
+// GetEnvVars returns the env vars for this flag
+func (f *PathFlag) GetEnvVars() []string {
+	return f.EnvVars
+}
+
 // Apply populates the flag given the flag set and environment
 func (f *PathFlag) Apply(set *flag.FlagSet) error {
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
@@ -79,8 +98,8 @@ func (f *PathFlag) Apply(set *flag.FlagSet) error {
 
 // Path looks up the value of a local PathFlag, returns
 // "" if not found
-func (c *Context) Path(name string) string {
-	if fs := c.lookupFlagSet(name); fs != nil {
+func (cCtx *Context) Path(name string) string {
+	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return lookupPath(name, fs)
 	}
 

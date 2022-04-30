@@ -8,10 +8,14 @@
 
 _(REQUIRED)_
 
-- [ ] bug
-- [ ] cleanup  
-- [ ] documentation
-- [ ] feature
+<!--
+  Delete any of the following that do not apply:
+ -->
+
+- bug
+- cleanup
+- documentation
+- feature
 
 ## What this PR does / why we need it:
 
@@ -28,6 +32,7 @@ _(REQUIRED)_
 ## Which issue(s) this PR fixes:
 
 _(REQUIRED)_
+
 <!--
 If this PR fixes one of more issues, list them here.
 One line each, like so:
