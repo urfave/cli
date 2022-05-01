@@ -96,6 +96,11 @@ func (f *PathFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
+// Get returns the flag’s value in the given Context.
+func (f *PathFlag) Get(ctx *Context) string {
+	return ctx.Path(f.Name)
+}
+
 // Path looks up the value of a local PathFlag, returns
 // "" if not found
 func (cCtx *Context) Path(name string) string {

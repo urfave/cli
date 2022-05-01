@@ -176,6 +176,11 @@ func (f *Int64SliceFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
+// Get returns the flag’s value in the given Context.
+func (f *Int64SliceFlag) Get(ctx *Context) []int64 {
+	return ctx.Int64Slice(f.Name)
+}
+
 // Int64Slice looks up the value of a local Int64SliceFlag, returns
 // nil if not found
 func (cCtx *Context) Int64Slice(name string) []int64 {

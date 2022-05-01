@@ -101,6 +101,11 @@ func (f *Float64Flag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
+// Get returns the flag’s value in the given Context.
+func (f *Float64Flag) Get(ctx *Context) float64 {
+	return ctx.Float64(f.Name)
+}
+
 // Float64 looks up the value of a local Float64Flag, returns
 // 0 if not found
 func (cCtx *Context) Float64(name string) float64 {

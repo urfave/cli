@@ -101,6 +101,11 @@ func (f *Uint64Flag) GetEnvVars() []string {
 	return f.EnvVars
 }
 
+// Get returns the flag’s value in the given Context.
+func (f *Uint64Flag) Get(ctx *Context) uint64 {
+	return ctx.Uint64(f.Name)
+}
+
 // Uint64 looks up the value of a local Uint64Flag, returns
 // 0 if not found
 func (cCtx *Context) Uint64(name string) uint64 {

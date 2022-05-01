@@ -188,6 +188,11 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
+// Get returns the flag’s value in the given Context.
+func (f *StringSliceFlag) Get(ctx *Context) []string {
+	return ctx.StringSlice(f.Name)
+}
+
 // StringSlice looks up the value of a local StringSliceFlag, returns
 // nil if not found
 func (cCtx *Context) StringSlice(name string) []string {

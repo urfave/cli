@@ -164,6 +164,11 @@ func (f *TimestampFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
+// Get returns the flag’s value in the given Context.
+func (f *TimestampFlag) Get(ctx *Context) *time.Time {
+	return ctx.Timestamp(f.Name)
+}
+
 // Timestamp gets the timestamp from a flag name
 func (cCtx *Context) Timestamp(name string) *time.Time {
 	if fs := cCtx.lookupFlagSet(name); fs != nil {
