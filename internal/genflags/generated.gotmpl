@@ -1,0 +1,53 @@
+// WARNING: this file is generated. DO NOT EDIT
+
+package {{.PackageName}}
+
+{{range .SortedFlagTypes}}
+// {{.TypeName}} is a flag with type {{.GoType}}
+type {{.TypeName}} struct {
+  Name string
+
+  DefaultText string
+  FilePath string
+  Usage string
+
+  Required bool
+  Hidden bool
+  HasBeenSet bool
+
+  Value {{if .ValuePointer}}*{{end}}{{.GoType}}
+  Destination *{{.GoType}}
+
+  Aliases []string
+  EnvVars []string
+
+  {{range .StructFields}}
+  {{.Name}} {{.Type}}
+  {{end}}
+}
+
+{{if .GenerateFmtStringerInterface}}
+// String returns a readable representation of this value (for usage defaults)
+func (f *{{.TypeName}}) String() string {
+  return {{$.UrfaveCLINamespace}}FlagStringer(f)
+}
+{{end}}
+
+{{if .GenerateFlagInterface}}
+// IsSet returns whether or not the flag has been set through env or file
+func (f *{{.TypeName}}) IsSet() bool {
+  return f.HasBeenSet
+}
+
+// Names returns the names of the flag
+func (f *{{.TypeName}}) Names() []string {
+  return {{$.UrfaveCLINamespace}}FlagNames(f.Name, f.Aliases)
+}
+
+{{end}}{{/* /if .GenerateFlagInterface */}}
+{{end}}{{/* /range .SortedFlagTypes */}}
+
+// vim{{/* 👻 */}}:ro
+{{/*
+vim:filetype=gotexttmpl
+*/}}
