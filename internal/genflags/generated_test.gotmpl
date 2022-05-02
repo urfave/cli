@@ -5,13 +5,18 @@ package {{.TestPackageName}}
 {{range .SortedFlagTypes}}
 {{if .GenerateFlagInterface}}
 func Test{{.TypeName}}_SatisfiesFlagInterface(t *testing.T) {
-  var _ {{$.UrfaveCLITestNamespace}}Flag = &{{$.UrfaveCLITestNamespace}}{{.TypeName}}{}
+  var f {{$.UrfaveCLITestNamespace}}Flag = &{{$.UrfaveCLITestNamespace}}{{.TypeName}}{}
+
+  _ = f.IsSet()
+  _ = f.Names()
 }
 {{end}}
 
 {{if .GenerateFmtStringerInterface}}
 func Test{{.TypeName}}_SatisfiesFmtStringerInterface(t *testing.T) {
-  var _ fmt.Stringer = &{{$.UrfaveCLITestNamespace}}{{.TypeName}}{}
+  var f fmt.Stringer = &{{$.UrfaveCLITestNamespace}}{{.TypeName}}{}
+
+  _ = f.String()
 }
 {{end}}
 {{end}}
