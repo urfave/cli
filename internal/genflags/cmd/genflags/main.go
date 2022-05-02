@@ -39,6 +39,8 @@ func main() {
 	}
 
 	app := &cli.App{
+		Name:  "genflags",
+		Usage: "Generate flag types for urfave/cli",
 		Flags: []cli.Flag{
 			&cli.PathFlag{
 				Name:    "flag-spec-yaml",
