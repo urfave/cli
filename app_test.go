@@ -507,31 +507,6 @@ func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
 	expect(t, context.String("lang"), "spanish")
 }
 
-func TestApp_RunAsSubCommandIncorrectUsage(t *testing.T) {
-	// Go 1.17+ panics when invalid flag is given.
-	// Catch it here and consider the test passed.
-	defer func() {
-		if err := recover(); err == nil {
-			t.Fatal("expected error, got nothing")
-		}
-	}()
-
-	a := App{
-		Flags: []Flag{
-			StringFlag{Name: "--foo"},
-		},
-		Writer: bytes.NewBufferString(""),
-	}
-
-	set := flag.NewFlagSet("", flag.ContinueOnError)
-	_ = set.Parse([]string{"", "---foo"})
-	c := &Context{flagSet: set}
-
-	err := a.RunAsSubcommand(c)
-
-	expect(t, err, errors.New("bad flag syntax: ---foo"))
-}
-
 func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
 	var parsedOption string
 	var args []string
