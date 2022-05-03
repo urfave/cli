@@ -31,7 +31,7 @@ jobs:
         run: npm install markdown-toc
 
       - name: Run Tests
-        run:
+        run: |
           go run build.go vet
           go run build.go test
           go run build.go toc docs/v1/manual.md
