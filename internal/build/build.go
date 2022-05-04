@@ -10,9 +10,27 @@ import (
 	"math"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/urfave/cli/v2"
+)
+
+const (
+	badNewsEmoji      = "🚨"
+	goodNewsEmoji     = "✨"
+	checksPassedEmoji = "✅"
+
+	v2diffWarning = `
+# The unified diff above indicates that the public API surface area
+# has changed. If you feel that the changes are acceptable and adhere
+# to the semantic versioning promise of the v2.x series described in
+# docs/CONTRIBUTING.md, please run the following command to promote
+# the current go docs:
+#
+#     make v2approve
+#
+`
 )
 
 func main() {
@@ -56,6 +74,17 @@ func main() {
 		{
 			Name:   "generate",
 			Action: GenerateActionFunc,
+		},
+		{
+			Name: "v2diff",
+			Flags: []cli.Flag{
+				&cli.BoolFlag{Name: "color", Value: false},
+			},
+			Action: V2Diff,
+		},
+		{
+			Name:   "v2approve",
+			Action: V2Approve,
 		},
 	}
 	app.Flags = []cli.Flag{
@@ -206,9 +235,6 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 		helloSourceFilePath  = "./internal/example-hello-world/example-hello-world.go"
 		helloBuiltFilePath   = "./internal/example-hello-world/built-example"
 		desiredMaxBinarySize = 2.2
-		badNewsEmoji         = "🚨"
-		goodNewsEmoji        = "✨"
-		checksPassedEmoji    = "✅"
 		mbStringFormatter    = "%.1fMB"
 	)
 
@@ -290,7 +316,66 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 }
 
 func GenerateActionFunc(cCtx *cli.Context) error {
+	top := cCtx.Path("top")
+
+	cliDocs, err := sh("go", "doc", "-all", top)
+	if err != nil {
+		return err
+	}
+
+	altsrcDocs, err := sh("go", "doc", "-all", filepath.Join(top, "altsrc"))
+	if err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(
+		filepath.Join(top, "godoc-current.txt"),
+		[]byte(cliDocs+altsrcDocs),
+		0644,
+	); err != nil {
+		return err
+	}
+
 	return runCmd("go", "generate", cCtx.Path("top")+"/...")
+}
+
+func V2Diff(cCtx *cli.Context) error {
+	os.Chdir(cCtx.Path("top"))
+
+	err := runCmd(
+		"diff",
+		"--ignore-all-space",
+		"--minimal",
+		"--color="+func() string {
+			if cCtx.Bool("color") {
+				return "always"
+			}
+			return "auto"
+		}(),
+		"--unified",
+		"--label=a/godoc",
+		filepath.Join("testdata", "godoc-v2.x.txt"),
+		"--label=b/godoc",
+		"godoc-current.txt",
+	)
+
+	if err != nil {
+		fmt.Printf("# %v ---> Hey! <---\n", badNewsEmoji)
+		fmt.Println(strings.TrimSpace(v2diffWarning))
+	}
+
+	return err
+}
+
+func V2Approve(cCtx *cli.Context) error {
+	top := cCtx.Path("top")
+
+	return runCmd(
+		"cp",
+		"-v",
+		filepath.Join(top, "godoc-current.txt"),
+		filepath.Join(top, "testdata", "godoc-v2.x.txt"),
+	)
 }
 
 func getSize(sourcePath string, builtPath string, tags string) (size int64, err error) {

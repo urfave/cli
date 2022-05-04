@@ -12,8 +12,9 @@ not get a response for many days.
 
 ### semantic versioning adherence
 
-The `urfave/cli` project strives to strictly adhere to semantic versioning. The active
-development branches and the milestones and import paths to which they correspond are:
+The `urfave/cli` project strives to strictly adhere to [semantic
+versioning](https://semver.org/spec/v2.0.0.html). The active development branches and the
+milestones and import paths to which they correspond are:
 
 #### `main` branch
 
@@ -24,6 +25,10 @@ which **MUST** *only* receive bug fixes and feature *additions*.
 
 - :arrow_right: [`v2.x`](https://github.com/urfave/cli/milestone/16)
 - :arrow_right: `github.com/urfave/cli/v2`
+
+The `main` branch in particular includes tooling to help with keeping the `v2.x` series
+backward compatible. More details on this process are in the development workflow section
+below.
 
 #### `v1` branch
 
@@ -62,6 +67,20 @@ Running the default `make` target (`all`) will ensure all of the critical steps 
 verify one's changes are harmonious in nature. The same steps are also run during the
 [continuous integration
 phase](https://github.com/urfave/cli/blob/main/.github/workflows/cli.yml).
+
+In the event that the `v2diff` target exits non-zero, this is a signal that the public API
+surface area has changed. If the changes adhere to semantic versioning, meaning they are
+*additions* or *bug fixes*, then manually running the approval step will "promote" the
+current `go doc` output:
+
+```sh
+make v2approve
+```
+
+Because the `generate` step includes updating `godoc-current.txt` and
+`testdata/godoc-v2.x.txt`, these changes *MUST* be part of any proposed pull request so
+that reviewers have an opportunity to also make an informed decision about the "promotion"
+step.
 
 #### generated code
 
