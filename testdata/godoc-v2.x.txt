@@ -934,7 +934,7 @@ type Float64SliceFlag struct {
 	Aliases []string
 	EnvVars []string
 }
-    Float64SliceFlag is a flag with type Float64Slice
+    Float64SliceFlag is a flag with type *Float64Slice
 
 func (f *Float64SliceFlag) Apply(set *flag.FlagSet) error
     Apply populates the flag given the flag set and environment
@@ -1134,7 +1134,7 @@ type Int64SliceFlag struct {
 	Aliases []string
 	EnvVars []string
 }
-    Int64SliceFlag is a flag with type Int64Slice
+    Int64SliceFlag is a flag with type *Int64Slice
 
 func (f *Int64SliceFlag) Apply(set *flag.FlagSet) error
     Apply populates the flag given the flag set and environment
@@ -1273,7 +1273,7 @@ type IntSliceFlag struct {
 	Aliases []string
 	EnvVars []string
 }
-    IntSliceFlag is a flag with type IntSlice
+    IntSliceFlag is a flag with type *IntSlice
 
 func (f *IntSliceFlag) Apply(set *flag.FlagSet) error
     Apply populates the flag given the flag set and environment
@@ -1498,7 +1498,7 @@ type StringSliceFlag struct {
 
 	TakesFile bool
 }
-    StringSliceFlag is a flag with type StringSlice
+    StringSliceFlag is a flag with type *StringSlice
 
 func (f *StringSliceFlag) Apply(set *flag.FlagSet) error
     Apply populates the flag given the flag set and environment
@@ -1582,7 +1582,7 @@ type TimestampFlag struct {
 
 	Layout string
 }
-    TimestampFlag is a flag with type Timestamp
+    TimestampFlag is a flag with type *Timestamp
 
 func (f *TimestampFlag) Apply(set *flag.FlagSet) error
     Apply populates the flag given the flag set and environment
