@@ -3,7 +3,7 @@
 package {{.PackageName}}
 
 {{range .SortedFlagTypes}}
-// {{.TypeName}} is a flag with type {{.GoType}}
+// {{.TypeName}} is a flag with type {{if .ValuePointer}}*{{end}}{{.GoType}}
 type {{.TypeName}} struct {
   Name string
 

@@ -4,7 +4,7 @@ package cli
 
 import "time"
 
-// Float64SliceFlag is a flag with type Float64Slice
+// Float64SliceFlag is a flag with type *Float64Slice
 type Float64SliceFlag struct {
 	Name string
 
@@ -69,7 +69,7 @@ func (f *GenericFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
-// Int64SliceFlag is a flag with type Int64Slice
+// Int64SliceFlag is a flag with type *Int64Slice
 type Int64SliceFlag struct {
 	Name string
 
@@ -98,7 +98,7 @@ func (f *Int64SliceFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
-// IntSliceFlag is a flag with type IntSlice
+// IntSliceFlag is a flag with type *IntSlice
 type IntSliceFlag struct {
 	Name string
 
@@ -163,7 +163,7 @@ func (f *PathFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
-// StringSliceFlag is a flag with type StringSlice
+// StringSliceFlag is a flag with type *StringSlice
 type StringSliceFlag struct {
 	Name string
 
@@ -194,7 +194,7 @@ func (f *StringSliceFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
-// TimestampFlag is a flag with type Timestamp
+// TimestampFlag is a flag with type *Timestamp
 type TimestampFlag struct {
 	Name string
 
