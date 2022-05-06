@@ -205,18 +205,18 @@ func (fsm *MapInputSource) Generic(name string) (cli.Generic, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if exists {
 		otherValue, isType := otherGenericValue.(cli.Generic)
-		if !isType {
-			return nil, incorrectTypeForFlagError(name, "cli.Generic", otherGenericValue)
+		if isType {
+			return otherValue, nil
 		}
-		return otherValue, nil
+		return cli.JSONWrapGeneric(otherGenericValue), nil
 	}
 	nestedGenericValue, exists := nestedVal(name, fsm.valueMap)
 	if exists {
 		otherValue, isType := nestedGenericValue.(cli.Generic)
-		if !isType {
-			return nil, incorrectTypeForFlagError(name, "cli.Generic", nestedGenericValue)
+		if isType {
+			return otherValue, nil
 		}
-		return otherValue, nil
+		return cli.JSONWrapGeneric(nestedGenericValue), nil
 	}
 
 	return nil, nil

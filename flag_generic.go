@@ -1,14 +1,41 @@
 package cli
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 )
 
 // Generic is a generic parseable type identified by a specific flag
-type Generic interface {
-	Set(value string) error
-	String() string
+type Generic = flag.Value
+
+// JSONWrapGeneric accepts any type and wraps it to provide the
+// Generic interface via JSON marshal/unmarshal
+func JSONWrapGeneric(v interface{}) Generic {
+	return &jsonGenericWrapper{v: v}
+}
+
+type jsonGenericWrapper struct {
+	v interface{}
+}
+
+func (gw *jsonGenericWrapper) Set(value string) error {
+	fromJSONStr := ""
+
+	if err := json.Unmarshal([]byte(value), &fromJSONStr); err == nil {
+		value = fromJSONStr
+	}
+
+	return json.Unmarshal([]byte(value), &gw.v)
+}
+
+func (gw *jsonGenericWrapper) String() string {
+	vBytes, err := json.Marshal(gw.v)
+	if err != nil {
+		return fmt.Sprintf("%v", gw.v)
+	}
+
+	return string(vBytes)
 }
 
 // GenericFlag is a flag with type Generic
@@ -86,7 +113,7 @@ func (f *GenericFlag) GetEnvVars() []string {
 
 // Apply takes the flagset and calls Set on the generic flag with the value
 // provided by the user for parsing by the flag
-func (f GenericFlag) Apply(set *flag.FlagSet) error {
+func (f *GenericFlag) Apply(set *flag.FlagSet) error {
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		if val != "" {
 			if err := f.Value.Set(val); err != nil {
@@ -104,13 +131,21 @@ func (f GenericFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
-// Get returns the flag’s value in the given Context.
+// Get returns the flag’s value in the given Context. In the
+// special case of types that are wrapped as with JSONWrapGeneric,
+// the wrapped type value is returned.
 func (f *GenericFlag) Get(ctx *Context) interface{} {
-	return ctx.Generic(f.Name)
+	v := ctx.Generic(f.Name)
+	if wrapped, ok := v.(*jsonGenericWrapper); ok {
+		return wrapped.v
+	}
+
+	return v
 }
 
-// Generic looks up the value of a local GenericFlag, returns
-// nil if not found
+// Generic looks up the value of a local GenericFlag, returning nil
+// if not found. In the special case of types that are wrapped as
+// with JSONWrapGeneric, the wrapped type value is returned.
 func (cCtx *Context) Generic(name string) interface{} {
 	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return lookupGeneric(name, fs)
@@ -121,11 +156,11 @@ func (cCtx *Context) Generic(name string) interface{} {
 func lookupGeneric(name string, set *flag.FlagSet) interface{} {
 	f := set.Lookup(name)
 	if f != nil {
-		parsed, err := f.Value, error(nil)
-		if err != nil {
-			return nil
+		if wrapped, ok := f.Value.(*jsonGenericWrapper); ok {
+			return wrapped.v
 		}
-		return parsed
+
+		return f.Value
 	}
 	return nil
 }

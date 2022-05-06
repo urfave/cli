@@ -1253,6 +1253,28 @@ func TestGenericFlagValueFromContext(t *testing.T) {
 	expect(t, f.Get(ctx), &Parser{"abc", "def"})
 }
 
+func TestJSONWrapGeneric(t *testing.T) {
+	type unknowable []uint8
+
+	unk := unknowable([]uint8{4, 8, 15, 16, 23, 42})
+
+	app := &App{
+		Flags: []Flag{
+			&GenericFlag{Name: "unk", Value: JSONWrapGeneric(&unk)},
+		},
+		Action: func(cCtx *Context) error {
+			unkValue := *cCtx.Generic("unk").(*unknowable)
+			expect(t, unkValue, unknowable([]uint8{6, 1, 0}))
+
+			return nil
+		},
+	}
+
+	if err := app.Run([]string{"cmd", "--unk", "[6,1,0]"}); err != nil {
+		t.Error(err)
+	}
+}
+
 func TestParseMultiString(t *testing.T) {
 	_ = (&App{
 		Flags: []Flag{
