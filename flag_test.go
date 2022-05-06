@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math"
 	"os"
 	"reflect"
 	"regexp"
@@ -1290,8 +1291,9 @@ func (f *friend) MarshalJSON() ([]byte, error) {
 
 func TestJSONGenericWrapper(t *testing.T) {
 	for _, tc := range []struct {
-		name    string
-		wrapped interface{}
+		name      string
+		wrapped   interface{}
+		expectErr bool
 	}{
 		{
 			name:    "custom-marshalled",
@@ -1310,12 +1312,26 @@ func TestJSONGenericWrapper(t *testing.T) {
 				return &m
 			}(),
 		},
+		{
+			name: "json-incompatible-map",
+			wrapped: func() *map[string]interface{} {
+				m := map[string]interface{}{
+					"neighbors": []float64{11, math.Inf(1)},
+				}
+				return &m
+			}(),
+			expectErr: true,
+		},
 	} {
 		t.Run(tc.name, func(ct *testing.T) {
 			fl := JSONWrapGeneric(tc.wrapped)
 
 			if err := fl.Set(fl.String()); err != nil {
-				ct.Errorf("error %v", err)
+				if !tc.expectErr {
+					ct.Errorf("unexpected error %v", err)
+				} else if _, ok := err.(*json.SyntaxError); !ok {
+					ct.Errorf("error %+#v != expected *json.SyntaxError", err)
+				}
 			}
 
 			if v, ok := fl.(*jsonGenericWrapper); ok {
