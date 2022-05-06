@@ -344,14 +344,26 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 		if a.validCommandName(name) {
 			c = a.Command(name)
 		} else {
-			isFlagName := false
-			for _, flagName := range cCtx.FlagNames() {
-				if name == flagName {
-					isFlagName = true
-					break
+			hasDefault := a.DefaultCommand != ""
+			isFlagName := checkStringSliceIncludes(name, cCtx.FlagNames())
+
+			var (
+				isDefaultSubcommand   = false
+				defaultHasSubcommands = false
+			)
+
+			if hasDefault {
+				dc := a.Command(a.DefaultCommand)
+				defaultHasSubcommands = len(dc.Subcommands) > 0
+				for _, dcSub := range dc.Subcommands {
+					if checkStringSliceIncludes(name, dcSub.Names()) {
+						isDefaultSubcommand = true
+						break
+					}
 				}
 			}
-			if isFlagName {
+
+			if isFlagName || (hasDefault && (defaultHasSubcommands && isDefaultSubcommand)) {
 				argsWithDefault := a.argsWithDefaultCommand(args)
 				if !reflect.DeepEqual(args, argsWithDefault) {
 					c = a.Command(argsWithDefault.First())
@@ -660,4 +672,16 @@ func HandleAction(action interface{}, cCtx *Context) (err error) {
 	}
 
 	return errInvalidActionType
+}
+
+func checkStringSliceIncludes(want string, sSlice []string) bool {
+	found := false
+	for _, s := range sSlice {
+		if want == s {
+			found = true
+			break
+		}
+	}
+
+	return found
 }
