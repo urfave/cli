@@ -20,15 +20,11 @@ type jsonGenericWrapper struct {
 }
 
 func (gw *jsonGenericWrapper) Set(value string) error {
-	fromJSONStr := ""
-
-	if err := json.Unmarshal([]byte(value), &fromJSONStr); err == nil {
-		value = fromJSONStr
-	}
-
 	return json.Unmarshal([]byte(value), &gw.v)
 }
 
+// String makes a best effort to JSON marshal the wrapped type and
+// falls back to returning the fmt "%v" representation.
 func (gw *jsonGenericWrapper) String() string {
 	vBytes, err := json.Marshal(gw.v)
 	if err != nil {

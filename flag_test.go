@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -1272,6 +1273,55 @@ func TestJSONWrapGeneric(t *testing.T) {
 
 	if err := app.Run([]string{"cmd", "--unk", "[6,1,0]"}); err != nil {
 		t.Error(err)
+	}
+}
+
+type friend struct {
+	Name string
+}
+
+func (f *friend) UnmarshalJSON(b []byte) error {
+	return json.Unmarshal(b, &f.Name)
+}
+
+func (f *friend) MarshalJSON() ([]byte, error) {
+	return json.Marshal(f.Name)
+}
+
+func TestJSONGenericWrapper(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		wrapped interface{}
+	}{
+		{
+			name:    "custom-marshalled",
+			wrapped: &friend{Name: "cat"},
+		},
+		{
+			name:    "string",
+			wrapped: func() *string { s := "snail"; return &s }(),
+		},
+		{
+			name: "json-compatible-map",
+			wrapped: func() *map[string]interface{} {
+				m := map[string]interface{}{
+					"neighbors": []string{"robin", "bluejay", "starling"},
+				}
+				return &m
+			}(),
+		},
+	} {
+		t.Run(tc.name, func(ct *testing.T) {
+			fl := JSONWrapGeneric(tc.wrapped)
+
+			if err := fl.Set(fl.String()); err != nil {
+				ct.Errorf("error %v", err)
+			}
+
+			if v, ok := fl.(*jsonGenericWrapper); ok {
+				expect(t, v.v, tc.wrapped)
+			}
+		})
 	}
 }
 
