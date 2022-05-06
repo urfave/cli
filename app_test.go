@@ -502,7 +502,60 @@ func TestApp_RunDefaultCommand(t *testing.T) {
 			expect(t, err == nil, test.expected)
 		})
 	}
+}
 
+var defaultCommandSubCmdAppTests = []struct {
+	cmdName    string
+	subCmd     string
+	defaultCmd string
+	expected   bool
+}{
+	{"foobar", "", "foobar", true},
+	{"foobar", "carly", "foobar", true},
+	{"batbaz", "", "foobar", true},
+	{"b", "", "", true},
+	{"f", "", "", true},
+	{"", "", "foobar", true},
+	{"", "", "", true},
+	{"", "jimbob", "foobar", true},
+	{"", "j", "foobar", true},
+	{"", "carly", "foobar", true},
+	{"", "jimmers", "foobar", true},
+	{"", "jimmers", "", true},
+	{" ", "jimmers", "foobar", false},
+	{"", "", "", true},
+	{" ", "", "", false},
+	{" ", "j", "", false},
+	{"bat", "", "batbaz", false},
+	{"nothing", "", "batbaz", false},
+	{"nothing", "", "", false},
+	{"nothing", "j", "batbaz", false},
+	{"nothing", "carly", "", false},
+}
+
+func TestApp_RunDefaultCommandWithSubCommand(t *testing.T) {
+	for _, test := range defaultCommandSubCmdAppTests {
+		testTitle := fmt.Sprintf("command=%[1]s-subcmd=%[2]s-default=%[3]s", test.cmdName, test.subCmd, test.defaultCmd)
+		t.Run(testTitle, func(t *testing.T) {
+			app := &App{
+				DefaultCommand: test.defaultCmd,
+				Commands: []*Command{
+					{
+						Name:    "foobar",
+						Aliases: []string{"f"},
+						Subcommands: []*Command{
+							{Name: "jimbob", Aliases: []string{"j"}},
+							{Name: "carly"},
+						},
+					},
+					{Name: "batbaz", Aliases: []string{"b"}},
+				},
+			}
+			
+			err := app.Run([]string{"c", test.cmdName, test.subCmd})
+			expect(t, err == nil, test.expected)
+		})
+	}
 }
 
 func TestApp_Setup_defaultsReader(t *testing.T) {
