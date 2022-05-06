@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"time"
 )
@@ -43,6 +44,9 @@ type App struct {
 	Version string
 	// Description of the program
 	Description string
+	// DefaultCommand is the (optional) name of a command
+	// to run if no command names are passed as CLI arguments.
+	DefaultCommand string
 	// List of commands to execute
 	Commands []*Command
 	// List of flags to parse
@@ -333,13 +337,33 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 		}
 	}
 
+	var c *Command
 	args := cCtx.Args()
 	if args.Present() {
 		name := args.First()
-		c := a.Command(name)
-		if c != nil {
-			return c.Run(cCtx)
+		if a.validCommandName(name) {
+			c = a.Command(name)
+		} else {
+			isFlagName := false
+			for _, flagName := range cCtx.FlagNames() {
+				if name == flagName {
+					isFlagName = true
+					break
+				}
+			}
+			if isFlagName {
+				argsWithDefault := a.argsWithDefaultCommand(args)
+				if !reflect.DeepEqual(args, argsWithDefault) {
+					c = a.Command(argsWithDefault.First())
+				}
+			}
 		}
+	} else if a.DefaultCommand != "" {
+		c = a.Command(a.DefaultCommand)
+	}
+
+	if c != nil {
+		return c.Run(cCtx)
 	}
 
 	if a.Action == nil {
@@ -568,6 +592,41 @@ func (a *App) handleExitCoder(cCtx *Context, err error) {
 	} else {
 		HandleExitCoder(err)
 	}
+}
+
+func (a *App) commandNames() []string {
+	var cmdNames []string
+
+	for _, cmd := range a.Commands {
+		cmdNames = append(cmdNames, cmd.Names()...)
+	}
+
+	return cmdNames
+}
+
+func (a *App) validCommandName(checkCmdName string) bool {
+	valid := false
+	allCommandNames := a.commandNames()
+
+	for _, cmdName := range allCommandNames {
+		if checkCmdName == cmdName {
+			valid = true
+			break
+		}
+	}
+
+	return valid
+}
+
+func (a *App) argsWithDefaultCommand(oldArgs Args) Args {
+	if a.DefaultCommand != "" {
+		rawArgs := append([]string{a.DefaultCommand}, oldArgs.Slice()...)
+		newArgs := args(rawArgs)
+
+		return &newArgs
+	}
+
+	return oldArgs
 }
 
 // Author represents someone who has contributed to a cli project.

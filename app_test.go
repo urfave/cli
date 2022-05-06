@@ -469,6 +469,42 @@ func TestApp_Command(t *testing.T) {
 	}
 }
 
+var defaultCommandAppTests = []struct {
+	cmdName    string
+	defaultCmd string
+	expected   bool
+}{
+	{"foobar", "foobar", true},
+	{"batbaz", "foobar", true},
+	{"b", "", true},
+	{"f", "", true},
+	{"", "foobar", true},
+	{"", "", true},
+	{" ", "", false},
+	{"bat", "batbaz", false},
+	{"nothing", "batbaz", false},
+	{"nothing", "", false},
+}
+
+func TestApp_RunDefaultCommand(t *testing.T) {
+	for _, test := range defaultCommandAppTests {
+		testTitle := fmt.Sprintf("command=%[1]s-default=%[2]s", test.cmdName, test.defaultCmd)
+		t.Run(testTitle, func(t *testing.T) {
+			app := &App{
+				DefaultCommand: test.defaultCmd,
+				Commands: []*Command{
+					{Name: "foobar", Aliases: []string{"f"}},
+					{Name: "batbaz", Aliases: []string{"b"}},
+				},
+			}
+
+			err := app.Run([]string{"c", test.cmdName})
+			expect(t, err == nil, test.expected)
+		})
+	}
+
+}
+
 func TestApp_Setup_defaultsReader(t *testing.T) {
 	app := &App{}
 	app.Setup()
