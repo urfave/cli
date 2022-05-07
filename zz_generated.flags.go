@@ -8,6 +8,7 @@ import "time"
 type Float64SliceFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -37,6 +38,7 @@ func (f *Float64SliceFlag) Names() []string {
 type GenericFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -73,6 +75,7 @@ func (f *GenericFlag) Names() []string {
 type Int64SliceFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -102,6 +105,7 @@ func (f *Int64SliceFlag) Names() []string {
 type IntSliceFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -131,6 +135,7 @@ func (f *IntSliceFlag) Names() []string {
 type PathFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -167,6 +172,7 @@ func (f *PathFlag) Names() []string {
 type StringSliceFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -198,6 +204,7 @@ func (f *StringSliceFlag) Names() []string {
 type TimestampFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -234,6 +241,7 @@ func (f *TimestampFlag) Names() []string {
 type BoolFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -268,6 +276,7 @@ func (f *BoolFlag) Names() []string {
 type Float64Flag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -302,6 +311,7 @@ func (f *Float64Flag) Names() []string {
 type IntFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -336,6 +346,7 @@ func (f *IntFlag) Names() []string {
 type Int64Flag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -370,6 +381,7 @@ func (f *Int64Flag) Names() []string {
 type StringFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -406,6 +418,7 @@ func (f *StringFlag) Names() []string {
 type DurationFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -440,6 +453,7 @@ func (f *DurationFlag) Names() []string {
 type UintFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -474,6 +488,7 @@ func (f *UintFlag) Names() []string {
 type Uint64Flag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
