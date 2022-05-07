@@ -59,11 +59,21 @@ import (
 
 You can use the following build tags:
 
+#### `urfave_cli_core`
+
+When set, applies all `urfave_cli_no.+` build tags to minimize resulting binary
+size.
+
 #### `urfave_cli_no_docs`
 
 When set, this removes `ToMarkdown` and `ToMan` methods, so your application
 won't be able to call those. This reduces the resulting binary size by about
-300-400 KB (measured using Go 1.18.1 on Linux/amd64), due to less dependencies.
+300-400 KB (measured using Go 1.18.1 on Linux/amd64), due to fewer dependencies.
+
+#### `urfave_cli_no_suggest`
+
+When set, the capability enabled by setting `App.Suggest` will be a no-op. This
+reduces the resulting binary size due to fewer dependencies.
 
 ### GOPATH
 

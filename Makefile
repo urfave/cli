@@ -17,11 +17,11 @@ all: generate vet tag-test test check-binary-size tag-check-binary-size gfmrun t
 
 .PHONY: tag-test
 tag-test:
-	go run internal/build/build.go -tags urfave_cli_no_docs test
+	go run internal/build/build.go -tags urfave_cli_core test
 
 .PHONY: tag-check-binary-size
 tag-check-binary-size:
-	go run internal/build/build.go -tags urfave_cli_no_docs check-binary-size
+	go run internal/build/build.go -tags urfave_cli_core check-binary-size
 
 .PHONY: gfmrun
 gfmrun:

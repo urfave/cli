@@ -37,8 +37,14 @@ jobs:
       - name: vet
         run: go run internal/build/build.go vet
 
-      - name: test with tags
+      - name: test with urfave_cli_core tag
+        run: go run internal/build/build.go -tags urfave_cli_core test
+
+      - name: test with urfave_cli_no_docs tag
         run: go run internal/build/build.go -tags urfave_cli_no_docs test
+
+      - name: test with urfave_cli_no_suggest tag
+        run: go run internal/build/build.go -tags urfave_cli_no_suggest test
 
       - name: test
         run: go run internal/build/build.go test
@@ -47,7 +53,7 @@ jobs:
         run: go run internal/build/build.go check-binary-size
 
       - name: check-binary-size with tags (informational only)
-        run: go run internal/build/build.go -tags urfave_cli_no_docs check-binary-size || true
+        run: go run internal/build/build.go -tags urfave_cli_core check-binary-size
 
       - name: Upload coverage to Codecov
         if: success() && matrix.go == '1.18.x' && matrix.os == 'ubuntu-latest'
