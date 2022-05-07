@@ -184,14 +184,7 @@ func (a *App) Setup() {
 			c.HelpName = fmt.Sprintf("%s %s", a.HelpName, c.Name)
 		}
 
-		fc := newFlagCategories()
-		for _, fl := range c.Flags {
-			if cf, ok := fl.(CategorizableFlag); ok {
-				fc.AddFlag(cf.GetCategory(), cf)
-			}
-		}
-
-		c.flagCategories = fc
+		c.flagCategories = newFlagCategoriesFromFlags(c.Flags)
 		newCommands = append(newCommands, c)
 	}
 	a.Commands = newCommands
@@ -502,7 +495,7 @@ func (a *App) VisibleCommands() []*Command {
 // VisibleFlagCategories returns a slice containing all the categories with the flags they contain
 func (a *App) VisibleFlagCategories() []VisibleFlagCategory {
 	if a.flagCategories == nil {
-		a.flagCategories = newFlagCategories()
+		return []VisibleFlagCategory{}
 	}
 	return a.flagCategories.VisibleCategories()
 }

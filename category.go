@@ -98,6 +98,17 @@ func newFlagCategories() FlagCategories {
 	}
 }
 
+func newFlagCategoriesFromFlags(fs []Flag) FlagCategories {
+	fc := newFlagCategories()
+	for _, fl := range fs {
+		if cf, ok := fl.(CategorizableFlag); ok {
+			fc.AddFlag(cf.GetCategory(), cf)
+		}
+	}
+
+	return fc
+}
+
 func (f *defaultFlagCategories) AddFlag(category string, fl Flag) {
 	if _, ok := f.m[category]; !ok {
 		f.m[category] = &defaultVisibleFlagCategory{name: category, m: map[string]Flag{}}

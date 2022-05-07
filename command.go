@@ -284,7 +284,7 @@ func (c *Command) startApp(ctx *Context) error {
 // VisibleFlagCategories returns a slice containing all the visible flag categories with the flags they contain
 func (c *Command) VisibleFlagCategories() []VisibleFlagCategory {
 	if c.flagCategories == nil {
-		c.flagCategories = newFlagCategories()
+		return []VisibleFlagCategory{}
 	}
 	return c.flagCategories.VisibleCategories()
 }
