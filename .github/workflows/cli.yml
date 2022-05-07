@@ -87,3 +87,8 @@ jobs:
 
       - name: toc
         run: go run internal/build/build.go toc docs/v2/manual.md
+
+      - name: diff check
+        run: |
+          git diff --exit-code
+          git diff --cached --exit-code
