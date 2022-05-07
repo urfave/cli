@@ -54,12 +54,14 @@ func (i *IntSlice) Set(value string) error {
 		return nil
 	}
 
-	tmp, err := strconv.ParseInt(value, 0, 64)
-	if err != nil {
-		return err
-	}
+	for _, s := range flagSplitMultiValues(value) {
+		tmp, err := strconv.ParseInt(strings.TrimSpace(s), 0, 64)
+		if err != nil {
+			return err
+		}
 
-	i.slice = append(i.slice, int(tmp))
+		i.slice = append(i.slice, int(tmp))
+	}
 
 	return nil
 }
@@ -85,34 +87,10 @@ func (i *IntSlice) Get() interface{} {
 	return *i
 }
 
-// IntSliceFlag is a flag with type *IntSlice
-type IntSliceFlag struct {
-	Name        string
-	Aliases     []string
-	Usage       string
-	EnvVars     []string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       *IntSlice
-	DefaultText string
-	HasBeenSet  bool
-}
-
-// IsSet returns whether or not the flag has been set through env or file
-func (f *IntSliceFlag) IsSet() bool {
-	return f.HasBeenSet
-}
-
 // String returns a readable representation of this value
 // (for usage defaults)
 func (f *IntSliceFlag) String() string {
-	return FlagStringer(f)
-}
-
-// Names returns the names of the flag
-func (f *IntSliceFlag) Names() []string {
-	return flagNames(f.Name, f.Aliases)
+	return withEnvHint(f.GetEnvVars(), stringifyIntSliceFlag(f))
 }
 
 // IsRequired returns whether or not the flag is required
@@ -144,12 +122,25 @@ func (f *IntSliceFlag) IsVisible() bool {
 	return !f.Hidden
 }
 
+// GetDefaultText returns the default text for this flag
+func (f *IntSliceFlag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	return f.GetValue()
+}
+
+// GetEnvVars returns the env vars for this flag
+func (f *IntSliceFlag) GetEnvVars() []string {
+	return f.EnvVars
+}
+
 // Apply populates the flag given the flag set and environment
 func (f *IntSliceFlag) Apply(set *flag.FlagSet) error {
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
 		f.Value = &IntSlice{}
 
-		for _, s := range strings.Split(val, ",") {
+		for _, s := range flagSplitMultiValues(val) {
 			if err := f.Value.Set(strings.TrimSpace(s)); err != nil {
 				return fmt.Errorf("could not parse %q as int slice value for flag %s: %s", val, f.Name, err)
 			}
@@ -172,10 +163,15 @@ func (f *IntSliceFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
+// Get returns the flag’s value in the given Context.
+func (f *IntSliceFlag) Get(ctx *Context) []int {
+	return ctx.IntSlice(f.Name)
+}
+
 // IntSlice looks up the value of a local IntSliceFlag, returns
 // nil if not found
-func (c *Context) IntSlice(name string) []int {
-	if fs := c.lookupFlagSet(name); fs != nil {
+func (cCtx *Context) IntSlice(name string) []int {
+	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return lookupIntSlice(name, fs)
 	}
 	return nil

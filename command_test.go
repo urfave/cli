@@ -31,7 +31,7 @@ func TestCommandFlagParsing(t *testing.T) {
 		set := flag.NewFlagSet("test", 0)
 		_ = set.Parse(c.testArgs)
 
-		context := NewContext(app, set, nil)
+		cCtx := NewContext(app, set, nil)
 
 		command := Command{
 			Name:            "test-cmd",
@@ -42,10 +42,10 @@ func TestCommandFlagParsing(t *testing.T) {
 			SkipFlagParsing: c.skipFlagParsing,
 		}
 
-		err := command.Run(context)
+		err := command.Run(cCtx)
 
 		expect(t, err, c.expectedErr)
-		expect(t, context.Args().Slice(), c.testArgs)
+		expect(t, cCtx.Args().Slice(), c.testArgs)
 	}
 }
 

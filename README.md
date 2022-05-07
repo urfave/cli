@@ -55,6 +55,16 @@ import (
 ...
 ```
 
+### Build tags
+
+You can use the following build tags:
+
+#### `urfave_cli_no_docs`
+
+When set, this removes `ToMarkdown` and `ToMan` methods, so your application
+won't be able to call those. This reduces the resulting binary size by about
+300-400 KB (measured using Go 1.18.1 on Linux/amd64), due to less dependencies.
+
 ### GOPATH
 
 Make sure your `PATH` includes the `$GOPATH/bin` directory so your commands can
@@ -68,3 +78,7 @@ export PATH=$PATH:$GOPATH/bin
 cli is tested against multiple versions of Go on Linux, and against the latest
 released version of Go on OS X and Windows. This project uses Github Actions for
 builds. To see our currently supported go versions and platforms, look at the [./.github/workflows/cli.yml](https://github.com/urfave/cli/blob/main/.github/workflows/cli.yml).
+
+## License
+
+See [`LICENSE`](./LICENSE)

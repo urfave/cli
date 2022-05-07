@@ -58,38 +58,6 @@ func (t *Timestamp) Get() interface{} {
 	return *t
 }
 
-// TimestampFlag is a flag with type time
-type TimestampFlag struct {
-	Name        string
-	Aliases     []string
-	Usage       string
-	EnvVars     []string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Layout      string
-	Value       *Timestamp
-	DefaultText string
-	HasBeenSet  bool
-	Destination *Timestamp
-}
-
-// IsSet returns whether or not the flag has been set through env or file
-func (f *TimestampFlag) IsSet() bool {
-	return f.HasBeenSet
-}
-
-// String returns a readable representation of this value
-// (for usage defaults)
-func (f *TimestampFlag) String() string {
-	return FlagStringer(f)
-}
-
-// Names returns the names of the flag
-func (f *TimestampFlag) Names() []string {
-	return flagNames(f.Name, f.Aliases)
-}
-
 // IsRequired returns whether or not the flag is required
 func (f *TimestampFlag) IsRequired() bool {
 	return f.Required
@@ -117,6 +85,19 @@ func (f *TimestampFlag) GetValue() string {
 // IsVisible returns true if the flag is not hidden, otherwise false
 func (f *TimestampFlag) IsVisible() bool {
 	return !f.Hidden
+}
+
+// GetDefaultText returns the default text for this flag
+func (f *TimestampFlag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	return f.GetValue()
+}
+
+// GetEnvVars returns the env vars for this flag
+func (f *TimestampFlag) GetEnvVars() []string {
+	return f.EnvVars
 }
 
 // Apply populates the flag given the flag set and environment
@@ -151,9 +132,14 @@ func (f *TimestampFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
+// Get returns the flag’s value in the given Context.
+func (f *TimestampFlag) Get(ctx *Context) *time.Time {
+	return ctx.Timestamp(f.Name)
+}
+
 // Timestamp gets the timestamp from a flag name
-func (c *Context) Timestamp(name string) *time.Time {
-	if fs := c.lookupFlagSet(name); fs != nil {
+func (cCtx *Context) Timestamp(name string) *time.Time {
+	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return lookupTimestamp(name, fs)
 	}
 	return nil

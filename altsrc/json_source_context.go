@@ -16,9 +16,9 @@ import (
 // variables from a file containing JSON data with the file name defined
 // by the given flag.
 func NewJSONSourceFromFlagFunc(flag string) func(c *cli.Context) (InputSourceContext, error) {
-	return func(context *cli.Context) (InputSourceContext, error) {
-		if context.IsSet(flag) {
-			return NewJSONSourceFromFile(context.String(flag))
+	return func(cCtx *cli.Context) (InputSourceContext, error) {
+		if cCtx.IsSet(flag) {
+			return NewJSONSourceFromFile(cCtx.String(flag))
 		}
 
 		return defaultInputSource()
@@ -182,6 +182,11 @@ func (x *jsonSource) Bool(name string) (bool, error) {
 		return false, fmt.Errorf("unexpected type %T for %q", i, name)
 	}
 	return v, nil
+}
+
+func (x *jsonSource) isSet(name string) bool {
+	_, err := x.getValue(name)
+	return err == nil
 }
 
 func (x *jsonSource) getValue(key string) (interface{}, error) {

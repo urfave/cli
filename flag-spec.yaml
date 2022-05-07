@@ -1,0 +1,50 @@
+# NOTE: this file is used by the tool defined in
+# ./internal/genflags/cmd/genflags/main.go which uses the
+# `genflags.Spec` type that maps to this file structure.
+
+flag_types:
+  bool: {}
+  float64: {}
+  int64: {}
+  int: {}
+  time.Duration: {}
+  uint64: {}
+  uint: {}
+
+  string:
+    struct_fields:
+      - { name: TakesFile, type: bool }
+  Generic:
+    struct_fields:
+      - { name: TakesFile, type: bool }
+  Path:
+    struct_fields:
+      - { name: TakesFile, type: bool }
+
+  Float64Slice:
+    value_pointer: true
+    skip_interfaces:
+      - fmt.Stringer
+  Int64Slice:
+    value_pointer: true
+    skip_interfaces:
+      - fmt.Stringer
+  IntSlice:
+    value_pointer: true
+    skip_interfaces:
+      - fmt.Stringer
+  StringSlice:
+    value_pointer: true
+    skip_interfaces:
+      - fmt.Stringer
+    struct_fields:
+      - { name: TakesFile, type: bool }
+  Timestamp:
+    value_pointer: true
+    struct_fields:
+      - { name: Layout, type: string }
+
+  # TODO: enable UintSlice
+  # UintSlice: {}
+  # TODO: enable Uint64Slice once #1334 lands
+  # Uint64Slice: {}

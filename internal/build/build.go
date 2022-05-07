@@ -6,19 +6,45 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/urfave/cli/v2"
 )
 
-var packages = []string{"cli", "altsrc"}
+const (
+	badNewsEmoji      = "🚨"
+	goodNewsEmoji     = "✨"
+	checksPassedEmoji = "✅"
+
+	v2diffWarning = `
+# The unified diff above indicates that the public API surface area
+# has changed. If you feel that the changes are acceptable and adhere
+# to the semantic versioning promise of the v2.x series described in
+# docs/CONTRIBUTING.md, please run the following command to promote
+# the current go docs:
+#
+#     make v2approve
+#
+`
+)
 
 func main() {
+	top, err := func() (string, error) {
+		if v, err := sh("git", "rev-parse", "--show-toplevel"); err == nil {
+			return strings.TrimSpace(v), nil
+		}
+
+		return os.Getwd()
+	}()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	app := cli.NewApp()
 
 	app.Name = "builder"
@@ -45,12 +71,50 @@ func main() {
 			Name:   "check-binary-size",
 			Action: checkBinarySizeActionFunc,
 		},
+		{
+			Name:   "generate",
+			Action: GenerateActionFunc,
+		},
+		{
+			Name: "v2diff",
+			Flags: []cli.Flag{
+				&cli.BoolFlag{Name: "color", Value: false},
+			},
+			Action: V2Diff,
+		},
+		{
+			Name:   "v2approve",
+			Action: V2Approve,
+		},
+	}
+	app.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:  "tags",
+			Usage: "set build tags",
+		},
+		&cli.PathFlag{
+			Name:  "top",
+			Value: top,
+		},
+		&cli.StringSliceFlag{
+			Name:  "packages",
+			Value: cli.NewStringSlice("cli", "altsrc", "internal/build", "internal/genflags"),
+		},
 	}
 
-	err := app.Run(os.Args)
-	if err != nil {
+	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func sh(exe string, args ...string) (string, error) {
+	cmd := exec.Command(exe, args...)
+	cmd.Stdin = os.Stdin
+	cmd.Stderr = os.Stderr
+
+	fmt.Fprintf(os.Stderr, "# ---> %s\n", cmd)
+	outBytes, err := cmd.Output()
+	return string(outBytes), err
 }
 
 func runCmd(arg string, args ...string) error {
@@ -60,76 +124,63 @@ func runCmd(arg string, args ...string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
+	fmt.Fprintf(os.Stderr, "# ---> %s\n", cmd)
 	return cmd.Run()
 }
 
-func VetActionFunc(_ *cli.Context) error {
-	return runCmd("go", "vet")
+func VetActionFunc(cCtx *cli.Context) error {
+	return runCmd("go", "vet", cCtx.Path("top")+"/...")
 }
 
 func TestActionFunc(c *cli.Context) error {
-	for _, pkg := range packages {
-		var packageName string
+	tags := c.String("tags")
 
-		if pkg == "cli" {
-			packageName = "github.com/urfave/cli/v2"
-		} else {
+	for _, pkg := range c.StringSlice("packages") {
+		packageName := "github.com/urfave/cli/v2"
+
+		if pkg != "cli" {
 			packageName = fmt.Sprintf("github.com/urfave/cli/v2/%s", pkg)
 		}
 
-		coverProfile := fmt.Sprintf("--coverprofile=%s.coverprofile", pkg)
-
-		err := runCmd("go", "test", "-v", coverProfile, packageName)
-		if err != nil {
+		if err := runCmd(
+			"go", "test",
+			"-tags", tags,
+			"-v",
+			"--coverprofile", pkg+".coverprofile",
+			"--covermode", "count",
+			"--cover", packageName,
+			packageName,
+		); err != nil {
 			return err
 		}
 	}
 
-	return testCleanup()
+	return testCleanup(c.StringSlice("packages"))
 }
 
-func testCleanup() error {
-	var out bytes.Buffer
+func testCleanup(packages []string) error {
+	out := &bytes.Buffer{}
+
+	fmt.Fprintf(out, "mode: count\n")
 
 	for _, pkg := range packages {
-		file, err := os.Open(fmt.Sprintf("%s.coverprofile", pkg))
+		filename := pkg + ".coverprofile"
+
+		lineBytes, err := os.ReadFile(filename)
 		if err != nil {
 			return err
 		}
 
-		b, err := ioutil.ReadAll(file)
-		if err != nil {
-			return err
-		}
+		lines := strings.Split(string(lineBytes), "\n")
 
-		out.Write(b)
-		err = file.Close()
-		if err != nil {
-			return err
-		}
+		fmt.Fprintf(out, strings.Join(lines[1:], "\n"))
 
-		err = os.Remove(fmt.Sprintf("%s.coverprofile", pkg))
-		if err != nil {
+		if err := os.Remove(filename); err != nil {
 			return err
 		}
 	}
 
-	outFile, err := os.Create("coverage.txt")
-	if err != nil {
-		return err
-	}
-
-	_, err = out.WriteTo(outFile)
-	if err != nil {
-		return err
-	}
-
-	err = outFile.Close()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return os.WriteFile("coverage.txt", out.Bytes(), 0644)
 }
 
 func GfmrunActionFunc(c *cli.Context) error {
@@ -171,17 +222,7 @@ func TocActionFunc(c *cli.Context) error {
 		filename = "README.md"
 	}
 
-	err := runCmd("markdown-toc", "-i", filename)
-	if err != nil {
-		return err
-	}
-
-	err = runCmd("git", "diff", "--exit-code")
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return runCmd("markdown-toc", "-i", filename)
 }
 
 // checkBinarySizeActionFunc checks the size of an example binary to ensure that we are keeping size down
@@ -193,22 +234,26 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 		cliBuiltFilePath     = "./internal/example-cli/built-example"
 		helloSourceFilePath  = "./internal/example-hello-world/example-hello-world.go"
 		helloBuiltFilePath   = "./internal/example-hello-world/built-example"
-		desiredMinBinarySize = 1.9
 		desiredMaxBinarySize = 2.2
-		badNewsEmoji         = "🚨"
-		goodNewsEmoji        = "✨"
-		checksPassedEmoji    = "✅"
 		mbStringFormatter    = "%.1fMB"
 	)
 
+	desiredMinBinarySize := 1.675
+
+	tags := c.String("tags")
+
+	if strings.Contains(tags, "urfave_cli_no_docs") {
+		desiredMinBinarySize = 1.39
+	}
+
 	// get cli example size
-	cliSize, err := getSize(cliSourceFilePath, cliBuiltFilePath)
+	cliSize, err := getSize(cliSourceFilePath, cliBuiltFilePath, tags)
 	if err != nil {
 		return err
 	}
 
 	// get hello world size
-	helloSize, err := getSize(helloSourceFilePath, helloBuiltFilePath)
+	helloSize, err := getSize(helloSourceFilePath, helloBuiltFilePath, tags)
 	if err != nil {
 		return err
 	}
@@ -270,9 +315,72 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 	return nil
 }
 
-func getSize(sourcePath string, builtPath string) (size int64, err error) {
+func GenerateActionFunc(cCtx *cli.Context) error {
+	top := cCtx.Path("top")
+
+	cliDocs, err := sh("go", "doc", "-all", top)
+	if err != nil {
+		return err
+	}
+
+	altsrcDocs, err := sh("go", "doc", "-all", filepath.Join(top, "altsrc"))
+	if err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(
+		filepath.Join(top, "godoc-current.txt"),
+		[]byte(cliDocs+altsrcDocs),
+		0644,
+	); err != nil {
+		return err
+	}
+
+	return runCmd("go", "generate", cCtx.Path("top")+"/...")
+}
+
+func V2Diff(cCtx *cli.Context) error {
+	os.Chdir(cCtx.Path("top"))
+
+	err := runCmd(
+		"diff",
+		"--ignore-all-space",
+		"--minimal",
+		"--color="+func() string {
+			if cCtx.Bool("color") {
+				return "always"
+			}
+			return "auto"
+		}(),
+		"--unified",
+		"--label=a/godoc",
+		filepath.Join("testdata", "godoc-v2.x.txt"),
+		"--label=b/godoc",
+		"godoc-current.txt",
+	)
+
+	if err != nil {
+		fmt.Printf("# %v ---> Hey! <---\n", badNewsEmoji)
+		fmt.Println(strings.TrimSpace(v2diffWarning))
+	}
+
+	return err
+}
+
+func V2Approve(cCtx *cli.Context) error {
+	top := cCtx.Path("top")
+
+	return runCmd(
+		"cp",
+		"-v",
+		filepath.Join(top, "godoc-current.txt"),
+		filepath.Join(top, "testdata", "godoc-v2.x.txt"),
+	)
+}
+
+func getSize(sourcePath string, builtPath string, tags string) (size int64, err error) {
 	// build example binary
-	err = runCmd("go", "build", "-o", builtPath, "-ldflags", "-s -w", sourcePath)
+	err = runCmd("go", "build", "-tags", tags, "-o", builtPath, "-ldflags", "-s -w", sourcePath)
 	if err != nil {
 		fmt.Println("issue getting size for example binary")
 		return 0, err

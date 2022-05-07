@@ -31,11 +31,14 @@ jobs:
         uses: actions/checkout@v3
 
       - name: GOFMT Check
-        if: matrix.go == '1.17.x' && matrix.os == 'ubuntu-latest'
+        if: matrix.go == '1.18.x' && matrix.os == 'ubuntu-latest'
         run: test -z $(gofmt -l .)
 
       - name: vet
         run: go run internal/build/build.go vet
+
+      - name: test with tags
+        run: go run internal/build/build.go -tags urfave_cli_no_docs test
 
       - name: test
         run: go run internal/build/build.go test
@@ -43,8 +46,11 @@ jobs:
       - name: check-binary-size
         run: go run internal/build/build.go check-binary-size
 
+      - name: check-binary-size with tags (informational only)
+        run: go run internal/build/build.go -tags urfave_cli_no_docs check-binary-size || true
+
       - name: Upload coverage to Codecov
-        if: success() && matrix.go == '1.17.x' && matrix.os == 'ubuntu-latest'
+        if: success() && matrix.go == '1.18.x' && matrix.os == 'ubuntu-latest'
         uses: codecov/codecov-action@v2
         with:
           fail_ci_if_error: true
@@ -81,3 +87,8 @@ jobs:
 
       - name: toc
         run: go run internal/build/build.go toc docs/v2/manual.md
+
+      - name: diff check
+        run: |
+          git diff --exit-code
+          git diff --cached --exit-code
