@@ -6,37 +6,6 @@ import (
 	"strconv"
 )
 
-// Uint64Flag is a flag with type uint64
-type Uint64Flag struct {
-	Name        string
-	Aliases     []string
-	Usage       string
-	EnvVars     []string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       uint64
-	DefaultText string
-	Destination *uint64
-	HasBeenSet  bool
-}
-
-// IsSet returns whether or not the flag has been set through env or file
-func (f *Uint64Flag) IsSet() bool {
-	return f.HasBeenSet
-}
-
-// String returns a readable representation of this value
-// (for usage defaults)
-func (f *Uint64Flag) String() string {
-	return FlagStringer(f)
-}
-
-// Names returns the names of the flag
-func (f *Uint64Flag) Names() []string {
-	return flagNames(f.Name, f.Aliases)
-}
-
 // IsRequired returns whether or not the flag is required
 func (f *Uint64Flag) IsRequired() bool {
 	return f.Required

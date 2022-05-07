@@ -6,7 +6,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math"
 	"os"
@@ -16,9 +15,18 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var packages = []string{"cli", "altsrc"}
-
 func main() {
+	top, err := func() (string, error) {
+		if v, err := sh("git", "rev-parse", "--show-toplevel"); err == nil {
+			return strings.TrimSpace(v), nil
+		}
+
+		return os.Getwd()
+	}()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	app := cli.NewApp()
 
 	app.Name = "builder"
@@ -45,18 +53,39 @@ func main() {
 			Name:   "check-binary-size",
 			Action: checkBinarySizeActionFunc,
 		},
+		{
+			Name:   "generate",
+			Action: GenerateActionFunc,
+		},
 	}
 	app.Flags = []cli.Flag{
 		&cli.StringFlag{
 			Name:  "tags",
 			Usage: "set build tags",
 		},
+		&cli.PathFlag{
+			Name:  "top",
+			Value: top,
+		},
+		&cli.StringSliceFlag{
+			Name:  "packages",
+			Value: cli.NewStringSlice("cli", "altsrc", "internal/build", "internal/genflags"),
+		},
 	}
 
-	err := app.Run(os.Args)
-	if err != nil {
+	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func sh(exe string, args ...string) (string, error) {
+	cmd := exec.Command(exe, args...)
+	cmd.Stdin = os.Stdin
+	cmd.Stderr = os.Stderr
+
+	fmt.Fprintf(os.Stderr, "# ---> %s\n", cmd)
+	outBytes, err := cmd.Output()
+	return string(outBytes), err
 }
 
 func runCmd(arg string, args ...string) error {
@@ -66,78 +95,63 @@ func runCmd(arg string, args ...string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
+	fmt.Fprintf(os.Stderr, "# ---> %s\n", cmd)
 	return cmd.Run()
 }
 
-func VetActionFunc(_ *cli.Context) error {
-	return runCmd("go", "vet")
+func VetActionFunc(cCtx *cli.Context) error {
+	return runCmd("go", "vet", cCtx.Path("top")+"/...")
 }
 
 func TestActionFunc(c *cli.Context) error {
 	tags := c.String("tags")
 
-	for _, pkg := range packages {
-		var packageName string
+	for _, pkg := range c.StringSlice("packages") {
+		packageName := "github.com/urfave/cli/v2"
 
-		if pkg == "cli" {
-			packageName = "github.com/urfave/cli/v2"
-		} else {
+		if pkg != "cli" {
 			packageName = fmt.Sprintf("github.com/urfave/cli/v2/%s", pkg)
 		}
 
-		coverProfile := fmt.Sprintf("--coverprofile=%s.coverprofile", pkg)
-
-		err := runCmd("go", "test", "-tags", tags, "-v", coverProfile, packageName)
-		if err != nil {
+		if err := runCmd(
+			"go", "test",
+			"-tags", tags,
+			"-v",
+			"--coverprofile", pkg+".coverprofile",
+			"--covermode", "count",
+			"--cover", packageName,
+			packageName,
+		); err != nil {
 			return err
 		}
 	}
 
-	return testCleanup()
+	return testCleanup(c.StringSlice("packages"))
 }
 
-func testCleanup() error {
-	var out bytes.Buffer
+func testCleanup(packages []string) error {
+	out := &bytes.Buffer{}
+
+	fmt.Fprintf(out, "mode: count\n")
 
 	for _, pkg := range packages {
-		file, err := os.Open(fmt.Sprintf("%s.coverprofile", pkg))
+		filename := pkg + ".coverprofile"
+
+		lineBytes, err := os.ReadFile(filename)
 		if err != nil {
 			return err
 		}
 
-		b, err := ioutil.ReadAll(file)
-		if err != nil {
-			return err
-		}
+		lines := strings.Split(string(lineBytes), "\n")
 
-		out.Write(b)
-		err = file.Close()
-		if err != nil {
-			return err
-		}
+		fmt.Fprintf(out, strings.Join(lines[1:], "\n"))
 
-		err = os.Remove(fmt.Sprintf("%s.coverprofile", pkg))
-		if err != nil {
+		if err := os.Remove(filename); err != nil {
 			return err
 		}
 	}
 
-	outFile, err := os.Create("coverage.txt")
-	if err != nil {
-		return err
-	}
-
-	_, err = out.WriteTo(outFile)
-	if err != nil {
-		return err
-	}
-
-	err = outFile.Close()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return os.WriteFile("coverage.txt", out.Bytes(), 0644)
 }
 
 func GfmrunActionFunc(c *cli.Context) error {
@@ -179,17 +193,7 @@ func TocActionFunc(c *cli.Context) error {
 		filename = "README.md"
 	}
 
-	err := runCmd("markdown-toc", "-i", filename)
-	if err != nil {
-		return err
-	}
-
-	err = runCmd("git", "diff", "--exit-code")
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return runCmd("markdown-toc", "-i", filename)
 }
 
 // checkBinarySizeActionFunc checks the size of an example binary to ensure that we are keeping size down
@@ -201,7 +205,6 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 		cliBuiltFilePath     = "./internal/example-cli/built-example"
 		helloSourceFilePath  = "./internal/example-hello-world/example-hello-world.go"
 		helloBuiltFilePath   = "./internal/example-hello-world/built-example"
-		desiredMinBinarySize = 1.675
 		desiredMaxBinarySize = 2.2
 		badNewsEmoji         = "🚨"
 		goodNewsEmoji        = "✨"
@@ -209,7 +212,13 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 		mbStringFormatter    = "%.1fMB"
 	)
 
+	desiredMinBinarySize := 1.675
+
 	tags := c.String("tags")
+
+	if strings.Contains(tags, "urfave_cli_no_docs") {
+		desiredMinBinarySize = 1.39
+	}
 
 	// get cli example size
 	cliSize, err := getSize(cliSourceFilePath, cliBuiltFilePath, tags)
@@ -278,6 +287,10 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 	}
 
 	return nil
+}
+
+func GenerateActionFunc(cCtx *cli.Context) error {
+	return runCmd("go", "generate", cCtx.Path("top")+"/...")
 }
 
 func getSize(sourcePath string, builtPath string, tags string) (size int64, err error) {
