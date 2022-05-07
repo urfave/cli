@@ -258,7 +258,7 @@ func withEnvHint(envVars []string, str string) string {
 	return str + envText
 }
 
-func flagNames(name string, aliases []string) []string {
+func FlagNames(name string, aliases []string) []string {
 	var ret []string
 
 	for _, part := range append([]string{name}, aliases...) {

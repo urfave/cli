@@ -51,6 +51,17 @@ func TestBoolFlagApply_SetsAllNames(t *testing.T) {
 	expect(t, v, true)
 }
 
+func TestBoolFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Bool("trueflag", true, "doc")
+	set.Bool("falseflag", false, "doc")
+	ctx := NewContext(nil, set, nil)
+	tf := &BoolFlag{Name: "trueflag"}
+	ff := &BoolFlag{Name: "falseflag"}
+	expect(t, tf.Get(ctx), true)
+	expect(t, ff.Get(ctx), false)
+}
+
 func TestFlagsFromEnv(t *testing.T) {
 	newSetFloat64Slice := func(defaults ...float64) Float64Slice {
 		s := NewFloat64Slice(defaults...)
@@ -439,6 +450,14 @@ func TestStringFlagApply_SetsAllNames(t *testing.T) {
 	expect(t, v, "YUUUU")
 }
 
+func TestStringFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.String("myflag", "foobar", "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &StringFlag{Name: "myflag"}
+	expect(t, f.Get(ctx), "foobar")
+}
+
 var pathFlagTests = []struct {
 	name     string
 	aliases  []string
@@ -488,6 +507,14 @@ func TestPathFlagApply_SetsAllNames(t *testing.T) {
 	err := set.Parse([]string{"--path", "/path/to/file/path", "-p", "/path/to/file/p", "--PATH", "/path/to/file/PATH"})
 	expect(t, err, nil)
 	expect(t, v, "/path/to/file/PATH")
+}
+
+func TestPathFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.String("myflag", "/my/path", "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &PathFlag{Name: "myflag"}
+	expect(t, f.Get(ctx), "/my/path")
 }
 
 var _ = []struct {
@@ -603,6 +630,14 @@ func TestStringSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 	expect(t, defValue, fl.Destination.Value())
 }
 
+func TestStringSliceFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Var(NewStringSlice("a", "b", "c"), "myflag", "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &StringSliceFlag{Name: "myflag"}
+	expect(t, f.Get(ctx), []string{"a", "b", "c"})
+}
+
 var intFlagTests = []struct {
 	name     string
 	expected string
@@ -652,6 +687,14 @@ func TestIntFlagApply_SetsAllNames(t *testing.T) {
 	expect(t, v, 5)
 }
 
+func TestIntFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Int("myflag", 42, "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &IntFlag{Name: "myflag"}
+	expect(t, f.Get(ctx), 42)
+}
+
 var int64FlagTests = []struct {
 	name     string
 	expected string
@@ -688,6 +731,14 @@ func TestInt64FlagWithEnvVarHelpOutput(t *testing.T) {
 			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
 	}
+}
+
+func TestInt64FlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Int64("myflag", 42, "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &Int64Flag{Name: "myflag"}
+	expect(t, f.Get(ctx), int64(42))
 }
 
 var uintFlagTests = []struct {
@@ -728,6 +779,14 @@ func TestUintFlagWithEnvVarHelpOutput(t *testing.T) {
 	}
 }
 
+func TestUintFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Uint("myflag", 42, "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &UintFlag{Name: "myflag"}
+	expect(t, f.Get(ctx), uint(42))
+}
+
 var uint64FlagTests = []struct {
 	name     string
 	expected string
@@ -764,6 +823,14 @@ func TestUint64FlagWithEnvVarHelpOutput(t *testing.T) {
 			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
 	}
+}
+
+func TestUint64FlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Uint64("myflag", 42, "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &Uint64Flag{Name: "myflag"}
+	expect(t, f.Get(ctx), uint64(42))
 }
 
 var durationFlagTests = []struct {
@@ -813,6 +880,14 @@ func TestDurationFlagApply_SetsAllNames(t *testing.T) {
 	err := set.Parse([]string{"--howmuch", "30s", "-H", "5m", "--whyyy", "30h"})
 	expect(t, err, nil)
 	expect(t, v, time.Hour*30)
+}
+
+func TestDurationFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Duration("myflag", 42*time.Second, "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &DurationFlag{Name: "myflag"}
+	expect(t, f.Get(ctx), 42*time.Second)
 }
 
 var intSliceFlagTests = []struct {
@@ -902,6 +977,14 @@ func TestIntSliceFlag_SetFromParentContext(t *testing.T) {
 	if !reflect.DeepEqual(ctx.IntSlice("numbers"), expected) {
 		t.Errorf("child context unable to view parent flag: %v != %v", expected, ctx.IntSlice("numbers"))
 	}
+}
+
+func TestIntSliceFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Var(NewIntSlice(1, 2, 3), "myflag", "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &IntSliceFlag{Name: "myflag"}
+	expect(t, f.Get(ctx), []int{1, 2, 3})
 }
 
 var int64SliceFlagTests = []struct {
@@ -1000,6 +1083,14 @@ func TestInt64SliceFlag_ReturnNil(t *testing.T) {
 	}
 }
 
+func TestInt64SliceFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Var(NewInt64Slice(1, 2, 3), "myflag", "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &Int64SliceFlag{Name: "myflag"}
+	expect(t, f.Get(ctx), []int64{1, 2, 3})
+}
+
 var float64FlagTests = []struct {
 	name     string
 	expected string
@@ -1049,6 +1140,14 @@ func TestFloat64FlagApply_SetsAllNames(t *testing.T) {
 	expect(t, v, float64(43.33333))
 }
 
+func TestFloat64FlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Float64("myflag", 1.23, "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &Float64Flag{Name: "myflag"}
+	expect(t, f.Get(ctx), 1.23)
+}
+
 var float64SliceFlagTests = []struct {
 	name     string
 	aliases  []string
@@ -1088,6 +1187,14 @@ func TestFloat64SliceFlagWithEnvVarHelpOutput(t *testing.T) {
 			t.Errorf("%q does not end with"+expectedSuffix, output)
 		}
 	}
+}
+
+func TestFloat64SliceFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Var(NewFloat64Slice(1.23, 4.56), "myflag", "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &Float64SliceFlag{Name: "myflag"}
+	expect(t, f.Get(ctx), []float64{1.23, 4.56})
 }
 
 var genericFlagTests = []struct {
@@ -1136,6 +1243,14 @@ func TestGenericFlagApply_SetsAllNames(t *testing.T) {
 
 	err := set.Parse([]string{"--orbs", "eleventy,3", "-O", "4,bloop", "--obrs", "19,s"})
 	expect(t, err, nil)
+}
+
+func TestGenericFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Var(&Parser{"abc", "def"}, "myflag", "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &GenericFlag{Name: "myflag"}
+	expect(t, f.Get(ctx), &Parser{"abc", "def"})
 }
 
 func TestParseMultiString(t *testing.T) {
@@ -2163,6 +2278,15 @@ func TestTimestampFlagApply_Fail_Parse_Wrong_Time(t *testing.T) {
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
 	expect(t, err, fmt.Errorf("invalid value \"2006-01-02T15:04:05Z\" for flag -time: parsing time \"2006-01-02T15:04:05Z\" as \"Jan 2, 2006 at 3:04pm (MST)\": cannot parse \"2006-01-02T15:04:05Z\" as \"Jan\""))
+}
+
+func TestTimestampFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	now := time.Now()
+	set.Var(NewTimestamp(now), "myflag", "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &TimestampFlag{Name: "myflag"}
+	expect(t, f.Get(ctx), &now)
 }
 
 type flagDefaultTestCase struct {

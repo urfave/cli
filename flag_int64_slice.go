@@ -76,34 +76,10 @@ func (i *Int64Slice) Get() interface{} {
 	return *i
 }
 
-// Int64SliceFlag is a flag with type *Int64Slice
-type Int64SliceFlag struct {
-	Name        string
-	Aliases     []string
-	Usage       string
-	EnvVars     []string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       *Int64Slice
-	DefaultText string
-	HasBeenSet  bool
-}
-
-// IsSet returns whether or not the flag has been set through env or file
-func (f *Int64SliceFlag) IsSet() bool {
-	return f.HasBeenSet
-}
-
 // String returns a readable representation of this value
 // (for usage defaults)
 func (f *Int64SliceFlag) String() string {
 	return withEnvHint(f.GetEnvVars(), stringifyInt64SliceFlag(f))
-}
-
-// Names returns the names of the flag
-func (f *Int64SliceFlag) Names() []string {
-	return flagNames(f.Name, f.Aliases)
 }
 
 // IsRequired returns whether or not the flag is required
@@ -174,6 +150,11 @@ func (f *Int64SliceFlag) Apply(set *flag.FlagSet) error {
 	}
 
 	return nil
+}
+
+// Get returns the flag’s value in the given Context.
+func (f *Int64SliceFlag) Get(ctx *Context) []int64 {
+	return ctx.Int64Slice(f.Name)
 }
 
 // Int64Slice looks up the value of a local Int64SliceFlag, returns
