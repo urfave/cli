@@ -16,7 +16,7 @@ policy! :tada: :lock:
 
 Please disclose any vulnerabilities by sending an email to:
 
-[dan+urfave-cli-security@meatballhat.com](mailto:dan+urfave-cli-security@meatballhat.com)
+[urfave-security@googlegroups.com](mailto:urfave-security@googlegroups.com)
 
 You should expect a response within 48 hours and further
 communications to be decided via email. The `urfave/cli` maintainer
