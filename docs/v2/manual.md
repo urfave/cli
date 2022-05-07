@@ -36,6 +36,7 @@ cli v2 manual
   * [Version Flag](#version-flag)
     + [Customization](#customization-2)
   * [Timestamp Flag](#timestamp-flag)
+  * [Suggestions](#suggestions)
   * [Full API Example](#full-api-example)
 
 <!-- tocstop -->
@@ -1456,6 +1457,13 @@ In this example the flag could be used like this :
 `myapp --meeting 2019-08-12T15:04:05`
 
 Side note: quotes may be necessary around the date depending on your layout (if you have spaces for instance)
+
+### Suggestions
+
+To enable flag and command suggestions, set `app.Suggest = true`. If the suggest
+feature is enabled, then the help output of the corresponding command will
+provide an appropriate suggestion for the provided flag or subcommand if
+available.
 
 ### Full API Example
 
