@@ -70,37 +70,10 @@ func (s *StringSlice) Get() interface{} {
 	return *s
 }
 
-// StringSliceFlag is a flag with type *StringSlice
-type StringSliceFlag struct {
-	Name        string
-	Aliases     []string
-	Usage       string
-	EnvVars     []string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	TakesFile   bool
-	Value       *StringSlice
-	DefaultText string
-	HasBeenSet  bool
-	Destination *StringSlice
-	Category    string
-}
-
-// IsSet returns whether or not the flag has been set through env or file
-func (f *StringSliceFlag) IsSet() bool {
-	return f.HasBeenSet
-}
-
 // String returns a readable representation of this value
 // (for usage defaults)
 func (f *StringSliceFlag) String() string {
 	return withEnvHint(f.GetEnvVars(), stringifyStringSliceFlag(f))
-}
-
-// Names returns the names of the flag
-func (f *StringSliceFlag) Names() []string {
-	return flagNames(f.Name, f.Aliases)
 }
 
 // IsRequired returns whether or not the flag is required
@@ -192,6 +165,11 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
 	}
 
 	return nil
+}
+
+// Get returns the flag’s value in the given Context.
+func (f *StringSliceFlag) Get(ctx *Context) []string {
+	return ctx.StringSlice(f.Name)
 }
 
 // StringSlice looks up the value of a local StringSliceFlag, returns

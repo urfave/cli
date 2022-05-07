@@ -20,4 +20,4 @@
 //   }
 package cli
 
-//go:generate go run flag-gen/main.go flag-gen/assets_vfsdata.go
+//go:generate go run internal/genflags/cmd/genflags/main.go
