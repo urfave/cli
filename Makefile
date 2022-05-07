@@ -5,30 +5,22 @@
 # attention on files that are primarily Go.
 
 .PHONY: all
-all: generate lint tag-test test check-bin tag-check-bin gfmrun toc
+all: generate vet tag-test test check-binary-size tag-check-binary-size gfmrun toc v2diff
 
-.PHONY: generate
-generate:
-	go run internal/build/build.go generate
-
-.PHONY: lint
-lint:
-	go run internal/build/build.go vet
+# NOTE: this is a special catch-all rule to run any of the commands
+# defined in internal/build/build.go with optional arguments passed
+# via GFLAGS (global flags) and FLAGS (command-specific flags), e.g.:
+#
+#   $ make test GFLAGS='--packages cli'
+%:
+	go run internal/build/build.go $(GFLAGS) $* $(FLAGS)
 
 .PHONY: tag-test
 tag-test:
 	go run internal/build/build.go -tags urfave_cli_no_docs test
 
-.PHONY: test
-test:
-	go run internal/build/build.go test
-
-.PHONY: check-bin
-check-bin:
-	go run internal/build/build.go check-binary-size
-
-.PHONY: tag-check-bin
-tag-check-bin:
+.PHONY: tag-check-binary-size
+tag-check-binary-size:
 	go run internal/build/build.go -tags urfave_cli_no_docs check-binary-size
 
 .PHONY: gfmrun
