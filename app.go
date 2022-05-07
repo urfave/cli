@@ -245,48 +245,48 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 
 	err = parseIter(set, a, arguments[1:], shellComplete)
 	nerr := normalizeFlags(a.Flags, set)
-	context := NewContext(a, set, &Context{Context: ctx})
+	cCtx := NewContext(a, set, &Context{Context: ctx})
 	if nerr != nil {
 		_, _ = fmt.Fprintln(a.Writer, nerr)
-		_ = ShowAppHelp(context)
+		_ = ShowAppHelp(cCtx)
 		return nerr
 	}
-	context.shellComplete = shellComplete
+	cCtx.shellComplete = shellComplete
 
-	if checkCompletions(context) {
+	if checkCompletions(cCtx) {
 		return nil
 	}
 
 	if err != nil {
 		if a.OnUsageError != nil {
-			err := a.OnUsageError(context, err, false)
-			a.handleExitCoder(context, err)
+			err := a.OnUsageError(cCtx, err, false)
+			a.handleExitCoder(cCtx, err)
 			return err
 		}
 		_, _ = fmt.Fprintf(a.Writer, "%s %s\n\n", "Incorrect Usage.", err.Error())
-		_ = ShowAppHelp(context)
+		_ = ShowAppHelp(cCtx)
 		return err
 	}
 
-	if !a.HideHelp && checkHelp(context) {
-		_ = ShowAppHelp(context)
+	if !a.HideHelp && checkHelp(cCtx) {
+		_ = ShowAppHelp(cCtx)
 		return nil
 	}
 
-	if !a.HideVersion && checkVersion(context) {
-		ShowVersion(context)
+	if !a.HideVersion && checkVersion(cCtx) {
+		ShowVersion(cCtx)
 		return nil
 	}
 
-	cerr := context.checkRequiredFlags(a.Flags)
+	cerr := cCtx.checkRequiredFlags(a.Flags)
 	if cerr != nil {
-		_ = ShowAppHelp(context)
+		_ = ShowAppHelp(cCtx)
 		return cerr
 	}
 
 	if a.After != nil {
 		defer func() {
-			if afterErr := a.After(context); afterErr != nil {
+			if afterErr := a.After(cCtx); afterErr != nil {
 				if err != nil {
 					err = newMultiError(err, afterErr)
 				} else {
@@ -297,20 +297,20 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 	}
 
 	if a.Before != nil {
-		beforeErr := a.Before(context)
+		beforeErr := a.Before(cCtx)
 		if beforeErr != nil {
-			a.handleExitCoder(context, beforeErr)
+			a.handleExitCoder(cCtx, beforeErr)
 			err = beforeErr
 			return err
 		}
 	}
 
-	args := context.Args()
+	args := cCtx.Args()
 	if args.Present() {
 		name := args.First()
 		c := a.Command(name)
 		if c != nil {
-			return c.Run(context)
+			return c.Run(cCtx)
 		}
 	}
 
@@ -319,9 +319,9 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 	}
 
 	// Run default Action
-	err = a.Action(context)
+	err = a.Action(cCtx)
 
-	a.handleExitCoder(context, err)
+	a.handleExitCoder(cCtx, err)
 	return err
 }
 
@@ -359,55 +359,55 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 
 	err = parseIter(set, a, ctx.Args().Tail(), ctx.shellComplete)
 	nerr := normalizeFlags(a.Flags, set)
-	context := NewContext(a, set, ctx)
+	cCtx := NewContext(a, set, ctx)
 
 	if nerr != nil {
 		_, _ = fmt.Fprintln(a.Writer, nerr)
 		_, _ = fmt.Fprintln(a.Writer)
 		if len(a.Commands) > 0 {
-			_ = ShowSubcommandHelp(context)
+			_ = ShowSubcommandHelp(cCtx)
 		} else {
-			_ = ShowCommandHelp(ctx, context.Args().First())
+			_ = ShowCommandHelp(ctx, cCtx.Args().First())
 		}
 		return nerr
 	}
 
-	if checkCompletions(context) {
+	if checkCompletions(cCtx) {
 		return nil
 	}
 
 	if err != nil {
 		if a.OnUsageError != nil {
-			err = a.OnUsageError(context, err, true)
-			a.handleExitCoder(context, err)
+			err = a.OnUsageError(cCtx, err, true)
+			a.handleExitCoder(cCtx, err)
 			return err
 		}
 		_, _ = fmt.Fprintf(a.Writer, "%s %s\n\n", "Incorrect Usage.", err.Error())
-		_ = ShowSubcommandHelp(context)
+		_ = ShowSubcommandHelp(cCtx)
 		return err
 	}
 
 	if len(a.Commands) > 0 {
-		if checkSubcommandHelp(context) {
+		if checkSubcommandHelp(cCtx) {
 			return nil
 		}
 	} else {
-		if checkCommandHelp(ctx, context.Args().First()) {
+		if checkCommandHelp(ctx, cCtx.Args().First()) {
 			return nil
 		}
 	}
 
-	cerr := context.checkRequiredFlags(a.Flags)
+	cerr := cCtx.checkRequiredFlags(a.Flags)
 	if cerr != nil {
-		_ = ShowSubcommandHelp(context)
+		_ = ShowSubcommandHelp(cCtx)
 		return cerr
 	}
 
 	if a.After != nil {
 		defer func() {
-			afterErr := a.After(context)
+			afterErr := a.After(cCtx)
 			if afterErr != nil {
-				a.handleExitCoder(context, err)
+				a.handleExitCoder(cCtx, err)
 				if err != nil {
 					err = newMultiError(err, afterErr)
 				} else {
@@ -418,27 +418,27 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	}
 
 	if a.Before != nil {
-		beforeErr := a.Before(context)
+		beforeErr := a.Before(cCtx)
 		if beforeErr != nil {
-			a.handleExitCoder(context, beforeErr)
+			a.handleExitCoder(cCtx, beforeErr)
 			err = beforeErr
 			return err
 		}
 	}
 
-	args := context.Args()
+	args := cCtx.Args()
 	if args.Present() {
 		name := args.First()
 		c := a.Command(name)
 		if c != nil {
-			return c.Run(context)
+			return c.Run(cCtx)
 		}
 	}
 
 	// Run default Action
-	err = a.Action(context)
+	err = a.Action(cCtx)
 
-	a.handleExitCoder(context, err)
+	a.handleExitCoder(cCtx, err)
 	return err
 }
 
@@ -498,9 +498,9 @@ func (a *App) appendCommand(c *Command) {
 	}
 }
 
-func (a *App) handleExitCoder(context *Context, err error) {
+func (a *App) handleExitCoder(cCtx *Context, err error) {
 	if a.ExitErrHandler != nil {
-		a.ExitErrHandler(context, err)
+		a.ExitErrHandler(cCtx, err)
 	} else {
 		HandleExitCoder(err)
 	}
@@ -525,14 +525,14 @@ func (a *Author) String() string {
 // HandleAction attempts to figure out which Action signature was used.  If
 // it's an ActionFunc or a func with the legacy signature for Action, the func
 // is run!
-func HandleAction(action interface{}, context *Context) (err error) {
+func HandleAction(action interface{}, cCtx *Context) (err error) {
 	switch a := action.(type) {
 	case ActionFunc:
-		return a(context)
+		return a(cCtx)
 	case func(*Context) error:
-		return a(context)
+		return a(cCtx)
 	case func(*Context): // deprecated function signature
-		a(context)
+		a(cCtx)
 		return nil
 	}
 
