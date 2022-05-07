@@ -5,36 +5,7 @@ import (
 	"fmt"
 )
 
-type PathFlag struct {
-	Name        string
-	Aliases     []string
-	Usage       string
-	EnvVars     []string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	TakesFile   bool
-	Value       string
-	DefaultText string
-	Destination *string
-	HasBeenSet  bool
-}
-
-// IsSet returns whether or not the flag has been set through env or file
-func (f *PathFlag) IsSet() bool {
-	return f.HasBeenSet
-}
-
-// String returns a readable representation of this value
-// (for usage defaults)
-func (f *PathFlag) String() string {
-	return FlagStringer(f)
-}
-
-// Names returns the names of the flag
-func (f *PathFlag) Names() []string {
-	return flagNames(f.Name, f.Aliases)
-}
+type Path = string
 
 // IsRequired returns whether or not the flag is required
 func (f *PathFlag) IsRequired() bool {
