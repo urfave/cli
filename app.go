@@ -391,7 +391,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 		}
 		_, _ = fmt.Fprintf(a.Writer, "%s %s\n\n", "Incorrect Usage.", err.Error())
 		if a.Suggest {
-			if suggestion, err := a.suggestFlagFromError(err, context.Command.Name); err == nil {
+			if suggestion, err := a.suggestFlagFromError(err, cCtx.Command.Name); err == nil {
 				fmt.Fprintf(a.Writer, suggestion)
 			}
 		}

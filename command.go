@@ -121,7 +121,7 @@ func (c *Command) Run(ctx *Context) (err error) {
 		_, _ = fmt.Fprintln(cCtx.App.Writer)
 		if ctx.App.Suggest {
 			if suggestion, err := ctx.App.suggestFlagFromError(err, c.Name); err == nil {
-				fmt.Fprintf(context.App.Writer, suggestion)
+				fmt.Fprintf(cCtx.App.Writer, suggestion)
 			}
 		}
 		_ = ShowCommandHelp(cCtx, c.Name)
