@@ -126,8 +126,10 @@ func TestSuggestCommand(t *testing.T) {
 
 func ExampleApp_Suggest() {
 	app := &App{
-		Name:    "greet",
-		Suggest: true,
+		Name:            "greet",
+		Suggest:         true,
+		HideHelp:        true,
+		HideHelpCommand: true,
 		Flags: []Flag{
 			&StringFlag{Name: "name", Value: "squirrel", Usage: "a name to say"},
 		},
@@ -147,12 +149,8 @@ func ExampleApp_Suggest() {
 	//    greet - A new cli application
 	//
 	// USAGE:
-	//    greet [global options] command [command options] [arguments...]
-	//
-	// COMMANDS:
-	//    help, h  Shows a list of commands or help for one command
+	//    greet [global options] [arguments...]
 	//
 	// GLOBAL OPTIONS:
 	//    --name value  a name to say (default: "squirrel")
-	//    --help, -h    show help (default: false)
 }
