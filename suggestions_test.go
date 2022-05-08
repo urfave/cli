@@ -123,3 +123,36 @@ func TestSuggestCommand(t *testing.T) {
 		expect(t, res, fmt.Sprintf(didYouMeanTemplate, testCase.expected))
 	}
 }
+
+func ExampleApp_Suggest() {
+	app := &App{
+		Name:    "greet",
+		Suggest: true,
+		Flags: []Flag{
+			&StringFlag{Name: "name", Value: "squirrel", Usage: "a name to say"},
+		},
+		Action: func(c *Context) error {
+			fmt.Printf("Hello %v\n", c.String("name"))
+			return nil
+		},
+	}
+
+	app.Run([]string{"greet", "--nema", "chipmunk"})
+	// Output:
+	// Incorrect Usage. flag provided but not defined: -nema
+	//
+	// Did you mean '--name'?
+	//
+	// NAME:
+	//    greet - A new cli application
+	//
+	// USAGE:
+	//    greet [global options] command [command options] [arguments...]
+	//
+	// COMMANDS:
+	//    help, h  Shows a list of commands or help for one command
+	//
+	// GLOBAL OPTIONS:
+	//    --name value  a name to say (default: "squirrel")
+	//    --help, -h    show help (default: false)
+}
