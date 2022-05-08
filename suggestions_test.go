@@ -126,15 +126,16 @@ func TestSuggestCommand(t *testing.T) {
 
 func ExampleApp_Suggest() {
 	app := &App{
-		Name:            "greet",
-		Suggest:         true,
-		HideHelp:        true,
-		HideHelpCommand: true,
+		Name:                  "greet",
+		Suggest:               true,
+		HideHelp:              true,
+		HideHelpCommand:       true,
+		CustomAppHelpTemplate: "(this space intentionally left blank)\n",
 		Flags: []Flag{
 			&StringFlag{Name: "name", Value: "squirrel", Usage: "a name to say"},
 		},
-		Action: func(c *Context) error {
-			fmt.Printf("Hello %v\n", c.String("name"))
+		Action: func(cCtx *Context) error {
+			fmt.Printf("Hello %v\n", cCtx.String("name"))
 			return nil
 		},
 	}
@@ -145,12 +146,46 @@ func ExampleApp_Suggest() {
 	//
 	// Did you mean '--name'?
 	//
-	// NAME:
-	//    greet - A new cli application
+	// (this space intentionally left blank)
+}
+
+func ExampleApp_Suggest_command() {
+	app := &App{
+		Name:                  "greet",
+		Suggest:               true,
+		HideHelp:              true,
+		HideHelpCommand:       true,
+		CustomAppHelpTemplate: "(this space intentionally left blank)\n",
+		Flags: []Flag{
+			&StringFlag{Name: "name", Value: "squirrel", Usage: "a name to say"},
+		},
+		Action: func(cCtx *Context) error {
+			fmt.Printf("Hello %v\n", cCtx.String("name"))
+			return nil
+		},
+		Commands: []*Command{
+			{
+				Name:               "neighbors",
+				CustomHelpTemplate: "(this space intentionally left blank)\n",
+				Flags: []Flag{
+					&BoolFlag{Name: "smiling"},
+				},
+				Action: func(cCtx *Context) error {
+					if cCtx.Bool("smiling") {
+						fmt.Println("😀")
+					}
+					fmt.Println("Hello, neighbors")
+					return nil
+				},
+			},
+		},
+	}
+
+	app.Run([]string{"greet", "neighbors", "--sliming"})
+	// Output:
+	// Incorrect Usage: flag provided but not defined: -sliming
 	//
-	// USAGE:
-	//    greet [global options] [arguments...]
+	// Did you mean '--smiling'?
 	//
-	// GLOBAL OPTIONS:
-	//    --name value  a name to say (default: "squirrel")
+	// (this space intentionally left blank)
 }
