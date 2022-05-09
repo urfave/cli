@@ -58,11 +58,6 @@ func (t *Timestamp) Get() interface{} {
 	return *t
 }
 
-// IsRequired returns whether or not the flag is required
-func (f *TimestampFlag) IsRequired() bool {
-	return f.Required
-}
-
 // TakesValue returns true of the flag takes a value, otherwise false
 func (f *TimestampFlag) TakesValue() bool {
 	return true
@@ -80,11 +75,6 @@ func (f *TimestampFlag) GetValue() string {
 		return f.Value.timestamp.String()
 	}
 	return ""
-}
-
-// IsVisible returns true if the flag is not hidden, otherwise false
-func (f *TimestampFlag) IsVisible() bool {
-	return !f.Hidden
 }
 
 // GetDefaultText returns the default text for this flag
