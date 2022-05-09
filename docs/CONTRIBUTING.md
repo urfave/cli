@@ -98,6 +98,28 @@ line help system which may be consulted for further information, e.g.:
 go run internal/genflags/cmd/genflags/main.go --help
 ```
 
+#### docs output
+
+The documentation in the `docs` directory is automatically built via `mkdocs` into a
+static site and published when releases are pushed (see [RELEASING](./RELEASING/)). There
+is no strict requirement to build the documentation when developing locally, but the
+following `make` targets may be used if desired:
+
+```sh
+# install documentation dependencies with `pip`
+make docs-deps
+```
+
+```sh
+# build the static site in `./site`
+make docs
+```
+
+```sh
+# start an mkdocs development server
+make serve-docs
+```
+
 ### pull requests
 
 Please feel free to open a pull request to fix a bug or add a feature. The @urfave/cli

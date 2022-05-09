@@ -16,5 +16,6 @@ These are the guides for each major supported version:
 
 In addition to the version-specific guides, these other documents are available:
 
-- [`CONTRIBUTING`](./CONTRIBUTING/)
-- [`RELEASING`](./RELEASING/)
+- [CONTRIBUTING](./CONTRIBUTING/)
+- [CODE OF CONDUCT](./CODE_OF_CONDUCT/)
+- [RELEASING](./RELEASING/)
