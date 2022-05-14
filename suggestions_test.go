@@ -20,7 +20,7 @@ func TestSuggestFlag(t *testing.T) {
 		{"s", "-s"},
 	} {
 		// When
-		res := app.suggestFlag(app.Flags, testCase.provided)
+		res := suggestFlag(app.Flags, testCase.provided, false)
 
 		// Then
 		expect(t, res, testCase.expected)
@@ -30,10 +30,9 @@ func TestSuggestFlag(t *testing.T) {
 func TestSuggestFlagHideHelp(t *testing.T) {
 	// Given
 	app := testApp()
-	app.HideHelp = true
 
 	// When
-	res := app.suggestFlag(app.Flags, "hlp")
+	res := suggestFlag(app.Flags, "hlp", true)
 
 	// Then
 	expect(t, res, "--fl")

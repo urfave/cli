@@ -26,6 +26,10 @@ application:
 
 VARIABLES
 
+var (
+	SuggestFlag    SuggestFlagFunc    = suggestFlag
+	SuggestCommand SuggestCommandFunc = suggestCommand
+)
 var AppHelpTemplate = `NAME:
    {{.Name}}{{if .Usage}} - {{.Usage}}{{end}}
 
@@ -1538,6 +1542,10 @@ func (f *StringSliceFlag) String() string
 
 func (f *StringSliceFlag) TakesValue() bool
     TakesValue returns true of the flag takes a value, otherwise false
+
+type SuggestCommandFunc func(commands []*Command, provided string) string
+
+type SuggestFlagFunc func(flags []Flag, provided string, hideHelp bool) string
 
 type Timestamp struct {
 	// Has unexported fields.
