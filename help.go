@@ -10,9 +10,14 @@ import (
 	"unicode/utf8"
 )
 
+const (
+	helpName  = "help"
+	helpAlias = "h"
+)
+
 var helpCommand = &Command{
-	Name:      "help",
-	Aliases:   []string{"h"},
+	Name:      helpName,
+	Aliases:   []string{helpAlias},
 	Usage:     "Shows a list of commands or help for one command",
 	ArgsUsage: "[command]",
 	Action: func(cCtx *Context) error {
@@ -27,8 +32,8 @@ var helpCommand = &Command{
 }
 
 var helpSubcommand = &Command{
-	Name:      "help",
-	Aliases:   []string{"h"},
+	Name:      helpName,
+	Aliases:   []string{helpAlias},
 	Usage:     "Shows a list of commands or help for one command",
 	ArgsUsage: "[command]",
 	Action: func(cCtx *Context) error {
@@ -214,7 +219,13 @@ func ShowCommandHelp(ctx *Context, command string) error {
 	}
 
 	if ctx.App.CommandNotFound == nil {
-		return Exit(fmt.Sprintf("No help topic for '%v'", command), 3)
+		errMsg := fmt.Sprintf("No help topic for '%v'", command)
+		if ctx.App.Suggest {
+			if suggestion := suggestCommand(ctx.App.Commands, command); suggestion != "" {
+				errMsg += ". " + suggestion
+			}
+		}
+		return Exit(errMsg, 3)
 	}
 
 	ctx.App.CommandNotFound(ctx, command)
