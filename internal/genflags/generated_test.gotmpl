@@ -19,6 +19,22 @@ func Test{{.TypeName}}_SatisfiesFmtStringerInterface(t *testing.T) {
   _ = f.String()
 }
 {{end}}
+
+{{if .GenerateRequiredFlagInterface}}
+func Test{{.TypeName}}_SatisfiesRequiredFlagInterface(t *testing.T) {
+  var f {{$.UrfaveCLITestNamespace}}RequiredFlag = &{{$.UrfaveCLITestNamespace}}{{.TypeName}}{}
+
+  _ = f.IsRequired()
+}
+{{end}}
+
+{{if .GenerateVisibleFlagInterface}}
+func Test{{.TypeName}}_SatisfiesVisibleFlagInterface(t *testing.T) {
+  var f {{$.UrfaveCLITestNamespace}}VisibleFlag = &{{$.UrfaveCLITestNamespace}}{{.TypeName}}{}
+
+  _ = f.IsVisible()
+}
+{{end}}
 {{end}}
 
 // vim{{/* 👻 */}}:ro

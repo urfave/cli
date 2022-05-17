@@ -7,11 +7,6 @@ import (
 
 type Path = string
 
-// IsRequired returns whether or not the flag is required
-func (f *PathFlag) IsRequired() bool {
-	return f.Required
-}
-
 // TakesValue returns true of the flag takes a value, otherwise false
 func (f *PathFlag) TakesValue() bool {
 	return true
@@ -26,11 +21,6 @@ func (f *PathFlag) GetUsage() string {
 // string if the flag takes no value at all.
 func (f *PathFlag) GetValue() string {
 	return f.Value
-}
-
-// IsVisible returns true if the flag is not hidden, otherwise false
-func (f *PathFlag) IsVisible() bool {
-	return !f.Hidden
 }
 
 // GetDefaultText returns the default text for this flag

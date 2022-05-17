@@ -1,35 +1,4 @@
-cli v1 manual
-===
-
-<!-- toc -->
-
-- [Getting Started](#getting-started)
-- [Examples](#examples)
-  * [Arguments](#arguments)
-  * [Flags](#flags)
-    + [Placeholder Values](#placeholder-values)
-    + [Alternate Names](#alternate-names)
-    + [Ordering](#ordering)
-    + [Values from the Environment](#values-from-the-environment)
-    + [Values from files](#values-from-files)
-    + [Values from alternate input sources (YAML, TOML, and others)](#values-from-alternate-input-sources-yaml-toml-and-others)
-    + [Precedence](#precedence)
-  * [Subcommands](#subcommands)
-  * [Subcommands categories](#subcommands-categories)
-  * [Exit code](#exit-code)
-  * [Combining short options](#combining-short-options)
-  * [Bash Completion](#bash-completion)
-    + [Enabling](#enabling)
-    + [Distribution](#distribution)
-    + [Customization](#customization)
-  * [Generated Help Text](#generated-help-text)
-    + [Customization](#customization-1)
-  * [Version Flag](#version-flag)
-    + [Customization](#customization-2)
-    + [Full API Example](#full-api-example)
-  * [Migrating to V2](#migrating-to-v2)
-
-<!-- tocstop -->
+# v1 guide
 
 ## Getting Started
 

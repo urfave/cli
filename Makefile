@@ -30,3 +30,15 @@ gfmrun:
 .PHONY: toc
 toc:
 	go run internal/build/build.go toc docs/v2/manual.md
+
+.PHONY: docs
+docs:
+	mkdocs build
+
+.PHONY: docs-deps
+docs-deps:
+	pip install -r mkdocs-requirements.txt
+
+.PHONY: serve-docs
+serve-docs:
+	mkdocs serve

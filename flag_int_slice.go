@@ -93,11 +93,6 @@ func (f *IntSliceFlag) String() string {
 	return withEnvHint(f.GetEnvVars(), stringifyIntSliceFlag(f))
 }
 
-// IsRequired returns whether or not the flag is required
-func (f *IntSliceFlag) IsRequired() bool {
-	return f.Required
-}
-
 // TakesValue returns true of the flag takes a value, otherwise false
 func (f *IntSliceFlag) TakesValue() bool {
 	return true
@@ -115,11 +110,6 @@ func (f *IntSliceFlag) GetValue() string {
 		return f.Value.String()
 	}
 	return ""
-}
-
-// IsVisible returns true if the flag is not hidden, otherwise false
-func (f *IntSliceFlag) IsVisible() bool {
-	return !f.Hidden
 }
 
 // GetDefaultText returns the default text for this flag

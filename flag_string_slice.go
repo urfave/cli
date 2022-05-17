@@ -76,11 +76,6 @@ func (f *StringSliceFlag) String() string {
 	return withEnvHint(f.GetEnvVars(), stringifyStringSliceFlag(f))
 }
 
-// IsRequired returns whether or not the flag is required
-func (f *StringSliceFlag) IsRequired() bool {
-	return f.Required
-}
-
 // TakesValue returns true of the flag takes a value, otherwise false
 func (f *StringSliceFlag) TakesValue() bool {
 	return true
@@ -98,11 +93,6 @@ func (f *StringSliceFlag) GetValue() string {
 		return f.Value.String()
 	}
 	return ""
-}
-
-// IsVisible returns true if the flag is not hidden, otherwise false
-func (f *StringSliceFlag) IsVisible() bool {
-	return !f.Hidden
 }
 
 // GetDefaultText returns the default text for this flag
