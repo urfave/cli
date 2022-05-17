@@ -1,6 +1,4 @@
-Migration Guide: v1 to v2
-===
-
+# Migration Guide: v1 to v2
 
 v2 has a number of breaking changes but converting is relatively
 straightforward: make the changes documented below then resolve any
@@ -10,25 +8,6 @@ users.
 If you find any issues not covered by this document, please post a
 comment on [Issue 921](https://github.com/urfave/cli/issues/921) or
 consider sending a PR to help improve this guide.
-
-<!-- toc -->
-
-  * [Flags before args](#flags-before-args)
-  * [Import string changed](#import-string-changed)
-  * [Flag aliases are done differently](#flag-aliases-are-done-differently)
-  * [EnvVar is now a list (EnvVars)](#envvar-is-now-a-list-envvars)
-  * [Actions returns errors](#actions-returns-errors)
-  * [cli.Flag changed](#cliflag-changed)
-  * [Commands are now lists of pointers](#commands-are-now-lists-of-pointers)
-  * [Lists of commands should be pointers](#lists-of-commands-should-be-pointers)
-  * [Appending Commands](#appending-commands)
-  * [GlobalString, GlobalBool and its likes are deprecated](#globalstring-globalbool-and-its-likes-are-deprecated)
-  * [BoolTFlag and BoolT are deprecated](#booltflag-and-boolt-are-deprecated)
-  * [&cli.StringSlice{""} replaced with cli.NewStringSlice("")](#clistringslice-replaced-with-clinewstringslice)
-  * [Replace deprecated functions](#replace-deprecated-functions)
-  * [Everything else](#everything-else)
-
-<!-- tocstop -->
 
 # Flags before args
 
