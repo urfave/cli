@@ -242,7 +242,7 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 
 	tags := c.String("tags")
 
-	if strings.Contains(tags, "urfave_cli_core") || strings.Contains(tags, "urfave_cli_no_docs") {
+	if strings.Contains(tags, "urfave_cli_no_docs") {
 		desiredMinBinarySize = 1.39
 	}
 

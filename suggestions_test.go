@@ -1,6 +1,3 @@
-//go:build !urfave_cli_no_suggest && !urfave_cli_core
-// +build !urfave_cli_no_suggest,!urfave_cli_core
-
 package cli
 
 import (
