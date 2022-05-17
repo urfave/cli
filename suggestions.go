@@ -47,5 +47,5 @@ func suggestCommand(commands []*Command, provided string) (suggestion string) {
 		}
 	}
 
-	return fmt.Sprintf(didYouMeanTemplate, suggestion)
+	return fmt.Sprintf(SuggestDidYouMeanTemplate, suggestion)
 }

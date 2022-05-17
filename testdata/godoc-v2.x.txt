@@ -27,8 +27,9 @@ application:
 VARIABLES
 
 var (
-	SuggestFlag    SuggestFlagFunc    = suggestFlag
-	SuggestCommand SuggestCommandFunc = suggestCommand
+	SuggestFlag               SuggestFlagFunc    = suggestFlag
+	SuggestCommand            SuggestCommandFunc = suggestCommand
+	SuggestDidYouMeanTemplate string             = suggestDidYouMeanTemplate
 )
 var AppHelpTemplate = `NAME:
    {{.Name}}{{if .Usage}} - {{.Usage}}{{end}}

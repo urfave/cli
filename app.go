@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const didYouMeanTemplate = "Did you mean '%s'?"
+const suggestDidYouMeanTemplate = "Did you mean %q?"
 
 var (
 	changeLogURL            = "https://github.com/urfave/cli/blob/main/docs/CHANGELOG.md"
@@ -21,8 +21,9 @@ var (
 		fmt.Sprintf("Must be `func(*Context`)` or `func(*Context) error).  %s", contactSysadmin)+
 		fmt.Sprintf("See %s", appActionDeprecationURL), 2)
 
-	SuggestFlag    SuggestFlagFunc    = suggestFlag
-	SuggestCommand SuggestCommandFunc = suggestCommand
+	SuggestFlag               SuggestFlagFunc    = suggestFlag
+	SuggestCommand            SuggestCommandFunc = suggestCommand
+	SuggestDidYouMeanTemplate string             = suggestDidYouMeanTemplate
 )
 
 // App is the main structure of a cli application. It is recommended that
@@ -361,7 +362,7 @@ func (a *App) suggestFlagFromError(err error, command string) (string, error) {
 		return "", err
 	}
 
-	return fmt.Sprintf(didYouMeanTemplate+"\n\n", suggestion), nil
+	return fmt.Sprintf(SuggestDidYouMeanTemplate+"\n\n", suggestion), nil
 }
 
 // RunAndExitOnError calls .Run() and exits non-zero if an error was returned
