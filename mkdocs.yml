@@ -6,7 +6,7 @@
 
 site_name: urfave/cli
 site_url: https://cli.urfave.org/
-repo_url: https://github.com/urvafe/cli
+repo_url: https://github.com/urfave/cli
 edit_uri: edit/main/docs/
 nav:
   - Home: index.md
