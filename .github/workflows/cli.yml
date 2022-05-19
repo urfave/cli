@@ -76,17 +76,13 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Dependencies
-        run:
-          mkdir -p "${GITHUB_WORKSPACE}/.local/bin" &&
-          curl -fsSL -o "${GITHUB_WORKSPACE}/.local/bin/gfmrun" "https://github.com/urfave/gfmrun/releases/download/v1.3.0/gfmrun-$(go env GOOS)-$(go env GOARCH)-v1.3.0" &&
-          chmod +x "${GITHUB_WORKSPACE}/.local/bin/gfmrun" &&
-          npm install -g markdown-toc@1.2.0
+        run: |
+          mkdir -p "${GITHUB_WORKSPACE}/.local/bin"
+          curl -fsSL -o "${GITHUB_WORKSPACE}/.local/bin/gfmrun" "https://github.com/urfave/gfmrun/releases/download/v1.3.0/gfmrun-$(go env GOOS)-$(go env GOARCH)-v1.3.0"
+          chmod +x "${GITHUB_WORKSPACE}/.local/bin/gfmrun"
 
       - name: gfmrun
         run: go run internal/build/build.go gfmrun docs/v2/manual.md
-
-      - name: toc
-        run: go run internal/build/build.go toc docs/v2/manual.md
 
       - name: diff check
         run: |
@@ -96,13 +92,21 @@ jobs:
   publish:
     if: startswith(github.ref, 'refs/tags/')
     name: publish
+    needs: [test-docs]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup mkdocs
+        run: |
+          pip install -U pip
+          pip install -r mkdocs-requirements.txt
+          git remote rm origin
+          git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/urfave/cli.git
 
       - name: Publish Docs
-        uses: mhausenblas/mkdocs-deploy-gh-pages@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.MKDOCS_PUBLISH_GITHUB_TOKEN }}
-          REQUIREMENTS: mkdocs-requirements.txt
+        run: |
+          mkdocs gh-deploy --force

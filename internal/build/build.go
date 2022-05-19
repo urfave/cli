@@ -64,10 +64,6 @@ func main() {
 			Action: GfmrunActionFunc,
 		},
 		{
-			Name:   "toc",
-			Action: TocActionFunc,
-		},
-		{
 			Name:   "check-binary-size",
 			Action: checkBinarySizeActionFunc,
 		},
@@ -214,15 +210,6 @@ func GfmrunActionFunc(c *cli.Context) error {
 	}
 
 	return runCmd("gfmrun", "-c", fmt.Sprint(counter), "-s", filename)
-}
-
-func TocActionFunc(c *cli.Context) error {
-	filename := c.Args().Get(0)
-	if filename == "" {
-		filename = "README.md"
-	}
-
-	return runCmd("markdown-toc", "-i", filename)
 }
 
 // checkBinarySizeActionFunc checks the size of an example binary to ensure that we are keeping size down
