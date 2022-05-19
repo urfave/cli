@@ -94,7 +94,7 @@ jobs:
           git diff --cached --exit-code
 
   publish:
-    if: startswith(github.ref, 'refs/tags/')
+    #if: startswith(github.ref, 'refs/tags/')
     name: publish
     runs-on: ubuntu-latest
     steps:
@@ -104,5 +104,5 @@ jobs:
       - name: Publish Docs
         uses: mhausenblas/mkdocs-deploy-gh-pages@master
         env:
-          GITHUB_TOKEN: ${{ secrets.MKDOCS_PUBLISH_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REQUIREMENTS: mkdocs-requirements.txt
