@@ -12,6 +12,7 @@ on:
 
 jobs:
   test:
+    if: false
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
@@ -102,8 +103,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      - name: Setup mkdocs
+        run: |
+          pip install -U pip
+          pip install -r mkdocs-requirements.txt
+          git remote rm origin
+          git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/urfave/cli.git
+
       - name: Publish Docs
-        uses: mhausenblas/mkdocs-deploy-gh-pages@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REQUIREMENTS: mkdocs-requirements.txt
+        run: |
+          mkdocs gh-deploy --force
