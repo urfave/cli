@@ -96,6 +96,7 @@ jobs:
   publish:
     #if: startswith(github.ref, 'refs/tags/')
     name: publish
+    needs: [test-docs]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
