@@ -63,7 +63,7 @@ You can use the following build tags:
 
 When set, this removes `ToMarkdown` and `ToMan` methods, so your application
 won't be able to call those. This reduces the resulting binary size by about
-300-400 KB (measured using Go 1.18.1 on Linux/amd64), due to less dependencies.
+300-400 KB (measured using Go 1.18.1 on Linux/amd64), due to fewer dependencies.
 
 ### GOPATH
 

@@ -1,51 +1,4 @@
-cli v2 manual
-===
-
-<!-- toc -->
-
-- [Migrating From Older Releases](#migrating-from-older-releases)
-- [Getting Started](#getting-started)
-- [Examples](#examples)
-  * [Arguments](#arguments)
-  * [Flags](#flags)
-    + [Placeholder Values](#placeholder-values)
-    + [Alternate Names](#alternate-names)
-    + [Ordering](#ordering)
-    + [Values from the Environment](#values-from-the-environment)
-    + [Values from files](#values-from-files)
-    + [Values from alternate input sources (YAML, TOML, and others)](#values-from-alternate-input-sources-yaml-toml-and-others)
-    + [Required Flags](#required-flags)
-    + [Default Values for help output](#default-values-for-help-output)
-    + [Precedence](#precedence)
-  * [Subcommands](#subcommands)
-  * [Subcommands categories](#subcommands-categories)
-  * [Exit code](#exit-code)
-  * [Combining short options](#combining-short-options)
-  * [Bash Completion](#bash-completion)
-    + [Default auto-completion](#default-auto-completion)
-    + [Custom auto-completion](#custom-auto-completion)
-    + [Enabling](#enabling)
-    + [Distribution and Persistent Autocompletion](#distribution-and-persistent-autocompletion)
-    + [Customization](#customization)
-    + [ZSH Support](#zsh-support)
-    + [ZSH default auto-complete example](#zsh-default-auto-complete-example)
-    + [ZSH custom auto-complete example](#zsh-custom-auto-complete-example)
-    + [PowerShell Support](#powershell-support)
-  * [Generated Help Text](#generated-help-text)
-    + [Customization](#customization-1)
-  * [Version Flag](#version-flag)
-    + [Customization](#customization-2)
-  * [Timestamp Flag](#timestamp-flag)
-  * [Full API Example](#full-api-example)
-
-<!-- tocstop -->
-
-## Migrating From Older Releases
-
-There are a small set of breaking changes between v1 and v2.
-Converting is relatively straightforward and typically takes less than
-an hour. Specific steps are included in
-[Migration Guide: v1 to v2](../migrate-v1-to-v2.md). Also see the [pkg.go.dev docs](https://pkg.go.dev/github.com/urfave/cli/v2) for v2 API documentation.
+# v2 guide
 
 ## Getting Started
 
@@ -1457,6 +1410,13 @@ In this example the flag could be used like this :
 
 Side note: quotes may be necessary around the date depending on your layout (if you have spaces for instance)
 
+### Suggestions
+
+To enable flag and command suggestions, set `app.Suggest = true`. If the suggest
+feature is enabled, then the help output of the corresponding command will
+provide an appropriate suggestion for the provided flag or subcommand if
+available.
+
 ### Full API Example
 
 **Notice**: This is a contrived (functioning) example meant strictly for API
@@ -1714,3 +1674,11 @@ func wopAction(c *cli.Context) error {
   return nil
 }
 ```
+
+## Migrating From Older Releases
+
+There are a small set of breaking changes between v1 and v2.
+Converting is relatively straightforward and typically takes less than
+an hour. Specific steps are included in
+[Migration Guide: v1 to v2](../migrate-v1-to-v2.md). Also see the [pkg.go.dev docs](https://pkg.go.dev/github.com/urfave/cli/v2) for v2 API documentation.
+

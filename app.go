@@ -96,6 +96,8 @@ type App struct {
 	// single-character bool arguments into one
 	// i.e. foobar -o -v -> foobar -ov
 	UseShortOptionHandling bool
+	// Enable suggestions for commands and flags
+	Suggest bool
 
 	didSetup bool
 }
@@ -275,6 +277,11 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 			return err
 		}
 		_, _ = fmt.Fprintf(a.Writer, "%s %s\n\n", "Incorrect Usage.", err.Error())
+		if a.Suggest {
+			if suggestion, err := a.suggestFlagFromError(err, ""); err == nil {
+				fmt.Fprintf(a.Writer, suggestion)
+			}
+		}
 		_ = ShowAppHelp(cCtx)
 		return err
 	}
@@ -394,6 +401,11 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 			return err
 		}
 		_, _ = fmt.Fprintf(a.Writer, "%s %s\n\n", "Incorrect Usage.", err.Error())
+		if a.Suggest {
+			if suggestion, err := a.suggestFlagFromError(err, cCtx.Command.Name); err == nil {
+				fmt.Fprintf(a.Writer, suggestion)
+			}
+		}
 		_ = ShowSubcommandHelp(cCtx)
 		return err
 	}

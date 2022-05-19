@@ -5,7 +5,7 @@
 # attention on files that are primarily Go.
 
 .PHONY: all
-all: generate vet tag-test test check-binary-size tag-check-binary-size gfmrun toc v2diff
+all: generate vet tag-test test check-binary-size tag-check-binary-size gfmrun v2diff
 
 # NOTE: this is a special catch-all rule to run any of the commands
 # defined in internal/build/build.go with optional arguments passed
@@ -27,6 +27,14 @@ tag-check-binary-size:
 gfmrun:
 	go run internal/build/build.go gfmrun docs/v2/manual.md
 
-.PHONY: toc
-toc:
-	go run internal/build/build.go toc docs/v2/manual.md
+.PHONY: docs
+docs:
+	mkdocs build
+
+.PHONY: docs-deps
+docs-deps:
+	pip install -r mkdocs-requirements.txt
+
+.PHONY: serve-docs
+serve-docs:
+	mkdocs serve

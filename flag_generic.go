@@ -11,11 +11,6 @@ type Generic interface {
 	String() string
 }
 
-// IsRequired returns whether or not the flag is required
-func (f *GenericFlag) IsRequired() bool {
-	return f.Required
-}
-
 // TakesValue returns true of the flag takes a value, otherwise false
 func (f *GenericFlag) TakesValue() bool {
 	return true
@@ -38,11 +33,6 @@ func (f *GenericFlag) GetValue() string {
 		return f.Value.String()
 	}
 	return ""
-}
-
-// IsVisible returns true if the flag is not hidden, otherwise false
-func (f *GenericFlag) IsVisible() bool {
-	return !f.Hidden
 }
 
 // GetDefaultText returns the default text for this flag

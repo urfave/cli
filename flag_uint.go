@@ -6,11 +6,6 @@ import (
 	"strconv"
 )
 
-// IsRequired returns whether or not the flag is required
-func (f *UintFlag) IsRequired() bool {
-	return f.Required
-}
-
 // TakesValue returns true of the flag takes a value, otherwise false
 func (f *UintFlag) TakesValue() bool {
 	return true
@@ -24,11 +19,6 @@ func (f *UintFlag) GetUsage() string {
 // GetCategory returns the category for the flag
 func (f *UintFlag) GetCategory() string {
 	return f.Category
-}
-
-// IsVisible returns true if the flag is not hidden, otherwise false
-func (f *UintFlag) IsVisible() bool {
-	return !f.Hidden
 }
 
 // Apply populates the flag given the flag set and environment

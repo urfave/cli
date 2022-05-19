@@ -315,6 +315,8 @@ type App struct {
 	// single-character bool arguments into one
 	// i.e. foobar -o -v -> foobar -ov
 	UseShortOptionHandling bool
+	// Enable suggestions for commands and flags
+	Suggest bool
 
 	// Has unexported fields.
 }

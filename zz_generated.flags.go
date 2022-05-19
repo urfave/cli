@@ -34,6 +34,16 @@ func (f *Float64SliceFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
+// IsRequired returns whether or not the flag is required
+func (f *Float64SliceFlag) IsRequired() bool {
+	return f.Required
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *Float64SliceFlag) IsVisible() bool {
+	return !f.Hidden
+}
+
 // GenericFlag is a flag with type Generic
 type GenericFlag struct {
 	Name string
@@ -71,6 +81,16 @@ func (f *GenericFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
+// IsRequired returns whether or not the flag is required
+func (f *GenericFlag) IsRequired() bool {
+	return f.Required
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *GenericFlag) IsVisible() bool {
+	return !f.Hidden
+}
+
 // Int64SliceFlag is a flag with type *Int64Slice
 type Int64SliceFlag struct {
 	Name string
@@ -101,6 +121,16 @@ func (f *Int64SliceFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
+// IsRequired returns whether or not the flag is required
+func (f *Int64SliceFlag) IsRequired() bool {
+	return f.Required
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *Int64SliceFlag) IsVisible() bool {
+	return !f.Hidden
+}
+
 // IntSliceFlag is a flag with type *IntSlice
 type IntSliceFlag struct {
 	Name string
@@ -129,6 +159,16 @@ func (f *IntSliceFlag) IsSet() bool {
 // Names returns the names of the flag
 func (f *IntSliceFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
+}
+
+// IsRequired returns whether or not the flag is required
+func (f *IntSliceFlag) IsRequired() bool {
+	return f.Required
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *IntSliceFlag) IsVisible() bool {
+	return !f.Hidden
 }
 
 // PathFlag is a flag with type Path
@@ -168,6 +208,16 @@ func (f *PathFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
+// IsRequired returns whether or not the flag is required
+func (f *PathFlag) IsRequired() bool {
+	return f.Required
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *PathFlag) IsVisible() bool {
+	return !f.Hidden
+}
+
 // StringSliceFlag is a flag with type *StringSlice
 type StringSliceFlag struct {
 	Name string
@@ -198,6 +248,16 @@ func (f *StringSliceFlag) IsSet() bool {
 // Names returns the names of the flag
 func (f *StringSliceFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
+}
+
+// IsRequired returns whether or not the flag is required
+func (f *StringSliceFlag) IsRequired() bool {
+	return f.Required
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *StringSliceFlag) IsVisible() bool {
+	return !f.Hidden
 }
 
 // TimestampFlag is a flag with type *Timestamp
@@ -237,6 +297,16 @@ func (f *TimestampFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
+// IsRequired returns whether or not the flag is required
+func (f *TimestampFlag) IsRequired() bool {
+	return f.Required
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *TimestampFlag) IsVisible() bool {
+	return !f.Hidden
+}
+
 // BoolFlag is a flag with type bool
 type BoolFlag struct {
 	Name string
@@ -270,6 +340,16 @@ func (f *BoolFlag) IsSet() bool {
 // Names returns the names of the flag
 func (f *BoolFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
+}
+
+// IsRequired returns whether or not the flag is required
+func (f *BoolFlag) IsRequired() bool {
+	return f.Required
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *BoolFlag) IsVisible() bool {
+	return !f.Hidden
 }
 
 // Float64Flag is a flag with type float64
@@ -307,6 +387,16 @@ func (f *Float64Flag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
+// IsRequired returns whether or not the flag is required
+func (f *Float64Flag) IsRequired() bool {
+	return f.Required
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *Float64Flag) IsVisible() bool {
+	return !f.Hidden
+}
+
 // IntFlag is a flag with type int
 type IntFlag struct {
 	Name string
@@ -342,6 +432,16 @@ func (f *IntFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
+// IsRequired returns whether or not the flag is required
+func (f *IntFlag) IsRequired() bool {
+	return f.Required
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *IntFlag) IsVisible() bool {
+	return !f.Hidden
+}
+
 // Int64Flag is a flag with type int64
 type Int64Flag struct {
 	Name string
@@ -375,6 +475,16 @@ func (f *Int64Flag) IsSet() bool {
 // Names returns the names of the flag
 func (f *Int64Flag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
+}
+
+// IsRequired returns whether or not the flag is required
+func (f *Int64Flag) IsRequired() bool {
+	return f.Required
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *Int64Flag) IsVisible() bool {
+	return !f.Hidden
 }
 
 // StringFlag is a flag with type string
@@ -414,6 +524,16 @@ func (f *StringFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
+// IsRequired returns whether or not the flag is required
+func (f *StringFlag) IsRequired() bool {
+	return f.Required
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *StringFlag) IsVisible() bool {
+	return !f.Hidden
+}
+
 // DurationFlag is a flag with type time.Duration
 type DurationFlag struct {
 	Name string
@@ -447,6 +567,16 @@ func (f *DurationFlag) IsSet() bool {
 // Names returns the names of the flag
 func (f *DurationFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
+}
+
+// IsRequired returns whether or not the flag is required
+func (f *DurationFlag) IsRequired() bool {
+	return f.Required
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *DurationFlag) IsVisible() bool {
+	return !f.Hidden
 }
 
 // UintFlag is a flag with type uint
@@ -484,6 +614,16 @@ func (f *UintFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
+// IsRequired returns whether or not the flag is required
+func (f *UintFlag) IsRequired() bool {
+	return f.Required
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *UintFlag) IsVisible() bool {
+	return !f.Hidden
+}
+
 // Uint64Flag is a flag with type uint64
 type Uint64Flag struct {
 	Name string
@@ -517,6 +657,16 @@ func (f *Uint64Flag) IsSet() bool {
 // Names returns the names of the flag
 func (f *Uint64Flag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
+}
+
+// IsRequired returns whether or not the flag is required
+func (f *Uint64Flag) IsRequired() bool {
+	return f.Required
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *Uint64Flag) IsVisible() bool {
+	return !f.Hidden
 }
 
 // vim:ro

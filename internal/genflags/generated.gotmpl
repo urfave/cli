@@ -32,7 +32,7 @@ type {{.TypeName}} struct {
 func (f *{{.TypeName}}) String() string {
   return {{$.UrfaveCLINamespace}}FlagStringer(f)
 }
-{{end}}
+{{end}}{{/* /if .GenerateFmtStringerInterface */}}
 
 {{if .GenerateFlagInterface}}
 // IsSet returns whether or not the flag has been set through env or file
@@ -46,6 +46,20 @@ func (f *{{.TypeName}}) Names() []string {
 }
 
 {{end}}{{/* /if .GenerateFlagInterface */}}
+
+{{if .GenerateRequiredFlagInterface}}
+// IsRequired returns whether or not the flag is required
+func (f *{{.TypeName}}) IsRequired() bool {
+  return f.Required
+}
+{{end}}{{/* /if .GenerateRequiredFlagInterface */}}
+
+{{if .GenerateVisibleFlagInterface}}
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *{{.TypeName}}) IsVisible() bool {
+	return !f.Hidden
+}
+{{end}}{{/* /if .GenerateVisibleFlagInterface */}}
 {{end}}{{/* /range .SortedFlagTypes */}}
 
 // vim{{/* 👻 */}}:ro
