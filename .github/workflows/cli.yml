@@ -12,7 +12,6 @@ on:
 
 jobs:
   test:
-    if: false
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
@@ -91,7 +90,7 @@ jobs:
           git diff --cached --exit-code
 
   publish:
-    #if: startswith(github.ref, 'refs/tags/')
+    if: startswith(github.ref, 'refs/tags/')
     name: publish
     needs: [test-docs]
     runs-on: ubuntu-latest
