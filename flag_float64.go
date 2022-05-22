@@ -6,11 +6,6 @@ import (
 	"strconv"
 )
 
-// IsRequired returns whether or not the flag is required
-func (f *Float64Flag) IsRequired() bool {
-	return f.Required
-}
-
 // TakesValue returns true of the flag takes a value, otherwise false
 func (f *Float64Flag) TakesValue() bool {
 	return true
@@ -38,11 +33,6 @@ func (f *Float64Flag) GetDefaultText() string {
 // GetEnvVars returns the env vars for this flag
 func (f *Float64Flag) GetEnvVars() []string {
 	return f.EnvVars
-}
-
-// IsVisible returns true if the flag is not hidden, otherwise false
-func (f *Float64Flag) IsVisible() bool {
-	return !f.Hidden
 }
 
 // Apply populates the flag given the flag set and environment

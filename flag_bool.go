@@ -6,11 +6,6 @@ import (
 	"strconv"
 )
 
-// IsRequired returns whether or not the flag is required
-func (f *BoolFlag) IsRequired() bool {
-	return f.Required
-}
-
 // TakesValue returns true of the flag takes a value, otherwise false
 func (f *BoolFlag) TakesValue() bool {
 	return false
@@ -25,11 +20,6 @@ func (f *BoolFlag) GetUsage() string {
 // string if the flag takes no value at all.
 func (f *BoolFlag) GetValue() string {
 	return ""
-}
-
-// IsVisible returns true if the flag is not hidden, otherwise false
-func (f *BoolFlag) IsVisible() bool {
-	return !f.Hidden
 }
 
 // GetDefaultText returns the default text for this flag

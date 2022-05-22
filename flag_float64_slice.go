@@ -81,11 +81,6 @@ func (f *Float64SliceFlag) String() string {
 	return withEnvHint(f.GetEnvVars(), stringifyFloat64SliceFlag(f))
 }
 
-// IsRequired returns whether or not the flag is required
-func (f *Float64SliceFlag) IsRequired() bool {
-	return f.Required
-}
-
 // TakesValue returns true if the flag takes a value, otherwise false
 func (f *Float64SliceFlag) TakesValue() bool {
 	return true
@@ -103,11 +98,6 @@ func (f *Float64SliceFlag) GetValue() string {
 		return f.Value.String()
 	}
 	return ""
-}
-
-// IsVisible returns true if the flag is not hidden, otherwise false
-func (f *Float64SliceFlag) IsVisible() bool {
-	return !f.Hidden
 }
 
 // GetDefaultText returns the default text for this flag

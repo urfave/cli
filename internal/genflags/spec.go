@@ -83,6 +83,14 @@ func (ft *FlagType) GenerateFlagInterface() bool {
 	return ft.skipInterfaceNamed("Flag")
 }
 
+func (ft *FlagType) GenerateRequiredFlagInterface() bool {
+	return ft.skipInterfaceNamed("RequiredFlag")
+}
+
+func (ft *FlagType) GenerateVisibleFlagInterface() bool {
+	return ft.skipInterfaceNamed("VisibleFlag")
+}
+
 func (ft *FlagType) skipInterfaceNamed(name string) bool {
 	if ft.Config == nil {
 		return true

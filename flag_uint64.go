@@ -6,11 +6,6 @@ import (
 	"strconv"
 )
 
-// IsRequired returns whether or not the flag is required
-func (f *Uint64Flag) IsRequired() bool {
-	return f.Required
-}
-
 // TakesValue returns true of the flag takes a value, otherwise false
 func (f *Uint64Flag) TakesValue() bool {
 	return true
@@ -19,11 +14,6 @@ func (f *Uint64Flag) TakesValue() bool {
 // GetUsage returns the usage string for the flag
 func (f *Uint64Flag) GetUsage() string {
 	return f.Usage
-}
-
-// IsVisible returns true if the flag is not hidden, otherwise false
-func (f *Uint64Flag) IsVisible() bool {
-	return !f.Hidden
 }
 
 // Apply populates the flag given the flag set and environment
