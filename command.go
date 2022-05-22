@@ -119,6 +119,11 @@ func (c *Command) Run(ctx *Context) (err error) {
 		}
 		_, _ = fmt.Fprintln(cCtx.App.Writer, "Incorrect Usage:", err.Error())
 		_, _ = fmt.Fprintln(cCtx.App.Writer)
+		if ctx.App.Suggest {
+			if suggestion, err := ctx.App.suggestFlagFromError(err, c.Name); err == nil {
+				fmt.Fprintf(cCtx.App.Writer, suggestion)
+			}
+		}
 		_ = ShowCommandHelp(cCtx, c.Name)
 		return err
 	}
@@ -249,6 +254,7 @@ func (c *Command) startApp(ctx *Context) error {
 	app.ErrWriter = ctx.App.ErrWriter
 	app.ExitErrHandler = ctx.App.ExitErrHandler
 	app.UseShortOptionHandling = ctx.App.UseShortOptionHandling
+	app.Suggest = ctx.App.Suggest
 
 	app.categories = newCommandCategories()
 	for _, command := range c.Subcommands {
