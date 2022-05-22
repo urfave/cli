@@ -1040,11 +1040,15 @@ func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 }
 
 func TestDefaultCompleteWithFlags(t *testing.T) {
+	origEnv := os.Environ()
 	origArgv := os.Args
 
 	t.Cleanup(func() {
 		os.Args = origArgv
+		resetEnv(origEnv)
 	})
+
+	os.Setenv("SHELL", "bash")
 
 	for _, tc := range []struct {
 		name     string
