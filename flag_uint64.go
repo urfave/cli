@@ -16,6 +16,11 @@ func (f *Uint64Flag) GetUsage() string {
 	return f.Usage
 }
 
+// GetCategory returns the category for the flag
+func (f *Uint64Flag) GetCategory() string {
+	return f.Category
+}
+
 // Apply populates the flag given the flag set and environment
 func (f *Uint64Flag) Apply(set *flag.FlagSet) error {
 	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {

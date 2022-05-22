@@ -8,6 +8,7 @@ import "time"
 type Float64SliceFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -47,6 +48,7 @@ func (f *Float64SliceFlag) IsVisible() bool {
 type GenericFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -93,6 +95,7 @@ func (f *GenericFlag) IsVisible() bool {
 type Int64SliceFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -132,6 +135,7 @@ func (f *Int64SliceFlag) IsVisible() bool {
 type IntSliceFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -171,6 +175,7 @@ func (f *IntSliceFlag) IsVisible() bool {
 type PathFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -217,6 +222,7 @@ func (f *PathFlag) IsVisible() bool {
 type StringSliceFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -258,6 +264,7 @@ func (f *StringSliceFlag) IsVisible() bool {
 type TimestampFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -304,6 +311,7 @@ func (f *TimestampFlag) IsVisible() bool {
 type BoolFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -348,6 +356,7 @@ func (f *BoolFlag) IsVisible() bool {
 type Float64Flag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -392,6 +401,7 @@ func (f *Float64Flag) IsVisible() bool {
 type IntFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -436,6 +446,7 @@ func (f *IntFlag) IsVisible() bool {
 type Int64Flag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -480,6 +491,7 @@ func (f *Int64Flag) IsVisible() bool {
 type StringFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -526,6 +538,7 @@ func (f *StringFlag) IsVisible() bool {
 type DurationFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -570,6 +583,7 @@ func (f *DurationFlag) IsVisible() bool {
 type UintFlag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string
@@ -614,6 +628,7 @@ func (f *UintFlag) IsVisible() bool {
 type Uint64Flag struct {
 	Name string
 
+	Category    string
 	DefaultText string
 	FilePath    string
 	Usage       string

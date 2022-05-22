@@ -88,8 +88,13 @@ func (f *Int64SliceFlag) TakesValue() bool {
 }
 
 // GetUsage returns the usage string for the flag
-func (f Int64SliceFlag) GetUsage() string {
+func (f *Int64SliceFlag) GetUsage() string {
 	return f.Usage
+}
+
+// GetCategory returns the category for the flag
+func (f *Int64SliceFlag) GetCategory() string {
+	return f.Category
 }
 
 // GetValue returns the flags value as string representation and an empty

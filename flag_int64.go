@@ -16,6 +16,11 @@ func (f *Int64Flag) GetUsage() string {
 	return f.Usage
 }
 
+// GetCategory returns the category for the flag
+func (f *Int64Flag) GetCategory() string {
+	return f.Category
+}
+
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *Int64Flag) GetValue() string {

@@ -132,6 +132,14 @@ type VisibleFlag interface {
 	IsVisible() bool
 }
 
+// CategorizableFlag is an interface that allows us to potentially
+// use a flag in a categorized representation.
+type CategorizableFlag interface {
+	VisibleFlag
+
+	GetCategory() string
+}
+
 func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {
 	set := flag.NewFlagSet(name, flag.ContinueOnError)
 

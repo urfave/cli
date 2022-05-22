@@ -142,8 +142,8 @@ func ExampleApp_Run_appHelp() {
 	//    help, h        Shows a list of commands or help for one command
 	//
 	// GLOBAL OPTIONS:
-	//    --name value   a name to say (default: "bob")
 	//    --help, -h     show help (default: false)
+	//    --name value   a name to say (default: "bob")
 	//    --version, -v  print the version (default: false)
 }
 
@@ -1925,6 +1925,14 @@ func TestApp_VisibleCategories(t *testing.T) {
 
 	app.Setup()
 	expect(t, []CommandCategory{}, app.VisibleCategories())
+}
+
+func TestApp_VisibleFlagCategories(t *testing.T) {
+	app := &App{}
+	vfc := app.VisibleFlagCategories()
+	if len(vfc) != 0 {
+		t.Errorf("unexpected visible flag categories %+v", vfc)
+	}
 }
 
 func TestApp_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {

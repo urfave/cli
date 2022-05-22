@@ -52,6 +52,8 @@ type App struct {
 	HideVersion bool
 	// categories contains the categorized commands and is populated on app startup
 	categories CommandCategories
+	// flagCategories contains the categorized flags and is populated on app startup
+	flagCategories FlagCategories
 	// An action to execute when the shell completion flag is set
 	BashComplete BashCompleteFunc
 	// An action to execute before any subcommands are run, but after the context is ready
@@ -183,6 +185,8 @@ func (a *App) Setup() {
 		if c.HelpName == "" {
 			c.HelpName = fmt.Sprintf("%s %s", a.HelpName, c.Name)
 		}
+
+		c.flagCategories = newFlagCategoriesFromFlags(c.Flags)
 		newCommands = append(newCommands, c)
 	}
 	a.Commands = newCommands
@@ -206,6 +210,13 @@ func (a *App) Setup() {
 		a.categories.AddCommand(command.Category, command)
 	}
 	sort.Sort(a.categories.(*commandCategories))
+
+	a.flagCategories = newFlagCategories()
+	for _, fl := range a.Flags {
+		if cf, ok := fl.(CategorizableFlag); ok {
+			a.flagCategories.AddFlag(cf.GetCategory(), cf)
+		}
+	}
 
 	if a.Metadata == nil {
 		a.Metadata = make(map[string]interface{})
@@ -491,6 +502,14 @@ func (a *App) VisibleCommands() []*Command {
 		}
 	}
 	return ret
+}
+
+// VisibleFlagCategories returns a slice containing all the categories with the flags they contain
+func (a *App) VisibleFlagCategories() []VisibleFlagCategory {
+	if a.flagCategories == nil {
+		return []VisibleFlagCategory{}
+	}
+	return a.flagCategories.VisibleCategories()
 }
 
 // VisibleFlags returns a slice of the Flags with Hidden=false
