@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+const suggestDidYouMeanTemplate = "Did you mean %q?"
+
 var (
 	changeLogURL            = "https://github.com/urfave/cli/blob/main/docs/CHANGELOG.md"
 	appActionDeprecationURL = fmt.Sprintf("%s#deprecated-cli-app-action-signature", changeLogURL)
@@ -18,6 +20,10 @@ var (
 	errInvalidActionType    = NewExitError("ERROR invalid Action type. "+
 		fmt.Sprintf("Must be `func(*Context`)` or `func(*Context) error).  %s", contactSysadmin)+
 		fmt.Sprintf("See %s", appActionDeprecationURL), 2)
+
+	SuggestFlag               SuggestFlagFunc    = suggestFlag
+	SuggestCommand            SuggestCommandFunc = suggestCommand
+	SuggestDidYouMeanTemplate string             = suggestDidYouMeanTemplate
 )
 
 // App is the main structure of a cli application. It is recommended that
@@ -101,6 +107,10 @@ type App struct {
 
 	didSetup bool
 }
+
+type SuggestFlagFunc func(flags []Flag, provided string, hideHelp bool) string
+
+type SuggestCommandFunc func(commands []*Command, provided string) string
 
 // Tries to find out when this binary was compiled.
 // Returns the current time if it fails to find it.
@@ -341,6 +351,29 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 
 	a.handleExitCoder(cCtx, err)
 	return err
+}
+
+func (a *App) suggestFlagFromError(err error, command string) (string, error) {
+	flag, parseErr := flagFromError(err)
+	if parseErr != nil {
+		return "", err
+	}
+
+	flags := a.Flags
+	if command != "" {
+		cmd := a.Command(command)
+		if cmd == nil {
+			return "", err
+		}
+		flags = cmd.Flags
+	}
+
+	suggestion := SuggestFlag(flags, flag, a.HideHelp)
+	if len(suggestion) == 0 {
+		return "", err
+	}
+
+	return fmt.Sprintf(SuggestDidYouMeanTemplate+"\n\n", suggestion), nil
 }
 
 // RunAndExitOnError calls .Run() and exits non-zero if an error was returned

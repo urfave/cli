@@ -20,7 +20,7 @@ func TestSuggestFlag(t *testing.T) {
 		{"s", "-s"},
 	} {
 		// When
-		res := app.suggestFlag(app.Flags, testCase.provided)
+		res := suggestFlag(app.Flags, testCase.provided, false)
 
 		// Then
 		expect(t, res, testCase.expected)
@@ -30,10 +30,9 @@ func TestSuggestFlag(t *testing.T) {
 func TestSuggestFlagHideHelp(t *testing.T) {
 	// Given
 	app := testApp()
-	app.HideHelp = true
 
 	// When
-	res := app.suggestFlag(app.Flags, "hlp")
+	res := suggestFlag(app.Flags, "hlp", true)
 
 	// Then
 	expect(t, res, "--fl")
@@ -57,7 +56,7 @@ func TestSuggestFlagFromError(t *testing.T) {
 		)
 
 		// Then
-		expect(t, res, fmt.Sprintf(didYouMeanTemplate+"\n\n", testCase.expected))
+		expect(t, res, fmt.Sprintf(SuggestDidYouMeanTemplate+"\n\n", testCase.expected))
 	}
 }
 
@@ -117,7 +116,7 @@ func TestSuggestCommand(t *testing.T) {
 		res := suggestCommand(app.Commands, testCase.provided)
 
 		// Then
-		expect(t, res, fmt.Sprintf(didYouMeanTemplate, testCase.expected))
+		expect(t, res, fmt.Sprintf(SuggestDidYouMeanTemplate, testCase.expected))
 	}
 }
 
@@ -141,7 +140,7 @@ func ExampleApp_Suggest() {
 	// Output:
 	// Incorrect Usage. flag provided but not defined: -nema
 	//
-	// Did you mean '--name'?
+	// Did you mean "--name"?
 	//
 	// (this space intentionally left blank)
 }
@@ -182,7 +181,7 @@ func ExampleApp_Suggest_command() {
 	// Output:
 	// Incorrect Usage: flag provided but not defined: -sliming
 	//
-	// Did you mean '--smiling'?
+	// Did you mean "--smiling"?
 	//
 	// (this space intentionally left blank)
 }

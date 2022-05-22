@@ -6,37 +6,13 @@ import (
 	"github.com/antzucaro/matchr"
 )
 
-const didYouMeanTemplate = "Did you mean '%s'?"
-
-func (a *App) suggestFlagFromError(err error, command string) (string, error) {
-	flag, parseErr := flagFromError(err)
-	if parseErr != nil {
-		return "", err
-	}
-
-	flags := a.Flags
-	if command != "" {
-		cmd := a.Command(command)
-		if cmd == nil {
-			return "", err
-		}
-		flags = cmd.Flags
-	}
-
-	suggestion := a.suggestFlag(flags, flag)
-	if len(suggestion) == 0 {
-		return "", err
-	}
-
-	return fmt.Sprintf(didYouMeanTemplate+"\n\n", suggestion), nil
-}
-
-func (a *App) suggestFlag(flags []Flag, provided string) (suggestion string) {
+func suggestFlag(flags []Flag, provided string, hideHelp bool) string {
 	distance := 0.0
+	suggestion := ""
 
 	for _, flag := range flags {
 		flagNames := flag.Names()
-		if !a.HideHelp {
+		if !hideHelp {
 			flagNames = append(flagNames, HelpFlag.Names()...)
 		}
 		for _, name := range flagNames {
@@ -71,5 +47,5 @@ func suggestCommand(commands []*Command, provided string) (suggestion string) {
 		}
 	}
 
-	return fmt.Sprintf(didYouMeanTemplate, suggestion)
+	return fmt.Sprintf(SuggestDidYouMeanTemplate, suggestion)
 }
