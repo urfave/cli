@@ -228,6 +228,7 @@ func ExampleApp_Run_subcommandNoAction() {
 }
 
 func ExampleApp_Run_bashComplete_withShortFlag() {
+	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "-", "--generate-bash-completion"}
 
 	app := NewApp()
@@ -255,6 +256,7 @@ func ExampleApp_Run_bashComplete_withShortFlag() {
 }
 
 func ExampleApp_Run_bashComplete_withLongFlag() {
+	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "--s", "--generate-bash-completion"}
 
 	app := NewApp()
@@ -283,6 +285,7 @@ func ExampleApp_Run_bashComplete_withLongFlag() {
 	// --similar-flag
 }
 func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
+	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "--st", "--generate-bash-completion"}
 
 	app := NewApp()
@@ -315,7 +318,7 @@ func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
 }
 
 func ExampleApp_Run_bashComplete() {
-	// set args for examples sake
+	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "--generate-bash-completion"}
 
 	app := &App{
@@ -355,7 +358,7 @@ func ExampleApp_Run_bashComplete() {
 func ExampleApp_Run_zshComplete() {
 	// set args for examples sake
 	os.Args = []string{"greet", "--generate-bash-completion"}
-	_ = os.Setenv("_CLI_ZSH_AUTOCOMPLETE_HACK", "1")
+	_ = os.Setenv("SHELL", "/usr/bin/zsh")
 
 	app := NewApp()
 	app.Name = "greet"
