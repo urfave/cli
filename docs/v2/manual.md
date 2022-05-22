@@ -1165,10 +1165,10 @@ func main() {
 ```
 
 #### ZSH Support
-Auto-completion for ZSH is also supported using the `autocomplete/zsh_autocomplete` 
-file included in this repo. One environment variable is used, `PROG`.  Set 
-`PROG` to the program name as before, and then `source path/to/autocomplete/zsh_autocomplete`. 
-Adding the following lines to your ZSH configuration file (usually `.zshrc`) 
+Auto-completion for ZSH is also supported using the `autocomplete/zsh_autocomplete`
+file included in this repo. One environment variable is used, `PROG`.  Set
+`PROG` to the program name as before, and then `source path/to/autocomplete/zsh_autocomplete`.
+Adding the following lines to your ZSH configuration file (usually `.zshrc`)
 will allow the auto-completion to persist across new shells:
 
 ```
