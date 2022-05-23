@@ -363,7 +363,7 @@ For example this:
 
 <!-- {
   "args": ["&#45;&#45;help"],
-  "output": "add a task to the list\n.*complete a task on the list\n.*\n\n.*\n.*Load configuration from FILE\n.*Language for the greeting.*"
+  "output": ".*Language for the greeting.*"
 } -->
 ``` go
 package main
