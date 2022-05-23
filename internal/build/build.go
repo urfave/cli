@@ -182,6 +182,13 @@ func testCleanup(packages []string) error {
 func GfmrunActionFunc(cCtx *cli.Context) error {
 	top := cCtx.Path("top")
 
+	bash, err := exec.LookPath("bash")
+	if err != nil {
+		return err
+	}
+
+	os.Setenv("SHELL", bash)
+
 	tmpDir, err := os.MkdirTemp("", "urfave-cli*")
 	if err != nil {
 		return err
@@ -203,7 +210,6 @@ func GfmrunActionFunc(cCtx *cli.Context) error {
 	}
 
 	os.Setenv("TMPDIR", tmpDir)
-	os.Setenv("SHELL", "bash")
 
 	if err := os.Chdir(wd); err != nil {
 		return err
