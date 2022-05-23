@@ -85,7 +85,7 @@ step.
 #### generated code
 
 A significant portion of the project's source code is generated, with the goal being to
-eliminate repetetive maintenance where other type-safe abstraction is impractical or
+eliminate repetitive maintenance where other type-safe abstraction is impractical or
 impossible with Go versions `< 1.18`. In a future where the eldest Go version supported is
 `1.18.x`, there will likely be efforts to take advantage of
 [generics](https://go.dev/doc/tutorial/generics).
