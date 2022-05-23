@@ -4,16 +4,16 @@ package cli
 // cli.go uses text/template to render templates. You can
 // render custom help text by setting this variable.
 var AppHelpTemplate = `NAME:
-   {{.Name}}{{if .Usage}} - {{.Usage}}{{end}}
+   {{$v := offset .Name 6}}{{wrap .Name 3}}{{if .Usage}} - {{wrap .Usage $v}}{{end}}
 
 USAGE:
-   {{if .UsageText}}{{.UsageText | nindent 3 | trim}}{{else}}{{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
 
 VERSION:
    {{.Version}}{{end}}{{end}}{{if .Description}}
 
 DESCRIPTION:
-   {{.Description | nindent 3 | trim}}{{end}}{{if len .Authors}}
+   {{wrap .Description 3}}{{end}}{{if len .Authors}}
 
 AUTHOR{{with $length := len .Authors}}{{if ne 1 $length}}S{{end}}{{end}}:
    {{range $index, $author := .Authors}}{{if $index}}
@@ -31,26 +31,26 @@ GLOBAL OPTIONS:{{range .VisibleFlagCategories}}
 
 GLOBAL OPTIONS:
    {{range $index, $option := .VisibleFlags}}{{if $index}}
-   {{end}}{{$option}}{{end}}{{end}}{{end}}{{if .Copyright}}
+   {{end}}{{wrap $option.String 6}}{{end}}{{end}}{{end}}{{if .Copyright}}
 
 COPYRIGHT:
-   {{.Copyright}}{{end}}
+   {{wrap .Copyright 3}}{{end}}
 `
 
 // CommandHelpTemplate is the text template for the command help topic.
 // cli.go uses text/template to render templates. You can
 // render custom help text by setting this variable.
 var CommandHelpTemplate = `NAME:
-   {{.HelpName}} - {{.Usage}}
+   {{$v := offset .HelpName 6}}{{wrap .HelpName 3}}{{if .Usage}} - {{wrap .Usage $v}}{{end}}
 
 USAGE:
-   {{if .UsageText}}{{.UsageText | nindent 3 | trim}}{{else}}{{.HelpName}}{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Category}}
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}}{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Category}}
 
 CATEGORY:
    {{.Category}}{{end}}{{if .Description}}
 
 DESCRIPTION:
-   {{.Description | nindent 3 | trim}}{{end}}{{if .VisibleFlagCategories}}
+   {{wrap .Description 3}}{{end}}{{if .VisibleFlagCategories}}
 
 OPTIONS:{{range .VisibleFlagCategories}}
    {{if .Name}}{{.Name}}
@@ -69,10 +69,10 @@ var SubcommandHelpTemplate = `NAME:
    {{.HelpName}} - {{.Usage}}
 
 USAGE:
-   {{if .UsageText}}{{.UsageText | nindent 3 | trim}}{{else}}{{.HelpName}} command{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Description}}
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} command{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Description}}
 
 DESCRIPTION:
-   {{.Description | nindent 3 | trim}}{{end}}
+   {{wrap .Description 3}}{{end}}
 
 COMMANDS:{{range .VisibleCategories}}{{if .Name}}
    {{.Name}}:{{range .VisibleCommands}}

@@ -64,6 +64,11 @@ var HelpPrinter helpPrinter = printHelp
 // HelpPrinterCustom is a function that writes the help output. It is used as
 // the default implementation of HelpPrinter, and may be called directly if
 // the ExtraInfo field is set on an App.
+//
+// In the default implementation, if the customFuncs argument contains a
+// "wrapAt" key, which is a function which takes no arguments and returns
+// an int, this int value will be used to produce a "wrap" function used
+// by the default template to wrap long lines.
 var HelpPrinterCustom helpPrinterCustom = printHelpCustom
 
 // VersionPrinter prints the version for the App
@@ -286,12 +291,29 @@ func ShowCommandCompletions(ctx *Context, command string) {
 // The customFuncs map will be combined with a default template.FuncMap to
 // allow using arbitrary functions in template rendering.
 func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs map[string]interface{}) {
+
+	const maxLineLength = 10000
+
 	funcMap := template.FuncMap{
 		"join":    strings.Join,
 		"indent":  indent,
 		"nindent": nindent,
 		"trim":    strings.TrimSpace,
+		"wrap":    func(input string, offset int) string { return wrap(input, offset, maxLineLength) },
+		"offset":  offset,
 	}
+
+	if customFuncs["wrapAt"] != nil {
+		if wa, ok := customFuncs["wrapAt"]; ok {
+			if waf, ok := wa.(func() int); ok {
+				wrapAt := waf()
+				customFuncs["wrap"] = func(input string, offset int) string {
+					return wrap(input, offset, wrapAt)
+				}
+			}
+		}
+	}
+
 	for key, value := range customFuncs {
 		funcMap[key] = value
 	}
@@ -401,4 +423,56 @@ func indent(spaces int, v string) string {
 
 func nindent(spaces int, v string) string {
 	return "\n" + indent(spaces, v)
+}
+
+func wrap(input string, offset int, wrapAt int) string {
+	var sb strings.Builder
+
+	lines := strings.Split(input, "\n")
+
+	padding := strings.Repeat(" ", offset)
+
+	for i, line := range lines {
+		if i != 0 {
+			sb.WriteString(padding)
+		}
+
+		sb.WriteString(wrapLine(line, offset, wrapAt, padding))
+
+		if i != len(lines)-1 {
+			sb.WriteString("\n")
+		}
+	}
+
+	return sb.String()
+}
+
+func wrapLine(input string, offset int, wrapAt int, padding string) string {
+	if wrapAt <= offset || len(input) <= wrapAt-offset {
+		return input
+	}
+
+	lineWidth := wrapAt - offset
+	words := strings.Fields(input)
+	if len(words) == 0 {
+		return input
+	}
+
+	wrapped := words[0]
+	spaceLeft := lineWidth - len(wrapped)
+	for _, word := range words[1:] {
+		if len(word)+1 > spaceLeft {
+			wrapped += "\n" + padding + word
+			spaceLeft = lineWidth - len(word)
+		} else {
+			wrapped += " " + word
+			spaceLeft -= 1 + len(word)
+		}
+	}
+
+	return wrapped
+}
+
+func offset(input string, fixed int) int {
+	return len(input) + fixed
 }
