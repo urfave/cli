@@ -179,8 +179,43 @@ func testCleanup(packages []string) error {
 	return os.WriteFile("coverage.txt", out.Bytes(), 0644)
 }
 
-func GfmrunActionFunc(c *cli.Context) error {
-	filename := c.Args().Get(0)
+func GfmrunActionFunc(cCtx *cli.Context) error {
+	top := cCtx.Path("top")
+
+	bash, err := exec.LookPath("bash")
+	if err != nil {
+		return err
+	}
+
+	os.Setenv("SHELL", bash)
+
+	tmpDir, err := os.MkdirTemp("", "urfave-cli*")
+	if err != nil {
+		return err
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	if err := os.Chdir(tmpDir); err != nil {
+		return err
+	}
+
+	fmt.Fprintf(cCtx.App.ErrWriter, "# ---> workspace/TMPDIR is %q\n", tmpDir)
+
+	if err := runCmd("go", "work", "init", top); err != nil {
+		return err
+	}
+
+	os.Setenv("TMPDIR", tmpDir)
+
+	if err := os.Chdir(wd); err != nil {
+		return err
+	}
+
+	filename := cCtx.Args().Get(0)
 	if filename == "" {
 		filename = "README.md"
 	}
@@ -209,7 +244,11 @@ func GfmrunActionFunc(c *cli.Context) error {
 		return err
 	}
 
-	return runCmd("gfmrun", "-c", fmt.Sprint(counter), "-s", filename)
+	if err := runCmd("gfmrun", "-c", fmt.Sprint(counter), "-s", filename); err != nil {
+		return err
+	}
+
+	return os.RemoveAll(tmpDir)
 }
 
 // checkBinarySizeActionFunc checks the size of an example binary to ensure that we are keeping size down
