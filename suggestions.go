@@ -3,8 +3,17 @@ package cli
 import (
 	"fmt"
 
-	"github.com/antzucaro/matchr"
+	"github.com/xrash/smetrics"
 )
+
+func jaroWinkler(a, b string) float64 {
+	// magic values are from https://github.com/xrash/smetrics/blob/039620a656736e6ad994090895784a7af15e0b80/jaro-winkler.go#L8
+	const (
+		boostThreshold = 0.7
+		prefixSize     = 4
+	)
+	return smetrics.JaroWinkler(a, b, boostThreshold, prefixSize)
+}
 
 func suggestFlag(flags []Flag, provided string, hideHelp bool) string {
 	distance := 0.0
@@ -16,7 +25,7 @@ func suggestFlag(flags []Flag, provided string, hideHelp bool) string {
 			flagNames = append(flagNames, HelpFlag.Names()...)
 		}
 		for _, name := range flagNames {
-			newDistance := matchr.JaroWinkler(name, provided, true)
+			newDistance := jaroWinkler(name, provided)
 			if newDistance > distance {
 				distance = newDistance
 				suggestion = name
@@ -39,7 +48,7 @@ func suggestCommand(commands []*Command, provided string) (suggestion string) {
 	distance := 0.0
 	for _, command := range commands {
 		for _, name := range append(command.Names(), helpName, helpAlias) {
-			newDistance := matchr.JaroWinkler(name, provided, true)
+			newDistance := jaroWinkler(name, provided)
 			if newDistance > distance {
 				distance = newDistance
 				suggestion = name

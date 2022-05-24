@@ -34,6 +34,10 @@ jobs:
         if: matrix.go == '1.18.x' && matrix.os == 'ubuntu-latest'
         run: test -z $(gofmt -l .)
 
+      # https://github.com/urfave/cli/pull/1405#issuecomment-1135458582
+      - name: workaround for golang.org/x/tools error
+        run: go mod download golang.org/x/tools
+
       - name: vet
         run: go run internal/build/build.go vet
 
