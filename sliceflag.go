@@ -1,3 +1,6 @@
+//go:build go1.18
+// +build go1.18
+
 package cli
 
 import (
@@ -225,4 +228,66 @@ func unwrapFlagValue(v flag.Value) flag.Value {
 		}
 		v = h.value
 	}
+}
+
+// NOTE: the methods below are in this file to make use of the build constraint
+
+func (f *Float64SliceFlag) SetValue(slice []float64) {
+	f.Value = newSliceFlagValue(NewFloat64Slice, slice)
+}
+
+func (f *Float64SliceFlag) SetDestination(slice []float64) {
+	f.Destination = newSliceFlagValue(NewFloat64Slice, slice)
+}
+
+func (f *Float64SliceFlag) GetDestination() []float64 {
+	if destination := f.Destination; destination != nil {
+		return destination.Value()
+	}
+	return nil
+}
+
+func (f *Int64SliceFlag) SetValue(slice []int64) {
+	f.Value = newSliceFlagValue(NewInt64Slice, slice)
+}
+
+func (f *Int64SliceFlag) SetDestination(slice []int64) {
+	f.Destination = newSliceFlagValue(NewInt64Slice, slice)
+}
+
+func (f *Int64SliceFlag) GetDestination() []int64 {
+	if destination := f.Destination; destination != nil {
+		return destination.Value()
+	}
+	return nil
+}
+
+func (f *IntSliceFlag) SetValue(slice []int) {
+	f.Value = newSliceFlagValue(NewIntSlice, slice)
+}
+
+func (f *IntSliceFlag) SetDestination(slice []int) {
+	f.Destination = newSliceFlagValue(NewIntSlice, slice)
+}
+
+func (f *IntSliceFlag) GetDestination() []int {
+	if destination := f.Destination; destination != nil {
+		return destination.Value()
+	}
+	return nil
+}
+
+func (f *StringSliceFlag) SetValue(slice []string) {
+	f.Value = newSliceFlagValue(NewStringSlice, slice)
+}
+
+func (f *StringSliceFlag) SetDestination(slice []string) {
+	f.Destination = newSliceFlagValue(NewStringSlice, slice)
+}
+
+func (f *StringSliceFlag) GetDestination() []string {
+	if destination := f.Destination; destination != nil {
+		return destination.Value()
+	}
+	return nil
 }

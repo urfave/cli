@@ -174,21 +174,6 @@ func (f *IntSliceFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
-func (f *IntSliceFlag) SetValue(slice []int) {
-	f.Value = newSliceFlagValue(NewIntSlice, slice)
-}
-
-func (f *IntSliceFlag) SetDestination(slice []int) {
-	f.Destination = newSliceFlagValue(NewIntSlice, slice)
-}
-
-func (f *IntSliceFlag) GetDestination() []int {
-	if destination := f.Destination; destination != nil {
-		return destination.Value()
-	}
-	return nil
-}
-
 // Get returns the flag’s value in the given Context.
 func (f *IntSliceFlag) Get(ctx *Context) []int {
 	return ctx.IntSlice(f.Name)
