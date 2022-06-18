@@ -1003,6 +1003,8 @@ func (f *Float64SliceFlag) GetCategory() string
 func (f *Float64SliceFlag) GetDefaultText() string
     GetDefaultText returns the default text for this flag
 
+func (f *Float64SliceFlag) GetDestination() []float64
+
 func (f *Float64SliceFlag) GetEnvVars() []string
     GetEnvVars returns the env vars for this flag
 
@@ -1024,6 +1026,10 @@ func (f *Float64SliceFlag) IsVisible() bool
 
 func (f *Float64SliceFlag) Names() []string
     Names returns the names of the flag
+
+func (f *Float64SliceFlag) SetDestination(slice []float64)
+
+func (f *Float64SliceFlag) SetValue(slice []float64)
 
 func (f *Float64SliceFlag) String() string
     String returns a readable representation of this value (for usage defaults)
@@ -1215,6 +1221,8 @@ func (f *Int64SliceFlag) GetCategory() string
 func (f *Int64SliceFlag) GetDefaultText() string
     GetDefaultText returns the default text for this flag
 
+func (f *Int64SliceFlag) GetDestination() []int64
+
 func (f *Int64SliceFlag) GetEnvVars() []string
     GetEnvVars returns the env vars for this flag
 
@@ -1236,6 +1244,10 @@ func (f *Int64SliceFlag) IsVisible() bool
 
 func (f *Int64SliceFlag) Names() []string
     Names returns the names of the flag
+
+func (f *Int64SliceFlag) SetDestination(slice []int64)
+
+func (f *Int64SliceFlag) SetValue(slice []int64)
 
 func (f *Int64SliceFlag) String() string
     String returns a readable representation of this value (for usage defaults)
@@ -1362,6 +1374,8 @@ func (f *IntSliceFlag) GetCategory() string
 func (f *IntSliceFlag) GetDefaultText() string
     GetDefaultText returns the default text for this flag
 
+func (f *IntSliceFlag) GetDestination() []int
+
 func (f *IntSliceFlag) GetEnvVars() []string
     GetEnvVars returns the env vars for this flag
 
@@ -1384,6 +1398,10 @@ func (f *IntSliceFlag) IsVisible() bool
 func (f *IntSliceFlag) Names() []string
     Names returns the names of the flag
 
+func (f *IntSliceFlag) SetDestination(slice []int)
+
+func (f *IntSliceFlag) SetValue(slice []int)
+
 func (f *IntSliceFlag) String() string
     String returns a readable representation of this value (for usage defaults)
 
@@ -1395,6 +1413,22 @@ type MultiError interface {
 	Errors() []error
 }
     MultiError is an error that wraps multiple errors.
+
+type MultiFloat64Flag = SliceFlag[*Float64SliceFlag, []float64, float64]
+    MultiFloat64Flag extends Float64SliceFlag with support for using slices
+    directly, as Value and/or Destination. See also SliceFlag.
+
+type MultiInt64Flag = SliceFlag[*Int64SliceFlag, []int64, int64]
+    MultiInt64Flag extends Int64SliceFlag with support for using slices
+    directly, as Value and/or Destination. See also SliceFlag.
+
+type MultiIntFlag = SliceFlag[*IntSliceFlag, []int, int]
+    MultiIntFlag extends IntSliceFlag with support for using slices directly, as
+    Value and/or Destination. See also SliceFlag.
+
+type MultiStringFlag = SliceFlag[*StringSliceFlag, []string, string]
+    MultiStringFlag extends StringSliceFlag with support for using slices
+    directly, as Value and/or Destination. See also SliceFlag.
 
 type OnUsageErrorFunc func(cCtx *Context, err error, isSubcommand bool) error
     OnUsageErrorFunc is executed if a usage error occurs. This is useful for
@@ -1479,6 +1513,67 @@ type Serializer interface {
 	Serialize() string
 }
     Serializer is used to circumvent the limitations of flag.FlagSet.Set
+
+type SliceFlag[T SliceFlagTarget[E], S ~[]E, E any] struct {
+	Target      T
+	Value       S
+	Destination *S
+}
+    SliceFlag extends implementations like StringSliceFlag and IntSliceFlag with
+    support for using slices directly, as Value and/or Destination. See also
+    SliceFlagTarget, MultiStringFlag, MultiFloat64Flag, MultiInt64Flag,
+    MultiIntFlag.
+
+func (x *SliceFlag[T, S, E]) Apply(set *flag.FlagSet) error
+
+func (x *SliceFlag[T, S, E]) GetCategory() string
+
+func (x *SliceFlag[T, S, E]) GetDefaultText() string
+
+func (x *SliceFlag[T, S, E]) GetDestination() S
+
+func (x *SliceFlag[T, S, E]) GetEnvVars() []string
+
+func (x *SliceFlag[T, S, E]) GetUsage() string
+
+func (x *SliceFlag[T, S, E]) GetValue() string
+
+func (x *SliceFlag[T, S, E]) IsRequired() bool
+
+func (x *SliceFlag[T, S, E]) IsSet() bool
+
+func (x *SliceFlag[T, S, E]) IsVisible() bool
+
+func (x *SliceFlag[T, S, E]) Names() []string
+
+func (x *SliceFlag[T, S, E]) SetDestination(slice S)
+
+func (x *SliceFlag[T, S, E]) SetValue(slice S)
+
+func (x *SliceFlag[T, S, E]) String() string
+
+func (x *SliceFlag[T, S, E]) TakesValue() bool
+
+type SliceFlagTarget[E any] interface {
+	Flag
+	RequiredFlag
+	DocGenerationFlag
+	VisibleFlag
+	CategorizableFlag
+
+	// SetValue should propagate the given slice to the target, ideally as a new value.
+	// Note that a nil slice should nil/clear any existing value (modelled as ~[]E).
+	SetValue(slice []E)
+	// SetDestination should propagate the given slice to the target, ideally as a new value.
+	// Note that a nil slice should nil/clear any existing value (modelled as ~*[]E).
+	SetDestination(slice []E)
+	// GetDestination should return the current value referenced by any destination, or nil if nil/unset.
+	GetDestination() []E
+}
+    SliceFlagTarget models a target implementation for use with SliceFlag. The
+    three methods, SetValue, SetDestination, and GetDestination, are necessary
+    to propagate Value and Destination, where Value is propagated inwards
+    (initially), and Destination is propagated outwards (on every update).
 
 type StringFlag struct {
 	Name string
@@ -1599,6 +1694,8 @@ func (f *StringSliceFlag) GetCategory() string
 func (f *StringSliceFlag) GetDefaultText() string
     GetDefaultText returns the default text for this flag
 
+func (f *StringSliceFlag) GetDestination() []string
+
 func (f *StringSliceFlag) GetEnvVars() []string
     GetEnvVars returns the env vars for this flag
 
@@ -1620,6 +1717,10 @@ func (f *StringSliceFlag) IsVisible() bool
 
 func (f *StringSliceFlag) Names() []string
     Names returns the names of the flag
+
+func (f *StringSliceFlag) SetDestination(slice []string)
+
+func (f *StringSliceFlag) SetValue(slice []string)
 
 func (f *StringSliceFlag) String() string
     String returns a readable representation of this value (for usage defaults)
