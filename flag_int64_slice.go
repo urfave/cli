@@ -57,7 +57,12 @@ func (i *Int64Slice) Set(value string) error {
 
 // String returns a readable representation of this value (for usage defaults)
 func (i *Int64Slice) String() string {
-	return fmt.Sprintf("%#v", i.slice)
+	v := i.slice
+	if v == nil {
+		// treat nil the same as zero length non-nil
+		v = make([]int64, 0)
+	}
+	return fmt.Sprintf("%#v", v)
 }
 
 // Serialize allows Int64Slice to fulfill Serializer
@@ -121,27 +126,38 @@ func (f *Int64SliceFlag) GetEnvVars() []string {
 
 // Apply populates the flag given the flag set and environment
 func (f *Int64SliceFlag) Apply(set *flag.FlagSet) error {
-	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
-		f.Value = &Int64Slice{}
+	// apply any default
+	if f.Destination != nil && f.Value != nil {
+		f.Destination.slice = make([]int64, len(f.Value.slice))
+		copy(f.Destination.slice, f.Value.slice)
+	}
 
+	// resolve setValue (what we will assign to the set)
+	var setValue *Int64Slice
+	switch {
+	case f.Destination != nil:
+		setValue = f.Destination
+	case f.Value != nil:
+		setValue = f.Value.clone()
+	default:
+		setValue = new(Int64Slice)
+	}
+
+	if val, source, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok && val != "" {
 		for _, s := range flagSplitMultiValues(val) {
-			if err := f.Value.Set(strings.TrimSpace(s)); err != nil {
+			if err := setValue.Set(strings.TrimSpace(s)); err != nil {
 				return fmt.Errorf("could not parse %q as int64 slice value from %s for flag %s: %s", val, source, f.Name, err)
 			}
 		}
 
 		// Set this to false so that we reset the slice if we then set values from
 		// flags that have already been set by the environment.
-		f.Value.hasBeenSet = false
+		setValue.hasBeenSet = false
 		f.HasBeenSet = true
 	}
 
-	if f.Value == nil {
-		f.Value = &Int64Slice{}
-	}
-	copyValue := f.Value.clone()
 	for _, name := range f.Names() {
-		set.Var(copyValue, name, f.Usage)
+		set.Var(setValue, name, f.Usage)
 	}
 
 	return nil
@@ -164,7 +180,7 @@ func (cCtx *Context) Int64Slice(name string) []int64 {
 func lookupInt64Slice(name string, set *flag.FlagSet) []int64 {
 	f := set.Lookup(name)
 	if f != nil {
-		if slice, ok := f.Value.(*Int64Slice); ok {
+		if slice, ok := unwrapFlagValue(f.Value).(*Int64Slice); ok {
 			return slice.Value()
 		}
 	}

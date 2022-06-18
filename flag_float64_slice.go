@@ -56,7 +56,12 @@ func (f *Float64Slice) Set(value string) error {
 
 // String returns a readable representation of this value (for usage defaults)
 func (f *Float64Slice) String() string {
-	return fmt.Sprintf("%#v", f.slice)
+	v := f.slice
+	if v == nil {
+		// treat nil the same as zero length non-nil
+		v = make([]float64, 0)
+	}
+	return fmt.Sprintf("%#v", v)
 }
 
 // Serialize allows Float64Slice to fulfill Serializer
@@ -120,29 +125,40 @@ func (f *Float64SliceFlag) GetEnvVars() []string {
 
 // Apply populates the flag given the flag set and environment
 func (f *Float64SliceFlag) Apply(set *flag.FlagSet) error {
+	// apply any default
+	if f.Destination != nil && f.Value != nil {
+		f.Destination.slice = make([]float64, len(f.Value.slice))
+		copy(f.Destination.slice, f.Value.slice)
+	}
+
+	// resolve setValue (what we will assign to the set)
+	var setValue *Float64Slice
+	switch {
+	case f.Destination != nil:
+		setValue = f.Destination
+	case f.Value != nil:
+		setValue = f.Value.clone()
+	default:
+		setValue = new(Float64Slice)
+	}
+
 	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
 		if val != "" {
-			f.Value = &Float64Slice{}
-
 			for _, s := range flagSplitMultiValues(val) {
-				if err := f.Value.Set(strings.TrimSpace(s)); err != nil {
-					return fmt.Errorf("could not parse %q as float64 slice value from %s for flag %s: %s", f.Value, source, f.Name, err)
+				if err := setValue.Set(strings.TrimSpace(s)); err != nil {
+					return fmt.Errorf("could not parse %q as float64 slice value from %s for flag %s: %s", val, source, f.Name, err)
 				}
 			}
 
 			// Set this to false so that we reset the slice if we then set values from
 			// flags that have already been set by the environment.
-			f.Value.hasBeenSet = false
+			setValue.hasBeenSet = false
 			f.HasBeenSet = true
 		}
 	}
 
-	if f.Value == nil {
-		f.Value = &Float64Slice{}
-	}
-	copyValue := f.Value.clone()
 	for _, name := range f.Names() {
-		set.Var(copyValue, name, f.Usage)
+		set.Var(setValue, name, f.Usage)
 	}
 
 	return nil
@@ -165,7 +181,7 @@ func (cCtx *Context) Float64Slice(name string) []float64 {
 func lookupFloat64Slice(name string, set *flag.FlagSet) []float64 {
 	f := set.Lookup(name)
 	if f != nil {
-		if slice, ok := f.Value.(*Float64Slice); ok {
+		if slice, ok := unwrapFlagValue(f.Value).(*Float64Slice); ok {
 			return slice.Value()
 		}
 	}
