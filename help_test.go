@@ -1124,3 +1124,225 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 		})
 	}
 }
+
+func TestWrappedHelp(t *testing.T) {
+
+	// Reset HelpPrinter after this test.
+	defer func(old helpPrinter) {
+		HelpPrinter = old
+	}(HelpPrinter)
+
+	output := new(bytes.Buffer)
+	app := &App{
+		Writer: output,
+		Flags: []Flag{
+			&BoolFlag{Name: "foo",
+				Aliases: []string{"h"},
+				Usage:   "here's a really long help text line, let's see where it wraps. blah blah blah and so on.",
+			},
+		},
+		Usage:     "here's a sample App.Usage string long enough that it should be wrapped in this test",
+		UsageText: "i'm not sure how App.UsageText differs from App.Usage, but this should also be wrapped in this test",
+		// TODO: figure out how to make ArgsUsage appear in the help text, and test that
+		Description: `here's a sample App.Description string long enough that it should be wrapped in this test
+
+with a newline
+   and an indented line`,
+		Copyright: `Here's a sample copyright text string long enough that it should be wrapped.
+Including newlines.
+   And also indented lines.
+
+
+And then another long line. Blah blah blah does anybody ever read these things?`,
+	}
+
+	c := NewContext(app, nil, nil)
+
+	HelpPrinter = func(w io.Writer, templ string, data interface{}) {
+		funcMap := map[string]interface{}{
+			"wrapAt": func() int {
+				return 30
+			},
+		}
+
+		HelpPrinterCustom(w, templ, data, funcMap)
+	}
+
+	_ = ShowAppHelp(c)
+
+	expected := `NAME:
+    - here's a sample
+      App.Usage string long
+      enough that it should be
+      wrapped in this test
+
+USAGE:
+   i'm not sure how
+   App.UsageText differs from
+   App.Usage, but this should
+   also be wrapped in this
+   test
+
+DESCRIPTION:
+   here's a sample
+   App.Description string long
+   enough that it should be
+   wrapped in this test
+   
+   with a newline
+      and an indented line
+
+GLOBAL OPTIONS:
+   --foo, -h here's a
+      really long help text
+      line, let's see where it
+      wraps. blah blah blah
+      and so on. (default:
+      false)
+
+COPYRIGHT:
+   Here's a sample copyright
+   text string long enough
+   that it should be wrapped.
+   Including newlines.
+      And also indented lines.
+   
+   
+   And then another long line.
+   Blah blah blah does anybody
+   ever read these things?
+`
+
+	if output.String() != expected {
+		t.Errorf("Unexpected wrapping, got:\n%s\nexpected: %s",
+			output.String(), expected)
+	}
+}
+
+func TestWrappedCommandHelp(t *testing.T) {
+
+	// Reset HelpPrinter after this test.
+	defer func(old helpPrinter) {
+		HelpPrinter = old
+	}(HelpPrinter)
+
+	output := new(bytes.Buffer)
+	app := &App{
+		Writer: output,
+		Commands: []*Command{
+			{
+				Name:        "add",
+				Aliases:     []string{"a"},
+				Usage:       "add a task to the list",
+				UsageText:   "this is an even longer way of describing adding a task to the list",
+				Description: "and a description long enough to wrap in this test case",
+				Action: func(c *Context) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	c := NewContext(app, nil, nil)
+
+	HelpPrinter = func(w io.Writer, templ string, data interface{}) {
+		funcMap := map[string]interface{}{
+			"wrapAt": func() int {
+				return 30
+			},
+		}
+
+		HelpPrinterCustom(w, templ, data, funcMap)
+	}
+
+	_ = ShowCommandHelp(c, "add")
+
+	expected := `NAME:
+    - add a task to the list
+
+USAGE:
+   this is an even longer way
+   of describing adding a task
+   to the list
+
+DESCRIPTION:
+   and a description long
+   enough to wrap in this test
+   case
+`
+
+	if output.String() != expected {
+		t.Errorf("Unexpected wrapping, got:\n%s\nexpected: %s",
+			output.String(), expected)
+	}
+}
+
+func TestWrappedSubcommandHelp(t *testing.T) {
+
+	// Reset HelpPrinter after this test.
+	defer func(old helpPrinter) {
+		HelpPrinter = old
+	}(HelpPrinter)
+
+	output := new(bytes.Buffer)
+	app := &App{
+		Name:   "cli.test",
+		Writer: output,
+		Commands: []*Command{
+			{
+				Name:        "bar",
+				Aliases:     []string{"a"},
+				Usage:       "add a task to the list",
+				UsageText:   "this is an even longer way of describing adding a task to the list",
+				Description: "and a description long enough to wrap in this test case",
+				Action: func(c *Context) error {
+					return nil
+				},
+				Subcommands: []*Command{
+					{
+						Name:      "grok",
+						Usage:     "remove an existing template",
+						UsageText: "longer usage text goes here, la la la, hopefully this is long enough to wrap even more",
+						Action: func(c *Context) error {
+							return nil
+						},
+					},
+				},
+			},
+		},
+	}
+
+	HelpPrinter = func(w io.Writer, templ string, data interface{}) {
+		funcMap := map[string]interface{}{
+			"wrapAt": func() int {
+				return 30
+			},
+		}
+
+		HelpPrinterCustom(w, templ, data, funcMap)
+	}
+
+	_ = app.Run([]string{"foo", "bar", "grok", "--help"})
+
+	expected := `NAME:
+   cli.test bar grok - remove
+                       an
+                       existing
+                       template
+
+USAGE:
+   longer usage text goes
+   here, la la la, hopefully
+   this is long enough to wrap
+   even more
+
+OPTIONS:
+   --help, -h  show help (default: false)
+   
+`
+
+	if output.String() != expected {
+		t.Errorf("Unexpected wrapping, got:\n%s\nexpected: %s",
+			output.String(), expected)
+	}
+}
