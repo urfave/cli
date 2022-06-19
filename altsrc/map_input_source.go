@@ -32,11 +32,18 @@ func nestedVal(name string, tree map[interface{}]interface{}) (interface{}, bool
 			if !ok {
 				return nil, false
 			}
-			ctype, ok := child.(map[interface{}]interface{})
-			if !ok {
+
+			switch child := child.(type) {
+			case map[string]interface{}:
+				node = make(map[interface{}]interface{}, len(child))
+				for k, v := range child {
+					node[k] = v
+				}
+			case map[interface{}]interface{}:
+				node = child
+			default:
 				return nil, false
 			}
-			node = ctype
 		}
 		if val, ok := node[sections[len(sections)-1]]; ok {
 			return val, true
