@@ -551,7 +551,7 @@ func TestApp_RunDefaultCommandWithSubCommand(t *testing.T) {
 					{Name: "batbaz", Aliases: []string{"b"}},
 				},
 			}
-			
+
 			err := app.Run([]string{"c", test.cmdName, test.subCmd})
 			expect(t, err == nil, test.expected)
 		})
