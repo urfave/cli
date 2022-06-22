@@ -2083,6 +2083,8 @@ func (c *customBoolFlag) IsSet() bool {
 	return false
 }
 
+func (c *customBoolFlag) SetRequired(bool) {}
+
 func TestCustomFlagsUnused(t *testing.T) {
 	app := &App{
 		Flags:  []Flag{&customBoolFlag{"custom"}},

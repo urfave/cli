@@ -34,6 +34,10 @@ func (f *Float64SliceFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
+func (f *Float64SliceFlag) SetRequired(required bool) {
+	f.Required = required
+}
+
 // IsRequired returns whether or not the flag is required
 func (f *Float64SliceFlag) IsRequired() bool {
 	return f.Required
@@ -81,6 +85,10 @@ func (f *GenericFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
+func (f *GenericFlag) SetRequired(required bool) {
+	f.Required = required
+}
+
 // IsRequired returns whether or not the flag is required
 func (f *GenericFlag) IsRequired() bool {
 	return f.Required
@@ -121,6 +129,10 @@ func (f *Int64SliceFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
+func (f *Int64SliceFlag) SetRequired(required bool) {
+	f.Required = required
+}
+
 // IsRequired returns whether or not the flag is required
 func (f *Int64SliceFlag) IsRequired() bool {
 	return f.Required
@@ -159,6 +171,10 @@ func (f *IntSliceFlag) IsSet() bool {
 // Names returns the names of the flag
 func (f *IntSliceFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
+}
+
+func (f *IntSliceFlag) SetRequired(required bool) {
+	f.Required = required
 }
 
 // IsRequired returns whether or not the flag is required
@@ -208,6 +224,10 @@ func (f *PathFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
+func (f *PathFlag) SetRequired(required bool) {
+	f.Required = required
+}
+
 // IsRequired returns whether or not the flag is required
 func (f *PathFlag) IsRequired() bool {
 	return f.Required
@@ -248,6 +268,10 @@ func (f *StringSliceFlag) IsSet() bool {
 // Names returns the names of the flag
 func (f *StringSliceFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
+}
+
+func (f *StringSliceFlag) SetRequired(required bool) {
+	f.Required = required
 }
 
 // IsRequired returns whether or not the flag is required
@@ -297,6 +321,10 @@ func (f *TimestampFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
+func (f *TimestampFlag) SetRequired(required bool) {
+	f.Required = required
+}
+
 // IsRequired returns whether or not the flag is required
 func (f *TimestampFlag) IsRequired() bool {
 	return f.Required
@@ -340,6 +368,10 @@ func (f *BoolFlag) IsSet() bool {
 // Names returns the names of the flag
 func (f *BoolFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
+}
+
+func (f *BoolFlag) SetRequired(required bool) {
+	f.Required = required
 }
 
 // IsRequired returns whether or not the flag is required
@@ -387,6 +419,10 @@ func (f *Float64Flag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
+func (f *Float64Flag) SetRequired(required bool) {
+	f.Required = required
+}
+
 // IsRequired returns whether or not the flag is required
 func (f *Float64Flag) IsRequired() bool {
 	return f.Required
@@ -432,6 +468,10 @@ func (f *IntFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
+func (f *IntFlag) SetRequired(required bool) {
+	f.Required = required
+}
+
 // IsRequired returns whether or not the flag is required
 func (f *IntFlag) IsRequired() bool {
 	return f.Required
@@ -475,6 +515,10 @@ func (f *Int64Flag) IsSet() bool {
 // Names returns the names of the flag
 func (f *Int64Flag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
+}
+
+func (f *Int64Flag) SetRequired(required bool) {
+	f.Required = required
 }
 
 // IsRequired returns whether or not the flag is required
@@ -524,6 +568,10 @@ func (f *StringFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
+func (f *StringFlag) SetRequired(required bool) {
+	f.Required = required
+}
+
 // IsRequired returns whether or not the flag is required
 func (f *StringFlag) IsRequired() bool {
 	return f.Required
@@ -567,6 +615,10 @@ func (f *DurationFlag) IsSet() bool {
 // Names returns the names of the flag
 func (f *DurationFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
+}
+
+func (f *DurationFlag) SetRequired(required bool) {
+	f.Required = required
 }
 
 // IsRequired returns whether or not the flag is required
@@ -614,6 +666,10 @@ func (f *UintFlag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
+func (f *UintFlag) SetRequired(required bool) {
+	f.Required = required
+}
+
 // IsRequired returns whether or not the flag is required
 func (f *UintFlag) IsRequired() bool {
 	return f.Required
@@ -657,6 +713,10 @@ func (f *Uint64Flag) IsSet() bool {
 // Names returns the names of the flag
 func (f *Uint64Flag) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
+}
+
+func (f *Uint64Flag) SetRequired(required bool) {
+	f.Required = required
 }
 
 // IsRequired returns whether or not the flag is required

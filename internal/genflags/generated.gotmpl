@@ -45,6 +45,10 @@ func (f *{{.TypeName}}) Names() []string {
   return {{$.UrfaveCLINamespace}}FlagNames(f.Name, f.Aliases)
 }
 
+func (f *{{.TypeName}}) SetRequired(required bool) {
+    f.Required = required
+}
+
 {{end}}{{/* /if .GenerateFlagInterface */}}
 
 {{if .GenerateRequiredFlagInterface}}

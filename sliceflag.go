@@ -128,6 +128,7 @@ func (x *SliceFlag[T, S, E]) GetDefaultText() string { return x.Target.GetDefaul
 func (x *SliceFlag[T, S, E]) GetEnvVars() []string   { return x.Target.GetEnvVars() }
 func (x *SliceFlag[T, S, E]) IsVisible() bool        { return x.Target.IsVisible() }
 func (x *SliceFlag[T, S, E]) GetCategory() string    { return x.Target.GetCategory() }
+func (x *SliceFlag[T, S, E]) SetRequired(bool)       {}
 
 func (x *flagValueHook) Set(value string) error {
 	if err := x.value.Set(value); err != nil {

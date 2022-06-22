@@ -93,6 +93,7 @@ type Flag interface {
 	Apply(*flag.FlagSet) error
 	Names() []string
 	IsSet() bool
+	SetRequired(bool)
 }
 
 // RequiredFlag is an interface that allows us to mark flags as required

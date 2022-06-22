@@ -484,6 +484,8 @@ func (f *BoolFlag) IsVisible() bool
 func (f *BoolFlag) Names() []string
     Names returns the names of the flag
 
+func (f *BoolFlag) SetRequired(required bool)
+
 func (f *BoolFlag) String() string
     String returns a readable representation of this value (for usage defaults)
 
@@ -774,6 +776,8 @@ func (f *DurationFlag) IsVisible() bool
 func (f *DurationFlag) Names() []string
     Names returns the names of the flag
 
+func (f *DurationFlag) SetRequired(required bool)
+
 func (f *DurationFlag) String() string
     String returns a readable representation of this value (for usage defaults)
 
@@ -817,6 +821,7 @@ type Flag interface {
 	Apply(*flag.FlagSet) error
 	Names() []string
 	IsSet() bool
+	SetRequired(bool)
 }
     Flag is a common interface related to parsing flags in cli. For more
     advanced flag parsing techniques, it is recommended that this interface be
@@ -947,6 +952,8 @@ func (f *Float64Flag) IsVisible() bool
 func (f *Float64Flag) Names() []string
     Names returns the names of the flag
 
+func (f *Float64Flag) SetRequired(required bool)
+
 func (f *Float64Flag) String() string
     String returns a readable representation of this value (for usage defaults)
 
@@ -1034,6 +1041,8 @@ func (f *Float64SliceFlag) Names() []string
 
 func (f *Float64SliceFlag) SetDestination(slice []float64)
 
+func (f *Float64SliceFlag) SetRequired(required bool)
+
 func (f *Float64SliceFlag) SetValue(slice []float64)
 
 func (f *Float64SliceFlag) String() string
@@ -1105,6 +1114,8 @@ func (f *GenericFlag) IsVisible() bool
 func (f *GenericFlag) Names() []string
     Names returns the names of the flag
 
+func (f *GenericFlag) SetRequired(required bool)
+
 func (f *GenericFlag) String() string
     String returns a readable representation of this value (for usage defaults)
 
@@ -1164,6 +1175,8 @@ func (f *Int64Flag) IsVisible() bool
 
 func (f *Int64Flag) Names() []string
     Names returns the names of the flag
+
+func (f *Int64Flag) SetRequired(required bool)
 
 func (f *Int64Flag) String() string
     String returns a readable representation of this value (for usage defaults)
@@ -1252,6 +1265,8 @@ func (f *Int64SliceFlag) Names() []string
 
 func (f *Int64SliceFlag) SetDestination(slice []int64)
 
+func (f *Int64SliceFlag) SetRequired(required bool)
+
 func (f *Int64SliceFlag) SetValue(slice []int64)
 
 func (f *Int64SliceFlag) String() string
@@ -1313,6 +1328,8 @@ func (f *IntFlag) IsVisible() bool
 
 func (f *IntFlag) Names() []string
     Names returns the names of the flag
+
+func (f *IntFlag) SetRequired(required bool)
 
 func (f *IntFlag) String() string
     String returns a readable representation of this value (for usage defaults)
@@ -1404,6 +1421,8 @@ func (f *IntSliceFlag) Names() []string
     Names returns the names of the flag
 
 func (f *IntSliceFlag) SetDestination(slice []int)
+
+func (f *IntSliceFlag) SetRequired(required bool)
 
 func (f *IntSliceFlag) SetValue(slice []int)
 
@@ -1499,6 +1518,8 @@ func (f *PathFlag) IsVisible() bool
 func (f *PathFlag) Names() []string
     Names returns the names of the flag
 
+func (f *PathFlag) SetRequired(required bool)
+
 func (f *PathFlag) String() string
     String returns a readable representation of this value (for usage defaults)
 
@@ -1552,6 +1573,8 @@ func (x *SliceFlag[T, S, E]) IsVisible() bool
 func (x *SliceFlag[T, S, E]) Names() []string
 
 func (x *SliceFlag[T, S, E]) SetDestination(slice S)
+
+func (x *SliceFlag[T, S, E]) SetRequired(bool)
 
 func (x *SliceFlag[T, S, E]) SetValue(slice S)
 
@@ -1635,6 +1658,8 @@ func (f *StringFlag) IsVisible() bool
 
 func (f *StringFlag) Names() []string
     Names returns the names of the flag
+
+func (f *StringFlag) SetRequired(required bool)
 
 func (f *StringFlag) String() string
     String returns a readable representation of this value (for usage defaults)
@@ -1724,6 +1749,8 @@ func (f *StringSliceFlag) Names() []string
     Names returns the names of the flag
 
 func (f *StringSliceFlag) SetDestination(slice []string)
+
+func (f *StringSliceFlag) SetRequired(required bool)
 
 func (f *StringSliceFlag) SetValue(slice []string)
 
@@ -1819,6 +1846,8 @@ func (f *TimestampFlag) IsVisible() bool
 func (f *TimestampFlag) Names() []string
     Names returns the names of the flag
 
+func (f *TimestampFlag) SetRequired(required bool)
+
 func (f *TimestampFlag) String() string
     String returns a readable representation of this value (for usage defaults)
 
@@ -1879,6 +1908,8 @@ func (f *Uint64Flag) IsVisible() bool
 func (f *Uint64Flag) Names() []string
     Names returns the names of the flag
 
+func (f *Uint64Flag) SetRequired(required bool)
+
 func (f *Uint64Flag) String() string
     String returns a readable representation of this value (for usage defaults)
 
@@ -1938,6 +1969,8 @@ func (f *UintFlag) IsVisible() bool
 
 func (f *UintFlag) Names() []string
     Names returns the names of the flag
+
+func (f *UintFlag) SetRequired(required bool)
 
 func (f *UintFlag) String() string
     String returns a readable representation of this value (for usage defaults)
