@@ -539,9 +539,9 @@ from other file input sources.
 
 Currently supported input source formats:
 
-  YAML
-  JSON
-  TOML
+- YAML
+- JSON
+- TOML
 
 In order to get values for a flag from an alternate input source the following
 code would be added to wrap an existing cli.Flag like below:
