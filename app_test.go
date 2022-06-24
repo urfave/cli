@@ -469,6 +469,175 @@ func TestApp_Command(t *testing.T) {
 	}
 }
 
+var defaultCommandAppTests = []struct {
+	cmdName    string
+	defaultCmd string
+	expected   bool
+}{
+	{"foobar", "foobar", true},
+	{"batbaz", "foobar", true},
+	{"b", "", true},
+	{"f", "", true},
+	{"", "foobar", true},
+	{"", "", true},
+	{" ", "", false},
+	{"bat", "batbaz", false},
+	{"nothing", "batbaz", false},
+	{"nothing", "", false},
+}
+
+func TestApp_RunDefaultCommand(t *testing.T) {
+	for _, test := range defaultCommandAppTests {
+		testTitle := fmt.Sprintf("command=%[1]s-default=%[2]s", test.cmdName, test.defaultCmd)
+		t.Run(testTitle, func(t *testing.T) {
+			app := &App{
+				DefaultCommand: test.defaultCmd,
+				Commands: []*Command{
+					{Name: "foobar", Aliases: []string{"f"}},
+					{Name: "batbaz", Aliases: []string{"b"}},
+				},
+			}
+
+			err := app.Run([]string{"c", test.cmdName})
+			expect(t, err == nil, test.expected)
+		})
+	}
+}
+
+var defaultCommandSubCmdAppTests = []struct {
+	cmdName    string
+	subCmd     string
+	defaultCmd string
+	expected   bool
+}{
+	{"foobar", "", "foobar", true},
+	{"foobar", "carly", "foobar", true},
+	{"batbaz", "", "foobar", true},
+	{"b", "", "", true},
+	{"f", "", "", true},
+	{"", "", "foobar", true},
+	{"", "", "", true},
+	{"", "jimbob", "foobar", true},
+	{"", "j", "foobar", true},
+	{"", "carly", "foobar", true},
+	{"", "jimmers", "foobar", true},
+	{"", "jimmers", "", true},
+	{" ", "jimmers", "foobar", false},
+	{"", "", "", true},
+	{" ", "", "", false},
+	{" ", "j", "", false},
+	{"bat", "", "batbaz", false},
+	{"nothing", "", "batbaz", false},
+	{"nothing", "", "", false},
+	{"nothing", "j", "batbaz", false},
+	{"nothing", "carly", "", false},
+}
+
+func TestApp_RunDefaultCommandWithSubCommand(t *testing.T) {
+	for _, test := range defaultCommandSubCmdAppTests {
+		testTitle := fmt.Sprintf("command=%[1]s-subcmd=%[2]s-default=%[3]s", test.cmdName, test.subCmd, test.defaultCmd)
+		t.Run(testTitle, func(t *testing.T) {
+			app := &App{
+				DefaultCommand: test.defaultCmd,
+				Commands: []*Command{
+					{
+						Name:    "foobar",
+						Aliases: []string{"f"},
+						Subcommands: []*Command{
+							{Name: "jimbob", Aliases: []string{"j"}},
+							{Name: "carly"},
+						},
+					},
+					{Name: "batbaz", Aliases: []string{"b"}},
+				},
+			}
+
+			err := app.Run([]string{"c", test.cmdName, test.subCmd})
+			expect(t, err == nil, test.expected)
+		})
+	}
+}
+
+var defaultCommandFlagAppTests = []struct {
+	cmdName    string
+	flag       string
+	defaultCmd string
+	expected   bool
+}{
+	{"foobar", "", "foobar", true},
+	{"foobar", "-c derp", "foobar", true},
+	{"batbaz", "", "foobar", true},
+	{"b", "", "", true},
+	{"f", "", "", true},
+	{"", "", "foobar", true},
+	{"", "", "", true},
+	{"", "-j", "foobar", true},
+	{"", "-j", "foobar", true},
+	{"", "-c derp", "foobar", true},
+	{"", "--carly=derp", "foobar", true},
+	{"", "-j", "foobar", true},
+	{"", "-j", "", true},
+	{" ", "-j", "foobar", false},
+	{"", "", "", true},
+	{" ", "", "", false},
+	{" ", "-j", "", false},
+	{"bat", "", "batbaz", false},
+	{"nothing", "", "batbaz", false},
+	{"nothing", "", "", false},
+	{"nothing", "--jimbob", "batbaz", false},
+	{"nothing", "--carly", "", false},
+}
+
+func TestApp_RunDefaultCommandWithFlags(t *testing.T) {
+	for _, test := range defaultCommandFlagAppTests {
+		testTitle := fmt.Sprintf("command=%[1]s-flag=%[2]s-default=%[3]s", test.cmdName, test.flag, test.defaultCmd)
+		t.Run(testTitle, func(t *testing.T) {
+			app := &App{
+				DefaultCommand: test.defaultCmd,
+				Flags: []Flag{
+					&StringFlag{
+						Name:     "carly",
+						Aliases:  []string{"c"},
+						Required: false,
+					},
+					&BoolFlag{
+						Name:     "jimbob",
+						Aliases:  []string{"j"},
+						Required: false,
+						Value:    true,
+					},
+				},
+				Commands: []*Command{
+					{
+						Name:    "foobar",
+						Aliases: []string{"f"},
+					},
+					{Name: "batbaz", Aliases: []string{"b"}},
+				},
+			}
+
+			appArgs := []string{"c"}
+
+			if test.flag != "" {
+				flags := strings.Split(test.flag, " ")
+				if len(flags) > 1 {
+					appArgs = append(appArgs, flags...)
+				}
+
+				flags = strings.Split(test.flag, "=")
+				if len(flags) > 1 {
+					appArgs = append(appArgs, flags...)
+				}
+			}
+
+			appArgs = append(appArgs, test.cmdName)
+
+			err := app.Run(appArgs)
+			expect(t, err == nil, test.expected)
+		})
+	}
+}
+
 func TestApp_Setup_defaultsReader(t *testing.T) {
 	app := &App{}
 	app.Setup()

@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"time"
 )
@@ -43,6 +44,9 @@ type App struct {
 	Version string
 	// Description of the program
 	Description string
+	// DefaultCommand is the (optional) name of a command
+	// to run if no command names are passed as CLI arguments.
+	DefaultCommand string
 	// List of commands to execute
 	Commands []*Command
 	// List of flags to parse
@@ -333,13 +337,45 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 		}
 	}
 
+	var c *Command
 	args := cCtx.Args()
 	if args.Present() {
 		name := args.First()
-		c := a.Command(name)
-		if c != nil {
-			return c.Run(cCtx)
+		if a.validCommandName(name) {
+			c = a.Command(name)
+		} else {
+			hasDefault := a.DefaultCommand != ""
+			isFlagName := checkStringSliceIncludes(name, cCtx.FlagNames())
+
+			var (
+				isDefaultSubcommand   = false
+				defaultHasSubcommands = false
+			)
+
+			if hasDefault {
+				dc := a.Command(a.DefaultCommand)
+				defaultHasSubcommands = len(dc.Subcommands) > 0
+				for _, dcSub := range dc.Subcommands {
+					if checkStringSliceIncludes(name, dcSub.Names()) {
+						isDefaultSubcommand = true
+						break
+					}
+				}
+			}
+
+			if isFlagName || (hasDefault && (defaultHasSubcommands && isDefaultSubcommand)) {
+				argsWithDefault := a.argsWithDefaultCommand(args)
+				if !reflect.DeepEqual(args, argsWithDefault) {
+					c = a.Command(argsWithDefault.First())
+				}
+			}
 		}
+	} else if a.DefaultCommand != "" {
+		c = a.Command(a.DefaultCommand)
+	}
+
+	if c != nil {
+		return c.Run(cCtx)
 	}
 
 	if a.Action == nil {
@@ -570,6 +606,41 @@ func (a *App) handleExitCoder(cCtx *Context, err error) {
 	}
 }
 
+func (a *App) commandNames() []string {
+	var cmdNames []string
+
+	for _, cmd := range a.Commands {
+		cmdNames = append(cmdNames, cmd.Names()...)
+	}
+
+	return cmdNames
+}
+
+func (a *App) validCommandName(checkCmdName string) bool {
+	valid := false
+	allCommandNames := a.commandNames()
+
+	for _, cmdName := range allCommandNames {
+		if checkCmdName == cmdName {
+			valid = true
+			break
+		}
+	}
+
+	return valid
+}
+
+func (a *App) argsWithDefaultCommand(oldArgs Args) Args {
+	if a.DefaultCommand != "" {
+		rawArgs := append([]string{a.DefaultCommand}, oldArgs.Slice()...)
+		newArgs := args(rawArgs)
+
+		return &newArgs
+	}
+
+	return oldArgs
+}
+
 // Author represents someone who has contributed to a cli project.
 type Author struct {
 	Name  string // The Authors name
@@ -601,4 +672,16 @@ func HandleAction(action interface{}, cCtx *Context) (err error) {
 	}
 
 	return errInvalidActionType
+}
+
+func checkStringSliceIncludes(want string, sSlice []string) bool {
+	found := false
+	for _, s := range sSlice {
+		if want == s {
+			found = true
+			break
+		}
+	}
+
+	return found
 }
