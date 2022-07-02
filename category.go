@@ -100,6 +100,9 @@ func newFlagCategories() FlagCategories {
 
 func newFlagCategoriesFromFlags(fs []Flag) FlagCategories {
 	fc := newFlagCategories()
+	if !enableCategory(fs) {
+		return fc
+	}
 	for _, fl := range fs {
 		if cf, ok := fl.(CategorizableFlag); ok {
 			fc.AddFlag(cf.GetCategory(), cf)
@@ -107,6 +110,19 @@ func newFlagCategoriesFromFlags(fs []Flag) FlagCategories {
 	}
 
 	return fc
+}
+
+func enableCategory(fs []Flag) bool {
+	for _, fl := range fs {
+		if cf, ok := fl.(CategorizableFlag); ok {
+			// When a category is specified, it is assumed that the entire command opens the category
+			if len(cf.GetCategory()) != 0 {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 func (f *defaultFlagCategories) AddFlag(category string, fl Flag) {
