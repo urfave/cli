@@ -43,6 +43,7 @@ flag_types:
     value_pointer: true
     struct_fields:
       - { name: Layout, type: string }
+      - { name: Timezone, type: "*time.Location" }
 
   # TODO: enable UintSlice
   # UintSlice: {}
