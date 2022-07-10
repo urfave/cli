@@ -280,6 +280,8 @@ type TimestampFlag struct {
 	EnvVars []string
 
 	Layout string
+
+	Timezone *time.Location
 }
 
 // String returns a readable representation of this value (for usage defaults)

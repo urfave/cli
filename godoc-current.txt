@@ -269,6 +269,9 @@ type App struct {
 	Version string
 	// Description of the program
 	Description string
+	// DefaultCommand is the (optional) name of a command
+	// to run if no command names are passed as CLI arguments.
+	DefaultCommand string
 	// List of commands to execute
 	Commands []*Command
 	// List of flags to parse
@@ -1754,6 +1757,9 @@ func (t *Timestamp) Set(value string) error
 func (t *Timestamp) SetLayout(layout string)
     Set the timestamp string layout for future parsing
 
+func (t *Timestamp) SetLocation(loc *time.Location)
+    Set perceived timezone of the to-be parsed time string
+
 func (t *Timestamp) SetTimestamp(value time.Time)
     Set the timestamp value directly
 
@@ -1782,6 +1788,8 @@ type TimestampFlag struct {
 	EnvVars []string
 
 	Layout string
+
+	Timezone *time.Location
 }
     TimestampFlag is a flag with type *Timestamp
 

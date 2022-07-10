@@ -1413,6 +1413,19 @@ In this example the flag could be used like this:
 $ myapp --meeting 2019-08-12T15:04:05
 ```
 
+When the layout doesn't contain timezones, timestamp will render with UTC. To
+change behavior, a default timezone can be provided with flag definition:
+
+```go
+app := &cli.App{
+	Flags: []cli.Flag{
+		&cli.TimestampFlag{Name: "meeting", Layout: "2006-01-02T15:04:05", Timezone: time.Local},
+	},
+}
+```
+
+(time.Local contains the system's local time zone.)
+
 Side note: quotes may be necessary around the date depending on your layout (if
 you have spaces for instance)
 
