@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"flag"
+	"fmt"
 	"strings"
 )
 
@@ -46,6 +47,9 @@ func (cCtx *Context) NumFlags() int {
 
 // Set sets a context flag to a value.
 func (cCtx *Context) Set(name, value string) error {
+	if cCtx.isStrictLookup() && cCtx.flagSet.Lookup(name) == nil {
+		panic(fmt.Sprintf("flag not found: %q", name))
+	}
 	return cCtx.flagSet.Set(name, value)
 }
 
@@ -158,7 +162,9 @@ func (cCtx *Context) lookupFlagSet(name string) *flag.FlagSet {
 			return c.flagSet
 		}
 	}
-
+	if cCtx.isStrictLookup() {
+		panic(fmt.Sprintf("flag not found: %q", name))
+	}
 	return nil
 }
 
@@ -190,6 +196,10 @@ func (cCtx *Context) checkRequiredFlags(flags []Flag) requiredFlagsErr {
 	}
 
 	return nil
+}
+
+func (cCtx *Context) isStrictLookup() bool {
+	return cCtx.App != nil && cCtx.App.EnableStrictLookup
 }
 
 func makeFlagNameVisitor(names *[]string) func(*flag.Flag) {

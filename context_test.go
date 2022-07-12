@@ -150,6 +150,17 @@ func TestContext_Value(t *testing.T) {
 	expect(t, c.Value("unknown-flag"), nil)
 }
 
+func TestContext_Value_StrictLookup(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	app := &App{EnableStrictLookup: true}
+	c := NewContext(app, set, nil)
+	defer func() {
+		err := recover()
+		expect(t, err, `flag not found: "missing"`)
+	}()
+	c.Value("missing")
+}
+
 func TestContext_Args(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("myflag", false, "doc")
@@ -256,6 +267,17 @@ func TestContext_Set(t *testing.T) {
 	_ = c.Set("int", "1")
 	expect(t, c.Int("int"), 1)
 	expect(t, c.IsSet("int"), true)
+}
+
+func TestContext_Set_StrictLookup(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	app := &App{EnableStrictLookup: true}
+	c := NewContext(app, set, nil)
+	defer func() {
+		err := recover()
+		expect(t, err, `flag not found: "missing"`)
+	}()
+	c.Set("missing", "")
 }
 
 func TestContext_LocalFlagNames(t *testing.T) {

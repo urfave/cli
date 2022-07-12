@@ -53,6 +53,8 @@ type App struct {
 	Flags []Flag
 	// Boolean to enable bash completion commands
 	EnableBashCompletion bool
+	// Boolean to enable strict flag lookup
+	EnableStrictLookup bool
 	// Boolean to hide built-in help command and help flag
 	HideHelp bool
 	// Boolean to hide built-in help command but keep help flag.
