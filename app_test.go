@@ -142,8 +142,8 @@ func ExampleApp_Run_appHelp() {
 	//    help, h        Shows a list of commands or help for one command
 	//
 	// GLOBAL OPTIONS:
-	//    --name value   a name to say (default: "bob")
 	//    --help, -h     show help (default: false)
+	//    --name value   a name to say (default: "bob")
 	//    --version, -v  print the version (default: false)
 }
 
@@ -228,6 +228,7 @@ func ExampleApp_Run_subcommandNoAction() {
 }
 
 func ExampleApp_Run_bashComplete_withShortFlag() {
+	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "-", "--generate-bash-completion"}
 
 	app := NewApp()
@@ -255,6 +256,7 @@ func ExampleApp_Run_bashComplete_withShortFlag() {
 }
 
 func ExampleApp_Run_bashComplete_withLongFlag() {
+	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "--s", "--generate-bash-completion"}
 
 	app := NewApp()
@@ -283,6 +285,7 @@ func ExampleApp_Run_bashComplete_withLongFlag() {
 	// --similar-flag
 }
 func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
+	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "--st", "--generate-bash-completion"}
 
 	app := NewApp()
@@ -315,7 +318,7 @@ func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
 }
 
 func ExampleApp_Run_bashComplete() {
-	// set args for examples sake
+	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "--generate-bash-completion"}
 
 	app := &App{
@@ -355,7 +358,7 @@ func ExampleApp_Run_bashComplete() {
 func ExampleApp_Run_zshComplete() {
 	// set args for examples sake
 	os.Args = []string{"greet", "--generate-bash-completion"}
-	_ = os.Setenv("_CLI_ZSH_AUTOCOMPLETE_HACK", "1")
+	_ = os.Setenv("SHELL", "/usr/bin/zsh")
 
 	app := NewApp()
 	app.Name = "greet"
@@ -388,6 +391,40 @@ func ExampleApp_Run_zshComplete() {
 	// next:next example
 	// help:Shows a list of commands or help for one command
 	// h:Shows a list of commands or help for one command
+}
+
+func ExampleApp_Run_sliceValues() {
+	// set args for examples sake
+	os.Args = []string{"multi_values",
+		"--stringSclice", "parsed1,parsed2", "--stringSclice", "parsed3,parsed4",
+		"--float64Sclice", "13.3,14.4", "--float64Sclice", "15.5,16.6",
+		"--int64Sclice", "13,14", "--int64Sclice", "15,16",
+		"--intSclice", "13,14", "--intSclice", "15,16",
+	}
+	app := NewApp()
+	app.Name = "multi_values"
+	app.Flags = []Flag{
+		&StringSliceFlag{Name: "stringSclice"},
+		&Float64SliceFlag{Name: "float64Sclice"},
+		&Int64SliceFlag{Name: "int64Sclice"},
+		&IntSliceFlag{Name: "intSclice"},
+	}
+	app.Action = func(ctx *Context) error {
+		for i, v := range ctx.FlagNames() {
+			fmt.Printf("%d-%s %#v\n", i, v, ctx.Value(v))
+		}
+		err := ctx.Err()
+		fmt.Println("error:", err)
+		return err
+	}
+
+	_ = app.Run(os.Args)
+	// Output:
+	// 0-float64Sclice cli.Float64Slice{slice:[]float64{13.3, 14.4, 15.5, 16.6}, hasBeenSet:true}
+	// 1-int64Sclice cli.Int64Slice{slice:[]int64{13, 14, 15, 16}, hasBeenSet:true}
+	// 2-intSclice cli.IntSlice{slice:[]int{13, 14, 15, 16}, hasBeenSet:true}
+	// 3-stringSclice cli.StringSlice{slice:[]string{"parsed1", "parsed2", "parsed3", "parsed4"}, hasBeenSet:true}
+	// error: <nil>
 }
 
 func TestApp_Run(t *testing.T) {
@@ -432,6 +469,175 @@ func TestApp_Command(t *testing.T) {
 	}
 }
 
+var defaultCommandAppTests = []struct {
+	cmdName    string
+	defaultCmd string
+	expected   bool
+}{
+	{"foobar", "foobar", true},
+	{"batbaz", "foobar", true},
+	{"b", "", true},
+	{"f", "", true},
+	{"", "foobar", true},
+	{"", "", true},
+	{" ", "", false},
+	{"bat", "batbaz", false},
+	{"nothing", "batbaz", false},
+	{"nothing", "", false},
+}
+
+func TestApp_RunDefaultCommand(t *testing.T) {
+	for _, test := range defaultCommandAppTests {
+		testTitle := fmt.Sprintf("command=%[1]s-default=%[2]s", test.cmdName, test.defaultCmd)
+		t.Run(testTitle, func(t *testing.T) {
+			app := &App{
+				DefaultCommand: test.defaultCmd,
+				Commands: []*Command{
+					{Name: "foobar", Aliases: []string{"f"}},
+					{Name: "batbaz", Aliases: []string{"b"}},
+				},
+			}
+
+			err := app.Run([]string{"c", test.cmdName})
+			expect(t, err == nil, test.expected)
+		})
+	}
+}
+
+var defaultCommandSubCmdAppTests = []struct {
+	cmdName    string
+	subCmd     string
+	defaultCmd string
+	expected   bool
+}{
+	{"foobar", "", "foobar", true},
+	{"foobar", "carly", "foobar", true},
+	{"batbaz", "", "foobar", true},
+	{"b", "", "", true},
+	{"f", "", "", true},
+	{"", "", "foobar", true},
+	{"", "", "", true},
+	{"", "jimbob", "foobar", true},
+	{"", "j", "foobar", true},
+	{"", "carly", "foobar", true},
+	{"", "jimmers", "foobar", true},
+	{"", "jimmers", "", true},
+	{" ", "jimmers", "foobar", false},
+	{"", "", "", true},
+	{" ", "", "", false},
+	{" ", "j", "", false},
+	{"bat", "", "batbaz", false},
+	{"nothing", "", "batbaz", false},
+	{"nothing", "", "", false},
+	{"nothing", "j", "batbaz", false},
+	{"nothing", "carly", "", false},
+}
+
+func TestApp_RunDefaultCommandWithSubCommand(t *testing.T) {
+	for _, test := range defaultCommandSubCmdAppTests {
+		testTitle := fmt.Sprintf("command=%[1]s-subcmd=%[2]s-default=%[3]s", test.cmdName, test.subCmd, test.defaultCmd)
+		t.Run(testTitle, func(t *testing.T) {
+			app := &App{
+				DefaultCommand: test.defaultCmd,
+				Commands: []*Command{
+					{
+						Name:    "foobar",
+						Aliases: []string{"f"},
+						Subcommands: []*Command{
+							{Name: "jimbob", Aliases: []string{"j"}},
+							{Name: "carly"},
+						},
+					},
+					{Name: "batbaz", Aliases: []string{"b"}},
+				},
+			}
+
+			err := app.Run([]string{"c", test.cmdName, test.subCmd})
+			expect(t, err == nil, test.expected)
+		})
+	}
+}
+
+var defaultCommandFlagAppTests = []struct {
+	cmdName    string
+	flag       string
+	defaultCmd string
+	expected   bool
+}{
+	{"foobar", "", "foobar", true},
+	{"foobar", "-c derp", "foobar", true},
+	{"batbaz", "", "foobar", true},
+	{"b", "", "", true},
+	{"f", "", "", true},
+	{"", "", "foobar", true},
+	{"", "", "", true},
+	{"", "-j", "foobar", true},
+	{"", "-j", "foobar", true},
+	{"", "-c derp", "foobar", true},
+	{"", "--carly=derp", "foobar", true},
+	{"", "-j", "foobar", true},
+	{"", "-j", "", true},
+	{" ", "-j", "foobar", false},
+	{"", "", "", true},
+	{" ", "", "", false},
+	{" ", "-j", "", false},
+	{"bat", "", "batbaz", false},
+	{"nothing", "", "batbaz", false},
+	{"nothing", "", "", false},
+	{"nothing", "--jimbob", "batbaz", false},
+	{"nothing", "--carly", "", false},
+}
+
+func TestApp_RunDefaultCommandWithFlags(t *testing.T) {
+	for _, test := range defaultCommandFlagAppTests {
+		testTitle := fmt.Sprintf("command=%[1]s-flag=%[2]s-default=%[3]s", test.cmdName, test.flag, test.defaultCmd)
+		t.Run(testTitle, func(t *testing.T) {
+			app := &App{
+				DefaultCommand: test.defaultCmd,
+				Flags: []Flag{
+					&StringFlag{
+						Name:     "carly",
+						Aliases:  []string{"c"},
+						Required: false,
+					},
+					&BoolFlag{
+						Name:     "jimbob",
+						Aliases:  []string{"j"},
+						Required: false,
+						Value:    true,
+					},
+				},
+				Commands: []*Command{
+					{
+						Name:    "foobar",
+						Aliases: []string{"f"},
+					},
+					{Name: "batbaz", Aliases: []string{"b"}},
+				},
+			}
+
+			appArgs := []string{"c"}
+
+			if test.flag != "" {
+				flags := strings.Split(test.flag, " ")
+				if len(flags) > 1 {
+					appArgs = append(appArgs, flags...)
+				}
+
+				flags = strings.Split(test.flag, "=")
+				if len(flags) > 1 {
+					appArgs = append(appArgs, flags...)
+				}
+			}
+
+			appArgs = append(appArgs, test.cmdName)
+
+			err := app.Run(appArgs)
+			expect(t, err == nil, test.expected)
+		})
+	}
+}
+
 func TestApp_Setup_defaultsReader(t *testing.T) {
 	app := &App{}
 	app.Setup()
@@ -445,14 +651,14 @@ func TestApp_Setup_defaultsWriter(t *testing.T) {
 }
 
 func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
-	var context *Context
+	var cCtx *Context
 
 	a := &App{
 		Commands: []*Command{
 			{
 				Name: "foo",
 				Action: func(c *Context) error {
-					context = c
+					cCtx = c
 					return nil
 				},
 				Flags: []Flag{
@@ -468,8 +674,8 @@ func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
 	}
 	_ = a.Run([]string{"", "foo", "--lang", "spanish", "abcd"})
 
-	expect(t, context.Args().Get(0), "abcd")
-	expect(t, context.String("lang"), "spanish")
+	expect(t, cCtx.Args().Get(0), "abcd")
+	expect(t, cCtx.String("lang"), "spanish")
 }
 
 func TestApp_RunAsSubCommandIncorrectUsage(t *testing.T) {
@@ -1888,6 +2094,14 @@ func TestApp_VisibleCategories(t *testing.T) {
 
 	app.Setup()
 	expect(t, []CommandCategory{}, app.VisibleCategories())
+}
+
+func TestApp_VisibleFlagCategories(t *testing.T) {
+	app := &App{}
+	vfc := app.VisibleFlagCategories()
+	if len(vfc) != 0 {
+		t.Errorf("unexpected visible flag categories %+v", vfc)
+	}
 }
 
 func TestApp_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {

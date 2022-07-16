@@ -11,7 +11,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type yamlSourceContext struct {
@@ -31,10 +31,10 @@ func NewYamlSourceFromFile(file string) (InputSourceContext, error) {
 }
 
 // NewYamlSourceFromFlagFunc creates a new Yaml InputSourceContext from a provided flag name and source context.
-func NewYamlSourceFromFlagFunc(flagFileName string) func(context *cli.Context) (InputSourceContext, error) {
-	return func(context *cli.Context) (InputSourceContext, error) {
-		if context.IsSet(flagFileName) {
-			filePath := context.String(flagFileName)
+func NewYamlSourceFromFlagFunc(flagFileName string) func(cCtx *cli.Context) (InputSourceContext, error) {
+	return func(cCtx *cli.Context) (InputSourceContext, error) {
+		if cCtx.IsSet(flagFileName) {
+			filePath := cCtx.String(flagFileName)
 			return NewYamlSourceFromFile(filePath)
 		}
 
