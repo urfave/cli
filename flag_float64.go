@@ -6,42 +6,6 @@ import (
 	"strconv"
 )
 
-// Float64Flag is a flag with type float64
-type Float64Flag struct {
-	Name        string
-	Aliases     []string
-	Usage       string
-	EnvVars     []string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       float64
-	DefaultText string
-	Destination *float64
-	HasBeenSet  bool
-}
-
-// IsSet returns whether or not the flag has been set through env or file
-func (f *Float64Flag) IsSet() bool {
-	return f.HasBeenSet
-}
-
-// String returns a readable representation of this value
-// (for usage defaults)
-func (f *Float64Flag) String() string {
-	return FlagStringer(f)
-}
-
-// Names returns the names of the flag
-func (f *Float64Flag) Names() []string {
-	return flagNames(f.Name, f.Aliases)
-}
-
-// IsRequired returns whether or not the flag is required
-func (f *Float64Flag) IsRequired() bool {
-	return f.Required
-}
-
 // TakesValue returns true of the flag takes a value, otherwise false
 func (f *Float64Flag) TakesValue() bool {
 	return true
@@ -52,24 +16,37 @@ func (f *Float64Flag) GetUsage() string {
 	return f.Usage
 }
 
+// GetCategory returns the category for the flag
+func (f *Float64Flag) GetCategory() string {
+	return f.Category
+}
+
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *Float64Flag) GetValue() string {
-	return fmt.Sprintf("%f", f.Value)
+	return fmt.Sprintf("%v", f.Value)
 }
 
-// IsVisible returns true if the flag is not hidden, otherwise false
-func (f *Float64Flag) IsVisible() bool {
-	return !f.Hidden
+// GetDefaultText returns the default text for this flag
+func (f *Float64Flag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	return f.GetValue()
+}
+
+// GetEnvVars returns the env vars for this flag
+func (f *Float64Flag) GetEnvVars() []string {
+	return f.EnvVars
 }
 
 // Apply populates the flag given the flag set and environment
 func (f *Float64Flag) Apply(set *flag.FlagSet) error {
-	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
+	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
 		if val != "" {
 			valFloat, err := strconv.ParseFloat(val, 64)
 			if err != nil {
-				return fmt.Errorf("could not parse %q as float64 value for flag %s: %s", val, f.Name, err)
+				return fmt.Errorf("could not parse %q as float64 value from %s for flag %s: %s", val, source, f.Name, err)
 			}
 
 			f.Value = valFloat
@@ -88,10 +65,15 @@ func (f *Float64Flag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
+// Get returns the flag’s value in the given Context.
+func (f *Float64Flag) Get(ctx *Context) float64 {
+	return ctx.Float64(f.Name)
+}
+
 // Float64 looks up the value of a local Float64Flag, returns
 // 0 if not found
-func (c *Context) Float64(name string) float64 {
-	if fs := c.lookupFlagSet(name); fs != nil {
+func (cCtx *Context) Float64(name string) float64 {
+	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return lookupFloat64(name, fs)
 	}
 	return 0

@@ -54,19 +54,26 @@ func (i *IntSlice) Set(value string) error {
 		return nil
 	}
 
-	tmp, err := strconv.ParseInt(value, 0, 64)
-	if err != nil {
-		return err
-	}
+	for _, s := range flagSplitMultiValues(value) {
+		tmp, err := strconv.ParseInt(strings.TrimSpace(s), 0, 64)
+		if err != nil {
+			return err
+		}
 
-	i.slice = append(i.slice, int(tmp))
+		i.slice = append(i.slice, int(tmp))
+	}
 
 	return nil
 }
 
 // String returns a readable representation of this value (for usage defaults)
 func (i *IntSlice) String() string {
-	return fmt.Sprintf("%#v", i.slice)
+	v := i.slice
+	if v == nil {
+		// treat nil the same as zero length non-nil
+		v = make([]int, 0)
+	}
+	return fmt.Sprintf("%#v", v)
 }
 
 // Serialize allows IntSlice to fulfill Serializer
@@ -85,39 +92,10 @@ func (i *IntSlice) Get() interface{} {
 	return *i
 }
 
-// IntSliceFlag is a flag with type *IntSlice
-type IntSliceFlag struct {
-	Name        string
-	Aliases     []string
-	Usage       string
-	EnvVars     []string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       *IntSlice
-	DefaultText string
-	HasBeenSet  bool
-}
-
-// IsSet returns whether or not the flag has been set through env or file
-func (f *IntSliceFlag) IsSet() bool {
-	return f.HasBeenSet
-}
-
 // String returns a readable representation of this value
 // (for usage defaults)
 func (f *IntSliceFlag) String() string {
-	return FlagStringer(f)
-}
-
-// Names returns the names of the flag
-func (f *IntSliceFlag) Names() []string {
-	return flagNames(f.Name, f.Aliases)
-}
-
-// IsRequired returns whether or not the flag is required
-func (f *IntSliceFlag) IsRequired() bool {
-	return f.Required
+	return withEnvHint(f.GetEnvVars(), stringifyIntSliceFlag(f))
 }
 
 // TakesValue returns true of the flag takes a value, otherwise false
@@ -126,8 +104,13 @@ func (f *IntSliceFlag) TakesValue() bool {
 }
 
 // GetUsage returns the usage string for the flag
-func (f IntSliceFlag) GetUsage() string {
+func (f *IntSliceFlag) GetUsage() string {
 	return f.Usage
+}
+
+// GetCategory returns the category for the flag
+func (f *IntSliceFlag) GetCategory() string {
+	return f.Category
 }
 
 // GetValue returns the flags value as string representation and an empty
@@ -139,43 +122,67 @@ func (f *IntSliceFlag) GetValue() string {
 	return ""
 }
 
-// IsVisible returns true if the flag is not hidden, otherwise false
-func (f *IntSliceFlag) IsVisible() bool {
-	return !f.Hidden
+// GetDefaultText returns the default text for this flag
+func (f *IntSliceFlag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	return f.GetValue()
+}
+
+// GetEnvVars returns the env vars for this flag
+func (f *IntSliceFlag) GetEnvVars() []string {
+	return f.EnvVars
 }
 
 // Apply populates the flag given the flag set and environment
 func (f *IntSliceFlag) Apply(set *flag.FlagSet) error {
-	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
-		f.Value = &IntSlice{}
+	// apply any default
+	if f.Destination != nil && f.Value != nil {
+		f.Destination.slice = make([]int, len(f.Value.slice))
+		copy(f.Destination.slice, f.Value.slice)
+	}
 
-		for _, s := range strings.Split(val, ",") {
-			if err := f.Value.Set(strings.TrimSpace(s)); err != nil {
-				return fmt.Errorf("could not parse %q as int slice value for flag %s: %s", val, f.Name, err)
+	// resolve setValue (what we will assign to the set)
+	var setValue *IntSlice
+	switch {
+	case f.Destination != nil:
+		setValue = f.Destination
+	case f.Value != nil:
+		setValue = f.Value.clone()
+	default:
+		setValue = new(IntSlice)
+	}
+
+	if val, source, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok && val != "" {
+		for _, s := range flagSplitMultiValues(val) {
+			if err := setValue.Set(strings.TrimSpace(s)); err != nil {
+				return fmt.Errorf("could not parse %q as int slice value from %s for flag %s: %s", val, source, f.Name, err)
 			}
 		}
 
 		// Set this to false so that we reset the slice if we then set values from
 		// flags that have already been set by the environment.
-		f.Value.hasBeenSet = false
+		setValue.hasBeenSet = false
 		f.HasBeenSet = true
 	}
 
-	if f.Value == nil {
-		f.Value = &IntSlice{}
-	}
-	copyValue := f.Value.clone()
 	for _, name := range f.Names() {
-		set.Var(copyValue, name, f.Usage)
+		set.Var(setValue, name, f.Usage)
 	}
 
 	return nil
 }
 
+// Get returns the flag’s value in the given Context.
+func (f *IntSliceFlag) Get(ctx *Context) []int {
+	return ctx.IntSlice(f.Name)
+}
+
 // IntSlice looks up the value of a local IntSliceFlag, returns
 // nil if not found
-func (c *Context) IntSlice(name string) []int {
-	if fs := c.lookupFlagSet(name); fs != nil {
+func (cCtx *Context) IntSlice(name string) []int {
+	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return lookupIntSlice(name, fs)
 	}
 	return nil
@@ -184,7 +191,7 @@ func (c *Context) IntSlice(name string) []int {
 func lookupIntSlice(name string, set *flag.FlagSet) []int {
 	f := set.Lookup(name)
 	if f != nil {
-		if slice, ok := f.Value.(*IntSlice); ok {
+		if slice, ok := unwrapFlagValue(f.Value).(*IntSlice); ok {
 			return slice.Value()
 		}
 	}
