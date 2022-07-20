@@ -90,7 +90,7 @@ func (f *TimestampFlag) GetCategory() string {
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *TimestampFlag) GetValue() string {
-	if f.Value != nil {
+	if f.Value != nil && f.Value.timestamp != nil {
 		return f.Value.timestamp.String()
 	}
 	return ""
