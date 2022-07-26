@@ -2710,6 +2710,53 @@ func TestParseGeneric(t *testing.T) {
 	}).Run([]string{"run", "-s", "10,20"})
 }
 
+type genericType struct {
+	s []string
+}
+
+func (g *genericType) Set(value string) error {
+	g.s = strings.Split(value, "-")
+	return nil
+}
+
+func (g *genericType) String() string {
+	return strings.Join(g.s, "-")
+}
+
+func TestParseDestinationGeneric(t *testing.T) {
+	expectedString := "abc1-123d"
+	expectedGeneric := &genericType{[]string{"abc1", "123d"}}
+	dest := &genericType{}
+
+	_ = (&App{
+		Flags: []Flag{
+			&GenericFlag{
+				Name:        "dest",
+				Destination: dest,
+			},
+		},
+		Action: func(ctx *Context) error {
+
+			if !reflect.DeepEqual(dest, expectedGeneric) {
+				t.Errorf(
+					"expected destination generic: %+v, actual: %+v",
+					expectedGeneric,
+					dest,
+				)
+			}
+
+			if dest.String() != expectedString {
+				t.Errorf(
+					"expected destination string: %s, actual: %s",
+					expectedString,
+					dest.String(),
+				)
+			}
+			return nil
+		},
+	}).Run([]string{"run", "--dest", expectedString})
+}
+
 func TestParseGenericFromEnv(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
