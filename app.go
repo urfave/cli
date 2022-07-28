@@ -300,6 +300,18 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 		return err
 	}
 
+	if a.After != nil {
+		defer func() {
+			if afterErr := a.After(cCtx); afterErr != nil {
+				if err != nil {
+					err = newMultiError(err, afterErr)
+				} else {
+					err = afterErr
+				}
+			}
+		}()
+	}
+
 	if !a.HideHelp && checkHelp(cCtx) {
 		_ = ShowAppHelp(cCtx)
 		return nil
@@ -314,18 +326,6 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 	if cerr != nil {
 		_ = ShowAppHelp(cCtx)
 		return cerr
-	}
-
-	if a.After != nil {
-		defer func() {
-			if afterErr := a.After(cCtx); afterErr != nil {
-				if err != nil {
-					err = newMultiError(err, afterErr)
-				} else {
-					err = afterErr
-				}
-			}
-		}()
 	}
 
 	if a.Before != nil {
