@@ -273,7 +273,9 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 	cCtx := NewContext(a, set, &Context{Context: ctx})
 	if nerr != nil {
 		_, _ = fmt.Fprintln(a.Writer, nerr)
-		_ = ShowAppHelp(cCtx)
+		if !a.HideHelp {
+			_ = ShowAppHelp(cCtx)
+		}
 		return nerr
 	}
 	cCtx.shellComplete = shellComplete
@@ -294,7 +296,9 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 				fmt.Fprintf(a.Writer, suggestion)
 			}
 		}
-		_ = ShowAppHelp(cCtx)
+		if !a.HideHelp {
+			_ = ShowAppHelp(cCtx)
+		}
 		return err
 	}
 

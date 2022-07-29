@@ -1873,31 +1873,67 @@ func TestApp_Run_CommandSubcommandHelpName(t *testing.T) {
 }
 
 func TestApp_Run_Help(t *testing.T) {
-	var helpArguments = [][]string{{"boom", "--help"}, {"boom", "-h"}, {"boom", "help"}}
+	var tests = []struct {
+		helpArguments []string
+		hideHelp      bool
+		wantContains  string
+		wantErr       error
+	}{
+		{
+			helpArguments: []string{"boom", "--help"},
+			hideHelp:      false,
+			wantContains:  "boom - make an explosive entrance",
+		},
+		{
+			helpArguments: []string{"boom", "-h"},
+			hideHelp:      false,
+			wantContains:  "boom - make an explosive entrance",
+		},
+		{
+			helpArguments: []string{"boom", "help"},
+			hideHelp:      false,
+			wantContains:  "boom - make an explosive entrance",
+		},
+		{
+			helpArguments: []string{"boom", "--help"},
+			hideHelp:      true,
+			wantErr:       fmt.Errorf("flag: help requested"),
+		},
+		{
+			helpArguments: []string{"boom", "-h"},
+			hideHelp:      true,
+			wantErr:       fmt.Errorf("flag: help requested"),
+		},
+		{
+			helpArguments: []string{"boom", "help"},
+			hideHelp:      true,
+			wantContains:  "boom I say!",
+		},
+	}
 
-	for _, args := range helpArguments {
-		t.Run(fmt.Sprintf("checking with arguments %v", args), func(t *testing.T) {
-
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("checking with arguments %v", tt.helpArguments), func(t *testing.T) {
 			buf := new(bytes.Buffer)
 
 			app := &App{
-				Name:   "boom",
-				Usage:  "make an explosive entrance",
-				Writer: buf,
+				Name:     "boom",
+				Usage:    "make an explosive entrance",
+				Writer:   buf,
+				HideHelp: tt.hideHelp,
 				Action: func(c *Context) error {
 					buf.WriteString("boom I say!")
 					return nil
 				},
 			}
 
-			err := app.Run(args)
-			if err != nil {
-				t.Error(err)
+			err := app.Run(tt.helpArguments)
+			if err != nil && err.Error() != tt.wantErr.Error() {
+				t.Errorf("want err: %s, did note %s\n", tt.wantErr, err)
 			}
 
 			output := buf.String()
 
-			if !strings.Contains(output, "boom - make an explosive entrance") {
+			if !strings.Contains(output, tt.wantContains) {
 				t.Errorf("want help to contain %q, did not: \n%q", "boom - make an explosive entrance", output)
 			}
 		})
