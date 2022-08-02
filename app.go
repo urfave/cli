@@ -78,6 +78,8 @@ type App struct {
 	CommandNotFound CommandNotFoundFunc
 	// Execute this function if a usage error occurs
 	OnUsageError OnUsageErrorFunc
+	// Execute this function when an unknown flag is accessed from the context
+	UnknownFlagHandler UnknownFlagFunc
 	// Compilation date
 	Compiled time.Time
 	// List of all authors who contributed

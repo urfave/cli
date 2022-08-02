@@ -46,6 +46,9 @@ func (cCtx *Context) NumFlags() int {
 
 // Set sets a context flag to a value.
 func (cCtx *Context) Set(name, value string) error {
+	if cCtx.flagSet.Lookup(name) == nil {
+		cCtx.onUnknownFlag(name)
+	}
 	return cCtx.flagSet.Set(name, value)
 }
 
@@ -158,7 +161,7 @@ func (cCtx *Context) lookupFlagSet(name string) *flag.FlagSet {
 			return c.flagSet
 		}
 	}
-
+	cCtx.onUnknownFlag(name)
 	return nil
 }
 
@@ -188,6 +191,12 @@ func (cCtx *Context) checkRequiredFlags(flags []Flag) requiredFlagsErr {
 	}
 
 	return nil
+}
+
+func (cCtx *Context) onUnknownFlag(name string) {
+	if cCtx.App != nil && cCtx.App.UnknownFlagHandler != nil {
+		cCtx.App.UnknownFlagHandler(cCtx, name)
+	}
 }
 
 func makeFlagNameVisitor(names *[]string) func(*flag.Flag) {

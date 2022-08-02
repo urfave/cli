@@ -23,6 +23,9 @@ type CommandNotFoundFunc func(*Context, string)
 // is displayed and the execution is interrupted.
 type OnUsageErrorFunc func(cCtx *Context, err error, isSubcommand bool) error
 
+// UnknownFlagFunc is executed when an unknown flag is accessed from the context.
+type UnknownFlagFunc func(*Context, string)
+
 // ExitErrHandlerFunc is executed if provided in order to handle exitError values
 // returned by Actions and Before/After functions.
 type ExitErrHandlerFunc func(cCtx *Context, err error)
