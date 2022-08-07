@@ -125,7 +125,9 @@ func (c *Command) Run(ctx *Context) (err error) {
 				fmt.Fprintf(cCtx.App.Writer, suggestion)
 			}
 		}
-		_ = ShowCommandHelp(cCtx, c.Name)
+		if !c.HideHelp {
+			_ = ShowCommandHelp(cCtx, c.Name)
+		}
 		return err
 	}
 
@@ -135,7 +137,9 @@ func (c *Command) Run(ctx *Context) (err error) {
 
 	cerr := cCtx.checkRequiredFlags(c.Flags)
 	if cerr != nil {
-		_ = ShowCommandHelp(cCtx, c.Name)
+		if !c.HideHelp {
+			_ = ShowCommandHelp(cCtx, c.Name)
+		}
 		return cerr
 	}
 

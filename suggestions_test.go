@@ -124,7 +124,7 @@ func ExampleApp_Suggest() {
 	app := &App{
 		Name:                  "greet",
 		Suggest:               true,
-		HideHelp:              true,
+		HideHelp:              false,
 		HideHelpCommand:       true,
 		CustomAppHelpTemplate: "(this space intentionally left blank)\n",
 		Flags: []Flag{
@@ -149,7 +149,6 @@ func ExampleApp_Suggest_command() {
 	app := &App{
 		Name:                  "greet",
 		Suggest:               true,
-		HideHelp:              true,
 		HideHelpCommand:       true,
 		CustomAppHelpTemplate: "(this space intentionally left blank)\n",
 		Flags: []Flag{
@@ -162,6 +161,7 @@ func ExampleApp_Suggest_command() {
 		Commands: []*Command{
 			{
 				Name:               "neighbors",
+				HideHelp:           false,
 				CustomHelpTemplate: "(this space intentionally left blank)\n",
 				Flags: []Flag{
 					&BoolFlag{Name: "smiling"},
