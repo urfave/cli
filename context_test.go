@@ -150,11 +150,11 @@ func TestContext_Value(t *testing.T) {
 	expect(t, c.Value("unknown-flag"), nil)
 }
 
-func TestContext_Value_UnknownFlagHandler(t *testing.T) {
+func TestContext_Value_InvalidFlagAccessHandler(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	var flagName string
 	app := &App{
-		UnknownFlagHandler: func(_ *Context, name string) {
+		InvalidFlagAccessHandler: func(_ *Context, name string) {
 			flagName = name
 		},
 	}
@@ -271,11 +271,11 @@ func TestContext_Set(t *testing.T) {
 	expect(t, c.IsSet("int"), true)
 }
 
-func TestContext_Set_StrictLookup(t *testing.T) {
+func TestContext_Set_InvalidFlagAccessHandler(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	var flagName string
 	app := &App{
-		UnknownFlagHandler: func(_ *Context, name string) {
+		InvalidFlagAccessHandler: func(_ *Context, name string) {
 			flagName = name
 		},
 	}
