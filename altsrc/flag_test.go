@@ -180,7 +180,7 @@ func TestBoolApplyInputSourceMethodSet(t *testing.T) {
 
 func TestBoolApplyInputSourceMethodSet_Alias(t *testing.T) {
 	tis := testApplyInputSource{
-		Flag:     NewBoolFlag(&cli.BoolFlag{Name: "test",Aliases: []string{ "test_alias"}}),
+		Flag:     NewBoolFlag(&cli.BoolFlag{Name: "test", Aliases: []string{"test_alias"}}),
 		FlagName: "test_alias",
 		MapValue: true,
 	}
@@ -190,7 +190,6 @@ func TestBoolApplyInputSourceMethodSet_Alias(t *testing.T) {
 	c = runRacyTest(t, tis)
 	refute(t, true, c.Bool("test_alias"))
 }
-
 
 func TestBoolApplyInputSourceMethodContextSet(t *testing.T) {
 	tis := testApplyInputSource{

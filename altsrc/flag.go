@@ -121,8 +121,8 @@ func (f *IntSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceC
 
 // ApplyInputSourceValue applies a Bool value to the flagSet if required
 func (f *BoolFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error {
-	if f.set != nil && !cCtx.IsSet(f.Name) && !isEnvVarSet(f.EnvVars){
-		for _,name := range f.BoolFlag.Names(){
+	if f.set != nil && !cCtx.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) {
+		for _, name := range f.BoolFlag.Names() {
 			if isc.isSet(name) {
 				value, err := isc.Bool(name)
 				if err != nil {
@@ -138,7 +138,6 @@ func (f *BoolFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceConte
 	}
 	return nil
 }
-
 
 // ApplyInputSourceValue applies a String value to the flagSet if required
 func (f *StringFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error {
