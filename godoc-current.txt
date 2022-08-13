@@ -450,6 +450,8 @@ type BoolFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Count *int
 }
     BoolFlag is a flag with type bool
 
