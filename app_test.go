@@ -1309,6 +1309,27 @@ func TestApp_AfterFunc(t *testing.T) {
 	if counts.SubCommand != 1 {
 		t.Errorf("Subcommand not executed when expected")
 	}
+
+	/*
+		reset
+	*/
+	counts = &opCounts{}
+
+	// run with none args
+	err = app.Run([]string{"command"})
+
+	// should be the same error produced by the Before func
+	if err != nil {
+		t.Fatalf("Run error: %s", err)
+	}
+
+	if counts.After != 1 {
+		t.Errorf("After() not executed when expected")
+	}
+
+	if counts.SubCommand != 0 {
+		t.Errorf("Subcommand not executed when expected")
+	}
 }
 
 func TestAppNoHelpFlag(t *testing.T) {
