@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -300,6 +301,28 @@ func stringifyFlag(f Flag) string {
 
 	return withEnvHint(f.GetEnvVars(),
 		fmt.Sprintf("%s\t%s", prefixedNames(f.Names(), placeholder), usageWithDefault))
+}
+
+func stringifyUintSliceFlag(f *UintSliceFlag) string {
+	var defaultVals []string
+	if f.Value != nil && len(f.Value.Value()) > 0 {
+		for _, i := range f.Value.Value() {
+			defaultVals = append(defaultVals, strconv.FormatUint(uint64(i), 10))
+		}
+	}
+
+	return stringifySliceFlag(f.Usage, f.Names(), defaultVals)
+}
+
+func stringifyUint64SliceFlag(f *Uint64SliceFlag) string {
+	var defaultVals []string
+	if f.Value != nil && len(f.Value.Value()) > 0 {
+		for _, i := range f.Value.Value() {
+			defaultVals = append(defaultVals, strconv.FormatUint(i, 10))
+		}
+	}
+
+	return stringifySliceFlag(f.Usage, f.Names(), defaultVals)
 }
 
 func stringifySliceFlag(usage string, names, defaultVals []string) string {
