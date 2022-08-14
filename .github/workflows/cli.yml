@@ -27,12 +27,16 @@ jobs:
       - name: Set PATH
         run: echo "${GITHUB_WORKSPACE}/.local/bin" >>"${GITHUB_PATH}"
 
+      - name: install goimports
+        if: matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
+        run: GOBIN=${PWD}/.local/bin go install golang.org/x/tools/cmd/goimports@latest
+
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: GOFMT Check
+      - name: goimports check
         if: matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
-        run: test -z $(gofmt -l .)
+        run: test -z $(goimports -l .)
 
       - name: vet
         run: go run internal/build/build.go vet
