@@ -557,11 +557,12 @@ func TestCheckRequiredFlags(t *testing.T) {
 			},
 		},
 		{
-			testCase: "required_flag_with_one_character",
+			testCase:              "required_flag_with_one_character",
+			expectedAnError:       true,
+			expectedErrorContents: []string{"Required flag \"n\" not set"},
 			flags: []Flag{
 				&StringFlag{Name: "n", Required: true},
 			},
-			parseInput: []string{"--n", "asd"},
 		},
 	}
 
