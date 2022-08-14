@@ -556,6 +556,13 @@ func TestCheckRequiredFlags(t *testing.T) {
 				&StringSliceFlag{Name: "names, n", Required: true},
 			},
 		},
+		{
+			testCase: "required_flag_with_one_character",
+			flags: []Flag{
+				&StringFlag{Name: "n", Required: true},
+			},
+			parseInput: []string{"--n", "asd"},
+		},
 	}
 
 	for _, test := range tdata {
