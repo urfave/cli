@@ -95,7 +95,7 @@ The built-in `go generate` command is used to run the commands specified in
 line help system which may be consulted for further information, e.g.:
 
 ```sh
-go run internal/genflags/cmd/genflags/main.go --help
+go run cmd/urfave-cli-genflags/main.go --help
 ```
 
 #### docs output

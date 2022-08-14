@@ -6,5 +6,6 @@ internal/*/built-example
 coverage.txt
 /.local/
 /site/
+/cmd/urfave-cli-genflags/urfave-cli-genflags
 
 *.exe
