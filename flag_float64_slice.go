@@ -83,7 +83,7 @@ func (f *Float64Slice) Get() interface{} {
 // String returns a readable representation of this value
 // (for usage defaults)
 func (f *Float64SliceFlag) String() string {
-	return withEnvHint(f.GetEnvVars(), stringifyFloat64SliceFlag(f))
+	return withEnvHint(f.GetEnvVars(), f.stringify())
 }
 
 // TakesValue returns true if the flag takes a value, otherwise false
@@ -167,6 +167,18 @@ func (f *Float64SliceFlag) Apply(set *flag.FlagSet) error {
 // Get returns the flag’s value in the given Context.
 func (f *Float64SliceFlag) Get(ctx *Context) []float64 {
 	return ctx.Float64Slice(f.Name)
+}
+
+func (f *Float64SliceFlag) stringify() string {
+	var defaultVals []string
+
+	if f.Value != nil && len(f.Value.Value()) > 0 {
+		for _, i := range f.Value.Value() {
+			defaultVals = append(defaultVals, strings.TrimRight(strings.TrimRight(fmt.Sprintf("%f", i), "0"), "."))
+		}
+	}
+
+	return stringifySliceFlag(f.Usage, f.Names(), defaultVals)
 }
 
 // Float64Slice looks up the value of a local Float64SliceFlag, returns
