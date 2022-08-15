@@ -222,9 +222,9 @@ func GfmrunActionFunc(cCtx *cli.Context) error {
 		return err
 	}
 
-	filename := cCtx.Args().Get(0)
-	if filename == "" {
-		filename = "README.md"
+	dirPath := cCtx.Args().Get(0)
+	if dirPath == "" {
+		dirPath = "README.md"
 	}
 
 	walk := cCtx.Bool("walk")
@@ -232,7 +232,7 @@ func GfmrunActionFunc(cCtx *cli.Context) error {
 
 	if walk {
 		// Walk the directory and find all markdown files.
-		err := filepath.Walk(filename, func(path string, info os.FileInfo, err error) error {
+		err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
@@ -252,7 +252,7 @@ func GfmrunActionFunc(cCtx *cli.Context) error {
 			return err
 		}
 	} else {
-		sources = append(sources, filename)
+		sources = append(sources, dirPath)
 	}
 
 	var counter int
