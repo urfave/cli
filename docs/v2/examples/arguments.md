@@ -1,3 +1,10 @@
+---
+tags:
+  - v2
+search:
+  boost: 2
+---
+
 You can lookup arguments by calling the `Args` function on `cli.Context`, e.g.:
 
 <!-- {

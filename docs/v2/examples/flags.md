@@ -1,3 +1,10 @@
+---
+tags:
+  - v2
+search:
+  boost: 2
+---
+
 Setting and querying flags is simple.
 
 <!-- {

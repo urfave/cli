@@ -1,3 +1,10 @@
+---
+tags:
+  - v2
+search:
+  boost: 2
+---
+
 Calling `App.Run` will not automatically call `os.Exit`, which means that by
 default the exit code will "fall through" to being `0`.  An explicit exit code
 may be set by returning a non-nil error that fulfills `cli.ExitCoder`, *or* a

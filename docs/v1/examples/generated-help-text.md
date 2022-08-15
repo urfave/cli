@@ -1,3 +1,8 @@
+---
+tags:
+  - v1
+---
+
 The default help flag (`-h/--help`) is defined as `cli.HelpFlag` and is checked
 by the cli internals in order to print generated help text for the app, command,
 or subcommand, and break execution.

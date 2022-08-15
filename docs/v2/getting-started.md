@@ -1,3 +1,10 @@
+---
+tags:
+  - v2
+search:
+  boost: 2
+---
+
 One of the philosophies behind cli is that an API should be playful and full of
 discovery. So a cli app can be as little as one line of code in `main()`.
 

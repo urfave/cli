@@ -1,3 +1,10 @@
+---
+tags:
+  - v2
+search:
+  boost: 2
+---
+
 Traditional use of options using their shortnames look like this:
 
 ```sh-session

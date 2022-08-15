@@ -1,3 +1,10 @@
+---
+tags:
+  - v2
+search:
+  boost: 2
+---
+
 Using the timestamp flag is simple. Please refer to
 [`time.Parse`](https://golang.org/pkg/time/#example_Parse) to get possible
 formats.

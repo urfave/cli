@@ -1,3 +1,10 @@
+---
+tags:
+  - v2
+search:
+  boost: 2
+---
+
 **Notice**: This is a contrived (functioning) example meant strictly for API
 demonstration purposes. Use of one's imagination is encouraged.
 

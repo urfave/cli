@@ -1,3 +1,10 @@
+---
+tags:
+  - v2
+search:
+  boost: 2
+---
+
 Subcommands can be defined for a more git-like command line app.
 
 <!-- {

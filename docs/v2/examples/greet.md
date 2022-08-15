@@ -1,3 +1,10 @@
+---
+tags:
+  - v2
+search:
+  boost: 2
+---
+
 Being a programmer can be a lonely job. Thankfully by the power of automation
 that is not the case! Let's create a greeter app to fend off our demons of
 loneliness!
