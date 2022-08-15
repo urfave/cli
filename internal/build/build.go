@@ -232,7 +232,7 @@ func GfmrunActionFunc(cCtx *cli.Context) error {
 
 	if walk {
 		// Walk the directory and find all markdown files.
-		err := filepath.Walk(top, func(path string, info os.FileInfo, err error) error {
+		err := filepath.Walk(filename, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
