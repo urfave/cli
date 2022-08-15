@@ -196,8 +196,12 @@ func (cCtx *Context) checkRequiredFlags(flags []Flag) requiredFlagsErr {
 }
 
 func (cCtx *Context) onInvalidFlag(name string) {
-	if cCtx.App != nil && cCtx.App.InvalidFlagAccessHandler != nil {
-		cCtx.App.InvalidFlagAccessHandler(cCtx, name)
+	for cCtx != nil {
+		if cCtx.App != nil && cCtx.App.InvalidFlagAccessHandler != nil {
+			cCtx.App.InvalidFlagAccessHandler(cCtx, name)
+			break
+		}
+		cCtx = cCtx.parentContext
 	}
 }
 
