@@ -72,6 +72,7 @@ theme:
 plugins:
   - git-revision-date-localized
   - search
+  - tags
 # NOTE: this is the recommended configuration from
 # https://squidfunk.github.io/mkdocs-material/setup/extensions/#recommended-configuration
 markdown_extensions:
