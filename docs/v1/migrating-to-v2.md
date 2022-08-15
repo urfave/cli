@@ -1,4 +1,7 @@
-## Migrating to V2
+---
+tags:
+  - v1
+---
 
 There are a small set of breaking changes between v1 and v2.
 Converting is relatively straightforward and typically takes less than

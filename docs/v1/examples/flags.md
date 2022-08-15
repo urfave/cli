@@ -1,3 +1,8 @@
+---
+tags:
+  - v1
+---
+
 Setting and querying flags is simple.
 
 <!-- {

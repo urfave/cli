@@ -1,4 +1,7 @@
-### Arguments
+---
+tags:
+  - v1
+---
 
 You can lookup arguments by calling the `Args` function on `cli.Context`, e.g.:
 

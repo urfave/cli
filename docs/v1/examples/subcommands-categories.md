@@ -1,3 +1,8 @@
+---
+tags:
+  - v1
+---
+
 For additional organization in apps that have many subcommands, you can
 associate a category for each command to group them together in the help
 output.

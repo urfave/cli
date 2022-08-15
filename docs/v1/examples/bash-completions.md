@@ -1,3 +1,8 @@
+---
+tags:
+  - v1
+---
+
 You can enable completion commands by setting the `EnableBashCompletion`
 flag on the `App` object.  By default, this setting will only auto-complete to
 show an app's subcommands, but you can write your own completion methods for

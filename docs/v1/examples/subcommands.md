@@ -1,3 +1,8 @@
+---
+tags:
+  - v1
+---
+
 Subcommands can be defined for a more git-like command line app.
 
 <!-- {

@@ -1,4 +1,7 @@
-### Version Flag
+---
+tags:
+  - v1
+---
 
 The default version flag (`-v/--version`) is defined as `cli.VersionFlag`, which
 is checked by the cli internals in order to print the `App.Version` via

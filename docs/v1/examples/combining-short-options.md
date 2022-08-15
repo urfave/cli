@@ -1,3 +1,8 @@
+---
+tags:
+  - v1
+---
+
 Traditional use of options using their shortnames look like this:
 
 ```
