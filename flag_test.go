@@ -1201,10 +1201,10 @@ var uintSliceFlagTests = []struct {
 	value    *UintSlice
 	expected string
 }{
-	{"heads", nil, NewUintSlice(), "--heads value\t(accepts multiple inputs)"},
-	{"H", nil, NewUintSlice(), "-H value\t(accepts multiple inputs)"},
+	{"heads", nil, NewUintSlice(), "--heads value [ --heads value ]\t"},
+	{"H", nil, NewUintSlice(), "-H value [ -H value ]\t"},
 	{"heads", []string{"H"}, NewUintSlice(uint(2), uint(17179869184)),
-		"--heads value, -H value\t(default: 2, 17179869184)\t(accepts multiple inputs)"},
+		"--heads value, -H value [ --heads value, -H value ]\t(default: 2, 17179869184)"},
 }
 
 func TestUintSliceFlagHelpOutput(t *testing.T) {
@@ -1297,10 +1297,10 @@ var uint64SliceFlagTests = []struct {
 	value    *Uint64Slice
 	expected string
 }{
-	{"heads", nil, NewUint64Slice(), "--heads value\t(accepts multiple inputs)"},
-	{"H", nil, NewUint64Slice(), "-H value\t(accepts multiple inputs)"},
+	{"heads", nil, NewUint64Slice(), "--heads value [ --heads value ]\t"},
+	{"H", nil, NewUint64Slice(), "-H value [ -H value ]\t"},
 	{"heads", []string{"H"}, NewUint64Slice(uint64(2), uint64(17179869184)),
-		"--heads value, -H value\t(default: 2, 17179869184)\t(accepts multiple inputs)"},
+		"--heads value, -H value [ --heads value, -H value ]\t(default: 2, 17179869184)"},
 }
 
 func TestUint64SliceFlagHelpOutput(t *testing.T) {
@@ -2703,13 +2703,13 @@ func TestFlagDefaultValue(t *testing.T) {
 			name:    "uint64Slice",
 			flag:    &Uint64SliceFlag{Name: "flag", Value: NewUint64Slice(1, 2)},
 			toParse: []string{"--flag", "13"},
-			expect:  `--flag value	(default: 1, 2)	(accepts multiple inputs)`,
+			expect:  `--flag value [ --flag value ]	(default: 1, 2)`,
 		},
 		{
 			name:    "uintSlice",
 			flag:    &UintSliceFlag{Name: "flag", Value: NewUintSlice(1, 2)},
 			toParse: []string{"--flag", "13"},
-			expect:  `--flag value	(default: 1, 2)	(accepts multiple inputs)`,
+			expect:  `--flag value [ --flag value ]	(default: 1, 2)`,
 		},
 		{
 			name:    "string",
