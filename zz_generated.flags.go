@@ -309,6 +309,86 @@ func (f *TimestampFlag) IsVisible() bool {
 	return !f.Hidden
 }
 
+// Uint64SliceFlag is a flag with type *Uint64Slice
+type Uint64SliceFlag struct {
+	Name string
+
+	Category    string
+	DefaultText string
+	FilePath    string
+	Usage       string
+
+	Required   bool
+	Hidden     bool
+	HasBeenSet bool
+
+	Value       *Uint64Slice
+	Destination *Uint64Slice
+
+	Aliases []string
+	EnvVars []string
+}
+
+// IsSet returns whether or not the flag has been set through env or file
+func (f *Uint64SliceFlag) IsSet() bool {
+	return f.HasBeenSet
+}
+
+// Names returns the names of the flag
+func (f *Uint64SliceFlag) Names() []string {
+	return FlagNames(f.Name, f.Aliases)
+}
+
+// IsRequired returns whether or not the flag is required
+func (f *Uint64SliceFlag) IsRequired() bool {
+	return f.Required
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *Uint64SliceFlag) IsVisible() bool {
+	return !f.Hidden
+}
+
+// UintSliceFlag is a flag with type *UintSlice
+type UintSliceFlag struct {
+	Name string
+
+	Category    string
+	DefaultText string
+	FilePath    string
+	Usage       string
+
+	Required   bool
+	Hidden     bool
+	HasBeenSet bool
+
+	Value       *UintSlice
+	Destination *UintSlice
+
+	Aliases []string
+	EnvVars []string
+}
+
+// IsSet returns whether or not the flag has been set through env or file
+func (f *UintSliceFlag) IsSet() bool {
+	return f.HasBeenSet
+}
+
+// Names returns the names of the flag
+func (f *UintSliceFlag) Names() []string {
+	return FlagNames(f.Name, f.Aliases)
+}
+
+// IsRequired returns whether or not the flag is required
+func (f *UintSliceFlag) IsRequired() bool {
+	return f.Required
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *UintSliceFlag) IsVisible() bool {
+	return !f.Hidden
+}
+
 // BoolFlag is a flag with type bool
 type BoolFlag struct {
 	Name string

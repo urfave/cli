@@ -88,7 +88,7 @@ func (i *Uint64Slice) Get() interface{} {
 // String returns a readable representation of this value
 // (for usage defaults)
 func (f *Uint64SliceFlag) String() string {
-	return withEnvHint(f.GetEnvVars(), stringifyUint64SliceFlag(f))
+	return withEnvHint(f.GetEnvVars(), f.stringify())
 }
 
 // TakesValue returns true of the flag takes a value, otherwise false
@@ -170,6 +170,17 @@ func (f *Uint64SliceFlag) Apply(set *flag.FlagSet) error {
 // Get returns the flag’s value in the given Context.
 func (f *Uint64SliceFlag) Get(ctx *Context) []uint64 {
 	return ctx.Uint64Slice(f.Name)
+}
+
+func (f *Uint64SliceFlag) stringify() string {
+	var defaultVals []string
+	if f.Value != nil && len(f.Value.Value()) > 0 {
+		for _, i := range f.Value.Value() {
+			defaultVals = append(defaultVals, strconv.FormatUint(i, 10))
+		}
+	}
+
+	return stringifySliceFlag(f.Usage, f.Names(), defaultVals)
 }
 
 // Uint64Slice looks up the value of a local Uint64SliceFlag, returns
