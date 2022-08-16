@@ -60,7 +60,14 @@ func main() {
 			Action: TestActionFunc,
 		},
 		{
-			Name:   "gfmrun",
+			Name: "gfmrun",
+			Flags: []cli.Flag{
+				&cli.BoolFlag{
+					Name:  "walk",
+					Value: false,
+					Usage: "Walk the specified directory and perform validation on all markdown files",
+				},
+			},
 			Action: GfmrunActionFunc,
 		},
 		{
@@ -215,36 +222,75 @@ func GfmrunActionFunc(cCtx *cli.Context) error {
 		return err
 	}
 
-	filename := cCtx.Args().Get(0)
-	if filename == "" {
-		filename = "README.md"
+	dirPath := cCtx.Args().Get(0)
+	if dirPath == "" {
+		dirPath = "README.md"
 	}
 
-	file, err := os.Open(filename)
-	if err != nil {
-		return err
+	walk := cCtx.Bool("walk")
+	sources := []string{}
+
+	if walk {
+		// Walk the directory and find all markdown files.
+		err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			if info.IsDir() {
+				return nil
+			}
+
+			if filepath.Ext(path) != ".md" {
+				return nil
+			}
+
+			sources = append(sources, path)
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+	} else {
+		sources = append(sources, dirPath)
 	}
-	defer file.Close()
 
 	var counter int
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		if strings.Contains(scanner.Text(), "package main") {
-			counter++
+
+	for _, src := range sources {
+		file, err := os.Open(src)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			if strings.Contains(scanner.Text(), "package main") {
+				counter++
+			}
+		}
+
+		err = file.Close()
+		if err != nil {
+			return err
+		}
+
+		err = scanner.Err()
+		if err != nil {
+			return err
 		}
 	}
 
-	err = file.Close()
-	if err != nil {
-		return err
+	gfmArgs := []string{
+		"--count",
+		fmt.Sprint(counter),
+	}
+	for _, src := range sources {
+		gfmArgs = append(gfmArgs, "--sources", src)
 	}
 
-	err = scanner.Err()
-	if err != nil {
-		return err
-	}
-
-	if err := runCmd("gfmrun", "-c", fmt.Sprint(counter), "-s", filename); err != nil {
+	if err := runCmd("gfmrun", gfmArgs...); err != nil {
 		return err
 	}
 

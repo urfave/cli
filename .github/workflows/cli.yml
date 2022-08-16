@@ -89,7 +89,7 @@ jobs:
           chmod +x "${GITHUB_WORKSPACE}/.local/bin/gfmrun"
 
       - name: gfmrun
-        run: go run internal/build/build.go gfmrun docs/v2/manual.md
+        run: go run internal/build/build.go gfmrun --walk docs/v2/
 
       - name: diff check
         run: |

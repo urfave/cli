@@ -9,9 +9,45 @@ site_url: https://cli.urfave.org/
 repo_url: https://github.com/urfave/cli
 edit_uri: edit/main/docs/
 nav:
-  - Home: index.md
-  - v2 Manual: v2/index.md
-  - v1 Manual: v1/index.md
+  - Home:
+      - Welcome: index.md
+      - Contributing: CONTRIBUTING.md
+      - Code of Conduct: CODE_OF_CONDUCT.md
+      - Releasing: RELEASING.md
+      - Security: SECURITY.md
+      - Migrate v1 to v2: migrate-v1-to-v2.md
+  - v2 Manual:
+      - Getting Started: v2/getting-started.md
+      - Migrating From Older Releases: v2/migrating-from-older-releases.md
+      - Examples:
+          - Greet: v2/examples/greet.md
+          - Arguments: v2/examples/arguments.md
+          - Flags: v2/examples/flags.md
+          - Subcommands: v2/examples/subcommands.md
+          - Subcommands Categories: v2/examples/subcommands-categories.md
+          - Exit Codes: v2/examples/exit-codes.md
+          - Combining Short Options: v2/examples/combining-short-options.md
+          - Bash Completions: v2/examples/bash-completions.md
+          - Generated Help Text: v2/examples/generated-help-text.md
+          - Version Flag: v2/examples/version-flag.md
+          - Timestamp Flag: v2/examples/timestamp-flag.md
+          - Suggestions: v2/examples/suggestions.md
+          - Full API Example: v2/examples/full-api-example.md
+  - v1 Manual:
+      - Getting Started: v1/getting-started.md
+      - Migrating to v2: v1/migrating-to-v2.md
+      - Examples:
+          - Greet: v1/examples/greet.md
+          - Arguments: v1/examples/arguments.md
+          - Flags: v1/examples/flags.md
+          - Subcommands: v1/examples/subcommands.md
+          - Subcommands (Categories): v1/examples/subcommands-categories.md
+          - Exit Codes: v1/examples/exit-codes.md
+          - Combining Short Options: v1/examples/combining-short-options.md
+          - Bash Completions: v1/examples/bash-completions.md
+          - Generated Help Text: v1/examples/generated-help-text.md
+          - Version Flag: v1/examples/version-flag.md
+
 theme:
   name: material
   palette:
@@ -25,9 +61,18 @@ theme:
       toggle:
         icon: material/brightness-7
         name: light mode
+  features:
+    - content.code.annotate
+    - navigation.top
+    - navigation.instant
+    - navigation.expand
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
 plugins:
   - git-revision-date-localized
   - search
+  - tags
 # NOTE: this is the recommended configuration from
 # https://squidfunk.github.io/mkdocs-material/setup/extensions/#recommended-configuration
 markdown_extensions:
