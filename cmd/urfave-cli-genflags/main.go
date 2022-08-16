@@ -230,8 +230,9 @@ type FlagTypeConfig struct {
 }
 
 type FlagStructField struct {
-	Name string
-	Type string
+	Name    string
+	Type    string
+	Pointer bool
 }
 
 type FlagType struct {
