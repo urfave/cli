@@ -22,6 +22,7 @@ type Float64SliceFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
 }
 
 // IsSet returns whether or not the flag has been set through env or file
@@ -327,6 +328,8 @@ type BoolFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Count *int
 }
 
 // String returns a readable representation of this value (for usage defaults)

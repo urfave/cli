@@ -64,8 +64,8 @@ GLOBAL OPTIONS:
 COPYRIGHT:
    {{wrap .Copyright 3}}{{end}}
 `
-    AppHelpTemplate is the text template for the Default help topic. cli.go uses
-    text/template to render templates. You can render custom help text by
+    AppHelpTemplate is the text template for the Default help topic. cli.go
+    uses text/template to render templates. You can render custom help text by
     setting this variable.
 
 var CommandHelpTemplate = `NAME:
@@ -201,9 +201,9 @@ func DefaultAppComplete(cCtx *Context)
 func DefaultCompleteWithFlags(cmd *Command) func(cCtx *Context)
 func FlagNames(name string, aliases []string) []string
 func HandleAction(action interface{}, cCtx *Context) (err error)
-    HandleAction attempts to figure out which Action signature was used. If it's
-    an ActionFunc or a func with the legacy signature for Action, the func is
-    run!
+    HandleAction attempts to figure out which Action signature was used.
+    If it's an ActionFunc or a func with the legacy signature for Action,
+    the func is run!
 
 func HandleExitCoder(err error)
     HandleExitCoder handles errors implementing ExitCoder by printing their
@@ -360,14 +360,14 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error)
     to generate command-specific flags
 
 func (a *App) RunContext(ctx context.Context, arguments []string) (err error)
-    RunContext is like Run except it takes a Context that will be passed to its
-    commands and sub-commands. Through this, you can propagate timeouts and
+    RunContext is like Run except it takes a Context that will be passed to
+    its commands and sub-commands. Through this, you can propagate timeouts and
     cancellation requests
 
 func (a *App) Setup()
-    Setup runs initialization code to ensure all data structures are ready for
-    `Run` or inspection prior to `Run`. It is internally called by `Run`, but
-    will return early if setup has already happened.
+    Setup runs initialization code to ensure all data structures are ready
+    for `Run` or inspection prior to `Run`. It is internally called by `Run`,
+    but will return early if setup has already happened.
 
 func (a *App) ToFishCompletion() (string, error)
     ToFishCompletion creates a fish completion string for the `*App` The
@@ -450,6 +450,8 @@ type BoolFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Count *int
 }
     BoolFlag is a flag with type bool
 
@@ -799,9 +801,9 @@ func Exit(message interface{}, exitCode int) ExitCoder
     Exit wraps a message and exit code into an error, which by default is
     handled with a call to os.Exit during default error handling.
 
-    This is the simplest way to trigger a non-zero exit code for an App without
-    having to call os.Exit manually. During testing, this behavior can be
-    avoided by overiding the ExitErrHandler function on an App or the
+    This is the simplest way to trigger a non-zero exit code for an App
+    without having to call os.Exit manually. During testing, this behavior
+    can be avoided by overiding the ExitErrHandler function on an App or the
     package-global OsExiter function.
 
 func NewExitError(message interface{}, exitCode int) ExitCoder
@@ -1435,8 +1437,8 @@ type MultiInt64Flag = SliceFlag[*Int64SliceFlag, []int64, int64]
     directly, as Value and/or Destination. See also SliceFlag.
 
 type MultiIntFlag = SliceFlag[*IntSliceFlag, []int, int]
-    MultiIntFlag extends IntSliceFlag with support for using slices directly, as
-    Value and/or Destination. See also SliceFlag.
+    MultiIntFlag extends IntSliceFlag with support for using slices directly,
+    as Value and/or Destination. See also SliceFlag.
 
 type MultiStringFlag = SliceFlag[*StringSliceFlag, []string, string]
     MultiStringFlag extends StringSliceFlag with support for using slices
@@ -1517,8 +1519,8 @@ type RequiredFlag interface {
 
 	IsRequired() bool
 }
-    RequiredFlag is an interface that allows us to mark flags as required it
-    allows flags required flags to be backwards compatible with the Flag
+    RequiredFlag is an interface that allows us to mark flags as required
+    it allows flags required flags to be backwards compatible with the Flag
     interface
 
 type Serializer interface {
@@ -1531,9 +1533,9 @@ type SliceFlag[T SliceFlagTarget[E], S ~[]E, E any] struct {
 	Value       S
 	Destination *S
 }
-    SliceFlag extends implementations like StringSliceFlag and IntSliceFlag with
-    support for using slices directly, as Value and/or Destination. See also
-    SliceFlagTarget, MultiStringFlag, MultiFloat64Flag, MultiInt64Flag,
+    SliceFlag extends implementations like StringSliceFlag and IntSliceFlag
+    with support for using slices directly, as Value and/or Destination.
+    See also SliceFlagTarget, MultiStringFlag, MultiFloat64Flag, MultiInt64Flag,
     MultiIntFlag.
 
 func (x *SliceFlag[T, S, E]) Apply(set *flag.FlagSet) error
@@ -1994,9 +1996,9 @@ func InitInputSource(flags []cli.Flag, createInputSource func() (InputSourceCont
     that are supported by the input source
 
 func InitInputSourceWithContext(flags []cli.Flag, createInputSource func(cCtx *cli.Context) (InputSourceContext, error)) cli.BeforeFunc
-    InitInputSourceWithContext is used to to setup an InputSourceContext on a
-    cli.Command Before method. It will create a new input source based on the
-    func provided with potentially using existing cli.Context values to
+    InitInputSourceWithContext is used to to setup an InputSourceContext on
+    a cli.Command Before method. It will create a new input source based on
+    the func provided with potentially using existing cli.Context values to
     initialize itself. If there is no error it will then apply the new input
     source to any flags that are supported by the input source
 
