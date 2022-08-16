@@ -11,7 +11,7 @@ import (
 
 const (
 	fileName   = "current.json"
-	simpleJSON = `{"test": 15}`
+	simpleJSON = `{"test": 15, "testb": false}`
 	nestedJSON = `{"top": {"test": 15}}`
 )
 
@@ -34,11 +34,16 @@ func TestCommandJSONFileTest(t *testing.T) {
 		Action: func(c *cli.Context) error {
 			val := c.Int("test")
 			expect(t, val, 15)
+
+			valb := c.Bool("testb")
+			expect(t, valb, false)
 			return nil
 		},
 		Flags: []cli.Flag{
 			NewIntFlag(&cli.IntFlag{Name: "test"}),
-			&cli.StringFlag{Name: "load"}},
+			&cli.StringFlag{Name: "load"},
+			NewBoolFlag(&cli.BoolFlag{Name: "testb", Value: true}),
+		},
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewJSONSourceFromFlagFunc("load"))
 	err := command.Run(c)
