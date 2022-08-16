@@ -1,29 +1,63 @@
-package genflags_test
+package main_test
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
-	"github.com/urfave/cli/v2/internal/genflags"
+	main "github.com/urfave/cli/v2/cmd/urfave-cli-genflags"
 )
 
+func TestTypeName(t *testing.T) {
+	for _, tc := range []struct {
+		gt       string
+		fc       *main.FlagTypeConfig
+		expected string
+	}{
+		{gt: "int", fc: nil, expected: "IntFlag"},
+		{gt: "int", fc: &main.FlagTypeConfig{}, expected: "IntFlag"},
+		{gt: "int", fc: &main.FlagTypeConfig{TypeName: "VeryIntyFlag"}, expected: "VeryIntyFlag"},
+		{gt: "[]bool", fc: nil, expected: "BoolSliceFlag"},
+		{gt: "[]bool", fc: &main.FlagTypeConfig{}, expected: "BoolSliceFlag"},
+		{gt: "[]bool", fc: &main.FlagTypeConfig{TypeName: "ManyTruthsFlag"}, expected: "ManyTruthsFlag"},
+		{gt: "time.Rumination", fc: nil, expected: "RuminationFlag"},
+		{gt: "time.Rumination", fc: &main.FlagTypeConfig{}, expected: "RuminationFlag"},
+		{gt: "time.Rumination", fc: &main.FlagTypeConfig{TypeName: "PonderFlag"}, expected: "PonderFlag"},
+	} {
+		t.Run(
+			fmt.Sprintf("type=%s,cfg=%v", tc.gt, func() string {
+				if tc.fc != nil {
+					return tc.fc.TypeName
+				}
+				return "nil"
+			}()),
+			func(ct *testing.T) {
+				actual := main.TypeName(tc.gt, tc.fc)
+				if tc.expected != actual {
+					ct.Errorf("expected %q, got %q", tc.expected, actual)
+				}
+			},
+		)
+	}
+}
+
 func TestSpec_SortedFlagTypes(t *testing.T) {
-	spec := &genflags.Spec{
-		FlagTypes: map[string]*genflags.FlagTypeConfig{
-			"nerf": &genflags.FlagTypeConfig{},
+	spec := &main.Spec{
+		FlagTypes: map[string]*main.FlagTypeConfig{
+			"nerf": &main.FlagTypeConfig{},
 			"gerf": nil,
 		},
 	}
 
 	actual := spec.SortedFlagTypes()
-	expected := []*genflags.FlagType{
+	expected := []*main.FlagType{
 		{
 			GoType: "gerf",
 			Config: nil,
 		},
 		{
 			GoType: "nerf",
-			Config: &genflags.FlagTypeConfig{},
+			Config: &main.FlagTypeConfig{},
 		},
 	}
 	if !reflect.DeepEqual(expected, actual) {
@@ -31,12 +65,12 @@ func TestSpec_SortedFlagTypes(t *testing.T) {
 	}
 }
 
-func genFlagType() *genflags.FlagType {
-	return &genflags.FlagType{
+func genFlagType() *main.FlagType {
+	return &main.FlagType{
 		GoType: "blerf",
-		Config: &genflags.FlagTypeConfig{
+		Config: &main.FlagTypeConfig{
 			SkipInterfaces: []string{"fmt.Stringer"},
-			StructFields: []*genflags.FlagStructField{
+			StructFields: []*main.FlagStructField{
 				{
 					Name: "Foibles",
 					Type: "int",

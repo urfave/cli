@@ -94,7 +94,7 @@ func main() {
 		},
 		&cli.StringSliceFlag{
 			Name:  "packages",
-			Value: cli.NewStringSlice("cli", "altsrc", "internal/build", "internal/genflags"),
+			Value: cli.NewStringSlice("cli", "altsrc", "internal/build"),
 		},
 	}
 

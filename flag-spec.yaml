@@ -1,6 +1,6 @@
 # NOTE: this file is used by the tool defined in
-# ./internal/genflags/cmd/genflags/main.go which uses the
-# `genflags.Spec` type that maps to this file structure.
+# ./cmd/urfave-cli-genflags/main.go which uses the
+# `Spec` type that maps to this file structure.
 
 flag_types:
   bool: {}
