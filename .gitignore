@@ -9,3 +9,5 @@
 coverage.txt
 internal/*/built-example
 vendor
+/cmd/urfave-cli-genflags/urfave-cli-genflags
+*.exe

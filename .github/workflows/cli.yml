@@ -47,6 +47,9 @@ jobs:
       - name: test
         run: go run internal/build/build.go test
 
+      - name: test urfave-cli-genflags
+        run: make -C cmd/urfave-cli-genflags
+
       - name: check-binary-size
         run: go run internal/build/build.go check-binary-size
 
