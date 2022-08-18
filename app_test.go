@@ -1245,7 +1245,7 @@ func TestApp_BeforeFunc(t *testing.T) {
 	}
 }
 
-func TestApp_BeforeFuncShellCompletion(t *testing.T) {
+func TestApp_BeforeAfterFuncShellCompletion(t *testing.T) {
 	counts := &opCounts{}
 	var err error
 
