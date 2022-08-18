@@ -1245,6 +1245,58 @@ func TestApp_BeforeFunc(t *testing.T) {
 	}
 }
 
+func TestApp_BeforeFuncShellCompletion(t *testing.T) {
+	counts := &opCounts{}
+	var err error
+
+	app := &App{
+		EnableBashCompletion: true,
+		Before: func(c *Context) error {
+			counts.Total++
+			counts.Before = counts.Total
+			return nil
+		},
+		After: func(c *Context) error {
+			counts.Total++
+			counts.After = counts.Total
+			return nil
+		},
+		Commands: []*Command{
+			{
+				Name: "sub",
+				Action: func(c *Context) error {
+					counts.Total++
+					counts.SubCommand = counts.Total
+					return nil
+				},
+			},
+		},
+		Flags: []Flag{
+			&StringFlag{Name: "opt"},
+		},
+		Writer: ioutil.Discard,
+	}
+
+	// run with the Before() func succeeding
+	err = app.Run([]string{"command", "--opt", "succeed", "sub", "--generate-bash-completion"})
+
+	if err != nil {
+		t.Fatalf("Run error: %s", err)
+	}
+
+	if counts.Before != 0 {
+		t.Errorf("Before() executed when not expected")
+	}
+
+	if counts.After != 0 {
+		t.Errorf("After() executed when not expected")
+	}
+
+	if counts.SubCommand != 0 {
+		t.Errorf("Subcommand executed more than expected")
+	}
+}
+
 func TestApp_AfterFunc(t *testing.T) {
 	counts := &opCounts{}
 	afterError := fmt.Errorf("fail")
