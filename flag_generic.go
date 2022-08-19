@@ -22,7 +22,7 @@ func (f *GenericFlag) GetValue() string {
 
 // Apply takes the flagset and calls Set on the generic flag with the value
 // provided by the user for parsing by the flag
-func (f GenericFlag) Apply(set *flag.FlagSet) error {
+func (f *GenericFlag) Apply(set *flag.FlagSet) error {
 	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
 		if val != "" {
 			if err := f.Value.Set(val); err != nil {
