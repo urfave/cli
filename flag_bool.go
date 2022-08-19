@@ -51,8 +51,13 @@ func (f *BoolFlag) Apply(set *flag.FlagSet) error {
 			}
 
 			f.Value = valBool
-			f.HasBeenSet = true
+		} else {
+			// empty value implies that the env is defined but set to empty string, we have to assume that this is
+			// what the user wants. If user doesnt want this then the env needs to be deleted or the flag removed from
+			// file
+			f.Value = false
 		}
+		f.HasBeenSet = true
 	}
 
 	for _, name := range f.Names() {

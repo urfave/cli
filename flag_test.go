@@ -157,6 +157,10 @@ func TestFlagsFromEnv(t *testing.T) {
 				if !reflect.DeepEqual(ctx.Value(test.flag.Names()[0]), test.output) {
 					t.Errorf("ex:%01d expected %q to be parsed as %#v, instead was %#v", i, test.input, test.output, ctx.Value(test.flag.Names()[0]))
 				}
+				if !f.IsSet() {
+					t.Errorf("Flag %s not set", f.Names()[0])
+				}
+
 				return nil
 			},
 		}
@@ -2398,43 +2402,43 @@ func TestFlagDefaultValue(t *testing.T) {
 			name:    "stringSclice",
 			flag:    &StringSliceFlag{Name: "flag", Value: NewStringSlice("default1", "default2")},
 			toParse: []string{"--flag", "parsed"},
-			expect: `--flag value [ --flag value ]	(default: "default1", "default2")`,
+			expect:  `--flag value [ --flag value ]	(default: "default1", "default2")`,
 		},
 		{
 			name:    "float64Sclice",
 			flag:    &Float64SliceFlag{Name: "flag", Value: NewFloat64Slice(1.1, 2.2)},
 			toParse: []string{"--flag", "13.3"},
-			expect: `--flag value [ --flag value ]	(default: 1.1, 2.2)`,
+			expect:  `--flag value [ --flag value ]	(default: 1.1, 2.2)`,
 		},
 		{
 			name:    "int64Sclice",
 			flag:    &Int64SliceFlag{Name: "flag", Value: NewInt64Slice(1, 2)},
 			toParse: []string{"--flag", "13"},
-			expect: `--flag value [ --flag value ]	(default: 1, 2)`,
+			expect:  `--flag value [ --flag value ]	(default: 1, 2)`,
 		},
 		{
 			name:    "intSclice",
 			flag:    &IntSliceFlag{Name: "flag", Value: NewIntSlice(1, 2)},
 			toParse: []string{"--flag", "13"},
-			expect: `--flag value [ --flag value ]	(default: 1, 2)`,
+			expect:  `--flag value [ --flag value ]	(default: 1, 2)`,
 		},
 		{
 			name:    "string",
 			flag:    &StringFlag{Name: "flag", Value: "default"},
 			toParse: []string{"--flag", "parsed"},
-			expect: `--flag value	(default: "default")`,
+			expect:  `--flag value	(default: "default")`,
 		},
 		{
 			name:    "bool",
 			flag:    &BoolFlag{Name: "flag", Value: true},
 			toParse: []string{"--flag", "false"},
-			expect: `--flag	(default: true)`,
+			expect:  `--flag	(default: true)`,
 		},
 		{
 			name:    "uint64",
 			flag:    &Uint64Flag{Name: "flag", Value: 1},
 			toParse: []string{"--flag", "13"},
-			expect: `--flag value	(default: 1)`,
+			expect:  `--flag value	(default: 1)`,
 		},
 	}
 	for i, v := range cases {
