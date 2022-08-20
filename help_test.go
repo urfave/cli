@@ -895,6 +895,35 @@ App UsageText`,
 	}
 }
 
+func TestShowAppHelp_CommandMultiLine_UsageText(t *testing.T) {
+	app := &App{
+		UsageText: `This is a
+multi
+line
+App UsageText`,
+		Commands: []*Command{
+			{
+				Name:    "frobbly",
+				Aliases: []string{"frb1", "frbb2", "frl2"},
+				Usage:   "this is a long help output for the run command, long usage \noutput, long usage output, long usage output, long usage output\noutput, long usage output, long usage output",
+			},
+		},
+	}
+
+	output := &bytes.Buffer{}
+	app.Writer = output
+
+	_ = app.Run([]string{"foo"})
+
+	expected := `frobbly, frb1, frbb2, frl2  this is a long help output for the run command, long usage 
+                               output, long usage output, long usage output, long usage output
+                               output, long usage output, long usage output`
+
+	if !strings.Contains(output.String(), expected) {
+		t.Errorf("expected output to include usage text; got: %q", output.String())
+	}
+}
+
 func TestHideHelpCommand(t *testing.T) {
 	app := &App{
 		HideHelpCommand: true,
