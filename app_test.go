@@ -813,6 +813,28 @@ func TestApp_CommandWithNoFlagBeforeTerminator(t *testing.T) {
 	expect(t, args.Get(2), "notAFlagAtAll")
 }
 
+func TestApp_CommandWithNoFlagImmediatelyBeforeTerminator(t *testing.T) {
+	var args Args
+
+	app := &App{
+		Commands: []*Command{
+			{
+				Name: "cmd",
+				Action: func(c *Context) error {
+					args = c.Args()
+					return nil
+				},
+			},
+		},
+	}
+
+	_ = app.Run([]string{"", "cmd", "--", "my-arg", "notAFlagAtAll"})
+
+	expect(t, args.Get(0), "--")
+	expect(t, args.Get(1), "my-arg")
+	expect(t, args.Get(2), "notAFlagAtAll")
+}
+
 func TestApp_VisibleCommands(t *testing.T) {
 	app := &App{
 		Commands: []*Command{
