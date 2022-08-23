@@ -124,14 +124,11 @@ func (f *BoolFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceConte
 	if f.set != nil && !cCtx.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) && isc.isSet(f.BoolFlag.Name) {
 		value, err := isc.Bool(f.BoolFlag.Name)
 		if err != nil {
-			fmt.Println(err)
 			return err
 		}
 		for _, name := range f.Names() {
 			_ = f.set.Set(name, strconv.FormatBool(value))
 		}
-	} else {
-		fmt.Println("not fill")
 	}
 	return nil
 }
