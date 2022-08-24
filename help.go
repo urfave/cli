@@ -295,12 +295,15 @@ func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs 
 	const maxLineLength = 10000
 
 	funcMap := template.FuncMap{
-		"join":    strings.Join,
-		"indent":  indent,
-		"nindent": nindent,
-		"trim":    strings.TrimSpace,
-		"wrap":    func(input string, offset int) string { return wrap(input, offset, maxLineLength) },
-		"offset":  offset,
+		"join":           strings.Join,
+		"subtract":       subtract,
+		"add":            add,
+		"indent":         indent,
+		"nindent":        nindent,
+		"trim":           strings.TrimSpace,
+		"wrap":           func(input string, offset int) string { return wrap(input, offset, maxLineLength) },
+		"offset":         offset,
+		"offsetCommands": offsetCommands,
 	}
 
 	if customFuncs["wrapAt"] != nil {
@@ -416,6 +419,14 @@ func checkCommandCompletions(c *Context, name string) bool {
 	return true
 }
 
+func subtract(a, b int) int {
+	return a - b
+}
+
+func add(a, b int) int {
+	return a + b
+}
+
 func indent(spaces int, v string) string {
 	pad := strings.Repeat(" ", spaces)
 	return pad + strings.Replace(v, "\n", "\n"+pad, -1)
@@ -475,4 +486,15 @@ func wrapLine(input string, offset int, wrapAt int, padding string) string {
 
 func offset(input string, fixed int) int {
 	return len(input) + fixed
+}
+
+func offsetCommands(cmds []*Command, fixed int) int {
+	var max int = 0
+	for _, cmd := range cmds {
+		s := strings.Join(cmd.Names(), ", ")
+		if len(s) > max {
+			max = len(s)
+		}
+	}
+	return max + fixed
 }
