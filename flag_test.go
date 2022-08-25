@@ -110,6 +110,10 @@ func TestFlagsFromEnv(t *testing.T) {
 		{"foobar", 0, &Int64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as int value from environment variable "SECONDS" for flag seconds: .*`},
 
 		{"1", 1, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
+		{"08", 8, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 10}, ""},
+		{"755", 493, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 8}, ""},
+		{"deadBEEF", 3735928559, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 16}, ""},
+		{"08", 0, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 0}, `could not parse "08" as int value from environment variable "SECONDS" for flag seconds: .*`},
 		{"1.2", 0, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2" as int value from environment variable "SECONDS" for flag seconds: .*`},
 		{"foobar", 0, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as int value from environment variable "SECONDS" for flag seconds: .*`},
 
@@ -130,10 +134,18 @@ func TestFlagsFromEnv(t *testing.T) {
 		{"foo,bar", newSetStringSlice("foo", "bar"), &StringSliceFlag{Name: "names", EnvVars: []string{"NAMES"}}, ""},
 
 		{"1", uint(1), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
+		{"08", uint(8), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 10}, ""},
+		{"755", uint(493), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 8}, ""},
+		{"deadBEEF", uint(3735928559), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 16}, ""},
+		{"08", 0, &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 0}, `could not parse "08" as uint value from environment variable "SECONDS" for flag seconds: .*`},
 		{"1.2", 0, &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2" as uint value from environment variable "SECONDS" for flag seconds: .*`},
 		{"foobar", 0, &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as uint value from environment variable "SECONDS" for flag seconds: .*`},
 
 		{"1", uint64(1), &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
+		{"08", uint64(8), &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 10}, ""},
+		{"755", uint64(493), &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 8}, ""},
+		{"deadBEEF", uint64(3735928559), &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 16}, ""},
+		{"08", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 0}, `could not parse "08" as uint64 value from environment variable "SECONDS" for flag seconds: .*`},
 		{"1.2", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2" as uint64 value from environment variable "SECONDS" for flag seconds: .*`},
 		{"foobar", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as uint64 value from environment variable "SECONDS" for flag seconds: .*`},
 
@@ -2398,43 +2410,43 @@ func TestFlagDefaultValue(t *testing.T) {
 			name:    "stringSclice",
 			flag:    &StringSliceFlag{Name: "flag", Value: NewStringSlice("default1", "default2")},
 			toParse: []string{"--flag", "parsed"},
-			expect: `--flag value [ --flag value ]	(default: "default1", "default2")`,
+			expect:  `--flag value [ --flag value ]	(default: "default1", "default2")`,
 		},
 		{
 			name:    "float64Sclice",
 			flag:    &Float64SliceFlag{Name: "flag", Value: NewFloat64Slice(1.1, 2.2)},
 			toParse: []string{"--flag", "13.3"},
-			expect: `--flag value [ --flag value ]	(default: 1.1, 2.2)`,
+			expect:  `--flag value [ --flag value ]	(default: 1.1, 2.2)`,
 		},
 		{
 			name:    "int64Sclice",
 			flag:    &Int64SliceFlag{Name: "flag", Value: NewInt64Slice(1, 2)},
 			toParse: []string{"--flag", "13"},
-			expect: `--flag value [ --flag value ]	(default: 1, 2)`,
+			expect:  `--flag value [ --flag value ]	(default: 1, 2)`,
 		},
 		{
 			name:    "intSclice",
 			flag:    &IntSliceFlag{Name: "flag", Value: NewIntSlice(1, 2)},
 			toParse: []string{"--flag", "13"},
-			expect: `--flag value [ --flag value ]	(default: 1, 2)`,
+			expect:  `--flag value [ --flag value ]	(default: 1, 2)`,
 		},
 		{
 			name:    "string",
 			flag:    &StringFlag{Name: "flag", Value: "default"},
 			toParse: []string{"--flag", "parsed"},
-			expect: `--flag value	(default: "default")`,
+			expect:  `--flag value	(default: "default")`,
 		},
 		{
 			name:    "bool",
 			flag:    &BoolFlag{Name: "flag", Value: true},
 			toParse: []string{"--flag", "false"},
-			expect: `--flag	(default: true)`,
+			expect:  `--flag	(default: true)`,
 		},
 		{
 			name:    "uint64",
 			flag:    &Uint64Flag{Name: "flag", Value: 1},
 			toParse: []string{"--flag", "13"},
-			expect: `--flag value	(default: 1)`,
+			expect:  `--flag value	(default: 1)`,
 		},
 	}
 	for i, v := range cases {

@@ -44,7 +44,7 @@ func (f *Int64Flag) GetEnvVars() []string {
 func (f *Int64Flag) Apply(set *flag.FlagSet) error {
 	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
 		if val != "" {
-			valInt, err := strconv.ParseInt(val, 0, 64)
+			valInt, err := strconv.ParseInt(val, f.Base, 64)
 
 			if err != nil {
 				return fmt.Errorf("could not parse %q as int value from %s for flag %s: %s", val, source, f.Name, err)
