@@ -37,6 +37,20 @@ func (ris *racyInputSource) isSet(name string) bool {
 	return true
 }
 
+func TestGenericApplyInputSourceValue_Alias(t *testing.T) {
+	v := &Parser{"abc", "def"}
+	tis := testApplyInputSource{
+		Flag:     NewGenericFlag(&cli.GenericFlag{Name: "test",  Aliases: []string{"test_alias"}, Value: &Parser{}}),
+		FlagName: "test_alias",
+		MapValue: v,
+	}
+	c := runTest(t, tis)
+	expect(t, v, c.Generic("test_alias"))
+
+	c = runRacyTest(t, tis)
+	refute(t, v, c.Generic("test_alias"))
+}
+
 func TestGenericApplyInputSourceValue(t *testing.T) {
 	v := &Parser{"abc", "def"}
 	tis := testApplyInputSource{
@@ -85,6 +99,19 @@ func TestGenericApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	refute(t, &Parser{"abc", "def"}, c.Generic("test"))
 }
 
+func TestStringSliceApplyInputSourceValue_Alias(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:     NewStringSliceFlag(&cli.StringSliceFlag{Name: "test", Aliases: []string{"test_alias"}}),
+		FlagName: "test_alias",
+		MapValue: []interface{}{"hello", "world"},
+	}
+	c := runTest(t, tis)
+	expect(t, c.StringSlice("test_alias"), []string{"hello", "world"})
+
+	c = runRacyTest(t, tis)
+	refute(t, c.StringSlice("test_alias"), []string{"hello", "world"})
+}
+
 func TestStringSliceApplyInputSourceValue(t *testing.T) {
 	tis := testApplyInputSource{
 		Flag:     NewStringSliceFlag(&cli.StringSliceFlag{Name: "test"}),
@@ -121,6 +148,19 @@ func TestStringSliceApplyInputSourceMethodEnvVarSet(t *testing.T) {
 
 	c = runRacyTest(t, tis)
 	refute(t, c.StringSlice("test"), []string{"oh", "no"})
+}
+
+func TestIntSliceApplyInputSourceValue_Alias(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:     NewIntSliceFlag(&cli.IntSliceFlag{Name: "test", Aliases: []string{"test_alias"}}),
+		FlagName: "test_alias",
+		MapValue: []interface{}{1, 2},
+	}
+	c := runTest(t, tis)
+	expect(t, c.IntSlice("test_alias"), []int{1, 2})
+
+	c = runRacyTest(t, tis)
+	refute(t, c.IntSlice("test_alias"), []int{1, 2})
 }
 
 func TestIntSliceApplyInputSourceValue(t *testing.T) {
@@ -276,6 +316,31 @@ func TestStringApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	refute(t, "goodbye", c.String("test"))
 }
 
+func TestPathApplyInputSourceMethodSet_Alias(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:       NewPathFlag(&cli.PathFlag{Name: "test", Aliases: []string{"test_alias"}}),
+		FlagName:   "test_alias",
+		MapValue:   "hello",
+		SourcePath: "/path/to/source/file",
+	}
+	c := runTest(t, tis)
+
+	expected := "/path/to/source/hello"
+	if runtime.GOOS == "windows" {
+		var err error
+		// Prepend the corresponding drive letter (or UNC path?), and change
+		// to windows-style path:
+		expected, err = filepath.Abs(expected)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	expect(t, expected, c.String("test_alias"))
+
+	c = runRacyTest(t, tis)
+	refute(t, expected, c.String("test_alias"))
+}
+
 func TestPathApplyInputSourceMethodSet(t *testing.T) {
 	tis := testApplyInputSource{
 		Flag:       NewPathFlag(&cli.PathFlag{Name: "test"}),
@@ -335,7 +400,7 @@ func TestPathApplyInputSourceMethodEnvVarSet(t *testing.T) {
 func TestIntApplyInputSourceMethodSet_Alias(t *testing.T) {
 	tis := testApplyInputSource{
 		Flag:     NewIntFlag(&cli.IntFlag{Name: "test", Aliases: []string{"test_alias"}}),
-		FlagName: "test",
+		FlagName: "test_alias",
 		MapValue: 15,
 	}
 	c := runTest(t, tis)
@@ -403,7 +468,7 @@ func TestIntApplyInputSourceMethodEnvVarSet(t *testing.T) {
 func TestDurationApplyInputSourceMethodSet_Alias(t *testing.T) {
 	tis := testApplyInputSource{
 		Flag:     NewDurationFlag(&cli.DurationFlag{Name: "test", Aliases: []string{"test_alias"}}),
-		FlagName: "test",
+		FlagName: "test_alias",
 		MapValue: 30 * time.Second,
 	}
 	c := runTest(t, tis)
@@ -484,7 +549,7 @@ func TestFloat64ApplyInputSourceMethodSet(t *testing.T) {
 func TestFloat64ApplyInputSourceMethodSetNegativeValue_Alias(t *testing.T) {
 	tis := testApplyInputSource{
 		Flag:     NewFloat64Flag(&cli.Float64Flag{Name: "test", Aliases: []string{"test_alias"}}),
-		FlagName: "test",
+		FlagName: "test_alias",
 		MapValue: -1.3,
 	}
 	c := runTest(t, tis)

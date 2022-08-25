@@ -64,14 +64,18 @@ func InitInputSourceWithContext(flags []cli.Flag, createInputSource func(cCtx *c
 
 // ApplyInputSourceValue applies a generic value to the flagSet if required
 func (f *GenericFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error {
-	if f.set != nil && !cCtx.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) && isc.isSet(f.GenericFlag.Name) {
-		value, err := isc.Generic(f.GenericFlag.Name)
-		if err != nil {
-			return err
-		}
-		if value != nil {
-			for _, name := range f.Names() {
-				_ = f.set.Set(name, value.String())
+	if f.set != nil && !cCtx.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) {
+		for _, name := range f.GenericFlag.Names() {
+			if isc.isSet(name) {
+				value, err := isc.Generic(name)
+				if err != nil {
+					return err
+				}
+				if value != nil {
+					for _, n := range f.Names() {
+						_ = f.set.Set(n, value.String())
+					}
+				}
 			}
 		}
 	}
@@ -81,17 +85,21 @@ func (f *GenericFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceCo
 
 // ApplyInputSourceValue applies a StringSlice value to the flagSet if required
 func (f *StringSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error {
-	if f.set != nil && !cCtx.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) && isc.isSet(f.StringSliceFlag.Name) {
-		value, err := isc.StringSlice(f.StringSliceFlag.Name)
-		if err != nil {
-			return err
-		}
-		if value != nil {
-			var sliceValue cli.StringSlice = *(cli.NewStringSlice(value...))
-			for _, name := range f.Names() {
-				underlyingFlag := f.set.Lookup(name)
-				if underlyingFlag != nil {
-					underlyingFlag.Value = &sliceValue
+	if f.set != nil && !cCtx.IsSet(f.Name) && !isEnvVarSet(f.EnvVars){
+		for _, name := range f.StringSliceFlag.Names() {
+			if isc.isSet(name) {
+				value, err := isc.StringSlice(name)
+				if err != nil {
+					return err
+				}
+				if value != nil {
+					var sliceValue = *(cli.NewStringSlice(value...))
+					for _, n := range f.Names() {
+						underlyingFlag := f.set.Lookup(n)
+						if underlyingFlag != nil {
+							underlyingFlag.Value = &sliceValue
+						}
+					}
 				}
 			}
 		}
@@ -101,17 +109,21 @@ func (f *StringSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSour
 
 // ApplyInputSourceValue applies a IntSlice value if required
 func (f *IntSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error {
-	if f.set != nil && !cCtx.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) && isc.isSet(f.IntSliceFlag.Name) {
-		value, err := isc.IntSlice(f.IntSliceFlag.Name)
-		if err != nil {
-			return err
-		}
-		if value != nil {
-			var sliceValue cli.IntSlice = *(cli.NewIntSlice(value...))
-			for _, name := range f.Names() {
-				underlyingFlag := f.set.Lookup(name)
-				if underlyingFlag != nil {
-					underlyingFlag.Value = &sliceValue
+	if f.set != nil && !cCtx.IsSet(f.Name) && !isEnvVarSet(f.EnvVars) {
+		for _, name := range f.IntSliceFlag.Names() {
+			if isc.isSet(name) {
+				value, err := isc.IntSlice(name)
+				if err != nil {
+					return err
+				}
+				if value != nil {
+					var sliceValue = *(cli.NewIntSlice(value...))
+					for _, n := range f.Names() {
+						underlyingFlag := f.set.Lookup(n)
+						if underlyingFlag != nil {
+							underlyingFlag.Value = &sliceValue
+						}
+					}
 				}
 			}
 		}
@@ -160,23 +172,27 @@ func (f *StringFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceCon
 // ApplyInputSourceValue applies a Path value to the flagSet if required
 func (f *PathFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error {
 	if f.set != nil && !(cCtx.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) {
-		value, err := isc.String(f.PathFlag.Name)
-		if err != nil {
-			return err
-		}
-		if value != "" {
-			for _, name := range f.Names() {
-
-				if !filepath.IsAbs(value) && isc.Source() != "" {
-					basePathAbs, err := filepath.Abs(isc.Source())
-					if err != nil {
-						return err
-					}
-
-					value = filepath.Join(filepath.Dir(basePathAbs), value)
+		for _, name := range f.PathFlag.Names() {
+			if isc.isSet(name) {
+				value, err := isc.String(name)
+				if err != nil {
+					return err
 				}
+				if value != "" {
+					for _, n := range f.Names() {
 
-				_ = f.set.Set(name, value)
+						if !filepath.IsAbs(value) && isc.Source() != "" {
+							basePathAbs, err := filepath.Abs(isc.Source())
+							if err != nil {
+								return err
+							}
+
+							value = filepath.Join(filepath.Dir(basePathAbs), value)
+						}
+
+						_ = f.set.Set(n, value)
+					}
+				}
 			}
 		}
 	}
