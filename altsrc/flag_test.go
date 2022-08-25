@@ -332,6 +332,19 @@ func TestPathApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	refute(t, "goodbye", c.String("test"))
 }
 
+func TestIntApplyInputSourceMethodSet_Alias(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:     NewIntFlag(&cli.IntFlag{Name: "test", Aliases: []string{"test_alias"}}),
+		FlagName: "test",
+		MapValue: 15,
+	}
+	c := runTest(t, tis)
+	expect(t, 15, c.Int("test_alias"))
+
+	c = runRacyTest(t, tis)
+	refute(t, 15, c.Int("test_alias"))
+}
+
 func TestIntApplyInputSourceMethodSet(t *testing.T) {
 	tis := testApplyInputSource{
 		Flag:     NewIntFlag(&cli.IntFlag{Name: "test"}),
