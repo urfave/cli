@@ -128,10 +128,8 @@ func (f *BoolFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceConte
 				if err != nil {
 					return err
 				}
-				if value {
-					for _, n := range f.Names() {
-						_ = f.set.Set(n, strconv.FormatBool(value))
-					}
+				for _, n := range f.Names() {
+					_ = f.set.Set(n, strconv.FormatBool(value))
 				}
 			}
 		}
