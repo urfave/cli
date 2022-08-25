@@ -297,7 +297,6 @@ func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs 
 	funcMap := template.FuncMap{
 		"join":           strings.Join,
 		"subtract":       subtract,
-		"add":            add,
 		"indent":         indent,
 		"nindent":        nindent,
 		"trim":           strings.TrimSpace,
