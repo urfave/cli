@@ -204,12 +204,16 @@ func (f *IntFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContex
 // ApplyInputSourceValue applies a Duration value to the flagSet if required
 func (f *DurationFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error {
 	if f.set != nil && !(cCtx.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) && isc.isSet(f.DurationFlag.Name) {
-		value, err := isc.Duration(f.DurationFlag.Name)
-		if err != nil {
-			return err
-		}
-		for _, name := range f.Names() {
-			_ = f.set.Set(name, value.String())
+		for _, name := range f.DurationFlag.Names() {
+			if isc.isSet(name) {
+				value, err := isc.Duration(name)
+				if err != nil {
+					return err
+				}
+				for _, n := range f.Names() {
+					_ = f.set.Set(n, value.String())
+				}
+			}
 		}
 	}
 	return nil
