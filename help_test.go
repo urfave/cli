@@ -907,6 +907,11 @@ App UsageText`,
 				Aliases: []string{"frb1", "frbb2", "frl2"},
 				Usage:   "this is a long help output for the run command, long usage \noutput, long usage output, long usage output, long usage output\noutput, long usage output, long usage output",
 			},
+			{
+				Name:    "grobbly",
+				Aliases: []string{"grb1", "grbb2"},
+				Usage:   "this is another long help output for the run command, long usage \noutput, long usage output",
+			},
 		},
 	}
 
@@ -915,10 +920,12 @@ App UsageText`,
 
 	_ = app.Run([]string{"foo"})
 
-	expected := `frobbly, frb1, frbb2, frl2  this is a long help output for the run command, long usage 
-                               output, long usage output, long usage output, long usage output
-                               output, long usage output, long usage output`
-
+	expected := "COMMANDS:\n" +
+		"   frobbly, frb1, frbb2, frl2  this is a long help output for the run command, long usage \n" +
+		"                               output, long usage output, long usage output, long usage output\n" +
+		"                               output, long usage output, long usage output\n" +
+		"   grobbly, grb1, grbb2        this is another long help output for the run command, long usage \n" +
+		"                               output, long usage output"
 	if !strings.Contains(output.String(), expected) {
 		t.Errorf("expected output to include usage text; got: %q", output.String())
 	}
