@@ -220,6 +220,20 @@ func TestBoolApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	refute(t, true, c.Bool("test"))
 }
 
+func TestStringApplyInputSourceMethodSet_Alias(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:     NewStringFlag(&cli.StringFlag{Name: "test", Aliases: []string{"test_alias"}}),
+		FlagName: "test_alias",
+		MapValue: "hello",
+		ContextValueString: "goodbye",
+	}
+	c := runTest(t, tis)
+	expect(t, "goodbye", c.String("test_alias"))
+
+	c = runRacyTest(t, tis)
+	refute(t, "goodbye", c.String("test_alias"))
+}
+
 func TestStringApplyInputSourceMethodSet(t *testing.T) {
 	tis := testApplyInputSource{
 		Flag:     NewStringFlag(&cli.StringFlag{Name: "test"}),

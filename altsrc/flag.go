@@ -142,13 +142,15 @@ func (f *BoolFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceConte
 // ApplyInputSourceValue applies a String value to the flagSet if required
 func (f *StringFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error {
 	if f.set != nil && !(cCtx.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) && isc.isSet(f.StringFlag.Name) {
-		value, err := isc.String(f.StringFlag.Name)
-		if err != nil {
-			return err
-		}
-		if value != "" {
-			for _, name := range f.Names() {
-				_ = f.set.Set(name, value)
+		for _, name := range f.StringFlag.Names(){
+			if isc.isSet(name) {
+				value, err := isc.String(name)
+				if err != nil {
+					return err
+				}
+				for _, n := range f.Names() {
+					_ = f.set.Set(n, value)
+				}
 			}
 		}
 	}
