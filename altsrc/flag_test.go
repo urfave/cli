@@ -265,13 +265,12 @@ func TestStringApplyInputSourceMethodSet_Alias(t *testing.T) {
 		Flag:     NewStringFlag(&cli.StringFlag{Name: "test", Aliases: []string{"test_alias"}}),
 		FlagName: "test_alias",
 		MapValue: "hello",
-		ContextValueString: "goodbye",
 	}
 	c := runTest(t, tis)
-	expect(t, "goodbye", c.String("test_alias"))
+	expect(t, "hello", c.String("test_alias"))
 
 	c = runRacyTest(t, tis)
-	refute(t, "goodbye", c.String("test_alias"))
+	refute(t, "hello", c.String("test_alias"))
 }
 
 func TestStringApplyInputSourceMethodSet(t *testing.T) {
