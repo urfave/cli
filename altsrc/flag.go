@@ -186,12 +186,16 @@ func (f *PathFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceConte
 // ApplyInputSourceValue applies a int value to the flagSet if required
 func (f *IntFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error {
 	if f.set != nil && !(cCtx.IsSet(f.Name) || isEnvVarSet(f.EnvVars)) && isc.isSet(f.IntFlag.Name) {
-		value, err := isc.Int(f.IntFlag.Name)
-		if err != nil {
-			return err
-		}
-		for _, name := range f.Names() {
-			_ = f.set.Set(name, strconv.FormatInt(int64(value), 10))
+		for _, name := range f.IntFlag.Names() {
+			if isc.isSet(name) {
+				value, err := isc.Int(name)
+				if err != nil {
+					return err
+				}
+				for _, n := range f.Names() {
+					_ = f.set.Set(n, strconv.FormatInt(int64(value), 10))
+				}
+			}
 		}
 	}
 	return nil
