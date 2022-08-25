@@ -400,6 +400,19 @@ func TestIntApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	refute(t, 12, c.Int("test"))
 }
 
+func TestDurationApplyInputSourceMethodSet_Alias(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:     NewDurationFlag(&cli.DurationFlag{Name: "test", Aliases: []string{"test_alias"}}),
+		FlagName: "test",
+		MapValue: 30 * time.Second,
+	}
+	c := runTest(t, tis)
+	expect(t, 30*time.Second, c.Duration("test_alias"))
+
+	c = runRacyTest(t, tis)
+	refute(t, 30*time.Second, c.Duration("test_alias"))
+}
+
 func TestDurationApplyInputSourceMethodSet(t *testing.T) {
 	tis := testApplyInputSource{
 		Flag:     NewDurationFlag(&cli.DurationFlag{Name: "test"}),
