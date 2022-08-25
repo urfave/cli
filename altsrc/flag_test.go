@@ -481,6 +481,19 @@ func TestFloat64ApplyInputSourceMethodSet(t *testing.T) {
 	refute(t, 1.3, c.Float64("test"))
 }
 
+func TestFloat64ApplyInputSourceMethodSetNegativeValue_Alias(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:     NewFloat64Flag(&cli.Float64Flag{Name: "test", Aliases: []string{"test_alias"}}),
+		FlagName: "test",
+		MapValue: -1.3,
+	}
+	c := runTest(t, tis)
+	expect(t, -1.3, c.Float64("test_alias"))
+
+	c = runRacyTest(t, tis)
+	refute(t, -1.3, c.Float64("test_alias"))
+}
+
 func TestFloat64ApplyInputSourceMethodSetNegativeValue(t *testing.T) {
 	tis := testApplyInputSource{
 		Flag:     NewFloat64Flag(&cli.Float64Flag{Name: "test"}),
