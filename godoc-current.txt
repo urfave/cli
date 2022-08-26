@@ -1131,6 +1131,8 @@ type Int64Flag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Base int
 }
     Int64Flag is a flag with type int64
 
@@ -1280,6 +1282,8 @@ type IntFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Base int
 }
     IntFlag is a flag with type int
 
@@ -1850,6 +1854,8 @@ type Uint64Flag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Base int
 }
     Uint64Flag is a flag with type uint64
 
@@ -1910,6 +1916,8 @@ type UintFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Base int
 }
     UintFlag is a flag with type uint
 

@@ -25,7 +25,7 @@ func (f *UintFlag) GetCategory() string {
 func (f *UintFlag) Apply(set *flag.FlagSet) error {
 	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
 		if val != "" {
-			valInt, err := strconv.ParseUint(val, 0, 64)
+			valInt, err := strconv.ParseUint(val, f.Base, 64)
 			if err != nil {
 				return fmt.Errorf("could not parse %q as uint value from %s for flag %s: %s", val, source, f.Name, err)
 			}
