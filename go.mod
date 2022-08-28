@@ -9,11 +9,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-require (
-	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/sirupsen/logrus v1.8.1 // indirect
-	github.com/urfave/gfmrun v1.3.1 // indirect
-	golang.org/x/sys v0.0.0-20220429233432-b5fbb4746d32 // indirect
-	golang.org/x/text v0.3.7 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
-)
+require github.com/russross/blackfriday/v2 v2.1.0 // indirect
