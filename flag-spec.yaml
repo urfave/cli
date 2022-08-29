@@ -5,11 +5,19 @@
 flag_types:
   bool: {}
   float64: {}
-  int64: {}
-  int: {}
+  int64:
+    struct_fields:
+      - { name: Base, type: int }
+  int:
+    struct_fields:
+      - { name: Base, type: int }
   time.Duration: {}
-  uint64: {}
-  uint: {}
+  uint64:
+    struct_fields:
+      - { name: Base, type: int }
+  uint:
+    struct_fields:
+      - { name: Base, type: int }
 
   string:
     struct_fields:
