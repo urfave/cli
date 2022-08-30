@@ -150,6 +150,31 @@ func TestContext_Value(t *testing.T) {
 	expect(t, c.Value("unknown-flag"), nil)
 }
 
+func TestContext_Value_InvalidFlagAccessHandler(t *testing.T) {
+	var flagName string
+	app := &App{
+		InvalidFlagAccessHandler: func(_ *Context, name string) {
+			flagName = name
+		},
+		Commands: []*Command{
+			{
+				Name: "command",
+				Subcommands: []*Command{
+					{
+						Name: "subcommand",
+						Action: func(ctx *Context) error {
+							ctx.Value("missing")
+							return nil
+						},
+					},
+				},
+			},
+		},
+	}
+	expect(t, app.Run([]string{"run", "command", "subcommand"}), nil)
+	expect(t, flagName, "missing")
+}
+
 func TestContext_Args(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("myflag", false, "doc")
@@ -256,6 +281,19 @@ func TestContext_Set(t *testing.T) {
 	_ = c.Set("int", "1")
 	expect(t, c.Int("int"), 1)
 	expect(t, c.IsSet("int"), true)
+}
+
+func TestContext_Set_InvalidFlagAccessHandler(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	var flagName string
+	app := &App{
+		InvalidFlagAccessHandler: func(_ *Context, name string) {
+			flagName = name
+		},
+	}
+	c := NewContext(app, set, nil)
+	c.Set("missing", "")
+	expect(t, flagName, "missing")
 }
 
 func TestContext_LocalFlagNames(t *testing.T) {
