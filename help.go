@@ -483,6 +483,20 @@ func offset(input string, fixed int) int {
 	return len(input) + fixed
 }
 
+// this function tries to find the max width of the names column
+// so say we have the following rows for help
+//
+//	foo1, foo2, foo3  some string here
+//	bar1, b2 some other string here
+//
+// We want to offset the 2nd row usage by some amount so that everything
+// is aligned
+//
+//	foo1, foo2, foo3  some string here
+//	bar1, b2          some other string here
+//
+// to find that offset we find the length of all the rows and use the max
+// to calculate the offset
 func offsetCommands(cmds []*Command, fixed int) int {
 	var max int = 0
 	for _, cmd := range cmds {
