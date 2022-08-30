@@ -11,7 +11,7 @@ an expressive way.
 
 These are the guides for each major supported version:
 
-- [`v2`](./v2/)
+- [`v2`](./v2/getting-started)
 - [`v1`](./v1/getting-started)
 
 In addition to the version-specific guides, these other documents are available:
