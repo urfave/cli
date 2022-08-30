@@ -295,12 +295,14 @@ func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs 
 	const maxLineLength = 10000
 
 	funcMap := template.FuncMap{
-		"join":    strings.Join,
-		"indent":  indent,
-		"nindent": nindent,
-		"trim":    strings.TrimSpace,
-		"wrap":    func(input string, offset int) string { return wrap(input, offset, maxLineLength) },
-		"offset":  offset,
+		"join":           strings.Join,
+		"subtract":       subtract,
+		"indent":         indent,
+		"nindent":        nindent,
+		"trim":           strings.TrimSpace,
+		"wrap":           func(input string, offset int) string { return wrap(input, offset, maxLineLength) },
+		"offset":         offset,
+		"offsetCommands": offsetCommands,
 	}
 
 	if customFuncs["wrapAt"] != nil {
@@ -416,6 +418,10 @@ func checkCommandCompletions(c *Context, name string) bool {
 	return true
 }
 
+func subtract(a, b int) int {
+	return a - b
+}
+
 func indent(spaces int, v string) string {
 	pad := strings.Repeat(" ", spaces)
 	return pad + strings.Replace(v, "\n", "\n"+pad, -1)
@@ -475,4 +481,29 @@ func wrapLine(input string, offset int, wrapAt int, padding string) string {
 
 func offset(input string, fixed int) int {
 	return len(input) + fixed
+}
+
+// this function tries to find the max width of the names column
+// so say we have the following rows for help
+//
+//	foo1, foo2, foo3  some string here
+//	bar1, b2 some other string here
+//
+// We want to offset the 2nd row usage by some amount so that everything
+// is aligned
+//
+//	foo1, foo2, foo3  some string here
+//	bar1, b2          some other string here
+//
+// to find that offset we find the length of all the rows and use the max
+// to calculate the offset
+func offsetCommands(cmds []*Command, fixed int) int {
+	var max int = 0
+	for _, cmd := range cmds {
+		s := strings.Join(cmd.Names(), ", ")
+		if len(s) > max {
+			max = len(s)
+		}
+	}
+	return max + fixed
 }
