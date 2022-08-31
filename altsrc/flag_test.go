@@ -40,7 +40,7 @@ func (ris *racyInputSource) isSet(name string) bool {
 func TestGenericApplyInputSourceValue_Alias(t *testing.T) {
 	v := &Parser{"abc", "def"}
 	tis := testApplyInputSource{
-		Flag:     NewGenericFlag(&cli.GenericFlag{Name: "test",  Aliases: []string{"test_alias"}, Value: &Parser{}}),
+		Flag:     NewGenericFlag(&cli.GenericFlag{Name: "test", Aliases: []string{"test_alias"}, Value: &Parser{}}),
 		FlagName: "test_alias",
 		MapValue: v,
 	}
