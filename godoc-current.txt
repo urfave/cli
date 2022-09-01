@@ -5,24 +5,24 @@ line Go applications. cli is designed to be easy to understand and write,
 the most simple cli application can be written as follows:
 
     func main() {
-      (&cli.App{}).Run(os.Args)
+    	(&cli.App{}).Run(os.Args)
     }
 
 Of course this application does not do much, so let's make this an actual
 application:
 
-      func main() {
-        app := &cli.App{
-    			 Name: "greet",
-    			 Usage: "say a greeting",
-    			 Action: func(c *cli.Context) error {
-    				 fmt.Println("Greetings")
-    				 return nil
-    			 },
-    		 }
+    func main() {
+    	app := &cli.App{
+      		Name: "greet",
+      		Usage: "say a greeting",
+      		Action: func(c *cli.Context) error {
+      			fmt.Println("Greetings")
+      			return nil
+      		},
+    	}
 
-        app.Run(os.Args)
-      }
+    	app.Run(os.Args)
+    }
 
 VARIABLES
 
@@ -1073,7 +1073,7 @@ type GenericFlag struct {
 }
     GenericFlag is a flag with type Generic
 
-func (f GenericFlag) Apply(set *flag.FlagSet) error
+func (f *GenericFlag) Apply(set *flag.FlagSet) error
     Apply takes the flagset and calls Set on the generic flag with the value
     provided by the user for parsing by the flag
 
