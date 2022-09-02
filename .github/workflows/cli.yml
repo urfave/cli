@@ -13,6 +13,9 @@ on:
       - main
       - v3-dev-main
 
+permissions:
+  contents: read
+
 jobs:
   test:
     strategy:
@@ -100,6 +103,8 @@ jobs:
           git diff --cached --exit-code
 
   publish:
+    permissions:
+      contents: write
     # TODO: switch once v3 is released {{
     # if: startswith(github.ref, 'refs/tags/')
     if: 'false'
