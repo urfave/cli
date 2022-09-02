@@ -10,6 +10,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   test:
     strategy:
@@ -97,6 +100,8 @@ jobs:
           git diff --cached --exit-code
 
   publish:
+    permissions:
+      contents: write
     if: startswith(github.ref, 'refs/tags/')
     name: publish
     needs: [test-docs]
