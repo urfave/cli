@@ -51,6 +51,13 @@ func (b *boolValue) String() string {
 
 func (b *boolValue) IsBoolFlag() bool { return true }
 
+func (b *boolValue) Count() int {
+	if b.count != nil {
+		return *b.count
+	}
+	return 0
+}
+
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *BoolFlag) GetValue() string {
