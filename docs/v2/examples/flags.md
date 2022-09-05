@@ -104,7 +104,8 @@ See full list of flags at https://pkg.go.dev/github.com/urfave/cli/v2
 For bool flags you can specify the flag multiple times to get a count(e.g -v -v -v or -vvv)
 
 <!-- {
-  "output": "count 0"
+  "args": "--foo --foo",
+  "output": "count 2"
 } -->
 ```go
 package main
