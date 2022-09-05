@@ -101,6 +101,45 @@ func main() {
 
 See full list of flags at https://pkg.go.dev/github.com/urfave/cli/v2
 
+For bool flags you can specify the flag multiple times to get a count(e.g -v -v -v or -vvv)
+
+<!-- {
+  "output": "count 1"
+} -->
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/urfave/cli/v2"
+)
+
+func main() {
+	var count int
+
+	app := &cli.App{
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:        "foo",
+				Usage:       "foo greeting",
+				Count: &count,
+			},
+		},
+		Action: func(cCtx *cli.Context) error {
+			fmt.Println("Count %d", count)
+			return nil
+		},
+	}
+
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
 #### Placeholder Values
 
 Sometimes it's useful to specify a flag's value within the usage string itself.
@@ -550,6 +589,7 @@ Will result in help output like:
 #### Precedence
 
 The precedence for flag value sources is as follows (highest to lowest):
+eikdcclkkujudfjnhknkgruvlncbgvuckugignuhturk
 
 0. Command line flag value from user
 0. Environment variable (if specified)
