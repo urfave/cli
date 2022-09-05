@@ -129,7 +129,7 @@ func main() {
 			},
 		},
 		Action: func(cCtx *cli.Context) error {
-			fmt.Println("Count ", count)
+			fmt.Println("count", count)
 			return nil
 		},
 	}
