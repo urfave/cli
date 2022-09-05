@@ -66,6 +66,7 @@ jobs:
         if: success() && matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
         uses: codecov/codecov-action@v3
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 
   test-docs:
