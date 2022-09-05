@@ -3,7 +3,8 @@
 # `genflags.Spec` type that maps to this file structure.
 
 flag_types:
-  bool: {}
+  bool: 
+    no_default_text: true
   float64: {}
   int64: {}
   int: {}
@@ -12,12 +13,14 @@ flag_types:
   uint: {}
 
   string:
+    no_default_text: true
     struct_fields:
       - { name: TakesFile, type: bool }
   Generic:
     struct_fields:
       - { name: TakesFile, type: bool }
   Path:
+    no_default_text: true
     struct_fields:
       - { name: TakesFile, type: bool }
 

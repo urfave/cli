@@ -21,10 +21,6 @@ type (
 	// update).
 	SliceFlagTarget[E any] interface {
 		Flag
-		RequiredFlag
-		DocGenerationFlag
-		VisibleFlag
-		CategorizableFlag
 
 		// SetValue should propagate the given slice to the target, ideally as a new value.
 		// Note that a nil slice should nil/clear any existing value (modelled as ~[]E).

@@ -43,6 +43,7 @@ type FlagTypeConfig struct {
 	StructFields   []*FlagStructField `yaml:"struct_fields"`
 	TypeName       string             `yaml:"type_name"`
 	ValuePointer   bool               `yaml:"value_pointer"`
+	NoDefaultText  bool               `yaml:"no_default_text"`
 }
 
 type FlagStructField struct {
@@ -83,12 +84,8 @@ func (ft *FlagType) GenerateFlagInterface() bool {
 	return ft.skipInterfaceNamed("Flag")
 }
 
-func (ft *FlagType) GenerateRequiredFlagInterface() bool {
-	return ft.skipInterfaceNamed("RequiredFlag")
-}
-
-func (ft *FlagType) GenerateVisibleFlagInterface() bool {
-	return ft.skipInterfaceNamed("VisibleFlag")
+func (ft *FlagType) GenerateDefaultText() bool {
+	return !ft.Config.NoDefaultText
 }
 
 func (ft *FlagType) skipInterfaceNamed(name string) bool {

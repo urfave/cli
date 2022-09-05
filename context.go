@@ -165,7 +165,7 @@ func (cCtx *Context) lookupFlagSet(name string) *flag.FlagSet {
 func (cCtx *Context) checkRequiredFlags(flags []Flag) requiredFlagsErr {
 	var missingFlags []string
 	for _, f := range flags {
-		if rf, ok := f.(RequiredFlag); ok && rf.IsRequired() {
+		if f.IsRequired() {
 			var flagPresent bool
 			var flagName string
 

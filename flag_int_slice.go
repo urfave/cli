@@ -98,21 +98,6 @@ func (f *IntSliceFlag) String() string {
 	return withEnvHint(f.GetEnvVars(), stringifyIntSliceFlag(f))
 }
 
-// TakesValue returns true of the flag takes a value, otherwise false
-func (f *IntSliceFlag) TakesValue() bool {
-	return true
-}
-
-// GetUsage returns the usage string for the flag
-func (f *IntSliceFlag) GetUsage() string {
-	return f.Usage
-}
-
-// GetCategory returns the category for the flag
-func (f *IntSliceFlag) GetCategory() string {
-	return f.Category
-}
-
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *IntSliceFlag) GetValue() string {
@@ -120,19 +105,6 @@ func (f *IntSliceFlag) GetValue() string {
 		return f.Value.String()
 	}
 	return ""
-}
-
-// GetDefaultText returns the default text for this flag
-func (f *IntSliceFlag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	return f.GetValue()
-}
-
-// GetEnvVars returns the env vars for this flag
-func (f *IntSliceFlag) GetEnvVars() []string {
-	return f.EnvVars
 }
 
 // Apply populates the flag given the flag set and environment

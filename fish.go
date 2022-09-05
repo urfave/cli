@@ -114,12 +114,7 @@ func (a *App) prepareFishCommands(commands []*Command, allCommands *[]string, pr
 
 func (a *App) prepareFishFlags(flags []Flag, previousCommands []string) []string {
 	completions := []string{}
-	for _, f := range flags {
-		flag, ok := f.(DocGenerationFlag)
-		if !ok {
-			continue
-		}
-
+	for _, flag := range flags {
 		completion := &strings.Builder{}
 		completion.WriteString(fmt.Sprintf(
 			"complete -c %s -n '%s'",
@@ -127,7 +122,7 @@ func (a *App) prepareFishFlags(flags []Flag, previousCommands []string) []string
 			a.fishSubcommandHelper(previousCommands),
 		))
 
-		fishAddFileFlag(f, completion)
+		fishAddFileFlag(flag, completion)
 
 		for idx, opt := range flag.Names() {
 			if idx == 0 {

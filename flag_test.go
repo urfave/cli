@@ -144,10 +144,7 @@ func TestFlagsFromEnv(t *testing.T) {
 		defer resetEnv(os.Environ())
 		os.Clearenv()
 
-		f, ok := test.flag.(DocGenerationFlag)
-		if !ok {
-			t.Errorf("flag %v needs to implement DocGenerationFlag to retrieve env vars", test.flag)
-		}
+		f := test.flag
 		envVarSlice := f.GetEnvVars()
 		_ = os.Setenv(envVarSlice[0], test.input)
 
@@ -177,12 +174,6 @@ func TestFlagsFromEnv(t *testing.T) {
 			}
 		}
 	}
-}
-
-type nodocFlag struct {
-	Flag
-
-	Name string
 }
 
 func TestFlagStringifying(t *testing.T) {
@@ -340,11 +331,6 @@ func TestFlagStringifying(t *testing.T) {
 			name:     "uint64-flag-with-default-text",
 			fl:       &UintFlag{Name: "tubes", DefaultText: "13"},
 			expected: "--tubes value\t(default: 13)",
-		},
-		{
-			name:     "nodoc-flag",
-			fl:       &nodocFlag{Name: "scarecrow"},
-			expected: "",
 		},
 	} {
 		t.Run(tc.name, func(ct *testing.T) {
