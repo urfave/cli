@@ -104,7 +104,7 @@ See full list of flags at https://pkg.go.dev/github.com/urfave/cli/v2
 For bool flags you can specify the flag multiple times to get a count(e.g -v -v -v or -vvv)
 
 <!-- {
-  "output": "count 1"
+  "output": "count 0"
 } -->
 ```go
 package main
@@ -129,7 +129,7 @@ func main() {
 			},
 		},
 		Action: func(cCtx *cli.Context) error {
-			fmt.Println("Count %d", count)
+			fmt.Println("Count ", count)
 			return nil
 		},
 	}
