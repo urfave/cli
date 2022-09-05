@@ -105,6 +105,18 @@ func (cCtx *Context) Lineage() []*Context {
 	return lineage
 }
 
+// NumOccurrences returns the num of occurences of this flag
+func (cCtx *Context) Count(name string) int {
+	if fs := cCtx.lookupFlagSet(name); fs != nil {
+		if bf, ok := fs.Lookup(name).Value.(*boolValue); ok {
+			if bf.count != nil {
+				return *bf.count
+			}
+		}
+	}
+	return 0
+}
+
 // Value returns the value of the flag corresponding to `name`
 func (cCtx *Context) Value(name string) interface{} {
 	if fs := cCtx.lookupFlagSet(name); fs != nil {
