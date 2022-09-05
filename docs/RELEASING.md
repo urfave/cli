@@ -41,9 +41,11 @@ git tag -a -s -m 'Release 2.4.8' v2.4.8
 git push origin v2.4.8
 ```
 
-The tag push will trigger a GitHub Actions workflow. The remaining
-steps require human intervention through the GitHub web view
-although [automated solutions
+The tag push will trigger a GitHub Actions workflow and will be
+**immediately available** to the [Go module mirror, index, and
+checksum database](https://proxy.golang.org/). The remaining steps
+require human intervention through the GitHub web view although
+[automated solutions
 exist](https://github.com/softprops/action-gh-release) that may be
 adopted in the future.
 
@@ -58,4 +60,6 @@ adopted in the future.
 
 [^2]: This was not always true. The
   [`docs/CHANGELOG.md`](./CHANGELOG.md) document used to be
-  manually maintained.
+  manually maintained. Relying on the automatic release notes
+  generation requires the use of **merge commits** as opposed to
+  squash merging or rebase merging.
