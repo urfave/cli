@@ -9,10 +9,11 @@ import (
 
 // boolValue needs to implement the boolFlag internal interface in flag
 // to be able to capture bool fields and values
-// type boolFlag interface {
-//	  Value
-//	  IsBoolFlag() bool
-// }
+//
+//	type boolFlag interface {
+//		  Value
+//		  IsBoolFlag() bool
+//	}
 type boolValue struct {
 	destination *bool
 	count       *int
