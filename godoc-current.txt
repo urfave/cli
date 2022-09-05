@@ -634,7 +634,7 @@ func (cCtx *Context) Bool(name string) bool
     Bool looks up the value of a local BoolFlag, returns false if not found
 
 func (cCtx *Context) Count(name string) int
-    NumOccurrences returns the num of occurences of this flag
+    Count returns the num of occurences of this flag
 
 func (cCtx *Context) Duration(name string) time.Duration
     Duration looks up the value of a local DurationFlag, returns 0 if not found
@@ -707,6 +707,12 @@ func (cCtx *Context) Uint64(name string) uint64
 
 func (cCtx *Context) Value(name string) interface{}
     Value returns the value of the flag corresponding to `name`
+
+type Countable interface {
+	Count() int
+}
+    Countable is an interface to enable detection of flag values which support
+    repetitive flags
 
 type DocGenerationFlag interface {
 	Flag
