@@ -77,27 +77,36 @@ func TestBoolFlagApply_SetsCount(t *testing.T) {
 }
 
 func TestBoolFlagCountFromContext(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	ctx := NewContext(nil, set, nil)
-	tf := &BoolFlag{Name: "tf", Aliases: []string{"w", "huh"}}
-	err := tf.Apply(set)
-	expect(t, err, nil)
 
-	err = set.Parse([]string{"-tf", "-w", "-huh"})
-	expect(t, err, nil)
-	expect(t, tf.Get(ctx), true)
-	expect(t, ctx.Count("tf"), 3)
+	boolCountTests := []struct {
+		input         []string
+		expectedVal   bool
+		expectedCount int
+	}{
+		{
+			input:         []string{"-tf", "-w", "-huh"},
+			expectedVal:   true,
+			expectedCount: 3,
+		},
+		{
+			input:         []string{},
+			expectedVal:   false,
+			expectedCount: 0,
+		},
+	}
 
-	set1 := flag.NewFlagSet("test", 0)
-	ctx1 := NewContext(nil, set1, nil)
-	tf1 := &BoolFlag{Name: "tf", Aliases: []string{"w", "huh"}}
-	err = tf1.Apply(set1)
-	expect(t, err, nil)
+	for _, bct := range boolCountTests {
+		set := flag.NewFlagSet("test", 0)
+		ctx := NewContext(nil, set, nil)
+		tf := &BoolFlag{Name: "tf", Aliases: []string{"w", "huh"}}
+		err := tf.Apply(set)
+		expect(t, err, nil)
 
-	err = set1.Parse([]string{})
-	expect(t, err, nil)
-	expect(t, tf1.Get(ctx1), false)
-	expect(t, ctx1.Count("tf"), 0)
+		err = set.Parse(bct.input)
+		expect(t, err, nil)
+		expect(t, tf.Get(ctx), bct.expectedVal)
+		expect(t, ctx.Count("tf"), bct.expectedCount)
+	}
 }
 
 func TestFlagsFromEnv(t *testing.T) {
