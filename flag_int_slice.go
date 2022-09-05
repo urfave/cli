@@ -107,14 +107,6 @@ func (f *IntSliceFlag) GetValue() string {
 	return ""
 }
 
-// GetDefaultText returns the default text for this flag
-func (f *IntSliceFlag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	return f.GetValue()
-}
-
 // Apply populates the flag given the flag set and environment
 func (f *IntSliceFlag) Apply(set *flag.FlagSet) error {
 	// apply any default

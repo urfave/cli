@@ -12,14 +12,6 @@ func (f *DurationFlag) GetValue() string {
 	return f.Value.String()
 }
 
-// GetDefaultText returns the default text for this flag
-func (f *DurationFlag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	return f.GetValue()
-}
-
 // Apply populates the flag given the flag set and environment
 func (f *DurationFlag) Apply(set *flag.FlagSet) error {
 	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
