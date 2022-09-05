@@ -786,22 +786,37 @@ type ExitErrHandlerFunc func(cCtx *Context, err error)
 
 type Flag interface {
 	fmt.Stringer
+
 	// Apply Flag settings to the given flag set
 	Apply(*flag.FlagSet) error
+
+	// All possible names for this flag
 	Names() []string
+
+	// Whether the flag has been set or not
 	IsSet() bool
+
+	// whether the flag is a required flag or not
 	IsRequired() bool
+
 	// IsVisible returns true if the flag is not hidden, otherwise false
 	IsVisible() bool
+
+	// Returns the category of the flag
 	GetCategory() string
+
 	// GetUsage returns the usage string for the flag
 	GetUsage() string
+
 	// GetEnvVars returns the env vars for this flag
 	GetEnvVars() []string
+
 	// TakesValue returns true if the flag takes a value, otherwise false
 	TakesValue() bool
+
 	// GetDefaultText returns the default text for this flag
 	GetDefaultText() string
+
 	// GetValue returns the flags value as string representation and an empty
 	// string if the flag takes no value at all.
 	GetValue() string
