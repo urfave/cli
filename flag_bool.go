@@ -85,14 +85,18 @@ func (f *BoolFlag) Apply(set *flag.FlagSet) error {
 		f.HasBeenSet = true
 	}
 
+	count := f.Count
+	dest := f.Destination
+
+	if count == nil {
+		count = new(int)
+	}
+	if dest == nil {
+		dest = new(bool)
+	}
+
 	for _, name := range f.Names() {
-		var value flag.Value
-		if f.Destination != nil {
-			value = newBoolValue(f.Value, f.Destination, f.Count)
-		} else {
-			t := new(bool)
-			value = newBoolValue(f.Value, t, f.Count)
-		}
+		value := newBoolValue(f.Value, dest, count)
 		set.Var(value, name, f.Usage)
 	}
 
