@@ -93,14 +93,20 @@ type Flag interface {
 	Apply(*flag.FlagSet) error
 	Names() []string
 	IsSet() bool
+	IsRequired() bool
+	// IsVisible returns true if the flag is not hidden, otherwise false
+	IsVisible() bool
+	GetCategory() string
+	// GetUsage returns the usage string for the flag
+	GetUsage() string
+	// GetEnvVars returns the env vars for this flag
+	GetEnvVars() []string
 }
 
 // RequiredFlag is an interface that allows us to mark flags as required
 // it allows flags required flags to be backwards compatible with the Flag interface
 type RequiredFlag interface {
 	Flag
-
-	IsRequired() bool
 }
 
 // DocGenerationFlag is an interface that allows documentation generation for the flag
@@ -110,34 +116,23 @@ type DocGenerationFlag interface {
 	// TakesValue returns true if the flag takes a value, otherwise false
 	TakesValue() bool
 
-	// GetUsage returns the usage string for the flag
-	GetUsage() string
-
 	// GetValue returns the flags value as string representation and an empty
 	// string if the flag takes no value at all.
 	GetValue() string
 
 	// GetDefaultText returns the default text for this flag
 	GetDefaultText() string
-
-	// GetEnvVars returns the env vars for this flag
-	GetEnvVars() []string
 }
 
 // VisibleFlag is an interface that allows to check if a flag is visible
 type VisibleFlag interface {
 	Flag
-
-	// IsVisible returns true if the flag is not hidden, otherwise false
-	IsVisible() bool
 }
 
 // CategorizableFlag is an interface that allows us to potentially
 // use a flag in a categorized representation.
 type CategorizableFlag interface {
 	VisibleFlag
-
-	GetCategory() string
 }
 
 func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {

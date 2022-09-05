@@ -35,12 +35,6 @@ func TestGenericFlag_SatisfiesFlagInterface(t *testing.T) {
 	_ = f.Names()
 }
 
-func TestGenericFlag_SatisfiesFmtStringerInterface(t *testing.T) {
-	var f fmt.Stringer = &cli.GenericFlag{}
-
-	_ = f.String()
-}
-
 func TestGenericFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
 	var f cli.RequiredFlag = &cli.GenericFlag{}
 
@@ -51,6 +45,12 @@ func TestGenericFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
 	var f cli.VisibleFlag = &cli.GenericFlag{}
 
 	_ = f.IsVisible()
+}
+
+func TestGenericFlag_SatisfiesFmtStringerInterface(t *testing.T) {
+	var f fmt.Stringer = &cli.GenericFlag{}
+
+	_ = f.String()
 }
 
 func TestInt64SliceFlag_SatisfiesFlagInterface(t *testing.T) {
@@ -98,12 +98,6 @@ func TestPathFlag_SatisfiesFlagInterface(t *testing.T) {
 	_ = f.Names()
 }
 
-func TestPathFlag_SatisfiesFmtStringerInterface(t *testing.T) {
-	var f fmt.Stringer = &cli.PathFlag{}
-
-	_ = f.String()
-}
-
 func TestPathFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
 	var f cli.RequiredFlag = &cli.PathFlag{}
 
@@ -114,6 +108,12 @@ func TestPathFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
 	var f cli.VisibleFlag = &cli.PathFlag{}
 
 	_ = f.IsVisible()
+}
+
+func TestPathFlag_SatisfiesFmtStringerInterface(t *testing.T) {
+	var f fmt.Stringer = &cli.PathFlag{}
+
+	_ = f.String()
 }
 
 func TestStringSliceFlag_SatisfiesFlagInterface(t *testing.T) {
@@ -142,12 +142,6 @@ func TestTimestampFlag_SatisfiesFlagInterface(t *testing.T) {
 	_ = f.Names()
 }
 
-func TestTimestampFlag_SatisfiesFmtStringerInterface(t *testing.T) {
-	var f fmt.Stringer = &cli.TimestampFlag{}
-
-	_ = f.String()
-}
-
 func TestTimestampFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
 	var f cli.RequiredFlag = &cli.TimestampFlag{}
 
@@ -160,17 +154,17 @@ func TestTimestampFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
 	_ = f.IsVisible()
 }
 
+func TestTimestampFlag_SatisfiesFmtStringerInterface(t *testing.T) {
+	var f fmt.Stringer = &cli.TimestampFlag{}
+
+	_ = f.String()
+}
+
 func TestBoolFlag_SatisfiesFlagInterface(t *testing.T) {
 	var f cli.Flag = &cli.BoolFlag{}
 
 	_ = f.IsSet()
 	_ = f.Names()
-}
-
-func TestBoolFlag_SatisfiesFmtStringerInterface(t *testing.T) {
-	var f fmt.Stringer = &cli.BoolFlag{}
-
-	_ = f.String()
 }
 
 func TestBoolFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
@@ -185,17 +179,17 @@ func TestBoolFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
 	_ = f.IsVisible()
 }
 
+func TestBoolFlag_SatisfiesFmtStringerInterface(t *testing.T) {
+	var f fmt.Stringer = &cli.BoolFlag{}
+
+	_ = f.String()
+}
+
 func TestFloat64Flag_SatisfiesFlagInterface(t *testing.T) {
 	var f cli.Flag = &cli.Float64Flag{}
 
 	_ = f.IsSet()
 	_ = f.Names()
-}
-
-func TestFloat64Flag_SatisfiesFmtStringerInterface(t *testing.T) {
-	var f fmt.Stringer = &cli.Float64Flag{}
-
-	_ = f.String()
 }
 
 func TestFloat64Flag_SatisfiesRequiredFlagInterface(t *testing.T) {
@@ -210,17 +204,17 @@ func TestFloat64Flag_SatisfiesVisibleFlagInterface(t *testing.T) {
 	_ = f.IsVisible()
 }
 
+func TestFloat64Flag_SatisfiesFmtStringerInterface(t *testing.T) {
+	var f fmt.Stringer = &cli.Float64Flag{}
+
+	_ = f.String()
+}
+
 func TestIntFlag_SatisfiesFlagInterface(t *testing.T) {
 	var f cli.Flag = &cli.IntFlag{}
 
 	_ = f.IsSet()
 	_ = f.Names()
-}
-
-func TestIntFlag_SatisfiesFmtStringerInterface(t *testing.T) {
-	var f fmt.Stringer = &cli.IntFlag{}
-
-	_ = f.String()
 }
 
 func TestIntFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
@@ -235,17 +229,17 @@ func TestIntFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
 	_ = f.IsVisible()
 }
 
+func TestIntFlag_SatisfiesFmtStringerInterface(t *testing.T) {
+	var f fmt.Stringer = &cli.IntFlag{}
+
+	_ = f.String()
+}
+
 func TestInt64Flag_SatisfiesFlagInterface(t *testing.T) {
 	var f cli.Flag = &cli.Int64Flag{}
 
 	_ = f.IsSet()
 	_ = f.Names()
-}
-
-func TestInt64Flag_SatisfiesFmtStringerInterface(t *testing.T) {
-	var f fmt.Stringer = &cli.Int64Flag{}
-
-	_ = f.String()
 }
 
 func TestInt64Flag_SatisfiesRequiredFlagInterface(t *testing.T) {
@@ -260,17 +254,17 @@ func TestInt64Flag_SatisfiesVisibleFlagInterface(t *testing.T) {
 	_ = f.IsVisible()
 }
 
+func TestInt64Flag_SatisfiesFmtStringerInterface(t *testing.T) {
+	var f fmt.Stringer = &cli.Int64Flag{}
+
+	_ = f.String()
+}
+
 func TestStringFlag_SatisfiesFlagInterface(t *testing.T) {
 	var f cli.Flag = &cli.StringFlag{}
 
 	_ = f.IsSet()
 	_ = f.Names()
-}
-
-func TestStringFlag_SatisfiesFmtStringerInterface(t *testing.T) {
-	var f fmt.Stringer = &cli.StringFlag{}
-
-	_ = f.String()
 }
 
 func TestStringFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
@@ -285,17 +279,17 @@ func TestStringFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
 	_ = f.IsVisible()
 }
 
+func TestStringFlag_SatisfiesFmtStringerInterface(t *testing.T) {
+	var f fmt.Stringer = &cli.StringFlag{}
+
+	_ = f.String()
+}
+
 func TestDurationFlag_SatisfiesFlagInterface(t *testing.T) {
 	var f cli.Flag = &cli.DurationFlag{}
 
 	_ = f.IsSet()
 	_ = f.Names()
-}
-
-func TestDurationFlag_SatisfiesFmtStringerInterface(t *testing.T) {
-	var f fmt.Stringer = &cli.DurationFlag{}
-
-	_ = f.String()
 }
 
 func TestDurationFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
@@ -310,17 +304,17 @@ func TestDurationFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
 	_ = f.IsVisible()
 }
 
+func TestDurationFlag_SatisfiesFmtStringerInterface(t *testing.T) {
+	var f fmt.Stringer = &cli.DurationFlag{}
+
+	_ = f.String()
+}
+
 func TestUintFlag_SatisfiesFlagInterface(t *testing.T) {
 	var f cli.Flag = &cli.UintFlag{}
 
 	_ = f.IsSet()
 	_ = f.Names()
-}
-
-func TestUintFlag_SatisfiesFmtStringerInterface(t *testing.T) {
-	var f fmt.Stringer = &cli.UintFlag{}
-
-	_ = f.String()
 }
 
 func TestUintFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
@@ -335,17 +329,17 @@ func TestUintFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
 	_ = f.IsVisible()
 }
 
+func TestUintFlag_SatisfiesFmtStringerInterface(t *testing.T) {
+	var f fmt.Stringer = &cli.UintFlag{}
+
+	_ = f.String()
+}
+
 func TestUint64Flag_SatisfiesFlagInterface(t *testing.T) {
 	var f cli.Flag = &cli.Uint64Flag{}
 
 	_ = f.IsSet()
 	_ = f.Names()
-}
-
-func TestUint64Flag_SatisfiesFmtStringerInterface(t *testing.T) {
-	var f fmt.Stringer = &cli.Uint64Flag{}
-
-	_ = f.String()
 }
 
 func TestUint64Flag_SatisfiesRequiredFlagInterface(t *testing.T) {
@@ -358,6 +352,12 @@ func TestUint64Flag_SatisfiesVisibleFlagInterface(t *testing.T) {
 	var f cli.VisibleFlag = &cli.Uint64Flag{}
 
 	_ = f.IsVisible()
+}
+
+func TestUint64Flag_SatisfiesFmtStringerInterface(t *testing.T) {
+	var f fmt.Stringer = &cli.Uint64Flag{}
+
+	_ = f.String()
 }
 
 // vim:ro

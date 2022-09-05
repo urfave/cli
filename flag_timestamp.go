@@ -72,21 +72,6 @@ func (t *Timestamp) Get() interface{} {
 	return *t
 }
 
-// TakesValue returns true of the flag takes a value, otherwise false
-func (f *TimestampFlag) TakesValue() bool {
-	return true
-}
-
-// GetUsage returns the usage string for the flag
-func (f *TimestampFlag) GetUsage() string {
-	return f.Usage
-}
-
-// GetCategory returns the category for the flag
-func (f *TimestampFlag) GetCategory() string {
-	return f.Category
-}
-
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *TimestampFlag) GetValue() string {
@@ -102,11 +87,6 @@ func (f *TimestampFlag) GetDefaultText() string {
 		return f.DefaultText
 	}
 	return f.GetValue()
-}
-
-// GetEnvVars returns the env vars for this flag
-func (f *TimestampFlag) GetEnvVars() []string {
-	return f.EnvVars
 }
 
 // Apply populates the flag given the flag set and environment

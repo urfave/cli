@@ -6,21 +6,6 @@ import (
 	"strconv"
 )
 
-// TakesValue returns true of the flag takes a value, otherwise false
-func (f *UintFlag) TakesValue() bool {
-	return true
-}
-
-// GetUsage returns the usage string for the flag
-func (f *UintFlag) GetUsage() string {
-	return f.Usage
-}
-
-// GetCategory returns the category for the flag
-func (f *UintFlag) GetCategory() string {
-	return f.Category
-}
-
 // Apply populates the flag given the flag set and environment
 func (f *UintFlag) Apply(set *flag.FlagSet) error {
 	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
@@ -58,11 +43,6 @@ func (f *UintFlag) GetDefaultText() string {
 		return f.DefaultText
 	}
 	return f.GetValue()
-}
-
-// GetEnvVars returns the env vars for this flag
-func (f *UintFlag) GetEnvVars() []string {
-	return f.EnvVars
 }
 
 // Get returns the flag’s value in the given Context.

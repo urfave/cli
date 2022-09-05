@@ -45,21 +45,38 @@ func (f *{{.TypeName}}) Names() []string {
   return {{$.UrfaveCLINamespace}}FlagNames(f.Name, f.Aliases)
 }
 
-{{end}}{{/* /if .GenerateFlagInterface */}}
-
-{{if .GenerateRequiredFlagInterface}}
 // IsRequired returns whether or not the flag is required
 func (f *{{.TypeName}}) IsRequired() bool {
   return f.Required
 }
-{{end}}{{/* /if .GenerateRequiredFlagInterface */}}
 
-{{if .GenerateVisibleFlagInterface}}
 // IsVisible returns true if the flag is not hidden, otherwise false
 func (f *{{.TypeName}}) IsVisible() bool {
 	return !f.Hidden
 }
-{{end}}{{/* /if .GenerateVisibleFlagInterface */}}
+
+// GetCategory returns the category of the flag
+func (f *{{.TypeName}}) GetCategory() string {
+	return f.Category
+}
+
+// GetUsage returns the usage string for the flag
+func (f *{{.TypeName}}) GetUsage() string {
+	return f.Usage
+}
+
+// GetEnvVars returns the env vars for this flag
+func (f *{{.TypeName}}) GetEnvVars() []string {
+	return f.EnvVars
+}
+
+// TakesValue returns true if the flag takes a value, otherwise false
+func (f *{{.TypeName}}) TakesValue() bool {
+  return "{{.TypeName }}" != "BoolFlag"
+}
+
+{{end}}{{/* /if .GenerateFlagInterface */}}
+
 {{end}}{{/* /range .SortedFlagTypes */}}
 
 // vim{{/* 👻 */}}:ro

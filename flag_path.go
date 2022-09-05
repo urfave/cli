@@ -7,21 +7,6 @@ import (
 
 type Path = string
 
-// TakesValue returns true of the flag takes a value, otherwise false
-func (f *PathFlag) TakesValue() bool {
-	return true
-}
-
-// GetUsage returns the usage string for the flag
-func (f *PathFlag) GetUsage() string {
-	return f.Usage
-}
-
-// GetCategory returns the category for the flag
-func (f *PathFlag) GetCategory() string {
-	return f.Category
-}
-
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *PathFlag) GetValue() string {
@@ -37,11 +22,6 @@ func (f *PathFlag) GetDefaultText() string {
 		return f.Value
 	}
 	return fmt.Sprintf("%q", f.Value)
-}
-
-// GetEnvVars returns the env vars for this flag
-func (f *PathFlag) GetEnvVars() []string {
-	return f.EnvVars
 }
 
 // Apply populates the flag given the flag set and environment

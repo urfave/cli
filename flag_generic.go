@@ -11,21 +11,6 @@ type Generic interface {
 	String() string
 }
 
-// TakesValue returns true of the flag takes a value, otherwise false
-func (f *GenericFlag) TakesValue() bool {
-	return true
-}
-
-// GetUsage returns the usage string for the flag
-func (f *GenericFlag) GetUsage() string {
-	return f.Usage
-}
-
-// GetCategory returns the category for the flag
-func (f *GenericFlag) GetCategory() string {
-	return f.Category
-}
-
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *GenericFlag) GetValue() string {
@@ -41,11 +26,6 @@ func (f *GenericFlag) GetDefaultText() string {
 		return f.DefaultText
 	}
 	return f.GetValue()
-}
-
-// GetEnvVars returns the env vars for this flag
-func (f *GenericFlag) GetEnvVars() []string {
-	return f.EnvVars
 }
 
 // Apply takes the flagset and calls Set on the generic flag with the value

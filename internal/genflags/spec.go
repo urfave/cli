@@ -39,10 +39,11 @@ func (gfs *Spec) SortedFlagTypes() []*FlagType {
 }
 
 type FlagTypeConfig struct {
-	SkipInterfaces []string           `yaml:"skip_interfaces"`
-	StructFields   []*FlagStructField `yaml:"struct_fields"`
-	TypeName       string             `yaml:"type_name"`
-	ValuePointer   bool               `yaml:"value_pointer"`
+	SkipInterfaces  []string           `yaml:"skip_interfaces"`
+	StructFields    []*FlagStructField `yaml:"struct_fields"`
+	TypeName        string             `yaml:"type_name"`
+	ValuePointer    bool               `yaml:"value_pointer"`
+	DoesntNeedValue bool               `yaml:"doesnt_need_value"`
 }
 
 type FlagStructField struct {
@@ -81,14 +82,6 @@ func (ft *FlagType) GenerateFmtStringerInterface() bool {
 
 func (ft *FlagType) GenerateFlagInterface() bool {
 	return ft.skipInterfaceNamed("Flag")
-}
-
-func (ft *FlagType) GenerateRequiredFlagInterface() bool {
-	return ft.skipInterfaceNamed("RequiredFlag")
-}
-
-func (ft *FlagType) GenerateVisibleFlagInterface() bool {
-	return ft.skipInterfaceNamed("VisibleFlag")
 }
 
 func (ft *FlagType) skipInterfaceNamed(name string) bool {

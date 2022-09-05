@@ -6,21 +6,6 @@ import (
 	"strconv"
 )
 
-// TakesValue returns true of the flag takes a value, otherwise false
-func (f *IntFlag) TakesValue() bool {
-	return true
-}
-
-// GetUsage returns the usage string for the flag
-func (f *IntFlag) GetUsage() string {
-	return f.Usage
-}
-
-// GetCategory returns the category for the flag
-func (f *IntFlag) GetCategory() string {
-	return f.Category
-}
-
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *IntFlag) GetValue() string {
@@ -33,11 +18,6 @@ func (f *IntFlag) GetDefaultText() string {
 		return f.DefaultText
 	}
 	return f.GetValue()
-}
-
-// GetEnvVars returns the env vars for this flag
-func (f *IntFlag) GetEnvVars() []string {
-	return f.EnvVars
 }
 
 // Apply populates the flag given the flag set and environment

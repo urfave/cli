@@ -10,6 +10,19 @@ func Test{{.TypeName}}_SatisfiesFlagInterface(t *testing.T) {
   _ = f.IsSet()
   _ = f.Names()
 }
+
+func Test{{.TypeName}}_SatisfiesRequiredFlagInterface(t *testing.T) {
+  var f {{$.UrfaveCLITestNamespace}}RequiredFlag = &{{$.UrfaveCLITestNamespace}}{{.TypeName}}{}
+
+  _ = f.IsRequired()
+}
+
+func Test{{.TypeName}}_SatisfiesVisibleFlagInterface(t *testing.T) {
+  var f {{$.UrfaveCLITestNamespace}}VisibleFlag = &{{$.UrfaveCLITestNamespace}}{{.TypeName}}{}
+
+  _ = f.IsVisible()
+}
+
 {{end}}
 
 {{if .GenerateFmtStringerInterface}}
@@ -20,21 +33,7 @@ func Test{{.TypeName}}_SatisfiesFmtStringerInterface(t *testing.T) {
 }
 {{end}}
 
-{{if .GenerateRequiredFlagInterface}}
-func Test{{.TypeName}}_SatisfiesRequiredFlagInterface(t *testing.T) {
-  var f {{$.UrfaveCLITestNamespace}}RequiredFlag = &{{$.UrfaveCLITestNamespace}}{{.TypeName}}{}
 
-  _ = f.IsRequired()
-}
-{{end}}
-
-{{if .GenerateVisibleFlagInterface}}
-func Test{{.TypeName}}_SatisfiesVisibleFlagInterface(t *testing.T) {
-  var f {{$.UrfaveCLITestNamespace}}VisibleFlag = &{{$.UrfaveCLITestNamespace}}{{.TypeName}}{}
-
-  _ = f.IsVisible()
-}
-{{end}}
 {{end}}
 
 // vim{{/* 👻 */}}:ro

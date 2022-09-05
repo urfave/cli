@@ -5,21 +5,6 @@ import (
 	"fmt"
 )
 
-// TakesValue returns true of the flag takes a value, otherwise false
-func (f *StringFlag) TakesValue() bool {
-	return true
-}
-
-// GetUsage returns the usage string for the flag
-func (f *StringFlag) GetUsage() string {
-	return f.Usage
-}
-
-// GetCategory returns the category for the flag
-func (f *StringFlag) GetCategory() string {
-	return f.Category
-}
-
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *StringFlag) GetValue() string {
@@ -35,11 +20,6 @@ func (f *StringFlag) GetDefaultText() string {
 		return f.Value
 	}
 	return fmt.Sprintf("%q", f.Value)
-}
-
-// GetEnvVars returns the env vars for this flag
-func (f *StringFlag) GetEnvVars() []string {
-	return f.EnvVars
 }
 
 // Apply populates the flag given the flag set and environment
