@@ -590,7 +590,6 @@ Will result in help output like:
 #### Precedence
 
 The precedence for flag value sources is as follows (highest to lowest):
-eikdcclkkujudfjnhknkgruvlncbgvuckugignuhturk
 
 0. Command line flag value from user
 0. Environment variable (if specified)
