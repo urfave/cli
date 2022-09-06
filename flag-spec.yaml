@@ -3,7 +3,9 @@
 # `Spec` type that maps to this file structure.
 
 flag_types:
-  bool: {}
+  bool: 
+    struct_fields:
+      - { name: Count, type: int, pointer: true }
   float64: {}
   int64:
     struct_fields:

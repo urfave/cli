@@ -327,6 +327,8 @@ type BoolFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Count *int
 }
 
 // String returns a readable representation of this value (for usage defaults)

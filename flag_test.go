@@ -62,6 +62,53 @@ func TestBoolFlagValueFromContext(t *testing.T) {
 	expect(t, ff.Get(ctx), false)
 }
 
+func TestBoolFlagApply_SetsCount(t *testing.T) {
+	v := false
+	count := 0
+	fl := BoolFlag{Name: "wat", Aliases: []string{"W", "huh"}, Destination: &v, Count: &count}
+	set := flag.NewFlagSet("test", 0)
+	err := fl.Apply(set)
+	expect(t, err, nil)
+
+	err = set.Parse([]string{"--wat", "-W", "--huh"})
+	expect(t, err, nil)
+	expect(t, v, true)
+	expect(t, count, 3)
+}
+
+func TestBoolFlagCountFromContext(t *testing.T) {
+
+	boolCountTests := []struct {
+		input         []string
+		expectedVal   bool
+		expectedCount int
+	}{
+		{
+			input:         []string{"-tf", "-w", "-huh"},
+			expectedVal:   true,
+			expectedCount: 3,
+		},
+		{
+			input:         []string{},
+			expectedVal:   false,
+			expectedCount: 0,
+		},
+	}
+
+	for _, bct := range boolCountTests {
+		set := flag.NewFlagSet("test", 0)
+		ctx := NewContext(nil, set, nil)
+		tf := &BoolFlag{Name: "tf", Aliases: []string{"w", "huh"}}
+		err := tf.Apply(set)
+		expect(t, err, nil)
+
+		err = set.Parse(bct.input)
+		expect(t, err, nil)
+		expect(t, tf.Get(ctx), bct.expectedVal)
+		expect(t, ctx.Count("tf"), bct.expectedCount)
+	}
+}
+
 func TestFlagsFromEnv(t *testing.T) {
 	newSetFloat64Slice := func(defaults ...float64) Float64Slice {
 		s := NewFloat64Slice(defaults...)

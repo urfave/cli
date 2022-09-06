@@ -49,8 +49,8 @@ AUTHOR{{with $length := len .Authors}}{{if ne 1 $length}}S{{end}}{{end}}:
 
 COMMANDS:{{range .VisibleCategories}}{{if .Name}}
    {{.Name}}:{{range .VisibleCommands}}
-     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{range .VisibleCommands}}
-   {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{end}}{{end}}{{end}}{{if .VisibleFlagCategories}}
+     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{ $cv := offsetCommands .VisibleCommands 5}}{{range .VisibleCommands}}
+   {{$s := join .Names ", "}}{{$s}}{{ $sp := subtract $cv (offset $s 3) }}{{ indent $sp ""}}{{wrap .Usage $cv}}{{end}}{{end}}{{end}}{{end}}{{if .VisibleFlagCategories}}
 
 GLOBAL OPTIONS:{{range .VisibleFlagCategories}}
    {{if .Name}}{{.Name}}
@@ -157,8 +157,8 @@ DESCRIPTION:
 
 COMMANDS:{{range .VisibleCategories}}{{if .Name}}
    {{.Name}}:{{range .VisibleCommands}}
-     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{range .VisibleCommands}}
-   {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
+     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{ $cv := offsetCommands .VisibleCommands 5}}{{range .VisibleCommands}}
+     {{$s := join .Names ", "}}{{$s}}{{ $sp := subtract $cv (offset $s 3) }}{{ indent $sp ""}}{{wrap .Usage $cv}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
 
 OPTIONS:
    {{range .VisibleFlags}}{{.}}
@@ -300,6 +300,8 @@ type App struct {
 	CommandNotFound CommandNotFoundFunc
 	// Execute this function if a usage error occurs
 	OnUsageError OnUsageErrorFunc
+	// Execute this function when an invalid flag is accessed from the context
+	InvalidFlagAccessHandler InvalidFlagAccessFunc
 	// Compilation date
 	Compiled time.Time
 	// List of all authors who contributed
@@ -450,6 +452,8 @@ type BoolFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Count *int
 }
     BoolFlag is a flag with type bool
 
@@ -629,6 +633,9 @@ func (cCtx *Context) Args() Args
 func (cCtx *Context) Bool(name string) bool
     Bool looks up the value of a local BoolFlag, returns false if not found
 
+func (cCtx *Context) Count(name string) int
+    Count returns the num of occurences of this flag
+
 func (cCtx *Context) Duration(name string) time.Duration
     Duration looks up the value of a local DurationFlag, returns 0 if not found
 
@@ -700,6 +707,12 @@ func (cCtx *Context) Uint64(name string) uint64
 
 func (cCtx *Context) Value(name string) interface{}
     Value returns the value of the flag corresponding to `name`
+
+type Countable interface {
+	Count() int
+}
+    Countable is an interface to enable detection of flag values which support
+    repetitive flags
 
 type DocGenerationFlag interface {
 	Flag
@@ -1419,6 +1432,10 @@ func (f *IntSliceFlag) String() string
 
 func (f *IntSliceFlag) TakesValue() bool
     TakesValue returns true of the flag takes a value, otherwise false
+
+type InvalidFlagAccessFunc func(*Context, string)
+    InvalidFlagAccessFunc is executed when an invalid flag is accessed from the
+    context.
 
 type MultiError interface {
 	error
