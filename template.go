@@ -26,7 +26,7 @@ COMMANDS:{{range .VisibleCategories}}{{if .Name}}
 
 GLOBAL OPTIONS:{{range .VisibleFlagCategories}}
    {{if .Name}}{{.Name}}
-   {{end}}{{range .Flags}}{{.}}
+   {{end}}{{range .Flags}}{{$v := offset .Name 6}}{{wrap .Name 3}}{{if .Usage}} - {{wrap .Usage $v}}{{end}}
    {{end}}{{end}}{{else}}{{if .VisibleFlags}}
 
 GLOBAL OPTIONS:
