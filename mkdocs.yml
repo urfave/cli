@@ -33,6 +33,7 @@ nav:
           - Timestamp Flag: v2/examples/timestamp-flag.md
           - Suggestions: v2/examples/suggestions.md
           - Full API Example: v2/examples/full-api-example.md
+          - Command Usage Text Wrapping: v2/examples/command-usage-wrap.md
   - v1 Manual:
       - Getting Started: v1/getting-started.md
       - Migrating to v2: v1/migrating-to-v2.md
