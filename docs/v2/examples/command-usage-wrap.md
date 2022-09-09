@@ -9,16 +9,7 @@ You can wrap command usage, e.g.:
 
 <!-- {
   "args": ["help"],
-  "output": "NAME:
-   long - Long command description cli
-
-USAGE:
-   long  command [command options] [arguments...]
-
-COMMANDS:
-   help, h     
-   testing, t  aaaaaaaaa aaaaaaaaa aaaaa aaaaaaaaa aaaaaaaaaaaaaaa aaaaa
-               aaaaaaaaaaaa aaa aa aaaaaa aa aaaa"
+  "output": "NAME:\\n   long - Long command description cli\\n\\nUSAGE:\\n   long  command [command options] [arguments...]\\n\\nCOMMANDS:\\n   help, h     \\n   testing, t  aaaaaaaaa aaaaaaaaa aaaaa aaaaaaaaa aaaaaaaaaaaaaaa aaaaa\\n               aaaaaaaaaaaa aaa aa aaaaaa aa aaaa\\n\""
 } -->
 ```go
 package main
