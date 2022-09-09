@@ -8,6 +8,7 @@ search:
 You can wrap command usage, e.g.:
 
 <!-- {
+  "args": ["help"],
   "output": "NAME:
    long - Long command description cli
 
