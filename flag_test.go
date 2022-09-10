@@ -1676,12 +1676,85 @@ func TestFloat64SliceFlagWithEnvVarHelpOutput(t *testing.T) {
 	}
 }
 
+func TestFloat64SliceFlagApply_SetsAllNames(t *testing.T) {
+	fl := Float64SliceFlag{Name: "bits", Aliases: []string{"B", "bips"}}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{"--bits", "23", "-B", "3", "--bips", "99"})
+	expect(t, err, nil)
+}
+
+func TestFloat64SliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
+	defer resetEnv(os.Environ())
+	os.Clearenv()
+	_ = os.Setenv("MY_GOAT", "1.0 , 2.0")
+	var val Float64Slice
+	fl := Float64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: &val}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse(nil)
+	expect(t, err, nil)
+	expect(t, val.Value(), []float64(nil))
+	expect(t, set.Lookup("goat").Value.(*Float64Slice).Value(), []float64{1, 2})
+}
+
+func TestFloat64SliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
+	defer resetEnv(os.Environ())
+	os.Clearenv()
+	_ = os.Setenv("MY_GOAT", "1.0 , 2.0")
+	val := NewFloat64Slice(3.0, 4.0)
+	fl := Float64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: val}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+	err := set.Parse(nil)
+	expect(t, err, nil)
+	expect(t, val.Value(), []float64{3, 4})
+	expect(t, set.Lookup("goat").Value.(*Float64Slice).Value(), []float64{1, 2})
+}
+
+func TestFloat64SliceFlagApply_DefaultValueWithDestination(t *testing.T) {
+	defValue := []float64{1.0, 2.0}
+
+	fl := Float64SliceFlag{Name: "country", Value: NewFloat64Slice(defValue...), Destination: NewFloat64Slice(3)}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{})
+	expect(t, err, nil)
+	expect(t, defValue, fl.Destination.Value())
+}
+
 func TestFloat64SliceFlagValueFromContext(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Var(NewFloat64Slice(1.23, 4.56), "myflag", "doc")
 	ctx := NewContext(nil, set, nil)
 	f := &Float64SliceFlag{Name: "myflag"}
 	expect(t, f.Get(ctx), []float64{1.23, 4.56})
+}
+
+func TestFloat64SliceFlagApply_ParentContext(t *testing.T) {
+	_ = (&App{
+		Flags: []Flag{
+			&Float64SliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: NewFloat64Slice(1.0, 2.0, 3.0)},
+		},
+		Commands: []*Command{
+			{
+				Name: "child",
+				Action: func(ctx *Context) error {
+					expected := []float64{1.0, 2.0, 3.0}
+					if !reflect.DeepEqual(ctx.Float64Slice("numbers"), expected) {
+						t.Errorf("child context unable to view parent flag: %v != %v", expected, ctx.Float64Slice("numbers"))
+					}
+					if !reflect.DeepEqual(ctx.Float64Slice("n"), expected) {
+						t.Errorf("child context unable to view parent flag: %v != %v", expected, ctx.Float64Slice("n"))
+					}
+					return nil
+				},
+			},
+		},
+	}).Run([]string{"run", "child"})
 }
 
 var genericFlagTests = []struct {
