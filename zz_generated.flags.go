@@ -86,7 +86,7 @@ type GenericFlag struct {
 	HasBeenSet bool
 
 	Value       Generic
-	Destination *Generic
+	Destination Generic
 
 	Aliases []string
 	EnvVars []string

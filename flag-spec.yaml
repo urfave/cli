@@ -6,64 +6,71 @@ flag_types:
   bool: 
     no_default_text: true
     struct_fields:
-      - { name: Count, type: int, pointer: true }
-  float64: {}
-  int64:
-    struct_fields:
-      - { name: Base, type: int }
-  int:
-    struct_fields:
-      - { name: Base, type: int }
-  time.Duration: {}
-  uint64:
-    struct_fields:
-      - { name: Base, type: int }
-  uint:
-    struct_fields:
-      - { name: Base, type: int }
-
-  string:
-    no_default_text: true
-    struct_fields:
-      - { name: TakesFile, type: bool }
-  Generic:
-    struct_fields:
-      - { name: TakesFile, type: bool }
-  Path:
-    no_default_text: true
-    struct_fields:
-      - { name: TakesFile, type: bool }
-
+      - name: Count 
+        type: int
+        pointer: true
+  float64: 
   Float64Slice:
     value_pointer: true
     skip_interfaces:
       - fmt.Stringer
-  Int64Slice:
-    value_pointer: true
-    skip_interfaces:
-      - fmt.Stringer
+  int:
+    struct_fields:
+      - name: Base
+        type: int
   IntSlice:
     value_pointer: true
     skip_interfaces:
       - fmt.Stringer
+  int64:
+    struct_fields:
+      - name: Base
+        type: int
+  Int64Slice:
+    value_pointer: true
+    skip_interfaces:
+      - fmt.Stringer
+  uint:
+    struct_fields:
+      - name: Base
+        type: int
+  UintSlice: 
+    value_pointer: true
+    skip_interfaces:
+      - fmt.Stringer
+  uint64:
+    struct_fields:
+      - name: Base
+        type: int
+  Uint64Slice: 
+    value_pointer: true
+    skip_interfaces:
+      - fmt.Stringer        
+  string:
+    struct_fields:
+      - name: TakesFile
+        type: bool
   StringSlice:
     value_pointer: true
     skip_interfaces:
       - fmt.Stringer
     struct_fields:
-      - { name: TakesFile, type: bool }
+      - name: TakesFile
+        type: bool
+  time.Duration:      
   Timestamp:
     value_pointer: true
     struct_fields:
-      - { name: Layout, type: string }
-      - { name: Timezone, type: "*time.Location" }
-
-  UintSlice: 
-    value_pointer: true
-    skip_interfaces:
-      - fmt.Stringer
-  Uint64Slice: 
-    value_pointer: true
-    skip_interfaces:
-      - fmt.Stringer
-
+      - name: Layout 
+        type: string 
+      - name: Timezone
+        type: "*time.Location"
+  Generic:
+    no_destination_pointer: true
+    struct_fields:
+      - name: TakesFile
+        type: bool
+  Path:
+    struct_fields:
+      - name: TakesFile
+        type: bool
