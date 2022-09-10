@@ -17,7 +17,7 @@ type {{.TypeName}} struct {
   HasBeenSet bool
 
   Value {{if .ValuePointer}}*{{end}}{{.GoType}}
-  Destination *{{.GoType}}
+  Destination {{if .NoDestinationPointer}}{{else}}*{{end}}{{.GoType}}
 
   Aliases []string
   EnvVars []string
