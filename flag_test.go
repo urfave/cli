@@ -1044,6 +1044,47 @@ func TestIntSliceFlagApply_SetsAllNames(t *testing.T) {
 	expect(t, err, nil)
 }
 
+func TestIntSliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
+	defer resetEnv(os.Environ())
+	os.Clearenv()
+	_ = os.Setenv("MY_GOAT", "1 , 2")
+	var val IntSlice
+	fl := IntSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: &val}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse(nil)
+	expect(t, err, nil)
+	expect(t, val.Value(), []int(nil))
+	expect(t, set.Lookup("goat").Value.(*IntSlice).Value(), []int{1, 2})
+}
+
+func TestIntSliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
+	defer resetEnv(os.Environ())
+	os.Clearenv()
+	_ = os.Setenv("MY_GOAT", "1 , 2")
+	val := NewIntSlice(3, 4)
+	fl := IntSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: val}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+	err := set.Parse(nil)
+	expect(t, err, nil)
+	expect(t, val.Value(), []int{3, 4})
+	expect(t, set.Lookup("goat").Value.(*IntSlice).Value(), []int{1, 2})
+}
+
+func TestIntSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
+	defValue := []int{1, 2}
+
+	fl := IntSliceFlag{Name: "country", Value: NewIntSlice(defValue...), Destination: NewIntSlice(3)}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{})
+	expect(t, err, nil)
+	expect(t, defValue, fl.Destination.Value())
+}
+
 func TestIntSliceFlagApply_ParentContext(t *testing.T) {
 	_ = (&App{
 		Flags: []Flag{
@@ -1131,6 +1172,56 @@ func TestInt64SliceFlagWithEnvVarHelpOutput(t *testing.T) {
 			t.Errorf("%q does not end with"+expectedSuffix, output)
 		}
 	}
+}
+
+func TestInt64SliceFlagApply_SetsAllNames(t *testing.T) {
+	fl := Int64SliceFlag{Name: "bits", Aliases: []string{"B", "bips"}}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{"--bits", "23", "-B", "3", "--bips", "99"})
+	expect(t, err, nil)
+}
+
+func TestInt64SliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
+	defer resetEnv(os.Environ())
+	os.Clearenv()
+	_ = os.Setenv("MY_GOAT", "1 , 2")
+	var val Int64Slice
+	fl := Int64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: &val}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse(nil)
+	expect(t, err, nil)
+	expect(t, val.Value(), []int64(nil))
+	expect(t, set.Lookup("goat").Value.(*Int64Slice).Value(), []int64{1, 2})
+}
+
+func TestInt64SliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
+	defer resetEnv(os.Environ())
+	os.Clearenv()
+	_ = os.Setenv("MY_GOAT", "1 , 2")
+	val := NewInt64Slice(3, 4)
+	fl := Int64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: val}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+	err := set.Parse(nil)
+	expect(t, err, nil)
+	expect(t, val.Value(), []int64{3, 4})
+	expect(t, set.Lookup("goat").Value.(*Int64Slice).Value(), []int64{1, 2})
+}
+
+func TestInt64SliceFlagApply_DefaultValueWithDestination(t *testing.T) {
+	defValue := []int64{1, 2}
+
+	fl := Int64SliceFlag{Name: "country", Value: NewInt64Slice(defValue...), Destination: NewInt64Slice(3)}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{})
+	expect(t, err, nil)
+	expect(t, defValue, fl.Destination.Value())
 }
 
 func TestInt64SliceFlagApply_ParentContext(t *testing.T) {
@@ -1237,6 +1328,56 @@ func TestUintSliceFlagWithEnvVarHelpOutput(t *testing.T) {
 	}
 }
 
+func TestUintSliceFlagApply_SetsAllNames(t *testing.T) {
+	fl := UintSliceFlag{Name: "bits", Aliases: []string{"B", "bips"}}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{"--bits", "23", "-B", "3", "--bips", "99"})
+	expect(t, err, nil)
+}
+
+func TestUintSliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
+	defer resetEnv(os.Environ())
+	os.Clearenv()
+	_ = os.Setenv("MY_GOAT", "1 , 2")
+	var val UintSlice
+	fl := UintSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: &val}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse(nil)
+	expect(t, err, nil)
+	expect(t, val.Value(), []uint(nil))
+	expect(t, set.Lookup("goat").Value.(*UintSlice).Value(), []uint{1, 2})
+}
+
+func TestUintSliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
+	defer resetEnv(os.Environ())
+	os.Clearenv()
+	_ = os.Setenv("MY_GOAT", "1 , 2")
+	val := NewUintSlice(3, 4)
+	fl := UintSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: val}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+	err := set.Parse(nil)
+	expect(t, err, nil)
+	expect(t, val.Value(), []uint{3, 4})
+	expect(t, set.Lookup("goat").Value.(*UintSlice).Value(), []uint{1, 2})
+}
+
+func TestUintSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
+	defValue := []uint{1, 2}
+
+	fl := UintSliceFlag{Name: "country", Value: NewUintSlice(defValue...), Destination: NewUintSlice(3)}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{})
+	expect(t, err, nil)
+	expect(t, defValue, fl.Destination.Value())
+}
+
 func TestUintSliceFlagApply_ParentContext(t *testing.T) {
 	_ = (&App{
 		Flags: []Flag{
@@ -1331,6 +1472,56 @@ func TestUint64SliceFlagWithEnvVarHelpOutput(t *testing.T) {
 			t.Errorf("%q does not end with"+expectedSuffix, output)
 		}
 	}
+}
+
+func TestUint64SliceFlagApply_SetsAllNames(t *testing.T) {
+	fl := Uint64SliceFlag{Name: "bits", Aliases: []string{"B", "bips"}}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{"--bits", "23", "-B", "3", "--bips", "99"})
+	expect(t, err, nil)
+}
+
+func TestUint64SliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
+	defer resetEnv(os.Environ())
+	os.Clearenv()
+	_ = os.Setenv("MY_GOAT", "1 , 2")
+	var val Uint64Slice
+	fl := Uint64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: &val}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse(nil)
+	expect(t, err, nil)
+	expect(t, val.Value(), []uint64(nil))
+	expect(t, set.Lookup("goat").Value.(*Uint64Slice).Value(), []uint64{1, 2})
+}
+
+func TestUint64SliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
+	defer resetEnv(os.Environ())
+	os.Clearenv()
+	_ = os.Setenv("MY_GOAT", "1 , 2")
+	val := NewUint64Slice(3, 4)
+	fl := Uint64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: val}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+	err := set.Parse(nil)
+	expect(t, err, nil)
+	expect(t, val.Value(), []uint64{3, 4})
+	expect(t, set.Lookup("goat").Value.(*Uint64Slice).Value(), []uint64{1, 2})
+}
+
+func TestUint64SliceFlagApply_DefaultValueWithDestination(t *testing.T) {
+	defValue := []uint64{1, 2}
+
+	fl := Uint64SliceFlag{Name: "country", Value: NewUint64Slice(defValue...), Destination: NewUint64Slice(3)}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{})
+	expect(t, err, nil)
+	expect(t, defValue, fl.Destination.Value())
 }
 
 func TestUint64SliceFlagApply_ParentContext(t *testing.T) {
@@ -2570,6 +2761,38 @@ func TestInt64Slice_Serialized_Set(t *testing.T) {
 	}
 
 	sl1 := NewInt64Slice(int64(3), int64(4))
+	_ = sl1.Set(ser0)
+
+	if sl0.String() != sl1.String() {
+		t.Fatalf("pre and post serialization do not match: %v != %v", sl0, sl1)
+	}
+}
+
+func TestUintSlice_Serialized_Set(t *testing.T) {
+	sl0 := NewUintSlice(1, 2)
+	ser0 := sl0.Serialize()
+
+	if len(ser0) < len(slPfx) {
+		t.Fatalf("serialized shorter than expected: %q", ser0)
+	}
+
+	sl1 := NewUintSlice(3, 4)
+	_ = sl1.Set(ser0)
+
+	if sl0.String() != sl1.String() {
+		t.Fatalf("pre and post serialization do not match: %v != %v", sl0, sl1)
+	}
+}
+
+func TestUint64Slice_Serialized_Set(t *testing.T) {
+	sl0 := NewUint64Slice(1, 2)
+	ser0 := sl0.Serialize()
+
+	if len(ser0) < len(slPfx) {
+		t.Fatalf("serialized shorter than expected: %q", ser0)
+	}
+
+	sl1 := NewUint64Slice(3, 4)
 	_ = sl1.Set(ser0)
 
 	if sl0.String() != sl1.String() {
