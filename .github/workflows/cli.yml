@@ -35,12 +35,12 @@ jobs:
       - run: make vet
       - run: make test
         env:
-          FLAGS: -tags urfave_cli_no_docs
+          GFLAGS: -tags urfave_cli_no_docs
       - run: make test
       - run: make -C cmd/urfave-cli-genflags
       - run: make check-binary-size
         env:
-          FLAGS: -tags urfave_cli_no_docs
+          GFLAGS: -tags urfave_cli_no_docs
       - run: make check-binary-size
       - run: make yamlfmt
       - run: make diffcheck
