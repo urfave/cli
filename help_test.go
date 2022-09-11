@@ -428,6 +428,58 @@ func TestShowCommandHelp_CommandAliases(t *testing.T) {
 	}
 }
 
+func TestHelpNameConsistency(t *testing.T) {
+	// Setup some very basic templates based on actual AppHelp, CommandHelp
+	// and SubcommandHelp templates to display the help name
+	// The inconsistency shows up when users use NewApp() as opposed to
+	// using App{...} directly
+	SubcommandHelpTemplate = `{{.HelpName}}`
+	app := NewApp()
+	app.Name = "bar"
+	app.CustomAppHelpTemplate = `{{.HelpName}}`
+	app.Commands = []*Command{
+		{
+			Name:               "command1",
+			CustomHelpTemplate: `{{.HelpName}}`,
+			Subcommands: []*Command{
+				{
+					Name:               "subcommand1",
+					CustomHelpTemplate: `{{.HelpName}}`,
+				},
+			},
+		},
+	}
+
+	tests := []struct {
+		name string
+		args []string
+	}{
+		{
+			name: "App help",
+			args: []string{"foo"},
+		},
+		{
+			name: "Command help",
+			args: []string{"foo", "command1"},
+		},
+		{
+			name: "Subcommand help",
+			args: []string{"foo", "command1", "subcommand1"},
+		},
+	}
+
+	for _, tt := range tests {
+		output := &bytes.Buffer{}
+		app.Writer = output
+		if err := app.Run(tt.args); err != nil {
+			t.Error(err)
+		}
+		if !strings.Contains(output.String(), "bar") {
+			t.Errorf("expected output to contain bar; got: %q", output.String())
+		}
+	}
+}
+
 func TestShowSubcommandHelp_CommandAliases(t *testing.T) {
 	app := &App{
 		Commands: []*Command{
