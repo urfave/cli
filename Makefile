@@ -17,22 +17,6 @@ all: generate vet tag-test test check-binary-size tag-check-binary-size gfmrun y
 %:
 	$(GO_RUN_BUILD) $(GFLAGS) $* $(FLAGS)
 
-.PHONY: tag-test
-tag-test:
-	$(GO_RUN_BUILD) -tags urfave_cli_no_docs test
-
-.PHONY: tag-check-binary-size
-tag-check-binary-size:
-	$(GO_RUN_BUILD) -tags urfave_cli_no_docs check-binary-size
-
-.PHONY: gfmrun
-gfmrun:
-	$(GO_RUN_BUILD) gfmrun --walk docs/v2/
-
-.PHONY: ci-ensure-mkdocs
-ci-ensure-mkdocs:
-	$(GO_RUN_BUILD) ensure-mkdocs --upgrade-pip
-
 .PHONY: docs
 docs:
 	mkdocs build
