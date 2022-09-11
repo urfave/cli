@@ -40,7 +40,8 @@ jobs:
       - run: make tag-check-binary-size
       - run: make yamlfmt
       - run: make diffcheck
-      - run: make v2diff
+      - if: matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
+        run: make v2diff
       - if: success() && matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
         uses: codecov/codecov-action@v3
         with:
