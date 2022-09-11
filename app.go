@@ -133,7 +133,6 @@ func compileTime() time.Time {
 func NewApp() *App {
 	return &App{
 		Name:         filepath.Base(os.Args[0]),
-		HelpName:     filepath.Base(os.Args[0]),
 		Usage:        "A new cli application",
 		UsageText:    "",
 		BashComplete: DefaultAppComplete,
