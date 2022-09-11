@@ -107,7 +107,7 @@ following `make` targets may be used if desired:
 
 ```sh
 # install documentation dependencies with `pip`
-make docs-deps
+make ensure-mkdocs
 ```
 
 ```sh
