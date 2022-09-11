@@ -223,10 +223,11 @@ func (gfs *Spec) SortedFlagTypes() []*FlagType {
 }
 
 type FlagTypeConfig struct {
-	SkipInterfaces []string           `yaml:"skip_interfaces"`
-	StructFields   []*FlagStructField `yaml:"struct_fields"`
-	TypeName       string             `yaml:"type_name"`
-	ValuePointer   bool               `yaml:"value_pointer"`
+	SkipInterfaces       []string           `yaml:"skip_interfaces"`
+	StructFields         []*FlagStructField `yaml:"struct_fields"`
+	TypeName             string             `yaml:"type_name"`
+	ValuePointer         bool               `yaml:"value_pointer"`
+	NoDestinationPointer bool               `yaml:"no_destination_pointer"`
 }
 
 type FlagStructField struct {
@@ -254,6 +255,14 @@ func (ft *FlagType) ValuePointer() bool {
 	}
 
 	return ft.Config.ValuePointer
+}
+
+func (ft *FlagType) NoDestinationPointer() bool {
+	if ft.Config == nil {
+		return false
+	}
+
+	return ft.Config.NoDestinationPointer
 }
 
 func (ft *FlagType) TypeName() string {
