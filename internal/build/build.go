@@ -113,7 +113,11 @@ func main() {
 				Name:   "set-mkdocs-remote",
 				Action: SetMkdocsRemoteActionFunc,
 				Flags: []cli.Flag{
-					&cli.StringFlag{Name: "github-token", Required: true},
+					&cli.StringFlag{
+						Name:     "github-token",
+						EnvVars:  []string{"MKDOCS_REMOTE_GITHUB_TOKEN"},
+						Required: true,
+					},
 				},
 			},
 			{
