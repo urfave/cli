@@ -1,4 +1,4 @@
-package cli // import "github.com/urfave/cli/v2"
+package cli // import "github.com/urfave/cli/v3"
 
 Package cli provides a minimal framework for creating and organizing command
 line Go applications. cli is designed to be easy to understand and write,
@@ -1948,7 +1948,7 @@ type VisibleFlagCategory interface {
 }
     VisibleFlagCategory is a category containing flags.
 
-package altsrc // import "github.com/urfave/cli/v2/altsrc"
+package altsrc // import "github.com/urfave/cli/v3/altsrc"
 
 
 FUNCTIONS
