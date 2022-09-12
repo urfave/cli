@@ -33,11 +33,9 @@ func NewYamlSourceFromFile(file string) (InputSourceContext, error) {
 // NewYamlSourceFromFlagFunc creates a new Yaml InputSourceContext from a provided flag name and source context.
 func NewYamlSourceFromFlagFunc(flagFileName string) func(cCtx *cli.Context) (InputSourceContext, error) {
 	return func(cCtx *cli.Context) (InputSourceContext, error) {
-		if cCtx.IsSet(flagFileName) {
-			filePath := cCtx.String(flagFileName)
+		if filePath := cCtx.String(flagFileName); filePath != "" {
 			return NewYamlSourceFromFile(filePath)
 		}
-
 		return defaultInputSource()
 	}
 }
