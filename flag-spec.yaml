@@ -1,14 +1,13 @@
 # NOTE: this file is used by the tool defined in
 # ./cmd/urfave-cli-genflags/main.go which uses the
 # `Spec` type that maps to this file structure.
-
 flag_types:
-  bool: 
+  bool:
     struct_fields:
-      - name: Count 
+      - name: Count
         type: int
         pointer: true
-  float64: 
+  float64:
   Float64Slice:
     value_pointer: true
     skip_interfaces:
@@ -33,7 +32,7 @@ flag_types:
     struct_fields:
       - name: Base
         type: int
-  UintSlice: 
+  UintSlice:
     value_pointer: true
     skip_interfaces:
       - fmt.Stringer
@@ -41,10 +40,10 @@ flag_types:
     struct_fields:
       - name: Base
         type: int
-  Uint64Slice: 
+  Uint64Slice:
     value_pointer: true
     skip_interfaces:
-      - fmt.Stringer        
+      - fmt.Stringer
   string:
     struct_fields:
       - name: TakesFile
@@ -56,12 +55,12 @@ flag_types:
     struct_fields:
       - name: TakesFile
         type: bool
-  time.Duration:      
+  time.Duration:
   Timestamp:
     value_pointer: true
     struct_fields:
-      - name: Layout 
-        type: string 
+      - name: Layout
+        type: string
       - name: Timezone
         type: "*time.Location"
   Generic:
