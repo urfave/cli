@@ -110,6 +110,9 @@ func (f *StringSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSour
 			}
 			underlyingFlag.Value = &sliceValue
 		}
+		if f.Destination != nil {
+			f.Destination.Set(sliceValue.Serialize())
+		}
 	}
 	return nil
 }
@@ -137,6 +140,9 @@ func (f *IntSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceC
 				continue
 			}
 			underlyingFlag.Value = &sliceValue
+		}
+		if f.Destination != nil {
+			f.Destination.Set(sliceValue.Serialize())
 		}
 	}
 	return nil

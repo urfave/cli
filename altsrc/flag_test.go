@@ -100,39 +100,61 @@ func TestGenericApplyInputSourceMethodEnvVarSet(t *testing.T) {
 }
 
 func TestStringSliceApplyInputSourceValue_Alias(t *testing.T) {
+	dest := cli.NewStringSlice()
 	tis := testApplyInputSource{
-		Flag:     NewStringSliceFlag(&cli.StringSliceFlag{Name: "test", Aliases: []string{"test_alias"}}),
+		Flag:     NewStringSliceFlag(&cli.StringSliceFlag{Name: "test", Aliases: []string{"test_alias"}, Destination: dest}),
 		FlagName: "test_alias",
 		MapValue: []interface{}{"hello", "world"},
 	}
 	c := runTest(t, tis)
 	expect(t, c.StringSlice("test_alias"), []string{"hello", "world"})
+	expect(t, dest.Value(), []string{"hello", "world"})
 
+	// reset dest
+	dest = cli.NewStringSlice()
+	tis = testApplyInputSource{
+		Flag:     NewStringSliceFlag(&cli.StringSliceFlag{Name: "test", Aliases: []string{"test_alias"}, Destination: dest}),
+		FlagName: "test_alias",
+		MapValue: []interface{}{"hello", "world"},
+	}
 	c = runRacyTest(t, tis)
 	refute(t, c.StringSlice("test_alias"), []string{"hello", "world"})
+	refute(t, dest.Value(), []string{"hello", "world"})
 }
 
 func TestStringSliceApplyInputSourceValue(t *testing.T) {
+	dest := cli.NewStringSlice()
 	tis := testApplyInputSource{
-		Flag:     NewStringSliceFlag(&cli.StringSliceFlag{Name: "test"}),
+		Flag:     NewStringSliceFlag(&cli.StringSliceFlag{Name: "test", Destination: dest}),
 		FlagName: "test",
 		MapValue: []interface{}{"hello", "world"},
 	}
 	c := runTest(t, tis)
 	expect(t, c.StringSlice("test"), []string{"hello", "world"})
+	expect(t, dest.Value(), []string{"hello", "world"})
 
+	// reset dest
+	dest = cli.NewStringSlice()
+	tis = testApplyInputSource{
+		Flag:     NewStringSliceFlag(&cli.StringSliceFlag{Name: "test", Destination: dest}),
+		FlagName: "test",
+		MapValue: []interface{}{"hello", "world"},
+	}
 	c = runRacyTest(t, tis)
 	refute(t, c.StringSlice("test"), []string{"hello", "world"})
+	refute(t, dest.Value(), []string{"hello", "world"})
 }
 
 func TestStringSliceApplyInputSourceMethodContextSet(t *testing.T) {
+	dest := cli.NewStringSlice()
 	c := runTest(t, testApplyInputSource{
-		Flag:               NewStringSliceFlag(&cli.StringSliceFlag{Name: "test"}),
+		Flag:               NewStringSliceFlag(&cli.StringSliceFlag{Name: "test", Destination: dest}),
 		FlagName:           "test",
 		MapValue:           []interface{}{"hello", "world"},
 		ContextValueString: "ohno",
 	})
 	expect(t, c.StringSlice("test"), []string{"ohno"})
+	expect(t, dest.Value(), []string{"ohno"})
 }
 
 func TestStringSliceApplyInputSourceMethodEnvVarSet(t *testing.T) {
@@ -151,43 +173,73 @@ func TestStringSliceApplyInputSourceMethodEnvVarSet(t *testing.T) {
 }
 
 func TestIntSliceApplyInputSourceValue_Alias(t *testing.T) {
+	dest := cli.NewIntSlice()
 	tis := testApplyInputSource{
-		Flag:     NewIntSliceFlag(&cli.IntSliceFlag{Name: "test", Aliases: []string{"test_alias"}}),
+		Flag:     NewIntSliceFlag(&cli.IntSliceFlag{Name: "test", Aliases: []string{"test_alias"}, Destination: dest}),
 		FlagName: "test_alias",
 		MapValue: []interface{}{1, 2},
 	}
 	c := runTest(t, tis)
 	expect(t, c.IntSlice("test_alias"), []int{1, 2})
+	expect(t, dest.Value(), []int{1, 2})
 
+	dest = cli.NewIntSlice()
+	tis = testApplyInputSource{
+		Flag:     NewIntSliceFlag(&cli.IntSliceFlag{Name: "test", Aliases: []string{"test_alias"}, Destination: dest}),
+		FlagName: "test_alias",
+		MapValue: []interface{}{1, 2},
+	}
 	c = runRacyTest(t, tis)
 	refute(t, c.IntSlice("test_alias"), []int{1, 2})
+	refute(t, dest.Value(), []int{1, 2})
 }
 
 func TestIntSliceApplyInputSourceValue(t *testing.T) {
+	dest := cli.NewIntSlice()
 	tis := testApplyInputSource{
-		Flag:     NewIntSliceFlag(&cli.IntSliceFlag{Name: "test"}),
+		Flag:     NewIntSliceFlag(&cli.IntSliceFlag{Name: "test", Destination: dest}),
 		FlagName: "test",
 		MapValue: []interface{}{1, 2},
 	}
 	c := runTest(t, tis)
 	expect(t, c.IntSlice("test"), []int{1, 2})
+	expect(t, dest.Value(), []int{1, 2})
 
+	// reset dest
+	dest = cli.NewIntSlice()
+	tis = testApplyInputSource{
+		Flag:     NewIntSliceFlag(&cli.IntSliceFlag{Name: "test", Destination: dest}),
+		FlagName: "test",
+		MapValue: []interface{}{1, 2},
+	}
 	c = runRacyTest(t, tis)
 	refute(t, c.IntSlice("test"), []int{1, 2})
+	refute(t, dest.Value(), []int{1, 2})
 }
 
 func TestIntSliceApplyInputSourceMethodContextSet(t *testing.T) {
+	dest := cli.NewIntSlice()
 	tis := testApplyInputSource{
-		Flag:               NewIntSliceFlag(&cli.IntSliceFlag{Name: "test"}),
+		Flag:               NewIntSliceFlag(&cli.IntSliceFlag{Name: "test", Destination: dest}),
 		FlagName:           "test",
 		MapValue:           []interface{}{1, 2},
 		ContextValueString: "3",
 	}
 	c := runTest(t, tis)
 	expect(t, c.IntSlice("test"), []int{3})
+	expect(t, dest.Value(), []int{3})
 
+	// reset dest
+	dest = cli.NewIntSlice()
+	tis = testApplyInputSource{
+		Flag:               NewIntSliceFlag(&cli.IntSliceFlag{Name: "test", Destination: dest}),
+		FlagName:           "test",
+		MapValue:           []interface{}{1, 2},
+		ContextValueString: "3",
+	}
 	c = runRacyTest(t, tis)
 	refute(t, c.IntSlice("test"), []int{3})
+	refute(t, dest.Value(), []int{3})
 }
 
 func TestIntSliceApplyInputSourceMethodEnvVarSet(t *testing.T) {
