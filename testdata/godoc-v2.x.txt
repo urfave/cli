@@ -250,6 +250,13 @@ TYPES
 type ActionFunc func(*Context) error
     ActionFunc is the action to execute when no subcommands are specified
 
+type ActionableFlag interface {
+	Flag
+	RunAction(*Context) error
+}
+    ActionableFlag is an interface that wraps Flag interface and RunAction
+    operation.
+
 type AfterFunc func(*Context) error
     AfterFunc is an action to execute after any subcommands are run, but after
     the subcommand has finished it is run even if Action() panics
@@ -490,6 +497,9 @@ func (f *BoolFlag) IsVisible() bool
 
 func (f *BoolFlag) Names() []string
     Names returns the names of the flag
+
+func (f *BoolFlag) RunAction(c *Context) error
+    RunAction executes flag action if set
 
 func (f *BoolFlag) String() string
     String returns a readable representation of this value (for usage defaults)
@@ -798,6 +808,9 @@ func (f *DurationFlag) IsVisible() bool
 func (f *DurationFlag) Names() []string
     Names returns the names of the flag
 
+func (f *DurationFlag) RunAction(c *Context) error
+    RunAction executes flag action if set
+
 func (f *DurationFlag) String() string
     String returns a readable representation of this value (for usage defaults)
 
@@ -971,6 +984,9 @@ func (f *Float64Flag) IsVisible() bool
 func (f *Float64Flag) Names() []string
     Names returns the names of the flag
 
+func (f *Float64Flag) RunAction(c *Context) error
+    RunAction executes flag action if set
+
 func (f *Float64Flag) String() string
     String returns a readable representation of this value (for usage defaults)
 
@@ -1056,6 +1072,9 @@ func (f *Float64SliceFlag) IsVisible() bool
 func (f *Float64SliceFlag) Names() []string
     Names returns the names of the flag
 
+func (f *Float64SliceFlag) RunAction(c *Context) error
+    RunAction executes flag action if set
+
 func (f *Float64SliceFlag) SetDestination(slice []float64)
 
 func (f *Float64SliceFlag) SetValue(slice []float64)
@@ -1129,6 +1148,9 @@ func (f *GenericFlag) IsVisible() bool
 func (f *GenericFlag) Names() []string
     Names returns the names of the flag
 
+func (f *GenericFlag) RunAction(c *Context) error
+    RunAction executes flag action if set
+
 func (f *GenericFlag) String() string
     String returns a readable representation of this value (for usage defaults)
 
@@ -1190,6 +1212,9 @@ func (f *Int64Flag) IsVisible() bool
 
 func (f *Int64Flag) Names() []string
     Names returns the names of the flag
+
+func (f *Int64Flag) RunAction(c *Context) error
+    RunAction executes flag action if set
 
 func (f *Int64Flag) String() string
     String returns a readable representation of this value (for usage defaults)
@@ -1276,6 +1301,9 @@ func (f *Int64SliceFlag) IsVisible() bool
 func (f *Int64SliceFlag) Names() []string
     Names returns the names of the flag
 
+func (f *Int64SliceFlag) RunAction(c *Context) error
+    RunAction executes flag action if set
+
 func (f *Int64SliceFlag) SetDestination(slice []int64)
 
 func (f *Int64SliceFlag) SetValue(slice []int64)
@@ -1341,6 +1369,9 @@ func (f *IntFlag) IsVisible() bool
 
 func (f *IntFlag) Names() []string
     Names returns the names of the flag
+
+func (f *IntFlag) RunAction(c *Context) error
+    RunAction executes flag action if set
 
 func (f *IntFlag) String() string
     String returns a readable representation of this value (for usage defaults)
@@ -1430,6 +1461,9 @@ func (f *IntSliceFlag) IsVisible() bool
 
 func (f *IntSliceFlag) Names() []string
     Names returns the names of the flag
+
+func (f *IntSliceFlag) RunAction(c *Context) error
+    RunAction executes flag action if set
 
 func (f *IntSliceFlag) SetDestination(slice []int)
 
@@ -1530,6 +1564,9 @@ func (f *PathFlag) IsVisible() bool
 
 func (f *PathFlag) Names() []string
     Names returns the names of the flag
+
+func (f *PathFlag) RunAction(c *Context) error
+    RunAction executes flag action if set
 
 func (f *PathFlag) String() string
     String returns a readable representation of this value (for usage defaults)
@@ -1668,6 +1705,9 @@ func (f *StringFlag) IsVisible() bool
 func (f *StringFlag) Names() []string
     Names returns the names of the flag
 
+func (f *StringFlag) RunAction(c *Context) error
+    RunAction executes flag action if set
+
 func (f *StringFlag) String() string
     String returns a readable representation of this value (for usage defaults)
 
@@ -1754,6 +1794,9 @@ func (f *StringSliceFlag) IsVisible() bool
 
 func (f *StringSliceFlag) Names() []string
     Names returns the names of the flag
+
+func (f *StringSliceFlag) RunAction(c *Context) error
+    RunAction executes flag action if set
 
 func (f *StringSliceFlag) SetDestination(slice []string)
 
@@ -1856,6 +1899,9 @@ func (f *TimestampFlag) IsVisible() bool
 func (f *TimestampFlag) Names() []string
     Names returns the names of the flag
 
+func (f *TimestampFlag) RunAction(c *Context) error
+    RunAction executes flag action if set
+
 func (f *TimestampFlag) String() string
     String returns a readable representation of this value (for usage defaults)
 
@@ -1917,6 +1963,9 @@ func (f *Uint64Flag) IsVisible() bool
 
 func (f *Uint64Flag) Names() []string
     Names returns the names of the flag
+
+func (f *Uint64Flag) RunAction(c *Context) error
+    RunAction executes flag action if set
 
 func (f *Uint64Flag) String() string
     String returns a readable representation of this value (for usage defaults)
@@ -2062,6 +2111,9 @@ func (f *UintFlag) IsVisible() bool
 
 func (f *UintFlag) Names() []string
     Names returns the names of the flag
+
+func (f *UintFlag) RunAction(c *Context) error
+    RunAction executes flag action if set
 
 func (f *UintFlag) String() string
     String returns a readable representation of this value (for usage defaults)
