@@ -2600,6 +2600,9 @@ func TestFlagAction(t *testing.T) {
 	stringFlag := &StringFlag{
 		Name: "f_string",
 		Action: func(c *Context, v string) error {
+			if v == "" {
+				return fmt.Errorf("empty string")
+			}
 			c.App.Writer.Write([]byte(v + " "))
 			return nil
 		},
@@ -2622,9 +2625,15 @@ func TestFlagAction(t *testing.T) {
 		},
 		Flags: []Flag{
 			stringFlag,
+			&StringFlag{
+				Name: "f_no_action",
+			},
 			&StringSliceFlag{
 				Name: "f_string_slice",
 				Action: func(c *Context, v []string) error {
+					if v[0] == "err" {
+						return fmt.Errorf("error string slice")
+					}
 					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 					return nil
 				},
@@ -2632,6 +2641,9 @@ func TestFlagAction(t *testing.T) {
 			&BoolFlag{
 				Name: "f_bool",
 				Action: func(c *Context, v bool) error {
+					if !v {
+						return fmt.Errorf("value is false")
+					}
 					c.App.Writer.Write([]byte(fmt.Sprintf("%t ", v)))
 					return nil
 				},
@@ -2639,6 +2651,9 @@ func TestFlagAction(t *testing.T) {
 			&DurationFlag{
 				Name: "f_duration",
 				Action: func(c *Context, v time.Duration) error {
+					if v == 0 {
+						return fmt.Errorf("empty duration")
+					}
 					c.App.Writer.Write([]byte(v.String() + " "))
 					return nil
 				},
@@ -2646,6 +2661,9 @@ func TestFlagAction(t *testing.T) {
 			&Float64Flag{
 				Name: "f_float64",
 				Action: func(c *Context, v float64) error {
+					if v < 0 {
+						return fmt.Errorf("negative float64")
+					}
 					c.App.Writer.Write([]byte(strconv.FormatFloat(v, 'f', -1, 64) + " "))
 					return nil
 				},
@@ -2653,6 +2671,9 @@ func TestFlagAction(t *testing.T) {
 			&Float64SliceFlag{
 				Name: "f_float64_slice",
 				Action: func(c *Context, v []float64) error {
+					if len(v) > 0 && v[0] < 0 {
+						return fmt.Errorf("invalid float64 slice")
+					}
 					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 					return nil
 				},
@@ -2661,6 +2682,14 @@ func TestFlagAction(t *testing.T) {
 				Name:  "f_generic",
 				Value: new(stringGeneric),
 				Action: func(c *Context, v interface{}) error {
+					fmt.Printf("%T %v\n", v, v)
+					switch vv := v.(type) {
+					case *stringGeneric:
+						if vv.value == "" {
+							return fmt.Errorf("generic value not set")
+						}
+					}
+
 					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 					return nil
 				},
@@ -2668,6 +2697,9 @@ func TestFlagAction(t *testing.T) {
 			&IntFlag{
 				Name: "f_int",
 				Action: func(c *Context, v int) error {
+					if v < 0 {
+						return fmt.Errorf("negative int")
+					}
 					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 					return nil
 				},
@@ -2675,6 +2707,9 @@ func TestFlagAction(t *testing.T) {
 			&IntSliceFlag{
 				Name: "f_int_slice",
 				Action: func(c *Context, v []int) error {
+					if len(v) > 0 && v[0] < 0 {
+						return fmt.Errorf("invalid int slice")
+					}
 					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 					return nil
 				},
@@ -2682,6 +2717,9 @@ func TestFlagAction(t *testing.T) {
 			&Int64Flag{
 				Name: "f_int64",
 				Action: func(c *Context, v int64) error {
+					if v < 0 {
+						return fmt.Errorf("negative int64")
+					}
 					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 					return nil
 				},
@@ -2689,6 +2727,9 @@ func TestFlagAction(t *testing.T) {
 			&Int64SliceFlag{
 				Name: "f_int64_slice",
 				Action: func(c *Context, v []int64) error {
+					if len(v) > 0 && v[0] < 0 {
+						return fmt.Errorf("invalid int64 slice")
+					}
 					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 					return nil
 				},
@@ -2696,6 +2737,9 @@ func TestFlagAction(t *testing.T) {
 			&PathFlag{
 				Name: "f_path",
 				Action: func(c *Context, v string) error {
+					if v == "" {
+						return fmt.Errorf("empty path")
+					}
 					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 					return nil
 				},
@@ -2704,6 +2748,9 @@ func TestFlagAction(t *testing.T) {
 				Name:   "f_timestamp",
 				Layout: "2006-01-02 15:04:05",
 				Action: func(c *Context, v *time.Time) error {
+					if v.IsZero() {
+						return fmt.Errorf("zero timestamp")
+					}
 					c.App.Writer.Write([]byte(v.Format(time.RFC3339) + " "))
 					return nil
 				},
@@ -2711,6 +2758,9 @@ func TestFlagAction(t *testing.T) {
 			&UintFlag{
 				Name: "f_uint",
 				Action: func(c *Context, v uint) error {
+					if v == 0 {
+						return fmt.Errorf("zero uint")
+					}
 					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 					return nil
 				},
@@ -2718,6 +2768,9 @@ func TestFlagAction(t *testing.T) {
 			&Uint64Flag{
 				Name: "f_uint64",
 				Action: func(c *Context, v uint64) error {
+					if v == 0 {
+						return fmt.Errorf("zero uint64")
+					}
 					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 					return nil
 				},
@@ -2729,17 +2782,18 @@ func TestFlagAction(t *testing.T) {
 	tests := []struct {
 		name string
 		args []string
+		err  error
 		exp  string
 	}{
-		{
-			name: "flag_empty",
-			args: []string{"app"},
-			exp:  "",
-		},
 		{
 			name: "flag_string",
 			args: []string{"app", "--f_string=string"},
 			exp:  "string ",
+		},
+		{
+			name: "flag_string_error",
+			args: []string{"app", "--f_string="},
+			err:  fmt.Errorf("empty string"),
 		},
 		{
 			name: "flag_string_slice",
@@ -2747,9 +2801,19 @@ func TestFlagAction(t *testing.T) {
 			exp:  "[s1 s2 s3] ",
 		},
 		{
+			name: "flag_string_slice_error",
+			args: []string{"app", "--f_string_slice=err"},
+			err:  fmt.Errorf("error string slice"),
+		},
+		{
 			name: "flag_bool",
 			args: []string{"app", "--f_bool"},
 			exp:  "true ",
+		},
+		{
+			name: "flag_bool_error",
+			args: []string{"app", "--f_bool=false"},
+			err:  fmt.Errorf("value is false"),
 		},
 		{
 			name: "flag_duration",
@@ -2757,9 +2821,19 @@ func TestFlagAction(t *testing.T) {
 			exp:  "1h30m20s ",
 		},
 		{
+			name: "flag_duration_error",
+			args: []string{"app", "--f_duration=0"},
+			err:  fmt.Errorf("empty duration"),
+		},
+		{
 			name: "flag_float64",
 			args: []string{"app", "--f_float64=3.14159"},
 			exp:  "3.14159 ",
+		},
+		{
+			name: "flag_float64_error",
+			args: []string{"app", "--f_float64=-1"},
+			err:  fmt.Errorf("negative float64"),
 		},
 		{
 			name: "flag_float64_slice",
@@ -2767,9 +2841,19 @@ func TestFlagAction(t *testing.T) {
 			exp:  "[1.1 2.2 3.3] ",
 		},
 		{
+			name: "flag_float64_slice_error",
+			args: []string{"app", "--f_float64_slice=-1"},
+			err:  fmt.Errorf("invalid float64 slice"),
+		},
+		{
 			name: "flag_generic",
 			args: []string{"app", "--f_generic=1"},
 			exp:  "1 ",
+		},
+		{
+			name: "flag_generic_error",
+			args: []string{"app", "--f_generic="},
+			err:  fmt.Errorf("generic value not set"),
 		},
 		{
 			name: "flag_int",
@@ -2777,9 +2861,19 @@ func TestFlagAction(t *testing.T) {
 			exp:  "1 ",
 		},
 		{
+			name: "flag_int_error",
+			args: []string{"app", "--f_int=-1"},
+			err:  fmt.Errorf("negative int"),
+		},
+		{
 			name: "flag_int_slice",
 			args: []string{"app", "--f_int_slice=1,2,3"},
 			exp:  "[1 2 3] ",
+		},
+		{
+			name: "flag_int_slice_error",
+			args: []string{"app", "--f_int_slice=-1"},
+			err:  fmt.Errorf("invalid int slice"),
 		},
 		{
 			name: "flag_int64",
@@ -2787,9 +2881,19 @@ func TestFlagAction(t *testing.T) {
 			exp:  "1 ",
 		},
 		{
+			name: "flag_int64_error",
+			args: []string{"app", "--f_int64=-1"},
+			err:  fmt.Errorf("negative int64"),
+		},
+		{
 			name: "flag_int64_slice",
 			args: []string{"app", "--f_int64_slice=1,2,3"},
 			exp:  "[1 2 3] ",
+		},
+		{
+			name: "flag_int64_slice",
+			args: []string{"app", "--f_int64_slice=-1"},
+			err:  fmt.Errorf("invalid int64 slice"),
 		},
 		{
 			name: "flag_path",
@@ -2797,9 +2901,19 @@ func TestFlagAction(t *testing.T) {
 			exp:  "/root ",
 		},
 		{
+			name: "flag_path_error",
+			args: []string{"app", "--f_path="},
+			err:  fmt.Errorf("empty path"),
+		},
+		{
 			name: "flag_timestamp",
 			args: []string{"app", "--f_timestamp", "2022-05-01 02:26:20"},
 			exp:  "2022-05-01T02:26:20Z ",
+		},
+		{
+			name: "flag_timestamp_error",
+			args: []string{"app", "--f_timestamp", "0001-01-01 00:00:00"},
+			err:  fmt.Errorf("zero timestamp"),
 		},
 		{
 			name: "flag_uint",
@@ -2807,9 +2921,24 @@ func TestFlagAction(t *testing.T) {
 			exp:  "1 ",
 		},
 		{
+			name: "flag_uint_error",
+			args: []string{"app", "--f_uint=0"},
+			err:  fmt.Errorf("zero uint"),
+		},
+		{
 			name: "flag_uint64",
 			args: []string{"app", "--f_uint64=1"},
 			exp:  "1 ",
+		},
+		{
+			name: "flag_uint64_error",
+			args: []string{"app", "--f_uint64=0"},
+			err:  fmt.Errorf("zero uint64"),
+		},
+		{
+			name: "flag_no_action",
+			args: []string{"app", "--f_no_action="},
+			exp:  "",
 		},
 		{
 			name: "command_flag",
@@ -2833,8 +2962,12 @@ func TestFlagAction(t *testing.T) {
 			buf := new(bytes.Buffer)
 			app.Writer = buf
 			err := app.Run(test.args)
-			expect(t, err, nil)
-			expect(t, buf.String(), test.exp)
+			if test.err != nil {
+				expect(t, err, test.err)
+			} else {
+				expect(t, err, nil)
+				expect(t, buf.String(), test.exp)
+			}
 		})
 	}
 }
