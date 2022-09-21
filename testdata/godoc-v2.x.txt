@@ -82,12 +82,10 @@ DESCRIPTION:
 
 OPTIONS:{{range .VisibleFlagCategories}}
    {{if .Name}}{{.Name}}
-   {{end}}{{range .Flags}}{{.}}
-   {{end}}{{end}}{{else}}{{if .VisibleFlags}}
+   {{end}}{{range .Flags}}{{.}}{{end}}{{end}}{{else}}{{if .VisibleFlags}}
 
 OPTIONS:
-   {{range .VisibleFlags}}{{.}}
-   {{end}}{{end}}{{end}}
+   {{range .VisibleFlags}}{{.}}{{end}}{{end}}{{end}}
 `
     CommandHelpTemplate is the text template for the command help topic. cli.go
     uses text/template to render templates. You can render custom help text by
@@ -161,8 +159,7 @@ COMMANDS:{{range .VisibleCategories}}{{if .Name}}
      {{$s := join .Names ", "}}{{$s}}{{ $sp := subtract $cv (offset $s 3) }}{{ indent $sp ""}}{{wrap .Usage $cv}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
 
 OPTIONS:
-   {{range .VisibleFlags}}{{.}}
-   {{end}}{{end}}
+   {{range .VisibleFlags}}{{.}}{{end}}{{end}}
 `
     SubcommandHelpTemplate is the text template for the subcommand help topic.
     cli.go uses text/template to render templates. You can render custom help
@@ -558,6 +555,7 @@ type Command struct {
 	// cli.go uses text/template to render templates. You can
 	// render custom help text by setting this variable.
 	CustomHelpTemplate string
+
 	// Has unexported fields.
 }
     Command is a subcommand for a cli.App.
@@ -575,6 +573,13 @@ func (c *Command) Names() []string
 func (c *Command) Run(ctx *Context) (err error)
     Run invokes the command given the context, parses ctx.Args() to generate
     command-specific flags
+
+func (c *Command) VisibleCategories() []CommandCategory
+    VisibleCategories returns a slice of categories and commands that are
+    Hidden=false
+
+func (c *Command) VisibleCommands() []*Command
+    VisibleCommands returns a slice of the Commands with Hidden=false
 
 func (c *Command) VisibleFlagCategories() []VisibleFlagCategory
     VisibleFlagCategories returns a slice containing all the visible flag
