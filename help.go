@@ -15,6 +15,15 @@ const (
 	helpAlias = "h"
 )
 
+// this instance is to avoid recursion in the ShowCommandHelp which can
+// add a help command again
+var helpCommandDontUse = &Command{
+	Name:      helpName,
+	Aliases:   []string{helpAlias},
+	Usage:     "Shows a list of commands or help for one command",
+	ArgsUsage: "[command]",
+}
+
 var helpCommand = &Command{
 	Name:      helpName,
 	Aliases:   []string{helpAlias},
@@ -22,26 +31,43 @@ var helpCommand = &Command{
 	ArgsUsage: "[command]",
 	Action: func(cCtx *Context) error {
 		args := cCtx.Args()
-		if args.Present() {
-			return ShowCommandHelp(cCtx, args.First())
+		argsPresent := args.First() != ""
+		firstArg := args.First()
+
+		// This action can be triggered by a "default" action of a command
+		// or via cmd.Run when cmd == helpCmd. So we have following possibilities
+		//
+		// 1 $ app
+		// 2 $ app help
+		// 3 $ app foo
+		// 4 $ app help foo
+		// 5 $ app foo help
+
+		// Case 4. when executing a help command set the context to parent
+		// to allow resolution of subsequent args. This will transform
+		// $ app help foo
+		//     to
+		// $ app foo
+		// which will then be handled as case 3
+		if cCtx.Command.Name == helpName || cCtx.Command.Name == helpAlias {
+			cCtx = cCtx.parentContext
 		}
 
-		_ = ShowAppHelp(cCtx)
-		return nil
-	},
-}
-
-var helpSubcommand = &Command{
-	Name:      helpName,
-	Aliases:   []string{helpAlias},
-	Usage:     "Shows a list of commands or help for one command",
-	ArgsUsage: "[command]",
-	Action: func(cCtx *Context) error {
-		args := cCtx.Args()
-		if args.Present() {
-			return ShowCommandHelp(cCtx, args.First())
+		// Case 4. $ app hello foo
+		// foo is the command for which help needs to be shown
+		if argsPresent {
+			return ShowCommandHelp(cCtx, firstArg)
 		}
 
+		// Case 1 & 2
+		// Special case when running help on main app itself as opposed to indivdual
+		// commands/subcommands
+		if cCtx.parentContext.App == nil {
+			_ = ShowAppHelp(cCtx)
+			return nil
+		}
+
+		// Case 3, 5
 		return ShowSubcommandHelp(cCtx)
 	},
 }
@@ -212,9 +238,19 @@ func ShowCommandHelp(ctx *Context, command string) error {
 
 	for _, c := range ctx.App.Commands {
 		if c.HasName(command) {
+			if !ctx.App.HideHelpCommand && !c.HasName(helpName) && len(c.Subcommands) != 0 {
+				c.Subcommands = append(c.Subcommands, helpCommandDontUse)
+			}
+			if !ctx.App.HideHelp && HelpFlag != nil {
+				c.appendFlag(HelpFlag)
+			}
 			templ := c.CustomHelpTemplate
 			if templ == "" {
-				templ = CommandHelpTemplate
+				if len(c.Subcommands) == 0 {
+					templ = CommandHelpTemplate
+				} else {
+					templ = SubcommandHelpTemplate
+				}
 			}
 
 			HelpPrinter(ctx.App.Writer, templ, c)

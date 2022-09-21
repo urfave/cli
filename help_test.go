@@ -186,7 +186,7 @@ func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 
 	c := NewContext(app, set, nil)
 
-	err := helpSubcommand.Action(c)
+	err := helpCommand.Action(c)
 
 	if err == nil {
 		t.Fatalf("expected error from helpCommand.Action(), but got nil")
@@ -248,7 +248,7 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 				fmt.Fprint(w, "yo")
 			},
 			command:      "",
-			wantTemplate: SubcommandHelpTemplate,
+			wantTemplate: AppHelpTemplate,
 			wantOutput:   "yo",
 		},
 		{
@@ -333,7 +333,7 @@ func TestShowCommandHelp_HelpPrinterCustom(t *testing.T) {
 				fmt.Fprint(w, "yo")
 			},
 			command:      "",
-			wantTemplate: SubcommandHelpTemplate,
+			wantTemplate: AppHelpTemplate,
 			wantOutput:   "yo",
 		},
 		{
@@ -1357,10 +1357,13 @@ DESCRIPTION:
    and a description long
    enough to wrap in this test
    case
+
+OPTIONS:
+   --help, -h  show help (default: false)
 `
 
 	if output.String() != expected {
-		t.Errorf("Unexpected wrapping, got:\n%s\nexpected: %s",
+		t.Errorf("Unexpected wrapping, got:\n%s\nexpected:\n%s",
 			output.String(), expected)
 	}
 }
@@ -1426,7 +1429,6 @@ USAGE:
 
 OPTIONS:
    --help, -h  show help (default: false)
-   
 `
 
 	if output.String() != expected {
