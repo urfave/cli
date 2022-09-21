@@ -62,6 +62,9 @@ type Command struct {
 	// cli.go uses text/template to render templates. You can
 	// render custom help text by setting this variable.
 	CustomHelpTemplate string
+
+	// categories contains the categorized commands and is populated on app startup
+	categories CommandCategories
 }
 
 type Commands []*Command
@@ -170,7 +173,7 @@ func (c *Command) Run(ctx *Context) (err error) {
 	}
 
 	if c.Action == nil {
-		c.Action = helpSubcommand.Action
+		c.Action = helpCommand.Action
 	}
 
 	cCtx.Command = c
@@ -284,7 +287,7 @@ func (c *Command) startApp(ctx *Context) error {
 	if c.Action != nil {
 		app.Action = c.Action
 	} else {
-		app.Action = helpSubcommand.Action
+		app.Action = helpCommand.Action
 	}
 	app.OnUsageError = c.OnUsageError
 
@@ -298,7 +301,12 @@ func (c *Command) startApp(ctx *Context) error {
 // VisibleFlagCategories returns a slice containing all the visible flag categories with the flags they contain
 func (c *Command) VisibleFlagCategories() []VisibleFlagCategory {
 	if c.flagCategories == nil {
-		return []VisibleFlagCategory{}
+		c.flagCategories = newFlagCategories()
+		for _, fl := range c.Flags {
+			if cf, ok := fl.(CategorizableFlag); ok {
+				c.flagCategories.AddFlag(cf.GetCategory(), cf)
+			}
+		}
 	}
 	return c.flagCategories.VisibleCategories()
 }
@@ -306,6 +314,42 @@ func (c *Command) VisibleFlagCategories() []VisibleFlagCategory {
 // VisibleFlags returns a slice of the Flags with Hidden=false
 func (c *Command) VisibleFlags() []Flag {
 	return visibleFlags(c.Flags)
+}
+
+// VisibleCategories returns a slice of categories and commands that are
+// Hidden=false
+func (c *Command) VisibleCategories() []CommandCategory {
+	ret := []CommandCategory{}
+	if c.categories == nil {
+		c.categories = newCommandCategories()
+		for _, command := range c.Subcommands {
+			c.categories.AddCommand(command.Category, command)
+		}
+		sort.Sort(c.categories.(*commandCategories))
+	}
+	for _, category := range c.categories.Categories() {
+		if visible := func() CommandCategory {
+			if len(category.VisibleCommands()) > 0 {
+				return category
+			}
+			return nil
+		}(); visible != nil {
+			ret = append(ret, visible)
+		}
+	}
+
+	return ret
+}
+
+// VisibleCommands returns a slice of the Commands with Hidden=false
+func (c *Command) VisibleCommands() []*Command {
+	var ret []*Command
+	for _, command := range c.Subcommands {
+		if !command.Hidden {
+			ret = append(ret, command)
+		}
+	}
+	return ret
 }
 
 func (c *Command) appendFlag(fl Flag) {
