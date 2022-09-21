@@ -643,3 +643,19 @@ func TestCheckRequiredFlags(t *testing.T) {
 		})
 	}
 }
+
+func TestContext_ParentContext_Set(t *testing.T) {
+	parentSet := flag.NewFlagSet("parent", flag.ContinueOnError)
+	parentSet.String("Name", "", "")
+
+	context := NewContext(
+		nil,
+		flag.NewFlagSet("child", flag.ContinueOnError),
+		NewContext(nil, parentSet, nil),
+	)
+
+	err := context.Set("Name", "aaa")
+	if err != nil {
+		t.Errorf("expect nil. set parent context flag return err: %s", err)
+	}
+}
