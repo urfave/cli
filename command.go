@@ -316,31 +316,6 @@ func (c *Command) VisibleFlags() []Flag {
 	return visibleFlags(c.Flags)
 }
 
-// VisibleCategories returns a slice of categories and commands that are
-// Hidden=false
-func (c *Command) VisibleCategories() []CommandCategory {
-	ret := []CommandCategory{}
-	if c.categories == nil {
-		c.categories = newCommandCategories()
-		for _, command := range c.Subcommands {
-			c.categories.AddCommand(command.Category, command)
-		}
-		sort.Sort(c.categories.(*commandCategories))
-	}
-	for _, category := range c.categories.Categories() {
-		if visible := func() CommandCategory {
-			if len(category.VisibleCommands()) > 0 {
-				return category
-			}
-			return nil
-		}(); visible != nil {
-			ret = append(ret, visible)
-		}
-	}
-
-	return ret
-}
-
 // VisibleCommands returns a slice of the Commands with Hidden=false
 func (c *Command) VisibleCommands() []*Command {
 	var ret []*Command
