@@ -62,9 +62,6 @@ type Command struct {
 	// cli.go uses text/template to render templates. You can
 	// render custom help text by setting this variable.
 	CustomHelpTemplate string
-
-	// categories contains the categorized commands and is populated on app startup
-	categories CommandCategories
 }
 
 type Commands []*Command
@@ -314,17 +311,6 @@ func (c *Command) VisibleFlagCategories() []VisibleFlagCategory {
 // VisibleFlags returns a slice of the Flags with Hidden=false
 func (c *Command) VisibleFlags() []Flag {
 	return visibleFlags(c.Flags)
-}
-
-// VisibleCommands returns a slice of the Commands with Hidden=false
-func (c *Command) VisibleCommands() []*Command {
-	var ret []*Command
-	for _, command := range c.Subcommands {
-		if !command.Hidden {
-			ret = append(ret, command)
-		}
-	}
-	return ret
 }
 
 func (c *Command) appendFlag(fl Flag) {
