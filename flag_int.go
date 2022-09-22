@@ -71,6 +71,15 @@ func (f *IntFlag) Get(ctx *Context) int {
 	return ctx.Int(f.Name)
 }
 
+// RunAction executes flag action if set
+func (f *IntFlag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.Int(f.Name))
+	}
+
+	return nil
+}
+
 // Int looks up the value of a local IntFlag, returns
 // 0 if not found
 func (cCtx *Context) Int(name string) int {

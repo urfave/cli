@@ -46,6 +46,15 @@ func (f *UintFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
+// RunAction executes flag action if set
+func (f *UintFlag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.Uint(f.Name))
+	}
+
+	return nil
+}
+
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *UintFlag) GetValue() string {

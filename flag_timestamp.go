@@ -148,6 +148,15 @@ func (f *TimestampFlag) Get(ctx *Context) *time.Time {
 	return ctx.Timestamp(f.Name)
 }
 
+// RunAction executes flag action if set
+func (f *TimestampFlag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.Timestamp(f.Name))
+	}
+
+	return nil
+}
+
 // Timestamp gets the timestamp from a flag name
 func (cCtx *Context) Timestamp(name string) *time.Time {
 	if fs := cCtx.lookupFlagSet(name); fs != nil {

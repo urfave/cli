@@ -73,6 +73,15 @@ func (f *GenericFlag) Get(ctx *Context) interface{} {
 	return ctx.Generic(f.Name)
 }
 
+// RunAction executes flag action if set
+func (f *GenericFlag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.Generic(f.Name))
+	}
+
+	return nil
+}
+
 // Generic looks up the value of a local GenericFlag, returns
 // nil if not found
 func (cCtx *Context) Generic(name string) interface{} {

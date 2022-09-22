@@ -179,6 +179,15 @@ func (f *IntSliceFlag) Get(ctx *Context) []int {
 	return ctx.IntSlice(f.Name)
 }
 
+// RunAction executes flag action if set
+func (f *IntSliceFlag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.IntSlice(f.Name))
+	}
+
+	return nil
+}
+
 func (f *IntSliceFlag) stringify() string {
 	var defaultVals []string
 	if f.Value != nil && len(f.Value.Value()) > 0 {
