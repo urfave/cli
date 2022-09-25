@@ -69,8 +69,6 @@ type Command struct {
 
 	// if this is a root "special" command
 	isRoot bool
-
-	helpAction ActionFunc
 }
 
 type Commands []*Command
@@ -108,15 +106,36 @@ func (cmd *Command) Command(name string) *Command {
 	return nil
 }
 
+func newRootCommand(a *App) *Command {
+	return &Command{
+		HelpName:               a.HelpName,
+		Subcommands:            a.Commands,
+		flagCategories:         a.flagCategories,
+		Flags:                  a.Flags,
+		Name:                   a.Name,
+		Action:                 a.Action,
+		UseShortOptionHandling: a.UseShortOptionHandling,
+		Before:                 a.Before,
+		After:                  a.After,
+		HideHelp:               a.HideHelp,
+		HideHelpCommand:        a.HideHelpCommand,
+		OnUsageError:           a.OnUsageError,
+		CustomHelpTemplate:     a.CustomAppHelpTemplate,
+		Usage:                  a.Usage,
+		UsageText:              a.UsageText,
+		Description:            a.Description,
+		ArgsUsage:              a.ArgsUsage,
+		BashComplete:           a.BashComplete,
+		categories:             a.categories,
+		isRoot:                 true,
+	}
+}
+
 func (c *Command) setup(ctx *Context) {
 	if c.Command(helpCommand.Name) == nil && !c.HideHelp {
 		if !c.HideHelpCommand {
 			c.Subcommands = append(c.Subcommands, helpCommand)
 		}
-	}
-
-	if c.helpAction == nil {
-		c.helpAction = helpCommand.Action
 	}
 
 	if !c.HideHelp && HelpFlag != nil {
@@ -185,11 +204,7 @@ func (c *Command) Run(cCtx *Context, arguments []string) (err error) {
 	}
 
 	if checkHelp(cCtx) {
-		return c.helpAction(cCtx)
-	}
-
-	if cCtx.Args().First() == "help" && c.Action == nil {
-		return c.helpAction(cCtx)
+		return helpCommand.Action(cCtx)
 	}
 
 	if c.isRoot && !cCtx.App.HideVersion && checkVersion(cCtx) {

@@ -272,29 +272,7 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 	cCtx := NewContext(a, nil, &Context{Context: ctx})
 	cCtx.shellComplete = shellComplete
 
-	a.rootCommand = &Command{
-		HelpName:               a.HelpName,
-		Subcommands:            a.Commands,
-		flagCategories:         a.flagCategories,
-		Flags:                  a.Flags,
-		Name:                   a.Name,
-		Action:                 a.Action,
-		UseShortOptionHandling: a.UseShortOptionHandling,
-		Before:                 a.Before,
-		After:                  a.After,
-		HideHelp:               a.HideHelp,
-		HideHelpCommand:        a.HideHelpCommand,
-		OnUsageError:           a.OnUsageError,
-		CustomHelpTemplate:     a.CustomAppHelpTemplate,
-		Usage:                  a.Usage,
-		UsageText:              a.UsageText,
-		Description:            a.Description,
-		ArgsUsage:              a.ArgsUsage,
-		BashComplete:           a.BashComplete,
-		categories:             a.categories,
-		helpAction:             helpCommand.Action,
-		isRoot:                 true,
-	}
+	a.rootCommand = newRootCommand(a)
 	cCtx.Command = a.rootCommand
 
 	return a.rootCommand.Run(cCtx, arguments)
