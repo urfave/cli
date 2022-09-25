@@ -273,12 +273,12 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 	cCtx.shellComplete = shellComplete
 
 	a.rootCommand = &Command{
-		HelpName:       a.HelpName,
-		Subcommands:    a.Commands,
-		flagCategories: a.flagCategories,
-		Flags:          a.Flags,
-		Name:           a.Name,
-		//Action:                 a.Action,   // dont set this now
+		HelpName:               a.HelpName,
+		Subcommands:            a.Commands,
+		flagCategories:         a.flagCategories,
+		Flags:                  a.Flags,
+		Name:                   a.Name,
+		Action:                 a.Action,
 		UseShortOptionHandling: a.UseShortOptionHandling,
 		Before:                 a.Before,
 		After:                  a.After,

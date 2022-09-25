@@ -40,6 +40,7 @@ func TestCommandFlagParsing(t *testing.T) {
 			Description:     "testing",
 			Action:          func(_ *Context) error { return nil },
 			SkipFlagParsing: c.skipFlagParsing,
+			isRoot:          true,
 		}
 
 		err := command.Run(cCtx, c.testArgs)

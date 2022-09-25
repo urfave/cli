@@ -109,19 +109,14 @@ func (cmd *Command) Command(name string) *Command {
 }
 
 func (c *Command) setup(ctx *Context) {
-	helpCmd := helpCommand
-	if len(c.Subcommands) > 0 {
-		helpCmd = helpSubcommand
-	}
-
-	if c.Command(helpCmd.Name) == nil && !c.HideHelp {
+	if c.Command(helpCommand.Name) == nil && !c.HideHelp {
 		if !c.HideHelpCommand {
-			c.Subcommands = append(c.Subcommands, helpCmd)
+			c.Subcommands = append(c.Subcommands, helpCommand)
 		}
 	}
 
 	if c.helpAction == nil {
-		c.helpAction = helpCmd.Action
+		c.helpAction = helpCommand.Action
 	}
 
 	if !c.HideHelp && HelpFlag != nil {
@@ -183,7 +178,7 @@ func (c *Command) Run(cCtx *Context, arguments []string) (err error) {
 			if c.isRoot {
 				_ = ShowAppHelp(cCtx)
 			} else {
-				_ = ShowCommandHelp(cCtx, c.Name)
+				_ = ShowCommandHelp(cCtx.parentContext, c.Name)
 			}
 		}
 		return err

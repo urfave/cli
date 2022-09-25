@@ -68,6 +68,15 @@ var helpCommand = &Command{
 		}
 
 		// Case 3, 5
+		if (len(cCtx.Command.Subcommands) == 1 && !cCtx.Command.HideHelp) ||
+			(len(cCtx.Command.Subcommands) == 0 && cCtx.Command.HideHelp) {
+			templ := cCtx.Command.CustomHelpTemplate
+			if templ == "" {
+				templ = CommandHelpTemplate
+			}
+			HelpPrinter(cCtx.App.Writer, templ, cCtx.Command)
+			return nil
+		}
 		return ShowSubcommandHelp(cCtx)
 	},
 }
@@ -230,8 +239,9 @@ func ShowCommandHelpAndExit(c *Context, command string, code int) {
 
 // ShowCommandHelp prints help for the given command
 func ShowCommandHelp(ctx *Context, command string) error {
+
 	commands := ctx.App.Commands
-	if ctx.Command != nil {
+	if ctx.Command.Subcommands != nil {
 		commands = ctx.Command.Subcommands
 	}
 	for _, c := range commands {
