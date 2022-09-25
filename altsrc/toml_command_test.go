@@ -34,7 +34,7 @@ func TestCommandTomFileTest(t *testing.T) {
 			&cli.StringFlag{Name: "load"}},
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewTomlSourceFromFlagFunc("load"))
-	err := command.Run(c)
+	err := command.Run(c, test)
 
 	expect(t, err, nil)
 }
@@ -68,7 +68,7 @@ func TestCommandTomlFileTestGlobalEnvVarWins(t *testing.T) {
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewTomlSourceFromFlagFunc("load"))
 
-	err := command.Run(c)
+	err := command.Run(c, test)
 
 	expect(t, err, nil)
 }
@@ -102,7 +102,7 @@ func TestCommandTomlFileTestGlobalEnvVarWinsNested(t *testing.T) {
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewTomlSourceFromFlagFunc("load"))
 
-	err := command.Run(c)
+	err := command.Run(c, test)
 
 	expect(t, err, nil)
 }
@@ -134,7 +134,7 @@ func TestCommandTomlFileTestSpecifiedFlagWins(t *testing.T) {
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewTomlSourceFromFlagFunc("load"))
 
-	err := command.Run(c)
+	err := command.Run(c, test)
 
 	expect(t, err, nil)
 }
@@ -167,7 +167,7 @@ func TestCommandTomlFileTestSpecifiedFlagWinsNested(t *testing.T) {
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewTomlSourceFromFlagFunc("load"))
 
-	err := command.Run(c)
+	err := command.Run(c, test)
 
 	expect(t, err, nil)
 }
@@ -199,7 +199,7 @@ func TestCommandTomlFileTestDefaultValueFileWins(t *testing.T) {
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewTomlSourceFromFlagFunc("load"))
 
-	err := command.Run(c)
+	err := command.Run(c, test)
 
 	expect(t, err, nil)
 }
@@ -231,7 +231,7 @@ func TestCommandTomlFileTestDefaultValueFileWinsNested(t *testing.T) {
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewTomlSourceFromFlagFunc("load"))
 
-	err := command.Run(c)
+	err := command.Run(c, test)
 
 	expect(t, err, nil)
 }
@@ -265,7 +265,7 @@ func TestCommandTomlFileFlagHasDefaultGlobalEnvTomlSetGlobalEnvWins(t *testing.T
 			&cli.StringFlag{Name: "load"}},
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewTomlSourceFromFlagFunc("load"))
-	err := command.Run(c)
+	err := command.Run(c, test)
 
 	expect(t, err, nil)
 }
@@ -299,7 +299,7 @@ func TestCommandTomlFileFlagHasDefaultGlobalEnvTomlSetGlobalEnvWinsNested(t *tes
 			&cli.StringFlag{Name: "load"}},
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewTomlSourceFromFlagFunc("load"))
-	err := command.Run(c)
+	err := command.Run(c, test)
 
 	expect(t, err, nil)
 }
