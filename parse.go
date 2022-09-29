@@ -46,7 +46,10 @@ func parseIter(set *flag.FlagSet, ip iterativeParser, args []string, shellComple
 			}
 
 			// swap current argument with the split version
-			args = append(args[:i], append(shortOpts, args[i+1:]...)...)
+			// do not include args that parsed correctly so far as it would
+			// trigger Value.Set() on those args and would result in
+			// duplicates for slice type flags
+			args = append(shortOpts, args[i+1:]...)
 			argsWereSplit = true
 			break
 		}
