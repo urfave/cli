@@ -40,6 +40,7 @@ jobs:
           GFLAGS: -tags urfave_cli_no_docs
       - run: make check-binary-size
       - run: make yamlfmt
+      - run: make generate
       - run: make diffcheck
       - if: matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
         run: make v2diff
