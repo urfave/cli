@@ -54,10 +54,10 @@ DESCRIPTION:
 
 OPTIONS:{{range .VisibleFlagCategories}}
    {{if .Name}}{{.Name}}
-   {{end}}{{range .Flags}}{{.}}{{end}}{{end}}{{else}}{{if .VisibleFlags}}
-
-OPTIONS:{{range .VisibleFlags}}
-   {{.}}{{end}}{{end}}{{end}}
+   {{end}}{{range .Flags}}{{.}}
+   {{end}}{{end}}{{else}}{{if .VisibleFlags}}   
+OPTIONS:{{range $index, $option := .VisibleFlags}}{{if $index}}{{end}}
+   {{wrap $option.String 6}}{{end}}{{end}}{{end}}
 `
 
 // SubcommandHelpTemplate is the text template for the subcommand help topic.
