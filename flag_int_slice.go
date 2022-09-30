@@ -95,16 +95,24 @@ func (i *IntSlice) Get() interface{} {
 // String returns a readable representation of this value
 // (for usage defaults)
 func (f *IntSliceFlag) String() string {
-	return withEnvHint(f.GetEnvVars(), f.stringify())
+	return FlagStringer(f)
 }
 
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *IntSliceFlag) GetValue() string {
-	if f.Value != nil {
-		return f.Value.String()
+	var defaultVals []string
+	if f.Value != nil && len(f.Value.Value()) > 0 {
+		for _, i := range f.Value.Value() {
+			defaultVals = append(defaultVals, strconv.Itoa(i))
+		}
 	}
-	return ""
+	return strings.Join(defaultVals, ", ")
+}
+
+// IsSliceFlag implements DocGenerationSliceFlag.
+func (f *IntSliceFlag) IsSliceFlag() bool {
+	return true
 }
 
 // Apply populates the flag given the flag set and environment
@@ -149,17 +157,6 @@ func (f *IntSliceFlag) Apply(set *flag.FlagSet) error {
 // Get returns the flag’s value in the given Context.
 func (f *IntSliceFlag) Get(ctx *Context) []int {
 	return ctx.IntSlice(f.Name)
-}
-
-func (f *IntSliceFlag) stringify() string {
-	var defaultVals []string
-	if f.Value != nil && len(f.Value.Value()) > 0 {
-		for _, i := range f.Value.Value() {
-			defaultVals = append(defaultVals, strconv.Itoa(i))
-		}
-	}
-
-	return stringifySliceFlag(f.Usage, f.Names(), defaultVals)
 }
 
 // RunAction executes flag action if set
