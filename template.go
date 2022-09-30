@@ -72,16 +72,9 @@ USAGE:
 DESCRIPTION:
    {{wrap .Description 3}}{{end}}{{if .VisibleCommands}}
 
-COMMANDS:{{range .VisibleCategories}}{{if .Name}}
-   {{.Name}}:{{range .VisibleCommands}}
-     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{ $cv := offsetCommands .VisibleCommands 5}}{{range .VisibleCommands}}
-     {{$s := join .Names ", "}}{{$s}}{{ $sp := subtract $cv (offset $s 3) }}{{ indent $sp ""}}{{wrap .Usage $cv}}{{end}}{{end}}{{end}}{{end}}{{if .VisibleFlagCategories}}
+COMMANDS:{{ $cv := offsetCommands .VisibleCommands 5}}{{range .VisibleCommands}}
+   {{$s := join .Names ", "}}{{$s}}{{ $sp := subtract $cv (offset $s 3) }}{{ indent $sp ""}}{{wrap .Usage $cv}}{{end}}{{end}}{{if .VisibleFlagCategories}}
 
-COMMANDS:{{range .VisibleCategories}}{{if .Name}}
-   {{.Name}}:{{range .VisibleCommands}}
-      {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{ $cv := offsetCommands .VisibleCommands 5}}{{range .VisibleCommands}}
-   {{$s := join .Names ", "}}{{$s}}{{ $sp := subtract $cv (offset $s 3) }}{{ indent $sp ""}}{{wrap .Usage $cv}}{{end}}{{end}}{{end}}{{end}}{{if .VisibleFlagCategories}}
-  
 OPTIONS:{{range .VisibleFlagCategories}}
    {{if .Name}}{{.Name}}{{end}}{{range .Flags}}{{.}}
    {{end}}{{end}}{{else}}{{if .VisibleFlags}}
