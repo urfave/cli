@@ -657,7 +657,7 @@ func (cCtx *Context) FlagNames() []string
     its parent contexts.
 
 func (cCtx *Context) Float64(name string) float64
-    Float64 looks up the value of a local Float64Flag, returns 0 if not found
+    Int looks up the value of a local IntFlag, returns 0 if not found
 
 func (cCtx *Context) Float64Slice(name string) []float64
     Float64Slice looks up the value of a local Float64SliceFlag, returns nil if
@@ -713,10 +713,10 @@ func (cCtx *Context) Timestamp(name string) *time.Time
     Timestamp gets the timestamp from a flag name
 
 func (cCtx *Context) Uint(name string) uint
-    Uint looks up the value of a local UintFlag, returns 0 if not found
+    Int looks up the value of a local IntFlag, returns 0 if not found
 
 func (cCtx *Context) Uint64(name string) uint64
-    Uint64 looks up the value of a local Uint64Flag, returns 0 if not found
+    Int64 looks up the value of a local Int64Flag, returns 0 if not found
 
 func (cCtx *Context) Uint64Slice(name string) []uint64
     Uint64Slice looks up the value of a local Uint64SliceFlag, returns nil if
@@ -949,6 +949,7 @@ func (f FlagsByName) Less(i, j int) bool
 
 func (f FlagsByName) Swap(i, j int)
 
+<<<<<<< HEAD
 type Float64Flag struct {
 	Name string
 
@@ -1014,6 +1015,9 @@ func (f *Float64Flag) String() string
 
 func (f *Float64Flag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
+=======
+type Float64Flag = flagImpl[float64]
+>>>>>>> First cut at using generics for base flag types
 
 type Float64Slice struct {
 	// Has unexported fields.
@@ -1188,6 +1192,7 @@ func (f *GenericFlag) String() string
 func (f *GenericFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
 
+<<<<<<< HEAD
 type Int64Flag struct {
 	Name string
 
@@ -1255,6 +1260,9 @@ func (f *Int64Flag) String() string
 
 func (f *Int64Flag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
+=======
+type Int64Flag = flagImpl[int64]
+>>>>>>> First cut at using generics for base flag types
 
 type Int64Slice struct {
 	// Has unexported fields.
@@ -1354,6 +1362,7 @@ func (f *Int64SliceFlag) String() string
 func (f *Int64SliceFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
 
+<<<<<<< HEAD
 type IntFlag struct {
 	Name string
 
@@ -1421,6 +1430,9 @@ func (f *IntFlag) String() string
 
 func (f *IntFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
+=======
+type IntFlag = flagImpl[int]
+>>>>>>> First cut at using generics for base flag types
 
 type IntSlice struct {
 	// Has unexported fields.
@@ -1973,6 +1985,7 @@ func (f *TimestampFlag) String() string
 func (f *TimestampFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
 
+<<<<<<< HEAD
 type Uint64Flag struct {
 	Name string
 
@@ -2200,6 +2213,11 @@ func (f *UintFlag) String() string
 
 func (f *UintFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
+=======
+type Uint64Flag = flagImpl[uint64]
+
+type UintFlag = flagImpl[uint]
+>>>>>>> First cut at using generics for base flag types
 
 type UintSlice struct {
 	// Has unexported fields.

@@ -4,6 +4,16 @@
 flag_types:
   bool:
     no_default_text: true
+<<<<<<< HEAD
+=======
+  time.Duration: {}
+
+  string:
+    no_default_text: true
+    struct_fields:
+      - { name: TakesFile, type: bool }
+  Generic:
+>>>>>>> First cut at using generics for base flag types
     struct_fields:
       - name: Count
         type: int

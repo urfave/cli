@@ -164,8 +164,8 @@ func TestFlagsFromEnv(t *testing.T) {
 		{"foobar", 0, &Float64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as float64 value from environment variable "SECONDS" for flag seconds: .*`},
 
 		{"1", int64(1), &Int64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
-		{"1.2", 0, &Int64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2" as int value from environment variable "SECONDS" for flag seconds: .*`},
-		{"foobar", 0, &Int64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as int value from environment variable "SECONDS" for flag seconds: .*`},
+		{"1.2", 0, &Int64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2" as int64 value from environment variable "SECONDS" for flag seconds: .*`},
+		{"foobar", 0, &Int64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as int64 value from environment variable "SECONDS" for flag seconds: .*`},
 
 		{"1", 1, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
 		{"08", 8, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 10}, ""},
@@ -3030,24 +3030,37 @@ func TestFlagDefaultValue(t *testing.T) {
 			name:    "stringSlice",
 			flag:    &StringSliceFlag{Name: "flag", Value: NewStringSlice("default1", "default2")},
 			toParse: []string{"--flag", "parsed"},
+<<<<<<< HEAD
 			expect:  `--flag value [ --flag value ]	(default: "default1", "default2")`,
+=======
+			expect:  `--flag value	(default: "default1", "default2")	(accepts multiple inputs)`,
+>>>>>>> First cut at using generics for base flag types
 		},
 		{
 			name:    "float64Slice",
 			flag:    &Float64SliceFlag{Name: "flag", Value: NewFloat64Slice(1.1, 2.2)},
 			toParse: []string{"--flag", "13.3"},
+<<<<<<< HEAD
 			expect:  `--flag value [ --flag value ]	(default: 1.1, 2.2)`,
+=======
+			expect:  `--flag value	(default: 1.1, 2.2)	(accepts multiple inputs)`,
+>>>>>>> First cut at using generics for base flag types
 		},
 		{
 			name:    "int64Slice",
 			flag:    &Int64SliceFlag{Name: "flag", Value: NewInt64Slice(1, 2)},
 			toParse: []string{"--flag", "13"},
+<<<<<<< HEAD
 			expect:  `--flag value [ --flag value ]	(default: 1, 2)`,
+=======
+			expect:  `--flag value	(default: 1, 2)	(accepts multiple inputs)`,
+>>>>>>> First cut at using generics for base flag types
 		},
 		{
 			name:    "intSlice",
 			flag:    &IntSliceFlag{Name: "flag", Value: NewIntSlice(1, 2)},
 			toParse: []string{"--flag", "13"},
+<<<<<<< HEAD
 			expect:  `--flag value [ --flag value ]	(default: 1, 2)`,
 		},
 		{
@@ -3061,6 +3074,9 @@ func TestFlagDefaultValue(t *testing.T) {
 			flag:    &UintSliceFlag{Name: "flag", Value: NewUintSlice(1, 2)},
 			toParse: []string{"--flag", "13"},
 			expect:  `--flag value [ --flag value ]	(default: 1, 2)`,
+=======
+			expect:  `--flag value	(default: 1, 2)	(accepts multiple inputs)`,
+>>>>>>> First cut at using generics for base flag types
 		},
 		{
 			name:    "string",
