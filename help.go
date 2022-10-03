@@ -476,7 +476,9 @@ func wrap(input string, offset int, wrapAt int) string {
 
 	for i, line := range lines {
 		if i != 0 {
-			sb.WriteString(padding)
+			if len(line) > 0 {
+				sb.WriteString(padding)
+			}
 		}
 
 		sb.WriteString(wrapLine(line, offset, wrapAt, padding))
