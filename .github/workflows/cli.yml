@@ -68,7 +68,7 @@ jobs:
       - run: make ensure-gfmrun
       - run: make gfmrun
         env:
-          FLAGS: --walk docs/v2/
+          FLAGS: --walk docs/v3/
       - run: make diffcheck
   publish:
     permissions:
