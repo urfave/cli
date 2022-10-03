@@ -1276,7 +1276,7 @@ DESCRIPTION:
    App.Description string long
    enough that it should be
    wrapped in this test
-   
+
    with a newline
       and an indented line
 
@@ -1294,8 +1294,8 @@ COPYRIGHT:
    that it should be wrapped.
    Including newlines.
       And also indented lines.
-   
-   
+
+
    And then another long line.
    Blah blah blah does anybody
    ever read these things?
