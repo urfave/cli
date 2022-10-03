@@ -93,7 +93,10 @@ jobs:
           git diff --cached --exit-code
 
   publish:
-    if: startswith(github.ref, 'refs/tags/')
+    # TODO: switch once v3 is released {{
+    # if: startswith(github.ref, 'refs/tags/')
+    if: 'false'
+    # }}
     name: publish
     needs: [test-docs]
     runs-on: ubuntu-latest
