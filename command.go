@@ -300,9 +300,7 @@ func (c *Command) VisibleFlagCategories() []VisibleFlagCategory {
 	if c.flagCategories == nil {
 		c.flagCategories = newFlagCategories()
 		for _, fl := range c.Flags {
-			if cf, ok := fl.(CategorizableFlag); ok {
-				c.flagCategories.AddFlag(cf.GetCategory(), cf)
-			}
+			c.flagCategories.AddFlag(fl.GetCategory(), fl)
 		}
 	}
 	return c.flagCategories.VisibleCategories()

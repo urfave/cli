@@ -174,10 +174,10 @@ func ExampleApp_Run_commandHelp() {
 	_ = app.Run(os.Args)
 	// Output:
 	// NAME:
-	//    greet describeit [command options] [arguments...]
+	//    greet describeit - use it to see a description
 	//
 	// USAGE:
-	//    greet describeit [arguments...]
+	//    greet describeit [command options] [arguments...]
 	//
 	// DESCRIPTION:
 	//    This is how we describe describeit the function

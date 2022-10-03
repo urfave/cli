@@ -167,35 +167,11 @@ func TestUint64SliceFlag_SatisfiesFlagInterface(t *testing.T) {
 	_ = f.Names()
 }
 
-func TestUint64SliceFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
-	var f cli.RequiredFlag = &cli.Uint64SliceFlag{}
-
-	_ = f.IsRequired()
-}
-
-func TestUint64SliceFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
-	var f cli.VisibleFlag = &cli.Uint64SliceFlag{}
-
-	_ = f.IsVisible()
-}
-
 func TestUintSliceFlag_SatisfiesFlagInterface(t *testing.T) {
 	var f cli.Flag = &cli.UintSliceFlag{}
 
 	_ = f.IsSet()
 	_ = f.Names()
-}
-
-func TestUintSliceFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
-	var f cli.RequiredFlag = &cli.UintSliceFlag{}
-
-	_ = f.IsRequired()
-}
-
-func TestUintSliceFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
-	var f cli.VisibleFlag = &cli.UintSliceFlag{}
-
-	_ = f.IsVisible()
 }
 
 func TestBoolFlag_SatisfiesFlagInterface(t *testing.T) {

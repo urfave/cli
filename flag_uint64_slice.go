@@ -183,6 +183,15 @@ func (f *Uint64SliceFlag) stringify() string {
 	return stringifySliceFlag(f.Usage, f.Names(), defaultVals)
 }
 
+// RunAction executes flag action if set
+func (f *Uint64SliceFlag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.Uint64Slice(f.Name))
+	}
+
+	return nil
+}
+
 // Uint64Slice looks up the value of a local Uint64SliceFlag, returns
 // nil if not found
 func (cCtx *Context) Uint64Slice(name string) []uint64 {
