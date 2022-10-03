@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 const (
@@ -139,10 +139,10 @@ func TestActionFunc(c *cli.Context) error {
 	tags := c.String("tags")
 
 	for _, pkg := range c.StringSlice("packages") {
-		packageName := "github.com/urfave/cli/v2"
+		packageName := "github.com/urfave/cli/v3"
 
 		if pkg != "cli" {
-			packageName = fmt.Sprintf("github.com/urfave/cli/v2/%s", pkg)
+			packageName = fmt.Sprintf("github.com/urfave/cli/v3/%s", pkg)
 		}
 
 		if err := runCmd(

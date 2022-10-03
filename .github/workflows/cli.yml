@@ -92,7 +92,7 @@ jobs:
           chmod +x "${GITHUB_WORKSPACE}/.local/bin/gfmrun"
 
       - name: gfmrun
-        run: go run internal/build/build.go gfmrun --walk docs/v2/
+        run: go run internal/build/build.go gfmrun --walk docs/v3/
 
       - name: diff check
         run: |
@@ -100,7 +100,10 @@ jobs:
           git diff --cached --exit-code
 
   publish:
-    if: startswith(github.ref, 'refs/tags/')
+    # TODO: switch once v3 is released {{
+    # if: startswith(github.ref, 'refs/tags/')
+    if: 'false'
+    # }}
     name: publish
     needs: [test-docs]
     runs-on: ubuntu-latest
