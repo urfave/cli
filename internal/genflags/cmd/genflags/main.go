@@ -13,8 +13,8 @@ import (
 	"syscall"
 	"text/template"
 
-	"github.com/urfave/cli/v2"
-	"github.com/urfave/cli/v2/internal/genflags"
+	"github.com/urfave/cli/v3"
+	"github.com/urfave/cli/v3/internal/genflags"
 	"gopkg.in/yaml.v3"
 )
 

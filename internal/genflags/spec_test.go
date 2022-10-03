@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/urfave/cli/v2/internal/genflags"
+	"github.com/urfave/cli/v3/internal/genflags"
 )
 
 func TestSpec_SortedFlagTypes(t *testing.T) {

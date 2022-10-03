@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func TestCommandYamlFileTest(t *testing.T) {

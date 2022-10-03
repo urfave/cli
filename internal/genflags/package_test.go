@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/urfave/cli/v2/internal/genflags"
+	"github.com/urfave/cli/v3/internal/genflags"
 )
 
 func TestTypeName(t *testing.T) {
