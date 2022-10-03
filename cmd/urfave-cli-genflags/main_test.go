@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	main "github.com/urfave/cli/v3/cmd/urfave-cli-genflags"
+	main "github.com/urfave/cli/v2/cmd/urfave-cli-genflags"
 )
 
 func TestTypeName(t *testing.T) {
