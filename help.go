@@ -468,7 +468,7 @@ func nindent(spaces int, v string) string {
 }
 
 func wrap(input string, offset int, wrapAt int) string {
-	var sb strings.Builder
+	var ss []string
 
 	lines := strings.Split(input, "\n")
 
@@ -476,23 +476,20 @@ func wrap(input string, offset int, wrapAt int) string {
 
 	for i, line := range lines {
 		if line == "" {
-			sb.WriteString("\n")
-			continue
-		}
+			ss = append(ss, line)
+		} else {
+			wrapped := wrapLine(line, offset, wrapAt, padding)
+			if i == 0 {
+				ss = append(ss, wrapped)
+			} else {
+				ss = append(ss, padding+wrapped)
 
-		// the first line is not indented
-		if i != 0 {
-			sb.WriteString(padding)
-		}
+			}
 
-		sb.WriteString(wrapLine(line, offset, wrapAt, padding))
-
-		if i != len(lines)-1 {
-			sb.WriteString("\n")
 		}
 	}
 
-	return sb.String()
+	return strings.Join(ss, "\n")
 }
 
 func wrapLine(input string, offset int, wrapAt int, padding string) string {

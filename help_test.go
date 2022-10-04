@@ -1213,6 +1213,13 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 	}
 }
 
+func TestWrap(t *testing.T) {
+	emptywrap := wrap("", 4, 16)
+	if emptywrap != "" {
+		t.Errorf("Wrapping empty line should return empty line. Got '%s'.", emptywrap)
+	}
+}
+
 func TestWrappedHelp(t *testing.T) {
 
 	// Reset HelpPrinter after this test.
