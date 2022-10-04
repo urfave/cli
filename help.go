@@ -475,10 +475,14 @@ func wrap(input string, offset int, wrapAt int) string {
 	padding := strings.Repeat(" ", offset)
 
 	for i, line := range lines {
+		if line == "" {
+			sb.WriteString("\n")
+			continue
+		}
+		
+		// the first line is not indented
 		if i != 0 {
-			if len(line) > 0 {
-				sb.WriteString(padding)
-			}
+			sb.WriteString(padding)
 		}
 
 		sb.WriteString(wrapLine(line, offset, wrapAt, padding))
