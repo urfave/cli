@@ -479,7 +479,7 @@ func wrap(input string, offset int, wrapAt int) string {
 			sb.WriteString("\n")
 			continue
 		}
-		
+
 		// the first line is not indented
 		if i != 0 {
 			sb.WriteString(padding)
