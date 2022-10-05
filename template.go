@@ -13,8 +13,10 @@ var visibleCommandCategoryTemplate = `{{range .VisibleCategories}}{{if .Name}}
      {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{template "visibleCommandTemplate" .}}{{end}}{{end}}`
 var visibleFlagCategoryTemplate = `{{range .VisibleFlagCategories}}
    {{if .Name}}{{.Name}}
-   {{end}}{{range .Flags}}{{.}}
-   {{end}}{{end}}`
+
+   {{end}}{{$flglen := len .Flags}}{{range $i, $e := .Flags}}{{if eq (subtract $flglen $i) 1}}{{$e}}
+{{else}}{{$e}}
+   {{end}}{{end}}{{end}}`
 
 var visibleFlagTemplate = `{{range $index, $option := .VisibleFlags}}{{if $index}}{{end}}
    {{wrap $option.String 6}}{{end}}`
