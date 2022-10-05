@@ -32,7 +32,7 @@ var (
 	SuggestDidYouMeanTemplate string             = suggestDidYouMeanTemplate
 )
 var AppHelpTemplate = `NAME:
-   {{$v := offset .Name 6}}{{wrap .Name 3}}{{if .Usage}} - {{wrap .Usage $v}}{{end}}
+   {{template "helpNameTemplate" .}}
 
 USAGE:
    {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
@@ -41,52 +41,39 @@ VERSION:
    {{.Version}}{{end}}{{end}}{{if .Description}}
 
 DESCRIPTION:
-   {{wrap .Description 3}}{{end}}{{if len .Authors}}
+   {{template "descriptionTemplate" .}}{{end}}
+{{- if len .Authors}}
 
-AUTHOR{{with $length := len .Authors}}{{if ne 1 $length}}S{{end}}{{end}}:
-   {{range $index, $author := .Authors}}{{if $index}}
-   {{end}}{{$author}}{{end}}{{end}}{{if .VisibleCommands}}
+AUTHOR{{template "authorsTemplate" .}}{{end}}{{if .VisibleCommands}}
 
-COMMANDS:{{range .VisibleCategories}}{{if .Name}}
-   {{.Name}}:{{range .VisibleCommands}}
-     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{ $cv := offsetCommands .VisibleCommands 5}}{{range .VisibleCommands}}
-   {{$s := join .Names ", "}}{{$s}}{{ $sp := subtract $cv (offset $s 3) }}{{ indent $sp ""}}{{wrap .Usage $cv}}{{end}}{{end}}{{end}}{{end}}{{if .VisibleFlagCategories}}
+COMMANDS:{{template "visibleCommandCategoryTemplate" .}}{{end}}{{if .VisibleFlagCategories}}
 
-GLOBAL OPTIONS:{{range .VisibleFlagCategories}}
-   {{if .Name}}{{.Name}}
-   {{end}}{{range .Flags}}{{.}}
-   {{end}}{{end}}{{else}}{{if .VisibleFlags}}
+GLOBAL OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
 
-GLOBAL OPTIONS:
-   {{range $index, $option := .VisibleFlags}}{{if $index}}
-   {{end}}{{wrap $option.String 6}}{{end}}{{end}}{{end}}{{if .Copyright}}
+GLOBAL OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}{{if .Copyright}}
 
 COPYRIGHT:
-   {{wrap .Copyright 3}}{{end}}
+   {{template "copyrightTemplate" .}}{{end}}
 `
     AppHelpTemplate is the text template for the Default help topic. cli.go
     uses text/template to render templates. You can render custom help text by
     setting this variable.
 
 var CommandHelpTemplate = `NAME:
-   {{$v := offset .HelpName 6}}{{wrap .HelpName 3}}{{if .Usage}} - {{wrap .Usage $v}}{{end}}
+   {{template "helpNameTemplate" .}}
 
 USAGE:
-   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}}{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Category}}
+   {{template "usageTemplate" .}}{{if .Category}}
 
 CATEGORY:
    {{.Category}}{{end}}{{if .Description}}
 
 DESCRIPTION:
-   {{wrap .Description 3}}{{end}}{{if .VisibleFlagCategories}}
+   {{template "descriptionTemplate" .}}{{end}}{{if .VisibleFlagCategories}}
 
-OPTIONS:{{range .VisibleFlagCategories}}
-   {{if .Name}}{{.Name}}
-   {{end}}{{range .Flags}}{{.}}{{end}}{{end}}{{else}}{{if .VisibleFlags}}
+OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
 
-OPTIONS:
-   {{range .VisibleFlags}}{{.}}{{end}}{{end}}{{end}}
-`
+OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}`
     CommandHelpTemplate is the text template for the command help topic. cli.go
     uses text/template to render templates. You can render custom help text by
     setting this variable.
@@ -145,22 +132,19 @@ var OsExiter = os.Exit
     os.Exit.
 
 var SubcommandHelpTemplate = `NAME:
-   {{.HelpName}} - {{.Usage}}
+   {{template "helpNameTemplate" .}}
 
 USAGE:
    {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} command{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Description}}
 
 DESCRIPTION:
-   {{wrap .Description 3}}{{end}}
+   {{template "descriptionTemplate" .}}{{end}}{{if .VisibleCommands}}
 
-COMMANDS:{{range .VisibleCategories}}{{if .Name}}
-   {{.Name}}:{{range .VisibleCommands}}
-     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{ $cv := offsetCommands .VisibleCommands 5}}{{range .VisibleCommands}}
-     {{$s := join .Names ", "}}{{$s}}{{ $sp := subtract $cv (offset $s 3) }}{{ indent $sp ""}}{{wrap .Usage $cv}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
+COMMANDS:{{template "visibleCommandTemplate" .}}{{end}}{{if .VisibleFlagCategories}}
 
-OPTIONS:
-   {{range .VisibleFlags}}{{.}}{{end}}{{end}}
-`
+OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
+
+OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}`
     SubcommandHelpTemplate is the text template for the subcommand help topic.
     cli.go uses text/template to render templates. You can render custom help
     text by setting this variable.
@@ -458,6 +442,8 @@ type BoolFlag struct {
 	EnvVars []string
 
 	Count *int
+
+	Action func(*Context, bool) error
 }
     BoolFlag is a flag with type bool
 
@@ -565,7 +551,6 @@ type Command struct {
 	// cli.go uses text/template to render templates. You can
 	// render custom help text by setting this variable.
 	CustomHelpTemplate string
-
 	// Has unexported fields.
 }
     Command is a subcommand for a cli.App.
@@ -583,10 +568,6 @@ func (c *Command) Names() []string
 func (c *Command) Run(ctx *Context) (err error)
     Run invokes the command given the context, parses ctx.Args() to generate
     command-specific flags
-
-func (c *Command) VisibleCategories() []CommandCategory
-    VisibleCategories returns a slice of categories and commands that are
-    Hidden=false
 
 func (c *Command) VisibleCommands() []*Command
     VisibleCommands returns a slice of the Commands with Hidden=false
@@ -776,6 +757,8 @@ type DurationFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Action func(*Context, time.Duration) error
 }
     DurationFlag is a flag with type time.Duration
 
@@ -952,6 +935,8 @@ type Float64Flag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Action func(*Context, float64) error
 }
     Float64Flag is a flag with type float64
 
@@ -1038,6 +1023,8 @@ type Float64SliceFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Action func(*Context, []float64) error
 }
     Float64SliceFlag is a flag with type *Float64Slice
 
@@ -1115,6 +1102,8 @@ type GenericFlag struct {
 	EnvVars []string
 
 	TakesFile bool
+
+	Action func(*Context, interface{}) error
 }
     GenericFlag is a flag with type Generic
 
@@ -1181,6 +1170,8 @@ type Int64Flag struct {
 	EnvVars []string
 
 	Base int
+
+	Action func(*Context, int64) error
 }
     Int64Flag is a flag with type int64
 
@@ -1267,6 +1258,8 @@ type Int64SliceFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Action func(*Context, []int64) error
 }
     Int64SliceFlag is a flag with type *Int64Slice
 
@@ -1338,6 +1331,8 @@ type IntFlag struct {
 	EnvVars []string
 
 	Base int
+
+	Action func(*Context, int) error
 }
     IntFlag is a flag with type int
 
@@ -1428,6 +1423,8 @@ type IntSliceFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Action func(*Context, []int) error
 }
     IntSliceFlag is a flag with type *IntSlice
 
@@ -1533,6 +1530,8 @@ type PathFlag struct {
 	EnvVars []string
 
 	TakesFile bool
+
+	Action func(*Context, Path) error
 }
     PathFlag is a flag with type Path
 
@@ -1673,6 +1672,8 @@ type StringFlag struct {
 	EnvVars []string
 
 	TakesFile bool
+
+	Action func(*Context, string) error
 }
     StringFlag is a flag with type string
 
@@ -1761,6 +1762,8 @@ type StringSliceFlag struct {
 	EnvVars []string
 
 	TakesFile bool
+
+	Action func(*Context, []string) error
 }
     StringSliceFlag is a flag with type *StringSlice
 
@@ -1867,6 +1870,8 @@ type TimestampFlag struct {
 	Layout string
 
 	Timezone *time.Location
+
+	Action func(*Context, *time.Time) error
 }
     TimestampFlag is a flag with type *Timestamp
 
@@ -1932,6 +1937,8 @@ type Uint64Flag struct {
 	EnvVars []string
 
 	Base int
+
+	Action func(*Context, uint64) error
 }
     Uint64Flag is a flag with type uint64
 
@@ -2018,6 +2025,8 @@ type Uint64SliceFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Action func(*Context, []uint64) error
 }
     Uint64SliceFlag is a flag with type *Uint64Slice
 
@@ -2080,6 +2089,8 @@ type UintFlag struct {
 	EnvVars []string
 
 	Base int
+
+	Action func(*Context, uint) error
 }
     UintFlag is a flag with type uint
 
@@ -2170,6 +2181,8 @@ type UintSliceFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Action func(*Context, []uint) error
 }
     UintSliceFlag is a flag with type *UintSlice
 
