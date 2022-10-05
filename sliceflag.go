@@ -42,7 +42,7 @@ type (
 
 	// MultiFloat64Flag extends Float64SliceFlag with support for using slices directly, as Value and/or Destination.
 	// See also SliceFlag.
-	MultiFloat64Flag = SliceFlag[*Float64SliceFlag, []float64, float64]
+	//MultiFloat64Flag = SliceFlag[*Float64SliceFlag, []float64, float64]
 
 	// MultiInt64Flag extends Int64SliceFlag with support for using slices directly, as Value and/or Destination.
 	// See also SliceFlag.
@@ -61,12 +61,12 @@ type (
 var (
 	// compile time assertions
 
-	_ SliceFlagTarget[string]  = (*StringSliceFlag)(nil)
-	_ SliceFlagTarget[string]  = (*SliceFlag[*StringSliceFlag, []string, string])(nil)
-	_ SliceFlagTarget[string]  = (*MultiStringFlag)(nil)
-	_ SliceFlagTarget[float64] = (*MultiFloat64Flag)(nil)
-	_ SliceFlagTarget[int64]   = (*MultiInt64Flag)(nil)
-	_ SliceFlagTarget[int]     = (*MultiIntFlag)(nil)
+	_ SliceFlagTarget[string] = (*StringSliceFlag)(nil)
+	_ SliceFlagTarget[string] = (*SliceFlag[*StringSliceFlag, []string, string])(nil)
+	_ SliceFlagTarget[string] = (*MultiStringFlag)(nil)
+	//_ SliceFlagTarget[float64] = (*MultiFloat64Flag)(nil)
+	_ SliceFlagTarget[int64] = (*MultiInt64Flag)(nil)
+	_ SliceFlagTarget[int]   = (*MultiIntFlag)(nil)
 
 	_ Generic    = (*flagValueHook)(nil)
 	_ Serializer = (*flagValueHook)(nil)
@@ -229,7 +229,7 @@ func unwrapFlagValue(v flag.Value) flag.Value {
 
 // NOTE: the methods below are in this file to make use of the build constraint
 
-func (f *Float64SliceFlag) SetValue(slice []float64) {
+/*func (f *Float64SliceFlag) SetValue(slice []float64) {
 	f.Value = newSliceFlagValue(NewFloat64Slice, slice)
 }
 
@@ -242,7 +242,7 @@ func (f *Float64SliceFlag) GetDestination() []float64 {
 		return destination.Value()
 	}
 	return nil
-}
+}*/
 
 func (f *Int64SliceFlag) SetValue(slice []int64) {
 	f.Value = newSliceFlagValue(NewInt64Slice, slice)

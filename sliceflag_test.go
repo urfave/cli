@@ -378,6 +378,7 @@ func TestSliceFlag_Apply_string(t *testing.T) {
 	}
 }
 
+/*
 func TestSliceFlag_Apply_float64(t *testing.T) {
 	normalise := func(v any) any {
 		switch v := v.(type) {
@@ -577,6 +578,7 @@ func TestSliceFlag_Apply_float64(t *testing.T) {
 		})
 	}
 }
+*/
 
 func TestSliceFlag_Apply_int64(t *testing.T) {
 	normalise := func(v any) any {
