@@ -59,13 +59,6 @@ func parseIter(set *flag.FlagSet, ip iterativeParser, args []string, shellComple
 		if !argsWereSplit {
 			return err
 		}
-
-		// Since custom parsing failed, replace the flag set before retrying
-		newSet, err := ip.newFlagSet()
-		if err != nil {
-			return err
-		}
-		*set = *newSet
 	}
 }
 
