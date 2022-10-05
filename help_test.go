@@ -1367,7 +1367,7 @@ DESCRIPTION:
 
 OPTIONS:
    --help, -h  show help (default: false)
-   `
+`
 
 	if output.String() != expected {
 		t.Errorf("Unexpected wrapping, got:\n%s\nexpected:\n%s",
@@ -1436,7 +1436,7 @@ USAGE:
 
 OPTIONS:
    --help, -h  show help (default: false)
-   `
+`
 
 	if output.String() != expected {
 		t.Errorf("Unexpected wrapping, got:\n%s\nexpected: %s",
@@ -1512,7 +1512,7 @@ USAGE:
 OPTIONS:
    --help, -h      show help (default: false)
    --test-f value  my test usage
-   `
+`
 
 	if output.String() != expected {
 		t.Errorf("Unexpected wrapping, got:\n%s\nexpected: %s",
