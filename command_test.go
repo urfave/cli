@@ -422,3 +422,30 @@ func TestCommand_CanAddVFlagOnCommands(t *testing.T) {
 	err := app.Run([]string{"foo", "bar"})
 	expect(t, err, nil)
 }
+
+func TestCommand_VisibleSubcCommands(t *testing.T) {
+
+	subc1 := &Command{
+		Name:  "subc1",
+		Usage: "subc1 command1",
+	}
+	subc3 := &Command{
+		Name:  "subc3",
+		Usage: "subc3 command2",
+	}
+	c := &Command{
+		Name:  "bar",
+		Usage: "this is for testing",
+		Subcommands: []*Command{
+			subc1,
+			{
+				Name:   "subc2",
+				Usage:  "subc2 command2",
+				Hidden: true,
+			},
+			subc3,
+		},
+	}
+
+	expect(t, c.VisibleCommands(), []*Command{subc1, subc3})
+}
