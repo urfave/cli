@@ -1213,6 +1213,13 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 	}
 }
 
+func TestWrap(t *testing.T) {
+	emptywrap := wrap("", 4, 16)
+	if emptywrap != "" {
+		t.Errorf("Wrapping empty line should return empty line. Got '%s'.", emptywrap)
+	}
+}
+
 func TestWrappedHelp(t *testing.T) {
 
 	// Reset HelpPrinter after this test.
@@ -1276,7 +1283,7 @@ DESCRIPTION:
    App.Description string long
    enough that it should be
    wrapped in this test
-   
+
    with a newline
       and an indented line
 
@@ -1294,8 +1301,8 @@ COPYRIGHT:
    that it should be wrapped.
    Including newlines.
       And also indented lines.
-   
-   
+
+
    And then another long line.
    Blah blah blah does anybody
    ever read these things?
