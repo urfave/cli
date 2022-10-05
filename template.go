@@ -39,7 +39,8 @@ VERSION:
    {{.Version}}{{end}}{{end}}{{if .Description}}
 
 DESCRIPTION:
-   {{template "descriptionTemplate" .}}{{end}}{{if len .Authors}}
+   {{template "descriptionTemplate" .}}{{end}}
+{{- if len .Authors}}
 
 AUTHOR{{template "authorsTemplate" .}}{{end}}{{if .VisibleCommands}}
 
