@@ -80,9 +80,8 @@ func genFlagType() *main.FlagType {
 					Type: "bool",
 				},
 			},
-			TypeName:           "YeOldeBlerfFlag",
-			ValuePointer:       true,
-			DestinationPointer: true,
+			TypeName:     "YeOldeBlerfFlag",
+			ValuePointer: true,
 		},
 	}
 }
@@ -113,21 +112,6 @@ func TestFlagType_ValuePointer(t *testing.T) {
 
 	if ft.ValuePointer() {
 		t.Errorf("expected ValuePointer to be false")
-	}
-}
-
-func TestFlagType_DestinationPointer(t *testing.T) {
-	ft := genFlagType()
-
-	if !ft.DestinationPointer() {
-		t.Errorf("expected DestinationPointer to be true")
-		return
-	}
-
-	ft.Config = nil
-
-	if ft.DestinationPointer() {
-		t.Errorf("expected DestinationPointer to be false")
 	}
 }
 
