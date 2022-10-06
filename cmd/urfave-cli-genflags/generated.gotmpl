@@ -17,13 +17,13 @@ type {{.TypeName}} struct {
   HasBeenSet bool
 
   Value {{if .ValuePointer}}*{{end}}{{.GoType}}
-  Destination *{{.GoType}}
+  Destination {{if .NoDestinationPointer}}{{else}}*{{end}}{{.GoType}}
 
   Aliases []string
   EnvVars []string
 
   {{range .StructFields}}
-  {{.Name}} {{.Type}}
+  {{.Name}} {{if .Pointer}}*{{end}}{{.Type}}
   {{end}}
 }
 

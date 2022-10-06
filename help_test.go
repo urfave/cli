@@ -186,7 +186,7 @@ func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 
 	c := NewContext(app, set, nil)
 
-	err := helpSubcommand.Action(c)
+	err := helpCommand.Action(c)
 
 	if err == nil {
 		t.Fatalf("expected error from helpCommand.Action(), but got nil")
@@ -248,7 +248,7 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 				fmt.Fprint(w, "yo")
 			},
 			command:      "",
-			wantTemplate: SubcommandHelpTemplate,
+			wantTemplate: AppHelpTemplate,
 			wantOutput:   "yo",
 		},
 		{
@@ -333,7 +333,7 @@ func TestShowCommandHelp_HelpPrinterCustom(t *testing.T) {
 				fmt.Fprint(w, "yo")
 			},
 			command:      "",
-			wantTemplate: SubcommandHelpTemplate,
+			wantTemplate: AppHelpTemplate,
 			wantOutput:   "yo",
 		},
 		{
@@ -425,6 +425,58 @@ func TestShowCommandHelp_CommandAliases(t *testing.T) {
 
 	if strings.Contains(output.String(), "bork") {
 		t.Errorf("expected output to exclude command aliases; got: %q", output.String())
+	}
+}
+
+func TestHelpNameConsistency(t *testing.T) {
+	// Setup some very basic templates based on actual AppHelp, CommandHelp
+	// and SubcommandHelp templates to display the help name
+	// The inconsistency shows up when users use NewApp() as opposed to
+	// using App{...} directly
+	SubcommandHelpTemplate = `{{.HelpName}}`
+	app := NewApp()
+	app.Name = "bar"
+	app.CustomAppHelpTemplate = `{{.HelpName}}`
+	app.Commands = []*Command{
+		{
+			Name:               "command1",
+			CustomHelpTemplate: `{{.HelpName}}`,
+			Subcommands: []*Command{
+				{
+					Name:               "subcommand1",
+					CustomHelpTemplate: `{{.HelpName}}`,
+				},
+			},
+		},
+	}
+
+	tests := []struct {
+		name string
+		args []string
+	}{
+		{
+			name: "App help",
+			args: []string{"foo"},
+		},
+		{
+			name: "Command help",
+			args: []string{"foo", "command1"},
+		},
+		{
+			name: "Subcommand help",
+			args: []string{"foo", "command1", "subcommand1"},
+		},
+	}
+
+	for _, tt := range tests {
+		output := &bytes.Buffer{}
+		app.Writer = output
+		if err := app.Run(tt.args); err != nil {
+			t.Error(err)
+		}
+		if !strings.Contains(output.String(), "bar") {
+			t.Errorf("expected output to contain bar; got: %q", output.String())
+		}
 	}
 }
 
@@ -895,6 +947,42 @@ App UsageText`,
 	}
 }
 
+func TestShowAppHelp_CommandMultiLine_UsageText(t *testing.T) {
+	app := &App{
+		UsageText: `This is a
+multi
+line
+App UsageText`,
+		Commands: []*Command{
+			{
+				Name:    "frobbly",
+				Aliases: []string{"frb1", "frbb2", "frl2"},
+				Usage:   "this is a long help output for the run command, long usage \noutput, long usage output, long usage output, long usage output\noutput, long usage output, long usage output",
+			},
+			{
+				Name:    "grobbly",
+				Aliases: []string{"grb1", "grbb2"},
+				Usage:   "this is another long help output for the run command, long usage \noutput, long usage output",
+			},
+		},
+	}
+
+	output := &bytes.Buffer{}
+	app.Writer = output
+
+	_ = app.Run([]string{"foo"})
+
+	expected := "COMMANDS:\n" +
+		"   frobbly, frb1, frbb2, frl2  this is a long help output for the run command, long usage \n" +
+		"                               output, long usage output, long usage output, long usage output\n" +
+		"                               output, long usage output, long usage output\n" +
+		"   grobbly, grb1, grbb2        this is another long help output for the run command, long usage \n" +
+		"                               output, long usage output"
+	if !strings.Contains(output.String(), expected) {
+		t.Errorf("expected output to include usage text; got: %q", output.String())
+	}
+}
+
 func TestHideHelpCommand(t *testing.T) {
 	app := &App{
 		HideHelpCommand: true,
@@ -1269,10 +1357,13 @@ DESCRIPTION:
    and a description long
    enough to wrap in this test
    case
+
+OPTIONS:
+   --help, -h  show help (default: false)
 `
 
 	if output.String() != expected {
-		t.Errorf("Unexpected wrapping, got:\n%s\nexpected: %s",
+		t.Errorf("Unexpected wrapping, got:\n%s\nexpected:\n%s",
 			output.String(), expected)
 	}
 }
@@ -1338,7 +1429,6 @@ USAGE:
 
 OPTIONS:
    --help, -h  show help (default: false)
-   
 `
 
 	if output.String() != expected {

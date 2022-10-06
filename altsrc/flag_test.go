@@ -37,6 +37,20 @@ func (ris *racyInputSource) isSet(name string) bool {
 	return true
 }
 
+func TestGenericApplyInputSourceValue_Alias(t *testing.T) {
+	v := &Parser{"abc", "def"}
+	tis := testApplyInputSource{
+		Flag:     NewGenericFlag(&cli.GenericFlag{Name: "test", Aliases: []string{"test_alias"}, Value: &Parser{}}),
+		FlagName: "test_alias",
+		MapValue: v,
+	}
+	c := runTest(t, tis)
+	expect(t, v, c.Generic("test_alias"))
+
+	c = runRacyTest(t, tis)
+	refute(t, v, c.Generic("test_alias"))
+}
+
 func TestGenericApplyInputSourceValue(t *testing.T) {
 	v := &Parser{"abc", "def"}
 	tis := testApplyInputSource{
@@ -85,27 +99,62 @@ func TestGenericApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	refute(t, &Parser{"abc", "def"}, c.Generic("test"))
 }
 
-func TestStringSliceApplyInputSourceValue(t *testing.T) {
+func TestStringSliceApplyInputSourceValue_Alias(t *testing.T) {
+	dest := cli.NewStringSlice()
 	tis := testApplyInputSource{
-		Flag:     NewStringSliceFlag(&cli.StringSliceFlag{Name: "test"}),
+		Flag:     NewStringSliceFlag(&cli.StringSliceFlag{Name: "test", Aliases: []string{"test_alias"}, Destination: dest}),
+		FlagName: "test_alias",
+		MapValue: []interface{}{"hello", "world"},
+	}
+	c := runTest(t, tis)
+	expect(t, c.StringSlice("test_alias"), []string{"hello", "world"})
+	expect(t, dest.Value(), []string{"hello", "world"})
+
+	// reset dest
+	dest = cli.NewStringSlice()
+	tis = testApplyInputSource{
+		Flag:     NewStringSliceFlag(&cli.StringSliceFlag{Name: "test", Aliases: []string{"test_alias"}, Destination: dest}),
+		FlagName: "test_alias",
+		MapValue: []interface{}{"hello", "world"},
+	}
+	c = runRacyTest(t, tis)
+	refute(t, c.StringSlice("test_alias"), []string{"hello", "world"})
+	refute(t, dest.Value(), []string{"hello", "world"})
+}
+
+func TestStringSliceApplyInputSourceValue(t *testing.T) {
+	dest := cli.NewStringSlice()
+	tis := testApplyInputSource{
+		Flag:     NewStringSliceFlag(&cli.StringSliceFlag{Name: "test", Destination: dest}),
 		FlagName: "test",
 		MapValue: []interface{}{"hello", "world"},
 	}
 	c := runTest(t, tis)
 	expect(t, c.StringSlice("test"), []string{"hello", "world"})
+	expect(t, dest.Value(), []string{"hello", "world"})
 
+	// reset dest
+	dest = cli.NewStringSlice()
+	tis = testApplyInputSource{
+		Flag:     NewStringSliceFlag(&cli.StringSliceFlag{Name: "test", Destination: dest}),
+		FlagName: "test",
+		MapValue: []interface{}{"hello", "world"},
+	}
 	c = runRacyTest(t, tis)
 	refute(t, c.StringSlice("test"), []string{"hello", "world"})
+	refute(t, dest.Value(), []string{"hello", "world"})
 }
 
 func TestStringSliceApplyInputSourceMethodContextSet(t *testing.T) {
+	dest := cli.NewStringSlice()
 	c := runTest(t, testApplyInputSource{
-		Flag:               NewStringSliceFlag(&cli.StringSliceFlag{Name: "test"}),
+		Flag:               NewStringSliceFlag(&cli.StringSliceFlag{Name: "test", Destination: dest}),
 		FlagName:           "test",
 		MapValue:           []interface{}{"hello", "world"},
 		ContextValueString: "ohno",
 	})
 	expect(t, c.StringSlice("test"), []string{"ohno"})
+	expect(t, dest.Value(), []string{"ohno"})
 }
 
 func TestStringSliceApplyInputSourceMethodEnvVarSet(t *testing.T) {
@@ -123,31 +172,74 @@ func TestStringSliceApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	refute(t, c.StringSlice("test"), []string{"oh", "no"})
 }
 
-func TestIntSliceApplyInputSourceValue(t *testing.T) {
+func TestIntSliceApplyInputSourceValue_Alias(t *testing.T) {
+	dest := cli.NewIntSlice()
 	tis := testApplyInputSource{
-		Flag:     NewIntSliceFlag(&cli.IntSliceFlag{Name: "test"}),
+		Flag:     NewIntSliceFlag(&cli.IntSliceFlag{Name: "test", Aliases: []string{"test_alias"}, Destination: dest}),
+		FlagName: "test_alias",
+		MapValue: []interface{}{1, 2},
+	}
+	c := runTest(t, tis)
+	expect(t, c.IntSlice("test_alias"), []int{1, 2})
+	expect(t, dest.Value(), []int{1, 2})
+
+	dest = cli.NewIntSlice()
+	tis = testApplyInputSource{
+		Flag:     NewIntSliceFlag(&cli.IntSliceFlag{Name: "test", Aliases: []string{"test_alias"}, Destination: dest}),
+		FlagName: "test_alias",
+		MapValue: []interface{}{1, 2},
+	}
+	c = runRacyTest(t, tis)
+	refute(t, c.IntSlice("test_alias"), []int{1, 2})
+	refute(t, dest.Value(), []int{1, 2})
+}
+
+func TestIntSliceApplyInputSourceValue(t *testing.T) {
+	dest := cli.NewIntSlice()
+	tis := testApplyInputSource{
+		Flag:     NewIntSliceFlag(&cli.IntSliceFlag{Name: "test", Destination: dest}),
 		FlagName: "test",
 		MapValue: []interface{}{1, 2},
 	}
 	c := runTest(t, tis)
 	expect(t, c.IntSlice("test"), []int{1, 2})
+	expect(t, dest.Value(), []int{1, 2})
 
+	// reset dest
+	dest = cli.NewIntSlice()
+	tis = testApplyInputSource{
+		Flag:     NewIntSliceFlag(&cli.IntSliceFlag{Name: "test", Destination: dest}),
+		FlagName: "test",
+		MapValue: []interface{}{1, 2},
+	}
 	c = runRacyTest(t, tis)
 	refute(t, c.IntSlice("test"), []int{1, 2})
+	refute(t, dest.Value(), []int{1, 2})
 }
 
 func TestIntSliceApplyInputSourceMethodContextSet(t *testing.T) {
+	dest := cli.NewIntSlice()
 	tis := testApplyInputSource{
-		Flag:               NewIntSliceFlag(&cli.IntSliceFlag{Name: "test"}),
+		Flag:               NewIntSliceFlag(&cli.IntSliceFlag{Name: "test", Destination: dest}),
 		FlagName:           "test",
 		MapValue:           []interface{}{1, 2},
 		ContextValueString: "3",
 	}
 	c := runTest(t, tis)
 	expect(t, c.IntSlice("test"), []int{3})
+	expect(t, dest.Value(), []int{3})
 
+	// reset dest
+	dest = cli.NewIntSlice()
+	tis = testApplyInputSource{
+		Flag:               NewIntSliceFlag(&cli.IntSliceFlag{Name: "test", Destination: dest}),
+		FlagName:           "test",
+		MapValue:           []interface{}{1, 2},
+		ContextValueString: "3",
+	}
 	c = runRacyTest(t, tis)
 	refute(t, c.IntSlice("test"), []int{3})
+	refute(t, dest.Value(), []int{3})
 }
 
 func TestIntSliceApplyInputSourceMethodEnvVarSet(t *testing.T) {
@@ -178,6 +270,19 @@ func TestBoolApplyInputSourceMethodSet(t *testing.T) {
 	refute(t, true, c.Bool("test"))
 }
 
+func TestBoolApplyInputSourceMethodSet_Alias(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:     NewBoolFlag(&cli.BoolFlag{Name: "test", Aliases: []string{"test_alias"}}),
+		FlagName: "test_alias",
+		MapValue: true,
+	}
+	c := runTest(t, tis)
+	expect(t, true, c.Bool("test_alias"))
+
+	c = runRacyTest(t, tis)
+	refute(t, true, c.Bool("test_alias"))
+}
+
 func TestBoolApplyInputSourceMethodContextSet(t *testing.T) {
 	tis := testApplyInputSource{
 		Flag:               NewBoolFlag(&cli.BoolFlag{Name: "test"}),
@@ -205,6 +310,19 @@ func TestBoolApplyInputSourceMethodEnvVarSet(t *testing.T) {
 
 	c = runRacyTest(t, tis)
 	refute(t, true, c.Bool("test"))
+}
+
+func TestStringApplyInputSourceMethodSet_Alias(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:     NewStringFlag(&cli.StringFlag{Name: "test", Aliases: []string{"test_alias"}}),
+		FlagName: "test_alias",
+		MapValue: "hello",
+	}
+	c := runTest(t, tis)
+	expect(t, "hello", c.String("test_alias"))
+
+	c = runRacyTest(t, tis)
+	refute(t, "hello", c.String("test_alias"))
 }
 
 func TestStringApplyInputSourceMethodSet(t *testing.T) {
@@ -247,6 +365,31 @@ func TestStringApplyInputSourceMethodEnvVarSet(t *testing.T) {
 
 	c = runRacyTest(t, tis)
 	refute(t, "goodbye", c.String("test"))
+}
+
+func TestPathApplyInputSourceMethodSet_Alias(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:       NewPathFlag(&cli.PathFlag{Name: "test", Aliases: []string{"test_alias"}}),
+		FlagName:   "test_alias",
+		MapValue:   "hello",
+		SourcePath: "/path/to/source/file",
+	}
+	c := runTest(t, tis)
+
+	expected := "/path/to/source/hello"
+	if runtime.GOOS == "windows" {
+		var err error
+		// Prepend the corresponding drive letter (or UNC path?), and change
+		// to windows-style path:
+		expected, err = filepath.Abs(expected)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	expect(t, expected, c.String("test_alias"))
+
+	c = runRacyTest(t, tis)
+	refute(t, expected, c.String("test_alias"))
 }
 
 func TestPathApplyInputSourceMethodSet(t *testing.T) {
@@ -305,6 +448,19 @@ func TestPathApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	refute(t, "goodbye", c.String("test"))
 }
 
+func TestIntApplyInputSourceMethodSet_Alias(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:     NewIntFlag(&cli.IntFlag{Name: "test", Aliases: []string{"test_alias"}}),
+		FlagName: "test_alias",
+		MapValue: 15,
+	}
+	c := runTest(t, tis)
+	expect(t, 15, c.Int("test_alias"))
+
+	c = runRacyTest(t, tis)
+	refute(t, 15, c.Int("test_alias"))
+}
+
 func TestIntApplyInputSourceMethodSet(t *testing.T) {
 	tis := testApplyInputSource{
 		Flag:     NewIntFlag(&cli.IntFlag{Name: "test"}),
@@ -358,6 +514,19 @@ func TestIntApplyInputSourceMethodEnvVarSet(t *testing.T) {
 
 	c = runRacyTest(t, tis)
 	refute(t, 12, c.Int("test"))
+}
+
+func TestDurationApplyInputSourceMethodSet_Alias(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:     NewDurationFlag(&cli.DurationFlag{Name: "test", Aliases: []string{"test_alias"}}),
+		FlagName: "test_alias",
+		MapValue: 30 * time.Second,
+	}
+	c := runTest(t, tis)
+	expect(t, 30*time.Second, c.Duration("test_alias"))
+
+	c = runRacyTest(t, tis)
+	refute(t, 30*time.Second, c.Duration("test_alias"))
 }
 
 func TestDurationApplyInputSourceMethodSet(t *testing.T) {
@@ -426,6 +595,19 @@ func TestFloat64ApplyInputSourceMethodSet(t *testing.T) {
 
 	c = runRacyTest(t, tis)
 	refute(t, 1.3, c.Float64("test"))
+}
+
+func TestFloat64ApplyInputSourceMethodSetNegativeValue_Alias(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:     NewFloat64Flag(&cli.Float64Flag{Name: "test", Aliases: []string{"test_alias"}}),
+		FlagName: "test_alias",
+		MapValue: -1.3,
+	}
+	c := runTest(t, tis)
+	expect(t, -1.3, c.Float64("test_alias"))
+
+	c = runRacyTest(t, tis)
+	refute(t, -1.3, c.Float64("test_alias"))
 }
 
 func TestFloat64ApplyInputSourceMethodSetNegativeValue(t *testing.T) {

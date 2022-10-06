@@ -22,7 +22,7 @@ func (f *GenericFlag) GetValue() string {
 
 // Apply takes the flagset and calls Set on the generic flag with the value
 // provided by the user for parsing by the flag
-func (f GenericFlag) Apply(set *flag.FlagSet) error {
+func (f *GenericFlag) Apply(set *flag.FlagSet) error {
 	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
 		if val != "" {
 			if err := f.Value.Set(val); err != nil {
@@ -43,6 +43,15 @@ func (f GenericFlag) Apply(set *flag.FlagSet) error {
 // Get returns the flag’s value in the given Context.
 func (f *GenericFlag) Get(ctx *Context) interface{} {
 	return ctx.Generic(f.Name)
+}
+
+// RunAction executes flag action if set
+func (f *GenericFlag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.Generic(f.Name))
+	}
+
+	return nil
 }
 
 // Generic looks up the value of a local GenericFlag, returns

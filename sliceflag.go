@@ -110,17 +110,18 @@ func (x *SliceFlag[T, S, E]) GetDestination() S {
 	return nil
 }
 
-func (x *SliceFlag[T, S, E]) String() string         { return x.Target.String() }
-func (x *SliceFlag[T, S, E]) Names() []string        { return x.Target.Names() }
-func (x *SliceFlag[T, S, E]) IsSet() bool            { return x.Target.IsSet() }
-func (x *SliceFlag[T, S, E]) IsRequired() bool       { return x.Target.IsRequired() }
-func (x *SliceFlag[T, S, E]) TakesValue() bool       { return x.Target.TakesValue() }
-func (x *SliceFlag[T, S, E]) GetUsage() string       { return x.Target.GetUsage() }
-func (x *SliceFlag[T, S, E]) GetValue() string       { return x.Target.GetValue() }
-func (x *SliceFlag[T, S, E]) GetDefaultText() string { return x.Target.GetDefaultText() }
-func (x *SliceFlag[T, S, E]) GetEnvVars() []string   { return x.Target.GetEnvVars() }
-func (x *SliceFlag[T, S, E]) IsVisible() bool        { return x.Target.IsVisible() }
-func (x *SliceFlag[T, S, E]) GetCategory() string    { return x.Target.GetCategory() }
+func (x *SliceFlag[T, S, E]) String() string             { return x.Target.String() }
+func (x *SliceFlag[T, S, E]) Names() []string            { return x.Target.Names() }
+func (x *SliceFlag[T, S, E]) IsSet() bool                { return x.Target.IsSet() }
+func (x *SliceFlag[T, S, E]) IsRequired() bool           { return x.Target.IsRequired() }
+func (x *SliceFlag[T, S, E]) TakesValue() bool           { return x.Target.TakesValue() }
+func (x *SliceFlag[T, S, E]) GetUsage() string           { return x.Target.GetUsage() }
+func (x *SliceFlag[T, S, E]) GetValue() string           { return x.Target.GetValue() }
+func (x *SliceFlag[T, S, E]) GetDefaultText() string     { return x.Target.GetDefaultText() }
+func (x *SliceFlag[T, S, E]) GetEnvVars() []string       { return x.Target.GetEnvVars() }
+func (x *SliceFlag[T, S, E]) IsVisible() bool            { return x.Target.IsVisible() }
+func (x *SliceFlag[T, S, E]) GetCategory() string        { return x.Target.GetCategory() }
+func (x *SliceFlag[T, S, E]) RunAction(c *Context) error { return x.Target.RunAction(c) }
 
 func (x *flagValueHook) Set(value string) error {
 	if err := x.value.Set(value); err != nil {

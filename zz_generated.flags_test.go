@@ -160,6 +160,20 @@ func TestTimestampFlag_SatisfiesFmtStringerInterface(t *testing.T) {
 	_ = f.String()
 }
 
+func TestUint64SliceFlag_SatisfiesFlagInterface(t *testing.T) {
+	var f cli.Flag = &cli.Uint64SliceFlag{}
+
+	_ = f.IsSet()
+	_ = f.Names()
+}
+
+func TestUintSliceFlag_SatisfiesFlagInterface(t *testing.T) {
+	var f cli.Flag = &cli.UintSliceFlag{}
+
+	_ = f.IsSet()
+	_ = f.Names()
+}
+
 func TestBoolFlag_SatisfiesFlagInterface(t *testing.T) {
 	var f cli.Flag = &cli.BoolFlag{}
 

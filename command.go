@@ -125,7 +125,9 @@ func (c *Command) Run(ctx *Context) (err error) {
 				fmt.Fprintf(cCtx.App.Writer, suggestion)
 			}
 		}
-		_ = ShowCommandHelp(cCtx, c.Name)
+		if !c.HideHelp {
+			_ = ShowCommandHelp(cCtx, c.Name)
+		}
 		return err
 	}
 
@@ -135,7 +137,9 @@ func (c *Command) Run(ctx *Context) (err error) {
 
 	cerr := cCtx.checkRequiredFlags(c.Flags)
 	if cerr != nil {
-		_ = ShowCommandHelp(cCtx, c.Name)
+		if !c.HideHelp {
+			_ = ShowCommandHelp(cCtx, c.Name)
+		}
 		return cerr
 	}
 
@@ -161,8 +165,12 @@ func (c *Command) Run(ctx *Context) (err error) {
 		}
 	}
 
+	if err = runFlagActions(cCtx, c.Flags); err != nil {
+		return err
+	}
+
 	if c.Action == nil {
-		c.Action = helpSubcommand.Action
+		c.Action = helpCommand.Action
 	}
 
 	cCtx.Command = c
@@ -276,7 +284,7 @@ func (c *Command) startApp(ctx *Context) error {
 	if c.Action != nil {
 		app.Action = c.Action
 	} else {
-		app.Action = helpSubcommand.Action
+		app.Action = helpCommand.Action
 	}
 	app.OnUsageError = c.OnUsageError
 
@@ -290,7 +298,10 @@ func (c *Command) startApp(ctx *Context) error {
 // VisibleFlagCategories returns a slice containing all the visible flag categories with the flags they contain
 func (c *Command) VisibleFlagCategories() []VisibleFlagCategory {
 	if c.flagCategories == nil {
-		return []VisibleFlagCategory{}
+		c.flagCategories = newFlagCategories()
+		for _, fl := range c.Flags {
+			c.flagCategories.AddFlag(fl.GetCategory(), fl)
+		}
 	}
 	return c.flagCategories.VisibleCategories()
 }

@@ -22,6 +22,8 @@ type Float64SliceFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Action func(*Context, []float64) error
 }
 
 // IsSet returns whether or not the flag has been set through env or file
@@ -86,12 +88,14 @@ type GenericFlag struct {
 	HasBeenSet bool
 
 	Value       Generic
-	Destination *Generic
+	Destination Generic
 
 	Aliases []string
 	EnvVars []string
 
 	TakesFile bool
+
+	Action func(*Context, interface{}) error
 }
 
 // String returns a readable representation of this value (for usage defaults)
@@ -165,6 +169,8 @@ type Int64SliceFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Action func(*Context, []int64) error
 }
 
 // IsSet returns whether or not the flag has been set through env or file
@@ -233,6 +239,8 @@ type IntSliceFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Action func(*Context, []int) error
 }
 
 // IsSet returns whether or not the flag has been set through env or file
@@ -303,6 +311,8 @@ type PathFlag struct {
 	EnvVars []string
 
 	TakesFile bool
+
+	Action func(*Context, Path) error
 }
 
 // String returns a readable representation of this value (for usage defaults)
@@ -370,6 +380,8 @@ type StringSliceFlag struct {
 	EnvVars []string
 
 	TakesFile bool
+
+	Action func(*Context, []string) error
 }
 
 // IsSet returns whether or not the flag has been set through env or file
@@ -442,6 +454,8 @@ type TimestampFlag struct {
 	Layout string
 
 	Timezone *time.Location
+
+	Action func(*Context, *time.Time) error
 }
 
 // String returns a readable representation of this value (for usage defaults)
@@ -497,6 +511,90 @@ func (f *TimestampFlag) GetDefaultText() string {
 	return f.GetValue()
 }
 
+// Uint64SliceFlag is a flag with type *Uint64Slice
+type Uint64SliceFlag struct {
+	Name string
+
+	Category    string
+	DefaultText string
+	FilePath    string
+	Usage       string
+
+	Required   bool
+	Hidden     bool
+	HasBeenSet bool
+
+	Value       *Uint64Slice
+	Destination *Uint64Slice
+
+	Aliases []string
+	EnvVars []string
+
+	Action func(*Context, []uint64) error
+}
+
+// IsSet returns whether or not the flag has been set through env or file
+func (f *Uint64SliceFlag) IsSet() bool {
+	return f.HasBeenSet
+}
+
+// Names returns the names of the flag
+func (f *Uint64SliceFlag) Names() []string {
+	return FlagNames(f.Name, f.Aliases)
+}
+
+// IsRequired returns whether or not the flag is required
+func (f *Uint64SliceFlag) IsRequired() bool {
+	return f.Required
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *Uint64SliceFlag) IsVisible() bool {
+	return !f.Hidden
+}
+
+// UintSliceFlag is a flag with type *UintSlice
+type UintSliceFlag struct {
+	Name string
+
+	Category    string
+	DefaultText string
+	FilePath    string
+	Usage       string
+
+	Required   bool
+	Hidden     bool
+	HasBeenSet bool
+
+	Value       *UintSlice
+	Destination *UintSlice
+
+	Aliases []string
+	EnvVars []string
+
+	Action func(*Context, []uint) error
+}
+
+// IsSet returns whether or not the flag has been set through env or file
+func (f *UintSliceFlag) IsSet() bool {
+	return f.HasBeenSet
+}
+
+// Names returns the names of the flag
+func (f *UintSliceFlag) Names() []string {
+	return FlagNames(f.Name, f.Aliases)
+}
+
+// IsRequired returns whether or not the flag is required
+func (f *UintSliceFlag) IsRequired() bool {
+	return f.Required
+}
+
+// IsVisible returns true if the flag is not hidden, otherwise false
+func (f *UintSliceFlag) IsVisible() bool {
+	return !f.Hidden
+}
+
 // BoolFlag is a flag with type bool
 type BoolFlag struct {
 	Name string
@@ -515,6 +613,10 @@ type BoolFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Count *int
+
+	Action func(*Context, bool) error
 }
 
 // String returns a readable representation of this value (for usage defaults)
@@ -580,6 +682,8 @@ type Float64Flag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Action func(*Context, float64) error
 }
 
 // String returns a readable representation of this value (for usage defaults)
@@ -653,6 +757,10 @@ type IntFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Base int
+
+	Action func(*Context, int) error
 }
 
 // String returns a readable representation of this value (for usage defaults)
@@ -726,6 +834,10 @@ type Int64Flag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Base int
+
+	Action func(*Context, int64) error
 }
 
 // String returns a readable representation of this value (for usage defaults)
@@ -801,6 +913,8 @@ type StringFlag struct {
 	EnvVars []string
 
 	TakesFile bool
+
+	Action func(*Context, string) error
 }
 
 // String returns a readable representation of this value (for usage defaults)
@@ -866,6 +980,8 @@ type DurationFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Action func(*Context, time.Duration) error
 }
 
 // String returns a readable representation of this value (for usage defaults)
@@ -939,6 +1055,10 @@ type UintFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Base int
+
+	Action func(*Context, uint) error
 }
 
 // String returns a readable representation of this value (for usage defaults)
@@ -1012,6 +1132,10 @@ type Uint64Flag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	Base int
+
+	Action func(*Context, uint64) error
 }
 
 // String returns a readable representation of this value (for usage defaults)

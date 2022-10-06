@@ -15,6 +15,15 @@ const (
 	helpAlias = "h"
 )
 
+// this instance is to avoid recursion in the ShowCommandHelp which can
+// add a help command again
+var helpCommandDontUse = &Command{
+	Name:      helpName,
+	Aliases:   []string{helpAlias},
+	Usage:     "Shows a list of commands or help for one command",
+	ArgsUsage: "[command]",
+}
+
 var helpCommand = &Command{
 	Name:      helpName,
 	Aliases:   []string{helpAlias},
@@ -22,26 +31,43 @@ var helpCommand = &Command{
 	ArgsUsage: "[command]",
 	Action: func(cCtx *Context) error {
 		args := cCtx.Args()
-		if args.Present() {
-			return ShowCommandHelp(cCtx, args.First())
+		argsPresent := args.First() != ""
+		firstArg := args.First()
+
+		// This action can be triggered by a "default" action of a command
+		// or via cmd.Run when cmd == helpCmd. So we have following possibilities
+		//
+		// 1 $ app
+		// 2 $ app help
+		// 3 $ app foo
+		// 4 $ app help foo
+		// 5 $ app foo help
+
+		// Case 4. when executing a help command set the context to parent
+		// to allow resolution of subsequent args. This will transform
+		// $ app help foo
+		//     to
+		// $ app foo
+		// which will then be handled as case 3
+		if cCtx.Command.Name == helpName || cCtx.Command.Name == helpAlias {
+			cCtx = cCtx.parentContext
 		}
 
-		_ = ShowAppHelp(cCtx)
-		return nil
-	},
-}
-
-var helpSubcommand = &Command{
-	Name:      helpName,
-	Aliases:   []string{helpAlias},
-	Usage:     "Shows a list of commands or help for one command",
-	ArgsUsage: "[command]",
-	Action: func(cCtx *Context) error {
-		args := cCtx.Args()
-		if args.Present() {
-			return ShowCommandHelp(cCtx, args.First())
+		// Case 4. $ app hello foo
+		// foo is the command for which help needs to be shown
+		if argsPresent {
+			return ShowCommandHelp(cCtx, firstArg)
 		}
 
+		// Case 1 & 2
+		// Special case when running help on main app itself as opposed to indivdual
+		// commands/subcommands
+		if cCtx.parentContext.App == nil {
+			_ = ShowAppHelp(cCtx)
+			return nil
+		}
+
+		// Case 3, 5
 		return ShowSubcommandHelp(cCtx)
 	},
 }
@@ -212,9 +238,19 @@ func ShowCommandHelp(ctx *Context, command string) error {
 
 	for _, c := range ctx.App.Commands {
 		if c.HasName(command) {
+			if !ctx.App.HideHelpCommand && !c.HasName(helpName) && len(c.Subcommands) != 0 {
+				c.Subcommands = append(c.Subcommands, helpCommandDontUse)
+			}
+			if !ctx.App.HideHelp && HelpFlag != nil {
+				c.appendFlag(HelpFlag)
+			}
 			templ := c.CustomHelpTemplate
 			if templ == "" {
-				templ = CommandHelpTemplate
+				if len(c.Subcommands) == 0 {
+					templ = CommandHelpTemplate
+				} else {
+					templ = SubcommandHelpTemplate
+				}
 			}
 
 			HelpPrinter(ctx.App.Writer, templ, c)
@@ -295,12 +331,14 @@ func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs 
 	const maxLineLength = 10000
 
 	funcMap := template.FuncMap{
-		"join":    strings.Join,
-		"indent":  indent,
-		"nindent": nindent,
-		"trim":    strings.TrimSpace,
-		"wrap":    func(input string, offset int) string { return wrap(input, offset, maxLineLength) },
-		"offset":  offset,
+		"join":           strings.Join,
+		"subtract":       subtract,
+		"indent":         indent,
+		"nindent":        nindent,
+		"trim":           strings.TrimSpace,
+		"wrap":           func(input string, offset int) string { return wrap(input, offset, maxLineLength) },
+		"offset":         offset,
+		"offsetCommands": offsetCommands,
 	}
 
 	if customFuncs["wrapAt"] != nil {
@@ -416,6 +454,10 @@ func checkCommandCompletions(c *Context, name string) bool {
 	return true
 }
 
+func subtract(a, b int) int {
+	return a - b
+}
+
 func indent(spaces int, v string) string {
 	pad := strings.Repeat(" ", spaces)
 	return pad + strings.Replace(v, "\n", "\n"+pad, -1)
@@ -475,4 +517,29 @@ func wrapLine(input string, offset int, wrapAt int, padding string) string {
 
 func offset(input string, fixed int) int {
 	return len(input) + fixed
+}
+
+// this function tries to find the max width of the names column
+// so say we have the following rows for help
+//
+//	foo1, foo2, foo3  some string here
+//	bar1, b2 some other string here
+//
+// We want to offset the 2nd row usage by some amount so that everything
+// is aligned
+//
+//	foo1, foo2, foo3  some string here
+//	bar1, b2          some other string here
+//
+// to find that offset we find the length of all the rows and use the max
+// to calculate the offset
+func offsetCommands(cmds []*Command, fixed int) int {
+	var max int = 0
+	for _, cmd := range cmds {
+		s := strings.Join(cmd.Names(), ", ")
+		if len(s) > max {
+			max = len(s)
+		}
+	}
+	return max + fixed
 }

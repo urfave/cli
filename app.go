@@ -78,6 +78,8 @@ type App struct {
 	CommandNotFound CommandNotFoundFunc
 	// Execute this function if a usage error occurs
 	OnUsageError OnUsageErrorFunc
+	// Execute this function when an invalid flag is accessed from the context
+	InvalidFlagAccessHandler InvalidFlagAccessFunc
 	// Compilation date
 	Compiled time.Time
 	// List of all authors who contributed
@@ -131,7 +133,6 @@ func compileTime() time.Time {
 func NewApp() *App {
 	return &App{
 		Name:         filepath.Base(os.Args[0]),
-		HelpName:     filepath.Base(os.Args[0]),
 		Usage:        "A new cli application",
 		UsageText:    "",
 		BashComplete: DefaultAppComplete,
@@ -273,7 +274,9 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 	cCtx := NewContext(a, set, &Context{Context: ctx})
 	if nerr != nil {
 		_, _ = fmt.Fprintln(a.Writer, nerr)
-		_ = ShowAppHelp(cCtx)
+		if !a.HideHelp {
+			_ = ShowAppHelp(cCtx)
+		}
 		return nerr
 	}
 	cCtx.shellComplete = shellComplete
@@ -294,8 +297,22 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 				fmt.Fprintf(a.Writer, suggestion)
 			}
 		}
-		_ = ShowAppHelp(cCtx)
+		if !a.HideHelp {
+			_ = ShowAppHelp(cCtx)
+		}
 		return err
+	}
+
+	if a.After != nil && !cCtx.shellComplete {
+		defer func() {
+			if afterErr := a.After(cCtx); afterErr != nil {
+				if err != nil {
+					err = newMultiError(err, afterErr)
+				} else {
+					err = afterErr
+				}
+			}
+		}()
 	}
 
 	if !a.HideHelp && checkHelp(cCtx) {
@@ -314,25 +331,17 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 		return cerr
 	}
 
-	if a.After != nil {
-		defer func() {
-			if afterErr := a.After(cCtx); afterErr != nil {
-				if err != nil {
-					err = newMultiError(err, afterErr)
-				} else {
-					err = afterErr
-				}
-			}
-		}()
-	}
-
-	if a.Before != nil {
+	if a.Before != nil && !cCtx.shellComplete {
 		beforeErr := a.Before(cCtx)
 		if beforeErr != nil {
 			a.handleExitCoder(cCtx, beforeErr)
 			err = beforeErr
 			return err
 		}
+	}
+
+	if err = runFlagActions(cCtx, a.Flags); err != nil {
+		return err
 	}
 
 	var c *Command
@@ -493,7 +502,7 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 		return cerr
 	}
 
-	if a.After != nil {
+	if a.After != nil && !cCtx.shellComplete {
 		defer func() {
 			afterErr := a.After(cCtx)
 			if afterErr != nil {
@@ -507,13 +516,17 @@ func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 		}()
 	}
 
-	if a.Before != nil {
+	if a.Before != nil && !cCtx.shellComplete {
 		beforeErr := a.Before(cCtx)
 		if beforeErr != nil {
 			a.handleExitCoder(cCtx, beforeErr)
 			err = beforeErr
 			return err
 		}
+	}
+
+	if err = runFlagActions(cCtx, a.Flags); err != nil {
+		return err
 	}
 
 	args := cCtx.Args()
@@ -637,6 +650,24 @@ func (a *App) argsWithDefaultCommand(oldArgs Args) Args {
 	}
 
 	return oldArgs
+}
+
+func runFlagActions(c *Context, fs []Flag) error {
+	for _, f := range fs {
+		isSet := false
+		for _, name := range f.Names() {
+			if c.IsSet(name) {
+				isSet = true
+				break
+			}
+		}
+		if isSet {
+			if err := f.RunAction(c); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // Author represents someone who has contributed to a cli project.

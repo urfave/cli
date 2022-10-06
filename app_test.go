@@ -9,8 +9,10 @@ import (
 	"io/ioutil"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 var (
@@ -175,10 +177,13 @@ func ExampleApp_Run_commandHelp() {
 	//    greet describeit - use it to see a description
 	//
 	// USAGE:
-	//    greet describeit [arguments...]
+	//    greet describeit [command options] [arguments...]
 	//
 	// DESCRIPTION:
 	//    This is how we describe describeit the function
+	//
+	// OPTIONS:
+	//    --help, -h  show help (default: false)
 }
 
 func ExampleApp_Run_noAction() {
@@ -1245,6 +1250,58 @@ func TestApp_BeforeFunc(t *testing.T) {
 	}
 }
 
+func TestApp_BeforeAfterFuncShellCompletion(t *testing.T) {
+	counts := &opCounts{}
+	var err error
+
+	app := &App{
+		EnableBashCompletion: true,
+		Before: func(c *Context) error {
+			counts.Total++
+			counts.Before = counts.Total
+			return nil
+		},
+		After: func(c *Context) error {
+			counts.Total++
+			counts.After = counts.Total
+			return nil
+		},
+		Commands: []*Command{
+			{
+				Name: "sub",
+				Action: func(c *Context) error {
+					counts.Total++
+					counts.SubCommand = counts.Total
+					return nil
+				},
+			},
+		},
+		Flags: []Flag{
+			&StringFlag{Name: "opt"},
+		},
+		Writer: ioutil.Discard,
+	}
+
+	// run with the Before() func succeeding
+	err = app.Run([]string{"command", "--opt", "succeed", "sub", "--generate-bash-completion"})
+
+	if err != nil {
+		t.Fatalf("Run error: %s", err)
+	}
+
+	if counts.Before != 0 {
+		t.Errorf("Before() executed when not expected")
+	}
+
+	if counts.After != 0 {
+		t.Errorf("After() executed when not expected")
+	}
+
+	if counts.SubCommand != 0 {
+		t.Errorf("Subcommand executed more than expected")
+	}
+}
+
 func TestApp_AfterFunc(t *testing.T) {
 	counts := &opCounts{}
 	afterError := fmt.Errorf("fail")
@@ -1307,6 +1364,27 @@ func TestApp_AfterFunc(t *testing.T) {
 	}
 
 	if counts.SubCommand != 1 {
+		t.Errorf("Subcommand not executed when expected")
+	}
+
+	/*
+		reset
+	*/
+	counts = &opCounts{}
+
+	// run with none args
+	err = app.Run([]string{"command"})
+
+	// should be the same error produced by the Before func
+	if err != nil {
+		t.Fatalf("Run error: %s", err)
+	}
+
+	if counts.After != 1 {
+		t.Errorf("After() not executed when expected")
+	}
+
+	if counts.SubCommand != 0 {
 		t.Errorf("Subcommand not executed when expected")
 	}
 }
@@ -1873,31 +1951,67 @@ func TestApp_Run_CommandSubcommandHelpName(t *testing.T) {
 }
 
 func TestApp_Run_Help(t *testing.T) {
-	var helpArguments = [][]string{{"boom", "--help"}, {"boom", "-h"}, {"boom", "help"}}
+	var tests = []struct {
+		helpArguments []string
+		hideHelp      bool
+		wantContains  string
+		wantErr       error
+	}{
+		{
+			helpArguments: []string{"boom", "--help"},
+			hideHelp:      false,
+			wantContains:  "boom - make an explosive entrance",
+		},
+		{
+			helpArguments: []string{"boom", "-h"},
+			hideHelp:      false,
+			wantContains:  "boom - make an explosive entrance",
+		},
+		{
+			helpArguments: []string{"boom", "help"},
+			hideHelp:      false,
+			wantContains:  "boom - make an explosive entrance",
+		},
+		{
+			helpArguments: []string{"boom", "--help"},
+			hideHelp:      true,
+			wantErr:       fmt.Errorf("flag: help requested"),
+		},
+		{
+			helpArguments: []string{"boom", "-h"},
+			hideHelp:      true,
+			wantErr:       fmt.Errorf("flag: help requested"),
+		},
+		{
+			helpArguments: []string{"boom", "help"},
+			hideHelp:      true,
+			wantContains:  "boom I say!",
+		},
+	}
 
-	for _, args := range helpArguments {
-		t.Run(fmt.Sprintf("checking with arguments %v", args), func(t *testing.T) {
-
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("checking with arguments %v", tt.helpArguments), func(t *testing.T) {
 			buf := new(bytes.Buffer)
 
 			app := &App{
-				Name:   "boom",
-				Usage:  "make an explosive entrance",
-				Writer: buf,
+				Name:     "boom",
+				Usage:    "make an explosive entrance",
+				Writer:   buf,
+				HideHelp: tt.hideHelp,
 				Action: func(c *Context) error {
 					buf.WriteString("boom I say!")
 					return nil
 				},
 			}
 
-			err := app.Run(args)
-			if err != nil {
-				t.Error(err)
+			err := app.Run(tt.helpArguments)
+			if err != nil && err.Error() != tt.wantErr.Error() {
+				t.Errorf("want err: %s, did note %s\n", tt.wantErr, err)
 			}
 
 			output := buf.String()
 
-			if !strings.Contains(output, "boom - make an explosive entrance") {
+			if !strings.Contains(output, tt.wantContains) {
 				t.Errorf("want help to contain %q, did not: \n%q", "boom - make an explosive entrance", output)
 			}
 		})
@@ -2248,6 +2362,10 @@ func (c *customBoolFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
+func (c *customBoolFlag) RunAction(*Context) error {
+	return nil
+}
+
 func (c *customBoolFlag) IsSet() bool {
 	return false
 }
@@ -2485,5 +2603,394 @@ func TestSetupInitializesOnlyNilWriters(t *testing.T) {
 
 	if a.Writer != os.Stdout {
 		t.Errorf("expected a.Writer to be os.Stdout")
+	}
+}
+
+type stringGeneric struct {
+	value string
+}
+
+func (s *stringGeneric) Set(value string) error {
+	s.value = value
+	return nil
+}
+
+func (s *stringGeneric) String() string {
+	return s.value
+}
+
+func TestFlagAction(t *testing.T) {
+	stringFlag := &StringFlag{
+		Name: "f_string",
+		Action: func(c *Context, v string) error {
+			if v == "" {
+				return fmt.Errorf("empty string")
+			}
+			c.App.Writer.Write([]byte(v + " "))
+			return nil
+		},
+	}
+	app := &App{
+		Name: "app",
+		Commands: []*Command{
+			{
+				Name:   "c1",
+				Flags:  []Flag{stringFlag},
+				Action: func(ctx *Context) error { return nil },
+				Subcommands: []*Command{
+					{
+						Name:   "sub1",
+						Action: func(ctx *Context) error { return nil },
+						Flags:  []Flag{stringFlag},
+					},
+				},
+			},
+		},
+		Flags: []Flag{
+			stringFlag,
+			&StringFlag{
+				Name: "f_no_action",
+			},
+			&StringSliceFlag{
+				Name: "f_string_slice",
+				Action: func(c *Context, v []string) error {
+					if v[0] == "err" {
+						return fmt.Errorf("error string slice")
+					}
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&BoolFlag{
+				Name: "f_bool",
+				Action: func(c *Context, v bool) error {
+					if !v {
+						return fmt.Errorf("value is false")
+					}
+					c.App.Writer.Write([]byte(fmt.Sprintf("%t ", v)))
+					return nil
+				},
+			},
+			&DurationFlag{
+				Name: "f_duration",
+				Action: func(c *Context, v time.Duration) error {
+					if v == 0 {
+						return fmt.Errorf("empty duration")
+					}
+					c.App.Writer.Write([]byte(v.String() + " "))
+					return nil
+				},
+			},
+			&Float64Flag{
+				Name: "f_float64",
+				Action: func(c *Context, v float64) error {
+					if v < 0 {
+						return fmt.Errorf("negative float64")
+					}
+					c.App.Writer.Write([]byte(strconv.FormatFloat(v, 'f', -1, 64) + " "))
+					return nil
+				},
+			},
+			&Float64SliceFlag{
+				Name: "f_float64_slice",
+				Action: func(c *Context, v []float64) error {
+					if len(v) > 0 && v[0] < 0 {
+						return fmt.Errorf("invalid float64 slice")
+					}
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&GenericFlag{
+				Name:  "f_generic",
+				Value: new(stringGeneric),
+				Action: func(c *Context, v interface{}) error {
+					fmt.Printf("%T %v\n", v, v)
+					switch vv := v.(type) {
+					case *stringGeneric:
+						if vv.value == "" {
+							return fmt.Errorf("generic value not set")
+						}
+					}
+
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&IntFlag{
+				Name: "f_int",
+				Action: func(c *Context, v int) error {
+					if v < 0 {
+						return fmt.Errorf("negative int")
+					}
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&IntSliceFlag{
+				Name: "f_int_slice",
+				Action: func(c *Context, v []int) error {
+					if len(v) > 0 && v[0] < 0 {
+						return fmt.Errorf("invalid int slice")
+					}
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&Int64Flag{
+				Name: "f_int64",
+				Action: func(c *Context, v int64) error {
+					if v < 0 {
+						return fmt.Errorf("negative int64")
+					}
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&Int64SliceFlag{
+				Name: "f_int64_slice",
+				Action: func(c *Context, v []int64) error {
+					if len(v) > 0 && v[0] < 0 {
+						return fmt.Errorf("invalid int64 slice")
+					}
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&PathFlag{
+				Name: "f_path",
+				Action: func(c *Context, v string) error {
+					if v == "" {
+						return fmt.Errorf("empty path")
+					}
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&TimestampFlag{
+				Name:   "f_timestamp",
+				Layout: "2006-01-02 15:04:05",
+				Action: func(c *Context, v *time.Time) error {
+					if v.IsZero() {
+						return fmt.Errorf("zero timestamp")
+					}
+					c.App.Writer.Write([]byte(v.Format(time.RFC3339) + " "))
+					return nil
+				},
+			},
+			&UintFlag{
+				Name: "f_uint",
+				Action: func(c *Context, v uint) error {
+					if v == 0 {
+						return fmt.Errorf("zero uint")
+					}
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&Uint64Flag{
+				Name: "f_uint64",
+				Action: func(c *Context, v uint64) error {
+					if v == 0 {
+						return fmt.Errorf("zero uint64")
+					}
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+		},
+		Action: func(ctx *Context) error { return nil },
+	}
+
+	tests := []struct {
+		name string
+		args []string
+		err  error
+		exp  string
+	}{
+		{
+			name: "flag_string",
+			args: []string{"app", "--f_string=string"},
+			exp:  "string ",
+		},
+		{
+			name: "flag_string_error",
+			args: []string{"app", "--f_string="},
+			err:  fmt.Errorf("empty string"),
+		},
+		{
+			name: "flag_string_slice",
+			args: []string{"app", "--f_string_slice=s1,s2,s3"},
+			exp:  "[s1 s2 s3] ",
+		},
+		{
+			name: "flag_string_slice_error",
+			args: []string{"app", "--f_string_slice=err"},
+			err:  fmt.Errorf("error string slice"),
+		},
+		{
+			name: "flag_bool",
+			args: []string{"app", "--f_bool"},
+			exp:  "true ",
+		},
+		{
+			name: "flag_bool_error",
+			args: []string{"app", "--f_bool=false"},
+			err:  fmt.Errorf("value is false"),
+		},
+		{
+			name: "flag_duration",
+			args: []string{"app", "--f_duration=1h30m20s"},
+			exp:  "1h30m20s ",
+		},
+		{
+			name: "flag_duration_error",
+			args: []string{"app", "--f_duration=0"},
+			err:  fmt.Errorf("empty duration"),
+		},
+		{
+			name: "flag_float64",
+			args: []string{"app", "--f_float64=3.14159"},
+			exp:  "3.14159 ",
+		},
+		{
+			name: "flag_float64_error",
+			args: []string{"app", "--f_float64=-1"},
+			err:  fmt.Errorf("negative float64"),
+		},
+		{
+			name: "flag_float64_slice",
+			args: []string{"app", "--f_float64_slice=1.1,2.2,3.3"},
+			exp:  "[1.1 2.2 3.3] ",
+		},
+		{
+			name: "flag_float64_slice_error",
+			args: []string{"app", "--f_float64_slice=-1"},
+			err:  fmt.Errorf("invalid float64 slice"),
+		},
+		{
+			name: "flag_generic",
+			args: []string{"app", "--f_generic=1"},
+			exp:  "1 ",
+		},
+		{
+			name: "flag_generic_error",
+			args: []string{"app", "--f_generic="},
+			err:  fmt.Errorf("generic value not set"),
+		},
+		{
+			name: "flag_int",
+			args: []string{"app", "--f_int=1"},
+			exp:  "1 ",
+		},
+		{
+			name: "flag_int_error",
+			args: []string{"app", "--f_int=-1"},
+			err:  fmt.Errorf("negative int"),
+		},
+		{
+			name: "flag_int_slice",
+			args: []string{"app", "--f_int_slice=1,2,3"},
+			exp:  "[1 2 3] ",
+		},
+		{
+			name: "flag_int_slice_error",
+			args: []string{"app", "--f_int_slice=-1"},
+			err:  fmt.Errorf("invalid int slice"),
+		},
+		{
+			name: "flag_int64",
+			args: []string{"app", "--f_int64=1"},
+			exp:  "1 ",
+		},
+		{
+			name: "flag_int64_error",
+			args: []string{"app", "--f_int64=-1"},
+			err:  fmt.Errorf("negative int64"),
+		},
+		{
+			name: "flag_int64_slice",
+			args: []string{"app", "--f_int64_slice=1,2,3"},
+			exp:  "[1 2 3] ",
+		},
+		{
+			name: "flag_int64_slice",
+			args: []string{"app", "--f_int64_slice=-1"},
+			err:  fmt.Errorf("invalid int64 slice"),
+		},
+		{
+			name: "flag_path",
+			args: []string{"app", "--f_path=/root"},
+			exp:  "/root ",
+		},
+		{
+			name: "flag_path_error",
+			args: []string{"app", "--f_path="},
+			err:  fmt.Errorf("empty path"),
+		},
+		{
+			name: "flag_timestamp",
+			args: []string{"app", "--f_timestamp", "2022-05-01 02:26:20"},
+			exp:  "2022-05-01T02:26:20Z ",
+		},
+		{
+			name: "flag_timestamp_error",
+			args: []string{"app", "--f_timestamp", "0001-01-01 00:00:00"},
+			err:  fmt.Errorf("zero timestamp"),
+		},
+		{
+			name: "flag_uint",
+			args: []string{"app", "--f_uint=1"},
+			exp:  "1 ",
+		},
+		{
+			name: "flag_uint_error",
+			args: []string{"app", "--f_uint=0"},
+			err:  fmt.Errorf("zero uint"),
+		},
+		{
+			name: "flag_uint64",
+			args: []string{"app", "--f_uint64=1"},
+			exp:  "1 ",
+		},
+		{
+			name: "flag_uint64_error",
+			args: []string{"app", "--f_uint64=0"},
+			err:  fmt.Errorf("zero uint64"),
+		},
+		{
+			name: "flag_no_action",
+			args: []string{"app", "--f_no_action="},
+			exp:  "",
+		},
+		{
+			name: "command_flag",
+			args: []string{"app", "c1", "--f_string=c1"},
+			exp:  "c1 ",
+		},
+		{
+			name: "subCommand_flag",
+			args: []string{"app", "c1", "sub1", "--f_string=sub1"},
+			exp:  "sub1 ",
+		},
+		{
+			name: "mixture",
+			args: []string{"app", "--f_string=app", "--f_uint=1", "--f_int_slice=1,2,3", "--f_duration=1h30m20s", "c1", "--f_string=c1", "sub1", "--f_string=sub1"},
+			exp:  "app 1h30m20s [1 2 3] 1 c1 sub1 ",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			buf := new(bytes.Buffer)
+			app.Writer = buf
+			err := app.Run(test.args)
+			if test.err != nil {
+				expect(t, err, test.err)
+			} else {
+				expect(t, err, nil)
+				expect(t, buf.String(), test.exp)
+			}
+		})
 	}
 }

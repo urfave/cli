@@ -1,5 +1,4 @@
 name: Run Tests
-
 on:
   push:
     branches:
@@ -12,87 +11,68 @@ on:
     branches:
       - main
       - v3-dev-main
-
+permissions:
+  contents: read
 jobs:
   test:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        go: [1.18.x]
+        go: [1.18.x, 1.19.x]
     name: ${{ matrix.os }} @ Go ${{ matrix.go }}
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Set up Go ${{ matrix.go }}
-        uses: actions/setup-go@v3
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
-
       - name: Set PATH
         run: echo "${GITHUB_WORKSPACE}/.local/bin" >>"${GITHUB_PATH}"
-
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: GOFMT Check
-        if: matrix.go == '1.18.x' && matrix.os == 'ubuntu-latest'
-        run: test -z $(gofmt -l .)
-
-      - name: vet
-        run: go run internal/build/build.go vet
-
-      - name: test with urfave_cli_no_docs tag
-        run: go run internal/build/build.go -tags urfave_cli_no_docs test
-
-      - name: test
-        run: go run internal/build/build.go test
-
-      - name: check-binary-size
-        run: go run internal/build/build.go check-binary-size
-
-      - name: check-binary-size with tags (informational only)
-        run: go run internal/build/build.go -tags urfave_cli_no_docs check-binary-size
-
-      - name: Upload coverage to Codecov
-        if: success() && matrix.go == '1.18.x' && matrix.os == 'ubuntu-latest'
-        uses: codecov/codecov-action@v2
+      - uses: actions/checkout@v3
+      - if: matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
+        run: make ensure-goimports
+      - if: matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
+        run: make lint
+      - run: make vet
+      - run: make test
+        env:
+          GFLAGS: -tags urfave_cli_no_docs
+      - run: make test
+      - run: make -C cmd/urfave-cli-genflags
+      - run: make check-binary-size
+        env:
+          GFLAGS: -tags urfave_cli_no_docs
+      - run: make check-binary-size
+      - run: make yamlfmt
+      - run: make diffcheck
+      - if: matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
+        run: make v2diff
+      - if: success() && matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v3
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 
   test-docs:
     name: test-docs
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Go
-        uses: actions/setup-go@v3
+      - uses: actions/setup-go@v3
         with:
-          go-version: 1.18.x
-
-      - name: Use Node.js 16
-        uses: actions/setup-node@v3
+          go-version: 1.19.x
+      - uses: actions/setup-node@v3
         with:
           node-version: '16'
-
       - name: Set PATH
         run: echo "${GITHUB_WORKSPACE}/.local/bin" >>"${GITHUB_PATH}"
-
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Install Dependencies
-        run: |
-          mkdir -p "${GITHUB_WORKSPACE}/.local/bin"
-          curl -fsSL -o "${GITHUB_WORKSPACE}/.local/bin/gfmrun" "https://github.com/urfave/gfmrun/releases/download/v1.3.0/gfmrun-$(go env GOOS)-$(go env GOARCH)-v1.3.0"
-          chmod +x "${GITHUB_WORKSPACE}/.local/bin/gfmrun"
-
-      - name: gfmrun
-        run: go run internal/build/build.go gfmrun docs/v3/index.md
-
-      - name: diff check
-        run: |
-          git diff --exit-code
-          git diff --cached --exit-code
-
+      - uses: actions/checkout@v3
+      - run: make ensure-gfmrun
+      - run: make gfmrun
+        env:
+          FLAGS: --walk docs/v3/
+      - run: make diffcheck
   publish:
+    permissions:
+      contents: write
     # TODO: switch once v3 is released {{
     # if: startswith(github.ref, 'refs/tags/')
     if: 'false'
@@ -101,18 +81,13 @@ jobs:
     needs: [test-docs]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
-      - name: Setup mkdocs
-        run: |
-          pip install -U pip
-          pip install -r mkdocs-requirements.txt
-          git remote rm origin
-          git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/urfave/cli.git
-
-      - name: Publish Docs
-        run: |
-          mkdocs gh-deploy --force
+      - run: make ensure-mkdocs
+        env:
+          FLAGS: --upgrade-pip
+      - run: make set-mkdocs-remote
+        env:
+          MKDOCS_REMOTE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: make deploy-mkdocs

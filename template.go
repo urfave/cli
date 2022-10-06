@@ -21,8 +21,8 @@ AUTHOR{{with $length := len .Authors}}{{if ne 1 $length}}S{{end}}{{end}}:
 
 COMMANDS:{{range .VisibleCategories}}{{if .Name}}
    {{.Name}}:{{range .VisibleCommands}}
-     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{range .VisibleCommands}}
-   {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{end}}{{end}}{{end}}{{if .VisibleFlagCategories}}
+     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{ $cv := offsetCommands .VisibleCommands 5}}{{range .VisibleCommands}}
+   {{$s := join .Names ", "}}{{$s}}{{ $sp := subtract $cv (offset $s 3) }}{{ indent $sp ""}}{{wrap .Usage $cv}}{{end}}{{end}}{{end}}{{end}}{{if .VisibleFlagCategories}}
 
 GLOBAL OPTIONS:{{range .VisibleFlagCategories}}
    {{if .Name}}{{.Name}}
@@ -54,12 +54,10 @@ DESCRIPTION:
 
 OPTIONS:{{range .VisibleFlagCategories}}
    {{if .Name}}{{.Name}}
-   {{end}}{{range .Flags}}{{.}}
-   {{end}}{{end}}{{else}}{{if .VisibleFlags}}
+   {{end}}{{range .Flags}}{{.}}{{end}}{{end}}{{else}}{{if .VisibleFlags}}
 
 OPTIONS:
-   {{range .VisibleFlags}}{{.}}
-   {{end}}{{end}}{{end}}
+   {{range .VisibleFlags}}{{.}}{{end}}{{end}}{{end}}
 `
 
 // SubcommandHelpTemplate is the text template for the subcommand help topic.
@@ -76,12 +74,11 @@ DESCRIPTION:
 
 COMMANDS:{{range .VisibleCategories}}{{if .Name}}
    {{.Name}}:{{range .VisibleCommands}}
-     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{range .VisibleCommands}}
-   {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
+     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{ $cv := offsetCommands .VisibleCommands 5}}{{range .VisibleCommands}}
+     {{$s := join .Names ", "}}{{$s}}{{ $sp := subtract $cv (offset $s 3) }}{{ indent $sp ""}}{{wrap .Usage $cv}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
 
 OPTIONS:
-   {{range .VisibleFlags}}{{.}}
-   {{end}}{{end}}
+   {{range .VisibleFlags}}{{.}}{{end}}{{end}}
 `
 
 var MarkdownDocTemplate = `{{if gt .SectionNum 0}}% {{ .App.Name }} {{ .SectionNum }}
