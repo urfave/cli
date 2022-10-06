@@ -740,6 +740,14 @@ type DocGenerationFlag interface {
     DocGenerationFlag is an interface that allows documentation generation for
     the flag
 
+type DocGenerationSliceFlag interface {
+	DocGenerationFlag
+
+	// IsSliceFlag returns true for flags that can be given multiple times.
+	IsSliceFlag() bool
+}
+    DocGenerationSliceFlag extends DocGenerationFlag for slice-based flags.
+
 type DurationFlag struct {
 	Name string
 
@@ -1058,6 +1066,9 @@ func (f *Float64SliceFlag) IsRequired() bool
 func (f *Float64SliceFlag) IsSet() bool
     IsSet returns whether or not the flag has been set through env or file
 
+func (f *Float64SliceFlag) IsSliceFlag() bool
+    IsSliceFlag implements DocGenerationSliceFlag.
+
 func (f *Float64SliceFlag) IsVisible() bool
     IsVisible returns true if the flag is not hidden, otherwise false
 
@@ -1293,6 +1304,9 @@ func (f *Int64SliceFlag) IsRequired() bool
 func (f *Int64SliceFlag) IsSet() bool
     IsSet returns whether or not the flag has been set through env or file
 
+func (f *Int64SliceFlag) IsSliceFlag() bool
+    IsSliceFlag implements DocGenerationSliceFlag.
+
 func (f *Int64SliceFlag) IsVisible() bool
     IsVisible returns true if the flag is not hidden, otherwise false
 
@@ -1457,6 +1471,9 @@ func (f *IntSliceFlag) IsRequired() bool
 
 func (f *IntSliceFlag) IsSet() bool
     IsSet returns whether or not the flag has been set through env or file
+
+func (f *IntSliceFlag) IsSliceFlag() bool
+    IsSliceFlag implements DocGenerationSliceFlag.
 
 func (f *IntSliceFlag) IsVisible() bool
     IsVisible returns true if the flag is not hidden, otherwise false
@@ -1797,6 +1814,9 @@ func (f *StringSliceFlag) IsRequired() bool
 func (f *StringSliceFlag) IsSet() bool
     IsSet returns whether or not the flag has been set through env or file
 
+func (f *StringSliceFlag) IsSliceFlag() bool
+    IsSliceFlag implements DocGenerationSliceFlag.
+
 func (f *StringSliceFlag) IsVisible() bool
     IsVisible returns true if the flag is not hidden, otherwise false
 
@@ -2058,6 +2078,9 @@ func (f *Uint64SliceFlag) IsRequired() bool
 func (f *Uint64SliceFlag) IsSet() bool
     IsSet returns whether or not the flag has been set through env or file
 
+func (f *Uint64SliceFlag) IsSliceFlag() bool
+    IsSliceFlag implements DocGenerationSliceFlag.
+
 func (f *Uint64SliceFlag) IsVisible() bool
     IsVisible returns true if the flag is not hidden, otherwise false
 
@@ -2213,6 +2236,9 @@ func (f *UintSliceFlag) IsRequired() bool
 
 func (f *UintSliceFlag) IsSet() bool
     IsSet returns whether or not the flag has been set through env or file
+
+func (f *UintSliceFlag) IsSliceFlag() bool
+    IsSliceFlag implements DocGenerationSliceFlag.
 
 func (f *UintSliceFlag) IsVisible() bool
     IsVisible returns true if the flag is not hidden, otherwise false
