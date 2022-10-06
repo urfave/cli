@@ -307,12 +307,12 @@ func TestFlagStringifying(t *testing.T) {
 		{
 			name:     "float64-slice-flag",
 			fl:       &Float64SliceFlag{Name: "pizzas"},
-			expected: "--pizzas value\t",
+			expected: "--pizzas value [ --pizzas value ]\t",
 		},
 		{
 			name:     "float64-slice-flag-with-default-text",
 			fl:       &Float64SliceFlag{Name: "pepperonis", DefaultText: "shaved"},
-			expected: "--pepperonis value\t(default: shaved)",
+			expected: "--pepperonis value [ --pepperonis value ]\t(default: shaved)",
 		},
 		{
 			name:     "generic-flag",
@@ -337,7 +337,7 @@ func TestFlagStringifying(t *testing.T) {
 		{
 			name:     "int-slice-flag",
 			fl:       &IntSliceFlag{Name: "pencils"},
-			expected: "--pencils value\t",
+			expected: "--pencils value [ --pencils value ]\t",
 		},
 		{
 			name:     "int-slice-flag-with-default-text",
@@ -347,7 +347,7 @@ func TestFlagStringifying(t *testing.T) {
 		{
 			name:     "uint-slice-flag",
 			fl:       &UintSliceFlag{Name: "pencils"},
-			expected: "--pencils value\t",
+			expected: "--pencils value [ --pencils value ]\t",
 		},
 		{
 			name:     "uint-slice-flag-with-default-text",
@@ -367,22 +367,22 @@ func TestFlagStringifying(t *testing.T) {
 		{
 			name:     "int64-slice-flag",
 			fl:       &Int64SliceFlag{Name: "drawers"},
-			expected: "--drawers value\t",
+			expected: "--drawers value [ --drawers value ]\t",
 		},
 		{
 			name:     "int64-slice-flag-with-default-text",
 			fl:       &Int64SliceFlag{Name: "handles", DefaultText: "-2"},
-			expected: "--handles value\t(default: -2)",
+			expected: "--handles value [ --handles value ]\t(default: -2)",
 		},
 		{
 			name:     "uint64-slice-flag",
 			fl:       &Uint64SliceFlag{Name: "drawers"},
-			expected: "--drawers value\t",
+			expected: "--drawers value [ --drawers value ]\t",
 		},
 		{
 			name:     "uint64-slice-flag-with-default-text",
 			fl:       &Uint64SliceFlag{Name: "handles", DefaultText: "-2"},
-			expected: "--handles value\t(default: -2)",
+			expected: "--handles value [ --handles value ]\t(default: -2)",
 		},
 		{
 			name:     "path-flag",
@@ -407,12 +407,12 @@ func TestFlagStringifying(t *testing.T) {
 		{
 			name:     "string-slice-flag",
 			fl:       &StringSliceFlag{Name: "meow-sounds"},
-			expected: "--meow-sounds value\t",
+			expected: "--meow-sounds value [ --meow-sounds value ]\t",
 		},
 		{
 			name:     "string-slice-flag-with-default-text",
 			fl:       &StringSliceFlag{Name: "moo-sounds", DefaultText: "awoo"},
-			expected: "--moo-sounds value\t(default: awoo)",
+			expected: "--moo-sounds value [ --moo-sounds value ]\t(default: awoo)",
 		},
 		{
 			name:     "timestamp-flag",
@@ -2722,6 +2722,53 @@ func TestParseGeneric(t *testing.T) {
 			return nil
 		},
 	}).Run([]string{"run", "-s", "10,20"})
+}
+
+type genericType struct {
+	s []string
+}
+
+func (g *genericType) Set(value string) error {
+	g.s = strings.Split(value, "-")
+	return nil
+}
+
+func (g *genericType) String() string {
+	return strings.Join(g.s, "-")
+}
+
+func TestParseDestinationGeneric(t *testing.T) {
+	expectedString := "abc1-123d"
+	expectedGeneric := &genericType{[]string{"abc1", "123d"}}
+	dest := &genericType{}
+
+	_ = (&App{
+		Flags: []Flag{
+			&GenericFlag{
+				Name:        "dest",
+				Destination: dest,
+			},
+		},
+		Action: func(ctx *Context) error {
+
+			if !reflect.DeepEqual(dest, expectedGeneric) {
+				t.Errorf(
+					"expected destination generic: %+v, actual: %+v",
+					expectedGeneric,
+					dest,
+				)
+			}
+
+			if dest.String() != expectedString {
+				t.Errorf(
+					"expected destination string: %s, actual: %s",
+					expectedString,
+					dest.String(),
+				)
+			}
+			return nil
+		},
+	}).Run([]string{"run", "--dest", expectedString})
 }
 
 func TestParseGenericFromEnv(t *testing.T) {

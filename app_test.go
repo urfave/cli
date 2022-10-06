@@ -177,7 +177,7 @@ func ExampleApp_Run_commandHelp() {
 	//    greet describeit - use it to see a description
 	//
 	// USAGE:
-	//    greet describeit [command options] [arguments...]
+	//    greet describeit [arguments...]
 	//
 	// DESCRIPTION:
 	//    This is how we describe describeit the function

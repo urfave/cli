@@ -242,7 +242,11 @@ func ShowCommandHelp(ctx *Context, command string) error {
 				c.Subcommands = append(c.Subcommands, helpCommandDontUse)
 			}
 			if !ctx.App.HideHelp && HelpFlag != nil {
-				c.appendFlag(HelpFlag)
+				if c.flagCategories == nil {
+					c.flagCategories = newFlagCategoriesFromFlags([]Flag{HelpFlag})
+				} else {
+					c.flagCategories.AddFlag("", HelpFlag)
+				}
 			}
 			templ := c.CustomHelpTemplate
 			if templ == "" {
@@ -358,6 +362,17 @@ func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs 
 
 	w := tabwriter.NewWriter(out, 1, 8, 2, ' ', 0)
 	t := template.Must(template.New("help").Funcs(funcMap).Parse(templ))
+	t.New("helpNameTemplate").Parse(helpNameTemplate)
+	t.New("usageTemplate").Parse(usageTemplate)
+	t.New("descriptionTemplate").Parse(descriptionTemplate)
+	t.New("visibleCommandTemplate").Parse(visibleCommandTemplate)
+	t.New("copyrightTemplate").Parse(copyrightTemplate)
+	t.New("versionTemplate").Parse(versionTemplate)
+	t.New("visibleFlagCategoryTemplate").Parse(visibleFlagCategoryTemplate)
+	t.New("visibleFlagTemplate").Parse(visibleFlagTemplate)
+	t.New("visibleGlobalFlagCategoryTemplate").Parse(strings.Replace(visibleFlagCategoryTemplate, "OPTIONS", "GLOBAL OPTIONS", -1))
+	t.New("authorsTemplate").Parse(authorsTemplate)
+	t.New("visibleCommandCategoryTemplate").Parse(visibleCommandCategoryTemplate)
 
 	err := t.Execute(w, data)
 	if err != nil {
