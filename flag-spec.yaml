@@ -2,7 +2,6 @@
 # ./cmd/urfave-cli-genflags/main.go which uses the
 # `Spec` type that maps to this file structure.
 flag_types:
-<<<<<<< HEAD
   bool:
     struct_fields:
       - name: Count
@@ -14,30 +13,8 @@ flag_types:
     struct_fields:
       - name: Action
         type: "func(*Context, float64) error"
-=======
-  bool: {}
-  float64: {}
-  int64: {}
-  int: {}
-  time.Duration: {}
-  uint64: {}
-  uint: {}
-
-  string:
-    destination_pointer: true
-    struct_fields:
-      - { name: TakesFile, type: bool }
-  Generic:
-    struct_fields:
-      - { name: TakesFile, type: bool }
-  Path:
-    destination_pointer: true
-    struct_fields:
-      - { name: TakesFile, type: bool }
->>>>>>> Add DestinationPointer for flags generator
   Float64Slice:
     value_pointer: true
-    destination_pointer: true
     skip_interfaces:
       - fmt.Stringer
     struct_fields:
@@ -64,7 +41,6 @@ flag_types:
         type: "func(*Context, int64) error"
   Int64Slice:
     value_pointer: true
-    destination_pointer: true
     skip_interfaces:
       - fmt.Stringer
     struct_fields:
@@ -78,7 +54,6 @@ flag_types:
         type: "func(*Context, uint) error"
   UintSlice:
     value_pointer: true
-    destination_pointer: true
     skip_interfaces:
       - fmt.Stringer
     struct_fields:
@@ -105,7 +80,6 @@ flag_types:
         type: "func(*Context, string) error"
   StringSlice:
     value_pointer: true
-    destination_pointer: true
     skip_interfaces:
       - fmt.Stringer
     struct_fields:
@@ -119,7 +93,6 @@ flag_types:
         type: "func(*Context, time.Duration) error"
   Timestamp:
     value_pointer: true
-    destination_pointer: true
     struct_fields:
       - name: Layout
         type: string

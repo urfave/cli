@@ -17,11 +17,7 @@ type {{.TypeName}} struct {
   HasBeenSet bool
 
   Value {{if .ValuePointer}}*{{end}}{{.GoType}}
-<<<<<<< HEAD:cmd/urfave-cli-genflags/generated.gotmpl
   Destination {{if .NoDestinationPointer}}{{else}}*{{end}}{{.GoType}}
-=======
-  Destination {{if .DestinationPointer}}*{{end}}{{.GoType}}
->>>>>>> Add DestinationPointer for flags generator:internal/genflags/generated.gotmpl
 
   Aliases []string
   EnvVars []string
