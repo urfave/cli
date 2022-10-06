@@ -62,6 +62,10 @@ func (f *GenericFlag) Apply(set *flag.FlagSet) error {
 	}
 
 	for _, name := range f.Names() {
+		if f.Destination != nil {
+			set.Var(f.Destination, name, f.Usage)
+			continue
+		}
 		set.Var(f.Value, name, f.Usage)
 	}
 
