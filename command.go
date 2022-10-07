@@ -312,7 +312,9 @@ func (c *Command) VisibleFlagCategories() []VisibleFlagCategory {
 		c.flagCategories = newFlagCategories()
 		for _, fl := range c.Flags {
 			if cf, ok := fl.(CategorizableFlag); ok {
-				c.flagCategories.AddFlag(cf.GetCategory(), cf)
+				if cf.GetCategory() != "" {
+					c.flagCategories.AddFlag(cf.GetCategory(), cf)
+				}
 			}
 		}
 	}

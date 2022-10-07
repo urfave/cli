@@ -242,11 +242,7 @@ func ShowCommandHelp(ctx *Context, command string) error {
 				c.Subcommands = append(c.Subcommands, helpCommandDontUse)
 			}
 			if !ctx.App.HideHelp && HelpFlag != nil {
-				if c.flagCategories == nil {
-					c.flagCategories = newFlagCategoriesFromFlags([]Flag{HelpFlag})
-				} else {
-					c.flagCategories.AddFlag("", HelpFlag)
-				}
+				c.appendFlag(HelpFlag)
 			}
 			templ := c.CustomHelpTemplate
 			if templ == "" {
