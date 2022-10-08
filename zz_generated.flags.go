@@ -66,14 +66,6 @@ func (f *Float64SliceFlag) TakesValue() bool {
 	return "Float64SliceFlag" != "BoolFlag"
 }
 
-// GetDefaultText returns the default text for this flag
-func (f *Float64SliceFlag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	return f.GetValue()
-}
-
 // GenericFlag is a flag with type Generic
 type GenericFlag struct {
 	Name string
@@ -143,14 +135,6 @@ func (f *GenericFlag) TakesValue() bool {
 	return "GenericFlag" != "BoolFlag"
 }
 
-// GetDefaultText returns the default text for this flag
-func (f *GenericFlag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	return f.GetValue()
-}
-
 // Int64SliceFlag is a flag with type *Int64Slice
 type Int64SliceFlag struct {
 	Name string
@@ -213,14 +197,6 @@ func (f *Int64SliceFlag) TakesValue() bool {
 	return "Int64SliceFlag" != "BoolFlag"
 }
 
-// GetDefaultText returns the default text for this flag
-func (f *Int64SliceFlag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	return f.GetValue()
-}
-
 // IntSliceFlag is a flag with type *IntSlice
 type IntSliceFlag struct {
 	Name string
@@ -281,14 +257,6 @@ func (f *IntSliceFlag) GetEnvVars() []string {
 // TakesValue returns true if the flag takes a value, otherwise false
 func (f *IntSliceFlag) TakesValue() bool {
 	return "IntSliceFlag" != "BoolFlag"
-}
-
-// GetDefaultText returns the default text for this flag
-func (f *IntSliceFlag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	return f.GetValue()
 }
 
 // PathFlag is a flag with type Path
@@ -424,14 +392,6 @@ func (f *StringSliceFlag) TakesValue() bool {
 	return "StringSliceFlag" != "BoolFlag"
 }
 
-// GetDefaultText returns the default text for this flag
-func (f *StringSliceFlag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	return f.GetValue()
-}
-
 // TimestampFlag is a flag with type *Timestamp
 type TimestampFlag struct {
 	Name string
@@ -501,14 +461,6 @@ func (f *TimestampFlag) GetEnvVars() []string {
 // TakesValue returns true if the flag takes a value, otherwise false
 func (f *TimestampFlag) TakesValue() bool {
 	return "TimestampFlag" != "BoolFlag"
-}
-
-// GetDefaultText returns the default text for this flag
-func (f *TimestampFlag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	return f.GetValue()
 }
 
 // Uint64SliceFlag is a flag with type *Uint64Slice
@@ -731,14 +683,6 @@ func (f *Float64Flag) TakesValue() bool {
 	return "Float64Flag" != "BoolFlag"
 }
 
-// GetDefaultText returns the default text for this flag
-func (f *Float64Flag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	return f.GetValue()
-}
-
 // IntFlag is a flag with type int
 type IntFlag struct {
 	Name string
@@ -808,14 +752,6 @@ func (f *IntFlag) TakesValue() bool {
 	return "IntFlag" != "BoolFlag"
 }
 
-// GetDefaultText returns the default text for this flag
-func (f *IntFlag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	return f.GetValue()
-}
-
 // Int64Flag is a flag with type int64
 type Int64Flag struct {
 	Name string
@@ -883,14 +819,6 @@ func (f *Int64Flag) GetEnvVars() []string {
 // TakesValue returns true if the flag takes a value, otherwise false
 func (f *Int64Flag) TakesValue() bool {
 	return "Int64Flag" != "BoolFlag"
-}
-
-// GetDefaultText returns the default text for this flag
-func (f *Int64Flag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	return f.GetValue()
 }
 
 // StringFlag is a flag with type string
@@ -1029,14 +957,6 @@ func (f *DurationFlag) TakesValue() bool {
 	return "DurationFlag" != "BoolFlag"
 }
 
-// GetDefaultText returns the default text for this flag
-func (f *DurationFlag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	return f.GetValue()
-}
-
 // UintFlag is a flag with type uint
 type UintFlag struct {
 	Name string
@@ -1106,14 +1026,6 @@ func (f *UintFlag) TakesValue() bool {
 	return "UintFlag" != "BoolFlag"
 }
 
-// GetDefaultText returns the default text for this flag
-func (f *UintFlag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	return f.GetValue()
-}
-
 // Uint64Flag is a flag with type uint64
 type Uint64Flag struct {
 	Name string
@@ -1181,14 +1093,6 @@ func (f *Uint64Flag) GetEnvVars() []string {
 // TakesValue returns true if the flag takes a value, otherwise false
 func (f *Uint64Flag) TakesValue() bool {
 	return "Uint64Flag" != "BoolFlag"
-}
-
-// GetDefaultText returns the default text for this flag
-func (f *Uint64Flag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	return f.GetValue()
 }
 
 // vim:ro
