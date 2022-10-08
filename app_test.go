@@ -2386,6 +2386,10 @@ func (c *customBoolFlag) GetEnvVars() []string {
 	return nil
 }
 
+func (c *customBoolFlag) GetDefaultText() string {
+	return ""
+}
+
 func TestCustomFlagsUnused(t *testing.T) {
 	app := &App{
 		Flags:  []Flag{&customBoolFlag{"custom"}},

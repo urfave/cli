@@ -12,14 +12,6 @@ func (f *Int64Flag) GetValue() string {
 	return fmt.Sprintf("%d", f.Value)
 }
 
-// GetDefaultText returns the default text for this flag
-func (f *Int64Flag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	return f.GetValue()
-}
-
 // Apply populates the flag given the flag set and environment
 func (f *Int64Flag) Apply(set *flag.FlagSet) error {
 	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {

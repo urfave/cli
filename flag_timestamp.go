@@ -81,14 +81,6 @@ func (f *TimestampFlag) GetValue() string {
 	return ""
 }
 
-// GetDefaultText returns the default text for this flag
-func (f *TimestampFlag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	return f.GetValue()
-}
-
 // Apply populates the flag given the flag set and environment
 func (f *TimestampFlag) Apply(set *flag.FlagSet) error {
 	if f.Layout == "" {
