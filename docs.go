@@ -116,7 +116,11 @@ func prepareFlags(
 	addDetails bool,
 ) []string {
 	args := []string{}
-	for _, flag := range flags {
+	for _, f := range flags {
+		flag, ok := f.(DocGenerationFlag)
+		if !ok {
+			continue
+		}
 		modifiedArg := opener
 
 		for _, s := range flag.Names() {
@@ -147,7 +151,7 @@ func prepareFlags(
 }
 
 // flagDetails returns a string containing the flags metadata
-func flagDetails(flag Flag) string {
+func flagDetails(flag DocGenerationFlag) string {
 	description := flag.GetUsage()
 	value := flag.GetValue()
 	if value != "" {
