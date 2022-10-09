@@ -406,17 +406,6 @@ func (c *Command) VisibleFlagCategories() []VisibleFlagCategory {
 	return c.flagCategories.VisibleCategories()
 }
 
-// VisibleCommands returns a slice of the Commands with Hidden=false
-func (c *Command) VisibleCommands() []*Command {
-	var ret []*Command
-	for _, command := range c.Subcommands {
-		if !command.Hidden {
-			ret = append(ret, command)
-		}
-	}
-	return ret
-}
-
 // VisibleFlags returns a slice of the Flags with Hidden=false
 func (c *Command) VisibleFlags() []Flag {
 	return visibleFlags(c.Flags)

@@ -549,6 +549,7 @@ type Command struct {
 	// cli.go uses text/template to render templates. You can
 	// render custom help text by setting this variable.
 	CustomHelpTemplate string
+
 	// Has unexported fields.
 }
     Command is a subcommand for a cli.App.
@@ -566,6 +567,10 @@ func (c *Command) Names() []string
     Names returns the names including short names and aliases.
 
 func (c *Command) Run(cCtx *Context, arguments []string) (err error)
+
+func (c *Command) VisibleCategories() []CommandCategory
+    VisibleCategories returns a slice of categories and commands that are
+    Hidden=false
 
 func (c *Command) VisibleCommands() []*Command
     VisibleCommands returns a slice of the Commands with Hidden=false
