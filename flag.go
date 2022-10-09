@@ -135,21 +135,6 @@ type DocGenerationFlag interface {
 	GetEnvVars() []string
 }
 
-// DocGenerationFlag is an interface that allows documentation generation for the flag
-type DocGenerationFlag interface {
-	Flag
-
-	// TakesValue returns true if the flag takes a value, otherwise false
-	TakesValue() bool
-
-	// GetValue returns the flags value as string representation and an empty
-	// string if the flag takes no value at all.
-	GetValue() string
-
-	// GetEnvVars returns the env vars for this flag
-	GetEnvVars() []string
-}
-
 // DocGenerationSliceFlag extends DocGenerationFlag for slice-based flags.
 type DocGenerationSliceFlag interface {
 	DocGenerationFlag
