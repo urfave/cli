@@ -19,3 +19,7 @@ smoke-test: build
 .PHONY: show-cover
 show-cover:
 	go tool cover -func main.coverprofile
+
+.PHONY: run
+run: build
+	./urfave-cli-genflags
