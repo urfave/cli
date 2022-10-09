@@ -247,6 +247,13 @@ TYPES
 type ActionFunc func(*Context) error
     ActionFunc is the action to execute when no subcommands are specified
 
+type ActionableFlag interface {
+	Flag
+	RunAction(*Context) error
+}
+    ActionableFlag is an interface that wraps Flag interface and RunAction
+    operation.
+
 type AfterFunc func(*Context) error
     AfterFunc is an action to execute after any subcommands are run, but after
     the subcommand has finished it is run even if Action() panics
@@ -499,6 +506,15 @@ func (f *BoolFlag) String() string
 func (f *BoolFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
 
+type CategorizableFlag interface {
+	VisibleFlag
+
+	// Returns the category of the flag
+	GetCategory() string
+}
+    CategorizableFlag is an interface that allows us to potentially use a flag
+    in a categorized representation.
+
 type Command struct {
 	// The name of the command
 	Name string
@@ -716,6 +732,28 @@ type Countable interface {
     Countable is an interface to enable detection of flag values which support
     repetitive flags
 
+type DocGenerationFlag interface {
+	Flag
+
+	// TakesValue returns true if the flag takes a value, otherwise false
+	TakesValue() bool
+
+	// GetUsage returns the usage string for the flag
+	GetUsage() string
+
+	// GetValue returns the flags value as string representation and an empty
+	// string if the flag takes no value at all.
+	GetValue() string
+
+	// GetDefaultText returns the default text for this flag
+	GetDefaultText() string
+
+	// GetEnvVars returns the env vars for this flag
+	GetEnvVars() []string
+}
+    DocGenerationFlag is an interface that allows documentation generation for
+    the flag
+
 type DurationFlag struct {
 	Name string
 
@@ -823,33 +861,6 @@ type Flag interface {
 
 	// Whether the flag has been set or not
 	IsSet() bool
-
-	// whether the flag is a required flag or not
-	IsRequired() bool
-
-	// IsVisible returns true if the flag is not hidden, otherwise false
-	IsVisible() bool
-
-	// Returns the category of the flag
-	GetCategory() string
-
-	// GetUsage returns the usage string for the flag
-	GetUsage() string
-
-	// GetEnvVars returns the env vars for this flag
-	GetEnvVars() []string
-
-	// TakesValue returns true if the flag takes a value, otherwise false
-	TakesValue() bool
-
-	// GetDefaultText returns the default text for this flag
-	GetDefaultText() string
-
-	// GetValue returns the flags value as string representation and an empty
-	// string if the flag takes no value at all.
-	GetValue() string
-
-	RunAction(*Context) error
 }
     Flag is a common interface related to parsing flags in cli. For more
     advanced flag parsing techniques, it is recommended that this interface be
@@ -1586,6 +1597,16 @@ func (f *PathFlag) String() string
 func (f *PathFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
 
+type RequiredFlag interface {
+	Flag
+
+	// whether the flag is a required flag or not
+	IsRequired() bool
+}
+    RequiredFlag is an interface that allows us to mark flags as required
+    it allows flags required flags to be backwards compatible with the Flag
+    interface
+
 type Serializer interface {
 	Serialize() string
 }
@@ -1623,8 +1644,6 @@ func (x *SliceFlag[T, S, E]) IsVisible() bool
 
 func (x *SliceFlag[T, S, E]) Names() []string
 
-func (x *SliceFlag[T, S, E]) RunAction(c *Context) error
-
 func (x *SliceFlag[T, S, E]) SetDestination(slice S)
 
 func (x *SliceFlag[T, S, E]) SetValue(slice S)
@@ -1635,6 +1654,10 @@ func (x *SliceFlag[T, S, E]) TakesValue() bool
 
 type SliceFlagTarget[E any] interface {
 	Flag
+	RequiredFlag
+	DocGenerationFlag
+	VisibleFlag
+	CategorizableFlag
 
 	// SetValue should propagate the given slice to the target, ideally as a new value.
 	// Note that a nil slice should nil/clear any existing value (modelled as ~[]E).
@@ -2229,11 +2252,19 @@ func (f *UintSliceFlag) String() string
 func (f *UintSliceFlag) TakesValue() bool
     TakesValue returns true of the flag takes a value, otherwise false
 
+type VisibleFlag interface {
+	Flag
+
+	// IsVisible returns true if the flag is not hidden, otherwise false
+	IsVisible() bool
+}
+    VisibleFlag is an interface that allows to check if a flag is visible
+
 type VisibleFlagCategory interface {
 	// Name returns the category name string
 	Name() string
 	// Flags returns a slice of VisibleFlag sorted by name
-	Flags() []Flag
+	Flags() []VisibleFlag
 }
     VisibleFlagCategory is a category containing flags.
 

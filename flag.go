@@ -83,6 +83,12 @@ func (f FlagsByName) Swap(i, j int) {
 	f[i], f[j] = f[j], f[i]
 }
 
+// ActionableFlag is an interface that wraps Flag interface and RunAction operation.
+type ActionableFlag interface {
+	Flag
+	RunAction(*Context) error
+}
+
 // Flag is a common interface related to parsing flags in cli.
 // For more advanced flag parsing techniques, it is recommended that
 // this interface be implemented.
@@ -97,39 +103,59 @@ type Flag interface {
 
 	// Whether the flag has been set or not
 	IsSet() bool
+}
+
+// RequiredFlag is an interface that allows us to mark flags as required
+// it allows flags required flags to be backwards compatible with the Flag interface
+type RequiredFlag interface {
+	Flag
 
 	// whether the flag is a required flag or not
 	IsRequired() bool
+}
 
-	// IsVisible returns true if the flag is not hidden, otherwise false
-	IsVisible() bool
-
-	// Returns the category of the flag
-	GetCategory() string
-
-	// GetUsage returns the usage string for the flag
-	GetUsage() string
-
-	// GetEnvVars returns the env vars for this flag
-	GetEnvVars() []string
+// DocGenerationFlag is an interface that allows documentation generation for the flag
+type DocGenerationFlag interface {
+	Flag
 
 	// TakesValue returns true if the flag takes a value, otherwise false
 	TakesValue() bool
 
-	// GetDefaultText returns the default text for this flag
-	GetDefaultText() string
+	// GetUsage returns the usage string for the flag
+	GetUsage() string
 
 	// GetValue returns the flags value as string representation and an empty
 	// string if the flag takes no value at all.
 	GetValue() string
 
-	RunAction(*Context) error
+	// GetDefaultText returns the default text for this flag
+	GetDefaultText() string
+
+	// GetEnvVars returns the env vars for this flag
+	GetEnvVars() []string
 }
 
 // Countable is an interface to enable detection of flag values which support
 // repetitive flags
 type Countable interface {
 	Count() int
+}
+
+// VisibleFlag is an interface that allows to check if a flag is visible
+type VisibleFlag interface {
+	Flag
+
+	// IsVisible returns true if the flag is not hidden, otherwise false
+	IsVisible() bool
+}
+
+// CategorizableFlag is an interface that allows us to potentially
+// use a flag in a categorized representation.
+type CategorizableFlag interface {
+	VisibleFlag
+
+	// Returns the category of the flag
+	GetCategory() string
 }
 
 func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {
@@ -189,7 +215,7 @@ func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
 func visibleFlags(fl []Flag) []Flag {
 	var visible []Flag
 	for _, f := range fl {
-		if f.IsVisible() {
+		if vf, ok := f.(VisibleFlag); ok && vf.IsVisible() {
 			visible = append(visible, f)
 		}
 	}
@@ -285,8 +311,14 @@ func formatDefault(format string) string {
 }
 
 func stringifyFlag(f Flag) string {
-	placeholder, usage := unquoteUsage(f.GetUsage())
-	needsPlaceholder := f.TakesValue()
+	// enforce DocGeneration interface on flags to avoid reflection
+	df, ok := f.(DocGenerationFlag)
+	if !ok {
+		return ""
+	}
+
+	placeholder, usage := unquoteUsage(df.GetUsage())
+	needsPlaceholder := df.TakesValue()
 
 	if needsPlaceholder && placeholder == "" {
 		placeholder = defaultPlaceholder
@@ -294,14 +326,14 @@ func stringifyFlag(f Flag) string {
 
 	defaultValueString := ""
 
-	if s := f.GetDefaultText(); s != "" {
+	if s := df.GetDefaultText(); s != "" {
 		defaultValueString = fmt.Sprintf(formatDefault("%s"), s)
 	}
 
 	usageWithDefault := strings.TrimSpace(usage + defaultValueString)
 
-	return withEnvHint(f.GetEnvVars(),
-		fmt.Sprintf("%s\t%s", prefixedNames(f.Names(), placeholder), usageWithDefault))
+	return withEnvHint(df.GetEnvVars(),
+		fmt.Sprintf("%s\t%s", prefixedNames(df.Names(), placeholder), usageWithDefault))
 }
 
 func stringifySliceFlag(usage string, names, defaultVals []string) string {

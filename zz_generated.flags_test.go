@@ -17,13 +17,13 @@ func TestFloat64SliceFlag_SatisfiesFlagInterface(t *testing.T) {
 }
 
 func TestFloat64SliceFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.Float64SliceFlag{}
+	var f cli.RequiredFlag = &cli.Float64SliceFlag{}
 
 	_ = f.IsRequired()
 }
 
 func TestFloat64SliceFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.Float64SliceFlag{}
+	var f cli.VisibleFlag = &cli.Float64SliceFlag{}
 
 	_ = f.IsVisible()
 }
@@ -36,13 +36,13 @@ func TestGenericFlag_SatisfiesFlagInterface(t *testing.T) {
 }
 
 func TestGenericFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.GenericFlag{}
+	var f cli.RequiredFlag = &cli.GenericFlag{}
 
 	_ = f.IsRequired()
 }
 
 func TestGenericFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.GenericFlag{}
+	var f cli.VisibleFlag = &cli.GenericFlag{}
 
 	_ = f.IsVisible()
 }
@@ -61,13 +61,13 @@ func TestInt64SliceFlag_SatisfiesFlagInterface(t *testing.T) {
 }
 
 func TestInt64SliceFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.Int64SliceFlag{}
+	var f cli.RequiredFlag = &cli.Int64SliceFlag{}
 
 	_ = f.IsRequired()
 }
 
 func TestInt64SliceFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.Int64SliceFlag{}
+	var f cli.VisibleFlag = &cli.Int64SliceFlag{}
 
 	_ = f.IsVisible()
 }
@@ -80,13 +80,13 @@ func TestIntSliceFlag_SatisfiesFlagInterface(t *testing.T) {
 }
 
 func TestIntSliceFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.IntSliceFlag{}
+	var f cli.RequiredFlag = &cli.IntSliceFlag{}
 
 	_ = f.IsRequired()
 }
 
 func TestIntSliceFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.IntSliceFlag{}
+	var f cli.VisibleFlag = &cli.IntSliceFlag{}
 
 	_ = f.IsVisible()
 }
@@ -99,13 +99,13 @@ func TestPathFlag_SatisfiesFlagInterface(t *testing.T) {
 }
 
 func TestPathFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.PathFlag{}
+	var f cli.RequiredFlag = &cli.PathFlag{}
 
 	_ = f.IsRequired()
 }
 
 func TestPathFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.PathFlag{}
+	var f cli.VisibleFlag = &cli.PathFlag{}
 
 	_ = f.IsVisible()
 }
@@ -124,13 +124,13 @@ func TestStringSliceFlag_SatisfiesFlagInterface(t *testing.T) {
 }
 
 func TestStringSliceFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.StringSliceFlag{}
+	var f cli.RequiredFlag = &cli.StringSliceFlag{}
 
 	_ = f.IsRequired()
 }
 
 func TestStringSliceFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.StringSliceFlag{}
+	var f cli.VisibleFlag = &cli.StringSliceFlag{}
 
 	_ = f.IsVisible()
 }
@@ -143,13 +143,13 @@ func TestTimestampFlag_SatisfiesFlagInterface(t *testing.T) {
 }
 
 func TestTimestampFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.TimestampFlag{}
+	var f cli.RequiredFlag = &cli.TimestampFlag{}
 
 	_ = f.IsRequired()
 }
 
 func TestTimestampFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.TimestampFlag{}
+	var f cli.VisibleFlag = &cli.TimestampFlag{}
 
 	_ = f.IsVisible()
 }
@@ -182,13 +182,13 @@ func TestBoolFlag_SatisfiesFlagInterface(t *testing.T) {
 }
 
 func TestBoolFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.BoolFlag{}
+	var f cli.RequiredFlag = &cli.BoolFlag{}
 
 	_ = f.IsRequired()
 }
 
 func TestBoolFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.BoolFlag{}
+	var f cli.VisibleFlag = &cli.BoolFlag{}
 
 	_ = f.IsVisible()
 }
@@ -207,13 +207,13 @@ func TestFloat64Flag_SatisfiesFlagInterface(t *testing.T) {
 }
 
 func TestFloat64Flag_SatisfiesRequiredFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.Float64Flag{}
+	var f cli.RequiredFlag = &cli.Float64Flag{}
 
 	_ = f.IsRequired()
 }
 
 func TestFloat64Flag_SatisfiesVisibleFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.Float64Flag{}
+	var f cli.VisibleFlag = &cli.Float64Flag{}
 
 	_ = f.IsVisible()
 }
@@ -232,13 +232,13 @@ func TestIntFlag_SatisfiesFlagInterface(t *testing.T) {
 }
 
 func TestIntFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.IntFlag{}
+	var f cli.RequiredFlag = &cli.IntFlag{}
 
 	_ = f.IsRequired()
 }
 
 func TestIntFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.IntFlag{}
+	var f cli.VisibleFlag = &cli.IntFlag{}
 
 	_ = f.IsVisible()
 }
@@ -257,13 +257,13 @@ func TestInt64Flag_SatisfiesFlagInterface(t *testing.T) {
 }
 
 func TestInt64Flag_SatisfiesRequiredFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.Int64Flag{}
+	var f cli.RequiredFlag = &cli.Int64Flag{}
 
 	_ = f.IsRequired()
 }
 
 func TestInt64Flag_SatisfiesVisibleFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.Int64Flag{}
+	var f cli.VisibleFlag = &cli.Int64Flag{}
 
 	_ = f.IsVisible()
 }
@@ -282,13 +282,13 @@ func TestStringFlag_SatisfiesFlagInterface(t *testing.T) {
 }
 
 func TestStringFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.StringFlag{}
+	var f cli.RequiredFlag = &cli.StringFlag{}
 
 	_ = f.IsRequired()
 }
 
 func TestStringFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.StringFlag{}
+	var f cli.VisibleFlag = &cli.StringFlag{}
 
 	_ = f.IsVisible()
 }
@@ -307,13 +307,13 @@ func TestDurationFlag_SatisfiesFlagInterface(t *testing.T) {
 }
 
 func TestDurationFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.DurationFlag{}
+	var f cli.RequiredFlag = &cli.DurationFlag{}
 
 	_ = f.IsRequired()
 }
 
 func TestDurationFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.DurationFlag{}
+	var f cli.VisibleFlag = &cli.DurationFlag{}
 
 	_ = f.IsVisible()
 }
@@ -332,13 +332,13 @@ func TestUintFlag_SatisfiesFlagInterface(t *testing.T) {
 }
 
 func TestUintFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.UintFlag{}
+	var f cli.RequiredFlag = &cli.UintFlag{}
 
 	_ = f.IsRequired()
 }
 
 func TestUintFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.UintFlag{}
+	var f cli.VisibleFlag = &cli.UintFlag{}
 
 	_ = f.IsVisible()
 }
@@ -357,13 +357,13 @@ func TestUint64Flag_SatisfiesFlagInterface(t *testing.T) {
 }
 
 func TestUint64Flag_SatisfiesRequiredFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.Uint64Flag{}
+	var f cli.RequiredFlag = &cli.Uint64Flag{}
 
 	_ = f.IsRequired()
 }
 
 func TestUint64Flag_SatisfiesVisibleFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.Uint64Flag{}
+	var f cli.VisibleFlag = &cli.Uint64Flag{}
 
 	_ = f.IsVisible()
 }

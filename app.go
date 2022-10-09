@@ -228,7 +228,9 @@ func (a *App) Setup() {
 
 	a.flagCategories = newFlagCategories()
 	for _, fl := range a.Flags {
-		a.flagCategories.AddFlag(fl.GetCategory(), fl)
+		if cf, ok := fl.(CategorizableFlag); ok {
+			a.flagCategories.AddFlag(cf.GetCategory(), cf)
+		}
 	}
 
 	if a.Metadata == nil {
@@ -662,8 +664,10 @@ func runFlagActions(c *Context, fs []Flag) error {
 			}
 		}
 		if isSet {
-			if err := f.RunAction(c); err != nil {
-				return err
+			if af, ok := f.(ActionableFlag); ok {
+				if err := af.RunAction(c); err != nil {
+					return err
+				}
 			}
 		}
 	}
