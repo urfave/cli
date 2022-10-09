@@ -239,7 +239,7 @@ For example this:
 
 <!-- {
   "args": ["&#45;&#45;help"],
-  "output": ".*Load configuration from FILE\n.*\n.*Language for the greeting.*"
+  "output": ".*Load configuration from FILE\n.*Language for the greeting.*"
 } -->
 ```go
 package main

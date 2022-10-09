@@ -102,7 +102,9 @@ func newFlagCategoriesFromFlags(fs []Flag) FlagCategories {
 	fc := newFlagCategories()
 	for _, fl := range fs {
 		if cf, ok := fl.(CategorizableFlag); ok {
-			fc.AddFlag(cf.GetCategory(), cf)
+			if cf.GetCategory() != "" {
+				fc.AddFlag(cf.GetCategory(), cf)
+			}
 		}
 	}
 
