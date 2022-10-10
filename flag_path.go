@@ -33,10 +33,10 @@ func (f *PathFlag) GetDefaultText() string {
 	if f.DefaultText != "" {
 		return f.DefaultText
 	}
-	if f.Value == "" {
-		return f.Value
+	if f.defaultValue == "" {
+		return f.defaultValue
 	}
-	return fmt.Sprintf("%q", f.Value)
+	return fmt.Sprintf("%q", f.defaultValue)
 }
 
 // GetEnvVars returns the env vars for this flag
@@ -46,6 +46,9 @@ func (f *PathFlag) GetEnvVars() []string {
 
 // Apply populates the flag given the flag set and environment
 func (f *PathFlag) Apply(set *flag.FlagSet) error {
+	// set default value so that environment wont be able to overwrite it
+	f.defaultValue = f.Value
+
 	if val, _, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
 		f.Value = val
 		f.HasBeenSet = true

@@ -447,6 +447,7 @@ type BoolFlag struct {
 	Count *int
 
 	Action func(*Context, bool) error
+	// Has unexported fields.
 }
     BoolFlag is a flag with type bool
 
@@ -775,6 +776,7 @@ type DurationFlag struct {
 	EnvVars []string
 
 	Action func(*Context, time.Duration) error
+	// Has unexported fields.
 }
     DurationFlag is a flag with type time.Duration
 
@@ -953,6 +955,7 @@ type Float64Flag struct {
 	EnvVars []string
 
 	Action func(*Context, float64) error
+	// Has unexported fields.
 }
     Float64Flag is a flag with type float64
 
@@ -1041,6 +1044,7 @@ type Float64SliceFlag struct {
 	EnvVars []string
 
 	Action func(*Context, []float64) error
+	// Has unexported fields.
 }
     Float64SliceFlag is a flag with type *Float64Slice
 
@@ -1123,6 +1127,7 @@ type GenericFlag struct {
 	TakesFile bool
 
 	Action func(*Context, interface{}) error
+	// Has unexported fields.
 }
     GenericFlag is a flag with type Generic
 
@@ -1191,6 +1196,7 @@ type Int64Flag struct {
 	Base int
 
 	Action func(*Context, int64) error
+	// Has unexported fields.
 }
     Int64Flag is a flag with type int64
 
@@ -1279,6 +1285,7 @@ type Int64SliceFlag struct {
 	EnvVars []string
 
 	Action func(*Context, []int64) error
+	// Has unexported fields.
 }
     Int64SliceFlag is a flag with type *Int64Slice
 
@@ -1355,6 +1362,7 @@ type IntFlag struct {
 	Base int
 
 	Action func(*Context, int) error
+	// Has unexported fields.
 }
     IntFlag is a flag with type int
 
@@ -1447,6 +1455,7 @@ type IntSliceFlag struct {
 	EnvVars []string
 
 	Action func(*Context, []int) error
+	// Has unexported fields.
 }
     IntSliceFlag is a flag with type *IntSlice
 
@@ -1557,6 +1566,7 @@ type PathFlag struct {
 	TakesFile bool
 
 	Action func(*Context, Path) error
+	// Has unexported fields.
 }
     PathFlag is a flag with type Path
 
@@ -1699,6 +1709,7 @@ type StringFlag struct {
 	TakesFile bool
 
 	Action func(*Context, string) error
+	// Has unexported fields.
 }
     StringFlag is a flag with type string
 
@@ -1789,6 +1800,7 @@ type StringSliceFlag struct {
 	TakesFile bool
 
 	Action func(*Context, []string) error
+	// Has unexported fields.
 }
     StringSliceFlag is a flag with type *StringSlice
 
@@ -1900,6 +1912,7 @@ type TimestampFlag struct {
 	Timezone *time.Location
 
 	Action func(*Context, *time.Time) error
+	// Has unexported fields.
 }
     TimestampFlag is a flag with type *Timestamp
 
@@ -1967,6 +1980,7 @@ type Uint64Flag struct {
 	Base int
 
 	Action func(*Context, uint64) error
+	// Has unexported fields.
 }
     Uint64Flag is a flag with type uint64
 
@@ -2055,6 +2069,7 @@ type Uint64SliceFlag struct {
 	EnvVars []string
 
 	Action func(*Context, []uint64) error
+	// Has unexported fields.
 }
     Uint64SliceFlag is a flag with type *Uint64Slice
 
@@ -2122,6 +2137,7 @@ type UintFlag struct {
 	Base int
 
 	Action func(*Context, uint) error
+	// Has unexported fields.
 }
     UintFlag is a flag with type uint
 
@@ -2214,6 +2230,7 @@ type UintSliceFlag struct {
 	EnvVars []string
 
 	Action func(*Context, []uint) error
+	// Has unexported fields.
 }
     UintSliceFlag is a flag with type *UintSlice
 

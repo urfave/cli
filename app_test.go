@@ -2625,19 +2625,6 @@ func TestSetupInitializesOnlyNilWriters(t *testing.T) {
 	}
 }
 
-type stringGeneric struct {
-	value string
-}
-
-func (s *stringGeneric) Set(value string) error {
-	s.value = value
-	return nil
-}
-
-func (s *stringGeneric) String() string {
-	return s.value
-}
-
 func TestFlagAction(t *testing.T) {
 	stringFlag := &StringFlag{
 		Name: "f_string",
