@@ -1,5 +1,8 @@
+GOIMPORTS_BIN ?= $(shell which goimports || true)
 GOTEST_FLAGS ?= -v --coverprofile main.coverprofile --covermode count --cover github.com/urfave/cli/v2/cmd/urfave-cli-genflags
 GOBUILD_FLAGS ?= -x
+
+export GOIMPORTS_BIN
 
 .PHONY: all
 all: test build smoke-test
