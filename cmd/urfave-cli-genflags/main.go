@@ -94,8 +94,9 @@ func main() {
 				Value:   "cli.",
 			},
 			&cli.PathFlag{
-				Name:  "goimports",
-				Value: filepath.Join(top, ".local/bin/goimports"),
+				Name:    "goimports",
+				EnvVars: []string{"GOIMPORTS_BIN"},
+				Value:   filepath.Join(top, ".local/bin/goimports"),
 			},
 		},
 		Action: runGenFlags,
