@@ -275,7 +275,7 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 	a.rootCommand = newRootCommand(a)
 	cCtx.Command = a.rootCommand
 
-	return a.rootCommand.Run(cCtx, arguments)
+	return a.rootCommand.Run(cCtx, arguments...)
 }
 
 func (a *App) suggestFlagFromError(err error, command string) (string, error) {

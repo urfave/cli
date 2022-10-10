@@ -163,7 +163,7 @@ func (c *Command) setup(ctx *Context) {
 	c.Subcommands = newCmds
 }
 
-func (c *Command) Run(cCtx *Context, arguments []string) (err error) {
+func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 
 	if !c.isRoot {
 		c.setup(cCtx)
@@ -286,7 +286,7 @@ func (c *Command) Run(cCtx *Context, arguments []string) (err error) {
 	if cmd != nil {
 		newcCtx := NewContext(cCtx.App, nil, cCtx)
 		newcCtx.Command = cmd
-		return cmd.Run(newcCtx, cCtx.Args().Slice())
+		return cmd.Run(newcCtx, cCtx.Args().Slice()...)
 	}
 
 	if c.Action == nil {

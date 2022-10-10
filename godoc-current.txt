@@ -566,7 +566,7 @@ func (c *Command) HasName(name string) bool
 func (c *Command) Names() []string
     Names returns the names including short names and aliases.
 
-func (c *Command) Run(cCtx *Context, arguments []string) (err error)
+func (c *Command) Run(cCtx *Context, arguments ...string) (err error)
 
 func (c *Command) VisibleCategories() []CommandCategory
     VisibleCategories returns a slice of categories and commands that are

@@ -46,7 +46,7 @@ func TestCommandJSONFileTest(t *testing.T) {
 		},
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewJSONSourceFromFlagFunc("load"))
-	err := command.Run(c, test)
+	err := command.Run(c, test...)
 
 	expect(t, err, nil)
 }
@@ -81,7 +81,7 @@ func TestCommandJSONFileTestGlobalEnvVarWins(t *testing.T) {
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewJSONSourceFromFlagFunc("load"))
 
-	err := command.Run(c, test)
+	err := command.Run(c, test...)
 
 	expect(t, err, nil)
 }
@@ -116,7 +116,7 @@ func TestCommandJSONFileTestGlobalEnvVarWinsNested(t *testing.T) {
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewJSONSourceFromFlagFunc("load"))
 
-	err := command.Run(c, test)
+	err := command.Run(c, test...)
 
 	expect(t, err, nil)
 }
@@ -148,7 +148,7 @@ func TestCommandJSONFileTestSpecifiedFlagWins(t *testing.T) {
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewJSONSourceFromFlagFunc("load"))
 
-	err := command.Run(c, test)
+	err := command.Run(c, test...)
 
 	expect(t, err, nil)
 }
@@ -180,7 +180,7 @@ func TestCommandJSONFileTestSpecifiedFlagWinsNested(t *testing.T) {
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewJSONSourceFromFlagFunc("load"))
 
-	err := command.Run(c, test)
+	err := command.Run(c, test...)
 
 	expect(t, err, nil)
 }
@@ -212,7 +212,7 @@ func TestCommandJSONFileTestDefaultValueFileWins(t *testing.T) {
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewJSONSourceFromFlagFunc("load"))
 
-	err := command.Run(c, test)
+	err := command.Run(c, test...)
 
 	expect(t, err, nil)
 }
@@ -244,7 +244,7 @@ func TestCommandJSONFileTestDefaultValueFileWinsNested(t *testing.T) {
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewJSONSourceFromFlagFunc("load"))
 
-	err := command.Run(c, test)
+	err := command.Run(c, test...)
 
 	expect(t, err, nil)
 }
@@ -278,7 +278,7 @@ func TestCommandJSONFileFlagHasDefaultGlobalEnvJSONSetGlobalEnvWins(t *testing.T
 			&cli.StringFlag{Name: "load"}},
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewJSONSourceFromFlagFunc("load"))
-	err := command.Run(c, test)
+	err := command.Run(c, test...)
 
 	expect(t, err, nil)
 }
@@ -312,7 +312,7 @@ func TestCommandJSONFileFlagHasDefaultGlobalEnvJSONSetGlobalEnvWinsNested(t *tes
 			&cli.StringFlag{Name: "load"}},
 	}
 	command.Before = InitInputSourceWithContext(command.Flags, NewJSONSourceFromFlagFunc("load"))
-	err := command.Run(c, test)
+	err := command.Run(c, test...)
 
 	expect(t, err, nil)
 }
