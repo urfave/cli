@@ -1914,12 +1914,12 @@ func TestApp_Run_CommandHelpName(t *testing.T) {
 
 	output := buf.String()
 
-	expected := "command foo bar - does bar things"
+	expected := "command custom bar - does bar things"
 	if !strings.Contains(output, expected) {
 		t.Errorf("expected %q in output: %s", expected, output)
 	}
 
-	expected = "command foo bar [command options] [arguments...]"
+	expected = "command custom bar [command options] [arguments...]"
 	if !strings.Contains(output, expected) {
 		t.Errorf("expected %q in output: %s", expected, output)
 	}

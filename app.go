@@ -198,9 +198,11 @@ func (a *App) Setup() {
 	var newCommands []*Command
 
 	for _, c := range a.Commands {
-		if c.HelpName == "" {
-			c.HelpName = fmt.Sprintf("%s %s", a.HelpName, c.Name)
+		cname := c.Name
+		if c.HelpName != "" {
+			cname = c.HelpName
 		}
+		c.HelpName = fmt.Sprintf("%s %s", a.HelpName, cname)
 
 		c.flagCategories = newFlagCategoriesFromFlags(c.Flags)
 		newCommands = append(newCommands, c)

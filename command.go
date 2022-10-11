@@ -107,10 +107,6 @@ func (cmd *Command) Command(name string) *Command {
 }
 
 func (c *Command) setup(ctx *Context) {
-	if c.HelpName == "" {
-		c.HelpName = fmt.Sprintf("%s %s", ctx.parentContext.Command.HelpName, c.Name)
-	}
-
 	if c.Command(helpCommand.Name) == nil && !c.HideHelp {
 		if !c.HideHelpCommand {
 			c.Subcommands = append(c.Subcommands, helpCommand)

@@ -504,13 +504,13 @@ func TestShowSubcommandHelp_CommandAliases(t *testing.T) {
 
 func TestShowCommandHelp_Customtemplate(t *testing.T) {
 	app := &App{
+		Name: "foo",
 		Commands: []*Command{
 			{
 				Name: "frobbly",
 				Action: func(ctx *Context) error {
 					return nil
 				},
-				HelpName: "foo frobbly",
 				CustomHelpTemplate: `NAME:
    {{.HelpName}} - {{.Usage}}
 
