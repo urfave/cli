@@ -305,6 +305,12 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 	return a.rootCommand.Run(cCtx, arguments...)
 }
 
+// This is a stub function to keep public API unchanged from old code
+// No one should really use this. Always use a.Run to execute app
+func (a *App) RunAsSubcommand(ctx *Context) (err error) {
+	return a.RunContext(ctx.Context, ctx.Args().Slice())
+}
+
 func (a *App) suggestFlagFromError(err error, command string) (string, error) {
 	flag, parseErr := flagFromError(err)
 	if parseErr != nil {
