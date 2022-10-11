@@ -347,6 +347,10 @@ func (a *App) RunAndExitOnError()
     to cli.App.Run. This will cause the application to exit with the given error
     code in the cli.ExitCoder
 
+func (a *App) RunAsSubcommand(ctx *Context) (err error)
+    This is a stub function to keep public API unchanged from old code No one
+    should really use this. Always use a.Run to execute app
+
 func (a *App) RunContext(ctx context.Context, arguments []string) (err error)
     RunContext is like Run except it takes a Context that will be passed to
     its commands and sub-commands. Through this, you can propagate timeouts and
