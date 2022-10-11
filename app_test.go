@@ -1901,6 +1901,7 @@ func TestApp_Run_CommandHelpName(t *testing.T) {
 	}
 	cmd := &Command{
 		Name:        "foo",
+		HelpName:    "custom",
 		Description: "foo commands",
 		Subcommands: []*Command{subCmd},
 	}

@@ -241,6 +241,31 @@ func (a *App) Setup() {
 	}
 }
 
+func (a *App) newRootCommand() *Command {
+	return &Command{
+		Name:                   a.Name,
+		Usage:                  a.Usage,
+		UsageText:              a.UsageText,
+		Description:            a.Description,
+		ArgsUsage:              a.ArgsUsage,
+		BashComplete:           a.BashComplete,
+		Before:                 a.Before,
+		After:                  a.After,
+		Action:                 a.Action,
+		OnUsageError:           a.OnUsageError,
+		Subcommands:            a.Commands,
+		Flags:                  a.Flags,
+		flagCategories:         a.flagCategories,
+		HideHelp:               a.HideHelp,
+		HideHelpCommand:        a.HideHelpCommand,
+		UseShortOptionHandling: a.UseShortOptionHandling,
+		HelpName:               a.HelpName,
+		CustomHelpTemplate:     a.CustomAppHelpTemplate,
+		categories:             a.categories,
+		isRoot:                 true,
+	}
+}
+
 func (a *App) newFlagSet() (*flag.FlagSet, error) {
 	return flagSet(a.Name, a.Flags)
 }
@@ -272,7 +297,7 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 	cCtx := NewContext(a, nil, &Context{Context: ctx})
 	cCtx.shellComplete = shellComplete
 
-	a.rootCommand = newRootCommand(a)
+	a.rootCommand = a.newRootCommand()
 	cCtx.Command = a.rootCommand
 
 	return a.rootCommand.Run(cCtx, arguments...)

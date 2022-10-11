@@ -106,32 +106,11 @@ func (cmd *Command) Command(name string) *Command {
 	return nil
 }
 
-func newRootCommand(a *App) *Command {
-	return &Command{
-		HelpName:               a.HelpName,
-		Subcommands:            a.Commands,
-		flagCategories:         a.flagCategories,
-		Flags:                  a.Flags,
-		Name:                   a.Name,
-		Action:                 a.Action,
-		UseShortOptionHandling: a.UseShortOptionHandling,
-		Before:                 a.Before,
-		After:                  a.After,
-		HideHelp:               a.HideHelp,
-		HideHelpCommand:        a.HideHelpCommand,
-		OnUsageError:           a.OnUsageError,
-		CustomHelpTemplate:     a.CustomAppHelpTemplate,
-		Usage:                  a.Usage,
-		UsageText:              a.UsageText,
-		Description:            a.Description,
-		ArgsUsage:              a.ArgsUsage,
-		BashComplete:           a.BashComplete,
-		categories:             a.categories,
-		isRoot:                 true,
-	}
-}
-
 func (c *Command) setup(ctx *Context) {
+	if c.HelpName == "" {
+		c.HelpName = fmt.Sprintf("%s %s", ctx.parentContext.Command.HelpName, c.Name)
+	}
+
 	if c.Command(helpCommand.Name) == nil && !c.HideHelp {
 		if !c.HideHelpCommand {
 			c.Subcommands = append(c.Subcommands, helpCommand)
