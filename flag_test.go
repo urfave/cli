@@ -3111,7 +3111,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "stringSlice",
 			flag:    &StringSliceFlag{Name: "flag", Value: NewStringSlice("default1", "default2"), EnvVars: []string{"ssflag"}},
 			toParse: []string{"--flag", "parsed"},
-			expect:  `--flag value [ --flag value ]	(default: "default1", "default2") [$ssflag]`,
+			expect:  `--flag value [ --flag value ]	(default: "default1", "default2")` + withEnvHint([]string{"ssflag"}, ""),
 			environ: map[string]string{
 				"ssflag": "some-other-env_value",
 			},
@@ -3120,7 +3120,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "float64Slice",
 			flag:    &Float64SliceFlag{Name: "flag", Value: NewFloat64Slice(1.1, 2.2), EnvVars: []string{"fsflag"}},
 			toParse: []string{"--flag", "13.3"},
-			expect:  `--flag value [ --flag value ]	(default: 1.1, 2.2) [$fsflag]`,
+			expect:  `--flag value [ --flag value ]	(default: 1.1, 2.2)` + withEnvHint([]string{"fsflag"}, ""),
 			environ: map[string]string{
 				"fsflag": "20304.222",
 			},
@@ -3129,7 +3129,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "int64Slice",
 			flag:    &Int64SliceFlag{Name: "flag", Value: NewInt64Slice(1, 2), EnvVars: []string{"isflag"}},
 			toParse: []string{"--flag", "13"},
-			expect:  `--flag value [ --flag value ]	(default: 1, 2) [$isflag]`,
+			expect:  `--flag value [ --flag value ]	(default: 1, 2)` + withEnvHint([]string{"isflag"}, ""),
 			environ: map[string]string{
 				"isflag": "101",
 			},
@@ -3138,7 +3138,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "intSlice",
 			flag:    &IntSliceFlag{Name: "flag", Value: NewIntSlice(1, 2), EnvVars: []string{"isflag"}},
 			toParse: []string{"--flag", "13"},
-			expect:  `--flag value [ --flag value ]	(default: 1, 2) [$isflag]`,
+			expect:  `--flag value [ --flag value ]	(default: 1, 2)` + withEnvHint([]string{"isflag"}, ""),
 			environ: map[string]string{
 				"isflag": "101",
 			},
@@ -3147,7 +3147,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "uint64Slice",
 			flag:    &Uint64SliceFlag{Name: "flag", Value: NewUint64Slice(1, 2), EnvVars: []string{"uisflag"}},
 			toParse: []string{"--flag", "13"},
-			expect:  `--flag value [ --flag value ]	(default: 1, 2) [$uisflag]`,
+			expect:  `--flag value [ --flag value ]	(default: 1, 2)` + withEnvHint([]string{"uisflag"}, ""),
 			environ: map[string]string{
 				"uisflag": "3",
 			},
@@ -3156,7 +3156,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "uintSlice",
 			flag:    &UintSliceFlag{Name: "flag", Value: NewUintSlice(1, 2), EnvVars: []string{"uisflag"}},
 			toParse: []string{"--flag", "13"},
-			expect:  `--flag value [ --flag value ]	(default: 1, 2) [$uisflag]`,
+			expect:  `--flag value [ --flag value ]	(default: 1, 2)` + withEnvHint([]string{"uisflag"}, ""),
 			environ: map[string]string{
 				"uisflag": "3",
 			},
@@ -3165,7 +3165,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "string",
 			flag:    &StringFlag{Name: "flag", Value: "default", EnvVars: []string{"uflag"}},
 			toParse: []string{"--flag", "parsed"},
-			expect:  `--flag value	(default: "default") [$uflag]`,
+			expect:  `--flag value	(default: "default")` + withEnvHint([]string{"uflag"}, ""),
 			environ: map[string]string{
 				"uflag": "some-other-string",
 			},
@@ -3174,7 +3174,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "bool",
 			flag:    &BoolFlag{Name: "flag", Value: true, EnvVars: []string{"uflag"}},
 			toParse: []string{"--flag", "false"},
-			expect:  `--flag	(default: true) [$uflag]`,
+			expect:  `--flag	(default: true)` + withEnvHint([]string{"uflag"}, ""),
 			environ: map[string]string{
 				"uflag": "false",
 			},
@@ -3183,7 +3183,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "uint64",
 			flag:    &Uint64Flag{Name: "flag", Value: 1, EnvVars: []string{"uflag"}},
 			toParse: []string{"--flag", "13"},
-			expect:  `--flag value	(default: 1) [$uflag]`,
+			expect:  `--flag value	(default: 1)` + withEnvHint([]string{"uflag"}, ""),
 			environ: map[string]string{
 				"uflag": "10",
 			},
@@ -3192,7 +3192,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "uint",
 			flag:    &UintFlag{Name: "flag", Value: 1, EnvVars: []string{"uflag"}},
 			toParse: []string{"--flag", "13"},
-			expect:  `--flag value	(default: 1) [$uflag]`,
+			expect:  `--flag value	(default: 1)` + withEnvHint([]string{"uflag"}, ""),
 			environ: map[string]string{
 				"uflag": "10",
 			},
@@ -3201,7 +3201,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "int64",
 			flag:    &Int64Flag{Name: "flag", Value: 1, EnvVars: []string{"uflag"}},
 			toParse: []string{"--flag", "13"},
-			expect:  `--flag value	(default: 1) [$uflag]`,
+			expect:  `--flag value	(default: 1)` + withEnvHint([]string{"uflag"}, ""),
 			environ: map[string]string{
 				"uflag": "10",
 			},
@@ -3210,7 +3210,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "int",
 			flag:    &IntFlag{Name: "flag", Value: 1, EnvVars: []string{"uflag"}},
 			toParse: []string{"--flag", "13"},
-			expect:  `--flag value	(default: 1) [$uflag]`,
+			expect:  `--flag value	(default: 1)` + withEnvHint([]string{"uflag"}, ""),
 			environ: map[string]string{
 				"uflag": "10",
 			},
@@ -3219,7 +3219,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "duration",
 			flag:    &DurationFlag{Name: "flag", Value: time.Second, EnvVars: []string{"uflag"}},
 			toParse: []string{"--flag", "2m"},
-			expect:  `--flag value	(default: 1s) [$uflag]`,
+			expect:  `--flag value	(default: 1s)` + withEnvHint([]string{"uflag"}, ""),
 			environ: map[string]string{
 				"uflag": "2h4m10s",
 			},
@@ -3228,7 +3228,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "path",
 			flag:    &PathFlag{Name: "flag", Value: "/tmp/foo", EnvVars: []string{"uflag"}},
 			toParse: []string{"--flag", "/bar/ddfr"},
-			expect:  `--flag value	(default: "/tmp/foo") [$uflag]`,
+			expect:  `--flag value	(default: "/tmp/foo")` + withEnvHint([]string{"uflag"}, ""),
 			environ: map[string]string{
 				"uflag": "/bar/t/err",
 			},
@@ -3237,7 +3237,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "timestamp",
 			flag:    &TimestampFlag{Name: "flag", Value: NewTimestamp(ts), Layout: time.RFC3339, EnvVars: []string{"tflag"}},
 			toParse: []string{"--flag", "2006-11-02T15:04:05Z"},
-			expect:  `--flag value	(default: 2005-01-02 15:04:05 +0000 UTC) [$tflag]`,
+			expect:  `--flag value	(default: 2005-01-02 15:04:05 +0000 UTC)` + withEnvHint([]string{"tflag"}, ""),
 			environ: map[string]string{
 				"tflag": "2010-01-02T15:04:05Z",
 			},
@@ -3246,7 +3246,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "generic",
 			flag:    &GenericFlag{Name: "flag", Value: &Parser{"11", "12"}, EnvVars: []string{"gflag"}},
 			toParse: []string{"--flag", "15,16"},
-			expect:  `--flag value	(default: 11,12) [$gflag]`,
+			expect:  `--flag value	(default: 11,12)` + withEnvHint([]string{"gflag"}, ""),
 			environ: map[string]string{
 				"gflag": "13,14",
 			},
