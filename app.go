@@ -319,7 +319,7 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 		}()
 	}
 
-	if !a.HideHelp && (checkHelp(context) || checkHelpArguments(arguments)) {
+	if !a.HideHelp && (checkHelp(cCtx) || checkHelpArguments(arguments)) {
 		_ = ShowAppHelp(cCtx)
 		return nil
 	}
