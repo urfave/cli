@@ -91,21 +91,6 @@ func (f *Uint64SliceFlag) String() string {
 	return FlagStringer(f)
 }
 
-// TakesValue returns true of the flag takes a value, otherwise false
-func (f *Uint64SliceFlag) TakesValue() bool {
-	return true
-}
-
-// GetUsage returns the usage string for the flag
-func (f *Uint64SliceFlag) GetUsage() string {
-	return f.Usage
-}
-
-// GetCategory returns the category for the flag
-func (f *Uint64SliceFlag) GetCategory() string {
-	return f.Category
-}
-
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *Uint64SliceFlag) GetValue() string {
@@ -124,11 +109,6 @@ func (f *Uint64SliceFlag) GetDefaultText() string {
 		return f.DefaultText
 	}
 	return f.GetValue()
-}
-
-// GetEnvVars returns the env vars for this flag
-func (f *Uint64SliceFlag) GetEnvVars() []string {
-	return f.EnvVars
 }
 
 // IsSliceFlag implements DocGenerationSliceFlag.

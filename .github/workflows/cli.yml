@@ -46,8 +46,11 @@ jobs:
       - if: matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
         run: make generate
       - run: make diffcheck
-      - if: matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
+      # TODO: switch once v3 is released {{
+      # - if: matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
+      - if: 'false'
         run: make v2diff
+      # }}
       - if: success() && matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
         uses: codecov/codecov-action@v3
         with:

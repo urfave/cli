@@ -99,6 +99,14 @@ func (f *Int64SliceFlag) GetValue() string {
 	return strings.Join(defaultVals, ", ")
 }
 
+// GetDefaultText returns the default text for this flag
+func (f *Int64SliceFlag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	return f.GetValue()
+}
+
 // IsSliceFlag implements DocGenerationSliceFlag.
 func (f *Int64SliceFlag) IsSliceFlag() bool {
 	return true

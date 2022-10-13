@@ -32,7 +32,7 @@ var (
 	SuggestDidYouMeanTemplate string             = suggestDidYouMeanTemplate
 )
 var AppHelpTemplate = `NAME:
-   {{$v := offset .Name 6}}{{wrap .Name 3}}{{if .Usage}} - {{wrap .Usage $v}}{{end}}
+   {{template "helpNameTemplate" .}}
 
 USAGE:
    {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
@@ -41,52 +41,39 @@ VERSION:
    {{.Version}}{{end}}{{end}}{{if .Description}}
 
 DESCRIPTION:
-   {{wrap .Description 3}}{{end}}{{if len .Authors}}
+   {{template "descriptionTemplate" .}}{{end}}
+{{- if len .Authors}}
 
-AUTHOR{{with $length := len .Authors}}{{if ne 1 $length}}S{{end}}{{end}}:
-   {{range $index, $author := .Authors}}{{if $index}}
-   {{end}}{{$author}}{{end}}{{end}}{{if .VisibleCommands}}
+AUTHOR{{template "authorsTemplate" .}}{{end}}{{if .VisibleCommands}}
 
-COMMANDS:{{range .VisibleCategories}}{{if .Name}}
-   {{.Name}}:{{range .VisibleCommands}}
-     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{ $cv := offsetCommands .VisibleCommands 5}}{{range .VisibleCommands}}
-   {{$s := join .Names ", "}}{{$s}}{{ $sp := subtract $cv (offset $s 3) }}{{ indent $sp ""}}{{wrap .Usage $cv}}{{end}}{{end}}{{end}}{{end}}{{if .VisibleFlagCategories}}
+COMMANDS:{{template "visibleCommandCategoryTemplate" .}}{{end}}{{if .VisibleFlagCategories}}
 
-GLOBAL OPTIONS:{{range .VisibleFlagCategories}}
-   {{if .Name}}{{.Name}}
-   {{end}}{{range .Flags}}{{.}}
-   {{end}}{{end}}{{else}}{{if .VisibleFlags}}
+GLOBAL OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
 
-GLOBAL OPTIONS:
-   {{range $index, $option := .VisibleFlags}}{{if $index}}
-   {{end}}{{wrap $option.String 6}}{{end}}{{end}}{{end}}{{if .Copyright}}
+GLOBAL OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}{{if .Copyright}}
 
 COPYRIGHT:
-   {{wrap .Copyright 3}}{{end}}
+   {{template "copyrightTemplate" .}}{{end}}
 `
     AppHelpTemplate is the text template for the Default help topic. cli.go
     uses text/template to render templates. You can render custom help text by
     setting this variable.
 
 var CommandHelpTemplate = `NAME:
-   {{$v := offset .HelpName 6}}{{wrap .HelpName 3}}{{if .Usage}} - {{wrap .Usage $v}}{{end}}
+   {{template "helpNameTemplate" .}}
 
 USAGE:
-   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}}{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Category}}
+   {{template "usageTemplate" .}}{{if .Category}}
 
 CATEGORY:
    {{.Category}}{{end}}{{if .Description}}
 
 DESCRIPTION:
-   {{wrap .Description 3}}{{end}}{{if .VisibleFlagCategories}}
+   {{template "descriptionTemplate" .}}{{end}}{{if .VisibleFlagCategories}}
 
-OPTIONS:{{range .VisibleFlagCategories}}
-   {{if .Name}}{{.Name}}
-   {{end}}{{range .Flags}}{{.}}{{end}}{{end}}{{else}}{{if .VisibleFlags}}
+OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
 
-OPTIONS:
-   {{range .VisibleFlags}}{{.}}{{end}}{{end}}{{end}}
-`
+OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}`
     CommandHelpTemplate is the text template for the command help topic. cli.go
     uses text/template to render templates. You can render custom help text by
     setting this variable.
@@ -145,22 +132,19 @@ var OsExiter = os.Exit
     os.Exit.
 
 var SubcommandHelpTemplate = `NAME:
-   {{.HelpName}} - {{.Usage}}
+   {{template "helpNameTemplate" .}}
 
 USAGE:
    {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} command{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Description}}
 
 DESCRIPTION:
-   {{wrap .Description 3}}{{end}}
+   {{template "descriptionTemplate" .}}{{end}}{{if .VisibleCommands}}
 
-COMMANDS:{{range .VisibleCategories}}{{if .Name}}
-   {{.Name}}:{{range .VisibleCommands}}
-     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{ $cv := offsetCommands .VisibleCommands 5}}{{range .VisibleCommands}}
-     {{$s := join .Names ", "}}{{$s}}{{ $sp := subtract $cv (offset $s 3) }}{{ indent $sp ""}}{{wrap .Usage $cv}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
+COMMANDS:{{template "visibleCommandTemplate" .}}{{end}}{{if .VisibleFlagCategories}}
 
-OPTIONS:
-   {{range .VisibleFlags}}{{.}}{{end}}{{end}}
-`
+OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
+
+OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}`
     SubcommandHelpTemplate is the text template for the subcommand help topic.
     cli.go uses text/template to render templates. You can render custom help
     text by setting this variable.
@@ -586,6 +570,9 @@ func (c *Command) Run(ctx *Context) (err error)
     Run invokes the command given the context, parses ctx.Args() to generate
     command-specific flags
 
+func (c *Command) VisibleCommands() []*Command
+    VisibleCommands returns a slice of the Commands with Hidden=false
+
 func (c *Command) VisibleFlagCategories() []VisibleFlagCategory
     VisibleFlagCategories returns a slice containing all the visible flag
     categories with the flags they contain
@@ -753,6 +740,14 @@ type DocGenerationFlag interface {
 }
     DocGenerationFlag is an interface that allows documentation generation for
     the flag
+
+type DocGenerationSliceFlag interface {
+	DocGenerationFlag
+
+	// IsSliceFlag returns true for flags that can be given multiple times.
+	IsSliceFlag() bool
+}
+    DocGenerationSliceFlag extends DocGenerationFlag for slice-based flags.
 
 type DurationFlag struct {
 	Name string
@@ -1077,6 +1072,9 @@ func (f *Float64SliceFlag) IsRequired() bool
 func (f *Float64SliceFlag) IsSet() bool
     IsSet returns whether or not the flag has been set through env or file
 
+func (f *Float64SliceFlag) IsSliceFlag() bool
+    IsSliceFlag implements DocGenerationSliceFlag.
+
 func (f *Float64SliceFlag) IsVisible() bool
     IsVisible returns true if the flag is not hidden, otherwise false
 
@@ -1312,6 +1310,9 @@ func (f *Int64SliceFlag) IsRequired() bool
 func (f *Int64SliceFlag) IsSet() bool
     IsSet returns whether or not the flag has been set through env or file
 
+func (f *Int64SliceFlag) IsSliceFlag() bool
+    IsSliceFlag implements DocGenerationSliceFlag.
+
 func (f *Int64SliceFlag) IsVisible() bool
     IsVisible returns true if the flag is not hidden, otherwise false
 
@@ -1476,6 +1477,9 @@ func (f *IntSliceFlag) IsRequired() bool
 
 func (f *IntSliceFlag) IsSet() bool
     IsSet returns whether or not the flag has been set through env or file
+
+func (f *IntSliceFlag) IsSliceFlag() bool
+    IsSliceFlag implements DocGenerationSliceFlag.
 
 func (f *IntSliceFlag) IsVisible() bool
     IsVisible returns true if the flag is not hidden, otherwise false
@@ -1817,6 +1821,9 @@ func (f *StringSliceFlag) IsRequired() bool
 func (f *StringSliceFlag) IsSet() bool
     IsSet returns whether or not the flag has been set through env or file
 
+func (f *StringSliceFlag) IsSliceFlag() bool
+    IsSliceFlag implements DocGenerationSliceFlag.
+
 func (f *StringSliceFlag) IsVisible() bool
     IsVisible returns true if the flag is not hidden, otherwise false
 
@@ -2057,7 +2064,7 @@ func (f *Uint64SliceFlag) Get(ctx *Context) []uint64
     Get returns the flag’s value in the given Context.
 
 func (f *Uint64SliceFlag) GetCategory() string
-    GetCategory returns the category for the flag
+    GetCategory returns the category of the flag
 
 func (f *Uint64SliceFlag) GetDefaultText() string
     GetDefaultText returns the default text for this flag
@@ -2078,6 +2085,9 @@ func (f *Uint64SliceFlag) IsRequired() bool
 func (f *Uint64SliceFlag) IsSet() bool
     IsSet returns whether or not the flag has been set through env or file
 
+func (f *Uint64SliceFlag) IsSliceFlag() bool
+    IsSliceFlag implements DocGenerationSliceFlag.
+
 func (f *Uint64SliceFlag) IsVisible() bool
     IsVisible returns true if the flag is not hidden, otherwise false
 
@@ -2091,7 +2101,7 @@ func (f *Uint64SliceFlag) String() string
     String returns a readable representation of this value (for usage defaults)
 
 func (f *Uint64SliceFlag) TakesValue() bool
-    TakesValue returns true of the flag takes a value, otherwise false
+    TakesValue returns true if the flag takes a value, otherwise false
 
 type UintFlag struct {
 	Name string
@@ -2216,7 +2226,7 @@ func (f *UintSliceFlag) Get(ctx *Context) []uint
     Get returns the flag’s value in the given Context.
 
 func (f *UintSliceFlag) GetCategory() string
-    GetCategory returns the category for the flag
+    GetCategory returns the category of the flag
 
 func (f *UintSliceFlag) GetDefaultText() string
     GetDefaultText returns the default text for this flag
@@ -2237,6 +2247,9 @@ func (f *UintSliceFlag) IsRequired() bool
 func (f *UintSliceFlag) IsSet() bool
     IsSet returns whether or not the flag has been set through env or file
 
+func (f *UintSliceFlag) IsSliceFlag() bool
+    IsSliceFlag implements DocGenerationSliceFlag.
+
 func (f *UintSliceFlag) IsVisible() bool
     IsVisible returns true if the flag is not hidden, otherwise false
 
@@ -2250,7 +2263,7 @@ func (f *UintSliceFlag) String() string
     String returns a readable representation of this value (for usage defaults)
 
 func (f *UintSliceFlag) TakesValue() bool
-    TakesValue returns true of the flag takes a value, otherwise false
+    TakesValue returns true if the flag takes a value, otherwise false
 
 type VisibleFlag interface {
 	Flag
