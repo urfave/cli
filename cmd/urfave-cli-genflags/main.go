@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	_ "embed"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -37,6 +38,9 @@ var (
 func sh(ctx context.Context, exe string, args ...string) (string, error) {
 	cmd := exec.CommandContext(ctx, exe, args...)
 	cmd.Stderr = os.Stderr
+
+	fmt.Fprintf(os.Stderr, "# ---> %s\n", cmd)
+
 	outBytes, err := cmd.Output()
 	return string(outBytes), err
 }
@@ -89,8 +93,17 @@ func main() {
 				Aliases: []string{"N"},
 				Value:   "cli.",
 			},
+			&cli.PathFlag{
+				Name:    "goimports",
+				EnvVars: []string{"GOIMPORTS_BIN"},
+				Value:   filepath.Join(top, ".local/bin/goimports"),
+			},
 		},
 		Action: runGenFlags,
+	}
+
+	if err := os.Chdir(top); err != nil {
+		log.Fatal(err)
 	}
 
 	if err := app.RunContext(ctx, os.Args); err != nil {
@@ -163,11 +176,11 @@ func runGenFlags(cCtx *cli.Context) error {
 		return err
 	}
 
-	if _, err := sh(cCtx.Context, "goimports", "-w", cCtx.Path("generated-output")); err != nil {
+	if _, err := sh(cCtx.Context, cCtx.Path("goimports"), "-w", cCtx.Path("generated-output")); err != nil {
 		return err
 	}
 
-	if _, err := sh(cCtx.Context, "goimports", "-w", cCtx.Path("generated-test-output")); err != nil {
+	if _, err := sh(cCtx.Context, cCtx.Path("goimports"), "-w", cCtx.Path("generated-test-output")); err != nil {
 		return err
 	}
 
