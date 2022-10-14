@@ -68,6 +68,15 @@ var helpCommand = &Command{
 		}
 
 		// Case 3, 5
+		if (len(cCtx.Command.Subcommands) == 1 && !cCtx.Command.HideHelp) ||
+			(len(cCtx.Command.Subcommands) == 0 && cCtx.Command.HideHelp) {
+			templ := cCtx.Command.CustomHelpTemplate
+			if templ == "" {
+				templ = CommandHelpTemplate
+			}
+			HelpPrinter(cCtx.App.Writer, templ, cCtx.Command)
+			return nil
+		}
 		return ShowSubcommandHelp(cCtx)
 	},
 }
@@ -230,13 +239,12 @@ func ShowCommandHelpAndExit(c *Context, command string, code int) {
 
 // ShowCommandHelp prints help for the given command
 func ShowCommandHelp(ctx *Context, command string) error {
-	// show the subcommand help for a command with subcommands
-	if command == "" {
-		HelpPrinter(ctx.App.Writer, SubcommandHelpTemplate, ctx.App)
-		return nil
-	}
 
-	for _, c := range ctx.App.Commands {
+	commands := ctx.App.Commands
+	if ctx.Command.Subcommands != nil {
+		commands = ctx.Command.Subcommands
+	}
+	for _, c := range commands {
 		if c.HasName(command) {
 			if !ctx.App.HideHelpCommand && !c.HasName(helpName) && len(c.Subcommands) != 0 {
 				c.Subcommands = append(c.Subcommands, helpCommandDontUse)
@@ -262,7 +270,7 @@ func ShowCommandHelp(ctx *Context, command string) error {
 	if ctx.App.CommandNotFound == nil {
 		errMsg := fmt.Sprintf("No help topic for '%v'", command)
 		if ctx.App.Suggest {
-			if suggestion := SuggestCommand(ctx.App.Commands, command); suggestion != "" {
+			if suggestion := SuggestCommand(ctx.Command.Subcommands, command); suggestion != "" {
 				errMsg += ". " + suggestion
 			}
 		}
@@ -285,11 +293,8 @@ func ShowSubcommandHelp(cCtx *Context) error {
 		return nil
 	}
 
-	if cCtx.Command != nil {
-		return ShowCommandHelp(cCtx, cCtx.Command.Name)
-	}
-
-	return ShowCommandHelp(cCtx, "")
+	HelpPrinter(cCtx.App.Writer, SubcommandHelpTemplate, cCtx.Command)
+	return nil
 }
 
 // ShowVersion prints the version number of the App
@@ -401,8 +406,10 @@ func checkHelp(cCtx *Context) bool {
 	for _, name := range HelpFlag.Names() {
 		if cCtx.Bool(name) {
 			found = true
+			break
 		}
 	}
+
 	return found
 }
 

@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"reflect"
 	"sort"
 	"time"
 )
@@ -112,6 +111,8 @@ type App struct {
 	Suggest bool
 
 	didSetup bool
+
+	rootCommand *Command
 }
 
 type SuggestFlagFunc func(flags []Flag, provided string, hideHelp bool) string
@@ -197,9 +198,11 @@ func (a *App) Setup() {
 	var newCommands []*Command
 
 	for _, c := range a.Commands {
-		if c.HelpName == "" {
-			c.HelpName = fmt.Sprintf("%s %s", a.HelpName, c.Name)
+		cname := c.Name
+		if c.HelpName != "" {
+			cname = c.HelpName
 		}
+		c.HelpName = fmt.Sprintf("%s %s", a.HelpName, cname)
 
 		c.flagCategories = newFlagCategoriesFromFlags(c.Flags)
 		newCommands = append(newCommands, c)
@@ -240,6 +243,31 @@ func (a *App) Setup() {
 	}
 }
 
+func (a *App) newRootCommand() *Command {
+	return &Command{
+		Name:                   a.Name,
+		Usage:                  a.Usage,
+		UsageText:              a.UsageText,
+		Description:            a.Description,
+		ArgsUsage:              a.ArgsUsage,
+		BashComplete:           a.BashComplete,
+		Before:                 a.Before,
+		After:                  a.After,
+		Action:                 a.Action,
+		OnUsageError:           a.OnUsageError,
+		Subcommands:            a.Commands,
+		Flags:                  a.Flags,
+		flagCategories:         a.flagCategories,
+		HideHelp:               a.HideHelp,
+		HideHelpCommand:        a.HideHelpCommand,
+		UseShortOptionHandling: a.UseShortOptionHandling,
+		HelpName:               a.HelpName,
+		CustomHelpTemplate:     a.CustomAppHelpTemplate,
+		categories:             a.categories,
+		isRoot:                 true,
+	}
+}
+
 func (a *App) newFlagSet() (*flag.FlagSet, error) {
 	return flagSet(a.Name, a.Flags)
 }
@@ -268,136 +296,20 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 	// always appends the completion flag at the end of the command
 	shellComplete, arguments := checkShellCompleteFlag(a, arguments)
 
-	set, err := a.newFlagSet()
-	if err != nil {
-		return err
-	}
-
-	err = parseIter(set, a, arguments[1:], shellComplete)
-	nerr := normalizeFlags(a.Flags, set)
-	cCtx := NewContext(a, set, &Context{Context: ctx})
-	if nerr != nil {
-		_, _ = fmt.Fprintln(a.Writer, nerr)
-		if !a.HideHelp {
-			_ = ShowAppHelp(cCtx)
-		}
-		return nerr
-	}
+	cCtx := NewContext(a, nil, &Context{Context: ctx})
 	cCtx.shellComplete = shellComplete
 
-	if checkCompletions(cCtx) {
-		return nil
-	}
+	a.rootCommand = a.newRootCommand()
+	cCtx.Command = a.rootCommand
 
-	if err != nil {
-		if a.OnUsageError != nil {
-			err := a.OnUsageError(cCtx, err, false)
-			a.handleExitCoder(cCtx, err)
-			return err
-		}
-		_, _ = fmt.Fprintf(a.Writer, "%s %s\n\n", "Incorrect Usage.", err.Error())
-		if a.Suggest {
-			if suggestion, err := a.suggestFlagFromError(err, ""); err == nil {
-				fmt.Fprintf(a.Writer, suggestion)
-			}
-		}
-		if !a.HideHelp {
-			_ = ShowAppHelp(cCtx)
-		}
-		return err
-	}
+	return a.rootCommand.Run(cCtx, arguments...)
+}
 
-	if a.After != nil && !cCtx.shellComplete {
-		defer func() {
-			if afterErr := a.After(cCtx); afterErr != nil {
-				if err != nil {
-					err = newMultiError(err, afterErr)
-				} else {
-					err = afterErr
-				}
-			}
-		}()
-	}
-
-	if !a.HideHelp && checkHelp(cCtx) {
-		_ = ShowAppHelp(cCtx)
-		return nil
-	}
-
-	if !a.HideVersion && checkVersion(cCtx) {
-		ShowVersion(cCtx)
-		return nil
-	}
-
-	cerr := cCtx.checkRequiredFlags(a.Flags)
-	if cerr != nil {
-		_ = ShowAppHelp(cCtx)
-		return cerr
-	}
-
-	if a.Before != nil && !cCtx.shellComplete {
-		beforeErr := a.Before(cCtx)
-		if beforeErr != nil {
-			a.handleExitCoder(cCtx, beforeErr)
-			err = beforeErr
-			return err
-		}
-	}
-
-	if err = runFlagActions(cCtx, a.Flags); err != nil {
-		return err
-	}
-
-	var c *Command
-	args := cCtx.Args()
-	if args.Present() {
-		name := args.First()
-		if a.validCommandName(name) {
-			c = a.Command(name)
-		} else {
-			hasDefault := a.DefaultCommand != ""
-			isFlagName := checkStringSliceIncludes(name, cCtx.FlagNames())
-
-			var (
-				isDefaultSubcommand   = false
-				defaultHasSubcommands = false
-			)
-
-			if hasDefault {
-				dc := a.Command(a.DefaultCommand)
-				defaultHasSubcommands = len(dc.Subcommands) > 0
-				for _, dcSub := range dc.Subcommands {
-					if checkStringSliceIncludes(name, dcSub.Names()) {
-						isDefaultSubcommand = true
-						break
-					}
-				}
-			}
-
-			if isFlagName || (hasDefault && (defaultHasSubcommands && isDefaultSubcommand)) {
-				argsWithDefault := a.argsWithDefaultCommand(args)
-				if !reflect.DeepEqual(args, argsWithDefault) {
-					c = a.Command(argsWithDefault.First())
-				}
-			}
-		}
-	} else if a.DefaultCommand != "" {
-		c = a.Command(a.DefaultCommand)
-	}
-
-	if c != nil {
-		return c.Run(cCtx)
-	}
-
-	if a.Action == nil {
-		a.Action = helpCommand.Action
-	}
-
-	// Run default Action
-	err = a.Action(cCtx)
-
-	a.handleExitCoder(cCtx, err)
-	return err
+// This is a stub function to keep public API unchanged from old code
+// 
+// Deprecated: use App.Run or App.RunContext
+func (a *App) RunAsSubcommand(ctx *Context) (err error) {
+	return a.RunContext(ctx.Context, ctx.Args().Slice())
 }
 
 func (a *App) suggestFlagFromError(err error, command string) (string, error) {
@@ -407,15 +319,17 @@ func (a *App) suggestFlagFromError(err error, command string) (string, error) {
 	}
 
 	flags := a.Flags
+	hideHelp := a.HideHelp
 	if command != "" {
 		cmd := a.Command(command)
 		if cmd == nil {
 			return "", err
 		}
 		flags = cmd.Flags
+		hideHelp = hideHelp || cmd.HideHelp
 	}
 
-	suggestion := SuggestFlag(flags, flag, a.HideHelp)
+	suggestion := SuggestFlag(flags, flag, hideHelp)
 	if len(suggestion) == 0 {
 		return "", err
 	}
@@ -433,120 +347,6 @@ func (a *App) RunAndExitOnError() {
 		_, _ = fmt.Fprintln(a.ErrWriter, err)
 		OsExiter(1)
 	}
-}
-
-// RunAsSubcommand invokes the subcommand given the context, parses ctx.Args() to
-// generate command-specific flags
-func (a *App) RunAsSubcommand(ctx *Context) (err error) {
-	// Setup also handles HideHelp and HideHelpCommand
-	a.Setup()
-
-	var newCmds []*Command
-	for _, c := range a.Commands {
-		if c.HelpName == "" {
-			c.HelpName = fmt.Sprintf("%s %s", a.HelpName, c.Name)
-		}
-		newCmds = append(newCmds, c)
-	}
-	a.Commands = newCmds
-
-	set, err := a.newFlagSet()
-	if err != nil {
-		return err
-	}
-
-	err = parseIter(set, a, ctx.Args().Tail(), ctx.shellComplete)
-	nerr := normalizeFlags(a.Flags, set)
-	cCtx := NewContext(a, set, ctx)
-
-	if nerr != nil {
-		_, _ = fmt.Fprintln(a.Writer, nerr)
-		_, _ = fmt.Fprintln(a.Writer)
-		if len(a.Commands) > 0 {
-			_ = ShowSubcommandHelp(cCtx)
-		} else {
-			_ = ShowCommandHelp(ctx, cCtx.Args().First())
-		}
-		return nerr
-	}
-
-	if checkCompletions(cCtx) {
-		return nil
-	}
-
-	if err != nil {
-		if a.OnUsageError != nil {
-			err = a.OnUsageError(cCtx, err, true)
-			a.handleExitCoder(cCtx, err)
-			return err
-		}
-		_, _ = fmt.Fprintf(a.Writer, "%s %s\n\n", "Incorrect Usage.", err.Error())
-		if a.Suggest {
-			if suggestion, err := a.suggestFlagFromError(err, cCtx.Command.Name); err == nil {
-				fmt.Fprintf(a.Writer, suggestion)
-			}
-		}
-		_ = ShowSubcommandHelp(cCtx)
-		return err
-	}
-
-	if len(a.Commands) > 0 {
-		if checkSubcommandHelp(cCtx) {
-			return nil
-		}
-	} else {
-		if checkCommandHelp(ctx, cCtx.Args().First()) {
-			return nil
-		}
-	}
-
-	cerr := cCtx.checkRequiredFlags(a.Flags)
-	if cerr != nil {
-		_ = ShowSubcommandHelp(cCtx)
-		return cerr
-	}
-
-	if a.After != nil && !cCtx.shellComplete {
-		defer func() {
-			afterErr := a.After(cCtx)
-			if afterErr != nil {
-				a.handleExitCoder(cCtx, err)
-				if err != nil {
-					err = newMultiError(err, afterErr)
-				} else {
-					err = afterErr
-				}
-			}
-		}()
-	}
-
-	if a.Before != nil && !cCtx.shellComplete {
-		beforeErr := a.Before(cCtx)
-		if beforeErr != nil {
-			a.handleExitCoder(cCtx, beforeErr)
-			err = beforeErr
-			return err
-		}
-	}
-
-	if err = runFlagActions(cCtx, a.Flags); err != nil {
-		return err
-	}
-
-	args := cCtx.Args()
-	if args.Present() {
-		name := args.First()
-		c := a.Command(name)
-		if c != nil {
-			return c.Run(cCtx)
-		}
-	}
-
-	// Run default Action
-	err = a.Action(cCtx)
-
-	a.handleExitCoder(cCtx, err)
-	return err
 }
 
 // Command returns the named command on App. Returns nil if the command does not exist

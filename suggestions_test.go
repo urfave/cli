@@ -138,7 +138,7 @@ func ExampleApp_Suggest() {
 
 	app.Run([]string{"greet", "--nema", "chipmunk"})
 	// Output:
-	// Incorrect Usage. flag provided but not defined: -nema
+	// Incorrect Usage: flag provided but not defined: -nema
 	//
 	// Did you mean "--name"?
 	//
