@@ -306,7 +306,7 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 }
 
 // This is a stub function to keep public API unchanged from old code
-// 
+//
 // Deprecated: use App.Run or App.RunContext
 func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	return a.RunContext(ctx.Context, ctx.Args().Slice())
