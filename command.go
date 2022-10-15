@@ -3,6 +3,7 @@ package cli
 import (
 	"flag"
 	"fmt"
+	"reflect"
 	"sort"
 	"strings"
 )
@@ -38,7 +39,8 @@ type Command struct {
 	// List of child commands
 	Subcommands []*Command
 	// List of flags to parse
-	Flags []Flag
+	Flags          []Flag
+	flagCategories FlagCategories
 	// Treat all flags as normal arguments if true
 	SkipFlagParsing bool
 	// Boolean to hide built-in help command and help flag
@@ -61,6 +63,12 @@ type Command struct {
 	// cli.go uses text/template to render templates. You can
 	// render custom help text by setting this variable.
 	CustomHelpTemplate string
+
+	// categories contains the categorized commands and is populated on app startup
+	categories CommandCategories
+
+	// if this is a root "special" command
+	isRoot bool
 }
 
 type Commands []*Command
@@ -88,10 +96,21 @@ func (c *Command) FullName() string {
 	return strings.Join(c.commandNamePath, " ")
 }
 
-// Run invokes the command given the context, parses ctx.Args() to generate command-specific flags
-func (c *Command) Run(ctx *Context) (err error) {
-	if len(c.Subcommands) > 0 {
-		return c.startApp(ctx)
+func (cmd *Command) Command(name string) *Command {
+	for _, c := range cmd.Subcommands {
+		if c.HasName(name) {
+			return c
+		}
+	}
+
+	return nil
+}
+
+func (c *Command) setup(ctx *Context) {
+	if c.Command(helpCommand.Name) == nil && !c.HideHelp {
+		if !c.HideHelpCommand {
+			c.Subcommands = append(c.Subcommands, helpCommand)
+		}
 	}
 
 	if !c.HideHelp && HelpFlag != nil {
@@ -103,41 +122,76 @@ func (c *Command) Run(ctx *Context) (err error) {
 		c.UseShortOptionHandling = true
 	}
 
-	set, err := c.parseFlags(ctx.Args(), ctx.shellComplete)
+	c.categories = newCommandCategories()
+	for _, command := range c.Subcommands {
+		c.categories.AddCommand(command.Category, command)
+	}
+	sort.Sort(c.categories.(*commandCategories))
 
-	context := NewContext(ctx.App, set, ctx)
-	context.Command = c
-	if checkCommandCompletions(context, c.Name) {
+	var newCmds []*Command
+	for _, scmd := range c.Subcommands {
+		if scmd.HelpName == "" {
+			scmd.HelpName = fmt.Sprintf("%s %s", c.HelpName, scmd.Name)
+		}
+		newCmds = append(newCmds, scmd)
+	}
+	c.Subcommands = newCmds
+}
+
+func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
+
+	if !c.isRoot {
+		c.setup(cCtx)
+	}
+
+	a := args(arguments)
+	set, err := c.parseFlags(&a, cCtx.shellComplete)
+	cCtx.flagSet = set
+
+	if c.isRoot {
+		if checkCompletions(cCtx) {
+			return nil
+		}
+	} else if checkCommandCompletions(cCtx, c.Name) {
 		return nil
 	}
 
 	if err != nil {
 		if c.OnUsageError != nil {
-			err = c.OnUsageError(context, err, false)
-			context.App.handleExitCoder(context, err)
+			err = c.OnUsageError(cCtx, err, !c.isRoot)
+			cCtx.App.handleExitCoder(cCtx, err)
 			return err
 		}
-		_, _ = fmt.Fprintln(context.App.Writer, "Incorrect Usage:", err.Error())
-		_, _ = fmt.Fprintln(context.App.Writer)
-		_ = ShowCommandHelp(context, c.Name)
+		_, _ = fmt.Fprintf(cCtx.App.Writer, "%s %s\n\n", "Incorrect Usage:", err.Error())
+		if cCtx.App.Suggest {
+			if suggestion, err := c.suggestFlagFromError(err, ""); err == nil {
+				fmt.Fprintf(cCtx.App.Writer, "%s", suggestion)
+			}
+		}
+		if !c.HideHelp {
+			if c.isRoot {
+				_ = ShowAppHelp(cCtx)
+			} else {
+				_ = ShowCommandHelp(cCtx.parentContext, c.Name)
+			}
+		}
 		return err
 	}
 
-	if checkCommandHelp(context, c.Name) {
+	if checkHelp(cCtx) {
+		return helpCommand.Action(cCtx)
+	}
+
+	if c.isRoot && !cCtx.App.HideVersion && checkVersion(cCtx) {
+		ShowVersion(cCtx)
 		return nil
 	}
 
-	cerr := checkRequiredFlags(c.Flags, context)
-	if cerr != nil {
-		_ = ShowCommandHelp(context, c.Name)
-		return cerr
-	}
-
-	if c.After != nil {
+	if c.After != nil && !cCtx.shellComplete {
 		defer func() {
-			afterErr := c.After(context)
+			afterErr := c.After(cCtx)
 			if afterErr != nil {
-				context.App.handleExitCoder(context, err)
+				cCtx.App.handleExitCoder(cCtx, err)
 				if err != nil {
 					err = newMultiError(err, afterErr)
 				} else {
@@ -147,24 +201,76 @@ func (c *Command) Run(ctx *Context) (err error) {
 		}()
 	}
 
-	if c.Before != nil {
-		err = c.Before(context)
-		if err != nil {
-			context.App.handleExitCoder(context, err)
+	cerr := cCtx.checkRequiredFlags(c.Flags)
+	if cerr != nil {
+		_ = ShowSubcommandHelp(cCtx)
+		return cerr
+	}
+
+	if c.Before != nil && !cCtx.shellComplete {
+		beforeErr := c.Before(cCtx)
+		if beforeErr != nil {
+			cCtx.App.handleExitCoder(cCtx, beforeErr)
+			err = beforeErr
 			return err
 		}
 	}
 
+	if err = runFlagActions(cCtx, c.Flags); err != nil {
+		return err
+	}
+
+	var cmd *Command
+	args := cCtx.Args()
+	if args.Present() {
+		name := args.First()
+		cmd = c.Command(name)
+		if cmd == nil {
+			hasDefault := cCtx.App.DefaultCommand != ""
+			isFlagName := checkStringSliceIncludes(name, cCtx.FlagNames())
+
+			var (
+				isDefaultSubcommand   = false
+				defaultHasSubcommands = false
+			)
+
+			if hasDefault {
+				dc := cCtx.App.Command(cCtx.App.DefaultCommand)
+				defaultHasSubcommands = len(dc.Subcommands) > 0
+				for _, dcSub := range dc.Subcommands {
+					if checkStringSliceIncludes(name, dcSub.Names()) {
+						isDefaultSubcommand = true
+						break
+					}
+				}
+			}
+
+			if isFlagName || (hasDefault && (defaultHasSubcommands && isDefaultSubcommand)) {
+				argsWithDefault := cCtx.App.argsWithDefaultCommand(args)
+				if !reflect.DeepEqual(args, argsWithDefault) {
+					cmd = cCtx.App.rootCommand.Command(argsWithDefault.First())
+				}
+			}
+		}
+	} else if cCtx.App.DefaultCommand != "" {
+		if dc := cCtx.App.Command(cCtx.App.DefaultCommand); dc != c {
+			cmd = dc
+		}
+	}
+
+	if cmd != nil {
+		newcCtx := NewContext(cCtx.App, nil, cCtx)
+		newcCtx.Command = cmd
+		return cmd.Run(newcCtx, cCtx.Args().Slice()...)
+	}
+
 	if c.Action == nil {
-		c.Action = helpSubcommand.Action
+		c.Action = helpCommand.Action
 	}
 
-	context.Command = c
-	err = c.Action(context)
+	err = c.Action(cCtx)
 
-	if err != nil {
-		context.App.handleExitCoder(context, err)
-	}
+	cCtx.App.handleExitCoder(cCtx, err)
 	return err
 }
 
@@ -174,6 +280,31 @@ func (c *Command) newFlagSet() (*flag.FlagSet, error) {
 
 func (c *Command) useShortOptionHandling() bool {
 	return c.UseShortOptionHandling
+}
+
+func (c *Command) suggestFlagFromError(err error, command string) (string, error) {
+	flag, parseErr := flagFromError(err)
+	if parseErr != nil {
+		return "", err
+	}
+
+	flags := c.Flags
+	hideHelp := c.HideHelp
+	if command != "" {
+		cmd := c.Command(command)
+		if cmd == nil {
+			return "", err
+		}
+		flags = cmd.Flags
+		hideHelp = hideHelp || cmd.HideHelp
+	}
+
+	suggestion := SuggestFlag(flags, flag, hideHelp)
+	if len(suggestion) == 0 {
+		return "", err
+	}
+
+	return fmt.Sprintf(SuggestDidYouMeanTemplate, suggestion) + "\n\n", nil
 }
 
 func (c *Command) parseFlags(args Args, shellComplete bool) (*flag.FlagSet, error) {
@@ -214,68 +345,40 @@ func (c *Command) HasName(name string) bool {
 	return false
 }
 
-func (c *Command) startApp(ctx *Context) error {
-	app := &App{
-		Metadata: ctx.App.Metadata,
-		Name:     fmt.Sprintf("%s %s", ctx.App.Name, c.Name),
+// VisibleCategories returns a slice of categories and commands that are
+// Hidden=false
+func (c *Command) VisibleCategories() []CommandCategory {
+	ret := []CommandCategory{}
+	for _, category := range c.categories.Categories() {
+		if visible := func() CommandCategory {
+			if len(category.VisibleCommands()) > 0 {
+				return category
+			}
+			return nil
+		}(); visible != nil {
+			ret = append(ret, visible)
+		}
 	}
+	return ret
+}
 
-	if c.HelpName == "" {
-		app.HelpName = c.HelpName
-	} else {
-		app.HelpName = app.Name
-	}
-
-	app.Usage = c.Usage
-	app.Description = c.Description
-	app.ArgsUsage = c.ArgsUsage
-
-	// set CommandNotFound
-	app.CommandNotFound = ctx.App.CommandNotFound
-	app.CustomAppHelpTemplate = c.CustomHelpTemplate
-
-	// set the flags and commands
-	app.Commands = c.Subcommands
-	app.Flags = c.Flags
-	app.HideHelp = c.HideHelp
-	app.HideHelpCommand = c.HideHelpCommand
-
-	app.Version = ctx.App.Version
-	app.HideVersion = true
-	app.Compiled = ctx.App.Compiled
-	app.Writer = ctx.App.Writer
-	app.ErrWriter = ctx.App.ErrWriter
-	app.ExitErrHandler = ctx.App.ExitErrHandler
-	app.UseShortOptionHandling = ctx.App.UseShortOptionHandling
-
-	app.categories = newCommandCategories()
+// VisibleCommands returns a slice of the Commands with Hidden=false
+func (c *Command) VisibleCommands() []*Command {
+	var ret []*Command
 	for _, command := range c.Subcommands {
-		app.categories.AddCommand(command.Category, command)
+		if !command.Hidden {
+			ret = append(ret, command)
+		}
 	}
+	return ret
+}
 
-	sort.Sort(app.categories.(*commandCategories))
-
-	// bash completion
-	app.EnableBashCompletion = ctx.App.EnableBashCompletion
-	if c.BashComplete != nil {
-		app.BashComplete = c.BashComplete
+// VisibleFlagCategories returns a slice containing all the visible flag categories with the flags they contain
+func (c *Command) VisibleFlagCategories() []VisibleFlagCategory {
+	if c.flagCategories == nil {
+		c.flagCategories = newFlagCategoriesFromFlags(c.Flags)
 	}
-
-	// set the actions
-	app.Before = c.Before
-	app.After = c.After
-	if c.Action != nil {
-		app.Action = c.Action
-	} else {
-		app.Action = helpSubcommand.Action
-	}
-	app.OnUsageError = c.OnUsageError
-
-	for index, cc := range app.Commands {
-		app.Commands[index].commandNamePath = []string{c.Name, cc.Name}
-	}
-
-	return app.RunAsSubcommand(ctx)
+	return c.flagCategories.VisibleCategories()
 }
 
 // VisibleFlags returns a slice of the Flags with Hidden=false

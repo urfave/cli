@@ -112,6 +112,8 @@ func TestContext_String(t *testing.T) {
 	c := NewContext(nil, set, parentCtx)
 	expect(t, c.String("myflag"), "hello world")
 	expect(t, c.String("top-flag"), "hai veld")
+	c = NewContext(nil, nil, parentCtx)
+	expect(t, c.String("top-flag"), "hai veld")
 }
 
 func TestContext_Path(t *testing.T) {
@@ -134,6 +136,43 @@ func TestContext_Bool(t *testing.T) {
 	c := NewContext(nil, set, parentCtx)
 	expect(t, c.Bool("myflag"), false)
 	expect(t, c.Bool("top-flag"), true)
+}
+
+func TestContext_Value(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Int("myflag", 12, "doc")
+	parentSet := flag.NewFlagSet("test", 0)
+	parentSet.Int("top-flag", 13, "doc")
+	parentCtx := NewContext(nil, parentSet, nil)
+	c := NewContext(nil, set, parentCtx)
+	expect(t, c.Value("myflag"), 12)
+	expect(t, c.Value("top-flag"), 13)
+	expect(t, c.Value("unknown-flag"), nil)
+}
+
+func TestContext_Value_InvalidFlagAccessHandler(t *testing.T) {
+	var flagName string
+	app := &App{
+		InvalidFlagAccessHandler: func(_ *Context, name string) {
+			flagName = name
+		},
+		Commands: []*Command{
+			{
+				Name: "command",
+				Subcommands: []*Command{
+					{
+						Name: "subcommand",
+						Action: func(ctx *Context) error {
+							ctx.Value("missing")
+							return nil
+						},
+					},
+				},
+			},
+		},
+	}
+	expect(t, app.Run([]string{"run", "command", "subcommand"}), nil)
+	expect(t, flagName, "missing")
 }
 
 func TestContext_Args(t *testing.T) {
@@ -244,6 +283,19 @@ func TestContext_Set(t *testing.T) {
 	expect(t, c.IsSet("int"), true)
 }
 
+func TestContext_Set_InvalidFlagAccessHandler(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	var flagName string
+	app := &App{
+		InvalidFlagAccessHandler: func(_ *Context, name string) {
+			flagName = name
+		},
+	}
+	c := NewContext(app, set, nil)
+	c.Set("missing", "")
+	expect(t, flagName, "missing")
+}
+
 func TestContext_LocalFlagNames(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("one-flag", false, "doc")
@@ -304,13 +356,13 @@ func TestContext_lookupFlagSet(t *testing.T) {
 	_ = set.Parse([]string{"--local-flag"})
 	_ = parentSet.Parse([]string{"--top-flag"})
 
-	fs := lookupFlagSet("top-flag", ctx)
+	fs := ctx.lookupFlagSet("top-flag")
 	expect(t, fs, parentCtx.flagSet)
 
-	fs = lookupFlagSet("local-flag", ctx)
+	fs = ctx.lookupFlagSet("local-flag")
 	expect(t, fs, ctx.flagSet)
 
-	if fs := lookupFlagSet("frob", ctx); fs != nil {
+	if fs := ctx.lookupFlagSet("frob"); fs != nil {
 		t.Fail()
 	}
 }
@@ -542,6 +594,14 @@ func TestCheckRequiredFlags(t *testing.T) {
 				&StringSliceFlag{Name: "names, n", Required: true},
 			},
 		},
+		{
+			testCase:              "required_flag_with_one_character",
+			expectedAnError:       true,
+			expectedErrorContents: []string{"Required flag \"n\" not set"},
+			flags: []Flag{
+				&StringFlag{Name: "n", Required: true},
+			},
+		},
 	}
 
 	for _, test := range tdata {
@@ -564,7 +624,7 @@ func TestCheckRequiredFlags(t *testing.T) {
 			ctx.Command.Flags = test.flags
 
 			// logic under test
-			err := checkRequiredFlags(test.flags, ctx)
+			err := ctx.checkRequiredFlags(test.flags)
 
 			// assertions
 			if test.expectedAnError && err == nil {
@@ -581,5 +641,21 @@ func TestCheckRequiredFlags(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestContext_ParentContext_Set(t *testing.T) {
+	parentSet := flag.NewFlagSet("parent", flag.ContinueOnError)
+	parentSet.String("Name", "", "")
+
+	context := NewContext(
+		nil,
+		flag.NewFlagSet("child", flag.ContinueOnError),
+		NewContext(nil, parentSet, nil),
+	)
+
+	err := context.Set("Name", "aaa")
+	if err != nil {
+		t.Errorf("expect nil. set parent context flag return err: %s", err)
 	}
 }

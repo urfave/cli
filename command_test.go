@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -30,7 +31,7 @@ func TestCommandFlagParsing(t *testing.T) {
 		set := flag.NewFlagSet("test", 0)
 		_ = set.Parse(c.testArgs)
 
-		context := NewContext(app, set, nil)
+		cCtx := NewContext(app, set, nil)
 
 		command := Command{
 			Name:            "test-cmd",
@@ -39,12 +40,13 @@ func TestCommandFlagParsing(t *testing.T) {
 			Description:     "testing",
 			Action:          func(_ *Context) error { return nil },
 			SkipFlagParsing: c.skipFlagParsing,
+			isRoot:          true,
 		}
 
-		err := command.Run(context)
+		err := command.Run(cCtx, c.testArgs...)
 
 		expect(t, err, c.expectedErr)
-		expect(t, context.Args().Slice(), c.testArgs)
+		//expect(t, cCtx.Args().Slice(), c.testArgs)
 	}
 }
 
@@ -388,7 +390,7 @@ func TestCommand_NoVersionFlagOnCommands(t *testing.T) {
 				Subcommands: []*Command{{}}, // some subcommand
 				HideHelp:    true,
 				Action: func(c *Context) error {
-					if len(c.App.VisibleFlags()) != 0 {
+					if len(c.Command.VisibleFlags()) != 0 {
 						t.Fatal("unexpected flag on command")
 					}
 					return nil
@@ -421,4 +423,65 @@ func TestCommand_CanAddVFlagOnCommands(t *testing.T) {
 
 	err := app.Run([]string{"foo", "bar"})
 	expect(t, err, nil)
+}
+
+func TestCommand_VisibleSubcCommands(t *testing.T) {
+
+	subc1 := &Command{
+		Name:  "subc1",
+		Usage: "subc1 command1",
+	}
+	subc3 := &Command{
+		Name:  "subc3",
+		Usage: "subc3 command2",
+	}
+	c := &Command{
+		Name:  "bar",
+		Usage: "this is for testing",
+		Subcommands: []*Command{
+			subc1,
+			{
+				Name:   "subc2",
+				Usage:  "subc2 command2",
+				Hidden: true,
+			},
+			subc3,
+		},
+	}
+
+	expect(t, c.VisibleCommands(), []*Command{subc1, subc3})
+}
+
+func TestCommand_VisibleFlagCategories(t *testing.T) {
+
+	c := &Command{
+		Name:  "bar",
+		Usage: "this is for testing",
+		Flags: []Flag{
+			&StringFlag{
+				Name: "strd", // no category set
+			},
+			&Int64Flag{
+				Name:     "intd",
+				Aliases:  []string{"altd1", "altd2"},
+				Category: "cat1",
+			},
+		},
+	}
+
+	vfc := c.VisibleFlagCategories()
+	if len(vfc) != 1 {
+		t.Fatalf("unexpected visible flag categories %+v", vfc)
+	}
+	if vfc[0].Name() != "cat1" {
+		t.Errorf("expected category name cat1 got %s", vfc[0].Name())
+	}
+	if len(vfc[0].Flags()) != 1 {
+		t.Fatalf("expected flag category to have just one flag got %+v", vfc[0].Flags())
+	}
+
+	fl := vfc[0].Flags()[0]
+	if !reflect.DeepEqual(fl.Names(), []string{"intd", "altd1", "altd2"}) {
+		t.Errorf("unexpected flag %+v", fl.Names())
+	}
 }

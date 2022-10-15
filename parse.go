@@ -26,9 +26,8 @@ func parseIter(set *flag.FlagSet, ip iterativeParser, args []string, shellComple
 			return err
 		}
 
-		errStr := err.Error()
-		trimmed := strings.TrimPrefix(errStr, "flag provided but not defined: -")
-		if errStr == trimmed {
+		trimmed, trimErr := flagFromError(err)
+		if trimErr != nil {
 			return err
 		}
 
@@ -47,7 +46,10 @@ func parseIter(set *flag.FlagSet, ip iterativeParser, args []string, shellComple
 			}
 
 			// swap current argument with the split version
-			args = append(args[:i], append(shortOpts, args[i+1:]...)...)
+			// do not include args that parsed correctly so far as it would
+			// trigger Value.Set() on those args and would result in
+			// duplicates for slice type flags
+			args = append(shortOpts, args[i+1:]...)
 			argsWereSplit = true
 			break
 		}
@@ -57,14 +59,20 @@ func parseIter(set *flag.FlagSet, ip iterativeParser, args []string, shellComple
 		if !argsWereSplit {
 			return err
 		}
-
-		// Since custom parsing failed, replace the flag set before retrying
-		newSet, err := ip.newFlagSet()
-		if err != nil {
-			return err
-		}
-		*set = *newSet
 	}
+}
+
+const providedButNotDefinedErrMsg = "flag provided but not defined: -"
+
+// flagFromError tries to parse a provided flag from an error message. If the
+// parsing fials, it returns the input error and an empty string
+func flagFromError(err error) (string, error) {
+	errStr := err.Error()
+	trimmed := strings.TrimPrefix(errStr, providedButNotDefinedErrMsg)
+	if errStr == trimmed {
+		return "", err
+	}
+	return trimmed, nil
 }
 
 func splitShortOptions(set *flag.FlagSet, arg string) []string {

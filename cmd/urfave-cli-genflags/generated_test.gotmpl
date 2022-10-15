@@ -1,0 +1,43 @@
+// WARNING: this file is generated. DO NOT EDIT
+
+package {{.TestPackageName}}
+
+{{range .SortedFlagTypes}}
+{{if .GenerateFlagInterface}}
+func Test{{.TypeName}}_SatisfiesFlagInterface(t *testing.T) {
+  var f {{$.UrfaveCLITestNamespace}}Flag = &{{$.UrfaveCLITestNamespace}}{{.TypeName}}{}
+
+  _ = f.IsSet()
+  _ = f.Names()
+}
+{{end}}
+
+{{if .GenerateFmtStringerInterface}}
+func Test{{.TypeName}}_SatisfiesFmtStringerInterface(t *testing.T) {
+  var f fmt.Stringer = &{{$.UrfaveCLITestNamespace}}{{.TypeName}}{}
+
+  _ = f.String()
+}
+{{end}}
+
+{{if .GenerateRequiredFlagInterface}}
+func Test{{.TypeName}}_SatisfiesRequiredFlagInterface(t *testing.T) {
+  var f {{$.UrfaveCLITestNamespace}}RequiredFlag = &{{$.UrfaveCLITestNamespace}}{{.TypeName}}{}
+
+  _ = f.IsRequired()
+}
+{{end}}
+
+{{if .GenerateVisibleFlagInterface}}
+func Test{{.TypeName}}_SatisfiesVisibleFlagInterface(t *testing.T) {
+  var f {{$.UrfaveCLITestNamespace}}VisibleFlag = &{{$.UrfaveCLITestNamespace}}{{.TypeName}}{}
+
+  _ = f.IsVisible()
+}
+{{end}}
+{{end}}
+
+// vim{{/* 👻 */}}:ro
+{{/*
+vim:filetype=gotexttmpl
+*/}}

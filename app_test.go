@@ -9,8 +9,10 @@ import (
 	"io/ioutil"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 var (
@@ -175,10 +177,13 @@ func ExampleApp_Run_commandHelp() {
 	//    greet describeit - use it to see a description
 	//
 	// USAGE:
-	//    greet describeit [arguments...]
+	//    greet describeit [command options] [arguments...]
 	//
 	// DESCRIPTION:
 	//    This is how we describe describeit the function
+	//
+	// OPTIONS:
+	//    --help, -h  show help (default: false)
 }
 
 func ExampleApp_Run_noAction() {
@@ -228,6 +233,7 @@ func ExampleApp_Run_subcommandNoAction() {
 }
 
 func ExampleApp_Run_bashComplete_withShortFlag() {
+	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "-", "--generate-bash-completion"}
 
 	app := NewApp()
@@ -255,6 +261,7 @@ func ExampleApp_Run_bashComplete_withShortFlag() {
 }
 
 func ExampleApp_Run_bashComplete_withLongFlag() {
+	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "--s", "--generate-bash-completion"}
 
 	app := NewApp()
@@ -283,6 +290,7 @@ func ExampleApp_Run_bashComplete_withLongFlag() {
 	// --similar-flag
 }
 func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
+	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "--st", "--generate-bash-completion"}
 
 	app := NewApp()
@@ -315,8 +323,7 @@ func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
 }
 
 func ExampleApp_Run_bashComplete() {
-	// set args for examples sake
-	// set args for examples sake
+	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "--generate-bash-completion"}
 
 	app := &App{
@@ -356,7 +363,7 @@ func ExampleApp_Run_bashComplete() {
 func ExampleApp_Run_zshComplete() {
 	// set args for examples sake
 	os.Args = []string{"greet", "--generate-bash-completion"}
-	_ = os.Setenv("_CLI_ZSH_AUTOCOMPLETE_HACK", "1")
+	_ = os.Setenv("SHELL", "/usr/bin/zsh")
 
 	app := NewApp()
 	app.Name = "greet"
@@ -389,6 +396,40 @@ func ExampleApp_Run_zshComplete() {
 	// next:next example
 	// help:Shows a list of commands or help for one command
 	// h:Shows a list of commands or help for one command
+}
+
+func ExampleApp_Run_sliceValues() {
+	// set args for examples sake
+	os.Args = []string{"multi_values",
+		"--stringSclice", "parsed1,parsed2", "--stringSclice", "parsed3,parsed4",
+		"--float64Sclice", "13.3,14.4", "--float64Sclice", "15.5,16.6",
+		"--int64Sclice", "13,14", "--int64Sclice", "15,16",
+		"--intSclice", "13,14", "--intSclice", "15,16",
+	}
+	app := NewApp()
+	app.Name = "multi_values"
+	app.Flags = []Flag{
+		&StringSliceFlag{Name: "stringSclice"},
+		&Float64SliceFlag{Name: "float64Sclice"},
+		&Int64SliceFlag{Name: "int64Sclice"},
+		&IntSliceFlag{Name: "intSclice"},
+	}
+	app.Action = func(ctx *Context) error {
+		for i, v := range ctx.FlagNames() {
+			fmt.Printf("%d-%s %#v\n", i, v, ctx.Value(v))
+		}
+		err := ctx.Err()
+		fmt.Println("error:", err)
+		return err
+	}
+
+	_ = app.Run(os.Args)
+	// Output:
+	// 0-float64Sclice cli.Float64Slice{slice:[]float64{13.3, 14.4, 15.5, 16.6}, hasBeenSet:true}
+	// 1-int64Sclice cli.Int64Slice{slice:[]int64{13, 14, 15, 16}, hasBeenSet:true}
+	// 2-intSclice cli.IntSlice{slice:[]int{13, 14, 15, 16}, hasBeenSet:true}
+	// 3-stringSclice cli.StringSlice{slice:[]string{"parsed1", "parsed2", "parsed3", "parsed4"}, hasBeenSet:true}
+	// error: <nil>
 }
 
 func TestApp_Run(t *testing.T) {
@@ -433,6 +474,175 @@ func TestApp_Command(t *testing.T) {
 	}
 }
 
+var defaultCommandAppTests = []struct {
+	cmdName    string
+	defaultCmd string
+	expected   bool
+}{
+	{"foobar", "foobar", true},
+	{"batbaz", "foobar", true},
+	{"b", "", true},
+	{"f", "", true},
+	{"", "foobar", true},
+	{"", "", true},
+	{" ", "", false},
+	{"bat", "batbaz", false},
+	{"nothing", "batbaz", false},
+	{"nothing", "", false},
+}
+
+func TestApp_RunDefaultCommand(t *testing.T) {
+	for _, test := range defaultCommandAppTests {
+		testTitle := fmt.Sprintf("command=%[1]s-default=%[2]s", test.cmdName, test.defaultCmd)
+		t.Run(testTitle, func(t *testing.T) {
+			app := &App{
+				DefaultCommand: test.defaultCmd,
+				Commands: []*Command{
+					{Name: "foobar", Aliases: []string{"f"}},
+					{Name: "batbaz", Aliases: []string{"b"}},
+				},
+			}
+
+			err := app.Run([]string{"c", test.cmdName})
+			expect(t, err == nil, test.expected)
+		})
+	}
+}
+
+var defaultCommandSubCmdAppTests = []struct {
+	cmdName    string
+	subCmd     string
+	defaultCmd string
+	expected   bool
+}{
+	{"foobar", "", "foobar", true},
+	{"foobar", "carly", "foobar", true},
+	{"batbaz", "", "foobar", true},
+	{"b", "", "", true},
+	{"f", "", "", true},
+	{"", "", "foobar", true},
+	{"", "", "", true},
+	{"", "jimbob", "foobar", true},
+	{"", "j", "foobar", true},
+	{"", "carly", "foobar", true},
+	{"", "jimmers", "foobar", true},
+	{"", "jimmers", "", true},
+	{" ", "jimmers", "foobar", false},
+	{"", "", "", true},
+	{" ", "", "", false},
+	{" ", "j", "", false},
+	{"bat", "", "batbaz", false},
+	{"nothing", "", "batbaz", false},
+	{"nothing", "", "", false},
+	{"nothing", "j", "batbaz", false},
+	{"nothing", "carly", "", false},
+}
+
+func TestApp_RunDefaultCommandWithSubCommand(t *testing.T) {
+	for _, test := range defaultCommandSubCmdAppTests {
+		testTitle := fmt.Sprintf("command=%[1]s-subcmd=%[2]s-default=%[3]s", test.cmdName, test.subCmd, test.defaultCmd)
+		t.Run(testTitle, func(t *testing.T) {
+			app := &App{
+				DefaultCommand: test.defaultCmd,
+				Commands: []*Command{
+					{
+						Name:    "foobar",
+						Aliases: []string{"f"},
+						Subcommands: []*Command{
+							{Name: "jimbob", Aliases: []string{"j"}},
+							{Name: "carly"},
+						},
+					},
+					{Name: "batbaz", Aliases: []string{"b"}},
+				},
+			}
+
+			err := app.Run([]string{"c", test.cmdName, test.subCmd})
+			expect(t, err == nil, test.expected)
+		})
+	}
+}
+
+var defaultCommandFlagAppTests = []struct {
+	cmdName    string
+	flag       string
+	defaultCmd string
+	expected   bool
+}{
+	{"foobar", "", "foobar", true},
+	{"foobar", "-c derp", "foobar", true},
+	{"batbaz", "", "foobar", true},
+	{"b", "", "", true},
+	{"f", "", "", true},
+	{"", "", "foobar", true},
+	{"", "", "", true},
+	{"", "-j", "foobar", true},
+	{"", "-j", "foobar", true},
+	{"", "-c derp", "foobar", true},
+	{"", "--carly=derp", "foobar", true},
+	{"", "-j", "foobar", true},
+	{"", "-j", "", true},
+	{" ", "-j", "foobar", false},
+	{"", "", "", true},
+	{" ", "", "", false},
+	{" ", "-j", "", false},
+	{"bat", "", "batbaz", false},
+	{"nothing", "", "batbaz", false},
+	{"nothing", "", "", false},
+	{"nothing", "--jimbob", "batbaz", false},
+	{"nothing", "--carly", "", false},
+}
+
+func TestApp_RunDefaultCommandWithFlags(t *testing.T) {
+	for _, test := range defaultCommandFlagAppTests {
+		testTitle := fmt.Sprintf("command=%[1]s-flag=%[2]s-default=%[3]s", test.cmdName, test.flag, test.defaultCmd)
+		t.Run(testTitle, func(t *testing.T) {
+			app := &App{
+				DefaultCommand: test.defaultCmd,
+				Flags: []Flag{
+					&StringFlag{
+						Name:     "carly",
+						Aliases:  []string{"c"},
+						Required: false,
+					},
+					&BoolFlag{
+						Name:     "jimbob",
+						Aliases:  []string{"j"},
+						Required: false,
+						Value:    true,
+					},
+				},
+				Commands: []*Command{
+					{
+						Name:    "foobar",
+						Aliases: []string{"f"},
+					},
+					{Name: "batbaz", Aliases: []string{"b"}},
+				},
+			}
+
+			appArgs := []string{"c"}
+
+			if test.flag != "" {
+				flags := strings.Split(test.flag, " ")
+				if len(flags) > 1 {
+					appArgs = append(appArgs, flags...)
+				}
+
+				flags = strings.Split(test.flag, "=")
+				if len(flags) > 1 {
+					appArgs = append(appArgs, flags...)
+				}
+			}
+
+			appArgs = append(appArgs, test.cmdName)
+
+			err := app.Run(appArgs)
+			expect(t, err == nil, test.expected)
+		})
+	}
+}
+
 func TestApp_Setup_defaultsReader(t *testing.T) {
 	app := &App{}
 	app.Setup()
@@ -446,14 +656,14 @@ func TestApp_Setup_defaultsWriter(t *testing.T) {
 }
 
 func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
-	var context *Context
+	var cCtx *Context
 
 	a := &App{
 		Commands: []*Command{
 			{
 				Name: "foo",
 				Action: func(c *Context) error {
-					context = c
+					cCtx = c
 					return nil
 				},
 				Flags: []Flag{
@@ -469,26 +679,8 @@ func TestApp_RunAsSubcommandParseFlags(t *testing.T) {
 	}
 	_ = a.Run([]string{"", "foo", "--lang", "spanish", "abcd"})
 
-	expect(t, context.Args().Get(0), "abcd")
-	expect(t, context.String("lang"), "spanish")
-}
-
-func TestApp_RunAsSubCommandIncorrectUsage(t *testing.T) {
-	a := App{
-		Name: "cmd",
-		Flags: []Flag{
-			&StringFlag{Name: "--foo"},
-		},
-		Writer: bytes.NewBufferString(""),
-	}
-
-	set := flag.NewFlagSet("", flag.ContinueOnError)
-	_ = set.Parse([]string{"", "---foo"})
-	c := &Context{flagSet: set}
-
-	err := a.RunAsSubcommand(c)
-
-	expect(t, err, errors.New("bad flag syntax: ---foo"))
+	expect(t, cCtx.Args().Get(0), "abcd")
+	expect(t, cCtx.String("lang"), "spanish")
 }
 
 func TestApp_CommandWithFlagBeforeTerminator(t *testing.T) {
@@ -746,6 +938,37 @@ func TestApp_UseShortOptionHandlingSubCommand_missing_value(t *testing.T) {
 	expect(t, err, errors.New("flag needs an argument: -n"))
 }
 
+func TestApp_UseShortOptionAfterSliceFlag(t *testing.T) {
+	var one, two bool
+	var name string
+	var sliceValDest StringSlice
+	var sliceVal []string
+	expected := "expectedName"
+
+	app := newTestApp()
+	app.UseShortOptionHandling = true
+	app.Flags = []Flag{
+		&StringSliceFlag{Name: "env", Aliases: []string{"e"}, Destination: &sliceValDest},
+		&BoolFlag{Name: "one", Aliases: []string{"o"}},
+		&BoolFlag{Name: "two", Aliases: []string{"t"}},
+		&StringFlag{Name: "name", Aliases: []string{"n"}},
+	}
+	app.Action = func(c *Context) error {
+		sliceVal = c.StringSlice("env")
+		one = c.Bool("one")
+		two = c.Bool("two")
+		name = c.String("name")
+		return nil
+	}
+
+	_ = app.Run([]string{"", "-e", "foo", "-on", expected})
+	expect(t, sliceVal, []string{"foo"})
+	expect(t, sliceValDest.Value(), []string{"foo"})
+	expect(t, one, true)
+	expect(t, two, false)
+	expect(t, name, expected)
+}
+
 func TestApp_Float64Flag(t *testing.T) {
 	var meters float64
 
@@ -897,6 +1120,39 @@ func TestApp_SetStdin(t *testing.T) {
 	}
 }
 
+func TestApp_SetStdin_Subcommand(t *testing.T) {
+	buf := make([]byte, 12)
+
+	app := &App{
+		Name:   "test",
+		Reader: strings.NewReader("Hello World!"),
+		Commands: []*Command{
+			{
+				Name: "command",
+				Subcommands: []*Command{
+					{
+						Name: "subcommand",
+						Action: func(c *Context) error {
+							_, err := c.App.Reader.Read(buf)
+							return err
+						},
+					},
+				},
+			},
+		},
+	}
+
+	err := app.Run([]string{"test", "command", "subcommand"})
+
+	if err != nil {
+		t.Fatalf("Run error: %s", err)
+	}
+
+	if string(buf) != "Hello World!" {
+		t.Error("App did not read input from desired reader.")
+	}
+}
+
 func TestApp_SetStdout(t *testing.T) {
 	var w bytes.Buffer
 
@@ -1007,6 +1263,58 @@ func TestApp_BeforeFunc(t *testing.T) {
 	}
 }
 
+func TestApp_BeforeAfterFuncShellCompletion(t *testing.T) {
+	counts := &opCounts{}
+	var err error
+
+	app := &App{
+		EnableBashCompletion: true,
+		Before: func(c *Context) error {
+			counts.Total++
+			counts.Before = counts.Total
+			return nil
+		},
+		After: func(c *Context) error {
+			counts.Total++
+			counts.After = counts.Total
+			return nil
+		},
+		Commands: []*Command{
+			{
+				Name: "sub",
+				Action: func(c *Context) error {
+					counts.Total++
+					counts.SubCommand = counts.Total
+					return nil
+				},
+			},
+		},
+		Flags: []Flag{
+			&StringFlag{Name: "opt"},
+		},
+		Writer: ioutil.Discard,
+	}
+
+	// run with the Before() func succeeding
+	err = app.Run([]string{"command", "--opt", "succeed", "sub", "--generate-bash-completion"})
+
+	if err != nil {
+		t.Fatalf("Run error: %s", err)
+	}
+
+	if counts.Before != 0 {
+		t.Errorf("Before() executed when not expected")
+	}
+
+	if counts.After != 0 {
+		t.Errorf("After() executed when not expected")
+	}
+
+	if counts.SubCommand != 0 {
+		t.Errorf("Subcommand executed more than expected")
+	}
+}
+
 func TestApp_AfterFunc(t *testing.T) {
 	counts := &opCounts{}
 	afterError := fmt.Errorf("fail")
@@ -1069,6 +1377,27 @@ func TestApp_AfterFunc(t *testing.T) {
 	}
 
 	if counts.SubCommand != 1 {
+		t.Errorf("Subcommand not executed when expected")
+	}
+
+	/*
+		reset
+	*/
+	counts = &opCounts{}
+
+	// run with none args
+	err = app.Run([]string{"command"})
+
+	// should be the same error produced by the Before func
+	if err != nil {
+		t.Fatalf("Run error: %s", err)
+	}
+
+	if counts.After != 1 {
+		t.Errorf("After() not executed when expected")
+	}
+
+	if counts.SubCommand != 0 {
 		t.Errorf("Subcommand not executed when expected")
 	}
 }
@@ -1200,6 +1529,9 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 				Subcommands: []*Command{{
 					Name:  "mySubCommand",
 					Flags: []Flag{&StringFlag{Name: "requiredFlag", Required: true}},
+					Action: func(c *Context) error {
+						return nil
+					},
 				}},
 			}},
 		},
@@ -1582,12 +1914,12 @@ func TestApp_Run_CommandHelpName(t *testing.T) {
 
 	output := buf.String()
 
-	expected := "command foo bar - does bar things"
+	expected := "command custom bar - does bar things"
 	if !strings.Contains(output, expected) {
 		t.Errorf("expected %q in output: %s", expected, output)
 	}
 
-	expected = "command foo bar [command options] [arguments...]"
+	expected = "command custom bar [command options] [arguments...]"
 	if !strings.Contains(output, expected) {
 		t.Errorf("expected %q in output: %s", expected, output)
 	}
@@ -1635,31 +1967,67 @@ func TestApp_Run_CommandSubcommandHelpName(t *testing.T) {
 }
 
 func TestApp_Run_Help(t *testing.T) {
-	var helpArguments = [][]string{{"boom", "--help"}, {"boom", "-h"}, {"boom", "help"}}
+	var tests = []struct {
+		helpArguments []string
+		hideHelp      bool
+		wantContains  string
+		wantErr       error
+	}{
+		{
+			helpArguments: []string{"boom", "--help"},
+			hideHelp:      false,
+			wantContains:  "boom - make an explosive entrance",
+		},
+		{
+			helpArguments: []string{"boom", "-h"},
+			hideHelp:      false,
+			wantContains:  "boom - make an explosive entrance",
+		},
+		{
+			helpArguments: []string{"boom", "help"},
+			hideHelp:      false,
+			wantContains:  "boom - make an explosive entrance",
+		},
+		{
+			helpArguments: []string{"boom", "--help"},
+			hideHelp:      true,
+			wantErr:       fmt.Errorf("flag: help requested"),
+		},
+		{
+			helpArguments: []string{"boom", "-h"},
+			hideHelp:      true,
+			wantErr:       fmt.Errorf("flag: help requested"),
+		},
+		{
+			helpArguments: []string{"boom", "help"},
+			hideHelp:      true,
+			wantContains:  "boom I say!",
+		},
+	}
 
-	for _, args := range helpArguments {
-		t.Run(fmt.Sprintf("checking with arguments %v", args), func(t *testing.T) {
-
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("checking with arguments %v", tt.helpArguments), func(t *testing.T) {
 			buf := new(bytes.Buffer)
 
 			app := &App{
-				Name:   "boom",
-				Usage:  "make an explosive entrance",
-				Writer: buf,
+				Name:     "boom",
+				Usage:    "make an explosive entrance",
+				Writer:   buf,
+				HideHelp: tt.hideHelp,
 				Action: func(c *Context) error {
 					buf.WriteString("boom I say!")
 					return nil
 				},
 			}
 
-			err := app.Run(args)
-			if err != nil {
-				t.Error(err)
+			err := app.Run(tt.helpArguments)
+			if err != nil && tt.wantErr != nil && err.Error() != tt.wantErr.Error() {
+				t.Errorf("want err: %s, did note %s\n", tt.wantErr, err)
 			}
 
 			output := buf.String()
 
-			if !strings.Contains(output, "boom - make an explosive entrance") {
+			if !strings.Contains(output, tt.wantContains) {
 				t.Errorf("want help to contain %q, did not: \n%q", "boom - make an explosive entrance", output)
 			}
 		})
@@ -1858,6 +2226,37 @@ func TestApp_VisibleCategories(t *testing.T) {
 	expect(t, []CommandCategory{}, app.VisibleCategories())
 }
 
+func TestApp_VisibleFlagCategories(t *testing.T) {
+	app := &App{
+		Flags: []Flag{
+			&StringFlag{
+				Name: "strd", // no category set
+			},
+			&Int64Flag{
+				Name:     "intd",
+				Aliases:  []string{"altd1", "altd2"},
+				Category: "cat1",
+			},
+		},
+	}
+	app.Setup()
+	vfc := app.VisibleFlagCategories()
+	if len(vfc) != 1 {
+		t.Fatalf("unexpected visible flag categories %+v", vfc)
+	}
+	if vfc[0].Name() != "cat1" {
+		t.Errorf("expected category name cat1 got %s", vfc[0].Name())
+	}
+	if len(vfc[0].Flags()) != 1 {
+		t.Fatalf("expected flag category to have just one flag got %+v", vfc[0].Flags())
+	}
+
+	fl := vfc[0].Flags()[0]
+	if !reflect.DeepEqual(fl.Names(), []string{"intd", "altd1", "altd2"}) {
+		t.Errorf("unexpected flag %+v", fl.Names())
+	}
+}
+
 func TestApp_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 	app := &App{
 		Action: func(c *Context) error { return nil },
@@ -1999,6 +2398,10 @@ func (c *customBoolFlag) GetUsage() string {
 
 func (c *customBoolFlag) Apply(set *flag.FlagSet) error {
 	set.String(c.Nombre, c.Nombre, "")
+	return nil
+}
+
+func (c *customBoolFlag) RunAction(*Context) error {
 	return nil
 }
 
@@ -2219,5 +2622,381 @@ func TestSetupInitializesOnlyNilWriters(t *testing.T) {
 
 	if a.Writer != os.Stdout {
 		t.Errorf("expected a.Writer to be os.Stdout")
+	}
+}
+
+func TestFlagAction(t *testing.T) {
+	stringFlag := &StringFlag{
+		Name: "f_string",
+		Action: func(c *Context, v string) error {
+			if v == "" {
+				return fmt.Errorf("empty string")
+			}
+			c.App.Writer.Write([]byte(v + " "))
+			return nil
+		},
+	}
+	app := &App{
+		Name: "app",
+		Commands: []*Command{
+			{
+				Name:   "c1",
+				Flags:  []Flag{stringFlag},
+				Action: func(ctx *Context) error { return nil },
+				Subcommands: []*Command{
+					{
+						Name:   "sub1",
+						Action: func(ctx *Context) error { return nil },
+						Flags:  []Flag{stringFlag},
+					},
+				},
+			},
+		},
+		Flags: []Flag{
+			stringFlag,
+			&StringFlag{
+				Name: "f_no_action",
+			},
+			&StringSliceFlag{
+				Name: "f_string_slice",
+				Action: func(c *Context, v []string) error {
+					if v[0] == "err" {
+						return fmt.Errorf("error string slice")
+					}
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&BoolFlag{
+				Name: "f_bool",
+				Action: func(c *Context, v bool) error {
+					if !v {
+						return fmt.Errorf("value is false")
+					}
+					c.App.Writer.Write([]byte(fmt.Sprintf("%t ", v)))
+					return nil
+				},
+			},
+			&DurationFlag{
+				Name: "f_duration",
+				Action: func(c *Context, v time.Duration) error {
+					if v == 0 {
+						return fmt.Errorf("empty duration")
+					}
+					c.App.Writer.Write([]byte(v.String() + " "))
+					return nil
+				},
+			},
+			&Float64Flag{
+				Name: "f_float64",
+				Action: func(c *Context, v float64) error {
+					if v < 0 {
+						return fmt.Errorf("negative float64")
+					}
+					c.App.Writer.Write([]byte(strconv.FormatFloat(v, 'f', -1, 64) + " "))
+					return nil
+				},
+			},
+			&Float64SliceFlag{
+				Name: "f_float64_slice",
+				Action: func(c *Context, v []float64) error {
+					if len(v) > 0 && v[0] < 0 {
+						return fmt.Errorf("invalid float64 slice")
+					}
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&GenericFlag{
+				Name:  "f_generic",
+				Value: new(stringGeneric),
+				Action: func(c *Context, v interface{}) error {
+					fmt.Printf("%T %v\n", v, v)
+					switch vv := v.(type) {
+					case *stringGeneric:
+						if vv.value == "" {
+							return fmt.Errorf("generic value not set")
+						}
+					}
+
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&IntFlag{
+				Name: "f_int",
+				Action: func(c *Context, v int) error {
+					if v < 0 {
+						return fmt.Errorf("negative int")
+					}
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&IntSliceFlag{
+				Name: "f_int_slice",
+				Action: func(c *Context, v []int) error {
+					if len(v) > 0 && v[0] < 0 {
+						return fmt.Errorf("invalid int slice")
+					}
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&Int64Flag{
+				Name: "f_int64",
+				Action: func(c *Context, v int64) error {
+					if v < 0 {
+						return fmt.Errorf("negative int64")
+					}
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&Int64SliceFlag{
+				Name: "f_int64_slice",
+				Action: func(c *Context, v []int64) error {
+					if len(v) > 0 && v[0] < 0 {
+						return fmt.Errorf("invalid int64 slice")
+					}
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&PathFlag{
+				Name: "f_path",
+				Action: func(c *Context, v string) error {
+					if v == "" {
+						return fmt.Errorf("empty path")
+					}
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&TimestampFlag{
+				Name:   "f_timestamp",
+				Layout: "2006-01-02 15:04:05",
+				Action: func(c *Context, v *time.Time) error {
+					if v.IsZero() {
+						return fmt.Errorf("zero timestamp")
+					}
+					c.App.Writer.Write([]byte(v.Format(time.RFC3339) + " "))
+					return nil
+				},
+			},
+			&UintFlag{
+				Name: "f_uint",
+				Action: func(c *Context, v uint) error {
+					if v == 0 {
+						return fmt.Errorf("zero uint")
+					}
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+			&Uint64Flag{
+				Name: "f_uint64",
+				Action: func(c *Context, v uint64) error {
+					if v == 0 {
+						return fmt.Errorf("zero uint64")
+					}
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return nil
+				},
+			},
+		},
+		Action: func(ctx *Context) error { return nil },
+	}
+
+	tests := []struct {
+		name string
+		args []string
+		err  error
+		exp  string
+	}{
+		{
+			name: "flag_string",
+			args: []string{"app", "--f_string=string"},
+			exp:  "string ",
+		},
+		{
+			name: "flag_string_error",
+			args: []string{"app", "--f_string="},
+			err:  fmt.Errorf("empty string"),
+		},
+		{
+			name: "flag_string_slice",
+			args: []string{"app", "--f_string_slice=s1,s2,s3"},
+			exp:  "[s1 s2 s3] ",
+		},
+		{
+			name: "flag_string_slice_error",
+			args: []string{"app", "--f_string_slice=err"},
+			err:  fmt.Errorf("error string slice"),
+		},
+		{
+			name: "flag_bool",
+			args: []string{"app", "--f_bool"},
+			exp:  "true ",
+		},
+		{
+			name: "flag_bool_error",
+			args: []string{"app", "--f_bool=false"},
+			err:  fmt.Errorf("value is false"),
+		},
+		{
+			name: "flag_duration",
+			args: []string{"app", "--f_duration=1h30m20s"},
+			exp:  "1h30m20s ",
+		},
+		{
+			name: "flag_duration_error",
+			args: []string{"app", "--f_duration=0"},
+			err:  fmt.Errorf("empty duration"),
+		},
+		{
+			name: "flag_float64",
+			args: []string{"app", "--f_float64=3.14159"},
+			exp:  "3.14159 ",
+		},
+		{
+			name: "flag_float64_error",
+			args: []string{"app", "--f_float64=-1"},
+			err:  fmt.Errorf("negative float64"),
+		},
+		{
+			name: "flag_float64_slice",
+			args: []string{"app", "--f_float64_slice=1.1,2.2,3.3"},
+			exp:  "[1.1 2.2 3.3] ",
+		},
+		{
+			name: "flag_float64_slice_error",
+			args: []string{"app", "--f_float64_slice=-1"},
+			err:  fmt.Errorf("invalid float64 slice"),
+		},
+		{
+			name: "flag_generic",
+			args: []string{"app", "--f_generic=1"},
+			exp:  "1 ",
+		},
+		{
+			name: "flag_generic_error",
+			args: []string{"app", "--f_generic="},
+			err:  fmt.Errorf("generic value not set"),
+		},
+		{
+			name: "flag_int",
+			args: []string{"app", "--f_int=1"},
+			exp:  "1 ",
+		},
+		{
+			name: "flag_int_error",
+			args: []string{"app", "--f_int=-1"},
+			err:  fmt.Errorf("negative int"),
+		},
+		{
+			name: "flag_int_slice",
+			args: []string{"app", "--f_int_slice=1,2,3"},
+			exp:  "[1 2 3] ",
+		},
+		{
+			name: "flag_int_slice_error",
+			args: []string{"app", "--f_int_slice=-1"},
+			err:  fmt.Errorf("invalid int slice"),
+		},
+		{
+			name: "flag_int64",
+			args: []string{"app", "--f_int64=1"},
+			exp:  "1 ",
+		},
+		{
+			name: "flag_int64_error",
+			args: []string{"app", "--f_int64=-1"},
+			err:  fmt.Errorf("negative int64"),
+		},
+		{
+			name: "flag_int64_slice",
+			args: []string{"app", "--f_int64_slice=1,2,3"},
+			exp:  "[1 2 3] ",
+		},
+		{
+			name: "flag_int64_slice",
+			args: []string{"app", "--f_int64_slice=-1"},
+			err:  fmt.Errorf("invalid int64 slice"),
+		},
+		{
+			name: "flag_path",
+			args: []string{"app", "--f_path=/root"},
+			exp:  "/root ",
+		},
+		{
+			name: "flag_path_error",
+			args: []string{"app", "--f_path="},
+			err:  fmt.Errorf("empty path"),
+		},
+		{
+			name: "flag_timestamp",
+			args: []string{"app", "--f_timestamp", "2022-05-01 02:26:20"},
+			exp:  "2022-05-01T02:26:20Z ",
+		},
+		{
+			name: "flag_timestamp_error",
+			args: []string{"app", "--f_timestamp", "0001-01-01 00:00:00"},
+			err:  fmt.Errorf("zero timestamp"),
+		},
+		{
+			name: "flag_uint",
+			args: []string{"app", "--f_uint=1"},
+			exp:  "1 ",
+		},
+		{
+			name: "flag_uint_error",
+			args: []string{"app", "--f_uint=0"},
+			err:  fmt.Errorf("zero uint"),
+		},
+		{
+			name: "flag_uint64",
+			args: []string{"app", "--f_uint64=1"},
+			exp:  "1 ",
+		},
+		{
+			name: "flag_uint64_error",
+			args: []string{"app", "--f_uint64=0"},
+			err:  fmt.Errorf("zero uint64"),
+		},
+		{
+			name: "flag_no_action",
+			args: []string{"app", "--f_no_action="},
+			exp:  "",
+		},
+		{
+			name: "command_flag",
+			args: []string{"app", "c1", "--f_string=c1"},
+			exp:  "c1 ",
+		},
+		{
+			name: "subCommand_flag",
+			args: []string{"app", "c1", "sub1", "--f_string=sub1"},
+			exp:  "sub1 ",
+		},
+		{
+			name: "mixture",
+			args: []string{"app", "--f_string=app", "--f_uint=1", "--f_int_slice=1,2,3", "--f_duration=1h30m20s", "c1", "--f_string=c1", "sub1", "--f_string=sub1"},
+			exp:  "app 1h30m20s [1 2 3] 1 c1 sub1 ",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			buf := new(bytes.Buffer)
+			app.Writer = buf
+			err := app.Run(test.args)
+			if test.err != nil {
+				expect(t, err, test.err)
+			} else {
+				expect(t, err, nil)
+				expect(t, buf.String(), test.exp)
+			}
+		})
 	}
 }

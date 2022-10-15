@@ -5,51 +5,182 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"math"
+	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/urfave/cli/v2"
 )
 
-var packages = []string{"cli", "altsrc"}
+const (
+	badNewsEmoji      = "🚨"
+	goodNewsEmoji     = "✨"
+	checksPassedEmoji = "✅"
+
+	gfmrunVersion = "v1.3.0"
+
+	v2diffWarning = `
+# The unified diff above indicates that the public API surface area
+# has changed. If you feel that the changes are acceptable and adhere
+# to the semantic versioning promise of the v2.x series described in
+# docs/CONTRIBUTING.md, please run the following command to promote
+# the current go docs:
+#
+#     make v2approve
+#
+`
+)
 
 func main() {
-	app := cli.NewApp()
+	top, err := func() (string, error) {
+		if v, err := sh("git", "rev-parse", "--show-toplevel"); err == nil {
+			return strings.TrimSpace(v), nil
+		}
 
-	app.Name = "builder"
-	app.Usage = "Generates a new urfave/cli build!"
+		return os.Getwd()
+	}()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	app.Commands = cli.Commands{
-		{
-			Name:   "vet",
-			Action: VetActionFunc,
+	app := &cli.App{
+		Name:  "builder",
+		Usage: "Do a thing for urfave/cli! (maybe build?)",
+		Commands: cli.Commands{
+			{
+				Name:   "vet",
+				Action: topRunAction("go", "vet", "./..."),
+			},
+			{
+				Name:   "test",
+				Action: TestActionFunc,
+			},
+			{
+				Name: "gfmrun",
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:  "walk",
+						Value: false,
+						Usage: "Walk the specified directory and perform validation on all markdown files",
+					},
+				},
+				Action: GfmrunActionFunc,
+			},
+			{
+				Name:   "check-binary-size",
+				Action: checkBinarySizeActionFunc,
+			},
+			{
+				Name:   "generate",
+				Action: GenerateActionFunc,
+			},
+			{
+				Name: "yamlfmt",
+				Flags: []cli.Flag{
+					&cli.BoolFlag{Name: "strict", Value: false, Usage: "require presence of yq"},
+				},
+				Action: YAMLFmtActionFunc,
+			},
+			{
+				Name:   "diffcheck",
+				Action: DiffCheckActionFunc,
+			},
+			{
+				Name:   "ensure-goimports",
+				Action: EnsureGoimportsActionFunc,
+			},
+			{
+				Name:   "ensure-gfmrun",
+				Action: EnsureGfmrunActionFunc,
+			},
+			{
+				Name:   "ensure-mkdocs",
+				Action: EnsureMkdocsActionFunc,
+				Flags: []cli.Flag{
+					&cli.BoolFlag{Name: "upgrade-pip"},
+				},
+			},
+			{
+				Name:   "set-mkdocs-remote",
+				Action: SetMkdocsRemoteActionFunc,
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:     "github-token",
+						EnvVars:  []string{"MKDOCS_REMOTE_GITHUB_TOKEN"},
+						Required: true,
+					},
+				},
+			},
+			{
+				Name:   "deploy-mkdocs",
+				Action: topRunAction("mkdocs", "gh-deploy", "--force"),
+			},
+			{
+				Name:   "lint",
+				Action: LintActionFunc,
+			},
+			{
+				Name: "v2diff",
+				Flags: []cli.Flag{
+					&cli.BoolFlag{Name: "color", Value: false},
+				},
+				Action: V2Diff,
+			},
+			{
+				Name: "v2approve",
+				Action: topRunAction(
+					"cp",
+					"-v",
+					"godoc-current.txt",
+					filepath.Join("testdata", "godoc-v2.x.txt"),
+				),
+			},
 		},
-		{
-			Name:   "test",
-			Action: TestActionFunc,
-		},
-		{
-			Name:   "gfmrun",
-			Action: GfmrunActionFunc,
-		},
-		{
-			Name:   "toc",
-			Action: TocActionFunc,
-		},
-		{
-			Name:   "check-binary-size",
-			Action: checkBinarySizeActionFunc,
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:  "tags",
+				Usage: "set build tags",
+			},
+			&cli.PathFlag{
+				Name:  "top",
+				Value: top,
+			},
+			&cli.StringSliceFlag{
+				Name:  "packages",
+				Value: cli.NewStringSlice("cli", "altsrc", "internal/build"),
+			},
 		},
 	}
 
-	err := app.Run(os.Args)
-	if err != nil {
+	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func sh(exe string, args ...string) (string, error) {
+	cmd := exec.Command(exe, args...)
+	cmd.Stdin = os.Stdin
+	cmd.Stderr = os.Stderr
+
+	fmt.Fprintf(os.Stderr, "# ---> %s\n", cmd)
+	outBytes, err := cmd.Output()
+	return string(outBytes), err
+}
+
+func topRunAction(arg string, args ...string) cli.ActionFunc {
+	return func(cCtx *cli.Context) error {
+		os.Chdir(cCtx.Path("top"))
+
+		return runCmd(arg, args...)
 	}
 }
 
@@ -60,128 +191,216 @@ func runCmd(arg string, args ...string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
+	fmt.Fprintf(os.Stderr, "# ---> %s\n", cmd)
 	return cmd.Run()
 }
 
-func VetActionFunc(_ *cli.Context) error {
-	return runCmd("go", "vet")
+func downloadFile(src, dest string, dirPerm, perm os.FileMode) error {
+	req, err := http.NewRequest(http.MethodGet, src, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 300 {
+		return fmt.Errorf("download response %[1]v", resp.StatusCode)
+	}
+
+	if err := os.MkdirAll(filepath.Dir(dest), dirPerm); err != nil {
+		return err
+	}
+
+	out, err := os.Create(dest)
+	if err != nil {
+		return err
+	}
+
+	if _, err := io.Copy(out, resp.Body); err != nil {
+		return err
+	}
+
+	if err := out.Close(); err != nil {
+		return err
+	}
+
+	return os.Chmod(dest, perm)
+}
+
+func VetActionFunc(cCtx *cli.Context) error {
+	return runCmd("go", "vet", cCtx.Path("top")+"/...")
 }
 
 func TestActionFunc(c *cli.Context) error {
-	for _, pkg := range packages {
-		var packageName string
+	tags := c.String("tags")
 
-		if pkg == "cli" {
-			packageName = "github.com/urfave/cli/v2"
-		} else {
+	for _, pkg := range c.StringSlice("packages") {
+		packageName := "github.com/urfave/cli/v2"
+
+		if pkg != "cli" {
 			packageName = fmt.Sprintf("github.com/urfave/cli/v2/%s", pkg)
 		}
 
-		coverProfile := fmt.Sprintf("--coverprofile=%s.coverprofile", pkg)
+		args := []string{"test"}
+		if tags != "" {
+			args = append(args, []string{"-tags", tags}...)
+		}
 
-		err := runCmd("go", "test", "-v", coverProfile, packageName)
-		if err != nil {
+		args = append(args, []string{
+			"-v",
+			"--coverprofile", pkg + ".coverprofile",
+			"--covermode", "count",
+			"--cover", packageName,
+			packageName,
+		}...)
+
+		if err := runCmd("go", args...); err != nil {
 			return err
 		}
 	}
 
-	return testCleanup()
+	return testCleanup(c.StringSlice("packages"))
 }
 
-func testCleanup() error {
-	var out bytes.Buffer
+func testCleanup(packages []string) error {
+	out := &bytes.Buffer{}
+
+	fmt.Fprintf(out, "mode: count\n")
 
 	for _, pkg := range packages {
-		file, err := os.Open(fmt.Sprintf("%s.coverprofile", pkg))
+		filename := pkg + ".coverprofile"
+
+		lineBytes, err := os.ReadFile(filename)
 		if err != nil {
 			return err
 		}
 
-		b, err := ioutil.ReadAll(file)
+		lines := strings.Split(string(lineBytes), "\n")
+
+		fmt.Fprintf(out, strings.Join(lines[1:], "\n"))
+
+		if err := os.Remove(filename); err != nil {
+			return err
+		}
+	}
+
+	return os.WriteFile("coverage.txt", out.Bytes(), 0644)
+}
+
+func GfmrunActionFunc(cCtx *cli.Context) error {
+	top := cCtx.Path("top")
+
+	bash, err := exec.LookPath("bash")
+	if err != nil {
+		return err
+	}
+
+	os.Setenv("SHELL", bash)
+
+	tmpDir, err := os.MkdirTemp("", "urfave-cli*")
+	if err != nil {
+		return err
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	if err := os.Chdir(tmpDir); err != nil {
+		return err
+	}
+
+	fmt.Fprintf(cCtx.App.ErrWriter, "# ---> workspace/TMPDIR is %q\n", tmpDir)
+
+	if err := runCmd("go", "work", "init", top); err != nil {
+		return err
+	}
+
+	os.Setenv("TMPDIR", tmpDir)
+
+	if err := os.Chdir(wd); err != nil {
+		return err
+	}
+
+	dirPath := cCtx.Args().Get(0)
+	if dirPath == "" {
+		dirPath = "README.md"
+	}
+
+	walk := cCtx.Bool("walk")
+	sources := []string{}
+
+	if walk {
+		// Walk the directory and find all markdown files.
+		err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			if info.IsDir() {
+				return nil
+			}
+
+			if filepath.Ext(path) != ".md" {
+				return nil
+			}
+
+			sources = append(sources, path)
+			return nil
+		})
 		if err != nil {
 			return err
 		}
+	} else {
+		sources = append(sources, dirPath)
+	}
 
-		out.Write(b)
+	var counter int
+
+	for _, src := range sources {
+		file, err := os.Open(src)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			if strings.Contains(scanner.Text(), "package main") {
+				counter++
+			}
+		}
+
 		err = file.Close()
 		if err != nil {
 			return err
 		}
 
-		err = os.Remove(fmt.Sprintf("%s.coverprofile", pkg))
+		err = scanner.Err()
 		if err != nil {
 			return err
 		}
 	}
 
-	outFile, err := os.Create("coverage.txt")
-	if err != nil {
+	gfmArgs := []string{
+		"--count",
+		fmt.Sprint(counter),
+	}
+	for _, src := range sources {
+		gfmArgs = append(gfmArgs, "--sources", src)
+	}
+
+	if err := runCmd("gfmrun", gfmArgs...); err != nil {
 		return err
 	}
 
-	_, err = out.WriteTo(outFile)
-	if err != nil {
-		return err
-	}
-
-	err = outFile.Close()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func GfmrunActionFunc(c *cli.Context) error {
-	filename := c.Args().Get(0)
-	if filename == "" {
-		filename = "README.md"
-	}
-
-	file, err := os.Open(filename)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	var counter int
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		if strings.Contains(scanner.Text(), "package main") {
-			counter++
-		}
-	}
-
-	err = file.Close()
-	if err != nil {
-		return err
-	}
-
-	err = scanner.Err()
-	if err != nil {
-		return err
-	}
-
-	return runCmd("gfmrun", "-c", fmt.Sprint(counter), "-s", filename)
-}
-
-func TocActionFunc(c *cli.Context) error {
-	filename := c.Args().Get(0)
-	if filename == "" {
-		filename = "README.md"
-	}
-
-	err := runCmd("markdown-toc", "-i", filename)
-	if err != nil {
-		return err
-	}
-
-	err = runCmd("git", "diff", "--exit-code")
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return os.RemoveAll(tmpDir)
 }
 
 // checkBinarySizeActionFunc checks the size of an example binary to ensure that we are keeping size down
@@ -193,22 +412,26 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 		cliBuiltFilePath     = "./internal/example-cli/built-example"
 		helloSourceFilePath  = "./internal/example-hello-world/example-hello-world.go"
 		helloBuiltFilePath   = "./internal/example-hello-world/built-example"
-		desiredMinBinarySize = 1.9
-		desiredMaxBinarySize = 2.1
-		badNewsEmoji         = "🚨"
-		goodNewsEmoji        = "✨"
-		checksPassedEmoji    = "✅"
+		desiredMaxBinarySize = 2.2
 		mbStringFormatter    = "%.1fMB"
 	)
 
+	desiredMinBinarySize := 1.675
+
+	tags := c.String("tags")
+
+	if strings.Contains(tags, "urfave_cli_no_docs") {
+		desiredMinBinarySize = 1.39
+	}
+
 	// get cli example size
-	cliSize, err := getSize(cliSourceFilePath, cliBuiltFilePath)
+	cliSize, err := getSize(cliSourceFilePath, cliBuiltFilePath, tags)
 	if err != nil {
 		return err
 	}
 
 	// get hello world size
-	helloSize, err := getSize(helloSourceFilePath, helloBuiltFilePath)
+	helloSize, err := getSize(helloSourceFilePath, helloBuiltFilePath, tags)
 	if err != nil {
 		return err
 	}
@@ -270,23 +493,200 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 	return nil
 }
 
-func getSize(sourcePath string, builtPath string) (size int64, err error) {
-	// build example binary
-	err = runCmd("go", "build", "-o", builtPath, "-ldflags", "-s -w", sourcePath)
+func GenerateActionFunc(cCtx *cli.Context) error {
+	top := cCtx.Path("top")
+
+	cliDocs, err := sh("go", "doc", "-all", top)
 	if err != nil {
+		return err
+	}
+
+	altsrcDocs, err := sh("go", "doc", "-all", filepath.Join(top, "altsrc"))
+	if err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(
+		filepath.Join(top, "godoc-current.txt"),
+		[]byte(cliDocs+altsrcDocs),
+		0644,
+	); err != nil {
+		return err
+	}
+
+	return runCmd("go", "generate", cCtx.Path("top")+"/...")
+}
+
+func YAMLFmtActionFunc(cCtx *cli.Context) error {
+	yqBin, err := exec.LookPath("yq")
+	if err != nil {
+		if !cCtx.Bool("strict") {
+			fmt.Fprintln(cCtx.App.ErrWriter, "# ---> no yq found; skipping")
+			return nil
+		}
+
+		return err
+	}
+
+	os.Chdir(cCtx.Path("top"))
+
+	return runCmd(yqBin, "eval", "--inplace", "flag-spec.yaml")
+}
+
+func DiffCheckActionFunc(cCtx *cli.Context) error {
+	os.Chdir(cCtx.Path("top"))
+
+	if err := runCmd("git", "diff", "--exit-code"); err != nil {
+		return err
+	}
+
+	return runCmd("git", "diff", "--cached", "--exit-code")
+}
+
+func EnsureGoimportsActionFunc(cCtx *cli.Context) error {
+	top := cCtx.Path("top")
+	os.Chdir(top)
+
+	if err := runCmd(
+		"goimports",
+		"-d",
+		filepath.Join(top, "internal/build/build.go"),
+	); err == nil {
+		return nil
+	}
+
+	os.Setenv("GOBIN", filepath.Join(top, ".local/bin"))
+
+	return runCmd("go", "install", "golang.org/x/tools/cmd/goimports@latest")
+}
+
+func EnsureGfmrunActionFunc(cCtx *cli.Context) error {
+	top := cCtx.Path("top")
+	gfmrunExe := filepath.Join(top, ".local/bin/gfmrun")
+
+	os.Chdir(top)
+
+	if v, err := sh(gfmrunExe, "--version"); err == nil && strings.TrimSpace(v) == gfmrunVersion {
+		return nil
+	}
+
+	gfmrunURL, err := url.Parse(
+		fmt.Sprintf(
+			"https://github.com/urfave/gfmrun/releases/download/%[1]s/gfmrun-%[2]s-%[3]s-%[1]s",
+			gfmrunVersion, runtime.GOOS, runtime.GOARCH,
+		),
+	)
+	if err != nil {
+		return err
+	}
+
+	return downloadFile(gfmrunURL.String(), gfmrunExe, 0755, 0755)
+}
+
+func EnsureMkdocsActionFunc(cCtx *cli.Context) error {
+	os.Chdir(cCtx.Path("top"))
+
+	if err := runCmd("mkdocs", "--version"); err == nil {
+		return nil
+	}
+
+	if cCtx.Bool("upgrade-pip") {
+		if err := runCmd("pip", "install", "-U", "pip"); err != nil {
+			return err
+		}
+	}
+
+	return runCmd("pip", "install", "-r", "mkdocs-requirements.txt")
+}
+
+func SetMkdocsRemoteActionFunc(cCtx *cli.Context) error {
+	ghToken := strings.TrimSpace(cCtx.String("github-token"))
+	if ghToken == "" {
+		return errors.New("empty github token")
+	}
+
+	os.Chdir(cCtx.Path("top"))
+
+	if err := runCmd("git", "remote", "rm", "origin"); err != nil {
+		return err
+	}
+
+	return runCmd(
+		"git", "remote", "add", "origin",
+		fmt.Sprintf("https://x-access-token:%[1]s@github.com/urfave/cli.git", ghToken),
+	)
+}
+
+func LintActionFunc(cCtx *cli.Context) error {
+	top := cCtx.Path("top")
+	os.Chdir(top)
+
+	out, err := sh(filepath.Join(top, ".local/bin/goimports"), "-l", ".")
+	if err != nil {
+		return err
+	}
+
+	if strings.TrimSpace(out) != "" {
+		fmt.Fprintln(cCtx.App.ErrWriter, "# ---> goimports -l is non-empty:")
+		fmt.Fprintln(cCtx.App.ErrWriter, out)
+
+		return errors.New("goimports needed")
+	}
+
+	return nil
+}
+
+func V2Diff(cCtx *cli.Context) error {
+	os.Chdir(cCtx.Path("top"))
+
+	err := runCmd(
+		"diff",
+		"--ignore-all-space",
+		"--minimal",
+		"--color="+func() string {
+			if cCtx.Bool("color") {
+				return "always"
+			}
+			return "auto"
+		}(),
+		"--unified",
+		"--label=a/godoc",
+		filepath.Join("testdata", "godoc-v2.x.txt"),
+		"--label=b/godoc",
+		"godoc-current.txt",
+	)
+
+	if err != nil {
+		fmt.Printf("# %v ---> Hey! <---\n", badNewsEmoji)
+		fmt.Println(strings.TrimSpace(v2diffWarning))
+	}
+
+	return err
+}
+
+func getSize(sourcePath, builtPath, tags string) (int64, error) {
+	args := []string{"build"}
+
+	if tags != "" {
+		args = append(args, []string{"-tags", tags}...)
+	}
+
+	args = append(args, []string{
+		"-o", builtPath,
+		"-ldflags", "-s -w",
+		sourcePath,
+	}...)
+
+	if err := runCmd("go", args...); err != nil {
 		fmt.Println("issue getting size for example binary")
 		return 0, err
 	}
 
-	// get file info
 	fileInfo, err := os.Stat(builtPath)
 	if err != nil {
 		fmt.Println("issue getting size for example binary")
 		return 0, err
 	}
 
-	// size!
-	size = fileInfo.Size()
-
-	return size, nil
+	return fileInfo.Size(), nil
 }

@@ -6,42 +6,6 @@ import (
 	"strconv"
 )
 
-// Uint64Flag is a flag with type uint64
-type Uint64Flag struct {
-	Name        string
-	Aliases     []string
-	Usage       string
-	EnvVars     []string
-	FilePath    string
-	Required    bool
-	Hidden      bool
-	Value       uint64
-	DefaultText string
-	Destination *uint64
-	HasBeenSet  bool
-}
-
-// IsSet returns whether or not the flag has been set through env or file
-func (f *Uint64Flag) IsSet() bool {
-	return f.HasBeenSet
-}
-
-// String returns a readable representation of this value
-// (for usage defaults)
-func (f *Uint64Flag) String() string {
-	return FlagStringer(f)
-}
-
-// Names returns the names of the flag
-func (f *Uint64Flag) Names() []string {
-	return flagNames(f.Name, f.Aliases)
-}
-
-// IsRequired returns whether or not the flag is required
-func (f *Uint64Flag) IsRequired() bool {
-	return f.Required
-}
-
 // TakesValue returns true of the flag takes a value, otherwise false
 func (f *Uint64Flag) TakesValue() bool {
 	return true
@@ -52,13 +16,21 @@ func (f *Uint64Flag) GetUsage() string {
 	return f.Usage
 }
 
+// GetCategory returns the category for the flag
+func (f *Uint64Flag) GetCategory() string {
+	return f.Category
+}
+
 // Apply populates the flag given the flag set and environment
 func (f *Uint64Flag) Apply(set *flag.FlagSet) error {
-	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
+	// set default value so that environment wont be able to overwrite it
+	f.defaultValue = f.Value
+
+	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
 		if val != "" {
-			valInt, err := strconv.ParseUint(val, 0, 64)
+			valInt, err := strconv.ParseUint(val, f.Base, 64)
 			if err != nil {
-				return fmt.Errorf("could not parse %q as uint64 value for flag %s: %s", val, f.Name, err)
+				return fmt.Errorf("could not parse %q as uint64 value from %s for flag %s: %s", val, source, f.Name, err)
 			}
 
 			f.Value = valInt
@@ -77,16 +49,43 @@ func (f *Uint64Flag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
+// RunAction executes flag action if set
+func (f *Uint64Flag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.Uint64(f.Name))
+	}
+
+	return nil
+}
+
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *Uint64Flag) GetValue() string {
 	return fmt.Sprintf("%d", f.Value)
 }
 
+// GetDefaultText returns the default text for this flag
+func (f *Uint64Flag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	return fmt.Sprintf("%d", f.defaultValue)
+}
+
+// GetEnvVars returns the env vars for this flag
+func (f *Uint64Flag) GetEnvVars() []string {
+	return f.EnvVars
+}
+
+// Get returns the flag’s value in the given Context.
+func (f *Uint64Flag) Get(ctx *Context) uint64 {
+	return ctx.Uint64(f.Name)
+}
+
 // Uint64 looks up the value of a local Uint64Flag, returns
 // 0 if not found
-func (c *Context) Uint64(name string) uint64 {
-	if fs := lookupFlagSet(name, c); fs != nil {
+func (cCtx *Context) Uint64(name string) uint64 {
+	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return lookupUint64(name, fs)
 	}
 	return 0

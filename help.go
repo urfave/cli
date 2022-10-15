@@ -11,34 +11,74 @@ import (
 	"unicode/utf8"
 )
 
-var helpCommand = &Command{
-	Name:      "help",
-	Aliases:   []string{"h"},
+const (
+	helpName  = "help"
+	helpAlias = "h"
+)
+
+// this instance is to avoid recursion in the ShowCommandHelp which can
+// add a help command again
+var helpCommandDontUse = &Command{
+	Name:      helpName,
+	Aliases:   []string{helpAlias},
 	Usage:     "Shows a list of commands or help for one command",
 	ArgsUsage: "[command]",
-	Action: func(c *Context) error {
-		args := c.Args()
-		if args.Present() {
-			return ShowCommandHelp(c, args.First())
-		}
-
-		_ = ShowAppHelp(c)
-		return nil
-	},
 }
 
-var helpSubcommand = &Command{
-	Name:      "help",
-	Aliases:   []string{"h"},
+var helpCommand = &Command{
+	Name:      helpName,
+	Aliases:   []string{helpAlias},
 	Usage:     "Shows a list of commands or help for one command",
 	ArgsUsage: "[command]",
-	Action: func(c *Context) error {
-		args := c.Args()
-		if args.Present() {
-			return ShowCommandHelp(c, args.First())
+	Action: func(cCtx *Context) error {
+		args := cCtx.Args()
+		argsPresent := args.First() != ""
+		firstArg := args.First()
+
+		// This action can be triggered by a "default" action of a command
+		// or via cmd.Run when cmd == helpCmd. So we have following possibilities
+		//
+		// 1 $ app
+		// 2 $ app help
+		// 3 $ app foo
+		// 4 $ app help foo
+		// 5 $ app foo help
+
+		// Case 4. when executing a help command set the context to parent
+		// to allow resolution of subsequent args. This will transform
+		// $ app help foo
+		//     to
+		// $ app foo
+		// which will then be handled as case 3
+		if cCtx.Command.Name == helpName || cCtx.Command.Name == helpAlias {
+			cCtx = cCtx.parentContext
 		}
 
-		return ShowSubcommandHelp(c)
+		// Case 4. $ app hello foo
+		// foo is the command for which help needs to be shown
+		if argsPresent {
+			return ShowCommandHelp(cCtx, firstArg)
+		}
+
+		// Case 1 & 2
+		// Special case when running help on main app itself as opposed to indivdual
+		// commands/subcommands
+		if cCtx.parentContext.App == nil {
+			_ = ShowAppHelp(cCtx)
+			return nil
+		}
+
+		// Case 3, 5
+		if (len(cCtx.Command.Subcommands) == 1 && !cCtx.Command.HideHelp) ||
+			(len(cCtx.Command.Subcommands) == 0 && cCtx.Command.HideHelp) {
+			templ := cCtx.Command.CustomHelpTemplate
+			if templ == "" {
+				templ = CommandHelpTemplate
+			}
+			HelpPrinter(cCtx.App.Writer, templ, cCtx.Command)
+			return nil
+		}
+		return ShowSubcommandHelp(cCtx)
 	},
 }
 
@@ -60,6 +100,11 @@ var HelpPrinter helpPrinter = printHelp
 // HelpPrinterCustom is a function that writes the help output. It is used as
 // the default implementation of HelpPrinter, and may be called directly if
 // the ExtraInfo field is set on an App.
+//
+// In the default implementation, if the customFuncs argument contains a
+// "wrapAt" key, which is a function which takes no arguments and returns
+// an int, this int value will be used to produce a "wrap" function used
+// by the default template to wrap long lines.
 var HelpPrinterCustom helpPrinterCustom = printHelpCustom
 
 // VersionPrinter prints the version for the App
@@ -72,30 +117,30 @@ func ShowAppHelpAndExit(c *Context, exitCode int) {
 }
 
 // ShowAppHelp is an action that displays the help.
-func ShowAppHelp(c *Context) error {
-	tpl := c.App.CustomAppHelpTemplate
+func ShowAppHelp(cCtx *Context) error {
+	tpl := cCtx.App.CustomAppHelpTemplate
 	if tpl == "" {
 		tpl = AppHelpTemplate
 	}
 
-	if c.App.ExtraInfo == nil {
-		HelpPrinter(c.App.Writer, tpl, c.App)
+	if cCtx.App.ExtraInfo == nil {
+		HelpPrinter(cCtx.App.Writer, tpl, cCtx.App)
 		return nil
 	}
 
 	customAppData := func() map[string]interface{} {
 		return map[string]interface{}{
-			"ExtraInfo": c.App.ExtraInfo,
+			"ExtraInfo": cCtx.App.ExtraInfo,
 		}
 	}
-	HelpPrinterCustom(c.App.Writer, tpl, c.App, customAppData())
+	HelpPrinterCustom(cCtx.App.Writer, tpl, cCtx.App, customAppData())
 
 	return nil
 }
 
 // DefaultAppComplete prints the list of subcommands as the default app completion method
-func DefaultAppComplete(c *Context) {
-	DefaultCompleteWithFlags(nil)(c)
+func DefaultAppComplete(cCtx *Context) {
+	DefaultCompleteWithFlags(nil)(cCtx)
 }
 
 func printCommandSuggestions(commands []*Command, writer io.Writer) {
@@ -103,7 +148,7 @@ func printCommandSuggestions(commands []*Command, writer io.Writer) {
 		if command.Hidden {
 			continue
 		}
-		if os.Getenv("_CLI_ZSH_AUTOCOMPLETE_HACK") == "1" {
+		if strings.HasSuffix(os.Getenv("SHELL"), "zsh") {
 			for _, name := range command.Names() {
 				_, _ = fmt.Fprintf(writer, "%s:%s\n", name, command.Usage)
 			}
@@ -160,23 +205,30 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 	}
 }
 
-func DefaultCompleteWithFlags(cmd *Command) func(c *Context) {
-	return func(c *Context) {
+func DefaultCompleteWithFlags(cmd *Command) func(cCtx *Context) {
+	return func(cCtx *Context) {
 		if len(os.Args) > 2 {
 			lastArg := os.Args[len(os.Args)-2]
+
 			if strings.HasPrefix(lastArg, "-") {
-				printFlagSuggestions(lastArg, c.App.Flags, c.App.Writer)
 				if cmd != nil {
-					printFlagSuggestions(lastArg, cmd.Flags, c.App.Writer)
+					printFlagSuggestions(lastArg, cmd.Flags, cCtx.App.Writer)
+
+					return
 				}
+
+				printFlagSuggestions(lastArg, cCtx.App.Flags, cCtx.App.Writer)
+
 				return
 			}
 		}
+
 		if cmd != nil {
-			printCommandSuggestions(cmd.Subcommands, c.App.Writer)
-		} else {
-			printCommandSuggestions(c.App.Commands, c.App.Writer)
+			printCommandSuggestions(cmd.Subcommands, cCtx.App.Writer)
+			return
 		}
+
+		printCommandSuggestions(cCtx.App.Commands, cCtx.App.Writer)
 	}
 }
 
@@ -188,17 +240,26 @@ func ShowCommandHelpAndExit(c *Context, command string, code int) {
 
 // ShowCommandHelp prints help for the given command
 func ShowCommandHelp(ctx *Context, command string) error {
-	// show the subcommand help for a command with subcommands
-	if command == "" {
-		HelpPrinter(ctx.App.Writer, SubcommandHelpTemplate, ctx.App)
-		return nil
-	}
 
-	for _, c := range ctx.App.Commands {
+	commands := ctx.App.Commands
+	if ctx.Command.Subcommands != nil {
+		commands = ctx.Command.Subcommands
+	}
+	for _, c := range commands {
 		if c.HasName(command) {
+			if !ctx.App.HideHelpCommand && !c.HasName(helpName) && len(c.Subcommands) != 0 {
+				c.Subcommands = append(c.Subcommands, helpCommandDontUse)
+			}
+			if !ctx.App.HideHelp && HelpFlag != nil {
+				c.appendFlag(HelpFlag)
+			}
 			templ := c.CustomHelpTemplate
 			if templ == "" {
-				templ = CommandHelpTemplate
+				if len(c.Subcommands) == 0 {
+					templ = CommandHelpTemplate
+				} else {
+					templ = SubcommandHelpTemplate
+				}
 			}
 
 			HelpPrinter(ctx.App.Writer, templ, c)
@@ -208,7 +269,13 @@ func ShowCommandHelp(ctx *Context, command string) error {
 	}
 
 	if ctx.App.CommandNotFound == nil {
-		return Exit(fmt.Sprintf("No help topic for '%v'", command), 3)
+		errMsg := fmt.Sprintf("No help topic for '%v'", command)
+		if ctx.App.Suggest {
+			if suggestion := SuggestCommand(ctx.Command.Subcommands, command); suggestion != "" {
+				errMsg += ". " + suggestion
+			}
+		}
+		return Exit(errMsg, 3)
 	}
 
 	ctx.App.CommandNotFound(ctx, command)
@@ -222,32 +289,29 @@ func ShowSubcommandHelpAndExit(c *Context, exitCode int) {
 }
 
 // ShowSubcommandHelp prints help for the given subcommand
-func ShowSubcommandHelp(c *Context) error {
-	if c == nil {
+func ShowSubcommandHelp(cCtx *Context) error {
+	if cCtx == nil {
 		return nil
 	}
 
-	if c.Command != nil {
-		return ShowCommandHelp(c, c.Command.Name)
-	}
-
-	return ShowCommandHelp(c, "")
+	HelpPrinter(cCtx.App.Writer, SubcommandHelpTemplate, cCtx.Command)
+	return nil
 }
 
 // ShowVersion prints the version number of the App
-func ShowVersion(c *Context) {
-	VersionPrinter(c)
+func ShowVersion(cCtx *Context) {
+	VersionPrinter(cCtx)
 }
 
-func printVersion(c *Context) {
-	_, _ = fmt.Fprintf(c.App.Writer, "%v version %v\n", c.App.Name, c.App.Version)
+func printVersion(cCtx *Context) {
+	_, _ = fmt.Fprintf(cCtx.App.Writer, "%v version %v\n", cCtx.App.Name, cCtx.App.Version)
 }
 
 // ShowCompletions prints the lists of commands within a given context
-func ShowCompletions(c *Context) {
-	a := c.App
+func ShowCompletions(cCtx *Context) {
+	a := cCtx.App
 	if a != nil && a.BashComplete != nil {
-		a.BashComplete(c)
+		a.BashComplete(cCtx)
 	}
 }
 
@@ -269,18 +333,48 @@ func ShowCommandCompletions(ctx *Context, command string) {
 // The customFuncs map will be combined with a default template.FuncMap to
 // allow using arbitrary functions in template rendering.
 func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs map[string]interface{}) {
+
+	const maxLineLength = 10000
+
 	funcMap := template.FuncMap{
-		"join":    strings.Join,
-		"indent":  indent,
-		"nindent": nindent,
-		"trim":    strings.TrimSpace,
+		"join":           strings.Join,
+		"subtract":       subtract,
+		"indent":         indent,
+		"nindent":        nindent,
+		"trim":           strings.TrimSpace,
+		"wrap":           func(input string, offset int) string { return wrap(input, offset, maxLineLength) },
+		"offset":         offset,
+		"offsetCommands": offsetCommands,
 	}
+
+	if customFuncs["wrapAt"] != nil {
+		if wa, ok := customFuncs["wrapAt"]; ok {
+			if waf, ok := wa.(func() int); ok {
+				wrapAt := waf()
+				customFuncs["wrap"] = func(input string, offset int) string {
+					return wrap(input, offset, wrapAt)
+				}
+			}
+		}
+	}
+
 	for key, value := range customFuncs {
 		funcMap[key] = value
 	}
 
 	w := tabwriter.NewWriter(out, 1, 8, 2, ' ', 0)
 	t := template.Must(template.New("help").Funcs(funcMap).Parse(templ))
+	t.New("helpNameTemplate").Parse(helpNameTemplate)
+	t.New("usageTemplate").Parse(usageTemplate)
+	t.New("descriptionTemplate").Parse(descriptionTemplate)
+	t.New("visibleCommandTemplate").Parse(visibleCommandTemplate)
+	t.New("copyrightTemplate").Parse(copyrightTemplate)
+	t.New("versionTemplate").Parse(versionTemplate)
+	t.New("visibleFlagCategoryTemplate").Parse(visibleFlagCategoryTemplate)
+	t.New("visibleFlagTemplate").Parse(visibleFlagTemplate)
+	t.New("visibleGlobalFlagCategoryTemplate").Parse(strings.Replace(visibleFlagCategoryTemplate, "OPTIONS", "GLOBAL OPTIONS", -1))
+	t.New("authorsTemplate").Parse(authorsTemplate)
+	t.New("visibleCommandCategoryTemplate").Parse(visibleCommandCategoryTemplate)
 
 	err := t.Execute(w, data)
 	if err != nil {
@@ -298,23 +392,25 @@ func printHelp(out io.Writer, templ string, data interface{}) {
 	HelpPrinterCustom(out, templ, data, nil)
 }
 
-func checkVersion(c *Context) bool {
+func checkVersion(cCtx *Context) bool {
 	found := false
 	for _, name := range VersionFlag.Names() {
-		if c.Bool(name) {
+		if cCtx.Bool(name) {
 			found = true
 		}
 	}
 	return found
 }
 
-func checkHelp(c *Context) bool {
+func checkHelp(cCtx *Context) bool {
 	found := false
 	for _, name := range HelpFlag.Names() {
-		if c.Bool(name) {
+		if cCtx.Bool(name) {
 			found = true
+			break
 		}
 	}
+
 	return found
 }
 
@@ -327,9 +423,9 @@ func checkCommandHelp(c *Context, name string) bool {
 	return false
 }
 
-func checkSubcommandHelp(c *Context) bool {
-	if c.Bool("h") || c.Bool("help") {
-		_ = ShowSubcommandHelp(c)
+func checkSubcommandHelp(cCtx *Context) bool {
+	if cCtx.Bool("h") || cCtx.Bool("help") {
+		_ = ShowSubcommandHelp(cCtx)
 		return true
 	}
 
@@ -351,20 +447,20 @@ func checkShellCompleteFlag(a *App, arguments []string) (bool, []string) {
 	return true, arguments[:pos]
 }
 
-func checkCompletions(c *Context) bool {
-	if !c.shellComplete {
+func checkCompletions(cCtx *Context) bool {
+	if !cCtx.shellComplete {
 		return false
 	}
 
-	if args := c.Args(); args.Present() {
+	if args := cCtx.Args(); args.Present() {
 		name := args.First()
-		if cmd := c.App.Command(name); cmd != nil {
+		if cmd := cCtx.App.Command(name); cmd != nil {
 			// let the command handle the completion
 			return false
 		}
 	}
 
-	ShowCompletions(c)
+	ShowCompletions(cCtx)
 	return true
 }
 
@@ -377,6 +473,10 @@ func checkCommandCompletions(c *Context, name string) bool {
 	return true
 }
 
+func subtract(a, b int) int {
+	return a - b
+}
+
 func indent(spaces int, v string) string {
 	pad := strings.Repeat(" ", spaces)
 	regex := regexp.MustCompile("\n +\n")
@@ -385,4 +485,84 @@ func indent(spaces int, v string) string {
 
 func nindent(spaces int, v string) string {
 	return "\n" + indent(spaces, v)
+}
+
+func wrap(input string, offset int, wrapAt int) string {
+	var ss []string
+
+	lines := strings.Split(input, "\n")
+
+	padding := strings.Repeat(" ", offset)
+
+	for i, line := range lines {
+		if line == "" {
+			ss = append(ss, line)
+		} else {
+			wrapped := wrapLine(line, offset, wrapAt, padding)
+			if i == 0 {
+				ss = append(ss, wrapped)
+			} else {
+				ss = append(ss, padding+wrapped)
+
+			}
+
+		}
+	}
+
+	return strings.Join(ss, "\n")
+}
+
+func wrapLine(input string, offset int, wrapAt int, padding string) string {
+	if wrapAt <= offset || len(input) <= wrapAt-offset {
+		return input
+	}
+
+	lineWidth := wrapAt - offset
+	words := strings.Fields(input)
+	if len(words) == 0 {
+		return input
+	}
+
+	wrapped := words[0]
+	spaceLeft := lineWidth - len(wrapped)
+	for _, word := range words[1:] {
+		if len(word)+1 > spaceLeft {
+			wrapped += "\n" + padding + word
+			spaceLeft = lineWidth - len(word)
+		} else {
+			wrapped += " " + word
+			spaceLeft -= 1 + len(word)
+		}
+	}
+
+	return wrapped
+}
+
+func offset(input string, fixed int) int {
+	return len(input) + fixed
+}
+
+// this function tries to find the max width of the names column
+// so say we have the following rows for help
+//
+//	foo1, foo2, foo3  some string here
+//	bar1, b2 some other string here
+//
+// We want to offset the 2nd row usage by some amount so that everything
+// is aligned
+//
+//	foo1, foo2, foo3  some string here
+//	bar1, b2          some other string here
+//
+// to find that offset we find the length of all the rows and use the max
+// to calculate the offset
+func offsetCommands(cmds []*Command, fixed int) int {
+	var max int = 0
+	for _, cmd := range cmds {
+		s := strings.Join(cmd.Names(), ", ")
+		if len(s) > max {
+			max = len(s)
+		}
+	}
+	return max + fixed
 }

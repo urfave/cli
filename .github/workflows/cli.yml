@@ -1,104 +1,88 @@
 name: Run Tests
-
 on:
   push:
     branches:
-      - master
-      - v1
+      - main
+    tags:
+      - v2.*
   pull_request:
     branches:
-      - master
-      - v1
-
+      - main
+permissions:
+  contents: read
 jobs:
   test:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        go: [1.13, 1.14, 1.15]
+        go: [1.17.x, 1.18.x, 1.19.x]
     name: ${{ matrix.os }} @ Go ${{ matrix.go }}
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Set up Go ${{ matrix.go }}
-        uses: actions/setup-go@v1
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
-
-      - name: Set GOPATH, PATH and ENV
-        run: |
-          echo "GOPATH=$(dirname $GITHUB_WORKSPACE)" >> $GITHUB_ENV
-          echo "GO111MODULE=on" >> $GITHUB_ENV
-          echo "GOPROXY=https://proxy.golang.org" >> $GITHUB_ENV
-          echo "$(dirname $GITHUB_WORKSPACE)/bin" >> $GITHUB_PATH
-        shell: bash
-
-      - name: Checkout Code
-        uses: actions/checkout@v1
+      - name: Set PATH
+        run: echo "${GITHUB_WORKSPACE}/.local/bin" >>"${GITHUB_PATH}"
+      - uses: actions/checkout@v3
+      - if: matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
+        run: make ensure-goimports
+      - if: matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
+        run: make lint
+      - run: make vet
+      - run: make test
+        env:
+          GFLAGS: -tags urfave_cli_no_docs
+      - run: make test
+      - run: make -C cmd/urfave-cli-genflags
+      - run: make check-binary-size
+        env:
+          GFLAGS: -tags urfave_cli_no_docs
+      - run: make check-binary-size
+      - run: make yamlfmt
+      - if: matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
+        run: make generate
+      - run: make diffcheck
+      - if: matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
+        run: make v2diff
+      - if: success() && matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v3
         with:
-          ref: ${{ github.ref }}
-
-      - name: GOFMT Check
-        if: matrix.go == 1.15 && matrix.os == 'ubuntu-latest'
-        run: test -z $(gofmt -l .)
-
-      - name: vet
-        run: go run internal/build/build.go vet
-
-      - name: test
-        run: go run internal/build/build.go test
-
-      - name: check-binary-size
-        run: go run internal/build/build.go check-binary-size
-
-      - name: Upload coverage to Codecov
-        if: success() && matrix.go == 1.14 && matrix.os == 'ubuntu-latest'
-        uses: codecov/codecov-action@v1
-        with:
-          token: 0a8cc73b-bb7c-480b-8626-38a461643761
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
-
   test-docs:
     name: test-docs
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Go 1.15
-        uses: actions/setup-go@v1
+      - uses: actions/setup-go@v3
         with:
-          go-version: 1.15
-
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
+          go-version: 1.19.x
+      - uses: actions/setup-node@v3
         with:
-          node-version: 12.x
-
-      - name: Set GOPATH, PATH and ENV
-        run: |
-          echo "GOPATH=$(dirname $GITHUB_WORKSPACE)" >> $GITHUB_ENV
-          echo "GO111MODULE=on" >> $GITHUB_ENV
-          echo "GOPROXY=https://proxy.golang.org" >> $GITHUB_ENV
-          echo "$(dirname $GITHUB_WORKSPACE)/bin" >> $GITHUB_PATH
-        shell: bash
-
-      - name: Checkout Code
-        uses: actions/checkout@v1
+          node-version: '16'
+      - name: Set PATH
+        run: echo "${GITHUB_WORKSPACE}/.local/bin" >>"${GITHUB_PATH}"
+      - uses: actions/checkout@v3
+      - run: make ensure-gfmrun
+      - run: make gfmrun
+        env:
+          FLAGS: --walk docs/v2/
+      - run: make diffcheck
+  publish:
+    permissions:
+      contents: write
+    if: startswith(github.ref, 'refs/tags/')
+    name: publish
+    needs: [test-docs]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
         with:
-          ref: ${{ github.ref }}
-
-      - name: Install Dependencies
-        run: |
-          mkdir -p $GOPATH/bin
-          curl -L -o $GOPATH/bin/gfmrun "https://github.com/urfave/gfmrun/releases/download/v1.2.14/gfmrun-$(go env GOOS)-amd64-v1.2.14"
-          chmod +x $GOPATH/bin/gfmrun
-          npm install -g markdown-toc@1.2.0
-
-      - name: Run Tests (v1)
-        if: contains(github.base_ref, 'v1')
-        run: |
-          go run internal/build/build.go gfmrun docs/v1/manual.md
-          go run internal/build/build.go toc docs/v1/manual.md
-
-      - name: Run Tests (v2)
-        if: contains(github.base_ref, 'master')
-        run: |
-          go run internal/build/build.go gfmrun docs/v2/manual.md
-          go run internal/build/build.go toc docs/v2/manual.md
+          fetch-depth: 0
+      - run: make ensure-mkdocs
+        env:
+          FLAGS: --upgrade-pip
+      - run: make set-mkdocs-remote
+        env:
+          MKDOCS_REMOTE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: make deploy-mkdocs
