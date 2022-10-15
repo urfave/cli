@@ -72,6 +72,25 @@ func (t *Timestamp) Get() interface{} {
 	return *t
 }
 
+// clone timestamp
+func (t *Timestamp) clone() *Timestamp {
+	tc := &Timestamp{
+		timestamp:  nil,
+		hasBeenSet: t.hasBeenSet,
+		layout:     t.layout,
+		location:   nil,
+	}
+	if t.timestamp != nil {
+		tts := *t.timestamp
+		tc.timestamp = &tts
+	}
+	if t.location != nil {
+		loc := *t.location
+		tc.location = &loc
+	}
+	return tc
+}
+
 // TakesValue returns true of the flag takes a value, otherwise false
 func (f *TimestampFlag) TakesValue() bool {
 	return true
@@ -101,7 +120,11 @@ func (f *TimestampFlag) GetDefaultText() string {
 	if f.DefaultText != "" {
 		return f.DefaultText
 	}
-	return f.GetValue()
+	if f.defaultValue != nil && f.defaultValue.timestamp != nil {
+		return f.defaultValue.timestamp.String()
+	}
+
+	return ""
 }
 
 // GetEnvVars returns the env vars for this flag
@@ -119,6 +142,8 @@ func (f *TimestampFlag) Apply(set *flag.FlagSet) error {
 	}
 	f.Value.SetLayout(f.Layout)
 	f.Value.SetLocation(f.Timezone)
+
+	f.defaultValue = f.Value.clone()
 
 	if f.Destination != nil {
 		f.Destination.SetLayout(f.Layout)
