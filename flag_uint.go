@@ -37,6 +37,14 @@ func (f *UintFlag) GetValue() string {
 	return fmt.Sprintf("%d", f.Value)
 }
 
+// GetDefaultText returns the default text for this flag
+func (f *UintFlag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	return f.GetValue()
+}
+
 // Get returns the flag’s value in the given Context.
 func (f *UintFlag) Get(ctx *Context) uint {
 	return ctx.Uint(f.Name)

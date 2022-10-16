@@ -75,16 +75,6 @@ func (f *{{.TypeName}}) TakesValue() bool {
   return "{{.TypeName }}" != "BoolFlag"
 }
 
-{{if .GenerateDefaultText}}
-// GetDefaultText returns the default text for this flag
-func (f *{{.TypeName}}) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	return f.GetValue()
-}
-{{end}}
-
 {{end}}{{/* /if .GenerateFlagInterface */}}
 
 {{end}}{{/* /range .SortedFlagTypes */}}

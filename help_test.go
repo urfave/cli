@@ -1213,6 +1213,13 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 	}
 }
 
+func TestWrap(t *testing.T) {
+	emptywrap := wrap("", 4, 16)
+	if emptywrap != "" {
+		t.Errorf("Wrapping empty line should return empty line. Got '%s'.", emptywrap)
+	}
+}
+
 func TestWrappedHelp(t *testing.T) {
 
 	// Reset HelpPrinter after this test.
@@ -1276,7 +1283,7 @@ DESCRIPTION:
    App.Description string long
    enough that it should be
    wrapped in this test
-   
+
    with a newline
       and an indented line
 
@@ -1294,8 +1301,8 @@ COPYRIGHT:
    that it should be wrapped.
    Including newlines.
       And also indented lines.
-   
-   
+
+
    And then another long line.
    Blah blah blah does anybody
    ever read these things?
@@ -1429,6 +1436,82 @@ USAGE:
 
 OPTIONS:
    --help, -h  show help (default: false)
+`
+
+	if output.String() != expected {
+		t.Errorf("Unexpected wrapping, got:\n%s\nexpected: %s",
+			output.String(), expected)
+	}
+}
+
+func TestWrappedHelpSubcommand(t *testing.T) {
+
+	// Reset HelpPrinter after this test.
+	defer func(old helpPrinter) {
+		HelpPrinter = old
+	}(HelpPrinter)
+
+	output := new(bytes.Buffer)
+	app := &App{
+		Name:   "cli.test",
+		Writer: output,
+		Commands: []*Command{
+			{
+				Name:        "bar",
+				Aliases:     []string{"a"},
+				Usage:       "add a task to the list",
+				UsageText:   "this is an even longer way of describing adding a task to the list",
+				Description: "and a description long enough to wrap in this test case",
+				Action: func(c *Context) error {
+					return nil
+				},
+				Subcommands: []*Command{
+					{
+						Name:      "grok",
+						Usage:     "remove an existing template",
+						UsageText: "longer usage text goes here, la la la, hopefully this is long enough to wrap even more",
+						Action: func(c *Context) error {
+							return nil
+						},
+						Flags: []Flag{
+							&StringFlag{
+								Name:  "test-f",
+								Usage: "my test usage",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	HelpPrinter = func(w io.Writer, templ string, data interface{}) {
+		funcMap := map[string]interface{}{
+			"wrapAt": func() int {
+				return 30
+			},
+		}
+
+		HelpPrinterCustom(w, templ, data, funcMap)
+	}
+
+	_ = app.Run([]string{"foo", "bar", "help", "grok"})
+
+	expected := `NAME:
+   cli.test bar grok - remove
+                       an
+                       existing
+                       template
+
+USAGE:
+   longer usage text goes
+   here, la la la, hopefully
+   this is long enough to wrap
+   even more
+
+OPTIONS:
+   --help, -h      show help (default: false)
+   --test-f value  my test usage
 `
 
 	if output.String() != expected {

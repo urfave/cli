@@ -99,31 +99,19 @@ func (i *UintSlice) Get() interface{} {
 // String returns a readable representation of this value
 // (for usage defaults)
 func (f *UintSliceFlag) String() string {
-	return withEnvHint(f.GetEnvVars(), f.stringify())
-}
-
-// TakesValue returns true of the flag takes a value, otherwise false
-func (f *UintSliceFlag) TakesValue() bool {
-	return true
-}
-
-// GetUsage returns the usage string for the flag
-func (f *UintSliceFlag) GetUsage() string {
-	return f.Usage
-}
-
-// GetCategory returns the category for the flag
-func (f *UintSliceFlag) GetCategory() string {
-	return f.Category
+	return FlagStringer(f)
 }
 
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *UintSliceFlag) GetValue() string {
-	if f.Value != nil {
-		return f.Value.String()
+	var defaultVals []string
+	if f.Value != nil && len(f.Value.Value()) > 0 {
+		for _, i := range f.Value.Value() {
+			defaultVals = append(defaultVals, strconv.FormatUint(uint64(i), 10))
+		}
 	}
-	return ""
+	return strings.Join(defaultVals, ", ")
 }
 
 // GetDefaultText returns the default text for this flag
@@ -134,9 +122,9 @@ func (f *UintSliceFlag) GetDefaultText() string {
 	return f.GetValue()
 }
 
-// GetEnvVars returns the env vars for this flag
-func (f *UintSliceFlag) GetEnvVars() []string {
-	return f.EnvVars
+// IsSliceFlag implements DocGenerationSliceFlag.
+func (f *UintSliceFlag) IsSliceFlag() bool {
+	return true
 }
 
 // Apply populates the flag given the flag set and environment
@@ -181,17 +169,6 @@ func (f *UintSliceFlag) Apply(set *flag.FlagSet) error {
 // Get returns the flag’s value in the given Context.
 func (f *UintSliceFlag) Get(ctx *Context) []uint {
 	return ctx.UintSlice(f.Name)
-}
-
-func (f *UintSliceFlag) stringify() string {
-	var defaultVals []string
-	if f.Value != nil && len(f.Value.Value()) > 0 {
-		for _, i := range f.Value.Value() {
-			defaultVals = append(defaultVals, strconv.FormatUint(uint64(i), 10))
-		}
-	}
-
-	return stringifySliceFlag(f.Usage, f.Names(), defaultVals)
 }
 
 // RunAction executes flag action if set

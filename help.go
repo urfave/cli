@@ -242,7 +242,11 @@ func ShowCommandHelp(ctx *Context, command string) error {
 				c.Subcommands = append(c.Subcommands, helpCommandDontUse)
 			}
 			if !ctx.App.HideHelp && HelpFlag != nil {
-				c.appendFlag(HelpFlag)
+				if c.flagCategories == nil {
+					c.flagCategories = newFlagCategoriesFromFlags([]Flag{HelpFlag})
+				} else {
+					c.flagCategories.AddFlag("", HelpFlag)
+				}
 			}
 			templ := c.CustomHelpTemplate
 			if templ == "" {
@@ -358,6 +362,17 @@ func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs 
 
 	w := tabwriter.NewWriter(out, 1, 8, 2, ' ', 0)
 	t := template.Must(template.New("help").Funcs(funcMap).Parse(templ))
+	t.New("helpNameTemplate").Parse(helpNameTemplate)
+	t.New("usageTemplate").Parse(usageTemplate)
+	t.New("descriptionTemplate").Parse(descriptionTemplate)
+	t.New("visibleCommandTemplate").Parse(visibleCommandTemplate)
+	t.New("copyrightTemplate").Parse(copyrightTemplate)
+	t.New("versionTemplate").Parse(versionTemplate)
+	t.New("visibleFlagCategoryTemplate").Parse(visibleFlagCategoryTemplate)
+	t.New("visibleFlagTemplate").Parse(visibleFlagTemplate)
+	t.New("visibleGlobalFlagCategoryTemplate").Parse(strings.Replace(visibleFlagCategoryTemplate, "OPTIONS", "GLOBAL OPTIONS", -1))
+	t.New("authorsTemplate").Parse(authorsTemplate)
+	t.New("visibleCommandCategoryTemplate").Parse(visibleCommandCategoryTemplate)
 
 	err := t.Execute(w, data)
 	if err != nil {
@@ -468,25 +483,28 @@ func nindent(spaces int, v string) string {
 }
 
 func wrap(input string, offset int, wrapAt int) string {
-	var sb strings.Builder
+	var ss []string
 
 	lines := strings.Split(input, "\n")
 
 	padding := strings.Repeat(" ", offset)
 
 	for i, line := range lines {
-		if i != 0 {
-			sb.WriteString(padding)
-		}
+		if line == "" {
+			ss = append(ss, line)
+		} else {
+			wrapped := wrapLine(line, offset, wrapAt, padding)
+			if i == 0 {
+				ss = append(ss, wrapped)
+			} else {
+				ss = append(ss, padding+wrapped)
 
-		sb.WriteString(wrapLine(line, offset, wrapAt, padding))
+			}
 
-		if i != len(lines)-1 {
-			sb.WriteString("\n")
 		}
 	}
 
-	return sb.String()
+	return strings.Join(ss, "\n")
 }
 
 func wrapLine(input string, offset int, wrapAt int, padding string) string {

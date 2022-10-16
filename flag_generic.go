@@ -20,6 +20,14 @@ func (f *GenericFlag) GetValue() string {
 	return ""
 }
 
+// GetDefaultText returns the default text for this flag
+func (f *GenericFlag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	return f.GetValue()
+}
+
 // Apply takes the flagset and calls Set on the generic flag with the value
 // provided by the user for parsing by the flag
 func (f *GenericFlag) Apply(set *flag.FlagSet) error {
@@ -34,6 +42,10 @@ func (f *GenericFlag) Apply(set *flag.FlagSet) error {
 	}
 
 	for _, name := range f.Names() {
+		if f.Destination != nil {
+			set.Var(f.Destination, name, f.Usage)
+			continue
+		}
 		set.Var(f.Value, name, f.Usage)
 	}
 

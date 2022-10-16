@@ -83,16 +83,32 @@ func (f *Float64Slice) Get() interface{} {
 // String returns a readable representation of this value
 // (for usage defaults)
 func (f *Float64SliceFlag) String() string {
-	return withEnvHint(f.GetEnvVars(), f.stringify())
+	return FlagStringer(f)
 }
 
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *Float64SliceFlag) GetValue() string {
-	if f.Value != nil {
-		return f.Value.String()
+	var defaultVals []string
+	if f.Value != nil && len(f.Value.Value()) > 0 {
+		for _, i := range f.Value.Value() {
+			defaultVals = append(defaultVals, strings.TrimRight(strings.TrimRight(fmt.Sprintf("%f", i), "0"), "."))
+		}
 	}
-	return ""
+	return strings.Join(defaultVals, ", ")
+}
+
+// GetDefaultText returns the default text for this flag
+func (f *Float64SliceFlag) GetDefaultText() string {
+	if f.DefaultText != "" {
+		return f.DefaultText
+	}
+	return f.GetValue()
+}
+
+// IsSliceFlag implements DocGenerationSliceFlag.
+func (f *Float64SliceFlag) IsSliceFlag() bool {
+	return true
 }
 
 // Apply populates the flag given the flag set and environment
@@ -139,18 +155,6 @@ func (f *Float64SliceFlag) Apply(set *flag.FlagSet) error {
 // Get returns the flag’s value in the given Context.
 func (f *Float64SliceFlag) Get(ctx *Context) []float64 {
 	return ctx.Float64Slice(f.Name)
-}
-
-func (f *Float64SliceFlag) stringify() string {
-	var defaultVals []string
-
-	if f.Value != nil && len(f.Value.Value()) > 0 {
-		for _, i := range f.Value.Value() {
-			defaultVals = append(defaultVals, strings.TrimRight(strings.TrimRight(fmt.Sprintf("%f", i), "0"), "."))
-		}
-	}
-
-	return stringifySliceFlag(f.Usage, f.Names(), defaultVals)
 }
 
 // RunAction executes flag action if set

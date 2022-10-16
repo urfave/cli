@@ -177,7 +177,7 @@ func ExampleApp_Run_commandHelp() {
 	//    greet describeit - use it to see a description
 	//
 	// USAGE:
-	//    greet describeit [command options] [arguments...]
+	//    greet describeit [arguments...]
 	//
 	// DESCRIPTION:
 	//    This is how we describe describeit the function
@@ -954,6 +954,37 @@ func TestApp_UseShortOptionHandlingSubCommand_missing_value(t *testing.T) {
 
 	err := app.Run([]string{"", "cmd", "sub", "-n"})
 	expect(t, err, errors.New("flag needs an argument: -n"))
+}
+
+func TestApp_UseShortOptionAfterSliceFlag(t *testing.T) {
+	var one, two bool
+	var name string
+	var sliceValDest StringSlice
+	var sliceVal []string
+	expected := "expectedName"
+
+	app := newTestApp()
+	app.UseShortOptionHandling = true
+	app.Flags = []Flag{
+		&StringSliceFlag{Name: "env", Aliases: []string{"e"}, Destination: &sliceValDest},
+		&BoolFlag{Name: "one", Aliases: []string{"o"}},
+		&BoolFlag{Name: "two", Aliases: []string{"t"}},
+		&StringFlag{Name: "name", Aliases: []string{"n"}},
+	}
+	app.Action = func(c *Context) error {
+		sliceVal = c.StringSlice("env")
+		one = c.Bool("one")
+		two = c.Bool("two")
+		name = c.String("name")
+		return nil
+	}
+
+	_ = app.Run([]string{"", "-e", "foo", "-on", expected})
+	expect(t, sliceVal, []string{"foo"})
+	expect(t, sliceValDest.Value(), []string{"foo"})
+	expect(t, one, true)
+	expect(t, two, false)
+	expect(t, name, expected)
 }
 
 func TestApp_Float64Flag(t *testing.T) {
