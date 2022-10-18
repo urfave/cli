@@ -1,5 +1,7 @@
 package cli
 
+import "os"
+
 func withEnvHint(envVars []string, str string) string {
 	// if we are running is powershell this env var is set
 	// and so we should use the default env format
