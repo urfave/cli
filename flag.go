@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"regexp"
-	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -268,21 +267,19 @@ func prefixedNames(names []string, placeholder string) string {
 	return prefixed
 }
 
-func withEnvHint(envVars []string, str string) string {
-	envText := ""
+func envFormat(envVars []string, prefix, sep, suffix string) string {
 	if len(envVars) > 0 {
-		prefix := "$"
-		suffix := ""
-		sep := ", $"
-		if runtime.GOOS == "windows" {
-			prefix = "%"
-			suffix = "%"
-			sep = "%, %"
-		}
-
-		envText = fmt.Sprintf(" [%s%s%s]", prefix, strings.Join(envVars, sep), suffix)
+		return fmt.Sprintf(" [%s%s%s]", prefix, strings.Join(envVars, sep), suffix)
 	}
-	return str + envText
+	return ""
+}
+
+func defaultEnvFormat(envVars []string) string {
+	return envFormat(envVars, "$", ", $", "")
+}
+
+func withEnvHint(envVars []string, str string) string {
+	return str + defaultEnvFormat(envVars)
 }
 
 func FlagNames(name string, aliases []string) []string {
