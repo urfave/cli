@@ -5,7 +5,9 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"regexp"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -279,7 +281,13 @@ func defaultEnvFormat(envVars []string) string {
 }
 
 func withEnvHint(envVars []string, str string) string {
-	return str + defaultEnvFormat(envVars)
+	envText := ""
+	if runtime.GOOS != "windows" || os.Getenv("PSHOME") != "" {
+		envText = defaultEnvFormat(envVars)
+	} else {
+		envText = envFormat(envVars, "%", "%, %", "%")
+	}
+	return str + envText
 }
 
 func FlagNames(name string, aliases []string) []string {
