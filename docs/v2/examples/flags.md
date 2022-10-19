@@ -51,9 +51,8 @@ func main() {
 ```
 
 You can also set a destination variable for a flag, to which the content will be
-scanned. Note that is the value variable is set for the flag, that will be shown 
-as default for the flag and destination is set to value prior to parsing flag on the 
-command line
+scanned. Note that if the `Value` is set for the flag, it will be shown as default,
+and destination will be set to this value before parsing flag on the command line.
 
 <!-- {
   "output": "Hello someone"
