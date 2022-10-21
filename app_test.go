@@ -648,6 +648,11 @@ func TestApp_FlagsFromExtPackage(t *testing.T) {
 	var someint int
 	flag.IntVar(&someint, "epflag", 2, "ext package flag usage")
 
+	// Based on source code we can reset the global flag parsing this way
+	defer func() {
+		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	}()
+
 	a := &App{
 		Flags: []Flag{
 			&StringFlag{
