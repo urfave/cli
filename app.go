@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -194,6 +195,14 @@ func (a *App) Setup() {
 	if a.ErrWriter == nil {
 		a.ErrWriter = os.Stderr
 	}
+
+	// add global flags added by other packages
+	flag.VisitAll(func(f *flag.Flag) {
+		// skip test flags
+		if !strings.HasPrefix(f.Name, "test.") {
+			a.Flags = append(a.Flags, extFlag{f})
+		}
+	})
 
 	var newCommands []*Command
 
