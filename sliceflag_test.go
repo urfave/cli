@@ -156,8 +156,8 @@ func ExampleMultiStringFlag() {
 	//---
 	//Setting all flags via environment...
 	//
-	//Flag names: []
-	//Local flag names: []
+	//Flag names: ["flag-one" "1" "two" "2" "flag-three" "3" "flag-four" "4"]
+	//Local flag names: ["flag-one" "1" "two" "2" "flag-three" "3" "flag-four" "4"]
 	//Context values:
 	//"flag-one"=["v 9" "v 10"]
 	//"two"=["v 11" "v 12"]
