@@ -225,7 +225,7 @@ View [unreleased 1.22.X] series changes.
   `CustomAppHelpTemplate`
 * Support for arbitrary key/value fields on `App` to be used with
   `CustomAppHelpTemplate` via `ExtraInfo`
-* `HelpFlag`, `VersionFlag`, and `BashCompletionFlag` changed to explictly be
+* `HelpFlag`, `VersionFlag`, and `BashCompletionFlag` changed to explicitly be
   `cli.Flag`s allowing for the use of custom flags satisfying the `cli.Flag`
   interface to be used.
 
