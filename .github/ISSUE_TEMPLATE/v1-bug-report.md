@@ -15,7 +15,7 @@ _**( Put the version of urfave/cli that you are using here )**_
 
 - [ ] Are you running the latest v1 release? The list of releases is [here](https://github.com/urfave/cli/releases).
 - [ ] Did you check the manual for your release? The v1 manual is [here](https://github.com/urfave/cli/blob/main/docs/v1/manual.md).
-- [ ] Did you perform a search about this problem? Here's the [Github guide](https://help.github.com/en/github/managing-your-work-on-github/using-search-to-filter-issues-and-pull-requests) about searching.
+- [ ] Did you perform a search about this problem? Here's the [GitHub guide](https://help.github.com/en/github/managing-your-work-on-github/using-search-to-filter-issues-and-pull-requests) about searching.
 
 ## Dependency Management
 
@@ -50,7 +50,7 @@ reproduction steps above?
 
 Add any other context about the problem here.
 
-If the issue relates to a specific open source Github repo, please
+If the issue relates to a specific open source GitHub repo, please
 link that repo here.
 
 If you can reproduce this issue with a public CI system, please
