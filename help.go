@@ -60,7 +60,7 @@ var helpCommand = &Command{
 		}
 
 		// Case 1 & 2
-		// Special case when running help on main app itself as opposed to indivdual
+		// Special case when running help on main app itself as opposed to individual
 		// commands/subcommands
 		if cCtx.parentContext.App == nil {
 			_ = ShowAppHelp(cCtx)
