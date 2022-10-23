@@ -196,12 +196,12 @@ View [unreleased 1.22.X] series changes.
   there are no `ExitCoder`s in the `MultiError`.
 * Fixed YAML file loading on Windows (previously would fail validate the file path)
 * Subcommand `Usage`, `Description`, `ArgsUsage`, `OnUsageError` correctly
-  propogated
+  propagated
 * `ErrWriter` is now passed downwards through command structure to avoid the
   need to redefine it
 * Pass `Command` context into `OnUsageError` rather than parent context so that
-  all fields are avaiable
-* Errors occuring in `Before` funcs are no longer double printed
+  all fields are available
+* Errors occurring in `Before` funcs are no longer double printed
 * Use `UsageText` in the help templates for commands and subcommands if
   defined; otherwise build the usage as before (was previously ignoring this
   field)
@@ -225,7 +225,7 @@ View [unreleased 1.22.X] series changes.
   `CustomAppHelpTemplate`
 * Support for arbitrary key/value fields on `App` to be used with
   `CustomAppHelpTemplate` via `ExtraInfo`
-* `HelpFlag`, `VersionFlag`, and `BashCompletionFlag` changed to explictly be
+* `HelpFlag`, `VersionFlag`, and `BashCompletionFlag` changed to explicitly be
   `cli.Flag`s allowing for the use of custom flags satisfying the `cli.Flag`
   interface to be used.
 

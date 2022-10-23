@@ -1454,7 +1454,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			}},
 			expectedAnError: true,
 		},
-		// assertion: inputing --help, when a required flag is present, does not error
+		// assertion: inputting --help, when a required flag is present, does not error
 		{
 			testCase:    "valid_case_help_input_with_required_flag_on_app",
 			appRunInput: []string{"myCLI", "--help"},
@@ -2584,7 +2584,7 @@ func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
 	}
 
 	if exitCodeFromExitErrHandler != testCode {
-		t.Errorf("exitCodeFromOsExiter valeu should be %v, but its value is %v", testCode, exitCodeFromExitErrHandler)
+		t.Errorf("exitCodeFromOsExiter value should be %v, but its value is %v", testCode, exitCodeFromExitErrHandler)
 	}
 }
 

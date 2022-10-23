@@ -899,7 +899,7 @@ VERSION:
 
 func TestShowAppHelp_UsageText(t *testing.T) {
 	app := &App{
-		UsageText: "This is a sinlge line of UsageText",
+		UsageText: "This is a single line of UsageText",
 		Commands: []*Command{
 			{
 				Name: "frobbly",
@@ -912,7 +912,7 @@ func TestShowAppHelp_UsageText(t *testing.T) {
 
 	_ = app.Run([]string{"foo"})
 
-	if !strings.Contains(output.String(), "This is a sinlge line of UsageText") {
+	if !strings.Contains(output.String(), "This is a single line of UsageText") {
 		t.Errorf("expected output to include usage text; got: %q", output.String())
 	}
 }

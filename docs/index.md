@@ -67,7 +67,7 @@ won't be able to call those. This reduces the resulting binary size by about
 ### Supported platforms
 
 cli is tested against multiple versions of Go on Linux, and against the latest
-released version of Go on OS X and Windows. This project uses Github Actions
+released version of Go on OS X and Windows. This project uses GitHub Actions
 for builds. To see our currently supported go versions and platforms, look at
 the [github workflow
 configuration](https://github.com/urfave/cli/blob/main/.github/workflows/cli.yml).
