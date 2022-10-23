@@ -59,7 +59,7 @@ link a failing build here.
 ## Want to fix this yourself?
 
 We'd love to have more contributors on this project! If the fix for
-this bug is easily explained and very small, free free to create a
+this bug is easily explained and very small, feel free to create a
 pull request for it.
 
 ## Run `go version` and paste its output here
