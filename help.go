@@ -179,7 +179,7 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 			// this will get total count utf8 letters in flag name
 			count := utf8.RuneCountInString(name)
 			if count > 2 {
-				count = 2 // resuse this count to generate single - or -- in flag completion
+				count = 2 // reuse this count to generate single - or -- in flag completion
 			}
 			// if flag name has more than one utf8 letter and last argument in cli has -- prefix then
 			// skip flag completion for short flags example -v or -x
