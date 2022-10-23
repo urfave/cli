@@ -612,6 +612,7 @@ package main
 import (
 	"log"
 	"os"
+	"fmt"
 
 	"github.com/urfave/cli/v2"
 )
@@ -628,6 +629,7 @@ func main() {
 					if v >= 65536 {
 						return fmt.Errorf("Flag port value %v out of range[0-65535]", v)
 					}
+					return nil
 				},
 			},
 		},
