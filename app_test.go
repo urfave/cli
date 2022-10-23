@@ -2545,7 +2545,7 @@ func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
 	}
 
 	if exitCodeFromExitErrHandler != testCode {
-		t.Errorf("exitCodeFromOsExiter valeu should be %v, but its value is %v", testCode, exitCodeFromExitErrHandler)
+		t.Errorf("exitCodeFromOsExiter value should be %v, but its value is %v", testCode, exitCodeFromExitErrHandler)
 	}
 }
 
