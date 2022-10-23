@@ -201,7 +201,7 @@ View [unreleased 1.22.X] series changes.
   need to redefine it
 * Pass `Command` context into `OnUsageError` rather than parent context so that
   all fields are available
-* Errors occuring in `Before` funcs are no longer double printed
+* Errors occurring in `Before` funcs are no longer double printed
 * Use `UsageText` in the help templates for commands and subcommands if
   defined; otherwise build the usage as before (was previously ignoring this
   field)
