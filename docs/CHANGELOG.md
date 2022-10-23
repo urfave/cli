@@ -196,7 +196,7 @@ View [unreleased 1.22.X] series changes.
   there are no `ExitCoder`s in the `MultiError`.
 * Fixed YAML file loading on Windows (previously would fail validate the file path)
 * Subcommand `Usage`, `Description`, `ArgsUsage`, `OnUsageError` correctly
-  propogated
+  propagated
 * `ErrWriter` is now passed downwards through command structure to avoid the
   need to redefine it
 * Pass `Command` context into `OnUsageError` rather than parent context so that
