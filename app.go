@@ -103,6 +103,8 @@ type App struct {
 	// cli.go uses text/template to render templates. You can
 	// render custom help text by setting this variable.
 	CustomAppHelpTemplate string
+	// SliceFlagSeparator is used to customize the separator for SliceFlag, the default is ","
+	SliceFlagSeparator string
 	// Boolean to enable short-option handling so user can combine several
 	// single-character bool arguments into one
 	// i.e. foobar -o -v -> foobar -ov
@@ -240,6 +242,10 @@ func (a *App) Setup() {
 
 	if a.Metadata == nil {
 		a.Metadata = make(map[string]interface{})
+	}
+
+	if len(a.SliceFlagSeparator) != 0 {
+		defaultSliceFlagSeparator = a.SliceFlagSeparator
 	}
 }
 
