@@ -212,13 +212,16 @@ func (c *Context) resolveFlagDeep(name string) *flag.Flag {
 	return src
 }
 
-func (ctx *Context) lookupFlagSet(name string) *flag.FlagSet {
-	for _, c := range ctx.Lineage() {
+func (cCtx *Context) lookupFlagSet(name string) *flag.FlagSet {
+	for _, c := range cCtx.Lineage() {
+		if c.flagSet == nil {
+			continue
+		}
 		if f := c.flagSet.Lookup(name); f != nil {
 			return c.flagSet
 		}
 	}
-	ctx.onInvalidFlag(name)
+	cCtx.onInvalidFlag(name)
 	return nil
 }
 
