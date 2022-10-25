@@ -3,7 +3,6 @@ package cli
 import (
 	"context"
 	"flag"
-	"fmt"
 	"strings"
 )
 
@@ -178,44 +177,12 @@ func (cCtx *Context) NArg() int {
 	return cCtx.Args().Len()
 }
 
-func (cCtx *Context) lookupFlag(name string) Flag {
-	for _, c := range cCtx.Lineage() {
-		if c.Command == nil {
-			continue
-		}
-
-		for _, f := range c.Command.Flags {
-			for _, n := range f.Names() {
-				if n == name {
-					return f
-				}
-			}
-		}
-	}
-
-	if cCtx.App != nil {
-		for _, f := range cCtx.App.Flags {
-			for _, n := range f.Names() {
-				if n == name {
-					return f
-				}
-			}
-		}
-	}
-
-	return nil
-}
-
-<<<<<<< HEAD
-func (cCtx *Context) lookupFlagSet(name string) *flag.FlagSet {
-	for _, c := range cCtx.Lineage() {
-		if c.flagSet == nil {
-			continue
-		}
-=======
 func (c *Context) resolveFlagDeep(name string) *flag.Flag {
 	var src *flag.Flag
 	for cur := c; cur != nil; cur = cur.parentContext {
+		if cur.flagSet == nil {
+			continue
+		}
 		if f := cur.flagSet.Lookup(name); f != nil {
 			if cur.flagOnCommandLine(name) {
 				// we've found most specific instance on command line, use it
@@ -232,14 +199,13 @@ func (c *Context) resolveFlagDeep(name string) *flag.Flag {
 	return src
 }
 
-func lookupFlagSet(name string, ctx *Context) *flag.FlagSet {
+func (ctx *Context) lookupFlagSet(name string) *flag.FlagSet {
 	for _, c := range ctx.Lineage() {
->>>>>>> Allow same flag to be repeated by child commands. Reading the value or checking for presence looks at the most specific subcommand that includes the flag on the command line.
 		if f := c.flagSet.Lookup(name); f != nil {
 			return c.flagSet
 		}
 	}
-	cCtx.onInvalidFlag(name)
+	ctx.onInvalidFlag(name)
 	return nil
 }
 
