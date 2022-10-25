@@ -3384,3 +3384,7 @@ func TestSliceShortOptionHandle(t *testing.T) {
 		t.Fatal("Action callback was never called")
 	}
 }
+
+func TestCI(t *testing.T) {
+
+}
