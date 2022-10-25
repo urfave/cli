@@ -84,8 +84,8 @@ func (f *Uint64Flag) Get(ctx *Context) uint64 {
 
 // Uint64 looks up the value of a local Uint64Flag, returns
 // 0 if not found
-func (c *Context) Uint64(name string) uint64 {
-	return lookupUint64(c.resolveFlagDeep(name))
+func (cCtx *Context) Uint64(name string) uint64 {
+	return lookupUint64(cCtx.resolveFlagDeep(name))
 }
 
 func lookupUint64(f *flag.Flag) uint64 {

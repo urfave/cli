@@ -84,8 +84,8 @@ func (f *UintFlag) Get(ctx *Context) uint {
 
 // Uint looks up the value of a local UintFlag, returns
 // 0 if not found
-func (c *Context) Uint(name string) uint {
-	return lookupUint(c.resolveFlagDeep(name))
+func (cCtx *Context) Uint(name string) uint {
+	return lookupUint(cCtx.resolveFlagDeep(name))
 }
 
 func lookupUint(f *flag.Flag) uint {

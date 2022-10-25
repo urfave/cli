@@ -179,8 +179,8 @@ func (f *StringSliceFlag) RunAction(c *Context) error {
 
 // StringSlice looks up the value of a local StringSliceFlag, returns
 // nil if not found
-func (c *Context) StringSlice(name string) []string {
-	return lookupStringSlice(c.resolveFlagDeep(name))
+func (cCtx *Context) StringSlice(name string) []string {
+	return lookupStringSlice(cCtx.resolveFlagDeep(name))
 }
 
 func lookupStringSlice(f *flag.Flag) []string {

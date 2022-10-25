@@ -149,8 +149,8 @@ func (f *BoolFlag) Get(ctx *Context) bool {
 
 // Bool looks up the value of a local BoolFlag, returns
 // false if not found
-func (c *Context) Bool(name string) bool {
-	return lookupBool(c.resolveFlagDeep(name))
+func (cCtx *Context) Bool(name string) bool {
+	return lookupBool(cCtx.resolveFlagDeep(name))
 }
 
 func lookupBool(f *flag.Flag) bool {

@@ -85,8 +85,8 @@ func (f *IntFlag) RunAction(c *Context) error {
 
 // Int looks up the value of a local IntFlag, returns
 // 0 if not found
-func (c *Context) Int(name string) int {
-	return lookupInt(c.resolveFlagDeep(name))
+func (cCtx *Context) Int(name string) int {
+	return lookupInt(cCtx.resolveFlagDeep(name))
 }
 
 func lookupInt(f *flag.Flag) int {

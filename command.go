@@ -146,7 +146,7 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 
 	a := args(arguments)
 	set, err := c.parseFlags(&a, cCtx.shellComplete)
-	cCtx.flagSet = set
+	cCtx.setFlagSet(set)
 
 	if c.isRoot {
 		if checkCompletions(cCtx) {

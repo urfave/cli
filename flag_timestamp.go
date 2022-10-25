@@ -183,8 +183,8 @@ func (f *TimestampFlag) RunAction(c *Context) error {
 }
 
 // Timestamp gets the timestamp from a flag name
-func (c *Context) Timestamp(name string) *time.Time {
-	return lookupTimestamp(c.resolveFlagDeep(name))
+func (cCtx *Context) Timestamp(name string) *time.Time {
+	return lookupTimestamp(cCtx.resolveFlagDeep(name))
 }
 
 // Fetches the timestamp value from the local timestampWrap

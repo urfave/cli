@@ -48,24 +48,37 @@ func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
 	return c
 }
 
+func (cCtx *Context) setFlagSet(set *flag.FlagSet) {
+	if set != nil {
+		set.Visit(func(f *flag.Flag) {
+			cCtx.fromFlagSet[f.Name] = true
+		})
+	}
+	cCtx.flagSet = set
+}
+
 // NumFlags returns the number of flags set
 func (cCtx *Context) NumFlags() int {
 	return cCtx.flagSet.NFlag()
 }
 
 // Set sets a context flag to a value.
-func (c *Context) Set(name, value string) error {
-	err := c.flagSet.Set(name, value)
+func (cCtx *Context) Set(name, value string) error {
+	if cCtx.flagSet.Lookup(name) == nil {
+		cCtx.onInvalidFlag(name)
+		return nil
+	}
+	err := cCtx.flagSet.Set(name, value)
 	if err == nil {
-		c.fromFlagSet[name] = true
+		cCtx.fromFlagSet[name] = true
 	}
 
 	return err
 }
 
 // IsSet determines if the flag was actually set
-func (c *Context) IsSet(name string) bool {
-	for ctx := c; ctx != nil; ctx = ctx.parentContext {
+func (cCtx *Context) IsSet(name string) bool {
+	for ctx := cCtx; ctx != nil; ctx = ctx.parentContext {
 		// try flags parsed from command line first
 		if ctx.flagSet.Lookup(name) == nil {
 			// flag not defined in this context

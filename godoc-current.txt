@@ -635,44 +635,44 @@ func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context
 func (cCtx *Context) Args() Args
     Args returns the command line arguments associated with the context.
 
-func (c *Context) Bool(name string) bool
+func (cCtx *Context) Bool(name string) bool
     Bool looks up the value of a local BoolFlag, returns false if not found
 
 func (cCtx *Context) Count(name string) int
     Count returns the num of occurences of this flag
 
-func (c *Context) Duration(name string) time.Duration
+func (cCtx *Context) Duration(name string) time.Duration
     Duration looks up the value of a local DurationFlag, returns 0 if not found
 
 func (cCtx *Context) FlagNames() []string
     FlagNames returns a slice of flag names used by the this context and all of
     its parent contexts.
 
-func (c *Context) Float64(name string) float64
+func (cCtx *Context) Float64(name string) float64
     Float64 looks up the value of a local Float64Flag, returns 0 if not found
 
-func (c *Context) Float64Slice(name string) []float64
+func (cCtx *Context) Float64Slice(name string) []float64
     Float64Slice looks up the value of a local Float64SliceFlag, returns nil if
     not found
 
-func (c *Context) Generic(name string) interface{}
+func (cCtx *Context) Generic(name string) interface{}
     Generic looks up the value of a local GenericFlag, returns nil if not found
 
-func (c *Context) Int(name string) int
+func (cCtx *Context) Int(name string) int
     Int looks up the value of a local IntFlag, returns 0 if not found
 
-func (c *Context) Int64(name string) int64
+func (cCtx *Context) Int64(name string) int64
     Int64 looks up the value of a local Int64Flag, returns 0 if not found
 
-func (c *Context) Int64Slice(name string) []int64
+func (cCtx *Context) Int64Slice(name string) []int64
     Int64Slice looks up the value of a local Int64SliceFlag, returns nil if not
     found
 
-func (c *Context) IntSlice(name string) []int
+func (cCtx *Context) IntSlice(name string) []int
     IntSlice looks up the value of a local IntSliceFlag, returns nil if not
     found
 
-func (c *Context) IsSet(name string) bool
+func (cCtx *Context) IsSet(name string) bool
     IsSet determines if the flag was actually set
 
 func (cCtx *Context) Lineage() []*Context
@@ -688,26 +688,26 @@ func (cCtx *Context) NArg() int
 func (cCtx *Context) NumFlags() int
     NumFlags returns the number of flags set
 
-func (c *Context) Path(name string) string
+func (cCtx *Context) Path(name string) string
     Path looks up the value of a local PathFlag, returns "" if not found
 
-func (c *Context) Set(name, value string) error
+func (cCtx *Context) Set(name, value string) error
     Set sets a context flag to a value.
 
-func (c *Context) String(name string) string
+func (cCtx *Context) String(name string) string
     String looks up the value of a local StringFlag, returns "" if not found
 
-func (c *Context) StringSlice(name string) []string
+func (cCtx *Context) StringSlice(name string) []string
     StringSlice looks up the value of a local StringSliceFlag, returns nil if
     not found
 
-func (c *Context) Timestamp(name string) *time.Time
+func (cCtx *Context) Timestamp(name string) *time.Time
     Timestamp gets the timestamp from a flag name
 
-func (c *Context) Uint(name string) uint
+func (cCtx *Context) Uint(name string) uint
     Uint looks up the value of a local UintFlag, returns 0 if not found
 
-func (c *Context) Uint64(name string) uint64
+func (cCtx *Context) Uint64(name string) uint64
     Uint64 looks up the value of a local Uint64Flag, returns 0 if not found
 
 func (cCtx *Context) Uint64Slice(name string) []uint64

@@ -79,8 +79,8 @@ func (f *StringFlag) RunAction(c *Context) error {
 
 // String looks up the value of a local StringFlag, returns
 // "" if not found
-func (c *Context) String(name string) string {
-	return lookupString(c.resolveFlagDeep(name))
+func (cCtx *Context) String(name string) string {
+	return lookupString(cCtx.resolveFlagDeep(name))
 }
 
 func lookupString(f *flag.Flag) string {

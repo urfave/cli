@@ -84,8 +84,8 @@ func (f *Int64Flag) RunAction(c *Context) error {
 
 // Int64 looks up the value of a local Int64Flag, returns
 // 0 if not found
-func (c *Context) Int64(name string) int64 {
-	return lookupInt64(c.resolveFlagDeep(name))
+func (cCtx *Context) Int64(name string) int64 {
+	return lookupInt64(cCtx.resolveFlagDeep(name))
 }
 
 func lookupInt64(f *flag.Flag) int64 {

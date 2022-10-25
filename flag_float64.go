@@ -81,8 +81,8 @@ func (f *Float64Flag) RunAction(c *Context) error {
 
 // Float64 looks up the value of a local Float64Flag, returns
 // 0 if not found
-func (c *Context) Float64(name string) float64 {
-	return lookupFloat64(c.resolveFlagDeep(name))
+func (cCtx *Context) Float64(name string) float64 {
+	return lookupFloat64(cCtx.resolveFlagDeep(name))
 }
 
 func lookupFloat64(f *flag.Flag) float64 {

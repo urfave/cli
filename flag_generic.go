@@ -109,8 +109,8 @@ func (f *GenericFlag) RunAction(c *Context) error {
 
 // Generic looks up the value of a local GenericFlag, returns
 // nil if not found
-func (c *Context) Generic(name string) interface{} {
-	return lookupGeneric(c.resolveFlagDeep(name))
+func (cCtx *Context) Generic(name string) interface{} {
+	return lookupGeneric(cCtx.resolveFlagDeep(name))
 }
 
 func lookupGeneric(f *flag.Flag) interface{} {

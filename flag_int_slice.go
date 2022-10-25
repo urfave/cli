@@ -198,8 +198,8 @@ func (f *IntSliceFlag) RunAction(c *Context) error {
 
 // IntSlice looks up the value of a local IntSliceFlag, returns
 // nil if not found
-func (c *Context) IntSlice(name string) []int {
-	return lookupIntSlice(c.resolveFlagDeep(name))
+func (cCtx *Context) IntSlice(name string) []int {
+	return lookupIntSlice(cCtx.resolveFlagDeep(name))
 }
 
 func lookupIntSlice(f *flag.Flag) []int {

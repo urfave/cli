@@ -188,8 +188,8 @@ func (f *Float64SliceFlag) RunAction(c *Context) error {
 
 // Float64Slice looks up the value of a local Float64SliceFlag, returns
 // nil if not found
-func (c *Context) Float64Slice(name string) []float64 {
-	return lookupFloat64Slice(c.resolveFlagDeep(name))
+func (cCtx *Context) Float64Slice(name string) []float64 {
+	return lookupFloat64Slice(cCtx.resolveFlagDeep(name))
 }
 
 func lookupFloat64Slice(f *flag.Flag) []float64 {

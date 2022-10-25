@@ -84,8 +84,8 @@ func (f *DurationFlag) RunAction(c *Context) error {
 
 // Duration looks up the value of a local DurationFlag, returns
 // 0 if not found
-func (c *Context) Duration(name string) time.Duration {
-	return lookupDuration(c.resolveFlagDeep(name))
+func (cCtx *Context) Duration(name string) time.Duration {
+	return lookupDuration(cCtx.resolveFlagDeep(name))
 }
 
 func lookupDuration(f *flag.Flag) time.Duration {

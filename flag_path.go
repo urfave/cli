@@ -81,8 +81,8 @@ func (f *PathFlag) RunAction(c *Context) error {
 
 // Path looks up the value of a local PathFlag, returns
 // "" if not found
-func (c *Context) Path(name string) string {
-	return lookupPath(c.resolveFlagDeep(name))
+func (cCtx *Context) Path(name string) string {
+	return lookupPath(cCtx.resolveFlagDeep(name))
 }
 
 func lookupPath(f *flag.Flag) string {
