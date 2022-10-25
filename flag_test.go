@@ -3384,3 +3384,30 @@ func TestSliceShortOptionHandle(t *testing.T) {
 		t.Fatal("Action callback was never called")
 	}
 }
+
+// Test issue #1541
+func TestCustomizedSliceFlagSeparator(t *testing.T) {
+	opts := []string{"opt1", "opt2", "opt3,op", "opt4"}
+	// set args for examples sake
+	os.Args = []string{"multi_values",
+		"--stringSlice=" + strings.Join(opts, ";"),
+	}
+	app := NewApp()
+	app.Name = "multi_values"
+	app.Flags = []Flag{
+		&StringSliceFlag{Name: "stringSlice"},
+	}
+	app.SliceFlagSeparator = ";"
+	app.Action = func(ctx *Context) error {
+		ret := ctx.StringSlice("stringSlice")
+		for idx, r := range ret {
+			if r != opts[idx] {
+				t.Fatalf("get %dth failed, wanted: %s, but get: %s", idx, opts[idx], r)
+			}
+		}
+		return nil
+	}
+
+	_ = app.Run(os.Args)
+	defaultSliceFlagSeparator = ","
+}
