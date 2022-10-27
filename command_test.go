@@ -485,3 +485,33 @@ func TestCommand_VisibleFlagCategories(t *testing.T) {
 		t.Errorf("unexpected flag %+v", fl.Names())
 	}
 }
+
+func TestCommand_RunSubcommandWithDefault(t *testing.T) {
+	app := &App{
+		Version:        "some version",
+		Name:           "app",
+		DefaultCommand: "foo",
+		Commands: []*Command{
+			{
+				Name: "foo",
+				Action: func(ctx *Context) error {
+					return errors.New("should not run this subcommand")
+				},
+			},
+			{
+				Name:        "bar",
+				Usage:       "this is for testing",
+				Subcommands: []*Command{{}}, // some subcommand
+				Action: func(*Context) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	err := app.Run([]string{"app", "bar"})
+	expect(t, err, nil)
+
+	err = app.Run([]string{"app"})
+	expect(t, err, errors.New("should not run this subcommand"))
+}
