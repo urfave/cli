@@ -3387,27 +3387,18 @@ func TestSliceShortOptionHandle(t *testing.T) {
 
 // Test issue #1541
 func TestCustomizedSliceFlagSeparator(t *testing.T) {
+	defaultSliceFlagSeparator = ";"
+	defer func() {
+		defaultSliceFlagSeparator = ","
+	}()
 	opts := []string{"opt1", "opt2", "opt3,op", "opt4"}
-	// set args for examples sake
-	os.Args = []string{"multi_values",
-		"--stringSlice=" + strings.Join(opts, ";"),
+	ret := flagSplitMultiValues(strings.Join(opts, ";"))
+	if len(ret) != 4 {
+		t.Fatalf("split slice flag failed, want: 4, but get: %d", len(ret))
 	}
-	app := NewApp()
-	app.Name = "multi_values"
-	app.Flags = []Flag{
-		&StringSliceFlag{Name: "stringSlice"},
-	}
-	app.SliceFlagSeparator = ";"
-	app.Action = func(ctx *Context) error {
-		ret := ctx.StringSlice("stringSlice")
-		for idx, r := range ret {
-			if r != opts[idx] {
-				t.Fatalf("get %dth failed, wanted: %s, but get: %s", idx, opts[idx], r)
-			}
+	for idx, r := range ret {
+		if r != opts[idx] {
+			t.Fatalf("get %dth failed, wanted: %s, but get: %s", idx, opts[idx], r)
 		}
-		return nil
 	}
-
-	_ = app.Run(os.Args)
-	defaultSliceFlagSeparator = ","
 }
