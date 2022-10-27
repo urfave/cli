@@ -200,7 +200,7 @@ func (a *App) Setup() {
 	flag.VisitAll(func(f *flag.Flag) {
 		// skip test flags
 		if !strings.HasPrefix(f.Name, "test.") {
-			a.Flags = append(a.Flags, extFlag{f})
+			a.Flags = append(a.Flags, &extFlag{f})
 		}
 	})
 
