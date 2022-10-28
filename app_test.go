@@ -643,6 +643,42 @@ func TestApp_RunDefaultCommandWithFlags(t *testing.T) {
 	}
 }
 
+func TestApp_FlagsFromExtPackage(t *testing.T) {
+
+	var someint int
+	flag.IntVar(&someint, "epflag", 2, "ext package flag usage")
+
+	// Based on source code we can reset the global flag parsing this way
+	defer func() {
+		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	}()
+
+	a := &App{
+		Flags: []Flag{
+			&StringFlag{
+				Name:     "carly",
+				Aliases:  []string{"c"},
+				Required: false,
+			},
+			&BoolFlag{
+				Name:     "jimbob",
+				Aliases:  []string{"j"},
+				Required: false,
+				Value:    true,
+			},
+		},
+	}
+
+	err := a.Run([]string{"foo", "-c", "cly", "--epflag", "10"})
+	if err != nil {
+		t.Error(err)
+	}
+
+	if someint != 10 {
+		t.Errorf("Expected 10 got %d for someint", someint)
+	}
+}
+
 func TestApp_Setup_defaultsReader(t *testing.T) {
 	app := &App{}
 	app.Setup()
