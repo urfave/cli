@@ -21,6 +21,7 @@ var (
 	errInvalidActionType    = NewExitError("ERROR invalid Action type. "+
 		fmt.Sprintf("Must be `func(*Context`)` or `func(*Context) error).  %s", contactSysadmin)+
 		fmt.Sprintf("See %s", appActionDeprecationURL), 2)
+	ignoreFlagPrefix = "test." // this is to ignore test flags when adding flags from other packages
 
 	SuggestFlag               SuggestFlagFunc    = suggestFlag
 	SuggestCommand            SuggestCommandFunc = suggestCommand
@@ -199,7 +200,7 @@ func (a *App) Setup() {
 	// add global flags added by other packages
 	flag.VisitAll(func(f *flag.Flag) {
 		// skip test flags
-		if !strings.HasPrefix(f.Name, "test.") {
+		if !strings.HasPrefix(f.Name, ignoreFlagPrefix) {
 			a.Flags = append(a.Flags, &extFlag{f})
 		}
 	})
