@@ -257,6 +257,29 @@ func TestIntSliceApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	refute(t, c.IntSlice("test"), []int{3, 4})
 }
 
+func TestInt64SliceFlagApplyInputSourceValue(t *testing.T) {
+	dest := cli.NewInt64Slice()
+	tis := testApplyInputSource{
+		Flag:     NewInt64SliceFlag(&cli.Int64SliceFlag{Name: "test", Destination: dest}),
+		FlagName: "test",
+		MapValue: []interface{}{int64(1), int64(2)},
+	}
+	c := runTest(t, tis)
+	expect(t, c.Int64Slice("test"), []int64{1, 2})
+	expect(t, dest.Value(), []int64{1, 2})
+
+	// reset dest
+	dest = cli.NewInt64Slice()
+	tis = testApplyInputSource{
+		Flag:     NewInt64SliceFlag(&cli.Int64SliceFlag{Name: "test", Destination: dest}),
+		FlagName: "test",
+		MapValue: []interface{}{int64(1), int64(2)},
+	}
+	c = runRacyTest(t, tis)
+	refute(t, c.IntSlice("test"), []int64{1, 2})
+	refute(t, dest.Value(), []int64{1, 2})
+}
+
 func TestBoolApplyInputSourceMethodSet(t *testing.T) {
 	tis := testApplyInputSource{
 		Flag:     NewBoolFlag(&cli.BoolFlag{Name: "test"}),

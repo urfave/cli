@@ -160,6 +160,29 @@ func (x *jsonSource) IntSlice(name string) ([]int, error) {
 	}
 }
 
+func (x *jsonSource) Int64Slice(name string) ([]int64, error) {
+	i, err := x.getValue(name)
+	if err != nil {
+		return nil, err
+	}
+	switch v := i.(type) {
+	default:
+		return nil, fmt.Errorf("unexpected type %T for %q", i, name)
+	case []int64:
+		return v, nil
+	case []interface{}:
+		c := []int64{}
+		for _, s := range v {
+			if i2, ok := s.(int64); ok {
+				c = append(c, i2)
+			} else {
+				return c, fmt.Errorf("unexpected item type %T in %T for %q", s, c, name)
+			}
+		}
+		return c, nil
+	}
+}
+
 func (x *jsonSource) Generic(name string) (cli.Generic, error) {
 	i, err := x.getValue(name)
 	if err != nil {

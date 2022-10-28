@@ -22,3 +22,14 @@ func TestMapDuration(t *testing.T) {
 	_, err = inputSource.Duration("duration_of_int_type")
 	refute(t, nil, err)
 }
+
+func TestMapInputSource_Int64Slice(t *testing.T) {
+	inputSource := NewMapInputSource(
+		"test",
+		map[interface{}]interface{}{
+			"test_num": []interface{}{int64(1), int64(2), int64(3)},
+		})
+	d, err := inputSource.Int64Slice("test_num")
+	expect(t, []int64{1, 2, 3}, d)
+	expect(t, nil, err)
+}
