@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -20,6 +21,7 @@ var (
 	errInvalidActionType    = NewExitError("ERROR invalid Action type. "+
 		fmt.Sprintf("Must be `func(*Context`)` or `func(*Context) error).  %s", contactSysadmin)+
 		fmt.Sprintf("See %s", appActionDeprecationURL), 2)
+	ignoreFlagPrefix = "test." // this is to ignore test flags when adding flags from other packages
 
 	SuggestFlag               SuggestFlagFunc    = suggestFlag
 	SuggestCommand            SuggestCommandFunc = suggestCommand
@@ -196,6 +198,14 @@ func (a *App) Setup() {
 	if a.ErrWriter == nil {
 		a.ErrWriter = os.Stderr
 	}
+
+	// add global flags added by other packages
+	flag.VisitAll(func(f *flag.Flag) {
+		// skip test flags
+		if !strings.HasPrefix(f.Name, ignoreFlagPrefix) {
+			a.Flags = append(a.Flags, &extFlag{f})
+		}
+	})
 
 	var newCommands []*Command
 
