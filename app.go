@@ -116,6 +116,8 @@ type App struct {
 	// Allows global flags set by libraries which use flag.XXXVar(...) directly
 	// to be parsed through this library
 	AllowExtFlags bool
+	// Treat all flags as normal arguments if true
+	SkipFlagParsing bool
 
 	didSetup bool
 
@@ -285,6 +287,7 @@ func (a *App) newRootCommand() *Command {
 		HelpName:               a.HelpName,
 		CustomHelpTemplate:     a.CustomAppHelpTemplate,
 		categories:             a.categories,
+		SkipFlagParsing:        a.SkipFlagParsing,
 		isRoot:                 true,
 	}
 }
