@@ -654,6 +654,7 @@ func TestApp_FlagsFromExtPackage(t *testing.T) {
 	}()
 
 	a := &App{
+		AllowExtFlags: true,
 		Flags: []Flag{
 			&StringFlag{
 				Name:     "carly",
@@ -676,6 +677,28 @@ func TestApp_FlagsFromExtPackage(t *testing.T) {
 
 	if someint != 10 {
 		t.Errorf("Expected 10 got %d for someint", someint)
+	}
+
+	a = &App{
+		Flags: []Flag{
+			&StringFlag{
+				Name:     "carly",
+				Aliases:  []string{"c"},
+				Required: false,
+			},
+			&BoolFlag{
+				Name:     "jimbob",
+				Aliases:  []string{"j"},
+				Required: false,
+				Value:    true,
+			},
+		},
+	}
+
+	// this should return an error since epflag shouldnt be registered
+	err = a.Run([]string{"foo", "-c", "cly", "--epflag", "10"})
+	if err == nil {
+		t.Error("Expected error")
 	}
 }
 
