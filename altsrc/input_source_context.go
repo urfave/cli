@@ -20,6 +20,7 @@ type InputSourceContext interface {
 	String(name string) (string, error)
 	StringSlice(name string) ([]string, error)
 	IntSlice(name string) ([]int, error)
+	Int64Slice(name string) ([]int64, error)
 	Generic(name string) (cli.Generic, error)
 	Bool(name string) (bool, error)
 

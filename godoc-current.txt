@@ -2437,6 +2437,7 @@ type InputSourceContext interface {
 	String(name string) (string, error)
 	StringSlice(name string) ([]string, error)
 	IntSlice(name string) ([]int, error)
+	Int64Slice(name string) ([]int64, error)
 	Generic(name string) (cli.Generic, error)
 	Bool(name string) (bool, error)
 
@@ -2493,6 +2494,9 @@ func NewInt64SliceFlag(fl *cli.Int64SliceFlag) *Int64SliceFlag
 func (f *Int64SliceFlag) Apply(set *flag.FlagSet) error
     Apply saves the flagSet for later usage calls, then calls the wrapped
     Int64SliceFlag.Apply
+
+func (f *Int64SliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
+    ApplyInputSourceValue applies a Int64Slice value if required
 
 type IntFlag struct {
 	*cli.IntFlag
@@ -2553,6 +2557,10 @@ func (fsm *MapInputSource) Generic(name string) (cli.Generic, error)
 
 func (fsm *MapInputSource) Int(name string) (int, error)
     Int returns an int from the map if it exists otherwise returns 0
+
+func (fsm *MapInputSource) Int64Slice(name string) ([]int64, error)
+    Int64Slice returns an []int64 from the map if it exists otherwise returns
+    nil
 
 func (fsm *MapInputSource) IntSlice(name string) ([]int, error)
     IntSlice returns an []int from the map if it exists otherwise returns nil
