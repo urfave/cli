@@ -177,25 +177,28 @@ func runGenFlags(cCtx *cli.Context) error {
 		return err
 	}
 
-	if !cCtx.IsSet("altsrc") {
-		genTestTmpl, err := template.New("gen_test").Parse(TestTemplateString)
-		if err != nil {
-			return err
-		}
-
-		genTestBuf := &bytes.Buffer{}
-		if err := genTestTmpl.Execute(genTestBuf, spec); err != nil {
-			return err
-		}
-
-		if err := os.WriteFile(cCtx.Path("generated-test-output"), genTestBuf.Bytes(), 0644); err != nil {
-			return err
-		}
-
-		if _, err := sh(cCtx.Context, cCtx.Path("goimports"), "-w", cCtx.Path("generated-test-output")); err != nil {
-			return err
-		}
+	if cCtx.IsSet("altsrc") {
+		return nil
 	}
+
+	genTestTmpl, err := template.New("gen_test").Parse(TestTemplateString)
+	if err != nil {
+		return err
+	}
+
+	genTestBuf := &bytes.Buffer{}
+	if err := genTestTmpl.Execute(genTestBuf, spec); err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(cCtx.Path("generated-test-output"), genTestBuf.Bytes(), 0644); err != nil {
+		return err
+	}
+
+	if _, err := sh(cCtx.Context, cCtx.Path("goimports"), "-w", cCtx.Path("generated-test-output")); err != nil {
+		return err
+	}
+
 	return nil
 }
 
