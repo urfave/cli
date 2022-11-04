@@ -654,6 +654,7 @@ func TestApp_FlagsFromExtPackage(t *testing.T) {
 	}()
 
 	a := &App{
+		AllowExtFlags: true,
 		Flags: []Flag{
 			&StringFlag{
 				Name:     "carly",
@@ -676,6 +677,28 @@ func TestApp_FlagsFromExtPackage(t *testing.T) {
 
 	if someint != 10 {
 		t.Errorf("Expected 10 got %d for someint", someint)
+	}
+
+	a = &App{
+		Flags: []Flag{
+			&StringFlag{
+				Name:     "carly",
+				Aliases:  []string{"c"},
+				Required: false,
+			},
+			&BoolFlag{
+				Name:     "jimbob",
+				Aliases:  []string{"j"},
+				Required: false,
+				Value:    true,
+			},
+		},
+	}
+
+	// this should return an error since epflag shouldnt be registered
+	err = a.Run([]string{"foo", "-c", "cly", "--epflag", "10"})
+	if err == nil {
+		t.Error("Expected error")
 	}
 }
 
@@ -787,6 +810,24 @@ func TestApp_CommandWithNoFlagBeforeTerminator(t *testing.T) {
 
 	expect(t, args.Get(0), "my-arg")
 	expect(t, args.Get(1), "--")
+	expect(t, args.Get(2), "notAFlagAtAll")
+}
+
+func TestApp_SkipFlagParsing(t *testing.T) {
+	var args Args
+
+	app := &App{
+		SkipFlagParsing: true,
+		Action: func(c *Context) error {
+			args = c.Args()
+			return nil
+		},
+	}
+
+	_ = app.Run([]string{"", "--", "my-arg", "notAFlagAtAll"})
+
+	expect(t, args.Get(0), "--")
+	expect(t, args.Get(1), "my-arg")
 	expect(t, args.Get(2), "notAFlagAtAll")
 }
 
