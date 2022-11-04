@@ -1,0 +1,18 @@
+# NOTE: this file is used by the tool defined in
+# ./cmd/urfave-cli-genflags/main.go which uses the
+# `Spec` type that maps to this file structure.
+flag_types:
+  Bool:
+  Duration:
+  Float64:
+  Generic:  
+  Int64:
+  Int:
+  IntSlice:
+  Int64Slice:
+  Float64Slice:
+  String:
+  Path:
+  StringSlice:
+  Uint64:  
+  Uint:
