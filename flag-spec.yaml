@@ -4,22 +4,12 @@
 flag_types:
   bool:
     no_default_text: true
-<<<<<<< HEAD
-=======
-  time.Duration: {}
-
-  string:
-    no_default_text: true
-    struct_fields:
-      - { name: TakesFile, type: bool }
-  Generic:
->>>>>>> First cut at using generics for base flag types
     struct_fields:
       - name: Count
         type: int
         pointer: true
       - name: Action
-        type: "func(*Context, bool) error"
+        type: "func(*Context, bool) error"    
   float64:
     struct_fields:
       - name: Action
@@ -31,12 +21,6 @@ flag_types:
     struct_fields:
       - name: Action
         type: "func(*Context, []float64) error"
-  int:
-    struct_fields:
-      - name: Base
-        type: int
-      - name: Action
-        type: "func(*Context, int) error"
   IntSlice:
     value_pointer: true
     skip_interfaces:

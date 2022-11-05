@@ -657,7 +657,7 @@ func (cCtx *Context) FlagNames() []string
     its parent contexts.
 
 func (cCtx *Context) Float64(name string) float64
-    Int looks up the value of a local IntFlag, returns 0 if not found
+    Float64 looks up the value of a local Float64Flag, returns 0 if not found
 
 func (cCtx *Context) Float64Slice(name string) []float64
     Float64Slice looks up the value of a local Float64SliceFlag, returns nil if
@@ -713,10 +713,10 @@ func (cCtx *Context) Timestamp(name string) *time.Time
     Timestamp gets the timestamp from a flag name
 
 func (cCtx *Context) Uint(name string) uint
-    Int looks up the value of a local IntFlag, returns 0 if not found
+    Uint looks up the value of a local UintFlag, returns 0 if not found
 
 func (cCtx *Context) Uint64(name string) uint64
-    Int64 looks up the value of a local Int64Flag, returns 0 if not found
+    Uint64 looks up the value of a local Uint64Flag, returns 0 if not found
 
 func (cCtx *Context) Uint64Slice(name string) []uint64
     Uint64Slice looks up the value of a local Uint64SliceFlag, returns nil if
@@ -949,7 +949,6 @@ func (f FlagsByName) Less(i, j int) bool
 
 func (f FlagsByName) Swap(i, j int)
 
-<<<<<<< HEAD
 type Float64Flag struct {
 	Name string
 
@@ -1015,9 +1014,6 @@ func (f *Float64Flag) String() string
 
 func (f *Float64Flag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
-=======
-type Float64Flag = flagImpl[float64]
->>>>>>> First cut at using generics for base flag types
 
 type Float64Slice struct {
 	// Has unexported fields.
@@ -1077,8 +1073,6 @@ func (f *Float64SliceFlag) GetCategory() string
 func (f *Float64SliceFlag) GetDefaultText() string
     GetDefaultText returns the default text for this flag
 
-func (f *Float64SliceFlag) GetDestination() []float64
-
 func (f *Float64SliceFlag) GetEnvVars() []string
     GetEnvVars returns the env vars for this flag
 
@@ -1106,10 +1100,6 @@ func (f *Float64SliceFlag) Names() []string
 
 func (f *Float64SliceFlag) RunAction(c *Context) error
     RunAction executes flag action if set
-
-func (f *Float64SliceFlag) SetDestination(slice []float64)
-
-func (f *Float64SliceFlag) SetValue(slice []float64)
 
 func (f *Float64SliceFlag) String() string
     String returns a readable representation of this value (for usage defaults)
@@ -1192,7 +1182,6 @@ func (f *GenericFlag) String() string
 func (f *GenericFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
 
-<<<<<<< HEAD
 type Int64Flag struct {
 	Name string
 
@@ -1260,9 +1249,6 @@ func (f *Int64Flag) String() string
 
 func (f *Int64Flag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
-=======
-type Int64Flag = flagImpl[int64]
->>>>>>> First cut at using generics for base flag types
 
 type Int64Slice struct {
 	// Has unexported fields.
@@ -1363,6 +1349,7 @@ func (f *Int64SliceFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 type IntFlag struct {
 	Name string
 
@@ -1433,6 +1420,9 @@ func (f *IntFlag) TakesValue() bool
 =======
 type IntFlag = flagImpl[int]
 >>>>>>> First cut at using generics for base flag types
+=======
+type IntFlag = flagImpl[int, intValue]
+>>>>>>> Rebase
 
 type IntSlice struct {
 	// Has unexported fields.
@@ -1545,10 +1535,6 @@ type MultiError interface {
 	Errors() []error
 }
     MultiError is an error that wraps multiple errors.
-
-type MultiFloat64Flag = SliceFlag[*Float64SliceFlag, []float64, float64]
-    MultiFloat64Flag extends Float64SliceFlag with support for using slices
-    directly, as Value and/or Destination. See also SliceFlag.
 
 type MultiInt64Flag = SliceFlag[*Int64SliceFlag, []int64, int64]
     MultiInt64Flag extends Int64SliceFlag with support for using slices
@@ -1985,7 +1971,6 @@ func (f *TimestampFlag) String() string
 func (f *TimestampFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
 
-<<<<<<< HEAD
 type Uint64Flag struct {
 	Name string
 
@@ -2213,11 +2198,6 @@ func (f *UintFlag) String() string
 
 func (f *UintFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
-=======
-type Uint64Flag = flagImpl[uint64]
-
-type UintFlag = flagImpl[uint]
->>>>>>> First cut at using generics for base flag types
 
 type UintSlice struct {
 	// Has unexported fields.
@@ -2314,6 +2294,10 @@ func (f *UintSliceFlag) String() string
 
 func (f *UintSliceFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
+
+type ValueCreator[T any] interface {
+	Create(t T, d *T) flag.Value
+}
 
 type VisibleFlag interface {
 	Flag

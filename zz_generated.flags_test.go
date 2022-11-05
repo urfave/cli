@@ -223,7 +223,6 @@ func TestBoolFlag_SatisfiesFmtStringerInterface(t *testing.T) {
 	_ = f.String()
 }
 
-<<<<<<< HEAD
 func TestFloat64Flag_SatisfiesFlagInterface(t *testing.T) {
 	var f cli.Flag = &cli.Float64Flag{}
 
@@ -245,31 +244,6 @@ func TestFloat64Flag_SatisfiesVisibleFlagInterface(t *testing.T) {
 
 func TestFloat64Flag_SatisfiesFmtStringerInterface(t *testing.T) {
 	var f fmt.Stringer = &cli.Float64Flag{}
-
-	_ = f.String()
-}
-
-func TestIntFlag_SatisfiesFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.IntFlag{}
-
-	_ = f.IsSet()
-	_ = f.Names()
-}
-
-func TestIntFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
-	var f cli.RequiredFlag = &cli.IntFlag{}
-
-	_ = f.IsRequired()
-}
-
-func TestIntFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
-	var f cli.VisibleFlag = &cli.IntFlag{}
-
-	_ = f.IsVisible()
-}
-
-func TestIntFlag_SatisfiesFmtStringerInterface(t *testing.T) {
-	var f fmt.Stringer = &cli.IntFlag{}
 
 	_ = f.String()
 }
@@ -299,8 +273,6 @@ func TestInt64Flag_SatisfiesFmtStringerInterface(t *testing.T) {
 	_ = f.String()
 }
 
-=======
->>>>>>> First cut at using generics for base flag types
 func TestStringFlag_SatisfiesFlagInterface(t *testing.T) {
 	var f cli.Flag = &cli.StringFlag{}
 
@@ -351,7 +323,6 @@ func TestDurationFlag_SatisfiesFmtStringerInterface(t *testing.T) {
 	_ = f.String()
 }
 
-<<<<<<< HEAD
 func TestUintFlag_SatisfiesFlagInterface(t *testing.T) {
 	var f cli.Flag = &cli.UintFlag{}
 
@@ -402,6 +373,4 @@ func TestUint64Flag_SatisfiesFmtStringerInterface(t *testing.T) {
 	_ = f.String()
 }
 
-=======
->>>>>>> First cut at using generics for base flag types
 // vim:ro
