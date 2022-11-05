@@ -433,6 +433,7 @@ type BeforeFunc func(*Context) error
     BeforeFunc is an action to execute before any subcommands are run, but after
     the context is ready if a non-nil error is returned, no subcommands are run
 
+<<<<<<< HEAD
 type BoolFlag struct {
 	Name string
 
@@ -500,6 +501,9 @@ func (f *BoolFlag) String() string
 
 func (f *BoolFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
+=======
+type BoolFlag = flagImpl[bool, boolValue]
+>>>>>>> Add all flags
 
 type CategorizableFlag interface {
 	VisibleFlag
@@ -644,20 +648,18 @@ func (cCtx *Context) Args() Args
     Args returns the command line arguments associated with the context.
 
 func (cCtx *Context) Bool(name string) bool
-    Bool looks up the value of a local BoolFlag, returns false if not found
 
 func (cCtx *Context) Count(name string) int
     Count returns the num of occurences of this flag
 
 func (cCtx *Context) Duration(name string) time.Duration
-    Duration looks up the value of a local DurationFlag, returns 0 if not found
 
 func (cCtx *Context) FlagNames() []string
     FlagNames returns a slice of flag names used by the this context and all of
     its parent contexts.
 
 func (cCtx *Context) Float64(name string) float64
-    Float64 looks up the value of a local Float64Flag, returns 0 if not found
+    Int looks up the value of a local IntFlag, returns 0 if not found
 
 func (cCtx *Context) Float64Slice(name string) []float64
     Float64Slice looks up the value of a local Float64SliceFlag, returns nil if
@@ -703,7 +705,6 @@ func (cCtx *Context) Set(name, value string) error
     Set sets a context flag to a value.
 
 func (cCtx *Context) String(name string) string
-    String looks up the value of a local StringFlag, returns "" if not found
 
 func (cCtx *Context) StringSlice(name string) []string
     StringSlice looks up the value of a local StringSliceFlag, returns nil if
@@ -713,10 +714,10 @@ func (cCtx *Context) Timestamp(name string) *time.Time
     Timestamp gets the timestamp from a flag name
 
 func (cCtx *Context) Uint(name string) uint
-    Uint looks up the value of a local UintFlag, returns 0 if not found
+    Int looks up the value of a local IntFlag, returns 0 if not found
 
 func (cCtx *Context) Uint64(name string) uint64
-    Uint64 looks up the value of a local Uint64Flag, returns 0 if not found
+    Int64 looks up the value of a local Int64Flag, returns 0 if not found
 
 func (cCtx *Context) Uint64Slice(name string) []uint64
     Uint64Slice looks up the value of a local Uint64SliceFlag, returns nil if
@@ -765,6 +766,7 @@ type DocGenerationSliceFlag interface {
 }
     DocGenerationSliceFlag extends DocGenerationFlag for slice-based flags.
 
+<<<<<<< HEAD
 type DurationFlag struct {
 	Name string
 
@@ -830,6 +832,9 @@ func (f *DurationFlag) String() string
 
 func (f *DurationFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
+=======
+type DurationFlag = flagImpl[time.Duration, durationValue]
+>>>>>>> Add all flags
 
 type ErrorFormatter interface {
 	Format(s fmt.State, verb rune)
@@ -949,6 +954,7 @@ func (f FlagsByName) Less(i, j int) bool
 
 func (f FlagsByName) Swap(i, j int)
 
+<<<<<<< HEAD
 type Float64Flag struct {
 	Name string
 
@@ -1014,6 +1020,9 @@ func (f *Float64Flag) String() string
 
 func (f *Float64Flag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
+=======
+type Float64Flag = flagImpl[float64, float64Value]
+>>>>>>> Add all flags
 
 type Float64Slice struct {
 	// Has unexported fields.
@@ -1182,6 +1191,7 @@ func (f *GenericFlag) String() string
 func (f *GenericFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
 
+<<<<<<< HEAD
 type Int64Flag struct {
 	Name string
 
@@ -1249,6 +1259,9 @@ func (f *Int64Flag) String() string
 
 func (f *Int64Flag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
+=======
+type Int64Flag = flagImpl[int64, int64Value]
+>>>>>>> Add all flags
 
 type Int64Slice struct {
 	// Has unexported fields.
@@ -1700,6 +1713,7 @@ type SliceFlagTarget[E any] interface {
     to propagate Value and Destination, where Value is propagated inwards
     (initially), and Destination is propagated outwards (on every update).
 
+<<<<<<< HEAD
 type StringFlag struct {
 	Name string
 
@@ -1767,6 +1781,9 @@ func (f *StringFlag) String() string
 
 func (f *StringFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
+=======
+type StringFlag = flagImpl[string, stringValue]
+>>>>>>> Add all flags
 
 type StringSlice struct {
 	// Has unexported fields.
@@ -1971,6 +1988,7 @@ func (f *TimestampFlag) String() string
 func (f *TimestampFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
 
+<<<<<<< HEAD
 type Uint64Flag struct {
 	Name string
 
@@ -2038,6 +2056,9 @@ func (f *Uint64Flag) String() string
 
 func (f *Uint64Flag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
+=======
+type Uint64Flag = flagImpl[uint64, uint64Value]
+>>>>>>> Add all flags
 
 type Uint64Slice struct {
 	// Has unexported fields.
@@ -2131,6 +2152,7 @@ func (f *Uint64SliceFlag) String() string
 func (f *Uint64SliceFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
 
+<<<<<<< HEAD
 type UintFlag struct {
 	Name string
 
@@ -2198,6 +2220,9 @@ func (f *UintFlag) String() string
 
 func (f *UintFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
+=======
+type UintFlag = flagImpl[uint, uintValue]
+>>>>>>> Add all flags
 
 type UintSlice struct {
 	// Has unexported fields.

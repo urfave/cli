@@ -30,6 +30,7 @@ type flagImpl[T any, F ValueCreator[T]] struct {
 
 	TakesFile bool
 	Base      int
+	Count     *int
 
 	creator F
 	value   flag.Value
@@ -131,87 +132,3 @@ func (f *flagImpl[T, V]) Get(ctx *Context) T {
 	var t T
 	return t
 }
-
-//type Float64Flag = flagImpl[float64, jsonValueFactory[float64]]
-
-// type Float64SliceFlag = flagImpl[[]float64, jsonSliceValueFactory[[]float64]]
-// type Float64Slice = []float64
-
-//type Int64Flag = flagImpl[int64, jsonValueFactory[int64]]
-//type UintFlag = flagImpl[uint, jsonValueFactory[uint]]
-//type Uint64Flag = flagImpl[uint64, jsonValueFactory[uint64]]
-
-func newSlice[T any](elem ...T) []T {
-	var t []T
-	t = append(t, elem...)
-	return t
-}
-
-/*func NewFloat64Slice(elem ...float64) []float64 {
-	return newSlice[float64](elem...)
-}*/
-
-//type StringFlag = flagImpl[string]
-
-// Int looks up the value of a local IntFlag, returns
-// 0 if not found
-/*func (cCtx *Context) Float64(name string) float64 {
-	if v, ok := cCtx.Value(name).(float64); ok {
-		return v
-	}
-	return 0
-}*/
-
-// Int looks up the value of a local IntFlag, returns
-// 0 if not found
-/*func (cCtx *Context) Float64Slice(name string) []float64 {
-	if v, ok := cCtx.Value(name).([]float64); ok {
-		return v
-	}
-	return nil
-}*/
-
-// Int looks up the value of a local IntFlag, returns
-// 0 if not found
-func (cCtx *Context) Int(name string) int {
-	if v, ok := cCtx.Value(name).(int); ok {
-		return v
-	}
-	return 0
-}
-
-// Int64 looks up the value of a local Int64Flag, returns
-// 0 if not found
-/*func (cCtx *Context) Int64(name string) int64 {
-	if v, ok := cCtx.Value(name).(int64); ok {
-		return v
-	}
-	return 0
-}*/
-
-// Int looks up the value of a local IntFlag, returns
-// 0 if not found
-/*func (cCtx *Context) Uint(name string) uint {
-	if v, ok := cCtx.Value(name).(uint); ok {
-		return v
-	}
-	return 0
-}*/
-
-// Int64 looks up the value of a local Int64Flag, returns
-// 0 if not found
-/*func (cCtx *Context) Uint64(name string) uint64 {
-	if v, ok := cCtx.Value(name).(uint64); ok {
-		return v
-	}
-	return 0
-}*/
-
-// String looks up the value of a local StringFlag, returns
-// "" if not found
-/*func (cCtx *Context) String(name string) string {
-	if v, ok := cCtx.Value(name).(string); ok {
-		return v
-	}
-	return ""
-}*/
