@@ -229,7 +229,7 @@ func (a *App) Setup() {
 	a.Commands = newCommands
 
 	if a.Command(helpCommand.Name) == nil && !a.HideHelp {
-		if !a.HideHelpCommand {
+		if !a.HideHelpCommand && len(a.Commands) > 0 {
 			a.appendCommand(helpCommand)
 		}
 

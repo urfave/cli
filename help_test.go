@@ -173,7 +173,7 @@ func Test_helpCommand_InHelpOutput(t *testing.T) {
 		t.Fatalf("empty COMMANDS section detected: %q", s)
 	}
 
-	if !strings.Contains(s, "help, h") {
+	if !strings.Contains(s, "--help, -h") {
 		t.Fatalf("missing \"help, h\": %q", s)
 	}
 }
@@ -736,6 +736,11 @@ func TestShowAppHelp_HelpPrinter(t *testing.T) {
 				Name:                  "my-app",
 				Writer:                &buf,
 				CustomAppHelpTemplate: tt.template,
+				Commands: []*Command{
+					{
+						Name: "frobbly",
+					},
+				},
 			}
 
 			err := app.Run([]string{"my-app", "help"})
@@ -807,6 +812,11 @@ func TestShowAppHelp_HelpPrinterCustom(t *testing.T) {
 				Name:                  "my-app",
 				Writer:                &buf,
 				CustomAppHelpTemplate: tt.template,
+				Commands: []*Command{
+					{
+						Name: "frobbly",
+					},
+				},
 			}
 
 			err := app.Run([]string{"my-app", "help"})
@@ -1009,12 +1019,7 @@ func TestHideHelpCommand_False(t *testing.T) {
 		Writer:          ioutil.Discard,
 	}
 
-	err := app.Run([]string{"foo", "help"})
-	if err != nil {
-		t.Errorf("Run returned unexpected error: %v", err)
-	}
-
-	err = app.Run([]string{"foo", "--help"})
+	err := app.Run([]string{"foo", "--help"})
 	if err != nil {
 		t.Errorf("Run returned unexpected error: %v", err)
 	}
@@ -1287,7 +1292,7 @@ DESCRIPTION:
    with a newline
       and an indented line
 
-GLOBAL OPTIONS:
+OPTIONS:
    --foo, -h here's a
       really long help text
       line, let's see where it

@@ -195,12 +195,9 @@ func ExampleApp_Run_noAction() {
 	//    greet - A new cli application
 	//
 	// USAGE:
-	//    greet [global options] command [command options] [arguments...]
+	//    greet [options] [arguments...]
 	//
-	// COMMANDS:
-	//    help, h  Shows a list of commands or help for one command
-	//
-	// GLOBAL OPTIONS:
+	// OPTIONS:
 	//    --help, -h  show help (default: false)
 }
 
@@ -2061,11 +2058,6 @@ func TestApp_Run_Help(t *testing.T) {
 			wantContains:  "boom - make an explosive entrance",
 		},
 		{
-			helpArguments: []string{"boom", "help"},
-			hideHelp:      false,
-			wantContains:  "boom - make an explosive entrance",
-		},
-		{
 			helpArguments: []string{"boom", "--help"},
 			hideHelp:      true,
 			wantErr:       fmt.Errorf("flag: help requested"),
@@ -2074,11 +2066,6 @@ func TestApp_Run_Help(t *testing.T) {
 			helpArguments: []string{"boom", "-h"},
 			hideHelp:      true,
 			wantErr:       fmt.Errorf("flag: help requested"),
-		},
-		{
-			helpArguments: []string{"boom", "help"},
-			hideHelp:      true,
-			wantContains:  "boom I say!",
 		},
 	}
 

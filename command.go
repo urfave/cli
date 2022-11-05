@@ -203,7 +203,11 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 
 	cerr := cCtx.checkRequiredFlags(c.Flags)
 	if cerr != nil {
-		_ = ShowSubcommandHelp(cCtx)
+		if c.isRoot {
+			_ = ShowAppHelp(cCtx)
+		} else {
+			_ = ShowSubcommandHelp(cCtx)
+		}
 		return cerr
 	}
 
