@@ -346,8 +346,9 @@ func (a *App) RunAndExitOnError()
     code in the cli.ExitCoder
 
 func (a *App) RunAsSubcommand(ctx *Context) (err error)
-    This is a stub function to keep public API unchanged from old code No one
-    should really use this. Always use a.Run to execute app
+    This is a stub function to keep public API unchanged from old code
+
+    Deprecated: use App.Run or App.RunContext
 
 func (a *App) RunContext(ctx context.Context, arguments []string) (err error)
     RunContext is like Run except it takes a Context that will be passed to
