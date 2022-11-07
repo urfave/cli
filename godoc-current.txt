@@ -322,6 +322,9 @@ type App struct {
 	UseShortOptionHandling bool
 	// Enable suggestions for commands and flags
 	Suggest bool
+	// Allows global flags set by libraries which use flag.XXXVar(...) directly
+	// to be parsed through this library
+	AllowExtFlags bool
 
 	// Has unexported fields.
 }
