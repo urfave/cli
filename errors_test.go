@@ -45,6 +45,25 @@ func TestHandleExitCoder_ExitCoder(t *testing.T) {
 	expect(t, called, true)
 }
 
+func TestHandleExitCoder_ErrorExitCoder(t *testing.T) {
+	exitCode := 0
+	called := false
+
+	OsExiter = func(rc int) {
+		if !called {
+			exitCode = rc
+			called = true
+		}
+	}
+
+	defer func() { OsExiter = fakeOsExiter }()
+
+	HandleExitCoder(Exit(errors.New("galactic perimeter breach"), 9))
+
+	expect(t, exitCode, 9)
+	expect(t, called, true)
+}
+
 func TestHandleExitCoder_MultiErrorWithExitCoder(t *testing.T) {
 	exitCode := 0
 	called := false
