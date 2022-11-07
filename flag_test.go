@@ -3384,3 +3384,21 @@ func TestSliceShortOptionHandle(t *testing.T) {
 		t.Fatal("Action callback was never called")
 	}
 }
+
+// Test issue #1541
+func TestCustomizedSliceFlagSeparator(t *testing.T) {
+	defaultSliceFlagSeparator = ";"
+	defer func() {
+		defaultSliceFlagSeparator = ","
+	}()
+	opts := []string{"opt1", "opt2", "opt3,op", "opt4"}
+	ret := flagSplitMultiValues(strings.Join(opts, ";"))
+	if len(ret) != 4 {
+		t.Fatalf("split slice flag failed, want: 4, but get: %d", len(ret))
+	}
+	for idx, r := range ret {
+		if r != opts[idx] {
+			t.Fatalf("get %dth failed, wanted: %s, but get: %s", idx, opts[idx], r)
+		}
+	}
+}
