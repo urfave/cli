@@ -32,6 +32,9 @@ var (
 	//go:embed generated_test.gotmpl
 	TestTemplateString string
 
+	//go:embed generated_altsrc.gotmpl
+	AltsrcTemplateString string
+
 	titler = cases.Title(language.Und, cases.NoLower)
 )
 
@@ -58,6 +61,10 @@ func main() {
 		Name:  "genflags",
 		Usage: "Generate flag types for urfave/cli",
 		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:    "altsrc",
+				Aliases: []string{"a"},
+			},
 			&cli.PathFlag{
 				Name:    "flag-spec-yaml",
 				Aliases: []string{"f"},
@@ -148,12 +155,11 @@ func runGenFlags(cCtx *cli.Context) error {
 		spec.UrfaveCLITestNamespace = "cli."
 	}
 
-	genTmpl, err := template.New("gen").Parse(TemplateString)
-	if err != nil {
-		return err
+	templateString := TemplateString
+	if cCtx.IsSet("altsrc") {
+		templateString = AltsrcTemplateString
 	}
-
-	genTestTmpl, err := template.New("gen_test").Parse(TestTemplateString)
+	genTmpl, err := template.New("gen").Parse(templateString)
 	if err != nil {
 		return err
 	}
@@ -163,20 +169,29 @@ func runGenFlags(cCtx *cli.Context) error {
 		return err
 	}
 
+	if err := os.WriteFile(cCtx.Path("generated-output"), genBuf.Bytes(), 0644); err != nil {
+		return err
+	}
+
+	if _, err := sh(cCtx.Context, cCtx.Path("goimports"), "-w", cCtx.Path("generated-output")); err != nil {
+		return err
+	}
+
+	if cCtx.IsSet("altsrc") {
+		return nil
+	}
+
+	genTestTmpl, err := template.New("gen_test").Parse(TestTemplateString)
+	if err != nil {
+		return err
+	}
+
 	genTestBuf := &bytes.Buffer{}
 	if err := genTestTmpl.Execute(genTestBuf, spec); err != nil {
 		return err
 	}
 
-	if err := os.WriteFile(cCtx.Path("generated-output"), genBuf.Bytes(), 0644); err != nil {
-		return err
-	}
-
 	if err := os.WriteFile(cCtx.Path("generated-test-output"), genTestBuf.Bytes(), 0644); err != nil {
-		return err
-	}
-
-	if _, err := sh(cCtx.Context, cCtx.Path("goimports"), "-w", cCtx.Path("generated-output")); err != nil {
 		return err
 	}
 
