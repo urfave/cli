@@ -207,6 +207,35 @@ func (fsm *MapInputSource) IntSlice(name string) ([]int, error) {
 	return intSlice, nil
 }
 
+// Int64Slice returns an []int64 from the map if it exists otherwise returns nil
+func (fsm *MapInputSource) Int64Slice(name string) ([]int64, error) {
+	otherGenericValue, exists := fsm.valueMap[name]
+	if !exists {
+		otherGenericValue, exists = nestedVal(name, fsm.valueMap)
+		if !exists {
+			return nil, nil
+		}
+	}
+
+	otherValue, isType := otherGenericValue.([]interface{})
+	if !isType {
+		return nil, incorrectTypeForFlagError(name, "[]interface{}", otherGenericValue)
+	}
+
+	var int64Slice = make([]int64, 0, len(otherValue))
+	for i, v := range otherValue {
+		int64Value, isType := v.(int64)
+
+		if !isType {
+			return nil, incorrectTypeForFlagError(fmt.Sprintf("%s[%d]", name, i), "int", v)
+		}
+
+		int64Slice = append(int64Slice, int64Value)
+	}
+
+	return int64Slice, nil
+}
+
 // Generic returns an cli.Generic from the map if it exists otherwise returns nil
 func (fsm *MapInputSource) Generic(name string) (cli.Generic, error) {
 	otherGenericValue, exists := fsm.valueMap[name]

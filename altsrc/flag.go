@@ -148,6 +148,37 @@ func (f *IntSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceC
 	return nil
 }
 
+// ApplyInputSourceValue applies a Int64Slice value if required
+func (f *Int64SliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error {
+	if f.set == nil || cCtx.IsSet(f.Name) || isEnvVarSet(f.EnvVars) {
+		return nil
+	}
+	for _, name := range f.Int64SliceFlag.Names() {
+		if !isc.isSet(name) {
+			continue
+		}
+		value, err := isc.Int64Slice(name)
+		if err != nil {
+			return err
+		}
+		if value == nil {
+			continue
+		}
+		var sliceValue = *(cli.NewInt64Slice(value...))
+		for _, n := range f.Names() {
+			underlyingFlag := f.set.Lookup(n)
+			if underlyingFlag == nil {
+				continue
+			}
+			underlyingFlag.Value = &sliceValue
+		}
+		if f.Destination != nil {
+			f.Destination.Set(sliceValue.Serialize())
+		}
+	}
+	return nil
+}
+
 // ApplyInputSourceValue applies a Bool value to the flagSet if required
 func (f *BoolFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error {
 	if f.set == nil || cCtx.IsSet(f.Name) || isEnvVarSet(f.EnvVars) {
