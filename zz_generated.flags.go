@@ -23,6 +23,8 @@ type Float64SliceFlag struct {
 	Aliases []string
 	EnvVars []string
 
+	defaultValue *Float64Slice
+
 	Action func(*Context, []float64) error
 }
 
@@ -84,6 +86,8 @@ type GenericFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	defaultValue Generic
 
 	TakesFile bool
 
@@ -154,6 +158,8 @@ type Int64SliceFlag struct {
 	Aliases []string
 	EnvVars []string
 
+	defaultValue *Int64Slice
+
 	Action func(*Context, []int64) error
 }
 
@@ -216,6 +222,8 @@ type IntSliceFlag struct {
 	Aliases []string
 	EnvVars []string
 
+	defaultValue *IntSlice
+
 	Action func(*Context, []int) error
 }
 
@@ -277,6 +285,8 @@ type PathFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	defaultValue Path
 
 	TakesFile bool
 
@@ -347,6 +357,8 @@ type StringSliceFlag struct {
 	Aliases []string
 	EnvVars []string
 
+	defaultValue *StringSlice
+
 	TakesFile bool
 
 	Action func(*Context, []string) error
@@ -410,6 +422,8 @@ type TimestampFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	defaultValue *Timestamp
 
 	Layout string
 
@@ -482,6 +496,8 @@ type Uint64SliceFlag struct {
 	Aliases []string
 	EnvVars []string
 
+	defaultValue *Uint64Slice
+
 	Action func(*Context, []uint64) error
 }
 
@@ -544,6 +560,8 @@ type UintSliceFlag struct {
 	Aliases []string
 	EnvVars []string
 
+	defaultValue *UintSlice
+
 	Action func(*Context, []uint) error
 }
 
@@ -605,6 +623,8 @@ type BoolFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	defaultValue bool
 
 	Count *int
 
@@ -675,6 +695,8 @@ type Float64Flag struct {
 	Aliases []string
 	EnvVars []string
 
+	defaultValue float64
+
 	Action func(*Context, float64) error
 }
 
@@ -741,6 +763,8 @@ type IntFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	defaultValue int
 
 	Base int
 
@@ -811,6 +835,8 @@ type Int64Flag struct {
 	Aliases []string
 	EnvVars []string
 
+	defaultValue int64
+
 	Base int
 
 	Action func(*Context, int64) error
@@ -879,6 +905,8 @@ type StringFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	defaultValue string
 
 	TakesFile bool
 
@@ -949,6 +977,8 @@ type DurationFlag struct {
 	Aliases []string
 	EnvVars []string
 
+	defaultValue time.Duration
+
 	Action func(*Context, time.Duration) error
 }
 
@@ -1015,6 +1045,8 @@ type UintFlag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	defaultValue uint
 
 	Base int
 
@@ -1084,6 +1116,8 @@ type Uint64Flag struct {
 
 	Aliases []string
 	EnvVars []string
+
+	defaultValue uint64
 
 	Base int
 

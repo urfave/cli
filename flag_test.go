@@ -8,7 +8,6 @@ import (
 	"os"
 	"reflect"
 	"regexp"
-	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -477,6 +476,9 @@ var stringFlagTests = []struct {
 func TestStringFlagHelpOutput(t *testing.T) {
 	for _, test := range stringFlagTests {
 		fl := &StringFlag{Name: test.name, Aliases: test.aliases, Usage: test.usage, Value: test.value}
+		// create a tmp flagset
+		tfs := flag.NewFlagSet("test", 0)
+		fl.Apply(tfs)
 		output := fl.String()
 
 		if output != test.expected {
@@ -504,10 +506,7 @@ func TestStringFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := &StringFlag{Name: test.name, Aliases: test.aliases, Value: test.value, EnvVars: []string{"APP_FOO"}}
 		output := fl.String()
 
-		expectedSuffix := " [$APP_FOO]"
-		if runtime.GOOS == "windows" {
-			expectedSuffix = " [%APP_FOO%]"
-		}
+		expectedSuffix := withEnvHint([]string{"APP_FOO"}, "")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
@@ -575,6 +574,11 @@ var pathFlagTests = []struct {
 func TestPathFlagHelpOutput(t *testing.T) {
 	for _, test := range pathFlagTests {
 		fl := &PathFlag{Name: test.name, Aliases: test.aliases, Usage: test.usage, Value: test.value}
+
+		// create a temporary flag set to apply
+		tfs := flag.NewFlagSet("test", 0)
+		fl.Apply(tfs)
+
 		output := fl.String()
 
 		if output != test.expected {
@@ -591,10 +595,7 @@ func TestPathFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := &PathFlag{Name: test.name, Aliases: test.aliases, Value: test.value, EnvVars: []string{"APP_PATH"}}
 		output := fl.String()
 
-		expectedSuffix := " [$APP_PATH]"
-		if runtime.GOOS == "windows" {
-			expectedSuffix = " [%APP_PATH%]"
-		}
+		expectedSuffix := withEnvHint([]string{"APP_PATH"}, "")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
@@ -688,10 +689,7 @@ func TestStringSliceFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := &StringSliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value, EnvVars: []string{"APP_QWWX"}}
 		output := fl.String()
 
-		expectedSuffix := " [$APP_QWWX]"
-		if runtime.GOOS == "windows" {
-			expectedSuffix = " [%APP_QWWX%]"
-		}
+		expectedSuffix := withEnvHint([]string{"APP_QWWX"}, "")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%q does not end with"+expectedSuffix, output)
 		}
@@ -767,6 +765,11 @@ var intFlagTests = []struct {
 func TestIntFlagHelpOutput(t *testing.T) {
 	for _, test := range intFlagTests {
 		fl := &IntFlag{Name: test.name, Value: 9}
+
+		// create a temporary flag set to apply
+		tfs := flag.NewFlagSet("test", 0)
+		fl.Apply(tfs)
+
 		output := fl.String()
 
 		if output != test.expected {
@@ -784,10 +787,7 @@ func TestIntFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := &IntFlag{Name: test.name, EnvVars: []string{"APP_BAR"}}
 		output := fl.String()
 
-		expectedSuffix := " [$APP_BAR]"
-		if runtime.GOOS == "windows" {
-			expectedSuffix = " [%APP_BAR%]"
-		}
+		expectedSuffix := withEnvHint([]string{"APP_BAR"}, "")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
@@ -824,6 +824,11 @@ var int64FlagTests = []struct {
 func TestInt64FlagHelpOutput(t *testing.T) {
 	for _, test := range int64FlagTests {
 		fl := Int64Flag{Name: test.name, Value: 8589934592}
+
+		// create a temporary flag set to apply
+		tfs := flag.NewFlagSet("test", 0)
+		fl.Apply(tfs)
+
 		output := fl.String()
 
 		if output != test.expected {
@@ -841,10 +846,7 @@ func TestInt64FlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := IntFlag{Name: test.name, EnvVars: []string{"APP_BAR"}}
 		output := fl.String()
 
-		expectedSuffix := " [$APP_BAR]"
-		if runtime.GOOS == "windows" {
-			expectedSuffix = " [%APP_BAR%]"
-		}
+		expectedSuffix := withEnvHint([]string{"APP_BAR"}, "")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
@@ -870,6 +872,11 @@ var uintFlagTests = []struct {
 func TestUintFlagHelpOutput(t *testing.T) {
 	for _, test := range uintFlagTests {
 		fl := UintFlag{Name: test.name, Value: 41}
+
+		// create a temporary flag set to apply
+		tfs := flag.NewFlagSet("test", 0)
+		fl.Apply(tfs)
+
 		output := fl.String()
 
 		if output != test.expected {
@@ -887,10 +894,7 @@ func TestUintFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := UintFlag{Name: test.name, EnvVars: []string{"APP_BAR"}}
 		output := fl.String()
 
-		expectedSuffix := " [$APP_BAR]"
-		if runtime.GOOS == "windows" {
-			expectedSuffix = " [%APP_BAR%]"
-		}
+		expectedSuffix := withEnvHint([]string{"APP_BAR"}, "")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
@@ -916,6 +920,11 @@ var uint64FlagTests = []struct {
 func TestUint64FlagHelpOutput(t *testing.T) {
 	for _, test := range uint64FlagTests {
 		fl := Uint64Flag{Name: test.name, Value: 8589934582}
+
+		// create a temporary flag set to apply
+		tfs := flag.NewFlagSet("test", 0)
+		fl.Apply(tfs)
+
 		output := fl.String()
 
 		if output != test.expected {
@@ -933,10 +942,7 @@ func TestUint64FlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := UintFlag{Name: test.name, EnvVars: []string{"APP_BAR"}}
 		output := fl.String()
 
-		expectedSuffix := " [$APP_BAR]"
-		if runtime.GOOS == "windows" {
-			expectedSuffix = " [%APP_BAR%]"
-		}
+		expectedSuffix := withEnvHint([]string{"APP_BAR"}, "")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
@@ -962,6 +968,11 @@ var durationFlagTests = []struct {
 func TestDurationFlagHelpOutput(t *testing.T) {
 	for _, test := range durationFlagTests {
 		fl := &DurationFlag{Name: test.name, Value: 1 * time.Second}
+
+		// create a temporary flag set to apply
+		tfs := flag.NewFlagSet("test", 0)
+		fl.Apply(tfs)
+
 		output := fl.String()
 
 		if output != test.expected {
@@ -979,10 +990,7 @@ func TestDurationFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := &DurationFlag{Name: test.name, EnvVars: []string{"APP_BAR"}}
 		output := fl.String()
 
-		expectedSuffix := " [$APP_BAR]"
-		if runtime.GOOS == "windows" {
-			expectedSuffix = " [%APP_BAR%]"
-		}
+		expectedSuffix := withEnvHint([]string{"APP_BAR"}, "")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
@@ -1039,10 +1047,7 @@ func TestIntSliceFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := &IntSliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value, EnvVars: []string{"APP_SMURF"}}
 		output := fl.String()
 
-		expectedSuffix := " [$APP_SMURF]"
-		if runtime.GOOS == "windows" {
-			expectedSuffix = " [%APP_SMURF%]"
-		}
+		expectedSuffix := withEnvHint([]string{"APP_SMURF"}, "")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%q does not end with"+expectedSuffix, output)
 		}
@@ -1178,10 +1183,7 @@ func TestInt64SliceFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := Int64SliceFlag{Name: test.name, Value: test.value, EnvVars: []string{"APP_SMURF"}}
 		output := fl.String()
 
-		expectedSuffix := " [$APP_SMURF]"
-		if runtime.GOOS == "windows" {
-			expectedSuffix = " [%APP_SMURF%]"
-		}
+		expectedSuffix := withEnvHint([]string{"APP_SMURF"}, "")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%q does not end with"+expectedSuffix, output)
 		}
@@ -1332,10 +1334,7 @@ func TestUintSliceFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := UintSliceFlag{Name: test.name, Value: test.value, EnvVars: []string{"APP_SMURF"}}
 		output := fl.String()
 
-		expectedSuffix := " [$APP_SMURF]"
-		if runtime.GOOS == "windows" {
-			expectedSuffix = " [%APP_SMURF%]"
-		}
+		expectedSuffix := withEnvHint([]string{"APP_SMURF"}, "")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%q does not end with"+expectedSuffix, output)
 		}
@@ -1478,10 +1477,7 @@ func TestUint64SliceFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := Uint64SliceFlag{Name: test.name, Value: test.value, EnvVars: []string{"APP_SMURF"}}
 		output := fl.String()
 
-		expectedSuffix := " [$APP_SMURF]"
-		if runtime.GOOS == "windows" {
-			expectedSuffix = " [%APP_SMURF%]"
-		}
+		expectedSuffix := withEnvHint([]string{"APP_SMURF"}, "")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%q does not end with"+expectedSuffix, output)
 		}
@@ -1620,10 +1616,7 @@ func TestFloat64FlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := &Float64Flag{Name: test.name, EnvVars: []string{"APP_BAZ"}}
 		output := fl.String()
 
-		expectedSuffix := " [$APP_BAZ]"
-		if runtime.GOOS == "windows" {
-			expectedSuffix = " [%APP_BAZ%]"
-		}
+		expectedSuffix := withEnvHint([]string{"APP_BAZ"}, "")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
@@ -1680,10 +1673,7 @@ func TestFloat64SliceFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := Float64SliceFlag{Name: test.name, Value: test.value, EnvVars: []string{"APP_SMURF"}}
 		output := fl.String()
 
-		expectedSuffix := " [$APP_SMURF]"
-		if runtime.GOOS == "windows" {
-			expectedSuffix = " [%APP_SMURF%]"
-		}
+		expectedSuffix := withEnvHint([]string{"APP_SMURF"}, "")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%q does not end with"+expectedSuffix, output)
 		}
@@ -1783,6 +1773,9 @@ var genericFlagTests = []struct {
 func TestGenericFlagHelpOutput(t *testing.T) {
 	for _, test := range genericFlagTests {
 		fl := &GenericFlag{Name: test.name, Value: test.value, Usage: "test flag"}
+		// create a temporary flag set to apply
+		tfs := flag.NewFlagSet("test", 0)
+		fl.Apply(tfs)
 		output := fl.String()
 
 		if output != test.expected {
@@ -1800,10 +1793,7 @@ func TestGenericFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := &GenericFlag{Name: test.name, EnvVars: []string{"APP_ZAP"}}
 		output := fl.String()
 
-		expectedSuffix := " [$APP_ZAP]"
-		if runtime.GOOS == "windows" {
-			expectedSuffix = " [%APP_ZAP%]"
-		}
+		expectedSuffix := withEnvHint([]string{"APP_ZAP"}, "")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
@@ -3091,6 +3081,186 @@ func TestFlagDefaultValue(t *testing.T) {
 		set := flag.NewFlagSet("test", 0)
 		set.SetOutput(ioutil.Discard)
 		_ = v.flag.Apply(set)
+		if err := set.Parse(v.toParse); err != nil {
+			t.Error(err)
+		}
+		if got := v.flag.String(); got != v.expect {
+			t.Errorf("TestFlagDefaultValue %d %s\nexpect:%s\ngot:%s", i, v.name, v.expect, got)
+		}
+	}
+}
+
+type flagDefaultTestCaseWithEnv struct {
+	name    string
+	flag    Flag
+	toParse []string
+	expect  string
+	environ map[string]string
+}
+
+func TestFlagDefaultValueWithEnv(t *testing.T) {
+	defer resetEnv(os.Environ())
+	os.Clearenv()
+
+	ts, err := time.Parse(time.RFC3339, "2005-01-02T15:04:05Z")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cases := []*flagDefaultTestCaseWithEnv{
+		{
+			name:    "stringSlice",
+			flag:    &StringSliceFlag{Name: "flag", Value: NewStringSlice("default1", "default2"), EnvVars: []string{"ssflag"}},
+			toParse: []string{"--flag", "parsed"},
+			expect:  `--flag value [ --flag value ]	(default: "default1", "default2")` + withEnvHint([]string{"ssflag"}, ""),
+			environ: map[string]string{
+				"ssflag": "some-other-env_value",
+			},
+		},
+		{
+			name:    "float64Slice",
+			flag:    &Float64SliceFlag{Name: "flag", Value: NewFloat64Slice(1.1, 2.2), EnvVars: []string{"fsflag"}},
+			toParse: []string{"--flag", "13.3"},
+			expect:  `--flag value [ --flag value ]	(default: 1.1, 2.2)` + withEnvHint([]string{"fsflag"}, ""),
+			environ: map[string]string{
+				"fsflag": "20304.222",
+			},
+		},
+		{
+			name:    "int64Slice",
+			flag:    &Int64SliceFlag{Name: "flag", Value: NewInt64Slice(1, 2), EnvVars: []string{"isflag"}},
+			toParse: []string{"--flag", "13"},
+			expect:  `--flag value [ --flag value ]	(default: 1, 2)` + withEnvHint([]string{"isflag"}, ""),
+			environ: map[string]string{
+				"isflag": "101",
+			},
+		},
+		{
+			name:    "intSlice",
+			flag:    &IntSliceFlag{Name: "flag", Value: NewIntSlice(1, 2), EnvVars: []string{"isflag"}},
+			toParse: []string{"--flag", "13"},
+			expect:  `--flag value [ --flag value ]	(default: 1, 2)` + withEnvHint([]string{"isflag"}, ""),
+			environ: map[string]string{
+				"isflag": "101",
+			},
+		},
+		{
+			name:    "uint64Slice",
+			flag:    &Uint64SliceFlag{Name: "flag", Value: NewUint64Slice(1, 2), EnvVars: []string{"uisflag"}},
+			toParse: []string{"--flag", "13"},
+			expect:  `--flag value [ --flag value ]	(default: 1, 2)` + withEnvHint([]string{"uisflag"}, ""),
+			environ: map[string]string{
+				"uisflag": "3",
+			},
+		},
+		{
+			name:    "uintSlice",
+			flag:    &UintSliceFlag{Name: "flag", Value: NewUintSlice(1, 2), EnvVars: []string{"uisflag"}},
+			toParse: []string{"--flag", "13"},
+			expect:  `--flag value [ --flag value ]	(default: 1, 2)` + withEnvHint([]string{"uisflag"}, ""),
+			environ: map[string]string{
+				"uisflag": "3",
+			},
+		},
+		{
+			name:    "string",
+			flag:    &StringFlag{Name: "flag", Value: "default", EnvVars: []string{"uflag"}},
+			toParse: []string{"--flag", "parsed"},
+			expect:  `--flag value	(default: "default")` + withEnvHint([]string{"uflag"}, ""),
+			environ: map[string]string{
+				"uflag": "some-other-string",
+			},
+		},
+		{
+			name:    "bool",
+			flag:    &BoolFlag{Name: "flag", Value: true, EnvVars: []string{"uflag"}},
+			toParse: []string{"--flag", "false"},
+			expect:  `--flag	(default: true)` + withEnvHint([]string{"uflag"}, ""),
+			environ: map[string]string{
+				"uflag": "false",
+			},
+		},
+		{
+			name:    "uint64",
+			flag:    &Uint64Flag{Name: "flag", Value: 1, EnvVars: []string{"uflag"}},
+			toParse: []string{"--flag", "13"},
+			expect:  `--flag value	(default: 1)` + withEnvHint([]string{"uflag"}, ""),
+			environ: map[string]string{
+				"uflag": "10",
+			},
+		},
+		{
+			name:    "uint",
+			flag:    &UintFlag{Name: "flag", Value: 1, EnvVars: []string{"uflag"}},
+			toParse: []string{"--flag", "13"},
+			expect:  `--flag value	(default: 1)` + withEnvHint([]string{"uflag"}, ""),
+			environ: map[string]string{
+				"uflag": "10",
+			},
+		},
+		{
+			name:    "int64",
+			flag:    &Int64Flag{Name: "flag", Value: 1, EnvVars: []string{"uflag"}},
+			toParse: []string{"--flag", "13"},
+			expect:  `--flag value	(default: 1)` + withEnvHint([]string{"uflag"}, ""),
+			environ: map[string]string{
+				"uflag": "10",
+			},
+		},
+		{
+			name:    "int",
+			flag:    &IntFlag{Name: "flag", Value: 1, EnvVars: []string{"uflag"}},
+			toParse: []string{"--flag", "13"},
+			expect:  `--flag value	(default: 1)` + withEnvHint([]string{"uflag"}, ""),
+			environ: map[string]string{
+				"uflag": "10",
+			},
+		},
+		{
+			name:    "duration",
+			flag:    &DurationFlag{Name: "flag", Value: time.Second, EnvVars: []string{"uflag"}},
+			toParse: []string{"--flag", "2m"},
+			expect:  `--flag value	(default: 1s)` + withEnvHint([]string{"uflag"}, ""),
+			environ: map[string]string{
+				"uflag": "2h4m10s",
+			},
+		},
+		{
+			name:    "path",
+			flag:    &PathFlag{Name: "flag", Value: "/tmp/foo", EnvVars: []string{"uflag"}},
+			toParse: []string{"--flag", "/bar/ddfr"},
+			expect:  `--flag value	(default: "/tmp/foo")` + withEnvHint([]string{"uflag"}, ""),
+			environ: map[string]string{
+				"uflag": "/bar/t/err",
+			},
+		},
+		{
+			name:    "timestamp",
+			flag:    &TimestampFlag{Name: "flag", Value: NewTimestamp(ts), Layout: time.RFC3339, EnvVars: []string{"tflag"}},
+			toParse: []string{"--flag", "2006-11-02T15:04:05Z"},
+			expect:  `--flag value	(default: 2005-01-02 15:04:05 +0000 UTC)` + withEnvHint([]string{"tflag"}, ""),
+			environ: map[string]string{
+				"tflag": "2010-01-02T15:04:05Z",
+			},
+		},
+		{
+			name:    "generic",
+			flag:    &GenericFlag{Name: "flag", Value: &Parser{"11", "12"}, EnvVars: []string{"gflag"}},
+			toParse: []string{"--flag", "15,16"},
+			expect:  `--flag value	(default: 11,12)` + withEnvHint([]string{"gflag"}, ""),
+			environ: map[string]string{
+				"gflag": "13,14",
+			},
+		},
+	}
+	for i, v := range cases {
+		for key, val := range v.environ {
+			os.Setenv(key, val)
+		}
+		set := flag.NewFlagSet("test", 0)
+		set.SetOutput(ioutil.Discard)
+		if err := v.flag.Apply(set); err != nil {
+			t.Fatal(err)
+		}
 		if err := set.Parse(v.toParse); err != nil {
 			t.Error(err)
 		}

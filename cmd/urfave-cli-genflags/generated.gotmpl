@@ -22,6 +22,8 @@ type {{.TypeName}} struct {
   Aliases []string
   EnvVars []string
 
+  defaultValue {{if .ValuePointer}}*{{end}}{{.GoType}}
+  
   {{range .StructFields}}
   {{.Name}} {{if .Pointer}}*{{end}}{{.Type}}
   {{end}}

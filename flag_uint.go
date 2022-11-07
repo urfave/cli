@@ -8,6 +8,9 @@ import (
 
 // Apply populates the flag given the flag set and environment
 func (f *UintFlag) Apply(set *flag.FlagSet) error {
+	// set default value so that environment wont be able to overwrite it
+	f.defaultValue = f.Value
+
 	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
 		if val != "" {
 			valInt, err := strconv.ParseUint(val, f.Base, 64)
@@ -42,7 +45,7 @@ func (f *UintFlag) GetDefaultText() string {
 	if f.DefaultText != "" {
 		return f.DefaultText
 	}
-	return f.GetValue()
+	return fmt.Sprintf("%d", f.defaultValue)
 }
 
 // Get returns the flag’s value in the given Context.
