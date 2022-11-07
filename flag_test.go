@@ -239,6 +239,10 @@ func TestFlagsFromEnv(t *testing.T) {
 					t.Errorf("Flag %s not set", f.Names()[0])
 				}
 
+				// check that flag names are returned when set via env as well
+				if !reflect.DeepEqual(ctx.FlagNames(), test.flag.Names()) {
+					t.Errorf("Not enough flag names %+v", ctx.FlagNames())
+				}
 				return nil
 			},
 		}
