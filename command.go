@@ -252,7 +252,7 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 				}
 			}
 		}
-	} else if cCtx.App.DefaultCommand != "" {
+	} else if c.isRoot && cCtx.App.DefaultCommand != "" {
 		if dc := cCtx.App.Command(cCtx.App.DefaultCommand); dc != c {
 			cmd = dc
 		}

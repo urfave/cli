@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -449,4 +450,68 @@ func TestCommand_VisibleSubcCommands(t *testing.T) {
 	}
 
 	expect(t, c.VisibleCommands(), []*Command{subc1, subc3})
+}
+
+func TestCommand_VisibleFlagCategories(t *testing.T) {
+
+	c := &Command{
+		Name:  "bar",
+		Usage: "this is for testing",
+		Flags: []Flag{
+			&StringFlag{
+				Name: "strd", // no category set
+			},
+			&Int64Flag{
+				Name:     "intd",
+				Aliases:  []string{"altd1", "altd2"},
+				Category: "cat1",
+			},
+		},
+	}
+
+	vfc := c.VisibleFlagCategories()
+	if len(vfc) != 1 {
+		t.Fatalf("unexpected visible flag categories %+v", vfc)
+	}
+	if vfc[0].Name() != "cat1" {
+		t.Errorf("expected category name cat1 got %s", vfc[0].Name())
+	}
+	if len(vfc[0].Flags()) != 1 {
+		t.Fatalf("expected flag category to have just one flag got %+v", vfc[0].Flags())
+	}
+
+	fl := vfc[0].Flags()[0]
+	if !reflect.DeepEqual(fl.Names(), []string{"intd", "altd1", "altd2"}) {
+		t.Errorf("unexpected flag %+v", fl.Names())
+	}
+}
+
+func TestCommand_RunSubcommandWithDefault(t *testing.T) {
+	app := &App{
+		Version:        "some version",
+		Name:           "app",
+		DefaultCommand: "foo",
+		Commands: []*Command{
+			{
+				Name: "foo",
+				Action: func(ctx *Context) error {
+					return errors.New("should not run this subcommand")
+				},
+			},
+			{
+				Name:        "bar",
+				Usage:       "this is for testing",
+				Subcommands: []*Command{{}}, // some subcommand
+				Action: func(*Context) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	err := app.Run([]string{"app", "bar"})
+	expect(t, err, nil)
+
+	err = app.Run([]string{"app"})
+	expect(t, err, errors.New("should not run this subcommand"))
 }
