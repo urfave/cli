@@ -377,12 +377,14 @@ func (c *Command) VisibleCommands() []*Command {
 func (c *Command) VisibleFlagCategories() []VisibleFlagCategory {
 	if c.flagCategories == nil {
 		c.flagCategories = newFlagCategories()
-		for _, fl := range c.Flags {
-			if cf, ok := fl.(CategorizableFlag); ok {
-				c.flagCategories.AddFlag(cf.GetCategory(), fl)
-			}
+	}
+
+	for _, fl := range c.Flags {
+		if cf, ok := fl.(CategorizableFlag); ok {
+			c.flagCategories.AddFlag(cf.GetCategory(), fl)
 		}
 	}
+
 	return c.flagCategories.VisibleCategories()
 }
 

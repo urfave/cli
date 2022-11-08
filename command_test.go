@@ -470,17 +470,21 @@ func TestCommand_VisibleFlagCategories(t *testing.T) {
 	}
 
 	vfc := c.VisibleFlagCategories()
-	if len(vfc) != 1 {
-		t.Fatalf("unexpected visible flag categories %+v", vfc)
-	}
-	if vfc[0].Name() != "cat1" {
-		t.Errorf("expected category name cat1 got %s", vfc[0].Name())
-	}
-	if len(vfc[0].Flags()) != 1 {
-		t.Fatalf("expected flag category to have just one flag got %+v", vfc[0].Flags())
+	if len(vfc) < 2 {
+		t.Fatalf("unexpected visible flag categories %+#v", vfc)
 	}
 
-	fl := vfc[0].Flags()[0]
+	intdCatFlag := vfc[1]
+
+	if intdCatFlag.Name() != "cat1" {
+		t.Errorf("expected category name cat1 got %q", intdCatFlag.Name())
+	}
+	if len(intdCatFlag.Flags()) != 1 {
+		t.Fatalf("expected flag category to have just one flag got %+v", intdCatFlag.Flags())
+	}
+
+	fl := intdCatFlag.Flags()[0]
+
 	if !reflect.DeepEqual(fl.Names(), []string{"intd", "altd1", "altd2"}) {
 		t.Errorf("unexpected flag %+v", fl.Names())
 	}
