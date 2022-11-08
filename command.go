@@ -376,15 +376,8 @@ func (c *Command) VisibleCommands() []*Command {
 // VisibleFlagCategories returns a slice containing all the visible flag categories with the flags they contain
 func (c *Command) VisibleFlagCategories() []VisibleFlagCategory {
 	if c.flagCategories == nil {
-		c.flagCategories = newFlagCategories()
+		c.flagCategories = newFlagCategoriesFromFlags(c.Flags)
 	}
-
-	for _, fl := range c.Flags {
-		if cf, ok := fl.(CategorizableFlag); ok {
-			c.flagCategories.AddFlag(cf.GetCategory(), fl)
-		}
-	}
-
 	return c.flagCategories.VisibleCategories()
 }
 

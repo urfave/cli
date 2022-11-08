@@ -144,8 +144,8 @@ func ExampleApp_Run_appHelp() {
 	//    help, h        Shows a list of commands or help for one command
 	//
 	// GLOBAL OPTIONS:
-	//    --help, -h     show help (default: false)
 	//    --name value   a name to say (default: "bob")
+	//    --help, -h     show help (default: false)
 	//    --version, -v  print the version (default: false)
 }
 
@@ -177,7 +177,7 @@ func ExampleApp_Run_commandHelp() {
 	//    greet describeit - use it to see a description
 	//
 	// USAGE:
-	//    greet describeit [arguments...]
+	//    greet describeit [command options] [arguments...]
 	//
 	// DESCRIPTION:
 	//    This is how we describe describeit the function
@@ -2304,10 +2304,33 @@ func TestApp_VisibleCategories(t *testing.T) {
 }
 
 func TestApp_VisibleFlagCategories(t *testing.T) {
-	app := &App{}
+	app := &App{
+		Flags: []Flag{
+			&StringFlag{
+				Name: "strd", // no category set
+			},
+			&Int64Flag{
+				Name:     "intd",
+				Aliases:  []string{"altd1", "altd2"},
+				Category: "cat1",
+			},
+		},
+	}
+	app.Setup()
 	vfc := app.VisibleFlagCategories()
-	if len(vfc) != 0 {
-		t.Errorf("unexpected visible flag categories %+v", vfc)
+	if len(vfc) != 1 {
+		t.Fatalf("unexpected visible flag categories %+v", vfc)
+	}
+	if vfc[0].Name() != "cat1" {
+		t.Errorf("expected category name cat1 got %s", vfc[0].Name())
+	}
+	if len(vfc[0].Flags()) != 1 {
+		t.Fatalf("expected flag category to have just one flag got %+v", vfc[0].Flags())
+	}
+
+	fl := vfc[0].Flags()[0]
+	if !reflect.DeepEqual(fl.Names(), []string{"intd", "altd1", "altd2"}) {
+		t.Errorf("unexpected flag %+v", fl.Names())
 	}
 }
 

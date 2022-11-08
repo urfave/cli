@@ -251,7 +251,9 @@ func (a *App) Setup() {
 	a.flagCategories = newFlagCategories()
 	for _, fl := range a.Flags {
 		if cf, ok := fl.(CategorizableFlag); ok {
-			a.flagCategories.AddFlag(cf.GetCategory(), cf)
+			if cf.GetCategory() != "" {
+				a.flagCategories.AddFlag(cf.GetCategory(), cf)
+			}
 		}
 	}
 

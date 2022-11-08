@@ -1366,7 +1366,8 @@ DESCRIPTION:
    case
 
 OPTIONS:
-   --help, -h  show help (default: false)
+   --help, -h show help
+      (default: false)
 `
 
 	if output.String() != expected {
@@ -1435,7 +1436,8 @@ USAGE:
    even more
 
 OPTIONS:
-   --help, -h  show help (default: false)
+   --help, -h show help
+      (default: false)
 `
 
 	if output.String() != expected {
@@ -1510,8 +1512,10 @@ USAGE:
    even more
 
 OPTIONS:
-   --help, -h      show help (default: false)
-   --test-f value  my test usage
+   --test-f value my test
+      usage
+   --help, -h show help
+      (default: false)
 `
 
 	if output.String() != expected {
