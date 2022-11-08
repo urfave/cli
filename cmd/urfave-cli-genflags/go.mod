@@ -3,8 +3,8 @@ module github.com/urfave/cli/v2/cmd/urfave-cli-genflags
 go 1.18
 
 require (
-	github.com/urfave/cli/v2 v2.11.2
-	golang.org/x/text v0.3.8
+	github.com/urfave/cli/v2 v2.23.4
+	golang.org/x/text v0.4.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
