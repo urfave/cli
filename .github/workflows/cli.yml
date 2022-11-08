@@ -2,12 +2,12 @@ name: Run Tests
 on:
   push:
     branches:
-      - main
+      - v2-maint
     tags:
       - v2.*
   pull_request:
     branches:
-      - main
+      - v2-maint
 permissions:
   contents: read
 jobs:
