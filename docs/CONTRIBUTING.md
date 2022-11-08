@@ -21,36 +21,33 @@ milestones and import paths to which they correspond are:
 <https://github.com/urfave/cli/tree/main>
 
 The majority of active development and issue management is targeting the `main` branch,
-which **MUST** *only* receive bug fixes and feature *additions*.
+which is currently in *alpha*.
 
-- :arrow_right: [`v2.x`](https://github.com/urfave/cli/milestone/16)
-- :arrow_right: `github.com/urfave/cli/v2`
+- :arrow_right: [`v3.x`](https://github.com/urfave/cli/milestone/5)
+- :arrow_right: `github.com/urfave/cli/v3`
 
-The `main` branch in particular includes tooling to help with keeping the `v2.x` series
-backward compatible. More details on this process are in the development workflow section
-below.
+The `main` branch includes tooling to help with keeping track of `v3.x` series backward
+compatibility. More details on this process are in the development workflow section below.
 
 #### `v1` branch
 
 <https://github.com/urfave/cli/tree/v1>
 
-The `v1` branch **MUST** only receive bug fixes in the `v1.22.x` series. There is no
-strict rule regarding bug fixes to the `v2.x` series being backported to the `v1.22.x`
-series.
+The `v1` branch is no longer maintained.
 
 - :arrow_right: [`v1.22.x`](https://github.com/urfave/cli/milestone/11)
 - :arrow_right: `github.com/urfave/cli`
 
-#### `v3-dev-main` branch
+#### `v2-maint` branch
 
-<https://github.com/urfave/cli/tree/v3-dev-main>
+<https://github.com/urfave/cli/tree/v2-maint>
 
-The `v3-dev-branch` **MUST** receive all bug fixes and features added to the `main` branch
-and **MAY** receive feature *removals* and other changes that are otherwise
-*backward-incompatible* with the `v2.x` series.
+The `v2-maint` branch **MUST** only receive bug fixes in the `v2.23.x` series. There is no
+strict rule regarding bug fixes to the `v3.x` series being backported to the `v2.23.x`
+series.
 
-- :arrow_right: [`v3.x`](https://github.com/urfave/cli/milestone/5)
-- unreleased / unsupported
+- :arrow_right: [`v2.23.x`](https://github.com/urfave/cli/milestone/16)
+- :arrow_right: `github.com/urfave/cli/v2`
 
 ### development workflow
 
@@ -68,17 +65,16 @@ verify one's changes are harmonious in nature. The same steps are also run durin
 [continuous integration
 phase](https://github.com/urfave/cli/blob/main/.github/workflows/cli.yml).
 
-In the event that the `v2diff` target exits non-zero, this is a signal that the public API
-surface area has changed. If the changes adhere to semantic versioning, meaning they are
-*additions* or *bug fixes*, then manually running the approval step will "promote" the
-current `go doc` output:
+In the event that the `v3diff` target exits non-zero, this is a signal that the public API
+surface area has changed. If the changes are acceptable, then manually running the
+approval step will "promote" the current `go doc` output:
 
 ```sh
-make v2approve
+make v3approve
 ```
 
 Because the `generate` step includes updating `godoc-current.txt` and
-`testdata/godoc-v2.x.txt`, these changes *MUST* be part of any proposed pull request so
+`testdata/godoc-v3.x.txt`, these changes *MUST* be part of any proposed pull request so
 that reviewers have an opportunity to also make an informed decision about the "promotion"
 step.
 

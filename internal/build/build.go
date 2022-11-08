@@ -28,14 +28,13 @@ const (
 
 	gfmrunVersion = "v1.3.0"
 
-	v2diffWarning = `
+	v3diffWarning = `
 # The unified diff above indicates that the public API surface area
-# has changed. If you feel that the changes are acceptable and adhere
-# to the semantic versioning promise of the v2.x series described in
-# docs/CONTRIBUTING.md, please run the following command to promote
-# the current go docs:
+# has changed. If you feel that the changes are acceptable for the
+# v3.x series, please run the following command to promote the
+# current go docs:
 #
-#     make v2approve
+#     make v3approve
 #
 `
 )
@@ -129,19 +128,19 @@ func main() {
 				Action: LintActionFunc,
 			},
 			{
-				Name: "v2diff",
+				Name: "v3diff",
 				Flags: []cli.Flag{
 					&cli.BoolFlag{Name: "color", Value: false},
 				},
-				Action: V2Diff,
+				Action: V3Diff,
 			},
 			{
-				Name: "v2approve",
+				Name: "v3approve",
 				Action: topRunAction(
 					"cp",
 					"-v",
 					"godoc-current.txt",
-					filepath.Join("testdata", "godoc-v2.x.txt"),
+					filepath.Join("testdata", "godoc-v3.x.txt"),
 				),
 			},
 		},
@@ -636,7 +635,7 @@ func LintActionFunc(cCtx *cli.Context) error {
 	return nil
 }
 
-func V2Diff(cCtx *cli.Context) error {
+func V3Diff(cCtx *cli.Context) error {
 	os.Chdir(cCtx.Path("top"))
 
 	err := runCmd(
@@ -651,14 +650,14 @@ func V2Diff(cCtx *cli.Context) error {
 		}(),
 		"--unified",
 		"--label=a/godoc",
-		filepath.Join("testdata", "godoc-v2.x.txt"),
+		filepath.Join("testdata", "godoc-v3.x.txt"),
 		"--label=b/godoc",
 		"godoc-current.txt",
 	)
 
 	if err != nil {
 		fmt.Printf("# %v ---> Hey! <---\n", badNewsEmoji)
-		fmt.Println(strings.TrimSpace(v2diffWarning))
+		fmt.Println(strings.TrimSpace(v3diffWarning))
 	}
 
 	return err
