@@ -2,11 +2,6 @@
 
 package {{.PackageName}}
 
-import (
-	"flag"
-	"github.com/urfave/cli/v2"
-)
-
 {{range .SortedFlagTypes}}
 // {{.TypeName}} is the flag type that wraps cli.{{.TypeName}} to allow
 // for other values to be specified
