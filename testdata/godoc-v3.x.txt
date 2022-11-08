@@ -73,7 +73,8 @@ DESCRIPTION:
 
 OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
 
-OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}`
+OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}
+`
     CommandHelpTemplate is the text template for the command help topic. cli.go
     uses text/template to render templates. You can render custom help text by
     setting this variable.
@@ -144,7 +145,8 @@ COMMANDS:{{template "visibleCommandTemplate" .}}{{end}}{{if .VisibleFlagCategori
 
 OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
 
-OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}`
+OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}
+`
     SubcommandHelpTemplate is the text template for the subcommand help topic.
     cli.go uses text/template to render templates. You can render custom help
     text by setting this variable.
@@ -2092,7 +2094,7 @@ func (f *Uint64SliceFlag) Get(ctx *Context) []uint64
     Get returns the flag’s value in the given Context.
 
 func (f *Uint64SliceFlag) GetCategory() string
-    GetCategory returns the category for the flag
+    GetCategory returns the category of the flag
 
 func (f *Uint64SliceFlag) GetDefaultText() string
     GetDefaultText returns the default text for this flag
@@ -2129,7 +2131,7 @@ func (f *Uint64SliceFlag) String() string
     String returns a readable representation of this value (for usage defaults)
 
 func (f *Uint64SliceFlag) TakesValue() bool
-    TakesValue returns true of the flag takes a value, otherwise false
+    TakesValue returns true if the flag takes a value, otherwise false
 
 type UintFlag struct {
 	Name string
@@ -2256,7 +2258,7 @@ func (f *UintSliceFlag) Get(ctx *Context) []uint
     Get returns the flag’s value in the given Context.
 
 func (f *UintSliceFlag) GetCategory() string
-    GetCategory returns the category for the flag
+    GetCategory returns the category of the flag
 
 func (f *UintSliceFlag) GetDefaultText() string
     GetDefaultText returns the default text for this flag
@@ -2293,7 +2295,7 @@ func (f *UintSliceFlag) String() string
     String returns a readable representation of this value (for usage defaults)
 
 func (f *UintSliceFlag) TakesValue() bool
-    TakesValue returns true of the flag takes a value, otherwise false
+    TakesValue returns true if the flag takes a value, otherwise false
 
 type VisibleFlag interface {
 	Flag
