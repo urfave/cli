@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/urfave/cli/v2 v2.11.2
-	golang.org/x/text v0.3.7
+	golang.org/x/text v0.3.8
 	gopkg.in/yaml.v3 v3.0.1
 )
 
