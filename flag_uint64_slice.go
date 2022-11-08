@@ -91,21 +91,6 @@ func (f *Uint64SliceFlag) String() string {
 	return FlagStringer(f)
 }
 
-// TakesValue returns true of the flag takes a value, otherwise false
-func (f *Uint64SliceFlag) TakesValue() bool {
-	return true
-}
-
-// GetUsage returns the usage string for the flag
-func (f *Uint64SliceFlag) GetUsage() string {
-	return f.Usage
-}
-
-// GetCategory returns the category for the flag
-func (f *Uint64SliceFlag) GetCategory() string {
-	return f.Category
-}
-
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *Uint64SliceFlag) GetValue() string {
@@ -124,11 +109,6 @@ func (f *Uint64SliceFlag) GetDefaultText() string {
 		return f.DefaultText
 	}
 	return f.GetValue()
-}
-
-// GetEnvVars returns the env vars for this flag
-func (f *Uint64SliceFlag) GetEnvVars() []string {
-	return f.EnvVars
 }
 
 // IsSliceFlag implements DocGenerationSliceFlag.
@@ -178,6 +158,15 @@ func (f *Uint64SliceFlag) Apply(set *flag.FlagSet) error {
 // Get returns the flag’s value in the given Context.
 func (f *Uint64SliceFlag) Get(ctx *Context) []uint64 {
 	return ctx.Uint64Slice(f.Name)
+}
+
+// RunAction executes flag action if set
+func (f *Uint64SliceFlag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.Uint64Slice(f.Name))
+	}
+
+	return nil
 }
 
 // Uint64Slice looks up the value of a local Uint64SliceFlag, returns

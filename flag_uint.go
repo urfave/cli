@@ -6,21 +6,6 @@ import (
 	"strconv"
 )
 
-// TakesValue returns true of the flag takes a value, otherwise false
-func (f *UintFlag) TakesValue() bool {
-	return true
-}
-
-// GetUsage returns the usage string for the flag
-func (f *UintFlag) GetUsage() string {
-	return f.Usage
-}
-
-// GetCategory returns the category for the flag
-func (f *UintFlag) GetCategory() string {
-	return f.Category
-}
-
 // Apply populates the flag given the flag set and environment
 func (f *UintFlag) Apply(set *flag.FlagSet) error {
 	// set default value so that environment wont be able to overwrite it
@@ -49,15 +34,6 @@ func (f *UintFlag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
-// RunAction executes flag action if set
-func (f *UintFlag) RunAction(c *Context) error {
-	if f.Action != nil {
-		return f.Action(c, c.Uint(f.Name))
-	}
-
-	return nil
-}
-
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *UintFlag) GetValue() string {
@@ -72,14 +48,18 @@ func (f *UintFlag) GetDefaultText() string {
 	return fmt.Sprintf("%d", f.defaultValue)
 }
 
-// GetEnvVars returns the env vars for this flag
-func (f *UintFlag) GetEnvVars() []string {
-	return f.EnvVars
-}
-
 // Get returns the flag’s value in the given Context.
 func (f *UintFlag) Get(ctx *Context) uint {
 	return ctx.Uint(f.Name)
+}
+
+// RunAction executes flag action if set
+func (f *UintFlag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.Uint(f.Name))
+	}
+
+	return nil
 }
 
 // Uint looks up the value of a local UintFlag, returns

@@ -3,6 +3,7 @@
 # `Spec` type that maps to this file structure.
 flag_types:
   bool:
+    no_default_text: true
     struct_fields:
       - name: Count
         type: int

@@ -77,21 +77,6 @@ func (f *StringSliceFlag) String() string {
 	return FlagStringer(f)
 }
 
-// TakesValue returns true of the flag takes a value, otherwise false
-func (f *StringSliceFlag) TakesValue() bool {
-	return true
-}
-
-// GetUsage returns the usage string for the flag
-func (f *StringSliceFlag) GetUsage() string {
-	return f.Usage
-}
-
-// GetCategory returns the category for the flag
-func (f *StringSliceFlag) GetCategory() string {
-	return f.Category
-}
-
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *StringSliceFlag) GetValue() string {
@@ -112,11 +97,6 @@ func (f *StringSliceFlag) GetDefaultText() string {
 		return f.DefaultText
 	}
 	return f.GetValue()
-}
-
-// GetEnvVars returns the env vars for this flag
-func (f *StringSliceFlag) GetEnvVars() []string {
-	return f.EnvVars
 }
 
 // IsSliceFlag implements DocGenerationSliceFlag.

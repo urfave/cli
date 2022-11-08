@@ -6,21 +6,6 @@ import (
 	"strconv"
 )
 
-// TakesValue returns true of the flag takes a value, otherwise false
-func (f *Uint64Flag) TakesValue() bool {
-	return true
-}
-
-// GetUsage returns the usage string for the flag
-func (f *Uint64Flag) GetUsage() string {
-	return f.Usage
-}
-
-// GetCategory returns the category for the flag
-func (f *Uint64Flag) GetCategory() string {
-	return f.Category
-}
-
 // Apply populates the flag given the flag set and environment
 func (f *Uint64Flag) Apply(set *flag.FlagSet) error {
 	// set default value so that environment wont be able to overwrite it
@@ -49,15 +34,6 @@ func (f *Uint64Flag) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
-// RunAction executes flag action if set
-func (f *Uint64Flag) RunAction(c *Context) error {
-	if f.Action != nil {
-		return f.Action(c, c.Uint64(f.Name))
-	}
-
-	return nil
-}
-
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *Uint64Flag) GetValue() string {
@@ -72,14 +48,18 @@ func (f *Uint64Flag) GetDefaultText() string {
 	return fmt.Sprintf("%d", f.defaultValue)
 }
 
-// GetEnvVars returns the env vars for this flag
-func (f *Uint64Flag) GetEnvVars() []string {
-	return f.EnvVars
-}
-
 // Get returns the flag’s value in the given Context.
 func (f *Uint64Flag) Get(ctx *Context) uint64 {
 	return ctx.Uint64(f.Name)
+}
+
+// RunAction executes flag action if set
+func (f *Uint64Flag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.Uint64(f.Name))
+	}
+
+	return nil
 }
 
 // Uint64 looks up the value of a local Uint64Flag, returns

@@ -102,21 +102,6 @@ func (f *UintSliceFlag) String() string {
 	return FlagStringer(f)
 }
 
-// TakesValue returns true of the flag takes a value, otherwise false
-func (f *UintSliceFlag) TakesValue() bool {
-	return true
-}
-
-// GetUsage returns the usage string for the flag
-func (f *UintSliceFlag) GetUsage() string {
-	return f.Usage
-}
-
-// GetCategory returns the category for the flag
-func (f *UintSliceFlag) GetCategory() string {
-	return f.Category
-}
-
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *UintSliceFlag) GetValue() string {
@@ -135,11 +120,6 @@ func (f *UintSliceFlag) GetDefaultText() string {
 		return f.DefaultText
 	}
 	return f.GetValue()
-}
-
-// GetEnvVars returns the env vars for this flag
-func (f *UintSliceFlag) GetEnvVars() []string {
-	return f.EnvVars
 }
 
 // IsSliceFlag implements DocGenerationSliceFlag.
@@ -189,6 +169,15 @@ func (f *UintSliceFlag) Apply(set *flag.FlagSet) error {
 // Get returns the flag’s value in the given Context.
 func (f *UintSliceFlag) Get(ctx *Context) []uint {
 	return ctx.UintSlice(f.Name)
+}
+
+// RunAction executes flag action if set
+func (f *UintSliceFlag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.UintSlice(f.Name))
+	}
+
+	return nil
 }
 
 // UintSlice looks up the value of a local UintSliceFlag, returns

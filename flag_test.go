@@ -224,7 +224,7 @@ func TestFlagsFromEnv(t *testing.T) {
 
 		f, ok := test.flag.(DocGenerationFlag)
 		if !ok {
-			t.Errorf("flag %v needs to implement DocGenerationFlag to retrieve env vars", test.flag)
+			t.Errorf("flag %[1]q (%[1]T) needs to implement DocGenerationFlag to retrieve env vars", test.flag)
 		}
 		envVarSlice := f.GetEnvVars()
 		_ = os.Setenv(envVarSlice[0], test.input)

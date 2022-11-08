@@ -97,9 +97,14 @@ type ActionableFlag interface {
 // this interface be implemented.
 type Flag interface {
 	fmt.Stringer
+
 	// Apply Flag settings to the given flag set
 	Apply(*flag.FlagSet) error
+
+	// All possible names for this flag
 	Names() []string
+
+	// Whether the flag has been set or not
 	IsSet() bool
 }
 
@@ -108,6 +113,7 @@ type Flag interface {
 type RequiredFlag interface {
 	Flag
 
+	// whether the flag is a required flag or not
 	IsRequired() bool
 }
 
@@ -140,6 +146,12 @@ type DocGenerationSliceFlag interface {
 	IsSliceFlag() bool
 }
 
+// Countable is an interface to enable detection of flag values which support
+// repetitive flags
+type Countable interface {
+	Count() int
+}
+
 // VisibleFlag is an interface that allows to check if a flag is visible
 type VisibleFlag interface {
 	Flag
@@ -153,13 +165,8 @@ type VisibleFlag interface {
 type CategorizableFlag interface {
 	VisibleFlag
 
+	// Returns the category of the flag
 	GetCategory() string
-}
-
-// Countable is an interface to enable detection of flag values which support
-// repetitive flags
-type Countable interface {
-	Count() int
 }
 
 func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {

@@ -58,21 +58,6 @@ func (b *boolValue) Count() int {
 	return 0
 }
 
-// TakesValue returns true of the flag takes a value, otherwise false
-func (f *BoolFlag) TakesValue() bool {
-	return false
-}
-
-// GetUsage returns the usage string for the flag
-func (f *BoolFlag) GetUsage() string {
-	return f.Usage
-}
-
-// GetCategory returns the category for the flag
-func (f *BoolFlag) GetCategory() string {
-	return f.Category
-}
-
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *BoolFlag) GetValue() string {
@@ -85,11 +70,6 @@ func (f *BoolFlag) GetDefaultText() string {
 		return f.DefaultText
 	}
 	return fmt.Sprintf("%v", f.defaultValue)
-}
-
-// GetEnvVars returns the env vars for this flag
-func (f *BoolFlag) GetEnvVars() []string {
-	return f.EnvVars
 }
 
 // RunAction executes flag action if set
