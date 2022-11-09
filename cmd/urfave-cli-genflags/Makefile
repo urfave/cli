@@ -26,4 +26,3 @@ show-cover:
 .PHONY: run
 run: build
 	./urfave-cli-genflags	
-	./urfave-cli-genflags -f altsrc/flag-spec.yaml -o altsrc/flag_generated.go -p altsrc -a

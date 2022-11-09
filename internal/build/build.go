@@ -155,7 +155,7 @@ func main() {
 			},
 			&cli.StringSliceFlag{
 				Name:  "packages",
-				Value: cli.NewStringSlice("cli", "altsrc", "internal/build"),
+				Value: cli.NewStringSlice("cli", "internal/build"),
 			},
 		},
 	}
@@ -500,14 +500,9 @@ func GenerateActionFunc(cCtx *cli.Context) error {
 		return err
 	}
 
-	altsrcDocs, err := sh("go", "doc", "-all", filepath.Join(top, "altsrc"))
-	if err != nil {
-		return err
-	}
-
 	if err := os.WriteFile(
 		filepath.Join(top, "godoc-current.txt"),
-		[]byte(cliDocs+altsrcDocs),
+		[]byte(cliDocs),
 		0644,
 	); err != nil {
 		return err
