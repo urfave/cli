@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-	"time"
 )
 
 const suggestDidYouMeanTemplate = "Did you mean %q?"
@@ -81,8 +80,6 @@ type App struct {
 	OnUsageError OnUsageErrorFunc
 	// Execute this function when an invalid flag is accessed from the context
 	InvalidFlagAccessHandler InvalidFlagAccessFunc
-	// Compilation date
-	Compiled time.Time
 	// List of all authors who contributed
 	Authors []*Author
 	// Copyright of the binary if any
@@ -128,16 +125,6 @@ type SuggestFlagFunc func(flags []Flag, provided string, hideHelp bool) string
 
 type SuggestCommandFunc func(commands []*Command, provided string) string
 
-// Tries to find out when this binary was compiled.
-// Returns the current time if it fails to find it.
-func compileTime() time.Time {
-	info, err := os.Stat(os.Args[0])
-	if err != nil {
-		return time.Now()
-	}
-	return info.ModTime()
-}
-
 // NewApp creates a new cli Application with some reasonable defaults for Name,
 // Usage, Version and Action.
 func NewApp() *App {
@@ -147,7 +134,6 @@ func NewApp() *App {
 		UsageText:    "",
 		BashComplete: DefaultAppComplete,
 		Action:       helpCommand.Action,
-		Compiled:     compileTime(),
 		Reader:       os.Stdin,
 		Writer:       os.Stdout,
 		ErrWriter:    os.Stderr,
@@ -186,10 +172,6 @@ func (a *App) Setup() {
 
 	if a.Action == nil {
 		a.Action = helpCommand.Action
-	}
-
-	if a.Compiled == (time.Time{}) {
-		a.Compiled = compileTime()
 	}
 
 	if a.Reader == nil {
