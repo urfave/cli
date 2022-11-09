@@ -178,6 +178,73 @@ func Test_helpCommand_InHelpOutput(t *testing.T) {
 	}
 }
 
+func Test_helpCommand_HelpName(t *testing.T) {
+	var tests = []struct {
+		name string
+		args []string
+		want string
+	}{
+		{
+			name: "app help's helpName",
+			args: []string{"app", "help", "help"},
+			want: "app help -",
+		},
+		{
+			name: "cmd help's helpName",
+			args: []string{"app", "cmd", "help", "help"},
+			want: "app cmd help -",
+		},
+		{
+			name: "subcmd help's helpName",
+			args: []string{"app", "cmd", "subcmd", "help", "help"},
+			want: "app cmd subcmd help -",
+		},
+	}
+	for _, tt := range tests {
+		buf := &bytes.Buffer{}
+		t.Run(tt.name, func(t *testing.T) {
+			app := &App{
+				Name: "app",
+				Commands: []*Command{
+					{
+						Name:        "cmd",
+						Subcommands: []*Command{{Name: "subcmd"}},
+					},
+				},
+				Writer: buf,
+			}
+			err := app.Run(tt.args)
+			expect(t, err, nil)
+			got := buf.String()
+			if !strings.Contains(got, tt.want) {
+				t.Errorf("Expected %q contained - Got %q", tt.want, got)
+			}
+		})
+	}
+}
+
+func Test_helpCommand_HideHelpCommand(t *testing.T) {
+	buf := &bytes.Buffer{}
+	app := &App{
+		Name:   "app",
+		Writer: buf,
+	}
+	err := app.Run([]string{"app", "help", "help"})
+	expect(t, err, nil)
+	got := buf.String()
+	notWant := "COMMANDS:"
+	if strings.Contains(got, notWant) {
+		t.Errorf("Not expected %q - Got %q", notWant, got)
+	}
+}
+
+func Test_helpCommand_HideHelpFlag(t *testing.T) {
+	app := newTestApp()
+	if err := app.Run([]string{"app", "help", "-h"}); err == nil {
+		t.Errorf("Expected flag error - Got nil")
+	}
+}
+
 func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 	app := &App{}
 

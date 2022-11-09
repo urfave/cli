@@ -230,6 +230,7 @@ func (a *App) Setup() {
 
 	if a.Command(helpCommand.Name) == nil && !a.HideHelp {
 		if !a.HideHelpCommand {
+			helpCommand.HelpName = fmt.Sprintf("%s %s", a.HelpName, helpName)
 			a.appendCommand(helpCommand)
 		}
 
