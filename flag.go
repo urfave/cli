@@ -15,7 +15,10 @@ import (
 
 const defaultPlaceholder = "value"
 
-var defaultSliceFlagSeparator = ","
+var (
+	defaultSliceFlagSeparator = ","
+	disableSliceFlagSeparator = false
+)
 
 var (
 	slPfx = fmt.Sprintf("sl:::%d:::", time.Now().UTC().UnixNano())
@@ -380,5 +383,9 @@ func flagFromEnvOrFile(envVars []string, filePath string) (value string, fromWhe
 }
 
 func flagSplitMultiValues(val string) []string {
+	if disableSliceFlagSeparator {
+		return []string{val}
+	}
+
 	return strings.Split(val, defaultSliceFlagSeparator)
 }

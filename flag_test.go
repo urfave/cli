@@ -3402,3 +3402,19 @@ func TestCustomizedSliceFlagSeparator(t *testing.T) {
 		}
 	}
 }
+
+func TestFlagSplitMultiValues_Disabled(t *testing.T) {
+	disableSliceFlagSeparator = true
+	defer func() {
+		disableSliceFlagSeparator = false
+	}()
+	opts := []string{"opt1", "opt2", "opt3,op", "opt4"}
+	ret := flagSplitMultiValues(strings.Join(opts, ","))
+	if len(ret) != 1 {
+		t.Fatalf("failed to disable split slice flag, want: 1, but got: %d", len(ret))
+	}
+
+	if ret[0] != strings.Join(opts, ",") {
+		t.Fatalf("failed to disable split slice flag, want: %s, but got: %s", strings.Join(opts, ","), ret[0])
+	}
+}
