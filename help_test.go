@@ -190,13 +190,28 @@ func Test_helpCommand_HelpName(t *testing.T) {
 			want: "app help -",
 		},
 		{
+			name: "app help's helpName via flag",
+			args: []string{"app", "-h", "help"},
+			want: "app help -",
+		},
+		{
 			name: "cmd help's helpName",
 			args: []string{"app", "cmd", "help", "help"},
 			want: "app cmd help -",
 		},
 		{
+			name: "cmd help's helpName via flag",
+			args: []string{"app", "cmd", "-h", "help"},
+			want: "app cmd help -",
+		},
+		{
 			name: "subcmd help's helpName",
 			args: []string{"app", "cmd", "subcmd", "help", "help"},
+			want: "app cmd subcmd help -",
+		},
+		{
+			name: "subcmd help's helpName via flag",
+			args: []string{"app", "cmd", "subcmd", "-h", "help"},
 			want: "app cmd subcmd help -",
 		},
 	}
@@ -292,6 +307,71 @@ func TestShowAppHelp_CommandAliases(t *testing.T) {
 
 	if !strings.Contains(output.String(), "frobbly, fr, frob") {
 		t.Errorf("expected output to include all command aliases; got: %q", output.String())
+	}
+}
+
+func TestShowCommandHelp_AppendHelp(t *testing.T) {
+	var tests = []struct {
+		name            string
+		hideHelp        bool
+		hideHelpCommand bool
+		args            []string
+		wantHelpCommand bool
+		wantHelpFlag    bool
+	}{
+		{
+			name:            "with HideHelp",
+			hideHelp:        true,
+			args:            []string{"app"},
+			wantHelpCommand: false,
+			wantHelpFlag:    false,
+		},
+		{
+			name:            "with HideHelpCommand",
+			hideHelpCommand: true,
+			args:            []string{"app"},
+			wantHelpCommand: false,
+			wantHelpFlag:    true,
+		},
+		{
+			name:            "with Subcommand",
+			args:            []string{"app"},
+			wantHelpCommand: true,
+			wantHelpFlag:    true,
+		},
+		{
+			name:            "without Subcommand",
+			args:            []string{"app", "cmd"},
+			wantHelpCommand: false,
+			wantHelpFlag:    true,
+		},
+	}
+	for _, tt := range tests {
+		buf := &bytes.Buffer{}
+		t.Run(tt.name, func(t *testing.T) {
+			app := &App{
+				Name:   "app",
+				Action: func(ctx *Context) error { return ShowCommandHelp(ctx, "cmd") },
+				Commands: []*Command{
+					{
+						Name:            "cmd",
+						HideHelp:        tt.hideHelp,
+						HideHelpCommand: tt.hideHelpCommand,
+						Action:          func(ctx *Context) error { return ShowCommandHelp(ctx, "subcmd") },
+						Subcommands:     []*Command{{Name: "subcmd"}},
+					},
+				},
+				Writer: buf,
+			}
+			err := app.Run(tt.args)
+			expect(t, err, nil)
+			got := buf.String()
+			gotHelpCommand := strings.Contains(got, "help, h  Shows a list of commands or help for one command")
+			gotHelpFlag := strings.Contains(got, "--help, -h  show help")
+			if gotHelpCommand != tt.wantHelpCommand || gotHelpFlag != tt.wantHelpFlag {
+				t.Errorf("ShowCommandHelp() return unexpected help message - Got %q", got)
+			}
+		})
 	}
 }
 
