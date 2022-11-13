@@ -3,6 +3,7 @@ package cli
 import (
 	"flag"
 	"fmt"
+	"reflect"
 )
 
 type FlagConfig interface {
@@ -122,7 +123,8 @@ func (f *FlagBase[T, V]) GetEnvVars() []string {
 
 // TakesValue returns true if the flag takes a value, otherwise false
 func (f *FlagBase[T, V]) TakesValue() bool {
-	return "Float64Flag" != "BoolFlag"
+	var t T
+	return reflect.TypeOf(t).Kind() != reflect.Bool
 }
 
 // GetDefaultText returns the default text for this flag
@@ -140,4 +142,13 @@ func (f *FlagBase[T, V]) Get(ctx *Context) T {
 	}
 	var t T
 	return t
+}
+
+// RunAction executes flag action if set
+func (f *FlagBase[T, V]) RunAction(ctx *Context) error {
+	if f.Action != nil {
+		return f.Action(ctx, f.Get(ctx))
+	}
+
+	return nil
 }
