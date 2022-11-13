@@ -18,7 +18,7 @@ type boolValue struct {
 	count       *int
 }
 
-func (i boolValue) Create(val bool, p *bool /*, count *int*/) flag.Value {
+func (i boolValue) Create(val bool, p *bool, c FlagConfig) flag.Value {
 	*p = val
 	return &boolValue{
 		destination: p,
@@ -57,7 +57,7 @@ func (b *boolValue) Count() int {
 	return 0
 }
 
-type BoolFlag = flagImpl[bool, boolValue]
+type BoolFlag = FlagBase[bool, boolValue]
 
 func (cCtx *Context) Bool(name string) bool {
 	if v, ok := cCtx.Value(name).(bool); ok {

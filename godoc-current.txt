@@ -434,6 +434,7 @@ type BeforeFunc func(*Context) error
     the context is ready if a non-nil error is returned, no subcommands are run
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 type BoolFlag struct {
 	Name string
 
@@ -504,6 +505,9 @@ func (f *BoolFlag) TakesValue() bool
 =======
 type BoolFlag = flagImpl[bool, boolValue]
 >>>>>>> Add all flags
+=======
+type BoolFlag = FlagBase[bool, boolValue]
+>>>>>>> Add FlagConfig
 
 type CategorizableFlag interface {
 	VisibleFlag
@@ -767,6 +771,7 @@ type DocGenerationSliceFlag interface {
     DocGenerationSliceFlag extends DocGenerationFlag for slice-based flags.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 type DurationFlag struct {
 	Name string
 
@@ -835,6 +840,9 @@ func (f *DurationFlag) TakesValue() bool
 =======
 type DurationFlag = flagImpl[time.Duration, durationValue]
 >>>>>>> Add all flags
+=======
+type DurationFlag = FlagBase[time.Duration, durationValue]
+>>>>>>> Add FlagConfig
 
 type ErrorFormatter interface {
 	Format(s fmt.State, verb rune)
@@ -905,6 +913,76 @@ var VersionFlag Flag = &BoolFlag{
 }
     VersionFlag prints the version for the application
 
+type FlagBase[T any, VC ValueCreator[T]] struct {
+	Name string
+
+	Category    string
+	DefaultText string
+	FilePath    string
+	Usage       string
+
+	Required   bool
+	Hidden     bool
+	HasBeenSet bool
+
+	Value       T
+	Destination *T
+
+	Aliases []string
+	EnvVars []string
+
+	TakesFile bool
+	Base      int
+	Count     *int
+
+	Action func(*Context, T) error
+
+	// Has unexported fields.
+}
+    Float64Flag is a flag with type float64
+
+func (f *FlagBase[T, V]) Apply(set *flag.FlagSet) error
+    Apply populates the flag given the flag set and environment
+
+func (f *FlagBase[T, V]) Get(ctx *Context) T
+    Get returns the flag’s value in the given Context.
+
+func (f *FlagBase[T, V]) GetCategory() string
+    GetCategory returns the category of the flag
+
+func (f *FlagBase[T, V]) GetDefaultText() string
+    GetDefaultText returns the default text for this flag
+
+func (f *FlagBase[T, V]) GetEnvVars() []string
+    GetEnvVars returns the env vars for this flag
+
+func (f *FlagBase[T, V]) GetUsage() string
+    GetUsage returns the usage string for the flag
+
+func (f *FlagBase[T, V]) GetValue() string
+    GetValue returns the flags value as string representation and an empty
+    string if the flag takes no value at all.
+
+func (f *FlagBase[T, V]) IntBase() int
+
+func (f *FlagBase[T, V]) IsRequired() bool
+    IsRequired returns whether or not the flag is required
+
+func (f *FlagBase[T, V]) IsSet() bool
+    IsSet returns whether or not the flag has been set through env or file
+
+func (f *FlagBase[T, V]) IsVisible() bool
+    IsVisible returns true if the flag is not hidden, otherwise false
+
+func (f *FlagBase[T, V]) Names() []string
+    Names returns the names of the flag
+
+func (f *FlagBase[T, V]) String() string
+    String returns a readable representation of this value (for usage defaults)
+
+func (f *FlagBase[T, V]) TakesValue() bool
+    TakesValue returns true if the flag takes a value, otherwise false
+
 type FlagCategories interface {
 	// AddFlags adds a flag to a category, creating a new category if necessary.
 	AddFlag(category string, fl Flag)
@@ -912,6 +990,10 @@ type FlagCategories interface {
 	VisibleCategories() []VisibleFlagCategory
 }
     FlagCategories interface allows for category manipulation
+
+type FlagConfig interface {
+	IntBase() int
+}
 
 type FlagEnvHintFunc func(envVars []string, str string) string
     FlagEnvHintFunc is used by the default FlagStringFunc to annotate flag help
@@ -954,6 +1036,7 @@ func (f FlagsByName) Less(i, j int) bool
 
 func (f FlagsByName) Swap(i, j int)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 type Float64Flag struct {
 	Name string
@@ -1023,6 +1106,9 @@ func (f *Float64Flag) TakesValue() bool
 =======
 type Float64Flag = flagImpl[float64, float64Value]
 >>>>>>> Add all flags
+=======
+type Float64Flag = FlagBase[float64, float64Value]
+>>>>>>> Add FlagConfig
 
 type Float64Slice struct {
 	// Has unexported fields.
@@ -1192,6 +1278,7 @@ func (f *GenericFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 type Int64Flag struct {
 	Name string
 
@@ -1262,6 +1349,9 @@ func (f *Int64Flag) TakesValue() bool
 =======
 type Int64Flag = flagImpl[int64, int64Value]
 >>>>>>> Add all flags
+=======
+type Int64Flag = FlagBase[int64, int64Value]
+>>>>>>> Add FlagConfig
 
 type Int64Slice struct {
 	// Has unexported fields.
@@ -1363,6 +1453,7 @@ func (f *Int64SliceFlag) TakesValue() bool
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 type IntFlag struct {
 	Name string
 
@@ -1436,6 +1527,9 @@ type IntFlag = flagImpl[int]
 =======
 type IntFlag = flagImpl[int, intValue]
 >>>>>>> Rebase
+=======
+type IntFlag = FlagBase[int, intValue]
+>>>>>>> Add FlagConfig
 
 type IntSlice struct {
 	// Has unexported fields.
@@ -1714,6 +1808,7 @@ type SliceFlagTarget[E any] interface {
     (initially), and Destination is propagated outwards (on every update).
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 type StringFlag struct {
 	Name string
 
@@ -1784,6 +1879,9 @@ func (f *StringFlag) TakesValue() bool
 =======
 type StringFlag = flagImpl[string, stringValue]
 >>>>>>> Add all flags
+=======
+type StringFlag = FlagBase[string, stringValue]
+>>>>>>> Add FlagConfig
 
 type StringSlice struct {
 	// Has unexported fields.
@@ -1989,6 +2087,7 @@ func (f *TimestampFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 type Uint64Flag struct {
 	Name string
 
@@ -2059,6 +2158,9 @@ func (f *Uint64Flag) TakesValue() bool
 =======
 type Uint64Flag = flagImpl[uint64, uint64Value]
 >>>>>>> Add all flags
+=======
+type Uint64Flag = FlagBase[uint64, uint64Value]
+>>>>>>> Add FlagConfig
 
 type Uint64Slice struct {
 	// Has unexported fields.
@@ -2153,6 +2255,7 @@ func (f *Uint64SliceFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 type UintFlag struct {
 	Name string
 
@@ -2223,6 +2326,9 @@ func (f *UintFlag) TakesValue() bool
 =======
 type UintFlag = flagImpl[uint, uintValue]
 >>>>>>> Add all flags
+=======
+type UintFlag = FlagBase[uint, uintValue]
+>>>>>>> Add FlagConfig
 
 type UintSlice struct {
 	// Has unexported fields.
@@ -2321,7 +2427,7 @@ func (f *UintSliceFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
 
 type ValueCreator[T any] interface {
-	Create(t T, d *T) flag.Value
+	Create(T, *T, FlagConfig) flag.Value
 }
 
 type VisibleFlag interface {

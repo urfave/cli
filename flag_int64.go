@@ -6,11 +6,17 @@ import (
 )
 
 // -- int64 Value
-type int64Value int64
+type int64Value struct {
+	val  *int64
+	base int
+}
 
-func (i int64Value) Create(val int64, p *int64) flag.Value {
+func (i int64Value) Create(val int64, p *int64, c FlagConfig) flag.Value {
 	*p = val
-	return (*int64Value)(p)
+	return &int64Value{
+		val:  p,
+		base: c.IntBase(),
+	}
 }
 
 func (i *int64Value) Set(s string) error {
@@ -18,15 +24,15 @@ func (i *int64Value) Set(s string) error {
 	if err != nil {
 		return err
 	}
-	*i = int64Value(v)
+	*i.val = v
 	return err
 }
 
-func (i *int64Value) Get() any { return int64(*i) }
+func (i *int64Value) Get() any { return int64(*i.val) }
 
-func (i *int64Value) String() string { return strconv.FormatInt(int64(*i), 10) }
+func (i *int64Value) String() string { return strconv.FormatInt(int64(*i.val), 10) }
 
-type Int64Flag = flagImpl[int64, int64Value]
+type Int64Flag = FlagBase[int64, int64Value]
 
 // Int64 looks up the value of a local Int64Flag, returns
 // 0 if not found

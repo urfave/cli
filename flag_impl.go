@@ -5,12 +5,16 @@ import (
 	"fmt"
 )
 
+type FlagConfig interface {
+	IntBase() int
+}
+
 type ValueCreator[T any] interface {
-	Create(t T, d *T) flag.Value
+	Create(T, *T, FlagConfig) flag.Value
 }
 
 // Float64Flag is a flag with type float64
-type flagImpl[T any, F ValueCreator[T]] struct {
+type FlagBase[T any, VC ValueCreator[T]] struct {
 	Name string
 
 	Category    string
@@ -32,21 +36,26 @@ type flagImpl[T any, F ValueCreator[T]] struct {
 	Base      int
 	Count     *int
 
-	creator F
+	Action func(*Context, T) error
+
+	creator VC
 	value   flag.Value
-	Action  func(*Context, T) error
+}
+
+func (f *FlagBase[T, V]) IntBase() int {
+	return f.Base
 }
 
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
-func (f *flagImpl[T, V]) GetValue() string {
+func (f *FlagBase[T, V]) GetValue() string {
 	return fmt.Sprintf("%v", f.Value)
 }
 
 // Apply populates the flag given the flag set and environment
-func (f *flagImpl[T, V]) Apply(set *flag.FlagSet) error {
+func (f *FlagBase[T, V]) Apply(set *flag.FlagSet) error {
 	if f.Destination == nil {
-		f.value = f.creator.Create(f.Value, new(T))
+		f.value = f.creator.Create(f.Value, new(T), f)
 	}
 
 	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
@@ -61,7 +70,7 @@ func (f *flagImpl[T, V]) Apply(set *flag.FlagSet) error {
 
 	for _, name := range f.Names() {
 		if f.Destination != nil {
-			f.value = f.creator.Create(f.Value, f.Destination)
+			f.value = f.creator.Create(f.Value, f.Destination, f)
 			set.Var(f.value, name, f.Usage)
 			continue
 		}
@@ -72,52 +81,52 @@ func (f *flagImpl[T, V]) Apply(set *flag.FlagSet) error {
 }
 
 // String returns a readable representation of this value (for usage defaults)
-func (f *flagImpl[T, V]) String() string {
+func (f *FlagBase[T, V]) String() string {
 	return FlagStringer(f)
 }
 
 // IsSet returns whether or not the flag has been set through env or file
-func (f *flagImpl[T, V]) IsSet() bool {
+func (f *FlagBase[T, V]) IsSet() bool {
 	return f.HasBeenSet
 }
 
 // Names returns the names of the flag
-func (f *flagImpl[T, V]) Names() []string {
+func (f *FlagBase[T, V]) Names() []string {
 	return FlagNames(f.Name, f.Aliases)
 }
 
 // IsRequired returns whether or not the flag is required
-func (f *flagImpl[T, V]) IsRequired() bool {
+func (f *FlagBase[T, V]) IsRequired() bool {
 	return f.Required
 }
 
 // IsVisible returns true if the flag is not hidden, otherwise false
-func (f *flagImpl[T, V]) IsVisible() bool {
+func (f *FlagBase[T, V]) IsVisible() bool {
 	return !f.Hidden
 }
 
 // GetCategory returns the category of the flag
-func (f *flagImpl[T, V]) GetCategory() string {
+func (f *FlagBase[T, V]) GetCategory() string {
 	return f.Category
 }
 
 // GetUsage returns the usage string for the flag
-func (f *flagImpl[T, V]) GetUsage() string {
+func (f *FlagBase[T, V]) GetUsage() string {
 	return f.Usage
 }
 
 // GetEnvVars returns the env vars for this flag
-func (f *flagImpl[T, V]) GetEnvVars() []string {
+func (f *FlagBase[T, V]) GetEnvVars() []string {
 	return f.EnvVars
 }
 
 // TakesValue returns true if the flag takes a value, otherwise false
-func (f *flagImpl[T, V]) TakesValue() bool {
+func (f *FlagBase[T, V]) TakesValue() bool {
 	return "Float64Flag" != "BoolFlag"
 }
 
 // GetDefaultText returns the default text for this flag
-func (f *flagImpl[T, V]) GetDefaultText() string {
+func (f *FlagBase[T, V]) GetDefaultText() string {
 	if f.DefaultText != "" {
 		return f.DefaultText
 	}
@@ -125,7 +134,7 @@ func (f *flagImpl[T, V]) GetDefaultText() string {
 }
 
 // Get returns the flag’s value in the given Context.
-func (f *flagImpl[T, V]) Get(ctx *Context) T {
+func (f *FlagBase[T, V]) Get(ctx *Context) T {
 	if v, ok := ctx.Value(f.Name).(T); ok {
 		return v
 	}

@@ -2726,6 +2726,7 @@ func TestFlagAction(t *testing.T) {
 	stringFlag := &StringFlag{
 		Name: "f_string",
 		Action: func(c *Context, v string) error {
+			t.Log("in adction")
 			if v == "" {
 				return fmt.Errorf("empty string")
 			}
