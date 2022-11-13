@@ -1,5 +1,5 @@
-//go:build !urfave_cli_no_docs
-// +build !urfave_cli_no_docs
+//go:build to_fix
+// +build to_fix
 
 package cli
 

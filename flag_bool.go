@@ -22,7 +22,7 @@ func (i boolValue) Create(val bool, p *bool, c FlagConfig) flag.Value {
 	*p = val
 	return &boolValue{
 		destination: p,
-		//count:       0//count,
+		count:       c.GetCount(),
 	}
 }
 

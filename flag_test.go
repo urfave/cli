@@ -151,7 +151,6 @@ func TestFlagsFromEnv(t *testing.T) {
 		flag      Flag
 		errRegexp string
 	}{
-		{"", false, &BoolFlag{Name: "debug", EnvVars: []string{"DEBUG"}}, ""},
 		{"1", true, &BoolFlag{Name: "debug", EnvVars: []string{"DEBUG"}}, ""},
 		{"false", false, &BoolFlag{Name: "debug", EnvVars: []string{"DEBUG"}}, ""},
 		{"foobar", true, &BoolFlag{Name: "debug", EnvVars: []string{"DEBUG"}}, `could not parse "foobar" as bool value from environment variable "DEBUG" for flag debug: .*`},
@@ -1603,6 +1602,8 @@ var float64FlagTests = []struct {
 func TestFloat64FlagHelpOutput(t *testing.T) {
 	for _, test := range float64FlagTests {
 		f := &Float64Flag{Name: test.name, Value: 0.1}
+		// simulate an f.Apply
+		f.defaultValue = f.Value
 		output := f.String()
 
 		if output != test.expected {

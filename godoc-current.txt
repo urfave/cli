@@ -775,9 +775,8 @@ type FlagBase[T any, VC ValueCreator[T]] struct {
 	FilePath    string
 	Usage       string
 
-	Required   bool
-	Hidden     bool
-	HasBeenSet bool
+	Required bool
+	Hidden   bool
 
 	Value       T
 	Destination *T
@@ -803,6 +802,8 @@ func (f *FlagBase[T, V]) Get(ctx *Context) T
 
 func (f *FlagBase[T, V]) GetCategory() string
     GetCategory returns the category of the flag
+
+func (f *FlagBase[T, V]) GetCount() *int
 
 func (f *FlagBase[T, V]) GetDefaultText() string
     GetDefaultText returns the default text for this flag
@@ -831,6 +832,9 @@ func (f *FlagBase[T, V]) IsVisible() bool
 func (f *FlagBase[T, V]) Names() []string
     Names returns the names of the flag
 
+func (f *FlagBase[T, V]) RunAction(ctx *Context) error
+    RunAction executes flag action if set
+
 func (f *FlagBase[T, V]) String() string
     String returns a readable representation of this value (for usage defaults)
 
@@ -847,6 +851,7 @@ type FlagCategories interface {
 
 type FlagConfig interface {
 	IntBase() int
+	GetCount() *int
 }
 
 type FlagEnvHintFunc func(envVars []string, str string) string
