@@ -30,7 +30,12 @@ func (i *intValue) Set(s string) error {
 
 func (i *intValue) Get() any { return int(*i.val) }
 
-func (i *intValue) String() string { return strconv.Itoa(int(*i.val)) }
+func (i *intValue) String() string {
+	if i == nil || i.val == nil {
+		return ""
+	}
+	return strconv.Itoa(int(*i.val))
+}
 
 type IntFlag = FlagBase[int, intValue]
 
