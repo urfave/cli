@@ -57,6 +57,9 @@ func (f *FlagBase[T, V]) GetCount() *int {
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *FlagBase[T, V]) GetValue() string {
+	if reflect.TypeOf(f.Value).Kind() == reflect.Bool {
+		return ""
+	}
 	return fmt.Sprintf("%v", f.Value)
 }
 
