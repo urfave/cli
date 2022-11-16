@@ -22,6 +22,7 @@ var helpCommandDontUse = &Command{
 	Aliases:   []string{helpAlias},
 	Usage:     "Shows a list of commands or help for one command",
 	ArgsUsage: "[command]",
+	HideHelp:  true,
 }
 
 var helpCommand = &Command{
@@ -29,6 +30,7 @@ var helpCommand = &Command{
 	Aliases:   []string{helpAlias},
 	Usage:     "Shows a list of commands or help for one command",
 	ArgsUsage: "[command]",
+	HideHelp:  true,
 	Action: func(cCtx *Context) error {
 		args := cCtx.Args()
 		argsPresent := args.First() != ""
@@ -246,11 +248,13 @@ func ShowCommandHelp(ctx *Context, command string) error {
 	}
 	for _, c := range commands {
 		if c.HasName(command) {
-			if !ctx.App.HideHelpCommand && !c.HasName(helpName) && len(c.Subcommands) != 0 && c.Command(helpName) == nil {
-				c.Subcommands = append(c.Subcommands, helpCommandDontUse)
-			}
-			if !ctx.App.HideHelp && HelpFlag != nil {
-				c.appendFlag(HelpFlag)
+			if !c.HideHelp {
+				if !c.HideHelpCommand && len(c.Subcommands) != 0 && c.Command(helpName) == nil {
+					c.Subcommands = append(c.Subcommands, helpCommandDontUse)
+				}
+				if HelpFlag != nil {
+					c.appendFlag(HelpFlag)
+				}
 			}
 			templ := c.CustomHelpTemplate
 			if templ == "" {

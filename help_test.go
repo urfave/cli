@@ -178,6 +178,88 @@ func Test_helpCommand_InHelpOutput(t *testing.T) {
 	}
 }
 
+func Test_helpCommand_HelpName(t *testing.T) {
+	var tests = []struct {
+		name string
+		args []string
+		want string
+	}{
+		{
+			name: "app help's helpName",
+			args: []string{"app", "help", "help"},
+			want: "app help -",
+		},
+		{
+			name: "app help's helpName via flag",
+			args: []string{"app", "-h", "help"},
+			want: "app help -",
+		},
+		{
+			name: "cmd help's helpName",
+			args: []string{"app", "cmd", "help", "help"},
+			want: "app cmd help -",
+		},
+		{
+			name: "cmd help's helpName via flag",
+			args: []string{"app", "cmd", "-h", "help"},
+			want: "app cmd help -",
+		},
+		{
+			name: "subcmd help's helpName",
+			args: []string{"app", "cmd", "subcmd", "help", "help"},
+			want: "app cmd subcmd help -",
+		},
+		{
+			name: "subcmd help's helpName via flag",
+			args: []string{"app", "cmd", "subcmd", "-h", "help"},
+			want: "app cmd subcmd help -",
+		},
+	}
+	for _, tt := range tests {
+		buf := &bytes.Buffer{}
+		t.Run(tt.name, func(t *testing.T) {
+			app := &App{
+				Name: "app",
+				Commands: []*Command{
+					{
+						Name:        "cmd",
+						Subcommands: []*Command{{Name: "subcmd"}},
+					},
+				},
+				Writer: buf,
+			}
+			err := app.Run(tt.args)
+			expect(t, err, nil)
+			got := buf.String()
+			if !strings.Contains(got, tt.want) {
+				t.Errorf("Expected %q contained - Got %q", tt.want, got)
+			}
+		})
+	}
+}
+
+func Test_helpCommand_HideHelpCommand(t *testing.T) {
+	buf := &bytes.Buffer{}
+	app := &App{
+		Name:   "app",
+		Writer: buf,
+	}
+	err := app.Run([]string{"app", "help", "help"})
+	expect(t, err, nil)
+	got := buf.String()
+	notWant := "COMMANDS:"
+	if strings.Contains(got, notWant) {
+		t.Errorf("Not expected %q - Got %q", notWant, got)
+	}
+}
+
+func Test_helpCommand_HideHelpFlag(t *testing.T) {
+	app := newTestApp()
+	if err := app.Run([]string{"app", "help", "-h"}); err == nil {
+		t.Errorf("Expected flag error - Got nil")
+	}
+}
+
 func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 	app := &App{}
 
@@ -225,6 +307,71 @@ func TestShowAppHelp_CommandAliases(t *testing.T) {
 
 	if !strings.Contains(output.String(), "frobbly, fr, frob") {
 		t.Errorf("expected output to include all command aliases; got: %q", output.String())
+	}
+}
+
+func TestShowCommandHelp_AppendHelp(t *testing.T) {
+	var tests = []struct {
+		name            string
+		hideHelp        bool
+		hideHelpCommand bool
+		args            []string
+		wantHelpCommand bool
+		wantHelpFlag    bool
+	}{
+		{
+			name:            "with HideHelp",
+			hideHelp:        true,
+			args:            []string{"app"},
+			wantHelpCommand: false,
+			wantHelpFlag:    false,
+		},
+		{
+			name:            "with HideHelpCommand",
+			hideHelpCommand: true,
+			args:            []string{"app"},
+			wantHelpCommand: false,
+			wantHelpFlag:    true,
+		},
+		{
+			name:            "with Subcommand",
+			args:            []string{"app"},
+			wantHelpCommand: true,
+			wantHelpFlag:    true,
+		},
+		{
+			name:            "without Subcommand",
+			args:            []string{"app", "cmd"},
+			wantHelpCommand: false,
+			wantHelpFlag:    true,
+		},
+	}
+	for _, tt := range tests {
+		buf := &bytes.Buffer{}
+		t.Run(tt.name, func(t *testing.T) {
+			app := &App{
+				Name:   "app",
+				Action: func(ctx *Context) error { return ShowCommandHelp(ctx, "cmd") },
+				Commands: []*Command{
+					{
+						Name:            "cmd",
+						HideHelp:        tt.hideHelp,
+						HideHelpCommand: tt.hideHelpCommand,
+						Action:          func(ctx *Context) error { return ShowCommandHelp(ctx, "subcmd") },
+						Subcommands:     []*Command{{Name: "subcmd"}},
+					},
+				},
+				Writer: buf,
+			}
+			err := app.Run(tt.args)
+			expect(t, err, nil)
+			got := buf.String()
+			gotHelpCommand := strings.Contains(got, "help, h  Shows a list of commands or help for one command")
+			gotHelpFlag := strings.Contains(got, "--help, -h  show help")
+			if gotHelpCommand != tt.wantHelpCommand || gotHelpFlag != tt.wantHelpFlag {
+				t.Errorf("ShowCommandHelp() return unexpected help message - Got %q", got)
+			}
+		})
 	}
 }
 
