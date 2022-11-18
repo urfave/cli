@@ -107,6 +107,8 @@ type App struct {
 	CustomAppHelpTemplate string
 	// SliceFlagSeparator is used to customize the separator for SliceFlag, the default is ","
 	SliceFlagSeparator string
+	// DisableSliceFlagSeparator is used to disable SliceFlagSeparator, the default is false
+	DisableSliceFlagSeparator bool
 	// Boolean to enable short-option handling so user can combine several
 	// single-character bool arguments into one
 	// i.e. foobar -o -v -> foobar -ov
@@ -264,6 +266,8 @@ func (a *App) Setup() {
 	if len(a.SliceFlagSeparator) != 0 {
 		defaultSliceFlagSeparator = a.SliceFlagSeparator
 	}
+
+	disableSliceFlagSeparator = a.DisableSliceFlagSeparator
 }
 
 func (a *App) newRootCommand() *Command {
