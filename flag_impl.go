@@ -7,7 +7,7 @@ import (
 )
 
 type FlagConfig interface {
-	IntBase() int
+	GetNumberBase() int
 	GetCount() *int
 }
 
@@ -15,7 +15,11 @@ type ValueCreator[T any] interface {
 	Create(T, *T, FlagConfig) flag.Value
 }
 
-// Float64Flag is a flag with type float64
+// FlagBase[T,VC] is a generic flag base which can be used
+// as a boilerplate to implement the most common interfaces
+// used by urfave/cli. T specifies the types and VC specifies
+// a value creator which can be used to get the correct flag.Value
+// for that type
 type FlagBase[T any, VC ValueCreator[T]] struct {
 	Name string
 
@@ -34,9 +38,9 @@ type FlagBase[T any, VC ValueCreator[T]] struct {
 	Aliases []string
 	EnvVars []string
 
-	TakesFile bool
-	Base      int
-	Count     *int
+	TakesFile  bool
+	NumberBase int
+	Count      *int
 
 	Action func(*Context, T) error
 
@@ -46,8 +50,8 @@ type FlagBase[T any, VC ValueCreator[T]] struct {
 	value   flag.Value
 }
 
-func (f *FlagBase[T, V]) IntBase() int {
-	return f.Base
+func (f *FlagBase[T, V]) GetNumberBase() int {
+	return f.NumberBase
 }
 
 func (f *FlagBase[T, V]) GetCount() *int {

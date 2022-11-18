@@ -15,7 +15,7 @@ func (i uint64Value) Create(val uint64, p *uint64, c FlagConfig) flag.Value {
 	*p = val
 	return &uint64Value{
 		val:  p,
-		base: c.IntBase(),
+		base: c.GetNumberBase(),
 	}
 }
 

@@ -784,15 +784,18 @@ type FlagBase[T any, VC ValueCreator[T]] struct {
 	Aliases []string
 	EnvVars []string
 
-	TakesFile bool
-	Base      int
-	Count     *int
+	TakesFile  bool
+	NumberBase int
+	Count      *int
 
 	Action func(*Context, T) error
 
 	// Has unexported fields.
 }
-    Float64Flag is a flag with type float64
+    FlagBase[T,VC] is a generic flag base which can be used as a boilerplate
+    to implement the most common interfaces used by urfave/cli. T specifies the
+    types and VC specifies a value creator which can be used to get the correct
+    flag.Value for that type
 
 func (f *FlagBase[T, V]) Apply(set *flag.FlagSet) error
     Apply populates the flag given the flag set and environment
@@ -811,14 +814,14 @@ func (f *FlagBase[T, V]) GetDefaultText() string
 func (f *FlagBase[T, V]) GetEnvVars() []string
     GetEnvVars returns the env vars for this flag
 
+func (f *FlagBase[T, V]) GetNumberBase() int
+
 func (f *FlagBase[T, V]) GetUsage() string
     GetUsage returns the usage string for the flag
 
 func (f *FlagBase[T, V]) GetValue() string
     GetValue returns the flags value as string representation and an empty
     string if the flag takes no value at all.
-
-func (f *FlagBase[T, V]) IntBase() int
 
 func (f *FlagBase[T, V]) IsRequired() bool
     IsRequired returns whether or not the flag is required
@@ -850,7 +853,7 @@ type FlagCategories interface {
     FlagCategories interface allows for category manipulation
 
 type FlagConfig interface {
-	IntBase() int
+	GetNumberBase() int
 	GetCount() *int
 }
 
@@ -955,6 +958,8 @@ func (f *Float64SliceFlag) GetCategory() string
 func (f *Float64SliceFlag) GetDefaultText() string
     GetDefaultText returns the default text for this flag
 
+func (f *Float64SliceFlag) GetDestination() []float64
+
 func (f *Float64SliceFlag) GetEnvVars() []string
     GetEnvVars returns the env vars for this flag
 
@@ -982,6 +987,10 @@ func (f *Float64SliceFlag) Names() []string
 
 func (f *Float64SliceFlag) RunAction(c *Context) error
     RunAction executes flag action if set
+
+func (f *Float64SliceFlag) SetDestination(slice []float64)
+
+func (f *Float64SliceFlag) SetValue(slice []float64)
 
 func (f *Float64SliceFlag) String() string
     String returns a readable representation of this value (for usage defaults)

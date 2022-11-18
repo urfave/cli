@@ -229,7 +229,7 @@ func unwrapFlagValue(v flag.Value) flag.Value {
 
 // NOTE: the methods below are in this file to make use of the build constraint
 
-/*func (f *Float64SliceFlag) SetValue(slice []float64) {
+func (f *Float64SliceFlag) SetValue(slice []float64) {
 	f.Value = newSliceFlagValue(NewFloat64Slice, slice)
 }
 
@@ -242,7 +242,7 @@ func (f *Float64SliceFlag) GetDestination() []float64 {
 		return destination.Value()
 	}
 	return nil
-}*/
+}
 
 func (f *Int64SliceFlag) SetValue(slice []int64) {
 	f.Value = newSliceFlagValue(NewInt64Slice, slice)

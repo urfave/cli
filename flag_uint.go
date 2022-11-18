@@ -15,7 +15,7 @@ func (i uintValue) Create(val uint, p *uint, c FlagConfig) flag.Value {
 	*p = val
 	return &uintValue{
 		val:  p,
-		base: c.IntBase(),
+		base: c.GetNumberBase(),
 	}
 }
 
