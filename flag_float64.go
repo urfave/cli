@@ -2,6 +2,7 @@ package cli
 
 import (
 	"flag"
+	"fmt"
 	"strconv"
 )
 
@@ -11,6 +12,10 @@ type float64Value float64
 func (f float64Value) Create(val float64, p *float64, c FlagConfig) flag.Value {
 	*p = val
 	return (*float64Value)(p)
+}
+
+func (f float64Value) ToString(b float64) string {
+	return fmt.Sprintf("%v", b)
 }
 
 func (f *float64Value) Set(s string) error {

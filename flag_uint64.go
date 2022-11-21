@@ -2,6 +2,7 @@ package cli
 
 import (
 	"flag"
+	"fmt"
 	"strconv"
 )
 
@@ -17,6 +18,10 @@ func (i uint64Value) Create(val uint64, p *uint64, c FlagConfig) flag.Value {
 		val:  p,
 		base: c.GetNumberBase(),
 	}
+}
+
+func (i uint64Value) ToString(b uint64) string {
+	return fmt.Sprintf("%d", b)
 }
 
 func (i *uint64Value) Set(s string) error {

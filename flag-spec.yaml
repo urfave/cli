@@ -2,50 +2,6 @@
 # ./cmd/urfave-cli-genflags/main.go which uses the
 # `Spec` type that maps to this file structure.
 flag_types:
-  Float64Slice:
-    value_pointer: true
-    skip_interfaces:
-      - fmt.Stringer
-    struct_fields:
-      - name: Action
-        type: "func(*Context, []float64) error"
-  IntSlice:
-    value_pointer: true
-    skip_interfaces:
-      - fmt.Stringer
-    struct_fields:
-      - name: Action
-        type: "func(*Context, []int) error"
-  Int64Slice:
-    value_pointer: true
-    skip_interfaces:
-      - fmt.Stringer
-    struct_fields:
-      - name: Action
-        type: "func(*Context, []int64) error"
-  UintSlice:
-    value_pointer: true
-    skip_interfaces:
-      - fmt.Stringer
-    struct_fields:
-      - name: Action
-        type: "func(*Context, []uint) error"
-  Uint64Slice:
-    value_pointer: true
-    skip_interfaces:
-      - fmt.Stringer
-    struct_fields:
-      - name: Action
-        type: "func(*Context, []uint64) error"
-  StringSlice:
-    value_pointer: true
-    skip_interfaces:
-      - fmt.Stringer
-    struct_fields:
-      - name: TakesFile
-        type: bool
-      - name: Action
-        type: "func(*Context, []string) error"
   Timestamp:
     value_pointer: true
     struct_fields:

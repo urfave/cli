@@ -2,6 +2,7 @@ package cli
 
 import (
 	"flag"
+	"fmt"
 )
 
 // -- string Value
@@ -10,6 +11,13 @@ type stringValue string
 func (i stringValue) Create(val string, p *string, c FlagConfig) flag.Value {
 	*p = val
 	return (*stringValue)(p)
+}
+
+func (i stringValue) ToString(b string) string {
+	if b == "" {
+		return b
+	}
+	return fmt.Sprintf("%q", b)
 }
 
 func (s *stringValue) Set(val string) error {

@@ -425,10 +425,10 @@ func ExampleApp_Run_sliceValues() {
 
 	_ = app.Run(os.Args)
 	// Output:
-	// 0-float64Sclice cli.Float64Slice{slice:[]float64{13.3, 14.4, 15.5, 16.6}, hasBeenSet:true}
-	// 1-int64Sclice cli.Int64Slice{slice:[]int64{13, 14, 15, 16}, hasBeenSet:true}
-	// 2-intSclice cli.IntSlice{slice:[]int{13, 14, 15, 16}, hasBeenSet:true}
-	// 3-stringSclice cli.StringSlice{slice:[]string{"parsed1", "parsed2", "parsed3", "parsed4"}, hasBeenSet:true}
+	// 0-float64Sclice []float64{13.3, 14.4, 15.5, 16.6}
+	// 1-int64Sclice []int64{13, 14, 15, 16}
+	// 2-intSclice []int{13, 14, 15, 16}
+	// 3-stringSclice []string{"parsed1", "parsed2", "parsed3", "parsed4"}
 	// error: <nil>
 }
 
@@ -1018,7 +1018,7 @@ func TestApp_UseShortOptionHandlingSubCommand_missing_value(t *testing.T) {
 func TestApp_UseShortOptionAfterSliceFlag(t *testing.T) {
 	var one, two bool
 	var name string
-	var sliceValDest StringSlice
+	var sliceValDest []string
 	var sliceVal []string
 	expected := "expectedName"
 
@@ -1040,7 +1040,7 @@ func TestApp_UseShortOptionAfterSliceFlag(t *testing.T) {
 
 	_ = app.Run([]string{"", "-e", "foo", "-on", expected})
 	expect(t, sliceVal, []string{"foo"})
-	expect(t, sliceValDest.Value(), []string{"foo"})
+	expect(t, sliceValDest, []string{"foo"})
 	expect(t, one, true)
 	expect(t, two, false)
 	expect(t, name, expected)
@@ -1072,8 +1072,8 @@ func TestApp_ParseSliceFlags(t *testing.T) {
 			{
 				Name: "cmd",
 				Flags: []Flag{
-					&IntSliceFlag{Name: "p", Value: NewIntSlice(), Usage: "set one or more ip addr"},
-					&StringSliceFlag{Name: "ip", Value: NewStringSlice(), Usage: "set one or more ports to open"},
+					&IntSliceFlag{Name: "p", Value: []int{}, Usage: "set one or more ip addr"},
+					&StringSliceFlag{Name: "ip", Value: []string{}, Usage: "set one or more ports to open"},
 				},
 				Action: func(c *Context) error {
 					parsedIntSlice = c.IntSlice("p")

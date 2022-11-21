@@ -2,6 +2,7 @@ package cli
 
 import (
 	"flag"
+	"fmt"
 	"time"
 )
 
@@ -11,6 +12,10 @@ type durationValue time.Duration
 func (i durationValue) Create(val time.Duration, p *time.Duration, c FlagConfig) flag.Value {
 	*p = val
 	return (*durationValue)(p)
+}
+
+func (i durationValue) ToString(d time.Duration) string {
+	return fmt.Sprintf("%v", d)
 }
 
 func (d *durationValue) Set(s string) error {

@@ -13,6 +13,7 @@ type FlagConfig interface {
 
 type ValueCreator[T any] interface {
 	Create(T, *T, FlagConfig) flag.Value
+	ToString(T) string
 }
 
 // FlagBase[T,VC] is a generic flag base which can be used
@@ -44,8 +45,6 @@ type FlagBase[T any, VC ValueCreator[T]] struct {
 
 	Action func(*Context, T) error
 
-	defaultValue T
-
 	creator VC
 	value   flag.Value
 }
@@ -69,32 +68,33 @@ func (f *FlagBase[T, V]) GetValue() string {
 
 // Apply populates the flag given the flag set and environment
 func (f *FlagBase[T, V]) Apply(set *flag.FlagSet) error {
-	f.defaultValue = f.Value
-
 	if f.Count == nil {
 		f.Count = new(int)
 	}
 
-	if f.Destination == nil {
-		f.value = f.creator.Create(f.Value, new(T), f)
-	} else {
-		f.value = f.creator.Create(f.Value, f.Destination, f)
-	}
+	newVal := f.Value
 
 	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
+		tmpVal := f.creator.Create(f.Value, new(T), f)
 		if val != "" || reflect.TypeOf(f.Value).Kind() == reflect.String {
-			if err := f.value.Set(val); err != nil {
+			if err := tmpVal.Set(val); err != nil {
 				return fmt.Errorf("could not parse %q as %T value from %s for flag %s: %s", val, f.Value, source, f.Name, err)
 			}
 		} else if val == "" && reflect.TypeOf(f.Value).Kind() == reflect.Bool {
 			val = "false"
-			if err := f.value.Set(val); err != nil {
+			if err := tmpVal.Set(val); err != nil {
 				return fmt.Errorf("could not parse %q as %T value from %s for flag %s: %s", val, f.Value, source, f.Name, err)
 			}
 		}
 
-		f.Value = f.value.(flag.Getter).Get().(T)
+		newVal = tmpVal.(flag.Getter).Get().(T)
 		f.hasBeenSet = true
+	}
+
+	if f.Destination == nil {
+		f.value = f.creator.Create(newVal, new(T), f)
+	} else {
+		f.value = f.creator.Create(newVal, f.Destination, f)
 	}
 
 	for _, name := range f.Names() {
@@ -155,14 +155,8 @@ func (f *FlagBase[T, V]) GetDefaultText() string {
 	if f.DefaultText != "" {
 		return f.DefaultText
 	}
-	if reflect.TypeOf(f.defaultValue).Kind() == reflect.String {
-		if s := fmt.Sprintf("%v", f.defaultValue); s == "" {
-			return s
-		} else {
-			return fmt.Sprintf("%q", s)
-		}
-	}
-	return fmt.Sprintf("%v", f.defaultValue)
+	var v V
+	return v.ToString(f.Value)
 }
 
 // Get returns the flag’s value in the given Context.
@@ -181,4 +175,9 @@ func (f *FlagBase[T, V]) RunAction(ctx *Context) error {
 	}
 
 	return nil
+}
+
+func (f *FlagBase[T, VC]) IsSliceFlag() bool {
+	// TBD how to specify
+	return reflect.TypeOf(f.Value).Kind() == reflect.Slice
 }

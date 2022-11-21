@@ -3,6 +3,7 @@ package cli
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"strconv"
 )
 
@@ -24,6 +25,10 @@ func (i boolValue) Create(val bool, p *bool, c FlagConfig) flag.Value {
 		destination: p,
 		count:       c.GetCount(),
 	}
+}
+
+func (i boolValue) ToString(b bool) string {
+	return fmt.Sprintf("%v", b)
 }
 
 func (b *boolValue) Set(s string) error {
