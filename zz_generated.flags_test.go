@@ -59,29 +59,4 @@ func TestPathFlag_SatisfiesFmtStringerInterface(t *testing.T) {
 	_ = f.String()
 }
 
-func TestTimestampFlag_SatisfiesFlagInterface(t *testing.T) {
-	var f cli.Flag = &cli.TimestampFlag{}
-
-	_ = f.IsSet()
-	_ = f.Names()
-}
-
-func TestTimestampFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
-	var f cli.RequiredFlag = &cli.TimestampFlag{}
-
-	_ = f.IsRequired()
-}
-
-func TestTimestampFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
-	var f cli.VisibleFlag = &cli.TimestampFlag{}
-
-	_ = f.IsVisible()
-}
-
-func TestTimestampFlag_SatisfiesFmtStringerInterface(t *testing.T) {
-	var f fmt.Stringer = &cli.TimestampFlag{}
-
-	_ = f.String()
-}
-
 // vim:ro

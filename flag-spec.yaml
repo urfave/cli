@@ -2,15 +2,6 @@
 # ./cmd/urfave-cli-genflags/main.go which uses the
 # `Spec` type that maps to this file structure.
 flag_types:
-  Timestamp:
-    value_pointer: true
-    struct_fields:
-      - name: Layout
-        type: string
-      - name: Timezone
-        type: "*time.Location"
-      - name: Action
-        type: "func(*Context, *time.Time) error"
   Generic:
     no_destination_pointer: true
     struct_fields:

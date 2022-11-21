@@ -2887,7 +2887,7 @@ func TestUint64Slice_Serialized_Set(t *testing.T) {
 }
 
 func TestTimestamp_set(t *testing.T) {
-	ts := Timestamp{
+	ts := timestampValue{
 		timestamp:  nil,
 		hasBeenSet: false,
 		layout:     "Jan 2, 2006 at 3:04pm (MST)",
@@ -2902,7 +2902,7 @@ func TestTimestamp_set(t *testing.T) {
 	}
 
 	ts.hasBeenSet = false
-	ts.SetLayout(time.RFC3339)
+	ts.layout = time.RFC3339
 	time2 := "2006-01-02T15:04:05Z"
 	if err := ts.Set(time2); err != nil {
 		t.Fatalf("Failed to parse time %s with layout %s", time2, ts.layout)
@@ -2920,18 +2920,18 @@ func TestTimestampFlagApply(t *testing.T) {
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
 	expect(t, err, nil)
-	expect(t, *fl.Value.timestamp, expectedResult)
+	expect(t, *set.Lookup("time").Value.(*timestampValue).timestamp, expectedResult)
 }
 
 func TestTimestampFlagApplyValue(t *testing.T) {
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: time.RFC3339, Value: NewTimestamp(expectedResult)}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: time.RFC3339, Value: expectedResult}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{""})
 	expect(t, err, nil)
-	expect(t, *fl.Value.timestamp, expectedResult)
+	expect(t, *set.Lookup("time").Value.(*timestampValue).timestamp, expectedResult)
 }
 
 func TestTimestampFlagApply_Fail_Parse_Wrong_Layout(t *testing.T) {
@@ -2963,16 +2963,16 @@ func TestTimestampFlagApply_Timezoned(t *testing.T) {
 
 	err := set.Parse([]string{"--time", "Mon Jan 2 08:04:05 2006"})
 	expect(t, err, nil)
-	expect(t, *fl.Value.timestamp, expectedResult.In(pdt))
+	expect(t, *set.Lookup("time").Value.(*timestampValue).timestamp, expectedResult.In(pdt))
 }
 
 func TestTimestampFlagValueFromContext(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	now := time.Now()
-	set.Var(NewTimestamp(now), "myflag", "doc")
+	set.Var(newTimestamp(now), "myflag", "doc")
 	ctx := NewContext(nil, set, nil)
 	f := &TimestampFlag{Name: "myflag"}
-	expect(t, f.Get(ctx), &now)
+	expect(t, f.Get(ctx), now)
 }
 
 type flagDefaultTestCase struct {
@@ -3197,7 +3197,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 		},
 		{
 			name:    "timestamp",
-			flag:    &TimestampFlag{Name: "flag", Value: NewTimestamp(ts), Layout: time.RFC3339, EnvVars: []string{"tflag"}},
+			flag:    &TimestampFlag{Name: "flag", Value: ts, Layout: time.RFC3339, EnvVars: []string{"tflag"}},
 			toParse: []string{"--flag", "2006-11-02T15:04:05Z"},
 			expect:  `--flag value	(default: 2005-01-02 15:04:05 +0000 UTC)` + withEnvHint([]string{"tflag"}, ""),
 			environ: map[string]string{
@@ -3293,7 +3293,7 @@ func TestFlagValue(t *testing.T) {
 }
 
 func TestTimestampFlagApply_WithDestination(t *testing.T) {
-	var destination Timestamp
+	var destination time.Time
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
 	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: time.RFC3339, Destination: &destination}
 	set := flag.NewFlagSet("test", 0)
@@ -3301,7 +3301,7 @@ func TestTimestampFlagApply_WithDestination(t *testing.T) {
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
 	expect(t, err, nil)
-	expect(t, *fl.Destination.timestamp, expectedResult)
+	expect(t, destination, expectedResult)
 }
 
 // Test issue #1254

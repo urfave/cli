@@ -4,11 +4,14 @@ import (
 	"flag"
 	"fmt"
 	"reflect"
+	"time"
 )
 
 type FlagConfig interface {
 	GetNumberBase() int
 	GetCount() *int
+	GetLayout() string
+	GetTimezone() *time.Location
 }
 
 type ValueCreator[T any] interface {
@@ -39,11 +42,19 @@ type FlagBase[T any, VC ValueCreator[T]] struct {
 	Aliases []string
 	EnvVars []string
 
-	TakesFile  bool
-	NumberBase int
-	Count      *int
+	TakesFile bool
 
 	Action func(*Context, T) error
+
+	// for int flags only
+	NumberBase int
+
+	// for bool flags only
+	Count *int
+
+	// for timestamp flags only
+	Layout   string
+	Timezone *time.Location
 
 	creator VC
 	value   flag.Value
@@ -55,6 +66,14 @@ func (f *FlagBase[T, V]) GetNumberBase() int {
 
 func (f *FlagBase[T, V]) GetCount() *int {
 	return f.Count
+}
+
+func (f *FlagBase[T, V]) GetLayout() string {
+	return f.Layout
+}
+
+func (f *FlagBase[T, V]) GetTimezone() *time.Location {
+	return f.Timezone
 }
 
 // GetValue returns the flags value as string representation and an empty
