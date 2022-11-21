@@ -75,10 +75,12 @@ func (i *SliceBase[T, VC]) Set(value string) error {
 
 // String returns a readable representation of this value (for usage defaults)
 func (i *SliceBase[T, VC]) String() string {
-	v := *i.slice
-	if v == nil {
+	var v []T
+	if i.slice == nil {
 		// treat nil the same as zero length non-nil
 		v = make([]T, 0)
+	} else {
+		v = *i.slice
 	}
 	var t T
 	if reflect.TypeOf(t).Kind() == reflect.String {
