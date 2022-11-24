@@ -5,10 +5,14 @@ import (
 	"fmt"
 )
 
+type StringFlag = FlagBase[string, NoConfig, stringValue]
+
 // -- string Value
 type stringValue string
 
-func (i stringValue) Create(val string, p *string, c FlagConfig) flag.Value {
+// Below functions are to satisfy the ValueCreator interface
+
+func (i stringValue) Create(val string, p *string, c NoConfig) flag.Value {
 	*p = val
 	return (*stringValue)(p)
 }
@@ -20,6 +24,8 @@ func (i stringValue) ToString(b string) string {
 	return fmt.Sprintf("%q", b)
 }
 
+// Below functions are to satisfy the flag.Value interface
+
 func (s *stringValue) Set(val string) error {
 	*s = stringValue(val)
 	return nil
@@ -28,8 +34,6 @@ func (s *stringValue) Set(val string) error {
 func (s *stringValue) Get() any { return string(*s) }
 
 func (s *stringValue) String() string { return string(*s) }
-
-type StringFlag = FlagBase[string, stringValue]
 
 func (cCtx *Context) String(name string) string {
 	if v, ok := cCtx.Value(name).(string); ok {

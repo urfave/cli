@@ -6,6 +6,14 @@ import (
 	"time"
 )
 
+type TimestampFlag = FlagBase[time.Time, TimestampConfig, timestampValue]
+
+// TimestampConfig defines the config for timestamp flags
+type TimestampConfig struct {
+	Timezone *time.Location
+	Layout   string
+}
+
 // timestampValue wrap to satisfy golang's flag interface.
 type timestampValue struct {
 	timestamp  *time.Time
@@ -14,12 +22,14 @@ type timestampValue struct {
 	location   *time.Location
 }
 
-func (i timestampValue) Create(val time.Time, p *time.Time, c FlagConfig) flag.Value {
+// Below functions are to satisfy the ValueCreator interface
+
+func (i timestampValue) Create(val time.Time, p *time.Time, c TimestampConfig) flag.Value {
 	*p = val
 	return &timestampValue{
 		timestamp: p,
-		layout:    c.GetLayout(),
-		location:  c.GetTimezone(),
+		layout:    c.Layout,
+		location:  c.Timezone,
 	}
 }
 
@@ -34,6 +44,8 @@ func (i timestampValue) ToString(b time.Time) string {
 func newTimestamp(timestamp time.Time) *timestampValue {
 	return &timestampValue{timestamp: &timestamp}
 }
+
+// Below functions are to satisfy the flag.Value interface
 
 // Parses the string value to timestamp
 func (t *timestampValue) Set(value string) error {
@@ -88,5 +100,3 @@ func lookupTimestamp(name string, set *flag.FlagSet) *time.Time {
 	}
 	return nil
 }
-
-type TimestampFlag = FlagBase[time.Time, timestampValue]

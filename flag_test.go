@@ -64,7 +64,7 @@ func TestBoolFlagValueFromContext(t *testing.T) {
 func TestBoolFlagApply_SetsCount(t *testing.T) {
 	v := false
 	count := 0
-	fl := BoolFlag{Name: "wat", Aliases: []string{"W", "huh"}, Destination: &v, Count: &count}
+	fl := BoolFlag{Name: "wat", Aliases: []string{"W", "huh"}, Destination: &v, Config: BoolConfig{Count: &count}}
 	set := flag.NewFlagSet("test", 0)
 	err := fl.Apply(set)
 	expect(t, err, nil)
@@ -132,10 +132,10 @@ func TestFlagsFromEnv(t *testing.T) {
 		{"foobar", 0, &Int64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as int64 value from environment variable "SECONDS" for flag seconds: .*`},
 
 		{"1", 1, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
-		{"08", 8, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, NumberBase: 10}, ""},
-		{"755", 493, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, NumberBase: 8}, ""},
-		{"deadBEEF", 3735928559, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, NumberBase: 16}, ""},
-		{"08", 0, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, NumberBase: 0}, `could not parse "08" as int value from environment variable "SECONDS" for flag seconds: .*`},
+		{"08", 8, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 10}}, ""},
+		{"755", 493, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 8}}, ""},
+		{"deadBEEF", 3735928559, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 16}}, ""},
+		{"08", 0, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 0}}, `could not parse "08" as int value from environment variable "SECONDS" for flag seconds: .*`},
 		{"1.2", 0, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2" as int value from environment variable "SECONDS" for flag seconds: .*`},
 		{"foobar", 0, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as int value from environment variable "SECONDS" for flag seconds: .*`},
 
@@ -164,18 +164,18 @@ func TestFlagsFromEnv(t *testing.T) {
 		{"foo,bar", []string{"foo", "bar"}, &StringSliceFlag{Name: "names", EnvVars: []string{"NAMES"}}, ""},
 
 		{"1", uint(1), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
-		{"08", uint(8), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, NumberBase: 10}, ""},
-		{"755", uint(493), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, NumberBase: 8}, ""},
-		{"deadBEEF", uint(3735928559), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, NumberBase: 16}, ""},
-		{"08", 0, &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, NumberBase: 0}, `could not parse "08" as uint value from environment variable "SECONDS" for flag seconds: .*`},
+		{"08", uint(8), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 10}}, ""},
+		{"755", uint(493), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 8}}, ""},
+		{"deadBEEF", uint(3735928559), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 16}}, ""},
+		{"08", 0, &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 0}}, `could not parse "08" as uint value from environment variable "SECONDS" for flag seconds: .*`},
 		{"1.2", 0, &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2" as uint value from environment variable "SECONDS" for flag seconds: .*`},
 		{"foobar", 0, &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as uint value from environment variable "SECONDS" for flag seconds: .*`},
 
 		{"1", uint64(1), &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
-		{"08", uint64(8), &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, NumberBase: 10}, ""},
-		{"755", uint64(493), &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, NumberBase: 8}, ""},
-		{"deadBEEF", uint64(3735928559), &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, NumberBase: 16}, ""},
-		{"08", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, NumberBase: 0}, `could not parse "08" as uint64 value from environment variable "SECONDS" for flag seconds: .*`},
+		{"08", uint64(8), &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 10}}, ""},
+		{"755", uint64(493), &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 8}}, ""},
+		{"deadBEEF", uint64(3735928559), &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 16}}, ""},
+		{"08", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 0}}, `could not parse "08" as uint64 value from environment variable "SECONDS" for flag seconds: .*`},
 		{"1.2", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2" as uint64 value from environment variable "SECONDS" for flag seconds: .*`},
 		{"foobar", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as uint64 value from environment variable "SECONDS" for flag seconds: .*`},
 
@@ -2914,7 +2914,7 @@ func TestTimestamp_set(t *testing.T) {
 
 func TestTimestampFlagApply(t *testing.T) {
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: time.RFC3339}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: time.RFC3339}}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
@@ -2925,7 +2925,7 @@ func TestTimestampFlagApply(t *testing.T) {
 
 func TestTimestampFlagApplyValue(t *testing.T) {
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: time.RFC3339, Value: expectedResult}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: time.RFC3339}, Value: expectedResult}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
@@ -2935,7 +2935,7 @@ func TestTimestampFlagApplyValue(t *testing.T) {
 }
 
 func TestTimestampFlagApply_Fail_Parse_Wrong_Layout(t *testing.T) {
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: "randomlayout"}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: "randomlayout"}}
 	set := flag.NewFlagSet("test", 0)
 	set.SetOutput(ioutil.Discard)
 	_ = fl.Apply(set)
@@ -2945,7 +2945,7 @@ func TestTimestampFlagApply_Fail_Parse_Wrong_Layout(t *testing.T) {
 }
 
 func TestTimestampFlagApply_Fail_Parse_Wrong_Time(t *testing.T) {
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: "Jan 2, 2006 at 3:04pm (MST)"}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: "Jan 2, 2006 at 3:04pm (MST)"}}
 	set := flag.NewFlagSet("test", 0)
 	set.SetOutput(ioutil.Discard)
 	_ = fl.Apply(set)
@@ -2957,7 +2957,7 @@ func TestTimestampFlagApply_Fail_Parse_Wrong_Time(t *testing.T) {
 func TestTimestampFlagApply_Timezoned(t *testing.T) {
 	pdt := time.FixedZone("PDT", -7*60*60)
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: time.ANSIC, Timezone: pdt}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: time.ANSIC, Timezone: pdt}}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
@@ -3197,7 +3197,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 		},
 		{
 			name:    "timestamp",
-			flag:    &TimestampFlag{Name: "flag", Value: ts, Layout: time.RFC3339, EnvVars: []string{"tflag"}},
+			flag:    &TimestampFlag{Name: "flag", Value: ts, Config: TimestampConfig{Layout: time.RFC3339}, EnvVars: []string{"tflag"}},
 			toParse: []string{"--flag", "2006-11-02T15:04:05Z"},
 			expect:  `--flag value	(default: 2005-01-02 15:04:05 +0000 UTC)` + withEnvHint([]string{"tflag"}, ""),
 			environ: map[string]string{
@@ -3295,7 +3295,7 @@ func TestFlagValue(t *testing.T) {
 func TestTimestampFlagApply_WithDestination(t *testing.T) {
 	var destination time.Time
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: time.RFC3339, Destination: &destination}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: time.RFC3339}, Destination: &destination}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 

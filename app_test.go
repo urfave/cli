@@ -2871,8 +2871,10 @@ func TestFlagAction(t *testing.T) {
 				},
 			},
 			&TimestampFlag{
-				Name:   "f_timestamp",
-				Layout: "2006-01-02 15:04:05",
+				Name: "f_timestamp",
+				Config: TimestampConfig{
+					Layout: "2006-01-02 15:04:05",
+				},
 				Action: func(c *Context, v time.Time) error {
 					if v.IsZero() {
 						return fmt.Errorf("zero timestamp")

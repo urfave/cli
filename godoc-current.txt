@@ -128,12 +128,12 @@ var MarkdownDocTemplate = `{{if gt .SectionNum 0}}% {{ .App.Name }} {{ .SectionN
 # COMMANDS
 {{ range $v := .Commands }}
 {{ $v }}{{ end }}{{ end }}`
-var NewFloat64Slice = NewSliceBase[float64, float64Value]
-var NewInt64Slice = NewSliceBase[int64, int64Value]
-var NewIntSlice = NewSliceBase[int, intValue]
-var NewStringSlice = NewSliceBase[string, stringValue]
-var NewUint64Slice = NewSliceBase[uint64, uint64Value]
-var NewUintSlice = NewSliceBase[uint, uintValue]
+var NewFloat64Slice = NewSliceBase[float64, NoConfig, float64Value]
+var NewInt64Slice = NewSliceBase[int64, IntegerConfig, int64Value]
+var NewIntSlice = NewSliceBase[int, IntegerConfig, intValue]
+var NewStringSlice = NewSliceBase[string, NoConfig, stringValue]
+var NewUint64Slice = NewSliceBase[uint64, IntegerConfig, uint64Value]
+var NewUintSlice = NewSliceBase[uint, IntegerConfig, uintValue]
 var OsExiter = os.Exit
     OsExiter is the function used when the app exits. If not set defaults to
     os.Exit.
@@ -439,7 +439,12 @@ type BeforeFunc func(*Context) error
     BeforeFunc is an action to execute before any subcommands are run, but after
     the context is ready if a non-nil error is returned, no subcommands are run
 
-type BoolFlag = FlagBase[bool, boolValue]
+type BoolConfig struct {
+	Count *int
+}
+    BoolConfig defines the configuration for bool flags
+
+type BoolFlag = FlagBase[bool, BoolConfig, boolValue]
 
 type CategorizableFlag interface {
 	VisibleFlag
@@ -702,7 +707,7 @@ type DocGenerationSliceFlag interface {
 }
     DocGenerationSliceFlag extends DocGenerationFlag for slice-based flags.
 
-type DurationFlag = FlagBase[time.Duration, durationValue]
+type DurationFlag = FlagBase[time.Duration, NoConfig, durationValue]
 
 type ErrorFormatter interface {
 	Format(s fmt.State, verb rune)
@@ -773,7 +778,7 @@ var VersionFlag Flag = &BoolFlag{
 }
     VersionFlag prints the version for the application
 
-type FlagBase[T any, VC ValueCreator[T]] struct {
+type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Name string
 
 	Category    string
@@ -794,74 +799,60 @@ type FlagBase[T any, VC ValueCreator[T]] struct {
 
 	Action func(*Context, T) error
 
-	// for int flags only
-	NumberBase int
-
-	// for bool flags only
-	Count *int
-
-	// for timestamp flags only
-	Layout   string
-	Timezone *time.Location
+	Config C
 
 	// Has unexported fields.
 }
-    FlagBase[T,VC] is a generic flag base which can be used as a boilerplate
-    to implement the most common interfaces used by urfave/cli. T specifies the
-    types and VC specifies a value creator which can be used to get the correct
-    flag.Value for that type
+    FlagBase[T,C,VC] is a generic flag base which can be used as a boilerplate
+    to implement the most common interfaces used by urfave/cli.
 
-func (f *FlagBase[T, V]) Apply(set *flag.FlagSet) error
+        T specifies the type
+        C specifies the configuration required(if any for that flag type)
+        VC specifies the value creator which creates the flag.Value emulation
+
+func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error
     Apply populates the flag given the flag set and environment
 
-func (f *FlagBase[T, V]) Get(ctx *Context) T
+func (f *FlagBase[T, C, V]) Get(ctx *Context) T
     Get returns the flag’s value in the given Context.
 
-func (f *FlagBase[T, V]) GetCategory() string
+func (f *FlagBase[T, C, V]) GetCategory() string
     GetCategory returns the category of the flag
 
-func (f *FlagBase[T, V]) GetCount() *int
-
-func (f *FlagBase[T, V]) GetDefaultText() string
+func (f *FlagBase[T, C, V]) GetDefaultText() string
     GetDefaultText returns the default text for this flag
 
-func (f *FlagBase[T, V]) GetEnvVars() []string
+func (f *FlagBase[T, C, V]) GetEnvVars() []string
     GetEnvVars returns the env vars for this flag
 
-func (f *FlagBase[T, V]) GetLayout() string
-
-func (f *FlagBase[T, V]) GetNumberBase() int
-
-func (f *FlagBase[T, V]) GetTimezone() *time.Location
-
-func (f *FlagBase[T, V]) GetUsage() string
+func (f *FlagBase[T, C, V]) GetUsage() string
     GetUsage returns the usage string for the flag
 
-func (f *FlagBase[T, V]) GetValue() string
+func (f *FlagBase[T, C, V]) GetValue() string
     GetValue returns the flags value as string representation and an empty
     string if the flag takes no value at all.
 
-func (f *FlagBase[T, V]) IsRequired() bool
+func (f *FlagBase[T, C, V]) IsRequired() bool
     IsRequired returns whether or not the flag is required
 
-func (f *FlagBase[T, V]) IsSet() bool
+func (f *FlagBase[T, C, V]) IsSet() bool
     IsSet returns whether or not the flag has been set through env or file
 
-func (f *FlagBase[T, VC]) IsSliceFlag() bool
+func (f *FlagBase[T, C, VC]) IsSliceFlag() bool
 
-func (f *FlagBase[T, V]) IsVisible() bool
+func (f *FlagBase[T, C, V]) IsVisible() bool
     IsVisible returns true if the flag is not hidden, otherwise false
 
-func (f *FlagBase[T, V]) Names() []string
+func (f *FlagBase[T, C, V]) Names() []string
     Names returns the names of the flag
 
-func (f *FlagBase[T, V]) RunAction(ctx *Context) error
+func (f *FlagBase[T, C, V]) RunAction(ctx *Context) error
     RunAction executes flag action if set
 
-func (f *FlagBase[T, V]) String() string
+func (f *FlagBase[T, C, V]) String() string
     String returns a readable representation of this value (for usage defaults)
 
-func (f *FlagBase[T, V]) TakesValue() bool
+func (f *FlagBase[T, C, V]) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
 
 type FlagCategories interface {
@@ -871,13 +862,6 @@ type FlagCategories interface {
 	VisibleCategories() []VisibleFlagCategory
 }
     FlagCategories interface allows for category manipulation
-
-type FlagConfig interface {
-	GetNumberBase() int
-	GetCount() *int
-	GetLayout() string
-	GetTimezone() *time.Location
-}
 
 type FlagEnvHintFunc func(envVars []string, str string) string
     FlagEnvHintFunc is used by the default FlagStringFunc to annotate flag help
@@ -920,11 +904,11 @@ func (f FlagsByName) Less(i, j int) bool
 
 func (f FlagsByName) Swap(i, j int)
 
-type Float64Flag = FlagBase[float64, float64Value]
+type Float64Flag = FlagBase[float64, NoConfig, float64Value]
 
-type Float64Slice = SliceBase[float64, float64Value]
+type Float64Slice = SliceBase[float64, NoConfig, float64Value]
 
-type Float64SliceFlag = FlagBase[[]float64, Float64Slice]
+type Float64SliceFlag = FlagBase[[]float64, NoConfig, Float64Slice]
 
 type Generic interface {
 	Set(value string) error
@@ -1001,17 +985,22 @@ func (f *GenericFlag) String() string
 func (f *GenericFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
 
-type Int64Flag = FlagBase[int64, int64Value]
+type Int64Flag = FlagBase[int64, IntegerConfig, int64Value]
 
-type Int64Slice = SliceBase[int64, int64Value]
+type Int64Slice = SliceBase[int64, IntegerConfig, int64Value]
 
-type Int64SliceFlag = FlagBase[[]int64, Int64Slice]
+type Int64SliceFlag = FlagBase[[]int64, IntegerConfig, Int64Slice]
 
-type IntFlag = FlagBase[int, intValue]
+type IntFlag = FlagBase[int, IntegerConfig, intValue]
 
-type IntSlice = SliceBase[int, intValue]
+type IntSlice = SliceBase[int, IntegerConfig, intValue]
 
-type IntSliceFlag = FlagBase[[]int, IntSlice]
+type IntSliceFlag = FlagBase[[]int, IntegerConfig, IntSlice]
+
+type IntegerConfig struct {
+	Base int
+}
+    IntegerConfig is the configuration for all integer type flags
 
 type InvalidFlagAccessFunc func(*Context, string)
     InvalidFlagAccessFunc is executed when an invalid flag is accessed from the
@@ -1022,6 +1011,9 @@ type MultiError interface {
 	Errors() []error
 }
     MultiError is an error that wraps multiple errors.
+
+type NoConfig struct{}
+    NoConfig is for flags which dont need a custom configuration
 
 type OnUsageErrorFunc func(cCtx *Context, err error, isSubcommand bool) error
     OnUsageErrorFunc is executed if a usage error occurs. This is useful for
@@ -1114,65 +1106,76 @@ type Serializer interface {
 }
     Serializer is used to circumvent the limitations of flag.FlagSet.Set
 
-type SliceBase[T any, VC ValueCreator[T]] struct {
+type SliceBase[T any, C any, VC ValueCreator[T, C]] struct {
 	// Has unexported fields.
 }
     SliceBase wraps []T to satisfy flag.Value
 
-func NewSliceBase[T any, VC ValueCreator[T]](defaults ...T) *SliceBase[T, VC]
+func NewSliceBase[T any, C any, VC ValueCreator[T, C]](defaults ...T) *SliceBase[T, C, VC]
     NewIntSlice makes an *IntSlice with default values
 
-func (i SliceBase[T, VC]) Create(val []T, p *[]T, c FlagConfig) flag.Value
+func (i SliceBase[T, C, VC]) Create(val []T, p *[]T, c C) flag.Value
 
-func (i *SliceBase[T, VC]) Get() interface{}
+func (i *SliceBase[T, C, VC]) Get() interface{}
     Get returns the slice of ints set by this flag
 
-func (i *SliceBase[T, VC]) Serialize() string
+func (i *SliceBase[T, C, VC]) Serialize() string
     Serialize allows IntSlice to fulfill Serializer
 
-func (i *SliceBase[T, VC]) Set(value string) error
+func (i *SliceBase[T, C, VC]) Set(value string) error
     Set parses the value into an integer and appends it to the list of values
 
-func (i *SliceBase[T, VC]) SetOne(value T)
+func (i *SliceBase[T, C, VC]) SetOne(value T)
     TODO: Consistently have specific Set function for Int64 and Float64 ? SetInt
     directly adds an integer to the list of values
 
-func (i *SliceBase[T, VC]) String() string
+func (i *SliceBase[T, C, VC]) String() string
     String returns a readable representation of this value (for usage defaults)
 
-func (i SliceBase[T, VC]) ToString(t []T) string
+func (i SliceBase[T, C, VC]) ToString(t []T) string
 
-func (i *SliceBase[T, VC]) Value() []T
+func (i *SliceBase[T, C, VC]) Value() []T
     Value returns the slice of ints set by this flag
 
-type StringFlag = FlagBase[string, stringValue]
+type StringFlag = FlagBase[string, NoConfig, stringValue]
 
-type StringSlice = SliceBase[string, stringValue]
+type StringSlice = SliceBase[string, NoConfig, stringValue]
 
-type StringSliceFlag = FlagBase[[]string, StringSlice]
+type StringSliceFlag = FlagBase[[]string, NoConfig, StringSlice]
 
 type SuggestCommandFunc func(commands []*Command, provided string) string
 
 type SuggestFlagFunc func(flags []Flag, provided string, hideHelp bool) string
 
-type TimestampFlag = FlagBase[time.Time, timestampValue]
+type TimestampConfig struct {
+	Timezone *time.Location
+	Layout   string
+}
+    TimestampConfig defines the config for timestamp flags
 
-type Uint64Flag = FlagBase[uint64, uint64Value]
+type TimestampFlag = FlagBase[time.Time, TimestampConfig, timestampValue]
 
-type Uint64Slice = SliceBase[uint64, uint64Value]
+type Uint64Flag = FlagBase[uint64, IntegerConfig, uint64Value]
 
-type Uint64SliceFlag = FlagBase[[]uint64, Uint64Slice]
+type Uint64Slice = SliceBase[uint64, IntegerConfig, uint64Value]
 
-type UintFlag = FlagBase[uint, uintValue]
+type Uint64SliceFlag = FlagBase[[]uint64, IntegerConfig, Uint64Slice]
 
-type UintSlice = SliceBase[uint, uintValue]
+type UintFlag = FlagBase[uint, IntegerConfig, uintValue]
 
-type UintSliceFlag = FlagBase[[]uint, UintSlice]
+type UintSlice = SliceBase[uint, IntegerConfig, uintValue]
 
-type ValueCreator[T any] interface {
-	Create(T, *T, FlagConfig) flag.Value
+type UintSliceFlag = FlagBase[[]uint, IntegerConfig, UintSlice]
+
+type ValueCreator[T any, C any] interface {
+	Create(T, *T, C) flag.Value
 	ToString(T) string
 }
+    ValueCreator is responsible for creating a flag.Value emulation as well as
+    custom formatting
+
+        T specifies the type
+        C specifies the config for the type
 
 type VisibleFlag interface {
 	Flag

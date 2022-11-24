@@ -6,23 +6,34 @@ import (
 	"strconv"
 )
 
+type IntFlag = FlagBase[int, IntegerConfig, intValue]
+
+// IntegerConfig is the configuration for all integer type flags
+type IntegerConfig struct {
+	Base int
+}
+
 // -- int Value
 type intValue struct {
 	val  *int
 	base int
 }
 
-func (i intValue) Create(val int, p *int, c FlagConfig) flag.Value {
+// Below functions are to satisfy the ValueCreator interface
+
+func (i intValue) Create(val int, p *int, c IntegerConfig) flag.Value {
 	*p = val
 	return &intValue{
 		val:  p,
-		base: c.GetNumberBase(),
+		base: c.Base,
 	}
 }
 
 func (i intValue) ToString(b int) string {
 	return fmt.Sprintf("%v", b)
 }
+
+// Below functions are to satisfy the flag.Value interface
 
 func (i *intValue) Set(s string) error {
 	v, err := strconv.ParseInt(s, i.base, strconv.IntSize)
@@ -41,8 +52,6 @@ func (i *intValue) String() string {
 	}
 	return strconv.Itoa(int(*i.val))
 }
-
-type IntFlag = FlagBase[int, intValue]
 
 // Int looks up the value of a local IntFlag, returns
 // 0 if not found

@@ -6,10 +6,14 @@ import (
 	"time"
 )
 
+type DurationFlag = FlagBase[time.Duration, NoConfig, durationValue]
+
 // -- time.Duration Value
 type durationValue time.Duration
 
-func (i durationValue) Create(val time.Duration, p *time.Duration, c FlagConfig) flag.Value {
+// Below functions are to satisfy the ValueCreator interface
+
+func (i durationValue) Create(val time.Duration, p *time.Duration, c NoConfig) flag.Value {
 	*p = val
 	return (*durationValue)(p)
 }
@@ -17,6 +21,8 @@ func (i durationValue) Create(val time.Duration, p *time.Duration, c FlagConfig)
 func (i durationValue) ToString(d time.Duration) string {
 	return fmt.Sprintf("%v", d)
 }
+
+// Below functions are to satisfy the flag.Value interface
 
 func (d *durationValue) Set(s string) error {
 	v, err := time.ParseDuration(s)
@@ -30,8 +36,6 @@ func (d *durationValue) Set(s string) error {
 func (d *durationValue) Get() any { return time.Duration(*d) }
 
 func (d *durationValue) String() string { return (*time.Duration)(d).String() }
-
-type DurationFlag = FlagBase[time.Duration, durationValue]
 
 func (cCtx *Context) Duration(name string) time.Duration {
 	if v, ok := cCtx.Value(name).(time.Duration); ok {

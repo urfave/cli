@@ -4,6 +4,11 @@ import (
 	"flag"
 )
 
+type UintSlice = SliceBase[uint, IntegerConfig, uintValue]
+type UintSliceFlag = FlagBase[[]uint, IntegerConfig, UintSlice]
+
+var NewUintSlice = NewSliceBase[uint, IntegerConfig, uintValue]
+
 // UintSlice looks up the value of a local UintSliceFlag, returns
 // nil if not found
 func (cCtx *Context) UintSlice(name string) []uint {
@@ -22,8 +27,3 @@ func lookupUintSlice(name string, set *flag.FlagSet) []uint {
 	}
 	return nil
 }
-
-type UintSlice = SliceBase[uint, uintValue]
-type UintSliceFlag = FlagBase[[]uint, UintSlice]
-
-var NewUintSlice = NewSliceBase[uint, uintValue]

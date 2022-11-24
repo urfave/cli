@@ -6,23 +6,29 @@ import (
 	"strconv"
 )
 
+type Uint64Flag = FlagBase[uint64, IntegerConfig, uint64Value]
+
 // -- uint64 Value
 type uint64Value struct {
 	val  *uint64
 	base int
 }
 
-func (i uint64Value) Create(val uint64, p *uint64, c FlagConfig) flag.Value {
+// Below functions are to satisfy the ValueCreator interface
+
+func (i uint64Value) Create(val uint64, p *uint64, c IntegerConfig) flag.Value {
 	*p = val
 	return &uint64Value{
 		val:  p,
-		base: c.GetNumberBase(),
+		base: c.Base,
 	}
 }
 
 func (i uint64Value) ToString(b uint64) string {
 	return fmt.Sprintf("%d", b)
 }
+
+// Below functions are to satisfy the flag.Value interface
 
 func (i *uint64Value) Set(s string) error {
 	v, err := strconv.ParseUint(s, i.base, 64)
@@ -36,8 +42,6 @@ func (i *uint64Value) Set(s string) error {
 func (i *uint64Value) Get() any { return uint64(*i.val) }
 
 func (i *uint64Value) String() string { return strconv.FormatUint(uint64(*i.val), 10) }
-
-type Uint64Flag = FlagBase[uint64, uint64Value]
 
 // Int64 looks up the value of a local Int64Flag, returns
 // 0 if not found

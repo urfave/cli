@@ -4,6 +4,11 @@ import (
 	"flag"
 )
 
+type Float64Slice = SliceBase[float64, NoConfig, float64Value]
+type Float64SliceFlag = FlagBase[[]float64, NoConfig, Float64Slice]
+
+var NewFloat64Slice = NewSliceBase[float64, NoConfig, float64Value]
+
 // Float64Slice looks up the value of a local Float64SliceFlag, returns
 // nil if not found
 func (cCtx *Context) Float64Slice(name string) []float64 {
@@ -22,8 +27,3 @@ func lookupFloat64Slice(name string, set *flag.FlagSet) []float64 {
 	}
 	return nil
 }
-
-type Float64Slice = SliceBase[float64, float64Value]
-type Float64SliceFlag = FlagBase[[]float64, Float64Slice]
-
-var NewFloat64Slice = NewSliceBase[float64, float64Value]

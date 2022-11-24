@@ -9,34 +9,34 @@ import (
 )
 
 // SliceBase wraps []T to satisfy flag.Value
-type SliceBase[T any, VC ValueCreator[T]] struct {
+type SliceBase[T any, C any, VC ValueCreator[T, C]] struct {
 	slice      *[]T
 	hasBeenSet bool
 	value      flag.Value
 }
 
-func (i SliceBase[T, VC]) Create(val []T, p *[]T, c FlagConfig) flag.Value {
+func (i SliceBase[T, C, VC]) Create(val []T, p *[]T, c C) flag.Value {
 	*p = []T{}
 	*p = append(*p, val...)
 	var t T
 	np := new(T)
 	var vc VC
-	return &SliceBase[T, VC]{
+	return &SliceBase[T, C, VC]{
 		slice: p,
 		value: vc.Create(t, np, c),
 	}
 }
 
 // NewIntSlice makes an *IntSlice with default values
-func NewSliceBase[T any, VC ValueCreator[T]](defaults ...T) *SliceBase[T, VC] {
-	return &SliceBase[T, VC]{
+func NewSliceBase[T any, C any, VC ValueCreator[T, C]](defaults ...T) *SliceBase[T, C, VC] {
+	return &SliceBase[T, C, VC]{
 		slice: &defaults,
 	}
 }
 
 // TODO: Consistently have specific Set function for Int64 and Float64 ?
 // SetInt directly adds an integer to the list of values
-func (i *SliceBase[T, VC]) SetOne(value T) {
+func (i *SliceBase[T, C, VC]) SetOne(value T) {
 	if !i.hasBeenSet {
 		*i.slice = []T{}
 		i.hasBeenSet = true
@@ -46,7 +46,7 @@ func (i *SliceBase[T, VC]) SetOne(value T) {
 }
 
 // Set parses the value into an integer and appends it to the list of values
-func (i *SliceBase[T, VC]) Set(value string) error {
+func (i *SliceBase[T, C, VC]) Set(value string) error {
 	if !i.hasBeenSet {
 		*i.slice = []T{}
 		i.hasBeenSet = true
@@ -74,7 +74,7 @@ func (i *SliceBase[T, VC]) Set(value string) error {
 }
 
 // String returns a readable representation of this value (for usage defaults)
-func (i *SliceBase[T, VC]) String() string {
+func (i *SliceBase[T, C, VC]) String() string {
 	v := i.Value()
 	var t T
 	if reflect.TypeOf(t).Kind() == reflect.String {
@@ -84,13 +84,13 @@ func (i *SliceBase[T, VC]) String() string {
 }
 
 // Serialize allows IntSlice to fulfill Serializer
-func (i *SliceBase[T, VC]) Serialize() string {
+func (i *SliceBase[T, C, VC]) Serialize() string {
 	jsonBytes, _ := json.Marshal(i.slice)
 	return fmt.Sprintf("%s%s", slPfx, string(jsonBytes))
 }
 
 // Value returns the slice of ints set by this flag
-func (i *SliceBase[T, VC]) Value() []T {
+func (i *SliceBase[T, C, VC]) Value() []T {
 	if i.slice == nil {
 		return []T{}
 	}
@@ -98,11 +98,11 @@ func (i *SliceBase[T, VC]) Value() []T {
 }
 
 // Get returns the slice of ints set by this flag
-func (i *SliceBase[T, VC]) Get() interface{} {
+func (i *SliceBase[T, C, VC]) Get() interface{} {
 	return *i.slice
 }
 
-func (i SliceBase[T, VC]) ToString(t []T) string {
+func (i SliceBase[T, C, VC]) ToString(t []T) string {
 	var defaultVals []string
 	var v VC
 	for _, s := range t {
