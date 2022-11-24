@@ -2,16 +2,3 @@
 # ./cmd/urfave-cli-genflags/main.go which uses the
 # `Spec` type that maps to this file structure.
 flag_types:
-  Generic:
-    no_destination_pointer: true
-    struct_fields:
-      - name: TakesFile
-        type: bool
-      - name: Action
-        type: "func(*Context, interface{}) error"
-  Path:
-    struct_fields:
-      - name: TakesFile
-        type: bool
-      - name: Action
-        type: "func(*Context, Path) error"

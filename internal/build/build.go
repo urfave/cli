@@ -149,7 +149,7 @@ func main() {
 				Name:  "tags",
 				Usage: "set build tags",
 			},
-			&cli.PathFlag{
+			&cli.StringFlag{
 				Name:  "top",
 				Value: top,
 			},
@@ -177,7 +177,7 @@ func sh(exe string, args ...string) (string, error) {
 
 func topRunAction(arg string, args ...string) cli.ActionFunc {
 	return func(cCtx *cli.Context) error {
-		os.Chdir(cCtx.Path("top"))
+		os.Chdir(cCtx.String("top"))
 
 		return runCmd(arg, args...)
 	}
@@ -232,7 +232,7 @@ func downloadFile(src, dest string, dirPerm, perm os.FileMode) error {
 }
 
 func VetActionFunc(cCtx *cli.Context) error {
-	return runCmd("go", "vet", cCtx.Path("top")+"/...")
+	return runCmd("go", "vet", cCtx.String("top")+"/...")
 }
 
 func TestActionFunc(c *cli.Context) error {
@@ -292,7 +292,7 @@ func testCleanup(packages []string) error {
 }
 
 func GfmrunActionFunc(cCtx *cli.Context) error {
-	top := cCtx.Path("top")
+	top := cCtx.String("top")
 
 	bash, err := exec.LookPath("bash")
 	if err != nil {
@@ -493,7 +493,7 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 }
 
 func GenerateActionFunc(cCtx *cli.Context) error {
-	top := cCtx.Path("top")
+	top := cCtx.String("top")
 
 	cliDocs, err := sh("go", "doc", "-all", top)
 	if err != nil {
@@ -508,7 +508,7 @@ func GenerateActionFunc(cCtx *cli.Context) error {
 		return err
 	}
 
-	return runCmd("go", "generate", cCtx.Path("top")+"/...")
+	return runCmd("go", "generate", cCtx.String("top")+"/...")
 }
 
 func YAMLFmtActionFunc(cCtx *cli.Context) error {
@@ -522,13 +522,13 @@ func YAMLFmtActionFunc(cCtx *cli.Context) error {
 		return err
 	}
 
-	os.Chdir(cCtx.Path("top"))
+	os.Chdir(cCtx.String("top"))
 
 	return runCmd(yqBin, "eval", "--inplace", "flag-spec.yaml")
 }
 
 func DiffCheckActionFunc(cCtx *cli.Context) error {
-	os.Chdir(cCtx.Path("top"))
+	os.Chdir(cCtx.String("top"))
 
 	if err := runCmd("git", "diff", "--exit-code"); err != nil {
 		return err
@@ -538,7 +538,7 @@ func DiffCheckActionFunc(cCtx *cli.Context) error {
 }
 
 func EnsureGoimportsActionFunc(cCtx *cli.Context) error {
-	top := cCtx.Path("top")
+	top := cCtx.String("top")
 	os.Chdir(top)
 
 	if err := runCmd(
@@ -555,7 +555,7 @@ func EnsureGoimportsActionFunc(cCtx *cli.Context) error {
 }
 
 func EnsureGfmrunActionFunc(cCtx *cli.Context) error {
-	top := cCtx.Path("top")
+	top := cCtx.String("top")
 	gfmrunExe := filepath.Join(top, ".local/bin/gfmrun")
 
 	os.Chdir(top)
@@ -578,7 +578,7 @@ func EnsureGfmrunActionFunc(cCtx *cli.Context) error {
 }
 
 func EnsureMkdocsActionFunc(cCtx *cli.Context) error {
-	os.Chdir(cCtx.Path("top"))
+	os.Chdir(cCtx.String("top"))
 
 	if err := runCmd("mkdocs", "--version"); err == nil {
 		return nil
@@ -599,7 +599,7 @@ func SetMkdocsRemoteActionFunc(cCtx *cli.Context) error {
 		return errors.New("empty github token")
 	}
 
-	os.Chdir(cCtx.Path("top"))
+	os.Chdir(cCtx.String("top"))
 
 	if err := runCmd("git", "remote", "rm", "origin"); err != nil {
 		return err
@@ -612,7 +612,7 @@ func SetMkdocsRemoteActionFunc(cCtx *cli.Context) error {
 }
 
 func LintActionFunc(cCtx *cli.Context) error {
-	top := cCtx.Path("top")
+	top := cCtx.String("top")
 	os.Chdir(top)
 
 	out, err := sh(filepath.Join(top, ".local/bin/goimports"), "-l", ".")
@@ -631,7 +631,7 @@ func LintActionFunc(cCtx *cli.Context) error {
 }
 
 func V3Diff(cCtx *cli.Context) error {
-	os.Chdir(cCtx.Path("top"))
+	os.Chdir(cCtx.String("top"))
 
 	err := runCmd(
 		"diff",

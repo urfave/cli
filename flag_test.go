@@ -159,7 +159,6 @@ func TestFlagsFromEnv(t *testing.T) {
 		{"foobar", []uint64{}, &Uint64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as \[\]uint64 value from environment variable "SECONDS" for flag seconds: .*`},
 
 		{"foo", "foo", &StringFlag{Name: "name", EnvVars: []string{"NAME"}}, ""},
-		{"path", "path", &PathFlag{Name: "path", EnvVars: []string{"PATH"}}, ""},
 
 		{"foo,bar", []string{"foo", "bar"}, &StringSliceFlag{Name: "names", EnvVars: []string{"NAMES"}}, ""},
 
@@ -178,8 +177,6 @@ func TestFlagsFromEnv(t *testing.T) {
 		{"08", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 0}}, `could not parse "08" as uint64 value from environment variable "SECONDS" for flag seconds: .*`},
 		{"1.2", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2" as uint64 value from environment variable "SECONDS" for flag seconds: .*`},
 		{"foobar", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as uint64 value from environment variable "SECONDS" for flag seconds: .*`},
-
-		{"foo,bar", &Parser{"foo", "bar"}, &GenericFlag{Name: "names", Value: &Parser{}, EnvVars: []string{"NAMES"}}, ""},
 	}
 
 	for i, test := range flagTests {
@@ -282,16 +279,6 @@ func TestFlagStringifying(t *testing.T) {
 			expected: "--pepperonis value [ --pepperonis value ]\t(default: shaved)",
 		},
 		{
-			name:     "generic-flag",
-			fl:       &GenericFlag{Name: "yogurt"},
-			expected: "--yogurt value\t",
-		},
-		{
-			name:     "generic-flag-with-default-text",
-			fl:       &GenericFlag{Name: "ricotta", DefaultText: "plops"},
-			expected: "--ricotta value\t(default: plops)",
-		},
-		{
 			name:     "int-flag",
 			fl:       &IntFlag{Name: "grubs"},
 			expected: "--grubs value\t(default: 0)",
@@ -350,16 +337,6 @@ func TestFlagStringifying(t *testing.T) {
 			name:     "uint64-slice-flag-with-default-text",
 			fl:       &Uint64SliceFlag{Name: "handles", DefaultText: "-2"},
 			expected: "--handles value [ --handles value ]\t(default: -2)",
-		},
-		{
-			name:     "path-flag",
-			fl:       &PathFlag{Name: "soup"},
-			expected: "--soup value\t",
-		},
-		{
-			name:     "path-flag-with-default-text",
-			fl:       &PathFlag{Name: "stew", DefaultText: "charred/beans"},
-			expected: "--stew value\t(default: charred/beans)",
 		},
 		{
 			name:     "string-flag",
@@ -526,67 +503,6 @@ func TestStringFlagValueFromContext(t *testing.T) {
 	ctx := NewContext(nil, set, nil)
 	f := &StringFlag{Name: "myflag"}
 	expect(t, f.Get(ctx), "foobar")
-}
-
-var pathFlagTests = []struct {
-	name     string
-	aliases  []string
-	usage    string
-	value    string
-	expected string
-}{
-	{"f", nil, "", "", "-f value\t"},
-	{"f", nil, "Path is the `path` of file", "/path/to/file", "-f path\tPath is the path of file (default: \"/path/to/file\")"},
-}
-
-func TestPathFlagHelpOutput(t *testing.T) {
-	for _, test := range pathFlagTests {
-		fl := &PathFlag{Name: test.name, Aliases: test.aliases, Usage: test.usage, Value: test.value}
-
-		// create a temporary flag set to apply
-		tfs := flag.NewFlagSet("test", 0)
-		fl.Apply(tfs)
-
-		output := fl.String()
-
-		if output != test.expected {
-			t.Errorf("%q does not match %q", output, test.expected)
-		}
-	}
-}
-
-func TestPathFlagWithEnvVarHelpOutput(t *testing.T) {
-	defer resetEnv(os.Environ())
-	os.Clearenv()
-	_ = os.Setenv("APP_PATH", "/path/to/file")
-	for _, test := range pathFlagTests {
-		fl := &PathFlag{Name: test.name, Aliases: test.aliases, Value: test.value, EnvVars: []string{"APP_PATH"}}
-		output := fl.String()
-
-		expectedSuffix := withEnvHint([]string{"APP_PATH"}, "")
-		if !strings.HasSuffix(output, expectedSuffix) {
-			t.Errorf("%s does not end with"+expectedSuffix, output)
-		}
-	}
-}
-
-func TestPathFlagApply_SetsAllNames(t *testing.T) {
-	v := "mmm"
-	fl := PathFlag{Name: "path", Aliases: []string{"p", "PATH"}, Destination: &v}
-	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
-
-	err := set.Parse([]string{"--path", "/path/to/file/path", "-p", "/path/to/file/p", "--PATH", "/path/to/file/PATH"})
-	expect(t, err, nil)
-	expect(t, v, "/path/to/file/PATH")
-}
-
-func TestPathFlagValueFromContext(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.String("myflag", "/my/path", "doc")
-	ctx := NewContext(nil, set, nil)
-	f := &PathFlag{Name: "myflag"}
-	expect(t, f.Get(ctx), "/my/path")
 }
 
 var _ = []struct {
@@ -1723,62 +1639,6 @@ func TestFloat64SliceFlagApply_ParentContext(t *testing.T) {
 	}).Run([]string{"run", "child"})
 }
 
-var genericFlagTests = []struct {
-	name     string
-	value    Generic
-	expected string
-}{
-	{"toads", &Parser{"abc", "def"}, "--toads value\ttest flag (default: abc,def)"},
-	{"t", &Parser{"abc", "def"}, "-t value\ttest flag (default: abc,def)"},
-}
-
-func TestGenericFlagHelpOutput(t *testing.T) {
-	for _, test := range genericFlagTests {
-		fl := &GenericFlag{Name: test.name, Value: test.value, Usage: "test flag"}
-		// create a temporary flag set to apply
-		tfs := flag.NewFlagSet("test", 0)
-		fl.Apply(tfs)
-		output := fl.String()
-
-		if output != test.expected {
-			t.Errorf("%q does not match %q", output, test.expected)
-		}
-	}
-}
-
-func TestGenericFlagWithEnvVarHelpOutput(t *testing.T) {
-	defer resetEnv(os.Environ())
-	os.Clearenv()
-	_ = os.Setenv("APP_ZAP", "3")
-
-	for _, test := range genericFlagTests {
-		fl := &GenericFlag{Name: test.name, EnvVars: []string{"APP_ZAP"}}
-		output := fl.String()
-
-		expectedSuffix := withEnvHint([]string{"APP_ZAP"}, "")
-		if !strings.HasSuffix(output, expectedSuffix) {
-			t.Errorf("%s does not end with"+expectedSuffix, output)
-		}
-	}
-}
-
-func TestGenericFlagApply_SetsAllNames(t *testing.T) {
-	fl := GenericFlag{Name: "orbs", Aliases: []string{"O", "obrs"}, Value: &Parser{}}
-	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
-
-	err := set.Parse([]string{"--orbs", "eleventy,3", "-O", "4,bloop", "--obrs", "19,s"})
-	expect(t, err, nil)
-}
-
-func TestGenericFlagValueFromContext(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Var(&Parser{"abc", "def"}, "myflag", "doc")
-	ctx := NewContext(nil, set, nil)
-	f := &GenericFlag{Name: "myflag"}
-	expect(t, f.Get(ctx), &Parser{"abc", "def"})
-}
-
 func TestParseMultiString(t *testing.T) {
 	_ = (&App{
 		Flags: []Flag{
@@ -2659,116 +2519,6 @@ func (p *Parser) Get() interface{} {
 	return p
 }
 
-func TestParseGeneric(t *testing.T) {
-	_ = (&App{
-		Flags: []Flag{
-			&GenericFlag{Name: "serve", Aliases: []string{"s"}, Value: &Parser{}},
-		},
-		Action: func(ctx *Context) error {
-			if !reflect.DeepEqual(ctx.Generic("serve"), &Parser{"10", "20"}) {
-				t.Errorf("main name not set")
-			}
-			if !reflect.DeepEqual(ctx.Generic("s"), &Parser{"10", "20"}) {
-				t.Errorf("short name not set")
-			}
-			return nil
-		},
-	}).Run([]string{"run", "-s", "10,20"})
-}
-
-type genericType struct {
-	s []string
-}
-
-func (g *genericType) Set(value string) error {
-	g.s = strings.Split(value, "-")
-	return nil
-}
-
-func (g *genericType) String() string {
-	return strings.Join(g.s, "-")
-}
-
-func TestParseDestinationGeneric(t *testing.T) {
-	expectedString := "abc1-123d"
-	expectedGeneric := &genericType{[]string{"abc1", "123d"}}
-	dest := &genericType{}
-
-	_ = (&App{
-		Flags: []Flag{
-			&GenericFlag{
-				Name:        "dest",
-				Destination: dest,
-			},
-		},
-		Action: func(ctx *Context) error {
-
-			if !reflect.DeepEqual(dest, expectedGeneric) {
-				t.Errorf(
-					"expected destination generic: %+v, actual: %+v",
-					expectedGeneric,
-					dest,
-				)
-			}
-
-			if dest.String() != expectedString {
-				t.Errorf(
-					"expected destination string: %s, actual: %s",
-					expectedString,
-					dest.String(),
-				)
-			}
-			return nil
-		},
-	}).Run([]string{"run", "--dest", expectedString})
-}
-
-func TestParseGenericFromEnv(t *testing.T) {
-	defer resetEnv(os.Environ())
-	os.Clearenv()
-	_ = os.Setenv("APP_SERVE", "20,30")
-	_ = (&App{
-		Flags: []Flag{
-			&GenericFlag{
-				Name:    "serve",
-				Aliases: []string{"s"},
-				Value:   &Parser{},
-				EnvVars: []string{"APP_SERVE"},
-			},
-		},
-		Action: func(ctx *Context) error {
-			if !reflect.DeepEqual(ctx.Generic("serve"), &Parser{"20", "30"}) {
-				t.Errorf("main name not set from env")
-			}
-			if !reflect.DeepEqual(ctx.Generic("s"), &Parser{"20", "30"}) {
-				t.Errorf("short name not set from env")
-			}
-			return nil
-		},
-	}).Run([]string{"run"})
-}
-
-func TestParseGenericFromEnvCascade(t *testing.T) {
-	defer resetEnv(os.Environ())
-	os.Clearenv()
-	_ = os.Setenv("APP_FOO", "99,2000")
-	_ = (&App{
-		Flags: []Flag{
-			&GenericFlag{
-				Name:    "foos",
-				Value:   &Parser{},
-				EnvVars: []string{"COMPAT_FOO", "APP_FOO"},
-			},
-		},
-		Action: func(ctx *Context) error {
-			if !reflect.DeepEqual(ctx.Generic("foos"), &Parser{"99", "2000"}) {
-				t.Errorf("value not set from env")
-			}
-			return nil
-		},
-	}).Run([]string{"run"})
-}
-
 func TestFlagFromFile(t *testing.T) {
 	temp, err := ioutil.TempFile("", "urfave_cli_test")
 	if err != nil {
@@ -3187,30 +2937,12 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			},
 		},
 		{
-			name:    "path",
-			flag:    &PathFlag{Name: "flag", Value: "/tmp/foo", EnvVars: []string{"uflag"}},
-			toParse: []string{"--flag", "/bar/ddfr"},
-			expect:  `--flag value	(default: "/tmp/foo")` + withEnvHint([]string{"uflag"}, ""),
-			environ: map[string]string{
-				"uflag": "/bar/t/err",
-			},
-		},
-		{
 			name:    "timestamp",
 			flag:    &TimestampFlag{Name: "flag", Value: ts, Config: TimestampConfig{Layout: time.RFC3339}, EnvVars: []string{"tflag"}},
 			toParse: []string{"--flag", "2006-11-02T15:04:05Z"},
 			expect:  `--flag value	(default: 2005-01-02 15:04:05 +0000 UTC)` + withEnvHint([]string{"tflag"}, ""),
 			environ: map[string]string{
 				"tflag": "2010-01-02T15:04:05Z",
-			},
-		},
-		{
-			name:    "generic",
-			flag:    &GenericFlag{Name: "flag", Value: &Parser{"11", "12"}, EnvVars: []string{"gflag"}},
-			toParse: []string{"--flag", "15,16"},
-			expect:  `--flag value	(default: 11,12)` + withEnvHint([]string{"gflag"}, ""),
-			environ: map[string]string{
-				"gflag": "13,14",
 			},
 		},
 	}

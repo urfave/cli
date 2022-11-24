@@ -606,9 +606,6 @@ func (cCtx *Context) Float64Slice(name string) []float64
     Float64Slice looks up the value of a local Float64SliceFlag, returns nil if
     not found
 
-func (cCtx *Context) Generic(name string) interface{}
-    Generic looks up the value of a local GenericFlag, returns nil if not found
-
 func (cCtx *Context) Int(name string) int
     Int looks up the value of a local IntFlag, returns 0 if not found
 
@@ -638,9 +635,6 @@ func (cCtx *Context) NArg() int
 
 func (cCtx *Context) NumFlags() int
     NumFlags returns the number of flags set
-
-func (cCtx *Context) Path(name string) string
-    Path looks up the value of a local PathFlag, returns "" if not found
 
 func (cCtx *Context) Set(name, value string) error
     Set sets a context flag to a value.
@@ -910,81 +904,6 @@ type Float64Slice = SliceBase[float64, NoConfig, float64Value]
 
 type Float64SliceFlag = FlagBase[[]float64, NoConfig, Float64Slice]
 
-type Generic interface {
-	Set(value string) error
-	String() string
-}
-    Generic is a generic parseable type identified by a specific flag
-
-type GenericFlag struct {
-	Name string
-
-	Category    string
-	DefaultText string
-	FilePath    string
-	Usage       string
-
-	Required   bool
-	Hidden     bool
-	HasBeenSet bool
-
-	Value       Generic
-	Destination Generic
-
-	Aliases []string
-	EnvVars []string
-
-	TakesFile bool
-
-	Action func(*Context, interface{}) error
-	// Has unexported fields.
-}
-    GenericFlag is a flag with type Generic
-
-func (f *GenericFlag) Apply(set *flag.FlagSet) error
-    Apply takes the flagset and calls Set on the generic flag with the value
-    provided by the user for parsing by the flag
-
-func (f *GenericFlag) Get(ctx *Context) interface{}
-    Get returns the flag’s value in the given Context.
-
-func (f *GenericFlag) GetCategory() string
-    GetCategory returns the category of the flag
-
-func (f *GenericFlag) GetDefaultText() string
-    GetDefaultText returns the default text for this flag
-
-func (f *GenericFlag) GetEnvVars() []string
-    GetEnvVars returns the env vars for this flag
-
-func (f *GenericFlag) GetUsage() string
-    GetUsage returns the usage string for the flag
-
-func (f *GenericFlag) GetValue() string
-    GetValue returns the flags value as string representation and an empty
-    string if the flag takes no value at all.
-
-func (f *GenericFlag) IsRequired() bool
-    IsRequired returns whether or not the flag is required
-
-func (f *GenericFlag) IsSet() bool
-    IsSet returns whether or not the flag has been set through env or file
-
-func (f *GenericFlag) IsVisible() bool
-    IsVisible returns true if the flag is not hidden, otherwise false
-
-func (f *GenericFlag) Names() []string
-    Names returns the names of the flag
-
-func (f *GenericFlag) RunAction(c *Context) error
-    RunAction executes flag action if set
-
-func (f *GenericFlag) String() string
-    String returns a readable representation of this value (for usage defaults)
-
-func (f *GenericFlag) TakesValue() bool
-    TakesValue returns true if the flag takes a value, otherwise false
-
 type Int64Flag = FlagBase[int64, IntegerConfig, int64Value]
 
 type Int64Slice = SliceBase[int64, IntegerConfig, int64Value]
@@ -1020,76 +939,6 @@ type OnUsageErrorFunc func(cCtx *Context, err error, isSubcommand bool) error
     displaying customized usage error messages. This function is able to replace
     the original error messages. If this function is not set, the "Incorrect
     usage" is displayed and the execution is interrupted.
-
-type Path = string
-
-type PathFlag struct {
-	Name string
-
-	Category    string
-	DefaultText string
-	FilePath    string
-	Usage       string
-
-	Required   bool
-	Hidden     bool
-	HasBeenSet bool
-
-	Value       Path
-	Destination *Path
-
-	Aliases []string
-	EnvVars []string
-
-	TakesFile bool
-
-	Action func(*Context, Path) error
-	// Has unexported fields.
-}
-    PathFlag is a flag with type Path
-
-func (f *PathFlag) Apply(set *flag.FlagSet) error
-    Apply populates the flag given the flag set and environment
-
-func (f *PathFlag) Get(ctx *Context) string
-    Get returns the flag’s value in the given Context.
-
-func (f *PathFlag) GetCategory() string
-    GetCategory returns the category of the flag
-
-func (f *PathFlag) GetDefaultText() string
-    GetDefaultText returns the default text for this flag
-
-func (f *PathFlag) GetEnvVars() []string
-    GetEnvVars returns the env vars for this flag
-
-func (f *PathFlag) GetUsage() string
-    GetUsage returns the usage string for the flag
-
-func (f *PathFlag) GetValue() string
-    GetValue returns the flags value as string representation and an empty
-    string if the flag takes no value at all.
-
-func (f *PathFlag) IsRequired() bool
-    IsRequired returns whether or not the flag is required
-
-func (f *PathFlag) IsSet() bool
-    IsSet returns whether or not the flag has been set through env or file
-
-func (f *PathFlag) IsVisible() bool
-    IsVisible returns true if the flag is not hidden, otherwise false
-
-func (f *PathFlag) Names() []string
-    Names returns the names of the flag
-
-func (f *PathFlag) RunAction(c *Context) error
-    RunAction executes flag action if set
-
-func (f *PathFlag) String() string
-    String returns a readable representation of this value (for usage defaults)
-
-func (f *PathFlag) TakesValue() bool
-    TakesValue returns true if the flag takes a value, otherwise false
 
 type RequiredFlag interface {
 	Flag

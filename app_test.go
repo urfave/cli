@@ -2804,22 +2804,6 @@ func TestFlagAction(t *testing.T) {
 					return nil
 				},
 			},
-			&GenericFlag{
-				Name:  "f_generic",
-				Value: new(stringGeneric),
-				Action: func(c *Context, v interface{}) error {
-					fmt.Printf("%T %v\n", v, v)
-					switch vv := v.(type) {
-					case *stringGeneric:
-						if vv.value == "" {
-							return fmt.Errorf("generic value not set")
-						}
-					}
-
-					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return nil
-				},
-			},
 			&IntFlag{
 				Name: "f_int",
 				Action: func(c *Context, v int) error {
@@ -2855,16 +2839,6 @@ func TestFlagAction(t *testing.T) {
 				Action: func(c *Context, v []int64) error {
 					if len(v) > 0 && v[0] < 0 {
 						return fmt.Errorf("invalid int64 slice")
-					}
-					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return nil
-				},
-			},
-			&PathFlag{
-				Name: "f_path",
-				Action: func(c *Context, v string) error {
-					if v == "" {
-						return fmt.Errorf("empty path")
 					}
 					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 					return nil
@@ -2974,16 +2948,6 @@ func TestFlagAction(t *testing.T) {
 			err:  fmt.Errorf("invalid float64 slice"),
 		},
 		{
-			name: "flag_generic",
-			args: []string{"app", "--f_generic=1"},
-			exp:  "1 ",
-		},
-		{
-			name: "flag_generic_error",
-			args: []string{"app", "--f_generic="},
-			err:  fmt.Errorf("generic value not set"),
-		},
-		{
 			name: "flag_int",
 			args: []string{"app", "--f_int=1"},
 			exp:  "1 ",
@@ -3022,16 +2986,6 @@ func TestFlagAction(t *testing.T) {
 			name: "flag_int64_slice",
 			args: []string{"app", "--f_int64_slice=-1"},
 			err:  fmt.Errorf("invalid int64 slice"),
-		},
-		{
-			name: "flag_path",
-			args: []string{"app", "--f_path=/root"},
-			exp:  "/root ",
-		},
-		{
-			name: "flag_path_error",
-			args: []string{"app", "--f_path="},
-			err:  fmt.Errorf("empty path"),
 		},
 		{
 			name: "flag_timestamp",
