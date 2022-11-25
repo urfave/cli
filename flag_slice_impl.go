@@ -2,7 +2,6 @@ package cli
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"reflect"
 	"strings"
@@ -63,7 +62,7 @@ func (i *SliceBase[T, C, VC]) Set(value string) error {
 		if err := i.value.Set(strings.TrimSpace(s)); err != nil {
 			return err
 		}
-		tmp, ok := i.value.(flag.Getter).Get().(T)
+		tmp, ok := i.value.Get().(T)
 		if !ok {
 			return fmt.Errorf("Unable to cast %v", i.value)
 		}

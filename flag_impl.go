@@ -88,7 +88,7 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 			}
 		}
 
-		newVal = tmpVal.(flag.Getter).Get().(T)
+		newVal = tmpVal.Get().(T)
 		f.hasBeenSet = true
 	}
 
