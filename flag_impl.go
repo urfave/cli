@@ -6,6 +6,8 @@ import (
 	"reflect"
 )
 
+// Value represents a value as used by cli.
+// For now it implements the golang flag.Value interface
 type Value interface {
 	flag.Value
 	flag.Getter
@@ -32,31 +34,32 @@ type NoConfig struct{}
 //	C specifies the configuration required(if any for that flag type)
 //	VC specifies the value creator which creates the flag.Value emulation
 type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
-	Name string
+	Name string // The name of the flag
 
-	Category    string
-	DefaultText string
-	FilePath    string
-	Usage       string
+	Category    string // The category of the flag, if any
+	DefaultText string // The default text of the flag for usage purposes
+	FilePath    string // The file path to load value from
+	Usage       string // The usage string for help output
 
-	Required   bool
-	Hidden     bool
-	hasBeenSet bool
+	Required bool // whether the flag is required or not
+	Hidden   bool // whether to hide the flag in help output
 
-	Value       T
-	Destination *T
+	Value       T  // The default value for this flag if not set by from any source
+	Destination *T // The destination pointer for value when set
 
-	Aliases []string
-	EnvVars []string
+	Aliases []string // Aliases that are allowed for this flag
+	EnvVars []string // Set of environment variables that can influence this flag's value
 
-	TakesFile bool
+	TakesFile bool // whether this flag takes a file argument, mainly for shell completion purposes
 
-	Action func(*Context, T) error
+	Action func(*Context, T) error // Action callback to be called when flag is set
 
-	Config C
+	Config C // Additional/Custom configuration associated with this flag type
 
-	creator VC
-	value   flag.Value
+	// unexported fields for internal use
+	hasBeenSet bool  // whether the flag has been set from env or file
+	creator    VC    // the value creator for this flag type
+	value      Value // the value representing this flag's value
 }
 
 // GetValue returns the flags value as string representation and an empty
