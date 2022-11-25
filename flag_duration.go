@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"flag"
 	"fmt"
 	"time"
 )
@@ -13,7 +12,7 @@ type durationValue time.Duration
 
 // Below functions are to satisfy the ValueCreator interface
 
-func (i durationValue) Create(val time.Duration, p *time.Duration, c NoConfig) flag.Value {
+func (i durationValue) Create(val time.Duration, p *time.Duration, c NoConfig) Value {
 	*p = val
 	return (*durationValue)(p)
 }

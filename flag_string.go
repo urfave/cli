@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"flag"
 	"fmt"
 )
 
@@ -12,7 +11,7 @@ type stringValue string
 
 // Below functions are to satisfy the ValueCreator interface
 
-func (i stringValue) Create(val string, p *string, c NoConfig) flag.Value {
+func (i stringValue) Create(val string, p *string, c NoConfig) Value {
 	*p = val
 	return (*stringValue)(p)
 }

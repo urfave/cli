@@ -6,13 +6,18 @@ import (
 	"reflect"
 )
 
+type Value interface {
+	flag.Value
+	flag.Getter
+}
+
 // ValueCreator is responsible for creating a flag.Value emulation
 // as well as custom formatting
 //
 //	T specifies the type
 //	C specifies the config for the type
 type ValueCreator[T any, C any] interface {
-	Create(T, *T, C) flag.Value
+	Create(T, *T, C) Value
 	ToString(T) string
 }
 

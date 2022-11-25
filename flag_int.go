@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"flag"
 	"fmt"
 	"strconv"
 )
@@ -21,7 +20,7 @@ type intValue struct {
 
 // Below functions are to satisfy the ValueCreator interface
 
-func (i intValue) Create(val int, p *int, c IntegerConfig) flag.Value {
+func (i intValue) Create(val int, p *int, c IntegerConfig) Value {
 	*p = val
 	return &intValue{
 		val:  p,

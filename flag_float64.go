@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"flag"
 	"fmt"
 	"strconv"
 )
@@ -13,7 +12,7 @@ type float64Value float64
 
 // Below functions are to satisfy the ValueCreator interface
 
-func (f float64Value) Create(val float64, p *float64, c NoConfig) flag.Value {
+func (f float64Value) Create(val float64, p *float64, c NoConfig) Value {
 	*p = val
 	return (*float64Value)(p)
 }

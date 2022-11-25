@@ -2,7 +2,6 @@ package cli
 
 import (
 	"errors"
-	"flag"
 	"fmt"
 	"strconv"
 )
@@ -36,7 +35,7 @@ func (cCtx *Context) Bool(name string) bool {
 // Below functions are to satisfy the ValueCreator interface
 
 // Create creates the bool value
-func (i boolValue) Create(val bool, p *bool, c BoolConfig) flag.Value {
+func (i boolValue) Create(val bool, p *bool, c BoolConfig) Value {
 	*p = val
 	if c.Count == nil {
 		c.Count = new(int)

@@ -963,7 +963,7 @@ type SliceBase[T any, C any, VC ValueCreator[T, C]] struct {
 func NewSliceBase[T any, C any, VC ValueCreator[T, C]](defaults ...T) *SliceBase[T, C, VC]
     NewIntSlice makes an *IntSlice with default values
 
-func (i SliceBase[T, C, VC]) Create(val []T, p *[]T, c C) flag.Value
+func (i SliceBase[T, C, VC]) Create(val []T, p *[]T, c C) Value
 
 func (i *SliceBase[T, C, VC]) Get() interface{}
     Get returns the slice of ints set by this flag
@@ -1016,8 +1016,13 @@ type UintSlice = SliceBase[uint, IntegerConfig, uintValue]
 
 type UintSliceFlag = FlagBase[[]uint, IntegerConfig, UintSlice]
 
+type Value interface {
+	flag.Value
+	flag.Getter
+}
+
 type ValueCreator[T any, C any] interface {
-	Create(T, *T, C) flag.Value
+	Create(T, *T, C) Value
 	ToString(T) string
 }
     ValueCreator is responsible for creating a flag.Value emulation as well as

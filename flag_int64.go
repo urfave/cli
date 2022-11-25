@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"flag"
 	"fmt"
 	"strconv"
 )
@@ -16,7 +15,7 @@ type int64Value struct {
 
 // Below functions are to satisfy the ValueCreator interface
 
-func (i int64Value) Create(val int64, p *int64, c IntegerConfig) flag.Value {
+func (i int64Value) Create(val int64, p *int64, c IntegerConfig) Value {
 	*p = val
 	return &int64Value{
 		val:  p,

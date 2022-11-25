@@ -12,10 +12,10 @@ import (
 type SliceBase[T any, C any, VC ValueCreator[T, C]] struct {
 	slice      *[]T
 	hasBeenSet bool
-	value      flag.Value
+	value      Value
 }
 
-func (i SliceBase[T, C, VC]) Create(val []T, p *[]T, c C) flag.Value {
+func (i SliceBase[T, C, VC]) Create(val []T, p *[]T, c C) Value {
 	*p = []T{}
 	*p = append(*p, val...)
 	var t T

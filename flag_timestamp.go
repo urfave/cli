@@ -24,7 +24,7 @@ type timestampValue struct {
 
 // Below functions are to satisfy the ValueCreator interface
 
-func (i timestampValue) Create(val time.Time, p *time.Time, c TimestampConfig) flag.Value {
+func (i timestampValue) Create(val time.Time, p *time.Time, c TimestampConfig) Value {
 	*p = val
 	return &timestampValue{
 		timestamp: p,
