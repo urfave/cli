@@ -39,7 +39,7 @@ func (f *float64Value) String() string { return strconv.FormatFloat(float64(*f),
 // Int looks up the value of a local IntFlag, returns
 // 0 if not found
 func (cCtx *Context) Float64(name string) float64 {
-	if v, ok := cCtx.Value(name).(float64); ok {
+	if v, ok := cCtx.GetValue(name).(float64); ok {
 		return v
 	}
 	return 0

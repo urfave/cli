@@ -416,7 +416,7 @@ func ExampleApp_Run_sliceValues() {
 	}
 	app.Action = func(ctx *Context) error {
 		for i, v := range ctx.FlagNames() {
-			fmt.Printf("%d-%s %#v\n", i, v, ctx.Value(v))
+			fmt.Printf("%d-%s %#v\n", i, v, ctx.GetValue(v))
 		}
 		err := ctx.Err()
 		fmt.Println("error:", err)
