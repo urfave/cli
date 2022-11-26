@@ -649,10 +649,10 @@ func (cCtx *Context) Timestamp(name string) *time.Time
     Timestamp gets the timestamp from a flag name
 
 func (cCtx *Context) Uint(name string) uint
-    Int looks up the value of a local IntFlag, returns 0 if not found
+    Uint looks up the value of a local UintFlag, returns 0 if not found
 
 func (cCtx *Context) Uint64(name string) uint64
-    Int64 looks up the value of a local Int64Flag, returns 0 if not found
+    Uint64 looks up the value of a local Uint64Flag, returns 0 if not found
 
 func (cCtx *Context) Uint64Slice(name string) []uint64
     Uint64Slice looks up the value of a local Uint64SliceFlag, returns nil if
@@ -966,17 +966,16 @@ func NewSliceBase[T any, C any, VC ValueCreator[T, C]](defaults ...T) *SliceBase
 func (i SliceBase[T, C, VC]) Create(val []T, p *[]T, c C) Value
 
 func (i *SliceBase[T, C, VC]) Get() interface{}
-    Get returns the slice of ints set by this flag
+    Get returns the slice of values set by this flag
 
 func (i *SliceBase[T, C, VC]) Serialize() string
-    Serialize allows IntSlice to fulfill Serializer
+    Serialize allows SliceBase to fulfill Serializer
 
 func (i *SliceBase[T, C, VC]) Set(value string) error
-    Set parses the value into an integer and appends it to the list of values
+    Set parses the value and appends it to the list of values
 
 func (i *SliceBase[T, C, VC]) SetOne(value T)
-    TODO: Consistently have specific Set function for Int64 and Float64 ? SetInt
-    directly adds an integer to the list of values
+    SetOne directly adds a value to the list of values
 
 func (i *SliceBase[T, C, VC]) String() string
     String returns a readable representation of this value (for usage defaults)
@@ -984,7 +983,7 @@ func (i *SliceBase[T, C, VC]) String() string
 func (i SliceBase[T, C, VC]) ToString(t []T) string
 
 func (i *SliceBase[T, C, VC]) Value() []T
-    Value returns the slice of ints set by this flag
+    Value returns the slice of values set by this flag
 
 type StringFlag = FlagBase[string, NoConfig, stringValue]
 

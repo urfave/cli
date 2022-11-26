@@ -33,8 +33,7 @@ func NewSliceBase[T any, C any, VC ValueCreator[T, C]](defaults ...T) *SliceBase
 	}
 }
 
-// TODO: Consistently have specific Set function for Int64 and Float64 ?
-// SetInt directly adds an integer to the list of values
+// SetOne directly adds a value to the list of values
 func (i *SliceBase[T, C, VC]) SetOne(value T) {
 	if !i.hasBeenSet {
 		*i.slice = []T{}

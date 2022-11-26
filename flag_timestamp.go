@@ -80,7 +80,7 @@ func (t *timestampValue) Value() *time.Time {
 }
 
 // Get returns the flag structure
-func (t *timestampValue) Get() interface{} {
+func (t *timestampValue) Get() any {
 	return *t.timestamp
 }
 
