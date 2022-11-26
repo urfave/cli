@@ -44,7 +44,7 @@ func (i *SliceBase[T, C, VC]) SetOne(value T) {
 	*i.slice = append(*i.slice, value)
 }
 
-// Set parses the value into an integer and appends it to the list of values
+// Set parses the value and appends it to the list of values
 func (i *SliceBase[T, C, VC]) Set(value string) error {
 	if !i.hasBeenSet {
 		*i.slice = []T{}
