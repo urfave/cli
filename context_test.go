@@ -363,14 +363,16 @@ func TestNonNilContext(t *testing.T) {
 	}
 }
 
+type testKey struct{}
+
 // TestContextPropagation tests that
 // *cli.Context always has a valid
 // context.Context
 func TestContextPropagation(t *testing.T) {
 	parent := NewContext(nil, nil, nil)
-	parent.Context = context.WithValue(context.Background(), "key", "val")
+	parent.Context = context.WithValue(context.Background(), testKey{}, "val")
 	ctx := NewContext(nil, nil, parent)
-	val := ctx.Context.Value("key")
+	val := ctx.Context.Value(testKey{})
 	if val == nil {
 		t.Fatal("expected a parent context to be inherited but got nil")
 	}

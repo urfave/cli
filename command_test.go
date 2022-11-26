@@ -5,7 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"reflect"
 	"strings"
 	"testing"
@@ -27,7 +27,7 @@ func TestCommandFlagParsing(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		app := &App{Writer: ioutil.Discard}
+		app := &App{Writer: io.Discard}
 		set := flag.NewFlagSet("test", 0)
 		_ = set.Parse(c.testArgs)
 
@@ -46,7 +46,7 @@ func TestCommandFlagParsing(t *testing.T) {
 		err := command.Run(cCtx, c.testArgs...)
 
 		expect(t, err, c.expectedErr)
-		//expect(t, cCtx.Args().Slice(), c.testArgs)
+		// expect(t, cCtx.Args().Slice(), c.testArgs)
 	}
 }
 
@@ -118,7 +118,7 @@ func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 				},
 			},
 		},
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 	}
 
 	err := app.Run([]string{"foo", "bar"})
@@ -216,7 +216,7 @@ func TestCommand_OnUsageError_WithWrongFlagValue(t *testing.T) {
 				Flags: []Flag{
 					&IntFlag{Name: "flag"},
 				},
-				OnUsageError: func(c *Context, err error, _ bool) error {
+				OnUsageError: func(_ *Context, err error, _ bool) error {
 					if !strings.HasPrefix(err.Error(), "invalid value \"wrong\"") {
 						t.Errorf("Expect an invalid value error, but got \"%v\"", err)
 					}
@@ -249,7 +249,7 @@ func TestCommand_OnUsageError_WithSubcommand(t *testing.T) {
 				Flags: []Flag{
 					&IntFlag{Name: "flag"},
 				},
-				OnUsageError: func(c *Context, err error, _ bool) error {
+				OnUsageError: func(_ *Context, err error, _ bool) error {
 					if !strings.HasPrefix(err.Error(), "invalid value \"wrong\"") {
 						t.Errorf("Expect an invalid value error, but got \"%v\"", err)
 					}
@@ -271,7 +271,7 @@ func TestCommand_OnUsageError_WithSubcommand(t *testing.T) {
 
 func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
 	app := &App{
-		ErrWriter: ioutil.Discard,
+		ErrWriter: io.Discard,
 		Commands: []*Command{
 			{
 				Name:  "bar",
@@ -281,7 +281,7 @@ func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
 						Name:  "baz",
 						Usage: "this is for testing",
 						Action: func(c *Context) error {
-							if c.App.ErrWriter != ioutil.Discard {
+							if c.App.ErrWriter != io.Discard {
 								return fmt.Errorf("ErrWriter not passed")
 							}
 
@@ -325,7 +325,7 @@ func TestCommandSkipFlagParsing(t *testing.T) {
 					},
 				},
 			},
-			Writer: ioutil.Discard,
+			Writer: io.Discard,
 		}
 
 		err := app.Run(c.testArgs)
@@ -377,7 +377,6 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 		expect(t, err, nil)
 		expect(t, stdout, c.expectedOut)
 	}
-
 }
 
 func TestCommand_NoVersionFlagOnCommands(t *testing.T) {
@@ -406,7 +405,7 @@ func TestCommand_NoVersionFlagOnCommands(t *testing.T) {
 func TestCommand_CanAddVFlagOnCommands(t *testing.T) {
 	app := &App{
 		Version: "some version",
-		Writer:  ioutil.Discard,
+		Writer:  io.Discard,
 		Commands: []*Command{
 			{
 				Name:        "bar",
@@ -426,7 +425,6 @@ func TestCommand_CanAddVFlagOnCommands(t *testing.T) {
 }
 
 func TestCommand_VisibleSubcCommands(t *testing.T) {
-
 	subc1 := &Command{
 		Name:  "subc1",
 		Usage: "subc1 command1",
@@ -453,7 +451,6 @@ func TestCommand_VisibleSubcCommands(t *testing.T) {
 }
 
 func TestCommand_VisibleFlagCategories(t *testing.T) {
-
 	c := &Command{
 		Name:  "bar",
 		Usage: "this is for testing",

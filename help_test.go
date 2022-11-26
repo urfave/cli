@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"strings"
@@ -179,7 +178,7 @@ func Test_helpCommand_InHelpOutput(t *testing.T) {
 }
 
 func Test_helpCommand_HelpName(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		name string
 		args []string
 		want string
@@ -311,7 +310,7 @@ func TestShowAppHelp_CommandAliases(t *testing.T) {
 }
 
 func TestShowCommandHelp_AppendHelp(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		name            string
 		hideHelp        bool
 		hideHelpCommand bool
@@ -391,7 +390,7 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 		{
 			name:     "no-command",
 			template: "",
-			printer: func(w io.Writer, templ string, data interface{}) {
+			printer: func(w io.Writer, _ string, _ interface{}) {
 				fmt.Fprint(w, "yo")
 			},
 			command:      "",
@@ -476,7 +475,7 @@ func TestShowCommandHelp_HelpPrinterCustom(t *testing.T) {
 		{
 			name:     "no-command",
 			template: "",
-			printer: func(w io.Writer, templ string, data interface{}, fm map[string]interface{}) {
+			printer: func(w io.Writer, _ string, _ interface{}, _ map[string]interface{}) {
 				fmt.Fprint(w, "yo")
 			},
 			command:      "",
@@ -486,7 +485,7 @@ func TestShowCommandHelp_HelpPrinterCustom(t *testing.T) {
 		{
 			name:     "standard-command",
 			template: "",
-			printer: func(w io.Writer, templ string, data interface{}, fm map[string]interface{}) {
+			printer: func(w io.Writer, _ string, _ interface{}, _ map[string]interface{}) {
 				fmt.Fprint(w, "yo")
 			},
 			command:      "my-command",
@@ -846,7 +845,7 @@ func TestShowAppHelp_HelpPrinter(t *testing.T) {
 		{
 			name:     "standard-command",
 			template: "",
-			printer: func(w io.Writer, templ string, data interface{}) {
+			printer: func(w io.Writer, _ string, _ interface{}) {
 				fmt.Fprint(w, "yo")
 			},
 			wantTemplate: AppHelpTemplate,
@@ -913,7 +912,7 @@ func TestShowAppHelp_HelpPrinterCustom(t *testing.T) {
 		{
 			name:     "standard-command",
 			template: "",
-			printer: func(w io.Writer, templ string, data interface{}, fm map[string]interface{}) {
+			printer: func(w io.Writer, _ string, _ interface{}, _ map[string]interface{}) {
 				fmt.Fprint(w, "yo")
 			},
 			wantTemplate: AppHelpTemplate,
@@ -1133,7 +1132,7 @@ App UsageText`,
 func TestHideHelpCommand(t *testing.T) {
 	app := &App{
 		HideHelpCommand: true,
-		Writer:          ioutil.Discard,
+		Writer:          io.Discard,
 	}
 
 	err := app.Run([]string{"foo", "help"})
@@ -1153,7 +1152,7 @@ func TestHideHelpCommand(t *testing.T) {
 func TestHideHelpCommand_False(t *testing.T) {
 	app := &App{
 		HideHelpCommand: false,
-		Writer:          ioutil.Discard,
+		Writer:          io.Discard,
 	}
 
 	err := app.Run([]string{"foo", "help"})
@@ -1171,7 +1170,7 @@ func TestHideHelpCommand_WithHideHelp(t *testing.T) {
 	app := &App{
 		HideHelp:        true, // effective (hides both command and flag)
 		HideHelpCommand: true, // ignored
-		Writer:          ioutil.Discard,
+		Writer:          io.Discard,
 	}
 
 	err := app.Run([]string{"foo", "help"})
@@ -1200,7 +1199,7 @@ func newContextFromStringSlice(ss []string) *Context {
 func TestHideHelpCommand_RunAsSubcommand(t *testing.T) {
 	app := &App{
 		HideHelpCommand: true,
-		Writer:          ioutil.Discard,
+		Writer:          io.Discard,
 		Commands: []*Command{
 			{
 				Name: "dummy",
@@ -1225,7 +1224,7 @@ func TestHideHelpCommand_RunAsSubcommand(t *testing.T) {
 func TestHideHelpCommand_RunAsSubcommand_False(t *testing.T) {
 	app := &App{
 		HideHelpCommand: false,
-		Writer:          ioutil.Discard,
+		Writer:          io.Discard,
 		Commands: []*Command{
 			{
 				Name: "dummy",
@@ -1246,7 +1245,7 @@ func TestHideHelpCommand_RunAsSubcommand_False(t *testing.T) {
 
 func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 	app := &App{
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 		Commands: []*Command{
 			{
 				Name: "dummy",
@@ -1368,7 +1367,6 @@ func TestWrap(t *testing.T) {
 }
 
 func TestWrappedHelp(t *testing.T) {
-
 	// Reset HelpPrinter after this test.
 	defer func(old helpPrinter) {
 		HelpPrinter = old
@@ -1378,7 +1376,8 @@ func TestWrappedHelp(t *testing.T) {
 	app := &App{
 		Writer: output,
 		Flags: []Flag{
-			&BoolFlag{Name: "foo",
+			&BoolFlag{
+				Name:    "foo",
 				Aliases: []string{"h"},
 				Usage:   "here's a really long help text line, let's see where it wraps. blah blah blah and so on.",
 			},
@@ -1462,7 +1461,6 @@ COPYRIGHT:
 }
 
 func TestWrappedCommandHelp(t *testing.T) {
-
 	// Reset HelpPrinter after this test.
 	defer func(old helpPrinter) {
 		HelpPrinter = old
@@ -1524,7 +1522,6 @@ OPTIONS:
 }
 
 func TestWrappedSubcommandHelp(t *testing.T) {
-
 	// Reset HelpPrinter after this test.
 	defer func(old helpPrinter) {
 		HelpPrinter = old
@@ -1594,7 +1591,6 @@ OPTIONS:
 }
 
 func TestWrappedHelpSubcommand(t *testing.T) {
-
 	// Reset HelpPrinter after this test.
 	defer func(old helpPrinter) {
 		HelpPrinter = old
