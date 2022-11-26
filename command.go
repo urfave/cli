@@ -146,7 +146,7 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 	}
 
 	a := args(arguments)
-	set, err := c.parseFlags(&a, cCtx.shellComplete)
+	set, err := c.parseFlags(&a, cCtx)
 	cCtx.flagSet = set
 
 	if c.isRoot {
@@ -308,7 +308,7 @@ func (c *Command) suggestFlagFromError(err error, command string) (string, error
 	return fmt.Sprintf(SuggestDidYouMeanTemplate, suggestion) + "\n\n", nil
 }
 
-func (c *Command) parseFlags(args Args, shellComplete bool) (*flag.FlagSet, error) {
+func (c *Command) parseFlags(args Args, ctx *Context) (*flag.FlagSet, error) {
 	set, err := c.newFlagSet()
 	if err != nil {
 		return nil, err
@@ -318,13 +318,42 @@ func (c *Command) parseFlags(args Args, shellComplete bool) (*flag.FlagSet, erro
 		return set, set.Parse(append([]string{"--"}, args.Tail()...))
 	}
 
-	err = parseIter(set, c, args.Tail(), shellComplete)
-	if err != nil {
+	for pCtx := ctx.parentContext; pCtx != nil; pCtx = pCtx.parentContext {
+		if pCtx.Command == nil {
+			continue
+		}
+
+		for _, fl := range pCtx.Command.Flags {
+			pfl, ok := fl.(PersistentFlag)
+			if !ok || !pfl.IsPersistent() {
+				continue
+			}
+
+			applyPersistentFlag := true
+			set.VisitAll(func(f *flag.Flag) {
+				for _, name := range fl.Names() {
+					if name == f.Name {
+						applyPersistentFlag = false
+						break
+					}
+				}
+			})
+
+			if !applyPersistentFlag {
+				continue
+			}
+
+			if err := fl.Apply(set); err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	if err := parseIter(set, c, args.Tail(), ctx.shellComplete); err != nil {
 		return nil, err
 	}
 
-	err = normalizeFlags(c.Flags, set)
-	if err != nil {
+	if err := normalizeFlags(c.Flags, set); err != nil {
 		return nil, err
 	}
 

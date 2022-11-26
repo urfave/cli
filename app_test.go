@@ -1461,6 +1461,10 @@ func TestApp_AfterFunc(t *testing.T) {
 		reset
 	*/
 	counts = &opCounts{}
+	// reset the flags since they are set previously
+	app.Flags = []Flag{
+		&StringFlag{Name: "opt"},
+	}
 
 	// run with none args
 	err = app.Run([]string{"command"})
@@ -3052,4 +3056,132 @@ func TestFlagAction(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPersistentFlag(t *testing.T) {
+
+	var topInt, topPersistentInt, subCommandInt, appOverrideInt int
+	var appFlag string
+	var appOverrideCmdInt int64
+	var appSliceFloat64 []float64
+	var persistentAppSliceInt []int64
+
+	a := &App{
+		Flags: []Flag{
+			&StringFlag{
+				Name:        "persistentAppFlag",
+				Persistent:  true,
+				Destination: &appFlag,
+			},
+			&Int64SliceFlag{
+				Name:        "persistentAppSliceFlag",
+				Persistent:  true,
+				Destination: &persistentAppSliceInt,
+			},
+			&Float64SliceFlag{
+				Name:       "persistentAppFloatSliceFlag",
+				Persistent: true,
+				Value:      []float64{11.3, 12.5},
+			},
+			&IntFlag{
+				Name:        "persistentAppOverrideFlag",
+				Persistent:  true,
+				Destination: &appOverrideInt,
+			},
+		},
+		Commands: []*Command{
+			{
+				Name: "cmd",
+				Flags: []Flag{
+					&IntFlag{
+						Name:        "cmdFlag",
+						Destination: &topInt,
+					},
+					&IntFlag{
+						Name:        "cmdPersistentFlag",
+						Persistent:  true,
+						Destination: &topPersistentInt,
+					},
+					&Int64Flag{
+						Name:        "paof",
+						Aliases:     []string{"persistentAppOverrideFlag"},
+						Destination: &appOverrideCmdInt,
+					},
+				},
+				Subcommands: []*Command{
+					{
+						Name: "subcmd",
+						Flags: []Flag{
+							&IntFlag{
+								Name:        "cmdFlag",
+								Destination: &subCommandInt,
+							},
+						},
+						Action: func(ctx *Context) error {
+							appSliceFloat64 = ctx.Float64Slice("persistentAppFloatSliceFlag")
+							return nil
+						},
+					},
+				},
+			},
+		},
+	}
+
+	err := a.Run([]string{"app",
+		"--persistentAppFlag", "hello",
+		"--persistentAppSliceFlag", "100",
+		"--persistentAppOverrideFlag", "102",
+		"cmd",
+		"--cmdFlag", "12",
+		"--persistentAppSliceFlag", "102",
+		"--persistentAppFloatSliceFlag", "102.455",
+		"--paof", "105",
+		"subcmd",
+		"--cmdPersistentFlag", "20",
+		"--cmdFlag", "11",
+		"--persistentAppFlag", "bar",
+		"--persistentAppSliceFlag", "130",
+		"--persistentAppFloatSliceFlag", "3.1445",
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if appFlag != "bar" {
+		t.Errorf("Expected 'bar' got %s", appFlag)
+	}
+
+	if topInt != 12 {
+		t.Errorf("Expected 12 got %d", topInt)
+	}
+
+	if topPersistentInt != 20 {
+		t.Errorf("Expected 20 got %d", topPersistentInt)
+	}
+
+	// this should be changed from app since
+	// cmd overrides it
+	if appOverrideInt != 102 {
+		t.Errorf("Expected 102 got %d", appOverrideInt)
+	}
+
+	if subCommandInt != 11 {
+		t.Errorf("Expected 11 got %d", subCommandInt)
+	}
+
+	if appOverrideCmdInt != 105 {
+		t.Errorf("Expected 105 got %d", appOverrideCmdInt)
+	}
+
+	expectedInt := []int64{100, 102, 130}
+	if !reflect.DeepEqual(persistentAppSliceInt, expectedInt) {
+		t.Errorf("Expected %v got %d", expectedInt, persistentAppSliceInt)
+	}
+
+	expectedFloat := []float64{102.455, 3.1445}
+	if !reflect.DeepEqual(appSliceFloat64, expectedFloat) {
+		t.Errorf("Expected %f got %f", expectedFloat, appSliceFloat64)
+	}
+
 }

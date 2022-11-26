@@ -41,8 +41,9 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	FilePath    string // file path to load value from
 	Usage       string // usage string for help output
 
-	Required bool // whether the flag is required or not
-	Hidden   bool // whether to hide the flag in help output
+	Required   bool // whether the flag is required or not
+	Hidden     bool // whether to hide the flag in help output
+	Persistent bool // whether the flag needs to be applied to subcommands as well
 
 	Value       T  // default value for this flag if not set by from any source
 	Destination *T // destination pointer for value when set
@@ -58,6 +59,7 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 
 	// unexported fields for internal use
 	hasBeenSet bool  // whether the flag has been set from env or file
+	applied    bool  // whether the flag has been applied to a flag set already
 	creator    VC    // value creator for this flag type
 	value      Value // value representing this flag's value
 }
@@ -73,35 +75,41 @@ func (f *FlagBase[T, C, V]) GetValue() string {
 
 // Apply populates the flag given the flag set and environment
 func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
-	newVal := f.Value
+	// if flag has been applied then it wouldnt have been set from
+	// env or file as well.
+	// TODO move this phase into a separate flag initialization function
+	if !f.applied {
+		newVal := f.Value
 
-	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
-		tmpVal := f.creator.Create(f.Value, new(T), f.Config)
-		if val != "" || reflect.TypeOf(f.Value).Kind() == reflect.String {
-			if err := tmpVal.Set(val); err != nil {
-				return fmt.Errorf("could not parse %q as %T value from %s for flag %s: %s", val, f.Value, source, f.Name, err)
+		if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
+			tmpVal := f.creator.Create(f.Value, new(T), f.Config)
+			if val != "" || reflect.TypeOf(f.Value).Kind() == reflect.String {
+				if err := tmpVal.Set(val); err != nil {
+					return fmt.Errorf("could not parse %q as %T value from %s for flag %s: %s", val, f.Value, source, f.Name, err)
+				}
+			} else if val == "" && reflect.TypeOf(f.Value).Kind() == reflect.Bool {
+				val = "false"
+				if err := tmpVal.Set(val); err != nil {
+					return fmt.Errorf("could not parse %q as %T value from %s for flag %s: %s", val, f.Value, source, f.Name, err)
+				}
 			}
-		} else if val == "" && reflect.TypeOf(f.Value).Kind() == reflect.Bool {
-			val = "false"
-			if err := tmpVal.Set(val); err != nil {
-				return fmt.Errorf("could not parse %q as %T value from %s for flag %s: %s", val, f.Value, source, f.Name, err)
-			}
+
+			newVal = tmpVal.Get().(T)
+			f.hasBeenSet = true
 		}
 
-		newVal = tmpVal.Get().(T)
-		f.hasBeenSet = true
-	}
-
-	if f.Destination == nil {
-		f.value = f.creator.Create(newVal, new(T), f.Config)
-	} else {
-		f.value = f.creator.Create(newVal, f.Destination, f.Config)
+		if f.Destination == nil {
+			f.value = f.creator.Create(newVal, new(T), f.Config)
+		} else {
+			f.value = f.creator.Create(newVal, f.Destination, f.Config)
+		}
 	}
 
 	for _, name := range f.Names() {
 		set.Var(f.value, name, f.Usage)
 	}
 
+	f.applied = true
 	return nil
 }
 
@@ -178,7 +186,13 @@ func (f *FlagBase[T, C, V]) RunAction(ctx *Context) error {
 	return nil
 }
 
+// IsSliceFlag returns true if the value type T is of kind slice
 func (f *FlagBase[T, C, VC]) IsSliceFlag() bool {
 	// TBD how to specify
 	return reflect.TypeOf(f.Value).Kind() == reflect.Slice
+}
+
+// IsPersistent returns true if flag needs to be persistent across subcommands
+func (f *FlagBase[T, C, VC]) IsPersistent() bool {
+	return f.Persistent
 }

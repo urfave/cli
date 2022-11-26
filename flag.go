@@ -172,6 +172,12 @@ type CategorizableFlag interface {
 	GetCategory() string
 }
 
+// PersistentFlag is an interface to enable detection of flags which are persistent
+// through subcommands
+type PersistentFlag interface {
+	IsPersistent() bool
+}
+
 func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {
 	set := flag.NewFlagSet(name, flag.ContinueOnError)
 
