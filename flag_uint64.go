@@ -42,7 +42,7 @@ func (i *uint64Value) Get() any { return uint64(*i.val) }
 
 func (i *uint64Value) String() string { return strconv.FormatUint(uint64(*i.val), 10) }
 
-// Int64 looks up the value of a local Int64Flag, returns
+// Uint64 looks up the value of a local Uint64Flag, returns
 // 0 if not found
 func (cCtx *Context) Uint64(name string) uint64 {
 	if v, ok := cCtx.Value(name).(uint64); ok {
