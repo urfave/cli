@@ -88,7 +88,7 @@ func (i *SliceBase[T, C, VC]) Serialize() string {
 	return fmt.Sprintf("%s%s", slPfx, string(jsonBytes))
 }
 
-// Value returns the slice of ints set by this flag
+// Value returns the slice of values set by this flag
 func (i *SliceBase[T, C, VC]) Value() []T {
 	if i.slice == nil {
 		return []T{}
