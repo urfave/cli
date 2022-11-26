@@ -64,7 +64,7 @@ func TestBoolFlagValueFromContext(t *testing.T) {
 func TestBoolFlagApply_SetsCount(t *testing.T) {
 	v := false
 	count := 0
-	fl := BoolFlag{Name: "wat", Aliases: []string{"W", "huh"}, Destination: &v, Count: &count}
+	fl := BoolFlag{Name: "wat", Aliases: []string{"W", "huh"}, Destination: &v, Config: BoolConfig{Count: &count}}
 	set := flag.NewFlagSet("test", 0)
 	err := fl.Apply(set)
 	expect(t, err, nil)
@@ -109,41 +109,6 @@ func TestBoolFlagCountFromContext(t *testing.T) {
 }
 
 func TestFlagsFromEnv(t *testing.T) {
-	newSetFloat64Slice := func(defaults ...float64) Float64Slice {
-		s := NewFloat64Slice(defaults...)
-		s.hasBeenSet = false
-		return *s
-	}
-
-	newSetIntSlice := func(defaults ...int) IntSlice {
-		s := NewIntSlice(defaults...)
-		s.hasBeenSet = false
-		return *s
-	}
-
-	newSetUintSlice := func(defaults ...uint) UintSlice {
-		s := NewUintSlice(defaults...)
-		s.hasBeenSet = false
-		return *s
-	}
-
-	newSetInt64Slice := func(defaults ...int64) Int64Slice {
-		s := NewInt64Slice(defaults...)
-		s.hasBeenSet = false
-		return *s
-	}
-
-	newSetUint64Slice := func(defaults ...uint64) Uint64Slice {
-		s := NewUint64Slice(defaults...)
-		s.hasBeenSet = false
-		return *s
-	}
-
-	newSetStringSlice := func(defaults ...string) StringSlice {
-		s := NewStringSlice(defaults...)
-		s.hasBeenSet = false
-		return *s
-	}
 
 	var flagTests = []struct {
 		input     string
@@ -151,71 +116,67 @@ func TestFlagsFromEnv(t *testing.T) {
 		flag      Flag
 		errRegexp string
 	}{
-		{"", false, &BoolFlag{Name: "debug", EnvVars: []string{"DEBUG"}}, ""},
 		{"1", true, &BoolFlag{Name: "debug", EnvVars: []string{"DEBUG"}}, ""},
 		{"false", false, &BoolFlag{Name: "debug", EnvVars: []string{"DEBUG"}}, ""},
 		{"foobar", true, &BoolFlag{Name: "debug", EnvVars: []string{"DEBUG"}}, `could not parse "foobar" as bool value from environment variable "DEBUG" for flag debug: .*`},
 
 		{"1s", 1 * time.Second, &DurationFlag{Name: "time", EnvVars: []string{"TIME"}}, ""},
-		{"foobar", false, &DurationFlag{Name: "time", EnvVars: []string{"TIME"}}, `could not parse "foobar" as duration value from environment variable "TIME" for flag time: .*`},
+		{"foobar", false, &DurationFlag{Name: "time", EnvVars: []string{"TIME"}}, `could not parse "foobar" as time.Duration value from environment variable "TIME" for flag time: .*`},
 
 		{"1.2", 1.2, &Float64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
 		{"1", 1.0, &Float64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
 		{"foobar", 0, &Float64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as float64 value from environment variable "SECONDS" for flag seconds: .*`},
 
 		{"1", int64(1), &Int64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
-		{"1.2", 0, &Int64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2" as int value from environment variable "SECONDS" for flag seconds: .*`},
-		{"foobar", 0, &Int64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as int value from environment variable "SECONDS" for flag seconds: .*`},
+		{"1.2", 0, &Int64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2" as int64 value from environment variable "SECONDS" for flag seconds: .*`},
+		{"foobar", 0, &Int64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as int64 value from environment variable "SECONDS" for flag seconds: .*`},
 
 		{"1", 1, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
-		{"08", 8, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 10}, ""},
-		{"755", 493, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 8}, ""},
-		{"deadBEEF", 3735928559, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 16}, ""},
-		{"08", 0, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 0}, `could not parse "08" as int value from environment variable "SECONDS" for flag seconds: .*`},
+		{"08", 8, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 10}}, ""},
+		{"755", 493, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 8}}, ""},
+		{"deadBEEF", 3735928559, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 16}}, ""},
+		{"08", 0, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 0}}, `could not parse "08" as int value from environment variable "SECONDS" for flag seconds: .*`},
 		{"1.2", 0, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2" as int value from environment variable "SECONDS" for flag seconds: .*`},
 		{"foobar", 0, &IntFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as int value from environment variable "SECONDS" for flag seconds: .*`},
 
-		{"1.0,2", newSetFloat64Slice(1, 2), &Float64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
-		{"foobar", newSetFloat64Slice(), &Float64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as float64 slice value from environment variable "SECONDS" for flag seconds: .*`},
+		{"1.0,2", []float64{1, 2}, &Float64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
+		{"foobar", []float64{}, &Float64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as \[\]float64 value from environment variable "SECONDS" for flag seconds: .*`},
 
-		{"1,2", newSetIntSlice(1, 2), &IntSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
-		{"1.2,2", newSetIntSlice(), &IntSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2,2" as int slice value from environment variable "SECONDS" for flag seconds: .*`},
-		{"foobar", newSetIntSlice(), &IntSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as int slice value from environment variable "SECONDS" for flag seconds: .*`},
+		{"1,2", []int{1, 2}, &IntSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
+		{"1.2,2", []int{}, &IntSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2,2" as \[\]int value from environment variable "SECONDS" for flag seconds: .*`},
+		{"foobar", []int{}, &IntSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as \[\]int value from environment variable "SECONDS" for flag seconds: .*`},
 
-		{"1,2", newSetUintSlice(1, 2), &UintSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
-		{"1.2,2", newSetUintSlice(), &UintSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2,2" as uint slice value from environment variable "SECONDS" for flag seconds: .*`},
-		{"foobar", newSetUintSlice(), &UintSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as uint slice value from environment variable "SECONDS" for flag seconds: .*`},
+		{"1,2", []uint{1, 2}, &UintSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
+		{"1.2,2", []uint{}, &UintSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2,2" as \[\]uint value from environment variable "SECONDS" for flag seconds: .*`},
+		{"foobar", []uint{}, &UintSliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as \[\]uint value from environment variable "SECONDS" for flag seconds: .*`},
 
-		{"1,2", newSetInt64Slice(1, 2), &Int64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
-		{"1.2,2", newSetInt64Slice(), &Int64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2,2" as int64 slice value from environment variable "SECONDS" for flag seconds: .*`},
-		{"foobar", newSetInt64Slice(), &Int64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as int64 slice value from environment variable "SECONDS" for flag seconds: .*`},
+		{"1,2", []int64{1, 2}, &Int64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
+		{"1.2,2", []int64{}, &Int64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2,2" as \[\]int64 value from environment variable "SECONDS" for flag seconds: .*`},
+		{"foobar", []int64{}, &Int64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as \[\]int64 value from environment variable "SECONDS" for flag seconds: .*`},
 
-		{"1,2", newSetUint64Slice(1, 2), &Uint64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
-		{"1.2,2", newSetUint64Slice(), &Uint64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2,2" as uint64 slice value from environment variable "SECONDS" for flag seconds: .*`},
-		{"foobar", newSetUint64Slice(), &Uint64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as uint64 slice value from environment variable "SECONDS" for flag seconds: .*`},
+		{"1,2", []uint64{1, 2}, &Uint64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
+		{"1.2,2", []uint64{}, &Uint64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2,2" as \[\]uint64 value from environment variable "SECONDS" for flag seconds: .*`},
+		{"foobar", []uint64{}, &Uint64SliceFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as \[\]uint64 value from environment variable "SECONDS" for flag seconds: .*`},
 
 		{"foo", "foo", &StringFlag{Name: "name", EnvVars: []string{"NAME"}}, ""},
-		{"path", "path", &PathFlag{Name: "path", EnvVars: []string{"PATH"}}, ""},
 
-		{"foo,bar", newSetStringSlice("foo", "bar"), &StringSliceFlag{Name: "names", EnvVars: []string{"NAMES"}}, ""},
+		{"foo,bar", []string{"foo", "bar"}, &StringSliceFlag{Name: "names", EnvVars: []string{"NAMES"}}, ""},
 
 		{"1", uint(1), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
-		{"08", uint(8), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 10}, ""},
-		{"755", uint(493), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 8}, ""},
-		{"deadBEEF", uint(3735928559), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 16}, ""},
-		{"08", 0, &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 0}, `could not parse "08" as uint value from environment variable "SECONDS" for flag seconds: .*`},
+		{"08", uint(8), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 10}}, ""},
+		{"755", uint(493), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 8}}, ""},
+		{"deadBEEF", uint(3735928559), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 16}}, ""},
+		{"08", 0, &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 0}}, `could not parse "08" as uint value from environment variable "SECONDS" for flag seconds: .*`},
 		{"1.2", 0, &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2" as uint value from environment variable "SECONDS" for flag seconds: .*`},
 		{"foobar", 0, &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as uint value from environment variable "SECONDS" for flag seconds: .*`},
 
 		{"1", uint64(1), &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
-		{"08", uint64(8), &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 10}, ""},
-		{"755", uint64(493), &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 8}, ""},
-		{"deadBEEF", uint64(3735928559), &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 16}, ""},
-		{"08", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 0}, `could not parse "08" as uint64 value from environment variable "SECONDS" for flag seconds: .*`},
+		{"08", uint64(8), &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 10}}, ""},
+		{"755", uint64(493), &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 8}}, ""},
+		{"deadBEEF", uint64(3735928559), &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 16}}, ""},
+		{"08", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 0}}, `could not parse "08" as uint64 value from environment variable "SECONDS" for flag seconds: .*`},
 		{"1.2", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2" as uint64 value from environment variable "SECONDS" for flag seconds: .*`},
 		{"foobar", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as uint64 value from environment variable "SECONDS" for flag seconds: .*`},
-
-		{"foo,bar", &Parser{"foo", "bar"}, &GenericFlag{Name: "names", Value: &Parser{}, EnvVars: []string{"NAMES"}}, ""},
 	}
 
 	for i, test := range flagTests {
@@ -318,16 +279,6 @@ func TestFlagStringifying(t *testing.T) {
 			expected: "--pepperonis value [ --pepperonis value ]\t(default: shaved)",
 		},
 		{
-			name:     "generic-flag",
-			fl:       &GenericFlag{Name: "yogurt"},
-			expected: "--yogurt value\t",
-		},
-		{
-			name:     "generic-flag-with-default-text",
-			fl:       &GenericFlag{Name: "ricotta", DefaultText: "plops"},
-			expected: "--ricotta value\t(default: plops)",
-		},
-		{
 			name:     "int-flag",
 			fl:       &IntFlag{Name: "grubs"},
 			expected: "--grubs value\t(default: 0)",
@@ -386,16 +337,6 @@ func TestFlagStringifying(t *testing.T) {
 			name:     "uint64-slice-flag-with-default-text",
 			fl:       &Uint64SliceFlag{Name: "handles", DefaultText: "-2"},
 			expected: "--handles value [ --handles value ]\t(default: -2)",
-		},
-		{
-			name:     "path-flag",
-			fl:       &PathFlag{Name: "soup"},
-			expected: "--soup value\t",
-		},
-		{
-			name:     "path-flag-with-default-text",
-			fl:       &PathFlag{Name: "stew", DefaultText: "charred/beans"},
-			expected: "--stew value\t(default: charred/beans)",
 		},
 		{
 			name:     "string-flag",
@@ -564,67 +505,6 @@ func TestStringFlagValueFromContext(t *testing.T) {
 	expect(t, f.Get(ctx), "foobar")
 }
 
-var pathFlagTests = []struct {
-	name     string
-	aliases  []string
-	usage    string
-	value    string
-	expected string
-}{
-	{"f", nil, "", "", "-f value\t"},
-	{"f", nil, "Path is the `path` of file", "/path/to/file", "-f path\tPath is the path of file (default: \"/path/to/file\")"},
-}
-
-func TestPathFlagHelpOutput(t *testing.T) {
-	for _, test := range pathFlagTests {
-		fl := &PathFlag{Name: test.name, Aliases: test.aliases, Usage: test.usage, Value: test.value}
-
-		// create a temporary flag set to apply
-		tfs := flag.NewFlagSet("test", 0)
-		fl.Apply(tfs)
-
-		output := fl.String()
-
-		if output != test.expected {
-			t.Errorf("%q does not match %q", output, test.expected)
-		}
-	}
-}
-
-func TestPathFlagWithEnvVarHelpOutput(t *testing.T) {
-	defer resetEnv(os.Environ())
-	os.Clearenv()
-	_ = os.Setenv("APP_PATH", "/path/to/file")
-	for _, test := range pathFlagTests {
-		fl := &PathFlag{Name: test.name, Aliases: test.aliases, Value: test.value, EnvVars: []string{"APP_PATH"}}
-		output := fl.String()
-
-		expectedSuffix := withEnvHint([]string{"APP_PATH"}, "")
-		if !strings.HasSuffix(output, expectedSuffix) {
-			t.Errorf("%s does not end with"+expectedSuffix, output)
-		}
-	}
-}
-
-func TestPathFlagApply_SetsAllNames(t *testing.T) {
-	v := "mmm"
-	fl := PathFlag{Name: "path", Aliases: []string{"p", "PATH"}, Destination: &v}
-	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
-
-	err := set.Parse([]string{"--path", "/path/to/file/path", "-p", "/path/to/file/p", "--PATH", "/path/to/file/PATH"})
-	expect(t, err, nil)
-	expect(t, v, "/path/to/file/PATH")
-}
-
-func TestPathFlagValueFromContext(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.String("myflag", "/my/path", "doc")
-	ctx := NewContext(nil, set, nil)
-	f := &PathFlag{Name: "myflag"}
-	expect(t, f.Get(ctx), "/my/path")
-}
-
 var _ = []struct {
 	name     string
 	env      string
@@ -663,14 +543,14 @@ var _ = []struct {
 var stringSliceFlagTests = []struct {
 	name     string
 	aliases  []string
-	value    *StringSlice
+	value    []string
 	expected string
 }{
-	{"foo", nil, NewStringSlice(""), "--foo value [ --foo value ]\t"},
-	{"f", nil, NewStringSlice(""), "-f value [ -f value ]\t"},
-	{"f", nil, NewStringSlice("Lipstick"), "-f value [ -f value ]\t(default: \"Lipstick\")"},
-	{"test", nil, NewStringSlice("Something"), "--test value [ --test value ]\t(default: \"Something\")"},
-	{"dee", []string{"d"}, NewStringSlice("Inka", "Dinka", "dooo"), "--dee value, -d value [ --dee value, -d value ]\t(default: \"Inka\", \"Dinka\", \"dooo\")"},
+	{"foo", nil, []string{}, "--foo value [ --foo value ]\t"},
+	{"f", nil, []string{}, "-f value [ -f value ]\t"},
+	{"f", nil, []string{"Lipstick"}, "-f value [ -f value ]\t(default: \"Lipstick\")"},
+	{"test", nil, []string{"Something"}, "--test value [ --test value ]\t(default: \"Something\")"},
+	{"dee", []string{"d"}, []string{"Inka", "Dinka", "dooo"}, "--dee value, -d value [ --dee value, -d value ]\t(default: \"Inka\", \"Dinka\", \"dooo\")"},
 }
 
 func TestStringSliceFlagHelpOutput(t *testing.T) {
@@ -713,14 +593,12 @@ func TestStringSliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("MY_GOAT", "vincent van goat,scape goat")
-	var val StringSlice
-	fl := StringSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: &val}
+	fl := StringSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
 	err := set.Parse(nil)
 	expect(t, err, nil)
-	expect(t, val.Value(), []string(nil))
 	expect(t, set.Lookup("goat").Value.(*StringSlice).Value(), []string{"vincent van goat", "scape goat"})
 }
 
@@ -728,26 +606,26 @@ func TestStringSliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("MY_GOAT", "vincent van goat,scape goat")
-	val := NewStringSlice(`some default`, `values here`)
+	val := []string{`some default`, `values here`}
 	fl := StringSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: val}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	err := set.Parse(nil)
 	expect(t, err, nil)
-	expect(t, val.Value(), []string{`some default`, `values here`})
 	expect(t, set.Lookup("goat").Value.(*StringSlice).Value(), []string{"vincent van goat", "scape goat"})
 }
 
 func TestStringSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 	defValue := []string{"UA", "US"}
+	dest := []string{"CA"}
 
-	fl := StringSliceFlag{Name: "country", Value: NewStringSlice(defValue...), Destination: NewStringSlice("CA")}
+	fl := StringSliceFlag{Name: "country", Value: defValue, Destination: &dest}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{})
 	expect(t, err, nil)
-	expect(t, defValue, fl.Destination.Value())
+	expect(t, defValue, dest)
 }
 
 func TestStringSliceFlagValueFromContext(t *testing.T) {
@@ -1023,12 +901,12 @@ func TestDurationFlagValueFromContext(t *testing.T) {
 var intSliceFlagTests = []struct {
 	name     string
 	aliases  []string
-	value    *IntSlice
+	value    []int
 	expected string
 }{
-	{"heads", nil, NewIntSlice(), "--heads value [ --heads value ]\t"},
-	{"H", nil, NewIntSlice(), "-H value [ -H value ]\t"},
-	{"H", []string{"heads"}, NewIntSlice(9, 3), "-H value, --heads value [ -H value, --heads value ]\t(default: 9, 3)"},
+	{"heads", nil, []int{}, "--heads value [ --heads value ]\t"},
+	{"H", nil, []int{}, "-H value [ -H value ]\t"},
+	{"H", []string{"heads"}, []int{9, 3}, "-H value, --heads value [ -H value, --heads value ]\t(default: 9, 3)"},
 }
 
 func TestIntSliceFlagHelpOutput(t *testing.T) {
@@ -1071,14 +949,13 @@ func TestIntSliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("MY_GOAT", "1 , 2")
-	var val IntSlice
-	fl := IntSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: &val}
+
+	fl := IntSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
 	err := set.Parse(nil)
 	expect(t, err, nil)
-	expect(t, val.Value(), []int(nil))
 	expect(t, set.Lookup("goat").Value.(*IntSlice).Value(), []int{1, 2})
 }
 
@@ -1086,32 +963,33 @@ func TestIntSliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("MY_GOAT", "1 , 2")
-	val := NewIntSlice(3, 4)
+	val := []int{3, 4}
 	fl := IntSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: val}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	err := set.Parse(nil)
 	expect(t, err, nil)
-	expect(t, val.Value(), []int{3, 4})
+	expect(t, val, []int{3, 4})
 	expect(t, set.Lookup("goat").Value.(*IntSlice).Value(), []int{1, 2})
 }
 
 func TestIntSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 	defValue := []int{1, 2}
+	dest := []int{3}
 
-	fl := IntSliceFlag{Name: "country", Value: NewIntSlice(defValue...), Destination: NewIntSlice(3)}
+	fl := IntSliceFlag{Name: "country", Value: defValue, Destination: &dest}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{})
 	expect(t, err, nil)
-	expect(t, defValue, fl.Destination.Value())
+	expect(t, defValue, dest)
 }
 
 func TestIntSliceFlagApply_ParentContext(t *testing.T) {
 	_ = (&App{
 		Flags: []Flag{
-			&IntSliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: NewIntSlice(1, 2, 3)},
+			&IntSliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: []int{1, 2, 3}},
 		},
 		Commands: []*Command{
 			{
@@ -1132,7 +1010,7 @@ func TestIntSliceFlagApply_ParentContext(t *testing.T) {
 }
 
 func TestIntSliceFlag_SetFromParentContext(t *testing.T) {
-	fl := &IntSliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: NewIntSlice(1, 2, 3, 4)}
+	fl := &IntSliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: []int{1, 2, 3, 4}}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	ctx := &Context{
@@ -1158,12 +1036,12 @@ func TestIntSliceFlagValueFromContext(t *testing.T) {
 var int64SliceFlagTests = []struct {
 	name     string
 	aliases  []string
-	value    *Int64Slice
+	value    []int64
 	expected string
 }{
-	{"heads", nil, NewInt64Slice(), "--heads value [ --heads value ]\t"},
-	{"H", nil, NewInt64Slice(), "-H value [ -H value ]\t"},
-	{"heads", []string{"H"}, NewInt64Slice(int64(2), int64(17179869184)),
+	{"heads", nil, []int64{}, "--heads value [ --heads value ]\t"},
+	{"H", nil, []int64{}, "-H value [ -H value ]\t"},
+	{"heads", []string{"H"}, []int64{2, 17179869184},
 		"--heads value, -H value [ --heads value, -H value ]\t(default: 2, 17179869184)"},
 }
 
@@ -1207,14 +1085,12 @@ func TestInt64SliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("MY_GOAT", "1 , 2")
-	var val Int64Slice
-	fl := Int64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: &val}
+	fl := Int64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
 	err := set.Parse(nil)
 	expect(t, err, nil)
-	expect(t, val.Value(), []int64(nil))
 	expect(t, set.Lookup("goat").Value.(*Int64Slice).Value(), []int64{1, 2})
 }
 
@@ -1223,7 +1099,7 @@ func TestInt64SliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	os.Clearenv()
 	_ = os.Setenv("MY_GOAT", "1 , 2")
 	val := NewInt64Slice(3, 4)
-	fl := Int64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: val}
+	fl := Int64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: val.Value()}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	err := set.Parse(nil)
@@ -1234,20 +1110,21 @@ func TestInt64SliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 
 func TestInt64SliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 	defValue := []int64{1, 2}
+	dest := []int64{3}
 
-	fl := Int64SliceFlag{Name: "country", Value: NewInt64Slice(defValue...), Destination: NewInt64Slice(3)}
+	fl := Int64SliceFlag{Name: "country", Value: defValue, Destination: &dest}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{})
 	expect(t, err, nil)
-	expect(t, defValue, fl.Destination.Value())
+	expect(t, defValue, dest)
 }
 
 func TestInt64SliceFlagApply_ParentContext(t *testing.T) {
 	_ = (&App{
 		Flags: []Flag{
-			&Int64SliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: NewInt64Slice(1, 2, 3)},
+			&Int64SliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: []int64{1, 2, 3}},
 		},
 		Commands: []*Command{
 			{
@@ -1268,7 +1145,7 @@ func TestInt64SliceFlagApply_ParentContext(t *testing.T) {
 }
 
 func TestInt64SliceFlag_SetFromParentContext(t *testing.T) {
-	fl := &Int64SliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: NewInt64Slice(1, 2, 3, 4)}
+	fl := &Int64SliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: []int64{1, 2, 3, 4}}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	ctx := &Context{
@@ -1309,12 +1186,12 @@ func TestInt64SliceFlagValueFromContext(t *testing.T) {
 var uintSliceFlagTests = []struct {
 	name     string
 	aliases  []string
-	value    *UintSlice
+	value    []uint
 	expected string
 }{
-	{"heads", nil, NewUintSlice(), "--heads value [ --heads value ]\t"},
-	{"H", nil, NewUintSlice(), "-H value [ -H value ]\t"},
-	{"heads", []string{"H"}, NewUintSlice(uint(2), uint(17179869184)),
+	{"heads", nil, []uint{}, "--heads value [ --heads value ]\t"},
+	{"H", nil, []uint{}, "-H value [ -H value ]\t"},
+	{"heads", []string{"H"}, []uint{2, 17179869184},
 		"--heads value, -H value [ --heads value, -H value ]\t(default: 2, 17179869184)"},
 }
 
@@ -1358,14 +1235,13 @@ func TestUintSliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("MY_GOAT", "1 , 2")
-	var val UintSlice
-	fl := UintSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: &val}
+
+	fl := UintSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
 	err := set.Parse(nil)
 	expect(t, err, nil)
-	expect(t, val.Value(), []uint(nil))
 	expect(t, set.Lookup("goat").Value.(*UintSlice).Value(), []uint{1, 2})
 }
 
@@ -1374,7 +1250,7 @@ func TestUintSliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	os.Clearenv()
 	_ = os.Setenv("MY_GOAT", "1 , 2")
 	val := NewUintSlice(3, 4)
-	fl := UintSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: val}
+	fl := UintSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: val.Value()}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	err := set.Parse(nil)
@@ -1385,20 +1261,21 @@ func TestUintSliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 
 func TestUintSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 	defValue := []uint{1, 2}
+	var dest []uint
 
-	fl := UintSliceFlag{Name: "country", Value: NewUintSlice(defValue...), Destination: NewUintSlice(3)}
+	fl := UintSliceFlag{Name: "country", Value: defValue, Destination: &dest}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{})
 	expect(t, err, nil)
-	expect(t, defValue, fl.Destination.Value())
+	expect(t, defValue, dest)
 }
 
 func TestUintSliceFlagApply_ParentContext(t *testing.T) {
 	_ = (&App{
 		Flags: []Flag{
-			&UintSliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: NewUintSlice(1, 2, 3)},
+			&UintSliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: []uint{1, 2, 3}},
 		},
 		Commands: []*Command{
 			{
@@ -1419,7 +1296,7 @@ func TestUintSliceFlagApply_ParentContext(t *testing.T) {
 }
 
 func TestUintSliceFlag_SetFromParentContext(t *testing.T) {
-	fl := &UintSliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: NewUintSlice(1, 2, 3, 4)}
+	fl := &UintSliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: []uint{1, 2, 3, 4}}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	ctx := &Context{
@@ -1452,12 +1329,12 @@ func TestUintSliceFlag_ReturnNil(t *testing.T) {
 var uint64SliceFlagTests = []struct {
 	name     string
 	aliases  []string
-	value    *Uint64Slice
+	value    []uint64
 	expected string
 }{
-	{"heads", nil, NewUint64Slice(), "--heads value [ --heads value ]\t"},
-	{"H", nil, NewUint64Slice(), "-H value [ -H value ]\t"},
-	{"heads", []string{"H"}, NewUint64Slice(uint64(2), uint64(17179869184)),
+	{"heads", nil, []uint64{}, "--heads value [ --heads value ]\t"},
+	{"H", nil, []uint64{}, "-H value [ -H value ]\t"},
+	{"heads", []string{"H"}, []uint64{2, 17179869184},
 		"--heads value, -H value [ --heads value, -H value ]\t(default: 2, 17179869184)"},
 }
 
@@ -1501,14 +1378,12 @@ func TestUint64SliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("MY_GOAT", "1 , 2")
-	var val Uint64Slice
-	fl := Uint64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: &val}
+	fl := Uint64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
 	err := set.Parse(nil)
 	expect(t, err, nil)
-	expect(t, val.Value(), []uint64(nil))
 	expect(t, set.Lookup("goat").Value.(*Uint64Slice).Value(), []uint64{1, 2})
 }
 
@@ -1516,32 +1391,32 @@ func TestUint64SliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("MY_GOAT", "1 , 2")
-	val := NewUint64Slice(3, 4)
+	val := []uint64{3, 4}
 	fl := Uint64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: val}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	err := set.Parse(nil)
 	expect(t, err, nil)
-	expect(t, val.Value(), []uint64{3, 4})
 	expect(t, set.Lookup("goat").Value.(*Uint64Slice).Value(), []uint64{1, 2})
 }
 
 func TestUint64SliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 	defValue := []uint64{1, 2}
+	dest := []uint64{3}
 
-	fl := Uint64SliceFlag{Name: "country", Value: NewUint64Slice(defValue...), Destination: NewUint64Slice(3)}
+	fl := Uint64SliceFlag{Name: "country", Value: defValue, Destination: &dest}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{})
 	expect(t, err, nil)
-	expect(t, defValue, fl.Destination.Value())
+	expect(t, defValue, dest)
 }
 
 func TestUint64SliceFlagApply_ParentContext(t *testing.T) {
 	_ = (&App{
 		Flags: []Flag{
-			&Uint64SliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: NewUint64Slice(1, 2, 3)},
+			&Uint64SliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: []uint64{1, 2, 3}},
 		},
 		Commands: []*Command{
 			{
@@ -1562,7 +1437,7 @@ func TestUint64SliceFlagApply_ParentContext(t *testing.T) {
 }
 
 func TestUint64SliceFlag_SetFromParentContext(t *testing.T) {
-	fl := &Uint64SliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: NewUint64Slice(1, 2, 3, 4)}
+	fl := &Uint64SliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: []uint64{1, 2, 3, 4}}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	ctx := &Context{
@@ -1649,12 +1524,12 @@ func TestFloat64FlagValueFromContext(t *testing.T) {
 var float64SliceFlagTests = []struct {
 	name     string
 	aliases  []string
-	value    *Float64Slice
+	value    []float64
 	expected string
 }{
-	{"heads", nil, NewFloat64Slice(), "--heads value [ --heads value ]\t"},
-	{"H", nil, NewFloat64Slice(), "-H value [ -H value ]\t"},
-	{"heads", []string{"H"}, NewFloat64Slice(0.1234, -10.5),
+	{"heads", nil, []float64{}, "--heads value [ --heads value ]\t"},
+	{"H", nil, []float64{}, "-H value [ -H value ]\t"},
+	{"heads", []string{"H"}, []float64{0.1234, -10.5},
 		"--heads value, -H value [ --heads value, -H value ]\t(default: 0.1234, -10.5)"},
 }
 
@@ -1697,14 +1572,13 @@ func TestFloat64SliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("MY_GOAT", "1.0 , 2.0")
-	var val Float64Slice
-	fl := Float64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: &val}
+
+	fl := Float64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
 	err := set.Parse(nil)
 	expect(t, err, nil)
-	expect(t, val.Value(), []float64(nil))
 	expect(t, set.Lookup("goat").Value.(*Float64Slice).Value(), []float64{1, 2})
 }
 
@@ -1712,26 +1586,26 @@ func TestFloat64SliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("MY_GOAT", "1.0 , 2.0")
-	val := NewFloat64Slice(3.0, 4.0)
+	val := []float64{3.0, 4.0}
 	fl := Float64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: val}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	err := set.Parse(nil)
 	expect(t, err, nil)
-	expect(t, val.Value(), []float64{3, 4})
 	expect(t, set.Lookup("goat").Value.(*Float64Slice).Value(), []float64{1, 2})
 }
 
 func TestFloat64SliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 	defValue := []float64{1.0, 2.0}
+	dest := []float64{3}
 
-	fl := Float64SliceFlag{Name: "country", Value: NewFloat64Slice(defValue...), Destination: NewFloat64Slice(3)}
+	fl := Float64SliceFlag{Name: "country", Value: defValue, Destination: &dest}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{})
 	expect(t, err, nil)
-	expect(t, defValue, fl.Destination.Value())
+	expect(t, defValue, dest)
 }
 
 func TestFloat64SliceFlagValueFromContext(t *testing.T) {
@@ -1745,7 +1619,7 @@ func TestFloat64SliceFlagValueFromContext(t *testing.T) {
 func TestFloat64SliceFlagApply_ParentContext(t *testing.T) {
 	_ = (&App{
 		Flags: []Flag{
-			&Float64SliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: NewFloat64Slice(1.0, 2.0, 3.0)},
+			&Float64SliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: []float64{1.0, 2.0, 3.0}},
 		},
 		Commands: []*Command{
 			{
@@ -1763,62 +1637,6 @@ func TestFloat64SliceFlagApply_ParentContext(t *testing.T) {
 			},
 		},
 	}).Run([]string{"run", "child"})
-}
-
-var genericFlagTests = []struct {
-	name     string
-	value    Generic
-	expected string
-}{
-	{"toads", &Parser{"abc", "def"}, "--toads value\ttest flag (default: abc,def)"},
-	{"t", &Parser{"abc", "def"}, "-t value\ttest flag (default: abc,def)"},
-}
-
-func TestGenericFlagHelpOutput(t *testing.T) {
-	for _, test := range genericFlagTests {
-		fl := &GenericFlag{Name: test.name, Value: test.value, Usage: "test flag"}
-		// create a temporary flag set to apply
-		tfs := flag.NewFlagSet("test", 0)
-		fl.Apply(tfs)
-		output := fl.String()
-
-		if output != test.expected {
-			t.Errorf("%q does not match %q", output, test.expected)
-		}
-	}
-}
-
-func TestGenericFlagWithEnvVarHelpOutput(t *testing.T) {
-	defer resetEnv(os.Environ())
-	os.Clearenv()
-	_ = os.Setenv("APP_ZAP", "3")
-
-	for _, test := range genericFlagTests {
-		fl := &GenericFlag{Name: test.name, EnvVars: []string{"APP_ZAP"}}
-		output := fl.String()
-
-		expectedSuffix := withEnvHint([]string{"APP_ZAP"}, "")
-		if !strings.HasSuffix(output, expectedSuffix) {
-			t.Errorf("%s does not end with"+expectedSuffix, output)
-		}
-	}
-}
-
-func TestGenericFlagApply_SetsAllNames(t *testing.T) {
-	fl := GenericFlag{Name: "orbs", Aliases: []string{"O", "obrs"}, Value: &Parser{}}
-	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
-
-	err := set.Parse([]string{"--orbs", "eleventy,3", "-O", "4,bloop", "--obrs", "19,s"})
-	expect(t, err, nil)
-}
-
-func TestGenericFlagValueFromContext(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Var(&Parser{"abc", "def"}, "myflag", "doc")
-	ctx := NewContext(nil, set, nil)
-	f := &GenericFlag{Name: "myflag"}
-	expect(t, f.Get(ctx), &Parser{"abc", "def"})
 }
 
 func TestParseMultiString(t *testing.T) {
@@ -1899,7 +1717,7 @@ func TestParseMultiStringFromEnvCascade(t *testing.T) {
 func TestParseMultiStringSlice(t *testing.T) {
 	_ = (&App{
 		Flags: []Flag{
-			&StringSliceFlag{Name: "serve", Aliases: []string{"s"}, Value: NewStringSlice()},
+			&StringSliceFlag{Name: "serve", Aliases: []string{"s"}, Value: []string{}},
 		},
 		Action: func(ctx *Context) error {
 			expected := []string{"10", "20"}
@@ -1917,7 +1735,7 @@ func TestParseMultiStringSlice(t *testing.T) {
 func TestParseMultiStringSliceWithDefaults(t *testing.T) {
 	_ = (&App{
 		Flags: []Flag{
-			&StringSliceFlag{Name: "serve", Aliases: []string{"s"}, Value: NewStringSlice("9", "2")},
+			&StringSliceFlag{Name: "serve", Aliases: []string{"s"}, Value: []string{"9", "2"}},
 		},
 		Action: func(ctx *Context) error {
 			expected := []string{"10", "20"}
@@ -1933,17 +1751,17 @@ func TestParseMultiStringSliceWithDefaults(t *testing.T) {
 }
 
 func TestParseMultiStringSliceWithDestination(t *testing.T) {
-	dest := &StringSlice{}
+	dest := []string{}
 	_ = (&App{
 		Flags: []Flag{
-			&StringSliceFlag{Name: "serve", Aliases: []string{"s"}, Destination: dest},
+			&StringSliceFlag{Name: "serve", Aliases: []string{"s"}, Destination: &dest},
 		},
 		Action: func(ctx *Context) error {
 			expected := []string{"10", "20"}
-			if !reflect.DeepEqual(dest.slice, expected) {
+			if !reflect.DeepEqual(dest, expected) {
 				t.Errorf("main name not set: %v != %v", expected, ctx.StringSlice("serve"))
 			}
-			if !reflect.DeepEqual(dest.slice, expected) {
+			if !reflect.DeepEqual(dest, expected) {
 				t.Errorf("short name not set: %v != %v", expected, ctx.StringSlice("s"))
 			}
 			return nil
@@ -1956,17 +1774,17 @@ func TestParseMultiStringSliceWithDestinationAndEnv(t *testing.T) {
 	os.Clearenv()
 	_ = os.Setenv("APP_INTERVALS", "20,30,40")
 
-	dest := &StringSlice{}
+	dest := []string{}
 	_ = (&App{
 		Flags: []Flag{
-			&StringSliceFlag{Name: "serve", Aliases: []string{"s"}, Destination: dest, EnvVars: []string{"APP_INTERVALS"}},
+			&StringSliceFlag{Name: "serve", Aliases: []string{"s"}, Destination: &dest, EnvVars: []string{"APP_INTERVALS"}},
 		},
 		Action: func(ctx *Context) error {
 			expected := []string{"10", "20"}
-			if !reflect.DeepEqual(dest.slice, expected) {
+			if !reflect.DeepEqual(dest, expected) {
 				t.Errorf("main name not set: %v != %v", expected, ctx.StringSlice("serve"))
 			}
-			if !reflect.DeepEqual(dest.slice, expected) {
+			if !reflect.DeepEqual(dest, expected) {
 				t.Errorf("short name not set: %v != %v", expected, ctx.StringSlice("s"))
 			}
 			return nil
@@ -1979,17 +1797,17 @@ func TestParseMultiFloat64SliceWithDestinationAndEnv(t *testing.T) {
 	os.Clearenv()
 	_ = os.Setenv("APP_INTERVALS", "20,30,40")
 
-	dest := &Float64Slice{}
+	dest := []float64{}
 	_ = (&App{
 		Flags: []Flag{
-			&Float64SliceFlag{Name: "serve", Aliases: []string{"s"}, Destination: dest, EnvVars: []string{"APP_INTERVALS"}},
+			&Float64SliceFlag{Name: "serve", Aliases: []string{"s"}, Destination: &dest, EnvVars: []string{"APP_INTERVALS"}},
 		},
 		Action: func(ctx *Context) error {
 			expected := []float64{10, 20}
-			if !reflect.DeepEqual(dest.slice, expected) {
+			if !reflect.DeepEqual(dest, expected) {
 				t.Errorf("main name not set: %v != %v", expected, ctx.StringSlice("serve"))
 			}
-			if !reflect.DeepEqual(dest.slice, expected) {
+			if !reflect.DeepEqual(dest, expected) {
 				t.Errorf("short name not set: %v != %v", expected, ctx.StringSlice("s"))
 			}
 			return nil
@@ -2002,17 +1820,17 @@ func TestParseMultiInt64SliceWithDestinationAndEnv(t *testing.T) {
 	os.Clearenv()
 	_ = os.Setenv("APP_INTERVALS", "20,30,40")
 
-	dest := &Int64Slice{}
+	var dest []int64
 	_ = (&App{
 		Flags: []Flag{
-			&Int64SliceFlag{Name: "serve", Aliases: []string{"s"}, Destination: dest, EnvVars: []string{"APP_INTERVALS"}},
+			&Int64SliceFlag{Name: "serve", Aliases: []string{"s"}, Destination: &dest, EnvVars: []string{"APP_INTERVALS"}},
 		},
 		Action: func(ctx *Context) error {
 			expected := []int64{10, 20}
-			if !reflect.DeepEqual(dest.slice, expected) {
+			if !reflect.DeepEqual(dest, expected) {
 				t.Errorf("main name not set: %v != %v", expected, ctx.StringSlice("serve"))
 			}
-			if !reflect.DeepEqual(dest.slice, expected) {
+			if !reflect.DeepEqual(dest, expected) {
 				t.Errorf("short name not set: %v != %v", expected, ctx.StringSlice("s"))
 			}
 			return nil
@@ -2025,18 +1843,18 @@ func TestParseMultiIntSliceWithDestinationAndEnv(t *testing.T) {
 	os.Clearenv()
 	_ = os.Setenv("APP_INTERVALS", "20,30,40")
 
-	dest := &IntSlice{}
+	dest := []int{}
 	_ = (&App{
 		Flags: []Flag{
-			&IntSliceFlag{Name: "serve", Aliases: []string{"s"}, Destination: dest, EnvVars: []string{"APP_INTERVALS"}},
+			&IntSliceFlag{Name: "serve", Aliases: []string{"s"}, Destination: &dest, EnvVars: []string{"APP_INTERVALS"}},
 		},
 		Action: func(ctx *Context) error {
 			expected := []int{10, 20}
-			if !reflect.DeepEqual(dest.slice, expected) {
-				t.Errorf("main name not set: %v != %v", expected, ctx.StringSlice("serve"))
+			if !reflect.DeepEqual(dest, expected) {
+				t.Errorf("main name not set: %v != %v %v", expected, ctx.IntSlice("serve"), dest)
 			}
-			if !reflect.DeepEqual(dest.slice, expected) {
-				t.Errorf("short name not set: %v != %v", expected, ctx.StringSlice("s"))
+			if !reflect.DeepEqual(dest, expected) {
+				t.Errorf("short name not set: %v != %v", expected, ctx.IntSlice("s"))
 			}
 			return nil
 		},
@@ -2046,7 +1864,7 @@ func TestParseMultiIntSliceWithDestinationAndEnv(t *testing.T) {
 func TestParseMultiStringSliceWithDefaultsUnset(t *testing.T) {
 	_ = (&App{
 		Flags: []Flag{
-			&StringSliceFlag{Name: "serve", Aliases: []string{"s"}, Value: NewStringSlice("9", "2")},
+			&StringSliceFlag{Name: "serve", Aliases: []string{"s"}, Value: []string{"9", "2"}},
 		},
 		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.StringSlice("serve"), []string{"9", "2"}) {
@@ -2067,7 +1885,7 @@ func TestParseMultiStringSliceFromEnv(t *testing.T) {
 
 	_ = (&App{
 		Flags: []Flag{
-			&StringSliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: NewStringSlice(), EnvVars: []string{"APP_INTERVALS"}},
+			&StringSliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: []string{}, EnvVars: []string{"APP_INTERVALS"}},
 		},
 		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.StringSlice("intervals"), []string{"20", "30", "40"}) {
@@ -2088,7 +1906,7 @@ func TestParseMultiStringSliceFromEnvWithDefaults(t *testing.T) {
 
 	_ = (&App{
 		Flags: []Flag{
-			&StringSliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: NewStringSlice("1", "2", "5"), EnvVars: []string{"APP_INTERVALS"}},
+			&StringSliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: []string{"1", "2", "5"}, EnvVars: []string{"APP_INTERVALS"}},
 		},
 		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.StringSlice("intervals"), []string{"20", "30", "40"}) {
@@ -2109,7 +1927,7 @@ func TestParseMultiStringSliceFromEnvCascade(t *testing.T) {
 
 	_ = (&App{
 		Flags: []Flag{
-			&StringSliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: NewStringSlice(), EnvVars: []string{"COMPAT_INTERVALS", "APP_INTERVALS"}},
+			&StringSliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: []string{}, EnvVars: []string{"COMPAT_INTERVALS", "APP_INTERVALS"}},
 		},
 		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.StringSlice("intervals"), []string{"20", "30", "40"}) {
@@ -2130,7 +1948,7 @@ func TestParseMultiStringSliceFromEnvCascadeWithDefaults(t *testing.T) {
 
 	_ = (&App{
 		Flags: []Flag{
-			&StringSliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: NewStringSlice("1", "2", "5"), EnvVars: []string{"COMPAT_INTERVALS", "APP_INTERVALS"}},
+			&StringSliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: []string{"1", "2", "5"}, EnvVars: []string{"COMPAT_INTERVALS", "APP_INTERVALS"}},
 		},
 		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.StringSlice("intervals"), []string{"20", "30", "40"}) {
@@ -2149,16 +1967,16 @@ func TestParseMultiStringSliceFromEnvWithDestination(t *testing.T) {
 	os.Clearenv()
 	_ = os.Setenv("APP_INTERVALS", "20,30,40")
 
-	dest := &StringSlice{}
+	dest := []string{}
 	_ = (&App{
 		Flags: []Flag{
-			&StringSliceFlag{Name: "intervals", Aliases: []string{"i"}, Destination: dest, EnvVars: []string{"APP_INTERVALS"}},
+			&StringSliceFlag{Name: "intervals", Aliases: []string{"i"}, Destination: &dest, EnvVars: []string{"APP_INTERVALS"}},
 		},
 		Action: func(ctx *Context) error {
-			if !reflect.DeepEqual(dest.slice, []string{"20", "30", "40"}) {
+			if !reflect.DeepEqual(dest, []string{"20", "30", "40"}) {
 				t.Errorf("main name not set from env")
 			}
-			if !reflect.DeepEqual(dest.slice, []string{"20", "30", "40"}) {
+			if !reflect.DeepEqual(dest, []string{"20", "30", "40"}) {
 				t.Errorf("short name not set from env")
 			}
 			return nil
@@ -2244,7 +2062,7 @@ func TestParseMultiIntFromEnvCascade(t *testing.T) {
 func TestParseMultiIntSlice(t *testing.T) {
 	_ = (&App{
 		Flags: []Flag{
-			&IntSliceFlag{Name: "serve", Aliases: []string{"s"}, Value: NewIntSlice()},
+			&IntSliceFlag{Name: "serve", Aliases: []string{"s"}, Value: []int{}},
 		},
 		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.IntSlice("serve"), []int{10, 20}) {
@@ -2261,7 +2079,7 @@ func TestParseMultiIntSlice(t *testing.T) {
 func TestParseMultiIntSliceWithDefaults(t *testing.T) {
 	_ = (&App{
 		Flags: []Flag{
-			&IntSliceFlag{Name: "serve", Aliases: []string{"s"}, Value: NewIntSlice(9, 2)},
+			&IntSliceFlag{Name: "serve", Aliases: []string{"s"}, Value: []int{9, 2}},
 		},
 		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.IntSlice("serve"), []int{10, 20}) {
@@ -2278,7 +2096,7 @@ func TestParseMultiIntSliceWithDefaults(t *testing.T) {
 func TestParseMultiIntSliceWithDefaultsUnset(t *testing.T) {
 	_ = (&App{
 		Flags: []Flag{
-			&IntSliceFlag{Name: "serve", Aliases: []string{"s"}, Value: NewIntSlice(9, 2)},
+			&IntSliceFlag{Name: "serve", Aliases: []string{"s"}, Value: []int{9, 2}},
 		},
 		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.IntSlice("serve"), []int{9, 2}) {
@@ -2299,7 +2117,7 @@ func TestParseMultiIntSliceFromEnv(t *testing.T) {
 
 	_ = (&App{
 		Flags: []Flag{
-			&IntSliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: NewIntSlice(), EnvVars: []string{"APP_INTERVALS"}},
+			&IntSliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: []int{}, EnvVars: []string{"APP_INTERVALS"}},
 		},
 		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.IntSlice("intervals"), []int{20, 30, 40}) {
@@ -2320,7 +2138,7 @@ func TestParseMultiIntSliceFromEnvWithDefaults(t *testing.T) {
 
 	_ = (&App{
 		Flags: []Flag{
-			&IntSliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: NewIntSlice(1, 2, 5), EnvVars: []string{"APP_INTERVALS"}},
+			&IntSliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: []int{1, 2, 5}, EnvVars: []string{"APP_INTERVALS"}},
 		},
 		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.IntSlice("intervals"), []int{20, 30, 40}) {
@@ -2341,7 +2159,7 @@ func TestParseMultiIntSliceFromEnvCascade(t *testing.T) {
 
 	_ = (&App{
 		Flags: []Flag{
-			&IntSliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: NewIntSlice(), EnvVars: []string{"COMPAT_INTERVALS", "APP_INTERVALS"}},
+			&IntSliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: []int{}, EnvVars: []string{"COMPAT_INTERVALS", "APP_INTERVALS"}},
 		},
 		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.IntSlice("intervals"), []int{20, 30, 40}) {
@@ -2358,7 +2176,7 @@ func TestParseMultiIntSliceFromEnvCascade(t *testing.T) {
 func TestParseMultiInt64Slice(t *testing.T) {
 	_ = (&App{
 		Flags: []Flag{
-			&Int64SliceFlag{Name: "serve", Aliases: []string{"s"}, Value: NewInt64Slice()},
+			&Int64SliceFlag{Name: "serve", Aliases: []string{"s"}},
 		},
 		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.Int64Slice("serve"), []int64{10, 17179869184}) {
@@ -2379,7 +2197,7 @@ func TestParseMultiInt64SliceFromEnv(t *testing.T) {
 
 	_ = (&App{
 		Flags: []Flag{
-			&Int64SliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: NewInt64Slice(), EnvVars: []string{"APP_INTERVALS"}},
+			&Int64SliceFlag{Name: "intervals", Aliases: []string{"i"}, EnvVars: []string{"APP_INTERVALS"}},
 		},
 		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.Int64Slice("intervals"), []int64{20, 30, 17179869184}) {
@@ -2400,7 +2218,7 @@ func TestParseMultiInt64SliceFromEnvCascade(t *testing.T) {
 
 	_ = (&App{
 		Flags: []Flag{
-			&Int64SliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: NewInt64Slice(), EnvVars: []string{"COMPAT_INTERVALS", "APP_INTERVALS"}},
+			&Int64SliceFlag{Name: "intervals", Aliases: []string{"i"}, EnvVars: []string{"COMPAT_INTERVALS", "APP_INTERVALS"}},
 		},
 		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.Int64Slice("intervals"), []int64{20, 30, 17179869184}) {
@@ -2496,7 +2314,7 @@ func TestParseMultiFloat64SliceFromEnv(t *testing.T) {
 
 	_ = (&App{
 		Flags: []Flag{
-			&Float64SliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: NewFloat64Slice(), EnvVars: []string{"APP_INTERVALS"}},
+			&Float64SliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: []float64{}, EnvVars: []string{"APP_INTERVALS"}},
 		},
 		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.Float64Slice("intervals"), []float64{0.1, -10.5}) {
@@ -2517,7 +2335,7 @@ func TestParseMultiFloat64SliceFromEnvCascade(t *testing.T) {
 
 	_ = (&App{
 		Flags: []Flag{
-			&Float64SliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: NewFloat64Slice(), EnvVars: []string{"COMPAT_INTERVALS", "APP_INTERVALS"}},
+			&Float64SliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: []float64{}, EnvVars: []string{"COMPAT_INTERVALS", "APP_INTERVALS"}},
 		},
 		Action: func(ctx *Context) error {
 			if !reflect.DeepEqual(ctx.Float64Slice("intervals"), []float64{0.1234, -10.5}) {
@@ -2701,116 +2519,6 @@ func (p *Parser) Get() interface{} {
 	return p
 }
 
-func TestParseGeneric(t *testing.T) {
-	_ = (&App{
-		Flags: []Flag{
-			&GenericFlag{Name: "serve", Aliases: []string{"s"}, Value: &Parser{}},
-		},
-		Action: func(ctx *Context) error {
-			if !reflect.DeepEqual(ctx.Generic("serve"), &Parser{"10", "20"}) {
-				t.Errorf("main name not set")
-			}
-			if !reflect.DeepEqual(ctx.Generic("s"), &Parser{"10", "20"}) {
-				t.Errorf("short name not set")
-			}
-			return nil
-		},
-	}).Run([]string{"run", "-s", "10,20"})
-}
-
-type genericType struct {
-	s []string
-}
-
-func (g *genericType) Set(value string) error {
-	g.s = strings.Split(value, "-")
-	return nil
-}
-
-func (g *genericType) String() string {
-	return strings.Join(g.s, "-")
-}
-
-func TestParseDestinationGeneric(t *testing.T) {
-	expectedString := "abc1-123d"
-	expectedGeneric := &genericType{[]string{"abc1", "123d"}}
-	dest := &genericType{}
-
-	_ = (&App{
-		Flags: []Flag{
-			&GenericFlag{
-				Name:        "dest",
-				Destination: dest,
-			},
-		},
-		Action: func(ctx *Context) error {
-
-			if !reflect.DeepEqual(dest, expectedGeneric) {
-				t.Errorf(
-					"expected destination generic: %+v, actual: %+v",
-					expectedGeneric,
-					dest,
-				)
-			}
-
-			if dest.String() != expectedString {
-				t.Errorf(
-					"expected destination string: %s, actual: %s",
-					expectedString,
-					dest.String(),
-				)
-			}
-			return nil
-		},
-	}).Run([]string{"run", "--dest", expectedString})
-}
-
-func TestParseGenericFromEnv(t *testing.T) {
-	defer resetEnv(os.Environ())
-	os.Clearenv()
-	_ = os.Setenv("APP_SERVE", "20,30")
-	_ = (&App{
-		Flags: []Flag{
-			&GenericFlag{
-				Name:    "serve",
-				Aliases: []string{"s"},
-				Value:   &Parser{},
-				EnvVars: []string{"APP_SERVE"},
-			},
-		},
-		Action: func(ctx *Context) error {
-			if !reflect.DeepEqual(ctx.Generic("serve"), &Parser{"20", "30"}) {
-				t.Errorf("main name not set from env")
-			}
-			if !reflect.DeepEqual(ctx.Generic("s"), &Parser{"20", "30"}) {
-				t.Errorf("short name not set from env")
-			}
-			return nil
-		},
-	}).Run([]string{"run"})
-}
-
-func TestParseGenericFromEnvCascade(t *testing.T) {
-	defer resetEnv(os.Environ())
-	os.Clearenv()
-	_ = os.Setenv("APP_FOO", "99,2000")
-	_ = (&App{
-		Flags: []Flag{
-			&GenericFlag{
-				Name:    "foos",
-				Value:   &Parser{},
-				EnvVars: []string{"COMPAT_FOO", "APP_FOO"},
-			},
-		},
-		Action: func(ctx *Context) error {
-			if !reflect.DeepEqual(ctx.Generic("foos"), &Parser{"99", "2000"}) {
-				t.Errorf("value not set from env")
-			}
-			return nil
-		},
-	}).Run([]string{"run"})
-}
-
 func TestFlagFromFile(t *testing.T) {
 	temp, err := ioutil.TempFile("", "urfave_cli_test")
 	if err != nil {
@@ -2929,7 +2637,7 @@ func TestUint64Slice_Serialized_Set(t *testing.T) {
 }
 
 func TestTimestamp_set(t *testing.T) {
-	ts := Timestamp{
+	ts := timestampValue{
 		timestamp:  nil,
 		hasBeenSet: false,
 		layout:     "Jan 2, 2006 at 3:04pm (MST)",
@@ -2944,7 +2652,7 @@ func TestTimestamp_set(t *testing.T) {
 	}
 
 	ts.hasBeenSet = false
-	ts.SetLayout(time.RFC3339)
+	ts.layout = time.RFC3339
 	time2 := "2006-01-02T15:04:05Z"
 	if err := ts.Set(time2); err != nil {
 		t.Fatalf("Failed to parse time %s with layout %s", time2, ts.layout)
@@ -2956,28 +2664,28 @@ func TestTimestamp_set(t *testing.T) {
 
 func TestTimestampFlagApply(t *testing.T) {
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: time.RFC3339}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: time.RFC3339}}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
 	expect(t, err, nil)
-	expect(t, *fl.Value.timestamp, expectedResult)
+	expect(t, *set.Lookup("time").Value.(*timestampValue).timestamp, expectedResult)
 }
 
 func TestTimestampFlagApplyValue(t *testing.T) {
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: time.RFC3339, Value: NewTimestamp(expectedResult)}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: time.RFC3339}, Value: expectedResult}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{""})
 	expect(t, err, nil)
-	expect(t, *fl.Value.timestamp, expectedResult)
+	expect(t, *set.Lookup("time").Value.(*timestampValue).timestamp, expectedResult)
 }
 
 func TestTimestampFlagApply_Fail_Parse_Wrong_Layout(t *testing.T) {
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: "randomlayout"}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: "randomlayout"}}
 	set := flag.NewFlagSet("test", 0)
 	set.SetOutput(ioutil.Discard)
 	_ = fl.Apply(set)
@@ -2987,7 +2695,7 @@ func TestTimestampFlagApply_Fail_Parse_Wrong_Layout(t *testing.T) {
 }
 
 func TestTimestampFlagApply_Fail_Parse_Wrong_Time(t *testing.T) {
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: "Jan 2, 2006 at 3:04pm (MST)"}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: "Jan 2, 2006 at 3:04pm (MST)"}}
 	set := flag.NewFlagSet("test", 0)
 	set.SetOutput(ioutil.Discard)
 	_ = fl.Apply(set)
@@ -2999,22 +2707,22 @@ func TestTimestampFlagApply_Fail_Parse_Wrong_Time(t *testing.T) {
 func TestTimestampFlagApply_Timezoned(t *testing.T) {
 	pdt := time.FixedZone("PDT", -7*60*60)
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: time.ANSIC, Timezone: pdt}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: time.ANSIC, Timezone: pdt}}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--time", "Mon Jan 2 08:04:05 2006"})
 	expect(t, err, nil)
-	expect(t, *fl.Value.timestamp, expectedResult.In(pdt))
+	expect(t, *set.Lookup("time").Value.(*timestampValue).timestamp, expectedResult.In(pdt))
 }
 
 func TestTimestampFlagValueFromContext(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	now := time.Now()
-	set.Var(NewTimestamp(now), "myflag", "doc")
+	set.Var(newTimestamp(now), "myflag", "doc")
 	ctx := NewContext(nil, set, nil)
 	f := &TimestampFlag{Name: "myflag"}
-	expect(t, f.Get(ctx), &now)
+	expect(t, f.Get(ctx), now)
 }
 
 type flagDefaultTestCase struct {
@@ -3028,37 +2736,37 @@ func TestFlagDefaultValue(t *testing.T) {
 	cases := []*flagDefaultTestCase{
 		{
 			name:    "stringSlice",
-			flag:    &StringSliceFlag{Name: "flag", Value: NewStringSlice("default1", "default2")},
+			flag:    &StringSliceFlag{Name: "flag", Value: []string{"default1", "default2"}},
 			toParse: []string{"--flag", "parsed"},
 			expect:  `--flag value [ --flag value ]	(default: "default1", "default2")`,
 		},
 		{
 			name:    "float64Slice",
-			flag:    &Float64SliceFlag{Name: "flag", Value: NewFloat64Slice(1.1, 2.2)},
+			flag:    &Float64SliceFlag{Name: "flag", Value: []float64{1.1, 2.2}},
 			toParse: []string{"--flag", "13.3"},
 			expect:  `--flag value [ --flag value ]	(default: 1.1, 2.2)`,
 		},
 		{
 			name:    "int64Slice",
-			flag:    &Int64SliceFlag{Name: "flag", Value: NewInt64Slice(1, 2)},
+			flag:    &Int64SliceFlag{Name: "flag", Value: []int64{1, 2}},
 			toParse: []string{"--flag", "13"},
 			expect:  `--flag value [ --flag value ]	(default: 1, 2)`,
 		},
 		{
 			name:    "intSlice",
-			flag:    &IntSliceFlag{Name: "flag", Value: NewIntSlice(1, 2)},
+			flag:    &IntSliceFlag{Name: "flag", Value: []int{1, 2}},
 			toParse: []string{"--flag", "13"},
 			expect:  `--flag value [ --flag value ]	(default: 1, 2)`,
 		},
 		{
 			name:    "uint64Slice",
-			flag:    &Uint64SliceFlag{Name: "flag", Value: NewUint64Slice(1, 2)},
+			flag:    &Uint64SliceFlag{Name: "flag", Value: []uint64{1, 2}},
 			toParse: []string{"--flag", "13"},
 			expect:  `--flag value [ --flag value ]	(default: 1, 2)`,
 		},
 		{
 			name:    "uintSlice",
-			flag:    &UintSliceFlag{Name: "flag", Value: NewUintSlice(1, 2)},
+			flag:    &UintSliceFlag{Name: "flag", Value: []uint{1, 2}},
 			toParse: []string{"--flag", "13"},
 			expect:  `--flag value [ --flag value ]	(default: 1, 2)`,
 		},
@@ -3113,7 +2821,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 	cases := []*flagDefaultTestCaseWithEnv{
 		{
 			name:    "stringSlice",
-			flag:    &StringSliceFlag{Name: "flag", Value: NewStringSlice("default1", "default2"), EnvVars: []string{"ssflag"}},
+			flag:    &StringSliceFlag{Name: "flag", Value: []string{"default1", "default2"}, EnvVars: []string{"ssflag"}},
 			toParse: []string{"--flag", "parsed"},
 			expect:  `--flag value [ --flag value ]	(default: "default1", "default2")` + withEnvHint([]string{"ssflag"}, ""),
 			environ: map[string]string{
@@ -3122,7 +2830,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 		},
 		{
 			name:    "float64Slice",
-			flag:    &Float64SliceFlag{Name: "flag", Value: NewFloat64Slice(1.1, 2.2), EnvVars: []string{"fsflag"}},
+			flag:    &Float64SliceFlag{Name: "flag", Value: []float64{1.1, 2.2}, EnvVars: []string{"fsflag"}},
 			toParse: []string{"--flag", "13.3"},
 			expect:  `--flag value [ --flag value ]	(default: 1.1, 2.2)` + withEnvHint([]string{"fsflag"}, ""),
 			environ: map[string]string{
@@ -3131,7 +2839,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 		},
 		{
 			name:    "int64Slice",
-			flag:    &Int64SliceFlag{Name: "flag", Value: NewInt64Slice(1, 2), EnvVars: []string{"isflag"}},
+			flag:    &Int64SliceFlag{Name: "flag", Value: []int64{1, 2}, EnvVars: []string{"isflag"}},
 			toParse: []string{"--flag", "13"},
 			expect:  `--flag value [ --flag value ]	(default: 1, 2)` + withEnvHint([]string{"isflag"}, ""),
 			environ: map[string]string{
@@ -3140,7 +2848,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 		},
 		{
 			name:    "intSlice",
-			flag:    &IntSliceFlag{Name: "flag", Value: NewIntSlice(1, 2), EnvVars: []string{"isflag"}},
+			flag:    &IntSliceFlag{Name: "flag", Value: []int{1, 2}, EnvVars: []string{"isflag"}},
 			toParse: []string{"--flag", "13"},
 			expect:  `--flag value [ --flag value ]	(default: 1, 2)` + withEnvHint([]string{"isflag"}, ""),
 			environ: map[string]string{
@@ -3149,7 +2857,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 		},
 		{
 			name:    "uint64Slice",
-			flag:    &Uint64SliceFlag{Name: "flag", Value: NewUint64Slice(1, 2), EnvVars: []string{"uisflag"}},
+			flag:    &Uint64SliceFlag{Name: "flag", Value: []uint64{1, 2}, EnvVars: []string{"uisflag"}},
 			toParse: []string{"--flag", "13"},
 			expect:  `--flag value [ --flag value ]	(default: 1, 2)` + withEnvHint([]string{"uisflag"}, ""),
 			environ: map[string]string{
@@ -3158,7 +2866,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 		},
 		{
 			name:    "uintSlice",
-			flag:    &UintSliceFlag{Name: "flag", Value: NewUintSlice(1, 2), EnvVars: []string{"uisflag"}},
+			flag:    &UintSliceFlag{Name: "flag", Value: []uint{1, 2}, EnvVars: []string{"uisflag"}},
 			toParse: []string{"--flag", "13"},
 			expect:  `--flag value [ --flag value ]	(default: 1, 2)` + withEnvHint([]string{"uisflag"}, ""),
 			environ: map[string]string{
@@ -3229,30 +2937,12 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			},
 		},
 		{
-			name:    "path",
-			flag:    &PathFlag{Name: "flag", Value: "/tmp/foo", EnvVars: []string{"uflag"}},
-			toParse: []string{"--flag", "/bar/ddfr"},
-			expect:  `--flag value	(default: "/tmp/foo")` + withEnvHint([]string{"uflag"}, ""),
-			environ: map[string]string{
-				"uflag": "/bar/t/err",
-			},
-		},
-		{
 			name:    "timestamp",
-			flag:    &TimestampFlag{Name: "flag", Value: NewTimestamp(ts), Layout: time.RFC3339, EnvVars: []string{"tflag"}},
+			flag:    &TimestampFlag{Name: "flag", Value: ts, Config: TimestampConfig{Layout: time.RFC3339}, EnvVars: []string{"tflag"}},
 			toParse: []string{"--flag", "2006-11-02T15:04:05Z"},
 			expect:  `--flag value	(default: 2005-01-02 15:04:05 +0000 UTC)` + withEnvHint([]string{"tflag"}, ""),
 			environ: map[string]string{
 				"tflag": "2010-01-02T15:04:05Z",
-			},
-		},
-		{
-			name:    "generic",
-			flag:    &GenericFlag{Name: "flag", Value: &Parser{"11", "12"}, EnvVars: []string{"gflag"}},
-			toParse: []string{"--flag", "15,16"},
-			expect:  `--flag value	(default: 11,12)` + withEnvHint([]string{"gflag"}, ""),
-			environ: map[string]string{
-				"gflag": "13,14",
 			},
 		},
 	}
@@ -3285,37 +2975,37 @@ func TestFlagValue(t *testing.T) {
 	cases := []*flagValueTestCase{
 		&flagValueTestCase{
 			name:    "stringSlice",
-			flag:    &StringSliceFlag{Name: "flag", Value: NewStringSlice("default1", "default2")},
+			flag:    &StringSliceFlag{Name: "flag", Value: []string{"default1", "default2"}},
 			toParse: []string{"--flag", "parsed,parsed2", "--flag", "parsed3,parsed4"},
 			expect:  `[parsed parsed2 parsed3 parsed4]`,
 		},
 		&flagValueTestCase{
 			name:    "float64Slice",
-			flag:    &Float64SliceFlag{Name: "flag", Value: NewFloat64Slice(1.1, 2.2)},
+			flag:    &Float64SliceFlag{Name: "flag", Value: []float64{1.1, 2.2}},
 			toParse: []string{"--flag", "13.3,14.4", "--flag", "15.5,16.6"},
 			expect:  `[]float64{13.3, 14.4, 15.5, 16.6}`,
 		},
 		&flagValueTestCase{
 			name:    "int64Slice",
-			flag:    &Int64SliceFlag{Name: "flag", Value: NewInt64Slice(1, 2)},
+			flag:    &Int64SliceFlag{Name: "flag", Value: []int64{1, 2}},
 			toParse: []string{"--flag", "13,14", "--flag", "15,16"},
 			expect:  `[]int64{13, 14, 15, 16}`,
 		},
 		&flagValueTestCase{
 			name:    "intSlice",
-			flag:    &IntSliceFlag{Name: "flag", Value: NewIntSlice(1, 2)},
+			flag:    &IntSliceFlag{Name: "flag", Value: []int{1, 2}},
 			toParse: []string{"--flag", "13,14", "--flag", "15,16"},
 			expect:  `[]int{13, 14, 15, 16}`,
 		},
 		&flagValueTestCase{
 			name:    "uint64Slice",
-			flag:    &Uint64SliceFlag{Name: "flag", Value: NewUint64Slice(1, 2)},
+			flag:    &Uint64SliceFlag{Name: "flag", Value: []uint64{1, 2}},
 			toParse: []string{"--flag", "13,14", "--flag", "15,16"},
 			expect:  `[]uint64{13, 14, 15, 16}`,
 		},
 		&flagValueTestCase{
 			name:    "uintSlice",
-			flag:    &UintSliceFlag{Name: "flag", Value: NewUintSlice(1, 2)},
+			flag:    &UintSliceFlag{Name: "flag", Value: []uint{1, 2}},
 			toParse: []string{"--flag", "13,14", "--flag", "15,16"},
 			expect:  `[]uint{13, 14, 15, 16}`,
 		},
@@ -3335,15 +3025,15 @@ func TestFlagValue(t *testing.T) {
 }
 
 func TestTimestampFlagApply_WithDestination(t *testing.T) {
-	var destination Timestamp
+	var destination time.Time
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: time.RFC3339, Destination: &destination}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: time.RFC3339}, Destination: &destination}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
 	expect(t, err, nil)
-	expect(t, *fl.Destination.timestamp, expectedResult)
+	expect(t, destination, expectedResult)
 }
 
 // Test issue #1254

@@ -159,19 +159,11 @@ func (a *App) prepareFishFlags(flags []Flag, previousCommands []string) []string
 
 func fishAddFileFlag(flag Flag, completion *strings.Builder) {
 	switch f := flag.(type) {
-	case *GenericFlag:
-		if f.TakesFile {
-			return
-		}
 	case *StringFlag:
 		if f.TakesFile {
 			return
 		}
 	case *StringSliceFlag:
-		if f.TakesFile {
-			return
-		}
-	case *PathFlag:
 		if f.TakesFile {
 			return
 		}

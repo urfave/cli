@@ -9,7 +9,7 @@ import (
 func TestFishCompletion(t *testing.T) {
 	// Given
 	app := testApp()
-	app.Flags = append(app.Flags, &PathFlag{
+	app.Flags = append(app.Flags, &StringFlag{
 		Name:      "logfile",
 		TakesFile: true,
 	})

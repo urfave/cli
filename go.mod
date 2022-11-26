@@ -12,4 +12,5 @@ require (
 require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/exp v0.0.0-20221002003631-540bb7301a08 // indirect
 )

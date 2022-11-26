@@ -1,84 +1,52 @@
 package cli
 
 import (
-	"flag"
 	"fmt"
 	"strconv"
 )
 
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f *Int64Flag) GetValue() string {
-	return fmt.Sprintf("%d", f.Value)
+type Int64Flag = FlagBase[int64, IntegerConfig, int64Value]
+
+// -- int64 Value
+type int64Value struct {
+	val  *int64
+	base int
 }
 
-// GetDefaultText returns the default text for this flag
-func (f *Int64Flag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
+// Below functions are to satisfy the ValueCreator interface
+
+func (i int64Value) Create(val int64, p *int64, c IntegerConfig) Value {
+	*p = val
+	return &int64Value{
+		val:  p,
+		base: c.Base,
 	}
-	return fmt.Sprintf("%d", f.defaultValue)
 }
 
-// Apply populates the flag given the flag set and environment
-func (f *Int64Flag) Apply(set *flag.FlagSet) error {
-	// set default value so that environment wont be able to overwrite it
-	f.defaultValue = f.Value
+func (i int64Value) ToString(b int64) string {
+	return fmt.Sprintf("%d", b)
+}
 
-	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
-		if val != "" {
-			valInt, err := strconv.ParseInt(val, f.Base, 64)
+// Below functions are to satisfy the flag.Value interface
 
-			if err != nil {
-				return fmt.Errorf("could not parse %q as int value from %s for flag %s: %s", val, source, f.Name, err)
-			}
-
-			f.Value = valInt
-			f.HasBeenSet = true
-		}
+func (i *int64Value) Set(s string) error {
+	v, err := strconv.ParseInt(s, 0, 64)
+	if err != nil {
+		return err
 	}
-
-	for _, name := range f.Names() {
-		if f.Destination != nil {
-			set.Int64Var(f.Destination, name, f.Value, f.Usage)
-			continue
-		}
-		set.Int64(name, f.Value, f.Usage)
-	}
-	return nil
+	*i.val = v
+	return err
 }
 
-// Get returns the flag’s value in the given Context.
-func (f *Int64Flag) Get(ctx *Context) int64 {
-	return ctx.Int64(f.Name)
-}
+func (i *int64Value) Get() any { return int64(*i.val) }
 
-// RunAction executes flag action if set
-func (f *Int64Flag) RunAction(c *Context) error {
-	if f.Action != nil {
-		return f.Action(c, c.Int64(f.Name))
-	}
-
-	return nil
-}
+func (i *int64Value) String() string { return strconv.FormatInt(int64(*i.val), 10) }
 
 // Int64 looks up the value of a local Int64Flag, returns
 // 0 if not found
 func (cCtx *Context) Int64(name string) int64 {
-	if fs := cCtx.lookupFlagSet(name); fs != nil {
-		return lookupInt64(name, fs)
-	}
-	return 0
-}
-
-func lookupInt64(name string, set *flag.FlagSet) int64 {
-	f := set.Lookup(name)
-	if f != nil {
-		parsed, err := strconv.ParseInt(f.Value.String(), 0, 64)
-		if err != nil {
-			return 0
-		}
-		return parsed
+	if v, ok := cCtx.Value(name).(int64); ok {
+		return v
 	}
 	return 0
 }

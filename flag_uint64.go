@@ -1,84 +1,52 @@
 package cli
 
 import (
-	"flag"
 	"fmt"
 	"strconv"
 )
 
-// Apply populates the flag given the flag set and environment
-func (f *Uint64Flag) Apply(set *flag.FlagSet) error {
-	// set default value so that environment wont be able to overwrite it
-	f.defaultValue = f.Value
+type Uint64Flag = FlagBase[uint64, IntegerConfig, uint64Value]
 
-	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
-		if val != "" {
-			valInt, err := strconv.ParseUint(val, f.Base, 64)
-			if err != nil {
-				return fmt.Errorf("could not parse %q as uint64 value from %s for flag %s: %s", val, source, f.Name, err)
-			}
+// -- uint64 Value
+type uint64Value struct {
+	val  *uint64
+	base int
+}
 
-			f.Value = valInt
-			f.HasBeenSet = true
-		}
+// Below functions are to satisfy the ValueCreator interface
+
+func (i uint64Value) Create(val uint64, p *uint64, c IntegerConfig) Value {
+	*p = val
+	return &uint64Value{
+		val:  p,
+		base: c.Base,
 	}
+}
 
-	for _, name := range f.Names() {
-		if f.Destination != nil {
-			set.Uint64Var(f.Destination, name, f.Value, f.Usage)
-			continue
-		}
-		set.Uint64(name, f.Value, f.Usage)
+func (i uint64Value) ToString(b uint64) string {
+	return fmt.Sprintf("%d", b)
+}
+
+// Below functions are to satisfy the flag.Value interface
+
+func (i *uint64Value) Set(s string) error {
+	v, err := strconv.ParseUint(s, i.base, 64)
+	if err != nil {
+		return err
 	}
-
-	return nil
+	*i.val = v
+	return err
 }
 
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f *Uint64Flag) GetValue() string {
-	return fmt.Sprintf("%d", f.Value)
-}
+func (i *uint64Value) Get() any { return uint64(*i.val) }
 
-// GetDefaultText returns the default text for this flag
-func (f *Uint64Flag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	return fmt.Sprintf("%d", f.defaultValue)
-}
-
-// Get returns the flag’s value in the given Context.
-func (f *Uint64Flag) Get(ctx *Context) uint64 {
-	return ctx.Uint64(f.Name)
-}
-
-// RunAction executes flag action if set
-func (f *Uint64Flag) RunAction(c *Context) error {
-	if f.Action != nil {
-		return f.Action(c, c.Uint64(f.Name))
-	}
-
-	return nil
-}
+func (i *uint64Value) String() string { return strconv.FormatUint(uint64(*i.val), 10) }
 
 // Uint64 looks up the value of a local Uint64Flag, returns
 // 0 if not found
 func (cCtx *Context) Uint64(name string) uint64 {
-	if fs := cCtx.lookupFlagSet(name); fs != nil {
-		return lookupUint64(name, fs)
-	}
-	return 0
-}
-
-func lookupUint64(name string, set *flag.FlagSet) uint64 {
-	f := set.Lookup(name)
-	if f != nil {
-		parsed, err := strconv.ParseUint(f.Value.String(), 0, 64)
-		if err != nil {
-			return 0
-		}
-		return parsed
+	if v, ok := cCtx.Value(name).(uint64); ok {
+		return v
 	}
 	return 0
 }

@@ -1,85 +1,62 @@
 package cli
 
 import (
-	"flag"
 	"fmt"
 	"strconv"
 )
 
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f *IntFlag) GetValue() string {
-	return fmt.Sprintf("%d", f.Value)
+type IntFlag = FlagBase[int, IntegerConfig, intValue]
+
+// IntegerConfig is the configuration for all integer type flags
+type IntegerConfig struct {
+	Base int
 }
 
-// GetDefaultText returns the default text for this flag
-func (f *IntFlag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	return fmt.Sprintf("%d", f.defaultValue)
+// -- int Value
+type intValue struct {
+	val  *int
+	base int
 }
 
-// Apply populates the flag given the flag set and environment
-func (f *IntFlag) Apply(set *flag.FlagSet) error {
-	// set default value so that environment wont be able to overwrite it
-	f.defaultValue = f.Value
+// Below functions are to satisfy the ValueCreator interface
 
-	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
-		if val != "" {
-			valInt, err := strconv.ParseInt(val, f.Base, 64)
-
-			if err != nil {
-				return fmt.Errorf("could not parse %q as int value from %s for flag %s: %s", val, source, f.Name, err)
-			}
-
-			f.Value = int(valInt)
-			f.HasBeenSet = true
-		}
+func (i intValue) Create(val int, p *int, c IntegerConfig) Value {
+	*p = val
+	return &intValue{
+		val:  p,
+		base: c.Base,
 	}
-
-	for _, name := range f.Names() {
-		if f.Destination != nil {
-			set.IntVar(f.Destination, name, f.Value, f.Usage)
-			continue
-		}
-		set.Int(name, f.Value, f.Usage)
-	}
-
-	return nil
 }
 
-// Get returns the flag’s value in the given Context.
-func (f *IntFlag) Get(ctx *Context) int {
-	return ctx.Int(f.Name)
+func (i intValue) ToString(b int) string {
+	return fmt.Sprintf("%v", b)
 }
 
-// RunAction executes flag action if set
-func (f *IntFlag) RunAction(c *Context) error {
-	if f.Action != nil {
-		return f.Action(c, c.Int(f.Name))
-	}
+// Below functions are to satisfy the flag.Value interface
 
-	return nil
+func (i *intValue) Set(s string) error {
+	v, err := strconv.ParseInt(s, i.base, strconv.IntSize)
+	if err != nil {
+		return err
+	}
+	*i.val = int(v)
+	return err
+}
+
+func (i *intValue) Get() any { return int(*i.val) }
+
+func (i *intValue) String() string {
+	if i == nil || i.val == nil {
+		return ""
+	}
+	return strconv.Itoa(int(*i.val))
 }
 
 // Int looks up the value of a local IntFlag, returns
 // 0 if not found
 func (cCtx *Context) Int(name string) int {
-	if fs := cCtx.lookupFlagSet(name); fs != nil {
-		return lookupInt(name, fs)
-	}
-	return 0
-}
-
-func lookupInt(name string, set *flag.FlagSet) int {
-	f := set.Lookup(name)
-	if f != nil {
-		parsed, err := strconv.ParseInt(f.Value.String(), 0, 64)
-		if err != nil {
-			return 0
-		}
-		return int(parsed)
+	if v, ok := cCtx.Value(name).(int); ok {
+		return v
 	}
 	return 0
 }
