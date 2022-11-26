@@ -82,7 +82,7 @@ func (i *SliceBase[T, C, VC]) String() string {
 	return fmt.Sprintf("%T{%s}", v, i.ToString(v))
 }
 
-// Serialize allows IntSlice to fulfill Serializer
+// Serialize allows SliceBase to fulfill Serializer
 func (i *SliceBase[T, C, VC]) Serialize() string {
 	jsonBytes, _ := json.Marshal(i.slice)
 	return fmt.Sprintf("%s%s", slPfx, string(jsonBytes))
