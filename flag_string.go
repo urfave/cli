@@ -35,7 +35,7 @@ func (s *stringValue) Get() any { return string(*s) }
 func (s *stringValue) String() string { return string(*s) }
 
 func (cCtx *Context) String(name string) string {
-	if v, ok := cCtx.Value(name).(string); ok {
+	if v, ok := cCtx.GetValue(name).(string); ok {
 		return v
 	}
 	return ""

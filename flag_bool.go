@@ -26,7 +26,7 @@ type boolValue struct {
 }
 
 func (cCtx *Context) Bool(name string) bool {
-	if v, ok := cCtx.Value(name).(bool); ok {
+	if v, ok := cCtx.GetValue(name).(bool); ok {
 		return v
 	}
 	return false

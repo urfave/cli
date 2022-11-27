@@ -20,6 +20,9 @@ type Context struct {
 	parentContext *Context
 }
 
+// ensures that Context always implements context.Context
+var _ context.Context = &Context{}
+
 // NewContext creates a new context. For use in when invoking an App or Command action.
 func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
 	c := &Context{App: app, flagSet: set, parentContext: parentCtx}
@@ -137,8 +140,8 @@ func (cCtx *Context) Count(name string) int {
 	return 0
 }
 
-// Value returns the value of the flag corresponding to `name`
-func (cCtx *Context) Value(name string) interface{} {
+// GetValue returns the value of the flag corresponding to `name`
+func (cCtx *Context) GetValue(name string) interface{} {
 	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return fs.Lookup(name).Value.(flag.Getter).Get()
 	}

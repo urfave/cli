@@ -173,7 +173,7 @@ func (f *FlagBase[T, C, V]) GetDefaultText() string {
 
 // Get returns the flag’s value in the given Context.
 func (f *FlagBase[T, C, V]) Get(ctx *Context) T {
-	if v, ok := ctx.Value(f.Name).(T); ok {
+	if v, ok := ctx.GetValue(f.Name).(T); ok {
 		return v
 	}
 	var t T

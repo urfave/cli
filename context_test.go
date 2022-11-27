@@ -134,9 +134,9 @@ func TestContext_Value(t *testing.T) {
 	parentSet.Int("top-flag", 13, "doc")
 	parentCtx := NewContext(nil, parentSet, nil)
 	c := NewContext(nil, set, parentCtx)
-	expect(t, c.Value("myflag"), 12)
-	expect(t, c.Value("top-flag"), 13)
-	expect(t, c.Value("unknown-flag"), nil)
+	expect(t, c.GetValue("myflag"), 12)
+	expect(t, c.GetValue("top-flag"), 13)
+	expect(t, c.GetValue("unknown-flag"), nil)
 }
 
 func TestContext_Value_InvalidFlagAccessHandler(t *testing.T) {
@@ -152,7 +152,7 @@ func TestContext_Value_InvalidFlagAccessHandler(t *testing.T) {
 					{
 						Name: "subcommand",
 						Action: func(ctx *Context) error {
-							ctx.Value("missing")
+							ctx.GetValue("missing")
 							return nil
 						},
 					},
@@ -370,7 +370,7 @@ func TestContextPropagation(t *testing.T) {
 	parent := NewContext(nil, nil, nil)
 	parent.Context = context.WithValue(context.Background(), "key", "val")
 	ctx := NewContext(nil, nil, parent)
-	val := ctx.Context.Value("key")
+	val := ctx.Value("key")
 	if val == nil {
 		t.Fatal("expected a parent context to be inherited but got nil")
 	}
