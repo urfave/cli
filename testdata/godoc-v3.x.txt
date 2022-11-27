@@ -606,6 +606,9 @@ func (cCtx *Context) Float64Slice(name string) []float64
     Float64Slice looks up the value of a local Float64SliceFlag, returns nil if
     not found
 
+func (cCtx *Context) GetValue(name string) interface{}
+    GetValue returns the value of the flag corresponding to `name`
+
 func (cCtx *Context) Int(name string) int
     Int looks up the value of a local IntFlag, returns 0 if not found
 
@@ -661,9 +664,6 @@ func (cCtx *Context) Uint64Slice(name string) []uint64
 func (cCtx *Context) UintSlice(name string) []uint
     UintSlice looks up the value of a local UintSliceFlag, returns nil if not
     found
-
-func (cCtx *Context) Value(name string) interface{}
-    Value returns the value of the flag corresponding to `name`
 
 type Countable interface {
 	Count() int
