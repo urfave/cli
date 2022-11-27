@@ -241,7 +241,6 @@ func ShowCommandHelpAndExit(c *Context, command string, code int) {
 
 // ShowCommandHelp prints help for the given command
 func ShowCommandHelp(ctx *Context, command string) error {
-
 	commands := ctx.App.Commands
 	if ctx.Command.Subcommands != nil {
 		commands = ctx.Command.Subcommands
@@ -328,7 +327,6 @@ func ShowCommandCompletions(ctx *Context, command string) {
 			DefaultCompleteWithFlags(c)(ctx)
 		}
 	}
-
 }
 
 // printHelpCustom is the default implementation of HelpPrinterCustom.
@@ -336,7 +334,6 @@ func ShowCommandCompletions(ctx *Context, command string) {
 // The customFuncs map will be combined with a default template.FuncMap to
 // allow using arbitrary functions in template rendering.
 func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs map[string]interface{}) {
-
 	const maxLineLength = 10000
 
 	funcMap := template.FuncMap{
@@ -417,24 +414,6 @@ func checkHelp(cCtx *Context) bool {
 	return found
 }
 
-func checkCommandHelp(c *Context, name string) bool {
-	if c.Bool("h") || c.Bool("help") {
-		_ = ShowCommandHelp(c, name)
-		return true
-	}
-
-	return false
-}
-
-func checkSubcommandHelp(cCtx *Context) bool {
-	if cCtx.Bool("h") || cCtx.Bool("help") {
-		_ = ShowSubcommandHelp(cCtx)
-		return true
-	}
-
-	return false
-}
-
 func checkShellCompleteFlag(a *App, arguments []string) (bool, []string) {
 	if !a.EnableBashCompletion {
 		return false, arguments
@@ -505,7 +484,6 @@ func wrap(input string, offset int, wrapAt int) string {
 				ss = append(ss, wrapped)
 			} else {
 				ss = append(ss, padding+wrapped)
-
 			}
 
 		}

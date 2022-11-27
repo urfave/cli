@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"regexp"
@@ -76,7 +75,6 @@ func TestBoolFlagApply_SetsCount(t *testing.T) {
 }
 
 func TestBoolFlagCountFromContext(t *testing.T) {
-
 	boolCountTests := []struct {
 		input         []string
 		expectedVal   bool
@@ -109,8 +107,7 @@ func TestBoolFlagCountFromContext(t *testing.T) {
 }
 
 func TestFlagsFromEnv(t *testing.T) {
-
-	var flagTests = []struct {
+	flagTests := []struct {
 		input     string
 		output    interface{}
 		flag      Flag
@@ -1041,8 +1038,12 @@ var int64SliceFlagTests = []struct {
 }{
 	{"heads", nil, []int64{}, "--heads value [ --heads value ]\t"},
 	{"H", nil, []int64{}, "-H value [ -H value ]\t"},
-	{"heads", []string{"H"}, []int64{2, 17179869184},
-		"--heads value, -H value [ --heads value, -H value ]\t(default: 2, 17179869184)"},
+	{
+		"heads",
+		[]string{"H"},
+		[]int64{2, 17179869184},
+		"--heads value, -H value [ --heads value, -H value ]\t(default: 2, 17179869184)",
+	},
 }
 
 func TestInt64SliceFlagHelpOutput(t *testing.T) {
@@ -1159,6 +1160,7 @@ func TestInt64SliceFlag_SetFromParentContext(t *testing.T) {
 		t.Errorf("child context unable to view parent flag: %v != %v", expected, ctx.Int64Slice("numbers"))
 	}
 }
+
 func TestInt64SliceFlag_ReturnNil(t *testing.T) {
 	fl := &Int64SliceFlag{}
 	set := flag.NewFlagSet("test", 0)
@@ -1191,8 +1193,12 @@ var uintSliceFlagTests = []struct {
 }{
 	{"heads", nil, []uint{}, "--heads value [ --heads value ]\t"},
 	{"H", nil, []uint{}, "-H value [ -H value ]\t"},
-	{"heads", []string{"H"}, []uint{2, 17179869184},
-		"--heads value, -H value [ --heads value, -H value ]\t(default: 2, 17179869184)"},
+	{
+		"heads",
+		[]string{"H"},
+		[]uint{2, 17179869184},
+		"--heads value, -H value [ --heads value, -H value ]\t(default: 2, 17179869184)",
+	},
 }
 
 func TestUintSliceFlagHelpOutput(t *testing.T) {
@@ -1310,6 +1316,7 @@ func TestUintSliceFlag_SetFromParentContext(t *testing.T) {
 		t.Errorf("child context unable to view parent flag: %v != %v", expected, ctx.UintSlice("numbers"))
 	}
 }
+
 func TestUintSliceFlag_ReturnNil(t *testing.T) {
 	fl := &UintSliceFlag{}
 	set := flag.NewFlagSet("test", 0)
@@ -1334,8 +1341,12 @@ var uint64SliceFlagTests = []struct {
 }{
 	{"heads", nil, []uint64{}, "--heads value [ --heads value ]\t"},
 	{"H", nil, []uint64{}, "-H value [ -H value ]\t"},
-	{"heads", []string{"H"}, []uint64{2, 17179869184},
-		"--heads value, -H value [ --heads value, -H value ]\t(default: 2, 17179869184)"},
+	{
+		"heads",
+		[]string{"H"},
+		[]uint64{2, 17179869184},
+		"--heads value, -H value [ --heads value, -H value ]\t(default: 2, 17179869184)",
+	},
 }
 
 func TestUint64SliceFlagHelpOutput(t *testing.T) {
@@ -1451,6 +1462,7 @@ func TestUint64SliceFlag_SetFromParentContext(t *testing.T) {
 		t.Errorf("child context unable to view parent flag: %v != %v", expected, ctx.Uint64Slice("numbers"))
 	}
 }
+
 func TestUint64SliceFlag_ReturnNil(t *testing.T) {
 	fl := &Uint64SliceFlag{}
 	set := flag.NewFlagSet("test", 0)
@@ -1529,8 +1541,12 @@ var float64SliceFlagTests = []struct {
 }{
 	{"heads", nil, []float64{}, "--heads value [ --heads value ]\t"},
 	{"H", nil, []float64{}, "-H value [ -H value ]\t"},
-	{"heads", []string{"H"}, []float64{0.1234, -10.5},
-		"--heads value, -H value [ --heads value, -H value ]\t(default: 0.1234, -10.5)"},
+	{
+		"heads",
+		[]string{"H"},
+		[]float64{0.1234, -10.5},
+		"--heads value, -H value [ --heads value, -H value ]\t(default: 0.1234, -10.5)",
+	},
 }
 
 func TestFloat64SliceFlagHelpOutput(t *testing.T) {
@@ -1665,7 +1681,7 @@ func TestParseDestinationString(t *testing.T) {
 				Destination: &dest,
 			},
 		},
-		Action: func(ctx *Context) error {
+		Action: func(*Context) error {
 			if dest != "10" {
 				t.Errorf("expected destination String 10")
 			}
@@ -1972,7 +1988,7 @@ func TestParseMultiStringSliceFromEnvWithDestination(t *testing.T) {
 		Flags: []Flag{
 			&StringSliceFlag{Name: "intervals", Aliases: []string{"i"}, Destination: &dest, EnvVars: []string{"APP_INTERVALS"}},
 		},
-		Action: func(ctx *Context) error {
+		Action: func(*Context) error {
 			if !reflect.DeepEqual(dest, []string{"20", "30", "40"}) {
 				t.Errorf("main name not set from env")
 			}
@@ -2010,7 +2026,7 @@ func TestParseDestinationInt(t *testing.T) {
 				Destination: &dest,
 			},
 		},
-		Action: func(ctx *Context) error {
+		Action: func(*Context) error {
 			if dest != 10 {
 				t.Errorf("expected destination Int 10")
 			}
@@ -2258,7 +2274,7 @@ func TestParseDestinationFloat64(t *testing.T) {
 				Destination: &dest,
 			},
 		},
-		Action: func(ctx *Context) error {
+		Action: func(*Context) error {
 			if dest != 10.2 {
 				t.Errorf("expected destination Float64 10.2")
 			}
@@ -2399,7 +2415,7 @@ func TestParseDestinationBool(t *testing.T) {
 				Destination: &dest,
 			},
 		},
-		Action: func(ctx *Context) error {
+		Action: func(*Context) error {
 			if dest != true {
 				t.Errorf("expected destination Bool true")
 			}
@@ -2449,7 +2465,7 @@ func TestParseMultiBoolFromEnvCascade(t *testing.T) {
 }
 
 func TestParseBoolFromEnv(t *testing.T) {
-	var boolFlagTests = []struct {
+	boolFlagTests := []struct {
 		input  string
 		output bool
 	}{
@@ -2520,7 +2536,7 @@ func (p *Parser) Get() interface{} {
 }
 
 func TestFlagFromFile(t *testing.T) {
-	temp, err := ioutil.TempFile("", "urfave_cli_test")
+	temp, err := os.CreateTemp("", "urfave_cli_test")
 	if err != nil {
 		t.Error(err)
 		return
@@ -2536,7 +2552,7 @@ func TestFlagFromFile(t *testing.T) {
 		_ = os.Remove(temp.Name())
 	}()
 
-	var filePathTests = []struct {
+	filePathTests := []struct {
 		path     string
 		name     []string
 		expected string
@@ -2687,7 +2703,7 @@ func TestTimestampFlagApplyValue(t *testing.T) {
 func TestTimestampFlagApply_Fail_Parse_Wrong_Layout(t *testing.T) {
 	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: "randomlayout"}}
 	set := flag.NewFlagSet("test", 0)
-	set.SetOutput(ioutil.Discard)
+	set.SetOutput(io.Discard)
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
@@ -2697,7 +2713,7 @@ func TestTimestampFlagApply_Fail_Parse_Wrong_Layout(t *testing.T) {
 func TestTimestampFlagApply_Fail_Parse_Wrong_Time(t *testing.T) {
 	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: "Jan 2, 2006 at 3:04pm (MST)"}}
 	set := flag.NewFlagSet("test", 0)
-	set.SetOutput(ioutil.Discard)
+	set.SetOutput(io.Discard)
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
@@ -2791,7 +2807,7 @@ func TestFlagDefaultValue(t *testing.T) {
 	}
 	for i, v := range cases {
 		set := flag.NewFlagSet("test", 0)
-		set.SetOutput(ioutil.Discard)
+		set.SetOutput(io.Discard)
 		_ = v.flag.Apply(set)
 		if err := set.Parse(v.toParse); err != nil {
 			t.Error(err)
@@ -2951,7 +2967,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			os.Setenv(key, val)
 		}
 		set := flag.NewFlagSet("test", 0)
-		set.SetOutput(ioutil.Discard)
+		set.SetOutput(io.Discard)
 		if err := v.flag.Apply(set); err != nil {
 			t.Fatal(err)
 		}
@@ -2973,37 +2989,37 @@ type flagValueTestCase struct {
 
 func TestFlagValue(t *testing.T) {
 	cases := []*flagValueTestCase{
-		&flagValueTestCase{
+		{
 			name:    "stringSlice",
 			flag:    &StringSliceFlag{Name: "flag", Value: []string{"default1", "default2"}},
 			toParse: []string{"--flag", "parsed,parsed2", "--flag", "parsed3,parsed4"},
 			expect:  `[parsed parsed2 parsed3 parsed4]`,
 		},
-		&flagValueTestCase{
+		{
 			name:    "float64Slice",
 			flag:    &Float64SliceFlag{Name: "flag", Value: []float64{1.1, 2.2}},
 			toParse: []string{"--flag", "13.3,14.4", "--flag", "15.5,16.6"},
 			expect:  `[]float64{13.3, 14.4, 15.5, 16.6}`,
 		},
-		&flagValueTestCase{
+		{
 			name:    "int64Slice",
 			flag:    &Int64SliceFlag{Name: "flag", Value: []int64{1, 2}},
 			toParse: []string{"--flag", "13,14", "--flag", "15,16"},
 			expect:  `[]int64{13, 14, 15, 16}`,
 		},
-		&flagValueTestCase{
+		{
 			name:    "intSlice",
 			flag:    &IntSliceFlag{Name: "flag", Value: []int{1, 2}},
 			toParse: []string{"--flag", "13,14", "--flag", "15,16"},
 			expect:  `[]int{13, 14, 15, 16}`,
 		},
-		&flagValueTestCase{
+		{
 			name:    "uint64Slice",
 			flag:    &Uint64SliceFlag{Name: "flag", Value: []uint64{1, 2}},
 			toParse: []string{"--flag", "13,14", "--flag", "15,16"},
 			expect:  `[]uint64{13, 14, 15, 16}`,
 		},
-		&flagValueTestCase{
+		{
 			name:    "uintSlice",
 			flag:    &UintSliceFlag{Name: "flag", Value: []uint{1, 2}},
 			toParse: []string{"--flag", "13,14", "--flag", "15,16"},
@@ -3012,7 +3028,7 @@ func TestFlagValue(t *testing.T) {
 	}
 	for i, v := range cases {
 		set := flag.NewFlagSet("test", 0)
-		set.SetOutput(ioutil.Discard)
+		set.SetOutput(io.Discard)
 		_ = v.flag.Apply(set)
 		if err := set.Parse(v.toParse); err != nil {
 			t.Error(err)

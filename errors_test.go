@@ -122,7 +122,7 @@ func (f *ErrorWithFormat) Format(s fmt.State, verb rune) {
 func TestHandleExitCoder_ErrorWithFormat(t *testing.T) {
 	called := false
 
-	OsExiter = func(rc int) {
+	OsExiter = func(int) {
 		if !called {
 			called = true
 		}
@@ -144,7 +144,7 @@ func TestHandleExitCoder_ErrorWithFormat(t *testing.T) {
 func TestHandleExitCoder_MultiErrorWithFormat(t *testing.T) {
 	called := false
 
-	OsExiter = func(rc int) {
+	OsExiter = func(int) {
 		if !called {
 			called = true
 		}
