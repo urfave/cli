@@ -75,10 +75,13 @@ func (f *FlagBase[T, C, V]) GetValue() string {
 
 // Apply populates the flag given the flag set and environment
 func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
-	// if flag has been applied then it wouldnt have been set from
-	// env or file as well.
 	// TODO move this phase into a separate flag initialization function
-	if !f.applied {
+	// if flag has been applied previously then it would have already been set
+	// from env or file. So no need to apply the env set again. However
+	// lots of units tests prior to persistent flags assumed that the
+	// flag can be applied to different flag sets multiple times while still
+	// keeping the env set.
+	if !f.applied || !f.Persistent {
 		newVal := f.Value
 
 		if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {

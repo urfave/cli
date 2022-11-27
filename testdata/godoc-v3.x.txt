@@ -780,8 +780,9 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	FilePath    string // file path to load value from
 	Usage       string // usage string for help output
 
-	Required bool // whether the flag is required or not
-	Hidden   bool // whether to hide the flag in help output
+	Required   bool // whether the flag is required or not
+	Hidden     bool // whether to hide the flag in help output
+	Persistent bool // whether the flag needs to be applied to subcommands as well
 
 	Value       T  // default value for this flag if not set by from any source
 	Destination *T // destination pointer for value when set
@@ -826,6 +827,9 @@ func (f *FlagBase[T, C, V]) GetValue() string
     GetValue returns the flags value as string representation and an empty
     string if the flag takes no value at all.
 
+func (f *FlagBase[T, C, VC]) IsPersistent() bool
+    IsPersistent returns true if flag needs to be persistent across subcommands
+
 func (f *FlagBase[T, C, V]) IsRequired() bool
     IsRequired returns whether or not the flag is required
 
@@ -833,6 +837,7 @@ func (f *FlagBase[T, C, V]) IsSet() bool
     IsSet returns whether or not the flag has been set through env or file
 
 func (f *FlagBase[T, C, VC]) IsSliceFlag() bool
+    IsSliceFlag returns true if the value type T is of kind slice
 
 func (f *FlagBase[T, C, V]) IsVisible() bool
     IsVisible returns true if the flag is not hidden, otherwise false
@@ -939,6 +944,12 @@ type OnUsageErrorFunc func(cCtx *Context, err error, isSubcommand bool) error
     displaying customized usage error messages. This function is able to replace
     the original error messages. If this function is not set, the "Incorrect
     usage" is displayed and the execution is interrupted.
+
+type PersistentFlag interface {
+	IsPersistent() bool
+}
+    PersistentFlag is an interface to enable detection of flags which are
+    persistent through subcommands
 
 type RequiredFlag interface {
 	Flag
