@@ -34,12 +34,10 @@ jobs:
         env:
           GFLAGS: -tags urfave_cli_no_docs
       - run: make test
-      - run: make -C cmd/urfave-cli-genflags
       - run: make check-binary-size
         env:
           GFLAGS: -tags urfave_cli_no_docs
       - run: make check-binary-size
-      - run: make yamlfmt
       - if: matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
         run: make generate
       - run: make diffcheck

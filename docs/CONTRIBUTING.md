@@ -78,22 +78,6 @@ Because the `generate` step includes updating `godoc-current.txt` and
 that reviewers have an opportunity to also make an informed decision about the "promotion"
 step.
 
-#### generated code
-
-A significant portion of the project's source code is generated, with the goal being to
-eliminate repetitive maintenance where other type-safe abstraction is impractical or
-impossible with Go versions `< 1.18`. In a future where the eldest Go version supported is
-`1.18.x`, there will likely be efforts to take advantage of
-[generics](https://go.dev/doc/tutorial/generics).
-
-The built-in `go generate` command is used to run the commands specified in
-`//go:generate` directives. Each such command runs a file that also supports a command
-line help system which may be consulted for further information, e.g.:
-
-```sh
-go run cmd/urfave-cli-genflags/main.go --help
-```
-
 #### docs output
 
 The documentation in the `docs` directory is automatically built via `mkdocs` into a
