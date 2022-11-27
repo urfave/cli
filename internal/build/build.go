@@ -83,13 +83,6 @@ func main() {
 				Action: GenerateActionFunc,
 			},
 			{
-				Name: "yamlfmt",
-				Flags: []cli.Flag{
-					&cli.BoolFlag{Name: "strict", Value: false, Usage: "require presence of yq"},
-				},
-				Action: YAMLFmtActionFunc,
-			},
-			{
 				Name:   "diffcheck",
 				Action: DiffCheckActionFunc,
 			},
@@ -500,31 +493,11 @@ func GenerateActionFunc(cCtx *cli.Context) error {
 		return err
 	}
 
-	if err := os.WriteFile(
+	return os.WriteFile(
 		filepath.Join(top, "godoc-current.txt"),
 		[]byte(cliDocs),
 		0644,
-	); err != nil {
-		return err
-	}
-
-	return runCmd("go", "generate", cCtx.String("top")+"/...")
-}
-
-func YAMLFmtActionFunc(cCtx *cli.Context) error {
-	yqBin, err := exec.LookPath("yq")
-	if err != nil {
-		if !cCtx.Bool("strict") {
-			fmt.Fprintln(cCtx.App.ErrWriter, "# ---> no yq found; skipping")
-			return nil
-		}
-
-		return err
-	}
-
-	os.Chdir(cCtx.String("top"))
-
-	return runCmd(yqBin, "eval", "--inplace", "flag-spec.yaml")
+	)
 }
 
 func DiffCheckActionFunc(cCtx *cli.Context) error {
