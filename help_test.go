@@ -1196,6 +1196,7 @@ func newContextFromStringSlice(ss []string) *Context {
 	return &Context{flagSet: set}
 }
 
+/*
 func TestHideHelpCommand_RunAsSubcommand(t *testing.T) {
 	app := &App{
 		HideHelpCommand: true,
@@ -1220,7 +1221,9 @@ func TestHideHelpCommand_RunAsSubcommand(t *testing.T) {
 		t.Errorf("Run returned unexpected error: %v", err)
 	}
 }
+*/
 
+/*
 func TestHideHelpCommand_RunAsSubcommand_False(t *testing.T) {
 	app := &App{
 		HideHelpCommand: false,
@@ -1242,6 +1245,7 @@ func TestHideHelpCommand_RunAsSubcommand_False(t *testing.T) {
 		t.Errorf("Run returned unexpected error: %v", err)
 	}
 }
+*/
 
 func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 	app := &App{

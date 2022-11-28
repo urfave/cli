@@ -703,13 +703,13 @@ func TestApp_FlagsFromExtPackage(t *testing.T) {
 
 func TestApp_Setup_defaultsReader(t *testing.T) {
 	app := &App{}
-	app.Setup()
+	app.setupDefaults()
 	expect(t, app.Reader, os.Stdin)
 }
 
 func TestApp_Setup_defaultsWriter(t *testing.T) {
 	app := &App{}
-	app.Setup()
+	app.setupDefaults()
 	expect(t, app.Writer, os.Stdout)
 }
 
@@ -847,7 +847,9 @@ func TestApp_VisibleCommands(t *testing.T) {
 		},
 	}
 
-	app.Setup()
+	cCtx := NewContext(app, nil, nil)
+	app.setup(cCtx)
+
 	expected := []*Command{
 		app.Commands[0],
 		app.Commands[2], // help
@@ -1157,7 +1159,7 @@ func TestApp_ParseSliceFlagsWithMissingValue(t *testing.T) {
 
 func TestApp_DefaultStdin(t *testing.T) {
 	app := &App{}
-	app.Setup()
+	app.setupDefaults()
 
 	if app.Reader != os.Stdin {
 		t.Error("Default input reader not set.")
@@ -1166,7 +1168,7 @@ func TestApp_DefaultStdin(t *testing.T) {
 
 func TestApp_DefaultStdout(t *testing.T) {
 	app := &App{}
-	app.Setup()
+	app.setupDefaults()
 
 	if app.Writer != os.Stdout {
 		t.Error("Default output writer not set.")
@@ -2232,7 +2234,8 @@ func TestApp_VisibleCategories(t *testing.T) {
 		},
 	}
 
-	app.Setup()
+	cCtx := NewContext(app, nil, nil)
+	app.setup(cCtx)
 	expect(t, expected, app.VisibleCategories())
 
 	app = &App{
@@ -2268,7 +2271,7 @@ func TestApp_VisibleCategories(t *testing.T) {
 		},
 	}
 
-	app.Setup()
+	app.setup(cCtx)
 	expect(t, expected, app.VisibleCategories())
 
 	app = &App{
@@ -2296,7 +2299,7 @@ func TestApp_VisibleCategories(t *testing.T) {
 		},
 	}
 
-	app.Setup()
+	app.setup(cCtx)
 	expect(t, []CommandCategory{}, app.VisibleCategories())
 }
 
@@ -2313,7 +2316,7 @@ func TestApp_VisibleFlagCategories(t *testing.T) {
 			},
 		},
 	}
-	app.Setup()
+	app.setupDefaults()
 	vfc := app.VisibleFlagCategories()
 	if len(vfc) != 1 {
 		t.Fatalf("unexpected visible flag categories %+v", vfc)
@@ -2691,7 +2694,7 @@ func newTestApp() *App {
 func TestSetupInitializesBothWriters(t *testing.T) {
 	a := &App{}
 
-	a.Setup()
+	a.setupDefaults()
 
 	if a.ErrWriter != os.Stderr {
 		t.Errorf("expected a.ErrWriter to be os.Stderr")
@@ -2708,7 +2711,7 @@ func TestSetupInitializesOnlyNilWriters(t *testing.T) {
 		ErrWriter: wr,
 	}
 
-	a.Setup()
+	a.setupDefaults()
 
 	if a.ErrWriter != wr {
 		t.Errorf("expected a.ErrWriter to be a *bytes.Buffer instance")

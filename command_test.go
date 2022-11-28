@@ -43,7 +43,7 @@ func TestCommandFlagParsing(t *testing.T) {
 			isRoot:          true,
 		}
 
-		err := command.Run(cCtx, c.testArgs...)
+		err := command.run(cCtx, c.testArgs...)
 
 		expect(t, err, c.expectedErr)
 		// expect(t, cCtx.Args().Slice(), c.testArgs)

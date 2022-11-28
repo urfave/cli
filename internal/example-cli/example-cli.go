@@ -3,9 +3,11 @@
 package main
 
 import (
+	"context"
+
 	"github.com/urfave/cli/v3"
 )
 
 func main() {
-	(&cli.App{}).Run([]string{""})
+	(&cli.App{}).RunContext(context.Background(), []string{""})
 }

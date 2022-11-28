@@ -2,13 +2,9 @@ package cli
 
 import (
 	"context"
-	"flag"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
-	"sort"
-	"strings"
 )
 
 const suggestDidYouMeanTemplate = "Did you mean %q?"
@@ -27,6 +23,9 @@ var (
 	SuggestDidYouMeanTemplate string             = suggestDidYouMeanTemplate
 )
 
+type App = Command
+
+/*
 // App is the main structure of a cli application. It is recommended that
 // an app be created with the cli.NewApp() function
 type App struct {
@@ -122,6 +121,7 @@ type App struct {
 
 	rootCommand *Command
 }
+*/
 
 type SuggestFlagFunc func(flags []Flag, provided string, hideHelp bool) string
 
@@ -142,6 +142,7 @@ func NewApp() *App {
 	}
 }
 
+/*
 // Setup runs initialization code to ensure all data structures are ready for
 // `Run` or inspection prior to `Run`.  It is internally called by `Run`, but
 // will return early if setup has already happened.
@@ -252,7 +253,9 @@ func (a *App) Setup() {
 
 	disableSliceFlagSeparator = a.DisableSliceFlagSeparator
 }
+*/
 
+/*
 func (a *App) newRootCommand() *Command {
 	return &Command{
 		Name:                   a.Name,
@@ -278,18 +281,23 @@ func (a *App) newRootCommand() *Command {
 		isRoot:                 true,
 	}
 }
+*/
 
+/*
 func (a *App) newFlagSet() (*flag.FlagSet, error) {
 	return flagSet(a.Name, a.Flags)
 }
+*/
 
+/*
 func (a *App) useShortOptionHandling() bool {
 	return a.UseShortOptionHandling
 }
+*/
 
 // Run is the entry point to the cli app. Parses the arguments slice and routes
 // to the proper flag/args combination
-func (a *App) Run(arguments []string) (err error) {
+func (a *App) Run(arguments []string) error {
 	return a.RunContext(context.Background(), arguments)
 }
 
@@ -297,7 +305,8 @@ func (a *App) Run(arguments []string) (err error) {
 // passed to its commands and sub-commands. Through this, you can
 // propagate timeouts and cancellation requests
 func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
-	a.Setup()
+	a.isRoot = true
+	a.setupDefaults()
 
 	// handle the completion flag separately from the flagset since
 	// completion could be attempted after a flag, but before its value was put
@@ -310,19 +319,26 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 	cCtx := NewContext(a, nil, &Context{Context: ctx})
 	cCtx.shellComplete = shellComplete
 
-	a.rootCommand = a.newRootCommand()
-	cCtx.Command = a.rootCommand
+	/*
+		a.rootCommand = a.newRootCommand()
+		cCtx.Command = a.rootCommand
 
-	return a.rootCommand.Run(cCtx, arguments...)
+		return a.rootCommand.Run(cCtx, arguments...)
+	*/
+
+	return a.run(cCtx, arguments...)
 }
 
+/*
 // This is a stub function to keep public API unchanged from old code
 //
 // Deprecated: use App.Run or App.RunContext
 func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	return a.RunContext(ctx.Context, ctx.Args().Slice())
 }
+*/
 
+/*
 func (a *App) suggestFlagFromError(err error, command string) (string, error) {
 	flag, parseErr := flagFromError(err)
 	if parseErr != nil {
@@ -347,7 +363,9 @@ func (a *App) suggestFlagFromError(err error, command string) (string, error) {
 
 	return fmt.Sprintf(SuggestDidYouMeanTemplate+"\n\n", suggestion), nil
 }
+*/
 
+/*
 // RunAndExitOnError calls .Run() and exits non-zero if an error was returned
 //
 // Deprecated: instead you should return an error that fulfills cli.ExitCoder
@@ -359,7 +377,9 @@ func (a *App) RunAndExitOnError() {
 		OsExiter(1)
 	}
 }
+*/
 
+/*
 // Command returns the named command on App. Returns nil if the command does not exist
 func (a *App) Command(name string) *Command {
 	for _, c := range a.Commands {
@@ -370,7 +390,9 @@ func (a *App) Command(name string) *Command {
 
 	return nil
 }
+*/
 
+/*
 // VisibleCategories returns a slice of categories and commands that are
 // Hidden=false
 func (a *App) VisibleCategories() []CommandCategory {
@@ -387,7 +409,9 @@ func (a *App) VisibleCategories() []CommandCategory {
 	}
 	return ret
 }
+*/
 
+/*
 // VisibleCommands returns a slice of the Commands with Hidden=false
 func (a *App) VisibleCommands() []*Command {
 	var ret []*Command
@@ -398,7 +422,9 @@ func (a *App) VisibleCommands() []*Command {
 	}
 	return ret
 }
+*/
 
+/*
 // VisibleFlagCategories returns a slice containing all the categories with the flags they contain
 func (a *App) VisibleFlagCategories() []VisibleFlagCategory {
 	if a.flagCategories == nil {
@@ -406,17 +432,22 @@ func (a *App) VisibleFlagCategories() []VisibleFlagCategory {
 	}
 	return a.flagCategories.VisibleCategories()
 }
+*/
 
+/*
 // VisibleFlags returns a slice of the Flags with Hidden=false
 func (a *App) VisibleFlags() []Flag {
 	return visibleFlags(a.Flags)
 }
+*/
 
+/*
 func (a *App) appendFlag(fl Flag) {
 	if !hasFlag(a.Flags, fl) {
 		a.Flags = append(a.Flags, fl)
 	}
 }
+*/
 
 func (a *App) appendCommand(c *Command) {
 	if !hasCommand(a.Commands, c) {
