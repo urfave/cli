@@ -777,7 +777,7 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 
 	Category    string   // category of the flag, if any
 	DefaultText string   // default text of the flag for usage purposes
-	FilePath    []string // file paths to load value from
+	FilePaths   []string // file paths to load value from
 	Usage       string   // usage string for help output
 
 	Required   bool // whether the flag is required or not
