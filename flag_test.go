@@ -174,6 +174,8 @@ func TestFlagsFromEnv(t *testing.T) {
 		{"08", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}, Config: IntegerConfig{Base: 0}}, `could not parse "08" as uint64 value from environment variable "SECONDS" for flag seconds: .*`},
 		{"1.2", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "1.2" as uint64 value from environment variable "SECONDS" for flag seconds: .*`},
 		{"foobar", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as uint64 value from environment variable "SECONDS" for flag seconds: .*`},
+
+		{"foo=bar,empty=", map[string]string{"foo": "bar", "empty": ""}, &StringMapFlag{Name: "names", EnvVars: []string{"NAMES"}}, ""},
 	}
 
 	for i, test := range flagTests {
@@ -2652,6 +2654,22 @@ func TestUint64Slice_Serialized_Set(t *testing.T) {
 	}
 }
 
+func TestStringMap_Serialized_Set(t *testing.T) {
+	m0 := NewStringMap(map[string]string{"a": "b"})
+	ser0 := m0.Serialize()
+
+	if len(ser0) < len(slPfx) {
+		t.Fatalf("serialized shorter than expected: %q", ser0)
+	}
+
+	m1 := NewStringMap(map[string]string{"c": "d"})
+	_ = m1.Set(ser0)
+
+	if m0.String() != m1.String() {
+		t.Fatalf("pre and post serialization do not match: %v != %v", m0, m1)
+	}
+}
+
 func TestTimestamp_set(t *testing.T) {
 	ts := timestampValue{
 		timestamp:  nil,
@@ -2803,6 +2821,12 @@ func TestFlagDefaultValue(t *testing.T) {
 			flag:    &Uint64Flag{Name: "flag", Value: 1},
 			toParse: []string{"--flag", "13"},
 			expect:  `--flag value	(default: 1)`,
+		},
+		{
+			name:    "stringMap",
+			flag:    &StringMapFlag{Name: "flag", Value: map[string]string{"default1": "default2"}},
+			toParse: []string{"--flag", "parsed="},
+			expect:  `--flag value [ --flag value ]	(default: default1="default2")`,
 		},
 	}
 	for i, v := range cases {
@@ -2961,6 +2985,15 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 				"tflag": "2010-01-02T15:04:05Z",
 			},
 		},
+		{
+			name:    "stringMap",
+			flag:    &StringMapFlag{Name: "flag", Value: map[string]string{"default1": "default2"}, EnvVars: []string{"ssflag"}},
+			toParse: []string{"--flag", "parsed="},
+			expect:  `--flag value [ --flag value ]	(default: default1="default2")` + withEnvHint([]string{"ssflag"}, ""),
+			environ: map[string]string{
+				"ssflag": "some-other-env_value=",
+			},
+		},
 	}
 	for i, v := range cases {
 		for key, val := range v.environ {
@@ -3024,6 +3057,12 @@ func TestFlagValue(t *testing.T) {
 			flag:    &UintSliceFlag{Name: "flag", Value: []uint{1, 2}},
 			toParse: []string{"--flag", "13,14", "--flag", "15,16"},
 			expect:  `[]uint{13, 14, 15, 16}`,
+		},
+		{
+			name:    "stringMap",
+			flag:    &StringMapFlag{Name: "flag", Value: map[string]string{"default1": "default2"}},
+			toParse: []string{"--flag", "parsed=parsed2", "--flag", "parsed3=parsed4"},
+			expect:  `map[parsed:parsed2 parsed3:parsed4]`,
 		},
 	}
 	for i, v := range cases {
@@ -3123,5 +3162,114 @@ func TestFlagSplitMultiValues_Disabled(t *testing.T) {
 
 	if ret[0] != strings.Join(opts, defaultSliceFlagSeparator) {
 		t.Fatalf("failed to disable split slice flag, want: %s, but got: %s", strings.Join(opts, defaultSliceFlagSeparator), ret[0])
+	}
+}
+
+var stringMapFlagTests = []struct {
+	name     string
+	aliases  []string
+	value    map[string]string
+	expected string
+}{
+	{"foo", nil, nil, "--foo value [ --foo value ]\t"},
+	{"f", nil, nil, "-f value [ -f value ]\t"},
+	{"f", nil, map[string]string{"Lipstick": ""}, "-f value [ -f value ]\t(default: Lipstick=)"},
+	{"test", nil, map[string]string{"Something": ""}, "--test value [ --test value ]\t(default: Something=)"},
+	{"dee", []string{"d"}, map[string]string{"Inka": "Dinka", "dooo": ""}, "--dee value, -d value [ --dee value, -d value ]\t(default: Inka=\"Dinka\", dooo=)"},
+}
+
+func TestStringMapFlagHelpOutput(t *testing.T) {
+	for _, test := range stringMapFlagTests {
+		f := &StringMapFlag{Name: test.name, Aliases: test.aliases, Value: test.value}
+		output := f.String()
+
+		if output != test.expected {
+			t.Errorf("%q does not match %q", output, test.expected)
+		}
+	}
+}
+
+func TestStringMapFlagWithEnvVarHelpOutput(t *testing.T) {
+	defer resetEnv(os.Environ())
+	os.Clearenv()
+	_ = os.Setenv("APP_QWWX", "11,4")
+
+	for _, test := range stringMapFlagTests {
+		fl := &StringMapFlag{Name: test.name, Aliases: test.aliases, Value: test.value, EnvVars: []string{"APP_QWWX"}}
+		output := fl.String()
+
+		expectedSuffix := withEnvHint([]string{"APP_QWWX"}, "")
+		if !strings.HasSuffix(output, expectedSuffix) {
+			t.Errorf("%q does not end with"+expectedSuffix, output)
+		}
+	}
+}
+
+func TestStringMapFlagApply_SetsAllNames(t *testing.T) {
+	fl := StringMapFlag{Name: "goat", Aliases: []string{"G", "gooots"}}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{"--goat", "aaa=", "-G", "bbb=", "--gooots", "eeeee="})
+	expect(t, err, nil)
+}
+
+func TestStringMapFlagApply_UsesEnvValues_noDefault(t *testing.T) {
+	defer resetEnv(os.Environ())
+	os.Clearenv()
+	_ = os.Setenv("MY_GOAT", "vincent van goat=scape goat")
+	var val map[string]string
+	fl := StringMapFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: val}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse(nil)
+	expect(t, err, nil)
+	expect(t, val, map[string]string(nil))
+	expect(t, set.Lookup("goat").Value.(*StringMap).Value(), map[string]string{"vincent van goat": "scape goat"})
+}
+
+func TestStringMapFlagApply_UsesEnvValues_withDefault(t *testing.T) {
+	defer resetEnv(os.Environ())
+	os.Clearenv()
+	_ = os.Setenv("MY_GOAT", "vincent van goat=scape goat")
+	val := map[string]string{`some default`: `values here`}
+	fl := StringMapFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: val}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+	err := set.Parse(nil)
+	expect(t, err, nil)
+	expect(t, val, map[string]string{`some default`: `values here`})
+	expect(t, set.Lookup("goat").Value.(*StringMap).Value(), map[string]string{"vincent van goat": "scape goat"})
+}
+
+func TestStringMapFlagApply_DefaultValueWithDestination(t *testing.T) {
+	defValue := map[string]string{"UA": "US"}
+
+	fl := StringMapFlag{Name: "country", Value: defValue, Destination: &map[string]string{"CA": ""}}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{})
+	expect(t, err, nil)
+	expect(t, defValue, *fl.Destination)
+}
+
+func TestStringMapFlagValueFromContext(t *testing.T) {
+	set := flag.NewFlagSet("test", 0)
+	set.Var(NewStringMap(map[string]string{"a": "b", "c": ""}), "myflag", "doc")
+	ctx := NewContext(nil, set, nil)
+	f := &StringMapFlag{Name: "myflag"}
+	expect(t, f.Get(ctx), map[string]string{"a": "b", "c": ""})
+}
+
+func TestStringMapFlagApply_Error(t *testing.T) {
+	fl := StringMapFlag{Name: "goat"}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	err := set.Parse([]string{"--goat", "aaa", "bbb="})
+	if err == nil {
+		t.Errorf("expected error, but got none")
 	}
 }

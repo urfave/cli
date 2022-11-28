@@ -16,8 +16,9 @@ import (
 const defaultPlaceholder = "value"
 
 var (
-	defaultSliceFlagSeparator = ","
-	disableSliceFlagSeparator = false
+	defaultSliceFlagSeparator       = ","
+	defaultMapFlagKeyValueSeparator = "="
+	disableSliceFlagSeparator       = false
 )
 
 var (
