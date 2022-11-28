@@ -189,11 +189,6 @@ func DefaultAppComplete(cCtx *Context)
 
 func DefaultCompleteWithFlags(cmd *Command) func(cCtx *Context)
 func FlagNames(name string, aliases []string) []string
-func HandleAction(action interface{}, cCtx *Context) (err error)
-    HandleAction attempts to figure out which Action signature was used.
-    If it's an ActionFunc or a func with the legacy signature for Action,
-    the func is run!
-
 func HandleExitCoder(err error)
     HandleExitCoder handles errors implementing ExitCoder by printing their
     message and calling OsExiter with the given exit code.
@@ -251,19 +246,6 @@ type AfterFunc func(*Context) error
     the subcommand has finished it is run even if Action() panics
 
 type App = Command
-
-func NewApp() *App
-    NewApp creates a new cli Application with some reasonable defaults for Name,
-    Usage, Version and Action.
-
-func (a *App) Run(arguments []string) error
-    Run is the entry point to the cli app. Parses the arguments slice and routes
-    to the proper flag/args combination
-
-func (a *App) RunContext(ctx context.Context, arguments []string) (err error)
-    RunContext is like Run except it takes a Context that will be passed to
-    its commands and sub-commands. Through this, you can propagate timeouts and
-    cancellation requests
 
 func (a *App) ToFishCompletion() (string, error)
     ToFishCompletion creates a fish completion string for the `*App` The
@@ -433,7 +415,9 @@ type Command struct {
 }
     Command is a subcommand for a cli.App.
 
-func (cmd *Command) Command(name string) *Command
+func (c *Command) Command(name string) *Command
+    Command returns the named command on App. Returns nil if the command does
+    not exist
 
 func (c *Command) FullName() string
     FullName returns the full name of the command. For subcommands this ensures
@@ -444,6 +428,15 @@ func (c *Command) HasName(name string) bool
 
 func (c *Command) Names() []string
     Names returns the names including short names and aliases.
+
+func (c *Command) Run(arguments []string) error
+    Run is the entry point to the cli app. Parses the arguments slice and routes
+    to the proper flag/args combination
+
+func (c *Command) RunContext(ctx context.Context, arguments []string) (err error)
+    RunContext is like Run except it takes a Context that will be passed to
+    its commands and sub-commands. Through this, you can propagate timeouts and
+    cancellation requests
 
 func (c *Command) VisibleCategories() []CommandCategory
     VisibleCategories returns a slice of categories and commands that are

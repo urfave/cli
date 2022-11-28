@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io"
@@ -10,6 +11,26 @@ import (
 	"sort"
 	"strings"
 )
+
+const suggestDidYouMeanTemplate = "Did you mean %q?"
+
+var (
+	changeLogURL            = "https://github.com/urfave/cli/blob/main/docs/CHANGELOG.md"
+	appActionDeprecationURL = fmt.Sprintf("%s#deprecated-cli-app-action-signature", changeLogURL)
+	contactSysadmin         = "This is an error in the application.  Please contact the distributor of this application if this is not you."
+	errInvalidActionType    = NewExitError("ERROR invalid Action type. "+
+		fmt.Sprintf("Must be `func(*Context`)` or `func(*Context) error).  %s", contactSysadmin)+
+		fmt.Sprintf("See %s", appActionDeprecationURL), 2)
+	ignoreFlagPrefix = "test." // this is to ignore test flags when adding flags from other packages
+
+	SuggestFlag               SuggestFlagFunc    = suggestFlag
+	SuggestCommand            SuggestCommandFunc = suggestCommand
+	SuggestDidYouMeanTemplate string             = suggestDidYouMeanTemplate
+)
+
+type SuggestFlagFunc func(flags []Flag, provided string, hideHelp bool) string
+
+type SuggestCommandFunc func(commands []*Command, provided string) string
 
 // Command is a subcommand for a cli.App.
 type Command struct {
@@ -289,6 +310,33 @@ func (c *Command) setup(ctx *Context) {
 	disableSliceFlagSeparator = c.DisableSliceFlagSeparator
 }
 
+// Run is the entry point to the cli app. Parses the arguments slice and routes
+// to the proper flag/args combination
+func (c *Command) Run(arguments []string) error {
+	return c.RunContext(context.Background(), arguments)
+}
+
+// RunContext is like Run except it takes a Context that will be
+// passed to its commands and sub-commands. Through this, you can
+// propagate timeouts and cancellation requests
+func (c *Command) RunContext(ctx context.Context, arguments []string) (err error) {
+	c.isRoot = true
+	c.setupDefaults()
+
+	// handle the completion flag separately from the flagset since
+	// completion could be attempted after a flag, but before its value was put
+	// on the command line. this causes the flagset to interpret the completion
+	// flag name as the value of the flag before it which is undesirable
+	// note that we can only do this because the shell autocomplete function
+	// always appends the completion flag at the end of the command
+	shellComplete, arguments := checkShellCompleteFlag(c, arguments)
+
+	cCtx := NewContext(c, nil, &Context{Context: ctx})
+	cCtx.shellComplete = shellComplete
+
+	return c.run(cCtx, arguments...)
+}
+
 func (c *Command) run(cCtx *Context, arguments ...string) (err error) {
 	c.setup(cCtx)
 
@@ -420,6 +468,42 @@ func (c *Command) run(cCtx *Context, arguments ...string) (err error) {
 
 	cCtx.App.handleExitCoder(cCtx, err)
 	return err
+}
+
+// Command returns the named command on App. Returns nil if the command does not exist
+func (c *Command) Command(name string) *Command {
+	for _, cmd := range c.Commands {
+		if cmd.HasName(name) {
+			return cmd
+		}
+	}
+
+	return nil
+}
+
+func (a *App) appendCommand(c *Command) {
+	if !hasCommand(a.Commands, c) {
+		a.Commands = append(a.Commands, c)
+	}
+}
+
+func (a *App) handleExitCoder(cCtx *Context, err error) {
+	if a.ExitErrHandler != nil {
+		a.ExitErrHandler(cCtx, err)
+	} else {
+		HandleExitCoder(err)
+	}
+}
+
+func (a *App) argsWithDefaultCommand(oldArgs Args) Args {
+	if a.DefaultCommand != "" {
+		rawArgs := append([]string{a.DefaultCommand}, oldArgs.Slice()...)
+		newArgs := args(rawArgs)
+
+		return &newArgs
+	}
+
+	return oldArgs
 }
 
 func (c *Command) newFlagSet() (*flag.FlagSet, error) {
@@ -577,4 +661,36 @@ func hasCommand(commands []*Command, command *Command) bool {
 	}
 
 	return false
+}
+
+func runFlagActions(c *Context, fs []Flag) error {
+	for _, f := range fs {
+		isSet := false
+		for _, name := range f.Names() {
+			if c.IsSet(name) {
+				isSet = true
+				break
+			}
+		}
+		if isSet {
+			if af, ok := f.(ActionableFlag); ok {
+				if err := af.RunAction(c); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func checkStringSliceIncludes(want string, sSlice []string) bool {
+	found := false
+	for _, s := range sSlice {
+		if want == s {
+			found = true
+			break
+		}
+	}
+
+	return found
 }

@@ -234,7 +234,7 @@ func ExampleApp_Run_bashComplete_withShortFlag() {
 	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "-", "--generate-bash-completion"}
 
-	app := NewApp()
+	app := &App{}
 	app.Name = "greet"
 	app.EnableBashCompletion = true
 	app.Flags = []Flag{
@@ -262,7 +262,7 @@ func ExampleApp_Run_bashComplete_withLongFlag() {
 	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "--s", "--generate-bash-completion"}
 
-	app := NewApp()
+	app := &App{}
 	app.Name = "greet"
 	app.EnableBashCompletion = true
 	app.Flags = []Flag{
@@ -292,7 +292,7 @@ func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
 	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "--st", "--generate-bash-completion"}
 
-	app := NewApp()
+	app := &App{}
 	app.Name = "greet"
 	app.EnableBashCompletion = true
 	app.Flags = []Flag{
@@ -364,7 +364,7 @@ func ExampleApp_Run_zshComplete() {
 	os.Args = []string{"greet", "--generate-bash-completion"}
 	_ = os.Setenv("SHELL", "/usr/bin/zsh")
 
-	app := NewApp()
+	app := &App{}
 	app.Name = "greet"
 	app.EnableBashCompletion = true
 	app.Commands = []*Command{
@@ -406,7 +406,7 @@ func ExampleApp_Run_sliceValues() {
 		"--int64Sclice", "13,14", "--int64Sclice", "15,16",
 		"--intSclice", "13,14", "--intSclice", "15,16",
 	}
-	app := NewApp()
+	app := &App{}
 	app.Name = "multi_values"
 	app.Flags = []Flag{
 		&StringSliceFlag{Name: "stringSclice"},
@@ -2686,7 +2686,7 @@ func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
 }
 
 func newTestApp() *App {
-	a := NewApp()
+	a := &App{}
 	a.Writer = io.Discard
 	return a
 }
