@@ -64,7 +64,7 @@ func ExampleApp_Run_subcommand() {
 				Aliases:     []string{"hi"},
 				Usage:       "use it to see a description",
 				Description: "This is how we describe hello the function",
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{
 						Name:        "english",
 						Aliases:     []string{"en"},
@@ -548,7 +548,7 @@ func TestApp_RunDefaultCommandWithSubCommand(t *testing.T) {
 					{
 						Name:    "foobar",
 						Aliases: []string{"f"},
-						Subcommands: []*Command{
+						Commands: []*Command{
 							{Name: "jimbob", Aliases: []string{"j"}},
 							{Name: "carly"},
 						},
@@ -985,7 +985,7 @@ func TestApp_UseShortOptionHandlingSubCommand(t *testing.T) {
 			return nil
 		},
 	}
-	command.Subcommands = []*Command{subCommand}
+	command.Commands = []*Command{subCommand}
 	app.Commands = []*Command{command}
 
 	err := app.Run([]string{"", "cmd", "sub", "-on", expected})
@@ -1007,7 +1007,7 @@ func TestApp_UseShortOptionHandlingSubCommand_missing_value(t *testing.T) {
 			&StringFlag{Name: "name", Aliases: []string{"n"}},
 		},
 	}
-	command.Subcommands = []*Command{subCommand}
+	command.Commands = []*Command{subCommand}
 	app.Commands = []*Command{command}
 
 	err := app.Run([]string{"", "cmd", "sub", "-n"})
@@ -1204,7 +1204,7 @@ func TestApp_SetStdin_Subcommand(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "command",
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{
 						Name: "subcommand",
 						Action: func(c *Context) error {
@@ -1524,7 +1524,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			appRunInput: []string{"myCLI", "myCommand", "mySubCommand"},
 			appCommands: []*Command{{
 				Name: "myCommand",
-				Subcommands: []*Command{{
+				Commands: []*Command{{
 					Name:  "mySubCommand",
 					Flags: []Flag{&StringFlag{Name: "requiredFlag", Required: true}},
 				}},
@@ -1550,7 +1550,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			appRunInput: []string{"myCLI", "myCommand", "mySubCommand", "--help"},
 			appCommands: []*Command{{
 				Name: "myCommand",
-				Subcommands: []*Command{{
+				Commands: []*Command{{
 					Name:  "mySubCommand",
 					Flags: []Flag{&StringFlag{Name: "requiredFlag", Required: true}},
 				}},
@@ -1577,7 +1577,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			appRunInput: []string{"myCLI", "myCommand", "mySubCommand", "--optional", "cats"},
 			appCommands: []*Command{{
 				Name: "myCommand",
-				Subcommands: []*Command{{
+				Commands: []*Command{{
 					Name:  "mySubCommand",
 					Flags: []Flag{&StringFlag{Name: "requiredFlag", Required: true}, &StringFlag{Name: "optional"}},
 				}},
@@ -1603,7 +1603,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 			appRunInput: []string{"myCLI", "myCommand", "mySubCommand", "--requiredFlag", "cats"},
 			appCommands: []*Command{{
 				Name: "myCommand",
-				Subcommands: []*Command{{
+				Commands: []*Command{{
 					Name:  "mySubCommand",
 					Flags: []Flag{&StringFlag{Name: "requiredFlag", Required: true}},
 					Action: func(c *Context) error {
@@ -1868,7 +1868,7 @@ func TestApp_Run_CommandWithSubcommandHasHelpTopic(t *testing.T) {
 			cmd := &Command{
 				Name:        "foo",
 				Description: "descriptive wall of text about how it does foo things",
-				Subcommands: []*Command{subCmdBar, subCmdBaz},
+				Commands:    []*Command{subCmdBar, subCmdBaz},
 				Action:      func(c *Context) error { return nil },
 			}
 
@@ -1909,7 +1909,7 @@ func TestApp_Run_SubcommandFullPath(t *testing.T) {
 	cmd := &Command{
 		Name:        "foo",
 		Description: "foo commands",
-		Subcommands: []*Command{subCmd},
+		Commands:    []*Command{subCmd},
 	}
 	app.Commands = []*Command{cmd}
 
@@ -1943,7 +1943,7 @@ func TestApp_Run_SubcommandHelpName(t *testing.T) {
 	cmd := &Command{
 		Name:        "foo",
 		Description: "foo commands",
-		Subcommands: []*Command{subCmd},
+		Commands:    []*Command{subCmd},
 	}
 	app.Commands = []*Command{cmd}
 
@@ -1978,7 +1978,7 @@ func TestApp_Run_CommandHelpName(t *testing.T) {
 		Name:        "foo",
 		HelpName:    "custom",
 		Description: "foo commands",
-		Subcommands: []*Command{subCmd},
+		Commands:    []*Command{subCmd},
 	}
 	app.Commands = []*Command{cmd}
 
@@ -2014,7 +2014,7 @@ func TestApp_Run_CommandSubcommandHelpName(t *testing.T) {
 		Name:        "foo",
 		Usage:       "foo commands",
 		Description: "This is a description",
-		Subcommands: []*Command{subCmd},
+		Commands:    []*Command{subCmd},
 	}
 	app.Commands = []*Command{cmd}
 
@@ -2356,7 +2356,7 @@ func TestApp_Run_SubcommandDoesNotOverwriteErrorFromBefore(t *testing.T) {
 	app := &App{
 		Commands: []*Command{
 			{
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{
 						Name: "sub",
 					},
@@ -2636,7 +2636,7 @@ func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
 	app.Commands = []*Command{
 		{
 			Name: "cmd",
-			Subcommands: []*Command{
+			Commands: []*Command{
 				{
 					Name: "subcmd",
 					Action: func(c *Context) error {
@@ -2737,7 +2737,7 @@ func TestFlagAction(t *testing.T) {
 				Name:   "c1",
 				Flags:  []Flag{stringFlag},
 				Action: func(ctx *Context) error { return nil },
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{
 						Name:   "sub1",
 						Action: func(ctx *Context) error { return nil },
@@ -3101,7 +3101,7 @@ func TestPersistentFlag(t *testing.T) {
 						Destination: &appOverrideCmdInt,
 					},
 				},
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{
 						Name: "subcmd",
 						Flags: []Flag{

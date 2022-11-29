@@ -70,8 +70,8 @@ var helpCommand = &Command{
 		}
 
 		// Case 3, 5
-		if (len(cCtx.Command.Subcommands) == 1 && !cCtx.Command.HideHelp) ||
-			(len(cCtx.Command.Subcommands) == 0 && cCtx.Command.HideHelp) {
+		if (len(cCtx.Command.Commands) == 1 && !cCtx.Command.HideHelp) ||
+			(len(cCtx.Command.Commands) == 0 && cCtx.Command.HideHelp) {
 			templ := cCtx.Command.CustomHelpTemplate
 			if templ == "" {
 				templ = CommandHelpTemplate
@@ -225,7 +225,7 @@ func DefaultCompleteWithFlags(cmd *Command) func(cCtx *Context) {
 		}
 
 		if cmd != nil {
-			printCommandSuggestions(cmd.Subcommands, cCtx.App.Writer)
+			printCommandSuggestions(cmd.Commands, cCtx.App.Writer)
 			return
 		}
 
@@ -242,14 +242,14 @@ func ShowCommandHelpAndExit(c *Context, command string, code int) {
 // ShowCommandHelp prints help for the given command
 func ShowCommandHelp(ctx *Context, command string) error {
 	commands := ctx.App.Commands
-	if ctx.Command.Subcommands != nil {
-		commands = ctx.Command.Subcommands
+	if ctx.Command.Commands != nil {
+		commands = ctx.Command.Commands
 	}
 	for _, c := range commands {
 		if c.HasName(command) {
 			if !c.HideHelp {
-				if !c.HideHelpCommand && len(c.Subcommands) != 0 && c.Command(helpName) == nil {
-					c.Subcommands = append(c.Subcommands, helpCommandDontUse)
+				if !c.HideHelpCommand && len(c.Commands) != 0 && c.Command(helpName) == nil {
+					c.Commands = append(c.Commands, helpCommandDontUse)
 				}
 				if HelpFlag != nil {
 					c.appendFlag(HelpFlag)
@@ -257,7 +257,7 @@ func ShowCommandHelp(ctx *Context, command string) error {
 			}
 			templ := c.CustomHelpTemplate
 			if templ == "" {
-				if len(c.Subcommands) == 0 {
+				if len(c.Commands) == 0 {
 					templ = CommandHelpTemplate
 				} else {
 					templ = SubcommandHelpTemplate
@@ -273,7 +273,7 @@ func ShowCommandHelp(ctx *Context, command string) error {
 	if ctx.App.CommandNotFound == nil {
 		errMsg := fmt.Sprintf("No help topic for '%v'", command)
 		if ctx.App.Suggest {
-			if suggestion := SuggestCommand(ctx.Command.Subcommands, command); suggestion != "" {
+			if suggestion := SuggestCommand(ctx.Command.Commands, command); suggestion != "" {
 				errMsg += ". " + suggestion
 			}
 		}
