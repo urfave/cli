@@ -265,7 +265,7 @@ func (a *App) newRootCommand() *Command {
 		After:                  a.After,
 		Action:                 a.Action,
 		OnUsageError:           a.OnUsageError,
-		Subcommands:            a.Commands,
+		Commands:               a.Commands,
 		Flags:                  a.Flags,
 		flagCategories:         a.flagCategories,
 		HideHelp:               a.HideHelp,

@@ -37,7 +37,7 @@ type Command struct {
 	// Execute this function if a usage error occurs.
 	OnUsageError OnUsageErrorFunc
 	// List of child commands
-	Subcommands []*Command
+	Commands []*Command
 	// List of flags to parse
 	Flags          []Flag
 	flagCategories FlagCategories
@@ -97,7 +97,7 @@ func (c *Command) FullName() string {
 }
 
 func (cmd *Command) Command(name string) *Command {
-	for _, c := range cmd.Subcommands {
+	for _, c := range cmd.Commands {
 		if c.HasName(name) {
 			return c
 		}
@@ -110,7 +110,7 @@ func (c *Command) setup(ctx *Context) {
 	if c.Command(helpCommand.Name) == nil && !c.HideHelp {
 		if !c.HideHelpCommand {
 			helpCommand.HelpName = fmt.Sprintf("%s %s", c.HelpName, helpName)
-			c.Subcommands = append(c.Subcommands, helpCommand)
+			c.Commands = append(c.Commands, helpCommand)
 		}
 	}
 
@@ -124,19 +124,19 @@ func (c *Command) setup(ctx *Context) {
 	}
 
 	c.categories = newCommandCategories()
-	for _, command := range c.Subcommands {
+	for _, command := range c.Commands {
 		c.categories.AddCommand(command.Category, command)
 	}
 	sort.Sort(c.categories.(*commandCategories))
 
 	var newCmds []*Command
-	for _, scmd := range c.Subcommands {
+	for _, scmd := range c.Commands {
 		if scmd.HelpName == "" {
 			scmd.HelpName = fmt.Sprintf("%s %s", c.HelpName, scmd.Name)
 		}
 		newCmds = append(newCmds, scmd)
 	}
-	c.Subcommands = newCmds
+	c.Commands = newCmds
 }
 
 func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
@@ -237,8 +237,8 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 
 			if hasDefault {
 				dc := cCtx.App.Command(cCtx.App.DefaultCommand)
-				defaultHasSubcommands = len(dc.Subcommands) > 0
-				for _, dcSub := range dc.Subcommands {
+				defaultHasSubcommands = len(dc.Commands) > 0
+				for _, dcSub := range dc.Commands {
 					if checkStringSliceIncludes(name, dcSub.Names()) {
 						isDefaultSubcommand = true
 						break
@@ -395,7 +395,7 @@ func (c *Command) VisibleCategories() []CommandCategory {
 // VisibleCommands returns a slice of the Commands with Hidden=false
 func (c *Command) VisibleCommands() []*Command {
 	var ret []*Command
-	for _, command := range c.Subcommands {
+	for _, command := range c.Commands {
 		if !command.Hidden {
 			ret = append(ret, command)
 		}

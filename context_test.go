@@ -148,7 +148,7 @@ func TestContext_Value_InvalidFlagAccessHandler(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "command",
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{
 						Name: "subcommand",
 						Action: func(ctx *Context) error {

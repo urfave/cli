@@ -60,7 +60,7 @@ func testApp() *App {
 		},
 		Name:  "config",
 		Usage: "another usage test",
-		Subcommands: []*Command{{
+		Commands: []*Command{{
 			Aliases: []string{"s", "ss"},
 			Flags: []Flag{
 				&StringFlag{Name: "sub-flag", Aliases: []string{"sub-fl", "s"}},
@@ -110,7 +110,7 @@ func() { ... }
 
 Should be a part of the same code block
 `,
-		Subcommands: []*Command{{
+		Commands: []*Command{{
 			Aliases: []string{"su"},
 			Flags: []Flag{
 				&BoolFlag{

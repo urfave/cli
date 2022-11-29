@@ -221,8 +221,8 @@ func Test_helpCommand_HelpName(t *testing.T) {
 				Name: "app",
 				Commands: []*Command{
 					{
-						Name:        "cmd",
-						Subcommands: []*Command{{Name: "subcmd"}},
+						Name:     "cmd",
+						Commands: []*Command{{Name: "subcmd"}},
 					},
 				},
 				Writer: buf,
@@ -357,7 +357,7 @@ func TestShowCommandHelp_AppendHelp(t *testing.T) {
 						HideHelp:        tt.hideHelp,
 						HideHelpCommand: tt.hideHelpCommand,
 						Action:          func(ctx *Context) error { return ShowCommandHelp(ctx, "subcmd") },
-						Subcommands:     []*Command{{Name: "subcmd"}},
+						Commands:        []*Command{{Name: "subcmd"}},
 					},
 				},
 				Writer: buf,
@@ -587,7 +587,7 @@ func TestHelpNameConsistency(t *testing.T) {
 		{
 			Name:               "command1",
 			CustomHelpTemplate: `{{.HelpName}}`,
-			Subcommands: []*Command{
+			Commands: []*Command{
 				{
 					Name:               "subcommand1",
 					CustomHelpTemplate: `{{.HelpName}}`,
@@ -745,7 +745,7 @@ func TestShowSubcommandHelp_SubcommandUsageText(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "frobbly",
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{
 						Name:      "bobbly",
 						UsageText: "this is usage text",
@@ -769,7 +769,7 @@ func TestShowSubcommandHelp_MultiLine_SubcommandUsageText(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "frobbly",
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{
 						Name: "bobbly",
 						UsageText: `This is a
@@ -1249,7 +1249,7 @@ func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "dummy",
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{
 						Name: "dummy2",
 					},
@@ -1330,7 +1330,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			}},
 			cmd: &Command{
 				Name: "putz",
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{Name: "futz"},
 				},
 				Flags: []Flag{
@@ -1541,7 +1541,7 @@ func TestWrappedSubcommandHelp(t *testing.T) {
 				Action: func(c *Context) error {
 					return nil
 				},
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{
 						Name:      "grok",
 						Usage:     "remove an existing template",
@@ -1610,7 +1610,7 @@ func TestWrappedHelpSubcommand(t *testing.T) {
 				Action: func(c *Context) error {
 					return nil
 				},
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{
 						Name:      "grok",
 						Usage:     "remove an existing template",

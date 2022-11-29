@@ -483,7 +483,7 @@ type Command struct {
 	// Execute this function if a usage error occurs.
 	OnUsageError OnUsageErrorFunc
 	// List of child commands
-	Subcommands []*Command
+	Commands []*Command
 	// List of flags to parse
 	Flags []Flag
 

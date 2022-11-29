@@ -241,7 +241,7 @@ func TestCommand_OnUsageError_WithSubcommand(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "bar",
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{
 						Name: "baz",
 					},
@@ -276,7 +276,7 @@ func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
 			{
 				Name:  "bar",
 				Usage: "this is for testing",
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{
 						Name:  "baz",
 						Usage: "this is for testing",
@@ -384,10 +384,10 @@ func TestCommand_NoVersionFlagOnCommands(t *testing.T) {
 		Version: "some version",
 		Commands: []*Command{
 			{
-				Name:        "bar",
-				Usage:       "this is for testing",
-				Subcommands: []*Command{{}}, // some subcommand
-				HideHelp:    true,
+				Name:     "bar",
+				Usage:    "this is for testing",
+				Commands: []*Command{{}}, // some subcommand
+				HideHelp: true,
 				Action: func(c *Context) error {
 					if len(c.Command.VisibleFlags()) != 0 {
 						t.Fatal("unexpected flag on command")
@@ -408,9 +408,9 @@ func TestCommand_CanAddVFlagOnCommands(t *testing.T) {
 		Writer:  io.Discard,
 		Commands: []*Command{
 			{
-				Name:        "bar",
-				Usage:       "this is for testing",
-				Subcommands: []*Command{{}}, // some subcommand
+				Name:     "bar",
+				Usage:    "this is for testing",
+				Commands: []*Command{{}}, // some subcommand
 				Flags: []Flag{
 					&BoolFlag{
 						Name: "v",
@@ -436,7 +436,7 @@ func TestCommand_VisibleSubcCommands(t *testing.T) {
 	c := &Command{
 		Name:  "bar",
 		Usage: "this is for testing",
-		Subcommands: []*Command{
+		Commands: []*Command{
 			subc1,
 			{
 				Name:   "subc2",
@@ -496,9 +496,9 @@ func TestCommand_RunSubcommandWithDefault(t *testing.T) {
 				},
 			},
 			{
-				Name:        "bar",
-				Usage:       "this is for testing",
-				Subcommands: []*Command{{}}, // some subcommand
+				Name:     "bar",
+				Usage:    "this is for testing",
+				Commands: []*Command{{}}, // some subcommand
 				Action: func(*Context) error {
 					return nil
 				},
