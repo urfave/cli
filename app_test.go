@@ -12,6 +12,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -186,7 +188,7 @@ func ExampleApp_Run_commandHelp() {
 }
 
 func ExampleApp_Run_noAction() {
-	app := App{}
+	app := &App{}
 	app.Name = "greet"
 	_ = app.Run([]string{"greet"})
 	// Output:
@@ -503,8 +505,11 @@ func TestApp_RunDefaultCommand(t *testing.T) {
 				},
 			}
 
-			err := app.Run([]string{"c", test.cmdName})
-			expect(t, err == nil, test.expected)
+			if test.expected {
+				require.Nil(t, app.Run([]string{"c", test.cmdName}))
+			} else {
+				require.NotNil(t, app.Run([]string{"c", test.cmdName}))
+			}
 		})
 	}
 }
@@ -1181,8 +1186,8 @@ func TestApp_SetStdin(t *testing.T) {
 	app := &App{
 		Name:   "test",
 		Reader: strings.NewReader("Hello World!"),
-		Action: func(c *Context) error {
-			_, err := c.App.Reader.Read(buf)
+		Action: func(cCtx *Context) error {
+			_, err := cCtx.Command.Reader.Read(buf)
 			return err
 		},
 	}
@@ -1209,8 +1214,8 @@ func TestApp_SetStdin_Subcommand(t *testing.T) {
 				Commands: []*Command{
 					{
 						Name: "subcommand",
-						Action: func(c *Context) error {
-							_, err := c.App.Reader.Read(buf)
+						Action: func(cCtx *Context) error {
+							_, err := cCtx.Command.Reader.Read(buf)
 							return err
 						},
 					},
@@ -2594,18 +2599,18 @@ func TestShellCompletionForIncompleteFlags(t *testing.T) {
 			},
 		},
 		EnableBashCompletion: true,
-		BashComplete: func(ctx *Context) {
-			for _, command := range ctx.App.Commands {
+		BashComplete: func(cCtx *Context) {
+			for _, command := range cCtx.Command.Commands {
 				if command.Hidden {
 					continue
 				}
 
 				for _, name := range command.Names() {
-					_, _ = fmt.Fprintln(ctx.App.Writer, name)
+					_, _ = fmt.Fprintln(cCtx.Command.Writer, name)
 				}
 			}
 
-			for _, fl := range ctx.App.Flags {
+			for _, fl := range cCtx.Command.Flags {
 				for _, name := range fl.Names() {
 					if name == BashCompletionFlag.Names()[0] {
 						continue
@@ -2614,9 +2619,9 @@ func TestShellCompletionForIncompleteFlags(t *testing.T) {
 					switch name = strings.TrimSpace(name); len(name) {
 					case 0:
 					case 1:
-						_, _ = fmt.Fprintln(ctx.App.Writer, "-"+name)
+						_, _ = fmt.Fprintln(cCtx.Command.Writer, "-"+name)
 					default:
-						_, _ = fmt.Fprintln(ctx.App.Writer, "--"+name)
+						_, _ = fmt.Fprintln(cCtx.Command.Writer, "--"+name)
 					}
 				}
 			}
@@ -2729,7 +2734,7 @@ func TestFlagAction(t *testing.T) {
 			if v == "" {
 				return fmt.Errorf("empty string")
 			}
-			c.App.Writer.Write([]byte(v + " "))
+			c.Command.Writer.Write([]byte(v + " "))
 			return nil
 		},
 	}
@@ -2760,7 +2765,7 @@ func TestFlagAction(t *testing.T) {
 					if v[0] == "err" {
 						return fmt.Errorf("error string slice")
 					}
-					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 					return nil
 				},
 			},
@@ -2770,7 +2775,7 @@ func TestFlagAction(t *testing.T) {
 					if !v {
 						return fmt.Errorf("value is false")
 					}
-					c.App.Writer.Write([]byte(fmt.Sprintf("%t ", v)))
+					c.Command.Writer.Write([]byte(fmt.Sprintf("%t ", v)))
 					return nil
 				},
 			},
@@ -2780,7 +2785,7 @@ func TestFlagAction(t *testing.T) {
 					if v == 0 {
 						return fmt.Errorf("empty duration")
 					}
-					c.App.Writer.Write([]byte(v.String() + " "))
+					c.Command.Writer.Write([]byte(v.String() + " "))
 					return nil
 				},
 			},
@@ -2790,7 +2795,7 @@ func TestFlagAction(t *testing.T) {
 					if v < 0 {
 						return fmt.Errorf("negative float64")
 					}
-					c.App.Writer.Write([]byte(strconv.FormatFloat(v, 'f', -1, 64) + " "))
+					c.Command.Writer.Write([]byte(strconv.FormatFloat(v, 'f', -1, 64) + " "))
 					return nil
 				},
 			},
@@ -2800,7 +2805,7 @@ func TestFlagAction(t *testing.T) {
 					if len(v) > 0 && v[0] < 0 {
 						return fmt.Errorf("invalid float64 slice")
 					}
-					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 					return nil
 				},
 			},
@@ -2810,7 +2815,7 @@ func TestFlagAction(t *testing.T) {
 					if v < 0 {
 						return fmt.Errorf("negative int")
 					}
-					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 					return nil
 				},
 			},
@@ -2820,7 +2825,7 @@ func TestFlagAction(t *testing.T) {
 					if len(v) > 0 && v[0] < 0 {
 						return fmt.Errorf("invalid int slice")
 					}
-					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 					return nil
 				},
 			},
@@ -2830,7 +2835,7 @@ func TestFlagAction(t *testing.T) {
 					if v < 0 {
 						return fmt.Errorf("negative int64")
 					}
-					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 					return nil
 				},
 			},
@@ -2840,7 +2845,7 @@ func TestFlagAction(t *testing.T) {
 					if len(v) > 0 && v[0] < 0 {
 						return fmt.Errorf("invalid int64 slice")
 					}
-					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 					return nil
 				},
 			},
@@ -2853,7 +2858,7 @@ func TestFlagAction(t *testing.T) {
 					if v.IsZero() {
 						return fmt.Errorf("zero timestamp")
 					}
-					c.App.Writer.Write([]byte(v.Format(time.RFC3339) + " "))
+					c.Command.Writer.Write([]byte(v.Format(time.RFC3339) + " "))
 					return nil
 				},
 			},
@@ -2863,7 +2868,7 @@ func TestFlagAction(t *testing.T) {
 					if v == 0 {
 						return fmt.Errorf("zero uint")
 					}
-					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 					return nil
 				},
 			},
@@ -2873,7 +2878,7 @@ func TestFlagAction(t *testing.T) {
 					if v == 0 {
 						return fmt.Errorf("zero uint64")
 					}
-					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 					return nil
 				},
 			},

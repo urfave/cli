@@ -15,12 +15,6 @@ import (
 const suggestDidYouMeanTemplate = "Did you mean %q?"
 
 var (
-	changeLogURL            = "https://github.com/urfave/cli/blob/main/docs/CHANGELOG.md"
-	appActionDeprecationURL = fmt.Sprintf("%s#deprecated-cli-app-action-signature", changeLogURL)
-	contactSysadmin         = "This is an error in the application.  Please contact the distributor of this application if this is not you."
-	errInvalidActionType    = NewExitError("ERROR invalid Action type. "+
-		fmt.Sprintf("Must be `func(*Context`)` or `func(*Context) error).  %s", contactSysadmin)+
-		fmt.Sprintf("See %s", appActionDeprecationURL), 2)
 	ignoreFlagPrefix = "test." // this is to ignore test flags when adding flags from other packages
 
 	SuggestFlag               SuggestFlagFunc    = suggestFlag
@@ -28,11 +22,16 @@ var (
 	SuggestDidYouMeanTemplate string             = suggestDidYouMeanTemplate
 )
 
+// App is an alias for Command that is intended to help clarify
+// which Command is considered the "root"
+type App = Command
+
 type SuggestFlagFunc func(flags []Flag, provided string, hideHelp bool) string
 
 type SuggestCommandFunc func(commands []*Command, provided string) string
 
-// Command is a subcommand for a cli.App.
+// Command is the primary type used in building a cli app and may
+// contain child Commands
 type Command struct {
 	// The name of the command
 	Name string
@@ -113,8 +112,6 @@ type Command struct {
 	// if this is a root "special" command
 	isRoot bool
 
-	didSetupDefaults bool
-
 	// Reader reader to write input to (useful for tests)
 	Reader io.Reader
 	// Writer writer to write output to
@@ -178,12 +175,6 @@ func (cmd *Command) Command(name string) *Command {
 }
 
 func (c *Command) setupDefaults() {
-	if c.didSetupDefaults {
-		return
-	}
-
-	c.didSetupDefaults = true
-
 	if c.Name == "" {
 		c.Name = filepath.Base(os.Args[0])
 	}
@@ -225,7 +216,7 @@ func (c *Command) setupDefaults() {
 	}
 }
 
-func (c *Command) setup(ctx *Context) {
+func (c *Command) setup(cCtx *Context) {
 	c.setupDefaults()
 
 	if c.AllowExtFlags {
@@ -236,10 +227,6 @@ func (c *Command) setup(ctx *Context) {
 				c.Flags = append(c.Flags, &extFlag{f})
 			}
 		})
-	}
-
-	if c.isRoot {
-		return
 	}
 
 	if c.Command(helpCommand.Name) == nil && !c.HideHelp {
@@ -254,7 +241,7 @@ func (c *Command) setup(ctx *Context) {
 		c.appendFlag(HelpFlag)
 	}
 
-	if ctx.App.UseShortOptionHandling {
+	if cCtx.Command.UseShortOptionHandling {
 		c.UseShortOptionHandling = true
 	}
 
@@ -355,13 +342,13 @@ func (c *Command) run(cCtx *Context, arguments ...string) (err error) {
 	if err != nil {
 		if c.OnUsageError != nil {
 			err = c.OnUsageError(cCtx, err, !c.isRoot)
-			cCtx.App.handleExitCoder(cCtx, err)
+			cCtx.Command.handleExitCoder(cCtx, err)
 			return err
 		}
-		_, _ = fmt.Fprintf(cCtx.App.Writer, "%s %s\n\n", "Incorrect Usage:", err.Error())
-		if cCtx.App.Suggest {
+		_, _ = fmt.Fprintf(cCtx.Command.Writer, "%s %s\n\n", "Incorrect Usage:", err.Error())
+		if cCtx.Command.Suggest {
 			if suggestion, err := c.suggestFlagFromError(err, ""); err == nil {
-				fmt.Fprintf(cCtx.App.Writer, "%s", suggestion)
+				fmt.Fprintf(cCtx.Command.Writer, "%s", suggestion)
 			}
 		}
 		if !c.HideHelp {
@@ -378,7 +365,7 @@ func (c *Command) run(cCtx *Context, arguments ...string) (err error) {
 		return helpCommand.Action(cCtx)
 	}
 
-	if c.isRoot && !cCtx.App.HideVersion && checkVersion(cCtx) {
+	if c.isRoot && !cCtx.Command.HideVersion && checkVersion(cCtx) {
 		ShowVersion(cCtx)
 		return nil
 	}
@@ -387,7 +374,7 @@ func (c *Command) run(cCtx *Context, arguments ...string) (err error) {
 		defer func() {
 			afterErr := c.After(cCtx)
 			if afterErr != nil {
-				cCtx.App.handleExitCoder(cCtx, err)
+				cCtx.Command.handleExitCoder(cCtx, err)
 				if err != nil {
 					err = newMultiError(err, afterErr)
 				} else {
@@ -406,7 +393,7 @@ func (c *Command) run(cCtx *Context, arguments ...string) (err error) {
 	if c.Before != nil && !cCtx.shellComplete {
 		beforeErr := c.Before(cCtx)
 		if beforeErr != nil {
-			cCtx.App.handleExitCoder(cCtx, beforeErr)
+			cCtx.Command.handleExitCoder(cCtx, beforeErr)
 			err = beforeErr
 			return err
 		}
@@ -422,7 +409,7 @@ func (c *Command) run(cCtx *Context, arguments ...string) (err error) {
 		name := args.First()
 		cmd = c.Command(name)
 		if cmd == nil {
-			hasDefault := cCtx.App.DefaultCommand != ""
+			hasDefault := cCtx.Command.DefaultCommand != ""
 			isFlagName := checkStringSliceIncludes(name, cCtx.FlagNames())
 
 			var (
@@ -431,7 +418,7 @@ func (c *Command) run(cCtx *Context, arguments ...string) (err error) {
 			)
 
 			if hasDefault {
-				dc := cCtx.App.Command(cCtx.App.DefaultCommand)
+				dc := cCtx.Command.Command(cCtx.Command.DefaultCommand)
 				defaultHasSubcommands = len(dc.Commands) > 0
 				for _, dcSub := range dc.Commands {
 					if checkStringSliceIncludes(name, dcSub.Names()) {
@@ -442,20 +429,20 @@ func (c *Command) run(cCtx *Context, arguments ...string) (err error) {
 			}
 
 			if isFlagName || (hasDefault && (defaultHasSubcommands && isDefaultSubcommand)) {
-				argsWithDefault := cCtx.App.argsWithDefaultCommand(args)
+				argsWithDefault := cCtx.Command.argsWithDefaultCommand(args)
 				if !reflect.DeepEqual(args, argsWithDefault) {
-					cmd = cCtx.App.Command(argsWithDefault.First())
+					cmd = cCtx.Command.Command(argsWithDefault.First())
 				}
 			}
 		}
-	} else if c.isRoot && cCtx.App.DefaultCommand != "" {
-		if dc := cCtx.App.Command(cCtx.App.DefaultCommand); dc != c {
+	} else if c.isRoot && cCtx.Command.DefaultCommand != "" {
+		if dc := cCtx.Command.Command(cCtx.Command.DefaultCommand); dc != c {
 			cmd = dc
 		}
 	}
 
 	if cmd != nil {
-		newcCtx := NewContext(cCtx.App, nil, cCtx)
+		newcCtx := NewContext(cCtx.Command, nil, cCtx)
 		newcCtx.Command = cmd
 		return cmd.run(newcCtx, cCtx.Args().Slice()...)
 	}
@@ -466,7 +453,7 @@ func (c *Command) run(cCtx *Context, arguments ...string) (err error) {
 
 	err = c.Action(cCtx)
 
-	cCtx.App.handleExitCoder(cCtx, err)
+	cCtx.Command.handleExitCoder(cCtx, err)
 	return err
 }
 
@@ -481,23 +468,23 @@ func (c *Command) Command(name string) *Command {
 	return nil
 }
 
-func (a *App) appendCommand(c *Command) {
-	if !hasCommand(a.Commands, c) {
-		a.Commands = append(a.Commands, c)
+func (c *Command) appendCommand(cmd *Command) {
+	if !hasCommand(c.Commands, cmd) {
+		c.Commands = append(c.Commands, cmd)
 	}
 }
 
-func (a *App) handleExitCoder(cCtx *Context, err error) {
-	if a.ExitErrHandler != nil {
-		a.ExitErrHandler(cCtx, err)
+func (c *Command) handleExitCoder(cCtx *Context, err error) {
+	if c.ExitErrHandler != nil {
+		c.ExitErrHandler(cCtx, err)
 	} else {
 		HandleExitCoder(err)
 	}
 }
 
-func (a *App) argsWithDefaultCommand(oldArgs Args) Args {
-	if a.DefaultCommand != "" {
-		rawArgs := append([]string{a.DefaultCommand}, oldArgs.Slice()...)
+func (c *Command) argsWithDefaultCommand(oldArgs Args) Args {
+	if c.DefaultCommand != "" {
+		rawArgs := append([]string{c.DefaultCommand}, oldArgs.Slice()...)
 		newArgs := args(rawArgs)
 
 		return &newArgs
@@ -539,7 +526,7 @@ func (c *Command) suggestFlagFromError(err error, command string) (string, error
 	return fmt.Sprintf(SuggestDidYouMeanTemplate, suggestion) + "\n\n", nil
 }
 
-func (c *Command) parseFlags(args Args, ctx *Context) (*flag.FlagSet, error) {
+func (c *Command) parseFlags(args Args, cCtx *Context) (*flag.FlagSet, error) {
 	set, err := c.newFlagSet()
 	if err != nil {
 		return nil, err
@@ -549,7 +536,7 @@ func (c *Command) parseFlags(args Args, ctx *Context) (*flag.FlagSet, error) {
 		return set, set.Parse(append([]string{"--"}, args.Tail()...))
 	}
 
-	for pCtx := ctx.parentContext; pCtx != nil; pCtx = pCtx.parentContext {
+	for pCtx := cCtx.parentContext; pCtx != nil; pCtx = pCtx.parentContext {
 		if pCtx.Command == nil {
 			continue
 		}
@@ -580,7 +567,7 @@ func (c *Command) parseFlags(args Args, ctx *Context) (*flag.FlagSet, error) {
 		}
 	}
 
-	if err := parseIter(set, c, args.Tail(), ctx.shellComplete); err != nil {
+	if err := parseIter(set, c, args.Tail(), cCtx.shellComplete); err != nil {
 		return nil, err
 	}
 

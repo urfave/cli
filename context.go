@@ -4,6 +4,8 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 )
 
@@ -13,16 +15,15 @@ import (
 // parsed command-line options.
 type Context struct {
 	context.Context
-	App           *App
 	Command       *Command
 	shellComplete bool
 	flagSet       *flag.FlagSet
 	parentContext *Context
 }
 
-// NewContext creates a new context. For use in when invoking an App or Command action.
-func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
-	c := &Context{App: app, flagSet: set, parentContext: parentCtx}
+// NewContext creates a new context. For use in when invoking a Command action.
+func NewContext(cmd *Command, set *flag.FlagSet, parentCtx *Context) *Context {
+	c := &Context{Command: cmd, flagSet: set, parentContext: parentCtx}
 	if parentCtx != nil {
 		c.Context = parentCtx.Context
 		c.shellComplete = parentCtx.shellComplete
@@ -127,6 +128,20 @@ func (cCtx *Context) Lineage() []*Context {
 	return lineage
 }
 
+func (cCtx *Context) Root() *Context {
+	lineage := cCtx.Lineage()
+	return lineage[len(lineage)-1]
+}
+
+func (cCtx *Context) Writer() io.Writer {
+	root := cCtx.Root()
+	if root.Command != nil && root.Command.Writer != nil {
+		return root.Command.Writer
+	}
+
+	return os.Stdout
+}
+
 // Count returns the num of occurences of this flag
 func (cCtx *Context) Count(name string) int {
 	if fs := cCtx.lookupFlagSet(name); fs != nil {
@@ -163,16 +178,6 @@ func (cCtx *Context) lookupFlag(name string) Flag {
 		}
 
 		for _, f := range c.Command.Flags {
-			for _, n := range f.Names() {
-				if n == name {
-					return f
-				}
-			}
-		}
-	}
-
-	if cCtx.App != nil {
-		for _, f := range cCtx.App.Flags {
 			for _, n := range f.Names() {
 				if n == name {
 					return f
@@ -227,8 +232,8 @@ func (cCtx *Context) checkRequiredFlags(flags []Flag) requiredFlagsErr {
 
 func (cCtx *Context) onInvalidFlag(name string) {
 	for cCtx != nil {
-		if cCtx.App != nil && cCtx.App.InvalidFlagAccessHandler != nil {
-			cCtx.App.InvalidFlagAccessHandler(cCtx, name)
+		if cCtx.Command != nil && cCtx.Command.InvalidFlagAccessHandler != nil {
+			cCtx.Command.InvalidFlagAccessHandler(cCtx, name)
 			break
 		}
 		cCtx = cCtx.parentContext

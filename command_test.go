@@ -143,11 +143,11 @@ func TestCommand_Run_BeforeSavesMetadata(t *testing.T) {
 			{
 				Name: "bar",
 				Before: func(c *Context) error {
-					c.App.Metadata["msg"] = "hello world"
+					c.Command.Metadata["msg"] = "hello world"
 					return nil
 				},
 				Action: func(c *Context) error {
-					msg, ok := c.App.Metadata["msg"]
+					msg, ok := c.Command.Metadata["msg"]
 					if !ok {
 						return errors.New("msg not found")
 					}
@@ -155,7 +155,7 @@ func TestCommand_Run_BeforeSavesMetadata(t *testing.T) {
 					return nil
 				},
 				After: func(c *Context) error {
-					msg, ok := c.App.Metadata["msg"]
+					msg, ok := c.Command.Metadata["msg"]
 					if !ok {
 						return errors.New("msg not found")
 					}
@@ -281,7 +281,7 @@ func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
 						Name:  "baz",
 						Usage: "this is for testing",
 						Action: func(c *Context) error {
-							if c.App.ErrWriter != io.Discard {
+							if c.Command.ErrWriter != io.Discard {
 								return fmt.Errorf("ErrWriter not passed")
 							}
 
@@ -362,7 +362,7 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 						},
 					},
 					BashComplete: func(c *Context) {
-						fmt.Fprintf(c.App.Writer, "found %d args", c.NArg())
+						fmt.Fprintf(c.Command.Writer, "found %d args", c.NArg())
 					},
 				},
 			},

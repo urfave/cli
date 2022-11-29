@@ -64,7 +64,7 @@ var helpCommand = &Command{
 		// Case 1 & 2
 		// Special case when running help on main app itself as opposed to individual
 		// commands/subcommands
-		if cCtx.parentContext.App == nil {
+		if cCtx.parentContext.Command == nil {
 			_ = ShowAppHelp(cCtx)
 			return nil
 		}
@@ -76,31 +76,31 @@ var helpCommand = &Command{
 			if templ == "" {
 				templ = CommandHelpTemplate
 			}
-			HelpPrinter(cCtx.App.Writer, templ, cCtx.Command)
+			HelpPrinter(cCtx.Writer(), templ, cCtx.Command)
 			return nil
 		}
 		return ShowSubcommandHelp(cCtx)
 	},
 }
 
-// Prints help for the App or Command
+// Prints help for the Command
 type helpPrinter func(w io.Writer, templ string, data interface{})
 
-// Prints help for the App or Command with custom template function.
+// Prints help for the Command with custom template function.
 type helpPrinterCustom func(w io.Writer, templ string, data interface{}, customFunc map[string]interface{})
 
 // HelpPrinter is a function that writes the help output. If not set explicitly,
 // this calls HelpPrinterCustom using only the default template functions.
 //
 // If custom logic for printing help is required, this function can be
-// overridden. If the ExtraInfo field is defined on an App, this function
+// overridden. If the ExtraInfo field is defined on a Command, this function
 // should not be modified, as HelpPrinterCustom will be used directly in order
 // to capture the extra information.
 var HelpPrinter helpPrinter = printHelp
 
 // HelpPrinterCustom is a function that writes the help output. It is used as
 // the default implementation of HelpPrinter, and may be called directly if
-// the ExtraInfo field is set on an App.
+// the ExtraInfo field is set on a Command.
 //
 // In the default implementation, if the customFuncs argument contains a
 // "wrapAt" key, which is a function which takes no arguments and returns
@@ -108,7 +108,7 @@ var HelpPrinter helpPrinter = printHelp
 // by the default template to wrap long lines.
 var HelpPrinterCustom helpPrinterCustom = printHelpCustom
 
-// VersionPrinter prints the version for the App
+// VersionPrinter prints the version for the Command
 var VersionPrinter = printVersion
 
 // ShowAppHelpAndExit - Prints the list of subcommands for the app and exits with exit code.
@@ -119,22 +119,22 @@ func ShowAppHelpAndExit(c *Context, exitCode int) {
 
 // ShowAppHelp is an action that displays the help.
 func ShowAppHelp(cCtx *Context) error {
-	tpl := cCtx.App.CustomAppHelpTemplate
+	tpl := cCtx.Command.CustomAppHelpTemplate
 	if tpl == "" {
 		tpl = AppHelpTemplate
 	}
 
-	if cCtx.App.ExtraInfo == nil {
-		HelpPrinter(cCtx.App.Writer, tpl, cCtx.App)
+	if cCtx.Command.ExtraInfo == nil {
+		HelpPrinter(cCtx.Writer(), tpl, cCtx.Command)
 		return nil
 	}
 
 	customAppData := func() map[string]interface{} {
 		return map[string]interface{}{
-			"ExtraInfo": cCtx.App.ExtraInfo,
+			"ExtraInfo": cCtx.Command.ExtraInfo,
 		}
 	}
-	HelpPrinterCustom(cCtx.App.Writer, tpl, cCtx.App, customAppData())
+	HelpPrinterCustom(cCtx.Writer(), tpl, cCtx.Command, customAppData())
 
 	return nil
 }
@@ -213,23 +213,23 @@ func DefaultCompleteWithFlags(cmd *Command) func(cCtx *Context) {
 
 			if strings.HasPrefix(lastArg, "-") {
 				if cmd != nil {
-					printFlagSuggestions(lastArg, cmd.Flags, cCtx.App.Writer)
+					printFlagSuggestions(lastArg, cmd.Flags, cCtx.Writer())
 
 					return
 				}
 
-				printFlagSuggestions(lastArg, cCtx.App.Flags, cCtx.App.Writer)
+				printFlagSuggestions(lastArg, cCtx.Command.Flags, cCtx.Writer())
 
 				return
 			}
 		}
 
 		if cmd != nil {
-			printCommandSuggestions(cmd.Commands, cCtx.App.Writer)
+			printCommandSuggestions(cmd.Commands, cCtx.Writer())
 			return
 		}
 
-		printCommandSuggestions(cCtx.App.Commands, cCtx.App.Writer)
+		printCommandSuggestions(cCtx.Command.Commands, cCtx.Writer())
 	}
 }
 
@@ -241,7 +241,7 @@ func ShowCommandHelpAndExit(c *Context, command string, code int) {
 
 // ShowCommandHelp prints help for the given command
 func ShowCommandHelp(ctx *Context, command string) error {
-	commands := ctx.App.Commands
+	commands := ctx.Command.Commands
 	if ctx.Command.Commands != nil {
 		commands = ctx.Command.Commands
 	}
@@ -264,15 +264,15 @@ func ShowCommandHelp(ctx *Context, command string) error {
 				}
 			}
 
-			HelpPrinter(ctx.App.Writer, templ, c)
+			HelpPrinter(ctx.Writer(), templ, c)
 
 			return nil
 		}
 	}
 
-	if ctx.App.CommandNotFound == nil {
+	if ctx.Command.CommandNotFound == nil {
 		errMsg := fmt.Sprintf("No help topic for '%v'", command)
-		if ctx.App.Suggest {
+		if ctx.Command.Suggest {
 			if suggestion := SuggestCommand(ctx.Command.Commands, command); suggestion != "" {
 				errMsg += ". " + suggestion
 			}
@@ -280,7 +280,7 @@ func ShowCommandHelp(ctx *Context, command string) error {
 		return Exit(errMsg, 3)
 	}
 
-	ctx.App.CommandNotFound(ctx, command)
+	ctx.Command.CommandNotFound(ctx, command)
 	return nil
 }
 
@@ -296,30 +296,30 @@ func ShowSubcommandHelp(cCtx *Context) error {
 		return nil
 	}
 
-	HelpPrinter(cCtx.App.Writer, SubcommandHelpTemplate, cCtx.Command)
+	HelpPrinter(cCtx.Writer(), SubcommandHelpTemplate, cCtx.Command)
 	return nil
 }
 
-// ShowVersion prints the version number of the App
+// ShowVersion prints the version number of the Command
 func ShowVersion(cCtx *Context) {
 	VersionPrinter(cCtx)
 }
 
 func printVersion(cCtx *Context) {
-	_, _ = fmt.Fprintf(cCtx.App.Writer, "%v version %v\n", cCtx.App.Name, cCtx.App.Version)
+	_, _ = fmt.Fprintf(cCtx.Writer(), "%v version %v\n", cCtx.Command.Name, cCtx.Command.Version)
 }
 
 // ShowCompletions prints the lists of commands within a given context
 func ShowCompletions(cCtx *Context) {
-	a := cCtx.App
-	if a != nil && a.BashComplete != nil {
-		a.BashComplete(cCtx)
+	cmd := cCtx.Command
+	if cmd != nil && cmd.BashComplete != nil {
+		cmd.BashComplete(cCtx)
 	}
 }
 
 // ShowCommandCompletions prints the custom completions for a given command
 func ShowCommandCompletions(ctx *Context, command string) {
-	c := ctx.App.Command(command)
+	c := ctx.Command.Command(command)
 	if c != nil {
 		if c.BashComplete != nil {
 			c.BashComplete(ctx)
@@ -414,8 +414,8 @@ func checkHelp(cCtx *Context) bool {
 	return found
 }
 
-func checkShellCompleteFlag(a *App, arguments []string) (bool, []string) {
-	if !a.EnableBashCompletion {
+func checkShellCompleteFlag(cmd *Command, arguments []string) (bool, []string) {
+	if !cmd.EnableBashCompletion {
 		return false, arguments
 	}
 
@@ -436,7 +436,7 @@ func checkCompletions(cCtx *Context) bool {
 
 	if args := cCtx.Args(); args.Present() {
 		name := args.First()
-		if cmd := cCtx.App.Command(name); cmd != nil {
+		if cmd := cCtx.Command.Command(name); cmd != nil {
 			// let the command handle the completion
 			return false
 		}

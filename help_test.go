@@ -1245,14 +1245,14 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 	}{
 		{
 			name:     "empty",
-			c:        &Context{App: &App{}},
+			c:        &Context{Command: &App{}},
 			cmd:      &Command{},
 			argv:     []string{"prog", "cmd"},
 			expected: "",
 		},
 		{
 			name: "typical-flag-suggestion",
-			c: &Context{App: &App{
+			c: &Context{Command: &App{
 				Name: "cmd",
 				Flags: []Flag{
 					&BoolFlag{Name: "happiness"},
@@ -1273,7 +1273,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 		},
 		{
 			name: "typical-command-suggestion",
-			c: &Context{App: &App{
+			c: &Context{Command: &App{
 				Name: "cmd",
 				Flags: []Flag{
 					&BoolFlag{Name: "happiness"},
@@ -1296,7 +1296,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 	} {
 		t.Run(tc.name, func(ct *testing.T) {
 			writer := &bytes.Buffer{}
-			tc.c.App.Writer = writer
+			tc.c.Command.Writer = writer
 
 			os.Args = tc.argv
 			f := DefaultCompleteWithFlags(tc.cmd)

@@ -83,9 +83,9 @@ var ErrWriter io.Writer = os.Stderr
     ErrWriter is used to write errors to the user. This can be anything
     implementing the io.Writer interface and defaults to os.Stderr.
 
-var FishCompletionTemplate = `# {{ .App.Name }} fish shell completion
+var FishCompletionTemplate = `# {{ .Command.Name }} fish shell completion
 
-function __fish_{{ .App.Name }}_no_subcommand --description 'Test if there has been any subcommand yet'
+function __fish_{{ .Command.Name }}_no_subcommand --description 'Test if there has been any subcommand yet'
     for i in (commandline -opc)
         if contains -- $i{{ range $v := .AllCommands }} {{ $v }}{{ end }}
             return 1
@@ -96,29 +96,29 @@ end
 
 {{ range $v := .Completions }}{{ $v }}
 {{ end }}`
-var MarkdownDocTemplate = `{{if gt .SectionNum 0}}% {{ .App.Name }} {{ .SectionNum }}
+var MarkdownDocTemplate = `{{if gt .SectionNum 0}}% {{ .Command.Name }} {{ .SectionNum }}
 
 {{end}}# NAME
 
-{{ .App.Name }}{{ if .App.Usage }} - {{ .App.Usage }}{{ end }}
+{{ .Command.Name }}{{ if .Command.Usage }} - {{ .Command.Usage }}{{ end }}
 
 # SYNOPSIS
 
-{{ .App.Name }}
+{{ .Command.Name }}
 {{ if .SynopsisArgs }}
 ` + "```" + `
 {{ range $v := .SynopsisArgs }}{{ $v }}{{ end }}` + "```" + `
-{{ end }}{{ if .App.Description }}
+{{ end }}{{ if .Command.Description }}
 # DESCRIPTION
 
-{{ .App.Description }}
+{{ .Command.Description }}
 {{ end }}
 **Usage**:
 
-` + "```" + `{{ if .App.UsageText }}
-{{ .App.UsageText }}
+` + "```" + `{{ if .Command.UsageText }}
+{{ .Command.UsageText }}
 {{ else }}
-{{ .App.Name }} [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
+{{ .Command.Name }} [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 {{ end }}` + "```" + `
 {{ if .GlobalArgs }}
 # GLOBAL OPTIONS
@@ -158,7 +158,7 @@ OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}
     text by setting this variable.
 
 var VersionPrinter = printVersion
-    VersionPrinter prints the version for the App
+    VersionPrinter prints the version for the Command
 
 var HelpPrinter helpPrinter = printHelp
     HelpPrinter is a function that writes the help output. If not set
@@ -166,14 +166,14 @@ var HelpPrinter helpPrinter = printHelp
     functions.
 
     If custom logic for printing help is required, this function can be
-    overridden. If the ExtraInfo field is defined on an App, this function
+    overridden. If the ExtraInfo field is defined on a Command, this function
     should not be modified, as HelpPrinterCustom will be used directly in order
     to capture the extra information.
 
 var HelpPrinterCustom helpPrinterCustom = printHelpCustom
     HelpPrinterCustom is a function that writes the help output. It is used as
     the default implementation of HelpPrinter, and may be called directly if the
-    ExtraInfo field is set on an App.
+    ExtraInfo field is set on a Command.
 
     In the default implementation, if the customFuncs argument contains a
     "wrapAt" key, which is a function which takes no arguments and returns an
@@ -226,7 +226,7 @@ func ShowSubcommandHelpAndExit(c *Context, exitCode int)
     with exit code.
 
 func ShowVersion(cCtx *Context)
-    ShowVersion prints the version number of the App
+    ShowVersion prints the version number of the Command
 
 
 TYPES
@@ -246,6 +246,8 @@ type AfterFunc func(*Context) error
     the subcommand has finished it is run even if Action() panics
 
 type App = Command
+    App is an alias for Command that is intended to help clarify which Command
+    is considered the "root"
 
 func (a *App) ToFishCompletion() (string, error)
     ToFishCompletion creates a fish completion string for the `*App` The
@@ -413,7 +415,8 @@ type Command struct {
 	AllowExtFlags bool
 	// Has unexported fields.
 }
-    Command is a subcommand for a cli.App.
+    Command is the primary type used in building a cli app and may contain child
+    Commands
 
 func (c *Command) Command(name string) *Command
     Command returns the named command on App. Returns nil if the command does
@@ -483,7 +486,6 @@ func (c CommandsByName) Swap(i, j int)
 
 type Context struct {
 	context.Context
-	App     *App
 	Command *Command
 
 	// Has unexported fields.
@@ -492,9 +494,8 @@ type Context struct {
     application. Context can be used to retrieve context-specific args and
     parsed command-line options.
 
-func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context
-    NewContext creates a new context. For use in when invoking an App or Command
-    action.
+func NewContext(cmd *Command, set *flag.FlagSet, parentCtx *Context) *Context
+    NewContext creates a new context. For use in when invoking a Command action.
 
 func (cCtx *Context) Args() Args
     Args returns the command line arguments associated with the context.
@@ -547,6 +548,8 @@ func (cCtx *Context) NArg() int
 func (cCtx *Context) NumFlags() int
     NumFlags returns the number of flags set
 
+func (cCtx *Context) Root() *Context
+
 func (cCtx *Context) Set(name, value string) error
     Set sets a context flag to a value.
 
@@ -575,6 +578,8 @@ func (cCtx *Context) UintSlice(name string) []uint
 
 func (cCtx *Context) Value(name string) interface{}
     Value returns the value of the flag corresponding to `name`
+
+func (cCtx *Context) Writer() io.Writer
 
 type Countable interface {
 	Count() int

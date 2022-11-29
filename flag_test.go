@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 var boolFlagTests = []struct {
@@ -109,7 +111,7 @@ func TestBoolFlagCountFromContext(t *testing.T) {
 func TestFlagsFromEnv(t *testing.T) {
 	flagTests := []struct {
 		input     string
-		output    interface{}
+		output    any
 		flag      Flag
 		errRegexp string
 	}{
@@ -176,50 +178,54 @@ func TestFlagsFromEnv(t *testing.T) {
 		{"foobar", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as uint64 value from environment variable "SECONDS" for flag seconds: .*`},
 	}
 
-	for i, test := range flagTests {
-		defer resetEnv(os.Environ())
-		os.Clearenv()
+	for _, test := range flagTests {
+		t.Run(fmt.Sprintf("%[1]v %[2]v %[3]v", test.flag.Names()[0], test.input, test.output), func(t *testing.T) {
+			r := require.New(t)
 
-		f, ok := test.flag.(DocGenerationFlag)
-		if !ok {
-			t.Errorf("flag %[1]q (%[1]T) needs to implement DocGenerationFlag to retrieve env vars", test.flag)
-		}
-		envVarSlice := f.GetEnvVars()
-		_ = os.Setenv(envVarSlice[0], test.input)
+			defer resetEnv(os.Environ())
+			os.Clearenv()
 
-		a := App{
-			Flags: []Flag{test.flag},
-			Action: func(ctx *Context) error {
-				if !reflect.DeepEqual(ctx.Value(test.flag.Names()[0]), test.output) {
-					t.Errorf("ex:%01d expected %q to be parsed as %#v, instead was %#v", i, test.input, test.output, ctx.Value(test.flag.Names()[0]))
+			f, ok := test.flag.(DocGenerationFlag)
+			r.Truef(ok, "flag %[1]q (%[1]T) needs to implement DocGenerationFlag to retrieve env vars", test.flag)
+
+			envVarSlice := f.GetEnvVars()
+			r.Nil(os.Setenv(envVarSlice[0], test.input))
+
+			app := App{
+				Flags: []Flag{test.flag},
+				Action: func(cCtx *Context) error {
+					r.Equalf(
+						cCtx.Value(test.flag.Names()[0]),
+						test.output,
+						"expected %[1]q to be parsed as %#[2]v",
+						test.input,
+						test.output,
+					)
+
+					r.Truef(f.IsSet(), "flag %[1]q not set", f.Names()[0])
+
+					// check that flag names are returned when set via env as well
+					r.Equal(cCtx.FlagNames(), test.flag.Names())
+					return nil
+				},
+			}
+
+			err := app.Run([]string{"run"})
+
+			if test.errRegexp != "" {
+				if err == nil {
+					t.Errorf("expected error to match %q, got none", test.errRegexp)
+				} else {
+					if matched, _ := regexp.MatchString(test.errRegexp, err.Error()); !matched {
+						t.Errorf("expected error to match %q, got error %s", test.errRegexp, err)
+					}
 				}
-				if !f.IsSet() {
-					t.Errorf("Flag %s not set", f.Names()[0])
-				}
-
-				// check that flag names are returned when set via env as well
-				if !reflect.DeepEqual(ctx.FlagNames(), test.flag.Names()) {
-					t.Errorf("Not enough flag names %+v", ctx.FlagNames())
-				}
-				return nil
-			},
-		}
-
-		err := a.Run([]string{"run"})
-
-		if test.errRegexp != "" {
-			if err == nil {
-				t.Errorf("expected error to match %q, got none", test.errRegexp)
 			} else {
-				if matched, _ := regexp.MatchString(test.errRegexp, err.Error()); !matched {
-					t.Errorf("expected error to match %q, got error %s", test.errRegexp, err)
+				if err != nil && test.errRegexp == "" {
+					t.Errorf("expected no error got %q", err)
 				}
 			}
-		} else {
-			if err != nil && test.errRegexp == "" {
-				t.Errorf("expected no error got %q", err)
-			}
-		}
+		})
 	}
 }
 
