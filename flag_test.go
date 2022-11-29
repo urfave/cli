@@ -2565,7 +2565,7 @@ func TestFlagFromFile(t *testing.T) {
 	}
 
 	for _, filePathTest := range filePathTests {
-		got, _, _ := flagFromEnvOrFile(filePathTest.name, filePathTest.path)
+		got, _, _ := flagFromEnvOrFile(filePathTest.name, []string{filePathTest.path})
 		if want := filePathTest.expected; got != want {
 			t.Errorf("Did not expect %v - Want %v", got, want)
 		}
