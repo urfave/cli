@@ -164,16 +164,6 @@ func (c *Command) FullName() string {
 	return strings.Join(c.commandNamePath, " ")
 }
 
-func (cmd *Command) Command(name string) *Command {
-	for _, c := range cmd.Commands {
-		if c.HasName(name) {
-			return c
-		}
-	}
-
-	return nil
-}
-
 func (c *Command) setupDefaults() {
 	if c.Name == "" {
 		c.Name = filepath.Base(os.Args[0])
