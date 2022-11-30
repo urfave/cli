@@ -36,10 +36,10 @@ type NoConfig struct{}
 type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Name string // name of the flag
 
-	Category    string // category of the flag, if any
-	DefaultText string // default text of the flag for usage purposes
-	FilePath    string // file path to load value from
-	Usage       string // usage string for help output
+	Category    string   // category of the flag, if any
+	DefaultText string   // default text of the flag for usage purposes
+	FilePaths   []string // file paths to load value from
+	Usage       string   // usage string for help output
 
 	Required   bool // whether the flag is required or not
 	Hidden     bool // whether to hide the flag in help output
@@ -84,7 +84,7 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 	if !f.applied || !f.Persistent {
 		newVal := f.Value
 
-		if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
+		if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePaths); found {
 			tmpVal := f.creator.Create(f.Value, new(T), f.Config)
 			if val != "" || reflect.TypeOf(f.Value).Kind() == reflect.String {
 				if err := tmpVal.Set(val); err != nil {
