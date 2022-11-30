@@ -29,7 +29,7 @@ var (
 
 // BashCompletionFlag enables bash-completion for all commands and subcommands
 var BashCompletionFlag Flag = &BoolFlag{
-	Name:   "generate-bash-completion",
+	Name:   "generate-shell-completion",
 	Hidden: true,
 }
 

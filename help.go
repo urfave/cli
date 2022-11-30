@@ -312,8 +312,8 @@ func printVersion(cCtx *Context) {
 // ShowCompletions prints the lists of commands within a given context
 func ShowCompletions(cCtx *Context) {
 	a := cCtx.App
-	if a != nil && a.BashComplete != nil {
-		a.BashComplete(cCtx)
+	if a != nil && a.ShellComplete != nil {
+		a.ShellComplete(cCtx)
 	}
 }
 
@@ -415,14 +415,14 @@ func checkHelp(cCtx *Context) bool {
 }
 
 func checkShellCompleteFlag(a *App, arguments []string) (bool, []string) {
-	if !a.EnableBashCompletion {
+	if !a.EnableShellCompletion {
 		return false, arguments
 	}
 
 	pos := len(arguments) - 1
 	lastArg := arguments[pos]
 
-	if lastArg != "--generate-bash-completion" {
+	if lastArg != "--generate-shell-completion" {
 		return false, arguments
 	}
 

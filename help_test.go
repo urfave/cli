@@ -1316,7 +1316,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 					&StringFlag{Name: "hat-shape"},
 				},
 			},
-			argv:     []string{"cmd", "--e", "--generate-bash-completion"},
+			argv:     []string{"cmd", "--e", "--generate-shell-completion"},
 			expected: "--excitement\n",
 		},
 		{
@@ -1338,7 +1338,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 					&StringFlag{Name: "hat-shape"},
 				},
 			},
-			argv:     []string{"cmd", "--generate-bash-completion"},
+			argv:     []string{"cmd", "--generate-shell-completion"},
 			expected: "futz\n",
 		},
 	} {

@@ -25,7 +25,7 @@ type Command struct {
 	// The category the command is part of
 	Category string
 	// The function to call when checking for bash command completions
-	BashComplete BashCompleteFunc
+	BashComplete ShellCompleteFunc
 	// An action to execute before any sub-subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no sub-subcommands are run
 	Before BeforeFunc
