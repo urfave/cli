@@ -55,7 +55,7 @@ var helpCommand = &Command{
 			cCtx = cCtx.parentContext
 		}
 
-		// Case 4. $ app hello foo
+		// Case 4. $ app help foo
 		// foo is the command for which help needs to be shown
 		if argsPresent {
 			return ShowCommandHelp(cCtx, firstArg)
