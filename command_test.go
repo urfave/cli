@@ -361,7 +361,7 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 							Usage: "A number to parse",
 						},
 					},
-					BashComplete: func(c *Context) {
+					ShellComplete: func(c *Context) {
 						fmt.Fprintf(c.App.Writer, "found %d args", c.NArg())
 					},
 				},

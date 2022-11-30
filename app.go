@@ -269,7 +269,7 @@ func (a *App) newRootCommand() *Command {
 		UsageText:              a.UsageText,
 		Description:            a.Description,
 		ArgsUsage:              a.ArgsUsage,
-		BashComplete:           a.ShellComplete,
+		ShellComplete:          a.ShellComplete,
 		Before:                 a.Before,
 		After:                  a.After,
 		Action:                 a.Action,

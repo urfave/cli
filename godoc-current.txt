@@ -212,9 +212,6 @@ func ShowAppHelpAndExit(c *Context, exitCode int)
     ShowAppHelpAndExit - Prints the list of subcommands for the app and exits
     with exit code.
 
-func ShowCommandCompletions(ctx *Context, command string)
-    ShowCommandCompletions prints the custom completions for a given command
-
 func ShowCommandHelp(ctx *Context, command string) error
     ShowCommandHelp prints help for the given command
 
@@ -469,8 +466,8 @@ type Command struct {
 	ArgsUsage string
 	// The category the command is part of
 	Category string
-	// The function to call when checking for bash command completions
-	BashComplete ShellCompleteFunc
+	// The function to call when checking for shell command completions
+	ShellComplete ShellCompleteFunc
 	// An action to execute before any sub-subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no sub-subcommands are run
 	Before BeforeFunc

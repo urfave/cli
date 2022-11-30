@@ -24,8 +24,8 @@ type Command struct {
 	ArgsUsage string
 	// The category the command is part of
 	Category string
-	// The function to call when checking for bash command completions
-	BashComplete ShellCompleteFunc
+	// The function to call when checking for shell command completions
+	ShellComplete ShellCompleteFunc
 	// An action to execute before any sub-subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no sub-subcommands are run
 	Before BeforeFunc
@@ -107,6 +107,9 @@ func (cmd *Command) Command(name string) *Command {
 }
 
 func (c *Command) setup(ctx *Context) {
+	if c.ShellComplete == nil {
+		c.ShellComplete = DefaultCompleteWithFlags(c)
+	}
 	if c.Command(helpCommand.Name) == nil && !c.HideHelp {
 		if !c.HideHelpCommand {
 			helpCommand.HelpName = fmt.Sprintf("%s %s", c.HelpName, helpName)
@@ -149,11 +152,7 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 	set, err := c.parseFlags(&a, cCtx)
 	cCtx.flagSet = set
 
-	if c.isRoot {
-		if checkCompletions(cCtx) {
-			return nil
-		}
-	} else if checkCommandCompletions(cCtx, c.Name) {
+	if checkCompletions(cCtx) {
 		return nil
 	}
 
