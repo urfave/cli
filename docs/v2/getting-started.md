@@ -26,8 +26,26 @@ func main() {
 }
 ```
 
-This app will run and show help text, but is not very useful. Let's give an
-action to execute and some help documentation:
+This app will run and show help text, but is not very useful.
+
+```
+$ wl-paste > hello.go
+$ go build hello.go
+$ ./hello
+NAME:
+   hello - A new cli application
+
+USAGE:
+   hello [global options] command [command options] [arguments...]
+
+COMMANDS:
+   help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --help, -h  show help (default: false)
+```
+
+Let's add an action to execute and some help documentation:
 
 <!-- {
   "output": "boom! I say!"
