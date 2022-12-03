@@ -1,16 +1,16 @@
 ---
-name: v2 feature request
-about: Suggest an improvement for v2
+name: v3 feature request
+about: Suggest an improvement to go into v3
 title: 'your feature title goes here'
-labels: 'type/feature, area/v2, status/triage'
+labels: 'type/feature, area/v3, status/triage'
 assignees: ''
 
 ---
 
 ## Checklist
 
-* [ ] Are you running the latest v2 release? The list of releases is [here](https://github.com/urfave/cli/releases).
-* [ ] Did you check the manual for your release? The v2 manual is [here](https://github.com/urfave/cli/blob/main/docs/v2/manual.md).
+* [ ] Are you running the latest v3 release? The list of releases is [here](https://github.com/urfave/cli/releases).
+* [ ] Did you check the manual for your release? The v3 manual is [here](https://github.com/urfave/cli/blob/main/docs/v3/manual.md).
 * [ ] Did you perform a search about this feature? Here's the [GitHub guide](https://help.github.com/en/github/managing-your-work-on-github/using-search-to-filter-issues-and-pull-requests) about searching.
 
 ## What problem does this solve?
