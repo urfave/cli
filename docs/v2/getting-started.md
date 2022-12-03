@@ -29,6 +29,7 @@ func main() {
 This app will run and show help text, but is not very useful.
 
 ```
+$ wl-paste > hello.go
 $ go build hello.go
 $ ./hello
 NAME:
