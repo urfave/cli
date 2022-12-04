@@ -21,7 +21,7 @@ ability to associate bugs and regressions with specific releases.
 - Releases are associated with **signed, annotated git tags**[^1].
 - Release notes are **automatically generated**[^2].
 
-In the `main` or `v1` branch, the current version is always
+In the `main` or `v2-maint` branch, the current version is always
 available via:
 
 ```sh
