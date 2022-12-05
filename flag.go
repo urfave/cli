@@ -141,12 +141,12 @@ type DocGenerationFlag interface {
 	GetEnvVars() []string
 }
 
-// DocGenerationSliceFlag extends DocGenerationFlag for slice-based flags.
-type DocGenerationSliceFlag interface {
+// DocGenerationSliceFlag extends DocGenerationFlag for slice/map based flags.
+type DocGenerationMultiValueFlag interface {
 	DocGenerationFlag
 
-	// IsSliceFlag returns true for flags that can be given multiple times.
-	IsSliceFlag() bool
+	// IsMultiValueFlag returns true for flags that can be given multiple times.
+	IsMultiValueFlag() bool
 }
 
 // Countable is an interface to enable detection of flag values which support
@@ -357,8 +357,8 @@ func stringifyFlag(f Flag) string {
 	usageWithDefault := strings.TrimSpace(usage + defaultValueString)
 
 	pn := prefixedNames(df.Names(), placeholder)
-	sliceFlag, ok := f.(DocGenerationSliceFlag)
-	if ok && sliceFlag.IsSliceFlag() {
+	sliceFlag, ok := f.(DocGenerationMultiValueFlag)
+	if ok && sliceFlag.IsMultiValueFlag() {
 		pn = pn + " [ " + pn + " ]"
 	}
 

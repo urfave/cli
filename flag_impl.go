@@ -189,10 +189,12 @@ func (f *FlagBase[T, C, V]) RunAction(ctx *Context) error {
 	return nil
 }
 
-// IsSliceFlag returns true if the value type T is of kind slice
-func (f *FlagBase[T, C, VC]) IsSliceFlag() bool {
+// IsMultiValueFlag returns true if the value type T can take multiple
+// values from cmd line. This is true for slice and map type flags
+func (f *FlagBase[T, C, VC]) IsMultiValueFlag() bool {
 	// TBD how to specify
-	return reflect.TypeOf(f.Value).Kind() == reflect.Slice
+	return reflect.TypeOf(f.Value).Kind() == reflect.Slice ||
+		reflect.TypeOf(f.Value).Kind() == reflect.Map
 }
 
 // IsPersistent returns true if flag needs to be persistent across subcommands
