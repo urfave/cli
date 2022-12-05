@@ -151,7 +151,7 @@ For example this:
 
 <!-- {
   "args": ["&#45;&#45;help"],
-  "output": "&#45;&#45;config FILE, &#45;c FILE"
+  "error": "&#45;&#45;config FILE, &#45;c FILE"
 } -->
 ```go
 package main
@@ -196,7 +196,7 @@ list for the `Name`. e.g.
 
 <!-- {
   "args": ["&#45;&#45;help"],
-  "output": "&#45;&#45;lang value, &#45;l value.*language for the greeting.*default: \"english\""
+  "error": "&#45;&#45;lang value, &#45;l value.*language for the greeting.*default: \"english\""
 } -->
 ```go
 package main
@@ -240,7 +240,7 @@ For example this:
 
 <!-- {
   "args": ["&#45;&#45;help"],
-  "output": ".*Load configuration from FILE\n.*Language for the greeting.*"
+  "error": ".*Load configuration from FILE\n.*Language for the greeting.*"
 } -->
 ```go
 package main
@@ -310,7 +310,7 @@ You can also have the default value set from the environment via `EnvVars`.  e.g
 
 <!-- {
   "args": ["&#45;&#45;help"],
-  "output": "language for the greeting.*APP_LANG"
+  "error": "language for the greeting.*APP_LANG"
 } -->
 ```go
 package main
@@ -346,7 +346,7 @@ resolves is used.
 
 <!-- {
   "args": ["&#45;&#45;help"],
-  "output": "language for the greeting.*LEGACY_COMPAT_LANG.*APP_LANG.*LANG"
+  "error": "language for the greeting.*LEGACY_COMPAT_LANG.*APP_LANG.*LANG"
 } -->
 ```go
 package main
@@ -383,7 +383,7 @@ You can also have the default value set from file via `FilePath`.  e.g.
 
 <!-- {
   "args": ["&#45;&#45;help"],
-  "output": "password for the mysql database"
+  "error": "password for the mysql database"
 } -->
 ```go
 package main
@@ -457,7 +457,7 @@ Here is a more complete sample of a command using YAML support:
 
 <!-- {
   "args": ["&#45;&#45;help"],
-  "output": "&#45&#45;test value.*default: 0"
+  "error": "&#45&#45;test value.*default: 0"
 } -->
 ```go
 package main
@@ -552,7 +552,7 @@ For example this:
 
 <!-- {
   "args": ["&#45;&#45;help"],
-  "output": "&#45;&#45;port value"
+  "error": "&#45;&#45;port value"
 } -->
 ```go
 package main
