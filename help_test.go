@@ -471,7 +471,7 @@ func TestHelpNameConsistency(t *testing.T) {
 
 	for _, tt := range tests {
 		output := &bytes.Buffer{}
-		app.Writer = output
+		app.ErrWriter = output
 		if err := app.Run(tt.args); err != nil {
 			t.Error(err)
 		}
@@ -579,7 +579,7 @@ UsageText`,
 	}
 
 	output := &bytes.Buffer{}
-	app.Writer = output
+	app.ErrWriter = output
 
 	_ = app.Run([]string{"foo", "frobbly", "--help"})
 
@@ -638,7 +638,7 @@ UsageText`,
 	}
 
 	output := &bytes.Buffer{}
-	app.Writer = output
+	app.ErrWriter = output
 	_ = app.Run([]string{"foo", "frobbly", "bobbly", "--help"})
 
 	expected := `USAGE:
@@ -909,7 +909,7 @@ func TestShowAppHelp_UsageText(t *testing.T) {
 	}
 
 	output := &bytes.Buffer{}
-	app.Writer = output
+	app.ErrWriter = output
 
 	_ = app.Run([]string{"foo"})
 
@@ -932,7 +932,7 @@ App UsageText`,
 	}
 
 	output := &bytes.Buffer{}
-	app.Writer = output
+	app.ErrWriter = output
 
 	_ = app.Run([]string{"foo"})
 
@@ -969,7 +969,7 @@ App UsageText`,
 	}
 
 	output := &bytes.Buffer{}
-	app.Writer = output
+	app.ErrWriter = output
 
 	_ = app.Run([]string{"foo"})
 
@@ -1199,7 +1199,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 	} {
 		t.Run(tc.name, func(ct *testing.T) {
 			writer := &bytes.Buffer{}
-			tc.c.App.Writer = writer
+			tc.c.App.ErrWriter = writer
 
 			os.Args = tc.argv
 			f := DefaultCompleteWithFlags(tc.cmd)
@@ -1230,7 +1230,7 @@ func TestWrappedHelp(t *testing.T) {
 
 	output := new(bytes.Buffer)
 	app := &App{
-		Writer: output,
+		ErrWriter: output,
 		Flags: []Flag{
 			&BoolFlag{Name: "foo",
 				Aliases: []string{"h"},
@@ -1324,7 +1324,7 @@ func TestWrappedCommandHelp(t *testing.T) {
 
 	output := new(bytes.Buffer)
 	app := &App{
-		Writer: output,
+		ErrWriter: output,
 		Commands: []*Command{
 			{
 				Name:        "add",
@@ -1386,8 +1386,8 @@ func TestWrappedSubcommandHelp(t *testing.T) {
 
 	output := new(bytes.Buffer)
 	app := &App{
-		Name:   "cli.test",
-		Writer: output,
+		Name:      "cli.test",
+		ErrWriter: output,
 		Commands: []*Command{
 			{
 				Name:        "bar",
@@ -1456,8 +1456,8 @@ func TestWrappedHelpSubcommand(t *testing.T) {
 
 	output := new(bytes.Buffer)
 	app := &App{
-		Name:   "cli.test",
-		Writer: output,
+		Name:      "cli.test",
+		ErrWriter: output,
 		Commands: []*Command{
 			{
 				Name:        "bar",

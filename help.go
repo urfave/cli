@@ -74,7 +74,7 @@ var helpCommand = &Command{
 			if templ == "" {
 				templ = CommandHelpTemplate
 			}
-			HelpPrinter(cCtx.App.Writer, templ, cCtx.Command)
+			HelpPrinter(cCtx.App.ErrWriter, templ, cCtx.Command)
 			return nil
 		}
 		return ShowSubcommandHelp(cCtx)
@@ -122,8 +122,8 @@ func ShowAppHelp(cCtx *Context) error {
 		tpl = AppHelpTemplate
 	}
 
-	if c.App.ExtraInfo == nil {
-		HelpPrinter(c.App.ErrWriter, tpl, c.App)
+	if cCtx.App.ExtraInfo == nil {
+		HelpPrinter(cCtx.App.ErrWriter, tpl, cCtx.App)
 		return nil
 	}
 
@@ -293,7 +293,7 @@ func ShowSubcommandHelp(cCtx *Context) error {
 		return nil
 	}
 
-	HelpPrinter(cCtx.App.Writer, SubcommandHelpTemplate, cCtx.Command)
+	HelpPrinter(cCtx.App.ErrWriter, SubcommandHelpTemplate, cCtx.Command)
 	return nil
 }
 

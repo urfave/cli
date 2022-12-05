@@ -3,6 +3,7 @@ package cli
 import (
 	"errors"
 	"fmt"
+	"os"
 	"testing"
 )
 
@@ -123,6 +124,7 @@ func TestSuggestCommand(t *testing.T) {
 func ExampleApp_Suggest() {
 	app := &App{
 		Name:                  "greet",
+		ErrWriter:             os.Stdout,
 		Suggest:               true,
 		HideHelp:              false,
 		HideHelpCommand:       true,
@@ -148,6 +150,7 @@ func ExampleApp_Suggest() {
 func ExampleApp_Suggest_command() {
 	app := &App{
 		Name:                  "greet",
+		ErrWriter:             os.Stdout,
 		Suggest:               true,
 		HideHelpCommand:       true,
 		CustomAppHelpTemplate: "(this space intentionally left blank)\n",
