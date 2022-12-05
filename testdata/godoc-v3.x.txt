@@ -131,8 +131,8 @@ var MarkdownDocTemplate = `{{if gt .SectionNum 0}}% {{ .App.Name }} {{ .SectionN
 var NewFloat64Slice = NewSliceBase[float64, NoConfig, float64Value]
 var NewInt64Slice = NewSliceBase[int64, IntegerConfig, int64Value]
 var NewIntSlice = NewSliceBase[int, IntegerConfig, intValue]
-var NewStringMap = NewMapBase[string, NoConfig, stringValue]
-var NewStringSlice = NewSliceBase[string, NoConfig, stringValue]
+var NewStringMap = NewMapBase[string, StringConfig, stringValue]
+var NewStringSlice = NewSliceBase[string, StringConfig, stringValue]
 var NewUint64Slice = NewSliceBase[uint64, IntegerConfig, uint64Value]
 var NewUintSlice = NewSliceBase[uint, IntegerConfig, uintValue]
 var OsExiter = os.Exit
@@ -1029,15 +1029,21 @@ func (i SliceBase[T, C, VC]) ToString(t []T) string
 func (i *SliceBase[T, C, VC]) Value() []T
     Value returns the slice of values set by this flag
 
-type StringFlag = FlagBase[string, NoConfig, stringValue]
+type StringConfig struct {
+	// Whether to trim whitespace of parsed value
+	TrimSpace bool
+}
+    StringConfig defines the configuration for string flags
 
-type StringMap = MapBase[string, NoConfig, stringValue]
+type StringFlag = FlagBase[string, StringConfig, stringValue]
 
-type StringMapFlag = FlagBase[map[string]string, NoConfig, StringMap]
+type StringMap = MapBase[string, StringConfig, stringValue]
 
-type StringSlice = SliceBase[string, NoConfig, stringValue]
+type StringMapFlag = FlagBase[map[string]string, StringConfig, StringMap]
 
-type StringSliceFlag = FlagBase[[]string, NoConfig, StringSlice]
+type StringSlice = SliceBase[string, StringConfig, stringValue]
+
+type StringSliceFlag = FlagBase[[]string, StringConfig, StringSlice]
 
 type SuggestCommandFunc func(commands []*Command, provided string) string
 

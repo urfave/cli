@@ -2,10 +2,10 @@ package cli
 
 import "flag"
 
-type StringMap = MapBase[string, NoConfig, stringValue]
-type StringMapFlag = FlagBase[map[string]string, NoConfig, StringMap]
+type StringMap = MapBase[string, StringConfig, stringValue]
+type StringMapFlag = FlagBase[map[string]string, StringConfig, StringMap]
 
-var NewStringMap = NewMapBase[string, NoConfig, stringValue]
+var NewStringMap = NewMapBase[string, StringConfig, stringValue]
 
 // StringMap looks up the value of a local StringMapFlag, returns
 // nil if not found

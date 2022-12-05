@@ -55,7 +55,7 @@ func (i *MapBase[T, C, VC]) Set(value string) error {
 		if !ok {
 			return fmt.Errorf("item %q is missing separator %q", item, defaultMapFlagKeyValueSeparator)
 		}
-		if err := i.value.Set(strings.TrimSpace(value)); err != nil {
+		if err := i.value.Set(value); err != nil {
 			return err
 		}
 		tmp, ok := i.value.Get().(T)

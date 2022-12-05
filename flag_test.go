@@ -176,6 +176,10 @@ func TestFlagsFromEnv(t *testing.T) {
 		{"foobar", 0, &Uint64Flag{Name: "seconds", EnvVars: []string{"SECONDS"}}, `could not parse "foobar" as uint64 value from environment variable "SECONDS" for flag seconds: .*`},
 
 		{"foo=bar,empty=", map[string]string{"foo": "bar", "empty": ""}, &StringMapFlag{Name: "names", EnvVars: []string{"NAMES"}}, ""},
+
+		{" foo", "foo", &StringFlag{Name: "names", EnvVars: []string{"NAMES"}, Config: StringConfig{TrimSpace: true}}, ""},
+		{"foo , bar ", []string{"foo", "bar"}, &StringSliceFlag{Name: "names", EnvVars: []string{"NAMES"}, Config: StringConfig{TrimSpace: true}}, ""},
+		{"foo= bar ", map[string]string{"foo": "bar"}, &StringMapFlag{Name: "names", EnvVars: []string{"NAMES"}, Config: StringConfig{TrimSpace: true}}, ""},
 	}
 
 	for i, test := range flagTests {
