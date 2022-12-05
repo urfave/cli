@@ -1262,7 +1262,7 @@ func TestApp_SetStdin_Subcommand(t *testing.T) {
 	}
 }
 
-func TestApp_SetStdout(t *testing.T) {
+func TestApp_SetErrWriter(t *testing.T) {
 	var w bytes.Buffer
 
 	app := &App{
