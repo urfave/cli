@@ -693,13 +693,13 @@ type DocGenerationFlag interface {
     DocGenerationFlag is an interface that allows documentation generation for
     the flag
 
-type DocGenerationSliceFlag interface {
+type DocGenerationMultiValueFlag interface {
 	DocGenerationFlag
 
-	// IsSliceFlag returns true for flags that can be given multiple times.
-	IsSliceFlag() bool
+	// IsMultiValueFlag returns true for flags that can be given multiple times.
+	IsMultiValueFlag() bool
 }
-    DocGenerationSliceFlag extends DocGenerationFlag for slice-based flags.
+    DocGenerationSliceFlag extends DocGenerationFlag for slice/map based flags.
 
 type DurationFlag = FlagBase[time.Duration, NoConfig, durationValue]
 
@@ -827,6 +827,10 @@ func (f *FlagBase[T, C, V]) GetValue() string
     GetValue returns the flags value as string representation and an empty
     string if the flag takes no value at all.
 
+func (f *FlagBase[T, C, VC]) IsMultiValueFlag() bool
+    IsMultiValueFlag returns true if the value type T can take multiple values
+    from cmd line. This is true for slice and map type flags
+
 func (f *FlagBase[T, C, VC]) IsPersistent() bool
     IsPersistent returns true if flag needs to be persistent across subcommands
 
@@ -835,9 +839,6 @@ func (f *FlagBase[T, C, V]) IsRequired() bool
 
 func (f *FlagBase[T, C, V]) IsSet() bool
     IsSet returns whether or not the flag has been set through env or file
-
-func (f *FlagBase[T, C, VC]) IsSliceFlag() bool
-    IsSliceFlag returns true if the value type T is of kind slice
 
 func (f *FlagBase[T, C, V]) IsVisible() bool
     IsVisible returns true if the flag is not hidden, otherwise false
