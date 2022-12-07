@@ -205,9 +205,6 @@ func ShowAppHelpAndExit(c *Context, exitCode int)
     ShowAppHelpAndExit - Prints the list of subcommands for the app and exits
     with exit code.
 
-func ShowCommandCompletions(ctx *Context, command string)
-    ShowCommandCompletions prints the custom completions for a given command
-
 func ShowCommandHelp(ctx *Context, command string) error
     ShowCommandHelp prints help for the given command
 
