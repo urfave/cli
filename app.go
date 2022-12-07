@@ -107,6 +107,8 @@ type App struct {
 	SkipFlagParsing bool
 	// Flag exclusion group
 	MutuallyExclusiveFlags []MutuallyExclusiveFlags
+	// Use longest prefix match for commands
+	PrefixMatchCommand bool
 
 	didSetup bool
 
@@ -258,6 +260,7 @@ func (a *App) newRootCommand() *Command {
 		SkipFlagParsing:        a.SkipFlagParsing,
 		isRoot:                 true,
 		MutuallyExclusiveFlags: a.MutuallyExclusiveFlags,
+		PrefixMatchCommand:     a.PrefixMatchCommand,
 	}
 }
 

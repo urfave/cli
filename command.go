@@ -64,6 +64,9 @@ type Command struct {
 	// render custom help text by setting this variable.
 	CustomHelpTemplate string
 
+	// Use longest prefix match for commands
+	PrefixMatchCommand bool
+
 	// categories contains the categorized commands and is populated on app startup
 	categories CommandCategories
 
@@ -100,10 +103,12 @@ func (c *Command) FullName() string {
 }
 
 func (cmd *Command) Command(name string) *Command {
+	//longestNameMatch := ""
 	for _, c := range cmd.Commands {
 		if c.HasName(name) {
 			return c
 		}
+		//if strings.P
 	}
 
 	return nil
