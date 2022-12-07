@@ -314,6 +314,19 @@ func ShowCompletions(cCtx *Context) {
 	}
 }
 
+// ShowCommandCompletions prints the custom completions for a given command
+func ShowCommandCompletions(ctx *Context, command string) {
+	c := ctx.Command.Command(command)
+	if c != nil {
+		if c.BashComplete != nil {
+			c.BashComplete(ctx)
+		} else {
+			DefaultCompleteWithFlags(c)(ctx)
+		}
+	}
+
+}
+
 // printHelpCustom is the default implementation of HelpPrinterCustom.
 //
 // The customFuncs map will be combined with a default template.FuncMap to
