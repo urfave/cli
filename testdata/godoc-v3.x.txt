@@ -131,7 +131,8 @@ var MarkdownDocTemplate = `{{if gt .SectionNum 0}}% {{ .App.Name }} {{ .SectionN
 var NewFloat64Slice = NewSliceBase[float64, NoConfig, float64Value]
 var NewInt64Slice = NewSliceBase[int64, IntegerConfig, int64Value]
 var NewIntSlice = NewSliceBase[int, IntegerConfig, intValue]
-var NewStringSlice = NewSliceBase[string, NoConfig, stringValue]
+var NewStringMap = NewMapBase[string, StringConfig, stringValue]
+var NewStringSlice = NewSliceBase[string, StringConfig, stringValue]
 var NewUint64Slice = NewSliceBase[uint64, IntegerConfig, uint64Value]
 var NewUintSlice = NewSliceBase[uint, IntegerConfig, uintValue]
 var OsExiter = os.Exit
@@ -641,6 +642,10 @@ func (cCtx *Context) Set(name, value string) error
 
 func (cCtx *Context) String(name string) string
 
+func (cCtx *Context) StringMap(name string) map[string]string
+    StringMap looks up the value of a local StringMapFlag, returns nil if not
+    found
+
 func (cCtx *Context) StringSlice(name string) []string
     StringSlice looks up the value of a local StringSliceFlag, returns nil if
     not found
@@ -931,6 +936,33 @@ type InvalidFlagAccessFunc func(*Context, string)
     InvalidFlagAccessFunc is executed when an invalid flag is accessed from the
     context.
 
+type MapBase[T any, C any, VC ValueCreator[T, C]] struct {
+	// Has unexported fields.
+}
+    MapBase wraps map[string]T to satisfy flag.Value
+
+func NewMapBase[T any, C any, VC ValueCreator[T, C]](defaults map[string]T) *MapBase[T, C, VC]
+    NewMapBase makes a *MapBase with default values
+
+func (i MapBase[T, C, VC]) Create(val map[string]T, p *map[string]T, c C) Value
+
+func (i *MapBase[T, C, VC]) Get() interface{}
+    Get returns the mapping of values set by this flag
+
+func (i *MapBase[T, C, VC]) Serialize() string
+    Serialize allows MapBase to fulfill Serializer
+
+func (i *MapBase[T, C, VC]) Set(value string) error
+    Set parses the value and appends it to the list of values
+
+func (i *MapBase[T, C, VC]) String() string
+    String returns a readable representation of this value (for usage defaults)
+
+func (i MapBase[T, C, VC]) ToString(t map[string]T) string
+
+func (i *MapBase[T, C, VC]) Value() map[string]T
+    Value returns the mapping of values set by this flag
+
 type MultiError interface {
 	error
 	Errors() []error
@@ -997,11 +1029,21 @@ func (i SliceBase[T, C, VC]) ToString(t []T) string
 func (i *SliceBase[T, C, VC]) Value() []T
     Value returns the slice of values set by this flag
 
-type StringFlag = FlagBase[string, NoConfig, stringValue]
+type StringConfig struct {
+	// Whether to trim whitespace of parsed value
+	TrimSpace bool
+}
+    StringConfig defines the configuration for string flags
 
-type StringSlice = SliceBase[string, NoConfig, stringValue]
+type StringFlag = FlagBase[string, StringConfig, stringValue]
 
-type StringSliceFlag = FlagBase[[]string, NoConfig, StringSlice]
+type StringMap = MapBase[string, StringConfig, stringValue]
+
+type StringMapFlag = FlagBase[map[string]string, StringConfig, StringMap]
+
+type StringSlice = SliceBase[string, StringConfig, stringValue]
+
+type StringSliceFlag = FlagBase[[]string, StringConfig, StringSlice]
 
 type SuggestCommandFunc func(commands []*Command, provided string) string
 

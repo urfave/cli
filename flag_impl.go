@@ -193,8 +193,8 @@ func (f *FlagBase[T, C, V]) RunAction(ctx *Context) error {
 // values from cmd line. This is true for slice and map type flags
 func (f *FlagBase[T, C, VC]) IsMultiValueFlag() bool {
 	// TBD how to specify
-	return reflect.TypeOf(f.Value).Kind() == reflect.Slice ||
-		reflect.TypeOf(f.Value).Kind() == reflect.Map
+	kind := reflect.TypeOf(f.Value).Kind()
+	return kind == reflect.Slice || kind == reflect.Map
 }
 
 // IsPersistent returns true if flag needs to be persistent across subcommands

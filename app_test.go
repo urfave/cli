@@ -432,6 +432,34 @@ func ExampleApp_Run_sliceValues() {
 	// error: <nil>
 }
 
+func ExampleApp_Run_mapValues() {
+	// set args for examples sake
+	os.Args = []string{
+		"multi_values",
+		"--stringMap", "parsed1=parsed two", "--stringMap", "parsed3=",
+	}
+	app := NewApp()
+	app.Name = "multi_values"
+	app.Flags = []Flag{
+		&StringMapFlag{Name: "stringMap"},
+	}
+	app.Action = func(ctx *Context) error {
+		for i, v := range ctx.FlagNames() {
+			fmt.Printf("%d-%s %#v\n", i, v, ctx.StringMap(v))
+		}
+		fmt.Printf("notfound %#v\n", ctx.StringMap("notfound"))
+		err := ctx.Err()
+		fmt.Println("error:", err)
+		return err
+	}
+
+	_ = app.Run(os.Args)
+	// Output:
+	// 0-stringMap map[string]string{"parsed1":"parsed two", "parsed3":""}
+	// notfound map[string]string(nil)
+	// error: <nil>
+}
+
 func TestApp_Run(t *testing.T) {
 	s := ""
 
@@ -2874,6 +2902,16 @@ func TestFlagAction(t *testing.T) {
 					return nil
 				},
 			},
+			&StringMapFlag{
+				Name: "f_string_map",
+				Action: func(c *Context, v map[string]string) error {
+					if _, ok := v["err"]; ok {
+						return fmt.Errorf("error string map")
+					}
+					c.App.Writer.Write([]byte(fmt.Sprintf("%v", v)))
+					return nil
+				},
+			},
 		},
 		Action: func(ctx *Context) error { return nil },
 	}
@@ -3033,6 +3071,16 @@ func TestFlagAction(t *testing.T) {
 			name: "mixture",
 			args: []string{"app", "--f_string=app", "--f_uint=1", "--f_int_slice=1,2,3", "--f_duration=1h30m20s", "c1", "--f_string=c1", "sub1", "--f_string=sub1"},
 			exp:  "app 1h30m20s [1 2 3] 1 c1 sub1 ",
+		},
+		{
+			name: "flag_string_map",
+			args: []string{"app", "--f_string_map=s1=s2,s3="},
+			exp:  "map[s1:s2 s3:]",
+		},
+		{
+			name: "flag_string_map_error",
+			args: []string{"app", "--f_string_map=err="},
+			err:  fmt.Errorf("error string map"),
 		},
 	}
 
