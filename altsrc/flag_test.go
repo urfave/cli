@@ -716,13 +716,16 @@ func TestJsonMissingKey(t *testing.T) {
 		NewInt64SliceFlag(&cli.Int64SliceFlag{Name: "int64slicea"}),
 		NewDurationFlag(&cli.DurationFlag{Name: "dflag"}),
 		NewPathFlag(&cli.PathFlag{Name: "patha"}),
-		NewGenericFlag(&cli.GenericFlag{Name: "gflag"}),
+		NewGenericFlag(&cli.GenericFlag{Name: "gflag", Value: &Parser{}}),
 	}
 
 	set := flag.NewFlagSet("test", flag.ContinueOnError)
 	c := cli.NewContext(nil, set, nil)
 
 	for _, f := range flags {
+		if err := f.Apply(set); err != nil {
+			t.Error(err)
+		}
 		if err := f.ApplyInputSourceValue(c, jis); err != nil {
 			t.Error(err)
 		}
