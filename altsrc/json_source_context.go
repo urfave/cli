@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 )
 
@@ -224,7 +223,7 @@ func jsonGetValue(key string, m map[string]interface{}) (interface{}, error) {
 	keys := strings.Split(key, ".")
 	for ix, k := range keys {
 		if ret, ok = working[k]; !ok {
-			return ret, errors.Wrap(errMissingKey, key)
+			return ret, fmt.Errorf("%w %s", errMissingKey, key)
 		}
 		if working, ok = ret.(map[string]interface{}); !ok {
 			if ix < len(keys)-1 {
