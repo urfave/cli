@@ -1196,53 +1196,6 @@ func newContextFromStringSlice(ss []string) *Context {
 	return &Context{flagSet: set}
 }
 
-func TestHideHelpCommand_RunAsSubcommand(t *testing.T) {
-	app := &App{
-		HideHelpCommand: true,
-		Writer:          io.Discard,
-		Commands: []*Command{
-			{
-				Name: "dummy",
-			},
-		},
-	}
-
-	err := app.RunAsSubcommand(newContextFromStringSlice([]string{"", "help"}))
-	if err == nil {
-		t.Fatalf("expected a non-nil error")
-	}
-	if !strings.Contains(err.Error(), "No help topic for 'help'") {
-		t.Errorf("Run returned unexpected error: %v", err)
-	}
-
-	err = app.RunAsSubcommand(newContextFromStringSlice([]string{"", "--help"}))
-	if err != nil {
-		t.Errorf("Run returned unexpected error: %v", err)
-	}
-}
-
-func TestHideHelpCommand_RunAsSubcommand_False(t *testing.T) {
-	app := &App{
-		HideHelpCommand: false,
-		Writer:          io.Discard,
-		Commands: []*Command{
-			{
-				Name: "dummy",
-			},
-		},
-	}
-
-	err := app.RunAsSubcommand(newContextFromStringSlice([]string{"", "help"}))
-	if err != nil {
-		t.Errorf("Run returned unexpected error: %v", err)
-	}
-
-	err = app.RunAsSubcommand(newContextFromStringSlice([]string{"", "--help"}))
-	if err != nil {
-		t.Errorf("Run returned unexpected error: %v", err)
-	}
-}
-
 func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 	app := &App{
 		Writer: io.Discard,

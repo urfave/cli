@@ -190,11 +190,6 @@ func DefaultAppComplete(cCtx *Context)
 
 func DefaultCompleteWithFlags(cmd *Command) func(cCtx *Context)
 func FlagNames(name string, aliases []string) []string
-func HandleAction(action interface{}, cCtx *Context) (err error)
-    HandleAction attempts to figure out which Action signature was used.
-    If it's an ActionFunc or a func with the legacy signature for Action,
-    the func is run!
-
 func HandleExitCoder(err error)
     HandleExitCoder handles errors implementing ExitCoder by printing their
     message and calling OsExiter with the given exit code.
@@ -353,18 +348,6 @@ func (a *App) Command(name string) *Command
 func (a *App) Run(arguments []string) (err error)
     Run is the entry point to the cli app. Parses the arguments slice and routes
     to the proper flag/args combination
-
-func (a *App) RunAndExitOnError()
-    RunAndExitOnError calls .Run() and exits non-zero if an error was returned
-
-    Deprecated: instead you should return an error that fulfills cli.ExitCoder
-    to cli.App.Run. This will cause the application to exit with the given error
-    code in the cli.ExitCoder
-
-func (a *App) RunAsSubcommand(ctx *Context) (err error)
-    This is a stub function to keep public API unchanged from old code
-
-    Deprecated: use App.Run or App.RunContext
 
 func (a *App) RunContext(ctx context.Context, arguments []string) (err error)
     RunContext is like Run except it takes a Context that will be passed to
@@ -728,12 +711,6 @@ func Exit(message interface{}, exitCode int) ExitCoder
     without having to call os.Exit manually. During testing, this behavior
     can be avoided by overriding the ExitErrHandler function on an App or the
     package-global OsExiter function.
-
-func NewExitError(message interface{}, exitCode int) ExitCoder
-    NewExitError calls Exit to create a new ExitCoder.
-
-    Deprecated: This function is a duplicate of Exit and will eventually be
-    removed.
 
 type ExitErrHandlerFunc func(cCtx *Context, err error)
     ExitErrHandlerFunc is executed if provided in order to handle exitError

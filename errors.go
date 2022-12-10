@@ -86,13 +86,6 @@ type exitError struct {
 	err      error
 }
 
-// NewExitError calls Exit to create a new ExitCoder.
-//
-// Deprecated: This function is a duplicate of Exit and will eventually be removed.
-func NewExitError(message interface{}, exitCode int) ExitCoder {
-	return Exit(message, exitCode)
-}
-
 // Exit wraps a message and exit code into an error, which by default is
 // handled with a call to os.Exit during default error handling.
 //
