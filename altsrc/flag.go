@@ -1,12 +1,17 @@
 package altsrc
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strconv"
 	"syscall"
 
 	"github.com/urfave/cli/v2"
+)
+
+var (
+	errMissingKey = errors.New("missing key")
 )
 
 // FlagInputSourceExtension is an extension interface of cli.Flag that
@@ -72,7 +77,7 @@ func (f *GenericFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceCo
 			continue
 		}
 		value, err := isc.Generic(name)
-		if err == syscall.ENOENT {
+		if errors.Is(err, errMissingKey) {
 			return nil
 		}
 		if err != nil {
@@ -99,7 +104,7 @@ func (f *StringSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSour
 			continue
 		}
 		value, err := isc.StringSlice(name)
-		if err == syscall.ENOENT {
+		if errors.Is(err, errMissingKey) {
 			return nil
 		}
 		if err != nil {
@@ -133,7 +138,7 @@ func (f *IntSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceC
 			continue
 		}
 		value, err := isc.IntSlice(name)
-		if err == syscall.ENOENT {
+		if errors.Is(err, errMissingKey) {
 			return nil
 		}
 		if err != nil {
@@ -167,7 +172,7 @@ func (f *Int64SliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourc
 			continue
 		}
 		value, err := isc.Int64Slice(name)
-		if err == syscall.ENOENT {
+		if errors.Is(err, errMissingKey) {
 			return nil
 		}
 		if err != nil {
@@ -201,7 +206,7 @@ func (f *BoolFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceConte
 			continue
 		}
 		value, err := isc.Bool(name)
-		if err == syscall.ENOENT {
+		if errors.Is(err, errMissingKey) {
 			return nil
 		}
 		if err != nil {
@@ -224,7 +229,7 @@ func (f *StringFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceCon
 			continue
 		}
 		value, err := isc.String(name)
-		if err == syscall.ENOENT {
+		if errors.Is(err, errMissingKey) {
 			return nil
 		}
 		if err != nil {
@@ -247,7 +252,7 @@ func (f *PathFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceConte
 			continue
 		}
 		value, err := isc.String(name)
-		if err == syscall.ENOENT {
+		if errors.Is(err, errMissingKey) {
 			return nil
 		}
 		if err != nil {
@@ -280,7 +285,7 @@ func (f *IntFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContex
 			continue
 		}
 		value, err := isc.Int(name)
-		if err == syscall.ENOENT {
+		if errors.Is(err, errMissingKey) {
 			return nil
 		}
 		if err != nil {
@@ -303,7 +308,7 @@ func (f *DurationFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceC
 			continue
 		}
 		value, err := isc.Duration(name)
-		if err == syscall.ENOENT {
+		if errors.Is(err, errMissingKey) {
 			return nil
 		}
 		if err != nil {
@@ -326,7 +331,7 @@ func (f *Float64Flag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceCo
 			continue
 		}
 		value, err := isc.Float64(name)
-		if err == syscall.ENOENT {
+		if errors.Is(err, errMissingKey) {
 			return nil
 		}
 		if err != nil {
