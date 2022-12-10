@@ -9,30 +9,27 @@ const (
 	completionCommandName = "generate-completion"
 )
 
-//go:embed autocomplete/bash_autocomplete
-var bash_autocomplete string
+var (
+	//go:embed autocomplete
+	autoCompleteFS embed.FS
 
-//go:embed autocomplete/powershell_autocomplete.ps1
-var powershell_autocomplete string
-
-//go:embed autocomplete/zsh_autocomplete
-var zsh_autocomplete string
+	shellCompletions = map[string]renderCompletion{
+		"bash": getCompletion("autocomplete/bash_autocomplete"),
+		"ps":   getCompletion("autocomplete/powershell_autocomplete.ps1"),
+		"zsh":  getCompletion("autocomplete/zsh_autocomplete"),
+		"fish": func(a *App) (string, error) {
+			return a.ToFishCompletion()
+		},
+	}
+)
 
 type renderCompletion func(a *App) (string, error)
 
 func getCompletion(s string) renderCompletion {
 	return func(a *App) (string, error) {
-		return s, nil
+		b, err := autoCompleteFS.ReadFile(s)
+		return string(b), err
 	}
-}
-
-var shellCompletions = map[string]renderCompletion{
-	"bash": getCompletion(bash_autocomplete),
-	"ps":   getCompletion(powershell_autocomplete),
-	"zsh":  getCompletion(zsh_autocomplete),
-	"fish": func(a *App) (string, error) {
-		return a.ToFishCompletion()
-	},
 }
 
 var completionCommand = &Command{
