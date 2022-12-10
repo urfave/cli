@@ -40,6 +40,8 @@ var completionCommand = &Command{
 		for k := range shellCompletions {
 			shells = append(shells, k)
 		}
+		
+		sort.Strings(shells)
 
 		if ctx.Args().Len() == 0 {
 			return Exit(fmt.Sprintf("no shell provided for completion command. available shells are %+v", shells), 1)
