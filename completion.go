@@ -1,8 +1,9 @@
 package cli
 
 import (
-	_ "embed"
+	"embed"
 	"fmt"
+	"sort"
 )
 
 const (
@@ -40,7 +41,7 @@ var completionCommand = &Command{
 		for k := range shellCompletions {
 			shells = append(shells, k)
 		}
-		
+
 		sort.Strings(shells)
 
 		if ctx.Args().Len() == 0 {
