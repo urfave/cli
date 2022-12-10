@@ -1,6 +1,7 @@
 package altsrc
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -682,6 +683,50 @@ func TestFloat64ApplyInputSourceMethodEnvVarSet(t *testing.T) {
 
 	c = runRacyTest(t, tis)
 	refute(t, 1.4, c.Float64("test"))
+}
+
+func TestJsonMissingKey(t *testing.T) {
+	type Foo struct {
+		IntFlag     int
+		Int64Flag   int64
+		Float64Flag float64
+	}
+	f := &Foo{
+		IntFlag:     32,
+		Int64Flag:   222,
+		Float64Flag: 1.001,
+	}
+	bytes, err := json.Marshal(f)
+	if err != nil {
+		t.Error(err)
+	}
+	jis, err := NewJSONSource(bytes)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// define flags with names non existent in the json input source
+	flags := []FlagInputSourceExtension{
+		NewIntFlag(&cli.IntFlag{Name: "inta"}),
+		NewIntSliceFlag(&cli.IntSliceFlag{Name: "intslicea"}),
+		NewFloat64Flag(&cli.Float64Flag{Name: "float64a"}),
+		NewBoolFlag(&cli.BoolFlag{Name: "boola"}),
+		NewStringFlag(&cli.StringFlag{Name: "stringa"}),
+		NewStringSliceFlag(&cli.StringSliceFlag{Name: "stringslicea"}),
+		NewInt64SliceFlag(&cli.Int64SliceFlag{Name: "int64slicea"}),
+		NewDurationFlag(&cli.DurationFlag{Name: "dflag"}),
+		NewPathFlag(&cli.PathFlag{Name: "patha"}),
+		NewGenericFlag(&cli.GenericFlag{Name: "gflag"}),
+	}
+
+	set := flag.NewFlagSet("test", flag.ContinueOnError)
+	c := cli.NewContext(nil, set, nil)
+
+	for _, f := range flags {
+		if err := f.ApplyInputSourceValue(c, jis); err != nil {
+			t.Error(err)
+		}
+	}
 }
 
 func runTest(t *testing.T, test testApplyInputSource) *cli.Context {
