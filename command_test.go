@@ -9,6 +9,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestCommandFlagParsing(t *testing.T) {
@@ -142,20 +144,20 @@ func TestCommand_Run_BeforeSavesMetadata(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "bar",
-				Before: func(c *Context) error {
-					c.Command.Metadata["msg"] = "hello world"
+				Before: func(cCtx *Context) error {
+					cCtx.Command.Metadata["msg"] = "hello world"
 					return nil
 				},
-				Action: func(c *Context) error {
-					msg, ok := c.Command.Metadata["msg"]
+				Action: func(cCtx *Context) error {
+					msg, ok := cCtx.Command.Metadata["msg"]
 					if !ok {
 						return errors.New("msg not found")
 					}
 					receivedMsgFromAction = msg.(string)
 					return nil
 				},
-				After: func(c *Context) error {
-					msg, ok := c.Command.Metadata["msg"]
+				After: func(cCtx *Context) error {
+					msg, ok := cCtx.Command.Metadata["msg"]
 					if !ok {
 						return errors.New("msg not found")
 					}
@@ -280,8 +282,8 @@ func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
 					{
 						Name:  "baz",
 						Usage: "this is for testing",
-						Action: func(c *Context) error {
-							if c.Command.ErrWriter != io.Discard {
+						Action: func(cCtx *Context) error {
+							if cCtx.Command.ErrWriter == nil {
 								return fmt.Errorf("ErrWriter not passed")
 							}
 
@@ -293,10 +295,7 @@ func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
 		},
 	}
 
-	err := app.Run([]string{"foo", "bar", "baz"})
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.Nil(t, app.Run([]string{"foo", "bar", "baz"}))
 }
 
 func TestCommandSkipFlagParsing(t *testing.T) {
@@ -361,8 +360,8 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 							Usage: "A number to parse",
 						},
 					},
-					BashComplete: func(c *Context) {
-						fmt.Fprintf(c.Command.Writer, "found %d args", c.NArg())
+					BashComplete: func(cCtx *Context) {
+						fmt.Fprintf(cCtx.Command.Writer, "found %d args", cCtx.NArg())
 					},
 				},
 			},

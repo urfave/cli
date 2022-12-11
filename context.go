@@ -128,18 +128,27 @@ func (cCtx *Context) Lineage() []*Context {
 	return lineage
 }
 
-func (cCtx *Context) Root() *Context {
+func (cCtx *Context) root() *Context {
 	lineage := cCtx.Lineage()
 	return lineage[len(lineage)-1]
 }
 
 func (cCtx *Context) Writer() io.Writer {
-	root := cCtx.Root()
+	root := cCtx.root()
 	if root.Command != nil && root.Command.Writer != nil {
 		return root.Command.Writer
 	}
 
 	return os.Stdout
+}
+
+func (cCtx *Context) ErrWriter() io.Writer {
+	root := cCtx.root()
+	if root.Command != nil && root.Command.ErrWriter != nil {
+		return root.Command.ErrWriter
+	}
+
+	return os.Stderr
 }
 
 // Count returns the num of occurences of this flag

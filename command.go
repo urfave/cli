@@ -261,7 +261,7 @@ func (c *Command) setup(cCtx *Context) {
 		}
 	}
 
-	if !c.HideVersion {
+	if c.isRoot && !c.HideVersion {
 		c.appendFlag(VersionFlag)
 	}
 

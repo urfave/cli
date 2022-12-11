@@ -507,6 +507,8 @@ func (cCtx *Context) Count(name string) int
 
 func (cCtx *Context) Duration(name string) time.Duration
 
+func (cCtx *Context) ErrWriter() io.Writer
+
 func (cCtx *Context) FlagNames() []string
     FlagNames returns a slice of flag names used by the this context and all of
     its parent contexts.
@@ -547,8 +549,6 @@ func (cCtx *Context) NArg() int
 
 func (cCtx *Context) NumFlags() int
     NumFlags returns the number of flags set
-
-func (cCtx *Context) Root() *Context
 
 func (cCtx *Context) Set(name, value string) error
     Set sets a context flag to a value.

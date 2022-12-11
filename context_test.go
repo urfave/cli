@@ -610,12 +610,12 @@ func TestCheckRequiredFlags(t *testing.T) {
 			}
 			_ = set.Parse(test.parseInput)
 
-			c := &Context{}
-			ctx := NewContext(c.Command, set, c)
-			ctx.Command.Flags = test.flags
+			cCtx := &Context{}
+			childCCtx := NewContext(cCtx.Command, set, cCtx)
+			childCCtx.Command.Flags = test.flags
 
 			// logic under test
-			err := ctx.checkRequiredFlags(test.flags)
+			err := childCCtx.checkRequiredFlags(test.flags)
 
 			// assertions
 			if test.expectedAnError && err == nil {
