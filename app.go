@@ -51,8 +51,10 @@ type App struct {
 	Commands []*Command
 	// List of flags to parse
 	Flags []Flag
-	// Boolean to enable bash completion commands
-	EnableBashCompletion bool
+	// Boolean to enable shell completion commands
+	EnableShellCompletion bool
+	// Shell Completion generation command name
+	ShellCompletionCommandName string
 	// Boolean to hide built-in help command and help flag
 	HideHelp bool
 	// Boolean to hide built-in help command but keep help flag.
@@ -65,7 +67,7 @@ type App struct {
 	// flagCategories contains the categorized flags and is populated on app startup
 	flagCategories FlagCategories
 	// An action to execute when the shell completion flag is set
-	BashComplete BashCompleteFunc
+	ShellComplete ShellCompleteFunc
 	// An action to execute before any subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no subcommands are run
 	Before BeforeFunc
@@ -131,14 +133,14 @@ type SuggestCommandFunc func(commands []*Command, provided string) string
 // Usage, Version and Action.
 func NewApp() *App {
 	return &App{
-		Name:         filepath.Base(os.Args[0]),
-		Usage:        "A new cli application",
-		UsageText:    "",
-		BashComplete: DefaultAppComplete,
-		Action:       helpCommand.Action,
-		Reader:       os.Stdin,
-		Writer:       os.Stdout,
-		ErrWriter:    os.Stderr,
+		Name:          filepath.Base(os.Args[0]),
+		Usage:         "A new cli application",
+		UsageText:     "",
+		ShellComplete: DefaultAppComplete,
+		Action:        helpCommand.Action,
+		Reader:        os.Stdin,
+		Writer:        os.Stdout,
+		ErrWriter:     os.Stderr,
 	}
 }
 
@@ -168,8 +170,8 @@ func (a *App) Setup() {
 		a.HideVersion = true
 	}
 
-	if a.BashComplete == nil {
-		a.BashComplete = DefaultAppComplete
+	if a.ShellComplete == nil {
+		a.ShellComplete = DefaultAppComplete
 	}
 
 	if a.Action == nil {
@@ -227,6 +229,13 @@ func (a *App) Setup() {
 		a.appendFlag(VersionFlag)
 	}
 
+	if a.EnableShellCompletion {
+		if a.ShellCompletionCommandName != "" {
+			completionCommand.Name = a.ShellCompletionCommandName
+		}
+		a.appendCommand(completionCommand)
+	}
+
 	a.categories = newCommandCategories()
 	for _, command := range a.Commands {
 		a.categories.AddCommand(command.Category, command)
@@ -260,7 +269,7 @@ func (a *App) newRootCommand() *Command {
 		UsageText:              a.UsageText,
 		Description:            a.Description,
 		ArgsUsage:              a.ArgsUsage,
-		BashComplete:           a.BashComplete,
+		ShellComplete:          a.ShellComplete,
 		Before:                 a.Before,
 		After:                  a.After,
 		Action:                 a.Action,

@@ -232,11 +232,11 @@ func ExampleApp_Run_subcommandNoAction() {
 
 func ExampleApp_Run_bashComplete_withShortFlag() {
 	os.Setenv("SHELL", "bash")
-	os.Args = []string{"greet", "-", "--generate-bash-completion"}
+	os.Args = []string{"greet", "-", "--generate-shell-completion"}
 
 	app := NewApp()
 	app.Name = "greet"
-	app.EnableBashCompletion = true
+	app.EnableShellCompletion = true
 	app.Flags = []Flag{
 		&IntFlag{
 			Name:    "other",
@@ -260,11 +260,11 @@ func ExampleApp_Run_bashComplete_withShortFlag() {
 
 func ExampleApp_Run_bashComplete_withLongFlag() {
 	os.Setenv("SHELL", "bash")
-	os.Args = []string{"greet", "--s", "--generate-bash-completion"}
+	os.Args = []string{"greet", "--s", "--generate-shell-completion"}
 
 	app := NewApp()
 	app.Name = "greet"
-	app.EnableBashCompletion = true
+	app.EnableShellCompletion = true
 	app.Flags = []Flag{
 		&IntFlag{
 			Name:    "other",
@@ -290,11 +290,11 @@ func ExampleApp_Run_bashComplete_withLongFlag() {
 
 func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
 	os.Setenv("SHELL", "bash")
-	os.Args = []string{"greet", "--st", "--generate-bash-completion"}
+	os.Args = []string{"greet", "--st", "--generate-shell-completion"}
 
 	app := NewApp()
 	app.Name = "greet"
-	app.EnableBashCompletion = true
+	app.EnableShellCompletion = true
 	app.Flags = []Flag{
 		&IntFlag{
 			Name:    "int-flag",
@@ -323,11 +323,11 @@ func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
 
 func ExampleApp_Run_bashComplete() {
 	os.Setenv("SHELL", "bash")
-	os.Args = []string{"greet", "--generate-bash-completion"}
+	os.Args = []string{"greet", "--generate-shell-completion"}
 
 	app := &App{
-		Name:                 "greet",
-		EnableBashCompletion: true,
+		Name:                  "greet",
+		EnableShellCompletion: true,
 		Commands: []*Command{
 			{
 				Name:        "describeit",
@@ -361,12 +361,12 @@ func ExampleApp_Run_bashComplete() {
 
 func ExampleApp_Run_zshComplete() {
 	// set args for examples sake
-	os.Args = []string{"greet", "--generate-bash-completion"}
+	os.Args = []string{"greet", "--generate-shell-completion"}
 	_ = os.Setenv("SHELL", "/usr/bin/zsh")
 
 	app := NewApp()
 	app.Name = "greet"
-	app.EnableBashCompletion = true
+	app.EnableShellCompletion = true
 	app.Commands = []*Command{
 		{
 			Name:        "describeit",
@@ -1369,7 +1369,7 @@ func TestApp_BeforeAfterFuncShellCompletion(t *testing.T) {
 	var err error
 
 	app := &App{
-		EnableBashCompletion: true,
+		EnableShellCompletion: true,
 		Before: func(*Context) error {
 			counts.Total++
 			counts.Before = counts.Total
@@ -1397,7 +1397,7 @@ func TestApp_BeforeAfterFuncShellCompletion(t *testing.T) {
 	}
 
 	// run with the Before() func succeeding
-	err = app.Run([]string{"command", "--opt", "succeed", "sub", "--generate-bash-completion"})
+	err = app.Run([]string{"command", "--opt", "succeed", "sub", "--generate-shell-completion"})
 
 	if err != nil {
 		t.Fatalf("Run error: %s", err)
@@ -1736,8 +1736,8 @@ func TestApp_OrderOfOperations(t *testing.T) {
 	resetCounts := func() { counts = &opCounts{} }
 
 	app := &App{
-		EnableBashCompletion: true,
-		BashComplete: func(*Context) {
+		EnableShellCompletion: true,
+		ShellComplete: func(*Context) {
 			counts.Total++
 			counts.ShellComplete = counts.Total
 		},
@@ -1803,7 +1803,7 @@ func TestApp_OrderOfOperations(t *testing.T) {
 
 	resetCounts()
 
-	_ = app.Run([]string{"command", fmt.Sprintf("--%s", "generate-bash-completion")})
+	_ = app.Run([]string{"command", fmt.Sprintf("--%s", "generate-shell-completion")})
 	expect(t, counts.ShellComplete, 1)
 	expect(t, counts.Total, 1)
 
@@ -2618,8 +2618,8 @@ func TestShellCompletionForIncompleteFlags(t *testing.T) {
 				Name: "test-completion",
 			},
 		},
-		EnableBashCompletion: true,
-		BashComplete: func(ctx *Context) {
+		EnableShellCompletion: true,
+		ShellComplete: func(ctx *Context) {
 			for _, command := range ctx.App.Commands {
 				if command.Hidden {
 					continue
@@ -2651,7 +2651,7 @@ func TestShellCompletionForIncompleteFlags(t *testing.T) {
 		},
 		Writer: io.Discard,
 	}
-	err := app.Run([]string{"", "--test-completion", "--" + "generate-bash-completion"})
+	err := app.Run([]string{"", "--test-completion", "--" + "generate-shell-completion"})
 	if err != nil {
 		t.Errorf("app should not return an error: %s", err)
 	}

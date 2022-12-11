@@ -311,21 +311,9 @@ func printVersion(cCtx *Context) {
 
 // ShowCompletions prints the lists of commands within a given context
 func ShowCompletions(cCtx *Context) {
-	a := cCtx.App
-	if a != nil && a.BashComplete != nil {
-		a.BashComplete(cCtx)
-	}
-}
-
-// ShowCommandCompletions prints the custom completions for a given command
-func ShowCommandCompletions(ctx *Context, command string) {
-	c := ctx.App.Command(command)
+	c := cCtx.Command
 	if c != nil {
-		if c.BashComplete != nil {
-			c.BashComplete(ctx)
-		} else {
-			DefaultCompleteWithFlags(c)(ctx)
-		}
+		c.ShellComplete(cCtx)
 	}
 }
 
@@ -415,14 +403,14 @@ func checkHelp(cCtx *Context) bool {
 }
 
 func checkShellCompleteFlag(a *App, arguments []string) (bool, []string) {
-	if !a.EnableBashCompletion {
+	if !a.EnableShellCompletion {
 		return false, arguments
 	}
 
 	pos := len(arguments) - 1
 	lastArg := arguments[pos]
 
-	if lastArg != "--generate-bash-completion" {
+	if lastArg != "--generate-shell-completion" {
 		return false, arguments
 	}
 
@@ -436,22 +424,13 @@ func checkCompletions(cCtx *Context) bool {
 
 	if args := cCtx.Args(); args.Present() {
 		name := args.First()
-		if cmd := cCtx.App.Command(name); cmd != nil {
+		if cmd := cCtx.Command.Command(name); cmd != nil {
 			// let the command handle the completion
 			return false
 		}
 	}
 
 	ShowCompletions(cCtx)
-	return true
-}
-
-func checkCommandCompletions(c *Context, name string) bool {
-	if !c.shellComplete {
-		return false
-	}
-
-	ShowCommandCompletions(c, name)
 	return true
 }
 

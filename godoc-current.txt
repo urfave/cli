@@ -212,9 +212,6 @@ func ShowAppHelpAndExit(c *Context, exitCode int)
     ShowAppHelpAndExit - Prints the list of subcommands for the app and exits
     with exit code.
 
-func ShowCommandCompletions(ctx *Context, command string)
-    ShowCommandCompletions prints the custom completions for a given command
-
 func ShowCommandHelp(ctx *Context, command string) error
     ShowCommandHelp prints help for the given command
 
@@ -273,8 +270,10 @@ type App struct {
 	Commands []*Command
 	// List of flags to parse
 	Flags []Flag
-	// Boolean to enable bash completion commands
-	EnableBashCompletion bool
+	// Boolean to enable shell completion commands
+	EnableShellCompletion bool
+	// Shell Completion generation command name
+	ShellCompletionCommandName string
 	// Boolean to hide built-in help command and help flag
 	HideHelp bool
 	// Boolean to hide built-in help command but keep help flag.
@@ -284,7 +283,7 @@ type App struct {
 	HideVersion bool
 
 	// An action to execute when the shell completion flag is set
-	BashComplete BashCompleteFunc
+	ShellComplete ShellCompleteFunc
 	// An action to execute before any subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no subcommands are run
 	Before BeforeFunc
@@ -432,10 +431,6 @@ func (a *Author) String() string
     String makes Author comply to the Stringer interface, to allow an easy print
     in the templating process
 
-type BashCompleteFunc func(*Context)
-    BashCompleteFunc is an action to execute when the shell completion flag is
-    set
-
 type BeforeFunc func(*Context) error
     BeforeFunc is an action to execute before any subcommands are run, but after
     the context is ready if a non-nil error is returned, no subcommands are run
@@ -471,8 +466,8 @@ type Command struct {
 	ArgsUsage string
 	// The category the command is part of
 	Category string
-	// The function to call when checking for bash command completions
-	BashComplete BashCompleteFunc
+	// The function to call when checking for shell command completions
+	ShellComplete ShellCompleteFunc
 	// An action to execute before any sub-subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no sub-subcommands are run
 	Before BeforeFunc
@@ -756,7 +751,7 @@ type Flag interface {
     implemented.
 
 var BashCompletionFlag Flag = &BoolFlag{
-	Name:   "generate-bash-completion",
+	Name:   "generate-shell-completion",
 	Hidden: true,
 }
     BashCompletionFlag enables bash-completion for all commands and subcommands
@@ -998,6 +993,10 @@ type Serializer interface {
 	Serialize() string
 }
     Serializer is used to circumvent the limitations of flag.FlagSet.Set
+
+type ShellCompleteFunc func(*Context)
+    ShellCompleteFunc is an action to execute when the shell completion flag is
+    set
 
 type SliceBase[T any, C any, VC ValueCreator[T, C]] struct {
 	// Has unexported fields.
