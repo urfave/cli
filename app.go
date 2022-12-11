@@ -17,10 +17,7 @@ var (
 	changeLogURL            = "https://github.com/urfave/cli/blob/main/docs/CHANGELOG.md"
 	appActionDeprecationURL = fmt.Sprintf("%s#deprecated-cli-app-action-signature", changeLogURL)
 	contactSysadmin         = "This is an error in the application.  Please contact the distributor of this application if this is not you."
-	errInvalidActionType    = NewExitError("ERROR invalid Action type. "+
-		fmt.Sprintf("Must be `func(*Context`)` or `func(*Context) error).  %s", contactSysadmin)+
-		fmt.Sprintf("See %s", appActionDeprecationURL), 2)
-	ignoreFlagPrefix = "test." // this is to ignore test flags when adding flags from other packages
+	ignoreFlagPrefix        = "test." // this is to ignore test flags when adding flags from other packages
 
 	SuggestFlag               SuggestFlagFunc    = suggestFlag
 	SuggestCommand            SuggestCommandFunc = suggestCommand
@@ -325,13 +322,6 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 	return a.rootCommand.Run(cCtx, arguments...)
 }
 
-// This is a stub function to keep public API unchanged from old code
-//
-// Deprecated: use App.Run or App.RunContext
-func (a *App) RunAsSubcommand(ctx *Context) (err error) {
-	return a.RunContext(ctx.Context, ctx.Args().Slice())
-}
-
 func (a *App) suggestFlagFromError(err error, command string) (string, error) {
 	flag, parseErr := flagFromError(err)
 	if parseErr != nil {
@@ -355,18 +345,6 @@ func (a *App) suggestFlagFromError(err error, command string) (string, error) {
 	}
 
 	return fmt.Sprintf(SuggestDidYouMeanTemplate+"\n\n", suggestion), nil
-}
-
-// RunAndExitOnError calls .Run() and exits non-zero if an error was returned
-//
-// Deprecated: instead you should return an error that fulfills cli.ExitCoder
-// to cli.App.Run. This will cause the application to exit with the given error
-// code in the cli.ExitCoder
-func (a *App) RunAndExitOnError() {
-	if err := a.Run(os.Args); err != nil {
-		_, _ = fmt.Fprintln(a.ErrWriter, err)
-		OsExiter(1)
-	}
 }
 
 // Command returns the named command on App. Returns nil if the command does not exist
@@ -486,23 +464,6 @@ func (a *Author) String() string {
 	}
 
 	return fmt.Sprintf("%v%v", a.Name, e)
-}
-
-// HandleAction attempts to figure out which Action signature was used.  If
-// it's an ActionFunc or a func with the legacy signature for Action, the func
-// is run!
-func HandleAction(action interface{}, cCtx *Context) (err error) {
-	switch a := action.(type) {
-	case ActionFunc:
-		return a(cCtx)
-	case func(*Context) error:
-		return a(cCtx)
-	case func(*Context): // deprecated function signature
-		a(cCtx)
-		return nil
-	}
-
-	return errInvalidActionType
 }
 
 func checkStringSliceIncludes(want string, sSlice []string) bool {

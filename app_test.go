@@ -2583,7 +2583,7 @@ func TestHandleExitCoder_Default(t *testing.T) {
 	}
 
 	ctx := NewContext(app, fs, nil)
-	app.handleExitCoder(ctx, NewExitError("Default Behavior Error", 42))
+	app.handleExitCoder(ctx, Exit("Default Behavior Error", 42))
 
 	output := fakeErrWriter.String()
 	if !strings.Contains(output, "Default") {
@@ -2603,7 +2603,7 @@ func TestHandleExitCoder_Custom(t *testing.T) {
 	}
 
 	ctx := NewContext(app, fs, nil)
-	app.handleExitCoder(ctx, NewExitError("Default Behavior Error", 42))
+	app.handleExitCoder(ctx, Exit("Default Behavior Error", 42))
 
 	output := fakeErrWriter.String()
 	if !strings.Contains(output, "Custom") {
@@ -2668,7 +2668,7 @@ func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
 				{
 					Name: "subcmd",
 					Action: func(c *Context) error {
-						return NewExitError("exit error", testCode)
+						return Exit("exit error", testCode)
 					},
 				},
 			},
