@@ -234,17 +234,18 @@ func ExampleApp_Run_bashComplete_withShortFlag() {
 	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "-", "--generate-shell-completion"}
 
-	app := NewApp()
-	app.Name = "greet"
-	app.EnableShellCompletion = true
-	app.Flags = []Flag{
-		&IntFlag{
-			Name:    "other",
-			Aliases: []string{"o"},
-		},
-		&StringFlag{
-			Name:    "xyz",
-			Aliases: []string{"x"},
+	app := &App{
+		Name:                  "greet",
+		EnableShellCompletion: true,
+		Flags: []Flag{
+			&IntFlag{
+				Name:    "other",
+				Aliases: []string{"o"},
+			},
+			&StringFlag{
+				Name:    "xyz",
+				Aliases: []string{"x"},
+			},
 		},
 	}
 
@@ -262,23 +263,24 @@ func ExampleApp_Run_bashComplete_withLongFlag() {
 	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "--s", "--generate-shell-completion"}
 
-	app := NewApp()
-	app.Name = "greet"
-	app.EnableShellCompletion = true
-	app.Flags = []Flag{
-		&IntFlag{
-			Name:    "other",
-			Aliases: []string{"o"},
-		},
-		&StringFlag{
-			Name:    "xyz",
-			Aliases: []string{"x"},
-		},
-		&StringFlag{
-			Name: "some-flag,s",
-		},
-		&StringFlag{
-			Name: "similar-flag",
+	app := &App{
+		Name:                  "greet",
+		EnableShellCompletion: true,
+		Flags: []Flag{
+			&IntFlag{
+				Name:    "other",
+				Aliases: []string{"o"},
+			},
+			&StringFlag{
+				Name:    "xyz",
+				Aliases: []string{"x"},
+			},
+			&StringFlag{
+				Name: "some-flag,s",
+			},
+			&StringFlag{
+				Name: "similar-flag",
+			},
 		},
 	}
 
@@ -292,26 +294,27 @@ func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
 	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "--st", "--generate-shell-completion"}
 
-	app := NewApp()
-	app.Name = "greet"
-	app.EnableShellCompletion = true
-	app.Flags = []Flag{
-		&IntFlag{
-			Name:    "int-flag",
-			Aliases: []string{"i"},
-		},
-		&StringFlag{
-			Name:    "string",
-			Aliases: []string{"s"},
-		},
-		&StringFlag{
-			Name: "string-flag-2",
-		},
-		&StringFlag{
-			Name: "similar-flag",
-		},
-		&StringFlag{
-			Name: "some-flag",
+	app := &App{
+		Name:                  "greet",
+		EnableShellCompletion: true,
+		Flags: []Flag{
+			&IntFlag{
+				Name:    "int-flag",
+				Aliases: []string{"i"},
+			},
+			&StringFlag{
+				Name:    "string",
+				Aliases: []string{"s"},
+			},
+			&StringFlag{
+				Name: "string-flag-2",
+			},
+			&StringFlag{
+				Name: "similar-flag",
+			},
+			&StringFlag{
+				Name: "some-flag",
+			},
 		},
 	}
 
@@ -364,26 +367,27 @@ func ExampleApp_Run_zshComplete() {
 	os.Args = []string{"greet", "--generate-shell-completion"}
 	_ = os.Setenv("SHELL", "/usr/bin/zsh")
 
-	app := NewApp()
-	app.Name = "greet"
-	app.EnableShellCompletion = true
-	app.Commands = []*Command{
-		{
-			Name:        "describeit",
-			Aliases:     []string{"d"},
-			Usage:       "use it to see a description",
-			Description: "This is how we describe describeit the function",
-			Action: func(*Context) error {
-				fmt.Printf("i like to describe things")
-				return nil
-			},
-		}, {
-			Name:        "next",
-			Usage:       "next example",
-			Description: "more stuff to see when generating bash completion",
-			Action: func(*Context) error {
-				fmt.Printf("the next example")
-				return nil
+	app := &App{
+		Name:                  "greet",
+		EnableShellCompletion: true,
+		Commands: []*Command{
+			{
+				Name:        "describeit",
+				Aliases:     []string{"d"},
+				Usage:       "use it to see a description",
+				Description: "This is how we describe describeit the function",
+				Action: func(*Context) error {
+					fmt.Printf("i like to describe things")
+					return nil
+				},
+			}, {
+				Name:        "next",
+				Usage:       "next example",
+				Description: "more stuff to see when generating bash completion",
+				Action: func(*Context) error {
+					fmt.Printf("the next example")
+					return nil
+				},
 			},
 		},
 	}
@@ -406,13 +410,14 @@ func ExampleApp_Run_sliceValues() {
 		"--int64Sclice", "13,14", "--int64Sclice", "15,16",
 		"--intSclice", "13,14", "--intSclice", "15,16",
 	}
-	app := NewApp()
-	app.Name = "multi_values"
-	app.Flags = []Flag{
-		&StringSliceFlag{Name: "stringSclice"},
-		&Float64SliceFlag{Name: "float64Sclice"},
-		&Int64SliceFlag{Name: "int64Sclice"},
-		&IntSliceFlag{Name: "intSclice"},
+	app := &App{
+		Name: "multi_values",
+		Flags: []Flag{
+			&StringSliceFlag{Name: "stringSclice"},
+			&Float64SliceFlag{Name: "float64Sclice"},
+			&Int64SliceFlag{Name: "int64Sclice"},
+			&IntSliceFlag{Name: "intSclice"},
+		},
 	}
 	app.Action = func(ctx *Context) error {
 		for i, v := range ctx.FlagNames() {
@@ -438,19 +443,20 @@ func ExampleApp_Run_mapValues() {
 		"multi_values",
 		"--stringMap", "parsed1=parsed two", "--stringMap", "parsed3=",
 	}
-	app := NewApp()
-	app.Name = "multi_values"
-	app.Flags = []Flag{
-		&StringMapFlag{Name: "stringMap"},
-	}
-	app.Action = func(ctx *Context) error {
-		for i, v := range ctx.FlagNames() {
-			fmt.Printf("%d-%s %#v\n", i, v, ctx.StringMap(v))
-		}
-		fmt.Printf("notfound %#v\n", ctx.StringMap("notfound"))
-		err := ctx.Err()
-		fmt.Println("error:", err)
-		return err
+	app := &App{
+		Name: "multi_values",
+		Flags: []Flag{
+			&StringMapFlag{Name: "stringMap"},
+		},
+		Action: func(ctx *Context) error {
+			for i, v := range ctx.FlagNames() {
+				fmt.Printf("%d-%s %#v\n", i, v, ctx.StringMap(v))
+			}
+			fmt.Printf("notfound %#v\n", ctx.StringMap("notfound"))
+			err := ctx.Err()
+			fmt.Println("error:", err)
+			return err
+		},
 	}
 
 	_ = app.Run(os.Args)
@@ -2711,8 +2717,9 @@ func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
 }
 
 func newTestApp() *App {
-	a := NewApp()
-	a.Writer = io.Discard
+	a := &App{
+		Writer: io.Discard,
+	}
 	return a
 }
 
