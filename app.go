@@ -24,8 +24,7 @@ var (
 	SuggestDidYouMeanTemplate string             = suggestDidYouMeanTemplate
 )
 
-// App is the main structure of a cli application. It is recommended that
-// an app be created with the cli.NewApp() function
+// App is the main structure of a cli application.
 type App struct {
 	// The name of the program. Defaults to path.Base(os.Args[0])
 	Name string
@@ -125,21 +124,6 @@ type App struct {
 type SuggestFlagFunc func(flags []Flag, provided string, hideHelp bool) string
 
 type SuggestCommandFunc func(commands []*Command, provided string) string
-
-// NewApp creates a new cli Application with some reasonable defaults for Name,
-// Usage, Version and Action.
-func NewApp() *App {
-	return &App{
-		Name:          filepath.Base(os.Args[0]),
-		Usage:         "A new cli application",
-		UsageText:     "",
-		ShellComplete: DefaultAppComplete,
-		Action:        helpCommand.Action,
-		Reader:        os.Stdin,
-		Writer:        os.Stdout,
-		ErrWriter:     os.Stderr,
-	}
-}
 
 // Setup runs initialization code to ensure all data structures are ready for
 // `Run` or inspection prior to `Run`.  It is internally called by `Run`, but

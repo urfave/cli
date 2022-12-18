@@ -333,12 +333,7 @@ type App struct {
 
 	// Has unexported fields.
 }
-    App is the main structure of a cli application. It is recommended that an
-    app be created with the cli.NewApp() function
-
-func NewApp() *App
-    NewApp creates a new cli Application with some reasonable defaults for Name,
-    Usage, Version and Action.
+    App is the main structure of a cli application.
 
 func (a *App) Command(name string) *Command
     Command returns the named command on App. Returns nil if the command does
