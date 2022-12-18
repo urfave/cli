@@ -49,7 +49,7 @@ func TestToMarkdownNoCommands(t *testing.T) {
 func TestToMarkdownNoAuthors(t *testing.T) {
 	// Given
 	app := testApp()
-	app.Authors = []*Author{}
+	app.Authors = []string{}
 
 	// When
 	res, err := app.ToMarkdown()

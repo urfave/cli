@@ -45,7 +45,7 @@ func ExampleApp_Run() {
 			return nil
 		},
 		UsageText: "app [first_arg] [second_arg]",
-		Authors:   []*Author{{Name: "Oliver Allen", Email: "oliver@toyshop.example.com"}},
+		Authors:   []string{"Oliver Allen <oliver@toyshop.example.com>"},
 	}
 
 	app.Run(os.Args)
@@ -100,9 +100,9 @@ func ExampleApp_Run_appHelp() {
 		Name:        "greet",
 		Version:     "0.1.0",
 		Description: "This is how we describe greet the app",
-		Authors: []*Author{
-			{Name: "Harrison", Email: "harrison@lolwut.com"},
-			{Name: "Oliver Allen", Email: "oliver@toyshop.com"},
+		Authors: []string{
+			"Harrison <harrison@lolwut.com>",
+			"Oliver Allen <oliver@toyshop.com>",
 		},
 		Flags: []Flag{
 			&StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
