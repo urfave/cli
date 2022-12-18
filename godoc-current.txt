@@ -550,6 +550,8 @@ func (cCtx *Context) NArg() int
 func (cCtx *Context) NumFlags() int
     NumFlags returns the number of flags set
 
+func (cCtx *Context) Reader() io.Reader
+
 func (cCtx *Context) Set(name, value string) error
     Set sets a context flag to a value.
 

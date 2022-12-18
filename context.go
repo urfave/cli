@@ -21,23 +21,26 @@ type Context struct {
 	parentContext *Context
 }
 
+func newRootContext(ctx context.Context, shellComplete bool) *Context {
+	return &Context{
+		Context:       ctx,
+		shellComplete: shellComplete,
+		flagSet:       &flag.FlagSet{},
+	}
+}
+
 // NewContext creates a new context. For use in when invoking a Command action.
 func NewContext(cmd *Command, set *flag.FlagSet, parentCtx *Context) *Context {
-	c := &Context{Command: cmd, flagSet: set, parentContext: parentCtx}
-	if parentCtx != nil {
-		c.Context = parentCtx.Context
-		c.shellComplete = parentCtx.shellComplete
-		if parentCtx.flagSet == nil {
-			parentCtx.flagSet = &flag.FlagSet{}
-		}
+	if parentCtx == nil {
+		parentCtx = newRootContext(context.TODO(), false)
 	}
-
-	c.Command = &Command{}
-
-	if c.Context == nil {
-		c.Context = context.Background()
+	c := &Context{
+		Context:       parentCtx.Context,
+		shellComplete: parentCtx.shellComplete,
+		Command:       cmd,
+		flagSet:       set,
+		parentContext: parentCtx,
 	}
-
 	return c
 }
 
@@ -130,7 +133,19 @@ func (cCtx *Context) Lineage() []*Context {
 
 func (cCtx *Context) root() *Context {
 	lineage := cCtx.Lineage()
+	if len(lineage) >= 2 {
+		return lineage[len(lineage)-2]
+	}
 	return lineage[len(lineage)-1]
+}
+
+func (cCtx *Context) Reader() io.Reader {
+	root := cCtx.root()
+	if root.Command != nil && root.Command.Reader != nil {
+		return root.Command.Reader
+	}
+
+	return os.Stdin
 }
 
 func (cCtx *Context) Writer() io.Writer {

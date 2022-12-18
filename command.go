@@ -207,6 +207,24 @@ func (c *Command) setupDefaults() {
 }
 
 func (c *Command) setup(cCtx *Context) {
+
+	if cCtx.parentContext != nil && cCtx.parentContext.Command != nil {
+		if cCtx.parentContext.Command.UseShortOptionHandling {
+			c.UseShortOptionHandling = true
+		}
+
+	}
+
+	if c.Reader == nil {
+		c.Reader = cCtx.Reader()
+	}
+	if c.Writer == nil {
+		c.Writer = cCtx.Writer()
+	}
+	if c.ErrWriter == nil {
+		c.ErrWriter = cCtx.ErrWriter()
+	}
+
 	c.setupDefaults()
 
 	if c.AllowExtFlags {
@@ -231,10 +249,6 @@ func (c *Command) setup(cCtx *Context) {
 		c.appendFlag(HelpFlag)
 	}
 
-	if cCtx.Command.UseShortOptionHandling {
-		c.UseShortOptionHandling = true
-	}
-
 	c.categories = newCommandCategories()
 	for _, command := range c.Commands {
 		c.categories.AddCommand(command.Category, command)
@@ -243,9 +257,11 @@ func (c *Command) setup(cCtx *Context) {
 
 	var newCmds []*Command
 	for _, scmd := range c.Commands {
-		if scmd.HelpName == "" {
-			scmd.HelpName = fmt.Sprintf("%s %s", c.HelpName, scmd.Name)
+		cname := scmd.Name
+		if scmd.HelpName != "" {
+			cname = scmd.HelpName
 		}
+		scmd.HelpName = fmt.Sprintf("%s %s", c.HelpName, cname)
 		newCmds = append(newCmds, scmd)
 	}
 	c.Commands = newCmds
@@ -308,8 +324,7 @@ func (c *Command) RunContext(ctx context.Context, arguments []string) (err error
 	// always appends the completion flag at the end of the command
 	shellComplete, arguments := checkShellCompleteFlag(c, arguments)
 
-	cCtx := NewContext(c, nil, &Context{Context: ctx})
-	cCtx.shellComplete = shellComplete
+	cCtx := NewContext(c, nil, newRootContext(ctx, shellComplete))
 
 	return c.run(cCtx, arguments...)
 }
@@ -336,7 +351,7 @@ func (c *Command) run(cCtx *Context, arguments ...string) (err error) {
 			return err
 		}
 		_, _ = fmt.Fprintf(cCtx.Command.Writer, "%s %s\n\n", "Incorrect Usage:", err.Error())
-		if cCtx.Command.Suggest {
+		if cCtx.root().Command.Suggest {
 			if suggestion, err := c.suggestFlagFromError(err, ""); err == nil {
 				fmt.Fprintf(cCtx.Command.Writer, "%s", suggestion)
 			}
@@ -432,8 +447,7 @@ func (c *Command) run(cCtx *Context, arguments ...string) (err error) {
 	}
 
 	if cmd != nil {
-		newcCtx := NewContext(cCtx.Command, nil, cCtx)
-		newcCtx.Command = cmd
+		newcCtx := NewContext(cmd, nil, cCtx)
 		return cmd.run(newcCtx, cCtx.Args().Slice()...)
 	}
 
@@ -443,7 +457,7 @@ func (c *Command) run(cCtx *Context, arguments ...string) (err error) {
 
 	err = c.Action(cCtx)
 
-	cCtx.Command.handleExitCoder(cCtx, err)
+	cCtx.root().Command.handleExitCoder(cCtx, err)
 	return err
 }
 

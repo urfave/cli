@@ -611,7 +611,7 @@ func TestCheckRequiredFlags(t *testing.T) {
 			_ = set.Parse(test.parseInput)
 
 			cCtx := &Context{}
-			childCCtx := NewContext(cCtx.Command, set, cCtx)
+			childCCtx := NewContext(&Command{}, set, cCtx)
 			childCCtx.Command.Flags = test.flags
 
 			// logic under test

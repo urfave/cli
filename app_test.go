@@ -3044,10 +3044,21 @@ func TestFlagAction(t *testing.T) {
 		},
 	}
 
+	var resetStreams func(c []*Command)
+	resetStreams = func(c []*Command) {
+		for _, sc := range c {
+			sc.Reader = nil
+			sc.Writer = nil
+			sc.ErrWriter = nil
+			resetStreams(sc.Commands)
+		}
+	}
+
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			buf := new(bytes.Buffer)
 			app.Writer = buf
+			resetStreams(app.Commands)
 			err := app.Run(test.args)
 			if test.err != nil {
 				expect(t, err, test.err)
