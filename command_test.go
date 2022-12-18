@@ -371,6 +371,7 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 		osArgs = append(osArgs, c.testArgs...)
 		osArgs = append(osArgs, "--generate-bash-completion")
 
+		resetStreams(app.Commands)
 		err := app.Run(osArgs)
 		stdout := outputBuffer.String()
 		expect(t, err, nil)

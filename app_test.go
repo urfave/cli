@@ -2727,6 +2727,15 @@ func TestSetupInitializesOnlyNilWriters(t *testing.T) {
 	}
 }
 
+func resetStreams(c []*Command) {
+	for _, sc := range c {
+		sc.Reader = nil
+		sc.Writer = nil
+		sc.ErrWriter = nil
+		resetStreams(sc.Commands)
+	}
+}
+
 func TestFlagAction(t *testing.T) {
 	stringFlag := &StringFlag{
 		Name: "f_string",
@@ -3042,16 +3051,6 @@ func TestFlagAction(t *testing.T) {
 			args: []string{"app", "--f_string=app", "--f_uint=1", "--f_int_slice=1,2,3", "--f_duration=1h30m20s", "c1", "--f_string=c1", "sub1", "--f_string=sub1"},
 			exp:  "app 1h30m20s [1 2 3] 1 c1 sub1 ",
 		},
-	}
-
-	var resetStreams func(c []*Command)
-	resetStreams = func(c []*Command) {
-		for _, sc := range c {
-			sc.Reader = nil
-			sc.Writer = nil
-			sc.ErrWriter = nil
-			resetStreams(sc.Commands)
-		}
 	}
 
 	for _, test := range tests {
