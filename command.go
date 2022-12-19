@@ -157,15 +157,16 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 	}
 
 	if err != nil {
+		cCtx.App.isInError = true
 		if c.OnUsageError != nil {
 			err = c.OnUsageError(cCtx, err, !c.isRoot)
 			cCtx.App.handleExitCoder(cCtx, err)
 			return err
 		}
-		_, _ = fmt.Fprintf(cCtx.App.Writer, "%s %s\n\n", "Incorrect Usage:", err.Error())
+		_, _ = fmt.Fprintf(cCtx.App.writer(), "%s %s\n\n", "Incorrect Usage:", err.Error())
 		if cCtx.App.Suggest {
 			if suggestion, err := c.suggestFlagFromError(err, ""); err == nil {
-				fmt.Fprintf(cCtx.App.Writer, "%s", suggestion)
+				fmt.Fprintf(cCtx.App.writer(), "%s", suggestion)
 			}
 		}
 		if !c.HideHelp {
@@ -203,6 +204,7 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 
 	cerr := cCtx.checkRequiredFlags(c.Flags)
 	if cerr != nil {
+		cCtx.App.isInError = true
 		_ = ShowSubcommandHelp(cCtx)
 		return cerr
 	}

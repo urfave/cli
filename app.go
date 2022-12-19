@@ -109,6 +109,9 @@ type App struct {
 	didSetup bool
 
 	rootCommand *Command
+
+	// if the app is in error mode
+	isInError bool
 }
 
 // Setup runs initialization code to ensure all data structures are ready for
@@ -418,6 +421,33 @@ func runFlagActions(c *Context, fs []Flag) error {
 		}
 	}
 	return nil
+}
+
+func (a *App) writer() io.Writer {
+	if a.isInError {
+		// this can happen in test but not in normal usage
+		if a.ErrWriter == nil {
+			return os.Stderr
+		}
+		return a.ErrWriter
+	}
+	return a.Writer
+}
+
+// Author represents someone who has contributed to a cli project.
+type Author struct {
+	Name  string // The Authors name
+	Email string // The Authors email
+}
+
+// String makes Author comply to the Stringer interface, to allow an easy print in the templating process
+func (a *Author) String() string {
+	e := ""
+	if a.Email != "" {
+		e = " <" + a.Email + ">"
+	}
+
+	return fmt.Sprintf("%v%v", a.Name, e)
 }
 
 func checkStringSliceIncludes(want string, sSlice []string) bool {
