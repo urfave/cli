@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net/mail"
 	"os"
 	"reflect"
 	"strconv"
@@ -45,7 +46,7 @@ func ExampleApp_Run() {
 			return nil
 		},
 		UsageText: "app [first_arg] [second_arg]",
-		Authors:   []*Author{{Name: "Oliver Allen", Email: "oliver@toyshop.example.com"}},
+		Authors:   []*mail.Address{{Name: "Oliver Allen", Address: "oliver@toyshop.example.com"}},
 	}
 
 	app.Run(os.Args)
@@ -100,9 +101,9 @@ func ExampleApp_Run_appHelp() {
 		Name:        "greet",
 		Version:     "0.1.0",
 		Description: "This is how we describe greet the app",
-		Authors: []*Author{
-			{Name: "Harrison", Email: "harrison@lolwut.com"},
-			{Name: "Oliver Allen", Email: "oliver@toyshop.com"},
+		Authors: []*mail.Address{
+			{Name: "Harrison", Address: "harrison@lolwut.com"},
+			{Name: "Oliver Allen", Address: "oliver@toyshop.com"},
 		},
 		Flags: []Flag{
 			&StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
@@ -135,8 +136,8 @@ func ExampleApp_Run_appHelp() {
 	//    This is how we describe greet the app
 	//
 	// AUTHORS:
-	//    Harrison <harrison@lolwut.com>
-	//    Oliver Allen <oliver@toyshop.com>
+	//    "Harrison" <harrison@lolwut.com>
+	//    "Oliver Allen" <oliver@toyshop.com>
 	//
 	// COMMANDS:
 	//    describeit, d  use it to see a description
