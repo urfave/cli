@@ -11,18 +11,8 @@ import (
 	"strings"
 )
 
-const suggestDidYouMeanTemplate = "Did you mean %q?"
-
-var (
-	changeLogURL            = "https://github.com/urfave/cli/blob/main/docs/CHANGELOG.md"
-	appActionDeprecationURL = fmt.Sprintf("%s#deprecated-cli-app-action-signature", changeLogURL)
-	contactSysadmin         = "This is an error in the application.  Please contact the distributor of this application if this is not you."
-	ignoreFlagPrefix        = "test." // this is to ignore test flags when adding flags from other packages
-
-	SuggestFlag               SuggestFlagFunc    = suggestFlag
-	SuggestCommand            SuggestCommandFunc = suggestCommand
-	SuggestDidYouMeanTemplate string             = suggestDidYouMeanTemplate
-)
+// ignoreFlagPrefix is to ignore test flags when adding flags from other packages
+const ignoreFlagPrefix = "test."
 
 // App is the main structure of a cli application.
 type App struct {
@@ -120,10 +110,6 @@ type App struct {
 
 	rootCommand *Command
 }
-
-type SuggestFlagFunc func(flags []Flag, provided string, hideHelp bool) string
-
-type SuggestCommandFunc func(commands []*Command, provided string) string
 
 // Setup runs initialization code to ensure all data structures are ready for
 // `Run` or inspection prior to `Run`.  It is internally called by `Run`, but

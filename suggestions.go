@@ -6,6 +6,18 @@ import (
 	"github.com/xrash/smetrics"
 )
 
+const suggestDidYouMeanTemplate = "Did you mean %q?"
+
+var (
+	SuggestFlag               SuggestFlagFunc    = suggestFlag
+	SuggestCommand            SuggestCommandFunc = suggestCommand
+	SuggestDidYouMeanTemplate string             = suggestDidYouMeanTemplate
+)
+
+type SuggestFlagFunc func(flags []Flag, provided string, hideHelp bool) string
+
+type SuggestCommandFunc func(commands []*Command, provided string) string
+
 func jaroWinkler(a, b string) float64 {
 	// magic values are from https://github.com/xrash/smetrics/blob/039620a656736e6ad994090895784a7af15e0b80/jaro-winkler.go#L8
 	const (
