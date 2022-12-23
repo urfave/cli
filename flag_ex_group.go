@@ -1,7 +1,5 @@
 package cli
 
-import "fmt"
-
 // FlagExGroup defines a mutually exclusive flag group
 // Multiple option paths can be provided out of which
 // only one can be defined on cmdline
@@ -17,14 +15,17 @@ type FlagExGroup struct {
 
 func (grp FlagExGroup) check(ctx *Context) error {
 	oneSet := false
+	e := &mutuallyExclusiveGroup{}
 
 	for _, grpf := range grp.Flags {
 		for _, f := range grpf {
 			for _, name := range f.Names() {
 				if ctx.IsSet(name) {
 					if oneSet {
-						return fmt.Errorf("muetx set")
+						e.flag2Name = name
+						return e
 					}
+					e.flag1Name = name
 					oneSet = true
 					break
 				}
@@ -36,7 +37,7 @@ func (grp FlagExGroup) check(ctx *Context) error {
 	}
 
 	if !oneSet && grp.Required {
-		return fmt.Errorf("missing required flags")
+		return &mutuallyExclusiveGroupRequiredFlag{&grp}
 	}
 	return nil
 }

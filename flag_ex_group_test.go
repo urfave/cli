@@ -42,6 +42,8 @@ func TestFlagExGroup(t *testing.T) {
 	err = a.Run([]string{"foo", "--i", "11", "--ai", "12"})
 	if err == nil {
 		t.Error("Expected mutual exclusion error")
+	} else if _, ok := err.(*mutuallyExclusiveGroup); !ok {
+		t.Errorf("Got invalid error %v", err)
 	}
 
 	a.FlagExGroups[0].Required = true
@@ -49,6 +51,8 @@ func TestFlagExGroup(t *testing.T) {
 	err = a.Run([]string{"foo"})
 	if err == nil {
 		t.Error("Required flags error")
+	} else if _, ok := err.(*mutuallyExclusiveGroupRequiredFlag); !ok {
+		t.Errorf("Got invalid error %v", err)
 	}
 
 	err = a.Run([]string{"foo", "--i", "10"})
@@ -59,6 +63,7 @@ func TestFlagExGroup(t *testing.T) {
 	err = a.Run([]string{"foo", "--i", "11", "--ai", "12"})
 	if err == nil {
 		t.Error("Expected mutual exclusion error")
+	} else if _, ok := err.(*mutuallyExclusiveGroup); !ok {
+		t.Errorf("Got invalid error %v", err)
 	}
-
 }
