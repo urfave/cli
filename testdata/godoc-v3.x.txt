@@ -330,6 +330,8 @@ type App struct {
 	AllowExtFlags bool
 	// Treat all flags as normal arguments if true
 	SkipFlagParsing bool
+	// Flag exclusion group
+	FlagExGroups []FlagExGroup
 
 	// Has unexported fields.
 }
@@ -473,6 +475,8 @@ type Command struct {
 	// render custom help text by setting this variable.
 	CustomHelpTemplate string
 
+	// Flag exclusion group
+	FlagExGroups []FlagExGroup
 	// Has unexported fields.
 }
     Command is a subcommand for a cli.App.
@@ -832,6 +836,17 @@ type FlagEnvHintFunc func(envVars []string, str string) string
 var FlagEnvHinter FlagEnvHintFunc = withEnvHint
     FlagEnvHinter annotates flag help message with the environment variable
     details. This is used by the default FlagStringer.
+
+type FlagExGroup struct {
+	// Flag list
+	Flags [][]Flag
+
+	// whether this group is required
+	Required bool
+}
+    FlagExGroup defines a mutually exclusive flag group Multiple option paths
+    can be provided out of which only one can be defined on cmdline So for
+    example [ --foo | [ --bar something --darth somethingelse ] ]
 
 type FlagFileHintFunc func(filePath, str string) string
     FlagFileHintFunc is used by the default FlagStringFunc to annotate flag help
