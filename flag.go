@@ -340,7 +340,7 @@ func stringifyFlag(f Flag) string {
 	defaultValueString := ""
 
 	// set default text for all flags except bool flags
-	// for bool flags text is set only is DisableDefaultText is not
+	// for bool flags display default text if DisableDefaultText is not
 	// set
 	if bf, ok := f.(*BoolFlag); !ok || !bf.DisableDefaultText {
 		if s := df.GetDefaultText(); s != "" {
