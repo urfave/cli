@@ -455,6 +455,8 @@ type BoolFlag struct {
 
 	Count *int
 
+	DisableDefaultText bool
+
 	Action func(*Context, bool) error
 	// Has unexported fields.
 }
@@ -881,18 +883,20 @@ var BashCompletionFlag Flag = &BoolFlag{
     BashCompletionFlag enables bash-completion for all commands and subcommands
 
 var HelpFlag Flag = &BoolFlag{
-	Name:    "help",
-	Aliases: []string{"h"},
-	Usage:   "show help",
+	Name:               "help",
+	Aliases:            []string{"h"},
+	Usage:              "show help",
+	DisableDefaultText: true,
 }
     HelpFlag prints the help for all commands and subcommands. Set to nil to
     disable the flag. The subcommand will still be added unless HideHelp or
     HideHelpCommand is set to true.
 
 var VersionFlag Flag = &BoolFlag{
-	Name:    "version",
-	Aliases: []string{"v"},
-	Usage:   "print the version",
+	Name:               "version",
+	Aliases:            []string{"v"},
+	Usage:              "print the version",
+	DisableDefaultText: true,
 }
     VersionFlag prints the version for the application
 

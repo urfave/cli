@@ -7,6 +7,8 @@ flag_types:
       - name: Count
         type: int
         pointer: true
+      - name: DisableDefaultText
+        type: bool
       - name: Action
         type: "func(*Context, bool) error"
   float64:
