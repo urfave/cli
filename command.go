@@ -65,7 +65,7 @@ type Command struct {
 	CustomHelpTemplate string
 
 	// Use longest prefix match for commands
-	PrefixMatchCommand bool
+	AllowShorthandCommand bool
 
 	// categories contains the categorized commands and is populated on app startup
 	categories CommandCategories
@@ -103,12 +103,10 @@ func (c *Command) FullName() string {
 }
 
 func (cmd *Command) Command(name string) *Command {
-	//longestNameMatch := ""
 	for _, c := range cmd.Commands {
 		if c.HasName(name) {
 			return c
 		}
-		//if strings.P
 	}
 
 	return nil
@@ -241,6 +239,9 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 	args := cCtx.Args()
 	if args.Present() {
 		name := args.First()
+		if cCtx.App.SuggestCommandFunc != nil {
+			name = cCtx.App.SuggestCommandFunc(c.Commands, name)
+		}
 		cmd = c.Command(name)
 		if cmd == nil {
 			hasDefault := cCtx.App.DefaultCommand != ""

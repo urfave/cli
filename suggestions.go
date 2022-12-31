@@ -1,8 +1,6 @@
 package cli
 
 import (
-	"fmt"
-
 	"github.com/xrash/smetrics"
 )
 
@@ -68,5 +66,5 @@ func suggestCommand(commands []*Command, provided string) (suggestion string) {
 		}
 	}
 
-	return fmt.Sprintf(SuggestDidYouMeanTemplate, suggestion)
+	return suggestion
 }
