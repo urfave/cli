@@ -5,7 +5,6 @@ package cli
 
 import (
 	"errors"
-	"net/mail"
 	"testing"
 )
 
@@ -50,7 +49,7 @@ func TestToMarkdownNoCommands(t *testing.T) {
 func TestToMarkdownNoAuthors(t *testing.T) {
 	// Given
 	app := testApp()
-	app.Authors = []*mail.Address{}
+	app.Authors = []any{}
 
 	// When
 	res, err := app.ToMarkdown()

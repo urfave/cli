@@ -46,7 +46,7 @@ func ExampleApp_Run() {
 			return nil
 		},
 		UsageText: "app [first_arg] [second_arg]",
-		Authors:   []*mail.Address{{Name: "Oliver Allen", Address: "oliver@toyshop.example.com"}},
+		Authors:   []any{&mail.Address{Name: "Oliver Allen", Address: "oliver@toyshop.example.com"}, "gruffalo@soup-world.example.org"},
 	}
 
 	app.Run(os.Args)
@@ -101,9 +101,9 @@ func ExampleApp_Run_appHelp() {
 		Name:        "greet",
 		Version:     "0.1.0",
 		Description: "This is how we describe greet the app",
-		Authors: []*mail.Address{
-			{Name: "Harrison", Address: "harrison@lolwut.com"},
-			{Name: "Oliver Allen", Address: "oliver@toyshop.com"},
+		Authors: []any{
+			&mail.Address{Name: "Harrison", Address: "harrison@lolwut.example.com"},
+			"Oliver Allen  <oliver@toyshop.example.com>",
 		},
 		Flags: []Flag{
 			&StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
@@ -136,8 +136,8 @@ func ExampleApp_Run_appHelp() {
 	//    This is how we describe greet the app
 	//
 	// AUTHORS:
-	//    "Harrison" <harrison@lolwut.com>
-	//    "Oliver Allen" <oliver@toyshop.com>
+	//    "Harrison" <harrison@lolwut.example.com>
+	//    Oliver Allen  <oliver@toyshop.example.com>
 	//
 	// COMMANDS:
 	//    describeit, d  use it to see a description

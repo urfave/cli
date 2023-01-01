@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"net/mail"
 	"os"
 	"path/filepath"
 	"sort"
@@ -79,8 +78,8 @@ type App struct {
 	OnUsageError OnUsageErrorFunc
 	// Execute this function when an invalid flag is accessed from the context
 	InvalidFlagAccessHandler InvalidFlagAccessFunc
-	// List of all authors who contributed
-	Authors []*mail.Address
+	// List of all authors who contributed (string or fmt.Stringer)
+	Authors []any // TODO: ~string | fmt.Stringer when interface unions are available
 	// Copyright of the binary if any
 	Copyright string
 	// Reader reader to write input to (useful for tests)
