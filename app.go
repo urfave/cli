@@ -68,8 +68,8 @@ type App struct {
 	OnUsageError OnUsageErrorFunc
 	// Execute this function when an invalid flag is accessed from the context
 	InvalidFlagAccessHandler InvalidFlagAccessFunc
-	// List of all authors who contributed
-	Authors []*Author
+	// List of all authors who contributed (string or fmt.Stringer)
+	Authors []any // TODO: ~string | fmt.Stringer when interface unions are available
 	// Copyright of the binary if any
 	Copyright string
 	// Reader reader to write input to (useful for tests)
@@ -418,22 +418,6 @@ func runFlagActions(c *Context, fs []Flag) error {
 		}
 	}
 	return nil
-}
-
-// Author represents someone who has contributed to a cli project.
-type Author struct {
-	Name  string // The Authors name
-	Email string // The Authors email
-}
-
-// String makes Author comply to the Stringer interface, to allow an easy print in the templating process
-func (a *Author) String() string {
-	e := ""
-	if a.Email != "" {
-		e = " <" + a.Email + ">"
-	}
-
-	return fmt.Sprintf("%v%v", a.Name, e)
 }
 
 func checkStringSliceIncludes(want string, sSlice []string) bool {

@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"net/mail"
 	"os"
 	"testing"
 )
@@ -127,9 +128,9 @@ Should be a part of the same code block
 	app.UsageText = "app [first_arg] [second_arg]"
 	app.Description = `Description of the application.`
 	app.Usage = "Some app"
-	app.Authors = []*Author{
-		{Name: "Harrison", Email: "harrison@lolwut.com"},
-		{Name: "Oliver Allen", Email: "oliver@toyshop.com"},
+	app.Authors = []any{
+		"Harrison <harrison@lolwut.example.com>",
+		&mail.Address{Name: "Oliver Allen", Address: "oliver@toyshop.com"},
 	}
 	return app
 }
