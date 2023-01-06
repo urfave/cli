@@ -448,6 +448,8 @@ type BoolFlag struct {
 
 	Count *int
 
+	DisableDefaultText bool
+
 	Action func(*Context, bool) error
 }
 

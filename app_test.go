@@ -145,8 +145,8 @@ func ExampleApp_Run_appHelp() {
 	//
 	// GLOBAL OPTIONS:
 	//    --name value   a name to say (default: "bob")
-	//    --help, -h     show help (default: false)
-	//    --version, -v  print the version (default: false)
+	//    --help, -h     show help
+	//    --version, -v  print the version
 }
 
 func ExampleApp_Run_commandHelp() {
@@ -183,7 +183,7 @@ func ExampleApp_Run_commandHelp() {
 	//    This is how we describe describeit the function
 	//
 	// OPTIONS:
-	//    --help, -h  show help (default: false)
+	//    --help, -h  show help
 }
 
 func ExampleApp_Run_noAction() {
@@ -201,7 +201,7 @@ func ExampleApp_Run_noAction() {
 	//    help, h  Shows a list of commands or help for one command
 	//
 	// GLOBAL OPTIONS:
-	//    --help, -h  show help (default: false)
+	//    --help, -h  show help
 }
 
 func ExampleApp_Run_subcommandNoAction() {
@@ -228,7 +228,7 @@ func ExampleApp_Run_subcommandNoAction() {
 	//    This is how we describe describeit the function
 	//
 	// OPTIONS:
-	//    --help, -h  show help (default: false)
+	//    --help, -h  show help
 
 }
 
