@@ -399,6 +399,16 @@ type Args interface {
 	Slice() []string
 }
 
+type Author struct {
+	Name  string // The Authors name
+	Email string // The Authors email
+}
+    Author represents someone who has contributed to a cli project.
+
+func (a *Author) String() string
+    String makes Author comply to the Stringer interface, to allow an easy print
+    in the templating process
+
 type BeforeFunc func(*Context) error
     BeforeFunc is an action to execute before any subcommands are run, but after
     the context is ready if a non-nil error is returned, no subcommands are run
