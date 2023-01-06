@@ -37,7 +37,7 @@ func (grp FlagExGroup) check(ctx *Context) error {
 	}
 
 	if !oneSet && grp.Required {
-		return &mutuallyExclusiveGroupRequiredFlag{&grp}
+		return &mutuallyExclusiveGroupRequiredFlag{flags: &grp}
 	}
 	return nil
 }
