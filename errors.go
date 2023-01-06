@@ -99,7 +99,7 @@ func (e *mutuallyExclusiveGroupRequiredFlag) Error() string {
 		missingFlags = append(missingFlags, strings.Join(grpString, " "))
 	}
 
-	return fmt.Sprintf("one of these flags needs to be provided %s", strings.Join(missingFlags, "\n"))
+	return fmt.Sprintf("one of these flags needs to be provided: %s", strings.Join(missingFlags, ", "))
 }
 
 // ErrorFormatter is the interface that will suitably format the error output
