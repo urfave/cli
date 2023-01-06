@@ -109,6 +109,9 @@ type App struct {
 	didSetup bool
 
 	rootCommand *Command
+
+	// if the app is in error mode
+	isInError bool
 }
 
 // Setup runs initialization code to ensure all data structures are ready for
@@ -418,6 +421,17 @@ func runFlagActions(c *Context, fs []Flag) error {
 		}
 	}
 	return nil
+}
+
+func (a *App) writer() io.Writer {
+	if a.isInError {
+		// this can happen in test but not in normal usage
+		if a.ErrWriter == nil {
+			return os.Stderr
+		}
+		return a.ErrWriter
+	}
+	return a.Writer
 }
 
 func checkStringSliceIncludes(want string, sSlice []string) bool {

@@ -76,7 +76,7 @@ var helpCommand = &Command{
 			if templ == "" {
 				templ = CommandHelpTemplate
 			}
-			HelpPrinter(cCtx.App.Writer, templ, cCtx.Command)
+			HelpPrinter(cCtx.App.writer(), templ, cCtx.Command)
 			return nil
 		}
 		return ShowSubcommandHelp(cCtx)
@@ -125,7 +125,7 @@ func ShowAppHelp(cCtx *Context) error {
 	}
 
 	if cCtx.App.ExtraInfo == nil {
-		HelpPrinter(cCtx.App.Writer, tpl, cCtx.App)
+		HelpPrinter(cCtx.App.writer(), tpl, cCtx.App)
 		return nil
 	}
 
@@ -134,7 +134,7 @@ func ShowAppHelp(cCtx *Context) error {
 			"ExtraInfo": cCtx.App.ExtraInfo,
 		}
 	}
-	HelpPrinterCustom(cCtx.App.Writer, tpl, cCtx.App, customAppData())
+	HelpPrinterCustom(cCtx.App.writer(), tpl, cCtx.App, customAppData())
 
 	return nil
 }
@@ -213,23 +213,23 @@ func DefaultCompleteWithFlags(cmd *Command) func(cCtx *Context) {
 
 			if strings.HasPrefix(lastArg, "-") {
 				if cmd != nil {
-					printFlagSuggestions(lastArg, cmd.Flags, cCtx.App.Writer)
+					printFlagSuggestions(lastArg, cmd.Flags, cCtx.App.writer())
 
 					return
 				}
 
-				printFlagSuggestions(lastArg, cCtx.App.Flags, cCtx.App.Writer)
+				printFlagSuggestions(lastArg, cCtx.App.Flags, cCtx.App.writer())
 
 				return
 			}
 		}
 
 		if cmd != nil {
-			printCommandSuggestions(cmd.Commands, cCtx.App.Writer)
+			printCommandSuggestions(cmd.Commands, cCtx.App.writer())
 			return
 		}
 
-		printCommandSuggestions(cCtx.App.Commands, cCtx.App.Writer)
+		printCommandSuggestions(cCtx.App.Commands, cCtx.App.writer())
 	}
 }
 
@@ -264,7 +264,7 @@ func ShowCommandHelp(ctx *Context, command string) error {
 				}
 			}
 
-			HelpPrinter(ctx.App.Writer, templ, c)
+			HelpPrinter(ctx.App.writer(), templ, c)
 
 			return nil
 		}
@@ -296,7 +296,7 @@ func ShowSubcommandHelp(cCtx *Context) error {
 		return nil
 	}
 
-	HelpPrinter(cCtx.App.Writer, SubcommandHelpTemplate, cCtx.Command)
+	HelpPrinter(cCtx.App.writer(), SubcommandHelpTemplate, cCtx.Command)
 	return nil
 }
 
@@ -306,7 +306,7 @@ func ShowVersion(cCtx *Context) {
 }
 
 func printVersion(cCtx *Context) {
-	_, _ = fmt.Fprintf(cCtx.App.Writer, "%v version %v\n", cCtx.App.Name, cCtx.App.Version)
+	_, _ = fmt.Fprintf(cCtx.App.writer(), "%v version %v\n", cCtx.App.Name, cCtx.App.Version)
 }
 
 // ShowCompletions prints the lists of commands within a given context
