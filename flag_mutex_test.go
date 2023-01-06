@@ -5,10 +5,10 @@ import (
 	"testing"
 )
 
-func TestFlagExGroup(t *testing.T) {
+func TestFlagMutuallyExclusiveFlags(t *testing.T) {
 
 	a := &App{
-		FlagExGroups: []FlagExGroup{
+		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
 			{
 				Flags: [][]Flag{
 					[]Flag{
@@ -49,7 +49,7 @@ func TestFlagExGroup(t *testing.T) {
 		t.Errorf("Invalid error string %v", err1)
 	}
 
-	a.FlagExGroups[0].Required = true
+	a.MutuallyExclusiveFlags[0].Required = true
 
 	err = a.Run([]string{"foo"})
 	if err == nil {

@@ -71,7 +71,7 @@ type Command struct {
 	isRoot bool
 
 	// Flag exclusion group
-	FlagExGroups []FlagExGroup
+	MutuallyExclusiveFlags []MutuallyExclusiveFlags
 }
 
 type Commands []*Command
@@ -212,7 +212,7 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 		return cerr
 	}
 
-	for _, grp := range c.FlagExGroups {
+	for _, grp := range c.MutuallyExclusiveFlags {
 		if err := grp.check(cCtx); err != nil {
 			_ = ShowSubcommandHelp(cCtx)
 			return err
@@ -293,7 +293,7 @@ func (c *Command) newFlagSet() (*flag.FlagSet, error) {
 func (c *Command) allFlags() []Flag {
 	var flags []Flag
 	flags = append(flags, c.Flags...)
-	for _, grpf := range c.FlagExGroups {
+	for _, grpf := range c.MutuallyExclusiveFlags {
 		for _, f1 := range grpf.Flags {
 			flags = append(flags, f1...)
 		}

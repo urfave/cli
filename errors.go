@@ -79,7 +79,7 @@ func (e *mutuallyExclusiveGroup) Error() string {
 }
 
 type mutuallyExclusiveGroupRequiredFlag struct {
-	flags *FlagExGroup
+	flags *MutuallyExclusiveFlags
 }
 
 func (e *mutuallyExclusiveGroupRequiredFlag) Error() string {

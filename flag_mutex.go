@@ -1,11 +1,11 @@
 package cli
 
-// FlagExGroup defines a mutually exclusive flag group
+// MutuallyExclusiveFlags defines a mutually exclusive flag group
 // Multiple option paths can be provided out of which
 // only one can be defined on cmdline
 // So for example
 // [ --foo | [ --bar something --darth somethingelse ] ]
-type FlagExGroup struct {
+type MutuallyExclusiveFlags struct {
 	// Flag list
 	Flags [][]Flag
 
@@ -13,7 +13,7 @@ type FlagExGroup struct {
 	Required bool
 }
 
-func (grp FlagExGroup) check(ctx *Context) error {
+func (grp MutuallyExclusiveFlags) check(ctx *Context) error {
 	oneSet := false
 	e := &mutuallyExclusiveGroup{}
 
