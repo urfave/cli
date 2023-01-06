@@ -335,7 +335,7 @@ type App struct {
 	MutuallyExclusiveFlags []MutuallyExclusiveFlags
 =======
 	// Use longest prefix match for commands
-	AllowShorthandCommand bool
+	PrefixMatchCommands bool
 	// Custom suggest command for matching
 	SuggestCommandFunc SuggestCommandFunc
 >>>>>>> Feature:(issue_1215) Allow shorthand name calling
