@@ -69,6 +69,9 @@ type Command struct {
 
 	// if this is a root "special" command
 	isRoot bool
+
+	// Flag exclusion group
+	MutuallyExclusiveFlags []MutuallyExclusiveFlags
 }
 
 type Commands []*Command
@@ -209,6 +212,13 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 		return cerr
 	}
 
+	for _, grp := range c.MutuallyExclusiveFlags {
+		if err := grp.check(cCtx); err != nil {
+			_ = ShowSubcommandHelp(cCtx)
+			return err
+		}
+	}
+
 	if c.Before != nil && !cCtx.shellComplete {
 		beforeErr := c.Before(cCtx)
 		if beforeErr != nil {
@@ -277,7 +287,18 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 }
 
 func (c *Command) newFlagSet() (*flag.FlagSet, error) {
-	return flagSet(c.Name, c.Flags)
+	return flagSet(c.Name, c.allFlags())
+}
+
+func (c *Command) allFlags() []Flag {
+	var flags []Flag
+	flags = append(flags, c.Flags...)
+	for _, grpf := range c.MutuallyExclusiveFlags {
+		for _, f1 := range grpf.Flags {
+			flags = append(flags, f1...)
+		}
+	}
+	return flags
 }
 
 func (c *Command) useShortOptionHandling() bool {

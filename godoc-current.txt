@@ -330,6 +330,8 @@ type App struct {
 	AllowExtFlags bool
 	// Treat all flags as normal arguments if true
 	SkipFlagParsing bool
+	// Flag exclusion group
+	MutuallyExclusiveFlags []MutuallyExclusiveFlags
 
 	// Has unexported fields.
 }
@@ -473,6 +475,8 @@ type Command struct {
 	// render custom help text by setting this variable.
 	CustomHelpTemplate string
 
+	// Flag exclusion group
+	MutuallyExclusiveFlags []MutuallyExclusiveFlags
 	// Has unexported fields.
 }
     Command is a subcommand for a cli.App.
@@ -925,6 +929,17 @@ type MultiError interface {
 	Errors() []error
 }
     MultiError is an error that wraps multiple errors.
+
+type MutuallyExclusiveFlags struct {
+	// Flag list
+	Flags [][]Flag
+
+	// whether this group is required
+	Required bool
+}
+    MutuallyExclusiveFlags defines a mutually exclusive flag group Multiple
+    option paths can be provided out of which only one can be defined on cmdline
+    So for example [ --foo | [ --bar something --darth somethingelse ] ]
 
 type NoConfig struct{}
     NoConfig is for flags which dont need a custom configuration

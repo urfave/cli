@@ -105,6 +105,8 @@ type App struct {
 	AllowExtFlags bool
 	// Treat all flags as normal arguments if true
 	SkipFlagParsing bool
+	// Flag exclusion group
+	MutuallyExclusiveFlags []MutuallyExclusiveFlags
 
 	didSetup bool
 
@@ -255,6 +257,7 @@ func (a *App) newRootCommand() *Command {
 		categories:             a.categories,
 		SkipFlagParsing:        a.SkipFlagParsing,
 		isRoot:                 true,
+		MutuallyExclusiveFlags: a.MutuallyExclusiveFlags,
 	}
 }
 
