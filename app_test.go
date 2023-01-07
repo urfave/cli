@@ -3295,3 +3295,89 @@ func TestFlagDuplicates(t *testing.T) {
 		})
 	}
 }
+
+func TestShorthandCommand(t *testing.T) {
+
+	af := func(p *int) ActionFunc {
+		return func(ctx *Context) error {
+			*p = *p + 1
+			return nil
+		}
+	}
+
+	var cmd1, cmd2 int
+
+	a := &App{
+		PrefixMatchCommands: true,
+		Commands: []*Command{
+			{
+				Name:    "cthdisd",
+				Aliases: []string{"cth"},
+				Action:  af(&cmd1),
+			},
+			{
+				Name:    "cthertoop",
+				Aliases: []string{"cer"},
+				Action:  af(&cmd2),
+			},
+		},
+	}
+
+	err := a.Run([]string{"foo", "cth"})
+	if err != nil {
+		t.Error(err)
+	}
+
+	if cmd1 != 1 && cmd2 != 0 {
+		t.Errorf("Expected command1 to be trigerred once but didnt %d %d", cmd1, cmd2)
+	}
+
+	cmd1 = 0
+	cmd2 = 0
+
+	err = a.Run([]string{"foo", "cthd"})
+	if err != nil {
+		t.Error(err)
+	}
+
+	if cmd1 != 1 && cmd2 != 0 {
+		t.Errorf("Expected command1 to be trigerred once but didnt %d %d", cmd1, cmd2)
+	}
+
+	cmd1 = 0
+	cmd2 = 0
+
+	err = a.Run([]string{"foo", "cthe"})
+	if err != nil {
+		t.Error(err)
+	}
+
+	if cmd1 != 1 && cmd2 != 0 {
+		t.Errorf("Expected command1 to be trigerred once but didnt %d %d", cmd1, cmd2)
+	}
+
+	cmd1 = 0
+	cmd2 = 0
+
+	err = a.Run([]string{"foo", "cthert"})
+	if err != nil {
+		t.Error(err)
+	}
+
+	if cmd1 != 0 && cmd2 != 1 {
+		t.Errorf("Expected command1 to be trigerred once but didnt %d %d", cmd1, cmd2)
+	}
+
+	cmd1 = 0
+	cmd2 = 0
+
+	err = a.Run([]string{"foo", "cthet"})
+	if err != nil {
+		t.Error(err)
+	}
+
+	if cmd1 != 0 && cmd2 != 1 {
+		t.Errorf("Expected command1 to be trigerred once but didnt %d %d", cmd1, cmd2)
+	}
+
+}
