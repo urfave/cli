@@ -65,7 +65,7 @@ type Command struct {
 	CustomHelpTemplate string
 
 	// Use longest prefix match for commands
-	AllowShorthandCommand bool
+	PrefixMatchCommands bool
 
 	// categories contains the categorized commands and is populated on app startup
 	categories CommandCategories

@@ -330,15 +330,12 @@ type App struct {
 	AllowExtFlags bool
 	// Treat all flags as normal arguments if true
 	SkipFlagParsing bool
-<<<<<<< HEAD
 	// Flag exclusion group
 	MutuallyExclusiveFlags []MutuallyExclusiveFlags
-=======
 	// Use longest prefix match for commands
 	PrefixMatchCommands bool
 	// Custom suggest command for matching
 	SuggestCommandFunc SuggestCommandFunc
->>>>>>> Feature:(issue_1215) Allow shorthand name calling
 
 	// Has unexported fields.
 }
@@ -482,14 +479,11 @@ type Command struct {
 	// render custom help text by setting this variable.
 	CustomHelpTemplate string
 
-<<<<<<< HEAD
+	// Use longest prefix match for commands
+	PrefixMatchCommands bool
+
 	// Flag exclusion group
 	MutuallyExclusiveFlags []MutuallyExclusiveFlags
-=======
-	// Use longest prefix match for commands
-	AllowShorthandCommand bool
-
->>>>>>> Feature:(issue_1215) Allow shorthand name calling
 	// Has unexported fields.
 }
     Command is a subcommand for a cli.App.

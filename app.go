@@ -267,7 +267,7 @@ func (a *App) newRootCommand() *Command {
 		SkipFlagParsing:        a.SkipFlagParsing,
 		isRoot:                 true,
 		MutuallyExclusiveFlags: a.MutuallyExclusiveFlags,
-		PrefixMatchCommand:     a.PrefixMatchCommand,
+		PrefixMatchCommands:    a.PrefixMatchCommands,
 	}
 }
 
