@@ -13,6 +13,30 @@ type Value interface {
 	flag.Getter
 }
 
+// simple wrapper to intercept Value operations
+// to check for duplicates
+type valueWrapper struct {
+	value      Value
+	count      int
+	duplicated bool
+}
+
+func (v *valueWrapper) String() string {
+	return v.value.String()
+}
+
+func (v *valueWrapper) Set(s string) error {
+	if v.count == 1 && !v.duplicated {
+		return fmt.Errorf("cant duplicate this flag")
+	}
+	v.count++
+	return v.value.Set(s)
+}
+
+func (v *valueWrapper) Get() any {
+	return v.value.Get()
+}
+
 // ValueCreator is responsible for creating a flag.Value emulation
 // as well as custom formatting
 //
@@ -56,6 +80,8 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Action func(*Context, T) error // Action callback to be called when flag is set
 
 	Config C // Additional/Custom configuration associated with this flag type
+
+	NonDuplicated bool // whether this flag can be duplicated on the command line
 
 	// unexported fields for internal use
 	hasBeenSet bool  // whether the flag has been set from env or file
@@ -108,8 +134,13 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 		}
 	}
 
+	vw := &valueWrapper{
+		value:      f.value,
+		duplicated: !f.NonDuplicated,
+	}
+
 	for _, name := range f.Names() {
-		set.Var(f.value, name, f.Usage)
+		set.Var(vw, name, f.Usage)
 	}
 
 	f.applied = true
