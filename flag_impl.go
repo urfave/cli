@@ -37,6 +37,11 @@ func (v *valueWrapper) Get() any {
 	return v.value.Get()
 }
 
+func (v *valueWrapper) IsBoolFlag() bool {
+	_, ok := v.value.(*boolValue)
+	return ok
+}
+
 // ValueCreator is responsible for creating a flag.Value emulation
 // as well as custom formatting
 //
