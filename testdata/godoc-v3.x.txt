@@ -762,7 +762,7 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 
 	Config C // Additional/Custom configuration associated with this flag type
 
-	NonDuplicated bool // whether this flag can be duplicated on the command line
+	OnlyOnce bool // whether this flag can be duplicated on the command line
 
 	// Has unexported fields.
 }

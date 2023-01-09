@@ -16,9 +16,9 @@ type Value interface {
 // simple wrapper to intercept Value operations
 // to check for duplicates
 type valueWrapper struct {
-	value      Value
-	count      int
-	duplicated bool
+	value    Value
+	count    int
+	onlyOnce bool
 }
 
 func (v *valueWrapper) String() string {
@@ -26,7 +26,7 @@ func (v *valueWrapper) String() string {
 }
 
 func (v *valueWrapper) Set(s string) error {
-	if v.count == 1 && !v.duplicated {
+	if v.count == 1 && v.onlyOnce {
 		return fmt.Errorf("cant duplicate this flag")
 	}
 	v.count++
@@ -81,7 +81,7 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 
 	Config C // Additional/Custom configuration associated with this flag type
 
-	NonDuplicated bool // whether this flag can be duplicated on the command line
+	OnlyOnce bool // whether this flag can be duplicated on the command line
 
 	// unexported fields for internal use
 	hasBeenSet bool  // whether the flag has been set from env or file
@@ -135,8 +135,8 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 	}
 
 	vw := &valueWrapper{
-		value:      f.value,
-		duplicated: !f.NonDuplicated,
+		value:    f.value,
+		onlyOnce: !f.OnlyOnce,
 	}
 
 	for _, name := range f.Names() {

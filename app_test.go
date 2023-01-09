@@ -3240,15 +3240,15 @@ func TestFlagDuplicates(t *testing.T) {
 	a := &App{
 		Flags: []Flag{
 			&StringFlag{
-				Name:          "sflag",
-				NonDuplicated: true,
+				Name:     "sflag",
+				OnlyOnce: true,
 			},
 			&Int64SliceFlag{
 				Name: "isflag",
 			},
 			&Float64SliceFlag{
-				Name:          "fsflag",
-				NonDuplicated: true,
+				Name:     "fsflag",
+				OnlyOnce: true,
 			},
 			&IntFlag{
 				Name: "iflag",
