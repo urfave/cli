@@ -332,6 +332,10 @@ type App struct {
 	SkipFlagParsing bool
 	// Flag exclusion group
 	MutuallyExclusiveFlags []MutuallyExclusiveFlags
+	// Use longest prefix match for commands
+	PrefixMatchCommands bool
+	// Custom suggest command for matching
+	SuggestCommandFunc SuggestCommandFunc
 
 	// Has unexported fields.
 }
@@ -474,6 +478,9 @@ type Command struct {
 	// cli.go uses text/template to render templates. You can
 	// render custom help text by setting this variable.
 	CustomHelpTemplate string
+
+	// Use longest prefix match for commands
+	PrefixMatchCommands bool
 
 	// Flag exclusion group
 	MutuallyExclusiveFlags []MutuallyExclusiveFlags

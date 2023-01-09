@@ -107,6 +107,10 @@ type App struct {
 	SkipFlagParsing bool
 	// Flag exclusion group
 	MutuallyExclusiveFlags []MutuallyExclusiveFlags
+	// Use longest prefix match for commands
+	PrefixMatchCommands bool
+	// Custom suggest command for matching
+	SuggestCommandFunc SuggestCommandFunc
 
 	didSetup bool
 
@@ -201,6 +205,11 @@ func (a *App) Setup() {
 		a.appendFlag(VersionFlag)
 	}
 
+	if a.PrefixMatchCommands {
+		if a.SuggestCommandFunc == nil {
+			a.SuggestCommandFunc = suggestCommand
+		}
+	}
 	if a.EnableShellCompletion {
 		if a.ShellCompletionCommandName != "" {
 			completionCommand.Name = a.ShellCompletionCommandName
@@ -258,6 +267,7 @@ func (a *App) newRootCommand() *Command {
 		SkipFlagParsing:        a.SkipFlagParsing,
 		isRoot:                 true,
 		MutuallyExclusiveFlags: a.MutuallyExclusiveFlags,
+		PrefixMatchCommands:    a.PrefixMatchCommands,
 	}
 }
 

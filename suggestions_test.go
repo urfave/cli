@@ -111,13 +111,15 @@ func TestSuggestCommand(t *testing.T) {
 		{"conf", "config"},
 		{"i", "i"},
 		{"information", "info"},
+		{"inf", "info"},
+		{"con", "config"},
 		{"not-existing", "info"},
 	} {
 		// When
 		res := suggestCommand(app.Commands, testCase.provided)
 
 		// Then
-		expect(t, res, fmt.Sprintf(SuggestDidYouMeanTemplate, testCase.expected))
+		expect(t, res, testCase.expected)
 	}
 }
 
