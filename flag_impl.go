@@ -136,7 +136,7 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 
 	vw := &valueWrapper{
 		value:    f.value,
-		onlyOnce: !f.OnlyOnce,
+		onlyOnce: f.OnlyOnce,
 	}
 
 	for _, name := range f.Names() {
