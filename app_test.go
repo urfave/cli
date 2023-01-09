@@ -3234,3 +3234,64 @@ func TestPersistentFlag(t *testing.T) {
 	}
 
 }
+
+func TestFlagDuplicates(t *testing.T) {
+
+	a := &App{
+		Flags: []Flag{
+			&StringFlag{
+				Name:     "sflag",
+				OnlyOnce: true,
+			},
+			&Int64SliceFlag{
+				Name: "isflag",
+			},
+			&Float64SliceFlag{
+				Name:     "fsflag",
+				OnlyOnce: true,
+			},
+			&IntFlag{
+				Name: "iflag",
+			},
+		},
+		Action: func(ctx *Context) error {
+			return nil
+		},
+	}
+
+	tests := []struct {
+		name        string
+		args        []string
+		errExpected bool
+	}{
+		{
+			name: "all args present once",
+			args: []string{"foo", "--sflag", "hello", "--isflag", "1", "--isflag", "2", "--fsflag", "2.0", "--iflag", "10"},
+		},
+		{
+			name: "duplicate non slice flag(duplicatable)",
+			args: []string{"foo", "--sflag", "hello", "--isflag", "1", "--isflag", "2", "--fsflag", "2.0", "--iflag", "10", "--iflag", "20"},
+		},
+		{
+			name:        "duplicate non slice flag(non duplicatable)",
+			args:        []string{"foo", "--sflag", "hello", "--isflag", "1", "--isflag", "2", "--fsflag", "2.0", "--iflag", "10", "--sflag", "trip"},
+			errExpected: true,
+		},
+		{
+			name:        "duplicate slice flag(non duplicatable)",
+			args:        []string{"foo", "--sflag", "hello", "--isflag", "1", "--isflag", "2", "--fsflag", "2.0", "--fsflag", "3.0", "--iflag", "10"},
+			errExpected: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := a.Run(test.args)
+			if test.errExpected && err == nil {
+				t.Error("expected error")
+			} else if !test.errExpected && err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
