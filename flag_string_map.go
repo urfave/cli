@@ -19,8 +19,8 @@ func (cCtx *Context) StringMap(name string) map[string]string {
 func lookupStringMap(name string, set *flag.FlagSet) map[string]string {
 	f := set.Lookup(name)
 	if f != nil {
-		if mapping, ok := f.Value.(*StringMap); ok {
-			return mapping.Value()
+		if mapping, ok := f.Value.(flag.Getter).Get().(map[string]string); ok {
+			return mapping
 		}
 	}
 	return nil
