@@ -22,6 +22,9 @@ type valueWrapper struct {
 }
 
 func (v *valueWrapper) String() string {
+	if v.value == nil {
+		return ""
+	}
 	return v.value.String()
 }
 
