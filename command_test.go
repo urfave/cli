@@ -119,7 +119,7 @@ func TestParseAndRunHyphenValues(t *testing.T) {
 	cases := []struct {
 		testArgs     []string
 		expectedArgs []string
-		expectedOpt string
+		expectedOpt  string
 	}{
 		{[]string{"foo", "test", "argz"}, []string{"argz"}, ""},
 		{[]string{"foo", "test", "argz", "arga"}, []string{"argz", "arga"}, ""},
@@ -155,10 +155,10 @@ func TestParseAndRunHyphenValues(t *testing.T) {
 
 	for _, tc := range cases {
 		tc := tc
-		t.Run(strings.Join(tc.testArgs, "_"), func(t *testing.T){
+		t.Run(strings.Join(tc.testArgs, "_"), func(t *testing.T) {
 			var (
 				args []string
-				opt string
+				opt  string
 			)
 
 			cmd := Command{
@@ -171,8 +171,8 @@ func TestParseAndRunHyphenValues(t *testing.T) {
 					return nil
 				},
 				Flags: []Flag{
-					StringFlag{Name:  "opt"},
-					StringFlag{Name:  "opt2"},
+					StringFlag{Name: "opt"},
+					StringFlag{Name: "opt2"},
 				},
 			}
 
@@ -435,6 +435,11 @@ func TestCommandSkipFlagParsing(t *testing.T) {
 					Name:            "some-command",
 					Flags: []Flag{
 						StringFlag{Name: "flag"},
+					},
+					Subcommands: []Command{
+						{
+							Name: "some-arg",
+						},
 					},
 					Action: func(c *Context) {
 						fmt.Printf("%+v\n", c.String("flag"))

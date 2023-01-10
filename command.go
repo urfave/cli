@@ -98,8 +98,10 @@ type Commands []Command
 
 // Run invokes the command given the context, parses ctx.Args() to generate command-specific flags
 func (c Command) Run(ctx *Context) (err error) {
-	if len(c.Subcommands) > 0 {
-		return c.startApp(ctx)
+	if !c.SkipFlagParsing {
+		if len(c.Subcommands) > 0 {
+			return c.startApp(ctx)
+		}
 	}
 
 	if !c.HideHelp && (HelpFlag != BoolFlag{}) {
@@ -261,7 +263,7 @@ func reorderArgs(commandFlags []Flag, args []string) []string {
 
 // argIsFlag checks if an arg is one of our command flags
 func argIsFlag(commandFlags []Flag, arg string) bool {
-	if arg == "-" || arg == "--"{
+	if arg == "-" || arg == "--" {
 		// `-` is never a flag
 		// `--` is an option-value when following a flag, and a delimiter indicating the end of options in other cases.
 		return false
