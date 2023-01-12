@@ -18,11 +18,13 @@ func (test boolWithInverseTestCase) Run() error {
 		Name: "env",
 	})
 
+	var isSet bool
 	app := cli.App{
 		Flags: []cli.Flag{
 			flagWithInverse,
 		},
 		Action: func(ctx *cli.Context) error {
+			isSet = ctx.IsSet("env")
 			return nil
 		},
 	}
@@ -32,7 +34,7 @@ func (test boolWithInverseTestCase) Run() error {
 		return err
 	}
 
-	if flagWithInverse.IsSet() != test.toBeSet {
+	if flagWithInverse.IsSet() != test.toBeSet || isSet != test.toBeSet {
 		return fmt.Errorf("flag should be set %t, but got %t", test.toBeSet, flagWithInverse.IsSet())
 	}
 

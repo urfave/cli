@@ -55,6 +55,18 @@ func (s *boolWithInverse) RunAction(ctx *Context) error {
 		return fmt.Errorf("cannot set both flags `--%s` and `--%s`", s.positiveFlag.Name, s.negativeFlag.Name)
 	}
 
+	if *s.negDest {
+		err := ctx.Set(s.positiveFlag.Name, "false")
+		if err != nil {
+			return err
+		}
+	} else if *s.posDest {
+		err := ctx.Set(s.negativeFlag.Name, "false")
+		if err != nil {
+			return err
+		}
+	}
+
 	if s.positiveFlag.Action != nil {
 		return s.positiveFlag.Action(ctx, *s.posDest)
 	}
