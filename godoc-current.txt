@@ -490,6 +490,32 @@ func (f *BoolFlag) String() string
 func (f *BoolFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
 
+type BoolWithInverseFlag interface {
+	fmt.Stringer
+
+	// Apply Flag settings to the given flag set
+	Apply(*flag.FlagSet) error
+
+	// All possible names for this flag
+	Names() []string
+
+	// Whether the flag has been set or not
+	IsSet() bool
+
+	// Will return the original flag and the inverse flag
+	Flags() []Flag
+
+	// Will return the value as it relates to the boolFlag provided
+	Value() bool
+}
+
+func NewBoolWithInverse(flag BoolFlag) BoolWithInverseFlag
+    NewBoolWithInverse creates a new BoolFlag that has an inverse flag
+
+    consider a bool flag `--env`, there is no way to set it to false this
+    function allows you to set `--env` or `--no-env` and in the command action
+    it can be determined that BoolWithInverseFlag.IsSet()
+
 type CategorizableFlag interface {
 	VisibleFlag
 
