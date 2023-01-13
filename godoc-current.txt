@@ -78,6 +78,9 @@ OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}`
     uses text/template to render templates. You can render custom help text by
     setting this variable.
 
+var (
+	DefaultInverseBoolPrefix = "no-"
+)
 var ErrWriter io.Writer = os.Stderr
     ErrWriter is used to write errors to the user. This can be anything
     implementing the io.Writer interface and defaults to os.Stderr.
@@ -490,31 +493,32 @@ func (f *BoolFlag) String() string
 func (f *BoolFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
 
-type BoolWithInverseFlag interface {
-	fmt.Stringer
+type BoolWithInverseFlag struct {
+	// The BoolFlag which the positive and negative flags are generated from
+	*BoolFlag
 
-	// Apply Flag settings to the given flag set
-	Apply(*flag.FlagSet) error
+	// The prefix used to indicate a negative value
+	// Default: `env` becomes `no-env`
+	InversePrefix string
 
-	// All possible names for this flag
-	Names() []string
-
-	// Whether the flag has been set or not
-	IsSet() bool
-
-	// Will return the original flag and the inverse flag
-	Flags() []Flag
-
-	// Will return the value as it relates to the boolFlag provided
-	Value() bool
+	// Has unexported fields.
 }
 
-func NewBoolWithInverse(flag BoolFlag) BoolWithInverseFlag
-    NewBoolWithInverse creates a new BoolFlag that has an inverse flag
+func (s *BoolWithInverseFlag) Apply(set *flag.FlagSet) error
 
-    consider a bool flag `--env`, there is no way to set it to false this
-    function allows you to set `--env` or `--no-env` and in the command action
-    it can be determined that BoolWithInverseFlag.IsSet()
+func (s *BoolWithInverseFlag) Flags() []Flag
+
+func (s *BoolWithInverseFlag) IsSet() bool
+
+func (s *BoolWithInverseFlag) Names() []string
+
+func (s *BoolWithInverseFlag) RunAction(ctx *Context) error
+
+func (s *BoolWithInverseFlag) String() string
+    Example for BoolFlag{Name: "env"} --env (default: false) || --no-env
+    (default: false)
+
+func (s *BoolWithInverseFlag) Value() bool
 
 type CategorizableFlag interface {
 	VisibleFlag

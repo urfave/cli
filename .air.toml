@@ -1,0 +1,37 @@
+root = "."
+testdata_dir = ""
+tmp_dir = "tmp"
+
+[build]
+  args_bin = []
+  bin = "./tmp/air-main"
+  cmd = "go test -v --run Inverse"
+  delay = 1
+  exclude_dir = ["assets", "tmp", "vendor"]
+  exclude_file = []
+  exclude_regex = []
+  exclude_unchanged = false
+  follow_symlink = false
+  full_bin = ""
+  include_dir = []
+  include_ext = ["go", "tpl", "tmpl", "html"]
+  kill_delay = "0s"
+  log = "build-errors.log"
+  send_interrupt = false
+  stop_on_error = true
+
+[color]
+  app = ""
+  build = "yellow"
+  main = "magenta"
+  runner = "green"
+  watcher = "cyan"
+
+[log]
+  time = false
+
+[misc]
+  clean_on_exit = false
+
+[screen]
+  clear_on_rebuild = false
