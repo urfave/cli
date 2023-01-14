@@ -1,81 +1,44 @@
 package cli
 
 import (
-	"flag"
 	"fmt"
 	"time"
 )
 
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f *DurationFlag) GetValue() string {
-	return f.Value.String()
+type DurationFlag = FlagBase[time.Duration, NoConfig, durationValue]
+
+// -- time.Duration Value
+type durationValue time.Duration
+
+// Below functions are to satisfy the ValueCreator interface
+
+func (i durationValue) Create(val time.Duration, p *time.Duration, c NoConfig) Value {
+	*p = val
+	return (*durationValue)(p)
 }
 
-// GetDefaultText returns the default text for this flag
-func (f *DurationFlag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
+func (i durationValue) ToString(d time.Duration) string {
+	return fmt.Sprintf("%v", d)
+}
+
+// Below functions are to satisfy the flag.Value interface
+
+func (d *durationValue) Set(s string) error {
+	v, err := time.ParseDuration(s)
+	if err != nil {
+		return err
 	}
-	return f.GetValue()
+	*d = durationValue(v)
+	return err
 }
 
-// Apply populates the flag given the flag set and environment
-func (f *DurationFlag) Apply(set *flag.FlagSet) error {
-	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
-		if val != "" {
-			valDuration, err := time.ParseDuration(val)
+func (d *durationValue) Get() any { return time.Duration(*d) }
 
-			if err != nil {
-				return fmt.Errorf("could not parse %q as duration value from %s for flag %s: %s", val, source, f.Name, err)
-			}
+func (d *durationValue) String() string { return (*time.Duration)(d).String() }
 
-			f.Value = valDuration
-			f.HasBeenSet = true
-		}
-	}
-
-	for _, name := range f.Names() {
-		if f.Destination != nil {
-			set.DurationVar(f.Destination, name, f.Value, f.Usage)
-			continue
-		}
-		set.Duration(name, f.Value, f.Usage)
-	}
-	return nil
-}
-
-// Get returns the flag’s value in the given Context.
-func (f *DurationFlag) Get(ctx *Context) time.Duration {
-	return ctx.Duration(f.Name)
-}
-
-// RunAction executes flag action if set
-func (f *DurationFlag) RunAction(c *Context) error {
-	if f.Action != nil {
-		return f.Action(c, c.Duration(f.Name))
-	}
-
-	return nil
-}
-
-// Duration looks up the value of a local DurationFlag, returns
-// 0 if not found
 func (cCtx *Context) Duration(name string) time.Duration {
-	if fs := cCtx.lookupFlagSet(name); fs != nil {
-		return lookupDuration(name, fs)
-	}
-	return 0
-}
-
-func lookupDuration(name string, set *flag.FlagSet) time.Duration {
-	f := set.Lookup(name)
-	if f != nil {
-		parsed, err := time.ParseDuration(f.Value.String())
-		if err != nil {
-			return 0
-		}
-		return parsed
+	if v, ok := cCtx.Value(name).(time.Duration); ok {
+		return v
 	}
 	return 0
 }

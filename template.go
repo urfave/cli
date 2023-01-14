@@ -18,8 +18,8 @@ var visibleFlagCategoryTemplate = `{{range .VisibleFlagCategories}}
 {{else}}{{$e}}
    {{end}}{{end}}{{end}}`
 
-var visibleFlagTemplate = `{{range $index, $option := .VisibleFlags}}{{if $index}}{{end}}
-   {{wrap $option.String 6}}{{end}}`
+var visibleFlagTemplate = `{{range $i, $e := .VisibleFlags}}
+   {{wrap $e.String 6}}{{end}}`
 
 var versionTemplate = `{{if .Version}}{{if not .HideVersion}}
 
@@ -73,7 +73,8 @@ DESCRIPTION:
 
 OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
 
-OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}`
+OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}
+`
 
 // SubcommandHelpTemplate is the text template for the subcommand help topic.
 // cli.go uses text/template to render templates. You can
@@ -82,7 +83,7 @@ var SubcommandHelpTemplate = `NAME:
    {{template "helpNameTemplate" .}}
 
 USAGE:
-   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} command{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Description}}
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleFlags}}command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Description}}
 
 DESCRIPTION:
    {{template "descriptionTemplate" .}}{{end}}{{if .VisibleCommands}}
@@ -91,7 +92,8 @@ COMMANDS:{{template "visibleCommandTemplate" .}}{{end}}{{if .VisibleFlagCategori
 
 OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
 
-OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}`
+OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}
+`
 
 var MarkdownDocTemplate = `{{if gt .SectionNum 0}}% {{ .App.Name }} {{ .SectionNum }}
 

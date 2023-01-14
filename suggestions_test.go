@@ -3,6 +3,7 @@ package cli
 import (
 	"errors"
 	"fmt"
+	"os"
 	"testing"
 )
 
@@ -110,19 +111,22 @@ func TestSuggestCommand(t *testing.T) {
 		{"conf", "config"},
 		{"i", "i"},
 		{"information", "info"},
+		{"inf", "info"},
+		{"con", "config"},
 		{"not-existing", "info"},
 	} {
 		// When
 		res := suggestCommand(app.Commands, testCase.provided)
 
 		// Then
-		expect(t, res, fmt.Sprintf(SuggestDidYouMeanTemplate, testCase.expected))
+		expect(t, res, testCase.expected)
 	}
 }
 
 func ExampleApp_Suggest() {
 	app := &App{
 		Name:                  "greet",
+		ErrWriter:             os.Stdout,
 		Suggest:               true,
 		HideHelp:              false,
 		HideHelpCommand:       true,
@@ -138,7 +142,7 @@ func ExampleApp_Suggest() {
 
 	app.Run([]string{"greet", "--nema", "chipmunk"})
 	// Output:
-	// Incorrect Usage. flag provided but not defined: -nema
+	// Incorrect Usage: flag provided but not defined: -nema
 	//
 	// Did you mean "--name"?
 	//
@@ -148,6 +152,7 @@ func ExampleApp_Suggest() {
 func ExampleApp_Suggest_command() {
 	app := &App{
 		Name:                  "greet",
+		ErrWriter:             os.Stdout,
 		Suggest:               true,
 		HideHelpCommand:       true,
 		CustomAppHelpTemplate: "(this space intentionally left blank)\n",

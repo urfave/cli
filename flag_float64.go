@@ -1,81 +1,46 @@
 package cli
 
 import (
-	"flag"
 	"fmt"
 	"strconv"
 )
 
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f *Float64Flag) GetValue() string {
-	return fmt.Sprintf("%v", f.Value)
+type Float64Flag = FlagBase[float64, NoConfig, float64Value]
+
+// -- float64 Value
+type float64Value float64
+
+// Below functions are to satisfy the ValueCreator interface
+
+func (f float64Value) Create(val float64, p *float64, c NoConfig) Value {
+	*p = val
+	return (*float64Value)(p)
 }
 
-// GetDefaultText returns the default text for this flag
-func (f *Float64Flag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
+func (f float64Value) ToString(b float64) string {
+	return fmt.Sprintf("%v", b)
+}
+
+// Below functions are to satisfy the flag.Value interface
+
+func (f *float64Value) Set(s string) error {
+	v, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return err
 	}
-	return f.GetValue()
+	*f = float64Value(v)
+	return err
 }
 
-// Apply populates the flag given the flag set and environment
-func (f *Float64Flag) Apply(set *flag.FlagSet) error {
-	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
-		if val != "" {
-			valFloat, err := strconv.ParseFloat(val, 64)
-			if err != nil {
-				return fmt.Errorf("could not parse %q as float64 value from %s for flag %s: %s", val, source, f.Name, err)
-			}
+func (f *float64Value) Get() any { return float64(*f) }
 
-			f.Value = valFloat
-			f.HasBeenSet = true
-		}
-	}
+func (f *float64Value) String() string { return strconv.FormatFloat(float64(*f), 'g', -1, 64) }
 
-	for _, name := range f.Names() {
-		if f.Destination != nil {
-			set.Float64Var(f.Destination, name, f.Value, f.Usage)
-			continue
-		}
-		set.Float64(name, f.Value, f.Usage)
-	}
-
-	return nil
-}
-
-// Get returns the flag’s value in the given Context.
-func (f *Float64Flag) Get(ctx *Context) float64 {
-	return ctx.Float64(f.Name)
-}
-
-// RunAction executes flag action if set
-func (f *Float64Flag) RunAction(c *Context) error {
-	if f.Action != nil {
-		return f.Action(c, c.Float64(f.Name))
-	}
-
-	return nil
-}
-
-// Float64 looks up the value of a local Float64Flag, returns
+// Int looks up the value of a local IntFlag, returns
 // 0 if not found
 func (cCtx *Context) Float64(name string) float64 {
-	if fs := cCtx.lookupFlagSet(name); fs != nil {
-		return lookupFloat64(name, fs)
-	}
-	return 0
-}
-
-func lookupFloat64(name string, set *flag.FlagSet) float64 {
-	f := set.Lookup(name)
-	if f != nil {
-		parsed, err := strconv.ParseFloat(f.Value.String(), 64)
-		if err != nil {
-			return 0
-		}
-		return parsed
+	if v, ok := cCtx.Value(name).(float64); ok {
+		return v
 	}
 	return 0
 }

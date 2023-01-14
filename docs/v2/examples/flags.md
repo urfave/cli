@@ -51,7 +51,8 @@ func main() {
 ```
 
 You can also set a destination variable for a flag, to which the content will be
-scanned.
+scanned. Note that if the `Value` is set for the flag, it will be shown as default,
+and destination will be set to this value before parsing flag on the command line.
 
 <!-- {
   "output": "Hello someone"
@@ -595,3 +596,53 @@ The precedence for flag value sources is as follows (highest to lowest):
 0. Environment variable (if specified)
 0. Configuration file (if specified)
 0. Default defined on the flag
+
+#### Flag Actions
+
+Handlers can be registered per flag which are triggered after a flag has been processed. 
+This can be used for a variety of purposes, one of which is flag validation
+
+<!-- {
+  "args": ["&#45;&#45;port","70000"],
+  "error": "Flag port value 70000 out of range[0-65535]"
+} -->
+```go
+package main
+
+import (
+	"log"
+	"os"
+	"fmt"
+
+	"github.com/urfave/cli/v2"
+)
+
+func main() {
+	app := &cli.App{
+		Flags: []cli.Flag{
+			&cli.IntFlag{
+				Name:        "port",
+				Usage:       "Use a randomized port",
+				Value:       0,
+				DefaultText: "random",
+				Action: func(ctx *cli.Context, v int) error {
+					if v >= 65536 {
+						return fmt.Errorf("Flag port value %v out of range[0-65535]", v)
+					}
+					return nil
+				},
+			},
+		},
+	}
+
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
+Will result in help output like:
+
+```
+Flag port value 70000 out of range[0-65535]
+```

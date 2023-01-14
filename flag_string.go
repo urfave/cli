@@ -1,73 +1,63 @@
 package cli
 
 import (
-	"flag"
 	"fmt"
+	"strings"
 )
 
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f *StringFlag) GetValue() string {
-	return f.Value
+type StringFlag = FlagBase[string, StringConfig, stringValue]
+
+// StringConfig defines the configuration for string flags
+type StringConfig struct {
+	// Whether to trim whitespace of parsed value
+	TrimSpace bool
 }
 
-// GetDefaultText returns the default text for this flag
-func (f *StringFlag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	if f.Value == "" {
-		return f.Value
-	}
-	return fmt.Sprintf("%q", f.Value)
+// -- string Value
+type stringValue struct {
+	destination *string
+	trimSpace   bool
 }
 
-// Apply populates the flag given the flag set and environment
-func (f *StringFlag) Apply(set *flag.FlagSet) error {
-	if val, _, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
-		f.Value = val
-		f.HasBeenSet = true
-	}
+// Below functions are to satisfy the ValueCreator interface
 
-	for _, name := range f.Names() {
-		if f.Destination != nil {
-			set.StringVar(f.Destination, name, f.Value, f.Usage)
-			continue
-		}
-		set.String(name, f.Value, f.Usage)
+func (i stringValue) Create(val string, p *string, c StringConfig) Value {
+	*p = val
+	return &stringValue{
+		destination: p,
+		trimSpace:   c.TrimSpace,
 	}
+}
 
+func (i stringValue) ToString(b string) string {
+	if b == "" {
+		return b
+	}
+	return fmt.Sprintf("%q", b)
+}
+
+// Below functions are to satisfy the flag.Value interface
+
+func (s *stringValue) Set(val string) error {
+	if s.trimSpace {
+		val = strings.TrimSpace(val)
+	}
+	*s.destination = val
 	return nil
 }
 
-// Get returns the flag’s value in the given Context.
-func (f *StringFlag) Get(ctx *Context) string {
-	return ctx.String(f.Name)
-}
+func (s *stringValue) Get() any { return *s.destination }
 
-// RunAction executes flag action if set
-func (f *StringFlag) RunAction(c *Context) error {
-	if f.Action != nil {
-		return f.Action(c, c.String(f.Name))
-	}
-
-	return nil
-}
-
-// String looks up the value of a local StringFlag, returns
-// "" if not found
-func (cCtx *Context) String(name string) string {
-	if fs := cCtx.lookupFlagSet(name); fs != nil {
-		return lookupString(name, fs)
+func (s *stringValue) String() string {
+	if s.destination != nil {
+		return *s.destination
 	}
 	return ""
 }
 
-func lookupString(name string, set *flag.FlagSet) string {
-	f := set.Lookup(name)
-	if f != nil {
-		parsed := f.Value.String()
-		return parsed
+func (cCtx *Context) String(name string) string {
+	if v, ok := cCtx.Value(name).(string); ok {
+		return v
 	}
 	return ""
 }

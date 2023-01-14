@@ -3,14 +3,11 @@ on:
   push:
     branches:
       - main
-      - v3-dev-main
     tags:
-      - v2.*
       - v3.*
   pull_request:
     branches:
       - main
-      - v3-dev-main
 permissions:
   contents: read
 jobs:
@@ -37,20 +34,15 @@ jobs:
         env:
           GFLAGS: -tags urfave_cli_no_docs
       - run: make test
-      - run: make -C cmd/urfave-cli-genflags
       - run: make check-binary-size
         env:
           GFLAGS: -tags urfave_cli_no_docs
       - run: make check-binary-size
-      - run: make yamlfmt
       - if: matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
         run: make generate
       - run: make diffcheck
-      # TODO: switch once v3 is released {{
-      # - if: matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
-      - if: 'false'
-        run: make v2diff
-      # }}
+      - if: matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
+        run: make v3diff
       - if: success() && matrix.go == '1.19.x' && matrix.os == 'ubuntu-latest'
         uses: codecov/codecov-action@v3
         with:
@@ -78,7 +70,7 @@ jobs:
   publish:
     permissions:
       contents: write
-    # TODO: switch once v3 is released {{
+    # TODO: switch once v3 is out of alpha {{
     # if: startswith(github.ref, 'refs/tags/')
     if: 'false'
     # }}

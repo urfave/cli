@@ -5,7 +5,6 @@
 .envrc
 .idea
 /.local/
-/cmd/urfave-cli-genflags/urfave-cli-genflags
 /site/
 coverage.txt
 internal/*/built-example

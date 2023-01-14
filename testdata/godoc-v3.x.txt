@@ -1,0 +1,1089 @@
+package cli // import "github.com/urfave/cli/v3"
+
+Package cli provides a minimal framework for creating and organizing command
+line Go applications. cli is designed to be easy to understand and write,
+the most simple cli application can be written as follows:
+
+    func main() {
+    	(&cli.App{}).Run(os.Args)
+    }
+
+Of course this application does not do much, so let's make this an actual
+application:
+
+    func main() {
+    	app := &cli.App{
+      		Name: "greet",
+      		Usage: "say a greeting",
+      		Action: func(c *cli.Context) error {
+      			fmt.Println("Greetings")
+      			return nil
+      		},
+    	}
+
+    	app.Run(os.Args)
+    }
+
+VARIABLES
+
+var (
+	SuggestFlag               SuggestFlagFunc    = suggestFlag
+	SuggestCommand            SuggestCommandFunc = suggestCommand
+	SuggestDidYouMeanTemplate string             = suggestDidYouMeanTemplate
+)
+var AppHelpTemplate = `NAME:
+   {{template "helpNameTemplate" .}}
+
+USAGE:
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
+
+VERSION:
+   {{.Version}}{{end}}{{end}}{{if .Description}}
+
+DESCRIPTION:
+   {{template "descriptionTemplate" .}}{{end}}
+{{- if len .Authors}}
+
+AUTHOR{{template "authorsTemplate" .}}{{end}}{{if .VisibleCommands}}
+
+COMMANDS:{{template "visibleCommandCategoryTemplate" .}}{{end}}{{if .VisibleFlagCategories}}
+
+GLOBAL OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
+
+GLOBAL OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}{{if .Copyright}}
+
+COPYRIGHT:
+   {{template "copyrightTemplate" .}}{{end}}
+`
+    AppHelpTemplate is the text template for the Default help topic. cli.go
+    uses text/template to render templates. You can render custom help text by
+    setting this variable.
+
+var CommandHelpTemplate = `NAME:
+   {{template "helpNameTemplate" .}}
+
+USAGE:
+   {{template "usageTemplate" .}}{{if .Category}}
+
+CATEGORY:
+   {{.Category}}{{end}}{{if .Description}}
+
+DESCRIPTION:
+   {{template "descriptionTemplate" .}}{{end}}{{if .VisibleFlagCategories}}
+
+OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
+
+OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}
+`
+    CommandHelpTemplate is the text template for the command help topic. cli.go
+    uses text/template to render templates. You can render custom help text by
+    setting this variable.
+
+var ErrWriter io.Writer = os.Stderr
+    ErrWriter is used to write errors to the user. This can be anything
+    implementing the io.Writer interface and defaults to os.Stderr.
+
+var FishCompletionTemplate = `# {{ .App.Name }} fish shell completion
+
+function __fish_{{ .App.Name }}_no_subcommand --description 'Test if there has been any subcommand yet'
+    for i in (commandline -opc)
+        if contains -- $i{{ range $v := .AllCommands }} {{ $v }}{{ end }}
+            return 1
+        end
+    end
+    return 0
+end
+
+{{ range $v := .Completions }}{{ $v }}
+{{ end }}`
+var MarkdownDocTemplate = `{{if gt .SectionNum 0}}% {{ .App.Name }} {{ .SectionNum }}
+
+{{end}}# NAME
+
+{{ .App.Name }}{{ if .App.Usage }} - {{ .App.Usage }}{{ end }}
+
+# SYNOPSIS
+
+{{ .App.Name }}
+{{ if .SynopsisArgs }}
+` + "```" + `
+{{ range $v := .SynopsisArgs }}{{ $v }}{{ end }}` + "```" + `
+{{ end }}{{ if .App.Description }}
+# DESCRIPTION
+
+{{ .App.Description }}
+{{ end }}
+**Usage**:
+
+` + "```" + `{{ if .App.UsageText }}
+{{ .App.UsageText }}
+{{ else }}
+{{ .App.Name }} [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
+{{ end }}` + "```" + `
+{{ if .GlobalArgs }}
+# GLOBAL OPTIONS
+{{ range $v := .GlobalArgs }}
+{{ $v }}{{ end }}
+{{ end }}{{ if .Commands }}
+# COMMANDS
+{{ range $v := .Commands }}
+{{ $v }}{{ end }}{{ end }}`
+var NewFloat64Slice = NewSliceBase[float64, NoConfig, float64Value]
+var NewInt64Slice = NewSliceBase[int64, IntegerConfig, int64Value]
+var NewIntSlice = NewSliceBase[int, IntegerConfig, intValue]
+var NewStringMap = NewMapBase[string, StringConfig, stringValue]
+var NewStringSlice = NewSliceBase[string, StringConfig, stringValue]
+var NewUint64Slice = NewSliceBase[uint64, IntegerConfig, uint64Value]
+var NewUintSlice = NewSliceBase[uint, IntegerConfig, uintValue]
+var OsExiter = os.Exit
+    OsExiter is the function used when the app exits. If not set defaults to
+    os.Exit.
+
+var SubcommandHelpTemplate = `NAME:
+   {{template "helpNameTemplate" .}}
+
+USAGE:
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleFlags}}command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Description}}
+
+DESCRIPTION:
+   {{template "descriptionTemplate" .}}{{end}}{{if .VisibleCommands}}
+
+COMMANDS:{{template "visibleCommandTemplate" .}}{{end}}{{if .VisibleFlagCategories}}
+
+OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
+
+OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}
+`
+    SubcommandHelpTemplate is the text template for the subcommand help topic.
+    cli.go uses text/template to render templates. You can render custom help
+    text by setting this variable.
+
+var VersionPrinter = printVersion
+    VersionPrinter prints the version for the App
+
+var HelpPrinter helpPrinter = printHelp
+    HelpPrinter is a function that writes the help output. If not set
+    explicitly, this calls HelpPrinterCustom using only the default template
+    functions.
+
+    If custom logic for printing help is required, this function can be
+    overridden. If the ExtraInfo field is defined on an App, this function
+    should not be modified, as HelpPrinterCustom will be used directly in order
+    to capture the extra information.
+
+var HelpPrinterCustom helpPrinterCustom = printHelpCustom
+    HelpPrinterCustom is a function that writes the help output. It is used as
+    the default implementation of HelpPrinter, and may be called directly if the
+    ExtraInfo field is set on an App.
+
+    In the default implementation, if the customFuncs argument contains a
+    "wrapAt" key, which is a function which takes no arguments and returns an
+    int, this int value will be used to produce a "wrap" function used by the
+    default template to wrap long lines.
+
+
+FUNCTIONS
+
+func DefaultAppComplete(cCtx *Context)
+    DefaultAppComplete prints the list of subcommands as the default app
+    completion method
+
+func DefaultCompleteWithFlags(cmd *Command) func(cCtx *Context)
+func FlagNames(name string, aliases []string) []string
+func HandleExitCoder(err error)
+    HandleExitCoder handles errors implementing ExitCoder by printing their
+    message and calling OsExiter with the given exit code.
+
+    If the given error instead implements MultiError, each error will be checked
+    for the ExitCoder interface, and OsExiter will be called with the last exit
+    code found, or exit code 1 if no ExitCoder is found.
+
+    This function is the default error-handling behavior for an App.
+
+func ShowAppHelp(cCtx *Context) error
+    ShowAppHelp is an action that displays the help.
+
+func ShowAppHelpAndExit(c *Context, exitCode int)
+    ShowAppHelpAndExit - Prints the list of subcommands for the app and exits
+    with exit code.
+
+func ShowCommandHelp(ctx *Context, command string) error
+    ShowCommandHelp prints help for the given command
+
+func ShowCommandHelpAndExit(c *Context, command string, code int)
+    ShowCommandHelpAndExit - exits with code after showing help
+
+func ShowCompletions(cCtx *Context)
+    ShowCompletions prints the lists of commands within a given context
+
+func ShowSubcommandHelp(cCtx *Context) error
+    ShowSubcommandHelp prints help for the given subcommand
+
+func ShowSubcommandHelpAndExit(c *Context, exitCode int)
+    ShowSubcommandHelpAndExit - Prints help for the given subcommand and exits
+    with exit code.
+
+func ShowVersion(cCtx *Context)
+    ShowVersion prints the version number of the App
+
+
+TYPES
+
+type ActionFunc func(*Context) error
+    ActionFunc is the action to execute when no subcommands are specified
+
+type ActionableFlag interface {
+	Flag
+	RunAction(*Context) error
+}
+    ActionableFlag is an interface that wraps Flag interface and RunAction
+    operation.
+
+type AfterFunc func(*Context) error
+    AfterFunc is an action to execute after any subcommands are run, but after
+    the subcommand has finished it is run even if Action() panics
+
+type App struct {
+	// The name of the program. Defaults to path.Base(os.Args[0])
+	Name string
+	// Full name of command for help, defaults to Name
+	HelpName string
+	// Description of the program.
+	Usage string
+	// Text to override the USAGE section of help
+	UsageText string
+	// Description of the program argument format.
+	ArgsUsage string
+	// Version of the program
+	Version string
+	// Description of the program
+	Description string
+	// DefaultCommand is the (optional) name of a command
+	// to run if no command names are passed as CLI arguments.
+	DefaultCommand string
+	// List of commands to execute
+	Commands []*Command
+	// List of flags to parse
+	Flags []Flag
+	// Boolean to enable shell completion commands
+	EnableShellCompletion bool
+	// Shell Completion generation command name
+	ShellCompletionCommandName string
+	// Boolean to hide built-in help command and help flag
+	HideHelp bool
+	// Boolean to hide built-in help command but keep help flag.
+	// Ignored if HideHelp is true.
+	HideHelpCommand bool
+	// Boolean to hide built-in version flag and the VERSION section of help
+	HideVersion bool
+
+	// An action to execute when the shell completion flag is set
+	ShellComplete ShellCompleteFunc
+	// An action to execute before any subcommands are run, but after the context is ready
+	// If a non-nil error is returned, no subcommands are run
+	Before BeforeFunc
+	// An action to execute after any subcommands are run, but after the subcommand has finished
+	// It is run even if Action() panics
+	After AfterFunc
+	// The action to execute when no subcommands are specified
+	Action ActionFunc
+	// Execute this function if the proper command cannot be found
+	CommandNotFound CommandNotFoundFunc
+	// Execute this function if a usage error occurs
+	OnUsageError OnUsageErrorFunc
+	// Execute this function when an invalid flag is accessed from the context
+	InvalidFlagAccessHandler InvalidFlagAccessFunc
+	// List of all authors who contributed (string or fmt.Stringer)
+	Authors []any // TODO: ~string | fmt.Stringer when interface unions are available
+	// Copyright of the binary if any
+	Copyright string
+	// Reader reader to write input to (useful for tests)
+	Reader io.Reader
+	// Writer writer to write output to
+	Writer io.Writer
+	// ErrWriter writes error output
+	ErrWriter io.Writer
+	// ExitErrHandler processes any error encountered while running an App before
+	// it is returned to the caller. If no function is provided, HandleExitCoder
+	// is used as the default behavior.
+	ExitErrHandler ExitErrHandlerFunc
+	// Other custom info
+	Metadata map[string]interface{}
+	// Carries a function which returns app specific info.
+	ExtraInfo func() map[string]string
+	// CustomAppHelpTemplate the text template for app help topic.
+	// cli.go uses text/template to render templates. You can
+	// render custom help text by setting this variable.
+	CustomAppHelpTemplate string
+	// SliceFlagSeparator is used to customize the separator for SliceFlag, the default is ","
+	SliceFlagSeparator string
+	// DisableSliceFlagSeparator is used to disable SliceFlagSeparator, the default is false
+	DisableSliceFlagSeparator bool
+	// Boolean to enable short-option handling so user can combine several
+	// single-character bool arguments into one
+	// i.e. foobar -o -v -> foobar -ov
+	UseShortOptionHandling bool
+	// Enable suggestions for commands and flags
+	Suggest bool
+	// Allows global flags set by libraries which use flag.XXXVar(...) directly
+	// to be parsed through this library
+	AllowExtFlags bool
+	// Treat all flags as normal arguments if true
+	SkipFlagParsing bool
+	// Flag exclusion group
+	MutuallyExclusiveFlags []MutuallyExclusiveFlags
+	// Use longest prefix match for commands
+	PrefixMatchCommands bool
+	// Custom suggest command for matching
+	SuggestCommandFunc SuggestCommandFunc
+
+	// Has unexported fields.
+}
+    App is the main structure of a cli application.
+
+func (a *App) Command(name string) *Command
+    Command returns the named command on App. Returns nil if the command does
+    not exist
+
+func (a *App) Run(arguments []string) (err error)
+    Run is the entry point to the cli app. Parses the arguments slice and routes
+    to the proper flag/args combination
+
+func (a *App) RunContext(ctx context.Context, arguments []string) (err error)
+    RunContext is like Run except it takes a Context that will be passed to
+    its commands and sub-commands. Through this, you can propagate timeouts and
+    cancellation requests
+
+func (a *App) Setup()
+    Setup runs initialization code to ensure all data structures are ready
+    for `Run` or inspection prior to `Run`. It is internally called by `Run`,
+    but will return early if setup has already happened.
+
+func (a *App) ToFishCompletion() (string, error)
+    ToFishCompletion creates a fish completion string for the `*App` The
+    function errors if either parsing or writing of the string fails.
+
+func (a *App) ToMan() (string, error)
+    ToMan creates a man page string for the `*App` The function errors if either
+    parsing or writing of the string fails.
+
+func (a *App) ToManWithSection(sectionNumber int) (string, error)
+    ToMan creates a man page string with section number for the `*App` The
+    function errors if either parsing or writing of the string fails.
+
+func (a *App) ToMarkdown() (string, error)
+    ToMarkdown creates a markdown string for the `*App` The function errors if
+    either parsing or writing of the string fails.
+
+func (a *App) VisibleCategories() []CommandCategory
+    VisibleCategories returns a slice of categories and commands that are
+    Hidden=false
+
+func (a *App) VisibleCommands() []*Command
+    VisibleCommands returns a slice of the Commands with Hidden=false
+
+func (a *App) VisibleFlagCategories() []VisibleFlagCategory
+    VisibleFlagCategories returns a slice containing all the categories with the
+    flags they contain
+
+func (a *App) VisibleFlags() []Flag
+    VisibleFlags returns a slice of the Flags with Hidden=false
+
+type Args interface {
+	// Get returns the nth argument, or else a blank string
+	Get(n int) string
+	// First returns the first argument, or else a blank string
+	First() string
+	// Tail returns the rest of the arguments (not the first one)
+	// or else an empty string slice
+	Tail() []string
+	// Len returns the length of the wrapped slice
+	Len() int
+	// Present checks if there are any arguments present
+	Present() bool
+	// Slice returns a copy of the internal slice
+	Slice() []string
+}
+
+type BeforeFunc func(*Context) error
+    BeforeFunc is an action to execute before any subcommands are run, but after
+    the context is ready if a non-nil error is returned, no subcommands are run
+
+type BoolConfig struct {
+	Count *int
+}
+    BoolConfig defines the configuration for bool flags
+
+type BoolFlag = FlagBase[bool, BoolConfig, boolValue]
+
+type CategorizableFlag interface {
+	VisibleFlag
+
+	// Returns the category of the flag
+	GetCategory() string
+}
+    CategorizableFlag is an interface that allows us to potentially use a flag
+    in a categorized representation.
+
+type Command struct {
+	// The name of the command
+	Name string
+	// A list of aliases for the command
+	Aliases []string
+	// A short description of the usage of this command
+	Usage string
+	// Custom text to show on USAGE section of help
+	UsageText string
+	// A longer explanation of how the command works
+	Description string
+	// A short description of the arguments of this command
+	ArgsUsage string
+	// The category the command is part of
+	Category string
+	// The function to call when checking for shell command completions
+	ShellComplete ShellCompleteFunc
+	// An action to execute before any sub-subcommands are run, but after the context is ready
+	// If a non-nil error is returned, no sub-subcommands are run
+	Before BeforeFunc
+	// An action to execute after any subcommands are run, but after the subcommand has finished
+	// It is run even if Action() panics
+	After AfterFunc
+	// The function to call when this command is invoked
+	Action ActionFunc
+	// Execute this function if a usage error occurs.
+	OnUsageError OnUsageErrorFunc
+	// List of child commands
+	Commands []*Command
+	// List of flags to parse
+	Flags []Flag
+
+	// Treat all flags as normal arguments if true
+	SkipFlagParsing bool
+	// Boolean to hide built-in help command and help flag
+	HideHelp bool
+	// Boolean to hide built-in help command but keep help flag
+	// Ignored if HideHelp is true.
+	HideHelpCommand bool
+	// Boolean to hide this command from help or completion
+	Hidden bool
+	// Boolean to enable short-option handling so user can combine several
+	// single-character bool arguments into one
+	// i.e. foobar -o -v -> foobar -ov
+	UseShortOptionHandling bool
+
+	// Full name of command for help, defaults to full command name, including parent commands.
+	HelpName string
+
+	// CustomHelpTemplate the text template for the command help topic.
+	// cli.go uses text/template to render templates. You can
+	// render custom help text by setting this variable.
+	CustomHelpTemplate string
+
+	// Use longest prefix match for commands
+	PrefixMatchCommands bool
+
+	// Flag exclusion group
+	MutuallyExclusiveFlags []MutuallyExclusiveFlags
+	// Has unexported fields.
+}
+    Command is a subcommand for a cli.App.
+
+func (cmd *Command) Command(name string) *Command
+
+func (c *Command) FullName() string
+    FullName returns the full name of the command. For subcommands this ensures
+    that parent commands are part of the command path
+
+func (c *Command) HasName(name string) bool
+    HasName returns true if Command.Name matches given name
+
+func (c *Command) Names() []string
+    Names returns the names including short names and aliases.
+
+func (c *Command) Run(cCtx *Context, arguments ...string) (err error)
+
+func (c *Command) VisibleCategories() []CommandCategory
+    VisibleCategories returns a slice of categories and commands that are
+    Hidden=false
+
+func (c *Command) VisibleCommands() []*Command
+    VisibleCommands returns a slice of the Commands with Hidden=false
+
+func (c *Command) VisibleFlagCategories() []VisibleFlagCategory
+    VisibleFlagCategories returns a slice containing all the visible flag
+    categories with the flags they contain
+
+func (c *Command) VisibleFlags() []Flag
+    VisibleFlags returns a slice of the Flags with Hidden=false
+
+type CommandCategories interface {
+	// AddCommand adds a command to a category, creating a new category if necessary.
+	AddCommand(category string, command *Command)
+	// Categories returns a slice of categories sorted by name
+	Categories() []CommandCategory
+}
+    CommandCategories interface allows for category manipulation
+
+type CommandCategory interface {
+	// Name returns the category name string
+	Name() string
+	// VisibleCommands returns a slice of the Commands with Hidden=false
+	VisibleCommands() []*Command
+}
+    CommandCategory is a category containing commands.
+
+type CommandNotFoundFunc func(*Context, string)
+    CommandNotFoundFunc is executed if the proper command cannot be found
+
+type Commands []*Command
+
+type CommandsByName []*Command
+
+func (c CommandsByName) Len() int
+
+func (c CommandsByName) Less(i, j int) bool
+
+func (c CommandsByName) Swap(i, j int)
+
+type Context struct {
+	context.Context
+	App     *App
+	Command *Command
+
+	// Has unexported fields.
+}
+    Context is a type that is passed through to each Handler action in a cli
+    application. Context can be used to retrieve context-specific args and
+    parsed command-line options.
+
+func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context
+    NewContext creates a new context. For use in when invoking an App or Command
+    action.
+
+func (cCtx *Context) Args() Args
+    Args returns the command line arguments associated with the context.
+
+func (cCtx *Context) Bool(name string) bool
+
+func (cCtx *Context) Count(name string) int
+    Count returns the num of occurences of this flag
+
+func (cCtx *Context) Duration(name string) time.Duration
+
+func (cCtx *Context) FlagNames() []string
+    FlagNames returns a slice of flag names used by the this context and all of
+    its parent contexts.
+
+func (cCtx *Context) Float64(name string) float64
+    Int looks up the value of a local IntFlag, returns 0 if not found
+
+func (cCtx *Context) Float64Slice(name string) []float64
+    Float64Slice looks up the value of a local Float64SliceFlag, returns nil if
+    not found
+
+func (cCtx *Context) Int(name string) int
+    Int looks up the value of a local IntFlag, returns 0 if not found
+
+func (cCtx *Context) Int64(name string) int64
+    Int64 looks up the value of a local Int64Flag, returns 0 if not found
+
+func (cCtx *Context) Int64Slice(name string) []int64
+    Int64Slice looks up the value of a local Int64SliceFlag, returns nil if not
+    found
+
+func (cCtx *Context) IntSlice(name string) []int
+    IntSlice looks up the value of a local IntSliceFlag, returns nil if not
+    found
+
+func (cCtx *Context) IsSet(name string) bool
+    IsSet determines if the flag was actually set
+
+func (cCtx *Context) Lineage() []*Context
+    Lineage returns *this* context and all of its ancestor contexts in order
+    from child to parent
+
+func (cCtx *Context) LocalFlagNames() []string
+    LocalFlagNames returns a slice of flag names used in this context.
+
+func (cCtx *Context) NArg() int
+    NArg returns the number of the command line arguments.
+
+func (cCtx *Context) NumFlags() int
+    NumFlags returns the number of flags set
+
+func (cCtx *Context) Set(name, value string) error
+    Set sets a context flag to a value.
+
+func (cCtx *Context) String(name string) string
+
+func (cCtx *Context) StringMap(name string) map[string]string
+    StringMap looks up the value of a local StringMapFlag, returns nil if not
+    found
+
+func (cCtx *Context) StringSlice(name string) []string
+    StringSlice looks up the value of a local StringSliceFlag, returns nil if
+    not found
+
+func (cCtx *Context) Timestamp(name string) *time.Time
+    Timestamp gets the timestamp from a flag name
+
+func (cCtx *Context) Uint(name string) uint
+    Uint looks up the value of a local UintFlag, returns 0 if not found
+
+func (cCtx *Context) Uint64(name string) uint64
+    Uint64 looks up the value of a local Uint64Flag, returns 0 if not found
+
+func (cCtx *Context) Uint64Slice(name string) []uint64
+    Uint64Slice looks up the value of a local Uint64SliceFlag, returns nil if
+    not found
+
+func (cCtx *Context) UintSlice(name string) []uint
+    UintSlice looks up the value of a local UintSliceFlag, returns nil if not
+    found
+
+func (cCtx *Context) Value(name string) interface{}
+    Value returns the value of the flag corresponding to `name`
+
+type Countable interface {
+	Count() int
+}
+    Countable is an interface to enable detection of flag values which support
+    repetitive flags
+
+type DocGenerationFlag interface {
+	Flag
+
+	// TakesValue returns true if the flag takes a value, otherwise false
+	TakesValue() bool
+
+	// GetUsage returns the usage string for the flag
+	GetUsage() string
+
+	// GetValue returns the flags value as string representation and an empty
+	// string if the flag takes no value at all.
+	GetValue() string
+
+	// GetDefaultText returns the default text for this flag
+	GetDefaultText() string
+
+	// GetEnvVars returns the env vars for this flag
+	GetEnvVars() []string
+}
+    DocGenerationFlag is an interface that allows documentation generation for
+    the flag
+
+type DocGenerationMultiValueFlag interface {
+	DocGenerationFlag
+
+	// IsMultiValueFlag returns true for flags that can be given multiple times.
+	IsMultiValueFlag() bool
+}
+    DocGenerationSliceFlag extends DocGenerationFlag for slice/map based flags.
+
+type DurationFlag = FlagBase[time.Duration, NoConfig, durationValue]
+
+type ErrorFormatter interface {
+	Format(s fmt.State, verb rune)
+}
+    ErrorFormatter is the interface that will suitably format the error output
+
+type ExitCoder interface {
+	error
+	ExitCode() int
+}
+    ExitCoder is the interface checked by `App` and `Command` for a custom exit
+    code
+
+func Exit(message interface{}, exitCode int) ExitCoder
+    Exit wraps a message and exit code into an error, which by default is
+    handled with a call to os.Exit during default error handling.
+
+    This is the simplest way to trigger a non-zero exit code for an App
+    without having to call os.Exit manually. During testing, this behavior
+    can be avoided by overriding the ExitErrHandler function on an App or the
+    package-global OsExiter function.
+
+type ExitErrHandlerFunc func(cCtx *Context, err error)
+    ExitErrHandlerFunc is executed if provided in order to handle exitError
+    values returned by Actions and Before/After functions.
+
+type Flag interface {
+	fmt.Stringer
+
+	// Apply Flag settings to the given flag set
+	Apply(*flag.FlagSet) error
+
+	// All possible names for this flag
+	Names() []string
+
+	// Whether the flag has been set or not
+	IsSet() bool
+}
+    Flag is a common interface related to parsing flags in cli. For more
+    advanced flag parsing techniques, it is recommended that this interface be
+    implemented.
+
+var BashCompletionFlag Flag = &BoolFlag{
+	Name:   "generate-shell-completion",
+	Hidden: true,
+}
+    BashCompletionFlag enables bash-completion for all commands and subcommands
+
+var HelpFlag Flag = &BoolFlag{
+	Name:    "help",
+	Aliases: []string{"h"},
+	Usage:   "show help",
+}
+    HelpFlag prints the help for all commands and subcommands. Set to nil to
+    disable the flag. The subcommand will still be added unless HideHelp or
+    HideHelpCommand is set to true.
+
+var VersionFlag Flag = &BoolFlag{
+	Name:    "version",
+	Aliases: []string{"v"},
+	Usage:   "print the version",
+}
+    VersionFlag prints the version for the application
+
+type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
+	Name string // name of the flag
+
+	Category    string   // category of the flag, if any
+	DefaultText string   // default text of the flag for usage purposes
+	FilePaths   []string // file paths to load value from
+	Usage       string   // usage string for help output
+
+	Required   bool // whether the flag is required or not
+	Hidden     bool // whether to hide the flag in help output
+	Persistent bool // whether the flag needs to be applied to subcommands as well
+
+	Value       T  // default value for this flag if not set by from any source
+	Destination *T // destination pointer for value when set
+
+	Aliases []string // Aliases that are allowed for this flag
+	EnvVars []string // Set of environment variables that can influence this flag's value
+
+	TakesFile bool // whether this flag takes a file argument, mainly for shell completion purposes
+
+	Action func(*Context, T) error // Action callback to be called when flag is set
+
+	Config C // Additional/Custom configuration associated with this flag type
+
+	OnlyOnce bool // whether this flag can be duplicated on the command line
+
+	// Has unexported fields.
+}
+    FlagBase[T,C,VC] is a generic flag base which can be used as a boilerplate
+    to implement the most common interfaces used by urfave/cli.
+
+        T specifies the type
+        C specifies the configuration required(if any for that flag type)
+        VC specifies the value creator which creates the flag.Value emulation
+
+func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error
+    Apply populates the flag given the flag set and environment
+
+func (f *FlagBase[T, C, V]) Get(ctx *Context) T
+    Get returns the flag’s value in the given Context.
+
+func (f *FlagBase[T, C, V]) GetCategory() string
+    GetCategory returns the category of the flag
+
+func (f *FlagBase[T, C, V]) GetDefaultText() string
+    GetDefaultText returns the default text for this flag
+
+func (f *FlagBase[T, C, V]) GetEnvVars() []string
+    GetEnvVars returns the env vars for this flag
+
+func (f *FlagBase[T, C, V]) GetUsage() string
+    GetUsage returns the usage string for the flag
+
+func (f *FlagBase[T, C, V]) GetValue() string
+    GetValue returns the flags value as string representation and an empty
+    string if the flag takes no value at all.
+
+func (f *FlagBase[T, C, VC]) IsMultiValueFlag() bool
+    IsMultiValueFlag returns true if the value type T can take multiple values
+    from cmd line. This is true for slice and map type flags
+
+func (f *FlagBase[T, C, VC]) IsPersistent() bool
+    IsPersistent returns true if flag needs to be persistent across subcommands
+
+func (f *FlagBase[T, C, V]) IsRequired() bool
+    IsRequired returns whether or not the flag is required
+
+func (f *FlagBase[T, C, V]) IsSet() bool
+    IsSet returns whether or not the flag has been set through env or file
+
+func (f *FlagBase[T, C, V]) IsVisible() bool
+    IsVisible returns true if the flag is not hidden, otherwise false
+
+func (f *FlagBase[T, C, V]) Names() []string
+    Names returns the names of the flag
+
+func (f *FlagBase[T, C, V]) RunAction(ctx *Context) error
+    RunAction executes flag action if set
+
+func (f *FlagBase[T, C, V]) String() string
+    String returns a readable representation of this value (for usage defaults)
+
+func (f *FlagBase[T, C, V]) TakesValue() bool
+    TakesValue returns true if the flag takes a value, otherwise false
+
+type FlagCategories interface {
+	// AddFlags adds a flag to a category, creating a new category if necessary.
+	AddFlag(category string, fl Flag)
+	// VisibleCategories returns a slice of visible flag categories sorted by name
+	VisibleCategories() []VisibleFlagCategory
+}
+    FlagCategories interface allows for category manipulation
+
+type FlagEnvHintFunc func(envVars []string, str string) string
+    FlagEnvHintFunc is used by the default FlagStringFunc to annotate flag help
+    with the environment variable details.
+
+var FlagEnvHinter FlagEnvHintFunc = withEnvHint
+    FlagEnvHinter annotates flag help message with the environment variable
+    details. This is used by the default FlagStringer.
+
+type FlagFileHintFunc func(filePath, str string) string
+    FlagFileHintFunc is used by the default FlagStringFunc to annotate flag help
+    with the file path details.
+
+var FlagFileHinter FlagFileHintFunc = withFileHint
+    FlagFileHinter annotates flag help message with the environment variable
+    details. This is used by the default FlagStringer.
+
+type FlagNamePrefixFunc func(fullName []string, placeholder string) string
+    FlagNamePrefixFunc is used by the default FlagStringFunc to create prefix
+    text for a flag's full name.
+
+var FlagNamePrefixer FlagNamePrefixFunc = prefixedNames
+    FlagNamePrefixer converts a full flag name and its placeholder into the help
+    message flag prefix. This is used by the default FlagStringer.
+
+type FlagStringFunc func(Flag) string
+    FlagStringFunc is used by the help generation to display a flag, which is
+    expected to be a single line.
+
+var FlagStringer FlagStringFunc = stringifyFlag
+    FlagStringer converts a flag definition to a string. This is used by help to
+    display a flag.
+
+type FlagsByName []Flag
+    FlagsByName is a slice of Flag.
+
+func (f FlagsByName) Len() int
+
+func (f FlagsByName) Less(i, j int) bool
+
+func (f FlagsByName) Swap(i, j int)
+
+type Float64Flag = FlagBase[float64, NoConfig, float64Value]
+
+type Float64Slice = SliceBase[float64, NoConfig, float64Value]
+
+type Float64SliceFlag = FlagBase[[]float64, NoConfig, Float64Slice]
+
+type Int64Flag = FlagBase[int64, IntegerConfig, int64Value]
+
+type Int64Slice = SliceBase[int64, IntegerConfig, int64Value]
+
+type Int64SliceFlag = FlagBase[[]int64, IntegerConfig, Int64Slice]
+
+type IntFlag = FlagBase[int, IntegerConfig, intValue]
+
+type IntSlice = SliceBase[int, IntegerConfig, intValue]
+
+type IntSliceFlag = FlagBase[[]int, IntegerConfig, IntSlice]
+
+type IntegerConfig struct {
+	Base int
+}
+    IntegerConfig is the configuration for all integer type flags
+
+type InvalidFlagAccessFunc func(*Context, string)
+    InvalidFlagAccessFunc is executed when an invalid flag is accessed from the
+    context.
+
+type MapBase[T any, C any, VC ValueCreator[T, C]] struct {
+	// Has unexported fields.
+}
+    MapBase wraps map[string]T to satisfy flag.Value
+
+func NewMapBase[T any, C any, VC ValueCreator[T, C]](defaults map[string]T) *MapBase[T, C, VC]
+    NewMapBase makes a *MapBase with default values
+
+func (i MapBase[T, C, VC]) Create(val map[string]T, p *map[string]T, c C) Value
+
+func (i *MapBase[T, C, VC]) Get() interface{}
+    Get returns the mapping of values set by this flag
+
+func (i *MapBase[T, C, VC]) Serialize() string
+    Serialize allows MapBase to fulfill Serializer
+
+func (i *MapBase[T, C, VC]) Set(value string) error
+    Set parses the value and appends it to the list of values
+
+func (i *MapBase[T, C, VC]) String() string
+    String returns a readable representation of this value (for usage defaults)
+
+func (i MapBase[T, C, VC]) ToString(t map[string]T) string
+
+func (i *MapBase[T, C, VC]) Value() map[string]T
+    Value returns the mapping of values set by this flag
+
+type MultiError interface {
+	error
+	Errors() []error
+}
+    MultiError is an error that wraps multiple errors.
+
+type MutuallyExclusiveFlags struct {
+	// Flag list
+	Flags [][]Flag
+
+	// whether this group is required
+	Required bool
+}
+    MutuallyExclusiveFlags defines a mutually exclusive flag group Multiple
+    option paths can be provided out of which only one can be defined on cmdline
+    So for example [ --foo | [ --bar something --darth somethingelse ] ]
+
+type NoConfig struct{}
+    NoConfig is for flags which dont need a custom configuration
+
+type OnUsageErrorFunc func(cCtx *Context, err error, isSubcommand bool) error
+    OnUsageErrorFunc is executed if a usage error occurs. This is useful for
+    displaying customized usage error messages. This function is able to replace
+    the original error messages. If this function is not set, the "Incorrect
+    usage" is displayed and the execution is interrupted.
+
+type PersistentFlag interface {
+	IsPersistent() bool
+}
+    PersistentFlag is an interface to enable detection of flags which are
+    persistent through subcommands
+
+type RequiredFlag interface {
+	Flag
+
+	// whether the flag is a required flag or not
+	IsRequired() bool
+}
+    RequiredFlag is an interface that allows us to mark flags as required
+    it allows flags required flags to be backwards compatible with the Flag
+    interface
+
+type Serializer interface {
+	Serialize() string
+}
+    Serializer is used to circumvent the limitations of flag.FlagSet.Set
+
+type ShellCompleteFunc func(*Context)
+    ShellCompleteFunc is an action to execute when the shell completion flag is
+    set
+
+type SliceBase[T any, C any, VC ValueCreator[T, C]] struct {
+	// Has unexported fields.
+}
+    SliceBase wraps []T to satisfy flag.Value
+
+func NewSliceBase[T any, C any, VC ValueCreator[T, C]](defaults ...T) *SliceBase[T, C, VC]
+    NewIntSlice makes an *IntSlice with default values
+
+func (i SliceBase[T, C, VC]) Create(val []T, p *[]T, c C) Value
+
+func (i *SliceBase[T, C, VC]) Get() interface{}
+    Get returns the slice of values set by this flag
+
+func (i *SliceBase[T, C, VC]) Serialize() string
+    Serialize allows SliceBase to fulfill Serializer
+
+func (i *SliceBase[T, C, VC]) Set(value string) error
+    Set parses the value and appends it to the list of values
+
+func (i *SliceBase[T, C, VC]) SetOne(value T)
+    SetOne directly adds a value to the list of values
+
+func (i *SliceBase[T, C, VC]) String() string
+    String returns a readable representation of this value (for usage defaults)
+
+func (i SliceBase[T, C, VC]) ToString(t []T) string
+
+func (i *SliceBase[T, C, VC]) Value() []T
+    Value returns the slice of values set by this flag
+
+type StringConfig struct {
+	// Whether to trim whitespace of parsed value
+	TrimSpace bool
+}
+    StringConfig defines the configuration for string flags
+
+type StringFlag = FlagBase[string, StringConfig, stringValue]
+
+type StringMap = MapBase[string, StringConfig, stringValue]
+
+type StringMapFlag = FlagBase[map[string]string, StringConfig, StringMap]
+
+type StringSlice = SliceBase[string, StringConfig, stringValue]
+
+type StringSliceFlag = FlagBase[[]string, StringConfig, StringSlice]
+
+type SuggestCommandFunc func(commands []*Command, provided string) string
+
+type SuggestFlagFunc func(flags []Flag, provided string, hideHelp bool) string
+
+type TimestampConfig struct {
+	Timezone *time.Location
+	Layout   string
+}
+    TimestampConfig defines the config for timestamp flags
+
+type TimestampFlag = FlagBase[time.Time, TimestampConfig, timestampValue]
+
+type Uint64Flag = FlagBase[uint64, IntegerConfig, uint64Value]
+
+type Uint64Slice = SliceBase[uint64, IntegerConfig, uint64Value]
+
+type Uint64SliceFlag = FlagBase[[]uint64, IntegerConfig, Uint64Slice]
+
+type UintFlag = FlagBase[uint, IntegerConfig, uintValue]
+
+type UintSlice = SliceBase[uint, IntegerConfig, uintValue]
+
+type UintSliceFlag = FlagBase[[]uint, IntegerConfig, UintSlice]
+
+type Value interface {
+	flag.Value
+	flag.Getter
+}
+    Value represents a value as used by cli. For now it implements the golang
+    flag.Value interface
+
+type ValueCreator[T any, C any] interface {
+	Create(T, *T, C) Value
+	ToString(T) string
+}
+    ValueCreator is responsible for creating a flag.Value emulation as well as
+    custom formatting
+
+        T specifies the type
+        C specifies the config for the type
+
+type VisibleFlag interface {
+	Flag
+
+	// IsVisible returns true if the flag is not hidden, otherwise false
+	IsVisible() bool
+}
+    VisibleFlag is an interface that allows to check if a flag is visible
+
+type VisibleFlagCategory interface {
+	// Name returns the category name string
+	Name() string
+	// Flags returns a slice of VisibleFlag sorted by name
+	Flags() []VisibleFlag
+}
+    VisibleFlagCategory is a category containing flags.
+

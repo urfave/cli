@@ -2,14 +2,15 @@ package cli
 
 import (
 	"bytes"
-	"io/ioutil"
+	"net/mail"
+	"os"
 	"testing"
 )
 
 func TestFishCompletion(t *testing.T) {
 	// Given
 	app := testApp()
-	app.Flags = append(app.Flags, &PathFlag{
+	app.Flags = append(app.Flags, &StringFlag{
 		Name:      "logfile",
 		TakesFile: true,
 	})
@@ -60,7 +61,7 @@ func testApp() *App {
 		},
 		Name:  "config",
 		Usage: "another usage test",
-		Subcommands: []*Command{{
+		Commands: []*Command{{
 			Aliases: []string{"s", "ss"},
 			Flags: []Flag{
 				&StringFlag{Name: "sub-flag", Aliases: []string{"sub-fl", "s"}},
@@ -110,7 +111,7 @@ func() { ... }
 
 Should be a part of the same code block
 `,
-		Subcommands: []*Command{{
+		Commands: []*Command{{
 			Aliases: []string{"su"},
 			Flags: []Flag{
 				&BoolFlag{
@@ -127,15 +128,15 @@ Should be a part of the same code block
 	app.UsageText = "app [first_arg] [second_arg]"
 	app.Description = `Description of the application.`
 	app.Usage = "Some app"
-	app.Authors = []*Author{
-		{Name: "Harrison", Email: "harrison@lolwut.com"},
-		{Name: "Oliver Allen", Email: "oliver@toyshop.com"},
+	app.Authors = []any{
+		"Harrison <harrison@lolwut.example.com>",
+		&mail.Address{Name: "Oliver Allen", Address: "oliver@toyshop.com"},
 	}
 	return app
 }
 
 func expectFileContent(t *testing.T, file, got string) {
-	data, err := ioutil.ReadFile(file)
+	data, err := os.ReadFile(file)
 	// Ignore windows line endings
 	// TODO: Replace with bytes.ReplaceAll when support for Go 1.11 is dropped
 	data = bytes.Replace(data, []byte("\r\n"), []byte("\n"), -1)

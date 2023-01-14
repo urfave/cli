@@ -4,7 +4,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
+	"os"
 	"regexp"
 	"runtime"
 	"strings"
@@ -15,6 +16,12 @@ import (
 const defaultPlaceholder = "value"
 
 var (
+	defaultSliceFlagSeparator       = ","
+	defaultMapFlagKeyValueSeparator = "="
+	disableSliceFlagSeparator       = false
+)
+
+var (
 	slPfx = fmt.Sprintf("sl:::%d:::", time.Now().UTC().UnixNano())
 
 	commaWhitespace = regexp.MustCompile("[, ]+.*")
@@ -22,7 +29,7 @@ var (
 
 // BashCompletionFlag enables bash-completion for all commands and subcommands
 var BashCompletionFlag Flag = &BoolFlag{
-	Name:   "generate-bash-completion",
+	Name:   "generate-shell-completion",
 	Hidden: true,
 }
 
@@ -135,12 +142,12 @@ type DocGenerationFlag interface {
 	GetEnvVars() []string
 }
 
-// DocGenerationSliceFlag extends DocGenerationFlag for slice-based flags.
-type DocGenerationSliceFlag interface {
+// DocGenerationSliceFlag extends DocGenerationFlag for slice/map based flags.
+type DocGenerationMultiValueFlag interface {
 	DocGenerationFlag
 
-	// IsSliceFlag returns true for flags that can be given multiple times.
-	IsSliceFlag() bool
+	// IsMultiValueFlag returns true for flags that can be given multiple times.
+	IsMultiValueFlag() bool
 }
 
 // Countable is an interface to enable detection of flag values which support
@@ -166,6 +173,12 @@ type CategorizableFlag interface {
 	GetCategory() string
 }
 
+// PersistentFlag is an interface to enable detection of flags which are persistent
+// through subcommands
+type PersistentFlag interface {
+	IsPersistent() bool
+}
+
 func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {
 	set := flag.NewFlagSet(name, flag.ContinueOnError)
 
@@ -174,7 +187,7 @@ func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {
 			return nil, err
 		}
 	}
-	set.SetOutput(ioutil.Discard)
+	set.SetOutput(io.Discard)
 	return set, nil
 }
 
@@ -275,19 +288,23 @@ func prefixedNames(names []string, placeholder string) string {
 	return prefixed
 }
 
+func envFormat(envVars []string, prefix, sep, suffix string) string {
+	if len(envVars) > 0 {
+		return fmt.Sprintf(" [%s%s%s]", prefix, strings.Join(envVars, sep), suffix)
+	}
+	return ""
+}
+
+func defaultEnvFormat(envVars []string) string {
+	return envFormat(envVars, "$", ", $", "")
+}
+
 func withEnvHint(envVars []string, str string) string {
 	envText := ""
-	if len(envVars) > 0 {
-		prefix := "$"
-		suffix := ""
-		sep := ", $"
-		if runtime.GOOS == "windows" {
-			prefix = "%"
-			suffix = "%"
-			sep = "%, %"
-		}
-
-		envText = fmt.Sprintf(" [%s%s%s]", prefix, strings.Join(envVars, sep), suffix)
+	if runtime.GOOS != "windows" || os.Getenv("PSHOME") != "" {
+		envText = defaultEnvFormat(envVars)
+	} else {
+		envText = envFormat(envVars, "%", "%, %", "%")
 	}
 	return str + envText
 }
@@ -341,8 +358,8 @@ func stringifyFlag(f Flag) string {
 	usageWithDefault := strings.TrimSpace(usage + defaultValueString)
 
 	pn := prefixedNames(df.Names(), placeholder)
-	sliceFlag, ok := f.(DocGenerationSliceFlag)
-	if ok && sliceFlag.IsSliceFlag() {
+	sliceFlag, ok := f.(DocGenerationMultiValueFlag)
+	if ok && sliceFlag.IsMultiValueFlag() {
 		pn = pn + " [ " + pn + " ]"
 	}
 
@@ -362,17 +379,17 @@ func hasFlag(flags []Flag, fl Flag) bool {
 // Return the first value from a list of environment variables and files
 // (which may or may not exist), a description of where the value was found,
 // and a boolean which is true if a value was found.
-func flagFromEnvOrFile(envVars []string, filePath string) (value string, fromWhere string, found bool) {
+func flagFromEnvOrFile(envVars []string, filePaths []string) (value string, fromWhere string, found bool) {
 	for _, envVar := range envVars {
 		envVar = strings.TrimSpace(envVar)
 		if value, found := syscall.Getenv(envVar); found {
 			return value, fmt.Sprintf("environment variable %q", envVar), true
 		}
 	}
-	for _, fileVar := range strings.Split(filePath, ",") {
+	for _, fileVar := range filePaths {
 		if fileVar != "" {
-			if data, err := ioutil.ReadFile(fileVar); err == nil {
-				return string(data), fmt.Sprintf("file %q", filePath), true
+			if data, err := os.ReadFile(fileVar); err == nil {
+				return string(data), fmt.Sprintf("file %q", filePaths), true
 			}
 		}
 	}
@@ -380,5 +397,9 @@ func flagFromEnvOrFile(envVars []string, filePath string) (value string, fromWhe
 }
 
 func flagSplitMultiValues(val string) []string {
-	return strings.Split(val, ",")
+	if disableSliceFlagSeparator {
+		return []string{val}
+	}
+
+	return strings.Split(val, defaultSliceFlagSeparator)
 }

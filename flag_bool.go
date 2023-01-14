@@ -2,10 +2,16 @@ package cli
 
 import (
 	"errors"
-	"flag"
 	"fmt"
 	"strconv"
 )
+
+type BoolFlag = FlagBase[bool, BoolConfig, boolValue]
+
+// BoolConfig defines the configuration for bool flags
+type BoolConfig struct {
+	Count *int
+}
 
 // boolValue needs to implement the boolFlag internal interface in flag
 // to be able to capture bool fields and values
@@ -19,13 +25,33 @@ type boolValue struct {
 	count       *int
 }
 
-func newBoolValue(val bool, p *bool, count *int) *boolValue {
+func (cCtx *Context) Bool(name string) bool {
+	if v, ok := cCtx.Value(name).(bool); ok {
+		return v
+	}
+	return false
+}
+
+// Below functions are to satisfy the ValueCreator interface
+
+// Create creates the bool value
+func (i boolValue) Create(val bool, p *bool, c BoolConfig) Value {
 	*p = val
+	if c.Count == nil {
+		c.Count = new(int)
+	}
 	return &boolValue{
 		destination: p,
-		count:       count,
+		count:       c.Count,
 	}
 }
+
+// ToString formats the bool value
+func (i boolValue) ToString(b bool) string {
+	return fmt.Sprintf("%v", b)
+}
+
+// Below functions are to satisfy the flag.Value interface
 
 func (b *boolValue) Set(s string) error {
 	v, err := strconv.ParseBool(s)
@@ -56,91 +82,4 @@ func (b *boolValue) Count() int {
 		return *b.count
 	}
 	return 0
-}
-
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f *BoolFlag) GetValue() string {
-	return ""
-}
-
-// GetDefaultText returns the default text for this flag
-func (f *BoolFlag) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	return fmt.Sprintf("%v", f.Value)
-}
-
-// RunAction executes flag action if set
-func (f *BoolFlag) RunAction(c *Context) error {
-	if f.Action != nil {
-		return f.Action(c, c.Bool(f.Name))
-	}
-
-	return nil
-}
-
-// Apply populates the flag given the flag set and environment
-func (f *BoolFlag) Apply(set *flag.FlagSet) error {
-	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
-		if val != "" {
-			valBool, err := strconv.ParseBool(val)
-
-			if err != nil {
-				return fmt.Errorf("could not parse %q as bool value from %s for flag %s: %s", val, source, f.Name, err)
-			}
-
-			f.Value = valBool
-		} else {
-			// empty value implies that the env is defined but set to empty string, we have to assume that this is
-			// what the user wants. If user doesnt want this then the env needs to be deleted or the flag removed from
-			// file
-			f.Value = false
-		}
-		f.HasBeenSet = true
-	}
-
-	count := f.Count
-	dest := f.Destination
-
-	if count == nil {
-		count = new(int)
-	}
-	if dest == nil {
-		dest = new(bool)
-	}
-
-	for _, name := range f.Names() {
-		value := newBoolValue(f.Value, dest, count)
-		set.Var(value, name, f.Usage)
-	}
-
-	return nil
-}
-
-// Get returns the flag’s value in the given Context.
-func (f *BoolFlag) Get(ctx *Context) bool {
-	return ctx.Bool(f.Name)
-}
-
-// Bool looks up the value of a local BoolFlag, returns
-// false if not found
-func (cCtx *Context) Bool(name string) bool {
-	if fs := cCtx.lookupFlagSet(name); fs != nil {
-		return lookupBool(name, fs)
-	}
-	return false
-}
-
-func lookupBool(name string, set *flag.FlagSet) bool {
-	f := set.Lookup(name)
-	if f != nil {
-		parsed, err := strconv.ParseBool(f.Value.String())
-		if err != nil {
-			return false
-		}
-		return parsed
-	}
-	return false
 }

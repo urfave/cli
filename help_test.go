@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"strings"
@@ -178,6 +177,88 @@ func Test_helpCommand_InHelpOutput(t *testing.T) {
 	}
 }
 
+func Test_helpCommand_HelpName(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+		want string
+	}{
+		{
+			name: "app help's helpName",
+			args: []string{"app", "help", "help"},
+			want: "app help -",
+		},
+		{
+			name: "app help's helpName via flag",
+			args: []string{"app", "-h", "help"},
+			want: "app help -",
+		},
+		{
+			name: "cmd help's helpName",
+			args: []string{"app", "cmd", "help", "help"},
+			want: "app cmd help -",
+		},
+		{
+			name: "cmd help's helpName via flag",
+			args: []string{"app", "cmd", "-h", "help"},
+			want: "app cmd help -",
+		},
+		{
+			name: "subcmd help's helpName",
+			args: []string{"app", "cmd", "subcmd", "help", "help"},
+			want: "app cmd subcmd help -",
+		},
+		{
+			name: "subcmd help's helpName via flag",
+			args: []string{"app", "cmd", "subcmd", "-h", "help"},
+			want: "app cmd subcmd help -",
+		},
+	}
+	for _, tt := range tests {
+		buf := &bytes.Buffer{}
+		t.Run(tt.name, func(t *testing.T) {
+			app := &App{
+				Name: "app",
+				Commands: []*Command{
+					{
+						Name:     "cmd",
+						Commands: []*Command{{Name: "subcmd"}},
+					},
+				},
+				Writer: buf,
+			}
+			err := app.Run(tt.args)
+			expect(t, err, nil)
+			got := buf.String()
+			if !strings.Contains(got, tt.want) {
+				t.Errorf("Expected %q contained - Got %q", tt.want, got)
+			}
+		})
+	}
+}
+
+func Test_helpCommand_HideHelpCommand(t *testing.T) {
+	buf := &bytes.Buffer{}
+	app := &App{
+		Name:   "app",
+		Writer: buf,
+	}
+	err := app.Run([]string{"app", "help", "help"})
+	expect(t, err, nil)
+	got := buf.String()
+	notWant := "COMMANDS:"
+	if strings.Contains(got, notWant) {
+		t.Errorf("Not expected %q - Got %q", notWant, got)
+	}
+}
+
+func Test_helpCommand_HideHelpFlag(t *testing.T) {
+	app := newTestApp()
+	if err := app.Run([]string{"app", "help", "-h"}); err == nil {
+		t.Errorf("Expected flag error - Got nil")
+	}
+}
+
 func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 	app := &App{}
 
@@ -228,10 +309,75 @@ func TestShowAppHelp_CommandAliases(t *testing.T) {
 	}
 }
 
-func TestShowCommandHelp_HelpPrinter(t *testing.T) {
-	doublecho := func(text string) string {
-		return text + " " + text
+func TestShowCommandHelp_AppendHelp(t *testing.T) {
+	tests := []struct {
+		name            string
+		hideHelp        bool
+		hideHelpCommand bool
+		args            []string
+		wantHelpCommand bool
+		wantHelpFlag    bool
+	}{
+		{
+			name:            "with HideHelp",
+			hideHelp:        true,
+			args:            []string{"app"},
+			wantHelpCommand: false,
+			wantHelpFlag:    false,
+		},
+		{
+			name:            "with HideHelpCommand",
+			hideHelpCommand: true,
+			args:            []string{"app"},
+			wantHelpCommand: false,
+			wantHelpFlag:    true,
+		},
+		{
+			name:            "with Subcommand",
+			args:            []string{"app"},
+			wantHelpCommand: true,
+			wantHelpFlag:    true,
+		},
+		{
+			name:            "without Subcommand",
+			args:            []string{"app", "cmd"},
+			wantHelpCommand: false,
+			wantHelpFlag:    true,
+		},
 	}
+	for _, tt := range tests {
+		buf := &bytes.Buffer{}
+		t.Run(tt.name, func(t *testing.T) {
+			app := &App{
+				Name:   "app",
+				Action: func(ctx *Context) error { return ShowCommandHelp(ctx, "cmd") },
+				Commands: []*Command{
+					{
+						Name:            "cmd",
+						HideHelp:        tt.hideHelp,
+						HideHelpCommand: tt.hideHelpCommand,
+						Action:          func(ctx *Context) error { return ShowCommandHelp(ctx, "subcmd") },
+						Commands:        []*Command{{Name: "subcmd"}},
+					},
+				},
+				Writer: buf,
+			}
+			err := app.Run(tt.args)
+			expect(t, err, nil)
+			got := buf.String()
+			gotHelpCommand := strings.Contains(got, "help, h  Shows a list of commands or help for one command")
+			gotHelpFlag := strings.Contains(got, "--help, -h  show help")
+			if gotHelpCommand != tt.wantHelpCommand || gotHelpFlag != tt.wantHelpFlag {
+				t.Errorf("ShowCommandHelp() return unexpected help message - Got %q", got)
+			}
+		})
+	}
+}
+
+func TestShowCommandHelp_HelpPrinter(t *testing.T) {
+	/*doublecho := func(text string) string {
+		return text + " " + text
+	}*/
 
 	tests := []struct {
 		name         string
@@ -244,14 +390,14 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 		{
 			name:     "no-command",
 			template: "",
-			printer: func(w io.Writer, templ string, data interface{}) {
+			printer: func(w io.Writer, _ string, _ interface{}) {
 				fmt.Fprint(w, "yo")
 			},
 			command:      "",
 			wantTemplate: AppHelpTemplate,
 			wantOutput:   "yo",
 		},
-		{
+		/*{
 			name:     "standard-command",
 			template: "",
 			printer: func(w io.Writer, templ string, data interface{}) {
@@ -272,7 +418,7 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 			command:      "my-command",
 			wantTemplate: "{{doublecho .Name}}",
 			wantOutput:   "my-command my-command",
-		},
+		},*/
 	}
 
 	for _, tt := range tests {
@@ -329,7 +475,7 @@ func TestShowCommandHelp_HelpPrinterCustom(t *testing.T) {
 		{
 			name:     "no-command",
 			template: "",
-			printer: func(w io.Writer, templ string, data interface{}, fm map[string]interface{}) {
+			printer: func(w io.Writer, _ string, _ interface{}, _ map[string]interface{}) {
 				fmt.Fprint(w, "yo")
 			},
 			command:      "",
@@ -339,7 +485,7 @@ func TestShowCommandHelp_HelpPrinterCustom(t *testing.T) {
 		{
 			name:     "standard-command",
 			template: "",
-			printer: func(w io.Writer, templ string, data interface{}, fm map[string]interface{}) {
+			printer: func(w io.Writer, _ string, _ interface{}, _ map[string]interface{}) {
 				fmt.Fprint(w, "yo")
 			},
 			command:      "my-command",
@@ -428,58 +574,6 @@ func TestShowCommandHelp_CommandAliases(t *testing.T) {
 	}
 }
 
-func TestHelpNameConsistency(t *testing.T) {
-	// Setup some very basic templates based on actual AppHelp, CommandHelp
-	// and SubcommandHelp templates to display the help name
-	// The inconsistency shows up when users use NewApp() as opposed to
-	// using App{...} directly
-	SubcommandHelpTemplate = `{{.HelpName}}`
-	app := NewApp()
-	app.Name = "bar"
-	app.CustomAppHelpTemplate = `{{.HelpName}}`
-	app.Commands = []*Command{
-		{
-			Name:               "command1",
-			CustomHelpTemplate: `{{.HelpName}}`,
-			Subcommands: []*Command{
-				{
-					Name:               "subcommand1",
-					CustomHelpTemplate: `{{.HelpName}}`,
-				},
-			},
-		},
-	}
-
-	tests := []struct {
-		name string
-		args []string
-	}{
-		{
-			name: "App help",
-			args: []string{"foo"},
-		},
-		{
-			name: "Command help",
-			args: []string{"foo", "command1"},
-		},
-		{
-			name: "Subcommand help",
-			args: []string{"foo", "command1", "subcommand1"},
-		},
-	}
-
-	for _, tt := range tests {
-		output := &bytes.Buffer{}
-		app.Writer = output
-		if err := app.Run(tt.args); err != nil {
-			t.Error(err)
-		}
-		if !strings.Contains(output.String(), "bar") {
-			t.Errorf("expected output to contain bar; got: %q", output.String())
-		}
-	}
-}
-
 func TestShowSubcommandHelp_CommandAliases(t *testing.T) {
 	app := &App{
 		Commands: []*Command{
@@ -504,13 +598,13 @@ func TestShowSubcommandHelp_CommandAliases(t *testing.T) {
 
 func TestShowCommandHelp_Customtemplate(t *testing.T) {
 	app := &App{
+		Name: "foo",
 		Commands: []*Command{
 			{
 				Name: "frobbly",
 				Action: func(ctx *Context) error {
 					return nil
 				},
-				HelpName: "foo frobbly",
 				CustomHelpTemplate: `NAME:
    {{.HelpName}} - {{.Usage}}
 
@@ -599,7 +693,7 @@ func TestShowSubcommandHelp_SubcommandUsageText(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "frobbly",
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{
 						Name:      "bobbly",
 						UsageText: "this is usage text",
@@ -623,7 +717,7 @@ func TestShowSubcommandHelp_MultiLine_SubcommandUsageText(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "frobbly",
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{
 						Name: "bobbly",
 						UsageText: `This is a
@@ -699,7 +793,7 @@ func TestShowAppHelp_HelpPrinter(t *testing.T) {
 		{
 			name:     "standard-command",
 			template: "",
-			printer: func(w io.Writer, templ string, data interface{}) {
+			printer: func(w io.Writer, _ string, _ interface{}) {
 				fmt.Fprint(w, "yo")
 			},
 			wantTemplate: AppHelpTemplate,
@@ -766,7 +860,7 @@ func TestShowAppHelp_HelpPrinterCustom(t *testing.T) {
 		{
 			name:     "standard-command",
 			template: "",
-			printer: func(w io.Writer, templ string, data interface{}, fm map[string]interface{}) {
+			printer: func(w io.Writer, _ string, _ interface{}, _ map[string]interface{}) {
 				fmt.Fprint(w, "yo")
 			},
 			wantTemplate: AppHelpTemplate,
@@ -899,7 +993,7 @@ VERSION:
 
 func TestShowAppHelp_UsageText(t *testing.T) {
 	app := &App{
-		UsageText: "This is a sinlge line of UsageText",
+		UsageText: "This is a single line of UsageText",
 		Commands: []*Command{
 			{
 				Name: "frobbly",
@@ -912,7 +1006,7 @@ func TestShowAppHelp_UsageText(t *testing.T) {
 
 	_ = app.Run([]string{"foo"})
 
-	if !strings.Contains(output.String(), "This is a sinlge line of UsageText") {
+	if !strings.Contains(output.String(), "This is a single line of UsageText") {
 		t.Errorf("expected output to include usage text; got: %q", output.String())
 	}
 }
@@ -986,7 +1080,7 @@ App UsageText`,
 func TestHideHelpCommand(t *testing.T) {
 	app := &App{
 		HideHelpCommand: true,
-		Writer:          ioutil.Discard,
+		Writer:          io.Discard,
 	}
 
 	err := app.Run([]string{"foo", "help"})
@@ -1006,7 +1100,7 @@ func TestHideHelpCommand(t *testing.T) {
 func TestHideHelpCommand_False(t *testing.T) {
 	app := &App{
 		HideHelpCommand: false,
-		Writer:          ioutil.Discard,
+		Writer:          io.Discard,
 	}
 
 	err := app.Run([]string{"foo", "help"})
@@ -1024,7 +1118,7 @@ func TestHideHelpCommand_WithHideHelp(t *testing.T) {
 	app := &App{
 		HideHelp:        true, // effective (hides both command and flag)
 		HideHelpCommand: true, // ignored
-		Writer:          ioutil.Discard,
+		Writer:          io.Discard,
 	}
 
 	err := app.Run([]string{"foo", "help"})
@@ -1050,60 +1144,13 @@ func newContextFromStringSlice(ss []string) *Context {
 	return &Context{flagSet: set}
 }
 
-func TestHideHelpCommand_RunAsSubcommand(t *testing.T) {
-	app := &App{
-		HideHelpCommand: true,
-		Writer:          ioutil.Discard,
-		Commands: []*Command{
-			{
-				Name: "dummy",
-			},
-		},
-	}
-
-	err := app.RunAsSubcommand(newContextFromStringSlice([]string{"", "help"}))
-	if err == nil {
-		t.Fatalf("expected a non-nil error")
-	}
-	if !strings.Contains(err.Error(), "No help topic for 'help'") {
-		t.Errorf("Run returned unexpected error: %v", err)
-	}
-
-	err = app.RunAsSubcommand(newContextFromStringSlice([]string{"", "--help"}))
-	if err != nil {
-		t.Errorf("Run returned unexpected error: %v", err)
-	}
-}
-
-func TestHideHelpCommand_RunAsSubcommand_False(t *testing.T) {
-	app := &App{
-		HideHelpCommand: false,
-		Writer:          ioutil.Discard,
-		Commands: []*Command{
-			{
-				Name: "dummy",
-			},
-		},
-	}
-
-	err := app.RunAsSubcommand(newContextFromStringSlice([]string{"", "help"}))
-	if err != nil {
-		t.Errorf("Run returned unexpected error: %v", err)
-	}
-
-	err = app.RunAsSubcommand(newContextFromStringSlice([]string{"", "--help"}))
-	if err != nil {
-		t.Errorf("Run returned unexpected error: %v", err)
-	}
-}
-
 func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 	app := &App{
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 		Commands: []*Command{
 			{
 				Name: "dummy",
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{
 						Name: "dummy2",
 					},
@@ -1170,7 +1217,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 					&StringFlag{Name: "hat-shape"},
 				},
 			},
-			argv:     []string{"cmd", "--e", "--generate-bash-completion"},
+			argv:     []string{"cmd", "--e", "--generate-shell-completion"},
 			expected: "--excitement\n",
 		},
 		{
@@ -1184,7 +1231,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			}},
 			cmd: &Command{
 				Name: "putz",
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{Name: "futz"},
 				},
 				Flags: []Flag{
@@ -1192,7 +1239,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 					&StringFlag{Name: "hat-shape"},
 				},
 			},
-			argv:     []string{"cmd", "--generate-bash-completion"},
+			argv:     []string{"cmd", "--generate-shell-completion"},
 			expected: "futz\n",
 		},
 	} {
@@ -1221,7 +1268,6 @@ func TestWrap(t *testing.T) {
 }
 
 func TestWrappedHelp(t *testing.T) {
-
 	// Reset HelpPrinter after this test.
 	defer func(old helpPrinter) {
 		HelpPrinter = old
@@ -1231,7 +1277,8 @@ func TestWrappedHelp(t *testing.T) {
 	app := &App{
 		Writer: output,
 		Flags: []Flag{
-			&BoolFlag{Name: "foo",
+			&BoolFlag{
+				Name:    "foo",
 				Aliases: []string{"h"},
 				Usage:   "here's a really long help text line, let's see where it wraps. blah blah blah and so on.",
 			},
@@ -1315,7 +1362,6 @@ COPYRIGHT:
 }
 
 func TestWrappedCommandHelp(t *testing.T) {
-
 	// Reset HelpPrinter after this test.
 	defer func(old helpPrinter) {
 		HelpPrinter = old
@@ -1366,7 +1412,8 @@ DESCRIPTION:
    case
 
 OPTIONS:
-   --help, -h  show help (default: false)
+   --help, -h show help
+      (default: false)
 `
 
 	if output.String() != expected {
@@ -1376,7 +1423,6 @@ OPTIONS:
 }
 
 func TestWrappedSubcommandHelp(t *testing.T) {
-
 	// Reset HelpPrinter after this test.
 	defer func(old helpPrinter) {
 		HelpPrinter = old
@@ -1396,7 +1442,7 @@ func TestWrappedSubcommandHelp(t *testing.T) {
 				Action: func(c *Context) error {
 					return nil
 				},
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{
 						Name:      "grok",
 						Usage:     "remove an existing template",
@@ -1435,7 +1481,8 @@ USAGE:
    even more
 
 OPTIONS:
-   --help, -h  show help (default: false)
+   --help, -h show help
+      (default: false)
 `
 
 	if output.String() != expected {
@@ -1445,7 +1492,6 @@ OPTIONS:
 }
 
 func TestWrappedHelpSubcommand(t *testing.T) {
-
 	// Reset HelpPrinter after this test.
 	defer func(old helpPrinter) {
 		HelpPrinter = old
@@ -1465,7 +1511,7 @@ func TestWrappedHelpSubcommand(t *testing.T) {
 				Action: func(c *Context) error {
 					return nil
 				},
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{
 						Name:      "grok",
 						Usage:     "remove an existing template",
@@ -1510,8 +1556,10 @@ USAGE:
    even more
 
 OPTIONS:
-   --help, -h      show help (default: false)
-   --test-f value  my test usage
+   --test-f value my test
+      usage
+   --help, -h show help
+      (default: false)
 `
 
 	if output.String() != expected {

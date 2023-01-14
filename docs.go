@@ -91,10 +91,10 @@ func prepareCommands(commands []*Command, level int) []string {
 		coms = append(coms, prepared)
 
 		// recursively iterate subcommands
-		if len(command.Subcommands) > 0 {
+		if len(command.Commands) > 0 {
 			coms = append(
 				coms,
-				prepareCommands(command.Subcommands, level+1)...,
+				prepareCommands(command.Commands, level+1)...,
 			)
 		}
 	}

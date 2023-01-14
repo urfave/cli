@@ -28,14 +28,13 @@ const (
 
 	gfmrunVersion = "v1.3.0"
 
-	v2diffWarning = `
+	v3diffWarning = `
 # The unified diff above indicates that the public API surface area
-# has changed. If you feel that the changes are acceptable and adhere
-# to the semantic versioning promise of the v2.x series described in
-# docs/CONTRIBUTING.md, please run the following command to promote
-# the current go docs:
+# has changed. If you feel that the changes are acceptable for the
+# v3.x series, please run the following command to promote the
+# current go docs:
 #
-#     make v2approve
+#     make v3approve
 #
 `
 )
@@ -84,13 +83,6 @@ func main() {
 				Action: GenerateActionFunc,
 			},
 			{
-				Name: "yamlfmt",
-				Flags: []cli.Flag{
-					&cli.BoolFlag{Name: "strict", Value: false, Usage: "require presence of yq"},
-				},
-				Action: YAMLFmtActionFunc,
-			},
-			{
 				Name:   "diffcheck",
 				Action: DiffCheckActionFunc,
 			},
@@ -129,19 +121,19 @@ func main() {
 				Action: LintActionFunc,
 			},
 			{
-				Name: "v2diff",
+				Name: "v3diff",
 				Flags: []cli.Flag{
 					&cli.BoolFlag{Name: "color", Value: false},
 				},
-				Action: V2Diff,
+				Action: V3Diff,
 			},
 			{
-				Name: "v2approve",
+				Name: "v3approve",
 				Action: topRunAction(
 					"cp",
 					"-v",
 					"godoc-current.txt",
-					filepath.Join("testdata", "godoc-v2.x.txt"),
+					filepath.Join("testdata", "godoc-v3.x.txt"),
 				),
 			},
 		},
@@ -150,13 +142,13 @@ func main() {
 				Name:  "tags",
 				Usage: "set build tags",
 			},
-			&cli.PathFlag{
+			&cli.StringFlag{
 				Name:  "top",
 				Value: top,
 			},
 			&cli.StringSliceFlag{
 				Name:  "packages",
-				Value: cli.NewStringSlice("cli", "altsrc", "internal/build"),
+				Value: []string{"cli", "internal/build"},
 			},
 		},
 	}
@@ -178,7 +170,7 @@ func sh(exe string, args ...string) (string, error) {
 
 func topRunAction(arg string, args ...string) cli.ActionFunc {
 	return func(cCtx *cli.Context) error {
-		os.Chdir(cCtx.Path("top"))
+		os.Chdir(cCtx.String("top"))
 
 		return runCmd(arg, args...)
 	}
@@ -233,7 +225,7 @@ func downloadFile(src, dest string, dirPerm, perm os.FileMode) error {
 }
 
 func VetActionFunc(cCtx *cli.Context) error {
-	return runCmd("go", "vet", cCtx.Path("top")+"/...")
+	return runCmd("go", "vet", cCtx.String("top")+"/...")
 }
 
 func TestActionFunc(c *cli.Context) error {
@@ -293,7 +285,7 @@ func testCleanup(packages []string) error {
 }
 
 func GfmrunActionFunc(cCtx *cli.Context) error {
-	top := cCtx.Path("top")
+	top := cCtx.String("top")
 
 	bash, err := exec.LookPath("bash")
 	if err != nil {
@@ -494,47 +486,22 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 }
 
 func GenerateActionFunc(cCtx *cli.Context) error {
-	top := cCtx.Path("top")
+	top := cCtx.String("top")
 
 	cliDocs, err := sh("go", "doc", "-all", top)
 	if err != nil {
 		return err
 	}
 
-	altsrcDocs, err := sh("go", "doc", "-all", filepath.Join(top, "altsrc"))
-	if err != nil {
-		return err
-	}
-
-	if err := os.WriteFile(
+	return os.WriteFile(
 		filepath.Join(top, "godoc-current.txt"),
-		[]byte(cliDocs+altsrcDocs),
+		[]byte(cliDocs),
 		0644,
-	); err != nil {
-		return err
-	}
-
-	return runCmd("go", "generate", cCtx.Path("top")+"/...")
-}
-
-func YAMLFmtActionFunc(cCtx *cli.Context) error {
-	yqBin, err := exec.LookPath("yq")
-	if err != nil {
-		if !cCtx.Bool("strict") {
-			fmt.Fprintln(cCtx.App.ErrWriter, "# ---> no yq found; skipping")
-			return nil
-		}
-
-		return err
-	}
-
-	os.Chdir(cCtx.Path("top"))
-
-	return runCmd(yqBin, "eval", "--inplace", "flag-spec.yaml")
+	)
 }
 
 func DiffCheckActionFunc(cCtx *cli.Context) error {
-	os.Chdir(cCtx.Path("top"))
+	os.Chdir(cCtx.String("top"))
 
 	if err := runCmd("git", "diff", "--exit-code"); err != nil {
 		return err
@@ -544,7 +511,7 @@ func DiffCheckActionFunc(cCtx *cli.Context) error {
 }
 
 func EnsureGoimportsActionFunc(cCtx *cli.Context) error {
-	top := cCtx.Path("top")
+	top := cCtx.String("top")
 	os.Chdir(top)
 
 	if err := runCmd(
@@ -561,7 +528,7 @@ func EnsureGoimportsActionFunc(cCtx *cli.Context) error {
 }
 
 func EnsureGfmrunActionFunc(cCtx *cli.Context) error {
-	top := cCtx.Path("top")
+	top := cCtx.String("top")
 	gfmrunExe := filepath.Join(top, ".local/bin/gfmrun")
 
 	os.Chdir(top)
@@ -584,7 +551,7 @@ func EnsureGfmrunActionFunc(cCtx *cli.Context) error {
 }
 
 func EnsureMkdocsActionFunc(cCtx *cli.Context) error {
-	os.Chdir(cCtx.Path("top"))
+	os.Chdir(cCtx.String("top"))
 
 	if err := runCmd("mkdocs", "--version"); err == nil {
 		return nil
@@ -605,7 +572,7 @@ func SetMkdocsRemoteActionFunc(cCtx *cli.Context) error {
 		return errors.New("empty github token")
 	}
 
-	os.Chdir(cCtx.Path("top"))
+	os.Chdir(cCtx.String("top"))
 
 	if err := runCmd("git", "remote", "rm", "origin"); err != nil {
 		return err
@@ -618,7 +585,7 @@ func SetMkdocsRemoteActionFunc(cCtx *cli.Context) error {
 }
 
 func LintActionFunc(cCtx *cli.Context) error {
-	top := cCtx.Path("top")
+	top := cCtx.String("top")
 	os.Chdir(top)
 
 	out, err := sh(filepath.Join(top, ".local/bin/goimports"), "-l", ".")
@@ -636,8 +603,8 @@ func LintActionFunc(cCtx *cli.Context) error {
 	return nil
 }
 
-func V2Diff(cCtx *cli.Context) error {
-	os.Chdir(cCtx.Path("top"))
+func V3Diff(cCtx *cli.Context) error {
+	os.Chdir(cCtx.String("top"))
 
 	err := runCmd(
 		"diff",
@@ -651,14 +618,14 @@ func V2Diff(cCtx *cli.Context) error {
 		}(),
 		"--unified",
 		"--label=a/godoc",
-		filepath.Join("testdata", "godoc-v2.x.txt"),
+		filepath.Join("testdata", "godoc-v3.x.txt"),
 		"--label=b/godoc",
 		"godoc-current.txt",
 	)
 
 	if err != nil {
 		fmt.Printf("# %v ---> Hey! <---\n", badNewsEmoji)
-		fmt.Println(strings.TrimSpace(v2diffWarning))
+		fmt.Println(strings.TrimSpace(v3diffWarning))
 	}
 
 	return err

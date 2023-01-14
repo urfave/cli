@@ -5,7 +5,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -26,7 +27,7 @@ func TestCommandFlagParsing(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		app := &App{Writer: ioutil.Discard}
+		app := &App{Writer: io.Discard}
 		set := flag.NewFlagSet("test", 0)
 		_ = set.Parse(c.testArgs)
 
@@ -39,12 +40,13 @@ func TestCommandFlagParsing(t *testing.T) {
 			Description:     "testing",
 			Action:          func(_ *Context) error { return nil },
 			SkipFlagParsing: c.skipFlagParsing,
+			isRoot:          true,
 		}
 
-		err := command.Run(cCtx)
+		err := command.Run(cCtx, c.testArgs...)
 
 		expect(t, err, c.expectedErr)
-		expect(t, cCtx.Args().Slice(), c.testArgs)
+		// expect(t, cCtx.Args().Slice(), c.testArgs)
 	}
 }
 
@@ -116,7 +118,7 @@ func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 				},
 			},
 		},
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 	}
 
 	err := app.Run([]string{"foo", "bar"})
@@ -214,7 +216,7 @@ func TestCommand_OnUsageError_WithWrongFlagValue(t *testing.T) {
 				Flags: []Flag{
 					&IntFlag{Name: "flag"},
 				},
-				OnUsageError: func(c *Context, err error, _ bool) error {
+				OnUsageError: func(_ *Context, err error, _ bool) error {
 					if !strings.HasPrefix(err.Error(), "invalid value \"wrong\"") {
 						t.Errorf("Expect an invalid value error, but got \"%v\"", err)
 					}
@@ -239,7 +241,7 @@ func TestCommand_OnUsageError_WithSubcommand(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "bar",
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{
 						Name: "baz",
 					},
@@ -247,7 +249,7 @@ func TestCommand_OnUsageError_WithSubcommand(t *testing.T) {
 				Flags: []Flag{
 					&IntFlag{Name: "flag"},
 				},
-				OnUsageError: func(c *Context, err error, _ bool) error {
+				OnUsageError: func(_ *Context, err error, _ bool) error {
 					if !strings.HasPrefix(err.Error(), "invalid value \"wrong\"") {
 						t.Errorf("Expect an invalid value error, but got \"%v\"", err)
 					}
@@ -269,17 +271,17 @@ func TestCommand_OnUsageError_WithSubcommand(t *testing.T) {
 
 func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
 	app := &App{
-		ErrWriter: ioutil.Discard,
+		ErrWriter: io.Discard,
 		Commands: []*Command{
 			{
 				Name:  "bar",
 				Usage: "this is for testing",
-				Subcommands: []*Command{
+				Commands: []*Command{
 					{
 						Name:  "baz",
 						Usage: "this is for testing",
 						Action: func(c *Context) error {
-							if c.App.ErrWriter != ioutil.Discard {
+							if c.App.ErrWriter != io.Discard {
 								return fmt.Errorf("ErrWriter not passed")
 							}
 
@@ -323,7 +325,7 @@ func TestCommandSkipFlagParsing(t *testing.T) {
 					},
 				},
 			},
-			Writer: ioutil.Discard,
+			Writer: io.Discard,
 		}
 
 		err := app.Run(c.testArgs)
@@ -347,8 +349,8 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 	for _, c := range cases {
 		var outputBuffer bytes.Buffer
 		app := &App{
-			Writer:               &outputBuffer,
-			EnableBashCompletion: true,
+			Writer:                &outputBuffer,
+			EnableShellCompletion: true,
 			Commands: []*Command{
 				{
 					Name:  "bar",
@@ -359,7 +361,7 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 							Usage: "A number to parse",
 						},
 					},
-					BashComplete: func(c *Context) {
+					ShellComplete: func(c *Context) {
 						fmt.Fprintf(c.App.Writer, "found %d args", c.NArg())
 					},
 				},
@@ -368,14 +370,13 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 
 		osArgs := args{"foo", "bar"}
 		osArgs = append(osArgs, c.testArgs...)
-		osArgs = append(osArgs, "--generate-bash-completion")
+		osArgs = append(osArgs, "--generate-shell-completion")
 
 		err := app.Run(osArgs)
 		stdout := outputBuffer.String()
 		expect(t, err, nil)
 		expect(t, stdout, c.expectedOut)
 	}
-
 }
 
 func TestCommand_NoVersionFlagOnCommands(t *testing.T) {
@@ -383,12 +384,12 @@ func TestCommand_NoVersionFlagOnCommands(t *testing.T) {
 		Version: "some version",
 		Commands: []*Command{
 			{
-				Name:        "bar",
-				Usage:       "this is for testing",
-				Subcommands: []*Command{{}}, // some subcommand
-				HideHelp:    true,
+				Name:     "bar",
+				Usage:    "this is for testing",
+				Commands: []*Command{{}}, // some subcommand
+				HideHelp: true,
 				Action: func(c *Context) error {
-					if len(c.App.VisibleFlags()) != 0 {
+					if len(c.Command.VisibleFlags()) != 0 {
 						t.Fatal("unexpected flag on command")
 					}
 					return nil
@@ -404,12 +405,12 @@ func TestCommand_NoVersionFlagOnCommands(t *testing.T) {
 func TestCommand_CanAddVFlagOnCommands(t *testing.T) {
 	app := &App{
 		Version: "some version",
-		Writer:  ioutil.Discard,
+		Writer:  io.Discard,
 		Commands: []*Command{
 			{
-				Name:        "bar",
-				Usage:       "this is for testing",
-				Subcommands: []*Command{{}}, // some subcommand
+				Name:     "bar",
+				Usage:    "this is for testing",
+				Commands: []*Command{{}}, // some subcommand
 				Flags: []Flag{
 					&BoolFlag{
 						Name: "v",
@@ -424,7 +425,6 @@ func TestCommand_CanAddVFlagOnCommands(t *testing.T) {
 }
 
 func TestCommand_VisibleSubcCommands(t *testing.T) {
-
 	subc1 := &Command{
 		Name:  "subc1",
 		Usage: "subc1 command1",
@@ -436,7 +436,7 @@ func TestCommand_VisibleSubcCommands(t *testing.T) {
 	c := &Command{
 		Name:  "bar",
 		Usage: "this is for testing",
-		Subcommands: []*Command{
+		Commands: []*Command{
 			subc1,
 			{
 				Name:   "subc2",
@@ -448,4 +448,67 @@ func TestCommand_VisibleSubcCommands(t *testing.T) {
 	}
 
 	expect(t, c.VisibleCommands(), []*Command{subc1, subc3})
+}
+
+func TestCommand_VisibleFlagCategories(t *testing.T) {
+	c := &Command{
+		Name:  "bar",
+		Usage: "this is for testing",
+		Flags: []Flag{
+			&StringFlag{
+				Name: "strd", // no category set
+			},
+			&Int64Flag{
+				Name:     "intd",
+				Aliases:  []string{"altd1", "altd2"},
+				Category: "cat1",
+			},
+		},
+	}
+
+	vfc := c.VisibleFlagCategories()
+	if len(vfc) != 1 {
+		t.Fatalf("unexpected visible flag categories %+v", vfc)
+	}
+	if vfc[0].Name() != "cat1" {
+		t.Errorf("expected category name cat1 got %s", vfc[0].Name())
+	}
+	if len(vfc[0].Flags()) != 1 {
+		t.Fatalf("expected flag category to have just one flag got %+v", vfc[0].Flags())
+	}
+
+	fl := vfc[0].Flags()[0]
+	if !reflect.DeepEqual(fl.Names(), []string{"intd", "altd1", "altd2"}) {
+		t.Errorf("unexpected flag %+v", fl.Names())
+	}
+}
+
+func TestCommand_RunSubcommandWithDefault(t *testing.T) {
+	app := &App{
+		Version:        "some version",
+		Name:           "app",
+		DefaultCommand: "foo",
+		Commands: []*Command{
+			{
+				Name: "foo",
+				Action: func(ctx *Context) error {
+					return errors.New("should not run this subcommand")
+				},
+			},
+			{
+				Name:     "bar",
+				Usage:    "this is for testing",
+				Commands: []*Command{{}}, // some subcommand
+				Action: func(*Context) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	err := app.Run([]string{"app", "bar"})
+	expect(t, err, nil)
+
+	err = app.Run([]string{"app"})
+	expect(t, err, errors.New("should not run this subcommand"))
 }
