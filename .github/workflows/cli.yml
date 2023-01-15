@@ -3,10 +3,10 @@ name: Run Tests
 on:
   pull_request:
     branches:
-      - v1
+      - v1-maint
   push:
     branches:
-      - v1
+      - v1-maint
     tags:
       - v1.*
 
@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        go: [1.16.x, 1.17.x, 1.18.x]
+        go: [1.18.x, 1.19.x]
     name: ${{ matrix.os }} @ Go ${{ matrix.go }}
     runs-on: ${{ matrix.os }}
     steps:
