@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/urfave/cli"
 )
@@ -85,14 +86,17 @@ func (f *GenericFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourc
 func (f *StringSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
 		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVar) {
-			value, err := isc.StringSlice(f.StringSliceFlag.Name)
-			if err != nil {
-				return err
-			}
+			var value []string
+			eachName(f.StringSliceFlag.Name, func(name string) {
+				val, err := isc.StringSlice(name)
+				if err == nil && value == nil {
+					value = val
+				}
+			})
 			if value != nil {
 				var sliceValue cli.StringSlice = value
 				eachName(f.Name, func(name string) {
-					underlyingFlag := f.set.Lookup(f.Name)
+					underlyingFlag := f.set.Lookup(name)
 					if underlyingFlag != nil {
 						underlyingFlag.Value = &sliceValue
 					}
@@ -107,14 +111,17 @@ func (f *StringSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputS
 func (f *IntSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
 		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVar) {
-			value, err := isc.IntSlice(f.IntSliceFlag.Name)
-			if err != nil {
-				return err
-			}
+			var value []int
+			eachName(f.IntSliceFlag.Name, func(name string) {
+				val, err := isc.IntSlice(name)
+				if err == nil && value == nil {
+					value = val
+				}
+			})
 			if value != nil {
 				var sliceValue cli.IntSlice = value
 				eachName(f.Name, func(name string) {
-					underlyingFlag := f.set.Lookup(f.Name)
+					underlyingFlag := f.set.Lookup(name)
 					if underlyingFlag != nil {
 						underlyingFlag.Value = &sliceValue
 					}
@@ -129,13 +136,16 @@ func (f *IntSliceFlag) ApplyInputSourceValue(context *cli.Context, isc InputSour
 func (f *BoolFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
 		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVar) {
-			value, err := isc.Bool(f.BoolFlag.Name)
-			if err != nil {
-				return err
-			}
+			var value bool
+			eachName(f.BoolFlag.Name, func(name string) {
+				val, err := isc.Bool(name)
+				if err == nil && !value {
+					value = val
+				}
+			})
 			if value {
 				eachName(f.Name, func(name string) {
-					_ = f.set.Set(f.Name, strconv.FormatBool(value))
+					_ = f.set.Set(name, strconv.FormatBool(value))
 				})
 			}
 		}
@@ -147,13 +157,16 @@ func (f *BoolFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceCo
 func (f *BoolTFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
 		if !context.IsSet(f.Name) && !isEnvVarSet(f.EnvVar) {
-			value, err := isc.BoolT(f.BoolTFlag.Name)
-			if err != nil {
-				return err
-			}
+			var value bool
+			eachName(f.BoolTFlag.Name, func(name string) {
+				val, err := isc.Bool(name)
+				if err == nil && !value {
+					value = val
+				}
+			})
 			if !value {
 				eachName(f.Name, func(name string) {
-					_ = f.set.Set(f.Name, strconv.FormatBool(value))
+					_ = f.set.Set(name, strconv.FormatBool(value))
 				})
 			}
 		}
@@ -165,13 +178,16 @@ func (f *BoolTFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceC
 func (f *StringFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
 		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVar)) {
-			value, err := isc.String(f.StringFlag.Name)
-			if err != nil {
-				return err
-			}
+			var value string
+			eachName(f.StringFlag.Name, func(name string) {
+				val, err := isc.String(name)
+				if err == nil && value == "" {
+					value = val
+				}
+			})
 			if value != "" {
 				eachName(f.Name, func(name string) {
-					_ = f.set.Set(f.Name, value)
+					_ = f.set.Set(name, value)
 				})
 			}
 		}
@@ -183,13 +199,16 @@ func (f *StringFlag) ApplyInputSourceValue(context *cli.Context, isc InputSource
 func (f *IntFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
 		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVar)) {
-			value, err := isc.Int(f.IntFlag.Name)
-			if err != nil {
-				return err
-			}
+			var value int
+			eachName(f.IntFlag.Name, func(name string) {
+				val, err := isc.Int(name)
+				if err == nil && value == 0 {
+					value = val
+				}
+			})
 			if value > 0 {
 				eachName(f.Name, func(name string) {
-					_ = f.set.Set(f.Name, strconv.FormatInt(int64(value), 10))
+					_ = f.set.Set(name, strconv.FormatInt(int64(value), 10))
 				})
 			}
 		}
@@ -201,13 +220,16 @@ func (f *IntFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceCon
 func (f *DurationFlag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
 		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVar)) {
-			value, err := isc.Duration(f.DurationFlag.Name)
-			if err != nil {
-				return err
-			}
+			var value time.Duration
+			eachName(f.DurationFlag.Name, func(name string) {
+				val, err := isc.Duration(name)
+				if err == nil && value == 0 {
+					value = val
+				}
+			})
 			if value > 0 {
 				eachName(f.Name, func(name string) {
-					_ = f.set.Set(f.Name, value.String())
+					_ = f.set.Set(name, value.String())
 				})
 			}
 		}
@@ -219,14 +241,17 @@ func (f *DurationFlag) ApplyInputSourceValue(context *cli.Context, isc InputSour
 func (f *Float64Flag) ApplyInputSourceValue(context *cli.Context, isc InputSourceContext) error {
 	if f.set != nil {
 		if !(context.IsSet(f.Name) || isEnvVarSet(f.EnvVar)) {
-			value, err := isc.Float64(f.Float64Flag.Name)
-			if err != nil {
-				return err
-			}
+			var value float64
+			eachName(f.Float64Flag.Name, func(name string) {
+				val, err := isc.Float64(name)
+				if err == nil && value == 0 {
+					value = val
+				}
+			})
 			if value > 0 {
 				floatStr := float64ToString(value)
 				eachName(f.Name, func(name string) {
-					_ = f.set.Set(f.Name, floatStr)
+					_ = f.set.Set(name, floatStr)
 				})
 			}
 		}
