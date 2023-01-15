@@ -27,6 +27,8 @@ cli v1 manual
   * [Version Flag](#version-flag)
     + [Customization](#customization-2)
     + [Full API Example](#full-api-example)
+  * [Testing](#testing)
+  * [Migrating to V2](#migrating-to-v2)
 
 <!-- tocstop -->
 
@@ -150,16 +152,19 @@ cli also generates neat help text:
 ```
 $ greet help
 NAME:
-   greet - fight the loneliness!
+    greet - fight the loneliness!
 
 USAGE:
-   main [global options] command [command options] [arguments...]
+    greet [global options] command [command options] [arguments...]
+
+VERSION:
+    0.0.0
 
 COMMANDS:
-   help, h  Shows a list of commands or help for one command
+    help, h  Shows a list of commands or help for one command
 
-GLOBAL OPTIONS:
-   --help, -h  show help
+GLOBAL OPTIONS
+    --version Shows version information
 ```
 
 ### Arguments
@@ -1473,3 +1478,205 @@ func wopAction(c *cli.Context) error {
   return nil
 }
 ```
+
+## Testing
+
+In addition to testing units build using urfave/cli, a good idea can also be to
+do test the cli itself - a type of integration testing or interface testing.
+The purpose of these test cases can be to detect option clashes or crashing
+subcommands, and not functional correctness of the units. These problems can be
+hard to detect in a large application.
+
+Here is one example of an application with three subcommands and two flags.
+The flags, `offset` and `topic` both have the alias `o` which is not allowed
+in the same subcommand. The problem would only be detected in run-time if we
+didn't have testing.
+
+We start with a small `go.mod` file requiring only urfave/cli and
+stretchr/testify (to simplify test code):
+
+```
+module example.com/mycliapp
+
+go 1.13
+
+require (
+	github.com/stretchr/testify v1.7.0
+	github.com/urfave/cli v1.22.5
+)
+```
+
+The `main.go` file contains a bug in the intialization of `topicflg`
+(around line 59): a duplicated `o` alias. This will make the subcommand
+crash and some tests to fail.
+
+```
+package main
+
+import (
+	"fmt"
+	"os"
+
+	"github.com/urfave/cli"
+)
+
+// hw is the simplest for of hello world.
+func hw(ctx *cli.Context) {
+	fmt.Println("Hi.")
+}
+
+// hello has a configurable world.
+func hello(ctx *cli.Context) {
+	fmt.Println("Hello", ctx.String("topic"))
+}
+
+// helloworld allows advanced usage (spaces before output)
+func helloworld(ctx *cli.Context) {
+	topic := ctx.String("topic")
+	offset := ctx.Int64("offset")
+
+	for ; offset > 0; offset-- {
+		fmt.Print(" ")
+	}
+	fmt.Println("Hello", topic)
+}
+
+// offsetflg contains the number of spaces before output
+var offsetflg cli.Int64Flag
+
+// topicflg contains the configurable "world" string
+var topicflg cli.StringFlag
+
+// These are public in order to test them
+
+// HwCmd is the subcommand for hw
+var HwCmd cli.Command
+
+// HelloCmd is the subcommand for hello
+var HelloCmd cli.Command
+
+// HelloWorldCmd is the subcommand for helloworld
+var HelloWorldCmd cli.Command
+
+// init initializes the flags and subcommands
+func init() {
+
+	offsetflg = cli.Int64Flag{
+		Name: "offset, o",
+		Value: 0,
+		Usage: "Space offset",
+	}
+
+	topicflg = cli.StringFlag{
+		Name: "topic, o", // <<--- Please note that o is duplicated
+		Value: "World",
+		Usage: "Hello topic",
+	}
+
+	HwCmd = cli.Command{
+		Name:   "hw",
+		Usage:  "Just print hi.",
+		Action: hw,
+	}
+
+	HelloCmd = cli.Command{
+		Name:   "hello",
+		Usage:  "Hello world with customizable topic.",
+		Action: hello,
+		Flags:  []cli.Flag{topicflg},
+	}
+
+	HelloWorldCmd = cli.Command{
+		Name:   "helloworld",
+		Usage:  "Advanced hello with offset and topic.",
+		Action: helloworld,
+		Flags:  []cli.Flag{topicflg, offsetflg},
+	}
+}
+
+// main is the application itself
+func main() {
+	app := cli.NewApp()
+	app.Usage = "Example urfave cli app with flag conflicts."
+	app.Commands = cli.Commands{HwCmd, HelloCmd, HelloWorldCmd}
+
+	err := app.Run(os.Args)
+	if err != nil {
+		fmt.Println("ooops...")
+	}
+}
+```
+
+In `main_test.go` we write three simple test cases that does nothing more
+than run a subcommand each and assert that no errors are created:
+
+```
+package main
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/urfave/cli"
+)
+
+func TestHi(t *testing.T) {
+	app := cli.NewApp()
+	app.Commands = cli.Commands{HwCmd}
+	err := app.Run([]string{"appname", "hw"})
+	assert.Nil(t, err, "HW should not return an error")
+}
+
+func TestHello(t *testing.T) {
+	app := cli.NewApp()
+	app.Commands = cli.Commands{HelloCmd}
+	err := app.Run([]string{"appname", "hello"})
+	assert.Nil(t, err, "Hello should not return an error")
+}
+
+func TestHelloWorld(t *testing.T) {
+	app := cli.NewApp()
+	app.Commands = cli.Commands{HelloWorldCmd}
+	err := app.Run([]string{"appname", "helloworld"})
+	assert.Nil(t, err, "Hello World should not return an error")
+}
+```
+
+We can now run and build the application:
+
+```
+perst@R400:~/go-urfave-test-example
+$ go build
+
+$ ./mycliapp hw
+Hi.
+
+$ ./mycliapp hello --topic Moon
+Hello Moon
+
+$ ./mycliapp helloworld --topic Moon --offset 4
+helloworld flag redefined: o
+panic: helloworld flag redefined: o
+[...]
+```
+
+Similarly we can test it with go's `test` subcommand:
+
+```
+$ go test
+[...]
+--- FAIL: TestHelloWorld (0.00s)
+panic: helloworld flag redefined: o [recovered]
+	panic: helloworld flag redefined: o
+[...]
+```
+
+Modifying the `Name` of `topicflg` from `"topic, o"` to `"topic"`
+will repair both the subcommand and the test.
+
+## Migrating to V2
+
+There are a small set of breaking changes between v1 and v2.
+Converting is relatively straightforward and typically takes less than
+an hour. Specific steps are included in
+[Migration Guide: v1 to v2](../migrate-v1-to-v2.md).
