@@ -758,6 +758,45 @@ func TestStringSliceFlagValueFromContext(t *testing.T) {
 	expect(t, f.Get(ctx), []string{"a", "b", "c"})
 }
 
+func TestStringSliceFlag_MatchStringFlagBehavior(t *testing.T) {
+	t.Parallel()
+
+	values := []string{
+		"asd",
+		"123",
+		" asd ", // leading and tailing space
+	}
+	for testNum, value := range values {
+		value := value
+		t.Run(fmt.Sprintf("%d", testNum), func(t *testing.T) {
+			t.Parallel()
+
+			app := App{
+				Flags: []Flag{
+					&StringFlag{Name: "string"},
+					&StringSliceFlag{Name: "slice"},
+				},
+				Action: func(ctx *Context) error {
+					f1, f2 := ctx.String("string"), ctx.StringSlice("slice")
+					if l := len(f2); l != 1 {
+						t.Fatalf("StringSliceFlag should result in exactly one value, got %d", l)
+					}
+
+					v1, v2 := f1, f2[0]
+					if v1 != v2 {
+						t.Errorf("Expected StringSliceFlag to parse the same value as StringFlag (%q), got %q", v1, v2)
+					}
+					return nil
+				},
+			}
+
+			if err := app.Run([]string{"", "--string", value, "--slice", value}); err != nil {
+				t.Errorf("app run error: %s", err)
+			}
+		})
+	}
+}
+
 var intFlagTests = []struct {
 	name     string
 	expected string
