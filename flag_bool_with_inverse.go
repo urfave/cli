@@ -115,7 +115,8 @@ func (parent *BoolWithInverseFlag) initialize() {
 	}
 
 	// Set inverse names ex: --env => --no-env
-	parent.negativeFlag.Name, parent.negativeFlag.Aliases = parent.inverseNames()
+	parent.negativeFlag.Name = parent.inverseName()
+	parent.negativeFlag.Aliases = parent.inverseAliases()
 
 	if len(child.EnvVars) > 0 {
 		parent.negativeFlag.EnvVars = make([]string, len(child.EnvVars))
@@ -127,13 +128,15 @@ func (parent *BoolWithInverseFlag) initialize() {
 	return
 }
 
-func (parent *BoolWithInverseFlag) inverseNames() (name string, aliases []string) {
+func (parent *BoolWithInverseFlag) inverseName() string {
 	if parent.InversePrefix == "" {
 		parent.InversePrefix = DefaultInverseBoolPrefix
 	}
 
-	name = parent.InversePrefix + parent.BoolFlag.Name
+	return parent.InversePrefix + parent.BoolFlag.Name
+}
 
+func (parent *BoolWithInverseFlag) inverseAliases() (aliases []string) {
 	if len(parent.BoolFlag.Aliases) > 0 {
 		aliases = make([]string, len(parent.BoolFlag.Aliases))
 		for idx, alias := range parent.BoolFlag.Aliases {
@@ -163,9 +166,7 @@ func (s *BoolWithInverseFlag) Apply(set *flag.FlagSet) error {
 func (s *BoolWithInverseFlag) Names() []string {
 	// Get Names when flag has not been initialized
 	if s.positiveFlag == nil {
-		inverseName, inverseAliases := s.inverseNames()
-
-		return append(s.BoolFlag.Names(), FlagNames(inverseName, inverseAliases)...)
+		return append(s.BoolFlag.Names(), FlagNames(s.inverseName(), s.inverseAliases())...)
 	}
 
 	if *s.negDest {
@@ -183,7 +184,7 @@ func (s *BoolWithInverseFlag) Names() []string {
 // --env     (default: false) || --no-env    (default: false)
 func (s *BoolWithInverseFlag) String() string {
 	if s.positiveFlag == nil {
-		return s.BoolFlag.String()
+		return fmt.Sprintf("%s || --%s", s.BoolFlag.String(), s.inverseName())
 	}
 
 	return fmt.Sprintf("%s || %s", s.positiveFlag.String(), s.negativeFlag.String())

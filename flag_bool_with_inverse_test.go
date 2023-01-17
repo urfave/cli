@@ -3,6 +3,7 @@ package cli_test
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/urfave/cli/v3"
@@ -342,6 +343,17 @@ func TestBoolWithInverseNames(t *testing.T) {
 
 	if names[1] != "no-env" {
 		t.Errorf("expected first name to be `no-env`, got `%s`", names[1])
+		return
+	}
+
+	flagString := flag.String()
+	if strings.Contains(flagString, "--env") == false {
+		t.Errorf("expected `%s` to contain `--env`", flagString)
+		return
+	}
+
+	if strings.Contains(flagString, "--no-env") == false {
+		t.Errorf("expected `%s` to contain `--no-env`", flagString)
 		return
 	}
 }
