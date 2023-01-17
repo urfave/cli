@@ -93,20 +93,7 @@ func (parent *BoolWithInverseFlag) initialize() {
 	parent.positiveFlag.Destination = parent.posDest
 	parent.positiveFlag.Config.Count = parent.posCount
 
-	if parent.InversePrefix == "" {
-		parent.InversePrefix = DefaultInverseBoolPrefix
-	}
-
-	// Append `no-` to each alias
-	var inverseAliases []string
-	if len(child.Aliases) > 0 {
-		inverseAliases = make([]string, len(child.Aliases))
-		for idx, alias := range child.Aliases {
-			inverseAliases[idx] = parent.InversePrefix + alias
-		}
-	}
 	parent.negativeFlag = &BoolFlag{
-		Name:        parent.InversePrefix + child.Name,
 		Category:    child.Category,
 		DefaultText: child.DefaultText,
 		FilePaths:   append([]string{}, child.FilePaths...),
@@ -116,7 +103,6 @@ func (parent *BoolWithInverseFlag) initialize() {
 		Persistent:  child.Persistent,
 		Value:       child.Value,
 		Destination: parent.negDest,
-		Aliases:     inverseAliases,
 		TakesFile:   child.TakesFile,
 		Config: BoolConfig{
 			Count: parent.negCount,
@@ -128,10 +114,30 @@ func (parent *BoolWithInverseFlag) initialize() {
 		value:      child.value,
 	}
 
+	// Set inverse names ex: --env => --no-env
+	parent.negativeFlag.Name, parent.negativeFlag.Aliases = parent.inverseNames()
+
 	if len(child.EnvVars) > 0 {
 		parent.negativeFlag.EnvVars = make([]string, len(child.EnvVars))
 		for idx, envVar := range child.EnvVars {
 			parent.negativeFlag.EnvVars[idx] = strings.ToUpper(parent.InversePrefix) + envVar
+		}
+	}
+
+	return
+}
+
+func (parent *BoolWithInverseFlag) inverseNames() (name string, aliases []string) {
+	if parent.InversePrefix == "" {
+		parent.InversePrefix = DefaultInverseBoolPrefix
+	}
+
+	name = parent.InversePrefix + parent.BoolFlag.Name
+
+	if len(parent.BoolFlag.Aliases) > 0 {
+		aliases = make([]string, len(parent.BoolFlag.Aliases))
+		for idx, alias := range parent.BoolFlag.Aliases {
+			aliases[idx] = parent.InversePrefix + alias
 		}
 	}
 
@@ -155,6 +161,13 @@ func (s *BoolWithInverseFlag) Apply(set *flag.FlagSet) error {
 }
 
 func (s *BoolWithInverseFlag) Names() []string {
+	// Get Names when flag has not been initialized
+	if s.positiveFlag == nil {
+		inverseName, inverseAliases := s.inverseNames()
+
+		return append(s.BoolFlag.Names(), FlagNames(inverseName, inverseAliases)...)
+	}
+
 	if *s.negDest {
 		return s.negativeFlag.Names()
 	}

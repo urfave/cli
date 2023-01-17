@@ -321,6 +321,31 @@ func TestBoolWithInverseRequired(t *testing.T) {
 	}
 }
 
+func TestBoolWithInverseNames(t *testing.T) {
+	flag := &cli.BoolWithInverseFlag{
+		BoolFlag: &cli.BoolFlag{
+			Name:     "env",
+			Required: true,
+		},
+	}
+	names := flag.Names()
+
+	if len(names) != 2 {
+		t.Errorf("expected 2 names, got %d", len(names))
+		return
+	}
+
+	if names[0] != "env" {
+		t.Errorf("expected first name to be `env`, got `%s`", names[0])
+		return
+	}
+
+	if names[1] != "no-env" {
+		t.Errorf("expected first name to be `no-env`, got `%s`", names[1])
+		return
+	}
+}
+
 func ExampleBoolWithInverseFlag() {
 	flagWithInverse := &cli.BoolWithInverseFlag{
 		BoolFlag: &cli.BoolFlag{
