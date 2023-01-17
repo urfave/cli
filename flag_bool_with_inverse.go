@@ -21,8 +21,6 @@ type BoolWithInverseFlag struct {
 	positiveFlag *BoolFlag
 	negativeFlag *BoolFlag
 
-	action func(*Context, bool) error
-
 	// pointers obtained from the embedded bool flag
 	posDest  *bool
 	posCount *int
@@ -85,15 +83,15 @@ func (parent *BoolWithInverseFlag) initialize() {
 		parent.posDest = new(bool)
 	}
 
-	if child.Count != nil {
-		parent.posCount = child.Count
+	if child.Config.Count != nil {
+		parent.posCount = child.Config.Count
 	} else {
 		parent.posCount = new(int)
 	}
 
 	parent.positiveFlag = child
 	parent.positiveFlag.Destination = parent.posDest
-	parent.positiveFlag.Count = parent.posCount
+	parent.positiveFlag.Config.Count = parent.posCount
 
 	if parent.InversePrefix == "" {
 		parent.InversePrefix = DefaultInverseBoolPrefix
@@ -107,21 +105,27 @@ func (parent *BoolWithInverseFlag) initialize() {
 			inverseAliases[idx] = parent.InversePrefix + alias
 		}
 	}
-
 	parent.negativeFlag = &BoolFlag{
 		Name:        parent.InversePrefix + child.Name,
 		Category:    child.Category,
 		DefaultText: child.DefaultText,
-		FilePath:    child.FilePath,
+		FilePaths:   append([]string{}, child.FilePaths...),
 		Usage:       child.Usage,
 		Required:    child.Required,
 		Hidden:      child.Hidden,
-		HasBeenSet:  child.HasBeenSet,
+		Persistent:  child.Persistent,
 		Value:       child.Value,
-		Aliases:     inverseAliases,
-
 		Destination: parent.negDest,
-		Count:       parent.negCount,
+		Aliases:     inverseAliases,
+		TakesFile:   child.TakesFile,
+		Config: BoolConfig{
+			Count: parent.negCount,
+		},
+		OnlyOnce:   child.OnlyOnce,
+		hasBeenSet: child.hasBeenSet,
+		applied:    child.applied,
+		creator:    boolValue{},
+		value:      child.value,
 	}
 
 	if len(child.EnvVars) > 0 {
@@ -135,7 +139,9 @@ func (parent *BoolWithInverseFlag) initialize() {
 }
 
 func (s *BoolWithInverseFlag) Apply(set *flag.FlagSet) error {
-	s.initialize()
+	if s.positiveFlag == nil {
+		s.initialize()
+	}
 
 	if err := s.positiveFlag.Apply(set); err != nil {
 		return err

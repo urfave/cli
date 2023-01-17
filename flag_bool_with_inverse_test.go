@@ -282,6 +282,45 @@ func TestBoolWithInverseWithPrefix(t *testing.T) {
 	}
 }
 
+func TestBoolWithInverseRequired(t *testing.T) {
+	flagMethod := func() *cli.BoolWithInverseFlag {
+		return &cli.BoolWithInverseFlag{
+			BoolFlag: &cli.BoolFlag{
+				Name:     "env",
+				Required: true,
+			},
+		}
+	}
+
+	testCases := []boolWithInverseTestCase{
+		{
+			args:    []string{"--no-env"},
+			toBeSet: true,
+			value:   false,
+		},
+		{
+			args:    []string{"--env"},
+			toBeSet: true,
+			value:   true,
+		},
+		{
+			toBeSet: false,
+			value:   false,
+			err:     fmt.Errorf(`Required flag "env" not set`),
+		},
+		{
+			args: []string{"--env", "--no-env"},
+			err:  bothEnvFlagsAreSetError,
+		},
+	}
+
+	err := runTests(flagMethod, testCases)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+}
+
 func ExampleBoolWithInverseFlag() {
 	flagWithInverse := &cli.BoolWithInverseFlag{
 		BoolFlag: &cli.BoolFlag{
