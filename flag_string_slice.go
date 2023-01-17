@@ -44,7 +44,7 @@ func (s *StringSlice) Set(value string) error {
 	}
 
 	for _, t := range flagSplitMultiValues(value) {
-		s.slice = append(s.slice, strings.TrimSpace(t))
+		s.slice = append(s.slice, t)
 	}
 
 	return nil
