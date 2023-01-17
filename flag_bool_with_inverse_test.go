@@ -358,6 +358,87 @@ func TestBoolWithInverseNames(t *testing.T) {
 	}
 }
 
+func TestBoolWithInverseDestination(t *testing.T) {
+	destination := new(bool)
+	count := new(int)
+
+	flagMethod := func() *cli.BoolWithInverseFlag {
+		return &cli.BoolWithInverseFlag{
+			BoolFlag: &cli.BoolFlag{
+				Name:        "env",
+				Destination: destination,
+				Config: cli.BoolConfig{
+					Count: count,
+				},
+			},
+		}
+	}
+
+	checkAndReset := func(expectedCount int, expectedValue bool) error {
+		if *count != expectedCount {
+			return fmt.Errorf("expected count to be %d, got %d", expectedCount, *count)
+
+		}
+
+		if *destination != expectedValue {
+			return fmt.Errorf("expected destination to be %t, got %t", expectedValue, *destination)
+		}
+
+		*count = 0
+		*destination = false
+
+		return nil
+	}
+
+	err := boolWithInverseTestCase{
+		args:    []string{"--env"},
+		toBeSet: true,
+		value:   true,
+	}.Run(flagMethod())
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = checkAndReset(1, true)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = boolWithInverseTestCase{
+		args:    []string{"--no-env"},
+		toBeSet: true,
+		value:   false,
+	}.Run(flagMethod())
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = checkAndReset(1, false)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = boolWithInverseTestCase{
+		args:    []string{},
+		toBeSet: false,
+		value:   false,
+	}.Run(flagMethod())
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = checkAndReset(0, false)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+}
+
 func ExampleBoolWithInverseFlag() {
 	flagWithInverse := &cli.BoolWithInverseFlag{
 		BoolFlag: &cli.BoolFlag{

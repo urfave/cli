@@ -25,8 +25,7 @@ type BoolWithInverseFlag struct {
 	posDest  *bool
 	posCount *int
 
-	negDest  *bool
-	negCount *int
+	negDest *bool
 }
 
 func (s *BoolWithInverseFlag) Flags() []Flag {
@@ -34,7 +33,7 @@ func (s *BoolWithInverseFlag) Flags() []Flag {
 }
 
 func (s *BoolWithInverseFlag) IsSet() bool {
-	return (*s.posCount > 0 || *s.negCount > 0) || (s.positiveFlag.IsSet() || s.negativeFlag.IsSet())
+	return (*s.posCount > 0) || (s.positiveFlag.IsSet() || s.negativeFlag.IsSet())
 }
 
 func (s *BoolWithInverseFlag) Value() bool {
@@ -47,12 +46,7 @@ func (s *BoolWithInverseFlag) RunAction(ctx *Context) error {
 	}
 
 	if *s.negDest {
-		err := ctx.Set(s.negativeFlag.Name, "true")
-		if err != nil {
-			return err
-		}
-	} else if *s.posDest {
-		err := ctx.Set(s.positiveFlag.Name, "true")
+		err := ctx.Set(s.positiveFlag.Name, "false")
 		if err != nil {
 			return err
 		}
@@ -76,7 +70,6 @@ func (parent *BoolWithInverseFlag) initialize() {
 	child := parent.BoolFlag
 
 	parent.negDest = new(bool)
-	parent.negCount = new(int)
 	if child.Destination != nil {
 		parent.posDest = child.Destination
 	} else {
@@ -104,14 +97,11 @@ func (parent *BoolWithInverseFlag) initialize() {
 		Value:       child.Value,
 		Destination: parent.negDest,
 		TakesFile:   child.TakesFile,
-		Config: BoolConfig{
-			Count: parent.negCount,
-		},
-		OnlyOnce:   child.OnlyOnce,
-		hasBeenSet: child.hasBeenSet,
-		applied:    child.applied,
-		creator:    boolValue{},
-		value:      child.value,
+		OnlyOnce:    child.OnlyOnce,
+		hasBeenSet:  child.hasBeenSet,
+		applied:     child.applied,
+		creator:     boolValue{},
+		value:       child.value,
 	}
 
 	// Set inverse names ex: --env => --no-env
