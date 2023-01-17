@@ -79,6 +79,9 @@ OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}
     uses text/template to render templates. You can render custom help text by
     setting this variable.
 
+var (
+	DefaultInverseBoolPrefix = "no-"
+)
 var ErrWriter io.Writer = os.Stderr
     ErrWriter is used to write errors to the user. This can be anything
     implementing the io.Writer interface and defaults to os.Stderr.
@@ -415,6 +418,33 @@ type BoolConfig struct {
     BoolConfig defines the configuration for bool flags
 
 type BoolFlag = FlagBase[bool, BoolConfig, boolValue]
+
+type BoolWithInverseFlag struct {
+	// The BoolFlag which the positive and negative flags are generated from
+	*BoolFlag
+
+	// The prefix used to indicate a negative value
+	// Default: `env` becomes `no-env`
+	InversePrefix string
+
+	// Has unexported fields.
+}
+
+func (s *BoolWithInverseFlag) Apply(set *flag.FlagSet) error
+
+func (s *BoolWithInverseFlag) Flags() []Flag
+
+func (s *BoolWithInverseFlag) IsSet() bool
+
+func (s *BoolWithInverseFlag) Names() []string
+
+func (s *BoolWithInverseFlag) RunAction(ctx *Context) error
+
+func (s *BoolWithInverseFlag) String() string
+    Example for BoolFlag{Name: "env"} --env (default: false) || --no-env
+    (default: false)
+
+func (s *BoolWithInverseFlag) Value() bool
 
 type CategorizableFlag interface {
 	VisibleFlag
