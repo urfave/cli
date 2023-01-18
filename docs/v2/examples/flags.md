@@ -230,57 +230,6 @@ That flag can then be set with `--lang spanish` or `-l spanish`. Note that
 giving two different forms of the same flag in the same command invocation is an
 error.
 
-#### Grouping
-
-You can associate a category for each flag to group them together in the help output, e.g:
-
-```go
-package main
-
-import (
-	"log"
-	"os"
-
-	"github.com/urfave/cli/v2"
-)
-
-func main() {
-	app = &cli.App{
-		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:     "silent",
-				Aliases:  []string{"s"},
-				Usage:    "no messages",
-				Category: "Miscellaneous:",
-			},
-			&cli.BoolFlag{
-				Name:     "perl-regexp",
-				Aliases:  []string{"P"},
-				Usage:    "PATTERNS are Perl regular expressions",
-				Category: "Pattern selection:",
-			},
-		},
-	}
-
-	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err)
-	}
-}
-```
-
-Will result in help output like:
-
-```
-GLOBAL OPTIONS:
-   Miscellaneous:
-
-   --silent, -s  no messages (default: false)
-
-   Pattern selection:
-
-   --perl-regexp, -P  PATTERNS are Perl regular expressions (default: false)
-```
-
 #### Ordering
 
 Flags for the application and commands are shown in the order they are defined.
