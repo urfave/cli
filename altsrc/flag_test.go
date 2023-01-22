@@ -327,6 +327,18 @@ func TestFloat64SliceFlagApplyInputSourceValueNotSet(t *testing.T) {
 	expect(t, dest.Value(), []float64{})
 }
 
+func TestFloat64SliceFlagApplyInputSourceValueInvalidType(t *testing.T) {
+	dest := cli.NewFloat64Slice()
+	tis := testApplyInputSource{
+		Flag:     NewFloat64SliceFlag(&cli.Float64SliceFlag{Name: "test", Destination: dest}),
+		FlagName: "test",
+		MapValue: []interface{}{1, 2},
+	}
+	c := runTest(t, tis)
+	expect(t, c.Float64Slice("test"), []float64{})
+	expect(t, dest.Value(), []float64{})
+}
+
 func TestBoolApplyInputSourceMethodSet(t *testing.T) {
 	tis := testApplyInputSource{
 		Flag:     NewBoolFlag(&cli.BoolFlag{Name: "test"}),
