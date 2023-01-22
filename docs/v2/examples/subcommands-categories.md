@@ -9,6 +9,9 @@ For additional organization in apps that have many subcommands, you can
 associate a category for each command to group them together in the help
 output, e.g.:
 
+<!-- {
+  "output": ".*COMMANDS:\\n.*noop.*template:\\n.*add[ ]*\\n[ ]*remove.*
+} -->
 ```go
 package main
 
@@ -40,15 +43,4 @@ func main() {
 		log.Fatal(err)
 	}
 }
-```
-
-Will include:
-
-```
-COMMANDS:
-  noop
-
-  Template actions:
-    add
-    remove
 ```
