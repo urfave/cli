@@ -44,3 +44,14 @@ func main() {
 	}
 }
 ```
+
+Will include:
+
+```
+COMMANDS:
+  noop
+
+  template:
+    add
+    remove
+```
