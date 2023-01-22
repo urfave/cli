@@ -10,7 +10,7 @@ associate a category for each command to group them together in the help
 output, e.g.:
 
 <!-- {
-  "output": ".*COMMANDS:\\n.*noop.*template:\\n.*add[ ]*\\n[ ]*remove.*
+  "output": ".*COMMANDS:\\n.*noop[ ]*\\n.*\\n[ ]*template:\\n[ ]*add[ ]*\\n[ ]*remove.*"
 } -->
 ```go
 package main
