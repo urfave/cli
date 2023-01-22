@@ -5,7 +5,7 @@
 
 .SH NAME
 .PP
-greet \- Some app
+greet - Some app
 
 
 .SH SYNOPSIS
@@ -16,9 +16,9 @@ greet
 .RS
 
 .nf
-[\-\-another\-flag|\-b]
-[\-\-flag|\-\-fl|\-f]=[value]
-[\-\-socket|\-s]=[value]
+[--another-flag|-b]
+[--flag|--fl|-f]=[value]
+[--socket|-s]=[value]
 
 .fi
 .RE
@@ -26,7 +26,7 @@ greet
 
 .SH DESCRIPTION
 .PP
-app [first\_arg] [second\_arg]
+app [first_arg] [second_arg]
 
 .PP
 \fBUsage\fP:
@@ -43,13 +43,13 @@ greet [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 .SH GLOBAL OPTIONS
 .PP
-\fB\-\-another\-flag, \-b\fP: another usage text
+\fB--another-flag, -b\fP: another usage text
 
 .PP
-\fB\-\-flag, \-\-fl, \-f\fP="":
+\fB--flag, --fl, -f\fP="":
 
 .PP
-\fB\-\-socket, \-s\fP="": some 'usage' text (default: value)
+\fB--socket, -s\fP="": some 'usage' text (default: value)
 
 
 .SH COMMANDS
@@ -58,23 +58,23 @@ greet [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 another usage test
 
 .PP
-\fB\-\-another\-flag, \-b\fP: another usage text
+\fB--another-flag, -b\fP: another usage text
 
 .PP
-\fB\-\-flag, \-\-fl, \-f\fP="":
+\fB--flag, --fl, -f\fP="":
 
-.SS sub\-config, s, ss
+.SS sub-config, s, ss
 .PP
 another usage test
 
 .PP
-\fB\-\-sub\-command\-flag, \-s\fP: some usage text
+\fB--sub-command-flag, -s\fP: some usage text
 
 .PP
-\fB\-\-sub\-flag, \-\-sub\-fl, \-s\fP="":
+\fB--sub-flag, --sub-fl, -s\fP="":
 
 .SH info, i, in
 .PP
 retrieve generic information
 
-.SH some\-command
+.SH some-command

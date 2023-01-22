@@ -6,3 +6,5 @@ vendor
 /.local/
 /internal/
 /site/
+package.json
+package-lock.json

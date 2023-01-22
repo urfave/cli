@@ -27,8 +27,8 @@ cli v1 manual
   * [Version Flag](#version-flag)
     + [Customization](#customization-2)
     + [Full API Example](#full-api-example)
-  * [Testing](#testing)
-  * [Migrating to V2](#migrating-to-v2)
+- [Testing](#testing)
+- [Migrating to V2](#migrating-to-v2)
 
 <!-- tocstop -->
 

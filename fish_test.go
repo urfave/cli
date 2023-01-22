@@ -1,8 +1,10 @@
 package cli
 
 import (
-	"io/ioutil"
+	"os"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func testApp() *App {
@@ -66,9 +68,9 @@ func testApp() *App {
 }
 
 func expectFileContent(t *testing.T, file, expected string) {
-	data, err := ioutil.ReadFile(file)
-	expect(t, err, nil)
-	expect(t, string(data), expected)
+	data, err := os.ReadFile(file)
+	require.Nil(t, err)
+	require.Equal(t, string(data), expected)
 }
 
 func TestFishCompletion(t *testing.T) {
