@@ -583,6 +583,27 @@ func TestIntApplyInputSourceMethodContextSet(t *testing.T) {
 	refute(t, 7, c.Int("test"))
 }
 
+func TestIntApplyInputSourceMethodContextNotSet(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:               NewIntFlag(&cli.IntFlag{Name: "test"}),
+		FlagName:           "test1",
+		MapValue:           15,
+		ContextValueString: "7",
+	}
+	c := runTest(t, tis)
+	expect(t, 0, c.Int("test"))
+}
+
+func TestIntApplyInputSourceMethodContextSetInvalidType(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:               NewIntFlag(&cli.IntFlag{Name: "test"}),
+		FlagName:           "test",
+		ContextValueString: "d",
+	}
+	c := runTest(t, tis)
+	expect(t, 0, c.Int("test"))
+}
+
 func TestIntApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	tis := testApplyInputSource{
 		Flag:        NewIntFlag(&cli.IntFlag{Name: "test", EnvVars: []string{"TEST"}}),
@@ -596,6 +617,95 @@ func TestIntApplyInputSourceMethodEnvVarSet(t *testing.T) {
 
 	c = runRacyTest(t, tis)
 	refute(t, 12, c.Int("test"))
+}
+
+func TestInt64ApplyInputSourceMethodSet_Alias(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:     NewInt64Flag(&cli.Int64Flag{Name: "test", Aliases: []string{"test_alias"}}),
+		FlagName: "test_alias",
+		MapValue: int64(15),
+	}
+	c := runTest(t, tis)
+	expect(t, int64(15), c.Int64("test_alias"))
+
+	c = runRacyTest(t, tis)
+	refute(t, int64(15), c.Int64("test_alias"))
+}
+
+func TestInt64ApplyInputSourceMethodSet(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:     NewInt64Flag(&cli.Int64Flag{Name: "test"}),
+		FlagName: "test",
+		MapValue: int64(15),
+	}
+	c := runTest(t, tis)
+	expect(t, int64(15), c.Int64("test"))
+
+	c = runRacyTest(t, tis)
+	refute(t, int64(15), c.Int("test"))
+}
+
+func TestInt64ApplyInputSourceMethodSetNegativeValue(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:     NewInt64Flag(&cli.Int64Flag{Name: "test"}),
+		FlagName: "test",
+		MapValue: int64(-1),
+	}
+	c := runTest(t, tis)
+	expect(t, int64(-1), c.Int64("test"))
+
+	c = runRacyTest(t, tis)
+	refute(t, int64(-1), c.Int("test"))
+}
+
+func TestInt64ApplyInputSourceMethodContextSet(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:               NewInt64Flag(&cli.Int64Flag{Name: "test"}),
+		FlagName:           "test",
+		MapValue:           15,
+		ContextValueString: "7",
+	}
+	c := runTest(t, tis)
+	expect(t, int64(7), c.Int64("test"))
+
+	c = runRacyTest(t, tis)
+	refute(t, int64(7), c.Int64("test"))
+}
+
+func TestInt64ApplyInputSourceMethodContextNotSet(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:               NewInt64Flag(&cli.Int64Flag{Name: "test"}),
+		FlagName:           "test1",
+		MapValue:           15,
+		ContextValueString: "7",
+	}
+	c := runTest(t, tis)
+	expect(t, int64(0), c.Int64("test"))
+}
+
+func TestInt64ApplyInputSourceMethodContextSetInvalidType(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:               NewInt64Flag(&cli.Int64Flag{Name: "test"}),
+		FlagName:           "test",
+		ContextValueString: "d",
+	}
+	c := runTest(t, tis)
+	expect(t, int64(0), c.Int64("test"))
+}
+
+func TestInt64ApplyInputSourceMethodEnvVarSet(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:        NewInt64Flag(&cli.Int64Flag{Name: "test", EnvVars: []string{"TEST"}}),
+		FlagName:    "test",
+		MapValue:    15,
+		EnvVarName:  "TEST",
+		EnvVarValue: "12",
+	}
+	c := runTest(t, tis)
+	expect(t, int64(12), c.Int64("test"))
+
+	c = runRacyTest(t, tis)
+	refute(t, int64(12), c.Int64("test"))
 }
 
 func TestUintApplyInputSourceMethodSet_Alias(t *testing.T) {
