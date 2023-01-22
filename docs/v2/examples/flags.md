@@ -245,7 +245,7 @@ import (
 )
 
 func main() {
-	app = &cli.App{
+	app := &cli.App{
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:     "silent",
