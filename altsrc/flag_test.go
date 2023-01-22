@@ -280,6 +280,65 @@ func TestInt64SliceFlagApplyInputSourceValue(t *testing.T) {
 	refute(t, dest.Value(), []int64{1, 2})
 }
 
+func TestInt64SliceFlagApplyInputSourceValueNotSet(t *testing.T) {
+	dest := cli.NewInt64Slice()
+	tis := testApplyInputSource{
+		Flag:     NewInt64SliceFlag(&cli.Int64SliceFlag{Name: "test", Destination: dest}),
+		FlagName: "test1",
+		MapValue: []interface{}{int64(1), int64(2)},
+	}
+	c := runTest(t, tis)
+	expect(t, c.Int64Slice("test"), []int64{})
+	expect(t, dest.Value(), []int64{})
+}
+
+func TestFloat64SliceFlagApplyInputSourceValue(t *testing.T) {
+	dest := cli.NewFloat64Slice()
+	tis := testApplyInputSource{
+		Flag:     NewFloat64SliceFlag(&cli.Float64SliceFlag{Name: "test", Destination: dest}),
+		FlagName: "test",
+		MapValue: []interface{}{float64(1.0), float64(2.1)},
+	}
+	c := runTest(t, tis)
+	expect(t, c.Float64Slice("test"), []float64{1.0, 2.1})
+	expect(t, dest.Value(), []float64{1.0, 2.1})
+
+	// reset dest
+	dest = cli.NewFloat64Slice()
+	tis = testApplyInputSource{
+		Flag:     NewFloat64SliceFlag(&cli.Float64SliceFlag{Name: "test", Destination: dest}),
+		FlagName: "test",
+		MapValue: []interface{}{float64(1.0), float64(2.1)},
+	}
+	c = runRacyTest(t, tis)
+	refute(t, c.IntSlice("test"), []int64{1, 2})
+	refute(t, dest.Value(), []int64{1, 2})
+}
+
+func TestFloat64SliceFlagApplyInputSourceValueNotSet(t *testing.T) {
+	dest := cli.NewFloat64Slice()
+	tis := testApplyInputSource{
+		Flag:     NewFloat64SliceFlag(&cli.Float64SliceFlag{Name: "test", Destination: dest}),
+		FlagName: "test1",
+		MapValue: []interface{}{float64(1.0), float64(2.1)},
+	}
+	c := runTest(t, tis)
+	expect(t, c.Float64Slice("test"), []float64{})
+	expect(t, dest.Value(), []float64{})
+}
+
+func TestFloat64SliceFlagApplyInputSourceValueInvalidType(t *testing.T) {
+	dest := cli.NewFloat64Slice()
+	tis := testApplyInputSource{
+		Flag:     NewFloat64SliceFlag(&cli.Float64SliceFlag{Name: "test", Destination: dest}),
+		FlagName: "test",
+		MapValue: []interface{}{1, 2},
+	}
+	c := runTest(t, tis)
+	expect(t, c.Float64Slice("test"), []float64{})
+	expect(t, dest.Value(), []float64{})
+}
+
 func TestBoolApplyInputSourceMethodSet(t *testing.T) {
 	tis := testApplyInputSource{
 		Flag:     NewBoolFlag(&cli.BoolFlag{Name: "test"}),
@@ -524,6 +583,27 @@ func TestIntApplyInputSourceMethodContextSet(t *testing.T) {
 	refute(t, 7, c.Int("test"))
 }
 
+func TestIntApplyInputSourceMethodContextNotSet(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:               NewIntFlag(&cli.IntFlag{Name: "test"}),
+		FlagName:           "test1",
+		MapValue:           15,
+		ContextValueString: "7",
+	}
+	c := runTest(t, tis)
+	expect(t, 0, c.Int("test"))
+}
+
+func TestIntApplyInputSourceMethodContextSetInvalidType(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:               NewIntFlag(&cli.IntFlag{Name: "test"}),
+		FlagName:           "test",
+		ContextValueString: "d",
+	}
+	c := runTest(t, tis)
+	expect(t, 0, c.Int("test"))
+}
+
 func TestIntApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	tis := testApplyInputSource{
 		Flag:        NewIntFlag(&cli.IntFlag{Name: "test", EnvVars: []string{"TEST"}}),
@@ -537,6 +617,190 @@ func TestIntApplyInputSourceMethodEnvVarSet(t *testing.T) {
 
 	c = runRacyTest(t, tis)
 	refute(t, 12, c.Int("test"))
+}
+
+func TestInt64ApplyInputSourceMethodSet_Alias(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:     NewInt64Flag(&cli.Int64Flag{Name: "test", Aliases: []string{"test_alias"}}),
+		FlagName: "test_alias",
+		MapValue: int64(15),
+	}
+	c := runTest(t, tis)
+	expect(t, int64(15), c.Int64("test_alias"))
+
+	c = runRacyTest(t, tis)
+	refute(t, int64(15), c.Int64("test_alias"))
+}
+
+func TestInt64ApplyInputSourceMethodSet(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:     NewInt64Flag(&cli.Int64Flag{Name: "test"}),
+		FlagName: "test",
+		MapValue: int64(15),
+	}
+	c := runTest(t, tis)
+	expect(t, int64(15), c.Int64("test"))
+
+	c = runRacyTest(t, tis)
+	refute(t, int64(15), c.Int("test"))
+}
+
+func TestInt64ApplyInputSourceMethodSetNegativeValue(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:     NewInt64Flag(&cli.Int64Flag{Name: "test"}),
+		FlagName: "test",
+		MapValue: int64(-1),
+	}
+	c := runTest(t, tis)
+	expect(t, int64(-1), c.Int64("test"))
+
+	c = runRacyTest(t, tis)
+	refute(t, int64(-1), c.Int("test"))
+}
+
+func TestInt64ApplyInputSourceMethodContextSet(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:               NewInt64Flag(&cli.Int64Flag{Name: "test"}),
+		FlagName:           "test",
+		MapValue:           15,
+		ContextValueString: "7",
+	}
+	c := runTest(t, tis)
+	expect(t, int64(7), c.Int64("test"))
+
+	c = runRacyTest(t, tis)
+	refute(t, int64(7), c.Int64("test"))
+}
+
+func TestInt64ApplyInputSourceMethodContextNotSet(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:               NewInt64Flag(&cli.Int64Flag{Name: "test"}),
+		FlagName:           "test1",
+		MapValue:           15,
+		ContextValueString: "7",
+	}
+	c := runTest(t, tis)
+	expect(t, int64(0), c.Int64("test"))
+}
+
+func TestInt64ApplyInputSourceMethodContextSetInvalidType(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:               NewInt64Flag(&cli.Int64Flag{Name: "test"}),
+		FlagName:           "test",
+		ContextValueString: "d",
+	}
+	c := runTest(t, tis)
+	expect(t, int64(0), c.Int64("test"))
+}
+
+func TestInt64ApplyInputSourceMethodEnvVarSet(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:        NewInt64Flag(&cli.Int64Flag{Name: "test", EnvVars: []string{"TEST"}}),
+		FlagName:    "test",
+		MapValue:    15,
+		EnvVarName:  "TEST",
+		EnvVarValue: "12",
+	}
+	c := runTest(t, tis)
+	expect(t, int64(12), c.Int64("test"))
+
+	c = runRacyTest(t, tis)
+	refute(t, int64(12), c.Int64("test"))
+}
+
+func TestUintApplyInputSourceMethodSet_Alias(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:     NewUintFlag(&cli.UintFlag{Name: "test", Aliases: []string{"test_alias"}}),
+		FlagName: "test_alias",
+		MapValue: uint(15),
+	}
+	c := runTest(t, tis)
+	expect(t, uint(15), c.Uint("test_alias"))
+
+	c = runRacyTest(t, tis)
+	refute(t, uint(15), c.Uint("test_alias"))
+}
+
+func TestUintApplyInputSourceMethodSet(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:     NewUintFlag(&cli.UintFlag{Name: "test"}),
+		FlagName: "test",
+		MapValue: uint(15),
+	}
+	c := runTest(t, tis)
+	expect(t, uint(15), c.Uint("test"))
+
+	c = runRacyTest(t, tis)
+	refute(t, uint(15), c.Uint("test"))
+}
+
+func TestUintApplyInputSourceMethodContextSet(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:               NewUintFlag(&cli.UintFlag{Name: "test"}),
+		FlagName:           "test",
+		MapValue:           uint(15),
+		ContextValueString: "7",
+	}
+	c := runTest(t, tis)
+	expect(t, uint(7), c.Uint("test"))
+
+	c = runRacyTest(t, tis)
+	refute(t, uint(7), c.Uint("test"))
+}
+
+func TestUint64ApplyInputSourceMethodSet_Alias(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:     NewUint64Flag(&cli.Uint64Flag{Name: "test", Aliases: []string{"test_alias"}}),
+		FlagName: "test_alias",
+		MapValue: uint64(15),
+	}
+	c := runTest(t, tis)
+	expect(t, uint64(15), c.Uint64("test_alias"))
+
+	c = runRacyTest(t, tis)
+	refute(t, uint64(15), c.Uint64("test_alias"))
+}
+
+func TestUint64ApplyInputSourceMethodSet(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:     NewUint64Flag(&cli.Uint64Flag{Name: "test"}),
+		FlagName: "test",
+		MapValue: uint64(15),
+	}
+	c := runTest(t, tis)
+	expect(t, uint64(15), c.Uint64("test"))
+
+	c = runRacyTest(t, tis)
+	refute(t, uint64(15), c.Uint64("test"))
+}
+
+func TestUint64ApplyInputSourceMethodContextSet(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:               NewUint64Flag(&cli.Uint64Flag{Name: "test"}),
+		FlagName:           "test",
+		MapValue:           uint64(15),
+		ContextValueString: "7",
+	}
+	c := runTest(t, tis)
+	expect(t, uint64(7), c.Uint64("test"))
+
+	c = runRacyTest(t, tis)
+	refute(t, uint64(7), c.Uint64("test"))
+}
+
+func TestUint64ApplyInputSourceMethodEnvVarSet(t *testing.T) {
+	tis := testApplyInputSource{
+		Flag:        NewUint64Flag(&cli.Uint64Flag{Name: "test", EnvVars: []string{"TEST"}}),
+		FlagName:    "test",
+		MapValue:    uint64(15),
+		EnvVarName:  "TEST",
+		EnvVarValue: "12",
+	}
+	c := runTest(t, tis)
+	expect(t, uint64(12), c.Uint64("test"))
+
+	c = runRacyTest(t, tis)
+	refute(t, uint64(12), c.Uint64("test"))
 }
 
 func TestDurationApplyInputSourceMethodSet_Alias(t *testing.T) {

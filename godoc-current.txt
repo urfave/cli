@@ -2417,6 +2417,9 @@ func (f *Float64SliceFlag) Apply(set *flag.FlagSet) error
     Apply saves the flagSet for later usage calls, then calls the wrapped
     Float64SliceFlag.Apply
 
+func (f *Float64SliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
+    ApplyInputSourceValue applies a Float64Slice value if required
+
 type GenericFlag struct {
 	*cli.GenericFlag
 	// Has unexported fields.
@@ -2438,12 +2441,16 @@ type InputSourceContext interface {
 	Source() string
 
 	Int(name string) (int, error)
+	Int64(name string) (int64, error)
+	Uint(name string) (uint, error)
+	Uint64(name string) (uint64, error)
 	Duration(name string) (time.Duration, error)
 	Float64(name string) (float64, error)
 	String(name string) (string, error)
 	StringSlice(name string) ([]string, error)
 	IntSlice(name string) ([]int, error)
 	Int64Slice(name string) ([]int64, error)
+	Float64Slice(name string) ([]float64, error)
 	Generic(name string) (cli.Generic, error)
 	Bool(name string) (bool, error)
 
@@ -2486,6 +2493,8 @@ func NewInt64Flag(fl *cli.Int64Flag) *Int64Flag
 func (f *Int64Flag) Apply(set *flag.FlagSet) error
     Apply saves the flagSet for later usage calls, then calls the wrapped
     Int64Flag.Apply
+
+func (f *Int64Flag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
 
 type Int64SliceFlag struct {
 	*cli.Int64SliceFlag
@@ -2557,12 +2566,19 @@ func (fsm *MapInputSource) Duration(name string) (time.Duration, error)
 func (fsm *MapInputSource) Float64(name string) (float64, error)
     Float64 returns an float64 from the map if it exists otherwise returns 0
 
+func (fsm *MapInputSource) Float64Slice(name string) ([]float64, error)
+    Float64Slice returns an []float64 from the map if it exists otherwise
+    returns nil
+
 func (fsm *MapInputSource) Generic(name string) (cli.Generic, error)
     Generic returns an cli.Generic from the map if it exists otherwise returns
     nil
 
 func (fsm *MapInputSource) Int(name string) (int, error)
     Int returns an int from the map if it exists otherwise returns 0
+
+func (fsm *MapInputSource) Int64(name string) (int64, error)
+    Int64 returns an int64 from the map if it exists otherwise returns 0
 
 func (fsm *MapInputSource) Int64Slice(name string) ([]int64, error)
     Int64Slice returns an []int64 from the map if it exists otherwise returns
@@ -2581,6 +2597,12 @@ func (fsm *MapInputSource) String(name string) (string, error)
 func (fsm *MapInputSource) StringSlice(name string) ([]string, error)
     StringSlice returns an []string from the map if it exists otherwise returns
     nil
+
+func (fsm *MapInputSource) Uint(name string) (uint, error)
+    Int64 returns an int64 from the map if it exists otherwise returns 0
+
+func (fsm *MapInputSource) Uint64(name string) (uint64, error)
+    UInt64 returns an uint64 from the map if it exists otherwise returns 0
 
 type PathFlag struct {
 	*cli.PathFlag
@@ -2647,6 +2669,8 @@ func (f *Uint64Flag) Apply(set *flag.FlagSet) error
     Apply saves the flagSet for later usage calls, then calls the wrapped
     Uint64Flag.Apply
 
+func (f *Uint64Flag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
+
 type UintFlag struct {
 	*cli.UintFlag
 	// Has unexported fields.
@@ -2660,4 +2684,6 @@ func NewUintFlag(fl *cli.UintFlag) *UintFlag
 func (f *UintFlag) Apply(set *flag.FlagSet) error
     Apply saves the flagSet for later usage calls, then calls the wrapped
     UintFlag.Apply
+
+func (f *UintFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
 
