@@ -5,6 +5,8 @@ package cli
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestToMarkdownFull(t *testing.T) {
@@ -53,6 +55,6 @@ func TestToMan(t *testing.T) {
 	res, err := app.ToMan()
 
 	// Then
-	expect(t, err, nil)
+	require.Nil(t, err)
 	expectFileContent(t, "testdata/expected-doc-full.man", res)
 }
