@@ -11,6 +11,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 
 	"github.com/urfave/cli"
@@ -164,12 +165,17 @@ func GfmrunActionFunc(c *cli.Context) error {
 }
 
 func TocActionFunc(c *cli.Context) error {
+	if runtime.GOOS == "windows" {
+		log.Println("the toc command is not meant for windows")
+		return nil
+	}
+
 	filename := c.Args().Get(0)
 	if filename == "" {
 		filename = "README.md"
 	}
 
-	err := runCmd("node", "node_modules/.bin/markdown-toc", "-i", filename)
+	err := runCmd("node_modules/.bin/markdown-toc", "-i", filename)
 	if err != nil {
 		return err
 	}
