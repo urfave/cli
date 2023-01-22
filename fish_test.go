@@ -2,6 +2,7 @@ package cli
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -70,7 +71,8 @@ func testApp() *App {
 func expectFileContent(t *testing.T, file, expected string) {
 	data, err := os.ReadFile(file)
 	require.Nil(t, err)
-	require.Equal(t, string(data), expected)
+
+	require.Equal(t, strings.ReplaceAll(string(data), "\r\n", "\n"), expected)
 }
 
 func TestFishCompletion(t *testing.T) {
