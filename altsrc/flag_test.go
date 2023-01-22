@@ -280,6 +280,18 @@ func TestInt64SliceFlagApplyInputSourceValue(t *testing.T) {
 	refute(t, dest.Value(), []int64{1, 2})
 }
 
+func TestInt64SliceFlagApplyInputSourceValueNotSet(t *testing.T) {
+	dest := cli.NewInt64Slice()
+	tis := testApplyInputSource{
+		Flag:     NewInt64SliceFlag(&cli.Int64SliceFlag{Name: "test", Destination: dest}),
+		FlagName: "test1",
+		MapValue: []interface{}{int64(1), int64(2)},
+	}
+	c := runTest(t, tis)
+	expect(t, c.Int64Slice("test"), []int64{})
+	expect(t, dest.Value(), []int64{})
+}
+
 func TestFloat64SliceFlagApplyInputSourceValue(t *testing.T) {
 	dest := cli.NewFloat64Slice()
 	tis := testApplyInputSource{
@@ -301,6 +313,18 @@ func TestFloat64SliceFlagApplyInputSourceValue(t *testing.T) {
 	c = runRacyTest(t, tis)
 	refute(t, c.IntSlice("test"), []int64{1, 2})
 	refute(t, dest.Value(), []int64{1, 2})
+}
+
+func TestFloat64SliceFlagApplyInputSourceValueNotSet(t *testing.T) {
+	dest := cli.NewFloat64Slice()
+	tis := testApplyInputSource{
+		Flag:     NewFloat64SliceFlag(&cli.Float64SliceFlag{Name: "test", Destination: dest}),
+		FlagName: "test1",
+		MapValue: []interface{}{float64(1.0), float64(2.1)},
+	}
+	c := runTest(t, tis)
+	expect(t, c.Float64Slice("test"), []float64{})
+	expect(t, dest.Value(), []float64{})
 }
 
 func TestBoolApplyInputSourceMethodSet(t *testing.T) {
