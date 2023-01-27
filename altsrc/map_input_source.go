@@ -131,6 +131,9 @@ func (fsm *MapInputSource) Float64(name string) (float64, error) {
 func castToInt64(v interface{}) (int64, bool) {
 	int64Value := int64(0)
 	isType := false
+	if v == nil {
+		return int64Value, true
+	}
 
 	// There are only four cases(int, int64, uint64, float64) when parsing the integer in yaml.v3 pkg
 	// But the last case, float64, is an error case so that ignored
@@ -177,6 +180,9 @@ func (fsm *MapInputSource) Int64(name string) (int64, error) {
 func castToUint(v interface{}) (uint, bool) {
 	uintValue := uint(0)
 	isType := false
+	if v == nil {
+		return uintValue, true
+	}
 
 	// There are only four cases(int, int64, uint64, float64) when parsing the integer in yaml.v3 pkg
 	// But the last case, float64, is an error case so that ignored
@@ -229,6 +235,9 @@ func (fsm *MapInputSource) Uint(name string) (uint, error) {
 func castToUint64(v interface{}) (uint64, bool) {
 	uint64Value := uint64(0)
 	isType := false
+	if v == nil {
+		return uint64Value, true
+	}
 
 	// There are only four cases(int, int64, uint64, float64) when parsing the integer in yaml.v3 pkg
 	// But the last case, float64, is an error case so that ignored
