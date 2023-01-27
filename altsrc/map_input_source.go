@@ -200,6 +200,9 @@ func castToUint(v interface{}) (uint, bool) {
 			uintValue = uint(int64Value)
 			isType = true
 		}
+	case reflect.Uint:
+		uintValue = v.(uint)
+		isType = true
 	case reflect.Uint64:
 		uint64Value := v.(uint64)
 		if uint64Value <= math.MaxUint {
