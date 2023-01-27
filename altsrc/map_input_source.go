@@ -2,6 +2,7 @@ package altsrc
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 	"strings"
 	"time"
@@ -127,11 +128,35 @@ func (fsm *MapInputSource) Float64(name string) (float64, error) {
 	return 0, nil
 }
 
+func castToInt64(v interface{}) (int64, bool) {
+	int64Value := int64(0)
+	isType := false
+
+	// There are only four cases(int, int64, uint64, float64) when parsing the integer in yaml.v3 pkg
+	// But the last case, float64, is an error case so that ignored
+	vType := reflect.TypeOf(v).Kind()
+	switch vType {
+	case reflect.Int:
+		int64Value = int64(v.(int))
+		isType = true
+	case reflect.Int64:
+		int64Value = v.(int64)
+		isType = true
+	case reflect.Uint64:
+		uint64Value := v.(uint64)
+		if uint64Value <= math.MaxInt64 {
+			int64Value = int64(uint64Value)
+			isType = true
+		}
+	}
+	return int64Value, isType
+}
+
 // Int64 returns an int64 from the map if it exists otherwise returns 0
 func (fsm *MapInputSource) Int64(name string) (int64, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if exists {
-		otherValue, isType := otherGenericValue.(int64)
+		otherValue, isType := castToInt64(otherGenericValue)
 		if !isType {
 			return 0, incorrectTypeForFlagError(name, "int64", otherGenericValue)
 		}
@@ -139,7 +164,7 @@ func (fsm *MapInputSource) Int64(name string) (int64, error) {
 	}
 	nestedGenericValue, exists := nestedVal(name, fsm.valueMap)
 	if exists {
-		otherValue, isType := nestedGenericValue.(int64)
+		otherValue, isType := castToInt64(otherGenericValue)
 		if !isType {
 			return 0, incorrectTypeForFlagError(name, "int64", nestedGenericValue)
 		}
@@ -149,11 +174,41 @@ func (fsm *MapInputSource) Int64(name string) (int64, error) {
 	return 0, nil
 }
 
+func castToUint(v interface{}) (uint, bool) {
+	uintValue := uint(0)
+	isType := false
+
+	// There are only four cases(int, int64, uint64, float64) when parsing the integer in yaml.v3 pkg
+	// But the last case, float64, is an error case so that ignored
+	vType := reflect.TypeOf(v).Kind()
+	switch vType {
+	case reflect.Int:
+		intValue := v.(int)
+		if intValue >= 0 {
+			uintValue = uint(intValue)
+			isType = true
+		}
+	case reflect.Int64:
+		int64Value := v.(int64)
+		if int64Value >= 0 && uint64(int64Value) <= math.MaxUint {
+			uintValue = uint(int64Value)
+			isType = true
+		}
+	case reflect.Uint64:
+		uint64Value := v.(uint64)
+		if uint64Value <= math.MaxUint {
+			uintValue = uint(uint64Value)
+			isType = true
+		}
+	}
+	return uintValue, isType
+}
+
 // Int64 returns an int64 from the map if it exists otherwise returns 0
 func (fsm *MapInputSource) Uint(name string) (uint, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if exists {
-		otherValue, isType := otherGenericValue.(uint)
+		otherValue, isType := castToUint(otherGenericValue)
 		if !isType {
 			return 0, incorrectTypeForFlagError(name, "uint", otherGenericValue)
 		}
@@ -161,7 +216,7 @@ func (fsm *MapInputSource) Uint(name string) (uint, error) {
 	}
 	nestedGenericValue, exists := nestedVal(name, fsm.valueMap)
 	if exists {
-		otherValue, isType := nestedGenericValue.(uint)
+		otherValue, isType := castToUint(nestedGenericValue)
 		if !isType {
 			return 0, incorrectTypeForFlagError(name, "uint", nestedGenericValue)
 		}
@@ -169,6 +224,33 @@ func (fsm *MapInputSource) Uint(name string) (uint, error) {
 	}
 
 	return 0, nil
+}
+
+func castToUint64(v interface{}) (uint64, bool) {
+	uint64Value := uint64(0)
+	isType := false
+
+	// There are only four cases(int, int64, uint64, float64) when parsing the integer in yaml.v3 pkg
+	// But the last case, float64, is an error case so that ignored
+	vType := reflect.TypeOf(v).Kind()
+	switch vType {
+	case reflect.Int:
+		intValue := v.(int)
+		if intValue >= 0 {
+			uint64Value = uint64(intValue)
+			isType = true
+		}
+	case reflect.Int64:
+		int64Value := v.(int64)
+		if int64Value >= 0 {
+			uint64Value = uint64(int64Value)
+			isType = true
+		}
+	case reflect.Uint64:
+		uint64Value = v.(uint64)
+		isType = true
+	}
+	return uint64Value, isType
 }
 
 // UInt64 returns an uint64 from the map if it exists otherwise returns 0
@@ -290,12 +372,10 @@ func (fsm *MapInputSource) Int64Slice(name string) ([]int64, error) {
 
 	var int64Slice = make([]int64, 0, len(otherValue))
 	for i, v := range otherValue {
-		int64Value, isType := v.(int64)
-
+		int64Value, isType := castToInt64(v)
 		if !isType {
-			return nil, incorrectTypeForFlagError(fmt.Sprintf("%s[%d]", name, i), "int", v)
+			return nil, incorrectTypeForFlagError(fmt.Sprintf("%s[%d]", name, i), "int64", v)
 		}
-
 		int64Slice = append(int64Slice, int64Value)
 	}
 
