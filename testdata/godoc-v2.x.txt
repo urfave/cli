@@ -1038,6 +1038,8 @@ func (f *Float64Slice) String() string
 func (f *Float64Slice) Value() []float64
     Value returns the slice of float64s set by this flag
 
+func (f *Float64Slice) WithSeparatorSpec(spec separatorSpec)
+
 type Float64SliceFlag struct {
 	Name string
 
@@ -1112,6 +1114,8 @@ func (f *Float64SliceFlag) String() string
 
 func (f *Float64SliceFlag) TakesValue() bool
     TakesValue returns true if the flag takes a value, otherwise false
+
+func (f *Float64SliceFlag) WithSeparatorSpec(spec separatorSpec)
 
 type Generic interface {
 	Set(value string) error
@@ -1279,6 +1283,8 @@ func (i *Int64Slice) String() string
 func (i *Int64Slice) Value() []int64
     Value returns the slice of ints set by this flag
 
+func (i *Int64Slice) WithSeparatorSpec(spec separatorSpec)
+
 type Int64SliceFlag struct {
 	Name string
 
@@ -1353,6 +1359,8 @@ func (f *Int64SliceFlag) String() string
 
 func (f *Int64SliceFlag) TakesValue() bool
     TakesValue returns true of the flag takes a value, otherwise false
+
+func (f *Int64SliceFlag) WithSeparatorSpec(spec separatorSpec)
 
 type IntFlag struct {
 	Name string
@@ -1449,6 +1457,8 @@ func (i *IntSlice) String() string
 func (i *IntSlice) Value() []int
     Value returns the slice of ints set by this flag
 
+func (i *IntSlice) WithSeparatorSpec(spec separatorSpec)
+
 type IntSliceFlag struct {
 	Name string
 
@@ -1523,6 +1533,8 @@ func (f *IntSliceFlag) String() string
 
 func (f *IntSliceFlag) TakesValue() bool
     TakesValue returns true of the flag takes a value, otherwise false
+
+func (f *IntSliceFlag) WithSeparatorSpec(spec separatorSpec)
 
 type InvalidFlagAccessFunc func(*Context, string)
     InvalidFlagAccessFunc is executed when an invalid flag is accessed from the
@@ -1792,6 +1804,8 @@ func (s *StringSlice) String() string
 func (s *StringSlice) Value() []string
     Value returns the slice of strings set by this flag
 
+func (s *StringSlice) WithSeparatorSpec(spec separatorSpec)
+
 type StringSliceFlag struct {
 	Name string
 
@@ -1868,6 +1882,8 @@ func (f *StringSliceFlag) String() string
 
 func (f *StringSliceFlag) TakesValue() bool
     TakesValue returns true of the flag takes a value, otherwise false
+
+func (f *StringSliceFlag) WithSeparatorSpec(spec separatorSpec)
 
 type SuggestCommandFunc func(commands []*Command, provided string) string
 
@@ -2063,6 +2079,8 @@ func (i *Uint64Slice) String() string
 func (i *Uint64Slice) Value() []uint64
     Value returns the slice of ints set by this flag
 
+func (i *Uint64Slice) WithSeparatorSpec(spec separatorSpec)
+
 type Uint64SliceFlag struct {
 	Name string
 
@@ -2128,6 +2146,8 @@ func (f *Uint64SliceFlag) String() string
 
 func (f *Uint64SliceFlag) TakesValue() bool
     TakesValue returns true of the flag takes a value, otherwise false
+
+func (f *Uint64SliceFlag) WithSeparatorSpec(spec separatorSpec)
 
 type UintFlag struct {
 	Name string
@@ -2224,6 +2244,8 @@ func (i *UintSlice) String() string
 func (i *UintSlice) Value() []uint
     Value returns the slice of ints set by this flag
 
+func (i *UintSlice) WithSeparatorSpec(spec separatorSpec)
+
 type UintSliceFlag struct {
 	Name string
 
@@ -2289,6 +2311,8 @@ func (f *UintSliceFlag) String() string
 
 func (f *UintSliceFlag) TakesValue() bool
     TakesValue returns true of the flag takes a value, otherwise false
+
+func (f *UintSliceFlag) WithSeparatorSpec(spec separatorSpec)
 
 type VisibleFlag interface {
 	Flag
