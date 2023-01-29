@@ -250,14 +250,7 @@ func (a *App) Setup() {
 	}
 	sort.Sort(a.categories.(*commandCategories))
 
-	a.flagCategories = newFlagCategories()
-	for _, fl := range a.Flags {
-		if cf, ok := fl.(CategorizableFlag); ok {
-			if cf.GetCategory() != "" {
-				a.flagCategories.AddFlag(cf.GetCategory(), cf)
-			}
-		}
-	}
+	a.flagCategories = newFlagCategoriesFromFlags(a.Flags)
 
 	if a.Metadata == nil {
 		a.Metadata = make(map[string]interface{})
