@@ -25,6 +25,8 @@ type Float64SliceFlag struct {
 
 	defaultValue *Float64Slice
 
+	separator separatorSpec
+
 	Action func(*Context, []float64) error
 }
 
@@ -120,6 +122,8 @@ type Int64SliceFlag struct {
 
 	defaultValue *Int64Slice
 
+	separator separatorSpec
+
 	Action func(*Context, []int64) error
 }
 
@@ -163,6 +167,8 @@ type IntSliceFlag struct {
 	EnvVars []string
 
 	defaultValue *IntSlice
+
+	separator separatorSpec
 
 	Action func(*Context, []int) error
 }
@@ -258,6 +264,8 @@ type StringSliceFlag struct {
 	EnvVars []string
 
 	defaultValue *StringSlice
+
+	separator separatorSpec
 
 	TakesFile bool
 
@@ -358,6 +366,8 @@ type Uint64SliceFlag struct {
 
 	defaultValue *Uint64Slice
 
+	separator separatorSpec
+
 	Action func(*Context, []uint64) error
 }
 
@@ -401,6 +411,8 @@ type UintSliceFlag struct {
 	EnvVars []string
 
 	defaultValue *UintSlice
+
+	separator separatorSpec
 
 	Action func(*Context, []uint) error
 }

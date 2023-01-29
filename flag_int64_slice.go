@@ -11,6 +11,7 @@ import (
 // Int64Slice wraps []int64 to satisfy flag.Value
 type Int64Slice struct {
 	slice      []int64
+	separator  separatorSpec
 	hasBeenSet bool
 }
 
@@ -29,6 +30,10 @@ func (i *Int64Slice) clone() *Int64Slice {
 	return n
 }
 
+func (i *Int64Slice) WithSeparatorSpec(spec separatorSpec) {
+	i.separator = spec
+}
+
 // Set parses the value into an integer and appends it to the list of values
 func (i *Int64Slice) Set(value string) error {
 	if !i.hasBeenSet {
@@ -43,7 +48,7 @@ func (i *Int64Slice) Set(value string) error {
 		return nil
 	}
 
-	for _, s := range flagSplitMultiValues(value) {
+	for _, s := range i.separator.flagSplitMultiValues(value) {
 		tmp, err := strconv.ParseInt(strings.TrimSpace(s), 0, 64)
 		if err != nil {
 			return err
@@ -149,10 +154,11 @@ func (f *Int64SliceFlag) Apply(set *flag.FlagSet) error {
 		setValue = f.Value.clone()
 	default:
 		setValue = new(Int64Slice)
+		setValue.WithSeparatorSpec(f.separator)
 	}
 
 	if val, source, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok && val != "" {
-		for _, s := range flagSplitMultiValues(val) {
+		for _, s := range f.separator.flagSplitMultiValues(val) {
 			if err := setValue.Set(strings.TrimSpace(s)); err != nil {
 				return fmt.Errorf("could not parse %q as int64 slice value from %s for flag %s: %s", val, source, f.Name, err)
 			}
@@ -169,6 +175,10 @@ func (f *Int64SliceFlag) Apply(set *flag.FlagSet) error {
 	}
 
 	return nil
+}
+
+func (f *Int64SliceFlag) WithSeparatorSpec(spec separatorSpec) {
+	f.separator = spec
 }
 
 // Get returns the flag’s value in the given Context.

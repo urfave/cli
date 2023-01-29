@@ -3425,13 +3425,27 @@ func TestSliceShortOptionHandle(t *testing.T) {
 }
 
 // Test issue #1541
+func TestDefaultSliceFlagSeparator(t *testing.T) {
+	separator := separatorSpec{}
+	opts := []string{"opt1", "opt2", "opt3", "opt4"}
+	ret := separator.flagSplitMultiValues(strings.Join(opts, ","))
+	if len(ret) != 4 {
+		t.Fatalf("split slice flag failed, want: 4, but get: %d", len(ret))
+	}
+	for idx, r := range ret {
+		if r != opts[idx] {
+			t.Fatalf("get %dth failed, wanted: %s, but get: %s", idx, opts[idx], r)
+		}
+	}
+}
+
 func TestCustomizedSliceFlagSeparator(t *testing.T) {
-	defaultSliceFlagSeparator = ";"
-	defer func() {
-		defaultSliceFlagSeparator = ","
-	}()
+	separator := separatorSpec{
+		customized: true,
+		sep:        ";",
+	}
 	opts := []string{"opt1", "opt2", "opt3,op", "opt4"}
-	ret := flagSplitMultiValues(strings.Join(opts, ";"))
+	ret := separator.flagSplitMultiValues(strings.Join(opts, ";"))
 	if len(ret) != 4 {
 		t.Fatalf("split slice flag failed, want: 4, but get: %d", len(ret))
 	}
@@ -3443,13 +3457,13 @@ func TestCustomizedSliceFlagSeparator(t *testing.T) {
 }
 
 func TestFlagSplitMultiValues_Disabled(t *testing.T) {
-	disableSliceFlagSeparator = true
-	defer func() {
-		disableSliceFlagSeparator = false
-	}()
+	separator := separatorSpec{
+		customized: true,
+		disabled:   true,
+	}
 
 	opts := []string{"opt1", "opt2", "opt3,op", "opt4"}
-	ret := flagSplitMultiValues(strings.Join(opts, defaultSliceFlagSeparator))
+	ret := separator.flagSplitMultiValues(strings.Join(opts, defaultSliceFlagSeparator))
 	if len(ret) != 1 {
 		t.Fatalf("failed to disable split slice flag, want: 1, but got: %d", len(ret))
 	}

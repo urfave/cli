@@ -20,6 +20,8 @@ flag_types:
     skip_interfaces:
       - fmt.Stringer
     struct_fields:
+      - name: separator
+        type: separatorSpec
       - name: Action
         type: "func(*Context, []float64) error"
   int:
@@ -33,6 +35,8 @@ flag_types:
     skip_interfaces:
       - fmt.Stringer
     struct_fields:
+      - name: separator
+        type: separatorSpec
       - name: Action
         type: "func(*Context, []int) error"
   int64:
@@ -46,6 +50,8 @@ flag_types:
     skip_interfaces:
       - fmt.Stringer
     struct_fields:
+      - name: separator
+        type: separatorSpec
       - name: Action
         type: "func(*Context, []int64) error"
   uint:
@@ -59,6 +65,8 @@ flag_types:
     skip_interfaces:
       - fmt.Stringer
     struct_fields:
+      - name: separator
+        type: separatorSpec
       - name: Action
         type: "func(*Context, []uint) error"
   uint64:
@@ -72,6 +80,8 @@ flag_types:
     skip_interfaces:
       - fmt.Stringer
     struct_fields:
+      - name: separator
+        type: separatorSpec
       - name: Action
         type: "func(*Context, []uint64) error"
   string:
@@ -85,6 +95,8 @@ flag_types:
     skip_interfaces:
       - fmt.Stringer
     struct_fields:
+      - name: separator
+        type: separatorSpec
       - name: TakesFile
         type: bool
       - name: Action
