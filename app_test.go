@@ -2532,7 +2532,7 @@ func TestCustomHelpVersionFlags(t *testing.T) {
 
 func TestHandleExitCoder_Default(t *testing.T) {
 	app := newTestApp()
-	fs, err := flagSet(app.Name, app.Flags)
+	fs, err := flagSet(app.Name, app.Flags, separatorSpec{})
 	if err != nil {
 		t.Errorf("error creating FlagSet: %s", err)
 	}
@@ -2548,7 +2548,7 @@ func TestHandleExitCoder_Default(t *testing.T) {
 
 func TestHandleExitCoder_Custom(t *testing.T) {
 	app := newTestApp()
-	fs, err := flagSet(app.Name, app.Flags)
+	fs, err := flagSet(app.Name, app.Flags, separatorSpec{})
 	if err != nil {
 		t.Errorf("error creating FlagSet: %s", err)
 	}
