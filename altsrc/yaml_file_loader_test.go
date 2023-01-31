@@ -117,26 +117,43 @@ func TestYamlFileStringSlice(t *testing.T) {
 
 func TestYamlFileUint64(t *testing.T) {
 	tests := []struct {
+		name  string
 		entry string
 		err   bool
 	}{
 		{
+			"top.test",
+			`top: 
+  test: 100`,
+			false,
+		},
+		{
+			"test",
+			"test: ",
+			false,
+		},
+		{
+			"test",
 			"test: 100", //int
 			false,
 		},
 		{
+			"test",
 			"test: -100", //int
 			true,
 		},
 		{
+			"test",
 			"test: 9223372036854775807", //int
 			false,
 		},
 		{
+			"test",
 			"test: 9223372036854775808", //uintt64
 			false,
 		},
 		{
+			"test",
 			"test: 19223372036854775808", //float64
 			true,
 		},
@@ -148,7 +165,7 @@ func TestYamlFileUint64(t *testing.T) {
 
 		testFlag := []cli.Flag{
 			&altsrc.StringFlag{StringFlag: &cli.StringFlag{Name: "conf"}},
-			&altsrc.Uint64Flag{Uint64Flag: &cli.Uint64Flag{Name: "test"}},
+			&altsrc.Uint64Flag{Uint64Flag: &cli.Uint64Flag{Name: test.name}},
 		}
 		app := &cli.App{}
 		app.Flags = append(app.Flags, testFlag...)
@@ -164,26 +181,43 @@ func TestYamlFileUint64(t *testing.T) {
 
 func TestYamlFileUint(t *testing.T) {
 	tests := []struct {
+		name  string
 		entry string
 		err   bool
 	}{
 		{
+			"top.test",
+			`top: 
+  test: 100`,
+			false,
+		},
+		{
+			"test",
+			"test: ",
+			false,
+		},
+		{
+			"test",
 			"test: 100", //int
 			false,
 		},
 		{
+			"test",
 			"test: -100", //int
 			true,
 		},
 		{
+			"test",
 			"test: 9223372036854775807", //int
 			false,
 		},
 		{
+			"test",
 			"test: 9223372036854775808", //uintt64
 			false,
 		},
 		{
+			"test",
 			"test: 19223372036854775808", //float64
 			true,
 		},
@@ -195,7 +229,7 @@ func TestYamlFileUint(t *testing.T) {
 
 		testFlag := []cli.Flag{
 			&altsrc.StringFlag{StringFlag: &cli.StringFlag{Name: "conf"}},
-			&altsrc.UintFlag{UintFlag: &cli.UintFlag{Name: "test"}},
+			&altsrc.UintFlag{UintFlag: &cli.UintFlag{Name: test.name}},
 		}
 		app := &cli.App{}
 		app.Flags = append(app.Flags, testFlag...)
@@ -211,26 +245,43 @@ func TestYamlFileUint(t *testing.T) {
 
 func TestYamlFileInt64(t *testing.T) {
 	tests := []struct {
+		name  string
 		entry string
 		err   bool
 	}{
 		{
+			"top.test",
+			`top: 
+  test: 100`,
+			false,
+		},
+		{
+			"test",
+			"test: ",
+			false,
+		},
+		{
+			"test",
 			"test: 100", //int
 			false,
 		},
 		{
+			"test",
 			"test: -100", //int
-			false,
+			true,
 		},
 		{
+			"test",
 			"test: 9223372036854775807", //int
 			false,
 		},
 		{
+			"test",
 			"test: 9223372036854775808", //uintt64
-			true,
+			false,
 		},
 		{
+			"test",
 			"test: 19223372036854775808", //float64
 			true,
 		},
@@ -242,7 +293,7 @@ func TestYamlFileInt64(t *testing.T) {
 
 		testFlag := []cli.Flag{
 			&altsrc.StringFlag{StringFlag: &cli.StringFlag{Name: "conf"}},
-			&altsrc.Int64Flag{Int64Flag: &cli.Int64Flag{Name: "test"}},
+			&altsrc.Int64Flag{Int64Flag: &cli.Int64Flag{Name: test.name}},
 		}
 		app := &cli.App{}
 		app.Flags = append(app.Flags, testFlag...)
