@@ -109,6 +109,7 @@ func (f *StringSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSour
 				continue
 			}
 			underlyingFlag.Value = &sliceValue
+			f.set.Set(n, sliceValue.Serialize())
 		}
 		if f.Destination != nil {
 			f.Destination.Set(sliceValue.Serialize())
