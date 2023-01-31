@@ -269,7 +269,7 @@ func castToUint64(v interface{}) (uint64, bool) {
 func (fsm *MapInputSource) Uint64(name string) (uint64, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if exists {
-		otherValue, isType := otherGenericValue.(uint64)
+		otherValue, isType := castToUint64(otherGenericValue)
 		if !isType {
 			return 0, incorrectTypeForFlagError(name, "uint64", otherGenericValue)
 		}
@@ -277,7 +277,7 @@ func (fsm *MapInputSource) Uint64(name string) (uint64, error) {
 	}
 	nestedGenericValue, exists := nestedVal(name, fsm.valueMap)
 	if exists {
-		otherValue, isType := nestedGenericValue.(uint64)
+		otherValue, isType := castToUint64(nestedGenericValue)
 		if !isType {
 			return 0, incorrectTypeForFlagError(name, "uint64", nestedGenericValue)
 		}
