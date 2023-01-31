@@ -1828,7 +1828,7 @@ type StringSliceFlag struct {
 
 	Action func(*Context, []string) error
 
-	NoTrimSpace bool
+	KeepSpace bool
 	// Has unexported fields.
 }
     StringSliceFlag is a flag with type *StringSlice

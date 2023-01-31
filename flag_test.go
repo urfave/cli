@@ -144,9 +144,9 @@ func TestFlagsFromEnv(t *testing.T) {
 		s.hasBeenSet = false
 		return *s
 	}
-	newSetStringSliceNoTrimSpace := func(defaults ...string) StringSlice {
+	newSetStringSliceKeepSpace := func(defaults ...string) StringSlice {
 		s := newSetStringSlice(defaults...)
-		s.noTrimSpace = true
+		s.keepSpace = true
 		return s
 	}
 
@@ -203,7 +203,7 @@ func TestFlagsFromEnv(t *testing.T) {
 		{"path", "path", &PathFlag{Name: "path", EnvVars: []string{"PATH"}}, ""},
 
 		{"foo,bar", newSetStringSlice("foo", "bar"), &StringSliceFlag{Name: "names", EnvVars: []string{"NAMES"}}, ""},
-		{" space ", newSetStringSliceNoTrimSpace(" space "), &StringSliceFlag{Name: "names", NoTrimSpace: true, EnvVars: []string{"NAMES"}}, ""},
+		{" space ", newSetStringSliceKeepSpace(" space "), &StringSliceFlag{Name: "names", KeepSpace: true, EnvVars: []string{"NAMES"}}, ""},
 		{" no space ", newSetStringSlice("no space"), &StringSliceFlag{Name: "names", EnvVars: []string{"NAMES"}}, ""},
 
 		{"1", uint(1), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
@@ -781,7 +781,7 @@ func TestStringSliceFlag_MatchStringFlagBehavior(t *testing.T) {
 			app := App{
 				Flags: []Flag{
 					&StringFlag{Name: "string"},
-					&StringSliceFlag{Name: "slice", NoTrimSpace: true},
+					&StringSliceFlag{Name: "slice", KeepSpace: true},
 				},
 				Action: func(ctx *Context) error {
 					f1, f2 := ctx.String("string"), ctx.StringSlice("slice")
@@ -822,7 +822,7 @@ func TestStringSliceFlag_TrimSpace(t *testing.T) {
 			app := App{
 				Flags: []Flag{
 					&StringSliceFlag{Name: "trim"},
-					&StringSliceFlag{Name: "no-trim", NoTrimSpace: true},
+					&StringSliceFlag{Name: "no-trim", KeepSpace: true},
 				},
 				Action: func(ctx *Context) error {
 					flagTrim, flagNoTrim := ctx.StringSlice("trim"), ctx.StringSlice("no-trim")

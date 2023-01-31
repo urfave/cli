@@ -10,10 +10,10 @@ import (
 
 // StringSlice wraps a []string to satisfy flag.Value
 type StringSlice struct {
-	slice       []string
-	separator   separatorSpec
-	hasBeenSet  bool
-	noTrimSpace bool
+	slice      []string
+	separator  separatorSpec
+	hasBeenSet bool
+	keepSpace  bool
 }
 
 // NewStringSlice creates a *StringSlice with default values
@@ -46,7 +46,7 @@ func (s *StringSlice) Set(value string) error {
 	}
 
 	for _, t := range s.separator.flagSplitMultiValues(value) {
-		if !s.noTrimSpace {
+		if !s.keepSpace {
 			t = strings.TrimSpace(t)
 		}
 		s.slice = append(s.slice, t)
@@ -153,11 +153,11 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
 		setValue.WithSeparatorSpec(f.separator)
 	}
 
-	setValue.noTrimSpace = f.NoTrimSpace
+	setValue.keepSpace = f.KeepSpace
 
 	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
 		for _, s := range f.separator.flagSplitMultiValues(val) {
-			if !f.NoTrimSpace {
+			if !f.KeepSpace {
 				s = strings.TrimSpace(s)
 			}
 			if err := setValue.Set(s); err != nil {

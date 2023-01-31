@@ -428,7 +428,7 @@ func ExampleApp_Run_sliceValues() {
 	// 0-float64Sclice cli.Float64Slice{slice:[]float64{13.3, 14.4, 15.5, 16.6}, separator:cli.separatorSpec{sep:"", disabled:false, customized:false}, hasBeenSet:true}
 	// 1-int64Sclice cli.Int64Slice{slice:[]int64{13, 14, 15, 16}, separator:cli.separatorSpec{sep:"", disabled:false, customized:false}, hasBeenSet:true}
 	// 2-intSclice cli.IntSlice{slice:[]int{13, 14, 15, 16}, separator:cli.separatorSpec{sep:"", disabled:false, customized:false}, hasBeenSet:true}
-	// 3-stringSclice cli.StringSlice{slice:[]string{"parsed1", "parsed2", "parsed3", "parsed4"}, separator:cli.separatorSpec{sep:"", disabled:false, customized:false}, hasBeenSet:true, noTrimSpace:false}
+	// 3-stringSclice cli.StringSlice{slice:[]string{"parsed1", "parsed2", "parsed3", "parsed4"}, separator:cli.separatorSpec{sep:"", disabled:false, customized:false}, hasBeenSet:true, keepSpace:false}
 	// error: <nil>
 }
 

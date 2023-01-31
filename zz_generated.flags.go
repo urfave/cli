@@ -271,7 +271,7 @@ type StringSliceFlag struct {
 
 	Action func(*Context, []string) error
 
-	NoTrimSpace bool
+	KeepSpace bool
 }
 
 // IsSet returns whether or not the flag has been set through env or file

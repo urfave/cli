@@ -101,7 +101,7 @@ flag_types:
         type: bool
       - name: Action
         type: "func(*Context, []string) error"
-      - name: NoTrimSpace
+      - name: KeepSpace
         type: bool
   time.Duration:
     struct_fields:
