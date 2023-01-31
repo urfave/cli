@@ -268,7 +268,7 @@ func TestYamlFileInt64(t *testing.T) {
 		{
 			"test",
 			"test: -100", //int
-			true,
+			false,
 		},
 		{
 			"test",
@@ -278,7 +278,7 @@ func TestYamlFileInt64(t *testing.T) {
 		{
 			"test",
 			"test: 9223372036854775808", //uintt64
-			false,
+			true,
 		},
 		{
 			"test",
