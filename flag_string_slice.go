@@ -157,7 +157,10 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
 
 	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
 		for _, s := range f.separator.flagSplitMultiValues(val) {
-			if err := setValue.Set(strings.TrimSpace(s)); err != nil {
+			if !f.NoTrimSpace {
+				s = strings.TrimSpace(s)
+			}
+			if err := setValue.Set(s); err != nil {
 				return fmt.Errorf("could not parse %q as string value from %s for flag %s: %s", val, source, f.Name, err)
 			}
 		}
