@@ -270,6 +270,8 @@ type StringSliceFlag struct {
 	TakesFile bool
 
 	Action func(*Context, []string) error
+
+	KeepSpace bool
 }
 
 // IsSet returns whether or not the flag has been set through env or file

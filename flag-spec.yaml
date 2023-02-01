@@ -101,6 +101,8 @@ flag_types:
         type: bool
       - name: Action
         type: "func(*Context, []string) error"
+      - name: KeepSpace
+        type: bool
   time.Duration:
     struct_fields:
       - name: Action

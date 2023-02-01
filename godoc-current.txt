@@ -1827,6 +1827,8 @@ type StringSliceFlag struct {
 	TakesFile bool
 
 	Action func(*Context, []string) error
+
+	KeepSpace bool
 	// Has unexported fields.
 }
     StringSliceFlag is a flag with type *StringSlice

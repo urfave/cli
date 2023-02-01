@@ -144,6 +144,11 @@ func TestFlagsFromEnv(t *testing.T) {
 		s.hasBeenSet = false
 		return *s
 	}
+	newSetStringSliceKeepSpace := func(defaults ...string) StringSlice {
+		s := newSetStringSlice(defaults...)
+		s.keepSpace = true
+		return s
+	}
 
 	var flagTests = []struct {
 		input     string
@@ -198,6 +203,8 @@ func TestFlagsFromEnv(t *testing.T) {
 		{"path", "path", &PathFlag{Name: "path", EnvVars: []string{"PATH"}}, ""},
 
 		{"foo,bar", newSetStringSlice("foo", "bar"), &StringSliceFlag{Name: "names", EnvVars: []string{"NAMES"}}, ""},
+		{" space ", newSetStringSliceKeepSpace(" space "), &StringSliceFlag{Name: "names", KeepSpace: true, EnvVars: []string{"NAMES"}}, ""},
+		{" no space ", newSetStringSlice("no space"), &StringSliceFlag{Name: "names", EnvVars: []string{"NAMES"}}, ""},
 
 		{"1", uint(1), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
 		{"08", uint(8), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 10}, ""},
@@ -774,7 +781,7 @@ func TestStringSliceFlag_MatchStringFlagBehavior(t *testing.T) {
 			app := App{
 				Flags: []Flag{
 					&StringFlag{Name: "string"},
-					&StringSliceFlag{Name: "slice"},
+					&StringSliceFlag{Name: "slice", KeepSpace: true},
 				},
 				Action: func(ctx *Context) error {
 					f1, f2 := ctx.String("string"), ctx.StringSlice("slice")
@@ -791,6 +798,52 @@ func TestStringSliceFlag_MatchStringFlagBehavior(t *testing.T) {
 			}
 
 			if err := app.Run([]string{"", "--string", value, "--slice", value}); err != nil {
+				t.Errorf("app run error: %s", err)
+			}
+		})
+	}
+}
+
+func TestStringSliceFlag_TrimSpace(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		in, out string
+	}{
+		{" asd", "asd"},
+		{"123 ", "123"},
+		{" asd ", "asd"},
+	}
+	for testNum, tt := range tests {
+		tt := tt
+		t.Run(fmt.Sprintf("%d", testNum), func(t *testing.T) {
+			t.Parallel()
+
+			app := App{
+				Flags: []Flag{
+					&StringSliceFlag{Name: "trim"},
+					&StringSliceFlag{Name: "no-trim", KeepSpace: true},
+				},
+				Action: func(ctx *Context) error {
+					flagTrim, flagNoTrim := ctx.StringSlice("trim"), ctx.StringSlice("no-trim")
+					if l := len(flagTrim); l != 1 {
+						t.Fatalf("slice flag 'trim' should result in exactly one value, got %d", l)
+					}
+					if l := len(flagNoTrim); l != 1 {
+						t.Fatalf("slice flag 'no-trim' should result in exactly one value, got %d", l)
+					}
+
+					if v := flagTrim[0]; v != tt.out {
+						t.Errorf("Expected trimmed value %q, got %q", tt.out, v)
+					}
+					if v := flagNoTrim[0]; v != tt.in {
+						t.Errorf("Expected no trimmed value%q, got %q", tt.out, v)
+					}
+					return nil
+				},
+			}
+
+			if err := app.Run([]string{"", "--trim", tt.in, "--no-trim", tt.in}); err != nil {
 				t.Errorf("app run error: %s", err)
 			}
 		})
