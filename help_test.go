@@ -1242,6 +1242,28 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			argv:     []string{"cmd", "--generate-shell-completion"},
 			expected: "futz\n",
 		},
+		{
+			name: "autocomplete-with-spaces",
+			c: &Context{App: &App{
+				Name: "cmd",
+				Flags: []Flag{
+					&BoolFlag{Name: "happiness"},
+					&Int64Flag{Name: "everybody-jump-on"},
+				},
+			}},
+			cmd: &Command{
+				Name: "putz",
+				Commands: []*Command{
+					{Name: "help"},
+				},
+				Flags: []Flag{
+					&BoolFlag{Name: "excitement"},
+					&StringFlag{Name: "hat-shape"},
+				},
+			},
+			argv:     []string{"cmd", "--url", "http://localhost:8000", "h", "--generate-shell-completion"},
+			expected: "help\n",
+		},
 	} {
 		t.Run(tc.name, func(ct *testing.T) {
 			writer := &bytes.Buffer{}
