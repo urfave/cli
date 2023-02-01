@@ -384,7 +384,7 @@ func flagFromEnvOrFile(envVars []string, filePath string) (value string, fromWhe
 	}
 	for _, fileVar := range strings.Split(filePath, ",") {
 		if fileVar != "" {
-			if data, err := ioutil.ReadFile(fileVar); err == nil {
+			if data, err := os.ReadFile(fileVar); err == nil {
 				return string(data), fmt.Sprintf("file %q", filePath), true
 			}
 		}
