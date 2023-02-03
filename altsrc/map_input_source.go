@@ -136,21 +136,14 @@ func castToInt64(v interface{}) (int64, bool) {
 	}
 
 	// There are only four cases(int, int64, uint64, float64) when parsing the integer in yaml.v3 pkg
-	// But the last case, float64, is an error case so that ignored
-	vType := reflect.TypeOf(v).Kind()
-	switch vType {
-	case reflect.Int:
-		int64Value = int64(v.(int))
+	// But the cases, uint64, float64, are an error case so that ignored
+	switch value := v.(type) {
+	case int:
+		int64Value = int64(value)
 		isType = true
-	case reflect.Int64:
-		int64Value = v.(int64)
+	case int64:
+		int64Value = int64(value)
 		isType = true
-	case reflect.Uint64:
-		uint64Value := v.(uint64)
-		if uint64Value <= math.MaxInt64 {
-			int64Value = int64(uint64Value)
-			isType = true
-		}
 	}
 	return int64Value, isType
 }
@@ -186,27 +179,26 @@ func castToUint(v interface{}) (uint, bool) {
 
 	// There are only four cases(int, int64, uint64, float64) when parsing the integer in yaml.v3 pkg
 	// But the last case, float64, is an error case so that ignored
-	vType := reflect.TypeOf(v).Kind()
-	switch vType {
-	case reflect.Int:
-		intValue := v.(int)
+	switch value := v.(type) {
+	case int:
+		intValue := int(value)
 		if intValue >= 0 {
-			uintValue = uint(intValue)
+			uintValue = uint(value)
 			isType = true
 		}
-	case reflect.Int64:
-		int64Value := v.(int64)
+	case int64:
+		int64Value := int64(value)
 		if int64Value >= 0 && uint64(int64Value) <= math.MaxUint {
-			uintValue = uint(int64Value)
+			uintValue = uint(value)
 			isType = true
 		}
-	case reflect.Uint:
-		uintValue = v.(uint)
+	case uint:
+		uintValue = uint(value)
 		isType = true
-	case reflect.Uint64:
-		uint64Value := v.(uint64)
+	case uint64:
+		uint64Value := uint64(value)
 		if uint64Value <= math.MaxUint {
-			uintValue = uint(uint64Value)
+			uintValue = uint(value)
 			isType = true
 		}
 	}
@@ -244,22 +236,24 @@ func castToUint64(v interface{}) (uint64, bool) {
 
 	// There are only four cases(int, int64, uint64, float64) when parsing the integer in yaml.v3 pkg
 	// But the last case, float64, is an error case so that ignored
-	vType := reflect.TypeOf(v).Kind()
-	switch vType {
-	case reflect.Int:
-		intValue := v.(int)
+	switch value := v.(type) {
+	case int:
+		intValue := int(value)
 		if intValue >= 0 {
 			uint64Value = uint64(intValue)
 			isType = true
 		}
-	case reflect.Int64:
-		int64Value := v.(int64)
+	case int64:
+		int64Value := int64(value)
 		if int64Value >= 0 {
 			uint64Value = uint64(int64Value)
 			isType = true
 		}
-	case reflect.Uint64:
-		uint64Value = v.(uint64)
+	case uint:
+		uint64Value = uint64(value)
+		isType = true
+	case uint64:
+		uint64Value = uint64(value)
 		isType = true
 	}
 	return uint64Value, isType
