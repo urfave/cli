@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"strings"
@@ -986,7 +985,7 @@ App UsageText`,
 func TestHideHelpCommand(t *testing.T) {
 	app := &App{
 		HideHelpCommand: true,
-		Writer:          ioutil.Discard,
+		Writer:          io.Discard,
 	}
 
 	err := app.Run([]string{"foo", "help"})
@@ -1006,7 +1005,7 @@ func TestHideHelpCommand(t *testing.T) {
 func TestHideHelpCommand_False(t *testing.T) {
 	app := &App{
 		HideHelpCommand: false,
-		Writer:          ioutil.Discard,
+		Writer:          io.Discard,
 	}
 
 	err := app.Run([]string{"foo", "help"})
@@ -1024,7 +1023,7 @@ func TestHideHelpCommand_WithHideHelp(t *testing.T) {
 	app := &App{
 		HideHelp:        true, // effective (hides both command and flag)
 		HideHelpCommand: true, // ignored
-		Writer:          ioutil.Discard,
+		Writer:          io.Discard,
 	}
 
 	err := app.Run([]string{"foo", "help"})
@@ -1053,7 +1052,7 @@ func newContextFromStringSlice(ss []string) *Context {
 func TestHideHelpCommand_RunAsSubcommand(t *testing.T) {
 	app := &App{
 		HideHelpCommand: true,
-		Writer:          ioutil.Discard,
+		Writer:          io.Discard,
 		Commands: []*Command{
 			{
 				Name: "dummy",
@@ -1078,7 +1077,7 @@ func TestHideHelpCommand_RunAsSubcommand(t *testing.T) {
 func TestHideHelpCommand_RunAsSubcommand_False(t *testing.T) {
 	app := &App{
 		HideHelpCommand: false,
-		Writer:          ioutil.Discard,
+		Writer:          io.Discard,
 		Commands: []*Command{
 			{
 				Name: "dummy",
@@ -1099,7 +1098,7 @@ func TestHideHelpCommand_RunAsSubcommand_False(t *testing.T) {
 
 func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 	app := &App{
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 		Commands: []*Command{
 			{
 				Name: "dummy",

@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"regexp"
@@ -2904,7 +2903,7 @@ func TestParseGenericFromEnvCascade(t *testing.T) {
 }
 
 func TestFlagFromFile(t *testing.T) {
-	temp, err := ioutil.TempFile("", "urfave_cli_test")
+	temp, err := os.CreateTemp("", "urfave_cli_test")
 	if err != nil {
 		t.Error(err)
 		return
@@ -3071,7 +3070,7 @@ func TestTimestampFlagApplyValue(t *testing.T) {
 func TestTimestampFlagApply_Fail_Parse_Wrong_Layout(t *testing.T) {
 	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: "randomlayout"}
 	set := flag.NewFlagSet("test", 0)
-	set.SetOutput(ioutil.Discard)
+	set.SetOutput(io.Discard)
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
@@ -3081,7 +3080,7 @@ func TestTimestampFlagApply_Fail_Parse_Wrong_Layout(t *testing.T) {
 func TestTimestampFlagApply_Fail_Parse_Wrong_Time(t *testing.T) {
 	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: "Jan 2, 2006 at 3:04pm (MST)"}
 	set := flag.NewFlagSet("test", 0)
-	set.SetOutput(ioutil.Discard)
+	set.SetOutput(io.Discard)
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
@@ -3175,7 +3174,7 @@ func TestFlagDefaultValue(t *testing.T) {
 	}
 	for i, v := range cases {
 		set := flag.NewFlagSet("test", 0)
-		set.SetOutput(ioutil.Discard)
+		set.SetOutput(io.Discard)
 		_ = v.flag.Apply(set)
 		if err := set.Parse(v.toParse); err != nil {
 			t.Error(err)
@@ -3353,7 +3352,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			os.Setenv(key, val)
 		}
 		set := flag.NewFlagSet("test", 0)
-		set.SetOutput(ioutil.Discard)
+		set.SetOutput(io.Discard)
 		if err := v.flag.Apply(set); err != nil {
 			t.Fatal(err)
 		}
@@ -3414,7 +3413,7 @@ func TestFlagValue(t *testing.T) {
 	}
 	for i, v := range cases {
 		set := flag.NewFlagSet("test", 0)
-		set.SetOutput(ioutil.Discard)
+		set.SetOutput(io.Discard)
 		_ = v.flag.Apply(set)
 		if err := set.Parse(v.toParse); err != nil {
 			t.Error(err)

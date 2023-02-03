@@ -4,7 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"regexp"
 	"runtime"
@@ -178,7 +178,7 @@ func flagSet(name string, flags []Flag, spec separatorSpec) (*flag.FlagSet, erro
 			return nil, err
 		}
 	}
-	set.SetOutput(ioutil.Discard)
+	set.SetOutput(io.Discard)
 	return set, nil
 }
 
@@ -384,7 +384,7 @@ func flagFromEnvOrFile(envVars []string, filePath string) (value string, fromWhe
 	}
 	for _, fileVar := range strings.Split(filePath, ",") {
 		if fileVar != "" {
-			if data, err := ioutil.ReadFile(fileVar); err == nil {
+			if data, err := os.ReadFile(fileVar); err == nil {
 				return string(data), fmt.Sprintf("file %q", filePath), true
 			}
 		}

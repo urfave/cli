@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"strconv"
@@ -1278,7 +1277,7 @@ func TestApp_BeforeFunc(t *testing.T) {
 		Flags: []Flag{
 			&StringFlag{Name: "opt"},
 		},
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 	}
 
 	// run with the Before() func succeeding
@@ -1369,7 +1368,7 @@ func TestApp_BeforeAfterFuncShellCompletion(t *testing.T) {
 		Flags: []Flag{
 			&StringFlag{Name: "opt"},
 		},
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 	}
 
 	// run with the Before() func succeeding
@@ -1487,7 +1486,7 @@ func TestAppNoHelpFlag(t *testing.T) {
 
 	HelpFlag = nil
 
-	app := &App{Writer: ioutil.Discard}
+	app := &App{Writer: io.Discard}
 	err := app.Run([]string{"test", "-h"})
 
 	if err != flag.ErrHelp {
@@ -1718,7 +1717,7 @@ func TestApp_OrderOfOperations(t *testing.T) {
 			counts.OnUsageError = counts.Total
 			return errors.New("hay OnUsageError")
 		},
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 	}
 
 	beforeNoError := func(c *Context) error {
@@ -2308,7 +2307,7 @@ func TestApp_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 		Action: func(c *Context) error { return nil },
 		Before: func(c *Context) error { return fmt.Errorf("before error") },
 		After:  func(c *Context) error { return fmt.Errorf("after error") },
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 	}
 
 	err := app.Run([]string{"foo"})
@@ -2458,7 +2457,7 @@ func (c *customBoolFlag) IsSet() bool {
 func TestCustomFlagsUnused(t *testing.T) {
 	app := &App{
 		Flags:  []Flag{&customBoolFlag{"custom"}},
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 	}
 
 	err := app.Run([]string{"foo"})
@@ -2470,7 +2469,7 @@ func TestCustomFlagsUnused(t *testing.T) {
 func TestCustomFlagsUsed(t *testing.T) {
 	app := &App{
 		Flags:  []Flag{&customBoolFlag{"custom"}},
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 	}
 
 	err := app.Run([]string{"foo", "--custom=bar"})
@@ -2481,7 +2480,7 @@ func TestCustomFlagsUsed(t *testing.T) {
 
 func TestCustomHelpVersionFlags(t *testing.T) {
 	app := &App{
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 	}
 
 	// Be sure to reset the global flags
@@ -2573,7 +2572,7 @@ func TestShellCompletionForIncompleteFlags(t *testing.T) {
 		Action: func(ctx *Context) error {
 			return fmt.Errorf("should not get here")
 		},
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 	}
 	err := app.Run([]string{"", "--test-completion", "--" + "generate-bash-completion"})
 	if err != nil {
@@ -2636,7 +2635,7 @@ func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
 
 func newTestApp() *App {
 	a := NewApp()
-	a.Writer = ioutil.Discard
+	a.Writer = io.Discard
 	return a
 }
 
