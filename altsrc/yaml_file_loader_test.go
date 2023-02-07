@@ -91,12 +91,13 @@ func ExampleApp_Run_yamlFileLoaderDuration() {
 }
 
 func TestYamlFileInt64Slice(t *testing.T) {
-	_ = ioutil.WriteFile("current.yaml", []byte(`top: [100, 9223372036854775808]`), 0666)
+	_ = ioutil.WriteFile("current.yaml", []byte(`top: 
+  test: [100, 9223372036854775808]`), 0666)
 	defer os.Remove("current.yaml")
 
 	testFlag := []cli.Flag{
 		&altsrc.StringFlag{StringFlag: &cli.StringFlag{Name: "conf"}},
-		&altsrc.Int64SliceFlag{Int64SliceFlag: &cli.Int64SliceFlag{Name: "top", EnvVars: []string{"THE_TEST"}}},
+		&altsrc.Int64SliceFlag{Int64SliceFlag: &cli.Int64SliceFlag{Name: "top.test"}},
 	}
 	app := &cli.App{}
 	app.Before = altsrc.InitInputSourceWithContext(testFlag, altsrc.NewYamlSourceFromFlagFunc("conf"))
@@ -105,7 +106,7 @@ func TestYamlFileInt64Slice(t *testing.T) {
 
 	test := []string{"testApp", "--conf", "current.yaml"}
 	if err := app.Run(test); err == nil {
-		t.Error("Should return the mismatch type error")
+		t.Error("should return the mismatch type error")
 	}
 }
 
