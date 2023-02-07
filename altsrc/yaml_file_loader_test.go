@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"reflect"
 	"testing"
 	"time"
 
@@ -87,6 +88,25 @@ func ExampleApp_Run_yamlFileLoaderDuration() {
 
 	// Output:
 	// keepalive 45s
+}
+
+func TestYamlFileInt64Slice(t *testing.T) {
+	_ = ioutil.WriteFile("current.yaml", []byte(`top: [100, 9223372036854775808]`), 0666)
+	defer os.Remove("current.yaml")
+
+	testFlag := []cli.Flag{
+		&altsrc.StringFlag{StringFlag: &cli.StringFlag{Name: "conf"}},
+		&altsrc.Int64SliceFlag{Int64SliceFlag: &cli.Int64SliceFlag{Name: "top", EnvVars: []string{"THE_TEST"}}},
+	}
+	app := &cli.App{}
+	app.Before = altsrc.InitInputSourceWithContext(testFlag, altsrc.NewYamlSourceFromFlagFunc("conf"))
+	app.Action = func(c *cli.Context) error { return nil }
+	app.Flags = append(app.Flags, testFlag...)
+
+	test := []string{"testApp", "--conf", "current.yaml"}
+	if err := app.Run(test); err == nil {
+		t.Error("Should return the mismatch type error")
+	}
 }
 
 func TestYamlFileStringSlice(t *testing.T) {
@@ -303,6 +323,39 @@ func TestYamlFileInt64(t *testing.T) {
 		err := app.Run(appCmd)
 		if result := err != nil; result != test.err {
 			t.Error(i, "testcast: expect error but", err)
+		}
+	}
+}
+
+func TestCastToUint64(t *testing.T) {
+	tests := []struct {
+		value  interface{}
+		expect bool
+	}{
+		{int64(100), true},
+		{uint(100), true},
+	}
+
+	for _, test := range tests {
+		v, isType := altsrc.CastToUint64(test.value)
+		if isType != test.expect && reflect.TypeOf(v).Kind() != reflect.Uint64 {
+			t.Fatalf("expect %v, but %v", test.expect, isType)
+		}
+	}
+}
+
+func TestCastToUint(t *testing.T) {
+	tests := []struct {
+		value  interface{}
+		expect bool
+	}{
+		{int64(100), true},
+	}
+
+	for _, test := range tests {
+		v, isType := altsrc.CastToUint(test.value)
+		if isType != test.expect && reflect.TypeOf(v).Kind() != reflect.Uint64 {
+			t.Fatalf("expect %v, but %v", test.expect, isType)
 		}
 	}
 }
