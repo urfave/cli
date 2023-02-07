@@ -5,7 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"reflect"
 	"strings"
 	"testing"
@@ -27,7 +27,7 @@ func TestCommandFlagParsing(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		app := &App{Writer: ioutil.Discard}
+		app := &App{Writer: io.Discard}
 		set := flag.NewFlagSet("test", 0)
 		_ = set.Parse(c.testArgs)
 
@@ -118,7 +118,7 @@ func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 				},
 			},
 		},
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 	}
 
 	err := app.Run([]string{"foo", "bar"})
@@ -271,7 +271,7 @@ func TestCommand_OnUsageError_WithSubcommand(t *testing.T) {
 
 func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
 	app := &App{
-		ErrWriter: ioutil.Discard,
+		ErrWriter: io.Discard,
 		Commands: []*Command{
 			{
 				Name:  "bar",
@@ -281,7 +281,7 @@ func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
 						Name:  "baz",
 						Usage: "this is for testing",
 						Action: func(c *Context) error {
-							if c.App.ErrWriter != ioutil.Discard {
+							if c.App.ErrWriter != io.Discard {
 								return fmt.Errorf("ErrWriter not passed")
 							}
 
@@ -325,7 +325,7 @@ func TestCommandSkipFlagParsing(t *testing.T) {
 					},
 				},
 			},
-			Writer: ioutil.Discard,
+			Writer: io.Discard,
 		}
 
 		err := app.Run(c.testArgs)
@@ -406,7 +406,7 @@ func TestCommand_NoVersionFlagOnCommands(t *testing.T) {
 func TestCommand_CanAddVFlagOnCommands(t *testing.T) {
 	app := &App{
 		Version: "some version",
-		Writer:  ioutil.Discard,
+		Writer:  io.Discard,
 		Commands: []*Command{
 			{
 				Name:        "bar",
@@ -470,17 +470,17 @@ func TestCommand_VisibleFlagCategories(t *testing.T) {
 	}
 
 	vfc := c.VisibleFlagCategories()
-	if len(vfc) != 1 {
+	if len(vfc) != 2 {
 		t.Fatalf("unexpected visible flag categories %+v", vfc)
 	}
-	if vfc[0].Name() != "cat1" {
+	if vfc[1].Name() != "cat1" {
 		t.Errorf("expected category name cat1 got %s", vfc[0].Name())
 	}
-	if len(vfc[0].Flags()) != 1 {
+	if len(vfc[1].Flags()) != 1 {
 		t.Fatalf("expected flag category to have just one flag got %+v", vfc[0].Flags())
 	}
 
-	fl := vfc[0].Flags()[0]
+	fl := vfc[1].Flags()[0]
 	if !reflect.DeepEqual(fl.Names(), []string{"intd", "altd1", "altd2"}) {
 		t.Errorf("unexpected flag %+v", fl.Names())
 	}

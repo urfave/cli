@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strings"
 	"time"
 
@@ -40,7 +39,7 @@ func NewJSONSourceFromFile(f string) (InputSourceContext, error) {
 // NewJSONSourceFromReader returns an InputSourceContext suitable for
 // retrieving config variables from an io.Reader that returns JSON data.
 func NewJSONSourceFromReader(r io.Reader) (InputSourceContext, error) {
-	data, err := ioutil.ReadAll(r)
+	data, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
