@@ -106,7 +106,7 @@ func TestYamlFileInt64Slice(t *testing.T) {
 
 	test := []string{"testApp", "--conf", "current.yaml"}
 	if err := app.Run(test); err == nil {
-		t.Error("should return the mismatch type error")
+		t.Error("should return the mismatch error")
 	}
 }
 
