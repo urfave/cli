@@ -128,7 +128,7 @@ func (fsm *MapInputSource) Float64(name string) (float64, error) {
 	return 0, nil
 }
 
-func CastToInt64(v interface{}) (int64, bool) {
+func castToInt64(v interface{}) (int64, bool) {
 	int64Value := int64(0)
 	isType := false
 	if v == nil {
@@ -152,7 +152,7 @@ func CastToInt64(v interface{}) (int64, bool) {
 func (fsm *MapInputSource) Int64(name string) (int64, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if exists {
-		otherValue, isType := CastToInt64(otherGenericValue)
+		otherValue, isType := castToInt64(otherGenericValue)
 		if !isType {
 			return 0, incorrectTypeForFlagError(name, "int64", otherGenericValue)
 		}
@@ -160,7 +160,7 @@ func (fsm *MapInputSource) Int64(name string) (int64, error) {
 	}
 	nestedGenericValue, exists := nestedVal(name, fsm.valueMap)
 	if exists {
-		otherValue, isType := CastToInt64(otherGenericValue)
+		otherValue, isType := castToInt64(otherGenericValue)
 		if !isType {
 			return 0, incorrectTypeForFlagError(name, "int64", nestedGenericValue)
 		}
@@ -170,7 +170,7 @@ func (fsm *MapInputSource) Int64(name string) (int64, error) {
 	return 0, nil
 }
 
-func CastToUint(v interface{}) (uint, bool) {
+func castToUint(v interface{}) (uint, bool) {
 	uintValue := uint(0)
 	isType := false
 	if v == nil {
@@ -209,7 +209,7 @@ func CastToUint(v interface{}) (uint, bool) {
 func (fsm *MapInputSource) Uint(name string) (uint, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if exists {
-		otherValue, isType := CastToUint(otherGenericValue)
+		otherValue, isType := castToUint(otherGenericValue)
 		if !isType {
 			return 0, incorrectTypeForFlagError(name, "uint", otherGenericValue)
 		}
@@ -217,7 +217,7 @@ func (fsm *MapInputSource) Uint(name string) (uint, error) {
 	}
 	nestedGenericValue, exists := nestedVal(name, fsm.valueMap)
 	if exists {
-		otherValue, isType := CastToUint(nestedGenericValue)
+		otherValue, isType := castToUint(nestedGenericValue)
 		if !isType {
 			return 0, incorrectTypeForFlagError(name, "uint", nestedGenericValue)
 		}
@@ -227,7 +227,7 @@ func (fsm *MapInputSource) Uint(name string) (uint, error) {
 	return 0, nil
 }
 
-func CastToUint64(v interface{}) (uint64, bool) {
+func castToUint64(v interface{}) (uint64, bool) {
 	uint64Value := uint64(0)
 	isType := false
 	if v == nil {
@@ -263,7 +263,7 @@ func CastToUint64(v interface{}) (uint64, bool) {
 func (fsm *MapInputSource) Uint64(name string) (uint64, error) {
 	otherGenericValue, exists := fsm.valueMap[name]
 	if exists {
-		otherValue, isType := CastToUint64(otherGenericValue)
+		otherValue, isType := castToUint64(otherGenericValue)
 		if !isType {
 			return 0, incorrectTypeForFlagError(name, "uint64", otherGenericValue)
 		}
@@ -271,7 +271,7 @@ func (fsm *MapInputSource) Uint64(name string) (uint64, error) {
 	}
 	nestedGenericValue, exists := nestedVal(name, fsm.valueMap)
 	if exists {
-		otherValue, isType := CastToUint64(nestedGenericValue)
+		otherValue, isType := castToUint64(nestedGenericValue)
 		if !isType {
 			return 0, incorrectTypeForFlagError(name, "uint64", nestedGenericValue)
 		}
@@ -378,7 +378,7 @@ func (fsm *MapInputSource) Int64Slice(name string) ([]int64, error) {
 
 	var int64Slice = make([]int64, 0, len(otherValue))
 	for i, v := range otherValue {
-		int64Value, isType := CastToInt64(v)
+		int64Value, isType := castToInt64(v)
 		if !isType {
 			return nil, incorrectTypeForFlagError(fmt.Sprintf("%s[%d]", name, i), "int64", v)
 		}
