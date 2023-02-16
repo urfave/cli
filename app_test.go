@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"strconv"
@@ -425,10 +424,10 @@ func ExampleApp_Run_sliceValues() {
 
 	_ = app.Run(os.Args)
 	// Output:
-	// 0-float64Sclice cli.Float64Slice{slice:[]float64{13.3, 14.4, 15.5, 16.6}, hasBeenSet:true}
-	// 1-int64Sclice cli.Int64Slice{slice:[]int64{13, 14, 15, 16}, hasBeenSet:true}
-	// 2-intSclice cli.IntSlice{slice:[]int{13, 14, 15, 16}, hasBeenSet:true}
-	// 3-stringSclice cli.StringSlice{slice:[]string{"parsed1", "parsed2", "parsed3", "parsed4"}, hasBeenSet:true}
+	// 0-float64Sclice cli.Float64Slice{slice:[]float64{13.3, 14.4, 15.5, 16.6}, separator:cli.separatorSpec{sep:"", disabled:false, customized:false}, hasBeenSet:true}
+	// 1-int64Sclice cli.Int64Slice{slice:[]int64{13, 14, 15, 16}, separator:cli.separatorSpec{sep:"", disabled:false, customized:false}, hasBeenSet:true}
+	// 2-intSclice cli.IntSlice{slice:[]int{13, 14, 15, 16}, separator:cli.separatorSpec{sep:"", disabled:false, customized:false}, hasBeenSet:true}
+	// 3-stringSclice cli.StringSlice{slice:[]string{"parsed1", "parsed2", "parsed3", "parsed4"}, separator:cli.separatorSpec{sep:"", disabled:false, customized:false}, hasBeenSet:true, keepSpace:false}
 	// error: <nil>
 }
 
@@ -1278,7 +1277,7 @@ func TestApp_BeforeFunc(t *testing.T) {
 		Flags: []Flag{
 			&StringFlag{Name: "opt"},
 		},
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 	}
 
 	// run with the Before() func succeeding
@@ -1369,7 +1368,7 @@ func TestApp_BeforeAfterFuncShellCompletion(t *testing.T) {
 		Flags: []Flag{
 			&StringFlag{Name: "opt"},
 		},
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 	}
 
 	// run with the Before() func succeeding
@@ -1487,7 +1486,7 @@ func TestAppNoHelpFlag(t *testing.T) {
 
 	HelpFlag = nil
 
-	app := &App{Writer: ioutil.Discard}
+	app := &App{Writer: io.Discard}
 	err := app.Run([]string{"test", "-h"})
 
 	if err != flag.ErrHelp {
@@ -1718,7 +1717,7 @@ func TestApp_OrderOfOperations(t *testing.T) {
 			counts.OnUsageError = counts.Total
 			return errors.New("hay OnUsageError")
 		},
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 	}
 
 	beforeNoError := func(c *Context) error {
@@ -2303,43 +2302,12 @@ func TestApp_VisibleCategories(t *testing.T) {
 	expect(t, []CommandCategory{}, app.VisibleCategories())
 }
 
-func TestApp_VisibleFlagCategories(t *testing.T) {
-	app := &App{
-		Flags: []Flag{
-			&StringFlag{
-				Name: "strd", // no category set
-			},
-			&Int64Flag{
-				Name:     "intd",
-				Aliases:  []string{"altd1", "altd2"},
-				Category: "cat1",
-			},
-		},
-	}
-	app.Setup()
-	vfc := app.VisibleFlagCategories()
-	if len(vfc) != 1 {
-		t.Fatalf("unexpected visible flag categories %+v", vfc)
-	}
-	if vfc[0].Name() != "cat1" {
-		t.Errorf("expected category name cat1 got %s", vfc[0].Name())
-	}
-	if len(vfc[0].Flags()) != 1 {
-		t.Fatalf("expected flag category to have just one flag got %+v", vfc[0].Flags())
-	}
-
-	fl := vfc[0].Flags()[0]
-	if !reflect.DeepEqual(fl.Names(), []string{"intd", "altd1", "altd2"}) {
-		t.Errorf("unexpected flag %+v", fl.Names())
-	}
-}
-
 func TestApp_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 	app := &App{
 		Action: func(c *Context) error { return nil },
 		Before: func(c *Context) error { return fmt.Errorf("before error") },
 		After:  func(c *Context) error { return fmt.Errorf("after error") },
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 	}
 
 	err := app.Run([]string{"foo"})
@@ -2489,7 +2457,7 @@ func (c *customBoolFlag) IsSet() bool {
 func TestCustomFlagsUnused(t *testing.T) {
 	app := &App{
 		Flags:  []Flag{&customBoolFlag{"custom"}},
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 	}
 
 	err := app.Run([]string{"foo"})
@@ -2501,7 +2469,7 @@ func TestCustomFlagsUnused(t *testing.T) {
 func TestCustomFlagsUsed(t *testing.T) {
 	app := &App{
 		Flags:  []Flag{&customBoolFlag{"custom"}},
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 	}
 
 	err := app.Run([]string{"foo", "--custom=bar"})
@@ -2512,7 +2480,7 @@ func TestCustomFlagsUsed(t *testing.T) {
 
 func TestCustomHelpVersionFlags(t *testing.T) {
 	app := &App{
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 	}
 
 	// Be sure to reset the global flags
@@ -2532,7 +2500,7 @@ func TestCustomHelpVersionFlags(t *testing.T) {
 
 func TestHandleExitCoder_Default(t *testing.T) {
 	app := newTestApp()
-	fs, err := flagSet(app.Name, app.Flags)
+	fs, err := flagSet(app.Name, app.Flags, separatorSpec{})
 	if err != nil {
 		t.Errorf("error creating FlagSet: %s", err)
 	}
@@ -2548,7 +2516,7 @@ func TestHandleExitCoder_Default(t *testing.T) {
 
 func TestHandleExitCoder_Custom(t *testing.T) {
 	app := newTestApp()
-	fs, err := flagSet(app.Name, app.Flags)
+	fs, err := flagSet(app.Name, app.Flags, separatorSpec{})
 	if err != nil {
 		t.Errorf("error creating FlagSet: %s", err)
 	}
@@ -2604,7 +2572,7 @@ func TestShellCompletionForIncompleteFlags(t *testing.T) {
 		Action: func(ctx *Context) error {
 			return fmt.Errorf("should not get here")
 		},
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 	}
 	err := app.Run([]string{"", "--test-completion", "--" + "generate-bash-completion"})
 	if err != nil {
@@ -2667,7 +2635,7 @@ func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
 
 func newTestApp() *App {
 	a := NewApp()
-	a.Writer = ioutil.Discard
+	a.Writer = io.Discard
 	return a
 }
 

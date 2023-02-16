@@ -94,7 +94,6 @@ import (
   "flag"
   "fmt"
   "io"
-  "io/ioutil"
   "os"
   "time"
 
@@ -119,7 +118,7 @@ func init() {
   cli.OsExiter = func(c int) {
     fmt.Fprintf(cli.ErrWriter, "refusing to exit %d\n", c)
   }
-  cli.ErrWriter = ioutil.Discard
+  cli.ErrWriter = io.Discard
   cli.FlagStringer = func(fl cli.Flag) string {
     return fmt.Sprintf("\t\t%s", fl.GetName())
   }
