@@ -4,7 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"regexp"
 	"runtime"
@@ -15,7 +15,7 @@ import (
 
 const defaultPlaceholder = "value"
 
-var (
+const (
 	defaultSliceFlagSeparator = ","
 	disableSliceFlagSeparator = false
 )
@@ -167,15 +167,18 @@ type Countable interface {
 	Count() int
 }
 
-func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {
+func flagSet(name string, flags []Flag, spec separatorSpec) (*flag.FlagSet, error) {
 	set := flag.NewFlagSet(name, flag.ContinueOnError)
 
 	for _, f := range flags {
+		if c, ok := f.(customizedSeparator); ok {
+			c.WithSeparatorSpec(spec)
+		}
 		if err := f.Apply(set); err != nil {
 			return nil, err
 		}
 	}
-	set.SetOutput(ioutil.Discard)
+	set.SetOutput(io.Discard)
 	return set, nil
 }
 
@@ -381,7 +384,7 @@ func flagFromEnvOrFile(envVars []string, filePath string) (value string, fromWhe
 	}
 	for _, fileVar := range strings.Split(filePath, ",") {
 		if fileVar != "" {
-			if data, err := ioutil.ReadFile(fileVar); err == nil {
+			if data, err := os.ReadFile(fileVar); err == nil {
 				return string(data), fmt.Sprintf("file %q", filePath), true
 			}
 		}
@@ -389,10 +392,28 @@ func flagFromEnvOrFile(envVars []string, filePath string) (value string, fromWhe
 	return "", "", false
 }
 
-func flagSplitMultiValues(val string) []string {
-	if disableSliceFlagSeparator {
+type customizedSeparator interface {
+	WithSeparatorSpec(separatorSpec)
+}
+
+type separatorSpec struct {
+	sep        string
+	disabled   bool
+	customized bool
+}
+
+func (s separatorSpec) flagSplitMultiValues(val string) []string {
+	var (
+		disabled bool   = s.disabled
+		sep      string = s.sep
+	)
+	if !s.customized {
+		disabled = disableSliceFlagSeparator
+		sep = defaultSliceFlagSeparator
+	}
+	if disabled {
 		return []string{val}
 	}
 
-	return strings.Split(val, defaultSliceFlagSeparator)
+	return strings.Split(val, sep)
 }

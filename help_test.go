@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"strings"
@@ -986,7 +985,7 @@ App UsageText`,
 func TestHideHelpCommand(t *testing.T) {
 	app := &App{
 		HideHelpCommand: true,
-		Writer:          ioutil.Discard,
+		Writer:          io.Discard,
 	}
 
 	err := app.Run([]string{"foo", "help"})
@@ -1006,7 +1005,7 @@ func TestHideHelpCommand(t *testing.T) {
 func TestHideHelpCommand_False(t *testing.T) {
 	app := &App{
 		HideHelpCommand: false,
-		Writer:          ioutil.Discard,
+		Writer:          io.Discard,
 	}
 
 	err := app.Run([]string{"foo", "help"})
@@ -1024,7 +1023,7 @@ func TestHideHelpCommand_WithHideHelp(t *testing.T) {
 	app := &App{
 		HideHelp:        true, // effective (hides both command and flag)
 		HideHelpCommand: true, // ignored
-		Writer:          ioutil.Discard,
+		Writer:          io.Discard,
 	}
 
 	err := app.Run([]string{"foo", "help"})
@@ -1053,7 +1052,7 @@ func newContextFromStringSlice(ss []string) *Context {
 func TestHideHelpCommand_RunAsSubcommand(t *testing.T) {
 	app := &App{
 		HideHelpCommand: true,
-		Writer:          ioutil.Discard,
+		Writer:          io.Discard,
 		Commands: []*Command{
 			{
 				Name: "dummy",
@@ -1078,7 +1077,7 @@ func TestHideHelpCommand_RunAsSubcommand(t *testing.T) {
 func TestHideHelpCommand_RunAsSubcommand_False(t *testing.T) {
 	app := &App{
 		HideHelpCommand: false,
-		Writer:          ioutil.Discard,
+		Writer:          io.Discard,
 		Commands: []*Command{
 			{
 				Name: "dummy",
@@ -1099,7 +1098,7 @@ func TestHideHelpCommand_RunAsSubcommand_False(t *testing.T) {
 
 func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 	app := &App{
-		Writer: ioutil.Discard,
+		Writer: io.Discard,
 		Commands: []*Command{
 			{
 				Name: "dummy",
@@ -1194,6 +1193,28 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			},
 			argv:     []string{"cmd", "--generate-bash-completion"},
 			expected: "futz\n",
+		},
+		{
+			name: "autocomplete-with-spaces",
+			c: &Context{App: &App{
+				Name: "cmd",
+				Flags: []Flag{
+					&BoolFlag{Name: "happiness"},
+					&Int64Flag{Name: "everybody-jump-on"},
+				},
+			}},
+			cmd: &Command{
+				Name: "putz",
+				Subcommands: []*Command{
+					{Name: "help"},
+				},
+				Flags: []Flag{
+					&BoolFlag{Name: "excitement"},
+					&StringFlag{Name: "hat-shape"},
+				},
+			},
+			argv:     []string{"cmd", "--url", "http://localhost:8000", "h", "--generate-bash-completion"},
+			expected: "help\n",
 		},
 	} {
 		t.Run(tc.name, func(ct *testing.T) {
@@ -1517,6 +1538,71 @@ OPTIONS:
 
 	if output.String() != expected {
 		t.Errorf("Unexpected wrapping, got:\n%s\nexpected: %s",
+			output.String(), expected)
+	}
+}
+
+func TestCategorizedHelp(t *testing.T) {
+	// Reset HelpPrinter after this test.
+	defer func(old helpPrinter) {
+		HelpPrinter = old
+	}(HelpPrinter)
+
+	output := new(bytes.Buffer)
+	app := &App{
+		Name:   "cli.test",
+		Writer: output,
+		Action: func(ctx *Context) error { return nil },
+		Flags: []Flag{
+			&StringFlag{
+				Name: "strd", // no category set
+			},
+			&Int64Flag{
+				Name:     "intd",
+				Aliases:  []string{"altd1", "altd2"},
+				Category: "cat1",
+			},
+		},
+	}
+
+	c := NewContext(app, nil, nil)
+	app.Setup()
+
+	HelpPrinter = func(w io.Writer, templ string, data interface{}) {
+		funcMap := map[string]interface{}{
+			"wrapAt": func() int {
+				return 30
+			},
+		}
+
+		HelpPrinterCustom(w, templ, data, funcMap)
+	}
+
+	_ = ShowAppHelp(c)
+
+	expected := `NAME:
+   cli.test - A new cli
+              application
+
+USAGE:
+   cli.test [global options] command [command options] [arguments...]
+
+COMMANDS:
+   help, h  Shows a list of
+            commands or help
+            for one command
+
+GLOBAL OPTIONS:
+   --help, -h    show help
+   --strd value  
+
+   cat1
+
+   --intd value, --altd1 value, --altd2 value  (default: 0)
+
+`
+	if output.String() != expected {
+		t.Errorf("Unexpected wrapping, got:\n%s\nexpected:\n%s",
 			output.String(), expected)
 	}
 }

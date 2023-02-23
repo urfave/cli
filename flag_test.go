@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"regexp"
@@ -144,6 +143,11 @@ func TestFlagsFromEnv(t *testing.T) {
 		s.hasBeenSet = false
 		return *s
 	}
+	newSetStringSliceKeepSpace := func(defaults ...string) StringSlice {
+		s := newSetStringSlice(defaults...)
+		s.keepSpace = true
+		return s
+	}
 
 	var flagTests = []struct {
 		input     string
@@ -198,6 +202,8 @@ func TestFlagsFromEnv(t *testing.T) {
 		{"path", "path", &PathFlag{Name: "path", EnvVars: []string{"PATH"}}, ""},
 
 		{"foo,bar", newSetStringSlice("foo", "bar"), &StringSliceFlag{Name: "names", EnvVars: []string{"NAMES"}}, ""},
+		{" space ", newSetStringSliceKeepSpace(" space "), &StringSliceFlag{Name: "names", KeepSpace: true, EnvVars: []string{"NAMES"}}, ""},
+		{" no space ", newSetStringSlice("no space"), &StringSliceFlag{Name: "names", EnvVars: []string{"NAMES"}}, ""},
 
 		{"1", uint(1), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}}, ""},
 		{"08", uint(8), &UintFlag{Name: "seconds", EnvVars: []string{"SECONDS"}, Base: 10}, ""},
@@ -774,7 +780,7 @@ func TestStringSliceFlag_MatchStringFlagBehavior(t *testing.T) {
 			app := App{
 				Flags: []Flag{
 					&StringFlag{Name: "string"},
-					&StringSliceFlag{Name: "slice"},
+					&StringSliceFlag{Name: "slice", KeepSpace: true},
 				},
 				Action: func(ctx *Context) error {
 					f1, f2 := ctx.String("string"), ctx.StringSlice("slice")
@@ -791,6 +797,52 @@ func TestStringSliceFlag_MatchStringFlagBehavior(t *testing.T) {
 			}
 
 			if err := app.Run([]string{"", "--string", value, "--slice", value}); err != nil {
+				t.Errorf("app run error: %s", err)
+			}
+		})
+	}
+}
+
+func TestStringSliceFlag_TrimSpace(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		in, out string
+	}{
+		{" asd", "asd"},
+		{"123 ", "123"},
+		{" asd ", "asd"},
+	}
+	for testNum, tt := range tests {
+		tt := tt
+		t.Run(fmt.Sprintf("%d", testNum), func(t *testing.T) {
+			t.Parallel()
+
+			app := App{
+				Flags: []Flag{
+					&StringSliceFlag{Name: "trim"},
+					&StringSliceFlag{Name: "no-trim", KeepSpace: true},
+				},
+				Action: func(ctx *Context) error {
+					flagTrim, flagNoTrim := ctx.StringSlice("trim"), ctx.StringSlice("no-trim")
+					if l := len(flagTrim); l != 1 {
+						t.Fatalf("slice flag 'trim' should result in exactly one value, got %d", l)
+					}
+					if l := len(flagNoTrim); l != 1 {
+						t.Fatalf("slice flag 'no-trim' should result in exactly one value, got %d", l)
+					}
+
+					if v := flagTrim[0]; v != tt.out {
+						t.Errorf("Expected trimmed value %q, got %q", tt.out, v)
+					}
+					if v := flagNoTrim[0]; v != tt.in {
+						t.Errorf("Expected no trimmed value%q, got %q", tt.out, v)
+					}
+					return nil
+				},
+			}
+
+			if err := app.Run([]string{"", "--trim", tt.in, "--no-trim", tt.in}); err != nil {
 				t.Errorf("app run error: %s", err)
 			}
 		})
@@ -2851,7 +2903,7 @@ func TestParseGenericFromEnvCascade(t *testing.T) {
 }
 
 func TestFlagFromFile(t *testing.T) {
-	temp, err := ioutil.TempFile("", "urfave_cli_test")
+	temp, err := os.CreateTemp("", "urfave_cli_test")
 	if err != nil {
 		t.Error(err)
 		return
@@ -3018,7 +3070,7 @@ func TestTimestampFlagApplyValue(t *testing.T) {
 func TestTimestampFlagApply_Fail_Parse_Wrong_Layout(t *testing.T) {
 	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: "randomlayout"}
 	set := flag.NewFlagSet("test", 0)
-	set.SetOutput(ioutil.Discard)
+	set.SetOutput(io.Discard)
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
@@ -3028,7 +3080,7 @@ func TestTimestampFlagApply_Fail_Parse_Wrong_Layout(t *testing.T) {
 func TestTimestampFlagApply_Fail_Parse_Wrong_Time(t *testing.T) {
 	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: "Jan 2, 2006 at 3:04pm (MST)"}
 	set := flag.NewFlagSet("test", 0)
-	set.SetOutput(ioutil.Discard)
+	set.SetOutput(io.Discard)
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
@@ -3122,7 +3174,7 @@ func TestFlagDefaultValue(t *testing.T) {
 	}
 	for i, v := range cases {
 		set := flag.NewFlagSet("test", 0)
-		set.SetOutput(ioutil.Discard)
+		set.SetOutput(io.Discard)
 		_ = v.flag.Apply(set)
 		if err := set.Parse(v.toParse); err != nil {
 			t.Error(err)
@@ -3300,7 +3352,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			os.Setenv(key, val)
 		}
 		set := flag.NewFlagSet("test", 0)
-		set.SetOutput(ioutil.Discard)
+		set.SetOutput(io.Discard)
 		if err := v.flag.Apply(set); err != nil {
 			t.Fatal(err)
 		}
@@ -3361,7 +3413,7 @@ func TestFlagValue(t *testing.T) {
 	}
 	for i, v := range cases {
 		set := flag.NewFlagSet("test", 0)
-		set.SetOutput(ioutil.Discard)
+		set.SetOutput(io.Discard)
 		_ = v.flag.Apply(set)
 		if err := set.Parse(v.toParse); err != nil {
 			t.Error(err)
@@ -3425,13 +3477,27 @@ func TestSliceShortOptionHandle(t *testing.T) {
 }
 
 // Test issue #1541
+func TestDefaultSliceFlagSeparator(t *testing.T) {
+	separator := separatorSpec{}
+	opts := []string{"opt1", "opt2", "opt3", "opt4"}
+	ret := separator.flagSplitMultiValues(strings.Join(opts, ","))
+	if len(ret) != 4 {
+		t.Fatalf("split slice flag failed, want: 4, but get: %d", len(ret))
+	}
+	for idx, r := range ret {
+		if r != opts[idx] {
+			t.Fatalf("get %dth failed, wanted: %s, but get: %s", idx, opts[idx], r)
+		}
+	}
+}
+
 func TestCustomizedSliceFlagSeparator(t *testing.T) {
-	defaultSliceFlagSeparator = ";"
-	defer func() {
-		defaultSliceFlagSeparator = ","
-	}()
+	separator := separatorSpec{
+		customized: true,
+		sep:        ";",
+	}
 	opts := []string{"opt1", "opt2", "opt3,op", "opt4"}
-	ret := flagSplitMultiValues(strings.Join(opts, ";"))
+	ret := separator.flagSplitMultiValues(strings.Join(opts, ";"))
 	if len(ret) != 4 {
 		t.Fatalf("split slice flag failed, want: 4, but get: %d", len(ret))
 	}
@@ -3443,13 +3509,13 @@ func TestCustomizedSliceFlagSeparator(t *testing.T) {
 }
 
 func TestFlagSplitMultiValues_Disabled(t *testing.T) {
-	disableSliceFlagSeparator = true
-	defer func() {
-		disableSliceFlagSeparator = false
-	}()
+	separator := separatorSpec{
+		customized: true,
+		disabled:   true,
+	}
 
 	opts := []string{"opt1", "opt2", "opt3,op", "opt4"}
-	ret := flagSplitMultiValues(strings.Join(opts, defaultSliceFlagSeparator))
+	ret := separator.flagSplitMultiValues(strings.Join(opts, defaultSliceFlagSeparator))
 	if len(ret) != 1 {
 		t.Fatalf("failed to disable split slice flag, want: 1, but got: %d", len(ret))
 	}

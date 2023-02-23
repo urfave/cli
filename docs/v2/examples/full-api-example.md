@@ -16,10 +16,9 @@ package main
 
 import (
 	"errors"
-	"flag"
+	"flag" 
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"time"
 
@@ -43,7 +42,7 @@ func init() {
 	cli.OsExiter = func(cCtx int) {
 		fmt.Fprintf(cli.ErrWriter, "refusing to exit %d\n", cCtx)
 	}
-	cli.ErrWriter = ioutil.Discard
+	cli.ErrWriter = io.Discard
 	cli.FlagStringer = func(fl cli.Flag) string {
 		return fmt.Sprintf("\t\t%s", fl.Names()[0])
 	}
@@ -58,7 +57,7 @@ func (w *hexWriter) Write(p []byte) (int, error) {
 	fmt.Printf("\n")
 
 	return len(p), nil
-}
+} 
 
 type genericType struct {
 	s string
