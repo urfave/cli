@@ -1,9 +1,12 @@
 package altsrc_test
 
 import (
+	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"testing"
 	"time"
 
 	"github.com/urfave/cli/v2"
@@ -22,7 +25,7 @@ func ExampleApp_Run_yamlFileLoaderDuration() {
 		return stat != nil
 	}
 
-	// initConfigFileInputSource is like altsrc.InitInputSourceWithContext and altsrc.NewYamlSourceFromFlagFunc, but checks
+	// initConfigFileInputSource is like InitInputSourceWithContext and NewYamlSourceFromFlagFunc, but checks
 	// if the config flag is exists and only loads it if it does. If the flag is set and the file exists, it fails.
 	initConfigFileInputSource := func(configFlag string, flags []cli.Flag) cli.BeforeFunc {
 		return func(context *cli.Context) error {
@@ -84,4 +87,242 @@ func ExampleApp_Run_yamlFileLoaderDuration() {
 
 	// Output:
 	// keepalive 45s
+}
+
+func TestYamlFileInt64Slice(t *testing.T) {
+	_ = ioutil.WriteFile("current.yaml", []byte(`top: 
+  test: [100, 9223372036854775808]`), 0666)
+	defer os.Remove("current.yaml")
+
+	testFlag := []cli.Flag{
+		&altsrc.StringFlag{StringFlag: &cli.StringFlag{Name: "conf"}},
+		&altsrc.Int64SliceFlag{Int64SliceFlag: &cli.Int64SliceFlag{Name: "top.test"}},
+	}
+	app := &cli.App{}
+	app.Before = altsrc.InitInputSourceWithContext(testFlag, altsrc.NewYamlSourceFromFlagFunc("conf"))
+	app.Action = func(c *cli.Context) error { return nil }
+	app.Flags = append(app.Flags, testFlag...)
+
+	test := []string{"testApp", "--conf", "current.yaml"}
+	if err := app.Run(test); err == nil {
+		t.Error("should return the mismatch error")
+	}
+}
+
+func TestYamlFileStringSlice(t *testing.T) {
+	_ = ioutil.WriteFile("current.yaml", []byte(`top:
+  test: ["s1", "s2"]`), 0666)
+	defer os.Remove("current.yaml")
+
+	testFlag := []cli.Flag{
+		&altsrc.StringFlag{StringFlag: &cli.StringFlag{Name: "conf"}},
+		&altsrc.StringSliceFlag{StringSliceFlag: &cli.StringSliceFlag{Name: "top.test", EnvVars: []string{"THE_TEST"}}},
+	}
+	app := &cli.App{}
+	app.Before = altsrc.InitInputSourceWithContext(testFlag, altsrc.NewYamlSourceFromFlagFunc("conf"))
+	app.Action = func(c *cli.Context) error {
+		if c.IsSet("top.test") {
+			return nil
+		} else {
+			return errors.New("top.test is not set")
+		}
+	}
+	app.Flags = append(app.Flags, testFlag...)
+
+	test := []string{"testApp", "--conf", "current.yaml"}
+	if err := app.Run(test); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestYamlFileUint64(t *testing.T) {
+	tests := []struct {
+		name  string
+		entry string
+		err   bool
+	}{
+		{
+			"top.test",
+			`top: 
+  test: 100`,
+			false,
+		},
+		{
+			"test",
+			"test: ",
+			false,
+		},
+		{
+			"test",
+			"test: 100", //int
+			false,
+		},
+		{
+			"test",
+			"test: -100", //int
+			true,
+		},
+		{
+			"test",
+			"test: 9223372036854775807", //int
+			false,
+		},
+		{
+			"test",
+			"test: 9223372036854775808", //uintt64
+			false,
+		},
+		{
+			"test",
+			"test: 19223372036854775808", //float64
+			true,
+		},
+	}
+
+	for i, test := range tests {
+		_ = ioutil.WriteFile("current.yaml", []byte(test.entry), 0666)
+		defer os.Remove("current.yaml")
+
+		testFlag := []cli.Flag{
+			&altsrc.StringFlag{StringFlag: &cli.StringFlag{Name: "conf"}},
+			&altsrc.Uint64Flag{Uint64Flag: &cli.Uint64Flag{Name: test.name}},
+		}
+		app := &cli.App{}
+		app.Flags = append(app.Flags, testFlag...)
+		app.Before = altsrc.InitInputSourceWithContext(testFlag, altsrc.NewYamlSourceFromFlagFunc("conf"))
+
+		appCmd := []string{"testApp", "--conf", "current.yaml"}
+		err := app.Run(appCmd)
+		if result := err != nil; result != test.err {
+			t.Error(i, "testcast: expect error but", err)
+		}
+	}
+}
+
+func TestYamlFileUint(t *testing.T) {
+	tests := []struct {
+		name  string
+		entry string
+		err   bool
+	}{
+		{
+			"top.test",
+			`top: 
+  test: 100`,
+			false,
+		},
+		{
+			"test",
+			"test: ",
+			false,
+		},
+		{
+			"test",
+			"test: 100", //int
+			false,
+		},
+		{
+			"test",
+			"test: -100", //int
+			true,
+		},
+		{
+			"test",
+			"test: 9223372036854775807", //int
+			false,
+		},
+		{
+			"test",
+			"test: 9223372036854775808", //uintt64
+			false,
+		},
+		{
+			"test",
+			"test: 19223372036854775808", //float64
+			true,
+		},
+	}
+
+	for i, test := range tests {
+		_ = ioutil.WriteFile("current.yaml", []byte(test.entry), 0666)
+		defer os.Remove("current.yaml")
+
+		testFlag := []cli.Flag{
+			&altsrc.StringFlag{StringFlag: &cli.StringFlag{Name: "conf"}},
+			&altsrc.UintFlag{UintFlag: &cli.UintFlag{Name: test.name}},
+		}
+		app := &cli.App{}
+		app.Flags = append(app.Flags, testFlag...)
+		app.Before = altsrc.InitInputSourceWithContext(testFlag, altsrc.NewYamlSourceFromFlagFunc("conf"))
+
+		appCmd := []string{"testApp", "--conf", "current.yaml"}
+		err := app.Run(appCmd)
+		if result := err != nil; result != test.err {
+			t.Error(i, "testcast: expect error but", err)
+		}
+	}
+}
+
+func TestYamlFileInt64(t *testing.T) {
+	tests := []struct {
+		name  string
+		entry string
+		err   bool
+	}{
+		{
+			"top.test",
+			`top: 
+  test: 100`,
+			false,
+		},
+		{
+			"test",
+			"test: ",
+			false,
+		},
+		{
+			"test",
+			"test: 100", //int
+			false,
+		},
+		{
+			"test",
+			"test: -100", //int
+			false,
+		},
+		{
+			"test",
+			"test: 9223372036854775807", //int
+			false,
+		},
+		{
+			"test",
+			"test: 9223372036854775808", //uintt64
+			true,
+		},
+		{
+			"test",
+			"test: 19223372036854775808", //float64
+			true,
+		},
+	}
+
+	for i, test := range tests {
+		_ = ioutil.WriteFile("current.yaml", []byte(test.entry), 0666)
+		defer os.Remove("current.yaml")
+
+		testFlag := []cli.Flag{
+			&altsrc.StringFlag{StringFlag: &cli.StringFlag{Name: "conf"}},
+			&altsrc.Int64Flag{Int64Flag: &cli.Int64Flag{Name: test.name}},
+		}
+		app := &cli.App{}
+		app.Flags = append(app.Flags, testFlag...)
+		app.Before = altsrc.InitInputSourceWithContext(testFlag, altsrc.NewYamlSourceFromFlagFunc("conf"))
+
+		appCmd := []string{"testApp", "--conf", "current.yaml"}
+		err := app.Run(appCmd)
+		if result := err != nil; result != test.err {
+			t.Error(i, "testcast: expect error but", err)
+		}
+	}
 }
