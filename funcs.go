@@ -3,12 +3,13 @@ package cli
 // ShellCompleteFunc is an action to execute when the shell completion flag is set
 type ShellCompleteFunc func(*Context)
 
-// BeforeFunc is an action to execute before any subcommands are run, but after
-// the context is ready if a non-nil error is returned, no subcommands are run
+// BeforeFunc is an action that executes prior to any subcommands being run once
+// the context is ready.  If a non-nil error is returned, no subcommands are
+// run.
 type BeforeFunc func(*Context) error
 
-// AfterFunc is an action to execute after any subcommands are run, but after the
-// subcommand has finished it is run even if Action() panics
+// AfterFunc is an action that executes after any subcommands are run and have
+// finished. The AfterFunc is run even if Action() panics.
 type AfterFunc func(*Context) error
 
 // ActionFunc is the action to execute when no subcommands are specified
