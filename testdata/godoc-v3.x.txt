@@ -146,7 +146,7 @@ var SubcommandHelpTemplate = `NAME:
    {{template "helpNameTemplate" .}}
 
 USAGE:
-   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleFlags}}command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Description}}
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleCommands}}command [command options] {{end}}{{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Description}}
 
 DESCRIPTION:
    {{template "descriptionTemplate" .}}{{end}}{{if .VisibleCommands}}
@@ -243,8 +243,8 @@ type ActionableFlag interface {
     operation.
 
 type AfterFunc func(*Context) error
-    AfterFunc is an action to execute after any subcommands are run, but after
-    the subcommand has finished it is run even if Action() panics
+    AfterFunc is an action that executes after any subcommands are run and have
+    finished. The AfterFunc is run even if Action() panics.
 
 type App struct {
 	// The name of the program. Defaults to path.Base(os.Args[0])
@@ -409,8 +409,9 @@ type Args interface {
 }
 
 type BeforeFunc func(*Context) error
-    BeforeFunc is an action to execute before any subcommands are run, but after
-    the context is ready if a non-nil error is returned, no subcommands are run
+    BeforeFunc is an action that executes prior to any subcommands being run
+    once the context is ready. If a non-nil error is returned, no subcommands
+    are run.
 
 type BoolConfig struct {
 	Count *int
