@@ -111,7 +111,7 @@ func newFlagCategoriesFromFlags(fs []Flag) FlagCategories {
 		}
 	}
 
-	if categorized == true {
+	if categorized {
 		for _, fl := range fs {
 			if cf, ok := fl.(CategorizableFlag); ok {
 				if cf.GetCategory() == "" {

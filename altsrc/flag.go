@@ -109,10 +109,10 @@ func (f *StringSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSour
 				continue
 			}
 			underlyingFlag.Value = &sliceValue
-			f.set.Set(n, sliceValue.Serialize())
+			_ = f.set.Set(n, sliceValue.Serialize())
 		}
 		if f.Destination != nil {
-			f.Destination.Set(sliceValue.Serialize())
+			_ = f.Destination.Set(sliceValue.Serialize())
 		}
 	}
 	return nil
@@ -143,7 +143,7 @@ func (f *IntSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceC
 			underlyingFlag.Value = &sliceValue
 		}
 		if f.Destination != nil {
-			f.Destination.Set(sliceValue.Serialize())
+			_ = f.Destination.Set(sliceValue.Serialize())
 		}
 	}
 	return nil
@@ -174,7 +174,7 @@ func (f *Int64SliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourc
 			underlyingFlag.Value = &sliceValue
 		}
 		if f.Destination != nil {
-			f.Destination.Set(sliceValue.Serialize())
+			_ = f.Destination.Set(sliceValue.Serialize())
 		}
 	}
 	return nil
@@ -205,7 +205,7 @@ func (f *Float64SliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSou
 			underlyingFlag.Value = &sliceValue
 		}
 		if f.Destination != nil {
-			f.Destination.Set(sliceValue.Serialize())
+			_ = f.Destination.Set(sliceValue.Serialize())
 		}
 	}
 	return nil

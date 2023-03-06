@@ -458,30 +458,6 @@ func (a *App) handleExitCoder(cCtx *Context, err error) {
 	}
 }
 
-func (a *App) commandNames() []string {
-	var cmdNames []string
-
-	for _, cmd := range a.Commands {
-		cmdNames = append(cmdNames, cmd.Names()...)
-	}
-
-	return cmdNames
-}
-
-func (a *App) validCommandName(checkCmdName string) bool {
-	valid := false
-	allCommandNames := a.commandNames()
-
-	for _, cmdName := range allCommandNames {
-		if checkCmdName == cmdName {
-			valid = true
-			break
-		}
-	}
-
-	return valid
-}
-
 func (a *App) argsWithDefaultCommand(oldArgs Args) Args {
 	if a.DefaultCommand != "" {
 		rawArgs := append([]string{a.DefaultCommand}, oldArgs.Slice()...)

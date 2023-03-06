@@ -136,7 +136,9 @@ func ExampleApp_Suggest() {
 		},
 	}
 
-	app.Run([]string{"greet", "--nema", "chipmunk"})
+	if err := app.Run([]string{"greet", "--nema", "chipmunk"}); err == nil {
+		return
+	}
 	// Output:
 	// Incorrect Usage: flag provided but not defined: -nema
 	//
@@ -177,7 +179,9 @@ func ExampleApp_Suggest_command() {
 		},
 	}
 
-	app.Run([]string{"greet", "neighbors", "--sliming"})
+	if err := app.Run([]string{"greet", "neighbors", "--sliming"}); err == nil {
+		return
+	}
 	// Output:
 	// Incorrect Usage: flag provided but not defined: -sliming
 	//

@@ -48,7 +48,9 @@ func ExampleApp_Run() {
 		Authors:   []*Author{{Name: "Oliver Allen", Email: "oliver@toyshop.example.com"}},
 	}
 
-	app.Run(os.Args)
+	if err := app.Run(os.Args); err != nil {
+		return
+	}
 	// Output:
 	// Hello Jeremy
 }
@@ -2719,8 +2721,8 @@ func TestFlagAction(t *testing.T) {
 			if v == "" {
 				return fmt.Errorf("empty string")
 			}
-			c.App.Writer.Write([]byte(v + " "))
-			return nil
+			_, err := c.App.Writer.Write([]byte(v + " "))
+			return err
 		},
 	}
 	app := &App{
@@ -2750,8 +2752,8 @@ func TestFlagAction(t *testing.T) {
 					if v[0] == "err" {
 						return fmt.Errorf("error string slice")
 					}
-					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return nil
+					_, err := c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
 				},
 			},
 			&BoolFlag{
@@ -2760,8 +2762,8 @@ func TestFlagAction(t *testing.T) {
 					if !v {
 						return fmt.Errorf("value is false")
 					}
-					c.App.Writer.Write([]byte(fmt.Sprintf("%t ", v)))
-					return nil
+					_, err := c.App.Writer.Write([]byte(fmt.Sprintf("%t ", v)))
+					return err
 				},
 			},
 			&DurationFlag{
@@ -2770,8 +2772,8 @@ func TestFlagAction(t *testing.T) {
 					if v == 0 {
 						return fmt.Errorf("empty duration")
 					}
-					c.App.Writer.Write([]byte(v.String() + " "))
-					return nil
+					_, err := c.App.Writer.Write([]byte(v.String() + " "))
+					return err
 				},
 			},
 			&Float64Flag{
@@ -2780,8 +2782,8 @@ func TestFlagAction(t *testing.T) {
 					if v < 0 {
 						return fmt.Errorf("negative float64")
 					}
-					c.App.Writer.Write([]byte(strconv.FormatFloat(v, 'f', -1, 64) + " "))
-					return nil
+					_, err := c.App.Writer.Write([]byte(strconv.FormatFloat(v, 'f', -1, 64) + " "))
+					return err
 				},
 			},
 			&Float64SliceFlag{
@@ -2790,8 +2792,8 @@ func TestFlagAction(t *testing.T) {
 					if len(v) > 0 && v[0] < 0 {
 						return fmt.Errorf("invalid float64 slice")
 					}
-					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return nil
+					_, err := c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
 				},
 			},
 			&GenericFlag{
@@ -2806,8 +2808,8 @@ func TestFlagAction(t *testing.T) {
 						}
 					}
 
-					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return nil
+					_, err := c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
 				},
 			},
 			&IntFlag{
@@ -2816,8 +2818,8 @@ func TestFlagAction(t *testing.T) {
 					if v < 0 {
 						return fmt.Errorf("negative int")
 					}
-					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return nil
+					_, err := c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
 				},
 			},
 			&IntSliceFlag{
@@ -2826,8 +2828,8 @@ func TestFlagAction(t *testing.T) {
 					if len(v) > 0 && v[0] < 0 {
 						return fmt.Errorf("invalid int slice")
 					}
-					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return nil
+					_, err := c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
 				},
 			},
 			&Int64Flag{
@@ -2836,8 +2838,8 @@ func TestFlagAction(t *testing.T) {
 					if v < 0 {
 						return fmt.Errorf("negative int64")
 					}
-					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return nil
+					_, err := c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
 				},
 			},
 			&Int64SliceFlag{
@@ -2846,8 +2848,8 @@ func TestFlagAction(t *testing.T) {
 					if len(v) > 0 && v[0] < 0 {
 						return fmt.Errorf("invalid int64 slice")
 					}
-					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return nil
+					_, err := c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
 				},
 			},
 			&PathFlag{
@@ -2856,8 +2858,8 @@ func TestFlagAction(t *testing.T) {
 					if v == "" {
 						return fmt.Errorf("empty path")
 					}
-					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return nil
+					_, err := c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
 				},
 			},
 			&TimestampFlag{
@@ -2867,8 +2869,8 @@ func TestFlagAction(t *testing.T) {
 					if v.IsZero() {
 						return fmt.Errorf("zero timestamp")
 					}
-					c.App.Writer.Write([]byte(v.Format(time.RFC3339) + " "))
-					return nil
+					_, err := c.App.Writer.Write([]byte(v.Format(time.RFC3339) + " "))
+					return err
 				},
 			},
 			&UintFlag{
@@ -2877,8 +2879,8 @@ func TestFlagAction(t *testing.T) {
 					if v == 0 {
 						return fmt.Errorf("zero uint")
 					}
-					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return nil
+					_, err := c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
 				},
 			},
 			&Uint64Flag{
@@ -2887,8 +2889,8 @@ func TestFlagAction(t *testing.T) {
 					if v == 0 {
 						return fmt.Errorf("zero uint64")
 					}
-					c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return nil
+					_, err := c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
 				},
 			},
 		},
