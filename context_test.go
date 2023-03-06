@@ -282,10 +282,7 @@ func TestContext_Set_InvalidFlagAccessHandler(t *testing.T) {
 	}
 
 	c := NewContext(app, set, nil)
-	if err := c.Set("missing", ""); err == nil {
-		t.Error("Expected set error")
-		return
-	}
+	expect(t, c.Set("missing", "") == nil, true)
 	expect(t, flagName, "missing")
 }
 
