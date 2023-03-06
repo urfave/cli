@@ -140,8 +140,7 @@ func ExampleApp_Suggest() {
 		},
 	}
 
-	err := app.Run([]string{"greet", "--nema", "chipmunk"})
-	if err == nil {
+	if app.Run([]string{"greet", "--nema", "chipmunk"}) == nil {
 		fmt.Println("Expected error")
 	}
 	// Output:
@@ -185,8 +184,7 @@ func ExampleApp_Suggest_command() {
 		},
 	}
 
-	err := app.Run([]string{"greet", "neighbors", "--sliming"})
-	if err == nil {
+	if app.Run([]string{"greet", "neighbors", "--sliming"}) == nil {
 		fmt.Println("Expected error")
 	}
 	// Output:

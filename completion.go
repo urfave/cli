@@ -54,8 +54,7 @@ var completionCommand = &Command{
 		} else if c, err := rc(ctx.App); err != nil {
 			return Exit(err, 1)
 		} else {
-			_, err = ctx.App.Writer.Write([]byte(c))
-			if err != nil {
+			if _, err = ctx.App.Writer.Write([]byte(c)); err != nil {
 				return Exit(err, 1)
 			}
 		}

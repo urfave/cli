@@ -170,8 +170,7 @@ func sh(exe string, args ...string) (string, error) {
 
 func topRunAction(arg string, args ...string) cli.ActionFunc {
 	return func(cCtx *cli.Context) error {
-		err := os.Chdir(cCtx.String("top"))
-		if err != nil {
+		if err := os.Chdir(cCtx.String("top")); err != nil {
 			return err
 		}
 
@@ -504,8 +503,7 @@ func GenerateActionFunc(cCtx *cli.Context) error {
 }
 
 func DiffCheckActionFunc(cCtx *cli.Context) error {
-	err := os.Chdir(cCtx.String("top"))
-	if err != nil {
+	if err := os.Chdir(cCtx.String("top")); err != nil {
 		return err
 	}
 
@@ -518,12 +516,11 @@ func DiffCheckActionFunc(cCtx *cli.Context) error {
 
 func EnsureGoimportsActionFunc(cCtx *cli.Context) error {
 	top := cCtx.String("top")
-	err := os.Chdir(top)
-	if err != nil {
+	if err := os.Chdir(top); err != nil {
 		return err
 	}
 
-	if err = runCmd(
+	if err := runCmd(
 		"goimports",
 		"-d",
 		filepath.Join(top, "internal/build/build.go"),
@@ -540,8 +537,7 @@ func EnsureGfmrunActionFunc(cCtx *cli.Context) error {
 	top := cCtx.String("top")
 	gfmrunExe := filepath.Join(top, ".local/bin/gfmrun")
 
-	err := os.Chdir(top)
-	if err != nil {
+	if err := os.Chdir(top); err != nil {
 		return err
 	}
 
@@ -563,8 +559,7 @@ func EnsureGfmrunActionFunc(cCtx *cli.Context) error {
 }
 
 func EnsureMkdocsActionFunc(cCtx *cli.Context) error {
-	err := os.Chdir(cCtx.String("top"))
-	if err != nil {
+	if err := os.Chdir(cCtx.String("top")); err != nil {
 		return err
 	}
 
@@ -587,8 +582,7 @@ func SetMkdocsRemoteActionFunc(cCtx *cli.Context) error {
 		return errors.New("empty github token")
 	}
 
-	err := os.Chdir(cCtx.String("top"))
-	if err != nil {
+	if err := os.Chdir(cCtx.String("top")); err != nil {
 		return err
 	}
 
@@ -604,8 +598,7 @@ func SetMkdocsRemoteActionFunc(cCtx *cli.Context) error {
 
 func LintActionFunc(cCtx *cli.Context) error {
 	top := cCtx.String("top")
-	err := os.Chdir(top)
-	if err != nil {
+	if err := os.Chdir(top); err != nil {
 		return err
 	}
 
@@ -625,12 +618,11 @@ func LintActionFunc(cCtx *cli.Context) error {
 }
 
 func V3Diff(cCtx *cli.Context) error {
-	err := os.Chdir(cCtx.String("top"))
-	if err != nil {
+	if err := os.Chdir(cCtx.String("top")); err != nil {
 		return err
 	}
 
-	err = runCmd(
+	err := runCmd(
 		"diff",
 		"--ignore-all-space",
 		"--minimal",

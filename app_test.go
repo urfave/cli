@@ -49,8 +49,7 @@ func ExampleApp_Run() {
 		Authors:   []any{&mail.Address{Name: "Oliver Allen", Address: "oliver@toyshop.example.com"}, "gruffalo@soup-world.example.org"},
 	}
 
-	err := app.Run(os.Args)
-	if err != nil {
+	if err := app.Run(os.Args); err != nil {
 		return
 	}
 	// Output:
