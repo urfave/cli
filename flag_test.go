@@ -426,7 +426,10 @@ func TestStringFlagHelpOutput(t *testing.T) {
 		fl := &StringFlag{Name: test.name, Aliases: test.aliases, Usage: test.usage, Value: test.value}
 		// create a tmp flagset
 		tfs := flag.NewFlagSet("test", 0)
-		fl.Apply(tfs)
+		if err := fl.Apply(tfs); err != nil {
+			t.Error(err)
+			return
+		}
 		output := fl.String()
 
 		if output != test.expected {
@@ -653,7 +656,10 @@ func TestIntFlagHelpOutput(t *testing.T) {
 
 		// create a temporary flag set to apply
 		tfs := flag.NewFlagSet("test", 0)
-		fl.Apply(tfs)
+		if err := fl.Apply(tfs); err != nil {
+			t.Error(err)
+			return
+		}
 
 		output := fl.String()
 
@@ -712,7 +718,10 @@ func TestInt64FlagHelpOutput(t *testing.T) {
 
 		// create a temporary flag set to apply
 		tfs := flag.NewFlagSet("test", 0)
-		fl.Apply(tfs)
+		if err := fl.Apply(tfs); err != nil {
+			t.Error(err)
+			return
+		}
 
 		output := fl.String()
 
@@ -760,7 +769,10 @@ func TestUintFlagHelpOutput(t *testing.T) {
 
 		// create a temporary flag set to apply
 		tfs := flag.NewFlagSet("test", 0)
-		fl.Apply(tfs)
+		if err := fl.Apply(tfs); err != nil {
+			t.Error(err)
+			return
+		}
 
 		output := fl.String()
 
@@ -808,7 +820,10 @@ func TestUint64FlagHelpOutput(t *testing.T) {
 
 		// create a temporary flag set to apply
 		tfs := flag.NewFlagSet("test", 0)
-		fl.Apply(tfs)
+		if err := fl.Apply(tfs); err != nil {
+			t.Error(err)
+			return
+		}
 
 		output := fl.String()
 
@@ -856,7 +871,10 @@ func TestDurationFlagHelpOutput(t *testing.T) {
 
 		// create a temporary flag set to apply
 		tfs := flag.NewFlagSet("test", 0)
-		fl.Apply(tfs)
+		if err := fl.Apply(tfs); err != nil {
+			t.Error(err)
+			return
+		}
 
 		output := fl.String()
 

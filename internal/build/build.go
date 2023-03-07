@@ -170,7 +170,9 @@ func sh(exe string, args ...string) (string, error) {
 
 func topRunAction(arg string, args ...string) cli.ActionFunc {
 	return func(cCtx *cli.Context) error {
-		os.Chdir(cCtx.String("top"))
+		if err := os.Chdir(cCtx.String("top")); err != nil {
+			return err
+		}
 
 		return runCmd(arg, args...)
 	}
@@ -274,7 +276,7 @@ func testCleanup(packages []string) error {
 
 		lines := strings.Split(string(lineBytes), "\n")
 
-		fmt.Fprintf(out, strings.Join(lines[1:], "\n"))
+		fmt.Fprint(out, strings.Join(lines[1:], "\n"))
 
 		if err := os.Remove(filename); err != nil {
 			return err
@@ -447,10 +449,10 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 	desiredMaxSizeString := fmt.Sprintf(mbStringFormatter, desiredMaxBinarySize)
 
 	// show guidance
-	fmt.Println(fmt.Sprintf("\n%s is the current binary size", roundedFileSizeString))
+	fmt.Printf("\n%s is the current binary size\n", roundedFileSizeString)
 	// show guidance for min size
 	if isLessThanDesiredMin {
-		fmt.Println(fmt.Sprintf("  %s %s is the target min size", goodNewsEmoji, desiredMinSizeString))
+		fmt.Printf("  %s %s is the target min size\n", goodNewsEmoji, desiredMinSizeString)
 		fmt.Println("") // visual spacing
 		fmt.Println("     The binary is smaller than the target min size, which is great news!")
 		fmt.Println("     That means that your changes are shrinking the binary size.")
@@ -461,11 +463,11 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 		fmt.Println("") // visual spacing
 		os.Exit(1)
 	} else {
-		fmt.Println(fmt.Sprintf("  %s %s is the target min size", checksPassedEmoji, desiredMinSizeString))
+		fmt.Printf("  %s %s is the target min size\n", checksPassedEmoji, desiredMinSizeString)
 	}
 	// show guidance for max size
 	if isMoreThanDesiredMax {
-		fmt.Println(fmt.Sprintf("  %s %s is the target max size", badNewsEmoji, desiredMaxSizeString))
+		fmt.Printf("  %s %s is the target max size\n", badNewsEmoji, desiredMaxSizeString)
 		fmt.Println("") // visual spacing
 		fmt.Println("     The binary is larger than the target max size.")
 		fmt.Println("     That means that your changes are increasing the binary size.")
@@ -479,7 +481,7 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 		fmt.Println("") // visual spacing
 		os.Exit(1)
 	} else {
-		fmt.Println(fmt.Sprintf("  %s %s is the target max size", checksPassedEmoji, desiredMaxSizeString))
+		fmt.Printf("  %s %s is the target max size\n", checksPassedEmoji, desiredMaxSizeString)
 	}
 
 	return nil
@@ -501,7 +503,9 @@ func GenerateActionFunc(cCtx *cli.Context) error {
 }
 
 func DiffCheckActionFunc(cCtx *cli.Context) error {
-	os.Chdir(cCtx.String("top"))
+	if err := os.Chdir(cCtx.String("top")); err != nil {
+		return err
+	}
 
 	if err := runCmd("git", "diff", "--exit-code"); err != nil {
 		return err
@@ -512,7 +516,9 @@ func DiffCheckActionFunc(cCtx *cli.Context) error {
 
 func EnsureGoimportsActionFunc(cCtx *cli.Context) error {
 	top := cCtx.String("top")
-	os.Chdir(top)
+	if err := os.Chdir(top); err != nil {
+		return err
+	}
 
 	if err := runCmd(
 		"goimports",
@@ -531,7 +537,9 @@ func EnsureGfmrunActionFunc(cCtx *cli.Context) error {
 	top := cCtx.String("top")
 	gfmrunExe := filepath.Join(top, ".local/bin/gfmrun")
 
-	os.Chdir(top)
+	if err := os.Chdir(top); err != nil {
+		return err
+	}
 
 	if v, err := sh(gfmrunExe, "--version"); err == nil && strings.TrimSpace(v) == gfmrunVersion {
 		return nil
@@ -551,7 +559,9 @@ func EnsureGfmrunActionFunc(cCtx *cli.Context) error {
 }
 
 func EnsureMkdocsActionFunc(cCtx *cli.Context) error {
-	os.Chdir(cCtx.String("top"))
+	if err := os.Chdir(cCtx.String("top")); err != nil {
+		return err
+	}
 
 	if err := runCmd("mkdocs", "--version"); err == nil {
 		return nil
@@ -572,7 +582,9 @@ func SetMkdocsRemoteActionFunc(cCtx *cli.Context) error {
 		return errors.New("empty github token")
 	}
 
-	os.Chdir(cCtx.String("top"))
+	if err := os.Chdir(cCtx.String("top")); err != nil {
+		return err
+	}
 
 	if err := runCmd("git", "remote", "rm", "origin"); err != nil {
 		return err
@@ -586,7 +598,9 @@ func SetMkdocsRemoteActionFunc(cCtx *cli.Context) error {
 
 func LintActionFunc(cCtx *cli.Context) error {
 	top := cCtx.String("top")
-	os.Chdir(top)
+	if err := os.Chdir(top); err != nil {
+		return err
+	}
 
 	out, err := sh(filepath.Join(top, ".local/bin/goimports"), "-l", ".")
 	if err != nil {
@@ -604,7 +618,9 @@ func LintActionFunc(cCtx *cli.Context) error {
 }
 
 func V3Diff(cCtx *cli.Context) error {
-	os.Chdir(cCtx.String("top"))
+	if err := os.Chdir(cCtx.String("top")); err != nil {
+		return err
+	}
 
 	err := runCmd(
 		"diff",

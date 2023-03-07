@@ -1138,12 +1138,6 @@ func TestHideHelpCommand_WithHideHelp(t *testing.T) {
 	}
 }
 
-func newContextFromStringSlice(ss []string) *Context {
-	set := flag.NewFlagSet("", flag.ContinueOnError)
-	_ = set.Parse(ss)
-	return &Context{flagSet: set}
-}
-
 func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 	app := &App{
 		Writer: io.Discard,

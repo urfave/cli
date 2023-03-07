@@ -317,6 +317,17 @@ func ShowCompletions(cCtx *Context) {
 	}
 }
 
+func handleTemplateError(err error) {
+	if err != nil {
+		// If the writer is closed, t.Execute will fail, and there's nothing
+		// we can do to recover.
+		if os.Getenv("CLI_TEMPLATE_ERROR_DEBUG") != "" {
+			_, _ = fmt.Fprintf(ErrWriter, "CLI TEMPLATE ERROR: %#v\n", err)
+		}
+		return
+	}
+}
+
 // printHelpCustom is the default implementation of HelpPrinterCustom.
 //
 // The customFuncs map will be combined with a default template.FuncMap to
@@ -352,27 +363,51 @@ func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs 
 
 	w := tabwriter.NewWriter(out, 1, 8, 2, ' ', 0)
 	t := template.Must(template.New("help").Funcs(funcMap).Parse(templ))
-	t.New("helpNameTemplate").Parse(helpNameTemplate)
-	t.New("usageTemplate").Parse(usageTemplate)
-	t.New("descriptionTemplate").Parse(descriptionTemplate)
-	t.New("visibleCommandTemplate").Parse(visibleCommandTemplate)
-	t.New("copyrightTemplate").Parse(copyrightTemplate)
-	t.New("versionTemplate").Parse(versionTemplate)
-	t.New("visibleFlagCategoryTemplate").Parse(visibleFlagCategoryTemplate)
-	t.New("visibleFlagTemplate").Parse(visibleFlagTemplate)
-	t.New("visibleGlobalFlagCategoryTemplate").Parse(strings.Replace(visibleFlagCategoryTemplate, "OPTIONS", "GLOBAL OPTIONS", -1))
-	t.New("authorsTemplate").Parse(authorsTemplate)
-	t.New("visibleCommandCategoryTemplate").Parse(visibleCommandCategoryTemplate)
-
-	err := t.Execute(w, data)
-	if err != nil {
-		// If the writer is closed, t.Execute will fail, and there's nothing
-		// we can do to recover.
-		if os.Getenv("CLI_TEMPLATE_ERROR_DEBUG") != "" {
-			_, _ = fmt.Fprintf(ErrWriter, "CLI TEMPLATE ERROR: %#v\n", err)
-		}
-		return
+	if _, err := t.New("helpNameTemplate").Parse(helpNameTemplate); err != nil {
+		handleTemplateError(err)
 	}
+	if _, err := t.New("usageTemplate").Parse(usageTemplate); err != nil {
+		handleTemplateError(err)
+	}
+
+	if _, err := t.New("descriptionTemplate").Parse(descriptionTemplate); err != nil {
+		handleTemplateError(err)
+	}
+
+	if _, err := t.New("visibleCommandTemplate").Parse(visibleCommandTemplate); err != nil {
+		handleTemplateError(err)
+	}
+
+	if _, err := t.New("copyrightTemplate").Parse(copyrightTemplate); err != nil {
+		handleTemplateError(err)
+	}
+
+	if _, err := t.New("versionTemplate").Parse(versionTemplate); err != nil {
+		handleTemplateError(err)
+	}
+
+	if _, err := t.New("visibleFlagCategoryTemplate").Parse(visibleFlagCategoryTemplate); err != nil {
+		handleTemplateError(err)
+	}
+
+	if _, err := t.New("visibleFlagTemplate").Parse(visibleFlagTemplate); err != nil {
+		handleTemplateError(err)
+	}
+
+	if _, err := t.New("visibleGlobalFlagCategoryTemplate").Parse(strings.Replace(visibleFlagCategoryTemplate, "OPTIONS", "GLOBAL OPTIONS", -1)); err != nil {
+		handleTemplateError(err)
+	}
+
+	if _, err := t.New("authorsTemplate").Parse(authorsTemplate); err != nil {
+		handleTemplateError(err)
+	}
+
+	if _, err := t.New("visibleCommandCategoryTemplate").Parse(visibleCommandCategoryTemplate); err != nil {
+		handleTemplateError(err)
+	}
+
+	handleTemplateError(t.Execute(w, data))
+
 	_ = w.Flush()
 }
 

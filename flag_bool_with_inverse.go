@@ -114,8 +114,6 @@ func (parent *BoolWithInverseFlag) initialize() {
 			parent.negativeFlag.EnvVars[idx] = strings.ToUpper(parent.InversePrefix) + envVar
 		}
 	}
-
-	return
 }
 
 func (parent *BoolWithInverseFlag) inverseName() string {
