@@ -11,14 +11,14 @@ an expressive way.
 
 These are the guides for each major supported version:
 
-- [`v2`](./v2/getting-started)
-- [`v1`](./v1/getting-started)
+- [`v2`](./v2/getting-started.md)
+- [`v1`](./v1/getting-started.md)
 
 In addition to the version-specific guides, these other documents are available:
 
-- [CONTRIBUTING](./CONTRIBUTING/)
-- [CODE OF CONDUCT](./CODE_OF_CONDUCT/)
-- [RELEASING](./RELEASING/)
+- [CONTRIBUTING](./CONTRIBUTING.md)
+- [CODE OF CONDUCT](./CODE_OF_CONDUCT.md)
+- [RELEASING](./RELEASING.md)
 
 ## Installation
 
