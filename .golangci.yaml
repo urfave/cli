@@ -1,3 +1,4 @@
+# https://golangci-lint.run/usage/configuration/
 linters:
   enable:
     - misspell
