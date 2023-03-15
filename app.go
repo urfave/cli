@@ -121,8 +121,9 @@ type App struct {
 	// Treat all flags as normal arguments if true
 	SkipFlagParsing bool
 
-	didSetup  bool
-	separator separatorSpec
+	didSetup          bool
+	separator         separatorSpec
+	detectableSources map[string]func(string) func(*Context) (interface{}, error)
 
 	rootCommand *Command
 }
@@ -301,6 +302,16 @@ func (a *App) newFlagSet() (*flag.FlagSet, error) {
 
 func (a *App) useShortOptionHandling() bool {
 	return a.UseShortOptionHandling
+}
+
+// RegisterDetectableSource lets developers add support for their own altsrc filetypes to the autodetection list.
+func (a *App) RegisterDetectableSource(extension string, handler func(string) func(*Context) (interface{}, error)) {
+	a.detectableSources[extension] = handler
+}
+
+// GetDetectableSources is used internally to get the list of registered sources.
+func (a *App) GetDetectableSources() map[string]func(string) func(*Context) (interface{}, error) {
+	return a.detectableSources
 }
 
 // Run is the entry point to the cli app. Parses the arguments slice and routes

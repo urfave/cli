@@ -345,6 +345,14 @@ func (a *App) Command(name string) *Command
     Command returns the named command on App. Returns nil if the command does
     not exist
 
+func (a *App) GetDetectableSources() map[string]func(string) func(*Context) (interface{}, error)
+    GetDetectableSources is used internally to get the list of registered
+    sources.
+
+func (a *App) RegisterDetectableSource(extension string, handler func(string) func(*Context) (interface{}, error))
+    RegisterDetectableSource lets developers add support for their own altsrc
+    filetypes to the autodetection list.
+
 func (a *App) Run(arguments []string) (err error)
     Run is the entry point to the cli app. Parses the arguments slice and routes
     to the proper flag/args combination
@@ -2342,7 +2350,7 @@ func ApplyInputSourceValues(cCtx *cli.Context, inputSourceContext InputSourceCon
     ApplyInputSourceValue on flags implementing the FlagInputSourceExtension
     interface to initialize these flags to an alternate input source.
 
-func DetectNewSourceFromFlagFunc(flagFileName string) func(cCtx *cli.Context) (InputSourceContext, error)
+func DetectNewSourceFromFlagFunc(flagFileName string) func(*cli.Context) (InputSourceContext, error)
     DetectNewSourceFromFlagFunc creates a new InputSourceContext from a provided
     flag name and source context.
 
@@ -2371,10 +2379,6 @@ func NewTomlSourceFromFlagFunc(flagFileName string) func(cCtx *cli.Context) (Inp
 func NewYamlSourceFromFlagFunc(flagFileName string) func(cCtx *cli.Context) (InputSourceContext, error)
     NewYamlSourceFromFlagFunc creates a new Yaml InputSourceContext from a
     provided flag name and source context.
-
-func RegisterDetectableSource(extension string, handler func(string) func(cCtx *cli.Context) (InputSourceContext, error))
-    RegisterDetectableSource lets developers add support for their own altsrc
-    filetypes to the autodetection list.
 
 
 TYPES
