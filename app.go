@@ -123,7 +123,7 @@ type App struct {
 
 	didSetup          bool
 	separator         separatorSpec
-	detectableSources map[string]func(string) func(*Context) (interface{}, error)
+	detectableSources map[string]func(string) func(*Context) (InputSourceContext, error)
 
 	rootCommand *Command
 }
@@ -305,12 +305,15 @@ func (a *App) useShortOptionHandling() bool {
 }
 
 // RegisterDetectableSource lets developers add support for their own altsrc filetypes to the autodetection list.
-func (a *App) RegisterDetectableSource(extension string, handler func(string) func(*Context) (interface{}, error)) {
+func (a *App) RegisterDetectableSource(extension string, handler func(string) func(*Context) (InputSourceContext, error)) {
+	if a.detectableSources == nil {
+		a.detectableSources = make(map[string]func(string) func(*Context) (InputSourceContext, error))
+	}
 	a.detectableSources[extension] = handler
 }
 
 // GetDetectableSources is used internally to get the list of registered sources.
-func (a *App) GetDetectableSources() map[string]func(string) func(*Context) (interface{}, error) {
+func (a *App) GetDetectableSources() map[string]func(string) func(*Context) (InputSourceContext, error) {
 	return a.detectableSources
 }
 

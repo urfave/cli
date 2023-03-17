@@ -345,11 +345,11 @@ func (a *App) Command(name string) *Command
     Command returns the named command on App. Returns nil if the command does
     not exist
 
-func (a *App) GetDetectableSources() map[string]func(string) func(*Context) (interface{}, error)
+func (a *App) GetDetectableSources() map[string]func(string) func(*Context) (InputSourceContext, error)
     GetDetectableSources is used internally to get the list of registered
     sources.
 
-func (a *App) RegisterDetectableSource(extension string, handler func(string) func(*Context) (interface{}, error))
+func (a *App) RegisterDetectableSource(extension string, handler func(string) func(*Context) (InputSourceContext, error))
     RegisterDetectableSource lets developers add support for their own altsrc
     filetypes to the autodetection list.
 
@@ -1199,6 +1199,31 @@ func (f *GenericFlag) String() string
 
 func (f *GenericFlag) TakesValue() bool
     TakesValue returns true of the flag takes a value, otherwise false
+
+type InputSourceContext interface {
+	Source() string
+
+	Int(name string) (int, error)
+	Int64(name string) (int64, error)
+	Uint(name string) (uint, error)
+	Uint64(name string) (uint64, error)
+	Duration(name string) (time.Duration, error)
+	Float64(name string) (float64, error)
+	String(name string) (string, error)
+	StringSlice(name string) ([]string, error)
+	IntSlice(name string) ([]int, error)
+	Int64Slice(name string) ([]int64, error)
+	Float64Slice(name string) ([]float64, error)
+	Generic(name string) (Generic, error)
+	Bool(name string) (bool, error)
+
+	IsSet(name string) bool
+}
+    InputSourceContext is an interface used to allow other input sources to be
+    implemented as needed.
+
+    Source returns an identifier for the input source. In case of file source it
+    should return path to the file.
 
 type Int64Flag struct {
 	Name string
@@ -2345,39 +2370,60 @@ package altsrc // import "github.com/urfave/cli/v2/altsrc"
 
 FUNCTIONS
 
-func ApplyInputSourceValues(cCtx *cli.Context, inputSourceContext InputSourceContext, flags []cli.Flag) error
+func ApplyInputSourceValues(cCtx *cli.Context, inputSourceContext cli.InputSourceContext, flags []cli.Flag) error
     ApplyInputSourceValues iterates over all provided flags and executes
     ApplyInputSourceValue on flags implementing the FlagInputSourceExtension
     interface to initialize these flags to an alternate input source.
 
-func DetectNewSourceFromFlagFunc(flagFileName string) func(*cli.Context) (InputSourceContext, error)
-    DetectNewSourceFromFlagFunc creates a new InputSourceContext from a provided
-    flag name and source context.
+func DetectNewSourceFromFlagFunc(flagFileName string) func(*cli.Context) (cli.InputSourceContext, error)
+    DetectNewSourceFromFlagFunc creates a new cli.InputSourceContext from a
+    provided flag name and source context.
 
-func InitInputSource(flags []cli.Flag, createInputSource func() (InputSourceContext, error)) cli.BeforeFunc
-    InitInputSource is used to to setup an InputSourceContext on a cli.Command
-    Before method. It will create a new input source based on the func provided.
-    If there is no error it will then apply the new input source to any flags
-    that are supported by the input source
+func InitInputSource(flags []cli.Flag, createInputSource func() (cli.InputSourceContext, error)) cli.BeforeFunc
+    InitInputSource is used to to setup an cli.InputSourceContext on a
+    cli.Command Before method. It will create a new input source based on the
+    func provided. If there is no error it will then apply the new input source
+    to any flags that are supported by the input source
 
-func InitInputSourceWithContext(flags []cli.Flag, createInputSource func(cCtx *cli.Context) (InputSourceContext, error)) cli.BeforeFunc
-    InitInputSourceWithContext is used to to setup an InputSourceContext on
-    a cli.Command Before method. It will create a new input source based on
-    the func provided with potentially using existing cli.Context values to
+func InitInputSourceWithContext(flags []cli.Flag, createInputSource func(cCtx *cli.Context) (cli.InputSourceContext, error)) cli.BeforeFunc
+    InitInputSourceWithContext is used to to setup an cli.InputSourceContext
+    on a cli.Command Before method. It will create a new input source based
+    on the func provided with potentially using existing cli.Context values to
     initialize itself. If there is no error it will then apply the new input
     source to any flags that are supported by the input source
 
-func NewJSONSourceFromFlagFunc(flag string) func(c *cli.Context) (InputSourceContext, error)
-    NewJSONSourceFromFlagFunc returns a func that takes a cli.Context and
-    returns an InputSourceContext suitable for retrieving config variables from
-    a file containing JSON data with the file name defined by the given flag.
+func NewJSONSource(data []byte) (cli.InputSourceContext, error)
+    NewJSONSource returns an cli.InputSourceContext suitable for retrieving
+    config variables from raw JSON data.
 
-func NewTomlSourceFromFlagFunc(flagFileName string) func(cCtx *cli.Context) (InputSourceContext, error)
-    NewTomlSourceFromFlagFunc creates a new TOML InputSourceContext from a
+func NewJSONSourceFromFile(f string) (cli.InputSourceContext, error)
+    NewJSONSourceFromFile returns an cli.InputSourceContext suitable for
+    retrieving config variables from a file (or url) containing JSON data.
+
+func NewJSONSourceFromFlagFunc(flag string) func(c *cli.Context) (cli.InputSourceContext, error)
+    NewJSONSourceFromFlagFunc returns a func that takes a cli.Context and
+    returns an cli.InputSourceContext suitable for retrieving config variables
+    from a file containing JSON data with the file name defined by the given
+    flag.
+
+func NewJSONSourceFromReader(r io.Reader) (cli.InputSourceContext, error)
+    NewJSONSourceFromReader returns an cli.InputSourceContext suitable for
+    retrieving config variables from an io.Reader that returns JSON data.
+
+func NewTomlSourceFromFile(file string) (cli.InputSourceContext, error)
+    NewTomlSourceFromFile creates a new TOML cli.InputSourceContext from a
+    filepath.
+
+func NewTomlSourceFromFlagFunc(flagFileName string) func(cCtx *cli.Context) (cli.InputSourceContext, error)
+    NewTomlSourceFromFlagFunc creates a new TOML cli.InputSourceContext from a
     provided flag name and source context.
 
-func NewYamlSourceFromFlagFunc(flagFileName string) func(cCtx *cli.Context) (InputSourceContext, error)
-    NewYamlSourceFromFlagFunc creates a new Yaml InputSourceContext from a
+func NewYamlSourceFromFile(file string) (cli.InputSourceContext, error)
+    NewYamlSourceFromFile creates a new Yaml cli.InputSourceContext from a
+    filepath.
+
+func NewYamlSourceFromFlagFunc(flagFileName string) func(cCtx *cli.Context) (cli.InputSourceContext, error)
+    NewYamlSourceFromFlagFunc creates a new Yaml cli.InputSourceContext from a
     provided flag name and source context.
 
 
@@ -2397,7 +2443,7 @@ func (f *BoolFlag) Apply(set *flag.FlagSet) error
     Apply saves the flagSet for later usage calls, then calls the wrapped
     BoolFlag.Apply
 
-func (f *BoolFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
+func (f *BoolFlag) ApplyInputSourceValue(cCtx *cli.Context, isc cli.InputSourceContext) error
     ApplyInputSourceValue applies a Bool value to the flagSet if required
 
 type DurationFlag struct {
@@ -2414,12 +2460,12 @@ func (f *DurationFlag) Apply(set *flag.FlagSet) error
     Apply saves the flagSet for later usage calls, then calls the wrapped
     DurationFlag.Apply
 
-func (f *DurationFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
+func (f *DurationFlag) ApplyInputSourceValue(cCtx *cli.Context, isc cli.InputSourceContext) error
     ApplyInputSourceValue applies a Duration value to the flagSet if required
 
 type FlagInputSourceExtension interface {
 	cli.Flag
-	ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
+	ApplyInputSourceValue(cCtx *cli.Context, isc cli.InputSourceContext) error
 }
     FlagInputSourceExtension is an extension interface of cli.Flag that allows a
     value to be set on the existing parsed flags.
@@ -2438,7 +2484,7 @@ func (f *Float64Flag) Apply(set *flag.FlagSet) error
     Apply saves the flagSet for later usage calls, then calls the wrapped
     Float64Flag.Apply
 
-func (f *Float64Flag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
+func (f *Float64Flag) ApplyInputSourceValue(cCtx *cli.Context, isc cli.InputSourceContext) error
     ApplyInputSourceValue applies a Float64 value to the flagSet if required
 
 type Float64SliceFlag struct {
@@ -2455,7 +2501,7 @@ func (f *Float64SliceFlag) Apply(set *flag.FlagSet) error
     Apply saves the flagSet for later usage calls, then calls the wrapped
     Float64SliceFlag.Apply
 
-func (f *Float64SliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
+func (f *Float64SliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc cli.InputSourceContext) error
     ApplyInputSourceValue applies a Float64Slice value if required
 
 type GenericFlag struct {
@@ -2472,51 +2518,8 @@ func (f *GenericFlag) Apply(set *flag.FlagSet) error
     Apply saves the flagSet for later usage calls, then calls the wrapped
     GenericFlag.Apply
 
-func (f *GenericFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
+func (f *GenericFlag) ApplyInputSourceValue(cCtx *cli.Context, isc cli.InputSourceContext) error
     ApplyInputSourceValue applies a generic value to the flagSet if required
-
-type InputSourceContext interface {
-	Source() string
-
-	Int(name string) (int, error)
-	Int64(name string) (int64, error)
-	Uint(name string) (uint, error)
-	Uint64(name string) (uint64, error)
-	Duration(name string) (time.Duration, error)
-	Float64(name string) (float64, error)
-	String(name string) (string, error)
-	StringSlice(name string) ([]string, error)
-	IntSlice(name string) ([]int, error)
-	Int64Slice(name string) ([]int64, error)
-	Float64Slice(name string) ([]float64, error)
-	Generic(name string) (cli.Generic, error)
-	Bool(name string) (bool, error)
-
-	// Has unexported methods.
-}
-    InputSourceContext is an interface used to allow other input sources to be
-    implemented as needed.
-
-    Source returns an identifier for the input source. In case of file source it
-    should return path to the file.
-
-func NewJSONSource(data []byte) (InputSourceContext, error)
-    NewJSONSource returns an InputSourceContext suitable for retrieving config
-    variables from raw JSON data.
-
-func NewJSONSourceFromFile(f string) (InputSourceContext, error)
-    NewJSONSourceFromFile returns an InputSourceContext suitable for retrieving
-    config variables from a file (or url) containing JSON data.
-
-func NewJSONSourceFromReader(r io.Reader) (InputSourceContext, error)
-    NewJSONSourceFromReader returns an InputSourceContext suitable for
-    retrieving config variables from an io.Reader that returns JSON data.
-
-func NewTomlSourceFromFile(file string) (InputSourceContext, error)
-    NewTomlSourceFromFile creates a new TOML InputSourceContext from a filepath.
-
-func NewYamlSourceFromFile(file string) (InputSourceContext, error)
-    NewYamlSourceFromFile creates a new Yaml InputSourceContext from a filepath.
 
 type Int64Flag struct {
 	*cli.Int64Flag
@@ -2532,7 +2535,7 @@ func (f *Int64Flag) Apply(set *flag.FlagSet) error
     Apply saves the flagSet for later usage calls, then calls the wrapped
     Int64Flag.Apply
 
-func (f *Int64Flag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
+func (f *Int64Flag) ApplyInputSourceValue(cCtx *cli.Context, isc cli.InputSourceContext) error
 
 type Int64SliceFlag struct {
 	*cli.Int64SliceFlag
@@ -2548,7 +2551,7 @@ func (f *Int64SliceFlag) Apply(set *flag.FlagSet) error
     Apply saves the flagSet for later usage calls, then calls the wrapped
     Int64SliceFlag.Apply
 
-func (f *Int64SliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
+func (f *Int64SliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc cli.InputSourceContext) error
     ApplyInputSourceValue applies a Int64Slice value if required
 
 type IntFlag struct {
@@ -2565,7 +2568,7 @@ func (f *IntFlag) Apply(set *flag.FlagSet) error
     Apply saves the flagSet for later usage calls, then calls the wrapped
     IntFlag.Apply
 
-func (f *IntFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
+func (f *IntFlag) ApplyInputSourceValue(cCtx *cli.Context, isc cli.InputSourceContext) error
     ApplyInputSourceValue applies a int value to the flagSet if required
 
 type IntSliceFlag struct {
@@ -2582,13 +2585,13 @@ func (f *IntSliceFlag) Apply(set *flag.FlagSet) error
     Apply saves the flagSet for later usage calls, then calls the wrapped
     IntSliceFlag.Apply
 
-func (f *IntSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
+func (f *IntSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc cli.InputSourceContext) error
     ApplyInputSourceValue applies a IntSlice value if required
 
 type MapInputSource struct {
 	// Has unexported fields.
 }
-    MapInputSource implements InputSourceContext to return data from the map
+    MapInputSource implements cli.InputSourceContext to return data from the map
     that is loaded.
 
 func NewMapInputSource(file string, valueMap map[interface{}]interface{}) *MapInputSource
@@ -2625,6 +2628,8 @@ func (fsm *MapInputSource) Int64Slice(name string) ([]int64, error)
 func (fsm *MapInputSource) IntSlice(name string) ([]int, error)
     IntSlice returns an []int from the map if it exists otherwise returns nil
 
+func (fsm *MapInputSource) IsSet(name string) bool
+
 func (fsm *MapInputSource) Source() string
     Source returns the path of the source file
 
@@ -2656,7 +2661,7 @@ func (f *PathFlag) Apply(set *flag.FlagSet) error
     Apply saves the flagSet for later usage calls, then calls the wrapped
     PathFlag.Apply
 
-func (f *PathFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
+func (f *PathFlag) ApplyInputSourceValue(cCtx *cli.Context, isc cli.InputSourceContext) error
     ApplyInputSourceValue applies a Path value to the flagSet if required
 
 type StringFlag struct {
@@ -2673,7 +2678,7 @@ func (f *StringFlag) Apply(set *flag.FlagSet) error
     Apply saves the flagSet for later usage calls, then calls the wrapped
     StringFlag.Apply
 
-func (f *StringFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
+func (f *StringFlag) ApplyInputSourceValue(cCtx *cli.Context, isc cli.InputSourceContext) error
     ApplyInputSourceValue applies a String value to the flagSet if required
 
 type StringSliceFlag struct {
@@ -2690,7 +2695,7 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) error
     Apply saves the flagSet for later usage calls, then calls the wrapped
     StringSliceFlag.Apply
 
-func (f *StringSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
+func (f *StringSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc cli.InputSourceContext) error
     ApplyInputSourceValue applies a StringSlice value to the flagSet if required
 
 type Uint64Flag struct {
@@ -2707,7 +2712,7 @@ func (f *Uint64Flag) Apply(set *flag.FlagSet) error
     Apply saves the flagSet for later usage calls, then calls the wrapped
     Uint64Flag.Apply
 
-func (f *Uint64Flag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
+func (f *Uint64Flag) ApplyInputSourceValue(cCtx *cli.Context, isc cli.InputSourceContext) error
 
 type UintFlag struct {
 	*cli.UintFlag
@@ -2723,5 +2728,5 @@ func (f *UintFlag) Apply(set *flag.FlagSet) error
     Apply saves the flagSet for later usage calls, then calls the wrapped
     UintFlag.Apply
 
-func (f *UintFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
+func (f *UintFlag) ApplyInputSourceValue(cCtx *cli.Context, isc cli.InputSourceContext) error
 

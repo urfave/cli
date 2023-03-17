@@ -1,9 +1,7 @@
-package altsrc
+package cli
 
 import (
 	"time"
-
-	"github.com/urfave/cli/v2"
 )
 
 // InputSourceContext is an interface used to allow
@@ -25,8 +23,8 @@ type InputSourceContext interface {
 	IntSlice(name string) ([]int, error)
 	Int64Slice(name string) ([]int64, error)
 	Float64Slice(name string) ([]float64, error)
-	Generic(name string) (cli.Generic, error)
+	Generic(name string) (Generic, error)
 	Bool(name string) (bool, error)
 
-	isSet(name string) bool
+	IsSet(name string) bool
 }

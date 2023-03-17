@@ -11,11 +11,11 @@ import (
 )
 
 // NewJSONSourceFromFlagFunc returns a func that takes a cli.Context
-// and returns an InputSourceContext suitable for retrieving config
+// and returns an cli.InputSourceContext suitable for retrieving config
 // variables from a file containing JSON data with the file name defined
 // by the given flag.
-func NewJSONSourceFromFlagFunc(flag string) func(c *cli.Context) (InputSourceContext, error) {
-	return func(cCtx *cli.Context) (InputSourceContext, error) {
+func NewJSONSourceFromFlagFunc(flag string) func(c *cli.Context) (cli.InputSourceContext, error) {
+	return func(cCtx *cli.Context) (cli.InputSourceContext, error) {
 		if cCtx.IsSet(flag) {
 			return NewJSONSourceFromFile(cCtx.String(flag))
 		}
@@ -24,10 +24,10 @@ func NewJSONSourceFromFlagFunc(flag string) func(c *cli.Context) (InputSourceCon
 	}
 }
 
-// NewJSONSourceFromFile returns an InputSourceContext suitable for
+// NewJSONSourceFromFile returns an cli.InputSourceContext suitable for
 // retrieving config variables from a file (or url) containing JSON
 // data.
-func NewJSONSourceFromFile(f string) (InputSourceContext, error) {
+func NewJSONSourceFromFile(f string) (cli.InputSourceContext, error) {
 	data, err := loadDataFrom(f)
 	if err != nil {
 		return nil, err
@@ -36,9 +36,9 @@ func NewJSONSourceFromFile(f string) (InputSourceContext, error) {
 	return NewJSONSource(data)
 }
 
-// NewJSONSourceFromReader returns an InputSourceContext suitable for
+// NewJSONSourceFromReader returns an cli.InputSourceContext suitable for
 // retrieving config variables from an io.Reader that returns JSON data.
-func NewJSONSourceFromReader(r io.Reader) (InputSourceContext, error) {
+func NewJSONSourceFromReader(r io.Reader) (cli.InputSourceContext, error) {
 	data, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
@@ -46,9 +46,9 @@ func NewJSONSourceFromReader(r io.Reader) (InputSourceContext, error) {
 	return NewJSONSource(data)
 }
 
-// NewJSONSource returns an InputSourceContext suitable for retrieving
+// NewJSONSource returns an cli.InputSourceContext suitable for retrieving
 // config variables from raw JSON data.
-func NewJSONSource(data []byte) (InputSourceContext, error) {
+func NewJSONSource(data []byte) (cli.InputSourceContext, error) {
 	var deserialized map[string]interface{}
 	if err := json.Unmarshal(data, &deserialized); err != nil {
 		return nil, err
@@ -286,7 +286,7 @@ func (x *jsonSource) Bool(name string) (bool, error) {
 	return v, nil
 }
 
-func (x *jsonSource) isSet(name string) bool {
+func (x *jsonSource) IsSet(name string) bool {
 	_, err := x.getValue(name)
 	return err == nil
 }

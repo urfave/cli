@@ -10,7 +10,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-// MapInputSource implements InputSourceContext to return
+// MapInputSource implements cli.InputSourceContext to return
 // data from the map that is loaded.
 type MapInputSource struct {
 	file     string
@@ -461,7 +461,7 @@ func (fsm *MapInputSource) Bool(name string) (bool, error) {
 	return false, nil
 }
 
-func (fsm *MapInputSource) isSet(name string) bool {
+func (fsm *MapInputSource) IsSet(name string) bool {
 	if _, exists := fsm.valueMap[name]; exists {
 		return exists
 	}
