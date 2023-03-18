@@ -2463,6 +2463,12 @@ func (f *GenericFlag) Apply(set *flag.FlagSet) error
 func (f *GenericFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
     ApplyInputSourceValue applies a generic value to the flagSet if required
 
+type GenericWithImport interface {
+	cli.Generic
+
+	FromJson([]byte) error
+}
+
 type InputSourceContext interface {
 	Source() string
 
@@ -2505,6 +2511,12 @@ func NewTomlSourceFromFile(file string) (InputSourceContext, error)
 
 func NewYamlSourceFromFile(file string) (InputSourceContext, error)
     NewYamlSourceFromFile creates a new Yaml InputSourceContext from a filepath.
+
+type InputSourceContextWithExport interface {
+	InputSourceContext
+
+	Json(name string) ([]byte, error)
+}
 
 type Int64Flag struct {
 	*cli.Int64Flag
@@ -2612,6 +2624,8 @@ func (fsm *MapInputSource) Int64Slice(name string) ([]int64, error)
 
 func (fsm *MapInputSource) IntSlice(name string) ([]int, error)
     IntSlice returns an []int from the map if it exists otherwise returns nil
+
+func (fsm *MapInputSource) Json(name string) ([]byte, error)
 
 func (fsm *MapInputSource) Source() string
     Source returns the path of the source file

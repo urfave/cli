@@ -73,7 +73,32 @@ func (f *GenericFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceCo
 		}
 		value, err := isc.Generic(name)
 		if err != nil {
-			return err
+			stringValue, stringErr := isc.String(name)
+			if stringErr != nil {
+				isce, isType := isc.(InputSourceContextWithExport)
+				if isType {
+					flagValue, isType := f.Value.(GenericWithImport)
+					if !isType {
+						return err
+					}
+					jsonValue, err := isce.Json(name)
+					if err != nil {
+						return err
+					}
+					if len(jsonValue) > 0 {
+						err := flagValue.FromJson(jsonValue)
+						if err != nil {
+							return err
+						}
+						value = flagValue
+					}
+				}
+			} else {
+				value = &stringGeneric{stringValue}
+			}
+			if value == nil {
+				return err
+			}
 		}
 		if value == nil {
 			continue
@@ -414,4 +439,17 @@ func isEnvVarSet(envVars []string) bool {
 
 func float64ToString(f float64) string {
 	return fmt.Sprintf("%v", f)
+}
+
+type stringGeneric struct {
+	value string
+}
+
+func (s *stringGeneric) Set(value string) error {
+	s.value = value
+	return nil
+}
+
+func (s *stringGeneric) String() string {
+	return s.value
 }
