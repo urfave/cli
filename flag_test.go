@@ -42,7 +42,9 @@ func TestBoolFlagApply_SetsAllNames(t *testing.T) {
 	v := false
 	fl := BoolFlag{Name: "wat", Aliases: []string{"W", "huh"}, Destination: &v}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{"--wat", "-W", "--huh"})
 	expect(t, err, nil)
@@ -510,7 +512,9 @@ func TestStringFlagHelpOutput(t *testing.T) {
 		fl := &StringFlag{Name: test.name, Aliases: test.aliases, Usage: test.usage, Value: test.value}
 		// create a tmp flagset
 		tfs := flag.NewFlagSet("test", 0)
-		_ = fl.Apply(tfs)
+		if err := fl.Apply(tfs); err != nil {
+			t.Error(err)
+		}
 		output := fl.String()
 
 		if output != test.expected {
@@ -577,7 +581,9 @@ func TestStringFlagApply_SetsAllNames(t *testing.T) {
 	v := "mmm"
 	fl := StringFlag{Name: "hay", Aliases: []string{"H", "hayyy"}, Destination: &v}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{"--hay", "u", "-H", "yuu", "--hayyy", "YUUUU"})
 	expect(t, err, nil)
@@ -737,7 +743,9 @@ func TestStringSliceFlagWithEnvVarHelpOutput(t *testing.T) {
 func TestStringSliceFlagApply_SetsAllNames(t *testing.T) {
 	fl := StringSliceFlag{Name: "goat", Aliases: []string{"G", "gooots"}}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{"--goat", "aaa", "-G", "bbb", "--gooots", "eeeee"})
 	expect(t, err, nil)
@@ -750,7 +758,9 @@ func TestStringSliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	var val StringSlice
 	fl := StringSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: &val}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse(nil)
 	expect(t, err, nil)
@@ -765,7 +775,9 @@ func TestStringSliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	val := NewStringSlice(`some default`, `values here`)
 	fl := StringSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: val}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 	err := set.Parse(nil)
 	expect(t, err, nil)
 	expect(t, val.Value(), []string{`some default`, `values here`})
@@ -777,7 +789,9 @@ func TestStringSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 
 	fl := StringSliceFlag{Name: "country", Value: NewStringSlice(defValue...), Destination: NewStringSlice("CA")}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{})
 	expect(t, err, nil)
@@ -924,7 +938,9 @@ func TestIntFlagApply_SetsAllNames(t *testing.T) {
 	v := 3
 	fl := IntFlag{Name: "banana", Aliases: []string{"B", "banannanana"}, Destination: &v}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{"--banana", "1", "-B", "2", "--banannanana", "5"})
 	expect(t, err, nil)
@@ -1139,7 +1155,9 @@ func TestDurationFlagApply_SetsAllNames(t *testing.T) {
 	v := time.Second * 20
 	fl := DurationFlag{Name: "howmuch", Aliases: []string{"H", "whyyy"}, Destination: &v}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{"--howmuch", "30s", "-H", "5m", "--whyyy", "30h"})
 	expect(t, err, nil)
@@ -1195,7 +1213,9 @@ func TestIntSliceFlagWithEnvVarHelpOutput(t *testing.T) {
 func TestIntSliceFlagApply_SetsAllNames(t *testing.T) {
 	fl := IntSliceFlag{Name: "bits", Aliases: []string{"B", "bips"}}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{"--bits", "23", "-B", "3", "--bips", "99"})
 	expect(t, err, nil)
@@ -1208,7 +1228,9 @@ func TestIntSliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	var val IntSlice
 	fl := IntSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: &val}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse(nil)
 	expect(t, err, nil)
@@ -1223,7 +1245,9 @@ func TestIntSliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	val := NewIntSlice(3, 4)
 	fl := IntSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: val}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 	err := set.Parse(nil)
 	expect(t, err, nil)
 	expect(t, val.Value(), []int{3, 4})
@@ -1235,7 +1259,9 @@ func TestIntSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 
 	fl := IntSliceFlag{Name: "country", Value: NewIntSlice(defValue...), Destination: NewIntSlice(3)}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{})
 	expect(t, err, nil)
@@ -1268,7 +1294,9 @@ func TestIntSliceFlagApply_ParentContext(t *testing.T) {
 func TestIntSliceFlag_SetFromParentContext(t *testing.T) {
 	fl := &IntSliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: NewIntSlice(1, 2, 3, 4)}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 	ctx := &Context{
 		parentContext: &Context{
 			flagSet: set,
@@ -1331,7 +1359,9 @@ func TestInt64SliceFlagWithEnvVarHelpOutput(t *testing.T) {
 func TestInt64SliceFlagApply_SetsAllNames(t *testing.T) {
 	fl := Int64SliceFlag{Name: "bits", Aliases: []string{"B", "bips"}}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{"--bits", "23", "-B", "3", "--bips", "99"})
 	expect(t, err, nil)
@@ -1344,7 +1374,9 @@ func TestInt64SliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	var val Int64Slice
 	fl := Int64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: &val}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse(nil)
 	expect(t, err, nil)
@@ -1359,7 +1391,9 @@ func TestInt64SliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	val := NewInt64Slice(3, 4)
 	fl := Int64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: val}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 	err := set.Parse(nil)
 	expect(t, err, nil)
 	expect(t, val.Value(), []int64{3, 4})
@@ -1371,7 +1405,9 @@ func TestInt64SliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 
 	fl := Int64SliceFlag{Name: "country", Value: NewInt64Slice(defValue...), Destination: NewInt64Slice(3)}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{})
 	expect(t, err, nil)
@@ -1404,7 +1440,9 @@ func TestInt64SliceFlagApply_ParentContext(t *testing.T) {
 func TestInt64SliceFlag_SetFromParentContext(t *testing.T) {
 	fl := &Int64SliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: NewInt64Slice(1, 2, 3, 4)}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 	ctx := &Context{
 		parentContext: &Context{
 			flagSet: set,
@@ -1419,7 +1457,9 @@ func TestInt64SliceFlag_SetFromParentContext(t *testing.T) {
 func TestInt64SliceFlag_ReturnNil(t *testing.T) {
 	fl := &Int64SliceFlag{}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 	ctx := &Context{
 		parentContext: &Context{
 			flagSet: set,
@@ -1482,7 +1522,9 @@ func TestUintSliceFlagWithEnvVarHelpOutput(t *testing.T) {
 func TestUintSliceFlagApply_SetsAllNames(t *testing.T) {
 	fl := UintSliceFlag{Name: "bits", Aliases: []string{"B", "bips"}}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{"--bits", "23", "-B", "3", "--bips", "99"})
 	expect(t, err, nil)
@@ -1495,7 +1537,9 @@ func TestUintSliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	var val UintSlice
 	fl := UintSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: &val}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse(nil)
 	expect(t, err, nil)
@@ -1510,7 +1554,9 @@ func TestUintSliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	val := NewUintSlice(3, 4)
 	fl := UintSliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: val}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 	err := set.Parse(nil)
 	expect(t, err, nil)
 	expect(t, val.Value(), []uint{3, 4})
@@ -1522,7 +1568,9 @@ func TestUintSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 
 	fl := UintSliceFlag{Name: "country", Value: NewUintSlice(defValue...), Destination: NewUintSlice(3)}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{})
 	expect(t, err, nil)
@@ -1555,7 +1603,9 @@ func TestUintSliceFlagApply_ParentContext(t *testing.T) {
 func TestUintSliceFlag_SetFromParentContext(t *testing.T) {
 	fl := &UintSliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: NewUintSlice(1, 2, 3, 4)}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 	ctx := &Context{
 		parentContext: &Context{
 			flagSet: set,
@@ -1570,7 +1620,9 @@ func TestUintSliceFlag_SetFromParentContext(t *testing.T) {
 func TestUintSliceFlag_ReturnNil(t *testing.T) {
 	fl := &UintSliceFlag{}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 	ctx := &Context{
 		parentContext: &Context{
 			flagSet: set,
@@ -1625,7 +1677,9 @@ func TestUint64SliceFlagWithEnvVarHelpOutput(t *testing.T) {
 func TestUint64SliceFlagApply_SetsAllNames(t *testing.T) {
 	fl := Uint64SliceFlag{Name: "bits", Aliases: []string{"B", "bips"}}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{"--bits", "23", "-B", "3", "--bips", "99"})
 	expect(t, err, nil)
@@ -1638,7 +1692,9 @@ func TestUint64SliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	var val Uint64Slice
 	fl := Uint64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: &val}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse(nil)
 	expect(t, err, nil)
@@ -1653,7 +1709,9 @@ func TestUint64SliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	val := NewUint64Slice(3, 4)
 	fl := Uint64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: val}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 	err := set.Parse(nil)
 	expect(t, err, nil)
 	expect(t, val.Value(), []uint64{3, 4})
@@ -1665,7 +1723,9 @@ func TestUint64SliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 
 	fl := Uint64SliceFlag{Name: "country", Value: NewUint64Slice(defValue...), Destination: NewUint64Slice(3)}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{})
 	expect(t, err, nil)
@@ -1698,7 +1758,9 @@ func TestUint64SliceFlagApply_ParentContext(t *testing.T) {
 func TestUint64SliceFlag_SetFromParentContext(t *testing.T) {
 	fl := &Uint64SliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: NewUint64Slice(1, 2, 3, 4)}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 	ctx := &Context{
 		parentContext: &Context{
 			flagSet: set,
@@ -1713,7 +1775,9 @@ func TestUint64SliceFlag_SetFromParentContext(t *testing.T) {
 func TestUint64SliceFlag_ReturnNil(t *testing.T) {
 	fl := &Uint64SliceFlag{}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 	ctx := &Context{
 		parentContext: &Context{
 			flagSet: set,
@@ -1765,7 +1829,9 @@ func TestFloat64FlagApply_SetsAllNames(t *testing.T) {
 	v := 99.1
 	fl := Float64Flag{Name: "noodles", Aliases: []string{"N", "nurbles"}, Destination: &v}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{"--noodles", "1.3", "-N", "11", "--nurbles", "43.33333"})
 	expect(t, err, nil)
@@ -1821,7 +1887,9 @@ func TestFloat64SliceFlagWithEnvVarHelpOutput(t *testing.T) {
 func TestFloat64SliceFlagApply_SetsAllNames(t *testing.T) {
 	fl := Float64SliceFlag{Name: "bits", Aliases: []string{"B", "bips"}}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{"--bits", "23", "-B", "3", "--bips", "99"})
 	expect(t, err, nil)
@@ -1834,7 +1902,9 @@ func TestFloat64SliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	var val Float64Slice
 	fl := Float64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: &val}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse(nil)
 	expect(t, err, nil)
@@ -1849,7 +1919,9 @@ func TestFloat64SliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	val := NewFloat64Slice(3.0, 4.0)
 	fl := Float64SliceFlag{Name: "goat", EnvVars: []string{"MY_GOAT"}, Value: val}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 	err := set.Parse(nil)
 	expect(t, err, nil)
 	expect(t, val.Value(), []float64{3, 4})
@@ -1861,7 +1933,9 @@ func TestFloat64SliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 
 	fl := Float64SliceFlag{Name: "country", Value: NewFloat64Slice(defValue...), Destination: NewFloat64Slice(3)}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{})
 	expect(t, err, nil)
@@ -1944,7 +2018,9 @@ func TestGenericFlagWithEnvVarHelpOutput(t *testing.T) {
 func TestGenericFlagApply_SetsAllNames(t *testing.T) {
 	fl := GenericFlag{Name: "orbs", Aliases: []string{"O", "obrs"}, Value: &Parser{}}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{"--orbs", "eleventy,3", "-O", "4,bloop", "--obrs", "19,s"})
 	expect(t, err, nil)
@@ -3095,7 +3171,9 @@ func TestTimestampFlagApply(t *testing.T) {
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
 	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: time.RFC3339}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
 	expect(t, err, nil)
@@ -3106,7 +3184,9 @@ func TestTimestampFlagApplyValue(t *testing.T) {
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
 	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: time.RFC3339, Value: NewTimestamp(expectedResult)}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{""})
 	expect(t, err, nil)
@@ -3117,7 +3197,9 @@ func TestTimestampFlagApply_Fail_Parse_Wrong_Layout(t *testing.T) {
 	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: "randomlayout"}
 	set := flag.NewFlagSet("test", 0)
 	set.SetOutput(io.Discard)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
 	expect(t, err, fmt.Errorf("invalid value \"2006-01-02T15:04:05Z\" for flag -time: parsing time \"2006-01-02T15:04:05Z\" as \"randomlayout\": cannot parse \"2006-01-02T15:04:05Z\" as \"randomlayout\""))
@@ -3127,7 +3209,9 @@ func TestTimestampFlagApply_Fail_Parse_Wrong_Time(t *testing.T) {
 	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: "Jan 2, 2006 at 3:04pm (MST)"}
 	set := flag.NewFlagSet("test", 0)
 	set.SetOutput(io.Discard)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
 	expect(t, err, fmt.Errorf("invalid value \"2006-01-02T15:04:05Z\" for flag -time: parsing time \"2006-01-02T15:04:05Z\" as \"Jan 2, 2006 at 3:04pm (MST)\": cannot parse \"2006-01-02T15:04:05Z\" as \"Jan\""))
@@ -3138,7 +3222,9 @@ func TestTimestampFlagApply_Timezoned(t *testing.T) {
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
 	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: time.ANSIC, Timezone: pdt}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{"--time", "Mon Jan 2 08:04:05 2006"})
 	expect(t, err, nil)
@@ -3476,7 +3562,9 @@ func TestTimestampFlagApply_WithDestination(t *testing.T) {
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
 	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Layout: time.RFC3339, Destination: &destination}
 	set := flag.NewFlagSet("test", 0)
-	_ = fl.Apply(set)
+	if err := fl.Apply(set); err != nil {
+		t.Error(err)
+	}
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
 	expect(t, err, nil)

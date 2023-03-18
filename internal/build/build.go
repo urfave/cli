@@ -179,7 +179,9 @@ func sh(exe string, args ...string) (string, error) {
 
 func topRunAction(arg string, args ...string) cli.ActionFunc {
 	return func(cCtx *cli.Context) error {
-		_ = os.Chdir(cCtx.Path("top"))
+		if err := os.Chdir(cCtx.Path("top")); err != nil {
+			return err
+		}
 
 		return runCmd(arg, args...)
 	}
@@ -531,13 +533,17 @@ func YAMLFmtActionFunc(cCtx *cli.Context) error {
 		return err
 	}
 
-	_ = os.Chdir(cCtx.Path("top"))
+	if err := os.Chdir(cCtx.Path("top")); err != nil {
+		return err
+	}
 
 	return runCmd(yqBin, "eval", "--inplace", "flag-spec.yaml")
 }
 
 func DiffCheckActionFunc(cCtx *cli.Context) error {
-	_ = os.Chdir(cCtx.Path("top"))
+	if err := os.Chdir(cCtx.Path("top")); err != nil {
+		return err
+	}
 
 	if err := runCmd("git", "diff", "--exit-code"); err != nil {
 		return err
@@ -548,7 +554,9 @@ func DiffCheckActionFunc(cCtx *cli.Context) error {
 
 func EnsureGoimportsActionFunc(cCtx *cli.Context) error {
 	top := cCtx.Path("top")
-	_ = os.Chdir(top)
+	if err := os.Chdir(top); err != nil {
+		return err
+	}
 
 	if err := runCmd(
 		"goimports",
@@ -567,7 +575,9 @@ func EnsureGfmrunActionFunc(cCtx *cli.Context) error {
 	top := cCtx.Path("top")
 	gfmrunExe := filepath.Join(top, ".local/bin/gfmrun")
 
-	_ = os.Chdir(top)
+	if err := os.Chdir(top); err != nil {
+		return err
+	}
 
 	if v, err := sh(gfmrunExe, "--version"); err == nil && strings.TrimSpace(v) == gfmrunVersion {
 		return nil
@@ -587,7 +597,9 @@ func EnsureGfmrunActionFunc(cCtx *cli.Context) error {
 }
 
 func EnsureMkdocsActionFunc(cCtx *cli.Context) error {
-	_ = os.Chdir(cCtx.Path("top"))
+	if err := os.Chdir(cCtx.Path("top")); err != nil {
+		return err
+	}
 
 	if err := runCmd("mkdocs", "--version"); err == nil {
 		return nil
@@ -608,7 +620,9 @@ func SetMkdocsRemoteActionFunc(cCtx *cli.Context) error {
 		return errors.New("empty github token")
 	}
 
-	_ = os.Chdir(cCtx.Path("top"))
+	if err := os.Chdir(cCtx.Path("top")); err != nil {
+		return err
+	}
 
 	if err := runCmd("git", "remote", "rm", "origin"); err != nil {
 		return err
@@ -622,7 +636,9 @@ func SetMkdocsRemoteActionFunc(cCtx *cli.Context) error {
 
 func LintActionFunc(cCtx *cli.Context) error {
 	top := cCtx.Path("top")
-	_ = os.Chdir(top)
+	if err := os.Chdir(top); err != nil {
+		return err
+	}
 
 	out, err := sh(filepath.Join(top, ".local/bin/goimports"), "-l", ".")
 	if err != nil {
@@ -640,7 +656,9 @@ func LintActionFunc(cCtx *cli.Context) error {
 }
 
 func V2Diff(cCtx *cli.Context) error {
-	_ = os.Chdir(cCtx.Path("top"))
+	if err := os.Chdir(cCtx.Path("top")); err != nil {
+		return err
+	}
 
 	err := runCmd(
 		"diff",
