@@ -159,3 +159,13 @@ func TestHandleExitCoder_MultiErrorWithFormat(t *testing.T) {
 	expect(t, called, true)
 	expect(t, ErrWriter.(*bytes.Buffer).String(), "This the format: err1\nThis the format: err2\n")
 }
+
+func TestMultiErrorErrorsCopy(t *testing.T) {
+	errList := []error{
+		errors.New("foo"),
+		errors.New("bar"),
+		errors.New("baz"),
+	}
+	me := newMultiError(errList...)
+	expect(t, errList, me.Errors())
+}

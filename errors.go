@@ -41,9 +41,7 @@ func (m *multiError) Error() string {
 // Errors returns a copy of the errors slice
 func (m *multiError) Errors() []error {
 	errs := make([]error, len(*m))
-	for _, err := range *m {
-		errs = append(errs, err)
-	}
+	copy(errs, *m)
 	return errs
 }
 
