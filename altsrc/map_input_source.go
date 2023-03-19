@@ -475,6 +475,9 @@ func incorrectTypeForFlagError(name, expectedTypeName string, value interface{})
 	valueTypeName := ""
 	if valueType != nil {
 		valueTypeName = valueType.Name()
+		if valueTypeName == "" && valueType.Kind() == reflect.Pointer {
+			valueTypeName = "*" + valueType.Elem().Name()
+		}
 	}
 
 	return fmt.Errorf("Mismatched type for flag '%s'. Expected '%s' but actual is '%s'", name, expectedTypeName, valueTypeName)
