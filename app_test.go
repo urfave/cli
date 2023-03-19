@@ -3045,37 +3045,3 @@ func TestFlagAction(t *testing.T) {
 		})
 	}
 }
-
-func TestRegisterDetectableSource(t *testing.T) {
-	app := newTestApp()
-	testHandler := func(s string) func(*Context) (InputSourceContext, error) {
-		return func(ctx *Context) (InputSourceContext, error) {
-			return testInputSource{}, nil
-		}
-	}
-
-	app.RegisterDetectableSource(".test", testHandler)
-
-	_, ok := app.detectableSources[".test"]
-	expect(t, ok, true)
-}
-
-func TestGetDetectableSources(t *testing.T) {
-	app := newTestApp()
-	testHandler := func(s string) func(*Context) (InputSourceContext, error) {
-		return func(ctx *Context) (InputSourceContext, error) {
-			return testInputSource{}, nil
-		}
-	}
-
-	_, ok := app.GetDetectableSources()[".test"]
-	expect(t, ok, false)
-
-	app.RegisterDetectableSource(".test", testHandler)
-
-	_, ok = app.detectableSources[".test"]
-	expect(t, ok, true)
-
-	_, ok = app.GetDetectableSources()[".test"]
-	expect(t, ok, true)
-}

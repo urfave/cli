@@ -121,9 +121,9 @@ type App struct {
 	// Treat all flags as normal arguments if true
 	SkipFlagParsing bool
 
-	didSetup          bool
-	separator         separatorSpec
-	detectableSources map[string]func(string) func(*Context) (InputSourceContext, error)
+	didSetup   bool
+	separator  separatorSpec
+	extensions map[string]AppExtension
 
 	rootCommand *Command
 }
@@ -155,6 +155,7 @@ func NewApp() *App {
 		Reader:       os.Stdin,
 		Writer:       os.Stdout,
 		ErrWriter:    os.Stderr,
+		extensions:   make(map[string]AppExtension),
 	}
 }
 
@@ -267,6 +268,10 @@ func (a *App) Setup() {
 	if a.Metadata == nil {
 		a.Metadata = make(map[string]interface{})
 	}
+
+	if a.extensions == nil {
+		a.extensions = make(map[string]AppExtension)
+	}
 }
 
 func (a *App) newRootCommand() *Command {
@@ -304,17 +309,14 @@ func (a *App) useShortOptionHandling() bool {
 	return a.UseShortOptionHandling
 }
 
-// RegisterDetectableSource lets developers add support for their own altsrc filetypes to the autodetection list.
-func (a *App) RegisterDetectableSource(extension string, handler func(string) func(*Context) (InputSourceContext, error)) {
-	if a.detectableSources == nil {
-		a.detectableSources = make(map[string]func(string) func(*Context) (InputSourceContext, error))
-	}
-	a.detectableSources[extension] = handler
+// AddExtension connects an extension to the App instance for use by myriad extensions
+func (a *App) AddExtension(e AppExtension) {
+	a.extensions[e.MyName()] = e
 }
 
-// GetDetectableSources is used internally to get the list of registered sources.
-func (a *App) GetDetectableSources() map[string]func(string) func(*Context) (InputSourceContext, error) {
-	return a.detectableSources
+// GetExtension looks up the named extension so it can be worked with as needed
+func (a *App) GetExtension(name string) AppExtension {
+	return a.extensions[name]
 }
 
 // Run is the entry point to the cli app. Parses the arguments slice and routes

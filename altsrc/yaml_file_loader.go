@@ -18,8 +18,8 @@ type yamlSourceContext struct {
 	FilePath string
 }
 
-// NewYamlSourceFromFile creates a new Yaml cli.InputSourceContext from a filepath.
-func NewYamlSourceFromFile(file string) (cli.InputSourceContext, error) {
+// NewYamlSourceFromFile creates a new Yaml InputSourceContext from a filepath.
+func NewYamlSourceFromFile(file string) (InputSourceContext, error) {
 	ysc := &yamlSourceContext{FilePath: file}
 	var results map[interface{}]interface{}
 	err := readCommandYaml(ysc.FilePath, &results)
@@ -30,9 +30,9 @@ func NewYamlSourceFromFile(file string) (cli.InputSourceContext, error) {
 	return &MapInputSource{file: file, valueMap: results}, nil
 }
 
-// NewYamlSourceFromFlagFunc creates a new Yaml cli.InputSourceContext from a provided flag name and source context.
-func NewYamlSourceFromFlagFunc(flagFileName string) func(cCtx *cli.Context) (cli.InputSourceContext, error) {
-	return func(cCtx *cli.Context) (cli.InputSourceContext, error) {
+// NewYamlSourceFromFlagFunc creates a new Yaml InputSourceContext from a provided flag name and source context.
+func NewYamlSourceFromFlagFunc(flagFileName string) func(cCtx *cli.Context) (InputSourceContext, error) {
+	return func(cCtx *cli.Context) (InputSourceContext, error) {
 		if filePath := cCtx.String(flagFileName); filePath != "" {
 			return NewYamlSourceFromFile(filePath)
 		}

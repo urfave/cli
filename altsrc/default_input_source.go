@@ -1,8 +1,6 @@
 package altsrc
 
-import "github.com/urfave/cli/v2"
-
-// defaultInputSource creates a default cli.InputSourceContext.
-func defaultInputSource() (cli.InputSourceContext, error) {
+// defaultInputSource creates a default InputSourceContext.
+func defaultInputSource() (InputSourceContext, error) {
 	return &MapInputSource{file: "", valueMap: map[interface{}]interface{}{}}, nil
 }

@@ -9,7 +9,7 @@ import (
 )
 
 // defaultSources is a read-only map, making it concurrency-safe
-var defaultSources = map[string]func(string) func(*cli.Context) (cli.InputSourceContext, error){
+var defaultSources = map[string]func(string) func(*cli.Context) (InputSourceContext, error){
 	".conf": NewTomlSourceFromFlagFunc,
 	".json": NewJSONSourceFromFlagFunc,
 	".toml": NewTomlSourceFromFlagFunc,
@@ -17,17 +17,21 @@ var defaultSources = map[string]func(string) func(*cli.Context) (cli.InputSource
 	".yml":  NewYamlSourceFromFlagFunc,
 }
 
-// DetectNewSourceFromFlagFunc creates a new cli.InputSourceContext from a provided flag name and source context.
-func DetectNewSourceFromFlagFunc(flagFileName string) func(*cli.Context) (cli.InputSourceContext, error) {
-	return func(cCtx *cli.Context) (cli.InputSourceContext, error) {
-		detectableSources := cCtx.App.GetDetectableSources()
-
+// DetectNewSourceFromFlagFunc creates a new InputSourceContext from a provided flag name and source context.
+func DetectNewSourceFromFlagFunc(flagFileName string) func(*cli.Context) (InputSourceContext, error) {
+	return func(cCtx *cli.Context) (InputSourceContext, error) {
 		if fileFullPath := cCtx.String(flagFileName); fileFullPath != "" {
+			detectableSources := make(map[string]func(string) func(*cli.Context) (InputSourceContext, error))
 			fileExt := filepath.Ext(fileFullPath)
 
 			// Check if the App contains a handler for this extension first, allowing it to override the defaults
-			if handler, ok := detectableSources[fileExt]; ok {
-				return handler(flagFileName)(cCtx)
+			detectExt, isType := cCtx.App.GetExtension("DetectableSources").(DetectableSourcesAppExtension)
+			if isType {
+				detectableSources = detectExt.getDetectableSources()
+
+				if handler, ok := detectableSources[fileExt]; ok {
+					return handler(flagFileName)(cCtx)
+				}
 			}
 
 			// Fall back to the default sources implemented by the library itself
@@ -42,7 +46,7 @@ func DetectNewSourceFromFlagFunc(flagFileName string) func(*cli.Context) (cli.In
 	}
 }
 
-func detectableExtensions(detectableSources map[string]func(string) func(*cli.Context) (cli.InputSourceContext, error)) []string {
+func detectableExtensions(detectableSources map[string]func(string) func(*cli.Context) (InputSourceContext, error)) []string {
 	// We don't preallocate because this generates empty space in the output
 	// It's less efficient, but this is for error messaging only at the moment
 	var extensions []string

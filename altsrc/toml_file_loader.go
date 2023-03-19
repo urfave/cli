@@ -74,8 +74,8 @@ type tomlSourceContext struct {
 	FilePath string
 }
 
-// NewTomlSourceFromFile creates a new TOML cli.InputSourceContext from a filepath.
-func NewTomlSourceFromFile(file string) (cli.InputSourceContext, error) {
+// NewTomlSourceFromFile creates a new TOML InputSourceContext from a filepath.
+func NewTomlSourceFromFile(file string) (InputSourceContext, error) {
 	tsc := &tomlSourceContext{FilePath: file}
 	var results tomlMap = tomlMap{}
 	if err := readCommandToml(tsc.FilePath, &results); err != nil {
@@ -84,9 +84,9 @@ func NewTomlSourceFromFile(file string) (cli.InputSourceContext, error) {
 	return &MapInputSource{file: file, valueMap: results.Map}, nil
 }
 
-// NewTomlSourceFromFlagFunc creates a new TOML cli.InputSourceContext from a provided flag name and source context.
-func NewTomlSourceFromFlagFunc(flagFileName string) func(cCtx *cli.Context) (cli.InputSourceContext, error) {
-	return func(cCtx *cli.Context) (cli.InputSourceContext, error) {
+// NewTomlSourceFromFlagFunc creates a new TOML InputSourceContext from a provided flag name and source context.
+func NewTomlSourceFromFlagFunc(flagFileName string) func(cCtx *cli.Context) (InputSourceContext, error) {
+	return func(cCtx *cli.Context) (InputSourceContext, error) {
 		if cCtx.IsSet(flagFileName) {
 			filePath := cCtx.String(flagFileName)
 			return NewTomlSourceFromFile(filePath)

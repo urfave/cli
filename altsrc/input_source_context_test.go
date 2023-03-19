@@ -1,7 +1,9 @@
-package cli
+package altsrc
 
 import (
 	"time"
+
+	"github.com/urfave/cli/v2"
 )
 
 type testInputSource struct {
@@ -65,7 +67,7 @@ func (tis testInputSource) Float64Slice(name string) ([]float64, error) {
 	return float64Slice, nil
 }
 
-func (tis testInputSource) Generic(name string) (Generic, error) {
+func (tis testInputSource) Generic(name string) (cli.Generic, error) {
 	return nil, nil
 }
 
@@ -73,7 +75,7 @@ func (tis testInputSource) Bool(name string) (bool, error) {
 	return false, nil
 }
 
-func (tis testInputSource) IsSet(name string) bool {
+func (tis testInputSource) isSet(name string) bool {
 	_, exists := tis.valueMap[name]
 	return exists
 }

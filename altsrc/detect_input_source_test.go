@@ -10,7 +10,7 @@ import (
 )
 
 func TestDetectsConfCorrectly(t *testing.T) {
-	app := &cli.App{}
+	app := cli.NewApp()
 	set := flag.NewFlagSet("test", 0)
 	_ = os.WriteFile("current.conf", []byte("test = 15"), 0666)
 	defer os.Remove("current.conf")
@@ -40,7 +40,7 @@ func TestDetectsConfCorrectly(t *testing.T) {
 }
 
 func TestDetectsJsonCorrectly(t *testing.T) {
-	app := &cli.App{}
+	app := cli.NewApp()
 	set := flag.NewFlagSet("test", 0)
 	_ = os.WriteFile("current.json", []byte("{\"test\":15}"), 0666)
 	defer os.Remove("current.json")
@@ -70,7 +70,7 @@ func TestDetectsJsonCorrectly(t *testing.T) {
 }
 
 func TestDetectsTomlCorrectly(t *testing.T) {
-	app := &cli.App{}
+	app := cli.NewApp()
 	set := flag.NewFlagSet("test", 0)
 	_ = os.WriteFile("current.toml", []byte("test = 15"), 0666)
 	defer os.Remove("current.toml")
@@ -100,7 +100,7 @@ func TestDetectsTomlCorrectly(t *testing.T) {
 }
 
 func TestDetectsYamlCorrectly(t *testing.T) {
-	app := &cli.App{}
+	app := cli.NewApp()
 	set := flag.NewFlagSet("test", 0)
 	_ = os.WriteFile("current.yaml", []byte("test: 15"), 0666)
 	defer os.Remove("current.yaml")
@@ -130,7 +130,7 @@ func TestDetectsYamlCorrectly(t *testing.T) {
 }
 
 func TestDetectsYmlCorrectly(t *testing.T) {
-	app := &cli.App{}
+	app := cli.NewApp()
 	set := flag.NewFlagSet("test", 0)
 	_ = os.WriteFile("current.yml", []byte("test: 15"), 0666)
 	defer os.Remove("current.yml")
@@ -160,8 +160,9 @@ func TestDetectsYmlCorrectly(t *testing.T) {
 }
 
 func TestHandlesCustomTypeCorrectly(t *testing.T) {
-	app := &cli.App{}
-	app.RegisterDetectableSource(".custom", NewYamlSourceFromFlagFunc)
+	app := cli.NewApp()
+	app.AddExtension(NewDetectableSourcesAppExtension())
+	app.GetExtension("DetectableSources").(DetectableSourcesAppExtension).RegisterDetectableSource(".custom", NewYamlSourceFromFlagFunc)
 	set := flag.NewFlagSet("test", 0)
 	_ = os.WriteFile("current.custom", []byte("test: 15"), 0666)
 	defer os.Remove("current.custom")
@@ -191,8 +192,9 @@ func TestHandlesCustomTypeCorrectly(t *testing.T) {
 }
 
 func TestAllowsOverrides(t *testing.T) {
-	app := &cli.App{}
-	app.RegisterDetectableSource(".conf", NewYamlSourceFromFlagFunc)
+	app := cli.NewApp()
+	app.AddExtension(NewDetectableSourcesAppExtension())
+	app.GetExtension("DetectableSources").(DetectableSourcesAppExtension).RegisterDetectableSource(".conf", NewYamlSourceFromFlagFunc)
 	set := flag.NewFlagSet("test", 0)
 	_ = os.WriteFile("current.conf", []byte("test: 15"), 0666)
 	defer os.Remove("current.conf")
@@ -222,7 +224,7 @@ func TestAllowsOverrides(t *testing.T) {
 }
 
 func TestFailsOnUnrocegnized(t *testing.T) {
-	app := &cli.App{}
+	app := cli.NewApp()
 	set := flag.NewFlagSet("test", 0)
 	_ = os.WriteFile("current.fake", []byte("test: 15"), 0666)
 	defer os.Remove("current.fake")
@@ -252,7 +254,7 @@ func TestFailsOnUnrocegnized(t *testing.T) {
 }
 
 func TestSilentNoOpWithoutFlag(t *testing.T) {
-	app := &cli.App{}
+	app := cli.NewApp()
 	set := flag.NewFlagSet("test", 0)
 	_ = os.WriteFile("current.conf", []byte("test = 15"), 0666)
 	defer os.Remove("current.conf")
@@ -284,7 +286,7 @@ func TestSilentNoOpWithoutFlag(t *testing.T) {
 func TestLoadDefaultConfig(t *testing.T) {
 	t.Skip("Fix parent implementation for default Flag values to get this working")
 
-	app := &cli.App{}
+	app := cli.NewApp()
 	set := flag.NewFlagSet("test", 0)
 	_ = os.WriteFile("current.conf", []byte("test = 15"), 0666)
 	defer os.Remove("current.conf")
