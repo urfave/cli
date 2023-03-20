@@ -602,6 +602,14 @@ func TestCheckRequiredFlags(t *testing.T) {
 				&StringFlag{Name: "n", Required: true},
 			},
 		},
+		{
+			testCase:              "required_flag_with_alias_errors_with_actual_name",
+			expectedAnError:       true,
+			expectedErrorContents: []string{"Required flag \"collection\" not set"},
+			flags: []Flag{
+				&StringFlag{Name: "collection", Required: true, Aliases: []string{"c"}},
+			},
+		},
 	}
 
 	for _, test := range tdata {
