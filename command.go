@@ -135,6 +135,7 @@ func (c *Command) setup(ctx *Context) {
 		if scmd.HelpName == "" {
 			scmd.HelpName = fmt.Sprintf("%s %s", c.HelpName, scmd.Name)
 		}
+		scmd.separator = c.separator
 		newCmds = append(newCmds, scmd)
 	}
 	c.Subcommands = newCmds
