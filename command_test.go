@@ -515,3 +515,30 @@ func TestCommand_RunSubcommandWithDefault(t *testing.T) {
 	err = app.Run([]string{"app"})
 	expect(t, err, errors.New("should not run this subcommand"))
 }
+
+func TestCommand_PreservesSeparatorOnSubcommands(t *testing.T) {
+	var values []string
+	subcommand := &Command{
+		Name: "bar",
+		Flags: []Flag{
+			&StringSliceFlag{Name: "my-flag"},
+		},
+		Action: func(c *Context) error {
+			values = c.StringSlice("my-flag")
+			return nil
+		},
+	}
+	app := &App{
+		Commands: []*Command{
+			{
+				Name:        "foo",
+				Subcommands: []*Command{subcommand},
+			},
+		},
+		SliceFlagSeparator: ";",
+	}
+
+	app.Run([]string{"app", "foo", "bar", "--my-flag", "1;2;3"})
+
+	expect(t, values, []string{"1", "2", "3"})
+}
