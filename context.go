@@ -204,9 +204,10 @@ func (cCtx *Context) checkRequiredFlags(flags []Flag) requiredFlagsErr {
 			var flagPresent bool
 			var flagName string
 
-			for _, key := range f.Names() {
-				flagName = key
+			flagNames := f.Names()
+			flagName = flagNames[0]
 
+			for _, key := range flagNames {
 				if cCtx.IsSet(strings.TrimSpace(key)) {
 					flagPresent = true
 				}
