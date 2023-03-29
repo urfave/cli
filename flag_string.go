@@ -87,10 +87,8 @@ func (cCtx *Context) String(name string) string {
 }
 
 func lookupString(name string, set *flag.FlagSet) string {
-	f := set.Lookup(name)
-	if f != nil {
-		parsed := f.Value.String()
-		return parsed
+	if f := set.Lookup(name); f != nil {
+		return f.Value.String()
 	}
 	return ""
 }

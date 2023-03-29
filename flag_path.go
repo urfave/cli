@@ -90,13 +90,8 @@ func (cCtx *Context) Path(name string) string {
 }
 
 func lookupPath(name string, set *flag.FlagSet) string {
-	f := set.Lookup(name)
-	if f != nil {
-		parsed, err := f.Value.String(), error(nil)
-		if err != nil {
-			return ""
-		}
-		return parsed
+	if f := set.Lookup(name); f != nil {
+		return f.Value.String()
 	}
 	return ""
 }
