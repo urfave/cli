@@ -117,13 +117,8 @@ func (cCtx *Context) Generic(name string) interface{} {
 }
 
 func lookupGeneric(name string, set *flag.FlagSet) interface{} {
-	f := set.Lookup(name)
-	if f != nil {
-		parsed, err := f.Value, error(nil)
-		if err != nil {
-			return nil
-		}
-		return parsed
+	if f := set.Lookup(name); f != nil {
+		return f.Value
 	}
 	return nil
 }
