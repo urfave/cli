@@ -72,7 +72,7 @@ Some description
 
 Some other text`)
 
-		expected = bytes.Replace(expected, []byte{10, 13, 10}, []byte{10}, -1) // ignore windows line endings
+		expected = bytes.Replace(expected, []byte{10, 13, 10}, []byte{13}, -1) // ignore windows line endings
 
 		expect(t, string(content), string(expected)) // content matches
 	})
@@ -110,7 +110,7 @@ lorem+ipsum
 
 Some other text`)
 
-		expected = bytes.Replace(expected, []byte{10, 13, 10}, []byte{10}, -1) // ignore windows line endings
+		expected = bytes.Replace(expected, []byte{10, 13, 10}, []byte{13}, -1) // ignore windows line endings
 
 		t.Log(content)
 		t.Log(expected)
