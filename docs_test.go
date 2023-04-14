@@ -20,6 +20,18 @@ func TestToMarkdownFull(t *testing.T) {
 	expectFileContent(t, "testdata/expected-doc-full.md", res)
 }
 
+func TestToTabularMarkdownFull(t *testing.T) {
+	// Given
+	app := testApp()
+
+	// When
+	res, err := app.ToTabularMarkdown()
+
+	// Then
+	expect(t, err, nil)
+	expectFileContent(t, "testdata/expected-tabular-markdown-full.md", res)
+}
+
 func TestToMarkdownNoFlags(t *testing.T) {
 	// Given
 	app := testApp()

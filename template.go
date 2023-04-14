@@ -128,6 +128,74 @@ var MarkdownDocTemplate = `{{if gt .SectionNum 0}}% {{ .App.Name }} {{ .SectionN
 {{ range $v := .Commands }}
 {{ $v }}{{ end }}{{ end }}`
 
+var MarkdownTabularDocTemplate = `{{ define "flags" }}
+| Name | Description | Default value | Environment variables |
+|------|-------------|:-------------:|:---------------------:|
+{{   range $flag := . -}}
+{{- /**/ -}} | ` + "`" + `{{ $flag.Name }}{{ if $flag.TakesValue }}="…"{{ end }}` + "`" + ` {{ if $flag.Aliases }}(` + "`" + `{{ join $flag.Aliases "` + "`, `" + `" }}` + "`" + `) {{ end }}
+{{- /**/ -}} | {{ $flag.Usage }}
+{{- /**/ -}} | {{ if $flag.Default }}` + "`" + `{{ $flag.Default }}` + "`" + `{{ end }}
+{{- /**/ -}} | {{ if $flag.EnvVars }}` + "`" + `{{ join $flag.EnvVars "` + "`, `" + `" }}` + "`" + `{{ else }}*none*{{ end }}
+{{- /**/ -}} |
+{{   end }}
+{{ end }}
+
+{{ define "command" }}
+### ` + "`" + `{{ .Name }}` + "`" + ` {{ if gt .Level 0 }}sub{{ end }}command{{ if .Aliases }} (aliases: ` + "`" + `{{ join .Aliases "` + "`, `" + `" }}` + "`" + `){{ end }}
+{{   if .Usage }}
+{{     .Usage }}.
+{{   end }}
+{{   if .UsageText }}
+> {{ .UsageText }}.
+{{   end }}
+{{   if .Description }}
+{{     .Description }}.
+{{   end }}
+Usage:
+
+` + "```" + `bash
+$ {{ .AppPath }} [GLOBAL FLAGS] {{ .Name }}{{ if .Flags }} [COMMAND FLAGS]{{ end }} {{ if .ArgsUsage }}{{ .ArgsUsage }}{{ else }}[ARGUMENTS...]{{ end }}
+` + "```" + `
+
+{{   if .Flags -}}
+The following flags are supported:
+{{     template "flags" .Flags }}
+{{   end -}}
+
+{{   if .SubCommands -}}
+{{     range $subCmd := .SubCommands -}}
+{{       template "command" $subCmd }}
+{{     end -}}
+{{   end -}}
+{{ end }}
+
+## CLI interface{{ if .Name }} - {{ .Name }}{{ end }}
+
+{{ if .Description }}{{ .Description }}.
+{{ end }}
+{{ if .Usage }}{{ .Usage }}.
+{{ end }}
+{{ if .UsageText }}
+> {{ .UsageText }}.
+{{ end }}
+Usage:
+
+` + "```" + `bash
+$ {{ .AppPath }}{{ if .GlobalFlags }} [GLOBAL FLAGS]{{ end }} [COMMAND] [COMMAND FLAGS] {{ if .ArgsUsage }}{{ .ArgsUsage }}{{ else }}[ARGUMENTS...]{{ end }}
+` + "```" + `
+
+{{ if .GlobalFlags }}
+Global flags:
+
+{{ template "flags" .GlobalFlags }}
+
+{{ end -}}
+{{ if .Commands -}}
+{{   range $cmd := .Commands -}}
+{{     template "command" $cmd }}
+{{   end }}
+{{- end }}`
+
 var FishCompletionTemplate = `# {{ .App.Name }} fish shell completion
 
 function __fish_{{ .App.Name }}_no_subcommand --description 'Test if there has been any subcommand yet'

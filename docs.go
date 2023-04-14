@@ -7,12 +7,69 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"text/template"
+	"unicode/utf8"
 
 	"github.com/cpuguy83/go-md2man/v2/md2man"
 )
+
+type (
+	tabularOptions struct {
+		appPath string
+	}
+
+	TabularOption func(*tabularOptions)
+)
+
+// WithTabularAppPath allows to override the default app path.
+func WithTabularAppPath(path string) TabularOption {
+	return func(o *tabularOptions) { o.appPath = path }
+}
+
+// ToTabularMarkdown creates a tabular markdown documentation for the `*App`.
+// The function errors if either parsing or writing of the string fails.
+func (a *App) ToTabularMarkdown(opts ...TabularOption) (string, error) {
+	var o = tabularOptions{
+		appPath: "app",
+	}
+
+	for _, opt := range opts {
+		opt(&o)
+	}
+
+	const name = "cli"
+
+	t, err := template.New(name).Funcs(template.FuncMap{
+		"join": strings.Join,
+	}).Parse(MarkdownTabularDocTemplate)
+	if err != nil {
+		return "", err
+	}
+
+	var (
+		w  bytes.Buffer
+		tt tabularTemplate
+	)
+
+	if err = t.ExecuteTemplate(&w, name, cliTabularAppTemplate{
+		AppPath:     o.appPath,
+		Name:        a.Name,
+		Description: tt.PrepareMultilineString(a.Description),
+		Usage:       tt.PrepareMultilineString(a.Usage),
+		UsageText:   tt.PrepareMultilineString(a.UsageText),
+		ArgsUsage:   tt.PrepareMultilineString(a.ArgsUsage),
+		GlobalFlags: tt.PrepareFlags(a.VisibleFlags()),
+		Commands:    tt.PrepareCommands(a.VisibleCommands(), o.appPath, "", 0),
+	}); err != nil {
+		return "", err
+	}
+
+	return tt.Prettify(w.String()), nil
+}
 
 // ToMarkdown creates a markdown string for the `*App`
 // The function errors if either parsing or writing of the string fails.
@@ -195,4 +252,205 @@ func prepareUsage(command *Command, usageText string) string {
 	}
 
 	return usage
+}
+
+type (
+	cliTabularAppTemplate struct {
+		AppPath                     string
+		Name                        string
+		Usage, UsageText, ArgsUsage string
+		Description                 string
+		GlobalFlags                 []cliTabularFlagTemplate
+		Commands                    []cliTabularCommandTemplate
+	}
+
+	cliTabularCommandTemplate struct {
+		AppPath                     string
+		Name                        string
+		Aliases                     []string
+		Usage, UsageText, ArgsUsage string
+		Description                 string
+		Category                    string
+		Flags                       []cliTabularFlagTemplate
+		SubCommands                 []cliTabularCommandTemplate
+		Level                       uint
+	}
+
+	cliTabularFlagTemplate struct {
+		Name       string
+		Aliases    []string
+		Usage      string
+		TakesValue bool
+		Default    string
+		EnvVars    []string
+	}
+)
+
+// tabularTemplate is a struct for the tabular template preparation.
+type tabularTemplate struct{}
+
+// PrepareCommands converts CLI commands into a structs for the rendering.
+func (tt tabularTemplate) PrepareCommands(commands []*Command, appPath, parentCommandName string, level uint) []cliTabularCommandTemplate {
+	var result = make([]cliTabularCommandTemplate, 0, len(commands))
+
+	for _, cmd := range commands {
+		var command = cliTabularCommandTemplate{
+			AppPath:     appPath,
+			Name:        strings.TrimSpace(strings.Join([]string{parentCommandName, cmd.Name}, " ")),
+			Aliases:     cmd.Aliases,
+			Usage:       tt.PrepareMultilineString(cmd.Usage),
+			UsageText:   tt.PrepareMultilineString(cmd.UsageText),
+			ArgsUsage:   tt.PrepareMultilineString(cmd.ArgsUsage),
+			Description: tt.PrepareMultilineString(cmd.Description),
+			Category:    cmd.Category,
+			Flags:       tt.PrepareFlags(cmd.VisibleFlags()),
+			SubCommands: tt.PrepareCommands( // note: recursive call
+				cmd.Commands,
+				appPath,
+				strings.Join([]string{parentCommandName, cmd.Name}, " "),
+				level+1,
+			),
+			Level: level,
+		}
+
+		result = append(result, command)
+	}
+
+	return result
+}
+
+// PrepareFlags converts CLI flags into a structs for the rendering.
+func (tt tabularTemplate) PrepareFlags(flags []Flag) []cliTabularFlagTemplate {
+	var result = make([]cliTabularFlagTemplate, 0, len(flags))
+
+	for _, appFlag := range flags {
+		flag, ok := appFlag.(DocGenerationFlag)
+		if !ok {
+			continue
+		}
+
+		var f = cliTabularFlagTemplate{
+			Usage:      tt.PrepareMultilineString(flag.GetUsage()),
+			EnvVars:    flag.GetEnvVars(),
+			TakesValue: flag.TakesValue(),
+			Default:    flag.GetValue(),
+		}
+
+		if boolFlag, isBool := appFlag.(*BoolFlag); isBool {
+			f.Default = strconv.FormatBool(boolFlag.Value)
+		}
+
+		for i, name := range flag.Names() {
+			name = strings.TrimSpace(name)
+
+			if i == 0 {
+				f.Name = "--" + name
+
+				continue
+			}
+
+			if len(name) > 1 {
+				name = "--" + name
+			} else {
+				name = "-" + name
+			}
+
+			f.Aliases = append(f.Aliases, name)
+		}
+
+		result = append(result, f)
+	}
+
+	return result
+}
+
+// PrepareMultilineString prepares a string (removes line breaks).
+func (tabularTemplate) PrepareMultilineString(s string) string {
+	return strings.TrimRight(
+		strings.TrimSpace(
+			strings.ReplaceAll(s, "\n", " "),
+		),
+		".\r\n\t",
+	)
+}
+
+func (tabularTemplate) Prettify(s string) string {
+	s = regexp.MustCompile(`\n{2,}`).ReplaceAllString(s, "\n\n") // normalize newlines
+	s = strings.Trim(s, " \n")                                   // trim spaces and newlines
+
+	// search for tables
+	for _, rawTable := range regexp.MustCompile(`(?m)^(\|[^\n]+\|\r?\n)((?:\|:?-+:?)+\|)(\n(?:\|[^\n]+\|\r?\n?)*)?$`).FindAllString(s, -1) {
+		var lines = strings.FieldsFunc(rawTable, func(r rune) bool { return r == '\n' })
+
+		if len(lines) < 3 { // header, separator, body
+			continue
+		}
+
+		// parse table into the matrix
+		var matrix = make([][]string, 0, len(lines))
+		for _, line := range lines {
+			items := strings.FieldsFunc(strings.Trim(line, "| "), func(r rune) bool { return r == '|' })
+
+			for i := range items {
+				items[i] = strings.TrimSpace(items[i]) // trim spaces in cells
+			}
+
+			matrix = append(matrix, items)
+		}
+
+		// determine centered columns
+		var centered = make([]bool, 0, len(matrix[1]))
+		for _, cell := range matrix[1] {
+			centered = append(centered, strings.HasPrefix(cell, ":") && strings.HasSuffix(cell, ":"))
+		}
+
+		// calculate max lengths
+		var lengths = make([]int, len(matrix[0]))
+		const padding = 2 // 2 spaces for padding
+		for _, row := range matrix {
+			for i, cell := range row {
+				if len(cell) > lengths[i]-padding {
+					lengths[i] = utf8.RuneCountInString(cell) + padding
+				}
+			}
+		}
+
+		// format cells
+		for i, row := range matrix {
+			for j, cell := range row {
+				if i == 1 { // is separator
+					if centered[j] {
+						cell = ":" + strings.Repeat("-", lengths[j]-2) + ":"
+					} else {
+						cell = strings.Repeat("-", lengths[j]+1)
+					}
+				}
+
+				var (
+					padLeft, padRight = 1, 1
+					cellWidth         = utf8.RuneCountInString(cell)
+				)
+
+				if centered[j] { // is centered
+					padLeft = (lengths[j] - cellWidth) / 2
+					padRight = lengths[j] - cellWidth - padLeft
+				} else if i == 1 { // is header
+					padLeft, padRight = 0, 0
+				} else { // align to the left
+					padRight = lengths[j] - cellWidth
+				}
+
+				row[j] = strings.Repeat(" ", padLeft) + cell + strings.Repeat(" ", padRight)
+			}
+		}
+
+		var newTable string
+		for _, row := range matrix { // build new table
+			newTable += "|" + strings.Join(row, "|") + "|\n"
+		}
+
+		s = strings.Replace(s, rawTable, newTable, 1)
+	}
+
+	return s + "\n" // add an extra newline
 }
