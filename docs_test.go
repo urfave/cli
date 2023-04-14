@@ -53,6 +53,7 @@ Some description
 
 Some other text`)
 		expect(t, err, nil) // wrote without error
+		_ = tmpFile.Close()
 
 		expect(t, testApp().ToTabularToFileBetweenTags("app", tmpFile.Name()), nil) // replaced without error
 
@@ -88,6 +89,7 @@ lorem+ipsum
 
 Some other text`)
 		expect(t, err, nil) // wrote without error
+		_ = tmpFile.Close()
 
 		expect(t, testApp().ToTabularToFileBetweenTags("app", tmpFile.Name(), "foo_BAR|baz", "lorem+ipsum"), nil)
 
@@ -111,6 +113,7 @@ Some other text`
 	t.Run("missing file", func(t *testing.T) {
 		tmpFile, err := os.CreateTemp("", "")
 		expect(t, err, nil) // created without error
+		_ = tmpFile.Close()
 
 		expect(t, os.Remove(tmpFile.Name()), nil) // and remove immediately
 
