@@ -4,6 +4,7 @@
 package cli
 
 import (
+	"bytes"
 	"errors"
 	"io/fs"
 	"os"
@@ -38,6 +39,15 @@ func TestToTabularToFileBetweenTags(t *testing.T) {
 	expectedDocs, fErr := os.ReadFile("testdata/expected-tabular-markdown-full.md")
 	expect(t, fErr, nil) // read without error
 
+	// normalizes \r\n (windows) and \r (mac) into \n (unix)
+	var normalizeNewlines = func(d []byte) []byte {
+		// replace CR LF \r\n (windows) with LF \n (unix)
+		d = bytes.Replace(d, []byte{13, 10}, []byte{10}, -1)
+		// replace CF \r (mac) with LF \n (unix)
+		d = bytes.Replace(d, []byte{13}, []byte{10}, -1)
+		return d
+	}
+
 	t.Run("default tags", func(t *testing.T) {
 		tmpFile, err := os.CreateTemp("", "")
 		expect(t, err, nil) // created without error
@@ -60,7 +70,7 @@ Some other text`)
 		content, err := os.ReadFile(tmpFile.Name()) // read the file content
 		expect(t, err, nil)
 
-		expected := []byte(`# App readme file
+		expected := normalizeNewlines([]byte(`# App readme file
 
 Some description
 
@@ -69,9 +79,7 @@ Some description
 ` + string(expectedDocs) + `
 <!--/GENERATED:CLI_DOCS-->
 
-Some other text`)
-
-		// expected = bytes.Replace(expected, []byte{10, 13, 10}, []byte{13}, -1) // ignore windows line endings
+Some other text`))
 
 		expect(t, string(content), string(expected)) // content matches
 	})
@@ -98,7 +106,7 @@ Some other text`)
 		content, err := os.ReadFile(tmpFile.Name()) // read the file content
 		expect(t, err, nil)
 
-		expected := []byte(`# App readme file
+		expected := normalizeNewlines([]byte(`# App readme file
 
 Some description
 
@@ -107,9 +115,7 @@ foo_BAR|baz
 ` + string(expectedDocs) + `
 lorem+ipsum
 
-Some other text`)
-
-		// expected = bytes.Replace(expected, []byte{10, 13, 10}, []byte{13}, -1) // ignore windows line endings
+Some other text`))
 
 		t.Log(content)
 		t.Log(expected)
