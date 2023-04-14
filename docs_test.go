@@ -61,7 +61,7 @@ Some other text`)
 		content, err := os.ReadFile(tmpFile.Name()) // read the file content
 		expect(t, err, nil)
 
-		content = bytes.Replace(content, []byte("\r\n"), []byte("\n"), -1) // ignore windows line endings
+		content = bytes.Replace(content, []byte("\r\n"), []byte{}, -1) // ignore windows line endings
 
 		expected := `# App readme file
 
@@ -99,7 +99,7 @@ Some other text`)
 		content, err := os.ReadFile(tmpFile.Name()) // read the file content
 		expect(t, err, nil)
 
-		content = bytes.Replace(content, []byte("\r\n"), []byte("\n"), -1) // ignore windows line endings
+		content = bytes.Replace(content, []byte("\r\n"), []byte{}, -1) // ignore windows line endings
 
 		expected := `# App readme file
 
