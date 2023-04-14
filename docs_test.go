@@ -41,10 +41,9 @@ func TestToTabularToFileBetweenTags(t *testing.T) {
 
 	// normalizes \r\n (windows) and \r (mac) into \n (unix)
 	var normalizeNewlines = func(d []byte) []byte {
-		// replace CR LF \r\n (windows) with LF \n (unix)
-		d = bytes.Replace(d, []byte{13, 10}, []byte{10}, -1)
-		// replace CF \r (mac) with LF \n (unix)
-		d = bytes.Replace(d, []byte{13}, []byte{10}, -1)
+		d = bytes.Replace(d, []byte{13, 10}, []byte{10}, -1) // replace CR LF \r\n (windows) with LF \n (unix)
+		d = bytes.Replace(d, []byte{13}, []byte{10}, -1)     // replace CF \r (mac) with LF \n (unix)
+
 		return d
 	}
 
@@ -69,6 +68,8 @@ Some other text`)
 
 		content, err := os.ReadFile(tmpFile.Name()) // read the file content
 		expect(t, err, nil)
+
+		content = normalizeNewlines(content)
 
 		expected := normalizeNewlines([]byte(`# App readme file
 
@@ -106,6 +107,8 @@ Some other text`)
 		content, err := os.ReadFile(tmpFile.Name()) // read the file content
 		expect(t, err, nil)
 
+		content = normalizeNewlines(content)
+
 		expected := normalizeNewlines([]byte(`# App readme file
 
 Some description
@@ -116,9 +119,6 @@ foo_BAR|baz
 lorem+ipsum
 
 Some other text`))
-
-		t.Log(content)
-		t.Log(expected)
 
 		expect(t, string(content), string(expected)) // content matches
 	})
