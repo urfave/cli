@@ -449,9 +449,14 @@ func (a *App) ToMarkdown() (string, error)
     ToMarkdown creates a markdown string for the `*App` The function errors if
     either parsing or writing of the string fails.
 
-func (a *App) ToTabularMarkdown(opts ...TabularOption) (string, error)
+func (a *App) ToTabularMarkdown(appPath string) (string, error)
     ToTabularMarkdown creates a tabular markdown documentation for the `*App`.
     The function errors if either parsing or writing of the string fails.
+
+func (a *App) ToTabularToFileBetweenTags(appPath, filePath string, startEndTags ...string) error
+    ToTabularToFileBetweenTags creates a tabular markdown documentation for
+    the `*App` and updates the file between the tags in the file. The function
+    errors if either parsing or writing of the string fails.
 
 func (a *App) VisibleCategories() []CommandCategory
     VisibleCategories returns a slice of categories and commands that are
@@ -1139,11 +1144,6 @@ type StringSliceFlag = FlagBase[[]string, StringConfig, StringSlice]
 type SuggestCommandFunc func(commands []*Command, provided string) string
 
 type SuggestFlagFunc func(flags []Flag, provided string, hideHelp bool) string
-
-type TabularOption func(*tabularOptions)
-
-func WithTabularAppPath(path string) TabularOption
-    WithTabularAppPath allows to override the default app path.
 
 type TimestampConfig struct {
 	Timezone *time.Location
