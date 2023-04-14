@@ -39,6 +39,7 @@ func testApp() *App {
 			Name:    "another-flag",
 			Aliases: []string{"b"},
 			Usage:   "another usage text",
+			EnvVars: []string{"EXAMPLE_VARIABLE_NAME"},
 		},
 		&BoolFlag{
 			Name:   "hidden-flag",

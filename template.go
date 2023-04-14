@@ -146,7 +146,9 @@ var MarkdownTabularDocTemplate = `{{ define "flags" }}
 {{     .Usage }}.
 {{   end }}
 {{   if .UsageText }}
-> {{ .UsageText }}.
+{{     range $line := .UsageText -}}
+> {{ $line }}
+{{     end -}}
 {{   end }}
 {{   if .Description }}
 {{     .Description }}.
@@ -176,7 +178,9 @@ The following flags are supported:
 {{ if .Usage }}{{ .Usage }}.
 {{ end }}
 {{ if .UsageText }}
-> {{ .UsageText }}.
+{{   range $line := .UsageText -}}
+> {{ $line }}
+{{   end -}}
 {{ end }}
 Usage:
 

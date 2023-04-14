@@ -4,7 +4,7 @@ Description of the application.
 
 Some app.
 
-> app [first_arg] [second_arg].
+> app [first_arg] [second_arg]
 
 Usage:
 
@@ -14,11 +14,11 @@ $ app [GLOBAL FLAGS] [COMMAND] [COMMAND FLAGS] [ARGUMENTS...]
 
 Global flags:
 
-| Name                         | Description         |  Default value  |  Environment variables  |
-|------------------------------|---------------------|:---------------:|:-----------------------:|
-| `--socket="…"` (`-s`)        | some 'usage' text   |     `value`     |         *none*          |
-| `--flag="…"` (`--fl`, `-f`)  |                     |                 |         *none*          |
-| `--another-flag` (`-b`)      | another usage text  |     `false`     |         *none*          |
+| Name                        | Description        | Default value |  Environment variables  |
+|-----------------------------|--------------------|:-------------:|:-----------------------:|
+| `--socket="…"` (`-s`)       | some 'usage' text  |    `value`    |         *none*          |
+| `--flag="…"` (`--fl`, `-f`) |                    |               |         *none*          |
+| `--another-flag` (`-b`)     | another usage text |    `false`    | `EXAMPLE_VARIABLE_NAME` |
 
 ### `config` command (aliases: `c`)
 
@@ -76,7 +76,14 @@ $ app [GLOBAL FLAGS] some-command [ARGUMENTS...]
 
 standard usage text.
 
-> Usage for the usage text - formatted:  Based on the specified ConfigMap and summon secrets.yml - list:       Inspect the environment for a specific process running on a Pod - for_effect: Compare 'namespace' environment with 'local'  ``` func() { ... } ```  Should be a part of the same code block.
+> Usage for the usage text
+> - formatted:  Based on the specified ConfigMap and summon secrets.yml
+> - list:       Inspect the environment for a specific process running on a Pod
+> - for_effect: Compare 'namespace' environment with 'local'
+> ```
+> func() { ... }
+> ```
+> Should be a part of the same code block
 
 Usage:
 
@@ -95,7 +102,7 @@ The following flags are supported:
 
 standard usage text.
 
-> Single line of UsageText.
+> Single line of UsageText
 
 Usage:
 

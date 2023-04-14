@@ -60,7 +60,7 @@ func (a *App) ToTabularMarkdown(opts ...TabularOption) (string, error) {
 		Name:        a.Name,
 		Description: tt.PrepareMultilineString(a.Description),
 		Usage:       tt.PrepareMultilineString(a.Usage),
-		UsageText:   tt.PrepareMultilineString(a.UsageText),
+		UsageText:   strings.FieldsFunc(a.UsageText, func(r rune) bool { return r == '\n' }),
 		ArgsUsage:   tt.PrepareMultilineString(a.ArgsUsage),
 		GlobalFlags: tt.PrepareFlags(a.VisibleFlags()),
 		Commands:    tt.PrepareCommands(a.VisibleCommands(), o.appPath, "", 0),
@@ -256,24 +256,26 @@ func prepareUsage(command *Command, usageText string) string {
 
 type (
 	cliTabularAppTemplate struct {
-		AppPath                     string
-		Name                        string
-		Usage, UsageText, ArgsUsage string
-		Description                 string
-		GlobalFlags                 []cliTabularFlagTemplate
-		Commands                    []cliTabularCommandTemplate
+		AppPath          string
+		Name             string
+		Usage, ArgsUsage string
+		UsageText        []string
+		Description      string
+		GlobalFlags      []cliTabularFlagTemplate
+		Commands         []cliTabularCommandTemplate
 	}
 
 	cliTabularCommandTemplate struct {
-		AppPath                     string
-		Name                        string
-		Aliases                     []string
-		Usage, UsageText, ArgsUsage string
-		Description                 string
-		Category                    string
-		Flags                       []cliTabularFlagTemplate
-		SubCommands                 []cliTabularCommandTemplate
-		Level                       uint
+		AppPath          string
+		Name             string
+		Aliases          []string
+		Usage, ArgsUsage string
+		UsageText        []string
+		Description      string
+		Category         string
+		Flags            []cliTabularFlagTemplate
+		SubCommands      []cliTabularCommandTemplate
+		Level            uint
 	}
 
 	cliTabularFlagTemplate struct {
@@ -299,7 +301,7 @@ func (tt tabularTemplate) PrepareCommands(commands []*Command, appPath, parentCo
 			Name:        strings.TrimSpace(strings.Join([]string{parentCommandName, cmd.Name}, " ")),
 			Aliases:     cmd.Aliases,
 			Usage:       tt.PrepareMultilineString(cmd.Usage),
-			UsageText:   tt.PrepareMultilineString(cmd.UsageText),
+			UsageText:   strings.FieldsFunc(cmd.UsageText, func(r rune) bool { return r == '\n' }),
 			ArgsUsage:   tt.PrepareMultilineString(cmd.ArgsUsage),
 			Description: tt.PrepareMultilineString(cmd.Description),
 			Category:    cmd.Category,
@@ -375,8 +377,14 @@ func (tabularTemplate) PrepareMultilineString(s string) string {
 }
 
 func (tabularTemplate) Prettify(s string) string {
-	s = regexp.MustCompile(`\n{2,}`).ReplaceAllString(s, "\n\n") // normalize newlines
-	s = strings.Trim(s, " \n")                                   // trim spaces and newlines
+	var max = func(x, y int) int {
+		if x > y {
+			return x
+		}
+		return y
+	}
+
+	var b strings.Builder
 
 	// search for tables
 	for _, rawTable := range regexp.MustCompile(`(?m)^(\|[^\n]+\|\r?\n)((?:\|:?-+:?)+\|)(\n(?:\|[^\n]+\|\r?\n?)*)?$`).FindAllString(s, -1) {
@@ -406,11 +414,14 @@ func (tabularTemplate) Prettify(s string) string {
 
 		// calculate max lengths
 		var lengths = make([]int, len(matrix[0]))
-		const padding = 2 // 2 spaces for padding
-		for _, row := range matrix {
+		for n, row := range matrix {
 			for i, cell := range row {
-				if len(cell) > lengths[i]-padding {
-					lengths[i] = utf8.RuneCountInString(cell) + padding
+				if n == 1 {
+					continue // skip separator
+				}
+
+				if l := utf8.RuneCountInString(cell); l > lengths[i] {
+					lengths[i] = l
 				}
 			}
 		}
@@ -420,37 +431,57 @@ func (tabularTemplate) Prettify(s string) string {
 			for j, cell := range row {
 				if i == 1 { // is separator
 					if centered[j] {
-						cell = ":" + strings.Repeat("-", lengths[j]-2) + ":"
+						b.Reset()
+						b.WriteRune(':')
+						b.WriteString(strings.Repeat("-", max(0, lengths[j])))
+						b.WriteRune(':')
+
+						row[j] = b.String()
 					} else {
-						cell = strings.Repeat("-", lengths[j]+1)
+						row[j] = strings.Repeat("-", max(0, lengths[j]+2))
 					}
+
+					continue
 				}
 
 				var (
-					padLeft, padRight = 1, 1
 					cellWidth         = utf8.RuneCountInString(cell)
+					padLeft, padRight = 1, max(1, lengths[j]-cellWidth+1) // align to the left
 				)
 
 				if centered[j] { // is centered
-					padLeft = (lengths[j] - cellWidth) / 2
-					padRight = lengths[j] - cellWidth - padLeft
-				} else if i == 1 { // is header
-					padLeft, padRight = 0, 0
-				} else { // align to the left
-					padRight = lengths[j] - cellWidth
+					padLeft = max(1, (lengths[j]-cellWidth)/2)
+					padRight = max(1, lengths[j]-cellWidth-(padLeft-1))
 				}
 
-				row[j] = strings.Repeat(" ", padLeft) + cell + strings.Repeat(" ", padRight)
+				b.Reset()
+				b.WriteString(strings.Repeat(" ", padLeft))
+
+				if padLeft+cellWidth+padRight <= lengths[j]+1 {
+					b.WriteRune(' ') // add an extra space if the cell is not full
+				}
+
+				b.WriteString(cell)
+				b.WriteString(strings.Repeat(" ", padRight))
+
+				row[j] = b.String()
 			}
 		}
 
-		var newTable string
+		b.Reset()
+
 		for _, row := range matrix { // build new table
-			newTable += "|" + strings.Join(row, "|") + "|\n"
+			b.WriteRune('|')
+			b.WriteString(strings.Join(row, "|"))
+			b.WriteRune('|')
+			b.WriteRune('\n')
 		}
 
-		s = strings.Replace(s, rawTable, newTable, 1)
+		s = strings.Replace(s, rawTable, b.String(), 1)
 	}
+
+	s = regexp.MustCompile(`\n{2,}`).ReplaceAllString(s, "\n\n") // normalize newlines
+	s = strings.Trim(s, " \n")                                   // trim spaces and newlines
 
 	return s + "\n" // add an extra newline
 }
