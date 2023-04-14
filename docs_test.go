@@ -4,6 +4,7 @@
 package cli
 
 import (
+	"bytes"
 	"errors"
 	"io/fs"
 	"os"
@@ -60,9 +61,7 @@ Some other text`)
 		content, err := os.ReadFile(tmpFile.Name()) // read the file content
 		expect(t, err, nil)
 
-		// content = bytes.Replace(content, []byte("\r\n"), []byte{}, -1) // ignore windows line endings
-
-		expected := `# App readme file
+		expected := []byte(`# App readme file
 
 Some description
 
@@ -71,9 +70,11 @@ Some description
 ` + string(expectedDocs) + `
 <!--/GENERATED:CLI_DOCS-->
 
-Some other text`
+Some other text`)
 
-		expect(t, string(content), expected) // content matches
+		expected = bytes.Replace(expected, []byte("\r\n"), []byte{}, -1) // ignore windows line endings
+
+		expect(t, string(content), string(expected)) // content matches
 	})
 
 	t.Run("custom tags", func(t *testing.T) {
@@ -98,9 +99,7 @@ Some other text`)
 		content, err := os.ReadFile(tmpFile.Name()) // read the file content
 		expect(t, err, nil)
 
-		// content = bytes.Replace(content, []byte("\r\n"), []byte{}, -1) // ignore windows line endings
-
-		expected := `# App readme file
+		expected := []byte(`# App readme file
 
 Some description
 
@@ -109,12 +108,14 @@ foo_BAR|baz
 ` + string(expectedDocs) + `
 lorem+ipsum
 
-Some other text`
+Some other text`)
+
+		expected = bytes.Replace(expected, []byte("\r\n"), []byte{}, -1) // ignore windows line endings
 
 		t.Log(content)
-		t.Log([]byte(expected))
+		t.Log(expected)
 
-		expect(t, string(content), expected) // content matches
+		expect(t, string(content), string(expected)) // content matches
 	})
 
 	t.Run("missing file", func(t *testing.T) {
