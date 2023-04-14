@@ -4,6 +4,7 @@
 package cli
 
 import (
+	"bytes"
 	"errors"
 	"io/fs"
 	"os"
@@ -60,6 +61,8 @@ Some other text`)
 		content, err := os.ReadFile(tmpFile.Name()) // read the file content
 		expect(t, err, nil)
 
+		content = bytes.ReplaceAll(content, []byte("\r\n"), []byte("\n")) // Ignore windows line endings
+
 		expected := `# App readme file
 
 Some description
@@ -95,6 +98,8 @@ Some other text`)
 
 		content, err := os.ReadFile(tmpFile.Name()) // read the file content
 		expect(t, err, nil)
+
+		content = bytes.ReplaceAll(content, []byte("\r\n"), []byte("\n")) // Ignore windows line endings
 
 		expected := `# App readme file
 
