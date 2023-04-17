@@ -28,5 +28,5 @@ app [first_arg] [second_arg]
 
 **--flag, --fl, -f**="": 
 
-**--socket, -s**="": some 'usage' text (default: value)
+**--socket, -s**="": some 'usage' text (default: svalue)
 

@@ -47,7 +47,7 @@ app [first_arg] [second_arg]
 \fB--flag, --fl, -f\fP="":
 
 .PP
-\fB--socket, -s\fP="": some 'usage' text (default: value)
+\fB--socket, -s\fP="": some 'usage' text (default: svalue)
 
 
 .SH COMMANDS
