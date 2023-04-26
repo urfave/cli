@@ -31,7 +31,7 @@ func testApp() *App {
 			Aliases:     []string{"s"},
 			Usage:       "some 'usage' text",
 			Value:       "value",
-			DefaultText: "svalue",
+			DefaultText: "/some/path",
 			TakesFile:   true,
 		},
 		&StringFlag{Name: "flag", Aliases: []string{"fl", "f"}},
