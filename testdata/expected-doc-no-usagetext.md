@@ -28,7 +28,7 @@ greet [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 **--flag, --fl, -f**="": 
 
-**--socket, -s**="": some 'usage' text (default: svalue)
+**--socket, -s**="": some 'usage' text (default: /some/path)
 
 
 # COMMANDS
