@@ -27,11 +27,12 @@ func testApp() *App {
 	app.Name = "greet"
 	app.Flags = []Flag{
 		&StringFlag{
-			Name:      "socket",
-			Aliases:   []string{"s"},
-			Usage:     "some 'usage' text",
-			Value:     "value",
-			TakesFile: true,
+			Name:        "socket",
+			Aliases:     []string{"s"},
+			Usage:       "some 'usage' text",
+			Value:       "value",
+			DefaultText: "/some/path",
+			TakesFile:   true,
 		},
 		&StringFlag{Name: "flag", Aliases: []string{"fl", "f"}},
 		&BoolFlag{
