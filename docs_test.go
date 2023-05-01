@@ -35,6 +35,18 @@ func TestToTabularMarkdownFull(t *testing.T) {
 	expectFileContent(t, "testdata/expected-tabular-markdown-full.md", res)
 }
 
+func TestToTabularMarkdownWithEmptyAppPath(t *testing.T) {
+	// Given
+	app := testApp()
+
+	// When
+	res, err := app.ToTabularMarkdown("")
+
+	// Then
+	expect(t, err, nil)
+	expectFileContent(t, "testdata/expected-tabular-markdown-full.md", res)
+}
+
 func TestToTabularMarkdownWithCustomAppPath(t *testing.T) {
 	// Given
 	app := testApp()
