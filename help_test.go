@@ -1126,38 +1126,6 @@ func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 	}
 }
 
-func TestHideHelpCommand_RunAsSubcommand_False_CustomTemplate(t *testing.T) {
-	var buf bytes.Buffer
-
-	app := &App{
-		Writer: &buf,
-		Commands: []*Command{
-			{
-				Name:               "dummy",
-				CustomHelpTemplate: "TEMPLATE",
-				HideHelpCommand:    false,
-			},
-		},
-	}
-
-	err := app.RunAsSubcommand(newContextFromStringSlice([]string{"", "dummy", "help"}))
-	if err != nil {
-		t.Errorf("Run returned unexpected error: %v", err)
-	}
-	if !strings.Contains(buf.String(), "TEMPLATE") {
-		t.Errorf("Custom Help template ignored")
-	}
-	buf.Reset()
-
-	err = app.RunAsSubcommand(newContextFromStringSlice([]string{"", "dummy", "-h"}))
-	if err != nil {
-		t.Errorf("Run returned unexpected error: %v", err)
-	}
-	if !strings.Contains(buf.String(), "TEMPLATE") {
-		t.Errorf("Custom Help template ignored")
-	}
-}
-
 func TestHideHelpCommand_RunAsSubcommand_True_CustomTemplate(t *testing.T) {
 	var buf bytes.Buffer
 

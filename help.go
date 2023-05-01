@@ -84,19 +84,6 @@ var helpCommand = &Command{
 	},
 }
 
-func anyFlag(candidates []string, flags []Flag) bool {
-	for _, flag := range flags {
-		for _, alias := range flag.Names() {
-			for _, c := range candidates {
-				if c == alias {
-					return true
-				}
-			}
-		}
-	}
-	return false
-}
-
 // Prints help for the App or Command
 type helpPrinter func(w io.Writer, templ string, data interface{})
 
