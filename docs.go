@@ -280,26 +280,28 @@ func prepareUsage(command *Command, usageText string) string {
 
 type (
 	cliTabularAppTemplate struct {
-		AppPath          string
-		Name             string
-		Usage, ArgsUsage string
-		UsageText        []string
-		Description      string
-		GlobalFlags      []cliTabularFlagTemplate
-		Commands         []cliTabularCommandTemplate
+		AppPath     string
+		Name        string
+		Usage       string
+		ArgsUsage   string
+		UsageText   []string
+		Description string
+		GlobalFlags []cliTabularFlagTemplate
+		Commands    []cliTabularCommandTemplate
 	}
 
 	cliTabularCommandTemplate struct {
-		AppPath          string
-		Name             string
-		Aliases          []string
-		Usage, ArgsUsage string
-		UsageText        []string
-		Description      string
-		Category         string
-		Flags            []cliTabularFlagTemplate
-		SubCommands      []cliTabularCommandTemplate
-		Level            uint
+		AppPath     string
+		Name        string
+		Aliases     []string
+		Usage       string
+		ArgsUsage   string
+		UsageText   []string
+		Description string
+		Category    string
+		Flags       []cliTabularFlagTemplate
+		SubCommands []cliTabularCommandTemplate
+		Level       uint
 	}
 
 	cliTabularFlagTemplate struct {
