@@ -23,46 +23,45 @@ func TestToMarkdownFull(t *testing.T) {
 	expectFileContent(t, "testdata/expected-doc-full.md", res)
 }
 
-func TestToTabularMarkdownFull(t *testing.T) {
-	// Given
+func TestToTabularMarkdown(t *testing.T) {
 	app := testApp()
 
-	// When
-	res, err := app.ToTabularMarkdown("app")
+	t.Run("full", func(t *testing.T) {
+		// When
+		res, err := app.ToTabularMarkdown("app")
 
-	// Then
-	expect(t, err, nil)
-	expectFileContent(t, "testdata/expected-tabular-markdown-full.md", res)
-}
+		// Then
+		expect(t, err, nil)
+		expectFileContent(t, "testdata/expected-tabular-markdown-full.md", res)
+	})
 
-func TestToTabularMarkdownWithEmptyAppPath(t *testing.T) {
-	// Given
-	app := testApp()
+	t.Run("with empty path", func(t *testing.T) {
+		// When
+		res, err := app.ToTabularMarkdown("")
 
-	// When
-	res, err := app.ToTabularMarkdown("")
+		// Then
+		expect(t, err, nil)
+		expectFileContent(t, "testdata/expected-tabular-markdown-full.md", res)
+	})
 
-	// Then
-	expect(t, err, nil)
-	expectFileContent(t, "testdata/expected-tabular-markdown-full.md", res)
-}
+	t.Run("with custom app path", func(t *testing.T) {
+		// When
+		res, err := app.ToTabularMarkdown("/usr/local/bin")
 
-func TestToTabularMarkdownWithCustomAppPath(t *testing.T) {
-	// Given
-	app := testApp()
-
-	// When
-	res, err := app.ToTabularMarkdown("/usr/local/bin")
-
-	// Then
-	expect(t, err, nil)
-	expectFileContent(t, "testdata/expected-tabular-markdown-custom-app-path.md", res)
+		// Then
+		expect(t, err, nil)
+		expectFileContent(t, "testdata/expected-tabular-markdown-custom-app-path.md", res)
+	})
 }
 
 func TestToTabularMarkdownFailed(t *testing.T) {
+	tpl := MarkdownTabularDocTemplate
+	defer func() { MarkdownTabularDocTemplate = tpl }() // restore
+
+	MarkdownTabularDocTemplate = "{{ .Foo }}" // invalid template
+
 	// Given
 	app := testApp()
-	MarkdownTabularDocTemplate = "{{ .Foo }}" // invalid template
 
 	// When
 	res, err := app.ToTabularMarkdown("")
