@@ -1,6 +1,7 @@
 package altsrc
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"reflect"
@@ -461,6 +462,51 @@ func (fsm *MapInputSource) Bool(name string) (bool, error) {
 	return false, nil
 }
 
+func (fsm *MapInputSource) Json(name string) ([]byte, error) {
+	otherGenericValue, exists := fsm.valueMap[name]
+	if exists {
+		otherMapValue, isType := otherGenericValue.(map[interface{}]interface{})
+		if isType {
+			jsonable, err := mapToJsonable(otherMapValue)
+			if err != nil {
+				return nil, err
+			}
+			return json.Marshal(jsonable)
+		}
+		otherSliceValue, isType := otherGenericValue.([]interface{})
+		if isType {
+			jsonable, err := sliceToJsonable(otherSliceValue)
+			if err != nil {
+				return nil, err
+			}
+			return json.Marshal(jsonable)
+		}
+		return nil, incorrectTypeForFlagError(name, "map[interface{}]interface{} | []interface{}", otherGenericValue)
+	}
+	nestedGenericValue, exists := nestedVal(name, fsm.valueMap)
+	if exists {
+		otherMapValue, isType := nestedGenericValue.(map[interface{}]interface{})
+		if isType {
+			jsonable, err := mapToJsonable(otherMapValue)
+			if err != nil {
+				return nil, err
+			}
+			return json.Marshal(jsonable)
+		}
+		otherSliceValue, isType := nestedGenericValue.([]interface{})
+		if isType {
+			jsonable, err := sliceToJsonable(otherSliceValue)
+			if err != nil {
+				return nil, err
+			}
+			return json.Marshal(jsonable)
+		}
+		return nil, incorrectTypeForFlagError(name, "map[interface{}]interface{} | []interface{}", nestedGenericValue)
+	}
+
+	return nil, nil
+}
+
 func (fsm *MapInputSource) isSet(name string) bool {
 	if _, exists := fsm.valueMap[name]; exists {
 		return exists
@@ -468,6 +514,72 @@ func (fsm *MapInputSource) isSet(name string) bool {
 
 	_, exists := nestedVal(name, fsm.valueMap)
 	return exists
+}
+
+func mapToJsonable(mapValue map[interface{}]interface{}) (map[string]interface{}, error) {
+	output := make(map[string]interface{}, 0)
+	for key, value := range mapValue {
+		otherMapValue, isType := value.(map[interface{}]interface{})
+		if isType {
+			jsonable, err := mapToJsonable(otherMapValue)
+			if err != nil {
+				return nil, err
+			}
+			value = jsonable
+		}
+
+		otherSliceValue, isType := value.([]interface{})
+		if isType {
+			jsonable, err := sliceToJsonable(otherSliceValue)
+			if err != nil {
+				return nil, err
+			}
+			value = jsonable
+		}
+
+		stringKey, isType := key.(string)
+		if isType {
+			output[stringKey] = value
+			continue
+		}
+
+		stringerKey, isType := key.(fmt.Stringer)
+		if isType {
+			output[stringerKey.String()] = value
+			continue
+		}
+
+		return nil, fmt.Errorf("Couldn't encode map to JSON. %v is neither a string nor Stringable", key)
+	}
+
+	return output, nil
+}
+
+func sliceToJsonable(value []interface{}) ([]interface{}, error) {
+	output := make([]interface{}, len(value))
+	for i, v := range value {
+		otherMapValue, isType := v.(map[interface{}]interface{})
+		if isType {
+			jsonable, err := mapToJsonable(otherMapValue)
+			if err != nil {
+				return nil, err
+			}
+			v = jsonable
+		}
+
+		otherSliceValue, isType := v.([]interface{})
+		if isType {
+			jsonable, err := sliceToJsonable(otherSliceValue)
+			if err != nil {
+				return nil, err
+			}
+			v = jsonable
+		}
+
+		output[i] = v
+	}
+
+	return output, nil
 }
 
 func incorrectTypeForFlagError(name, expectedTypeName string, value interface{}) error {

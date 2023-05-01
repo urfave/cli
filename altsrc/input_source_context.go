@@ -30,3 +30,9 @@ type InputSourceContext interface {
 
 	isSet(name string) bool
 }
+
+type InputSourceContextWithExport interface {
+	InputSourceContext
+
+	Json(name string) ([]byte, error)
+}

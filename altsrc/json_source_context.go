@@ -286,6 +286,14 @@ func (x *jsonSource) Bool(name string) (bool, error) {
 	return v, nil
 }
 
+func (x *jsonSource) Json(name string) ([]byte, error) {
+	i, err := x.getValue(name)
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(i)
+}
+
 func (x *jsonSource) isSet(name string) bool {
 	_, err := x.getValue(name)
 	return err == nil

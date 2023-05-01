@@ -1,11 +1,13 @@
 package altsrc
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -63,6 +65,72 @@ func TestGenericApplyInputSourceValue(t *testing.T) {
 
 	c = runRacyTest(t, tis)
 	refute(t, v, c.Generic("test"))
+}
+
+func TestGenericApplyInputSourceValue_Import(t *testing.T) {
+	v := &HostPort{"localhost", 33}
+	tis := testApplyInputSource{
+		Flag:     NewGenericFlag(&cli.GenericFlag{Name: "test", Value: &HostPort{}}),
+		FlagName: "test",
+		MapValue: map[interface{}]interface{}{
+			"host": "localhost",
+			"port": 33,
+		},
+	}
+	c := runTest(t, tis)
+	expect(t, v, c.Generic("test"))
+
+	c = runRacyTest(t, tis)
+	refute(t, v, c.Generic("test"))
+}
+
+func TestGenericApplyInputSourceValue_ImportString(t *testing.T) {
+	v := &HostPort{"localhost", 33}
+	tis := testApplyInputSource{
+		Flag:     NewGenericFlag(&cli.GenericFlag{Name: "test", Value: &HostPort{}}),
+		FlagName: "test",
+		MapValue: "localhost:33",
+	}
+	c := runTest(t, tis)
+	expect(t, v, c.Generic("test"))
+
+	c = runRacyTest(t, tis)
+	refute(t, v, c.Generic("test"))
+}
+
+func TestGenericApplyInputSourceValue_ImportNested(t *testing.T) {
+	v := &HostPort{"localhost", 33}
+	tis := testApplyInputSource{
+		Flag:     NewGenericFlag(&cli.GenericFlag{Name: "top.test", Value: &HostPort{}}),
+		FlagName: "top",
+		MapValue: map[interface{}]interface{}{
+			"test": map[interface{}]interface{}{
+				"host": "localhost",
+				"port": 33,
+			},
+		},
+	}
+	c := runTest(t, tis)
+	expect(t, v, c.Generic("top.test"))
+
+	c = runRacyTest(t, tis)
+	refute(t, v, c.Generic("top.test"))
+}
+
+func TestGenericApplyInputSourceValue_ImportStringNested(t *testing.T) {
+	v := &HostPort{"localhost", 33}
+	tis := testApplyInputSource{
+		Flag:     NewGenericFlag(&cli.GenericFlag{Name: "top.test", Value: &HostPort{}}),
+		FlagName: "top",
+		MapValue: map[interface{}]interface{}{
+			"test": "localhost:33",
+		},
+	}
+	c := runTest(t, tis)
+	expect(t, v, c.Generic("top.test"))
+
+	c = runRacyTest(t, tis)
+	refute(t, v, c.Generic("top.test"))
 }
 
 func TestGenericApplyInputSourceMethodContextSet(t *testing.T) {
@@ -948,6 +1016,16 @@ func TestFloat64ApplyInputSourceMethodEnvVarSet(t *testing.T) {
 	refute(t, 1.4, c.Float64("test"))
 }
 
+func TestStringGeneric_Set(t *testing.T) {
+	generic := &stringGeneric{}
+
+	expect(t, "", generic.String())
+
+	generic.Set("test")
+
+	expect(t, "test", generic.String())
+}
+
 func runTest(t *testing.T, test testApplyInputSource) *cli.Context {
 	inputSource := &MapInputSource{
 		file:     test.SourcePath,
@@ -1002,6 +1080,35 @@ func (p *Parser) Set(value string) error {
 
 func (p *Parser) String() string {
 	return fmt.Sprintf("%s,%s", p[0], p[1])
+}
+
+type HostPort struct {
+	A string `json:"host"`
+	B int    `json:"port"`
+}
+
+func (hp *HostPort) Set(value string) error {
+	parts := strings.Split(value, ":")
+	if len(parts) != 2 {
+		return fmt.Errorf("invalid format")
+	}
+	port, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return err
+	}
+
+	(*hp).A = parts[0]
+	(*hp).B = port
+
+	return nil
+}
+
+func (hp *HostPort) String() string {
+	return fmt.Sprintf("%s:%d", hp.A, hp.B)
+}
+
+func (hp *HostPort) FromJson(rawJson []byte) error {
+	return json.Unmarshal(rawJson, hp)
 }
 
 type bogus [1]uint
