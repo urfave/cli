@@ -59,6 +59,21 @@ func TestToTabularMarkdownWithCustomAppPath(t *testing.T) {
 	expectFileContent(t, "testdata/expected-tabular-markdown-custom-app-path.md", res)
 }
 
+func TestToTabularMarkdownFailed(t *testing.T) {
+	// Given
+	app := testApp()
+	MarkdownTabularDocTemplate = "{{ .Foo }}" // invalid template
+
+	// When
+	res, err := app.ToTabularMarkdown("")
+
+	// Then
+	if err == nil {
+		t.Fatal("Expected error but got nil")
+	}
+	expect(t, res, "")
+}
+
 func TestToTabularToFileBetweenTags(t *testing.T) {
 	expectedDocs, fErr := os.ReadFile("testdata/expected-tabular-markdown-full.md")
 	expect(t, fErr, nil) // read without error
