@@ -35,6 +35,18 @@ func TestToTabularMarkdownFull(t *testing.T) {
 	expectFileContent(t, "testdata/expected-tabular-markdown-full.md", res)
 }
 
+func TestToTabularMarkdownWithCustomAppPath(t *testing.T) {
+	// Given
+	app := testApp()
+
+	// When
+	res, err := app.ToTabularMarkdown("/usr/local/bin")
+
+	// Then
+	expect(t, err, nil)
+	expectFileContent(t, "testdata/expected-tabular-markdown-custom-app-path.md", res)
+}
+
 func TestToTabularToFileBetweenTags(t *testing.T) {
 	expectedDocs, fErr := os.ReadFile("testdata/expected-tabular-markdown-full.md")
 	expect(t, fErr, nil) // read without error
