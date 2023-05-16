@@ -212,6 +212,39 @@ func TestContext_IsSet(t *testing.T) {
 	expect(t, ctx.IsSet("bogus"), false)
 }
 
+func TestContext_IsSet_Aliases(t *testing.T) {
+
+	var fooSet, fSet, tSet, iglooSet bool
+
+	a := App{
+		Flags: []Flag{
+			&Int64Flag{
+				Name:    "foo",
+				Aliases: []string{"f", "t", "igloo"},
+			},
+		},
+		Action: func(ctx *Context) error {
+			fooSet = ctx.IsSet("foo")
+			fSet = ctx.IsSet("f")
+			tSet = ctx.IsSet("t")
+			iglooSet = ctx.IsSet("igloo")
+			return nil
+		},
+	}
+
+	_ = a.Run([]string{"run"})
+	expect(t, fooSet, false)
+	expect(t, fSet, false)
+	expect(t, tSet, false)
+	expect(t, iglooSet, false)
+
+	_ = a.Run([]string{"run", "--t", "10"})
+	expect(t, fooSet, true)
+	expect(t, fSet, true)
+	expect(t, tSet, true)
+	expect(t, iglooSet, true)
+}
+
 // XXX Corresponds to hack in context.IsSet for flags with EnvVar field
 // Should be moved to `flag_test` in v2
 func TestContext_IsSet_fromEnv(t *testing.T) {
