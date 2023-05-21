@@ -336,7 +336,15 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 //
 // Deprecated: use App.Run or App.RunContext
 func (a *App) RunAsSubcommand(ctx *Context) (err error) {
-	return a.RunContext(ctx.Context, ctx.Args().Slice())
+	a.Setup()
+
+	cCtx := NewContext(a, nil, ctx)
+	cCtx.shellComplete = ctx.shellComplete
+
+	a.rootCommand = a.newRootCommand()
+	cCtx.Command = a.rootCommand
+
+	return a.rootCommand.Run(cCtx, ctx.Args().Slice()...)
 }
 
 func (a *App) suggestFlagFromError(err error, command string) (string, error) {
