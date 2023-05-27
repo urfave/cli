@@ -2195,6 +2195,48 @@ func TestApp_Run_Categories(t *testing.T) {
 	}
 }
 
+func TestApp_Run_SubCommand_Categories(t *testing.T) {
+	buf := new(bytes.Buffer)
+
+	app := &App{
+		Name:     "categories",
+		HideHelp: true,
+		Commands: []*Command{
+			{
+				Name: "main",
+				Subcommands: []*Command{
+					{
+						Name:     "command1",
+						Category: "CAT1",
+					},
+					{
+						Name:     "command2",
+						Category: "CAT2",
+					},
+					{
+						Name:     "command3",
+						Category: "CAT1",
+					},
+				},
+			},
+		},
+		Writer: buf,
+	}
+
+	_ = app.Run([]string{"categories", "main"})
+
+	output := buf.String()
+
+	if !strings.Contains(output, "CAT1:\n     command1") {
+		t.Errorf("want buffer to include category %q, did not: \n%q", "CAT1:\n     command1", output)
+	}
+
+	if !strings.Contains(output, "CAT2:\n     command2") {
+		t.Errorf("want buffer to include category %q, did not: \n%q", "CAT2:\n     command2", output)
+	}
+
+}
+
 func TestApp_VisibleCategories(t *testing.T) {
 	app := &App{
 		Name:     "visible-categories",
