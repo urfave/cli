@@ -333,7 +333,7 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 }
 
 // RunAsSubcommand is for legacy/compatibility purposes only. New code should only
-// use App.RunContextMost. This function is slated to be removed in v3
+// use App.RunContext. This function is slated to be removed in v3.
 func (a *App) RunAsSubcommand(ctx *Context) (err error) {
 	a.Setup()
 
