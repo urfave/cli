@@ -332,11 +332,18 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 	return a.rootCommand.Run(cCtx, arguments...)
 }
 
-// This is a stub function to keep public API unchanged from old code
-//
-// Deprecated: use App.Run or App.RunContext
+// RunAsSubcommand is for legacy/compatibility purposes only. New code should only
+// use App.RunContextMost. This function is slated to be removed in v3
 func (a *App) RunAsSubcommand(ctx *Context) (err error) {
-	return a.RunContext(ctx.Context, ctx.Args().Slice())
+	a.Setup()
+
+	cCtx := NewContext(a, nil, ctx)
+	cCtx.shellComplete = ctx.shellComplete
+
+	a.rootCommand = a.newRootCommand()
+	cCtx.Command = a.rootCommand
+
+	return a.rootCommand.Run(cCtx, ctx.Args().Slice()...)
 }
 
 func (a *App) suggestFlagFromError(err error, command string) (string, error) {

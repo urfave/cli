@@ -42,6 +42,7 @@ var helpCommand = &Command{
 		// 3 $ app foo
 		// 4 $ app help foo
 		// 5 $ app foo help
+		// 6 $ app foo -h (with no other sub-commands nor flags defined)
 
 		// Case 4. when executing a help command set the context to parent
 		// to allow resolution of subsequent args. This will transform
@@ -77,6 +78,8 @@ var helpCommand = &Command{
 			HelpPrinter(cCtx.App.Writer, templ, cCtx.Command)
 			return nil
 		}
+
+		// Case 6, handling incorporated in the callee itself
 		return ShowSubcommandHelp(cCtx)
 	},
 }
@@ -292,8 +295,12 @@ func ShowSubcommandHelp(cCtx *Context) error {
 	if cCtx == nil {
 		return nil
 	}
-
-	HelpPrinter(cCtx.App.Writer, SubcommandHelpTemplate, cCtx.Command)
+	// use custom template when provided (fixes #1703)
+	templ := SubcommandHelpTemplate
+	if cCtx.Command != nil && cCtx.Command.CustomHelpTemplate != "" {
+		templ = cCtx.Command.CustomHelpTemplate
+	}
+	HelpPrinter(cCtx.App.Writer, templ, cCtx.Command)
 	return nil
 }
 

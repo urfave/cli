@@ -3,7 +3,6 @@ package altsrc
 import (
 	"fmt"
 	"math"
-	"reflect"
 	"strings"
 	"time"
 
@@ -471,11 +470,5 @@ func (fsm *MapInputSource) isSet(name string) bool {
 }
 
 func incorrectTypeForFlagError(name, expectedTypeName string, value interface{}) error {
-	valueType := reflect.TypeOf(value)
-	valueTypeName := ""
-	if valueType != nil {
-		valueTypeName = valueType.Name()
-	}
-
-	return fmt.Errorf("Mismatched type for flag '%s'. Expected '%s' but actual is '%s'", name, expectedTypeName, valueTypeName)
+	return fmt.Errorf("Mismatched type for flag '%s'. Expected '%s' but actual is '%T'", name, expectedTypeName, value)
 }
