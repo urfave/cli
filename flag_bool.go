@@ -52,7 +52,7 @@ func (b *boolValue) String() string {
 func (b *boolValue) IsBoolFlag() bool { return true }
 
 func (b *boolValue) Count() int {
-	if b.count != nil {
+	if b.count != nil && *b.count > 0 {
 		return *b.count
 	}
 	return 0
@@ -130,6 +130,11 @@ func (f *BoolFlag) Apply(set *flag.FlagSet) error {
 	if count == nil {
 		count = new(int)
 	}
+
+	// since count will be incremented for each alias as well
+	// subtract number of aliases from overall count
+	*count -= len(f.Aliases)
+
 	if dest == nil {
 		dest = new(bool)
 	}
