@@ -56,6 +56,7 @@ func (cCtx *Context) Set(name, value string) error {
 
 // IsSet determines if the flag was actually set
 func (cCtx *Context) IsSet(name string) bool {
+
 	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		isSet := false
 		fs.Visit(func(f *flag.Flag) {
@@ -72,7 +73,23 @@ func (cCtx *Context) IsSet(name string) bool {
 			return false
 		}
 
-		return f.IsSet()
+		if f.IsSet() {
+			return true
+		}
+
+		// now redo flagset search on aliases
+		aliases := f.Names()
+		fs.Visit(func(f *flag.Flag) {
+			for _, alias := range aliases {
+				if f.Name == alias {
+					isSet = true
+				}
+			}
+		})
+
+		if isSet {
+			return true
+		}
 	}
 
 	return false
