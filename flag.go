@@ -92,7 +92,6 @@ func (f FlagsByName) Swap(i, j int) {
 
 // ActionableFlag is an interface that wraps Flag interface and RunAction operation.
 type ActionableFlag interface {
-	Flag
 	RunAction(*Context) error
 }
 
@@ -115,16 +114,12 @@ type Flag interface {
 // RequiredFlag is an interface that allows us to mark flags as required
 // it allows flags required flags to be backwards compatible with the Flag interface
 type RequiredFlag interface {
-	Flag
-
 	// whether the flag is a required flag or not
 	IsRequired() bool
 }
 
 // DocGenerationFlag is an interface that allows documentation generation for the flag
 type DocGenerationFlag interface {
-	Flag
-
 	// TakesValue returns true if the flag takes a value, otherwise false
 	TakesValue() bool
 
@@ -158,8 +153,6 @@ type Countable interface {
 
 // VisibleFlag is an interface that allows to check if a flag is visible
 type VisibleFlag interface {
-	Flag
-
 	// IsVisible returns true if the flag is not hidden, otherwise false
 	IsVisible() bool
 }
@@ -167,8 +160,6 @@ type VisibleFlag interface {
 // CategorizableFlag is an interface that allows us to potentially
 // use a flag in a categorized representation.
 type CategorizableFlag interface {
-	VisibleFlag
-
 	// Returns the category of the flag
 	GetCategory() string
 }
@@ -357,7 +348,7 @@ func stringifyFlag(f Flag) string {
 
 	usageWithDefault := strings.TrimSpace(usage + defaultValueString)
 
-	pn := prefixedNames(df.Names(), placeholder)
+	pn := prefixedNames(f.Names(), placeholder)
 	sliceFlag, ok := f.(DocGenerationMultiValueFlag)
 	if ok && sliceFlag.IsMultiValueFlag() {
 		pn = pn + " [ " + pn + " ]"

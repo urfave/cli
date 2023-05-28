@@ -75,6 +75,9 @@ type Command struct {
 
 	// Flag exclusion group
 	MutuallyExclusiveFlags []MutuallyExclusiveFlags
+
+	// flags that have been applied in current parse
+	appliedFlags []Flag
 }
 
 type Commands []*Command
@@ -231,7 +234,7 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 		}
 	}
 
-	if err = runFlagActions(cCtx, c.Flags); err != nil {
+	if err = runFlagActions(cCtx, c.appliedFlags); err != nil {
 		return err
 	}
 
@@ -293,6 +296,7 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 }
 
 func (c *Command) newFlagSet() (*flag.FlagSet, error) {
+	c.appliedFlags = append(c.appliedFlags, c.allFlags()...)
 	return flagSet(c.Name, c.allFlags())
 }
 
@@ -374,6 +378,8 @@ func (c *Command) parseFlags(args Args, ctx *Context) (*flag.FlagSet, error) {
 			if err := fl.Apply(set); err != nil {
 				return nil, err
 			}
+
+			c.appliedFlags = append(c.appliedFlags, fl)
 		}
 	}
 
