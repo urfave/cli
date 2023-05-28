@@ -63,12 +63,24 @@ func TestBoolFlagValueFromContext(t *testing.T) {
 func TestBoolFlagApply_SetsCount(t *testing.T) {
 	v := false
 	count := 0
-	fl := BoolFlag{Name: "wat", Aliases: []string{"W", "huh"}, Destination: &v, Count: &count}
-	set := flag.NewFlagSet("test", 0)
-	err := fl.Apply(set)
-	expect(t, err, nil)
+	app := &App{
+		Name: "foo",
+		Flags: []Flag{
+			&BoolFlag{Name: "wat", Aliases: []string{"W", "huh"}, Destination: &v, Count: &count},
+		},
+	}
 
-	err = set.Parse([]string{"--wat", "-W", "--huh"})
+	err := app.Run([]string{"foo", "--wat", "-W", "--huh"})
+	if err == nil {
+		t.Error("Expected error")
+	} else if es := err.Error(); !strings.Contains(es, "Cannot use two forms of the same flag") {
+		t.Errorf("Unexpected error %s", es)
+	}
+
+	v = false
+	count = 0
+
+	err = app.Run([]string{"foo", "--wat", "--wat", "--wat"})
 	expect(t, err, nil)
 	expect(t, v, true)
 	expect(t, count, 3)
@@ -82,7 +94,12 @@ func TestBoolFlagCountFromContext(t *testing.T) {
 		expectedCount int
 	}{
 		{
-			input:         []string{"-tf", "-w", "-huh"},
+			input:         []string{"foo", "-tf"},
+			expectedVal:   true,
+			expectedCount: 1,
+		},
+		{
+			input:         []string{"foo", "-tf", "-tf", "-tf"},
 			expectedVal:   true,
 			expectedCount: 3,
 		},
@@ -94,16 +111,21 @@ func TestBoolFlagCountFromContext(t *testing.T) {
 	}
 
 	for _, bct := range boolCountTests {
-		set := flag.NewFlagSet("test", 0)
-		ctx := NewContext(nil, set, nil)
 		tf := &BoolFlag{Name: "tf", Aliases: []string{"w", "huh"}}
-		err := tf.Apply(set)
-		expect(t, err, nil)
+		app := &App{
+			Name:  "foo",
+			Flags: []Flag{tf},
+			Action: func(ctx *Context) error {
+				expect(t, tf.Get(ctx), bct.expectedVal)
+				expect(t, ctx.Count("tf"), bct.expectedCount)
+				expect(t, ctx.Count("w"), bct.expectedCount)
+				expect(t, ctx.Count("huh"), bct.expectedCount)
+				return nil
+			},
+		}
 
-		err = set.Parse(bct.input)
-		expect(t, err, nil)
-		expect(t, tf.Get(ctx), bct.expectedVal)
-		expect(t, ctx.Count("tf"), bct.expectedCount)
+		app.Run(bct.input)
+
 	}
 }
 
