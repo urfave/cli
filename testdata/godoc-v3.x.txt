@@ -307,7 +307,6 @@ type ActionFunc func(*Context) error
     ActionFunc is the action to execute when no subcommands are specified
 
 type ActionableFlag interface {
-	Flag
 	RunAction(*Context) error
 }
     ActionableFlag is an interface that wraps Flag interface and RunAction
@@ -528,8 +527,6 @@ func (s *BoolWithInverseFlag) String() string
 func (s *BoolWithInverseFlag) Value() bool
 
 type CategorizableFlag interface {
-	VisibleFlag
-
 	// Returns the category of the flag
 	GetCategory() string
 }
@@ -595,6 +592,7 @@ type Command struct {
 
 	// Flag exclusion group
 	MutuallyExclusiveFlags []MutuallyExclusiveFlags
+
 	// Has unexported fields.
 }
     Command is a subcommand for a cli.App.
@@ -762,8 +760,6 @@ type Countable interface {
     repetitive flags
 
 type DocGenerationFlag interface {
-	Flag
-
 	// TakesValue returns true if the flag takes a value, otherwise false
 	TakesValue() bool
 
@@ -1077,8 +1073,6 @@ type PersistentFlag interface {
     persistent through subcommands
 
 type RequiredFlag interface {
-	Flag
-
 	// whether the flag is a required flag or not
 	IsRequired() bool
 }
@@ -1183,8 +1177,6 @@ type ValueCreator[T any, C any] interface {
         C specifies the config for the type
 
 type VisibleFlag interface {
-	Flag
-
 	// IsVisible returns true if the flag is not hidden, otherwise false
 	IsVisible() bool
 }
@@ -1194,7 +1186,7 @@ type VisibleFlagCategory interface {
 	// Name returns the category name string
 	Name() string
 	// Flags returns a slice of VisibleFlag sorted by name
-	Flags() []VisibleFlag
+	Flags() []Flag
 }
     VisibleFlagCategory is a category containing flags.
 
