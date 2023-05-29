@@ -33,8 +33,8 @@ maintenance is done on the [`v2-maint`
 branch](https://github.com/urfave/cli/tree/v2-maint) which receives **minor**
 improvements, bug fixes, and security fixes.
 
-```sh-session
-$ go get github.com/urfave/cli/v2@latest
+```sh
+go get github.com/urfave/cli/v2@latest
 ```
 
 ```go
@@ -51,8 +51,8 @@ be considered **alpha-level** with an unstable API. Occasional **alpha** tags
 are pushed to allow for limited stability without pinning to an arbitrary
 commit:
 
-```sh-session
-$ go get github.com/urfave/cli/v3@latest
+```sh
+go get github.com/urfave/cli/v3@latest
 ```
 
 ```go
