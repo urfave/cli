@@ -198,7 +198,7 @@ func TestBoolWithInverseEnvVars(t *testing.T) {
 		return &cli.BoolWithInverseFlag{
 			BoolFlag: &cli.BoolFlag{
 				Name:    "env",
-				EnvVars: []string{"ENV"},
+				Sources: cli.ValueSources{cli.EnvSource("ENV")},
 			},
 		}
 	}

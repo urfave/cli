@@ -107,7 +107,7 @@ func main() {
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:     "github-token",
-						EnvVars:  []string{"MKDOCS_REMOTE_GITHUB_TOKEN"},
+						Sources:  []cli.FlagValueSource{cli.EnvSource("MKDOCS_REMOTE_GITHUB_TOKEN")},
 						Required: true,
 					},
 				},
