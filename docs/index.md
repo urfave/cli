@@ -28,7 +28,7 @@ Go Modules are required when using this package. [See the go blog guide on using
 
 ### Using `v2` releases
 
-The `v2` series is the recommend version for new development. Ongoing
+The `v2` series is the recommended version for new development. Ongoing
 maintenance is done on the [`v2-maint`
 branch](https://github.com/urfave/cli/tree/v2-maint) which receives **minor**
 improvements, bug fixes, and security fixes.
