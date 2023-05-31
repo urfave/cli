@@ -116,9 +116,7 @@ func (f *StringSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSour
 			}
 		}
 		if f.Destination != nil {
-			if err := f.Destination.Set(sliceValue.Serialize()); err != nil {
-				return err
-			}
+			_ = f.Destination.Set(sliceValue.Serialize())
 		}
 	}
 	return nil

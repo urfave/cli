@@ -65,6 +65,24 @@ func TestGenericApplyInputSourceValue(t *testing.T) {
 	refute(t, v, c.Generic("test"))
 }
 
+func TestGenericApplyInputSourceValueError(t *testing.T) {
+	set := flag.NewFlagSet("", flag.ContinueOnError)
+	c := cli.NewContext(nil, set, nil)
+
+	testFlag := &GenericFlag{
+		GenericFlag: &cli.GenericFlag{
+			Name:  "test",
+			Value: &cli.StringSlice{},
+		},
+		set: set,
+	}
+
+	err := testFlag.ApplyInputSourceValue(c, NewMapInputSource("", map[interface{}]interface{}{
+		"test": testFlag.Value,
+	}))
+	expect(t, err, fmt.Errorf("no such flag -test"))
+}
+
 func TestGenericApplyInputSourceMethodContextSet(t *testing.T) {
 	p := &Parser{"abc", "def"}
 	tis := testApplyInputSource{
