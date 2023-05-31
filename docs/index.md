@@ -9,7 +9,7 @@
 goal is to enable developers to write fast and distributable command line applications in
 an expressive way.
 
-These are the guides for each major supported version:
+These are the guides for each major version:
 
 - [`v2`](./v2/getting-started.md)
 - [`v1`](./v1/getting-started.md)
@@ -28,31 +28,46 @@ Go Modules are required when using this package. [See the go blog guide on using
 
 ### Using `v2` releases
 
-```
-$ go get github.com/urfave/cli/v2
+The `v2` series is the recommended version for new development. Ongoing
+maintenance is done on the [`v2-maint`
+branch](https://github.com/urfave/cli/tree/v2-maint) which receives **minor**
+improvements, bug fixes, and security fixes.
+
+```sh
+go get github.com/urfave/cli/v2@latest
 ```
 
 ```go
-...
 import (
   "github.com/urfave/cli/v2" // imports as package "cli"
 )
-...
+```
+
+### Using **alpha-level** `v3` releases
+
+The latest pre-release in progress on the [`main`
+branch](https://github.com/urfave/cli/tree/main) is the `v3` series which should
+be considered **alpha-level** with an unstable API. Occasional **alpha** tags
+are pushed to allow for limited stability without pinning to an arbitrary
+commit:
+
+```sh
+go get github.com/urfave/cli/v3@latest
+```
+
+```go
+import (
+  "github.com/urfave/cli/v3" // imports as package "cli"
+)
 ```
 
 ### Using `v1` releases
 
-```
-$ go get github.com/urfave/cli
-```
-
-```go
-...
-import (
-  "github.com/urfave/cli"
-)
-...
-```
+:warning: The `v1` series is receiving **security fixes only** via the
+[`v1-maint`](https://github.com/urfave/cli/tree/v1-maint) branch and **should
+not** be used in new development. Please see the [`v2` migration
+guide](./migrate-v1-to-v2.md) and feel free to open an issue or discussion if
+you need help with the migration to `v2`.
 
 ### Build tags
 
