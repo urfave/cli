@@ -1209,13 +1209,13 @@ type ValueCreator[T any, C any] interface {
 type ValueSources []FlagValueSource
     ValueSources encapsulates all value sources
 
-func EnvSources(envs ...string) ValueSources
-    EnvSources is a helper function to encapsulate a bunch of envs together as
+func EnvVars(envs ...string) ValueSources
+    EnvVars is a helper function to encapsulate a bunch of envs together as
     ValueSources
 
-func FileSources(paths ...string) ValueSources
-    FileSources is a helper function to encapsulate a bunch of file paths
-    together as ValueSources
+func FilePaths(paths ...string) ValueSources
+    FilePaths is a helper function to encapsulate a bunch of file paths together
+    as ValueSources
 
 func (v ValueSources) Get() (string, string, bool)
 

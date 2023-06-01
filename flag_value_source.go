@@ -62,7 +62,7 @@ func (f FileSource) Get() (string, bool) {
 }
 
 func (f FileSource) Identifier() string {
-	return "File"
+	return fmt.Sprintf("file %q", string(f))
 }
 
 // FilePaths is a helper function to encapsulate a bunch
