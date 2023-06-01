@@ -217,9 +217,9 @@ func TestContext_IsSet_fromEnv(t *testing.T) {
 	_ = os.Setenv("APP_PASSWORD", "")
 	a := App{
 		Flags: []Flag{
-			&Float64Flag{Name: "timeout", Aliases: []string{"t"}, Sources: EnvSources("APP_TIMEOUT_SECONDS")},
-			&StringFlag{Name: "password", Aliases: []string{"p"}, Sources: EnvSources("APP_PASSWORD")},
-			&Float64Flag{Name: "unparsable", Aliases: []string{"u"}, Sources: EnvSources("APP_UNPARSABLE")},
+			&Float64Flag{Name: "timeout", Aliases: []string{"t"}, Sources: EnvVars("APP_TIMEOUT_SECONDS")},
+			&StringFlag{Name: "password", Aliases: []string{"p"}, Sources: EnvVars("APP_PASSWORD")},
+			&Float64Flag{Name: "unparsable", Aliases: []string{"u"}, Sources: EnvVars("APP_UNPARSABLE")},
 			&Float64Flag{Name: "no-env-var", Aliases: []string{"n"}},
 		},
 		Action: func(ctx *Context) error {
@@ -500,7 +500,7 @@ func TestCheckRequiredFlags(t *testing.T) {
 		{
 			testCase: "required_and_present_via_env_var",
 			flags: []Flag{
-				&StringFlag{Name: "requiredFlag", Required: true, Sources: EnvSources("REQUIRED_FLAG")},
+				&StringFlag{Name: "requiredFlag", Required: true, Sources: EnvVars("REQUIRED_FLAG")},
 			},
 			envVarInput: [2]string{"REQUIRED_FLAG", "true"},
 		},
@@ -525,7 +525,7 @@ func TestCheckRequiredFlags(t *testing.T) {
 			testCase: "required_and_optional_and_optional_present_via_env_var",
 			flags: []Flag{
 				&StringFlag{Name: "requiredFlag", Required: true},
-				&StringFlag{Name: "optionalFlag", Sources: EnvSources("OPTIONAL_FLAG")},
+				&StringFlag{Name: "optionalFlag", Sources: EnvVars("OPTIONAL_FLAG")},
 			},
 			envVarInput:     [2]string{"OPTIONAL_FLAG", "true"},
 			expectedAnError: true,
