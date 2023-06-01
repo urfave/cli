@@ -12,23 +12,13 @@ import (
 	"strings"
 )
 
-const suggestDidYouMeanTemplate = "Did you mean %q?"
-
 var (
 	ignoreFlagPrefix = "test." // this is to ignore test flags when adding flags from other packages
-
-	SuggestFlag               SuggestFlagFunc    = suggestFlag
-	SuggestCommand            SuggestCommandFunc = suggestCommand
-	SuggestDidYouMeanTemplate string             = suggestDidYouMeanTemplate
 )
 
 // App is an alias for Command that is intended to help clarify
 // which Command is considered the "root"
 type App = Command
-
-type SuggestFlagFunc func(flags []Flag, provided string, hideHelp bool) string
-
-type SuggestCommandFunc func(commands []*Command, provided string) string
 
 // Command is the primary type used in building a cli app and may
 // contain child Commands
@@ -52,8 +42,8 @@ type Command struct {
 	DefaultCommand string
 	// The category the command is part of
 	Category string
-	// The function to call when checking for bash command completions
-	BashComplete BashCompleteFunc
+	// The function to call when checking for shell command completions
+	ShellComplete ShellCompleteFunc
 	// An action to execute before any sub-subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no sub-subcommands are run
 	Before BeforeFunc
@@ -77,8 +67,8 @@ type Command struct {
 	// List of flags to parse
 	Flags          []Flag
 	flagCategories FlagCategories
-	// Boolean to enable bash completion commands
-	EnableBashCompletion bool
+	// Boolean to enable shell completion commands
+	EnableShellCompletion bool
 	// Treat all flags as normal arguments if true
 	SkipFlagParsing bool
 	// Boolean to hide built-in help command and help flag
@@ -105,6 +95,9 @@ type Command struct {
 	// cli.go uses text/template to render templates. You can
 	// render custom help text by setting this variable.
 	CustomHelpTemplate string
+
+	// Use longest prefix match for commands
+	PrefixMatchCommands bool
 
 	// categories contains the categorized commands and is populated on app startup
 	categories CommandCategories
@@ -137,6 +130,9 @@ type Command struct {
 	// Allows global flags set by libraries which use flag.XXXVar(...) directly
 	// to be parsed through this library
 	AllowExtFlags bool
+
+	// Flag exclusion group
+	MutuallyExclusiveFlags []MutuallyExclusiveFlags
 }
 
 type Commands []*Command
@@ -181,8 +177,8 @@ func (c *Command) setupDefaults() {
 		c.HideVersion = true
 	}
 
-	if c.BashComplete == nil {
-		c.BashComplete = DefaultAppComplete
+	if c.ShellComplete == nil {
+		c.ShellComplete = DefaultCompleteWithFlags(c)
 	}
 
 	if c.Action == nil {
@@ -207,12 +203,10 @@ func (c *Command) setupDefaults() {
 }
 
 func (c *Command) setup(cCtx *Context) {
-
 	if cCtx.parentContext != nil && cCtx.parentContext.Command != nil {
 		if cCtx.parentContext.Command.UseShortOptionHandling {
 			c.UseShortOptionHandling = true
 		}
-
 	}
 
 	if c.Reader == nil {
@@ -336,11 +330,7 @@ func (c *Command) run(cCtx *Context, arguments ...string) (err error) {
 	set, err := c.parseFlags(&a, cCtx)
 	cCtx.flagSet = set
 
-	if c.isRoot {
-		if checkCompletions(cCtx) {
-			return nil
-		}
-	} else if checkCommandCompletions(cCtx, c.Name) {
+	if checkCompletions(cCtx) {
 		return nil
 	}
 
@@ -395,6 +385,13 @@ func (c *Command) run(cCtx *Context, arguments ...string) (err error) {
 		return cerr
 	}
 
+	for _, grp := range c.MutuallyExclusiveFlags {
+		if err := grp.check(cCtx); err != nil {
+			_ = ShowSubcommandHelp(cCtx)
+			return err
+		}
+	}
+
 	if c.Before != nil && !cCtx.shellComplete {
 		beforeErr := c.Before(cCtx)
 		if beforeErr != nil {
@@ -412,6 +409,9 @@ func (c *Command) run(cCtx *Context, arguments ...string) (err error) {
 	args := cCtx.Args()
 	if args.Present() {
 		name := args.First()
+		if SuggestCommand != nil {
+			name = SuggestCommand(c.Commands, name)
+		}
 		cmd = c.Command(name)
 		if cmd == nil {
 			hasDefault := cCtx.Command.DefaultCommand != ""
@@ -498,7 +498,18 @@ func (c *Command) argsWithDefaultCommand(oldArgs Args) Args {
 }
 
 func (c *Command) newFlagSet() (*flag.FlagSet, error) {
-	return flagSet(c.Name, c.Flags)
+	return flagSet(c.Name, c.allFlags())
+}
+
+func (c *Command) allFlags() []Flag {
+	var flags []Flag
+	flags = append(flags, c.Flags...)
+	for _, grpf := range c.MutuallyExclusiveFlags {
+		for _, f1 := range grpf.Flags {
+			flags = append(flags, f1...)
+		}
+	}
+	return flags
 }
 
 func (c *Command) useShortOptionHandling() bool {

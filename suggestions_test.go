@@ -3,6 +3,7 @@ package cli
 import (
 	"errors"
 	"fmt"
+	"os"
 	"testing"
 )
 
@@ -110,19 +111,22 @@ func TestSuggestCommand(t *testing.T) {
 		{"conf", "config"},
 		{"i", "i"},
 		{"information", "info"},
+		{"inf", "info"},
+		{"con", "config"},
 		{"not-existing", "info"},
 	} {
 		// When
 		res := suggestCommand(app.Commands, testCase.provided)
 
 		// Then
-		expect(t, res, fmt.Sprintf(SuggestDidYouMeanTemplate, testCase.expected))
+		expect(t, res, testCase.expected)
 	}
 }
 
 func ExampleApp_Suggest() {
 	app := &App{
 		Name:                  "greet",
+		ErrWriter:             os.Stdout,
 		Suggest:               true,
 		HideHelp:              false,
 		HideHelpCommand:       true,
@@ -136,7 +140,9 @@ func ExampleApp_Suggest() {
 		},
 	}
 
-	app.Run([]string{"greet", "--nema", "chipmunk"})
+	if app.Run([]string{"greet", "--nema", "chipmunk"}) == nil {
+		fmt.Println("Expected error")
+	}
 	// Output:
 	// Incorrect Usage: flag provided but not defined: -nema
 	//
@@ -148,6 +154,7 @@ func ExampleApp_Suggest() {
 func ExampleApp_Suggest_command() {
 	app := &App{
 		Name:                  "greet",
+		ErrWriter:             os.Stdout,
 		Suggest:               true,
 		HideHelpCommand:       true,
 		CustomAppHelpTemplate: "(this space intentionally left blank)\n",
@@ -177,7 +184,9 @@ func ExampleApp_Suggest_command() {
 		},
 	}
 
-	app.Run([]string{"greet", "neighbors", "--sliming"})
+	if app.Run([]string{"greet", "neighbors", "--sliming"}) == nil {
+		fmt.Println("Expected error")
+	}
 	// Output:
 	// Incorrect Usage: flag provided but not defined: -sliming
 	//

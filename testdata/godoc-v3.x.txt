@@ -79,6 +79,9 @@ OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}
     uses text/template to render templates. You can render custom help text by
     setting this variable.
 
+var (
+	DefaultInverseBoolPrefix = "no-"
+)
 var ErrWriter io.Writer = os.Stderr
     ErrWriter is used to write errors to the user. This can be anything
     implementing the io.Writer interface and defaults to os.Stderr.
@@ -128,10 +131,82 @@ var MarkdownDocTemplate = `{{if gt .SectionNum 0}}% {{ .App.Name }} {{ .SectionN
 # COMMANDS
 {{ range $v := .Commands }}
 {{ $v }}{{ end }}{{ end }}`
+var MarkdownTabularDocTemplate = `{{ define "flags" }}
+| Name | Description | Default value | Environment variables |
+|------|-------------|:-------------:|:---------------------:|
+{{   range $flag := . -}}
+{{- /**/ -}} | ` + "`" + `{{ $flag.Name }}{{ if $flag.TakesValue }}="…"{{ end }}` + "`" + ` {{ if $flag.Aliases }}(` + "`" + `{{ join $flag.Aliases "` + "`, `" + `" }}` + "`" + `) {{ end }}
+{{- /**/ -}} | {{ $flag.Usage }}
+{{- /**/ -}} | {{ if $flag.Default }}` + "`" + `{{ $flag.Default }}` + "`" + `{{ end }}
+{{- /**/ -}} | {{ if $flag.EnvVars }}` + "`" + `{{ join $flag.EnvVars "` + "`, `" + `" }}` + "`" + `{{ else }}*none*{{ end }}
+{{- /**/ -}} |
+{{   end }}
+{{ end }}
+
+{{ define "command" }}
+### ` + "`" + `{{ .Name }}` + "`" + ` {{ if gt .Level 0 }}sub{{ end }}command{{ if .Aliases }} (aliases: ` + "`" + `{{ join .Aliases "` + "`, `" + `" }}` + "`" + `){{ end }}
+{{   if .Usage }}
+{{     .Usage }}.
+{{   end }}
+{{   if .UsageText }}
+{{     range $line := .UsageText -}}
+> {{ $line }}
+{{     end -}}
+{{   end }}
+{{   if .Description }}
+{{     .Description }}.
+{{   end }}
+Usage:
+
+` + "```" + `bash
+$ {{ .AppPath }} [GLOBAL FLAGS] {{ .Name }}{{ if .Flags }} [COMMAND FLAGS]{{ end }} {{ if .ArgsUsage }}{{ .ArgsUsage }}{{ else }}[ARGUMENTS...]{{ end }}
+` + "```" + `
+
+{{   if .Flags -}}
+The following flags are supported:
+{{     template "flags" .Flags }}
+{{   end -}}
+
+{{   if .SubCommands -}}
+{{     range $subCmd := .SubCommands -}}
+{{       template "command" $subCmd }}
+{{     end -}}
+{{   end -}}
+{{ end }}
+
+## CLI interface{{ if .Name }} - {{ .Name }}{{ end }}
+
+{{ if .Description }}{{ .Description }}.
+{{ end }}
+{{ if .Usage }}{{ .Usage }}.
+{{ end }}
+{{ if .UsageText }}
+{{   range $line := .UsageText -}}
+> {{ $line }}
+{{   end -}}
+{{ end }}
+Usage:
+
+` + "```" + `bash
+$ {{ .AppPath }}{{ if .GlobalFlags }} [GLOBAL FLAGS]{{ end }} [COMMAND] [COMMAND FLAGS] {{ if .ArgsUsage }}{{ .ArgsUsage }}{{ else }}[ARGUMENTS...]{{ end }}
+` + "```" + `
+
+{{ if .GlobalFlags }}
+Global flags:
+
+{{ template "flags" .GlobalFlags }}
+
+{{ end -}}
+{{ if .Commands -}}
+{{   range $cmd := .Commands -}}
+{{     template "command" $cmd }}
+{{   end }}
+{{- end }}`
 var NewFloat64Slice = NewSliceBase[float64, NoConfig, float64Value]
 var NewInt64Slice = NewSliceBase[int64, IntegerConfig, int64Value]
 var NewIntSlice = NewSliceBase[int, IntegerConfig, intValue]
-var NewStringSlice = NewSliceBase[string, NoConfig, stringValue]
+var NewStringMap = NewMapBase[string, StringConfig, stringValue]
+var NewStringSlice = NewSliceBase[string, StringConfig, stringValue]
 var NewUint64Slice = NewSliceBase[uint64, IntegerConfig, uint64Value]
 var NewUintSlice = NewSliceBase[uint, IntegerConfig, uintValue]
 var OsExiter = os.Exit
@@ -142,7 +217,7 @@ var SubcommandHelpTemplate = `NAME:
    {{template "helpNameTemplate" .}}
 
 USAGE:
-   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleFlags}}command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Description}}
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleCommands}}command [command options] {{end}}{{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Description}}
 
 DESCRIPTION:
    {{template "descriptionTemplate" .}}{{end}}{{if .VisibleCommands}}
@@ -189,11 +264,6 @@ func DefaultAppComplete(cCtx *Context)
 
 func DefaultCompleteWithFlags(cmd *Command) func(cCtx *Context)
 func FlagNames(name string, aliases []string) []string
-func HandleAction(action interface{}, cCtx *Context) (err error)
-    HandleAction attempts to figure out which Action signature was used.
-    If it's an ActionFunc or a func with the legacy signature for Action,
-    the func is run!
-
 func HandleExitCoder(err error)
     HandleExitCoder handles errors implementing ExitCoder by printing their
     message and calling OsExiter with the given exit code.
@@ -210,9 +280,6 @@ func ShowAppHelp(cCtx *Context) error
 func ShowAppHelpAndExit(c *Context, exitCode int)
     ShowAppHelpAndExit - Prints the list of subcommands for the app and exits
     with exit code.
-
-func ShowCommandCompletions(ctx *Context, command string)
-    ShowCommandCompletions prints the custom completions for a given command
 
 func ShowCommandHelp(ctx *Context, command string) error
     ShowCommandHelp prints help for the given command
@@ -247,8 +314,8 @@ type ActionableFlag interface {
     operation.
 
 type AfterFunc func(*Context) error
-    AfterFunc is an action to execute after any subcommands are run, but after
-    the subcommand has finished it is run even if Action() panics
+    AfterFunc is an action that executes after any subcommands are run and have
+    finished. The AfterFunc is run even if Action() panics.
 
 type App struct {
 	// The name of the program. Defaults to path.Base(os.Args[0])
@@ -272,8 +339,10 @@ type App struct {
 	Commands []*Command
 	// List of flags to parse
 	Flags []Flag
-	// Boolean to enable bash completion commands
-	EnableBashCompletion bool
+	// Boolean to enable shell completion commands
+	EnableShellCompletion bool
+	// Shell Completion generation command name
+	ShellCompletionCommandName string
 	// Boolean to hide built-in help command and help flag
 	HideHelp bool
 	// Boolean to hide built-in help command but keep help flag.
@@ -283,7 +352,7 @@ type App struct {
 	HideVersion bool
 
 	// An action to execute when the shell completion flag is set
-	BashComplete BashCompleteFunc
+	ShellComplete ShellCompleteFunc
 	// An action to execute before any subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no subcommands are run
 	Before BeforeFunc
@@ -298,8 +367,8 @@ type App struct {
 	OnUsageError OnUsageErrorFunc
 	// Execute this function when an invalid flag is accessed from the context
 	InvalidFlagAccessHandler InvalidFlagAccessFunc
-	// List of all authors who contributed
-	Authors []*Author
+	// List of all authors who contributed (string or fmt.Stringer)
+	Authors []any // TODO: ~string | fmt.Stringer when interface unions are available
 	// Copyright of the binary if any
 	Copyright string
 	// Reader reader to write input to (useful for tests)
@@ -335,15 +404,16 @@ type App struct {
 	AllowExtFlags bool
 	// Treat all flags as normal arguments if true
 	SkipFlagParsing bool
+	// Flag exclusion group
+	MutuallyExclusiveFlags []MutuallyExclusiveFlags
+	// Use longest prefix match for commands
+	PrefixMatchCommands bool
+	// Custom suggest command for matching
+	SuggestCommandFunc SuggestCommandFunc
 
 	// Has unexported fields.
 }
-    App is the main structure of a cli application. It is recommended that an
-    app be created with the cli.NewApp() function
-
-func NewApp() *App
-    NewApp creates a new cli Application with some reasonable defaults for Name,
-    Usage, Version and Action.
+    App is the main structure of a cli application.
 
 func (a *App) Command(name string) *Command
     Command returns the named command on App. Returns nil if the command does
@@ -352,18 +422,6 @@ func (a *App) Command(name string) *Command
 func (a *App) Run(arguments []string) (err error)
     Run is the entry point to the cli app. Parses the arguments slice and routes
     to the proper flag/args combination
-
-func (a *App) RunAndExitOnError()
-    RunAndExitOnError calls .Run() and exits non-zero if an error was returned
-
-    Deprecated: instead you should return an error that fulfills cli.ExitCoder
-    to cli.App.Run. This will cause the application to exit with the given error
-    code in the cli.ExitCoder
-
-func (a *App) RunAsSubcommand(ctx *Context) (err error)
-    This is a stub function to keep public API unchanged from old code
-
-    Deprecated: use App.Run or App.RunContext
 
 func (a *App) RunContext(ctx context.Context, arguments []string) (err error)
     RunContext is like Run except it takes a Context that will be passed to
@@ -390,6 +448,15 @@ func (a *App) ToManWithSection(sectionNumber int) (string, error)
 func (a *App) ToMarkdown() (string, error)
     ToMarkdown creates a markdown string for the `*App` The function errors if
     either parsing or writing of the string fails.
+
+func (a *App) ToTabularMarkdown(appPath string) (string, error)
+    ToTabularMarkdown creates a tabular markdown documentation for the `*App`.
+    The function errors if either parsing or writing of the string fails.
+
+func (a *App) ToTabularToFileBetweenTags(appPath, filePath string, startEndTags ...string) error
+    ToTabularToFileBetweenTags creates a tabular markdown documentation for
+    the `*App` and updates the file between the tags in the file. The function
+    errors if either parsing or writing of the string fails.
 
 func (a *App) VisibleCategories() []CommandCategory
     VisibleCategories returns a slice of categories and commands that are
@@ -421,23 +488,10 @@ type Args interface {
 	Slice() []string
 }
 
-type Author struct {
-	Name  string // The Authors name
-	Email string // The Authors email
-}
-    Author represents someone who has contributed to a cli project.
-
-func (a *Author) String() string
-    String makes Author comply to the Stringer interface, to allow an easy print
-    in the templating process
-
-type BashCompleteFunc func(*Context)
-    BashCompleteFunc is an action to execute when the shell completion flag is
-    set
-
 type BeforeFunc func(*Context) error
-    BeforeFunc is an action to execute before any subcommands are run, but after
-    the context is ready if a non-nil error is returned, no subcommands are run
+    BeforeFunc is an action that executes prior to any subcommands being run
+    once the context is ready. If a non-nil error is returned, no subcommands
+    are run.
 
 type BoolConfig struct {
 	Count *int
@@ -445,6 +499,33 @@ type BoolConfig struct {
     BoolConfig defines the configuration for bool flags
 
 type BoolFlag = FlagBase[bool, BoolConfig, boolValue]
+
+type BoolWithInverseFlag struct {
+	// The BoolFlag which the positive and negative flags are generated from
+	*BoolFlag
+
+	// The prefix used to indicate a negative value
+	// Default: `env` becomes `no-env`
+	InversePrefix string
+
+	// Has unexported fields.
+}
+
+func (s *BoolWithInverseFlag) Apply(set *flag.FlagSet) error
+
+func (s *BoolWithInverseFlag) Flags() []Flag
+
+func (s *BoolWithInverseFlag) IsSet() bool
+
+func (s *BoolWithInverseFlag) Names() []string
+
+func (s *BoolWithInverseFlag) RunAction(ctx *Context) error
+
+func (s *BoolWithInverseFlag) String() string
+    Example for BoolFlag{Name: "env"} --env (default: false) || --no-env
+    (default: false)
+
+func (s *BoolWithInverseFlag) Value() bool
 
 type CategorizableFlag interface {
 	VisibleFlag
@@ -470,8 +551,8 @@ type Command struct {
 	ArgsUsage string
 	// The category the command is part of
 	Category string
-	// The function to call when checking for bash command completions
-	BashComplete BashCompleteFunc
+	// The function to call when checking for shell command completions
+	ShellComplete ShellCompleteFunc
 	// An action to execute before any sub-subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no sub-subcommands are run
 	Before BeforeFunc
@@ -509,6 +590,11 @@ type Command struct {
 	// render custom help text by setting this variable.
 	CustomHelpTemplate string
 
+	// Use longest prefix match for commands
+	PrefixMatchCommands bool
+
+	// Flag exclusion group
+	MutuallyExclusiveFlags []MutuallyExclusiveFlags
 	// Has unexported fields.
 }
     Command is a subcommand for a cli.App.
@@ -591,7 +677,7 @@ func (cCtx *Context) Args() Args
 func (cCtx *Context) Bool(name string) bool
 
 func (cCtx *Context) Count(name string) int
-    Count returns the num of occurences of this flag
+    Count returns the num of occurrences of this flag
 
 func (cCtx *Context) Duration(name string) time.Duration
 
@@ -640,6 +726,10 @@ func (cCtx *Context) Set(name, value string) error
     Set sets a context flag to a value.
 
 func (cCtx *Context) String(name string) string
+
+func (cCtx *Context) StringMap(name string) map[string]string
+    StringMap looks up the value of a local StringMapFlag, returns nil if not
+    found
 
 func (cCtx *Context) StringSlice(name string) []string
     StringSlice looks up the value of a local StringSliceFlag, returns nil if
@@ -693,13 +783,13 @@ type DocGenerationFlag interface {
     DocGenerationFlag is an interface that allows documentation generation for
     the flag
 
-type DocGenerationSliceFlag interface {
+type DocGenerationMultiValueFlag interface {
 	DocGenerationFlag
 
-	// IsSliceFlag returns true for flags that can be given multiple times.
-	IsSliceFlag() bool
+	// IsMultiValueFlag returns true for flags that can be given multiple times.
+	IsMultiValueFlag() bool
 }
-    DocGenerationSliceFlag extends DocGenerationFlag for slice-based flags.
+    DocGenerationSliceFlag extends DocGenerationFlag for slice/map based flags.
 
 type DurationFlag = FlagBase[time.Duration, NoConfig, durationValue]
 
@@ -724,12 +814,6 @@ func Exit(message interface{}, exitCode int) ExitCoder
     can be avoided by overriding the ExitErrHandler function on an App or the
     package-global OsExiter function.
 
-func NewExitError(message interface{}, exitCode int) ExitCoder
-    NewExitError calls Exit to create a new ExitCoder.
-
-    Deprecated: This function is a duplicate of Exit and will eventually be
-    removed.
-
 type ExitErrHandlerFunc func(cCtx *Context, err error)
     ExitErrHandlerFunc is executed if provided in order to handle exitError
     values returned by Actions and Before/After functions.
@@ -751,7 +835,7 @@ type Flag interface {
     implemented.
 
 var BashCompletionFlag Flag = &BoolFlag{
-	Name:   "generate-bash-completion",
+	Name:   "generate-shell-completion",
 	Hidden: true,
 }
     BashCompletionFlag enables bash-completion for all commands and subcommands
@@ -796,6 +880,8 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 
 	Config C // Additional/Custom configuration associated with this flag type
 
+	OnlyOnce bool // whether this flag can be duplicated on the command line
+
 	// Has unexported fields.
 }
     FlagBase[T,C,VC] is a generic flag base which can be used as a boilerplate
@@ -827,6 +913,10 @@ func (f *FlagBase[T, C, V]) GetValue() string
     GetValue returns the flags value as string representation and an empty
     string if the flag takes no value at all.
 
+func (f *FlagBase[T, C, VC]) IsMultiValueFlag() bool
+    IsMultiValueFlag returns true if the value type T can take multiple values
+    from cmd line. This is true for slice and map type flags
+
 func (f *FlagBase[T, C, VC]) IsPersistent() bool
     IsPersistent returns true if flag needs to be persistent across subcommands
 
@@ -835,9 +925,6 @@ func (f *FlagBase[T, C, V]) IsRequired() bool
 
 func (f *FlagBase[T, C, V]) IsSet() bool
     IsSet returns whether or not the flag has been set through env or file
-
-func (f *FlagBase[T, C, VC]) IsSliceFlag() bool
-    IsSliceFlag returns true if the value type T is of kind slice
 
 func (f *FlagBase[T, C, V]) IsVisible() bool
     IsVisible returns true if the flag is not hidden, otherwise false
@@ -930,11 +1017,49 @@ type InvalidFlagAccessFunc func(*Context, string)
     InvalidFlagAccessFunc is executed when an invalid flag is accessed from the
     context.
 
+type MapBase[T any, C any, VC ValueCreator[T, C]] struct {
+	// Has unexported fields.
+}
+    MapBase wraps map[string]T to satisfy flag.Value
+
+func NewMapBase[T any, C any, VC ValueCreator[T, C]](defaults map[string]T) *MapBase[T, C, VC]
+    NewMapBase makes a *MapBase with default values
+
+func (i MapBase[T, C, VC]) Create(val map[string]T, p *map[string]T, c C) Value
+
+func (i *MapBase[T, C, VC]) Get() interface{}
+    Get returns the mapping of values set by this flag
+
+func (i *MapBase[T, C, VC]) Serialize() string
+    Serialize allows MapBase to fulfill Serializer
+
+func (i *MapBase[T, C, VC]) Set(value string) error
+    Set parses the value and appends it to the list of values
+
+func (i *MapBase[T, C, VC]) String() string
+    String returns a readable representation of this value (for usage defaults)
+
+func (i MapBase[T, C, VC]) ToString(t map[string]T) string
+
+func (i *MapBase[T, C, VC]) Value() map[string]T
+    Value returns the mapping of values set by this flag
+
 type MultiError interface {
 	error
 	Errors() []error
 }
     MultiError is an error that wraps multiple errors.
+
+type MutuallyExclusiveFlags struct {
+	// Flag list
+	Flags [][]Flag
+
+	// whether this group is required
+	Required bool
+}
+    MutuallyExclusiveFlags defines a mutually exclusive flag group Multiple
+    option paths can be provided out of which only one can be defined on cmdline
+    So for example [ --foo | [ --bar something --darth somethingelse ] ]
 
 type NoConfig struct{}
     NoConfig is for flags which dont need a custom configuration
@@ -966,6 +1091,10 @@ type Serializer interface {
 }
     Serializer is used to circumvent the limitations of flag.FlagSet.Set
 
+type ShellCompleteFunc func(*Context)
+    ShellCompleteFunc is an action to execute when the shell completion flag is
+    set
+
 type SliceBase[T any, C any, VC ValueCreator[T, C]] struct {
 	// Has unexported fields.
 }
@@ -996,11 +1125,21 @@ func (i SliceBase[T, C, VC]) ToString(t []T) string
 func (i *SliceBase[T, C, VC]) Value() []T
     Value returns the slice of values set by this flag
 
-type StringFlag = FlagBase[string, NoConfig, stringValue]
+type StringConfig struct {
+	// Whether to trim whitespace of parsed value
+	TrimSpace bool
+}
+    StringConfig defines the configuration for string flags
 
-type StringSlice = SliceBase[string, NoConfig, stringValue]
+type StringFlag = FlagBase[string, StringConfig, stringValue]
 
-type StringSliceFlag = FlagBase[[]string, NoConfig, StringSlice]
+type StringMap = MapBase[string, StringConfig, stringValue]
+
+type StringMapFlag = FlagBase[map[string]string, StringConfig, StringMap]
+
+type StringSlice = SliceBase[string, StringConfig, stringValue]
+
+type StringSliceFlag = FlagBase[[]string, StringConfig, StringSlice]
 
 type SuggestCommandFunc func(commands []*Command, provided string) string
 

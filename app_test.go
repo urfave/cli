@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net/mail"
 	"os"
 	"reflect"
 	"strconv"
@@ -47,10 +48,12 @@ func ExampleApp_Run() {
 			return nil
 		},
 		UsageText: "app [first_arg] [second_arg]",
-		Authors:   []*Author{{Name: "Oliver Allen", Email: "oliver@toyshop.example.com"}},
+		Authors:   []any{&mail.Address{Name: "Oliver Allen", Address: "oliver@toyshop.example.com"}, "gruffalo@soup-world.example.org"},
 	}
 
-	app.Run(os.Args)
+	if err := app.Run(os.Args); err != nil {
+		return
+	}
 	// Output:
 	// Hello Jeremy
 }
@@ -102,9 +105,9 @@ func ExampleApp_Run_appHelp() {
 		Name:        "greet",
 		Version:     "0.1.0",
 		Description: "This is how we describe greet the app",
-		Authors: []*Author{
-			{Name: "Harrison", Email: "harrison@lolwut.com"},
-			{Name: "Oliver Allen", Email: "oliver@toyshop.com"},
+		Authors: []any{
+			&mail.Address{Name: "Harrison", Address: "harrison@lolwut.example.com"},
+			"Oliver Allen  <oliver@toyshop.example.com>",
 		},
 		Flags: []Flag{
 			&StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
@@ -137,8 +140,8 @@ func ExampleApp_Run_appHelp() {
 	//    This is how we describe greet the app
 	//
 	// AUTHORS:
-	//    Harrison <harrison@lolwut.com>
-	//    Oliver Allen <oliver@toyshop.com>
+	//    "Harrison" <harrison@lolwut.example.com>
+	//    Oliver Allen  <oliver@toyshop.example.com>
 	//
 	// COMMANDS:
 	//    describeit, d  use it to see a description
@@ -234,19 +237,20 @@ func ExampleApp_Run_subcommandNoAction() {
 
 func ExampleApp_Run_bashComplete_withShortFlag() {
 	os.Setenv("SHELL", "bash")
-	os.Args = []string{"greet", "-", "--generate-bash-completion"}
+	os.Args = []string{"greet", "-", "--generate-shell-completion"}
 
-	app := &App{}
-	app.Name = "greet"
-	app.EnableBashCompletion = true
-	app.Flags = []Flag{
-		&IntFlag{
-			Name:    "other",
-			Aliases: []string{"o"},
-		},
-		&StringFlag{
-			Name:    "xyz",
-			Aliases: []string{"x"},
+	app := &App{
+		Name:                  "greet",
+		EnableShellCompletion: true,
+		Flags: []Flag{
+			&IntFlag{
+				Name:    "other",
+				Aliases: []string{"o"},
+			},
+			&StringFlag{
+				Name:    "xyz",
+				Aliases: []string{"x"},
+			},
 		},
 	}
 
@@ -262,25 +266,26 @@ func ExampleApp_Run_bashComplete_withShortFlag() {
 
 func ExampleApp_Run_bashComplete_withLongFlag() {
 	os.Setenv("SHELL", "bash")
-	os.Args = []string{"greet", "--s", "--generate-bash-completion"}
+	os.Args = []string{"greet", "--s", "--generate-shell-completion"}
 
-	app := &App{}
-	app.Name = "greet"
-	app.EnableBashCompletion = true
-	app.Flags = []Flag{
-		&IntFlag{
-			Name:    "other",
-			Aliases: []string{"o"},
-		},
-		&StringFlag{
-			Name:    "xyz",
-			Aliases: []string{"x"},
-		},
-		&StringFlag{
-			Name: "some-flag,s",
-		},
-		&StringFlag{
-			Name: "similar-flag",
+	app := &App{
+		Name:                  "greet",
+		EnableShellCompletion: true,
+		Flags: []Flag{
+			&IntFlag{
+				Name:    "other",
+				Aliases: []string{"o"},
+			},
+			&StringFlag{
+				Name:    "xyz",
+				Aliases: []string{"x"},
+			},
+			&StringFlag{
+				Name: "some-flag,s",
+			},
+			&StringFlag{
+				Name: "similar-flag",
+			},
 		},
 	}
 
@@ -292,28 +297,29 @@ func ExampleApp_Run_bashComplete_withLongFlag() {
 
 func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
 	os.Setenv("SHELL", "bash")
-	os.Args = []string{"greet", "--st", "--generate-bash-completion"}
+	os.Args = []string{"greet", "--st", "--generate-shell-completion"}
 
-	app := &App{}
-	app.Name = "greet"
-	app.EnableBashCompletion = true
-	app.Flags = []Flag{
-		&IntFlag{
-			Name:    "int-flag",
-			Aliases: []string{"i"},
-		},
-		&StringFlag{
-			Name:    "string",
-			Aliases: []string{"s"},
-		},
-		&StringFlag{
-			Name: "string-flag-2",
-		},
-		&StringFlag{
-			Name: "similar-flag",
-		},
-		&StringFlag{
-			Name: "some-flag",
+	app := &App{
+		Name:                  "greet",
+		EnableShellCompletion: true,
+		Flags: []Flag{
+			&IntFlag{
+				Name:    "int-flag",
+				Aliases: []string{"i"},
+			},
+			&StringFlag{
+				Name:    "string",
+				Aliases: []string{"s"},
+			},
+			&StringFlag{
+				Name: "string-flag-2",
+			},
+			&StringFlag{
+				Name: "similar-flag",
+			},
+			&StringFlag{
+				Name: "some-flag",
+			},
 		},
 	}
 
@@ -325,11 +331,11 @@ func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
 
 func ExampleApp_Run_bashComplete() {
 	os.Setenv("SHELL", "bash")
-	os.Args = []string{"greet", "--generate-bash-completion"}
+	os.Args = []string{"greet", "--generate-shell-completion"}
 
 	app := &App{
-		Name:                 "greet",
-		EnableBashCompletion: true,
+		Name:                  "greet",
+		EnableShellCompletion: true,
 		Commands: []*Command{
 			{
 				Name:        "describeit",
@@ -363,29 +369,30 @@ func ExampleApp_Run_bashComplete() {
 
 func ExampleApp_Run_zshComplete() {
 	// set args for examples sake
-	os.Args = []string{"greet", "--generate-bash-completion"}
+	os.Args = []string{"greet", "--generate-shell-completion"}
 	_ = os.Setenv("SHELL", "/usr/bin/zsh")
 
-	app := &App{}
-	app.Name = "greet"
-	app.EnableBashCompletion = true
-	app.Commands = []*Command{
-		{
-			Name:        "describeit",
-			Aliases:     []string{"d"},
-			Usage:       "use it to see a description",
-			Description: "This is how we describe describeit the function",
-			Action: func(*Context) error {
-				fmt.Printf("i like to describe things")
-				return nil
-			},
-		}, {
-			Name:        "next",
-			Usage:       "next example",
-			Description: "more stuff to see when generating bash completion",
-			Action: func(*Context) error {
-				fmt.Printf("the next example")
-				return nil
+	app := &App{
+		Name:                  "greet",
+		EnableShellCompletion: true,
+		Commands: []*Command{
+			{
+				Name:        "describeit",
+				Aliases:     []string{"d"},
+				Usage:       "use it to see a description",
+				Description: "This is how we describe describeit the function",
+				Action: func(*Context) error {
+					fmt.Printf("i like to describe things")
+					return nil
+				},
+			}, {
+				Name:        "next",
+				Usage:       "next example",
+				Description: "more stuff to see when generating bash completion",
+				Action: func(*Context) error {
+					fmt.Printf("the next example")
+					return nil
+				},
 			},
 		},
 	}
@@ -408,13 +415,14 @@ func ExampleApp_Run_sliceValues() {
 		"--int64Sclice", "13,14", "--int64Sclice", "15,16",
 		"--intSclice", "13,14", "--intSclice", "15,16",
 	}
-	app := &App{}
-	app.Name = "multi_values"
-	app.Flags = []Flag{
-		&StringSliceFlag{Name: "stringSclice"},
-		&Float64SliceFlag{Name: "float64Sclice"},
-		&Int64SliceFlag{Name: "int64Sclice"},
-		&IntSliceFlag{Name: "intSclice"},
+	app := &App{
+		Name: "multi_values",
+		Flags: []Flag{
+			&StringSliceFlag{Name: "stringSclice"},
+			&Float64SliceFlag{Name: "float64Sclice"},
+			&Int64SliceFlag{Name: "int64Sclice"},
+			&IntSliceFlag{Name: "intSclice"},
+		},
 	}
 	app.Action = func(ctx *Context) error {
 		for i, v := range ctx.FlagNames() {
@@ -431,6 +439,35 @@ func ExampleApp_Run_sliceValues() {
 	// 1-int64Sclice []int64{13, 14, 15, 16}
 	// 2-intSclice []int{13, 14, 15, 16}
 	// 3-stringSclice []string{"parsed1", "parsed2", "parsed3", "parsed4"}
+	// error: <nil>
+}
+
+func ExampleApp_Run_mapValues() {
+	// set args for examples sake
+	os.Args = []string{
+		"multi_values",
+		"--stringMap", "parsed1=parsed two", "--stringMap", "parsed3=",
+	}
+	app := &App{
+		Name: "multi_values",
+		Flags: []Flag{
+			&StringMapFlag{Name: "stringMap"},
+		},
+		Action: func(ctx *Context) error {
+			for i, v := range ctx.FlagNames() {
+				fmt.Printf("%d-%s %#v\n", i, v, ctx.StringMap(v))
+			}
+			fmt.Printf("notfound %#v\n", ctx.StringMap("notfound"))
+			err := ctx.Err()
+			fmt.Println("error:", err)
+			return err
+		},
+	}
+
+	_ = app.Run(os.Args)
+	// Output:
+	// 0-stringMap map[string]string{"parsed1":"parsed two", "parsed3":""}
+	// notfound map[string]string(nil)
 	// error: <nil>
 }
 
@@ -1348,7 +1385,7 @@ func TestApp_BeforeAfterFuncShellCompletion(t *testing.T) {
 	var err error
 
 	app := &App{
-		EnableBashCompletion: true,
+		EnableShellCompletion: true,
 		Before: func(*Context) error {
 			counts.Total++
 			counts.Before = counts.Total
@@ -1376,7 +1413,7 @@ func TestApp_BeforeAfterFuncShellCompletion(t *testing.T) {
 	}
 
 	// run with the Before() func succeeding
-	err = app.Run([]string{"command", "--opt", "succeed", "sub", "--generate-bash-completion"})
+	err = app.Run([]string{"command", "--opt", "succeed", "sub", "--generate-shell-completion"})
 
 	if err != nil {
 		t.Fatalf("Run error: %s", err)
@@ -1715,8 +1752,8 @@ func TestApp_OrderOfOperations(t *testing.T) {
 	resetCounts := func() { counts = &opCounts{} }
 
 	app := &App{
-		EnableBashCompletion: true,
-		BashComplete: func(*Context) {
+		EnableShellCompletion: true,
+		ShellComplete: func(*Context) {
 			counts.Total++
 			counts.ShellComplete = counts.Total
 		},
@@ -1782,7 +1819,7 @@ func TestApp_OrderOfOperations(t *testing.T) {
 
 	resetCounts()
 
-	_ = app.Run([]string{"command", fmt.Sprintf("--%s", "generate-bash-completion")})
+	_ = app.Run([]string{"command", fmt.Sprintf("--%s", "generate-shell-completion")})
 	expect(t, counts.ShellComplete, 1)
 	expect(t, counts.Total, 1)
 
@@ -2563,7 +2600,7 @@ func TestHandleExitCoder_Default(t *testing.T) {
 	}
 
 	ctx := NewContext(app, fs, nil)
-	app.handleExitCoder(ctx, NewExitError("Default Behavior Error", 42))
+	app.handleExitCoder(ctx, Exit("Default Behavior Error", 42))
 
 	output := fakeErrWriter.String()
 	if !strings.Contains(output, "Default") {
@@ -2583,7 +2620,7 @@ func TestHandleExitCoder_Custom(t *testing.T) {
 	}
 
 	ctx := NewContext(app, fs, nil)
-	app.handleExitCoder(ctx, NewExitError("Default Behavior Error", 42))
+	app.handleExitCoder(ctx, Exit("Default Behavior Error", 42))
 
 	output := fakeErrWriter.String()
 	if !strings.Contains(output, "Custom") {
@@ -2598,9 +2635,9 @@ func TestShellCompletionForIncompleteFlags(t *testing.T) {
 				Name: "test-completion",
 			},
 		},
-		EnableBashCompletion: true,
-		BashComplete: func(cCtx *Context) {
-			for _, command := range cCtx.Command.Commands {
+		EnableShellCompletion: true,
+		ShellComplete: func(ctx *Context) {
+			for _, command := range ctx.App.Commands {
 				if command.Hidden {
 					continue
 				}
@@ -2631,7 +2668,7 @@ func TestShellCompletionForIncompleteFlags(t *testing.T) {
 		},
 		Writer: io.Discard,
 	}
-	err := app.Run([]string{"", "--test-completion", "--" + "generate-bash-completion"})
+	err := app.Run([]string{"", "--test-completion", "--" + "generate-shell-completion"})
 	if err != nil {
 		t.Errorf("app should not return an error: %s", err)
 	}
@@ -2648,7 +2685,7 @@ func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
 				{
 					Name: "subcmd",
 					Action: func(c *Context) error {
-						return NewExitError("exit error", testCode)
+						return Exit("exit error", testCode)
 					},
 				},
 			},
@@ -2691,8 +2728,9 @@ func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
 }
 
 func newTestApp() *App {
-	a := &App{}
-	a.Writer = io.Discard
+	a := &App{
+		Writer: io.Discard,
+	}
 	return a
 }
 
@@ -2743,8 +2781,8 @@ func TestFlagAction(t *testing.T) {
 			if v == "" {
 				return fmt.Errorf("empty string")
 			}
-			c.Command.Writer.Write([]byte(v + " "))
-			return nil
+			_, err := c.Command.Writer.Write([]byte(v + " "))
+			return err
 		},
 	}
 	app := &App{
@@ -2774,8 +2812,8 @@ func TestFlagAction(t *testing.T) {
 					if v[0] == "err" {
 						return fmt.Errorf("error string slice")
 					}
-					c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return nil
+					_, err := c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
 				},
 			},
 			&BoolFlag{
@@ -2784,8 +2822,8 @@ func TestFlagAction(t *testing.T) {
 					if !v {
 						return fmt.Errorf("value is false")
 					}
-					c.Command.Writer.Write([]byte(fmt.Sprintf("%t ", v)))
-					return nil
+					_, err := c.Command.Writer.Write([]byte(fmt.Sprintf("%t ", v)))
+					return err
 				},
 			},
 			&DurationFlag{
@@ -2794,8 +2832,8 @@ func TestFlagAction(t *testing.T) {
 					if v == 0 {
 						return fmt.Errorf("empty duration")
 					}
-					c.Command.Writer.Write([]byte(v.String() + " "))
-					return nil
+					_, err := c.Command.Writer.Write([]byte(v.String() + " "))
+					return err
 				},
 			},
 			&Float64Flag{
@@ -2804,8 +2842,8 @@ func TestFlagAction(t *testing.T) {
 					if v < 0 {
 						return fmt.Errorf("negative float64")
 					}
-					c.Command.Writer.Write([]byte(strconv.FormatFloat(v, 'f', -1, 64) + " "))
-					return nil
+					_, err := c.Command.Writer.Write([]byte(strconv.FormatFloat(v, 'f', -1, 64) + " "))
+					return err
 				},
 			},
 			&Float64SliceFlag{
@@ -2814,8 +2852,8 @@ func TestFlagAction(t *testing.T) {
 					if len(v) > 0 && v[0] < 0 {
 						return fmt.Errorf("invalid float64 slice")
 					}
-					c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return nil
+					_, err := c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
 				},
 			},
 			&IntFlag{
@@ -2824,8 +2862,8 @@ func TestFlagAction(t *testing.T) {
 					if v < 0 {
 						return fmt.Errorf("negative int")
 					}
-					c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return nil
+					_, err := c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
 				},
 			},
 			&IntSliceFlag{
@@ -2834,8 +2872,8 @@ func TestFlagAction(t *testing.T) {
 					if len(v) > 0 && v[0] < 0 {
 						return fmt.Errorf("invalid int slice")
 					}
-					c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return nil
+					_, err := c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
 				},
 			},
 			&Int64Flag{
@@ -2844,8 +2882,8 @@ func TestFlagAction(t *testing.T) {
 					if v < 0 {
 						return fmt.Errorf("negative int64")
 					}
-					c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return nil
+					_, err := c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
 				},
 			},
 			&Int64SliceFlag{
@@ -2854,8 +2892,8 @@ func TestFlagAction(t *testing.T) {
 					if len(v) > 0 && v[0] < 0 {
 						return fmt.Errorf("invalid int64 slice")
 					}
-					c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return nil
+					_, err := c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
 				},
 			},
 			&TimestampFlag{
@@ -2867,8 +2905,8 @@ func TestFlagAction(t *testing.T) {
 					if v.IsZero() {
 						return fmt.Errorf("zero timestamp")
 					}
-					c.Command.Writer.Write([]byte(v.Format(time.RFC3339) + " "))
-					return nil
+					_, err := c.Command.Writer.Write([]byte(v.Format(time.RFC3339) + " "))
+					return err
 				},
 			},
 			&UintFlag{
@@ -2877,8 +2915,8 @@ func TestFlagAction(t *testing.T) {
 					if v == 0 {
 						return fmt.Errorf("zero uint")
 					}
-					c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return nil
+					_, err := c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
 				},
 			},
 			&Uint64Flag{
@@ -2887,8 +2925,18 @@ func TestFlagAction(t *testing.T) {
 					if v == 0 {
 						return fmt.Errorf("zero uint64")
 					}
-					c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return nil
+					_, err := c.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
+				},
+			},
+			&StringMapFlag{
+				Name: "f_string_map",
+				Action: func(c *Context, v map[string]string) error {
+					if _, ok := v["err"]; ok {
+						return fmt.Errorf("error string map")
+					}
+					_, err := c.Command.Writer.Write([]byte(fmt.Sprintf("%v", v)))
+					return err
 				},
 			},
 		},
@@ -3051,6 +3099,16 @@ func TestFlagAction(t *testing.T) {
 			args: []string{"app", "--f_string=app", "--f_uint=1", "--f_int_slice=1,2,3", "--f_duration=1h30m20s", "c1", "--f_string=c1", "sub1", "--f_string=sub1"},
 			exp:  "app 1h30m20s [1 2 3] 1 c1 sub1 ",
 		},
+		{
+			name: "flag_string_map",
+			args: []string{"app", "--f_string_map=s1=s2,s3="},
+			exp:  "map[s1:s2 s3:]",
+		},
+		{
+			name: "flag_string_map_error",
+			args: []string{"app", "--f_string_map=err="},
+			err:  fmt.Errorf("error string map"),
+		},
 	}
 
 	for _, test := range tests {
@@ -3193,6 +3251,153 @@ func TestPersistentFlag(t *testing.T) {
 	expectedFloat := []float64{102.455, 3.1445}
 	if !reflect.DeepEqual(appSliceFloat64, expectedFloat) {
 		t.Errorf("Expected %f got %f", expectedFloat, appSliceFloat64)
+	}
+
+}
+
+func TestFlagDuplicates(t *testing.T) {
+
+	a := &App{
+		Flags: []Flag{
+			&StringFlag{
+				Name:     "sflag",
+				OnlyOnce: true,
+			},
+			&Int64SliceFlag{
+				Name: "isflag",
+			},
+			&Float64SliceFlag{
+				Name:     "fsflag",
+				OnlyOnce: true,
+			},
+			&IntFlag{
+				Name: "iflag",
+			},
+		},
+		Action: func(ctx *Context) error {
+			return nil
+		},
+	}
+
+	tests := []struct {
+		name        string
+		args        []string
+		errExpected bool
+	}{
+		{
+			name: "all args present once",
+			args: []string{"foo", "--sflag", "hello", "--isflag", "1", "--isflag", "2", "--fsflag", "2.0", "--iflag", "10"},
+		},
+		{
+			name: "duplicate non slice flag(duplicatable)",
+			args: []string{"foo", "--sflag", "hello", "--isflag", "1", "--isflag", "2", "--fsflag", "2.0", "--iflag", "10", "--iflag", "20"},
+		},
+		{
+			name:        "duplicate non slice flag(non duplicatable)",
+			args:        []string{"foo", "--sflag", "hello", "--isflag", "1", "--isflag", "2", "--fsflag", "2.0", "--iflag", "10", "--sflag", "trip"},
+			errExpected: true,
+		},
+		{
+			name:        "duplicate slice flag(non duplicatable)",
+			args:        []string{"foo", "--sflag", "hello", "--isflag", "1", "--isflag", "2", "--fsflag", "2.0", "--fsflag", "3.0", "--iflag", "10"},
+			errExpected: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := a.Run(test.args)
+			if test.errExpected && err == nil {
+				t.Error("expected error")
+			} else if !test.errExpected && err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestShorthandCommand(t *testing.T) {
+
+	af := func(p *int) ActionFunc {
+		return func(ctx *Context) error {
+			*p = *p + 1
+			return nil
+		}
+	}
+
+	var cmd1, cmd2 int
+
+	a := &App{
+		PrefixMatchCommands: true,
+		Commands: []*Command{
+			{
+				Name:    "cthdisd",
+				Aliases: []string{"cth"},
+				Action:  af(&cmd1),
+			},
+			{
+				Name:    "cthertoop",
+				Aliases: []string{"cer"},
+				Action:  af(&cmd2),
+			},
+		},
+	}
+
+	err := a.Run([]string{"foo", "cth"})
+	if err != nil {
+		t.Error(err)
+	}
+
+	if cmd1 != 1 && cmd2 != 0 {
+		t.Errorf("Expected command1 to be trigerred once but didnt %d %d", cmd1, cmd2)
+	}
+
+	cmd1 = 0
+	cmd2 = 0
+
+	err = a.Run([]string{"foo", "cthd"})
+	if err != nil {
+		t.Error(err)
+	}
+
+	if cmd1 != 1 && cmd2 != 0 {
+		t.Errorf("Expected command1 to be trigerred once but didnt %d %d", cmd1, cmd2)
+	}
+
+	cmd1 = 0
+	cmd2 = 0
+
+	err = a.Run([]string{"foo", "cthe"})
+	if err != nil {
+		t.Error(err)
+	}
+
+	if cmd1 != 1 && cmd2 != 0 {
+		t.Errorf("Expected command1 to be trigerred once but didnt %d %d", cmd1, cmd2)
+	}
+
+	cmd1 = 0
+	cmd2 = 0
+
+	err = a.Run([]string{"foo", "cthert"})
+	if err != nil {
+		t.Error(err)
+	}
+
+	if cmd1 != 0 && cmd2 != 1 {
+		t.Errorf("Expected command1 to be trigerred once but didnt %d %d", cmd1, cmd2)
+	}
+
+	cmd1 = 0
+	cmd2 = 0
+
+	err = a.Run([]string{"foo", "cthet"})
+	if err != nil {
+		t.Error(err)
+	}
+
+	if cmd1 != 0 && cmd2 != 1 {
+		t.Errorf("Expected command1 to be trigerred once but didnt %d %d", cmd1, cmd2)
 	}
 
 }

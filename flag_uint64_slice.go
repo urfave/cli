@@ -21,8 +21,8 @@ func (cCtx *Context) Uint64Slice(name string) []uint64 {
 func lookupUint64Slice(name string, set *flag.FlagSet) []uint64 {
 	f := set.Lookup(name)
 	if f != nil {
-		if slice, ok := f.Value.(*Uint64Slice); ok {
-			return slice.Value()
+		if slice, ok := f.Value.(flag.Getter).Get().([]uint64); ok {
+			return slice
 		}
 	}
 	return nil

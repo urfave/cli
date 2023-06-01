@@ -13,6 +13,52 @@ type Value interface {
 	flag.Getter
 }
 
+// simple wrapper to intercept Value operations
+// to check for duplicates
+type valueWrapper struct {
+	value    Value
+	count    int
+	onlyOnce bool
+}
+
+func (v *valueWrapper) String() string {
+	if v.value == nil {
+		return ""
+	}
+	return v.value.String()
+}
+
+func (v *valueWrapper) Set(s string) error {
+	if v.count == 1 && v.onlyOnce {
+		return fmt.Errorf("cant duplicate this flag")
+	}
+	v.count++
+	return v.value.Set(s)
+}
+
+func (v *valueWrapper) Get() any {
+	return v.value.Get()
+}
+
+func (v *valueWrapper) IsBoolFlag() bool {
+	_, ok := v.value.(*boolValue)
+	return ok
+}
+
+func (v *valueWrapper) Serialize() string {
+	if s, ok := v.value.(Serializer); ok {
+		return s.Serialize()
+	}
+	return v.value.String()
+}
+
+func (v *valueWrapper) Count() int {
+	if s, ok := v.value.(Countable); ok {
+		return s.Count()
+	}
+	return 0
+}
+
 // ValueCreator is responsible for creating a flag.Value emulation
 // as well as custom formatting
 //
@@ -56,6 +102,8 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Action func(*Context, T) error // Action callback to be called when flag is set
 
 	Config C // Additional/Custom configuration associated with this flag type
+
+	OnlyOnce bool // whether this flag can be duplicated on the command line
 
 	// unexported fields for internal use
 	hasBeenSet bool  // whether the flag has been set from env or file
@@ -108,8 +156,13 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 		}
 	}
 
+	vw := &valueWrapper{
+		value:    f.value,
+		onlyOnce: f.OnlyOnce,
+	}
+
 	for _, name := range f.Names() {
-		set.Var(f.value, name, f.Usage)
+		set.Var(vw, name, f.Usage)
 	}
 
 	f.applied = true
@@ -189,10 +242,12 @@ func (f *FlagBase[T, C, V]) RunAction(ctx *Context) error {
 	return nil
 }
 
-// IsSliceFlag returns true if the value type T is of kind slice
-func (f *FlagBase[T, C, VC]) IsSliceFlag() bool {
+// IsMultiValueFlag returns true if the value type T can take multiple
+// values from cmd line. This is true for slice and map type flags
+func (f *FlagBase[T, C, VC]) IsMultiValueFlag() bool {
 	// TBD how to specify
-	return reflect.TypeOf(f.Value).Kind() == reflect.Slice
+	kind := reflect.TypeOf(f.Value).Kind()
+	return kind == reflect.Slice || kind == reflect.Map
 }
 
 // IsPersistent returns true if flag needs to be persistent across subcommands

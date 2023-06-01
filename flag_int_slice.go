@@ -19,8 +19,8 @@ func (cCtx *Context) IntSlice(name string) []int {
 func lookupIntSlice(name string, set *flag.FlagSet) []int {
 	f := set.Lookup(name)
 	if f != nil {
-		if slice, ok := f.Value.(*IntSlice); ok {
-			return slice.Value()
+		if slice, ok := f.Value.(flag.Getter).Get().([]int); ok {
+			return slice
 		}
 	}
 	return nil

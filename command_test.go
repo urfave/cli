@@ -340,7 +340,7 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 	}{
 		{testArgs: args{"--undefined"}, expectedOut: "found 0 args"},
 		{testArgs: args{"--number"}, expectedOut: "found 0 args"},
-		{testArgs: args{"--number", "fourty-two"}, expectedOut: "found 0 args"},
+		{testArgs: args{"--number", "forty-two"}, expectedOut: "found 0 args"},
 		{testArgs: args{"--number", "42"}, expectedOut: "found 0 args"},
 		{testArgs: args{"--number", "42", "newArg"}, expectedOut: "found 1 args"},
 	}
@@ -348,8 +348,8 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 	for _, c := range cases {
 		var outputBuffer bytes.Buffer
 		app := &App{
-			Writer:               &outputBuffer,
-			EnableBashCompletion: true,
+			Writer:                &outputBuffer,
+			EnableShellCompletion: true,
 			Commands: []*Command{
 				{
 					Name:  "bar",
@@ -360,7 +360,7 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 							Usage: "A number to parse",
 						},
 					},
-					BashComplete: func(cCtx *Context) {
+					ShellComplete: func(cCtx *Context) {
 						fmt.Fprintf(cCtx.Command.Writer, "found %d args", cCtx.NArg())
 					},
 				},
@@ -369,7 +369,7 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 
 		osArgs := args{"foo", "bar"}
 		osArgs = append(osArgs, c.testArgs...)
-		osArgs = append(osArgs, "--generate-bash-completion")
+		osArgs = append(osArgs, "--generate-shell-completion")
 
 		resetStreams(app.Commands)
 		err := app.Run(osArgs)

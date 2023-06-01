@@ -4,10 +4,10 @@ import (
 	"flag"
 )
 
-type StringSlice = SliceBase[string, NoConfig, stringValue]
-type StringSliceFlag = FlagBase[[]string, NoConfig, StringSlice]
+type StringSlice = SliceBase[string, StringConfig, stringValue]
+type StringSliceFlag = FlagBase[[]string, StringConfig, StringSlice]
 
-var NewStringSlice = NewSliceBase[string, NoConfig, stringValue]
+var NewStringSlice = NewSliceBase[string, StringConfig, stringValue]
 
 // StringSlice looks up the value of a local StringSliceFlag, returns
 // nil if not found
@@ -21,8 +21,8 @@ func (cCtx *Context) StringSlice(name string) []string {
 func lookupStringSlice(name string, set *flag.FlagSet) []string {
 	f := set.Lookup(name)
 	if f != nil {
-		if slice, ok := f.Value.(*StringSlice); ok {
-			return slice.Value()
+		if slice, ok := f.Value.(flag.Getter).Get().([]string); ok {
+			return slice
 		}
 	}
 	return nil
