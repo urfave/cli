@@ -43,6 +43,16 @@ func (e EnvSource) Identifier() string {
 	return fmt.Sprintf("environment variable %q", string(e))
 }
 
+// EnvSources is a helper function to encapsulate a bunch
+// of envs together as ValueSources
+func EnvSources(envs ...string) ValueSources {
+	vs := []FlagValueSource{}
+	for _, env := range envs {
+		vs = append(vs, EnvSource(env))
+	}
+	return vs
+}
+
 // FileSource encapsulates an file source
 type FileSource string
 
@@ -53,4 +63,14 @@ func (f FileSource) Get() (string, bool) {
 
 func (f FileSource) Identifier() string {
 	return "File"
+}
+
+// FileSources is a helper function to encapsulate a bunch
+// of file paths together as ValueSources
+func FileSources(paths ...string) ValueSources {
+	vs := []FlagValueSource{}
+	for _, path := range paths {
+		vs = append(vs, FileSource(path))
+	}
+	return vs
 }
