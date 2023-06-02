@@ -18,16 +18,16 @@ var (
 		"bash": getCompletion("autocomplete/bash_autocomplete"),
 		"ps":   getCompletion("autocomplete/powershell_autocomplete.ps1"),
 		"zsh":  getCompletion("autocomplete/zsh_autocomplete"),
-		"fish": func(a *App) (string, error) {
-			return a.ToFishCompletion()
+		"fish": func(c *Command) (string, error) {
+			return c.ToFishCompletion()
 		},
 	}
 )
 
-type renderCompletion func(a *App) (string, error)
+type renderCompletion func(*Command) (string, error)
 
 func getCompletion(s string) renderCompletion {
-	return func(a *App) (string, error) {
+	return func(c *Command) (string, error) {
 		b, err := autoCompleteFS.ReadFile(s)
 		return string(b), err
 	}
@@ -51,10 +51,10 @@ var completionCommand = &Command{
 
 		if rc, ok := shellCompletions[s]; !ok {
 			return Exit(fmt.Sprintf("unknown shell %s, available shells are %+v", s, shells), 1)
-		} else if c, err := rc(ctx.App); err != nil {
+		} else if c, err := rc(ctx.Command); err != nil {
 			return Exit(err, 1)
 		} else {
-			if _, err = ctx.App.Writer.Write([]byte(c)); err != nil {
+			if _, err = ctx.Command.Writer.Write([]byte(c)); err != nil {
 				return Exit(err, 1)
 			}
 		}

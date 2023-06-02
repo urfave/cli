@@ -11,9 +11,6 @@ import (
 	"strings"
 )
 
-// ignoreFlagPrefix is to ignore test flags when adding flags from other packages
-const ignoreFlagPrefix = "test."
-
 // App is the main structure of a cli application.
 type App struct {
 	// The name of the program. Defaults to path.Base(os.Args[0])
@@ -243,6 +240,7 @@ func (a *App) Setup() {
 	disableSliceFlagSeparator = a.DisableSliceFlagSeparator
 }
 
+/*
 func (a *App) newRootCommand() *Command {
 	return &Command{
 		Name:                   a.Name,
@@ -270,6 +268,7 @@ func (a *App) newRootCommand() *Command {
 		PrefixMatchCommands:    a.PrefixMatchCommands,
 	}
 }
+*/
 
 func (a *App) newFlagSet() (*flag.FlagSet, error) {
 	return flagSet(a.Name, a.Flags)
@@ -281,7 +280,7 @@ func (a *App) useShortOptionHandling() bool {
 
 // Run is the entry point to the cli app. Parses the arguments slice and routes
 // to the proper flag/args combination
-func (a *App) Run(arguments []string) (err error) {
+func (a *App) Run(arguments []string) error {
 	return a.RunContext(context.Background(), arguments)
 }
 
@@ -291,21 +290,23 @@ func (a *App) Run(arguments []string) (err error) {
 func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 	a.Setup()
 
-	// handle the completion flag separately from the flagset since
-	// completion could be attempted after a flag, but before its value was put
-	// on the command line. this causes the flagset to interpret the completion
-	// flag name as the value of the flag before it which is undesirable
-	// note that we can only do this because the shell autocomplete function
-	// always appends the completion flag at the end of the command
-	shellComplete, arguments := checkShellCompleteFlag(a, arguments)
+	/*
+		// handle the completion flag separately from the flagset since
+		// completion could be attempted after a flag, but before its value was put
+		// on the command line. this causes the flagset to interpret the completion
+		// flag name as the value of the flag before it which is undesirable
+		// note that we can only do this because the shell autocomplete function
+		// always appends the completion flag at the end of the command
+		shellComplete, arguments := checkShellCompleteFlag(a, arguments)
 
-	cCtx := NewContext(a, nil, &Context{Context: ctx})
-	cCtx.shellComplete = shellComplete
+		cCtx := NewContext(a, nil, &Context{Context: ctx})
+		cCtx.shellComplete = shellComplete
 
-	a.rootCommand = a.newRootCommand()
-	cCtx.Command = a.rootCommand
+		a.rootCommand = a.newRootCommand()
+		cCtx.Command = a.rootCommand
+	*/
 
-	return a.rootCommand.Run(cCtx, arguments...)
+	return a.rootCommand.Run(ctx, arguments)
 }
 
 func (a *App) suggestFlagFromError(err error, command string) (string, error) {

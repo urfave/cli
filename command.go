@@ -1,63 +1,117 @@
 package cli
 
 import (
+	"context"
 	"flag"
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
 	"reflect"
 	"sort"
 	"strings"
 )
 
+// ignoreFlagPrefix is to ignore test flags when adding flags from other packages
+const ignoreFlagPrefix = "test."
+
 // Command is a subcommand for a cli.App.
 type Command struct {
 	// The name of the command
 	Name string
+	// Full name of command for help, defaults to full command name, including parent commands.
+	HelpName        string
+	commandNamePath []string
 	// A list of aliases for the command
 	Aliases []string
 	// A short description of the usage of this command
 	Usage string
-	// Custom text to show on USAGE section of help
+	// Text to override the USAGE section of help
 	UsageText string
-	// A longer explanation of how the command works
-	Description string
 	// A short description of the arguments of this command
 	ArgsUsage string
+	// Version of the command
+	Version string
+	// Longer explanation of how the command works
+	Description string
+	// DefaultCommand is the (optional) name of a command
+	// to run if no command names are passed as CLI arguments.
+	DefaultCommand string
 	// The category the command is part of
 	Category string
+	// List of child commands
+	Commands []*Command
+	// categories contains the categorized commands and is populated on app startup
+	categories CommandCategories
+	// List of flags to parse
+	Flags []Flag
+	// flagCategories contains the categorized flags and is populated on app startup
+	flagCategories FlagCategories
+	// Boolean to enable shell completion commands
+	EnableShellCompletion bool
+	// Boolean to hide built-in help command and help flag
+	HideHelp bool
+	// Ignored if HideHelp is true.
+	HideHelpCommand bool
+	// Boolean to hide built-in version flag and the VERSION section of help
+	HideVersion bool
 	// The function to call when checking for shell command completions
 	ShellComplete ShellCompleteFunc
-	// An action to execute before any sub-subcommands are run, but after the context is ready
-	// If a non-nil error is returned, no sub-subcommands are run
+	// An action to execute before any subcommands are run, but after the context is ready
+	// If a non-nil error is returned, no subcommands are run
 	Before BeforeFunc
 	// An action to execute after any subcommands are run, but after the subcommand has finished
 	// It is run even if Action() panics
 	After AfterFunc
 	// The function to call when this command is invoked
 	Action ActionFunc
+	// Execute this function if the proper command cannot be found
+	CommandNotFound CommandNotFoundFunc
 	// Execute this function if a usage error occurs.
 	OnUsageError OnUsageErrorFunc
-	// List of child commands
-	Commands []*Command
-	// List of flags to parse
-	Flags          []Flag
-	flagCategories FlagCategories
-	// Treat all flags as normal arguments if true
-	SkipFlagParsing bool
-	// Boolean to hide built-in help command and help flag
-	HideHelp bool
-	// Boolean to hide built-in help command but keep help flag
-	// Ignored if HideHelp is true.
-	HideHelpCommand bool
+	// Execute this function when an invalid flag is accessed from the context
+	InvalidFlagAccessHandler InvalidFlagAccessFunc
 	// Boolean to hide this command from help or completion
 	Hidden bool
+	// List of all authors who contributed (string or fmt.Stringer)
+	Authors []any // TODO: ~string | fmt.Stringer when interface unions are available
+	// Copyright of the binary if any
+	Copyright string
+	// Reader reader to write input to (useful for tests)
+	Reader io.Reader
+	// Writer writer to write output to
+	Writer io.Writer
+	// ErrWriter writes error output
+	ErrWriter io.Writer
+	// ExitErrHandler processes any error encountered while running an App before
+	// it is returned to the caller. If no function is provided, HandleExitCoder
+	// is used as the default behavior.
+	ExitErrHandler ExitErrHandlerFunc
+	// Other custom info
+	Metadata map[string]interface{}
+	// Carries a function which returns app specific info.
+	ExtraInfo func() map[string]string
+	// CustomAppHelpTemplate the text template for app help topic.
+	// cli.go uses text/template to render templates. You can
+	// render custom help text by setting this variable.
+	CustomAppHelpTemplate string
+	// SliceFlagSeparator is used to customize the separator for SliceFlag, the default is ","
+	SliceFlagSeparator string
+	// DisableSliceFlagSeparator is used to disable SliceFlagSeparator, the default is false
+	DisableSliceFlagSeparator bool
 	// Boolean to enable short-option handling so user can combine several
 	// single-character bool arguments into one
 	// i.e. foobar -o -v -> foobar -ov
 	UseShortOptionHandling bool
-
-	// Full name of command for help, defaults to full command name, including parent commands.
-	HelpName        string
-	commandNamePath []string
+	// Enable suggestions for commands and flags
+	Suggest bool
+	// Allows global flags set by libraries which use flag.XXXVar(...) directly
+	// to be parsed through this library
+	AllowExtFlags bool
+	// Treat all flags as normal arguments if true
+	SkipFlagParsing bool
+	// Flag exclusion group
+	MutuallyExclusiveFlags []MutuallyExclusiveFlags
 
 	// CustomHelpTemplate the text template for the command help topic.
 	// cli.go uses text/template to render templates. You can
@@ -66,15 +120,15 @@ type Command struct {
 
 	// Use longest prefix match for commands
 	PrefixMatchCommands bool
+	// Custom suggest command for matching
+	SuggestCommandFunc SuggestCommandFunc
 
-	// categories contains the categorized commands and is populated on app startup
-	categories CommandCategories
+	// The parent of this command. This value will be nil for the
+	// command at the root of the graph.
+	parent *Command
 
-	// if this is a root "special" command
-	isRoot bool
-
-	// Flag exclusion group
-	MutuallyExclusiveFlags []MutuallyExclusiveFlags
+	// track state of error handling
+	isInError bool
 }
 
 type Commands []*Command
@@ -94,28 +148,151 @@ func (c CommandsByName) Swap(i, j int) {
 }
 
 // FullName returns the full name of the command.
-// For subcommands this ensures that parent commands are part of the command path
-func (c *Command) FullName() string {
-	if c.commandNamePath == nil {
-		return c.Name
+// For commands with parets this ensures that the parent commands
+// are part of the command path.
+func (cmd *Command) FullName() string {
+	if cmd.commandNamePath == nil {
+		return cmd.Name
 	}
-	return strings.Join(c.commandNamePath, " ")
+
+	return strings.Join(cmd.commandNamePath, " ")
 }
 
 func (cmd *Command) Command(name string) *Command {
-	for _, c := range cmd.Commands {
-		if c.HasName(name) {
-			return c
+	for _, subCmd := range cmd.Commands {
+		if subCmd.HasName(name) {
+			return subCmd
 		}
 	}
 
 	return nil
 }
 
-func (c *Command) setup(ctx *Context) {
-	if c.ShellComplete == nil {
-		c.ShellComplete = DefaultCompleteWithFlags(c)
+func (cmd *Command) setupDefaults() {
+	isRoot := cmd.parent == nil
+
+	if cmd.ShellComplete == nil {
+		cmd.ShellComplete = DefaultCompleteWithFlags(cmd)
 	}
+
+	if cmd.Name == "" && isRoot {
+		cmd.Name = filepath.Base(os.Args[0])
+	}
+
+	if cmd.HelpName == "" {
+		cmd.HelpName = cmd.Name
+	}
+
+	if cmd.Usage == "" && isRoot {
+		cmd.Usage = "A new cli application"
+	}
+
+	if cmd.Version == "" {
+		cmd.HideVersion = true
+	}
+
+	if cmd.Action == nil {
+		cmd.Action = helpCommand.Action
+	}
+
+	if cmd.Reader == nil {
+		cmd.Reader = os.Stdin
+	}
+
+	if cmd.Writer == nil {
+		cmd.Writer = os.Stdout
+	}
+
+	if cmd.ErrWriter == nil {
+		cmd.ErrWriter = os.Stderr
+	}
+
+	if cmd.AllowExtFlags {
+		// add global flags added by other packages
+		flag.VisitAll(func(f *flag.Flag) {
+			// skip test flags
+			if !strings.HasPrefix(f.Name, ignoreFlagPrefix) {
+				cmd.Flags = append(cmd.Flags, &extFlag{f})
+			}
+		})
+	}
+
+	var newCommands []*Command
+
+	for _, subCmd := range cmd.Commands {
+		cname := subCmd.Name
+		if subCmd.HelpName != "" {
+			cname = subCmd.HelpName
+		}
+		subCmd.HelpName = fmt.Sprintf("%s %s", cmd.HelpName, cname)
+
+		subCmd.flagCategories = newFlagCategoriesFromFlags(subCmd.Flags)
+		newCommands = append(newCommands, subCmd)
+	}
+
+	cmd.Commands = newCommands
+
+	if cmd.Command(helpCommand.Name) == nil && !cmd.HideHelp {
+		if !cmd.HideHelpCommand {
+			helpCommand.HelpName = fmt.Sprintf("%s %s", cmd.HelpName, helpName)
+			cmd.appendCommand(helpCommand)
+		}
+
+		if HelpFlag != nil {
+			cmd.appendFlag(HelpFlag)
+		}
+	}
+
+	if !cmd.HideVersion && isRoot {
+		cmd.appendFlag(VersionFlag)
+	}
+
+	if cmd.PrefixMatchCommands {
+		if cmd.SuggestCommandFunc == nil {
+			cmd.SuggestCommandFunc = suggestCommand
+		}
+	}
+
+	if cmd.EnableShellCompletion {
+		/*
+			if cmd.ShellCompletionCommandName != "" {
+				completionCommand.Name = cmd.ShellCompletionCommandName
+			}
+		*/
+
+		cmd.appendCommand(completionCommand)
+	}
+
+	cmd.categories = newCommandCategories()
+
+	for _, command := range cmd.Commands {
+		cmd.categories.AddCommand(command.Category, command)
+	}
+
+	sort.Sort(cmd.categories.(*commandCategories))
+
+	cmd.flagCategories = newFlagCategories()
+
+	for _, fl := range cmd.Flags {
+		if cf, ok := fl.(CategorizableFlag); ok {
+			if cf.GetCategory() != "" {
+				cmd.flagCategories.AddFlag(cf.GetCategory(), cf)
+			}
+		}
+	}
+
+	if cmd.Metadata == nil {
+		cmd.Metadata = map[string]any{}
+	}
+
+	if len(cmd.SliceFlagSeparator) != 0 {
+		defaultSliceFlagSeparator = cmd.SliceFlagSeparator
+	}
+
+	disableSliceFlagSeparator = cmd.DisableSliceFlagSeparator
+}
+
+func (c *Command) setup(ctx *Context) {
 	if c.Command(helpCommand.Name) == nil && !c.HideHelp {
 		if !c.HideHelpCommand {
 			helpCommand.HelpName = fmt.Sprintf("%s %s", c.HelpName, helpName)
@@ -128,7 +305,7 @@ func (c *Command) setup(ctx *Context) {
 		c.appendFlag(HelpFlag)
 	}
 
-	if ctx.App.UseShortOptionHandling {
+	if ctx.Command.UseShortOptionHandling {
 		c.UseShortOptionHandling = true
 	}
 
@@ -136,21 +313,48 @@ func (c *Command) setup(ctx *Context) {
 	for _, command := range c.Commands {
 		c.categories.AddCommand(command.Category, command)
 	}
+
 	sort.Sort(c.categories.(*commandCategories))
 
 	var newCmds []*Command
+
 	for _, scmd := range c.Commands {
 		if scmd.HelpName == "" {
 			scmd.HelpName = fmt.Sprintf("%s %s", c.HelpName, scmd.Name)
 		}
 		newCmds = append(newCmds, scmd)
 	}
+
 	c.Commands = newCmds
 }
 
-func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
+// Run is the entry point to the command graph. The positional
+// arguments are parsed according to the Flag and Command
+// definitions and the matching Action functions are run.
+func (c *Command) Run(ctx context.Context, arguments []string) error {
+	c.setupDefaults()
 
-	if !c.isRoot {
+	parentContext := &Context{Context: ctx}
+	if v, ok := ctx.Value(contextContextKey).(*Context); ok {
+		parentContext = v
+	}
+
+	// handle the completion flag separately from the flagset since
+	// completion could be attempted after a flag, but before its value was put
+	// on the command line. this causes the flagset to interpret the completion
+	// flag name as the value of the flag before it which is undesirable
+	// note that we can only do this because the shell autocomplete function
+	// always appends the completion flag at the end of the command
+	shellComplete, arguments := checkShellCompleteFlag(c, arguments)
+
+	cCtx := NewContext(c, nil, parentContext)
+	cCtx.shellComplete = shellComplete
+
+	cCtx.Command = c
+
+	ctx = context.WithValue(ctx, contextContextKey, cCtx)
+
+	if c.parent != nil {
 		c.setup(cCtx)
 	}
 
@@ -163,20 +367,20 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 	}
 
 	if err != nil {
-		cCtx.App.isInError = true
+		cCtx.Command.isInError = true
 		if c.OnUsageError != nil {
-			err = c.OnUsageError(cCtx, err, !c.isRoot)
-			cCtx.App.handleExitCoder(cCtx, err)
+			err = c.OnUsageError(cCtx, err, c.parent != nil)
+			cCtx.Command.handleExitCoder(cCtx, err)
 			return err
 		}
-		_, _ = fmt.Fprintf(cCtx.App.writer(), "%s %s\n\n", "Incorrect Usage:", err.Error())
-		if cCtx.App.Suggest {
+		_, _ = fmt.Fprintf(cCtx.Command.writer(), "%s %s\n\n", "Incorrect Usage:", err.Error())
+		if cCtx.Command.Suggest {
 			if suggestion, err := c.suggestFlagFromError(err, ""); err == nil {
-				fmt.Fprintf(cCtx.App.writer(), "%s", suggestion)
+				fmt.Fprintf(cCtx.Command.writer(), "%s", suggestion)
 			}
 		}
 		if !c.HideHelp {
-			if c.isRoot {
+			if c.parent == nil {
 				_ = ShowAppHelp(cCtx)
 			} else {
 				_ = ShowCommandHelp(cCtx.parentContext, c.Name)
@@ -189,7 +393,7 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 		return helpCommand.Action(cCtx)
 	}
 
-	if c.isRoot && !cCtx.App.HideVersion && checkVersion(cCtx) {
+	if c.parent == nil && !cCtx.Command.HideVersion && checkVersion(cCtx) {
 		ShowVersion(cCtx)
 		return nil
 	}
@@ -198,7 +402,7 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 		defer func() {
 			afterErr := c.After(cCtx)
 			if afterErr != nil {
-				cCtx.App.handleExitCoder(cCtx, err)
+				cCtx.Command.handleExitCoder(cCtx, err)
 				if err != nil {
 					err = newMultiError(err, afterErr)
 				} else {
@@ -210,7 +414,7 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 
 	cerr := cCtx.checkRequiredFlags(c.Flags)
 	if cerr != nil {
-		cCtx.App.isInError = true
+		cCtx.Command.isInError = true
 		_ = ShowSubcommandHelp(cCtx)
 		return cerr
 	}
@@ -225,7 +429,7 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 	if c.Before != nil && !cCtx.shellComplete {
 		beforeErr := c.Before(cCtx)
 		if beforeErr != nil {
-			cCtx.App.handleExitCoder(cCtx, beforeErr)
+			cCtx.Command.handleExitCoder(cCtx, beforeErr)
 			err = beforeErr
 			return err
 		}
@@ -239,12 +443,12 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 	args := cCtx.Args()
 	if args.Present() {
 		name := args.First()
-		if cCtx.App.SuggestCommandFunc != nil {
-			name = cCtx.App.SuggestCommandFunc(c.Commands, name)
+		if cCtx.Command.SuggestCommandFunc != nil {
+			name = cCtx.Command.SuggestCommandFunc(c.Commands, name)
 		}
 		cmd = c.Command(name)
 		if cmd == nil {
-			hasDefault := cCtx.App.DefaultCommand != ""
+			hasDefault := cCtx.Command.DefaultCommand != ""
 			isFlagName := checkStringSliceIncludes(name, cCtx.FlagNames())
 
 			var (
@@ -253,7 +457,7 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 			)
 
 			if hasDefault {
-				dc := cCtx.App.Command(cCtx.App.DefaultCommand)
+				dc := cCtx.Command.Command(cCtx.Command.DefaultCommand)
 				defaultHasSubcommands = len(dc.Commands) > 0
 				for _, dcSub := range dc.Commands {
 					if checkStringSliceIncludes(name, dcSub.Names()) {
@@ -264,22 +468,24 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 			}
 
 			if isFlagName || (hasDefault && (defaultHasSubcommands && isDefaultSubcommand)) {
-				argsWithDefault := cCtx.App.argsWithDefaultCommand(args)
+				argsWithDefault := cCtx.Command.argsWithDefaultCommand(args)
 				if !reflect.DeepEqual(args, argsWithDefault) {
-					cmd = cCtx.App.rootCommand.Command(argsWithDefault.First())
+					cmd = cCtx.Command.Command(argsWithDefault.First())
 				}
 			}
 		}
-	} else if c.isRoot && cCtx.App.DefaultCommand != "" {
-		if dc := cCtx.App.Command(cCtx.App.DefaultCommand); dc != c {
+	} else if c.parent == nil && cCtx.Command.DefaultCommand != "" {
+		if dc := cCtx.Command.Command(cCtx.Command.DefaultCommand); dc != c {
 			cmd = dc
 		}
 	}
 
 	if cmd != nil {
-		newcCtx := NewContext(cCtx.App, nil, cCtx)
-		newcCtx.Command = cmd
-		return cmd.Run(newcCtx, cCtx.Args().Slice()...)
+		/*
+			newcCtx := NewContext(cCtx.Command, nil, cCtx)
+			newcCtx.Command = cmd
+		*/
+		return cmd.Run(ctx, cCtx.Args().Slice())
 	}
 
 	if c.Action == nil {
@@ -288,7 +494,7 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 
 	err = c.Action(cCtx)
 
-	cCtx.App.handleExitCoder(cCtx, err)
+	cCtx.Command.handleExitCoder(cCtx, err)
 	return err
 }
 
@@ -448,6 +654,42 @@ func (c *Command) appendFlag(fl Flag) {
 	if !hasFlag(c.Flags, fl) {
 		c.Flags = append(c.Flags, fl)
 	}
+}
+
+func (cmd *Command) appendCommand(aCmd *Command) {
+	if !hasCommand(cmd.Commands, aCmd) {
+		cmd.Commands = append(cmd.Commands, aCmd)
+	}
+}
+
+func (c *Command) handleExitCoder(cCtx *Context, err error) {
+	if c.ExitErrHandler != nil {
+		c.ExitErrHandler(cCtx, err)
+	} else {
+		HandleExitCoder(err)
+	}
+}
+
+func (c *Command) argsWithDefaultCommand(oldArgs Args) Args {
+	if c.DefaultCommand != "" {
+		rawArgs := append([]string{c.DefaultCommand}, oldArgs.Slice()...)
+		newArgs := args(rawArgs)
+
+		return &newArgs
+	}
+
+	return oldArgs
+}
+
+func (c *Command) writer() io.Writer {
+	if c.isInError {
+		// this can happen in test but not in normal usage
+		if c.ErrWriter == nil {
+			return os.Stderr
+		}
+		return c.ErrWriter
+	}
+	return c.Writer
 }
 
 func hasCommand(commands []*Command, command *Command) bool {

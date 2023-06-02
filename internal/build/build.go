@@ -5,6 +5,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -51,7 +52,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	app := &cli.App{
+	app := &cli.Command{
 		Name:  "builder",
 		Usage: "Do a thing for urfave/cli! (maybe build?)",
 		Commands: cli.Commands{
@@ -153,7 +154,7 @@ func main() {
 		},
 	}
 
-	if err := app.Run(os.Args); err != nil {
+	if err := app.Run(context.Background(), os.Args); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -310,7 +311,7 @@ func GfmrunActionFunc(cCtx *cli.Context) error {
 		return err
 	}
 
-	fmt.Fprintf(cCtx.App.ErrWriter, "# ---> workspace/TMPDIR is %q\n", tmpDir)
+	fmt.Fprintf(cCtx.Command.ErrWriter, "# ---> workspace/TMPDIR is %q\n", tmpDir)
 
 	if err := runCmd("go", "work", "init", top); err != nil {
 		return err
@@ -608,8 +609,8 @@ func LintActionFunc(cCtx *cli.Context) error {
 	}
 
 	if strings.TrimSpace(out) != "" {
-		fmt.Fprintln(cCtx.App.ErrWriter, "# ---> goimports -l is non-empty:")
-		fmt.Fprintln(cCtx.App.ErrWriter, out)
+		fmt.Fprintln(cCtx.Command.ErrWriter, "# ---> goimports -l is non-empty:")
+		fmt.Fprintln(cCtx.Command.ErrWriter, out)
 
 		return errors.New("goimports needed")
 	}
