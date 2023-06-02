@@ -8,8 +8,7 @@ import (
 
 func TestEnvSource(t *testing.T) {
 
-	os.Setenv("foo", "bar")
-	defer os.Unsetenv("foo")
+	t.Setenv("foo", "bar")
 
 	s := EnvSource("foo_1")
 	_, ok := s.Get()
@@ -20,8 +19,7 @@ func TestEnvSource(t *testing.T) {
 	expect(t, ok, true)
 	expect(t, str, "bar")
 
-	os.Setenv("myfoo", "mybar")
-	defer os.Unsetenv("myfoo")
+	t.Setenv("myfoo", "mybar")
 
 	source := EnvVars("foo1", "myfoo")
 	str, id, ok := source.Get()
