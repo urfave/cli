@@ -402,16 +402,18 @@ func TestCommand_NoVersionFlagOnCommands(t *testing.T) {
 	expect(t, err, nil)
 }
 
-func TestCommand_CanAddVFlagOnCommands(t *testing.T) {
+func TestCommand_CanAddVFlagOnSubCommands(t *testing.T) {
 	cmd := &Command{
-		Version:  "some version",
-		Writer:   io.Discard,
-		Name:     "bar",
-		Usage:    "this is for testing",
-		Commands: []*Command{{}}, // some subcommand
-		Flags: []Flag{
-			&BoolFlag{
-				Name: "v",
+		Version: "some version",
+		Writer:  io.Discard,
+		Name:    "foo",
+		Usage:   "this is for testing",
+		Commands: []*Command{
+			{
+				Name: "bar",
+				Flags: []Flag{
+					&BoolFlag{Name: "v"},
+				},
 			},
 		},
 	}

@@ -47,14 +47,16 @@ type Command struct {
 	Flags []Flag
 	// flagCategories contains the categorized flags and is populated on app startup
 	flagCategories FlagCategories
-	// Boolean to enable shell completion commands
-	EnableShellCompletion bool
 	// Boolean to hide built-in help command and help flag
 	HideHelp bool
 	// Ignored if HideHelp is true.
 	HideHelpCommand bool
 	// Boolean to hide built-in version flag and the VERSION section of help
 	HideVersion bool
+	// Boolean to enable shell completion commands
+	EnableShellCompletion bool
+	// Shell Completion generation command name
+	ShellCompletionCommandName string
 	// The function to call when checking for shell command completions
 	ShellComplete ShellCompleteFunc
 	// An action to execute before any subcommands are run, but after the context is ready
@@ -254,11 +256,9 @@ func (cmd *Command) setupDefaults() {
 	}
 
 	if cmd.EnableShellCompletion {
-		/*
-			if cmd.ShellCompletionCommandName != "" {
-				completionCommand.Name = cmd.ShellCompletionCommandName
-			}
-		*/
+		if cmd.ShellCompletionCommandName != "" {
+			completionCommand.Name = cmd.ShellCompletionCommandName
+		}
 
 		cmd.appendCommand(completionCommand)
 	}

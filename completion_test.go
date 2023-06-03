@@ -2,23 +2,33 @@ package cli
 
 import (
 	"bytes"
+	"context"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestCompletionDisable(t *testing.T) {
-	a := &App{}
-	err := a.Run([]string{"foo", completionCommandName})
+	cmd := &Command{}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	t.Cleanup(cancel)
+
+	err := cmd.Run(ctx, []string{"foo", completionCommandName})
 	if err == nil {
 		t.Error("Expected error for no help topic for completion")
 	}
 }
 
 func TestCompletionEnable(t *testing.T) {
-	a := &App{
+	cmd := &Command{
 		EnableShellCompletion: true,
 	}
-	err := a.Run([]string{"foo", completionCommandName})
+
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	t.Cleanup(cancel)
+
+	err := cmd.Run(ctx, []string{"foo", completionCommandName})
 	if err == nil || !strings.Contains(err.Error(), "no shell provided") {
 		t.Errorf("expected no shell provided error instead got [%v]", err)
 	}
@@ -29,11 +39,15 @@ func TestCompletionEnableDiffCommandName(t *testing.T) {
 		completionCommand.Name = completionCommandName
 	}()
 
-	a := &App{
+	cmd := &Command{
 		EnableShellCompletion:      true,
 		ShellCompletionCommandName: "junky",
 	}
-	err := a.Run([]string{"foo", "junky"})
+
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	t.Cleanup(cancel)
+
+	err := cmd.Run(ctx, []string{"foo", "junky"})
 	if err == nil || !strings.Contains(err.Error(), "no shell provided") {
 		t.Errorf("expected no shell provided error instead got [%v]", err)
 	}
@@ -43,11 +57,15 @@ func TestCompletionShell(t *testing.T) {
 	for k := range shellCompletions {
 		var b bytes.Buffer
 		t.Run(k, func(t *testing.T) {
-			a := &App{
+			cmd := &Command{
 				EnableShellCompletion: true,
 				Writer:                &b,
 			}
-			err := a.Run([]string{"foo", completionCommandName, k})
+
+			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+			t.Cleanup(cancel)
+
+			err := cmd.Run(ctx, []string{"foo", completionCommandName, k})
 			if err != nil {
 				t.Error(err)
 			}
@@ -60,10 +78,14 @@ func TestCompletionShell(t *testing.T) {
 }
 
 func TestCompletionInvalidShell(t *testing.T) {
-	a := &App{
+	cmd := &Command{
 		EnableShellCompletion: true,
 	}
-	err := a.Run([]string{"foo", completionCommandName, "junky-sheell"})
+
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	t.Cleanup(cancel)
+
+	err := cmd.Run(ctx, []string{"foo", completionCommandName, "junky-sheell"})
 	if err == nil {
 		t.Error("Expected error for invalid shell")
 	}

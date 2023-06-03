@@ -141,7 +141,7 @@ func TestContext_Value(t *testing.T) {
 
 func TestContext_Value_InvalidFlagAccessHandler(t *testing.T) {
 	var flagName string
-	app := &App{
+	cmd := &Command{
 		InvalidFlagAccessHandler: func(_ *Context, name string) {
 			flagName = name
 		},
@@ -160,7 +160,11 @@ func TestContext_Value_InvalidFlagAccessHandler(t *testing.T) {
 			},
 		},
 	}
-	expect(t, app.Run([]string{"run", "command", "subcommand"}), nil)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	t.Cleanup(cancel)
+
+	expect(t, cmd.Run(ctx, []string{"run", "command", "subcommand"}), nil)
 	expect(t, flagName, "missing")
 }
 
@@ -215,7 +219,7 @@ func TestContext_IsSet_fromEnv(t *testing.T) {
 	os.Clearenv()
 	_ = os.Setenv("APP_TIMEOUT_SECONDS", "15.5")
 	_ = os.Setenv("APP_PASSWORD", "")
-	a := App{
+	cmd := &Command{
 		Flags: []Flag{
 			&Float64Flag{Name: "timeout", Aliases: []string{"t"}, EnvVars: []string{"APP_TIMEOUT_SECONDS"}},
 			&StringFlag{Name: "password", Aliases: []string{"p"}, EnvVars: []string{"APP_PASSWORD"}},
@@ -234,7 +238,11 @@ func TestContext_IsSet_fromEnv(t *testing.T) {
 			return nil
 		},
 	}
-	_ = a.Run([]string{"run"})
+
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	t.Cleanup(cancel)
+
+	_ = cmd.Run(ctx, []string{"run"})
 	expect(t, timeoutIsSet, true)
 	expect(t, tIsSet, true)
 	expect(t, passwordIsSet, true)
@@ -243,7 +251,7 @@ func TestContext_IsSet_fromEnv(t *testing.T) {
 	expect(t, nIsSet, false)
 
 	_ = os.Setenv("APP_UNPARSABLE", "foobar")
-	_ = a.Run([]string{"run"})
+	_ = cmd.Run(ctx, []string{"run"})
 	expect(t, unparsableIsSet, false)
 	expect(t, uIsSet, false)
 }
