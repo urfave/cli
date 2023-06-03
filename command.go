@@ -331,8 +331,8 @@ func (c *Command) setup(ctx *Context) {
 // Run is the entry point to the command graph. The positional
 // arguments are parsed according to the Flag and Command
 // definitions and the matching Action functions are run.
-func (c *Command) Run(ctx context.Context, arguments []string) error {
-	c.setupDefaults()
+func (cmd *Command) Run(ctx context.Context, arguments []string) error {
+	cmd.setupDefaults()
 
 	parentContext := &Context{Context: ctx}
 	if v, ok := ctx.Value(contextContextKey).(*Context); ok {
@@ -345,21 +345,21 @@ func (c *Command) Run(ctx context.Context, arguments []string) error {
 	// flag name as the value of the flag before it which is undesirable
 	// note that we can only do this because the shell autocomplete function
 	// always appends the completion flag at the end of the command
-	shellComplete, arguments := checkShellCompleteFlag(c, arguments)
+	shellComplete, arguments := checkShellCompleteFlag(cmd, arguments)
 
-	cCtx := NewContext(c, nil, parentContext)
+	cCtx := NewContext(cmd, nil, parentContext)
 	cCtx.shellComplete = shellComplete
 
-	cCtx.Command = c
+	cCtx.Command = cmd
 
 	ctx = context.WithValue(ctx, contextContextKey, cCtx)
 
-	if c.parent != nil {
-		c.setup(cCtx)
+	if cmd.parent != nil {
+		cmd.setup(cCtx)
 	}
 
 	a := args(arguments)
-	set, err := c.parseFlags(&a, cCtx)
+	set, err := cmd.parseFlags(&a, cCtx)
 	cCtx.flagSet = set
 
 	if checkCompletions(cCtx) {
@@ -368,22 +368,22 @@ func (c *Command) Run(ctx context.Context, arguments []string) error {
 
 	if err != nil {
 		cCtx.Command.isInError = true
-		if c.OnUsageError != nil {
-			err = c.OnUsageError(cCtx, err, c.parent != nil)
+		if cmd.OnUsageError != nil {
+			err = cmd.OnUsageError(cCtx, err, cmd.parent != nil)
 			cCtx.Command.handleExitCoder(cCtx, err)
 			return err
 		}
 		_, _ = fmt.Fprintf(cCtx.Command.writer(), "%s %s\n\n", "Incorrect Usage:", err.Error())
 		if cCtx.Command.Suggest {
-			if suggestion, err := c.suggestFlagFromError(err, ""); err == nil {
+			if suggestion, err := cmd.suggestFlagFromError(err, ""); err == nil {
 				fmt.Fprintf(cCtx.Command.writer(), "%s", suggestion)
 			}
 		}
-		if !c.HideHelp {
-			if c.parent == nil {
+		if !cmd.HideHelp {
+			if cmd.parent == nil {
 				_ = ShowAppHelp(cCtx)
 			} else {
-				_ = ShowCommandHelp(cCtx.parentContext, c.Name)
+				_ = ShowCommandHelp(cCtx.parentContext, cmd.Name)
 			}
 		}
 		return err
@@ -393,14 +393,14 @@ func (c *Command) Run(ctx context.Context, arguments []string) error {
 		return helpCommand.Action(cCtx)
 	}
 
-	if c.parent == nil && !cCtx.Command.HideVersion && checkVersion(cCtx) {
+	if cmd.parent == nil && !cCtx.Command.HideVersion && checkVersion(cCtx) {
 		ShowVersion(cCtx)
 		return nil
 	}
 
-	if c.After != nil && !cCtx.shellComplete {
+	if cmd.After != nil && !cCtx.shellComplete {
 		defer func() {
-			afterErr := c.After(cCtx)
+			afterErr := cmd.After(cCtx)
 			if afterErr != nil {
 				cCtx.Command.handleExitCoder(cCtx, err)
 				if err != nil {
@@ -412,22 +412,22 @@ func (c *Command) Run(ctx context.Context, arguments []string) error {
 		}()
 	}
 
-	cerr := cCtx.checkRequiredFlags(c.Flags)
+	cerr := cCtx.checkRequiredFlags(cmd.Flags)
 	if cerr != nil {
 		cCtx.Command.isInError = true
 		_ = ShowSubcommandHelp(cCtx)
 		return cerr
 	}
 
-	for _, grp := range c.MutuallyExclusiveFlags {
+	for _, grp := range cmd.MutuallyExclusiveFlags {
 		if err := grp.check(cCtx); err != nil {
 			_ = ShowSubcommandHelp(cCtx)
 			return err
 		}
 	}
 
-	if c.Before != nil && !cCtx.shellComplete {
-		beforeErr := c.Before(cCtx)
+	if cmd.Before != nil && !cCtx.shellComplete {
+		beforeErr := cmd.Before(cCtx)
 		if beforeErr != nil {
 			cCtx.Command.handleExitCoder(cCtx, beforeErr)
 			err = beforeErr
@@ -435,19 +435,19 @@ func (c *Command) Run(ctx context.Context, arguments []string) error {
 		}
 	}
 
-	if err = runFlagActions(cCtx, c.Flags); err != nil {
+	if err = runFlagActions(cCtx, cmd.Flags); err != nil {
 		return err
 	}
 
-	var cmd *Command
+	var subCmd *Command
 	args := cCtx.Args()
 	if args.Present() {
 		name := args.First()
 		if cCtx.Command.SuggestCommandFunc != nil {
-			name = cCtx.Command.SuggestCommandFunc(c.Commands, name)
+			name = cCtx.Command.SuggestCommandFunc(cmd.Commands, name)
 		}
-		cmd = c.Command(name)
-		if cmd == nil {
+		subCmd = cmd.Command(name)
+		if subCmd == nil {
 			hasDefault := cCtx.Command.DefaultCommand != ""
 			isFlagName := checkStringSliceIncludes(name, cCtx.FlagNames())
 
@@ -470,29 +470,29 @@ func (c *Command) Run(ctx context.Context, arguments []string) error {
 			if isFlagName || (hasDefault && (defaultHasSubcommands && isDefaultSubcommand)) {
 				argsWithDefault := cCtx.Command.argsWithDefaultCommand(args)
 				if !reflect.DeepEqual(args, argsWithDefault) {
-					cmd = cCtx.Command.Command(argsWithDefault.First())
+					subCmd = cCtx.Command.Command(argsWithDefault.First())
 				}
 			}
 		}
-	} else if c.parent == nil && cCtx.Command.DefaultCommand != "" {
-		if dc := cCtx.Command.Command(cCtx.Command.DefaultCommand); dc != c {
-			cmd = dc
+	} else if cmd.parent == nil && cCtx.Command.DefaultCommand != "" {
+		if dc := cCtx.Command.Command(cCtx.Command.DefaultCommand); dc != cmd {
+			subCmd = dc
 		}
 	}
 
-	if cmd != nil {
+	if subCmd != nil {
 		/*
 			newcCtx := NewContext(cCtx.Command, nil, cCtx)
 			newcCtx.Command = cmd
 		*/
-		return cmd.Run(ctx, cCtx.Args().Slice())
+		return subCmd.Run(ctx, cCtx.Args().Slice())
 	}
 
-	if c.Action == nil {
-		c.Action = helpCommand.Action
+	if cmd.Action == nil {
+		cmd.Action = helpCommand.Action
 	}
 
-	err = c.Action(cCtx)
+	err = cmd.Action(cCtx)
 
 	cCtx.Command.handleExitCoder(cCtx, err)
 	return err

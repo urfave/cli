@@ -9,7 +9,7 @@ import (
 
 func TestSuggestFlag(t *testing.T) {
 	// Given
-	app := testApp()
+	app := testFishCommand()
 
 	for _, testCase := range []struct {
 		provided, expected string
@@ -30,7 +30,7 @@ func TestSuggestFlag(t *testing.T) {
 
 func TestSuggestFlagHideHelp(t *testing.T) {
 	// Given
-	app := testApp()
+	app := testFishCommand()
 
 	// When
 	res := suggestFlag(app.Flags, "hlp", true)
@@ -41,7 +41,7 @@ func TestSuggestFlagHideHelp(t *testing.T) {
 
 func TestSuggestFlagFromError(t *testing.T) {
 	// Given
-	app := testApp()
+	app := testFishCommand()
 
 	for _, testCase := range []struct {
 		command, provided, expected string
@@ -63,7 +63,7 @@ func TestSuggestFlagFromError(t *testing.T) {
 
 func TestSuggestFlagFromErrorWrongError(t *testing.T) {
 	// Given
-	app := testApp()
+	app := testFishCommand()
 
 	// When
 	_, err := app.suggestFlagFromError(errors.New("invalid"), "")
@@ -74,7 +74,7 @@ func TestSuggestFlagFromErrorWrongError(t *testing.T) {
 
 func TestSuggestFlagFromErrorWrongCommand(t *testing.T) {
 	// Given
-	app := testApp()
+	app := testFishCommand()
 
 	// When
 	_, err := app.suggestFlagFromError(
@@ -88,7 +88,7 @@ func TestSuggestFlagFromErrorWrongCommand(t *testing.T) {
 
 func TestSuggestFlagFromErrorNoSuggestion(t *testing.T) {
 	// Given
-	app := testApp()
+	app := testFishCommand()
 
 	// When
 	_, err := app.suggestFlagFromError(
@@ -102,7 +102,7 @@ func TestSuggestFlagFromErrorNoSuggestion(t *testing.T) {
 
 func TestSuggestCommand(t *testing.T) {
 	// Given
-	app := testApp()
+	app := testFishCommand()
 
 	for _, testCase := range []struct {
 		provided, expected string

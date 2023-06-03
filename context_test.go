@@ -275,13 +275,13 @@ func TestContext_Set(t *testing.T) {
 func TestContext_Set_InvalidFlagAccessHandler(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	var flagName string
-	app := &App{
+	cmd := &Command{
 		InvalidFlagAccessHandler: func(_ *Context, name string) {
 			flagName = name
 		},
 	}
 
-	c := NewContext(app, set, nil)
+	c := NewContext(cmd, set, nil)
 	expect(t, c.Set("missing", "") != nil, true)
 	expect(t, flagName, "missing")
 }
@@ -612,7 +612,7 @@ func TestCheckRequiredFlags(t *testing.T) {
 			_ = set.Parse(test.parseInput)
 
 			c := &Context{}
-			ctx := NewContext(c.App, set, c)
+			ctx := NewContext(c.Command, set, c)
 			ctx.Command.Flags = test.flags
 
 			// logic under test

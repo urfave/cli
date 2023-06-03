@@ -9,7 +9,7 @@ import (
 
 func TestFishCompletion(t *testing.T) {
 	// Given
-	app := testApp()
+	app := testFishCommand()
 	app.Flags = append(app.Flags, &StringFlag{
 		Name:      "logfile",
 		TakesFile: true,
@@ -23,10 +23,10 @@ func TestFishCompletion(t *testing.T) {
 	expectFileContent(t, "testdata/expected-fish-full.fish", res)
 }
 
-func testApp() *App {
-	app := newTestApp()
-	app.Name = "greet"
-	app.Flags = []Flag{
+func testFishCommand() *Command {
+	cmd := newTestCommand()
+	cmd.Name = "greet"
+	cmd.Flags = []Flag{
 		&StringFlag{
 			Name:      "socket",
 			Aliases:   []string{"s"},
@@ -46,7 +46,7 @@ func testApp() *App {
 			Hidden: true,
 		},
 	}
-	app.Commands = []*Command{{
+	cmd.Commands = []*Command{{
 		Aliases: []string{"c"},
 		Flags: []Flag{
 			&StringFlag{
@@ -126,14 +126,15 @@ Should be a part of the same code block
 			UsageText: "Single line of UsageText",
 		}},
 	}}
-	app.UsageText = "app [first_arg] [second_arg]"
-	app.Description = `Description of the application.`
-	app.Usage = "Some app"
-	app.Authors = []any{
+	cmd.UsageText = "app [first_arg] [second_arg]"
+	cmd.Description = `Description of the application.`
+	cmd.Usage = "Some app"
+	cmd.Authors = []any{
 		"Harrison <harrison@lolwut.example.com>",
 		&mail.Address{Name: "Oliver Allen", Address: "oliver@toyshop.com"},
 	}
-	return app
+
+	return cmd
 }
 
 func expectFileContent(t *testing.T, file, got string) {

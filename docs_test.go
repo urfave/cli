@@ -13,10 +13,10 @@ import (
 
 func TestToMarkdownFull(t *testing.T) {
 	// Given
-	app := testApp()
+	cmd := testFishCommand()
 
 	// When
-	res, err := app.ToMarkdown()
+	res, err := cmd.ToMarkdown()
 
 	// Then
 	expect(t, err, nil)
@@ -24,7 +24,7 @@ func TestToMarkdownFull(t *testing.T) {
 }
 
 func TestToTabularMarkdown(t *testing.T) {
-	app := testApp()
+	app := testFishCommand()
 
 	t.Run("full", func(t *testing.T) {
 		// When
@@ -61,7 +61,7 @@ func TestToTabularMarkdownFailed(t *testing.T) {
 	MarkdownTabularDocTemplate = "{{ .Foo }}" // invalid template
 
 	// Given
-	app := testApp()
+	app := testFishCommand()
 
 	// When
 	res, err := app.ToTabularMarkdown("")
@@ -102,7 +102,7 @@ Some other text`)
 		expect(t, err, nil) // wrote without error
 		_ = tmpFile.Close()
 
-		expect(t, testApp().ToTabularToFileBetweenTags("app", tmpFile.Name()), nil) // replaced without error
+		expect(t, testFishCommand().ToTabularToFileBetweenTags("app", tmpFile.Name()), nil) // replaced without error
 
 		content, err := os.ReadFile(tmpFile.Name()) // read the file content
 		expect(t, err, nil)
@@ -140,7 +140,7 @@ Some other text`)
 		expect(t, err, nil) // wrote without error
 		_ = tmpFile.Close()
 
-		expect(t, testApp().ToTabularToFileBetweenTags("app", tmpFile.Name(), "foo_BAR|baz", "lorem+ipsum"), nil)
+		expect(t, testFishCommand().ToTabularToFileBetweenTags("app", tmpFile.Name(), "foo_BAR|baz", "lorem+ipsum"), nil)
 
 		content, err := os.ReadFile(tmpFile.Name()) // read the file content
 		expect(t, err, nil)
@@ -168,7 +168,7 @@ Some other text`))
 
 		expect(t, os.Remove(tmpFile.Name()), nil) // and remove immediately
 
-		err = testApp().ToTabularToFileBetweenTags("app", tmpFile.Name())
+		err = testFishCommand().ToTabularToFileBetweenTags("app", tmpFile.Name())
 
 		expect(t, errors.Is(err, fs.ErrNotExist), true)
 	})
@@ -176,7 +176,7 @@ Some other text`))
 
 func TestToMarkdownNoFlags(t *testing.T) {
 	// Given
-	app := testApp()
+	app := testFishCommand()
 	app.Flags = nil
 
 	// When
@@ -189,7 +189,7 @@ func TestToMarkdownNoFlags(t *testing.T) {
 
 func TestToMarkdownNoCommands(t *testing.T) {
 	// Given
-	app := testApp()
+	app := testFishCommand()
 	app.Commands = nil
 
 	// When
@@ -202,7 +202,7 @@ func TestToMarkdownNoCommands(t *testing.T) {
 
 func TestToMarkdownNoAuthors(t *testing.T) {
 	// Given
-	app := testApp()
+	app := testFishCommand()
 	app.Authors = []any{}
 
 	// When
@@ -215,7 +215,7 @@ func TestToMarkdownNoAuthors(t *testing.T) {
 
 func TestToMarkdownNoUsageText(t *testing.T) {
 	// Given
-	app := testApp()
+	app := testFishCommand()
 	app.UsageText = ""
 
 	// When
@@ -228,7 +228,7 @@ func TestToMarkdownNoUsageText(t *testing.T) {
 
 func TestToMan(t *testing.T) {
 	// Given
-	app := testApp()
+	app := testFishCommand()
 
 	// When
 	res, err := app.ToMan()
@@ -240,7 +240,7 @@ func TestToMan(t *testing.T) {
 
 func TestToManParseError(t *testing.T) {
 	// Given
-	app := testApp()
+	app := testFishCommand()
 
 	// When
 	// temporarily change the global variable for testing
@@ -255,7 +255,7 @@ func TestToManParseError(t *testing.T) {
 
 func TestToManWithSection(t *testing.T) {
 	// Given
-	app := testApp()
+	app := testFishCommand()
 
 	// When
 	res, err := app.ToManWithSection(8)
