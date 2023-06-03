@@ -89,7 +89,7 @@ func (parent *BoolWithInverseFlag) initialize() {
 	parent.negativeFlag = &BoolFlag{
 		Category:    child.Category,
 		DefaultText: child.DefaultText,
-		FilePaths:   append([]string{}, child.FilePaths...),
+		Sources:     append(ValueSources{}, child.Sources...),
 		Usage:       child.Usage,
 		Required:    child.Required,
 		Hidden:      child.Hidden,
@@ -108,10 +108,10 @@ func (parent *BoolWithInverseFlag) initialize() {
 	parent.negativeFlag.Name = parent.inverseName()
 	parent.negativeFlag.Aliases = parent.inverseAliases()
 
-	if len(child.EnvVars) > 0 {
-		parent.negativeFlag.EnvVars = make([]string, len(child.EnvVars))
-		for idx, envVar := range child.EnvVars {
-			parent.negativeFlag.EnvVars[idx] = strings.ToUpper(parent.InversePrefix) + envVar
+	if len(child.Sources) > 0 {
+		parent.negativeFlag.Sources = make(ValueSources, len(child.Sources))
+		for idx, envVar := range child.GetEnvVars() {
+			parent.negativeFlag.Sources[idx] = EnvSource(strings.ToUpper(parent.InversePrefix) + envVar)
 		}
 	}
 }
