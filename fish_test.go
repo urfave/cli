@@ -39,7 +39,7 @@ func testFishCommand() *Command {
 			Name:    "another-flag",
 			Aliases: []string{"b"},
 			Usage:   "another usage text",
-			EnvVars: []string{"EXAMPLE_VARIABLE_NAME"},
+			Sources: ValueSources{EnvSource("EXAMPLE_VARIABLE_NAME")},
 		},
 		&BoolFlag{
 			Name:   "hidden-flag",
