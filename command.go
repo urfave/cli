@@ -708,3 +708,35 @@ func hasCommand(commands []*Command, command *Command) bool {
 
 	return false
 }
+
+func runFlagActions(c *Context, fs []Flag) error {
+	for _, f := range fs {
+		isSet := false
+		for _, name := range f.Names() {
+			if c.IsSet(name) {
+				isSet = true
+				break
+			}
+		}
+		if isSet {
+			if af, ok := f.(ActionableFlag); ok {
+				if err := af.RunAction(c); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func checkStringSliceIncludes(want string, sSlice []string) bool {
+	found := false
+	for _, s := range sSlice {
+		if want == s {
+			found = true
+			break
+		}
+	}
+
+	return found
+}

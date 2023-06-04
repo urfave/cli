@@ -18,6 +18,7 @@ import (
 	"github.com/cpuguy83/go-md2man/v2/md2man"
 )
 
+/*
 // ToTabularMarkdown creates a tabular markdown documentation for the `*App`.
 // The function errors if either parsing or writing of the string fails.
 func (a *App) ToTabularMarkdown(appPath string) (string, error) {
@@ -54,6 +55,7 @@ func (a *App) ToTabularMarkdown(appPath string) (string, error) {
 
 	return tt.Prettify(w.String()), nil
 }
+*/
 
 // ToTabularMarkdown creates a tabular markdown documentation for the `*Command`.
 // The function errors if either parsing or writing of the string fails.
@@ -92,6 +94,7 @@ func (cmd *Command) ToTabularMarkdown(appPath string) (string, error) {
 	return tt.Prettify(w.String()), nil
 }
 
+/*
 // ToTabularToFileBetweenTags creates a tabular markdown documentation for the `*App` and updates the file between
 // the tags in the file. The function errors if either parsing or writing of the string fails.
 func (a *App) ToTabularToFileBetweenTags(appPath, filePath string, startEndTags ...string) error {
@@ -131,6 +134,7 @@ func (a *App) ToTabularToFileBetweenTags(appPath, filePath string, startEndTags 
 
 	return nil
 }
+*/
 
 // ToTabularToFileBetweenTags creates a tabular markdown documentation for the `*App` and updates the file between
 // the tags in the file. The function errors if either parsing or writing of the string fails.
@@ -172,6 +176,7 @@ func (a *Command) ToTabularToFileBetweenTags(appPath, filePath string, startEndT
 	return nil
 }
 
+/*
 // ToMarkdown creates a markdown string for the `*App`
 // The function errors if either parsing or writing of the string fails.
 func (a *App) ToMarkdown() (string, error) {
@@ -181,6 +186,7 @@ func (a *App) ToMarkdown() (string, error) {
 	}
 	return w.String(), nil
 }
+*/
 
 // ToMarkdown creates a markdown string for the `*Command`
 // The function errors if either parsing or writing of the string fails.
@@ -192,6 +198,7 @@ func (cmd *Command) ToMarkdown() (string, error) {
 	return w.String(), nil
 }
 
+/*
 // ToMan creates a man page string with section number for the `*App`
 // The function errors if either parsing or writing of the string fails.
 func (a *App) ToManWithSection(sectionNumber int) (string, error) {
@@ -202,6 +209,7 @@ func (a *App) ToManWithSection(sectionNumber int) (string, error) {
 	man := md2man.Render(w.Bytes())
 	return string(man), nil
 }
+*/
 
 // ToMan creates a man page string with section number for the `*Command`
 // The function errors if either parsing or writing of the string fails.
@@ -214,12 +222,14 @@ func (cmd *Command) ToManWithSection(sectionNumber int) (string, error) {
 	return string(man), nil
 }
 
+/*
 // ToMan creates a man page string for the `*App`
 // The function errors if either parsing or writing of the string fails.
 func (a *App) ToMan() (string, error) {
 	man, err := a.ToManWithSection(8)
 	return man, err
 }
+*/
 
 // ToMan creates a man page string for the `*Command`
 // The function errors if either parsing or writing of the string fails.
@@ -229,7 +239,7 @@ func (cmd *Command) ToMan() (string, error) {
 }
 
 type cliTemplate struct {
-	App          *App
+	App          *Command
 	SectionNum   int
 	Commands     []string
 	GlobalArgs   []string
@@ -244,6 +254,7 @@ type cliCommandTemplate struct {
 	SynopsisArgs []string
 }
 
+/*
 func (a *App) writeDocTemplate(w io.Writer, sectionNum int) error {
 	const name = "cli"
 	t, err := template.New(name).Parse(MarkdownDocTemplate)
@@ -258,6 +269,7 @@ func (a *App) writeDocTemplate(w io.Writer, sectionNum int) error {
 		SynopsisArgs: prepareArgsSynopsis(a.VisibleFlags()),
 	})
 }
+*/
 
 func (cmd *Command) writeDocTemplate(w io.Writer, sectionNum int) error {
 	const name = "cli"

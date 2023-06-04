@@ -125,7 +125,7 @@ func TestSuggestCommand(t *testing.T) {
 	}
 }
 
-func ExampleApp_Suggest() {
+func ExampleCommand_Suggest() {
 	cmd := &Command{
 		Name:                  "greet",
 		ErrWriter:             os.Stdout,
@@ -156,7 +156,7 @@ func ExampleApp_Suggest() {
 	// (this space intentionally left blank)
 }
 
-func ExampleApp_Suggest_command() {
+func ExampleCommand_Suggest_command() {
 	cmd := &Command{
 		Name:                  "greet",
 		ErrWriter:             os.Stdout,

@@ -8,6 +8,7 @@ import (
 	"text/template"
 )
 
+/*
 // ToFishCompletion creates a fish completion string for the `*App`
 // The function errors if either parsing or writing of the string fails.
 func (a *App) ToFishCompletion() (string, error) {
@@ -17,6 +18,7 @@ func (a *App) ToFishCompletion() (string, error) {
 	}
 	return w.String(), nil
 }
+*/
 
 // ToFishCompletion creates a fish completion string for the `*App`
 // The function errors if either parsing or writing of the string fails.
@@ -29,7 +31,7 @@ func (c *Command) ToFishCompletion() (string, error) {
 }
 
 type fishCompletionTemplate struct {
-	App         *App
+	App         *Command
 	Completions []string
 	AllCommands []string
 }
@@ -40,6 +42,7 @@ type fishCommandCompletionTemplate struct {
 	AllCommands []string
 }
 
+/*
 func (a *App) writeFishCompletionTemplate(w io.Writer) error {
 	const name = "cli"
 	t, err := template.New(name).Parse(FishCompletionTemplate)
@@ -79,6 +82,7 @@ func (a *App) writeFishCompletionTemplate(w io.Writer) error {
 		AllCommands: allCommands,
 	})
 }
+*/
 
 func (c *Command) writeFishCompletionTemplate(w io.Writer) error {
 	const name = "cli"
@@ -120,6 +124,7 @@ func (c *Command) writeFishCompletionTemplate(w io.Writer) error {
 	})
 }
 
+/*
 func (a *App) prepareFishCommands(commands []*Command, allCommands *[]string, previousCommands []string) []string {
 	completions := []string{}
 	for _, command := range commands {
@@ -167,6 +172,7 @@ func (a *App) prepareFishCommands(commands []*Command, allCommands *[]string, pr
 
 	return completions
 }
+*/
 
 func (c *Command) prepareFishCommands(commands []*Command, allCommands *[]string, previousCommands []string) []string {
 	completions := []string{}
@@ -216,6 +222,7 @@ func (c *Command) prepareFishCommands(commands []*Command, allCommands *[]string
 	return completions
 }
 
+/*
 func (a *App) prepareFishFlags(flags []Flag, previousCommands []string) []string {
 	completions := []string{}
 	for _, f := range flags {
@@ -257,6 +264,7 @@ func (a *App) prepareFishFlags(flags []Flag, previousCommands []string) []string
 
 	return completions
 }
+*/
 
 func (c *Command) prepareFishFlags(flags []Flag, previousCommands []string) []string {
 	completions := []string{}
@@ -314,6 +322,7 @@ func fishAddFileFlag(flag Flag, completion *strings.Builder) {
 	completion.WriteString(" -f")
 }
 
+/*
 func (a *App) fishSubcommandHelper(allCommands []string) string {
 	fishHelper := fmt.Sprintf("__fish_%s_no_subcommand", a.Name)
 	if len(allCommands) > 0 {
@@ -324,6 +333,7 @@ func (a *App) fishSubcommandHelper(allCommands []string) string {
 	}
 	return fishHelper
 }
+*/
 
 func (c *Command) fishSubcommandHelper(allCommands []string) string {
 	fishHelper := fmt.Sprintf("__fish_%s_no_subcommand", c.Name)

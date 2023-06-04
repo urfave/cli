@@ -33,7 +33,7 @@ type opCounts struct {
 	Total, ShellComplete, OnUsageError, Before, CommandNotFound, Action, After, SubCommand int
 }
 
-func ExampleApp_Run() {
+func ExampleCommand_Run() {
 	// set args for examples sake
 	os.Args = []string{"greet", "--name", "Jeremy"}
 
@@ -60,7 +60,7 @@ func ExampleApp_Run() {
 	// Hello Jeremy
 }
 
-func ExampleApp_Run_subcommand() {
+func ExampleCommand_Run_subcommand() {
 	// set args for examples sake
 	os.Args = []string{"say", "hi", "english", "--name", "Jeremy"}
 	cmd := &Command{
@@ -102,7 +102,7 @@ func ExampleApp_Run_subcommand() {
 	// Hello, Jeremy
 }
 
-func ExampleApp_Run_appHelp() {
+func ExampleCommand_Run_appHelp() {
 	// set args for examples sake
 	os.Args = []string{"greet", "help"}
 
@@ -162,7 +162,7 @@ func ExampleApp_Run_appHelp() {
 	//    --version, -v  print the version (default: false)
 }
 
-func ExampleApp_Run_commandHelp() {
+func ExampleCommand_Run_commandHelp() {
 	// set args for examples sake
 	os.Args = []string{"greet", "h", "describeit"}
 
@@ -203,7 +203,7 @@ func ExampleApp_Run_commandHelp() {
 	//    --help, -h  show help (default: false)
 }
 
-func ExampleApp_Run_noAction() {
+func ExampleCommand_Run_noAction() {
 	cmd := &Command{}
 	cmd.Name = "greet"
 
@@ -225,7 +225,7 @@ func ExampleApp_Run_noAction() {
 	//    --help, -h  show help (default: false)
 }
 
-func ExampleApp_Run_subcommandNoAction() {
+func ExampleCommand_Run_subcommandNoAction() {
 	cmd := &Command{
 		Name: "greet",
 		Commands: []*Command{
@@ -256,7 +256,7 @@ func ExampleApp_Run_subcommandNoAction() {
 	//    --help, -h  show help (default: false)
 }
 
-func ExampleApp_Run_bashComplete_withShortFlag() {
+func ExampleCommand_Run_bashComplete_withShortFlag() {
 	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "-", "--generate-shell-completion"}
 
@@ -288,7 +288,7 @@ func ExampleApp_Run_bashComplete_withShortFlag() {
 	// -h
 }
 
-func ExampleApp_Run_bashComplete_withLongFlag() {
+func ExampleCommand_Run_bashComplete_withLongFlag() {
 	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "--s", "--generate-shell-completion"}
 
@@ -322,7 +322,7 @@ func ExampleApp_Run_bashComplete_withLongFlag() {
 	// --similar-flag
 }
 
-func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
+func ExampleCommand_Run_bashComplete_withMultipleLongFlag() {
 	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "--st", "--generate-shell-completion"}
 
@@ -359,7 +359,7 @@ func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
 	// --string-flag-2
 }
 
-func ExampleApp_Run_bashComplete() {
+func ExampleCommand_Run_bashComplete() {
 	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "--generate-shell-completion"}
 
@@ -400,7 +400,7 @@ func ExampleApp_Run_bashComplete() {
 	// h
 }
 
-func ExampleApp_Run_zshComplete() {
+func ExampleCommand_Run_zshComplete() {
 	// set args for examples sake
 	os.Args = []string{"greet", "--generate-shell-completion"}
 	_ = os.Setenv("SHELL", "/usr/bin/zsh")
@@ -442,7 +442,7 @@ func ExampleApp_Run_zshComplete() {
 	// h:Shows a list of commands or help for one command
 }
 
-func ExampleApp_Run_sliceValues() {
+func ExampleCommand_Run_sliceValues() {
 	// set args for examples sake
 	os.Args = []string{
 		"multi_values",
@@ -481,7 +481,7 @@ func ExampleApp_Run_sliceValues() {
 	// error: <nil>
 }
 
-func ExampleApp_Run_mapValues() {
+func ExampleCommand_Run_mapValues() {
 	// set args for examples sake
 	os.Args = []string{
 		"multi_values",
