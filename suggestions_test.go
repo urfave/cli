@@ -1,10 +1,12 @@
 package cli
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
 	"testing"
+	"time"
 )
 
 func TestSuggestFlag(t *testing.T) {
@@ -124,7 +126,7 @@ func TestSuggestCommand(t *testing.T) {
 }
 
 func ExampleApp_Suggest() {
-	app := &App{
+	cmd := &Command{
 		Name:                  "greet",
 		ErrWriter:             os.Stdout,
 		Suggest:               true,
@@ -140,7 +142,10 @@ func ExampleApp_Suggest() {
 		},
 	}
 
-	if app.Run([]string{"greet", "--nema", "chipmunk"}) == nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+
+	if cmd.Run(ctx, []string{"greet", "--nema", "chipmunk"}) == nil {
 		fmt.Println("Expected error")
 	}
 	// Output:
@@ -152,7 +157,7 @@ func ExampleApp_Suggest() {
 }
 
 func ExampleApp_Suggest_command() {
-	app := &App{
+	cmd := &Command{
 		Name:                  "greet",
 		ErrWriter:             os.Stdout,
 		Suggest:               true,
@@ -184,7 +189,10 @@ func ExampleApp_Suggest_command() {
 		},
 	}
 
-	if app.Run([]string{"greet", "neighbors", "--sliming"}) == nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+
+	if cmd.Run(ctx, []string{"greet", "neighbors", "--sliming"}) == nil {
 		fmt.Println("Expected error")
 	}
 	// Output:

@@ -84,7 +84,7 @@ func Test_Help_Custom_Flags(t *testing.T) {
 		Usage:   "show help",
 	}
 
-	app := App{
+	cmd := &Command{
 		Flags: []Flag{
 			&BoolFlag{Name: "foo", Aliases: []string{"h"}},
 		},
@@ -96,8 +96,12 @@ func Test_Help_Custom_Flags(t *testing.T) {
 		},
 	}
 	output := new(bytes.Buffer)
-	app.Writer = output
-	_ = app.Run([]string{"test", "-h"})
+	cmd.Writer = output
+
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	t.Cleanup(cancel)
+
+	_ = cmd.Run(ctx, []string{"test", "-h"})
 	if output.Len() > 0 {
 		t.Errorf("unexpected output: %s", output.String())
 	}
@@ -115,7 +119,7 @@ func Test_Version_Custom_Flags(t *testing.T) {
 		Usage:   "show version",
 	}
 
-	app := App{
+	cmd := &Command{
 		Flags: []Flag{
 			&BoolFlag{Name: "foo", Aliases: []string{"v"}},
 		},
@@ -127,8 +131,12 @@ func Test_Version_Custom_Flags(t *testing.T) {
 		},
 	}
 	output := new(bytes.Buffer)
-	app.Writer = output
-	_ = app.Run([]string{"test", "-v"})
+	cmd.Writer = output
+
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	t.Cleanup(cancel)
+
+	_ = cmd.Run(ctx, []string{"test", "-v"})
 	if output.Len() > 0 {
 		t.Errorf("unexpected output: %s", output.String())
 	}

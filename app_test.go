@@ -204,9 +204,13 @@ func ExampleApp_Run_commandHelp() {
 }
 
 func ExampleApp_Run_noAction() {
-	app := App{}
-	app.Name = "greet"
-	_ = app.Run([]string{"greet"})
+	cmd := &Command{}
+	cmd.Name = "greet"
+
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+
+	_ = cmd.Run(ctx, []string{"greet"})
 	// Output:
 	// NAME:
 	//    greet - A new cli application

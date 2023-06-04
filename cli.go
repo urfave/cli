@@ -3,13 +3,13 @@
 // cli application can be written as follows:
 //
 //	func main() {
-//		(&cli.App{}).Run(os.Args)
+//		(&cli.Command{}).Run(context.Background(), os.Args)
 //	}
 //
 // Of course this application does not do much, so let's make this an actual application:
 //
 //	func main() {
-//		app := &cli.App{
+//		cmd := &cli.Command{
 //	  		Name: "greet",
 //	  		Usage: "say a greeting",
 //	  		Action: func(c *cli.Context) error {
@@ -18,6 +18,6 @@
 //	  		},
 //		}
 //
-//		app.Run(os.Args)
+//		cmd.Run(context.Background(), os.Args)
 //	}
 package cli

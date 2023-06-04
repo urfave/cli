@@ -95,29 +95,29 @@ OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
 OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}
 `
 
-var MarkdownDocTemplate = `{{if gt .SectionNum 0}}% {{ .App.Name }} {{ .SectionNum }}
+var MarkdownDocTemplate = `{{if gt .SectionNum 0}}% {{ .Command.Name }} {{ .SectionNum }}
 
 {{end}}# NAME
 
-{{ .App.Name }}{{ if .App.Usage }} - {{ .App.Usage }}{{ end }}
+{{ .Command.Name }}{{ if .Command.Usage }} - {{ .Command.Usage }}{{ end }}
 
 # SYNOPSIS
 
-{{ .App.Name }}
+{{ .Command.Name }}
 {{ if .SynopsisArgs }}
 ` + "```" + `
 {{ range $v := .SynopsisArgs }}{{ $v }}{{ end }}` + "```" + `
-{{ end }}{{ if .App.Description }}
+{{ end }}{{ if .Command.Description }}
 # DESCRIPTION
 
-{{ .App.Description }}
+{{ .Command.Description }}
 {{ end }}
 **Usage**:
 
-` + "```" + `{{ if .App.UsageText }}
-{{ .App.UsageText }}
+` + "```" + `{{ if .Command.UsageText }}
+{{ .Command.UsageText }}
 {{ else }}
-{{ .App.Name }} [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
+{{ .Command.Name }} [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 {{ end }}` + "```" + `
 {{ if .GlobalArgs }}
 # GLOBAL OPTIONS
@@ -200,9 +200,9 @@ Global flags:
 {{   end }}
 {{- end }}`
 
-var FishCompletionTemplate = `# {{ .App.Name }} fish shell completion
+var FishCompletionTemplate = `# {{ .Command.Name }} fish shell completion
 
-function __fish_{{ .App.Name }}_no_subcommand --description 'Test if there has been any subcommand yet'
+function __fish_{{ .Command.Name }}_no_subcommand --description 'Test if there has been any subcommand yet'
     for i in (commandline -opc)
         if contains -- $i{{ range $v := .AllCommands }} {{ $v }}{{ end }}
             return 1

@@ -1,10 +1,12 @@
 package cli_test
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/urfave/cli/v3"
 )
@@ -21,38 +23,41 @@ type boolWithInverseTestCase struct {
 	envVars map[string]string
 }
 
-func (test boolWithInverseTestCase) Run(flagWithInverse *cli.BoolWithInverseFlag) error {
-	app := cli.App{
+func (tc *boolWithInverseTestCase) Run(t *testing.T, flagWithInverse *cli.BoolWithInverseFlag) error {
+	cmd := &cli.Command{
 		Flags:  []cli.Flag{flagWithInverse},
 		Action: func(ctx *cli.Context) error { return nil },
 	}
 
-	for key, val := range test.envVars {
+	for key, val := range tc.envVars {
 		os.Setenv(key, val)
 		defer os.Unsetenv(key)
 	}
 
-	err := app.Run(append([]string{"prog"}, test.args...))
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	t.Cleanup(cancel)
+
+	err := cmd.Run(ctx, append([]string{"prog"}, tc.args...))
 	if err != nil {
 		return err
 	}
 
-	if flagWithInverse.IsSet() != test.toBeSet {
-		return fmt.Errorf("flag should be set %t, but got %t", test.toBeSet, flagWithInverse.IsSet())
+	if flagWithInverse.IsSet() != tc.toBeSet {
+		return fmt.Errorf("flag should be set %t, but got %t", tc.toBeSet, flagWithInverse.IsSet())
 	}
 
-	if flagWithInverse.Value() != test.value {
-		return fmt.Errorf("flag value should be %t, but got %t", test.value, flagWithInverse.Value())
+	if flagWithInverse.Value() != tc.value {
+		return fmt.Errorf("flag value should be %t, but got %t", tc.value, flagWithInverse.Value())
 	}
 
 	return nil
 }
 
-func runTests(newFlagMethod func() *cli.BoolWithInverseFlag, cases []boolWithInverseTestCase) error {
+func runTests(t *testing.T, newFlagMethod func() *cli.BoolWithInverseFlag, cases []*boolWithInverseTestCase) error {
 	for _, test := range cases {
-		flag := newFlagMethod()
+		fl := newFlagMethod()
 
-		err := test.Run(flag)
+		err := test.Run(t, fl)
 		if err != nil && test.err == nil {
 			return err
 		}
@@ -79,7 +84,7 @@ func TestBoolWithInverseBasic(t *testing.T) {
 		}
 	}
 
-	testCases := []boolWithInverseTestCase{
+	testCases := []*boolWithInverseTestCase{
 		{
 			args:    []string{"--no-env"},
 			toBeSet: true,
@@ -100,7 +105,7 @@ func TestBoolWithInverseBasic(t *testing.T) {
 		},
 	}
 
-	err := runTests(flagMethod, testCases)
+	err := runTests(t, flagMethod, testCases)
 	if err != nil {
 		t.Error(err)
 		return
@@ -125,7 +130,7 @@ func TestBoolWithInverseAction(t *testing.T) {
 		}
 	}
 
-	testCases := []boolWithInverseTestCase{
+	testCases := []*boolWithInverseTestCase{
 		{
 			args:    []string{"--no-env"},
 			toBeSet: true,
@@ -148,7 +153,7 @@ func TestBoolWithInverseAction(t *testing.T) {
 		},
 	}
 
-	err := runTests(flagMethod, testCases)
+	err := runTests(t, flagMethod, testCases)
 	if err != nil {
 		t.Error(err)
 		return
@@ -165,7 +170,7 @@ func TestBoolWithInverseAlias(t *testing.T) {
 		}
 	}
 
-	testCases := []boolWithInverseTestCase{
+	testCases := []*boolWithInverseTestCase{
 		{
 			args:    []string{"--no-e"},
 			toBeSet: true,
@@ -186,7 +191,7 @@ func TestBoolWithInverseAlias(t *testing.T) {
 		},
 	}
 
-	err := runTests(flagMethod, testCases)
+	err := runTests(t, flagMethod, testCases)
 	if err != nil {
 		t.Error(err)
 		return
@@ -203,7 +208,7 @@ func TestBoolWithInverseEnvVars(t *testing.T) {
 		}
 	}
 
-	testCases := []boolWithInverseTestCase{
+	testCases := []*boolWithInverseTestCase{
 		{
 			toBeSet: true,
 			value:   false,
@@ -238,7 +243,7 @@ func TestBoolWithInverseEnvVars(t *testing.T) {
 		},
 	}
 
-	err := runTests(flagMethod, testCases)
+	err := runTests(t, flagMethod, testCases)
 	if err != nil {
 		t.Error(err)
 		return
@@ -255,7 +260,7 @@ func TestBoolWithInverseWithPrefix(t *testing.T) {
 		}
 	}
 
-	testCases := []boolWithInverseTestCase{
+	testCases := []*boolWithInverseTestCase{
 		{
 			args:    []string{"--without-env"},
 			toBeSet: true,
@@ -276,7 +281,7 @@ func TestBoolWithInverseWithPrefix(t *testing.T) {
 		},
 	}
 
-	err := runTests(flagMethod, testCases)
+	err := runTests(t, flagMethod, testCases)
 	if err != nil {
 		t.Error(err)
 		return
@@ -293,7 +298,7 @@ func TestBoolWithInverseRequired(t *testing.T) {
 		}
 	}
 
-	testCases := []boolWithInverseTestCase{
+	testCases := []*boolWithInverseTestCase{
 		{
 			args:    []string{"--no-env"},
 			toBeSet: true,
@@ -315,7 +320,7 @@ func TestBoolWithInverseRequired(t *testing.T) {
 		},
 	}
 
-	err := runTests(flagMethod, testCases)
+	err := runTests(t, flagMethod, testCases)
 	if err != nil {
 		t.Error(err)
 		return
@@ -390,11 +395,11 @@ func TestBoolWithInverseDestination(t *testing.T) {
 		return nil
 	}
 
-	err := boolWithInverseTestCase{
+	err := (&boolWithInverseTestCase{
 		args:    []string{"--env"},
 		toBeSet: true,
 		value:   true,
-	}.Run(flagMethod())
+	}).Run(t, flagMethod())
 	if err != nil {
 		t.Error(err)
 		return
@@ -406,11 +411,11 @@ func TestBoolWithInverseDestination(t *testing.T) {
 		return
 	}
 
-	err = boolWithInverseTestCase{
+	err = (&boolWithInverseTestCase{
 		args:    []string{"--no-env"},
 		toBeSet: true,
 		value:   false,
-	}.Run(flagMethod())
+	}).Run(t, flagMethod())
 	if err != nil {
 		t.Error(err)
 		return
@@ -422,11 +427,11 @@ func TestBoolWithInverseDestination(t *testing.T) {
 		return
 	}
 
-	err = boolWithInverseTestCase{
+	err = (&boolWithInverseTestCase{
 		args:    []string{},
 		toBeSet: false,
 		value:   false,
-	}.Run(flagMethod())
+	}).Run(t, flagMethod())
 	if err != nil {
 		t.Error(err)
 		return
@@ -446,7 +451,7 @@ func ExampleBoolWithInverseFlag() {
 		},
 	}
 
-	app := cli.App{
+	cmd := &cli.Command{
 		Flags: []cli.Flag{
 			flagWithInverse,
 		},
@@ -463,8 +468,11 @@ func ExampleBoolWithInverseFlag() {
 		},
 	}
 
-	_ = app.Run([]string{"prog", "--no-env"})
-	_ = app.Run([]string{"prog", "--env"})
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+
+	_ = cmd.Run(ctx, []string{"prog", "--no-env"})
+	_ = cmd.Run(ctx, []string{"prog", "--env"})
 
 	fmt.Println("flags:", len(flagWithInverse.Flags()))
 

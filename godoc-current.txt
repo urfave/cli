@@ -5,14 +5,14 @@ line Go applications. cli is designed to be easy to understand and write,
 the most simple cli application can be written as follows:
 
     func main() {
-    	(&cli.App{}).Run(os.Args)
+    	(&cli.Command{}).Run(context.Background(), os.Args)
     }
 
 Of course this application does not do much, so let's make this an actual
 application:
 
     func main() {
-    	app := &cli.App{
+    	cmd := &cli.Command{
       		Name: "greet",
       		Usage: "say a greeting",
       		Action: func(c *cli.Context) error {
@@ -21,7 +21,7 @@ application:
       		},
     	}
 
-    	app.Run(os.Args)
+    	cmd.Run(context.Background(), os.Args)
     }
 
 VARIABLES
@@ -86,9 +86,9 @@ var ErrWriter io.Writer = os.Stderr
     ErrWriter is used to write errors to the user. This can be anything
     implementing the io.Writer interface and defaults to os.Stderr.
 
-var FishCompletionTemplate = `# {{ .App.Name }} fish shell completion
+var FishCompletionTemplate = `# {{ .Command.Name }} fish shell completion
 
-function __fish_{{ .App.Name }}_no_subcommand --description 'Test if there has been any subcommand yet'
+function __fish_{{ .Command.Name }}_no_subcommand --description 'Test if there has been any subcommand yet'
     for i in (commandline -opc)
         if contains -- $i{{ range $v := .AllCommands }} {{ $v }}{{ end }}
             return 1
@@ -99,29 +99,29 @@ end
 
 {{ range $v := .Completions }}{{ $v }}
 {{ end }}`
-var MarkdownDocTemplate = `{{if gt .SectionNum 0}}% {{ .App.Name }} {{ .SectionNum }}
+var MarkdownDocTemplate = `{{if gt .SectionNum 0}}% {{ .Command.Name }} {{ .SectionNum }}
 
 {{end}}# NAME
 
-{{ .App.Name }}{{ if .App.Usage }} - {{ .App.Usage }}{{ end }}
+{{ .Command.Name }}{{ if .Command.Usage }} - {{ .Command.Usage }}{{ end }}
 
 # SYNOPSIS
 
-{{ .App.Name }}
+{{ .Command.Name }}
 {{ if .SynopsisArgs }}
 ` + "```" + `
 {{ range $v := .SynopsisArgs }}{{ $v }}{{ end }}` + "```" + `
-{{ end }}{{ if .App.Description }}
+{{ end }}{{ if .Command.Description }}
 # DESCRIPTION
 
-{{ .App.Description }}
+{{ .Command.Description }}
 {{ end }}
 **Usage**:
 
-` + "```" + `{{ if .App.UsageText }}
-{{ .App.UsageText }}
+` + "```" + `{{ if .Command.UsageText }}
+{{ .Command.UsageText }}
 {{ else }}
-{{ .App.Name }} [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
+{{ .Command.Name }} [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 {{ end }}` + "```" + `
 {{ if .GlobalArgs }}
 # GLOBAL OPTIONS
@@ -565,14 +565,16 @@ type Command struct {
 	// List of flags to parse
 	Flags []Flag
 
-	// Boolean to enable shell completion commands
-	EnableShellCompletion bool
 	// Boolean to hide built-in help command and help flag
 	HideHelp bool
 	// Ignored if HideHelp is true.
 	HideHelpCommand bool
 	// Boolean to hide built-in version flag and the VERSION section of help
 	HideVersion bool
+	// Boolean to enable shell completion commands
+	EnableShellCompletion bool
+	// Shell Completion generation command name
+	ShellCompletionCommandName string
 	// The function to call when checking for shell command completions
 	ShellComplete ShellCompleteFunc
 	// An action to execute before any subcommands are run, but after the context is ready
@@ -657,7 +659,7 @@ func (c *Command) HasName(name string) bool
 func (c *Command) Names() []string
     Names returns the names including short names and aliases.
 
-func (c *Command) Run(ctx context.Context, arguments []string) error
+func (cmd *Command) Run(ctx context.Context, arguments []string) error
     Run is the entry point to the command graph. The positional arguments are
     parsed according to the Flag and Command definitions and the matching Action
     functions are run.
@@ -665,6 +667,28 @@ func (c *Command) Run(ctx context.Context, arguments []string) error
 func (c *Command) ToFishCompletion() (string, error)
     ToFishCompletion creates a fish completion string for the `*App` The
     function errors if either parsing or writing of the string fails.
+
+func (cmd *Command) ToMan() (string, error)
+    ToMan creates a man page string for the `*Command` The function errors if
+    either parsing or writing of the string fails.
+
+func (cmd *Command) ToManWithSection(sectionNumber int) (string, error)
+    ToMan creates a man page string with section number for the `*Command` The
+    function errors if either parsing or writing of the string fails.
+
+func (cmd *Command) ToMarkdown() (string, error)
+    ToMarkdown creates a markdown string for the `*Command` The function errors
+    if either parsing or writing of the string fails.
+
+func (cmd *Command) ToTabularMarkdown(appPath string) (string, error)
+    ToTabularMarkdown creates a tabular markdown documentation for the
+    `*Command`. The function errors if either parsing or writing of the string
+    fails.
+
+func (a *Command) ToTabularToFileBetweenTags(appPath, filePath string, startEndTags ...string) error
+    ToTabularToFileBetweenTags creates a tabular markdown documentation for
+    the `*App` and updates the file between the tags in the file. The function
+    errors if either parsing or writing of the string fails.
 
 func (c *Command) VisibleCategories() []CommandCategory
     VisibleCategories returns a slice of categories and commands that are

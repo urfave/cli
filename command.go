@@ -687,8 +687,15 @@ func (c *Command) writer() io.Writer {
 		if c.ErrWriter == nil {
 			return os.Stderr
 		}
+
 		return c.ErrWriter
 	}
+
+	// this can happen in test but not in normal usage
+	if c.Writer == nil {
+		return os.Stdout
+	}
+
 	return c.Writer
 }
 
