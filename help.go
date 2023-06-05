@@ -211,14 +211,10 @@ func DefaultCompleteWithFlags(cmd *Command) func(cCtx *Context) {
 	return func(cCtx *Context) {
 		var lastArg string
 
+		// TODO: This shouldnt depend on os.Args rather it should
+		// depend on root arguments passed to App
 		if len(os.Args) > 2 {
 			lastArg = os.Args[len(os.Args)-2]
-		}
-
-		if cmd != nil {
-			if cCtx.NArg() > 1 {
-				lastArg = cCtx.Args().Get(cCtx.NArg() - 1)
-			}
 		}
 
 		if lastArg != "" {
