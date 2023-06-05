@@ -227,7 +227,7 @@ func (a *App) Setup() {
 	for _, fl := range a.Flags {
 		if cf, ok := fl.(CategorizableFlag); ok {
 			if cf.GetCategory() != "" {
-				a.flagCategories.AddFlag(cf.GetCategory(), cf)
+				a.flagCategories.AddFlag(cf.GetCategory(), fl)
 			}
 		}
 	}
