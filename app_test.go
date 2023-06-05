@@ -1391,46 +1391,6 @@ func TestApp_BeforeAfterFuncShellCompletion(t *testing.T) {
 	}
 }
 
-func TestApp_SubcommandShellCompletion(t *testing.T) {
-
-	var w bytes.Buffer
-
-	app := &App{
-		Name:                 "command",
-		EnableBashCompletion: true,
-		Commands: []*Command{
-			{
-				Name: "subcmd1",
-				Subcommands: []*Command{
-					{
-						Name: "subcmd2",
-						Subcommands: []*Command{
-							{
-								Name: "subcmd3",
-							},
-						},
-					},
-				},
-			},
-		},
-		Flags: []Flag{
-			&StringFlag{Name: "opt"},
-		},
-		Writer: &w,
-	}
-
-	// run with the Before() func succeeding
-	err := app.Run([]string{"command", "subcmd1", "subcmd2", "--generate-bash-completion"})
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	if !strings.Contains(w.String(), "subcmd3\n") {
-		t.Errorf("Expected subcmd3 got %s", w.String())
-	}
-}
-
 func TestApp_AfterFunc(t *testing.T) {
 	counts := &opCounts{}
 	afterError := fmt.Errorf("fail")

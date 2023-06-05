@@ -218,8 +218,6 @@ func DefaultCompleteWithFlags(cmd *Command) func(cCtx *Context) {
 		if cmd != nil {
 			if cCtx.NArg() > 1 {
 				lastArg = cCtx.Args().Get(cCtx.NArg() - 1)
-			} else {
-				lastArg = ""
 			}
 		}
 

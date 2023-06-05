@@ -1221,8 +1221,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				},
 				Commands: []*Command{
 					{
-						Name:     "putz",
-						HideHelp: true,
+						Name: "putz",
 						Subcommands: []*Command{
 							{Name: "futz"},
 						},
@@ -1234,7 +1233,33 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				},
 			},
 			argv:     []string{"cmd", "--happiness", "putz", "--generate-bash-completion"},
-			expected: "futz\n",
+			expected: "futz\nhelp\nh\n",
+		},
+		{
+			name: "typical-subcommand-subcommand-suggestion",
+			a: &App{
+				Name: "cmd",
+				Flags: []Flag{
+					&BoolFlag{Name: "happiness"},
+					&Int64Flag{Name: "everybody-jump-on"},
+				},
+				Commands: []*Command{
+					{
+						Name: "putz",
+						Subcommands: []*Command{
+							{
+								Name: "futz",
+								Flags: []Flag{
+									&BoolFlag{Name: "excitement"},
+									&StringFlag{Name: "hat-shape"},
+								},
+							},
+						},
+					},
+				},
+			},
+			argv:     []string{"cmd", "--happiness", "putz", "futz", "-e", "--generate-bash-completion"},
+			expected: "--excitement\n",
 		},
 		{
 			name: "autocomplete-with-spaces",
