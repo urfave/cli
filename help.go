@@ -32,8 +32,8 @@ var helpCommand = &Command{
 	ArgsUsage: "[command]",
 	HideHelp:  true,
 	Action: func(cCtx *Context) error {
+		tracef("in helpCommand Action")
 		args := cCtx.Args()
-		argsPresent := args.First() != ""
 		firstArg := args.First()
 
 		// This action can be triggered by a "default" action of a command
@@ -51,13 +51,15 @@ var helpCommand = &Command{
 		//     to
 		// $ app foo
 		// which will then be handled as case 3
-		if cCtx.Command.Name == helpName || cCtx.Command.Name == helpAlias {
+		if cCtx.Command.HasName(helpName) || cCtx.Command.HasName(helpAlias) {
+			tracef("setting cCtx to cCtx.parentContext")
 			cCtx = cCtx.parentContext
 		}
 
 		// Case 4. $ app help foo
 		// foo is the command for which help needs to be shown
-		if argsPresent {
+		if firstArg != "" {
+			tracef("returning ShowCommandHelp with %[1]q", firstArg)
 			return ShowCommandHelp(cCtx, firstArg)
 		}
 
@@ -65,6 +67,7 @@ var helpCommand = &Command{
 		// Special case when running help on main app itself as opposed to individual
 		// commands/subcommands
 		if cCtx.parentContext.Command == nil {
+			tracef("returning ShowAppHelp")
 			_ = ShowAppHelp(cCtx)
 			return nil
 		}
@@ -72,13 +75,19 @@ var helpCommand = &Command{
 		// Case 3, 5
 		if (len(cCtx.Command.Commands) == 1 && !cCtx.Command.HideHelp) ||
 			(len(cCtx.Command.Commands) == 0 && cCtx.Command.HideHelp) {
-			templ := cCtx.Command.CustomHelpTemplate
-			if templ == "" {
-				templ = CommandHelpTemplate
+
+			tmpl := cCtx.Command.CustomHelpTemplate
+			if tmpl == "" {
+				tmpl = CommandHelpTemplate
 			}
-			HelpPrinter(cCtx.Command.writer(), templ, cCtx.Command)
+
+			tracef("running HelpPrinter with command %[1]s", cCtx.Command)
+			HelpPrinter(cCtx.Command.writer(), tmpl, cCtx.Command)
+
 			return nil
 		}
+
+		tracef("running ShowSubcommandHelp")
 		return ShowSubcommandHelp(cCtx)
 	},
 }
@@ -119,13 +128,13 @@ func ShowAppHelpAndExit(c *Context, exitCode int) {
 
 // ShowAppHelp is an action that displays the help.
 func ShowAppHelp(cCtx *Context) error {
-	tpl := cCtx.Command.CustomAppHelpTemplate
-	if tpl == "" {
-		tpl = AppHelpTemplate
+	tmpl := cCtx.Command.CustomAppHelpTemplate
+	if tmpl == "" {
+		tmpl = AppHelpTemplate
 	}
 
 	if cCtx.Command.ExtraInfo == nil {
-		HelpPrinter(cCtx.Command.writer(), tpl, cCtx.Command)
+		HelpPrinter(cCtx.Command.writer(), tmpl, cCtx.Command)
 		return nil
 	}
 
@@ -134,7 +143,7 @@ func ShowAppHelp(cCtx *Context) error {
 			"ExtraInfo": cCtx.Command.ExtraInfo,
 		}
 	}
-	HelpPrinterCustom(cCtx.Command.writer(), tpl, cCtx.Command, customAppData())
+	HelpPrinterCustom(cCtx.Command.writer(), tmpl, cCtx.Command, customAppData())
 
 	return nil
 }
@@ -240,47 +249,50 @@ func ShowCommandHelpAndExit(c *Context, command string, code int) {
 }
 
 // ShowCommandHelp prints help for the given command
-func ShowCommandHelp(ctx *Context, command string) error {
-	commands := ctx.Command.Commands
-	if ctx.Command.Commands != nil {
-		commands = ctx.Command.Commands
-	}
-	for _, c := range commands {
-		if c.HasName(command) {
-			if !c.HideHelp {
-				if !c.HideHelpCommand && len(c.Commands) != 0 && c.Command(helpName) == nil {
-					c.Commands = append(c.Commands, helpCommandDontUse)
-				}
-				if HelpFlag != nil {
-					c.appendFlag(HelpFlag)
-				}
-			}
-			templ := c.CustomHelpTemplate
-			if templ == "" {
-				if len(c.Commands) == 0 {
-					templ = CommandHelpTemplate
-				} else {
-					templ = SubcommandHelpTemplate
-				}
-			}
-
-			HelpPrinter(ctx.Command.writer(), templ, c)
-
-			return nil
+func ShowCommandHelp(cCtx *Context, commandName string) error {
+	for _, cmd := range cCtx.Command.Commands {
+		if !cmd.HasName(commandName) {
+			continue
 		}
+
+		if !cmd.HideHelp {
+			if !cmd.HideHelpCommand && len(cmd.Commands) != 0 && cmd.Command(helpName) == nil {
+				cmd.Commands = append(cmd.Commands, helpCommandDontUse)
+			}
+
+			if HelpFlag != nil {
+				cmd.appendFlag(HelpFlag)
+			}
+		}
+
+		tmpl := cmd.CustomHelpTemplate
+		if tmpl == "" {
+			if len(cmd.Commands) == 0 {
+				tmpl = CommandHelpTemplate
+			} else {
+				tmpl = SubcommandHelpTemplate
+			}
+		}
+
+		HelpPrinter(cCtx.Command.writer(), tmpl, cmd)
+
+		return nil
 	}
 
-	if ctx.Command.CommandNotFound == nil {
-		errMsg := fmt.Sprintf("No help topic for '%v'", command)
-		if ctx.Command.Suggest {
-			if suggestion := SuggestCommand(ctx.Command.Commands, command); suggestion != "" {
+	if cCtx.Command.CommandNotFound == nil {
+		errMsg := fmt.Sprintf("No help topic for '%v'", commandName)
+
+		if cCtx.Command.Suggest {
+			if suggestion := SuggestCommand(cCtx.Command.Commands, commandName); suggestion != "" {
 				errMsg += ". " + suggestion
 			}
 		}
+
 		return Exit(errMsg, 3)
 	}
 
-	ctx.Command.CommandNotFound(ctx, command)
+	cCtx.Command.CommandNotFound(cCtx, commandName)
+
 	return nil
 }
 

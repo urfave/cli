@@ -21,3 +21,24 @@
 //		cmd.Run(context.Background(), os.Args)
 //	}
 package cli
+
+import (
+	"fmt"
+	"os"
+	"runtime"
+	"strings"
+)
+
+func tracef(format string, a ...any) (int, error) {
+	if os.Getenv("URFAVE_CLI_TRACE") != "on" {
+		return 0, nil
+	}
+
+	if !strings.HasSuffix(format, "\n") {
+		format = format + "\n"
+	}
+
+	_, file, line, _ := runtime.Caller(1)
+
+	return fmt.Fprintf(os.Stderr, "# URFAVE CLI TRACE "+file+":"+fmt.Sprintf("%v", line)+" ---> "+format, a...)
+}

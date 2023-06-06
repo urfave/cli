@@ -14,6 +14,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -1036,13 +1038,13 @@ func TestApp_UseShortOptionHandling_missing_value(t *testing.T) {
 }
 
 func TestApp_UseShortOptionHandlingCommand(t *testing.T) {
-	var one, two bool
-	var name string
-	expected := "expectedName"
+	var (
+		one, two bool
+		name     string
+		expected = "expectedName"
+	)
 
-	cmd := newTestCommand()
-	cmd.UseShortOptionHandling = true
-	command := &Command{
+	cmd := &Command{
 		Name: "cmd",
 		Flags: []Flag{
 			&BoolFlag{Name: "one", Aliases: []string{"o"}},
@@ -1055,16 +1057,18 @@ func TestApp_UseShortOptionHandlingCommand(t *testing.T) {
 			name = c.String("name")
 			return nil
 		},
+		UseShortOptionHandling: true,
+		Writer:                 io.Discard,
 	}
-	cmd.Commands = []*Command{command}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	t.Cleanup(cancel)
 
-	_ = cmd.Run(ctx, []string{"", "cmd", "-on", expected})
-	expect(t, one, true)
-	expect(t, two, false)
-	expect(t, name, expected)
+	r := require.New(t)
+	r.Nil(cmd.Run(ctx, []string{"cmd", "-on", expected}))
+	r.True(one)
+	r.False(two)
+	r.Equal(expected, name)
 }
 
 func TestApp_UseShortOptionHandlingCommand_missing_value(t *testing.T) {
@@ -1081,8 +1085,11 @@ func TestApp_UseShortOptionHandlingCommand_missing_value(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	t.Cleanup(cancel)
 
-	err := cmd.Run(ctx, []string{"", "cmd", "-n"})
-	expect(t, err, errors.New("flag needs an argument: -n"))
+	require.ErrorContains(
+		t,
+		cmd.Run(ctx, []string{"", "cmd", "-n"}),
+		"flag needs an argument: -n",
+	)
 }
 
 func TestApp_UseShortOptionHandlingSubCommand(t *testing.T) {

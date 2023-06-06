@@ -222,10 +222,14 @@ func (cmd *Command) setupDefaults() {
 	var newCommands []*Command
 
 	for _, subCmd := range cmd.Commands {
+		subCmd.parent = cmd
+
 		cname := subCmd.Name
+
 		if subCmd.HelpName != "" {
 			cname = subCmd.HelpName
 		}
+
 		subCmd.HelpName = fmt.Sprintf("%s %s", cmd.HelpName, cname)
 
 		subCmd.flagCategories = newFlagCategoriesFromFlags(subCmd.Flags)
@@ -292,40 +296,44 @@ func (cmd *Command) setupDefaults() {
 	disableSliceFlagSeparator = cmd.DisableSliceFlagSeparator
 }
 
-func (c *Command) setup(ctx *Context) {
-	if c.Command(helpCommand.Name) == nil && !c.HideHelp {
-		if !c.HideHelpCommand {
-			helpCommand.HelpName = fmt.Sprintf("%s %s", c.HelpName, helpName)
-			c.Commands = append(c.Commands, helpCommand)
+func (cmd *Command) setupSubcommand(cCtx *Context) {
+	if cmd.Command(helpCommand.Name) == nil && !cmd.HideHelp {
+		if !cmd.HideHelpCommand {
+			helpCommand.HelpName = fmt.Sprintf("%s %s", cmd.HelpName, helpName)
+			cmd.Commands = append(cmd.Commands, helpCommand)
 		}
 	}
 
-	if !c.HideHelp && HelpFlag != nil {
+	if !cmd.HideHelp && HelpFlag != nil {
 		// append help to flags
-		c.appendFlag(HelpFlag)
+		cmd.appendFlag(HelpFlag)
 	}
 
-	if ctx.Command.UseShortOptionHandling {
-		c.UseShortOptionHandling = true
+	if cCtx.Command.UseShortOptionHandling {
+		cmd.UseShortOptionHandling = true
 	}
 
-	c.categories = newCommandCategories()
-	for _, command := range c.Commands {
-		c.categories.AddCommand(command.Category, command)
+	cmd.categories = newCommandCategories()
+	for _, subCmd := range cmd.Commands {
+		subCmd.parent = cmd
+		subCmd.setupSubcommand(cCtx)
+
+		cmd.categories.AddCommand(subCmd.Category, subCmd)
 	}
 
-	sort.Sort(c.categories.(*commandCategories))
+	sort.Sort(cmd.categories.(*commandCategories))
 
-	var newCmds []*Command
+	newCmds := []*Command{}
 
-	for _, scmd := range c.Commands {
-		if scmd.HelpName == "" {
-			scmd.HelpName = fmt.Sprintf("%s %s", c.HelpName, scmd.Name)
+	for _, subCmd := range cmd.Commands {
+		if subCmd.HelpName == "" {
+			subCmd.HelpName = fmt.Sprintf("%s %s", cmd.HelpName, subCmd.Name)
 		}
-		newCmds = append(newCmds, scmd)
+
+		newCmds = append(newCmds, subCmd)
 	}
 
-	c.Commands = newCmds
+	cmd.Commands = newCmds
 }
 
 // Run is the entry point to the command graph. The positional
@@ -355,7 +363,7 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) error {
 	ctx = context.WithValue(ctx, contextContextKey, cCtx)
 
 	if cmd.parent != nil {
-		cmd.setup(cCtx)
+		cmd.setupSubcommand(cCtx)
 	}
 
 	a := args(arguments)
@@ -595,17 +603,18 @@ func (c *Command) parseFlags(args Args, ctx *Context) (*flag.FlagSet, error) {
 }
 
 // Names returns the names including short names and aliases.
-func (c *Command) Names() []string {
-	return append([]string{c.Name}, c.Aliases...)
+func (cmd *Command) Names() []string {
+	return append([]string{cmd.Name}, cmd.Aliases...)
 }
 
 // HasName returns true if Command.Name matches given name
-func (c *Command) HasName(name string) bool {
-	for _, n := range c.Names() {
+func (cmd *Command) HasName(name string) bool {
+	for _, n := range cmd.Names() {
 		if n == name {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -682,6 +691,10 @@ func (c *Command) argsWithDefaultCommand(oldArgs Args) Args {
 }
 
 func (c *Command) writer() io.Writer {
+	if c.parent != nil {
+		return c.parent.writer()
+	}
+
 	if c.isInError {
 		// this can happen in test but not in normal usage
 		if c.ErrWriter == nil {

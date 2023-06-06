@@ -158,11 +158,7 @@ func ExampleCommand_Suggest() {
 
 func ExampleCommand_Suggest_command() {
 	cmd := &Command{
-		Name:                  "greet",
-		ErrWriter:             os.Stdout,
-		Suggest:               true,
-		HideHelpCommand:       true,
-		CustomAppHelpTemplate: "(this space intentionally left blank)\n",
+		Name: "greet",
 		Flags: []Flag{
 			&StringFlag{Name: "name", Value: "squirrel", Usage: "a name to say"},
 		},
@@ -173,7 +169,10 @@ func ExampleCommand_Suggest_command() {
 		Commands: []*Command{
 			{
 				Name:               "neighbors",
-				HideHelp:           false,
+				ErrWriter:          os.Stdout,
+				HideHelp:           true,
+				HideHelpCommand:    true,
+				Suggest:            true,
 				CustomHelpTemplate: "(this space intentionally left blank)\n",
 				Flags: []Flag{
 					&BoolFlag{Name: "smiling"},
@@ -199,6 +198,4 @@ func ExampleCommand_Suggest_command() {
 	// Incorrect Usage: flag provided but not defined: -sliming
 	//
 	// Did you mean "--smiling"?
-	//
-	// (this space intentionally left blank)
 }

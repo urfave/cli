@@ -27,22 +27,30 @@ type Context struct {
 
 // NewContext creates a new context. For use in when invoking a Command action.
 func NewContext(cmd *Command, set *flag.FlagSet, parentCtx *Context) *Context {
-	c := &Context{Command: cmd, flagSet: set, parentContext: parentCtx}
+	cCtx := &Context{
+		Command:       cmd,
+		flagSet:       set,
+		parentContext: parentCtx,
+	}
+
 	if parentCtx != nil {
-		c.Context = parentCtx.Context
-		c.shellComplete = parentCtx.shellComplete
+		cCtx.Context = parentCtx.Context
+		cCtx.shellComplete = parentCtx.shellComplete
+
 		if parentCtx.flagSet == nil {
 			parentCtx.flagSet = &flag.FlagSet{}
 		}
 	}
 
-	c.Command = &Command{}
-
-	if c.Context == nil {
-		c.Context = context.Background()
+	if cCtx.Command == nil {
+		cCtx.Command = &Command{}
 	}
 
-	return c
+	if cCtx.Context == nil {
+		cCtx.Context = context.Background()
+	}
+
+	return cCtx
 }
 
 // NumFlags returns the number of flags set
