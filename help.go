@@ -209,9 +209,15 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 
 func DefaultCompleteWithFlags(cmd *Command) func(cCtx *Context) {
 	return func(cCtx *Context) {
-		if len(os.Args) > 2 {
-			lastArg := os.Args[len(os.Args)-2]
+		var lastArg string
 
+		// TODO: This shouldnt depend on os.Args rather it should
+		// depend on root arguments passed to App
+		if len(os.Args) > 2 {
+			lastArg = os.Args[len(os.Args)-2]
+		}
+
+		if lastArg != "" {
 			if strings.HasPrefix(lastArg, "-") {
 				if cmd != nil {
 					printFlagSuggestions(lastArg, cmd.Flags, cCtx.App.Writer)
