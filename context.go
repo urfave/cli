@@ -22,15 +22,15 @@ type Context struct {
 	Command       *Command
 	shellComplete bool
 	flagSet       *flag.FlagSet
-	parentContext *Context
+	parent        *Context
 }
 
 // NewContext creates a new context. For use in when invoking a Command action.
 func NewContext(cmd *Command, set *flag.FlagSet, parentCtx *Context) *Context {
 	cCtx := &Context{
-		Command:       cmd,
-		flagSet:       set,
-		parentContext: parentCtx,
+		Command: cmd,
+		flagSet: set,
+		parent:  parentCtx,
 	}
 
 	if parentCtx != nil {
@@ -133,7 +133,7 @@ func (cCtx *Context) FlagNames() []string {
 func (cCtx *Context) Lineage() []*Context {
 	var lineage []*Context
 
-	for cur := cCtx; cur != nil; cur = cur.parentContext {
+	for cur := cCtx; cur != nil; cur = cur.parent {
 		lineage = append(lineage, cur)
 	}
 
@@ -234,7 +234,7 @@ func (cCtx *Context) onInvalidFlag(name string) {
 			cCtx.Command.InvalidFlagAccessHandler(cCtx, name)
 			break
 		}
-		cCtx = cCtx.parentContext
+		cCtx = cCtx.parent
 	}
 }
 

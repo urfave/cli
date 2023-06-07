@@ -152,15 +152,15 @@ func Test_helpCommand_Action_ErrorIfNoTopic(t *testing.T) {
 
 	c := NewContext(cmd, set, nil)
 
-	err := helpCommand.Action(c)
+	err := helpCommandAction(c)
 
 	if err == nil {
-		t.Fatalf("expected error from helpCommand.Action(), but got nil")
+		t.Fatalf("expected error from helpCommandAction(), but got nil")
 	}
 
 	exitErr, ok := err.(*exitError)
 	if !ok {
-		t.Fatalf("expected *exitError from helpCommand.Action(), but instead got: %v", err.Error())
+		t.Fatalf("expected *exitError from helpCommandAction(), but instead got: %v", err.Error())
 	}
 
 	if !strings.HasPrefix(exitErr.Error(), "No help topic for") {
@@ -287,7 +287,7 @@ func Test_helpCommand_HideHelpCommand(t *testing.T) {
 }
 
 func Test_helpCommand_HideHelpFlag(t *testing.T) {
-	app := newTestCommand()
+	app := buildMinimalTestCommand()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	t.Cleanup(cancel)
@@ -305,15 +305,15 @@ func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 
 	c := NewContext(cmd, set, nil)
 
-	err := helpCommand.Action(c)
+	err := helpCommandAction(c)
 
 	if err == nil {
-		t.Fatalf("expected error from helpCommand.Action(), but got nil")
+		t.Fatalf("expected error from helpCommandAction(), but got nil")
 	}
 
 	exitErr, ok := err.(*exitError)
 	if !ok {
-		t.Fatalf("expected *exitError from helpCommand.Action(), but instead got: %v", err.Error())
+		t.Fatalf("expected *exitError from helpCommandAction(), but instead got: %v", err.Error())
 	}
 
 	if !strings.HasPrefix(exitErr.Error(), "No help topic for") {
@@ -1257,16 +1257,15 @@ func TestHideHelpCommand_WithHideHelp(t *testing.T) {
 
 func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 	cmd := &Command{
-		Writer: io.Discard,
+		HideHelpCommand: true,
 		Commands: []*Command{
 			{
-				Name: "dummy",
+				Name: "nully",
 				Commands: []*Command{
 					{
-						Name: "dummy2",
+						Name: "nully2",
 					},
 				},
-				HideHelpCommand: true,
 			},
 		},
 	}
@@ -1274,18 +1273,10 @@ func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	t.Cleanup(cancel)
 
-	err := cmd.Run(ctx, []string{"foo", "dummy", "help"})
-	if err == nil {
-		t.Fatalf("expected a non-nil error")
-	}
-	if !strings.Contains(err.Error(), "No help topic for 'help'") {
-		t.Errorf("Run returned unexpected error: %v", err)
-	}
+	r := require.New(t)
 
-	err = cmd.Run(ctx, []string{"foo", "dummy", "--help"})
-	if err != nil {
-		t.Errorf("Run returned unexpected error: %v", err)
-	}
+	r.ErrorContains(cmd.Run(ctx, []string{"nully", "help"}), "No help topic for 'help'")
+	r.NoError(cmd.Run(ctx, []string{"nully", "--help"}))
 }
 
 func TestDefaultCompleteWithFlags(t *testing.T) {

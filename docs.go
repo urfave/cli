@@ -247,7 +247,7 @@ type cliTemplate struct {
 }
 
 type cliCommandTemplate struct {
-	App          *Command
+	Command      *Command
 	SectionNum   int
 	Commands     []string
 	GlobalArgs   []string
@@ -278,7 +278,7 @@ func (cmd *Command) writeDocTemplate(w io.Writer, sectionNum int) error {
 		return err
 	}
 	return t.ExecuteTemplate(w, name, &cliCommandTemplate{
-		App:          cmd,
+		Command:      cmd,
 		SectionNum:   sectionNum,
 		Commands:     prepareCommands(cmd.Commands, 0),
 		GlobalArgs:   prepareArgsWithValues(cmd.VisibleFlags()),

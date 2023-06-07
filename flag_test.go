@@ -1040,7 +1040,7 @@ func TestIntSliceFlag_SetFromParentContext(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	ctx := &Context{
-		parentContext: &Context{
+		parent: &Context{
 			flagSet: set,
 		},
 		flagSet: flag.NewFlagSet("empty", 0),
@@ -1182,7 +1182,7 @@ func TestInt64SliceFlag_SetFromParentContext(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	ctx := &Context{
-		parentContext: &Context{
+		parent: &Context{
 			flagSet: set,
 		},
 		flagSet: flag.NewFlagSet("empty", 0),
@@ -1198,7 +1198,7 @@ func TestInt64SliceFlag_ReturnNil(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	ctx := &Context{
-		parentContext: &Context{
+		parent: &Context{
 			flagSet: set,
 		},
 		flagSet: flag.NewFlagSet("empty", 0),
@@ -1341,7 +1341,7 @@ func TestUintSliceFlag_SetFromParentContext(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	ctx := &Context{
-		parentContext: &Context{
+		parent: &Context{
 			flagSet: set,
 		},
 		flagSet: flag.NewFlagSet("empty", 0),
@@ -1357,7 +1357,7 @@ func TestUintSliceFlag_ReturnNil(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	ctx := &Context{
-		parentContext: &Context{
+		parent: &Context{
 			flagSet: set,
 		},
 		flagSet: flag.NewFlagSet("empty", 0),
@@ -1490,7 +1490,7 @@ func TestUint64SliceFlag_SetFromParentContext(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	ctx := &Context{
-		parentContext: &Context{
+		parent: &Context{
 			flagSet: set,
 		},
 		flagSet: flag.NewFlagSet("empty", 0),
@@ -1506,7 +1506,7 @@ func TestUint64SliceFlag_ReturnNil(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	ctx := &Context{
-		parentContext: &Context{
+		parent: &Context{
 			flagSet: set,
 		},
 		flagSet: flag.NewFlagSet("empty", 0),

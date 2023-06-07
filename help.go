@@ -15,83 +15,6 @@ const (
 	helpAlias = "h"
 )
 
-// this instance is to avoid recursion in the ShowCommandHelp which can
-// add a help command again
-var helpCommandDontUse = &Command{
-	Name:      helpName,
-	Aliases:   []string{helpAlias},
-	Usage:     "Shows a list of commands or help for one command",
-	ArgsUsage: "[command]",
-	HideHelp:  true,
-}
-
-var helpCommand = &Command{
-	Name:      helpName,
-	Aliases:   []string{helpAlias},
-	Usage:     "Shows a list of commands or help for one command",
-	ArgsUsage: "[command]",
-	HideHelp:  true,
-	Action: func(cCtx *Context) error {
-		tracef("in helpCommand Action")
-		args := cCtx.Args()
-		firstArg := args.First()
-
-		// This action can be triggered by a "default" action of a command
-		// or via cmd.Run when cmd == helpCmd. So we have following possibilities
-		//
-		// 1 $ app
-		// 2 $ app help
-		// 3 $ app foo
-		// 4 $ app help foo
-		// 5 $ app foo help
-
-		// Case 4. when executing a help command set the context to parent
-		// to allow resolution of subsequent args. This will transform
-		// $ app help foo
-		//     to
-		// $ app foo
-		// which will then be handled as case 3
-		if cCtx.Command.HasName(helpName) || cCtx.Command.HasName(helpAlias) {
-			tracef("setting cCtx to cCtx.parentContext")
-			cCtx = cCtx.parentContext
-		}
-
-		// Case 4. $ app help foo
-		// foo is the command for which help needs to be shown
-		if firstArg != "" {
-			tracef("returning ShowCommandHelp with %[1]q", firstArg)
-			return ShowCommandHelp(cCtx, firstArg)
-		}
-
-		// Case 1 & 2
-		// Special case when running help on main app itself as opposed to individual
-		// commands/subcommands
-		if cCtx.parentContext.Command == nil {
-			tracef("returning ShowAppHelp")
-			_ = ShowAppHelp(cCtx)
-			return nil
-		}
-
-		// Case 3, 5
-		if (len(cCtx.Command.Commands) == 1 && !cCtx.Command.HideHelp) ||
-			(len(cCtx.Command.Commands) == 0 && cCtx.Command.HideHelp) {
-
-			tmpl := cCtx.Command.CustomHelpTemplate
-			if tmpl == "" {
-				tmpl = CommandHelpTemplate
-			}
-
-			tracef("running HelpPrinter with command %[1]s", cCtx.Command)
-			HelpPrinter(cCtx.Command.writer(), tmpl, cCtx.Command)
-
-			return nil
-		}
-
-		tracef("running ShowSubcommandHelp")
-		return ShowSubcommandHelp(cCtx)
-	},
-}
-
 // Prints help for the App or Command
 type helpPrinter func(w io.Writer, templ string, data interface{})
 
@@ -119,6 +42,82 @@ var HelpPrinterCustom helpPrinterCustom = printHelpCustom
 
 // VersionPrinter prints the version for the App
 var VersionPrinter = printVersion
+
+func buildHelpCommand(withAction bool) *Command {
+	cmd := &Command{
+		Name:      helpName,
+		Aliases:   []string{helpAlias},
+		Usage:     "Shows a list of commands or help for one command",
+		ArgsUsage: "[command]",
+		HideHelp:  true,
+	}
+
+	if withAction {
+		cmd.Action = helpCommandAction
+	}
+
+	return cmd
+}
+
+func helpCommandAction(cCtx *Context) error {
+	tracef("in helpCommand Action")
+	args := cCtx.Args()
+	firstArg := args.First()
+
+	// This action can be triggered by a "default" action of a command
+	// or via cmd.Run when cmd == helpCmd. So we have following possibilities
+	//
+	// 1 $ app
+	// 2 $ app help
+	// 3 $ app foo
+	// 4 $ app help foo
+	// 5 $ app foo help
+
+	// Case 4. when executing a help command set the context to parent
+	// to allow resolution of subsequent args. This will transform
+	// $ app help foo
+	//     to
+	// $ app foo
+	// which will then be handled as case 3
+	if cCtx.Command.HasName(helpName) || cCtx.Command.HasName(helpAlias) {
+		tracef("setting cCtx to cCtx.parentContext")
+		cCtx = cCtx.parent
+	}
+
+	// Case 4. $ app help foo
+	// foo is the command for which help needs to be shown
+	if firstArg != "" {
+		tracef("returning ShowCommandHelp with %[1]q", firstArg)
+		return ShowCommandHelp(cCtx, firstArg)
+	}
+
+	// Case 1 & 2
+	// Special case when running help on main app itself as opposed to individual
+	// commands/subcommands
+	if cCtx.parent.Command == nil {
+		tracef("returning ShowAppHelp")
+		_ = ShowAppHelp(cCtx)
+		return nil
+	}
+
+	// Case 3, 5
+	if (len(cCtx.Command.Commands) == 1 && !cCtx.Command.HideHelp) ||
+		(len(cCtx.Command.Commands) == 0 && cCtx.Command.HideHelp) {
+
+		tmpl := cCtx.Command.CustomHelpTemplate
+		if tmpl == "" {
+			tmpl = CommandHelpTemplate
+		}
+
+		tracef("running HelpPrinter with command %[1]s", cCtx.Command)
+		HelpPrinter(cCtx.Command.writer(), tmpl, cCtx.Command)
+
+		return nil
+	}
+
+	tracef("running ShowSubcommandHelp")
+	return ShowSubcommandHelp(cCtx)
+}
 
 // ShowAppHelpAndExit - Prints the list of subcommands for the app and exits with exit code.
 func ShowAppHelpAndExit(c *Context, exitCode int) {
@@ -255,15 +254,17 @@ func ShowCommandHelp(cCtx *Context, commandName string) error {
 			continue
 		}
 
-		if !cmd.HideHelp {
-			if !cmd.HideHelpCommand && len(cmd.Commands) != 0 && cmd.Command(helpName) == nil {
-				cmd.Commands = append(cmd.Commands, helpCommandDontUse)
-			}
+		/*
+			if !cmd.HideHelp {
+				if !cmd.HideHelpCommand && len(cmd.Commands) != 0 && cmd.Command(helpName) == nil {
+					cmd.Commands = append(cmd.Commands, buildHelpCommand(false))
+				}
 
-			if HelpFlag != nil {
-				cmd.appendFlag(HelpFlag)
+				if HelpFlag != nil {
+					cmd.appendFlag(HelpFlag)
+				}
 			}
-		}
+		*/
 
 		tmpl := cmd.CustomHelpTemplate
 		if tmpl == "" {
@@ -319,14 +320,6 @@ func ShowVersion(cCtx *Context) {
 
 func printVersion(cCtx *Context) {
 	_, _ = fmt.Fprintf(cCtx.Command.writer(), "%v version %v\n", cCtx.Command.Name, cCtx.Command.Version)
-}
-
-// ShowCompletions prints the lists of commands within a given context
-func ShowCompletions(cCtx *Context) {
-	c := cCtx.Command
-	if c != nil {
-		c.ShellComplete(cCtx)
-	}
 }
 
 func handleTemplateError(err error) {
@@ -477,7 +470,10 @@ func checkCompletions(cCtx *Context) bool {
 		}
 	}
 
-	ShowCompletions(cCtx)
+	if cCtx.Command != nil && cCtx.Command.ShellComplete != nil {
+		cCtx.Command.ShellComplete(cCtx)
+	}
+
 	return true
 }
 

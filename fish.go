@@ -37,7 +37,7 @@ type fishCompletionTemplate struct {
 }
 
 type fishCommandCompletionTemplate struct {
-	App         *Command
+	Command     *Command
 	Completions []string
 	AllCommands []string
 }
@@ -118,7 +118,7 @@ func (c *Command) writeFishCompletionTemplate(w io.Writer) error {
 	)
 
 	return t.ExecuteTemplate(w, name, &fishCommandCompletionTemplate{
-		App:         c,
+		Command:     c,
 		Completions: completions,
 		AllCommands: allCommands,
 	})

@@ -7,11 +7,128 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net/mail"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
+
+func buildExtendedTestCommand() *Command {
+	cmd := buildMinimalTestCommand()
+	cmd.Name = "greet"
+	cmd.Flags = []Flag{
+		&StringFlag{
+			Name:      "socket",
+			Aliases:   []string{"s"},
+			Usage:     "some 'usage' text",
+			Value:     "value",
+			TakesFile: true,
+		},
+		&StringFlag{Name: "flag", Aliases: []string{"fl", "f"}},
+		&BoolFlag{
+			Name:    "another-flag",
+			Aliases: []string{"b"},
+			Usage:   "another usage text",
+			Sources: ValueSources{EnvSource("EXAMPLE_VARIABLE_NAME")},
+		},
+		&BoolFlag{
+			Name:   "hidden-flag",
+			Hidden: true,
+		},
+	}
+	cmd.Commands = []*Command{{
+		Aliases: []string{"c"},
+		Flags: []Flag{
+			&StringFlag{
+				Name:      "flag",
+				Aliases:   []string{"fl", "f"},
+				TakesFile: true,
+			},
+			&BoolFlag{
+				Name:    "another-flag",
+				Aliases: []string{"b"},
+				Usage:   "another usage text",
+			},
+		},
+		Name:  "config",
+		Usage: "another usage test",
+		Commands: []*Command{{
+			Aliases: []string{"s", "ss"},
+			Flags: []Flag{
+				&StringFlag{Name: "sub-flag", Aliases: []string{"sub-fl", "s"}},
+				&BoolFlag{
+					Name:    "sub-command-flag",
+					Aliases: []string{"s"},
+					Usage:   "some usage text",
+				},
+			},
+			Name:  "sub-config",
+			Usage: "another usage test",
+		}},
+	}, {
+		Aliases: []string{"i", "in"},
+		Name:    "info",
+		Usage:   "retrieve generic information",
+	}, {
+		Name: "some-command",
+	}, {
+		Name:   "hidden-command",
+		Hidden: true,
+	}, {
+		Aliases: []string{"u"},
+		Flags: []Flag{
+			&StringFlag{
+				Name:      "flag",
+				Aliases:   []string{"fl", "f"},
+				TakesFile: true,
+			},
+			&BoolFlag{
+				Name:    "another-flag",
+				Aliases: []string{"b"},
+				Usage:   "another usage text",
+			},
+		},
+		Name:  "usage",
+		Usage: "standard usage text",
+		UsageText: `
+Usage for the usage text
+- formatted:  Based on the specified ConfigMap and summon secrets.yml
+- list:       Inspect the environment for a specific process running on a Pod
+- for_effect: Compare 'namespace' environment with 'local'
+
+` + "```" + `
+func() { ... }
+` + "```" + `
+
+Should be a part of the same code block
+`,
+		Commands: []*Command{{
+			Aliases: []string{"su"},
+			Flags: []Flag{
+				&BoolFlag{
+					Name:    "sub-command-flag",
+					Aliases: []string{"s"},
+					Usage:   "some usage text",
+				},
+			},
+			Name:      "sub-usage",
+			Usage:     "standard usage text",
+			UsageText: "Single line of UsageText",
+		}},
+	}}
+	cmd.UsageText = "app [first_arg] [second_arg]"
+	cmd.Description = `Description of the application.`
+	cmd.Usage = "Some app"
+	cmd.Authors = []any{
+		"Harrison <harrison@lolwut.example.com>",
+		&mail.Address{Name: "Oliver Allen", Address: "oliver@toyshop.com"},
+	}
+
+	return cmd
+}
 
 func TestCommandFlagParsing(t *testing.T) {
 	cases := []struct {
@@ -115,10 +232,10 @@ func TestParseAndRunShortOpts(t *testing.T) {
 func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 	cmd := &Command{
 		Name: "bar",
-		Before: func(c *Context) error {
+		Before: func(*Context) error {
 			return fmt.Errorf("before error")
 		},
-		After: func(c *Context) error {
+		After: func(*Context) error {
 			return fmt.Errorf("after error")
 		},
 		Writer: io.Discard,
@@ -127,17 +244,11 @@ func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	t.Cleanup(cancel)
 
-	err := cmd.Run(ctx, []string{"foo", "bar"})
-	if err == nil {
-		t.Fatalf("expected to receive error from Run, got none")
-	}
+	err := cmd.Run(ctx, []string{"bar"})
+	r := require.New(t)
 
-	if !strings.Contains(err.Error(), "before error") {
-		t.Errorf("expected text of error from Before method, but got none in \"%v\"", err)
-	}
-	if !strings.Contains(err.Error(), "after error") {
-		t.Errorf("expected text of error from After method, but got none in \"%v\"", err)
-	}
+	r.ErrorContains(err, "before error")
+	r.ErrorContains(err, "after error")
 }
 
 func TestCommand_Run_BeforeSavesMetadata(t *testing.T) {
@@ -202,7 +313,7 @@ func TestCommand_OnUsageError_hasCommandContext(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	t.Cleanup(cancel)
 
-	err := cmd.Run(ctx, []string{"foo", "bar", "--flag=wrong"})
+	err := cmd.Run(ctx, []string{"bar", "--flag=wrong"})
 	if err == nil {
 		t.Fatalf("expected to receive error from Run, got none")
 	}
@@ -229,7 +340,7 @@ func TestCommand_OnUsageError_WithWrongFlagValue(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	t.Cleanup(cancel)
 
-	err := cmd.Run(ctx, []string{"foo", "bar", "--flag=wrong"})
+	err := cmd.Run(ctx, []string{"bar", "--flag=wrong"})
 	if err == nil {
 		t.Fatalf("expected to receive error from Run, got none")
 	}
@@ -261,14 +372,7 @@ func TestCommand_OnUsageError_WithSubcommand(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	t.Cleanup(cancel)
 
-	err := cmd.Run(ctx, []string{"foo", "bar", "--flag=wrong"})
-	if err == nil {
-		t.Fatalf("expected to receive error from Run, got none")
-	}
-
-	if !strings.HasPrefix(err.Error(), "intercepted: invalid value") {
-		t.Errorf("Expect an intercepted error, but got \"%v\"", err)
-	}
+	require.ErrorContains(t, cmd.Run(ctx, []string{"bar", "--flag=wrong"}), "intercepted: invalid value")
 }
 
 func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
@@ -280,10 +384,8 @@ func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
 			{
 				Name:  "baz",
 				Usage: "this is for testing",
-				Action: func(c *Context) error {
-					if c.Command.ErrWriter != io.Discard {
-						return fmt.Errorf("ErrWriter not passed")
-					}
+				Action: func(cCtx *Context) error {
+					require.Equal(t, io.Discard, cCtx.Command.errWriter())
 
 					return nil
 				},
@@ -294,10 +396,7 @@ func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	t.Cleanup(cancel)
 
-	err := cmd.Run(ctx, []string{"foo", "bar", "baz"})
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, cmd.Run(ctx, []string{"bar", "baz"}))
 }
 
 func TestCommandSkipFlagParsing(t *testing.T) {
@@ -306,8 +405,8 @@ func TestCommandSkipFlagParsing(t *testing.T) {
 		expectedArgs *args
 		expectedErr  error
 	}{
-		{testArgs: args{"some-exec", "some-command", "some-arg", "--flag", "foo"}, expectedArgs: &args{"some-arg", "--flag", "foo"}, expectedErr: nil},
-		{testArgs: args{"some-exec", "some-command", "some-arg", "--flag=foo"}, expectedArgs: &args{"some-arg", "--flag=foo"}, expectedErr: nil},
+		{testArgs: args{"some-command", "some-arg", "--flag", "foo"}, expectedArgs: &args{"some-arg", "--flag", "foo"}, expectedErr: nil},
+		{testArgs: args{"some-command", "some-arg", "--flag=foo"}, expectedArgs: &args{"some-arg", "--flag=foo"}, expectedErr: nil},
 	}
 
 	for _, c := range cases {
@@ -348,9 +447,9 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(strings.Join(c.testArgs, " "), func(t *testing.T) {
-			var outputBuffer bytes.Buffer
+			out := &bytes.Buffer{}
 			cmd := &Command{
-				Writer:                &outputBuffer,
+				Writer:                out,
 				EnableShellCompletion: true,
 				Name:                  "bar",
 				Usage:                 "this is for testing",
@@ -360,46 +459,24 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 						Usage: "A number to parse",
 					},
 				},
-				ShellComplete: func(c *Context) {
-					fmt.Fprintf(c.Command.Writer, "found %d args", c.NArg())
+				ShellComplete: func(cCtx *Context) {
+					fmt.Fprintf(cCtx.Command.writer(), "found %[1]d args", cCtx.NArg())
 				},
 			}
 
-			osArgs := args{"foo", "bar"}
+			osArgs := args{"bar"}
 			osArgs = append(osArgs, c.testArgs...)
 			osArgs = append(osArgs, "--generate-shell-completion")
 
 			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 			t.Cleanup(cancel)
 
-			err := cmd.Run(ctx, osArgs)
-			stdout := outputBuffer.String()
-			expect(t, err, nil)
-			expect(t, stdout, c.expectedOut)
+			r := require.New(t)
+
+			r.NoError(cmd.Run(ctx, osArgs))
+			r.Equal(c.expectedOut, out.String())
 		})
 	}
-}
-
-func TestCommand_NoVersionFlagOnCommands(t *testing.T) {
-	cmd := &Command{
-		Version:  "some version",
-		Name:     "bar",
-		Usage:    "this is for testing",
-		Commands: []*Command{{}}, // some subcommand
-		HideHelp: true,
-		Action: func(c *Context) error {
-			if len(c.Command.VisibleFlags()) != 0 {
-				t.Fatal("unexpected flag on command")
-			}
-			return nil
-		},
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	err := cmd.Run(ctx, []string{"foo", "bar"})
-	expect(t, err, nil)
 }
 
 func TestCommand_CanAddVFlagOnSubCommands(t *testing.T) {

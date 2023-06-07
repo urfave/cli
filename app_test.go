@@ -165,13 +165,14 @@ func ExampleCommand_Run_appHelp() {
 }
 
 func ExampleCommand_Run_commandHelp() {
-	// set args for examples sake
-	os.Args = []string{"greet", "h", "describeit"}
-
 	cmd := &Command{
 		Name: "greet",
 		Flags: []Flag{
 			&StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
+		},
+		Action: func(cCtx *Context) error {
+			fmt.Fprintf(cCtx.Command.writer(), "hello to %[1]q\n", cCtx.String("name"))
+			return nil
 		},
 		Commands: []*Command{
 			{
@@ -180,7 +181,7 @@ func ExampleCommand_Run_commandHelp() {
 				Usage:       "use it to see a description",
 				Description: "This is how we describe describeit the function",
 				Action: func(*Context) error {
-					fmt.Printf("i like to describe things")
+					fmt.Println("i like to describe things")
 					return nil
 				},
 			},
@@ -189,6 +190,9 @@ func ExampleCommand_Run_commandHelp() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
+
+	// Simulate the command line arguments
+	os.Args = []string{"greet", "h", "describeit"}
 
 	_ = cmd.Run(ctx, os.Args)
 	// Output:
@@ -200,6 +204,9 @@ func ExampleCommand_Run_commandHelp() {
 	//
 	// DESCRIPTION:
 	//    This is how we describe describeit the function
+	//
+	// COMMANDS:
+	//    help, h  Shows a list of commands or help for one command
 	//
 	// OPTIONS:
 	//    --help, -h  show help (default: false)
@@ -1000,7 +1007,7 @@ func TestApp_UseShortOptionHandling(t *testing.T) {
 	var name string
 	expected := "expectedName"
 
-	cmd := newTestCommand()
+	cmd := buildMinimalTestCommand()
 	cmd.UseShortOptionHandling = true
 	cmd.Flags = []Flag{
 		&BoolFlag{Name: "one", Aliases: []string{"o"}},
@@ -1024,7 +1031,7 @@ func TestApp_UseShortOptionHandling(t *testing.T) {
 }
 
 func TestApp_UseShortOptionHandling_missing_value(t *testing.T) {
-	cmd := newTestCommand()
+	cmd := buildMinimalTestCommand()
 	cmd.UseShortOptionHandling = true
 	cmd.Flags = []Flag{
 		&StringFlag{Name: "name", Aliases: []string{"n"}},
@@ -1072,7 +1079,7 @@ func TestApp_UseShortOptionHandlingCommand(t *testing.T) {
 }
 
 func TestApp_UseShortOptionHandlingCommand_missing_value(t *testing.T) {
-	cmd := newTestCommand()
+	cmd := buildMinimalTestCommand()
 	cmd.UseShortOptionHandling = true
 	command := &Command{
 		Name: "cmd",
@@ -1097,7 +1104,7 @@ func TestApp_UseShortOptionHandlingSubCommand(t *testing.T) {
 	var name string
 	expected := "expectedName"
 
-	cmd := newTestCommand()
+	cmd := buildMinimalTestCommand()
 	cmd.UseShortOptionHandling = true
 	command := &Command{
 		Name: "cmd",
@@ -1130,7 +1137,7 @@ func TestApp_UseShortOptionHandlingSubCommand(t *testing.T) {
 }
 
 func TestApp_UseShortOptionHandlingSubCommand_missing_value(t *testing.T) {
-	cmd := newTestCommand()
+	cmd := buildMinimalTestCommand()
 	cmd.UseShortOptionHandling = true
 	command := &Command{
 		Name: "cmd",
@@ -1158,7 +1165,7 @@ func TestApp_UseShortOptionAfterSliceFlag(t *testing.T) {
 	var sliceVal []string
 	expected := "expectedName"
 
-	cmd := newTestCommand()
+	cmd := buildMinimalTestCommand()
 	cmd.UseShortOptionHandling = true
 	cmd.Flags = []Flag{
 		&StringSliceFlag{Name: "env", Aliases: []string{"e"}, Destination: &sliceValDest},
@@ -1787,7 +1794,7 @@ func TestRequiredFlagAppRunBehavior(t *testing.T) {
 	for _, test := range tdata {
 		t.Run(test.testCase, func(t *testing.T) {
 			// setup
-			cmd := newTestCommand()
+			cmd := buildMinimalTestCommand()
 			cmd.Flags = test.appFlags
 			cmd.Commands = test.appCommands
 
@@ -2771,7 +2778,7 @@ func TestCustomHelpVersionFlags(t *testing.T) {
 }
 
 func TestHandleExitCoder_Default(t *testing.T) {
-	app := newTestCommand()
+	app := buildMinimalTestCommand()
 	fs, err := flagSet(app.Name, app.Flags)
 	if err != nil {
 		t.Errorf("error creating FlagSet: %s", err)
@@ -2787,7 +2794,7 @@ func TestHandleExitCoder_Default(t *testing.T) {
 }
 
 func TestHandleExitCoder_Custom(t *testing.T) {
-	cmd := newTestCommand()
+	cmd := buildMinimalTestCommand()
 	fs, err := flagSet(cmd.Name, cmd.Flags)
 	if err != nil {
 		t.Errorf("error creating FlagSet: %s", err)
@@ -2859,7 +2866,7 @@ func TestShellCompletionForIncompleteFlags(t *testing.T) {
 func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
 	testCode := 104
 
-	cmd := newTestCommand()
+	cmd := buildMinimalTestCommand()
 	cmd.Commands = []*Command{
 		{
 			Name: "cmd",
@@ -2912,7 +2919,7 @@ func TestWhenExitSubCommandWithCodeThenAppQuitUnexpectedly(t *testing.T) {
 	}
 }
 
-func newTestCommand() *Command {
+func buildMinimalTestCommand() *Command {
 	return &Command{Writer: io.Discard}
 }
 

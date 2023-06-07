@@ -15,6 +15,8 @@ import (
 // ignoreFlagPrefix is to ignore test flags when adding flags from other packages
 const ignoreFlagPrefix = "test."
 
+const maxCommandGraphDepth = 256
+
 // Command is a subcommand for a cli.App.
 type Command struct {
 	// The name of the command
@@ -194,7 +196,7 @@ func (cmd *Command) setupDefaults() {
 	}
 
 	if cmd.Action == nil {
-		cmd.Action = helpCommand.Action
+		cmd.Action = helpCommandAction
 	}
 
 	if cmd.Reader == nil {
@@ -238,16 +240,7 @@ func (cmd *Command) setupDefaults() {
 
 	cmd.Commands = newCommands
 
-	if cmd.Command(helpCommand.Name) == nil && !cmd.HideHelp {
-		if !cmd.HideHelpCommand {
-			helpCommand.HelpName = fmt.Sprintf("%s %s", cmd.HelpName, helpName)
-			cmd.appendCommand(helpCommand)
-		}
-
-		if HelpFlag != nil {
-			cmd.appendFlag(HelpFlag)
-		}
-	}
+	cmd.ensureHelp()
 
 	if !cmd.HideVersion && isRoot {
 		cmd.appendFlag(VersionFlag)
@@ -296,18 +289,16 @@ func (cmd *Command) setupDefaults() {
 	disableSliceFlagSeparator = cmd.DisableSliceFlagSeparator
 }
 
-func (cmd *Command) setupSubcommand(cCtx *Context) {
-	if cmd.Command(helpCommand.Name) == nil && !cmd.HideHelp {
-		if !cmd.HideHelpCommand {
-			helpCommand.HelpName = fmt.Sprintf("%s %s", cmd.HelpName, helpName)
-			cmd.Commands = append(cmd.Commands, helpCommand)
-		}
+func (cmd *Command) setupCommandGraph(cCtx *Context) {
+	for _, subCmd := range cmd.Commands {
+		subCmd.parent = cmd
+		subCmd.setupSubcommand(cCtx)
+		subCmd.setupCommandGraph(cCtx)
 	}
+}
 
-	if !cmd.HideHelp && HelpFlag != nil {
-		// append help to flags
-		cmd.appendFlag(HelpFlag)
-	}
+func (cmd *Command) setupSubcommand(cCtx *Context) {
+	cmd.ensureHelp()
 
 	if cCtx.Command.UseShortOptionHandling {
 		cmd.UseShortOptionHandling = true
@@ -315,9 +306,6 @@ func (cmd *Command) setupSubcommand(cCtx *Context) {
 
 	cmd.categories = newCommandCategories()
 	for _, subCmd := range cmd.Commands {
-		subCmd.parent = cmd
-		subCmd.setupSubcommand(cCtx)
-
 		cmd.categories.AddCommand(subCmd.Category, subCmd)
 	}
 
@@ -327,7 +315,7 @@ func (cmd *Command) setupSubcommand(cCtx *Context) {
 
 	for _, subCmd := range cmd.Commands {
 		if subCmd.HelpName == "" {
-			subCmd.HelpName = fmt.Sprintf("%s %s", cmd.HelpName, subCmd.Name)
+			subCmd.HelpName = fmt.Sprintf("%[1]s %[2]s", cmd.HelpName, subCmd.Name)
 		}
 
 		newCmds = append(newCmds, subCmd)
@@ -336,10 +324,25 @@ func (cmd *Command) setupSubcommand(cCtx *Context) {
 	cmd.Commands = newCmds
 }
 
+func (cmd *Command) ensureHelp() {
+	helpCommand := buildHelpCommand(true)
+
+	if cmd.Command(helpCommand.Name) == nil && !cmd.HideHelp {
+		if !cmd.HideHelpCommand {
+			helpCommand.HelpName = fmt.Sprintf("%[1]s %[2]s", cmd.HelpName, helpName)
+			cmd.appendCommand(helpCommand)
+		}
+	}
+
+	if HelpFlag != nil && !cmd.HideHelp {
+		cmd.appendFlag(HelpFlag)
+	}
+}
+
 // Run is the entry point to the command graph. The positional
 // arguments are parsed according to the Flag and Command
 // definitions and the matching Action functions are run.
-func (cmd *Command) Run(ctx context.Context, arguments []string) error {
+func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error) {
 	cmd.setupDefaults()
 
 	parentContext := &Context{Context: ctx}
@@ -362,8 +365,8 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) error {
 
 	ctx = context.WithValue(ctx, contextContextKey, cCtx)
 
-	if cmd.parent != nil {
-		cmd.setupSubcommand(cCtx)
+	if cmd.parent == nil {
+		cmd.setupCommandGraph(cCtx)
 	}
 
 	a := args(arguments)
@@ -375,6 +378,8 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) error {
 	}
 
 	if err != nil {
+		deferErr = err
+
 		cCtx.Command.isInError = true
 		if cmd.OnUsageError != nil {
 			err = cmd.OnUsageError(cCtx, err, cmd.parent != nil)
@@ -391,14 +396,14 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) error {
 			if cmd.parent == nil {
 				_ = ShowAppHelp(cCtx)
 			} else {
-				_ = ShowCommandHelp(cCtx.parentContext, cmd.Name)
+				_ = ShowCommandHelp(cCtx.parent, cmd.Name)
 			}
 		}
 		return err
 	}
 
 	if checkHelp(cCtx) {
-		return helpCommand.Action(cCtx)
+		return helpCommandAction(cCtx)
 	}
 
 	if cmd.parent == nil && !cCtx.Command.HideVersion && checkVersion(cCtx) {
@@ -408,23 +413,22 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) error {
 
 	if cmd.After != nil && !cCtx.shellComplete {
 		defer func() {
-			afterErr := cmd.After(cCtx)
-			if afterErr != nil {
+			if err := cmd.After(cCtx); err != nil {
 				cCtx.Command.handleExitCoder(cCtx, err)
-				if err != nil {
-					err = newMultiError(err, afterErr)
+
+				if deferErr != nil {
+					deferErr = newMultiError(deferErr, err)
 				} else {
-					err = afterErr
+					deferErr = err
 				}
 			}
 		}()
 	}
 
-	cerr := cCtx.checkRequiredFlags(cmd.Flags)
-	if cerr != nil {
+	if err := cCtx.checkRequiredFlags(cmd.Flags); err != nil {
 		cCtx.Command.isInError = true
 		_ = ShowSubcommandHelp(cCtx)
-		return cerr
+		return err
 	}
 
 	for _, grp := range cmd.MutuallyExclusiveFlags {
@@ -435,15 +439,13 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) error {
 	}
 
 	if cmd.Before != nil && !cCtx.shellComplete {
-		beforeErr := cmd.Before(cCtx)
-		if beforeErr != nil {
-			cCtx.Command.handleExitCoder(cCtx, beforeErr)
-			err = beforeErr
+		if err := cmd.Before(cCtx); err != nil {
+			cCtx.Command.handleExitCoder(cCtx, err)
 			return err
 		}
 	}
 
-	if err = runFlagActions(cCtx, cmd.Flags); err != nil {
+	if err := runFlagActions(cCtx, cmd.Flags); err != nil {
 		return err
 	}
 
@@ -497,13 +499,14 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) error {
 	}
 
 	if cmd.Action == nil {
-		cmd.Action = helpCommand.Action
+		cmd.Action = helpCommandAction
 	}
 
-	err = cmd.Action(cCtx)
+	if err := cmd.Action(cCtx); err != nil {
+		cCtx.Command.handleExitCoder(cCtx, err)
+	}
 
-	cCtx.Command.handleExitCoder(cCtx, err)
-	return err
+	return deferErr
 }
 
 func (c *Command) newFlagSet() (*flag.FlagSet, error) {
@@ -525,24 +528,25 @@ func (c *Command) useShortOptionHandling() bool {
 	return c.UseShortOptionHandling
 }
 
-func (c *Command) suggestFlagFromError(err error, command string) (string, error) {
-	flag, parseErr := flagFromError(err)
+func (cmd *Command) suggestFlagFromError(err error, commandName string) (string, error) {
+	fl, parseErr := flagFromError(err)
 	if parseErr != nil {
 		return "", err
 	}
 
-	flags := c.Flags
-	hideHelp := c.HideHelp
-	if command != "" {
-		cmd := c.Command(command)
-		if cmd == nil {
+	flags := cmd.Flags
+	hideHelp := cmd.HideHelp
+
+	if commandName != "" {
+		subCmd := cmd.Command(commandName)
+		if subCmd == nil {
 			return "", err
 		}
-		flags = cmd.Flags
-		hideHelp = hideHelp || cmd.HideHelp
+		flags = subCmd.Flags
+		hideHelp = hideHelp || subCmd.HideHelp
 	}
 
-	suggestion := SuggestFlag(flags, flag, hideHelp)
+	suggestion := SuggestFlag(flags, fl, hideHelp)
 	if len(suggestion) == 0 {
 		return "", err
 	}
@@ -560,7 +564,7 @@ func (c *Command) parseFlags(args Args, ctx *Context) (*flag.FlagSet, error) {
 		return set, set.Parse(append([]string{"--"}, args.Tail()...))
 	}
 
-	for pCtx := ctx.parentContext; pCtx != nil; pCtx = pCtx.parentContext {
+	for pCtx := ctx.parent; pCtx != nil; pCtx = pCtx.parent {
 		if pCtx.Command == nil {
 			continue
 		}
@@ -671,12 +675,13 @@ func (cmd *Command) appendCommand(aCmd *Command) {
 	}
 }
 
-func (c *Command) handleExitCoder(cCtx *Context, err error) {
-	if c.ExitErrHandler != nil {
-		c.ExitErrHandler(cCtx, err)
-	} else {
-		HandleExitCoder(err)
+func (cmd *Command) handleExitCoder(cCtx *Context, err error) {
+	if cmd.ExitErrHandler != nil {
+		cmd.ExitErrHandler(cCtx, err)
+		return
 	}
+
+	HandleExitCoder(err)
 }
 
 func (c *Command) argsWithDefaultCommand(oldArgs Args) Args {
@@ -690,26 +695,36 @@ func (c *Command) argsWithDefaultCommand(oldArgs Args) Args {
 	return oldArgs
 }
 
-func (c *Command) writer() io.Writer {
-	if c.parent != nil {
-		return c.parent.writer()
+func (cmd *Command) errWriter() io.Writer {
+	if cmd.parent != nil {
+		return cmd.parent.errWriter()
 	}
 
-	if c.isInError {
-		// this can happen in test but not in normal usage
-		if c.ErrWriter == nil {
+	if cmd.ErrWriter == nil {
+		return os.Stderr
+	}
+
+	return cmd.ErrWriter
+}
+
+func (cmd *Command) writer() io.Writer {
+	if cmd.parent != nil {
+		return cmd.parent.writer()
+	}
+
+	if cmd.isInError {
+		if cmd.ErrWriter == nil {
 			return os.Stderr
 		}
 
-		return c.ErrWriter
+		return cmd.ErrWriter
 	}
 
-	// this can happen in test but not in normal usage
-	if c.Writer == nil {
+	if cmd.Writer == nil {
 		return os.Stdout
 	}
 
-	return c.Writer
+	return cmd.Writer
 }
 
 func hasCommand(commands []*Command, command *Command) bool {
@@ -722,23 +737,28 @@ func hasCommand(commands []*Command, command *Command) bool {
 	return false
 }
 
-func runFlagActions(c *Context, fs []Flag) error {
-	for _, f := range fs {
+func runFlagActions(cCtx *Context, flags []Flag) error {
+	for _, fl := range flags {
 		isSet := false
-		for _, name := range f.Names() {
-			if c.IsSet(name) {
+
+		for _, name := range fl.Names() {
+			if cCtx.IsSet(name) {
 				isSet = true
 				break
 			}
 		}
-		if isSet {
-			if af, ok := f.(ActionableFlag); ok {
-				if err := af.RunAction(c); err != nil {
-					return err
-				}
+
+		if !isSet {
+			continue
+		}
+
+		if af, ok := fl.(ActionableFlag); ok {
+			if err := af.RunAction(cCtx); err != nil {
+				return err
 			}
 		}
 	}
+
 	return nil
 }
 

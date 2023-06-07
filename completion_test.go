@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestCompletionDisable(t *testing.T) {
@@ -55,25 +57,25 @@ func TestCompletionEnableDiffCommandName(t *testing.T) {
 
 func TestCompletionShell(t *testing.T) {
 	for k := range shellCompletions {
-		var b bytes.Buffer
+		out := &bytes.Buffer{}
+
 		t.Run(k, func(t *testing.T) {
 			cmd := &Command{
 				EnableShellCompletion: true,
-				Writer:                &b,
+				Writer:                out,
 			}
 
 			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 			t.Cleanup(cancel)
 
-			err := cmd.Run(ctx, []string{"foo", completionCommandName, k})
-			if err != nil {
-				t.Error(err)
-			}
+			r := require.New(t)
+
+			r.NoError(cmd.Run(ctx, []string{"foo", completionCommandName, k}))
+			r.Containsf(
+				k, out.String(),
+				"Expected output to contain shell name %[1]q", k,
+			)
 		})
-		output := b.String()
-		if !strings.Contains(output, k) {
-			t.Errorf("Expected output to contain shell name %v", output)
-		}
 	}
 }
 

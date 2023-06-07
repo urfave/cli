@@ -9,11 +9,13 @@ import (
 	"io/fs"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestToMarkdownFull(t *testing.T) {
 	// Given
-	cmd := testFishCommand()
+	cmd := buildExtendedTestCommand()
 
 	// When
 	res, err := cmd.ToMarkdown()
@@ -24,7 +26,7 @@ func TestToMarkdownFull(t *testing.T) {
 }
 
 func TestToTabularMarkdown(t *testing.T) {
-	app := testFishCommand()
+	app := buildExtendedTestCommand()
 
 	t.Run("full", func(t *testing.T) {
 		// When
@@ -61,7 +63,7 @@ func TestToTabularMarkdownFailed(t *testing.T) {
 	MarkdownTabularDocTemplate = "{{ .Foo }}" // invalid template
 
 	// Given
-	app := testFishCommand()
+	app := buildExtendedTestCommand()
 
 	// When
 	res, err := app.ToTabularMarkdown("")
@@ -102,7 +104,7 @@ Some other text`)
 		expect(t, err, nil) // wrote without error
 		_ = tmpFile.Close()
 
-		expect(t, testFishCommand().ToTabularToFileBetweenTags("app", tmpFile.Name()), nil) // replaced without error
+		expect(t, buildExtendedTestCommand().ToTabularToFileBetweenTags("app", tmpFile.Name()), nil) // replaced without error
 
 		content, err := os.ReadFile(tmpFile.Name()) // read the file content
 		expect(t, err, nil)
@@ -140,7 +142,7 @@ Some other text`)
 		expect(t, err, nil) // wrote without error
 		_ = tmpFile.Close()
 
-		expect(t, testFishCommand().ToTabularToFileBetweenTags("app", tmpFile.Name(), "foo_BAR|baz", "lorem+ipsum"), nil)
+		expect(t, buildExtendedTestCommand().ToTabularToFileBetweenTags("app", tmpFile.Name(), "foo_BAR|baz", "lorem+ipsum"), nil)
 
 		content, err := os.ReadFile(tmpFile.Name()) // read the file content
 		expect(t, err, nil)
@@ -168,7 +170,7 @@ Some other text`))
 
 		expect(t, os.Remove(tmpFile.Name()), nil) // and remove immediately
 
-		err = testFishCommand().ToTabularToFileBetweenTags("app", tmpFile.Name())
+		err = buildExtendedTestCommand().ToTabularToFileBetweenTags("app", tmpFile.Name())
 
 		expect(t, errors.Is(err, fs.ErrNotExist), true)
 	})
@@ -176,7 +178,7 @@ Some other text`))
 
 func TestToMarkdownNoFlags(t *testing.T) {
 	// Given
-	app := testFishCommand()
+	app := buildExtendedTestCommand()
 	app.Flags = nil
 
 	// When
@@ -189,7 +191,7 @@ func TestToMarkdownNoFlags(t *testing.T) {
 
 func TestToMarkdownNoCommands(t *testing.T) {
 	// Given
-	app := testFishCommand()
+	app := buildExtendedTestCommand()
 	app.Commands = nil
 
 	// When
@@ -202,7 +204,7 @@ func TestToMarkdownNoCommands(t *testing.T) {
 
 func TestToMarkdownNoAuthors(t *testing.T) {
 	// Given
-	app := testFishCommand()
+	app := buildExtendedTestCommand()
 	app.Authors = []any{}
 
 	// When
@@ -215,7 +217,7 @@ func TestToMarkdownNoAuthors(t *testing.T) {
 
 func TestToMarkdownNoUsageText(t *testing.T) {
 	// Given
-	app := testFishCommand()
+	app := buildExtendedTestCommand()
 	app.UsageText = ""
 
 	// When
@@ -228,7 +230,7 @@ func TestToMarkdownNoUsageText(t *testing.T) {
 
 func TestToMan(t *testing.T) {
 	// Given
-	app := testFishCommand()
+	app := buildExtendedTestCommand()
 
 	// When
 	res, err := app.ToMan()
@@ -240,7 +242,7 @@ func TestToMan(t *testing.T) {
 
 func TestToManParseError(t *testing.T) {
 	// Given
-	app := testFishCommand()
+	app := buildExtendedTestCommand()
 
 	// When
 	// temporarily change the global variable for testing
@@ -255,13 +257,13 @@ func TestToManParseError(t *testing.T) {
 
 func TestToManWithSection(t *testing.T) {
 	// Given
-	app := testFishCommand()
+	cmd := buildExtendedTestCommand()
 
 	// When
-	res, err := app.ToManWithSection(8)
+	res, err := cmd.ToManWithSection(8)
 
 	// Then
-	expect(t, err, nil)
+	require.NoError(t, err)
 	expectFileContent(t, "testdata/expected-doc-full.man", res)
 }
 

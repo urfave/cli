@@ -281,14 +281,11 @@ func ShowAppHelpAndExit(c *Context, exitCode int)
     ShowAppHelpAndExit - Prints the list of subcommands for the app and exits
     with exit code.
 
-func ShowCommandHelp(ctx *Context, command string) error
+func ShowCommandHelp(cCtx *Context, commandName string) error
     ShowCommandHelp prints help for the given command
 
 func ShowCommandHelpAndExit(c *Context, command string, code int)
     ShowCommandHelpAndExit - exits with code after showing help
-
-func ShowCompletions(cCtx *Context)
-    ShowCompletions prints the lists of commands within a given context
 
 func ShowSubcommandHelp(cCtx *Context) error
     ShowSubcommandHelp prints help for the given subcommand
@@ -498,10 +495,10 @@ func (cmd *Command) FullName() string
     FullName returns the full name of the command. For commands with parets this
     ensures that the parent commands are part of the command path.
 
-func (c *Command) HasName(name string) bool
+func (cmd *Command) HasName(name string) bool
     HasName returns true if Command.Name matches given name
 
-func (c *Command) Names() []string
+func (cmd *Command) Names() []string
     Names returns the names including short names and aliases.
 
 func (cmd *Command) Run(ctx context.Context, arguments []string) error
