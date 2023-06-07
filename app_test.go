@@ -142,7 +142,7 @@ func ExampleCommand_Run_appHelp() {
 	//    greet - A new cli application
 	//
 	// USAGE:
-	//    greet [global options] command [command options] [arguments...]
+	//    greet [global options] [command options] [arguments...]
 	//
 	// VERSION:
 	//    0.1.0
@@ -225,7 +225,7 @@ func ExampleCommand_Run_noAction() {
 	//    greet - A new cli application
 	//
 	// USAGE:
-	//    greet [global options] command [command options] [arguments...]
+	//    greet [global options] [command options] [arguments...]
 	//
 	// COMMANDS:
 	//    help, h  Shows a list of commands or help for one command
