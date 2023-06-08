@@ -1275,8 +1275,8 @@ func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 
 	r := require.New(t)
 
-	r.ErrorContains(cmd.Run(ctx, []string{"nully", "help"}), "No help topic for 'help'")
-	r.NoError(cmd.Run(ctx, []string{"nully", "--help"}))
+	r.ErrorContains(cmd.Run(ctx, []string{"cli.test", "help"}), "No help topic for 'help'")
+	r.NoError(cmd.Run(ctx, []string{"cli.test", "--help"}))
 }
 
 func TestDefaultCompleteWithFlags(t *testing.T) {
@@ -1511,8 +1511,10 @@ func TestWrappedCommandHelp(t *testing.T) {
 			},
 		},
 	}
+	cmd.setupDefaults([]string{"cli.test"})
 
 	cCtx := NewContext(cmd, nil, nil)
+	cmd.setupCommandGraph(cCtx)
 
 	HelpPrinter = func(w io.Writer, templ string, data interface{}) {
 		funcMap := map[string]interface{}{
@@ -1528,7 +1530,8 @@ func TestWrappedCommandHelp(t *testing.T) {
 
 	r.NoError(ShowCommandHelp(cCtx, "add"))
 	r.Equal(`NAME:
-    - add a task to the list
+   cli.test add - add a task
+                  to the list
 
 USAGE:
    this is an even longer way
@@ -1539,6 +1542,11 @@ DESCRIPTION:
    and a description long
    enough to wrap in this test
    case
+
+COMMANDS:
+   help, h  Shows a list of
+            commands or help
+            for one command
 
 OPTIONS:
    --help, -h show help

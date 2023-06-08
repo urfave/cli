@@ -33,31 +33,35 @@ func getCompletion(s string) renderCompletion {
 	}
 }
 
-var completionCommand = &Command{
-	Name:   completionCommandName,
-	Hidden: true,
-	Action: func(ctx *Context) error {
-		var shells []string
-		for k := range shellCompletions {
-			shells = append(shells, k)
-		}
+func buildCompletionCommand() *Command {
+	return &Command{
+		Name:   completionCommandName,
+		Hidden: true,
+		Action: completionCommandAction,
+	}
+}
 
-		sort.Strings(shells)
+func completionCommandAction(cCtx *Context) error {
+	var shells []string
+	for k := range shellCompletions {
+		shells = append(shells, k)
+	}
 
-		if ctx.Args().Len() == 0 {
-			return Exit(fmt.Sprintf("no shell provided for completion command. available shells are %+v", shells), 1)
-		}
-		s := ctx.Args().First()
+	sort.Strings(shells)
 
-		if rc, ok := shellCompletions[s]; !ok {
-			return Exit(fmt.Sprintf("unknown shell %s, available shells are %+v", s, shells), 1)
-		} else if c, err := rc(ctx.Command); err != nil {
+	if cCtx.Args().Len() == 0 {
+		return Exit(fmt.Sprintf("no shell provided for completion command. available shells are %+v", shells), 1)
+	}
+	s := cCtx.Args().First()
+
+	if rc, ok := shellCompletions[s]; !ok {
+		return Exit(fmt.Sprintf("unknown shell %s, available shells are %+v", s, shells), 1)
+	} else if c, err := rc(cCtx.Command); err != nil {
+		return Exit(err, 1)
+	} else {
+		if _, err = cCtx.Command.Writer.Write([]byte(c)); err != nil {
 			return Exit(err, 1)
-		} else {
-			if _, err = ctx.Command.Writer.Write([]byte(c)); err != nil {
-				return Exit(err, 1)
-			}
 		}
-		return nil
-	},
+	}
+	return nil
 }

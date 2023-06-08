@@ -808,13 +808,13 @@ func TestApp_FlagsFromExtPackage(t *testing.T) {
 
 func TestApp_Setup_defaultsReader(t *testing.T) {
 	cmd := &Command{}
-	cmd.setupDefaults()
+	cmd.setupDefaults([]string{"cli.test"})
 	expect(t, cmd.Reader, os.Stdin)
 }
 
 func TestApp_Setup_defaultsWriter(t *testing.T) {
 	cmd := &Command{}
-	cmd.setupDefaults()
+	cmd.setupDefaults([]string{"cli.test"})
 	expect(t, cmd.Writer, os.Stdout)
 }
 
@@ -968,7 +968,7 @@ func TestApp_VisibleCommands(t *testing.T) {
 		},
 	}
 
-	cmd.setupDefaults()
+	cmd.setupDefaults([]string{"cli.test"})
 	expected := []*Command{
 		cmd.Commands[0],
 		cmd.Commands[2], // help
@@ -1313,7 +1313,7 @@ func TestApp_ParseSliceFlagsWithMissingValue(t *testing.T) {
 
 func TestApp_DefaultStdin(t *testing.T) {
 	cmd := &Command{}
-	cmd.setupDefaults()
+	cmd.setupDefaults([]string{"cli.test"})
 
 	if cmd.Reader != os.Stdin {
 		t.Error("Default input reader not set.")
@@ -1322,7 +1322,7 @@ func TestApp_DefaultStdin(t *testing.T) {
 
 func TestApp_DefaultStdout(t *testing.T) {
 	cmd := &Command{}
-	cmd.setupDefaults()
+	cmd.setupDefaults([]string{"cli.test"})
 
 	if cmd.Writer != os.Stdout {
 		t.Error("Default output writer not set.")
@@ -2441,7 +2441,7 @@ func TestApp_VisibleCategories(t *testing.T) {
 		},
 	}
 
-	cmd.setupDefaults()
+	cmd.setupDefaults([]string{"cli.test"})
 	expect(t, expected, cmd.VisibleCategories())
 
 	cmd = &Command{
@@ -2477,7 +2477,7 @@ func TestApp_VisibleCategories(t *testing.T) {
 		},
 	}
 
-	cmd.setupDefaults()
+	cmd.setupDefaults([]string{"cli.test"})
 	expect(t, expected, cmd.VisibleCategories())
 
 	cmd = &Command{
@@ -2505,7 +2505,7 @@ func TestApp_VisibleCategories(t *testing.T) {
 		},
 	}
 
-	cmd.setupDefaults()
+	cmd.setupDefaults([]string{"cli.test"})
 	expect(t, []CommandCategory{}, cmd.VisibleCategories())
 }
 
@@ -2522,7 +2522,7 @@ func TestApp_VisibleFlagCategories(t *testing.T) {
 			},
 		},
 	}
-	cmd.setupDefaults()
+	cmd.setupDefaults([]string{"cli.test"})
 	vfc := cmd.VisibleFlagCategories()
 	if len(vfc) != 1 {
 		t.Fatalf("unexpected visible flag categories %+v", vfc)
@@ -2926,7 +2926,7 @@ func buildMinimalTestCommand() *Command {
 func TestSetupInitializesBothWriters(t *testing.T) {
 	cmd := &Command{}
 
-	cmd.setupDefaults()
+	cmd.setupDefaults([]string{"cli.test"})
 
 	if cmd.ErrWriter != os.Stderr {
 		t.Errorf("expected a.ErrWriter to be os.Stderr")
@@ -2943,7 +2943,7 @@ func TestSetupInitializesOnlyNilWriters(t *testing.T) {
 		ErrWriter: wr,
 	}
 
-	cmd.setupDefaults()
+	cmd.setupDefaults([]string{"cli.test"})
 
 	if cmd.ErrWriter != wr {
 		t.Errorf("expected a.ErrWriter to be a *bytes.Buffer instance")

@@ -172,46 +172,58 @@ func (cmd *Command) Command(name string) *Command {
 	return nil
 }
 
-func (cmd *Command) setupDefaults() {
+func (cmd *Command) setupDefaults(arguments []string) {
 	isRoot := cmd.parent == nil
 
+	tracef("isRoot? %[1]v", isRoot)
+
 	if cmd.ShellComplete == nil {
+		tracef("setting default ShellComplete")
 		cmd.ShellComplete = DefaultCompleteWithFlags(cmd)
 	}
 
 	if cmd.Name == "" && isRoot {
-		cmd.Name = filepath.Base(os.Args[0])
+		tracef("setting cmd.Name from first arg basename")
+		cmd.Name = filepath.Base(arguments[0])
 	}
 
 	if cmd.HelpName == "" {
+		tracef("setting cmd.HelpName to cmd.Name %[1]q", cmd.Name)
 		cmd.HelpName = cmd.Name
 	}
 
 	if cmd.Usage == "" && isRoot {
+		tracef("setting default Usage")
 		cmd.Usage = "A new cli application"
 	}
 
 	if cmd.Version == "" {
+		tracef("setting HideVersion=true due to empty Version")
 		cmd.HideVersion = true
 	}
 
 	if cmd.Action == nil {
+		tracef("setting default Action as help command action")
 		cmd.Action = helpCommandAction
 	}
 
 	if cmd.Reader == nil {
+		tracef("setting default Reader as os.Stdin")
 		cmd.Reader = os.Stdin
 	}
 
 	if cmd.Writer == nil {
+		tracef("setting default Writer as os.Stdout")
 		cmd.Writer = os.Stdout
 	}
 
 	if cmd.ErrWriter == nil {
+		tracef("setting default ErrWriter as os.Stderr")
 		cmd.ErrWriter = os.Stderr
 	}
 
 	if cmd.AllowExtFlags {
+		tracef("visiting all flags given AllowExtFlags=true")
 		// add global flags added by other packages
 		flag.VisitAll(func(f *flag.Flag) {
 			// skip test flags
@@ -221,71 +233,77 @@ func (cmd *Command) setupDefaults() {
 		})
 	}
 
-	var newCommands []*Command
-
 	for _, subCmd := range cmd.Commands {
+		tracef("setting sub-command parent as self")
 		subCmd.parent = cmd
 
-		cname := subCmd.Name
+		/*
+			subCmdName := subCmd.Name
 
-		if subCmd.HelpName != "" {
-			cname = subCmd.HelpName
-		}
+			if subCmd.HelpName != "" {
+				tracef("setting subCmdName to %[1]q (cmd=%[2]q)", subCmd.HelpName, cmd.Name)
+				subCmdName = subCmd.HelpName
+			}
+		*/
 
-		subCmd.HelpName = fmt.Sprintf("%s %s", cmd.HelpName, cname)
+		newSubCmdHelpName := fmt.Sprintf("%[1]s %[2]s", cmd.HelpName, subCmd.Name)
 
+		tracef("setting subCmd.HelpName to %[1]q (cmd=%[2]q)", newSubCmdHelpName, cmd.Name)
+		subCmd.HelpName = newSubCmdHelpName
+
+		tracef("assigning subCmd.flagCategories from subCmd.Flags")
 		subCmd.flagCategories = newFlagCategoriesFromFlags(subCmd.Flags)
-		newCommands = append(newCommands, subCmd)
 	}
 
-	cmd.Commands = newCommands
-
+	tracef("ensuring help command and flag")
 	cmd.ensureHelp()
 
 	if !cmd.HideVersion && isRoot {
+		tracef("appending version flag")
 		cmd.appendFlag(VersionFlag)
 	}
 
-	if cmd.PrefixMatchCommands {
-		if cmd.SuggestCommandFunc == nil {
-			cmd.SuggestCommandFunc = suggestCommand
-		}
+	if cmd.PrefixMatchCommands && cmd.SuggestCommandFunc == nil {
+		tracef("setting default SuggestCommandFunc")
+		cmd.SuggestCommandFunc = suggestCommand
 	}
 
 	if cmd.EnableShellCompletion {
+		completionCommand := buildCompletionCommand()
+
 		if cmd.ShellCompletionCommandName != "" {
+			tracef("setting completion command name from ShellCompletionCommandName")
 			completionCommand.Name = cmd.ShellCompletionCommandName
 		}
 
+		tracef("appending completionCommand")
 		cmd.appendCommand(completionCommand)
 	}
 
+	tracef("setting command categories")
 	cmd.categories = newCommandCategories()
 
-	for _, command := range cmd.Commands {
-		cmd.categories.AddCommand(command.Category, command)
+	for _, subCmd := range cmd.Commands {
+		cmd.categories.AddCommand(subCmd.Category, subCmd)
 	}
 
+	tracef("sorting command categories")
 	sort.Sort(cmd.categories.(*commandCategories))
 
-	cmd.flagCategories = newFlagCategories()
-
-	for _, fl := range cmd.Flags {
-		if cf, ok := fl.(CategorizableFlag); ok {
-			if cf.GetCategory() != "" {
-				cmd.flagCategories.AddFlag(cf.GetCategory(), cf)
-			}
-		}
-	}
+	tracef("setting flag categories")
+	cmd.flagCategories = newFlagCategoriesFromFlags(cmd.Flags)
 
 	if cmd.Metadata == nil {
+		tracef("setting default Metadata")
 		cmd.Metadata = map[string]any{}
 	}
 
 	if len(cmd.SliceFlagSeparator) != 0 {
+		tracef("setting defaultSliceFlagSeparator from cmd.SliceFlagSeparator")
 		defaultSliceFlagSeparator = cmd.SliceFlagSeparator
 	}
 
+	tracef("setting disableSliceFlagSeparator from cmd.DisableSliceFlagSeparator")
 	disableSliceFlagSeparator = cmd.DisableSliceFlagSeparator
 }
 
@@ -304,24 +322,27 @@ func (cmd *Command) setupSubcommand(cCtx *Context) {
 		cmd.UseShortOptionHandling = true
 	}
 
+	for _, subCmd := range cmd.Commands {
+		if subCmd.HelpName == "" {
+			newSubCmdHelpName := fmt.Sprintf("%[1]s %[2]s", cmd.HelpName, subCmd.Name)
+
+			tracef("setting subCmd.HelpName to %[1]q (cmd=%[2]q)", newSubCmdHelpName, cmd.Name)
+			subCmd.HelpName = newSubCmdHelpName
+		}
+	}
+
+	tracef("setting command categories")
 	cmd.categories = newCommandCategories()
+
 	for _, subCmd := range cmd.Commands {
 		cmd.categories.AddCommand(subCmd.Category, subCmd)
 	}
 
+	tracef("sorting command categories")
 	sort.Sort(cmd.categories.(*commandCategories))
 
-	newCmds := []*Command{}
-
-	for _, subCmd := range cmd.Commands {
-		if subCmd.HelpName == "" {
-			subCmd.HelpName = fmt.Sprintf("%[1]s %[2]s", cmd.HelpName, subCmd.Name)
-		}
-
-		newCmds = append(newCmds, subCmd)
-	}
-
-	cmd.Commands = newCmds
+	tracef("setting flag categories")
+	cmd.flagCategories = newFlagCategoriesFromFlags(cmd.Flags)
 }
 
 func (cmd *Command) ensureHelp() {
@@ -329,12 +350,18 @@ func (cmd *Command) ensureHelp() {
 
 	if cmd.Command(helpCommand.Name) == nil && !cmd.HideHelp {
 		if !cmd.HideHelpCommand {
-			helpCommand.HelpName = fmt.Sprintf("%[1]s %[2]s", cmd.HelpName, helpName)
+			newHelpCmdName := fmt.Sprintf("%[1]s %[2]s", cmd.HelpName, helpName)
+
+			tracef("setting helpCommand.HelpName to %[1]q (cmd=%[2]q)", newHelpCmdName, cmd.Name)
+			helpCommand.HelpName = newHelpCmdName
+
+			tracef("appending helpCommand")
 			cmd.appendCommand(helpCommand)
 		}
 	}
 
 	if HelpFlag != nil && !cmd.HideHelp {
+		tracef("appending HelpFlag")
 		cmd.appendFlag(HelpFlag)
 	}
 }
@@ -343,7 +370,7 @@ func (cmd *Command) ensureHelp() {
 // arguments are parsed according to the Flag and Command
 // definitions and the matching Action functions are run.
 func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error) {
-	cmd.setupDefaults()
+	cmd.setupDefaults(arguments)
 
 	parentContext := &Context{Context: ctx}
 	if v, ok := ctx.Value(contextContextKey).(*Context); ok {
@@ -378,12 +405,13 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error
 	}
 
 	if err != nil {
+		tracef("setting deferErr from %[1]v", err)
 		deferErr = err
 
 		cCtx.Command.isInError = true
 		if cmd.OnUsageError != nil {
 			err = cmd.OnUsageError(cCtx, err, cmd.parent != nil)
-			cCtx.Command.handleExitCoder(cCtx, err)
+			err = cCtx.Command.handleExitCoder(cCtx, err)
 			return err
 		}
 		_, _ = fmt.Fprintf(cCtx.Command.writer(), "%s %s\n\n", "Incorrect Usage:", err.Error())
@@ -414,7 +442,7 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error
 	if cmd.After != nil && !cCtx.shellComplete {
 		defer func() {
 			if err := cmd.After(cCtx); err != nil {
-				cCtx.Command.handleExitCoder(cCtx, err)
+				err = cCtx.Command.handleExitCoder(cCtx, err)
 
 				if deferErr != nil {
 					deferErr = newMultiError(deferErr, err)
@@ -440,8 +468,8 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error
 
 	if cmd.Before != nil && !cCtx.shellComplete {
 		if err := cmd.Before(cCtx); err != nil {
-			cCtx.Command.handleExitCoder(cCtx, err)
-			return err
+			deferErr = cCtx.Command.handleExitCoder(cCtx, err)
+			return deferErr
 		}
 	}
 
@@ -503,9 +531,11 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error
 	}
 
 	if err := cmd.Action(cCtx); err != nil {
-		cCtx.Command.handleExitCoder(cCtx, err)
+		tracef("calling handleExitCoder with %[1]v", err)
+		deferErr = cCtx.Command.handleExitCoder(cCtx, err)
 	}
 
+	tracef("returning deferErr")
 	return deferErr
 }
 
@@ -675,13 +705,14 @@ func (cmd *Command) appendCommand(aCmd *Command) {
 	}
 }
 
-func (cmd *Command) handleExitCoder(cCtx *Context, err error) {
+func (cmd *Command) handleExitCoder(cCtx *Context, err error) error {
 	if cmd.ExitErrHandler != nil {
 		cmd.ExitErrHandler(cCtx, err)
-		return
+		return err
 	}
 
 	HandleExitCoder(err)
+	return err
 }
 
 func (c *Command) argsWithDefaultCommand(oldArgs Args) Args {

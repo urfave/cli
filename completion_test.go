@@ -37,10 +37,6 @@ func TestCompletionEnable(t *testing.T) {
 }
 
 func TestCompletionEnableDiffCommandName(t *testing.T) {
-	defer func() {
-		completionCommand.Name = completionCommandName
-	}()
-
 	cmd := &Command{
 		EnableShellCompletion:      true,
 		ShellCompletionCommandName: "junky",

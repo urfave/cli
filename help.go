@@ -60,7 +60,6 @@ func buildHelpCommand(withAction bool) *Command {
 }
 
 func helpCommandAction(cCtx *Context) error {
-	tracef("in helpCommand Action")
 	args := cCtx.Args()
 	firstArg := args.First()
 
@@ -79,7 +78,7 @@ func helpCommandAction(cCtx *Context) error {
 	//     to
 	// $ app foo
 	// which will then be handled as case 3
-	if cCtx.Command.HasName(helpName) || cCtx.Command.HasName(helpAlias) {
+	if cCtx.parent != nil && (cCtx.Command.HasName(helpName) || cCtx.Command.HasName(helpAlias)) {
 		tracef("setting cCtx to cCtx.parentContext")
 		cCtx = cCtx.parent
 	}
@@ -254,31 +253,25 @@ func ShowCommandHelp(cCtx *Context, commandName string) error {
 			continue
 		}
 
-		/*
-			if !cmd.HideHelp {
-				if !cmd.HideHelpCommand && len(cmd.Commands) != 0 && cmd.Command(helpName) == nil {
-					cmd.Commands = append(cmd.Commands, buildHelpCommand(false))
-				}
-
-				if HelpFlag != nil {
-					cmd.appendFlag(HelpFlag)
-				}
-			}
-		*/
-
 		tmpl := cmd.CustomHelpTemplate
 		if tmpl == "" {
 			if len(cmd.Commands) == 0 {
+				tracef("using CommandHelpTemplate")
 				tmpl = CommandHelpTemplate
 			} else {
+				tracef("using SubcommandHelpTemplate")
 				tmpl = SubcommandHelpTemplate
 			}
 		}
 
+		tracef("running HelpPrinter")
 		HelpPrinter(cCtx.Command.writer(), tmpl, cmd)
 
+		tracef("returning nil after printing help")
 		return nil
 	}
+
+	tracef("no matching command found")
 
 	if cCtx.Command.CommandNotFound == nil {
 		errMsg := fmt.Sprintf("No help topic for '%v'", commandName)
@@ -289,9 +282,11 @@ func ShowCommandHelp(cCtx *Context, commandName string) error {
 			}
 		}
 
+		tracef("exiting 3 with errMsg %[1]q", errMsg)
 		return Exit(errMsg, 3)
 	}
 
+	tracef("running CommandNotFound func for %[1]q", commandName)
 	cCtx.Command.CommandNotFound(cCtx, commandName)
 
 	return nil
@@ -324,6 +319,7 @@ func printVersion(cCtx *Context) {
 
 func handleTemplateError(err error) {
 	if err != nil {
+		tracef("error encountered during template parse: %[1]v", err)
 		// If the writer is closed, t.Execute will fail, and there's nothing
 		// we can do to recover.
 		if os.Getenv("CLI_TEMPLATE_ERROR_DEBUG") != "" {
@@ -340,6 +336,7 @@ func handleTemplateError(err error) {
 func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs map[string]interface{}) {
 	const maxLineLength = 10000
 
+	tracef("building default funcMap")
 	funcMap := template.FuncMap{
 		"join":           strings.Join,
 		"subtract":       subtract,
@@ -351,13 +348,11 @@ func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs 
 		"offsetCommands": offsetCommands,
 	}
 
-	if customFuncs["wrapAt"] != nil {
-		if wa, ok := customFuncs["wrapAt"]; ok {
-			if waf, ok := wa.(func() int); ok {
-				wrapAt := waf()
-				customFuncs["wrap"] = func(input string, offset int) string {
-					return wrap(input, offset, wrapAt)
-				}
+	if wa, ok := customFuncs["wrapAt"]; ok {
+		if wrapAtFunc, ok := wa.(func() int); ok {
+			wrapAt := wrapAtFunc()
+			customFuncs["wrap"] = func(input string, offset int) string {
+				return wrap(input, offset, wrapAt)
 			}
 		}
 	}
@@ -411,6 +406,7 @@ func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs 
 		handleTemplateError(err)
 	}
 
+	tracef("executing template")
 	handleTemplateError(t.Execute(w, data))
 
 	_ = w.Flush()
