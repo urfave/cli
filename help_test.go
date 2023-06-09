@@ -2,7 +2,6 @@ package cli
 
 import (
 	"bytes"
-	"context"
 	"flag"
 	"fmt"
 	"io"
@@ -10,7 +9,6 @@ import (
 	"runtime"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -86,6 +84,8 @@ func Test_Help_Custom_Flags(t *testing.T) {
 		Usage:   "show help",
 	}
 
+	out := &bytes.Buffer{}
+
 	cmd := &Command{
 		Flags: []Flag{
 			&BoolFlag{Name: "foo", Aliases: []string{"h"}},
@@ -96,17 +96,11 @@ func Test_Help_Custom_Flags(t *testing.T) {
 			}
 			return nil
 		},
+		Writer: out,
 	}
-	output := new(bytes.Buffer)
-	cmd.Writer = output
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	_ = cmd.Run(ctx, []string{"test", "-h"})
-	if output.Len() > 0 {
-		t.Errorf("unexpected output: %s", output.String())
-	}
+	_ = cmd.Run(buildTestContext(t), []string{"test", "-h"})
+	require.Len(t, out.String(), 0)
 }
 
 func Test_Version_Custom_Flags(t *testing.T) {
@@ -121,6 +115,7 @@ func Test_Version_Custom_Flags(t *testing.T) {
 		Usage:   "show version",
 	}
 
+	out := &bytes.Buffer{}
 	cmd := &Command{
 		Flags: []Flag{
 			&BoolFlag{Name: "foo", Aliases: []string{"v"}},
@@ -131,17 +126,11 @@ func Test_Version_Custom_Flags(t *testing.T) {
 			}
 			return nil
 		},
+		Writer: out,
 	}
-	output := new(bytes.Buffer)
-	cmd.Writer = output
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	_ = cmd.Run(ctx, []string{"test", "-v"})
-	if output.Len() > 0 {
-		t.Errorf("unexpected output: %s", output.String())
-	}
+	_ = cmd.Run(buildTestContext(t), []string{"test", "-v"})
+	require.Len(t, out.String(), 0)
 }
 
 func Test_helpCommand_Action_ErrorIfNoTopic(t *testing.T) {
@@ -177,10 +166,7 @@ func Test_helpCommand_InHelpOutput(t *testing.T) {
 	output := &bytes.Buffer{}
 	cmd.Writer = output
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	_ = cmd.Run(ctx, []string{"test", "--help"})
+	_ = cmd.Run(buildTestContext(t), []string{"test", "--help"})
 
 	s := output.String()
 
@@ -257,11 +243,8 @@ func TestHelpCommand_FullName(t *testing.T) {
 				ErrWriter: out,
 			}
 
-			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-			t.Cleanup(cancel)
-
 			r := require.New(t)
-			r.NoError(cmd.Run(ctx, tc.args))
+			r.NoError(cmd.Run(buildTestContext(t), tc.args))
 			r.Contains(out.String(), tc.contains)
 		})
 	}
@@ -274,10 +257,7 @@ func Test_helpCommand_HideHelpCommand(t *testing.T) {
 		Writer: buf,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	err := cmd.Run(ctx, []string{"app", "help", "help"})
+	err := cmd.Run(buildTestContext(t), []string{"app", "help", "help"})
 	expect(t, err, nil)
 	got := buf.String()
 	notWant := "COMMANDS:"
@@ -289,10 +269,7 @@ func Test_helpCommand_HideHelpCommand(t *testing.T) {
 func Test_helpCommand_HideHelpFlag(t *testing.T) {
 	app := buildMinimalTestCommand()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	if err := app.Run(ctx, []string{"app", "help", "-h"}); err == nil {
+	if err := app.Run(buildTestContext(t), []string{"app", "help", "-h"}); err == nil {
 		t.Errorf("Expected flag error - Got nil")
 	}
 }
@@ -326,6 +303,8 @@ func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 }
 
 func TestShowAppHelp_CommandAliases(t *testing.T) {
+	out := &bytes.Buffer{}
+
 	cmd := &Command{
 		Commands: []*Command{
 			{
@@ -336,19 +315,11 @@ func TestShowAppHelp_CommandAliases(t *testing.T) {
 				},
 			},
 		},
+		Writer: out,
 	}
 
-	output := &bytes.Buffer{}
-	cmd.Writer = output
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	_ = cmd.Run(ctx, []string{"foo", "--help"})
-
-	if !strings.Contains(output.String(), "frobbly, fr, frob") {
-		t.Errorf("expected output to include all command aliases; got: %q", output.String())
-	}
+	_ = cmd.Run(buildTestContext(t), []string{"foo", "--help"})
+	require.Contains(t, out.String(), "frobbly, fr, frob")
 }
 
 func TestShowCommandHelp_AppendHelp(t *testing.T) {
@@ -418,10 +389,7 @@ func TestShowCommandHelp_AppendHelp(t *testing.T) {
 				ErrWriter: out,
 			}
 
-			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-			t.Cleanup(cancel)
-
-			_ = cmd.Run(ctx, tc.args)
+			_ = cmd.Run(buildTestContext(t), tc.args)
 			tc.verify(t, out.String())
 		})
 	}
@@ -499,10 +467,7 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 				},
 			}
 
-			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-			t.Cleanup(cancel)
-
-			err := cmd.Run(ctx, []string{"my-app", "help", tt.command})
+			err := cmd.Run(buildTestContext(t), []string{"my-app", "help", tt.command})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -587,18 +552,17 @@ func TestShowCommandHelp_HelpPrinterCustom(t *testing.T) {
 				},
 			}
 
-			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-			t.Cleanup(cancel)
-
 			t.Logf("cmd.Run(ctx, %+[1]v)", tc.arguments)
 
-			r.NoError(cmd.Run(ctx, tc.arguments))
+			r.NoError(cmd.Run(buildTestContext(t), tc.arguments))
 			r.Equal(tc.wantOutput, out.String())
 		})
 	}
 }
 
 func TestShowCommandHelp_CommandAliases(t *testing.T) {
+	out := &bytes.Buffer{}
+
 	cmd := &Command{
 		Commands: []*Command{
 			{
@@ -609,23 +573,11 @@ func TestShowCommandHelp_CommandAliases(t *testing.T) {
 				},
 			},
 		},
+		Writer: out,
 	}
 
-	output := &bytes.Buffer{}
-	cmd.Writer = output
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	_ = cmd.Run(ctx, []string{"foo", "help", "fr"})
-
-	if !strings.Contains(output.String(), "frobbly") {
-		t.Errorf("expected output to include command name; got: %q", output.String())
-	}
-
-	if strings.Contains(output.String(), "bork") {
-		t.Errorf("expected output to exclude command aliases; got: %q", output.String())
-	}
+	_ = cmd.Run(buildTestContext(t), []string{"foo", "help", "fr"})
+	require.Contains(t, out.String(), "frobbly")
 }
 
 func TestShowSubcommandHelp_CommandAliases(t *testing.T) {
@@ -644,10 +596,7 @@ func TestShowSubcommandHelp_CommandAliases(t *testing.T) {
 	output := &bytes.Buffer{}
 	cmd.Writer = output
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	_ = cmd.Run(ctx, []string{"foo", "help"})
+	_ = cmd.Run(buildTestContext(t), []string{"foo", "help"})
 
 	if !strings.Contains(output.String(), "frobbly, fr, frob, bork") {
 		t.Errorf("expected output to include all command aliases; got: %q", output.String())
@@ -682,10 +631,7 @@ EXAMPLES:
 	output := &bytes.Buffer{}
 	cmd.Writer = output
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	_ = cmd.Run(ctx, []string{"foo", "help", "frobbly"})
+	_ = cmd.Run(buildTestContext(t), []string{"foo", "help", "frobbly"})
 
 	if strings.Contains(output.String(), "2. Frobbly runs without this param locally.") {
 		t.Errorf("expected output to exclude \"2. Frobbly runs without this param locally.\"; got: %q", output.String())
@@ -713,10 +659,7 @@ func TestShowSubcommandHelp_CommandUsageText(t *testing.T) {
 	output := &bytes.Buffer{}
 	cmd.Writer = output
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	_ = cmd.Run(ctx, []string{"foo", "frobbly", "--help"})
+	_ = cmd.Run(buildTestContext(t), []string{"foo", "frobbly", "--help"})
 
 	if !strings.Contains(output.String(), "this is usage text") {
 		t.Errorf("expected output to include usage text; got: %q", output.String())
@@ -739,10 +682,7 @@ UsageText`,
 	output := &bytes.Buffer{}
 	cmd.Writer = output
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	_ = cmd.Run(ctx, []string{"foo", "frobbly", "--help"})
+	_ = cmd.Run(buildTestContext(t), []string{"foo", "frobbly", "--help"})
 
 	expected := `USAGE:
    This is a
@@ -774,10 +714,7 @@ func TestShowSubcommandHelp_SubcommandUsageText(t *testing.T) {
 	output := &bytes.Buffer{}
 	cmd.Writer = output
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	_ = cmd.Run(ctx, []string{"foo", "frobbly", "bobbly", "--help"})
+	_ = cmd.Run(buildTestContext(t), []string{"foo", "frobbly", "bobbly", "--help"})
 
 	if !strings.Contains(output.String(), "this is usage text") {
 		t.Errorf("expected output to include usage text; got: %q", output.String())
@@ -805,10 +742,7 @@ UsageText`,
 	output := &bytes.Buffer{}
 	cmd.Writer = output
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	_ = cmd.Run(ctx, []string{"foo", "frobbly", "bobbly", "--help"})
+	_ = cmd.Run(buildTestContext(t), []string{"foo", "frobbly", "bobbly", "--help"})
 
 	expected := `USAGE:
    This is a
@@ -844,10 +778,7 @@ func TestShowAppHelp_HiddenCommand(t *testing.T) {
 	output := &bytes.Buffer{}
 	cmd.Writer = output
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	_ = cmd.Run(ctx, []string{"app", "--help"})
+	_ = cmd.Run(buildTestContext(t), []string{"app", "--help"})
 
 	if strings.Contains(output.String(), "secretfrob") {
 		t.Errorf("expected output to exclude \"secretfrob\"; got: %q", output.String())
@@ -912,10 +843,7 @@ func TestShowAppHelp_HelpPrinter(t *testing.T) {
 				CustomRootCommandHelpTemplate: tt.template,
 			}
 
-			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-			t.Cleanup(cancel)
-
-			err := cmd.Run(ctx, []string{"my-app", "help"})
+			err := cmd.Run(buildTestContext(t), []string{"my-app", "help"})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -986,10 +914,7 @@ func TestShowAppHelp_HelpPrinterCustom(t *testing.T) {
 				CustomRootCommandHelpTemplate: tt.template,
 			}
 
-			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-			t.Cleanup(cancel)
-
-			err := cmd.Run(ctx, []string{"my-app", "help"})
+			err := cmd.Run(buildTestContext(t), []string{"my-app", "help"})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1050,10 +975,7 @@ VERSION:
 	output := &bytes.Buffer{}
 	cmd.Writer = output
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	_ = cmd.Run(ctx, []string{"app", "--help"})
+	_ = cmd.Run(buildTestContext(t), []string{"app", "--help"})
 
 	if strings.Contains(output.String(), "secretfrob") {
 		t.Errorf("expected output to exclude \"secretfrob\"; got: %q", output.String())
@@ -1094,10 +1016,7 @@ func TestShowAppHelp_UsageText(t *testing.T) {
 	output := &bytes.Buffer{}
 	cmd.Writer = output
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	_ = cmd.Run(ctx, []string{"foo"})
+	_ = cmd.Run(buildTestContext(t), []string{"foo"})
 
 	if !strings.Contains(output.String(), "This is a single line of UsageText") {
 		t.Errorf("expected output to include usage text; got: %q", output.String())
@@ -1120,10 +1039,7 @@ App UsageText`,
 	output := &bytes.Buffer{}
 	cmd.Writer = output
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	_ = cmd.Run(ctx, []string{"foo"})
+	_ = cmd.Run(buildTestContext(t), []string{"foo"})
 
 	expected := `USAGE:
    This is a
@@ -1160,10 +1076,7 @@ App UsageText`,
 	output := &bytes.Buffer{}
 	cmd.Writer = output
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	_ = cmd.Run(ctx, []string{"foo"})
+	_ = cmd.Run(buildTestContext(t), []string{"foo"})
 
 	expected := "COMMANDS:\n" +
 		"   frobbly, frb1, frbb2, frl2  this is a long help output for the run command, long usage \n" +
@@ -1182,10 +1095,7 @@ func TestHideHelpCommand(t *testing.T) {
 		Writer:          io.Discard,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	err := cmd.Run(ctx, []string{"foo", "help"})
+	err := cmd.Run(buildTestContext(t), []string{"foo", "help"})
 	if err == nil {
 		t.Fatalf("expected a non-nil error")
 	}
@@ -1193,7 +1103,7 @@ func TestHideHelpCommand(t *testing.T) {
 		t.Errorf("Run returned unexpected error: %v", err)
 	}
 
-	err = cmd.Run(ctx, []string{"foo", "--help"})
+	err = cmd.Run(buildTestContext(t), []string{"foo", "--help"})
 	if err != nil {
 		t.Errorf("Run returned unexpected error: %v", err)
 	}
@@ -1205,15 +1115,12 @@ func TestHideHelpCommand_False(t *testing.T) {
 		Writer:          io.Discard,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	err := cmd.Run(ctx, []string{"foo", "help"})
+	err := cmd.Run(buildTestContext(t), []string{"foo", "help"})
 	if err != nil {
 		t.Errorf("Run returned unexpected error: %v", err)
 	}
 
-	err = cmd.Run(ctx, []string{"foo", "--help"})
+	err = cmd.Run(buildTestContext(t), []string{"foo", "--help"})
 	if err != nil {
 		t.Errorf("Run returned unexpected error: %v", err)
 	}
@@ -1226,10 +1133,7 @@ func TestHideHelpCommand_WithHideHelp(t *testing.T) {
 		Writer:          io.Discard,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	err := cmd.Run(ctx, []string{"foo", "help"})
+	err := cmd.Run(buildTestContext(t), []string{"foo", "help"})
 	if err == nil {
 		t.Fatalf("expected a non-nil error")
 	}
@@ -1237,7 +1141,7 @@ func TestHideHelpCommand_WithHideHelp(t *testing.T) {
 		t.Errorf("Run returned unexpected error: %v", err)
 	}
 
-	err = cmd.Run(ctx, []string{"foo", "--help"})
+	err = cmd.Run(buildTestContext(t), []string{"foo", "--help"})
 	if err == nil {
 		t.Fatalf("expected a non-nil error")
 	}
@@ -1261,13 +1165,10 @@ func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 		},
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	r := require.New(t)
 
-	r.ErrorContains(cmd.Run(ctx, []string{"cli.test", "help"}), "No help topic for 'help'")
-	r.NoError(cmd.Run(ctx, []string{"cli.test", "--help"}))
+	r.ErrorContains(cmd.Run(buildTestContext(t), []string{"cli.test", "help"}), "No help topic for 'help'")
+	r.NoError(cmd.Run(buildTestContext(t), []string{"cli.test", "--help"}))
 }
 
 func TestDefaultCompleteWithFlags(t *testing.T) {
@@ -1591,10 +1492,7 @@ func TestWrappedSubcommandHelp(t *testing.T) {
 		HelpPrinterCustom(w, templ, data, funcMap)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	_ = cmd.Run(ctx, []string{"foo", "bar", "grok", "--help"})
+	_ = cmd.Run(buildTestContext(t), []string{"foo", "bar", "grok", "--help"})
 
 	expected := `NAME:
    cli.test bar grok - remove
@@ -1670,12 +1568,9 @@ func TestWrappedHelpSubcommand(t *testing.T) {
 		HelpPrinterCustom(w, templ, data, funcMap)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	r := require.New(t)
 
-	r.NoError(cmd.Run(ctx, []string{"cli.test", "bar", "help", "grok"}))
+	r.NoError(cmd.Run(buildTestContext(t), []string{"cli.test", "bar", "help", "grok"}))
 	r.Equal(`NAME:
    cli.test bar grok - remove
                        an

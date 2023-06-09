@@ -1,14 +1,11 @@
-package cli_test
+package cli
 
 import (
-	"context"
 	"fmt"
-	"os"
 	"strings"
 	"testing"
-	"time"
 
-	"github.com/urfave/cli/v3"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -23,21 +20,17 @@ type boolWithInverseTestCase struct {
 	envVars map[string]string
 }
 
-func (tc *boolWithInverseTestCase) Run(t *testing.T, flagWithInverse *cli.BoolWithInverseFlag) error {
-	cmd := &cli.Command{
-		Flags:  []cli.Flag{flagWithInverse},
-		Action: func(ctx *cli.Context) error { return nil },
+func (tc *boolWithInverseTestCase) Run(t *testing.T, flagWithInverse *BoolWithInverseFlag) error {
+	cmd := &Command{
+		Flags:  []Flag{flagWithInverse},
+		Action: func(ctx *Context) error { return nil },
 	}
 
 	for key, val := range tc.envVars {
-		os.Setenv(key, val)
-		defer os.Unsetenv(key)
+		t.Setenv(key, val)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	err := cmd.Run(ctx, append([]string{"prog"}, tc.args...))
+	err := cmd.Run(buildTestContext(t), append([]string{"prog"}, tc.args...))
 	if err != nil {
 		return err
 	}
@@ -53,32 +46,35 @@ func (tc *boolWithInverseTestCase) Run(t *testing.T, flagWithInverse *cli.BoolWi
 	return nil
 }
 
-func runTests(t *testing.T, newFlagMethod func() *cli.BoolWithInverseFlag, cases []*boolWithInverseTestCase) error {
-	for _, test := range cases {
-		fl := newFlagMethod()
+func runBoolWithInverseFlagTests(t *testing.T, newFlagMethod func() *BoolWithInverseFlag, cases []*boolWithInverseTestCase) error {
+	for _, tc := range cases {
+		t.Run(strings.Join(tc.args, " ")+fmt.Sprintf("%[1]v %[2]v %[3]v", tc.value, tc.toBeSet, tc.err), func(t *testing.T) {
+			r := require.New(t)
 
-		err := test.Run(t, fl)
-		if err != nil && test.err == nil {
-			return err
-		}
+			fl := newFlagMethod()
 
-		if err == nil && test.err != nil {
-			return fmt.Errorf("expected error %q, but got nil", test.err)
-		}
+			err := tc.Run(t, fl)
+			if err != nil && tc.err == nil {
+				r.NoError(err)
+			}
 
-		if err != nil && test.err != nil && err.Error() != test.err.Error() {
-			return fmt.Errorf("expected error %q, but got %q", test.err, err)
-		}
+			if err == nil && tc.err != nil {
+				r.Error(err)
+			}
 
+			if err != nil && tc.err != nil {
+				r.EqualError(err, tc.err.Error())
+			}
+		})
 	}
 
 	return nil
 }
 
 func TestBoolWithInverseBasic(t *testing.T) {
-	flagMethod := func() *cli.BoolWithInverseFlag {
-		return &cli.BoolWithInverseFlag{
-			BoolFlag: &cli.BoolFlag{
+	flagMethod := func() *BoolWithInverseFlag {
+		return &BoolWithInverseFlag{
+			BoolFlag: &BoolFlag{
 				Name: "env",
 			},
 		}
@@ -105,7 +101,7 @@ func TestBoolWithInverseBasic(t *testing.T) {
 		},
 	}
 
-	err := runTests(t, flagMethod, testCases)
+	err := runBoolWithInverseFlagTests(t, flagMethod, testCases)
 	if err != nil {
 		t.Error(err)
 		return
@@ -113,13 +109,13 @@ func TestBoolWithInverseBasic(t *testing.T) {
 }
 
 func TestBoolWithInverseAction(t *testing.T) {
-	flagMethod := func() *cli.BoolWithInverseFlag {
-		return &cli.BoolWithInverseFlag{
-			BoolFlag: &cli.BoolFlag{
+	flagMethod := func() *BoolWithInverseFlag {
+		return &BoolWithInverseFlag{
+			BoolFlag: &BoolFlag{
 				Name: "env",
 
 				// Setting env to the opposite to test flag Action is working as intended
-				Action: func(ctx *cli.Context, value bool) error {
+				Action: func(ctx *Context, value bool) error {
 					if value {
 						return ctx.Set("env", "false")
 					}
@@ -153,7 +149,7 @@ func TestBoolWithInverseAction(t *testing.T) {
 		},
 	}
 
-	err := runTests(t, flagMethod, testCases)
+	err := runBoolWithInverseFlagTests(t, flagMethod, testCases)
 	if err != nil {
 		t.Error(err)
 		return
@@ -161,9 +157,9 @@ func TestBoolWithInverseAction(t *testing.T) {
 }
 
 func TestBoolWithInverseAlias(t *testing.T) {
-	flagMethod := func() *cli.BoolWithInverseFlag {
-		return &cli.BoolWithInverseFlag{
-			BoolFlag: &cli.BoolFlag{
+	flagMethod := func() *BoolWithInverseFlag {
+		return &BoolWithInverseFlag{
+			BoolFlag: &BoolFlag{
 				Name:    "env",
 				Aliases: []string{"e", "do-env"},
 			},
@@ -191,7 +187,7 @@ func TestBoolWithInverseAlias(t *testing.T) {
 		},
 	}
 
-	err := runTests(t, flagMethod, testCases)
+	err := runBoolWithInverseFlagTests(t, flagMethod, testCases)
 	if err != nil {
 		t.Error(err)
 		return
@@ -199,11 +195,11 @@ func TestBoolWithInverseAlias(t *testing.T) {
 }
 
 func TestBoolWithInverseEnvVars(t *testing.T) {
-	flagMethod := func() *cli.BoolWithInverseFlag {
-		return &cli.BoolWithInverseFlag{
-			BoolFlag: &cli.BoolFlag{
+	flagMethod := func() *BoolWithInverseFlag {
+		return &BoolWithInverseFlag{
+			BoolFlag: &BoolFlag{
 				Name:    "env",
-				Sources: cli.ValueSources{cli.EnvSource("ENV")},
+				Sources: ValueSources{EnvSource("ENV")},
 			},
 		}
 	}
@@ -243,7 +239,7 @@ func TestBoolWithInverseEnvVars(t *testing.T) {
 		},
 	}
 
-	err := runTests(t, flagMethod, testCases)
+	err := runBoolWithInverseFlagTests(t, flagMethod, testCases)
 	if err != nil {
 		t.Error(err)
 		return
@@ -251,9 +247,9 @@ func TestBoolWithInverseEnvVars(t *testing.T) {
 }
 
 func TestBoolWithInverseWithPrefix(t *testing.T) {
-	flagMethod := func() *cli.BoolWithInverseFlag {
-		return &cli.BoolWithInverseFlag{
-			BoolFlag: &cli.BoolFlag{
+	flagMethod := func() *BoolWithInverseFlag {
+		return &BoolWithInverseFlag{
+			BoolFlag: &BoolFlag{
 				Name: "env",
 			},
 			InversePrefix: "without-",
@@ -281,7 +277,7 @@ func TestBoolWithInverseWithPrefix(t *testing.T) {
 		},
 	}
 
-	err := runTests(t, flagMethod, testCases)
+	err := runBoolWithInverseFlagTests(t, flagMethod, testCases)
 	if err != nil {
 		t.Error(err)
 		return
@@ -289,9 +285,9 @@ func TestBoolWithInverseWithPrefix(t *testing.T) {
 }
 
 func TestBoolWithInverseRequired(t *testing.T) {
-	flagMethod := func() *cli.BoolWithInverseFlag {
-		return &cli.BoolWithInverseFlag{
-			BoolFlag: &cli.BoolFlag{
+	flagMethod := func() *BoolWithInverseFlag {
+		return &BoolWithInverseFlag{
+			BoolFlag: &BoolFlag{
 				Name:     "env",
 				Required: true,
 			},
@@ -320,7 +316,7 @@ func TestBoolWithInverseRequired(t *testing.T) {
 		},
 	}
 
-	err := runTests(t, flagMethod, testCases)
+	err := runBoolWithInverseFlagTests(t, flagMethod, testCases)
 	if err != nil {
 		t.Error(err)
 		return
@@ -328,8 +324,8 @@ func TestBoolWithInverseRequired(t *testing.T) {
 }
 
 func TestBoolWithInverseNames(t *testing.T) {
-	flag := &cli.BoolWithInverseFlag{
-		BoolFlag: &cli.BoolFlag{
+	flag := &BoolWithInverseFlag{
+		BoolFlag: &BoolFlag{
 			Name:     "env",
 			Required: true,
 		},
@@ -367,12 +363,12 @@ func TestBoolWithInverseDestination(t *testing.T) {
 	destination := new(bool)
 	count := new(int)
 
-	flagMethod := func() *cli.BoolWithInverseFlag {
-		return &cli.BoolWithInverseFlag{
-			BoolFlag: &cli.BoolFlag{
+	flagMethod := func() *BoolWithInverseFlag {
+		return &BoolWithInverseFlag{
+			BoolFlag: &BoolFlag{
 				Name:        "env",
 				Destination: destination,
-				Config: cli.BoolConfig{
+				Config: BoolConfig{
 					Count: count,
 				},
 			},

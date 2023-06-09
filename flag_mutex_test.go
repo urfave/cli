@@ -1,10 +1,8 @@
 package cli
 
 import (
-	"context"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestFlagMutuallyExclusiveFlags(t *testing.T) {
@@ -31,20 +29,17 @@ func TestFlagMutuallyExclusiveFlags(t *testing.T) {
 		},
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	err := cmd.Run(ctx, []string{"foo"})
+	err := cmd.Run(buildTestContext(t), []string{"foo"})
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = cmd.Run(ctx, []string{"foo", "--i", "10"})
+	err = cmd.Run(buildTestContext(t), []string{"foo", "--i", "10"})
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = cmd.Run(ctx, []string{"foo", "--i", "11", "--ai", "12"})
+	err = cmd.Run(buildTestContext(t), []string{"foo", "--i", "11", "--ai", "12"})
 	if err == nil {
 		t.Error("Expected mutual exclusion error")
 	} else if err1, ok := err.(*mutuallyExclusiveGroup); !ok {
@@ -55,7 +50,7 @@ func TestFlagMutuallyExclusiveFlags(t *testing.T) {
 
 	cmd.MutuallyExclusiveFlags[0].Required = true
 
-	err = cmd.Run(ctx, []string{"foo"})
+	err = cmd.Run(buildTestContext(t), []string{"foo"})
 	if err == nil {
 		t.Error("Required flags error")
 	} else if err1, ok := err.(*mutuallyExclusiveGroupRequiredFlag); !ok {
@@ -64,12 +59,12 @@ func TestFlagMutuallyExclusiveFlags(t *testing.T) {
 		t.Errorf("Invalid error string %v", err1)
 	}
 
-	err = cmd.Run(ctx, []string{"foo", "--i", "10"})
+	err = cmd.Run(buildTestContext(t), []string{"foo", "--i", "10"})
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = cmd.Run(ctx, []string{"foo", "--i", "11", "--ai", "12"})
+	err = cmd.Run(buildTestContext(t), []string{"foo", "--i", "11", "--ai", "12"})
 	if err == nil {
 		t.Error("Expected mutual exclusion error")
 	} else if err1, ok := err.(*mutuallyExclusiveGroup); !ok {

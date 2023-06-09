@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"io"
@@ -54,11 +53,11 @@ func TestBoolFlagValueFromContext(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Bool("trueflag", true, "doc")
 	set.Bool("falseflag", false, "doc")
-	ctx := NewContext(nil, set, nil)
+	cCtx := NewContext(nil, set, nil)
 	tf := &BoolFlag{Name: "trueflag"}
 	ff := &BoolFlag{Name: "falseflag"}
-	expect(t, tf.Get(ctx), true)
-	expect(t, ff.Get(ctx), false)
+	expect(t, tf.Get(cCtx), true)
+	expect(t, ff.Get(cCtx), false)
 }
 
 func TestBoolFlagApply_SetsCount(t *testing.T) {
@@ -210,10 +209,7 @@ func TestFlagsFromEnv(t *testing.T) {
 			},
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-		t.Cleanup(cancel)
-
-		err := cmd.Run(ctx, []string{"run"})
+		err := cmd.Run(buildTestContext(t), []string{"run"})
 
 		if test.errRegexp != "" {
 			if err == nil {
@@ -1010,9 +1006,6 @@ func TestIntSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 }
 
 func TestIntSliceFlagApply_ParentContext(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&IntSliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: []int{1, 2, 3}},
@@ -1032,7 +1025,7 @@ func TestIntSliceFlagApply_ParentContext(t *testing.T) {
 				},
 			},
 		},
-	}).Run(ctx, []string{"run", "child"})
+	}).Run(buildTestContext(t), []string{"run", "child"})
 }
 
 func TestIntSliceFlag_SetFromParentContext(t *testing.T) {
@@ -1152,9 +1145,6 @@ func TestInt64SliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 }
 
 func TestInt64SliceFlagApply_ParentContext(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&Int64SliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: []int64{1, 2, 3}},
@@ -1174,7 +1164,7 @@ func TestInt64SliceFlagApply_ParentContext(t *testing.T) {
 				},
 			},
 		},
-	}).Run(ctx, []string{"run", "child"})
+	}).Run(buildTestContext(t), []string{"run", "child"})
 }
 
 func TestInt64SliceFlag_SetFromParentContext(t *testing.T) {
@@ -1311,9 +1301,6 @@ func TestUintSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 }
 
 func TestUintSliceFlagApply_ParentContext(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&UintSliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: []uint{1, 2, 3}},
@@ -1333,7 +1320,7 @@ func TestUintSliceFlagApply_ParentContext(t *testing.T) {
 				},
 			},
 		},
-	}).Run(ctx, []string{"run", "child"})
+	}).Run(buildTestContext(t), []string{"run", "child"})
 }
 
 func TestUintSliceFlag_SetFromParentContext(t *testing.T) {
@@ -1460,9 +1447,6 @@ func TestUint64SliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 }
 
 func TestUint64SliceFlagApply_ParentContext(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&Uint64SliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: []uint64{1, 2, 3}},
@@ -1482,7 +1466,7 @@ func TestUint64SliceFlagApply_ParentContext(t *testing.T) {
 				},
 			},
 		},
-	}).Run(ctx, []string{"run", "child"})
+	}).Run(buildTestContext(t), []string{"run", "child"})
 }
 
 func TestUint64SliceFlag_SetFromParentContext(t *testing.T) {
@@ -1671,9 +1655,6 @@ func TestFloat64SliceFlagValueFromContext(t *testing.T) {
 }
 
 func TestFloat64SliceFlagApply_ParentContext(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&Float64SliceFlag{Name: "numbers", Aliases: []string{"n"}, Value: []float64{1.0, 2.0, 3.0}},
@@ -1693,13 +1674,10 @@ func TestFloat64SliceFlagApply_ParentContext(t *testing.T) {
 				},
 			},
 		},
-	}).Run(ctx, []string{"run", "child"})
+	}).Run(buildTestContext(t), []string{"run", "child"})
 }
 
 func TestParseMultiString(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&StringFlag{Name: "serve", Aliases: []string{"s"}},
@@ -1713,14 +1691,11 @@ func TestParseMultiString(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run", "-s", "10"})
+	}).Run(buildTestContext(t), []string{"run", "-s", "10"})
 }
 
 func TestParseDestinationString(t *testing.T) {
 	var dest string
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&StringFlag{
@@ -1734,16 +1709,11 @@ func TestParseDestinationString(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run", "--dest", "10"})
+	}).Run(buildTestContext(t), []string{"run", "--dest", "10"})
 }
 
 func TestParseMultiStringFromEnv(t *testing.T) {
-	defer resetEnv(os.Environ())
-	os.Clearenv()
-	_ = os.Setenv("APP_COUNT", "20")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
+	t.Setenv("APP_COUNT", "20")
 
 	_ = (&Command{
 		Flags: []Flag{
@@ -1758,16 +1728,13 @@ func TestParseMultiStringFromEnv(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseMultiStringFromEnvCascade(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("APP_COUNT", "20")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
 
 	_ = (&Command{
 		Flags: []Flag{
@@ -1782,13 +1749,10 @@ func TestParseMultiStringFromEnvCascade(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseMultiStringSlice(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&StringSliceFlag{Name: "serve", Aliases: []string{"s"}, Value: []string{}},
@@ -1803,13 +1767,10 @@ func TestParseMultiStringSlice(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run", "-s", "10", "-s", "20"})
+	}).Run(buildTestContext(t), []string{"run", "-s", "10", "-s", "20"})
 }
 
 func TestParseMultiStringSliceWithDefaults(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&StringSliceFlag{Name: "serve", Aliases: []string{"s"}, Value: []string{"9", "2"}},
@@ -1824,14 +1785,11 @@ func TestParseMultiStringSliceWithDefaults(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run", "-s", "10", "-s", "20"})
+	}).Run(buildTestContext(t), []string{"run", "-s", "10", "-s", "20"})
 }
 
 func TestParseMultiStringSliceWithDestination(t *testing.T) {
 	dest := []string{}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
 
 	_ = (&Command{
 		Flags: []Flag{
@@ -1847,18 +1805,13 @@ func TestParseMultiStringSliceWithDestination(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run", "-s", "10", "-s", "20"})
+	}).Run(buildTestContext(t), []string{"run", "-s", "10", "-s", "20"})
 }
 
 func TestParseMultiStringSliceWithDestinationAndEnv(t *testing.T) {
-	defer resetEnv(os.Environ())
-	os.Clearenv()
-	_ = os.Setenv("APP_INTERVALS", "20,30,40")
+	t.Setenv("APP_INTERVALS", "20,30,40")
 
 	dest := []string{}
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&StringSliceFlag{Name: "serve", Aliases: []string{"s"}, Destination: &dest, Sources: EnvVars("APP_INTERVALS")},
@@ -1873,7 +1826,7 @@ func TestParseMultiStringSliceWithDestinationAndEnv(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run", "-s", "10", "-s", "20"})
+	}).Run(buildTestContext(t), []string{"run", "-s", "10", "-s", "20"})
 }
 
 func TestParseMultiFloat64SliceWithDestinationAndEnv(t *testing.T) {
@@ -1882,9 +1835,6 @@ func TestParseMultiFloat64SliceWithDestinationAndEnv(t *testing.T) {
 	_ = os.Setenv("APP_INTERVALS", "20,30,40")
 
 	dest := []float64{}
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&Float64SliceFlag{Name: "serve", Aliases: []string{"s"}, Destination: &dest, Sources: EnvVars("APP_INTERVALS")},
@@ -1899,7 +1849,7 @@ func TestParseMultiFloat64SliceWithDestinationAndEnv(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run", "-s", "10", "-s", "20"})
+	}).Run(buildTestContext(t), []string{"run", "-s", "10", "-s", "20"})
 }
 
 func TestParseMultiInt64SliceWithDestinationAndEnv(t *testing.T) {
@@ -1908,9 +1858,6 @@ func TestParseMultiInt64SliceWithDestinationAndEnv(t *testing.T) {
 	_ = os.Setenv("APP_INTERVALS", "20,30,40")
 
 	var dest []int64
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
 
 	_ = (&Command{
 		Flags: []Flag{
@@ -1926,7 +1873,7 @@ func TestParseMultiInt64SliceWithDestinationAndEnv(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run", "-s", "10", "-s", "20"})
+	}).Run(buildTestContext(t), []string{"run", "-s", "10", "-s", "20"})
 }
 
 func TestParseMultiIntSliceWithDestinationAndEnv(t *testing.T) {
@@ -1935,9 +1882,6 @@ func TestParseMultiIntSliceWithDestinationAndEnv(t *testing.T) {
 	_ = os.Setenv("APP_INTERVALS", "20,30,40")
 
 	dest := []int{}
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&IntSliceFlag{Name: "serve", Aliases: []string{"s"}, Destination: &dest, Sources: EnvVars("APP_INTERVALS")},
@@ -1952,13 +1896,10 @@ func TestParseMultiIntSliceWithDestinationAndEnv(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run", "-s", "10", "-s", "20"})
+	}).Run(buildTestContext(t), []string{"run", "-s", "10", "-s", "20"})
 }
 
 func TestParseMultiStringSliceWithDefaultsUnset(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&StringSliceFlag{Name: "serve", Aliases: []string{"s"}, Value: []string{"9", "2"}},
@@ -1972,16 +1913,13 @@ func TestParseMultiStringSliceWithDefaultsUnset(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseMultiStringSliceFromEnv(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("APP_INTERVALS", "20,30,40")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
 
 	_ = (&Command{
 		Flags: []Flag{
@@ -1996,16 +1934,13 @@ func TestParseMultiStringSliceFromEnv(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseMultiStringSliceFromEnvWithDefaults(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("APP_INTERVALS", "20,30,40")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
 
 	_ = (&Command{
 		Flags: []Flag{
@@ -2020,16 +1955,13 @@ func TestParseMultiStringSliceFromEnvWithDefaults(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseMultiStringSliceFromEnvCascade(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("APP_INTERVALS", "20,30,40")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
 
 	_ = (&Command{
 		Flags: []Flag{
@@ -2044,16 +1976,13 @@ func TestParseMultiStringSliceFromEnvCascade(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseMultiStringSliceFromEnvCascadeWithDefaults(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("APP_INTERVALS", "20,30,40")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
 
 	_ = (&Command{
 		Flags: []Flag{
@@ -2068,7 +1997,7 @@ func TestParseMultiStringSliceFromEnvCascadeWithDefaults(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseMultiStringSliceFromEnvWithDestination(t *testing.T) {
@@ -2077,9 +2006,6 @@ func TestParseMultiStringSliceFromEnvWithDestination(t *testing.T) {
 	_ = os.Setenv("APP_INTERVALS", "20,30,40")
 
 	dest := []string{}
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&StringSliceFlag{Name: "intervals", Aliases: []string{"i"}, Destination: &dest, Sources: EnvVars("APP_INTERVALS")},
@@ -2093,13 +2019,10 @@ func TestParseMultiStringSliceFromEnvWithDestination(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseMultiInt(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&IntFlag{Name: "serve", Aliases: []string{"s"}},
@@ -2113,14 +2036,11 @@ func TestParseMultiInt(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run", "-s", "10"})
+	}).Run(buildTestContext(t), []string{"run", "-s", "10"})
 }
 
 func TestParseDestinationInt(t *testing.T) {
 	var dest int
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&IntFlag{
@@ -2134,16 +2054,13 @@ func TestParseDestinationInt(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run", "--dest", "10"})
+	}).Run(buildTestContext(t), []string{"run", "--dest", "10"})
 }
 
 func TestParseMultiIntFromEnv(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("APP_TIMEOUT_SECONDS", "10")
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&IntFlag{Name: "timeout", Aliases: []string{"t"}, Sources: EnvVars("APP_TIMEOUT_SECONDS")},
@@ -2157,16 +2074,13 @@ func TestParseMultiIntFromEnv(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseMultiIntFromEnvCascade(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("APP_TIMEOUT_SECONDS", "10")
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&IntFlag{Name: "timeout", Aliases: []string{"t"}, Sources: EnvVars("COMPAT_TIMEOUT_SECONDS", "APP_TIMEOUT_SECONDS")},
@@ -2180,13 +2094,10 @@ func TestParseMultiIntFromEnvCascade(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseMultiIntSlice(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&IntSliceFlag{Name: "serve", Aliases: []string{"s"}, Value: []int{}},
@@ -2200,13 +2111,10 @@ func TestParseMultiIntSlice(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run", "-s", "10", "-s", "20"})
+	}).Run(buildTestContext(t), []string{"run", "-s", "10", "-s", "20"})
 }
 
 func TestParseMultiIntSliceWithDefaults(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&IntSliceFlag{Name: "serve", Aliases: []string{"s"}, Value: []int{9, 2}},
@@ -2220,13 +2128,10 @@ func TestParseMultiIntSliceWithDefaults(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run", "-s", "10", "-s", "20"})
+	}).Run(buildTestContext(t), []string{"run", "-s", "10", "-s", "20"})
 }
 
 func TestParseMultiIntSliceWithDefaultsUnset(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&IntSliceFlag{Name: "serve", Aliases: []string{"s"}, Value: []int{9, 2}},
@@ -2240,16 +2145,13 @@ func TestParseMultiIntSliceWithDefaultsUnset(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseMultiIntSliceFromEnv(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("APP_INTERVALS", "20,30,40")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
 
 	_ = (&Command{
 		Flags: []Flag{
@@ -2264,16 +2166,13 @@ func TestParseMultiIntSliceFromEnv(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseMultiIntSliceFromEnvWithDefaults(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("APP_INTERVALS", "20,30,40")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
 
 	_ = (&Command{
 		Flags: []Flag{
@@ -2288,16 +2187,13 @@ func TestParseMultiIntSliceFromEnvWithDefaults(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseMultiIntSliceFromEnvCascade(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("APP_INTERVALS", "20,30,40")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
 
 	_ = (&Command{
 		Flags: []Flag{
@@ -2312,13 +2208,10 @@ func TestParseMultiIntSliceFromEnvCascade(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseMultiInt64Slice(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&Int64SliceFlag{Name: "serve", Aliases: []string{"s"}},
@@ -2332,16 +2225,13 @@ func TestParseMultiInt64Slice(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run", "-s", "10", "-s", "17179869184"})
+	}).Run(buildTestContext(t), []string{"run", "-s", "10", "-s", "17179869184"})
 }
 
 func TestParseMultiInt64SliceFromEnv(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("APP_INTERVALS", "20,30,17179869184")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
 
 	_ = (&Command{
 		Flags: []Flag{
@@ -2356,16 +2246,13 @@ func TestParseMultiInt64SliceFromEnv(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseMultiInt64SliceFromEnvCascade(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("APP_INTERVALS", "20,30,17179869184")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
 
 	_ = (&Command{
 		Flags: []Flag{
@@ -2380,13 +2267,10 @@ func TestParseMultiInt64SliceFromEnvCascade(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseMultiFloat64(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&Float64Flag{Name: "serve", Aliases: []string{"s"}},
@@ -2400,14 +2284,11 @@ func TestParseMultiFloat64(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run", "-s", "10.2"})
+	}).Run(buildTestContext(t), []string{"run", "-s", "10.2"})
 }
 
 func TestParseDestinationFloat64(t *testing.T) {
 	var dest float64
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&Float64Flag{
@@ -2421,16 +2302,13 @@ func TestParseDestinationFloat64(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run", "--dest", "10.2"})
+	}).Run(buildTestContext(t), []string{"run", "--dest", "10.2"})
 }
 
 func TestParseMultiFloat64FromEnv(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("APP_TIMEOUT_SECONDS", "15.5")
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&Float64Flag{Name: "timeout", Aliases: []string{"t"}, Sources: EnvVars("APP_TIMEOUT_SECONDS")},
@@ -2444,16 +2322,13 @@ func TestParseMultiFloat64FromEnv(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseMultiFloat64FromEnvCascade(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("APP_TIMEOUT_SECONDS", "15.5")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
 
 	_ = (&Command{
 		Flags: []Flag{
@@ -2468,16 +2343,13 @@ func TestParseMultiFloat64FromEnvCascade(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseMultiFloat64SliceFromEnv(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("APP_INTERVALS", "0.1,-10.5")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
 
 	_ = (&Command{
 		Flags: []Flag{
@@ -2492,16 +2364,13 @@ func TestParseMultiFloat64SliceFromEnv(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseMultiFloat64SliceFromEnvCascade(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("APP_INTERVALS", "0.1234,-10.5")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
 
 	_ = (&Command{
 		Flags: []Flag{
@@ -2516,13 +2385,10 @@ func TestParseMultiFloat64SliceFromEnvCascade(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseMultiBool(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&BoolFlag{Name: "serve", Aliases: []string{"s"}},
@@ -2536,13 +2402,10 @@ func TestParseMultiBool(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run", "--serve"})
+	}).Run(buildTestContext(t), []string{"run", "--serve"})
 }
 
 func TestParseBoolShortOptionHandle(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Commands: []*Command{
 			{
@@ -2563,14 +2426,11 @@ func TestParseBoolShortOptionHandle(t *testing.T) {
 				},
 			},
 		},
-	}).Run(ctx, []string{"run", "foobar", "-so"})
+	}).Run(buildTestContext(t), []string{"run", "foobar", "-so"})
 }
 
 func TestParseDestinationBool(t *testing.T) {
 	var dest bool
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&BoolFlag{
@@ -2584,16 +2444,13 @@ func TestParseDestinationBool(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run", "--dest"})
+	}).Run(buildTestContext(t), []string{"run", "--dest"})
 }
 
 func TestParseMultiBoolFromEnv(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("APP_DEBUG", "1")
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&BoolFlag{Name: "debug", Aliases: []string{"d"}, Sources: EnvVars("APP_DEBUG")},
@@ -2607,16 +2464,13 @@ func TestParseMultiBoolFromEnv(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseMultiBoolFromEnvCascade(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
 	_ = os.Setenv("APP_DEBUG", "1")
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&BoolFlag{Name: "debug", Aliases: []string{"d"}, Sources: EnvVars("COMPAT_DEBUG", "APP_DEBUG")},
@@ -2630,7 +2484,7 @@ func TestParseMultiBoolFromEnvCascade(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run"})
+	}).Run(buildTestContext(t), []string{"run"})
 }
 
 func TestParseBoolFromEnv(t *testing.T) {
@@ -2648,9 +2502,6 @@ func TestParseBoolFromEnv(t *testing.T) {
 		defer resetEnv(os.Environ())
 		os.Clearenv()
 		_ = os.Setenv("DEBUG", test.input)
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-		t.Cleanup(cancel)
-
 		_ = (&Command{
 			Flags: []Flag{
 				&BoolFlag{Name: "debug", Aliases: []string{"d"}, Sources: EnvVars("DEBUG")},
@@ -2664,14 +2515,11 @@ func TestParseBoolFromEnv(t *testing.T) {
 				}
 				return nil
 			},
-		}).Run(ctx, []string{"run"})
+		}).Run(buildTestContext(t), []string{"run"})
 	}
 }
 
 func TestParseMultiBoolT(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	_ = (&Command{
 		Flags: []Flag{
 			&BoolFlag{Name: "implode", Aliases: []string{"i"}, Value: true},
@@ -2685,7 +2533,7 @@ func TestParseMultiBoolT(t *testing.T) {
 			}
 			return nil
 		},
-	}).Run(ctx, []string{"run", "--implode=false"})
+	}).Run(buildTestContext(t), []string{"run", "--implode=false"})
 }
 
 type Parser [2]string
@@ -3268,9 +3116,6 @@ func TestTimestampFlagApply_WithDestination(t *testing.T) {
 // StringSlice() with UseShortOptionHandling causes duplicated entries, depending on the ordering of the flags
 func TestSliceShortOptionHandle(t *testing.T) {
 	wasCalled := false
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
 	err := (&Command{
 		Commands: []*Command{
 			{
@@ -3297,7 +3142,7 @@ func TestSliceShortOptionHandle(t *testing.T) {
 				},
 			},
 		},
-	}).Run(ctx, []string{"run", "foobar", "--net=foo", "-it"})
+	}).Run(buildTestContext(t), []string{"run", "foobar", "--net=foo", "-it"})
 	if err != nil {
 		t.Fatal(err)
 	}
