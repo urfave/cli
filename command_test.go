@@ -173,59 +173,76 @@ func TestCommandFlagParsing(t *testing.T) {
 }
 
 func TestParseAndRunShortOpts(t *testing.T) {
-	cases := []struct {
+	testCases := []struct {
 		testArgs     args
-		expectedErr  error
+		expectedErr  string
 		expectedArgs Args
 	}{
-		{testArgs: args{"foo", "test", "-a"}, expectedErr: nil, expectedArgs: &args{}},
-		{testArgs: args{"foo", "test", "-c", "arg1", "arg2"}, expectedErr: nil, expectedArgs: &args{"arg1", "arg2"}},
-		{testArgs: args{"foo", "test", "-f"}, expectedErr: nil, expectedArgs: &args{}},
-		{testArgs: args{"foo", "test", "-ac", "--fgh"}, expectedErr: nil, expectedArgs: &args{}},
-		{testArgs: args{"foo", "test", "-af"}, expectedErr: nil, expectedArgs: &args{}},
-		{testArgs: args{"foo", "test", "-cf"}, expectedErr: nil, expectedArgs: &args{}},
-		{testArgs: args{"foo", "test", "-acf"}, expectedErr: nil, expectedArgs: &args{}},
-		{testArgs: args{"foo", "test", "--acf"}, expectedErr: errors.New("flag provided but not defined: -acf"), expectedArgs: nil},
-		{testArgs: args{"foo", "test", "-invalid"}, expectedErr: errors.New("flag provided but not defined: -invalid"), expectedArgs: nil},
-		{testArgs: args{"foo", "test", "-acf", "-invalid"}, expectedErr: errors.New("flag provided but not defined: -invalid"), expectedArgs: nil},
-		{testArgs: args{"foo", "test", "--invalid"}, expectedErr: errors.New("flag provided but not defined: -invalid"), expectedArgs: nil},
-		{testArgs: args{"foo", "test", "-acf", "--invalid"}, expectedErr: errors.New("flag provided but not defined: -invalid"), expectedArgs: nil},
-		{testArgs: args{"foo", "test", "-acf", "arg1", "-invalid"}, expectedErr: nil, expectedArgs: &args{"arg1", "-invalid"}},
-		{testArgs: args{"foo", "test", "-acf", "arg1", "--invalid"}, expectedErr: nil, expectedArgs: &args{"arg1", "--invalid"}},
-		{testArgs: args{"foo", "test", "-acfi", "not-arg", "arg1", "-invalid"}, expectedErr: nil, expectedArgs: &args{"arg1", "-invalid"}},
-		{testArgs: args{"foo", "test", "-i", "ivalue"}, expectedErr: nil, expectedArgs: &args{}},
-		{testArgs: args{"foo", "test", "-i", "ivalue", "arg1"}, expectedErr: nil, expectedArgs: &args{"arg1"}},
-		{testArgs: args{"foo", "test", "-i"}, expectedErr: errors.New("flag needs an argument: -i"), expectedArgs: nil},
+		{testArgs: args{"test", "-a"}},
+		{testArgs: args{"test", "-c", "arg1", "arg2"}, expectedArgs: &args{"arg1", "arg2"}},
+		{testArgs: args{"test", "-f"}, expectedArgs: &args{}},
+		{testArgs: args{"test", "-ac", "--fgh"}, expectedArgs: &args{}},
+		{testArgs: args{"test", "-af"}, expectedArgs: &args{}},
+		{testArgs: args{"test", "-cf"}, expectedArgs: &args{}},
+		{testArgs: args{"test", "-acf"}, expectedArgs: &args{}},
+		{testArgs: args{"test", "--acf"}, expectedErr: "flag provided but not defined: -acf"},
+		{testArgs: args{"test", "-invalid"}, expectedErr: "flag provided but not defined: -invalid"},
+		{testArgs: args{"test", "-acf", "-invalid"}, expectedErr: "flag provided but not defined: -invalid"},
+		{testArgs: args{"test", "--invalid"}, expectedErr: "flag provided but not defined: -invalid"},
+		{testArgs: args{"test", "-acf", "--invalid"}, expectedErr: "flag provided but not defined: -invalid"},
+		{testArgs: args{"test", "-acf", "arg1", "-invalid"}, expectedArgs: &args{"arg1", "-invalid"}},
+		{testArgs: args{"test", "-acf", "arg1", "--invalid"}, expectedArgs: &args{"arg1", "--invalid"}},
+		{testArgs: args{"test", "-acfi", "not-arg", "arg1", "-invalid"}, expectedArgs: &args{"arg1", "-invalid"}},
+		{testArgs: args{"test", "-i", "ivalue"}, expectedArgs: &args{}},
+		{testArgs: args{"test", "-i", "ivalue", "arg1"}, expectedArgs: &args{"arg1"}},
+		{testArgs: args{"test", "-i"}, expectedErr: "flag needs an argument: -i"},
 	}
 
-	for _, c := range cases {
-		var args Args
-		cmd := &Command{
-			Name:        "test",
-			Usage:       "this is for testing",
-			Description: "testing",
-			Action: func(c *Context) error {
-				args = c.Args()
-				return nil
-			},
-			UseShortOptionHandling: true,
-			Flags: []Flag{
-				&BoolFlag{Name: "abc", Aliases: []string{"a"}},
-				&BoolFlag{Name: "cde", Aliases: []string{"c"}},
-				&BoolFlag{Name: "fgh", Aliases: []string{"f"}},
-				&StringFlag{Name: "ijk", Aliases: []string{"i"}},
-			},
-		}
+	for _, tc := range testCases {
+		t.Run(strings.Join(tc.testArgs, " "), func(t *testing.T) {
+			state := map[string]Args{"args": nil}
 
-		cmd.Writer = io.Discard
+			cmd := &Command{
+				Name:        "test",
+				Usage:       "this is for testing",
+				Description: "testing",
+				Action: func(c *Context) error {
+					state["args"] = c.Args()
+					return nil
+				},
+				UseShortOptionHandling: true,
+				Writer:                 io.Discard,
+				Flags: []Flag{
+					&BoolFlag{Name: "abc", Aliases: []string{"a"}},
+					&BoolFlag{Name: "cde", Aliases: []string{"c"}},
+					&BoolFlag{Name: "fgh", Aliases: []string{"f"}},
+					&StringFlag{Name: "ijk", Aliases: []string{"i"}},
+				},
+			}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-		t.Cleanup(cancel)
+			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+			t.Cleanup(cancel)
 
-		err := cmd.Run(ctx, c.testArgs)
+			err := cmd.Run(ctx, tc.testArgs)
 
-		expect(t, err, c.expectedErr)
-		expect(t, args, c.expectedArgs)
+			r := require.New(t)
+
+			if tc.expectedErr == "" {
+				r.NoError(err)
+			} else {
+				r.ErrorContains(err, tc.expectedErr)
+			}
+
+			if tc.expectedArgs == nil {
+				if state["args"] != nil {
+					r.Len(state["args"].Slice(), 0)
+				} else {
+					r.Nil(state["args"])
+				}
+			} else {
+				r.Equal(tc.expectedArgs, state["args"])
+			}
+		})
 	}
 }
 

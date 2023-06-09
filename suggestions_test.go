@@ -127,12 +127,12 @@ func TestSuggestCommand(t *testing.T) {
 
 func ExampleCommand_Suggest() {
 	cmd := &Command{
-		Name:                  "greet",
-		ErrWriter:             os.Stdout,
-		Suggest:               true,
-		HideHelp:              false,
-		HideHelpCommand:       true,
-		CustomAppHelpTemplate: "(this space intentionally left blank)\n",
+		Name:                          "greet",
+		ErrWriter:                     os.Stdout,
+		Suggest:                       true,
+		HideHelp:                      false,
+		HideHelpCommand:               true,
+		CustomRootCommandHelpTemplate: "(this space intentionally left blank)\n",
 		Flags: []Flag{
 			&StringFlag{Name: "name", Value: "squirrel", Usage: "a name to say"},
 		},

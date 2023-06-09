@@ -108,7 +108,7 @@ func helpCommandAction(cCtx *Context) error {
 			tmpl = CommandHelpTemplate
 		}
 
-		tracef("running HelpPrinter with command %[1]s", cCtx.Command)
+		tracef("running HelpPrinter with command %[1]q", cCtx.Command.Name)
 		HelpPrinter(cCtx.Command.writer(), tmpl, cCtx.Command)
 
 		return nil
@@ -126,9 +126,10 @@ func ShowAppHelpAndExit(c *Context, exitCode int) {
 
 // ShowAppHelp is an action that displays the help.
 func ShowAppHelp(cCtx *Context) error {
-	tmpl := cCtx.Command.CustomAppHelpTemplate
+	tmpl := cCtx.Command.CustomRootCommandHelpTemplate
 	if tmpl == "" {
-		tmpl = AppHelpTemplate
+		tracef("using RootCommandHelpTemplate")
+		tmpl = RootCommandHelpTemplate
 	}
 
 	if cCtx.Command.ExtraInfo == nil {
@@ -136,8 +137,9 @@ func ShowAppHelp(cCtx *Context) error {
 		return nil
 	}
 
-	customAppData := func() map[string]interface{} {
-		return map[string]interface{}{
+	tracef("setting ExtraInfo in customAppData")
+	customAppData := func() map[string]any {
+		return map[string]any{
 			"ExtraInfo": cCtx.Command.ExtraInfo,
 		}
 	}

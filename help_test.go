@@ -447,7 +447,7 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 				fmt.Fprint(w, "yo")
 			},
 			command:      "",
-			wantTemplate: AppHelpTemplate,
+			wantTemplate: RootCommandHelpTemplate,
 			wantOutput:   "yo",
 		},
 		/*{
@@ -520,73 +520,69 @@ func TestShowCommandHelp_HelpPrinterCustom(t *testing.T) {
 		return text + " " + text
 	}
 
-	tests := []struct {
+	testCases := []struct {
 		name         string
 		template     string
 		printer      helpPrinterCustom
-		command      string
+		arguments    []string
 		wantTemplate string
 		wantOutput   string
 	}{
 		{
-			name:     "no-command",
-			template: "",
-			printer: func(w io.Writer, _ string, _ interface{}, _ map[string]interface{}) {
+			name: "no command",
+			printer: func(w io.Writer, _ string, _ any, _ map[string]any) {
 				fmt.Fprint(w, "yo")
 			},
-			command:      "",
-			wantTemplate: AppHelpTemplate,
+			arguments:    []string{"my-app", "help"},
+			wantTemplate: RootCommandHelpTemplate,
 			wantOutput:   "yo",
 		},
 		{
-			name:     "standard-command",
-			template: "",
-			printer: func(w io.Writer, _ string, _ interface{}, _ map[string]interface{}) {
+			name: "standard command",
+			printer: func(w io.Writer, _ string, _ any, _ map[string]any) {
 				fmt.Fprint(w, "yo")
 			},
-			command:      "my-command",
-			wantTemplate: CommandHelpTemplate,
+			arguments:    []string{"my-app", "help", "my-command"},
+			wantTemplate: SubcommandHelpTemplate,
 			wantOutput:   "yo",
 		},
 		{
-			name:     "custom-template-command",
+			name:     "custom template command",
 			template: "{{doublecho .Name}}",
-			printer: func(w io.Writer, templ string, data interface{}, _ map[string]interface{}) {
+			printer: func(w io.Writer, templ string, data any, _ map[string]any) {
 				// Pass a custom function to ensure it gets used
-				fm := map[string]interface{}{"doublecho": doublecho}
+				fm := map[string]any{"doublecho": doublecho}
 				printHelpCustom(w, templ, data, fm)
 			},
-			command:      "my-command",
+			arguments:    []string{"my-app", "help", "my-command"},
 			wantTemplate: "{{doublecho .Name}}",
 			wantOutput:   "my-command my-command",
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			r := require.New(t)
+
 			defer func(old helpPrinterCustom) {
 				HelpPrinterCustom = old
 			}(HelpPrinterCustom)
-			HelpPrinterCustom = func(w io.Writer, templ string, data interface{}, fm map[string]interface{}) {
-				if fm != nil {
-					t.Error("unexpected function map passed")
-				}
 
-				if templ != tt.wantTemplate {
-					t.Errorf("want template:\n%s\ngot template:\n%s", tt.wantTemplate, templ)
-				}
+			HelpPrinterCustom = func(w io.Writer, tmpl string, data any, fm map[string]any) {
+				r.Nil(fm)
+				r.Equal(tc.wantTemplate, tmpl)
 
-				tt.printer(w, templ, data, fm)
+				tc.printer(w, tmpl, data, fm)
 			}
 
-			var buf bytes.Buffer
+			out := &bytes.Buffer{}
 			cmd := &Command{
 				Name:   "my-app",
-				Writer: &buf,
+				Writer: out,
 				Commands: []*Command{
 					{
 						Name:               "my-command",
-						CustomHelpTemplate: tt.template,
+						CustomHelpTemplate: tc.template,
 					},
 				},
 			}
@@ -594,15 +590,10 @@ func TestShowCommandHelp_HelpPrinterCustom(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 			t.Cleanup(cancel)
 
-			err := cmd.Run(ctx, []string{"my-app", "help", tt.command})
-			if err != nil {
-				t.Fatal(err)
-			}
+			t.Logf("cmd.Run(ctx, %+[1]v)", tc.arguments)
 
-			got := buf.String()
-			if got != tt.wantOutput {
-				t.Errorf("want output %q, got %q", tt.wantOutput, got)
-			}
+			r.NoError(cmd.Run(ctx, tc.arguments))
+			r.Equal(tc.wantOutput, out.String())
 		})
 	}
 }
@@ -885,7 +876,7 @@ func TestShowAppHelp_HelpPrinter(t *testing.T) {
 			printer: func(w io.Writer, _ string, _ interface{}) {
 				fmt.Fprint(w, "yo")
 			},
-			wantTemplate: AppHelpTemplate,
+			wantTemplate: RootCommandHelpTemplate,
 			wantOutput:   "yo",
 		},
 		{
@@ -916,9 +907,9 @@ func TestShowAppHelp_HelpPrinter(t *testing.T) {
 
 			var buf bytes.Buffer
 			cmd := &Command{
-				Name:                  "my-app",
-				Writer:                &buf,
-				CustomAppHelpTemplate: tt.template,
+				Name:                          "my-app",
+				Writer:                        &buf,
+				CustomRootCommandHelpTemplate: tt.template,
 			}
 
 			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
@@ -955,7 +946,7 @@ func TestShowAppHelp_HelpPrinterCustom(t *testing.T) {
 			printer: func(w io.Writer, _ string, _ interface{}, _ map[string]interface{}) {
 				fmt.Fprint(w, "yo")
 			},
-			wantTemplate: AppHelpTemplate,
+			wantTemplate: RootCommandHelpTemplate,
 			wantOutput:   "yo",
 		},
 		{
@@ -990,9 +981,9 @@ func TestShowAppHelp_HelpPrinterCustom(t *testing.T) {
 
 			var buf bytes.Buffer
 			cmd := &Command{
-				Name:                  "my-app",
-				Writer:                &buf,
-				CustomAppHelpTemplate: tt.template,
+				Name:                          "my-app",
+				Writer:                        &buf,
+				CustomRootCommandHelpTemplate: tt.template,
 			}
 
 			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
@@ -1036,7 +1027,7 @@ func TestShowAppHelp_CustomAppTemplate(t *testing.T) {
 				"RUNTIME":  goruntime,
 			}
 		},
-		CustomAppHelpTemplate: `NAME:
+		CustomRootCommandHelpTemplate: `NAME:
   {{.Name}} - {{.Usage}}
 
 USAGE:

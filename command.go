@@ -15,8 +15,6 @@ import (
 // ignoreFlagPrefix is to ignore test flags when adding flags from other packages
 const ignoreFlagPrefix = "test."
 
-const maxCommandGraphDepth = 256
-
 // Command is a subcommand for a cli.App.
 type Command struct {
 	// The name of the command
@@ -95,10 +93,10 @@ type Command struct {
 	Metadata map[string]interface{}
 	// Carries a function which returns app specific info.
 	ExtraInfo func() map[string]string
-	// CustomAppHelpTemplate the text template for app help topic.
+	// CustomRootCommandHelpTemplate the text template for app help topic.
 	// cli.go uses text/template to render templates. You can
 	// render custom help text by setting this variable.
-	CustomAppHelpTemplate string
+	CustomRootCommandHelpTemplate string
 	// SliceFlagSeparator is used to customize the separator for SliceFlag, the default is ","
 	SliceFlagSeparator string
 	// DisableSliceFlagSeparator is used to disable SliceFlagSeparator, the default is false
@@ -133,6 +131,9 @@ type Command struct {
 
 	// track state of error handling
 	isInError bool
+
+	// track state of defaults
+	didSetupDefaults bool
 }
 
 type Commands []*Command
@@ -173,8 +174,14 @@ func (cmd *Command) Command(name string) *Command {
 }
 
 func (cmd *Command) setupDefaults(arguments []string) {
-	isRoot := cmd.parent == nil
+	if cmd.didSetupDefaults {
+		tracef("already did setup")
+		return
+	}
 
+	cmd.didSetupDefaults = true
+
+	isRoot := cmd.parent == nil
 	tracef("isRoot? %[1]v", isRoot)
 
 	if cmd.ShellComplete == nil {
@@ -237,16 +244,15 @@ func (cmd *Command) setupDefaults(arguments []string) {
 		tracef("setting sub-command parent as self")
 		subCmd.parent = cmd
 
-		/*
-			subCmdName := subCmd.Name
+		tracef("setting subCmdHelpName from subCmd.Name %[1]q", subCmd.Name)
+		subCmdHelpName := subCmd.Name
 
-			if subCmd.HelpName != "" {
-				tracef("setting subCmdName to %[1]q (cmd=%[2]q)", subCmd.HelpName, cmd.Name)
-				subCmdName = subCmd.HelpName
-			}
-		*/
+		if subCmd.HelpName != "" && !strings.HasPrefix(subCmd.HelpName, cmd.HelpName) {
+			tracef("setting subCmdHelpName from subCmd.HelpName %[1]q", subCmd.HelpName)
+			subCmdHelpName = subCmd.HelpName
+		}
 
-		newSubCmdHelpName := fmt.Sprintf("%[1]s %[2]s", cmd.HelpName, subCmd.Name)
+		newSubCmdHelpName := fmt.Sprintf("%[1]s %[2]s", cmd.HelpName, subCmdHelpName)
 
 		tracef("setting subCmd.HelpName to %[1]q (cmd=%[2]q)", newSubCmdHelpName, cmd.Name)
 		subCmd.HelpName = newSubCmdHelpName
@@ -422,11 +428,18 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error
 		}
 		if !cmd.HideHelp {
 			if cmd.parent == nil {
-				_ = ShowAppHelp(cCtx)
+				tracef("running ShowAppHelp")
+				if err := ShowAppHelp(cCtx); err != nil {
+					tracef("SILENTLY IGNORING ERROR running ShowAppHelp %[1]v", err)
+				}
 			} else {
-				_ = ShowCommandHelp(cCtx.parent, cmd.Name)
+				tracef("running ShowCommandHelp with %[1]q", cmd.Name)
+				if err := ShowCommandHelp(cCtx.parent, cmd.Name); err != nil {
+					tracef("SILENTLY IGNORING ERROR running ShowCommandHelp with %[1]q %[2]v", cmd.Name, err)
+				}
 			}
 		}
+
 		return err
 	}
 
@@ -706,6 +719,10 @@ func (cmd *Command) appendCommand(aCmd *Command) {
 }
 
 func (cmd *Command) handleExitCoder(cCtx *Context, err error) error {
+	if cmd.parent != nil {
+		return cmd.parent.handleExitCoder(cCtx, err)
+	}
+
 	if cmd.ExitErrHandler != nil {
 		cmd.ExitErrHandler(cCtx, err)
 		return err
@@ -715,9 +732,9 @@ func (cmd *Command) handleExitCoder(cCtx *Context, err error) error {
 	return err
 }
 
-func (c *Command) argsWithDefaultCommand(oldArgs Args) Args {
-	if c.DefaultCommand != "" {
-		rawArgs := append([]string{c.DefaultCommand}, oldArgs.Slice()...)
+func (cmd *Command) argsWithDefaultCommand(oldArgs Args) Args {
+	if cmd.DefaultCommand != "" {
+		rawArgs := append([]string{cmd.DefaultCommand}, oldArgs.Slice()...)
 		newArgs := args(rawArgs)
 
 		return &newArgs
@@ -726,16 +743,16 @@ func (c *Command) argsWithDefaultCommand(oldArgs Args) Args {
 	return oldArgs
 }
 
-func (cmd *Command) errWriter() io.Writer {
+func (cmd *Command) reader() io.Reader {
 	if cmd.parent != nil {
-		return cmd.parent.errWriter()
+		return cmd.parent.reader()
 	}
 
-	if cmd.ErrWriter == nil {
-		return os.Stderr
+	if cmd.Reader == nil {
+		return os.Stdin
 	}
 
-	return cmd.ErrWriter
+	return cmd.Reader
 }
 
 func (cmd *Command) writer() io.Writer {
@@ -756,6 +773,18 @@ func (cmd *Command) writer() io.Writer {
 	}
 
 	return cmd.Writer
+}
+
+func (cmd *Command) errWriter() io.Writer {
+	if cmd.parent != nil {
+		return cmd.parent.errWriter()
+	}
+
+	if cmd.ErrWriter == nil {
+		return os.Stderr
+	}
+
+	return cmd.ErrWriter
 }
 
 func hasCommand(commands []*Command, command *Command) bool {
