@@ -193,7 +193,7 @@ func Test_helpCommand_InHelpOutput(t *testing.T) {
 	}
 }
 
-func TestHelpCommand_HelpName(t *testing.T) {
+func TestHelpCommand_FullName(t *testing.T) {
 	testCases := []struct {
 		name     string
 		args     []string
@@ -201,34 +201,34 @@ func TestHelpCommand_HelpName(t *testing.T) {
 		skip     bool
 	}{
 		{
-			name:     "app help's helpName",
+			name:     "app help's FullName",
 			args:     []string{"app", "help", "help"},
 			contains: "app help -",
 		},
 		{
-			name:     "app help's helpName via flag",
+			name:     "app help's FullName via flag",
 			args:     []string{"app", "-h", "help"},
 			contains: "app help -",
 		},
 		{
-			name:     "cmd help's helpName",
+			name:     "cmd help's FullName",
 			args:     []string{"app", "cmd", "help", "help"},
 			contains: "app cmd help -",
 			skip:     true, // FIXME: App Command collapse
 		},
 		{
-			name:     "cmd help's helpName via flag",
+			name:     "cmd help's FullName via flag",
 			args:     []string{"app", "cmd", "-h", "help"},
 			contains: "app cmd help -",
 			skip:     true, // FIXME: App Command collapse
 		},
 		{
-			name:     "subcmd help's helpName",
+			name:     "subcmd help's FullName",
 			args:     []string{"app", "cmd", "subcmd", "help", "help"},
 			contains: "app cmd subcmd help -",
 		},
 		{
-			name:     "subcmd help's helpName via flag",
+			name:     "subcmd help's FullName via flag",
 			args:     []string{"app", "cmd", "subcmd", "-h", "help"},
 			contains: "app cmd subcmd help -",
 		},
@@ -664,17 +664,17 @@ func TestShowCommandHelp_Customtemplate(t *testing.T) {
 					return nil
 				},
 				CustomHelpTemplate: `NAME:
-   {{.HelpName}} - {{.Usage}}
+   {{.FullName}} - {{.Usage}}
 
 USAGE:
-   {{.HelpName}} [FLAGS] TARGET [TARGET ...]
+   {{.FullName}} [FLAGS] TARGET [TARGET ...]
 
 FLAGS:
   {{range .VisibleFlags}}{{.}}
   {{end}}
 EXAMPLES:
    1. Frobbly runs with this param locally.
-      $ {{.HelpName}} wobbly
+      $ {{.FullName}} wobbly
 `,
 			},
 		},

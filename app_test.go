@@ -955,15 +955,13 @@ func TestApp_VisibleCommands(t *testing.T) {
 	cmd := &Command{
 		Commands: []*Command{
 			{
-				Name:     "frob",
-				HelpName: "foo frob",
-				Action:   func(_ *Context) error { return nil },
+				Name:   "frob",
+				Action: func(_ *Context) error { return nil },
 			},
 			{
-				Name:     "frib",
-				HelpName: "foo frib",
-				Hidden:   true,
-				Action:   func(_ *Context) error { return nil },
+				Name:   "frib",
+				Hidden: true,
+				Action: func(_ *Context) error { return nil },
 			},
 		},
 	}
@@ -2124,103 +2122,6 @@ func TestApp_Run_SubcommandFullPath(t *testing.T) {
 	}
 }
 
-func TestApp_Run_SubcommandHelpName(t *testing.T) {
-	out := &bytes.Buffer{}
-
-	subCmd := &Command{
-		Name:     "bar",
-		HelpName: "custom",
-		Usage:    "does bar things",
-	}
-
-	cmd := &Command{
-		Name:        "foo",
-		Description: "foo commands",
-		Commands:    []*Command{subCmd},
-		Writer:      out,
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	r := require.New(t)
-
-	r.NoError(cmd.Run(ctx, []string{"foo", "bar", "--help"}))
-
-	outString := out.String()
-
-	r.Contains(outString, "custom - does bar things")
-	r.Contains(outString, "custom [command options] [arguments...]")
-}
-
-func TestApp_Run_CommandHelpName(t *testing.T) {
-	buf := new(bytes.Buffer)
-
-	subCmd := &Command{
-		Name:  "bar",
-		Usage: "does bar things",
-	}
-
-	cmd := &Command{
-		Name:        "foo",
-		HelpName:    "custom",
-		Description: "foo commands",
-		Commands:    []*Command{subCmd},
-		Writer:      buf,
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	err := cmd.Run(ctx, []string{"foo", "bar", "--help"})
-	if err != nil {
-		t.Error(err)
-	}
-
-	output := buf.String()
-
-	expected := "custom bar - does bar things"
-	if !strings.Contains(output, expected) {
-		t.Errorf("expected %q in output: %s", expected, output)
-	}
-
-	expected = "custom bar [command options] [arguments...]"
-	if !strings.Contains(output, expected) {
-		t.Errorf("expected %q in output: %s", expected, output)
-	}
-}
-
-func TestApp_Run_CommandSubcommandHelpName(t *testing.T) {
-	out := &bytes.Buffer{}
-
-	subCmd := &Command{
-		Name:     "bar",
-		HelpName: "custom",
-		Usage:    "does bar things",
-	}
-
-	cmd := &Command{
-		Name:        "foo",
-		Usage:       "foo commands",
-		Description: "This is a description",
-		Commands:    []*Command{subCmd},
-		Writer:      out,
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(cancel)
-
-	r := require.New(t)
-
-	r.NoError(cmd.Run(ctx, []string{"foo", "--help"}))
-
-	outString := out.String()
-
-	r.Contains(outString, "foo - foo commands")
-	r.Contains(outString, "DESCRIPTION:\n   This is a description\n")
-	r.Contains(outString, "foo [global options] [command options] [arguments...]")
-}
-
 func TestApp_Run_Help(t *testing.T) {
 	tests := []struct {
 		helpArguments []string
@@ -2390,18 +2291,15 @@ func TestApp_VisibleCategories(t *testing.T) {
 			{
 				Name:     "command1",
 				Category: "1",
-				HelpName: "foo command1",
 				Hidden:   true,
 			},
 			{
 				Name:     "command2",
 				Category: "2",
-				HelpName: "foo command2",
 			},
 			{
 				Name:     "command3",
 				Category: "3",
-				HelpName: "foo command3",
 			},
 		},
 	}
@@ -2431,19 +2329,16 @@ func TestApp_VisibleCategories(t *testing.T) {
 			{
 				Name:     "command1",
 				Category: "1",
-				HelpName: "foo command1",
 				Hidden:   true,
 			},
 			{
 				Name:     "command2",
 				Category: "2",
-				HelpName: "foo command2",
 				Hidden:   true,
 			},
 			{
 				Name:     "command3",
 				Category: "3",
-				HelpName: "foo command3",
 			},
 		},
 	}
@@ -2467,19 +2362,16 @@ func TestApp_VisibleCategories(t *testing.T) {
 			{
 				Name:     "command1",
 				Category: "1",
-				HelpName: "foo command1",
 				Hidden:   true,
 			},
 			{
 				Name:     "command2",
 				Category: "2",
-				HelpName: "foo command2",
 				Hidden:   true,
 			},
 			{
 				Name:     "command3",
 				Category: "3",
-				HelpName: "foo command3",
 				Hidden:   true,
 			},
 		},

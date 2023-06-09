@@ -189,7 +189,7 @@ var RootCommandHelpTemplate = `NAME:
    {{template "helpNameTemplate" .}}
 
 USAGE:
-   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .VisibleCommands}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.FullName}} {{if .VisibleFlags}}[global options]{{end}}{{if .VisibleCommands}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
 
 VERSION:
    {{.Version}}{{end}}{{end}}{{if .Description}}
@@ -217,7 +217,7 @@ var SubcommandHelpTemplate = `NAME:
    {{template "helpNameTemplate" .}}
 
 USAGE:
-   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleCommands}}[command options] {{end}}{{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Category}}
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.FullName}} {{if .VisibleCommands}}[command options] {{end}}{{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Category}}
 
 CATEGORY:
    {{.Category}}{{end}}{{if .Description}}
@@ -381,9 +381,6 @@ type CategorizableFlag interface {
 type Command struct {
 	// The name of the command
 	Name string
-	// Full name of command for help, defaults to full command name, including parent commands.
-	HelpName string
-
 	// A list of aliases for the command
 	Aliases []string
 	// A short description of the usage of this command
@@ -472,17 +469,14 @@ type Command struct {
 	AllowExtFlags bool
 	// Treat all flags as normal arguments if true
 	SkipFlagParsing bool
-
 	// CustomHelpTemplate the text template for the command help topic.
 	// cli.go uses text/template to render templates. You can
 	// render custom help text by setting this variable.
 	CustomHelpTemplate string
-
 	// Use longest prefix match for commands
 	PrefixMatchCommands bool
 	// Custom suggest command for matching
 	SuggestCommandFunc SuggestCommandFunc
-
 	// Flag exclusion group
 	MutuallyExclusiveFlags []MutuallyExclusiveFlags
 
@@ -493,8 +487,8 @@ type Command struct {
 func (cmd *Command) Command(name string) *Command
 
 func (cmd *Command) FullName() string
-    FullName returns the full name of the command. For commands with parets this
-    ensures that the parent commands are part of the command path.
+    FullName returns the full name of the command. For commands with parents
+    this ensures that the parent commands are part of the command path.
 
 func (cmd *Command) HasName(name string) bool
     HasName returns true if Command.Name matches given name
@@ -565,8 +559,6 @@ type CommandCategory interface {
 
 type CommandNotFoundFunc func(*Context, string)
     CommandNotFoundFunc is executed if the proper command cannot be found
-
-type Commands []*Command
 
 type CommandsByName []*Command
 

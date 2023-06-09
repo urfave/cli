@@ -19,9 +19,6 @@ const ignoreFlagPrefix = "test."
 type Command struct {
 	// The name of the command
 	Name string
-	// Full name of command for help, defaults to full command name, including parent commands.
-	HelpName        string
-	commandNamePath []string
 	// A list of aliases for the command
 	Aliases []string
 	// A short description of the usage of this command
@@ -112,35 +109,26 @@ type Command struct {
 	AllowExtFlags bool
 	// Treat all flags as normal arguments if true
 	SkipFlagParsing bool
-
 	// CustomHelpTemplate the text template for the command help topic.
 	// cli.go uses text/template to render templates. You can
 	// render custom help text by setting this variable.
 	CustomHelpTemplate string
-
 	// Use longest prefix match for commands
 	PrefixMatchCommands bool
 	// Custom suggest command for matching
 	SuggestCommandFunc SuggestCommandFunc
-
+	// Flag exclusion group
+	MutuallyExclusiveFlags []MutuallyExclusiveFlags
+	// flags that have been applied in current parse
+	appliedFlags []Flag
 	// The parent of this command. This value will be nil for the
 	// command at the root of the graph.
 	parent *Command
-
 	// track state of error handling
 	isInError bool
-
 	// track state of defaults
 	didSetupDefaults bool
-
-	// Flag exclusion group
-	MutuallyExclusiveFlags []MutuallyExclusiveFlags
-
-	// flags that have been applied in current parse
-	appliedFlags []Flag
 }
-
-type Commands []*Command
 
 type CommandsByName []*Command
 
@@ -157,14 +145,16 @@ func (c CommandsByName) Swap(i, j int) {
 }
 
 // FullName returns the full name of the command.
-// For commands with parets this ensures that the parent commands
+// For commands with parents this ensures that the parent commands
 // are part of the command path.
 func (cmd *Command) FullName() string {
-	if cmd.commandNamePath == nil {
-		return cmd.Name
+	namePath := []string{}
+
+	if cmd.parent != nil {
+		namePath = append(namePath, cmd.parent.FullName())
 	}
 
-	return strings.Join(cmd.commandNamePath, " ")
+	return strings.Join(append(namePath, cmd.Name), " ")
 }
 
 func (cmd *Command) Command(name string) *Command {
@@ -196,11 +186,6 @@ func (cmd *Command) setupDefaults(arguments []string) {
 	if cmd.Name == "" && isRoot {
 		tracef("setting cmd.Name from first arg basename")
 		cmd.Name = filepath.Base(arguments[0])
-	}
-
-	if cmd.HelpName == "" {
-		tracef("setting cmd.HelpName to cmd.Name %[1]q", cmd.Name)
-		cmd.HelpName = cmd.Name
 	}
 
 	if cmd.Usage == "" && isRoot {
@@ -247,19 +232,6 @@ func (cmd *Command) setupDefaults(arguments []string) {
 	for _, subCmd := range cmd.Commands {
 		tracef("setting sub-command parent as self")
 		subCmd.parent = cmd
-
-		tracef("setting subCmdHelpName from subCmd.Name %[1]q", subCmd.Name)
-		subCmdHelpName := subCmd.Name
-
-		if subCmd.HelpName != "" && !strings.HasPrefix(subCmd.HelpName, cmd.HelpName) {
-			tracef("setting subCmdHelpName from subCmd.HelpName %[1]q", subCmd.HelpName)
-			subCmdHelpName = subCmd.HelpName
-		}
-
-		newSubCmdHelpName := fmt.Sprintf("%[1]s %[2]s", cmd.HelpName, subCmdHelpName)
-
-		tracef("setting subCmd.HelpName to %[1]q (cmd=%[2]q)", newSubCmdHelpName, cmd.Name)
-		subCmd.HelpName = newSubCmdHelpName
 
 		tracef("assigning subCmd.flagCategories from subCmd.Flags")
 		subCmd.flagCategories = newFlagCategoriesFromFlags(subCmd.Flags)
@@ -332,15 +304,6 @@ func (cmd *Command) setupSubcommand(cCtx *Context) {
 		cmd.UseShortOptionHandling = true
 	}
 
-	for _, subCmd := range cmd.Commands {
-		if subCmd.HelpName == "" {
-			newSubCmdHelpName := fmt.Sprintf("%[1]s %[2]s", cmd.HelpName, subCmd.Name)
-
-			tracef("setting subCmd.HelpName to %[1]q (cmd=%[2]q)", newSubCmdHelpName, cmd.Name)
-			subCmd.HelpName = newSubCmdHelpName
-		}
-	}
-
 	tracef("setting command categories")
 	cmd.categories = newCommandCategories()
 
@@ -360,11 +323,6 @@ func (cmd *Command) ensureHelp() {
 
 	if cmd.Command(helpCommand.Name) == nil && !cmd.HideHelp {
 		if !cmd.HideHelpCommand {
-			newHelpCmdName := fmt.Sprintf("%[1]s %[2]s", cmd.HelpName, helpName)
-
-			tracef("setting helpCommand.HelpName to %[1]q (cmd=%[2]q)", newHelpCmdName, cmd.Name)
-			helpCommand.HelpName = newHelpCmdName
-
 			tracef("appending helpCommand")
 			cmd.appendCommand(helpCommand)
 		}
@@ -721,6 +679,7 @@ func (c *Command) appendFlag(fl Flag) {
 
 func (cmd *Command) appendCommand(aCmd *Command) {
 	if !hasCommand(cmd.Commands, aCmd) {
+		aCmd.parent = cmd
 		cmd.Commands = append(cmd.Commands, aCmd)
 	}
 }

@@ -55,7 +55,7 @@ func main() {
 	app := &cli.Command{
 		Name:  "builder",
 		Usage: "Do a thing for urfave/cli! (maybe build?)",
-		Commands: cli.Commands{
+		Commands: []*cli.Command{
 			{
 				Name:   "vet",
 				Action: topRunAction("go", "vet", "./..."),

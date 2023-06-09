@@ -11,8 +11,7 @@ import (
 func expectFileContent(t *testing.T, file, got string) {
 	data, err := os.ReadFile(file)
 	// Ignore windows line endings
-	// TODO: Replace with bytes.ReplaceAll when support for Go 1.11 is dropped
-	data = bytes.Replace(data, []byte("\r\n"), []byte("\n"), -1)
+	data = bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n"))
 
 	r := require.New(t)
 	r.NoError(err)
