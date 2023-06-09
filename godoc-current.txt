@@ -93,7 +93,7 @@ var MarkdownDocTemplate = `{{if gt .SectionNum 0}}% {{ .Command.Name }} {{ .Sect
 ` + "```" + `{{ if .Command.UsageText }}
 {{ .Command.UsageText }}
 {{ else }}
-{{ .Command.Name }} [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
+{{ .Command.Name }} [GLOBAL OPTIONS] [command [COMMAND OPTIONS]] [ARGUMENTS...]
 {{ end }}` + "```" + `
 {{ if .GlobalArgs }}
 # GLOBAL OPTIONS
@@ -189,7 +189,7 @@ var RootCommandHelpTemplate = `NAME:
    {{template "helpNameTemplate" .}}
 
 USAGE:
-   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.FullName}} {{if .VisibleFlags}}[global options]{{end}}{{if .VisibleCommands}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.FullName}} {{if .VisibleFlags}}[global options]{{end}}{{if .VisibleCommands}} [command [command options]]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
 
 VERSION:
    {{.Version}}{{end}}{{end}}{{if .Description}}
@@ -217,7 +217,7 @@ var SubcommandHelpTemplate = `NAME:
    {{template "helpNameTemplate" .}}
 
 USAGE:
-   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.FullName}} {{if .VisibleCommands}}[command options] {{end}}{{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Category}}
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.FullName}} {{if .VisibleCommands}}[command [command options]] {{end}}{{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Category}}
 
 CATEGORY:
    {{.Category}}{{end}}{{if .Description}}
@@ -400,10 +400,8 @@ type Command struct {
 	Category string
 	// List of child commands
 	Commands []*Command
-
 	// List of flags to parse
 	Flags []Flag
-
 	// Boolean to hide built-in help command and help flag
 	HideHelp bool
 	// Ignored if HideHelp is true.
@@ -482,7 +480,9 @@ type Command struct {
 
 	// Has unexported fields.
 }
-    Command is a subcommand for a cli.App.
+    Command contains everything needed to run an application that accepts a
+    string slice of arguments such as os.Args. A given Command may contain Flags
+    and sub-commands in Commands.
 
 func (cmd *Command) Command(name string) *Command
 

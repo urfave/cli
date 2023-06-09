@@ -105,9 +105,6 @@ func ExampleCommand_Run_subcommand() {
 }
 
 func ExampleCommand_Run_appHelp() {
-	// set args for examples sake
-	os.Args = []string{"greet", "help"}
-
 	cmd := &Command{
 		Name:        "greet",
 		Version:     "0.1.0",
@@ -136,13 +133,16 @@ func ExampleCommand_Run_appHelp() {
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
 
+	// Simulate the command line arguments
+	os.Args = []string{"greet", "help"}
+
 	_ = cmd.Run(ctx, os.Args)
 	// Output:
 	// NAME:
 	//    greet - A new cli application
 	//
 	// USAGE:
-	//    greet [global options] [command options] [arguments...]
+	//    greet [global options] [command [command options]] [arguments...]
 	//
 	// VERSION:
 	//    0.1.0
@@ -200,7 +200,7 @@ func ExampleCommand_Run_commandHelp() {
 	//    greet describeit - use it to see a description
 	//
 	// USAGE:
-	//    greet describeit [command options] [arguments...]
+	//    greet describeit [command [command options]] [arguments...]
 	//
 	// DESCRIPTION:
 	//    This is how we describe describeit the function
@@ -213,8 +213,9 @@ func ExampleCommand_Run_commandHelp() {
 }
 
 func ExampleCommand_Run_noAction() {
-	cmd := &Command{}
-	cmd.Name = "greet"
+	cmd := &Command{
+		Name: "greet",
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
@@ -225,7 +226,7 @@ func ExampleCommand_Run_noAction() {
 	//    greet - A new cli application
 	//
 	// USAGE:
-	//    greet [global options] [command options] [arguments...]
+	//    greet [global options] [command [command options]] [arguments...]
 	//
 	// COMMANDS:
 	//    help, h  Shows a list of commands or help for one command
@@ -256,7 +257,7 @@ func ExampleCommand_Run_subcommandNoAction() {
 	//    greet describeit - use it to see a description
 	//
 	// USAGE:
-	//    greet describeit [command options] [arguments...]
+	//    greet describeit [command [command options]] [arguments...]
 	//
 	// DESCRIPTION:
 	//    This is how we describe describeit the function
@@ -2088,7 +2089,7 @@ func TestApp_Run_CommandWithSubcommandHasHelpTopic(t *testing.T) {
 }
 
 func TestApp_Run_SubcommandFullPath(t *testing.T) {
-	buf := new(bytes.Buffer)
+	out := &bytes.Buffer{}
 
 	subCmd := &Command{
 		Name:  "bar",
@@ -2099,27 +2100,19 @@ func TestApp_Run_SubcommandFullPath(t *testing.T) {
 		Name:        "foo",
 		Description: "foo commands",
 		Commands:    []*Command{subCmd},
-		Writer:      buf,
+		Writer:      out,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	t.Cleanup(cancel)
 
-	err := cmd.Run(ctx, []string{"foo", "bar", "--help"})
-	if err != nil {
-		t.Error(err)
-	}
+	r := require.New(t)
 
-	output := buf.String()
-	expected := "foo bar - does bar things"
-	if !strings.Contains(output, expected) {
-		t.Errorf("expected %q in output: %s", expected, output)
-	}
+	r.NoError(cmd.Run(ctx, []string{"foo", "bar", "--help"}))
 
-	expected = "foo bar [command options] [arguments...]"
-	if !strings.Contains(output, expected) {
-		t.Errorf("expected %q in output: %s", expected, output)
-	}
+	outString := out.String()
+	r.Contains(outString, "foo bar - does bar things")
+	r.Contains(outString, "foo bar [command [command options]] [arguments...]")
 }
 
 func TestApp_Run_Help(t *testing.T) {

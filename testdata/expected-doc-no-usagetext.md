@@ -19,7 +19,7 @@ Description of the application.
 **Usage**:
 
 ```
-greet [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
+greet [GLOBAL OPTIONS] [command [COMMAND OPTIONS]] [ARGUMENTS...]
 ```
 
 # GLOBAL OPTIONS

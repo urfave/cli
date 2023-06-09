@@ -224,7 +224,7 @@ func TestToMarkdownNoUsageText(t *testing.T) {
 	res, err := app.ToMarkdown()
 
 	// Then
-	expect(t, err, nil)
+	require.NoError(t, err)
 	expectFileContent(t, "testdata/expected-doc-no-usagetext.md", res)
 }
 

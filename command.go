@@ -15,7 +15,9 @@ import (
 // ignoreFlagPrefix is to ignore test flags when adding flags from other packages
 const ignoreFlagPrefix = "test."
 
-// Command is a subcommand for a cli.App.
+// Command contains everything needed to run an application that
+// accepts a string slice of arguments such as os.Args. A given
+// Command may contain Flags and sub-commands in Commands.
 type Command struct {
 	// The name of the command
 	Name string
@@ -38,12 +40,8 @@ type Command struct {
 	Category string
 	// List of child commands
 	Commands []*Command
-	// categories contains the categorized commands and is populated on app startup
-	categories CommandCategories
 	// List of flags to parse
 	Flags []Flag
-	// flagCategories contains the categorized flags and is populated on app startup
-	flagCategories FlagCategories
 	// Boolean to hide built-in help command and help flag
 	HideHelp bool
 	// Ignored if HideHelp is true.
@@ -119,6 +117,11 @@ type Command struct {
 	SuggestCommandFunc SuggestCommandFunc
 	// Flag exclusion group
 	MutuallyExclusiveFlags []MutuallyExclusiveFlags
+
+	// categories contains the categorized commands and is populated on app startup
+	categories CommandCategories
+	// flagCategories contains the categorized flags and is populated on app startup
+	flagCategories FlagCategories
 	// flags that have been applied in current parse
 	appliedFlags []Flag
 	// The parent of this command. This value will be nil for the
