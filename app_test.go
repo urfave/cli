@@ -2930,174 +2930,6 @@ func TestSetupInitializesOnlyNilWriters(t *testing.T) {
 }
 
 func TestFlagAction(t *testing.T) {
-	stringFlag := &StringFlag{
-		Name: "f_string",
-		Action: func(cCtx *Context, v string) error {
-			if v == "" {
-				return fmt.Errorf("empty string")
-			}
-			_, err := cCtx.Command.writer().Write([]byte(v + " "))
-			return err
-		},
-	}
-	cmd := &Command{
-		Name: "app",
-		Commands: []*Command{
-			{
-				Name:   "c1",
-				Flags:  []Flag{stringFlag},
-				Action: func(cCtx *Context) error { return nil },
-				Commands: []*Command{
-					{
-						Name:   "sub1",
-						Action: func(cCtx *Context) error { return nil },
-						Flags:  []Flag{stringFlag},
-					},
-				},
-			},
-		},
-		Flags: []Flag{
-			stringFlag,
-			&StringFlag{
-				Name: "f_no_action",
-			},
-			&StringSliceFlag{
-				Name: "f_string_slice",
-				Action: func(cCtx *Context, v []string) error {
-					if v[0] == "err" {
-						return fmt.Errorf("error string slice")
-					}
-					_, err := cCtx.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return err
-				},
-			},
-			&BoolFlag{
-				Name: "f_bool",
-				Action: func(cCtx *Context, v bool) error {
-					if !v {
-						return fmt.Errorf("value is false")
-					}
-					_, err := cCtx.Command.Writer.Write([]byte(fmt.Sprintf("%t ", v)))
-					return err
-				},
-			},
-			&DurationFlag{
-				Name: "f_duration",
-				Action: func(cCtx *Context, v time.Duration) error {
-					if v == 0 {
-						return fmt.Errorf("empty duration")
-					}
-					_, err := cCtx.Command.Writer.Write([]byte(v.String() + " "))
-					return err
-				},
-			},
-			&Float64Flag{
-				Name: "f_float64",
-				Action: func(cCtx *Context, v float64) error {
-					if v < 0 {
-						return fmt.Errorf("negative float64")
-					}
-					_, err := cCtx.Command.Writer.Write([]byte(strconv.FormatFloat(v, 'f', -1, 64) + " "))
-					return err
-				},
-			},
-			&Float64SliceFlag{
-				Name: "f_float64_slice",
-				Action: func(cCtx *Context, v []float64) error {
-					if len(v) > 0 && v[0] < 0 {
-						return fmt.Errorf("invalid float64 slice")
-					}
-					_, err := cCtx.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return err
-				},
-			},
-			&IntFlag{
-				Name: "f_int",
-				Action: func(cCtx *Context, v int) error {
-					if v < 0 {
-						return fmt.Errorf("negative int")
-					}
-					_, err := cCtx.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return err
-				},
-			},
-			&IntSliceFlag{
-				Name: "f_int_slice",
-				Action: func(cCtx *Context, v []int) error {
-					if len(v) > 0 && v[0] < 0 {
-						return fmt.Errorf("invalid int slice")
-					}
-					_, err := cCtx.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return err
-				},
-			},
-			&Int64Flag{
-				Name: "f_int64",
-				Action: func(cCtx *Context, v int64) error {
-					if v < 0 {
-						return fmt.Errorf("negative int64")
-					}
-					_, err := cCtx.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return err
-				},
-			},
-			&Int64SliceFlag{
-				Name: "f_int64_slice",
-				Action: func(cCtx *Context, v []int64) error {
-					if len(v) > 0 && v[0] < 0 {
-						return fmt.Errorf("invalid int64 slice")
-					}
-					_, err := cCtx.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return err
-				},
-			},
-			&TimestampFlag{
-				Name: "f_timestamp",
-				Config: TimestampConfig{
-					Layout: "2006-01-02 15:04:05",
-				},
-				Action: func(cCtx *Context, v time.Time) error {
-					if v.IsZero() {
-						return fmt.Errorf("zero timestamp")
-					}
-					_, err := cCtx.Command.Writer.Write([]byte(v.Format(time.RFC3339) + " "))
-					return err
-				},
-			},
-			&UintFlag{
-				Name: "f_uint",
-				Action: func(cCtx *Context, v uint) error {
-					if v == 0 {
-						return fmt.Errorf("zero uint")
-					}
-					_, err := cCtx.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return err
-				},
-			},
-			&Uint64Flag{
-				Name: "f_uint64",
-				Action: func(cCtx *Context, v uint64) error {
-					if v == 0 {
-						return fmt.Errorf("zero uint64")
-					}
-					_, err := cCtx.Command.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-					return err
-				},
-			},
-			&StringMapFlag{
-				Name: "f_string_map",
-				Action: func(cCtx *Context, v map[string]string) error {
-					if _, ok := v["err"]; ok {
-						return fmt.Errorf("error string map")
-					}
-					_, err := cCtx.Command.Writer.Write([]byte(fmt.Sprintf("%v", v)))
-					return err
-				},
-			},
-		},
-		Action: func(cCtx *Context) error { return nil },
-	}
-
 	testCases := []struct {
 		name string
 		args []string
@@ -3252,7 +3084,7 @@ func TestFlagAction(t *testing.T) {
 		{
 			name: "mixture",
 			args: []string{"app", "--f_string=app", "--f_uint=1", "--f_int_slice=1,2,3", "--f_duration=1h30m20s", "c1", "--f_string=c1", "sub1", "--f_string=sub1"},
-			exp:  "app 1h30m20s [1 2 3] 1 c1 c1 c1 sub1 sub1 ",
+			exp:  "app 1h30m20s [1 2 3] 1 c1 sub1 ",
 		},
 		{
 			name: "flag_string_map",
@@ -3269,7 +3101,176 @@ func TestFlagAction(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 			out := &bytes.Buffer{}
-			cmd.Writer = out
+
+			stringFlag := &StringFlag{
+				Name: "f_string",
+				Action: func(cCtx *Context, v string) error {
+					if v == "" {
+						return fmt.Errorf("empty string")
+					}
+					_, err := cCtx.Command.writer().Write([]byte(v + " "))
+					return err
+				},
+			}
+
+			cmd := &Command{
+				Writer: out,
+				Name:   "app",
+				Commands: []*Command{
+					{
+						Name:   "c1",
+						Flags:  []Flag{stringFlag},
+						Action: func(cCtx *Context) error { return nil },
+						Commands: []*Command{
+							{
+								Name:   "sub1",
+								Action: func(cCtx *Context) error { return nil },
+								Flags:  []Flag{stringFlag},
+							},
+						},
+					},
+				},
+				Flags: []Flag{
+					stringFlag,
+					&StringFlag{
+						Name: "f_no_action",
+					},
+					&StringSliceFlag{
+						Name: "f_string_slice",
+						Action: func(cCtx *Context, v []string) error {
+							if v[0] == "err" {
+								return fmt.Errorf("error string slice")
+							}
+							_, err := cCtx.Command.writer().Write([]byte(fmt.Sprintf("%v ", v)))
+							return err
+						},
+					},
+					&BoolFlag{
+						Name: "f_bool",
+						Action: func(cCtx *Context, v bool) error {
+							if !v {
+								return fmt.Errorf("value is false")
+							}
+							_, err := cCtx.Command.writer().Write([]byte(fmt.Sprintf("%t ", v)))
+							return err
+						},
+					},
+					&DurationFlag{
+						Name: "f_duration",
+						Action: func(cCtx *Context, v time.Duration) error {
+							if v == 0 {
+								return fmt.Errorf("empty duration")
+							}
+							_, err := cCtx.Command.writer().Write([]byte(v.String() + " "))
+							return err
+						},
+					},
+					&Float64Flag{
+						Name: "f_float64",
+						Action: func(cCtx *Context, v float64) error {
+							if v < 0 {
+								return fmt.Errorf("negative float64")
+							}
+							_, err := cCtx.Command.writer().Write([]byte(strconv.FormatFloat(v, 'f', -1, 64) + " "))
+							return err
+						},
+					},
+					&Float64SliceFlag{
+						Name: "f_float64_slice",
+						Action: func(cCtx *Context, v []float64) error {
+							if len(v) > 0 && v[0] < 0 {
+								return fmt.Errorf("invalid float64 slice")
+							}
+							_, err := cCtx.Command.writer().Write([]byte(fmt.Sprintf("%v ", v)))
+							return err
+						},
+					},
+					&IntFlag{
+						Name: "f_int",
+						Action: func(cCtx *Context, v int) error {
+							if v < 0 {
+								return fmt.Errorf("negative int")
+							}
+							_, err := cCtx.Command.writer().Write([]byte(fmt.Sprintf("%v ", v)))
+							return err
+						},
+					},
+					&IntSliceFlag{
+						Name: "f_int_slice",
+						Action: func(cCtx *Context, v []int) error {
+							if len(v) > 0 && v[0] < 0 {
+								return fmt.Errorf("invalid int slice")
+							}
+							_, err := cCtx.Command.writer().Write([]byte(fmt.Sprintf("%v ", v)))
+							return err
+						},
+					},
+					&Int64Flag{
+						Name: "f_int64",
+						Action: func(cCtx *Context, v int64) error {
+							if v < 0 {
+								return fmt.Errorf("negative int64")
+							}
+							_, err := cCtx.Command.writer().Write([]byte(fmt.Sprintf("%v ", v)))
+							return err
+						},
+					},
+					&Int64SliceFlag{
+						Name: "f_int64_slice",
+						Action: func(cCtx *Context, v []int64) error {
+							if len(v) > 0 && v[0] < 0 {
+								return fmt.Errorf("invalid int64 slice")
+							}
+							_, err := cCtx.Command.writer().Write([]byte(fmt.Sprintf("%v ", v)))
+							return err
+						},
+					},
+					&TimestampFlag{
+						Name: "f_timestamp",
+						Config: TimestampConfig{
+							Layout: "2006-01-02 15:04:05",
+						},
+						Action: func(cCtx *Context, v time.Time) error {
+							if v.IsZero() {
+								return fmt.Errorf("zero timestamp")
+							}
+							_, err := cCtx.Command.writer().Write([]byte(v.Format(time.RFC3339) + " "))
+							return err
+						},
+					},
+					&UintFlag{
+						Name: "f_uint",
+						Action: func(cCtx *Context, v uint) error {
+							if v == 0 {
+								return fmt.Errorf("zero uint")
+							}
+							_, err := cCtx.Command.writer().Write([]byte(fmt.Sprintf("%v ", v)))
+							return err
+						},
+					},
+					&Uint64Flag{
+						Name: "f_uint64",
+						Action: func(cCtx *Context, v uint64) error {
+							if v == 0 {
+								return fmt.Errorf("zero uint64")
+							}
+							_, err := cCtx.Command.writer().Write([]byte(fmt.Sprintf("%v ", v)))
+							return err
+						},
+					},
+					&StringMapFlag{
+						Name: "f_string_map",
+						Action: func(cCtx *Context, v map[string]string) error {
+							if _, ok := v["err"]; ok {
+								return fmt.Errorf("error string map")
+							}
+							_, err := cCtx.Command.writer().Write([]byte(fmt.Sprintf("%v", v)))
+							return err
+						},
+					},
+				},
+				Action: func(cCtx *Context) error { return nil },
+			}
 
 			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 			t.Cleanup(cancel)
