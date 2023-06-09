@@ -109,7 +109,7 @@ func helpCommandAction(cCtx *Context) error {
 		}
 
 		tracef("running HelpPrinter with command %[1]q", cCtx.Command.Name)
-		HelpPrinter(cCtx.Command.writer(), tmpl, cCtx.Command)
+		HelpPrinter(cCtx.Command.Root().Writer, tmpl, cCtx.Command)
 
 		return nil
 	}
@@ -133,7 +133,7 @@ func ShowAppHelp(cCtx *Context) error {
 	}
 
 	if cCtx.Command.ExtraInfo == nil {
-		HelpPrinter(cCtx.Command.writer(), tmpl, cCtx.Command)
+		HelpPrinter(cCtx.Command.Root().Writer, tmpl, cCtx.Command)
 		return nil
 	}
 
@@ -143,7 +143,7 @@ func ShowAppHelp(cCtx *Context) error {
 			"ExtraInfo": cCtx.Command.ExtraInfo,
 		}
 	}
-	HelpPrinterCustom(cCtx.Command.writer(), tmpl, cCtx.Command, customAppData())
+	HelpPrinterCustom(cCtx.Command.Root().Writer, tmpl, cCtx.Command, customAppData())
 
 	return nil
 }
@@ -222,23 +222,23 @@ func DefaultCompleteWithFlags(cmd *Command) func(cCtx *Context) {
 
 			if strings.HasPrefix(lastArg, "-") {
 				if cmd != nil {
-					printFlagSuggestions(lastArg, cmd.Flags, cCtx.Command.writer())
+					printFlagSuggestions(lastArg, cmd.Flags, cCtx.Command.Root().Writer)
 
 					return
 				}
 
-				printFlagSuggestions(lastArg, cCtx.Command.Flags, cCtx.Command.writer())
+				printFlagSuggestions(lastArg, cCtx.Command.Flags, cCtx.Command.Root().Writer)
 
 				return
 			}
 		}
 
 		if cmd != nil {
-			printCommandSuggestions(cmd.Commands, cCtx.Command.writer())
+			printCommandSuggestions(cmd.Commands, cCtx.Command.Root().Writer)
 			return
 		}
 
-		printCommandSuggestions(cCtx.Command.Commands, cCtx.Command.writer())
+		printCommandSuggestions(cCtx.Command.Commands, cCtx.Command.Root().Writer)
 	}
 }
 
@@ -267,7 +267,7 @@ func ShowCommandHelp(cCtx *Context, commandName string) error {
 		}
 
 		tracef("running HelpPrinter")
-		HelpPrinter(cCtx.Command.writer(), tmpl, cmd)
+		HelpPrinter(cCtx.Command.Root().Writer, tmpl, cmd)
 
 		tracef("returning nil after printing help")
 		return nil
@@ -306,7 +306,7 @@ func ShowSubcommandHelp(cCtx *Context) error {
 		return nil
 	}
 
-	HelpPrinter(cCtx.Command.writer(), SubcommandHelpTemplate, cCtx.Command)
+	HelpPrinter(cCtx.Command.Root().Writer, SubcommandHelpTemplate, cCtx.Command)
 	return nil
 }
 
@@ -316,7 +316,7 @@ func ShowVersion(cCtx *Context) {
 }
 
 func printVersion(cCtx *Context) {
-	_, _ = fmt.Fprintf(cCtx.Command.writer(), "%v version %v\n", cCtx.Command.Name, cCtx.Command.Version)
+	_, _ = fmt.Fprintf(cCtx.Command.Root().Writer, "%v version %v\n", cCtx.Command.Name, cCtx.Command.Version)
 }
 
 func handleTemplateError(err error) {

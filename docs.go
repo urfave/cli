@@ -57,7 +57,7 @@ func (cmd *Command) ToTabularMarkdown(appPath string) (string, error) {
 
 // ToTabularToFileBetweenTags creates a tabular markdown documentation for the `*App` and updates the file between
 // the tags in the file. The function errors if either parsing or writing of the string fails.
-func (a *Command) ToTabularToFileBetweenTags(appPath, filePath string, startEndTags ...string) error {
+func (cmd *Command) ToTabularToFileBetweenTags(appPath, filePath string, startEndTags ...string) error {
 	var start, end = "<!--GENERATED:CLI_DOCS-->", "<!--/GENERATED:CLI_DOCS-->" // default tags
 
 	if len(startEndTags) == 2 {
@@ -71,7 +71,7 @@ func (a *Command) ToTabularToFileBetweenTags(appPath, filePath string, startEndT
 	}
 
 	// generate markdown
-	md, err := a.ToTabularMarkdown(appPath)
+	md, err := cmd.ToTabularMarkdown(appPath)
 	if err != nil {
 		return err
 	}

@@ -402,7 +402,7 @@ func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
 				Name:  "baz",
 				Usage: "this is for testing",
 				Action: func(cCtx *Context) error {
-					require.Equal(t, io.Discard, cCtx.Command.errWriter())
+					require.Equal(t, io.Discard, cCtx.Command.Root().ErrWriter)
 
 					return nil
 				},
@@ -477,7 +477,7 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 					},
 				},
 				ShellComplete: func(cCtx *Context) {
-					fmt.Fprintf(cCtx.Command.writer(), "found %[1]d args", cCtx.NArg())
+					fmt.Fprintf(cCtx.Command.Root().Writer, "found %[1]d args", cCtx.NArg())
 				},
 			}
 

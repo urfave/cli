@@ -382,10 +382,10 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error
 			err = cCtx.Command.handleExitCoder(cCtx, err)
 			return err
 		}
-		_, _ = fmt.Fprintf(cCtx.Command.writer(), "%s %s\n\n", "Incorrect Usage:", err.Error())
+		_, _ = fmt.Fprintf(cCtx.Command.Root().Writer, "%s %s\n\n", "Incorrect Usage:", err.Error())
 		if cCtx.Command.Suggest {
 			if suggestion, err := cmd.suggestFlagFromError(err, ""); err == nil {
-				fmt.Fprintf(cCtx.Command.writer(), "%s", suggestion)
+				fmt.Fprintf(cCtx.Command.Root().Writer, "%s", suggestion)
 			}
 		}
 		if !cmd.HideHelp {
@@ -514,15 +514,15 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error
 	return deferErr
 }
 
-func (c *Command) newFlagSet() (*flag.FlagSet, error) {
-	c.appliedFlags = append(c.appliedFlags, c.allFlags()...)
-	return flagSet(c.Name, c.allFlags())
+func (cmd *Command) newFlagSet() (*flag.FlagSet, error) {
+	cmd.appliedFlags = append(cmd.appliedFlags, cmd.allFlags()...)
+	return flagSet(cmd.Name, cmd.allFlags())
 }
 
-func (c *Command) allFlags() []Flag {
+func (cmd *Command) allFlags() []Flag {
 	var flags []Flag
-	flags = append(flags, c.Flags...)
-	for _, grpf := range c.MutuallyExclusiveFlags {
+	flags = append(flags, cmd.Flags...)
+	for _, grpf := range cmd.MutuallyExclusiveFlags {
 		for _, f1 := range grpf.Flags {
 			flags = append(flags, f1...)
 		}
@@ -530,8 +530,8 @@ func (c *Command) allFlags() []Flag {
 	return flags
 }
 
-func (c *Command) useShortOptionHandling() bool {
-	return c.UseShortOptionHandling
+func (cmd *Command) useShortOptionHandling() bool {
+	return cmd.UseShortOptionHandling
 }
 
 func (cmd *Command) suggestFlagFromError(err error, commandName string) (string, error) {
@@ -560,13 +560,13 @@ func (cmd *Command) suggestFlagFromError(err error, commandName string) (string,
 	return fmt.Sprintf(SuggestDidYouMeanTemplate, suggestion) + "\n\n", nil
 }
 
-func (c *Command) parseFlags(args Args, ctx *Context) (*flag.FlagSet, error) {
-	set, err := c.newFlagSet()
+func (cmd *Command) parseFlags(args Args, ctx *Context) (*flag.FlagSet, error) {
+	set, err := cmd.newFlagSet()
 	if err != nil {
 		return nil, err
 	}
 
-	if c.SkipFlagParsing {
+	if cmd.SkipFlagParsing {
 		return set, set.Parse(append([]string{"--"}, args.Tail()...))
 	}
 
@@ -599,15 +599,15 @@ func (c *Command) parseFlags(args Args, ctx *Context) (*flag.FlagSet, error) {
 				return nil, err
 			}
 
-			c.appliedFlags = append(c.appliedFlags, fl)
+			cmd.appliedFlags = append(cmd.appliedFlags, fl)
 		}
 	}
 
-	if err := parseIter(set, c, args.Tail(), ctx.shellComplete); err != nil {
+	if err := parseIter(set, cmd, args.Tail(), ctx.shellComplete); err != nil {
 		return nil, err
 	}
 
-	if err := normalizeFlags(c.Flags, set); err != nil {
+	if err := normalizeFlags(cmd.Flags, set); err != nil {
 		return nil, err
 	}
 
@@ -632,9 +632,9 @@ func (cmd *Command) HasName(name string) bool {
 
 // VisibleCategories returns a slice of categories and commands that are
 // Hidden=false
-func (c *Command) VisibleCategories() []CommandCategory {
+func (cmd *Command) VisibleCategories() []CommandCategory {
 	ret := []CommandCategory{}
-	for _, category := range c.categories.Categories() {
+	for _, category := range cmd.categories.Categories() {
 		if visible := func() CommandCategory {
 			if len(category.VisibleCommands()) > 0 {
 				return category
@@ -648,9 +648,9 @@ func (c *Command) VisibleCategories() []CommandCategory {
 }
 
 // VisibleCommands returns a slice of the Commands with Hidden=false
-func (c *Command) VisibleCommands() []*Command {
+func (cmd *Command) VisibleCommands() []*Command {
 	var ret []*Command
-	for _, command := range c.Commands {
+	for _, command := range cmd.Commands {
 		if !command.Hidden {
 			ret = append(ret, command)
 		}
@@ -659,21 +659,21 @@ func (c *Command) VisibleCommands() []*Command {
 }
 
 // VisibleFlagCategories returns a slice containing all the visible flag categories with the flags they contain
-func (c *Command) VisibleFlagCategories() []VisibleFlagCategory {
-	if c.flagCategories == nil {
-		c.flagCategories = newFlagCategoriesFromFlags(c.Flags)
+func (cmd *Command) VisibleFlagCategories() []VisibleFlagCategory {
+	if cmd.flagCategories == nil {
+		cmd.flagCategories = newFlagCategoriesFromFlags(cmd.Flags)
 	}
-	return c.flagCategories.VisibleCategories()
+	return cmd.flagCategories.VisibleCategories()
 }
 
 // VisibleFlags returns a slice of the Flags with Hidden=false
-func (c *Command) VisibleFlags() []Flag {
-	return visibleFlags(c.Flags)
+func (cmd *Command) VisibleFlags() []Flag {
+	return visibleFlags(cmd.Flags)
 }
 
-func (c *Command) appendFlag(fl Flag) {
-	if !hasFlag(c.Flags, fl) {
-		c.Flags = append(c.Flags, fl)
+func (cmd *Command) appendFlag(fl Flag) {
+	if !hasFlag(cmd.Flags, fl) {
+		cmd.Flags = append(cmd.Flags, fl)
 	}
 }
 
@@ -709,48 +709,13 @@ func (cmd *Command) argsWithDefaultCommand(oldArgs Args) Args {
 	return oldArgs
 }
 
-func (cmd *Command) reader() io.Reader {
-	if cmd.parent != nil {
-		return cmd.parent.reader()
+// Root returns the Command at the root of the graph
+func (cmd *Command) Root() *Command {
+	if cmd.parent == nil {
+		return cmd
 	}
 
-	if cmd.Reader == nil {
-		return os.Stdin
-	}
-
-	return cmd.Reader
-}
-
-func (cmd *Command) writer() io.Writer {
-	if cmd.parent != nil {
-		return cmd.parent.writer()
-	}
-
-	if cmd.isInError {
-		if cmd.ErrWriter == nil {
-			return os.Stderr
-		}
-
-		return cmd.ErrWriter
-	}
-
-	if cmd.Writer == nil {
-		return os.Stdout
-	}
-
-	return cmd.Writer
-}
-
-func (cmd *Command) errWriter() io.Writer {
-	if cmd.parent != nil {
-		return cmd.parent.errWriter()
-	}
-
-	if cmd.ErrWriter == nil {
-		return os.Stderr
-	}
-
-	return cmd.ErrWriter
+	return cmd.parent.Root()
 }
 
 func hasCommand(commands []*Command, command *Command) bool {

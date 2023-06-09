@@ -171,7 +171,7 @@ func ExampleCommand_Run_commandHelp() {
 			&StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
 		},
 		Action: func(cCtx *Context) error {
-			fmt.Fprintf(cCtx.Command.writer(), "hello to %[1]q\n", cCtx.String("name"))
+			fmt.Fprintf(cCtx.Command.Root().Writer, "hello to %[1]q\n", cCtx.String("name"))
 			return nil
 		},
 		Commands: []*Command{
@@ -1365,7 +1365,7 @@ func TestApp_SetStdin_Subcommand(t *testing.T) {
 					{
 						Name: "subcommand",
 						Action: func(c *Context) error {
-							_, err := c.Command.reader().Read(buf)
+							_, err := c.Command.Root().Reader.Read(buf)
 							return err
 						},
 					},
@@ -3000,7 +3000,7 @@ func TestFlagAction(t *testing.T) {
 					if v == "" {
 						return fmt.Errorf("empty string")
 					}
-					_, err := cCtx.Command.writer().Write([]byte(v + " "))
+					_, err := cCtx.Command.Root().Writer.Write([]byte(v + " "))
 					return err
 				},
 			}
@@ -3033,7 +3033,7 @@ func TestFlagAction(t *testing.T) {
 							if v[0] == "err" {
 								return fmt.Errorf("error string slice")
 							}
-							_, err := cCtx.Command.writer().Write([]byte(fmt.Sprintf("%v ", v)))
+							_, err := cCtx.Command.Root().Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 							return err
 						},
 					},
@@ -3043,7 +3043,7 @@ func TestFlagAction(t *testing.T) {
 							if !v {
 								return fmt.Errorf("value is false")
 							}
-							_, err := cCtx.Command.writer().Write([]byte(fmt.Sprintf("%t ", v)))
+							_, err := cCtx.Command.Root().Writer.Write([]byte(fmt.Sprintf("%t ", v)))
 							return err
 						},
 					},
@@ -3053,7 +3053,7 @@ func TestFlagAction(t *testing.T) {
 							if v == 0 {
 								return fmt.Errorf("empty duration")
 							}
-							_, err := cCtx.Command.writer().Write([]byte(v.String() + " "))
+							_, err := cCtx.Command.Root().Writer.Write([]byte(v.String() + " "))
 							return err
 						},
 					},
@@ -3063,7 +3063,7 @@ func TestFlagAction(t *testing.T) {
 							if v < 0 {
 								return fmt.Errorf("negative float64")
 							}
-							_, err := cCtx.Command.writer().Write([]byte(strconv.FormatFloat(v, 'f', -1, 64) + " "))
+							_, err := cCtx.Command.Root().Writer.Write([]byte(strconv.FormatFloat(v, 'f', -1, 64) + " "))
 							return err
 						},
 					},
@@ -3073,7 +3073,7 @@ func TestFlagAction(t *testing.T) {
 							if len(v) > 0 && v[0] < 0 {
 								return fmt.Errorf("invalid float64 slice")
 							}
-							_, err := cCtx.Command.writer().Write([]byte(fmt.Sprintf("%v ", v)))
+							_, err := cCtx.Command.Root().Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 							return err
 						},
 					},
@@ -3083,7 +3083,7 @@ func TestFlagAction(t *testing.T) {
 							if v < 0 {
 								return fmt.Errorf("negative int")
 							}
-							_, err := cCtx.Command.writer().Write([]byte(fmt.Sprintf("%v ", v)))
+							_, err := cCtx.Command.Root().Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 							return err
 						},
 					},
@@ -3093,7 +3093,7 @@ func TestFlagAction(t *testing.T) {
 							if len(v) > 0 && v[0] < 0 {
 								return fmt.Errorf("invalid int slice")
 							}
-							_, err := cCtx.Command.writer().Write([]byte(fmt.Sprintf("%v ", v)))
+							_, err := cCtx.Command.Root().Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 							return err
 						},
 					},
@@ -3103,7 +3103,7 @@ func TestFlagAction(t *testing.T) {
 							if v < 0 {
 								return fmt.Errorf("negative int64")
 							}
-							_, err := cCtx.Command.writer().Write([]byte(fmt.Sprintf("%v ", v)))
+							_, err := cCtx.Command.Root().Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 							return err
 						},
 					},
@@ -3113,7 +3113,7 @@ func TestFlagAction(t *testing.T) {
 							if len(v) > 0 && v[0] < 0 {
 								return fmt.Errorf("invalid int64 slice")
 							}
-							_, err := cCtx.Command.writer().Write([]byte(fmt.Sprintf("%v ", v)))
+							_, err := cCtx.Command.Root().Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 							return err
 						},
 					},
@@ -3126,7 +3126,7 @@ func TestFlagAction(t *testing.T) {
 							if v.IsZero() {
 								return fmt.Errorf("zero timestamp")
 							}
-							_, err := cCtx.Command.writer().Write([]byte(v.Format(time.RFC3339) + " "))
+							_, err := cCtx.Command.Root().Writer.Write([]byte(v.Format(time.RFC3339) + " "))
 							return err
 						},
 					},
@@ -3136,7 +3136,7 @@ func TestFlagAction(t *testing.T) {
 							if v == 0 {
 								return fmt.Errorf("zero uint")
 							}
-							_, err := cCtx.Command.writer().Write([]byte(fmt.Sprintf("%v ", v)))
+							_, err := cCtx.Command.Root().Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 							return err
 						},
 					},
@@ -3146,7 +3146,7 @@ func TestFlagAction(t *testing.T) {
 							if v == 0 {
 								return fmt.Errorf("zero uint64")
 							}
-							_, err := cCtx.Command.writer().Write([]byte(fmt.Sprintf("%v ", v)))
+							_, err := cCtx.Command.Root().Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 							return err
 						},
 					},
@@ -3156,7 +3156,7 @@ func TestFlagAction(t *testing.T) {
 							if _, ok := v["err"]; ok {
 								return fmt.Errorf("error string map")
 							}
-							_, err := cCtx.Command.writer().Write([]byte(fmt.Sprintf("%v", v)))
+							_, err := cCtx.Command.Root().Writer.Write([]byte(fmt.Sprintf("%v", v)))
 							return err
 						},
 					},

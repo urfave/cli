@@ -496,12 +496,15 @@ func (cmd *Command) HasName(name string) bool
 func (cmd *Command) Names() []string
     Names returns the names including short names and aliases.
 
+func (cmd *Command) Root() *Command
+    Root returns the Command at the root of the graph
+
 func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error)
     Run is the entry point to the command graph. The positional arguments are
     parsed according to the Flag and Command definitions and the matching Action
     functions are run.
 
-func (c *Command) ToFishCompletion() (string, error)
+func (cmd *Command) ToFishCompletion() (string, error)
     ToFishCompletion creates a fish completion string for the `*App` The
     function errors if either parsing or writing of the string fails.
 
@@ -522,23 +525,23 @@ func (cmd *Command) ToTabularMarkdown(appPath string) (string, error)
     `*Command`. The function errors if either parsing or writing of the string
     fails.
 
-func (a *Command) ToTabularToFileBetweenTags(appPath, filePath string, startEndTags ...string) error
+func (cmd *Command) ToTabularToFileBetweenTags(appPath, filePath string, startEndTags ...string) error
     ToTabularToFileBetweenTags creates a tabular markdown documentation for
     the `*App` and updates the file between the tags in the file. The function
     errors if either parsing or writing of the string fails.
 
-func (c *Command) VisibleCategories() []CommandCategory
+func (cmd *Command) VisibleCategories() []CommandCategory
     VisibleCategories returns a slice of categories and commands that are
     Hidden=false
 
-func (c *Command) VisibleCommands() []*Command
+func (cmd *Command) VisibleCommands() []*Command
     VisibleCommands returns a slice of the Commands with Hidden=false
 
-func (c *Command) VisibleFlagCategories() []VisibleFlagCategory
+func (cmd *Command) VisibleFlagCategories() []VisibleFlagCategory
     VisibleFlagCategories returns a slice containing all the visible flag
     categories with the flags they contain
 
-func (c *Command) VisibleFlags() []Flag
+func (cmd *Command) VisibleFlags() []Flag
     VisibleFlags returns a slice of the Flags with Hidden=false
 
 type CommandCategories interface {
