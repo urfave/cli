@@ -2765,7 +2765,7 @@ func TestHandleExitCoder_Default(t *testing.T) {
 	}
 
 	ctx := NewContext(app, fs, nil)
-	app.handleExitCoder(ctx, Exit("Default Behavior Error", 42))
+	_ = app.handleExitCoder(ctx, Exit("Default Behavior Error", 42))
 
 	output := fakeErrWriter.String()
 	if !strings.Contains(output, "Default") {
@@ -2785,7 +2785,7 @@ func TestHandleExitCoder_Custom(t *testing.T) {
 	}
 
 	ctx := NewContext(cmd, fs, nil)
-	cmd.handleExitCoder(ctx, Exit("Default Behavior Error", 42))
+	_ = cmd.handleExitCoder(ctx, Exit("Default Behavior Error", 42))
 
 	output := fakeErrWriter.String()
 	if !strings.Contains(output, "Custom") {

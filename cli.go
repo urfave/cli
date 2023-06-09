@@ -33,9 +33,9 @@ var (
 	isTracingOn = os.Getenv("URFAVE_CLI_TRACING") == "on"
 )
 
-func tracef(format string, a ...any) (int, error) {
+func tracef(format string, a ...any) {
 	if !isTracingOn {
-		return 0, nil
+		return
 	}
 
 	if !strings.HasSuffix(format, "\n") {
@@ -45,7 +45,7 @@ func tracef(format string, a ...any) (int, error) {
 	pc, file, line, _ := runtime.Caller(1)
 	cf := runtime.FuncForPC(pc)
 
-	return fmt.Fprintf(
+	fmt.Fprintf(
 		os.Stderr,
 		strings.Join([]string{
 			"## URFAVE CLI TRACE ",
