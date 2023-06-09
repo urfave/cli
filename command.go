@@ -133,20 +133,6 @@ type Command struct {
 	didSetupDefaults bool
 }
 
-type CommandsByName []*Command
-
-func (c CommandsByName) Len() int {
-	return len(c)
-}
-
-func (c CommandsByName) Less(i, j int) bool {
-	return lexicographicLess(c[i].Name, c[j].Name)
-}
-
-func (c CommandsByName) Swap(i, j int) {
-	c[i], c[j] = c[j], c[i]
-}
-
 // FullName returns the full name of the command.
 // For commands with parents this ensures that the parent commands
 // are part of the command path.

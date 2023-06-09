@@ -563,14 +563,6 @@ type CommandCategory interface {
 type CommandNotFoundFunc func(*Context, string)
     CommandNotFoundFunc is executed if the proper command cannot be found
 
-type CommandsByName []*Command
-
-func (c CommandsByName) Len() int
-
-func (c CommandsByName) Less(i, j int) bool
-
-func (c CommandsByName) Swap(i, j int)
-
 type Context struct {
 	context.Context
 	Command *Command
