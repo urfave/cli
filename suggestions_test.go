@@ -1,12 +1,9 @@
 package cli
 
 import (
-	"context"
 	"errors"
 	"fmt"
-	"os"
 	"testing"
-	"time"
 )
 
 func TestSuggestFlag(t *testing.T) {
@@ -123,79 +120,4 @@ func TestSuggestCommand(t *testing.T) {
 		// Then
 		expect(t, res, testCase.expected)
 	}
-}
-
-func ExampleCommand_Suggest() {
-	cmd := &Command{
-		Name:                          "greet",
-		ErrWriter:                     os.Stdout,
-		Suggest:                       true,
-		HideHelp:                      false,
-		HideHelpCommand:               true,
-		CustomRootCommandHelpTemplate: "(this space intentionally left blank)\n",
-		Flags: []Flag{
-			&StringFlag{Name: "name", Value: "squirrel", Usage: "a name to say"},
-		},
-		Action: func(cCtx *Context) error {
-			fmt.Printf("Hello %v\n", cCtx.String("name"))
-			return nil
-		},
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	defer cancel()
-
-	if cmd.Run(ctx, []string{"greet", "--nema", "chipmunk"}) == nil {
-		fmt.Println("Expected error")
-	}
-	// Output:
-	// Incorrect Usage: flag provided but not defined: -nema
-	//
-	// Did you mean "--name"?
-	//
-	// (this space intentionally left blank)
-}
-
-func ExampleCommand_Suggest_command() {
-	cmd := &Command{
-		Name: "greet",
-		Flags: []Flag{
-			&StringFlag{Name: "name", Value: "squirrel", Usage: "a name to say"},
-		},
-		Action: func(cCtx *Context) error {
-			fmt.Printf("Hello %v\n", cCtx.String("name"))
-			return nil
-		},
-		Commands: []*Command{
-			{
-				Name:               "neighbors",
-				ErrWriter:          os.Stdout,
-				HideHelp:           true,
-				HideHelpCommand:    true,
-				Suggest:            true,
-				CustomHelpTemplate: "(this space intentionally left blank)\n",
-				Flags: []Flag{
-					&BoolFlag{Name: "smiling"},
-				},
-				Action: func(cCtx *Context) error {
-					if cCtx.Bool("smiling") {
-						fmt.Println("😀")
-					}
-					fmt.Println("Hello, neighbors")
-					return nil
-				},
-			},
-		},
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	defer cancel()
-
-	if cmd.Run(ctx, []string{"greet", "neighbors", "--sliming"}) == nil {
-		fmt.Println("Expected error")
-	}
-	// Output:
-	// Incorrect Usage: flag provided but not defined: -sliming
-	//
-	// Did you mean "--smiling"?
 }

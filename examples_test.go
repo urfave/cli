@@ -481,3 +481,107 @@ func ExampleCommand_Run_mapValues() {
 	// notfound map[string]string(nil)
 	// error: <nil>
 }
+
+func ExampleBoolWithInverseFlag() {
+	flagWithInverse := &cli.BoolWithInverseFlag{
+		BoolFlag: &cli.BoolFlag{
+			Name: "env",
+		},
+	}
+
+	cmd := &cli.Command{
+		Flags: []cli.Flag{
+			flagWithInverse,
+		},
+		Action: func(ctx *cli.Context) error {
+			if flagWithInverse.IsSet() {
+				if flagWithInverse.Value() {
+					fmt.Println("env is set")
+				} else {
+					fmt.Println("no-env is set")
+				}
+			}
+
+			return nil
+		},
+	}
+
+	_ = cmd.Run(context.Background(), []string{"prog", "--no-env"})
+	_ = cmd.Run(context.Background(), []string{"prog", "--env"})
+
+	fmt.Println("flags:", len(flagWithInverse.Flags()))
+
+	// Output:
+	// no-env is set
+	// env is set
+	// flags: 2
+}
+
+func ExampleCommand_Suggest() {
+	cmd := &cli.Command{
+		Name:                          "greet",
+		ErrWriter:                     os.Stdout,
+		Suggest:                       true,
+		HideHelp:                      false,
+		HideHelpCommand:               true,
+		CustomRootCommandHelpTemplate: "(this space intentionally left blank)\n",
+		Flags: []cli.Flag{
+			&cli.StringFlag{Name: "name", Value: "squirrel", Usage: "a name to say"},
+		},
+		Action: func(cCtx *cli.Context) error {
+			fmt.Printf("Hello %v\n", cCtx.String("name"))
+			return nil
+		},
+	}
+
+	if cmd.Run(context.Background(), []string{"greet", "--nema", "chipmunk"}) == nil {
+		fmt.Println("Expected error")
+	}
+	// Output:
+	// Incorrect Usage: flag provided but not defined: -nema
+	//
+	// Did you mean "--name"?
+	//
+	// (this space intentionally left blank)
+}
+
+func ExampleCommand_Suggest_command() {
+	cmd := &cli.Command{
+		Name: "greet",
+		Flags: []cli.Flag{
+			&cli.StringFlag{Name: "name", Value: "squirrel", Usage: "a name to say"},
+		},
+		Action: func(cCtx *cli.Context) error {
+			fmt.Printf("Hello %v\n", cCtx.String("name"))
+			return nil
+		},
+		Commands: []*cli.Command{
+			{
+				Name:               "neighbors",
+				ErrWriter:          os.Stdout,
+				HideHelp:           true,
+				HideHelpCommand:    true,
+				Suggest:            true,
+				CustomHelpTemplate: "(this space intentionally left blank)\n",
+				Flags: []cli.Flag{
+					&cli.BoolFlag{Name: "smiling"},
+				},
+				Action: func(cCtx *cli.Context) error {
+					if cCtx.Bool("smiling") {
+						fmt.Println("😀")
+					}
+					fmt.Println("Hello, neighbors")
+					return nil
+				},
+			},
+		},
+	}
+
+	if cmd.Run(context.Background(), []string{"greet", "neighbors", "--sliming"}) == nil {
+		fmt.Println("Expected error")
+	}
+	// Output:
+	// Incorrect Usage: flag provided but not defined: -sliming
+	//
+	// Did you mean "--smiling"?
+}
