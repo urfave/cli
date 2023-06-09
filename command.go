@@ -112,8 +112,6 @@ type Command struct {
 	AllowExtFlags bool
 	// Treat all flags as normal arguments if true
 	SkipFlagParsing bool
-	// Flag exclusion group
-	MutuallyExclusiveFlags []MutuallyExclusiveFlags
 
 	// CustomHelpTemplate the text template for the command help topic.
 	// cli.go uses text/template to render templates. You can
@@ -134,6 +132,12 @@ type Command struct {
 
 	// track state of defaults
 	didSetupDefaults bool
+
+	// Flag exclusion group
+	MutuallyExclusiveFlags []MutuallyExclusiveFlags
+
+	// flags that have been applied in current parse
+	appliedFlags []Flag
 }
 
 type Commands []*Command
@@ -486,7 +490,7 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error
 		}
 	}
 
-	if err := runFlagActions(cCtx, cmd.Flags); err != nil {
+	if err := runFlagActions(cCtx, cmd.appliedFlags); err != nil {
 		return err
 	}
 
@@ -553,6 +557,7 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error
 }
 
 func (c *Command) newFlagSet() (*flag.FlagSet, error) {
+	c.appliedFlags = append(c.appliedFlags, c.allFlags()...)
 	return flagSet(c.Name, c.allFlags())
 }
 
@@ -635,6 +640,8 @@ func (c *Command) parseFlags(args Args, ctx *Context) (*flag.FlagSet, error) {
 			if err := fl.Apply(set); err != nil {
 				return nil, err
 			}
+
+			c.appliedFlags = append(c.appliedFlags, fl)
 		}
 	}
 

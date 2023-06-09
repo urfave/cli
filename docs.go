@@ -344,7 +344,7 @@ func prepareFlags(
 		}
 		modifiedArg := opener
 
-		for _, s := range flag.Names() {
+		for _, s := range f.Names() {
 			trimmed := strings.TrimSpace(s)
 			if len(modifiedArg) > len(opener) {
 				modifiedArg += sep
@@ -508,7 +508,7 @@ func (tt tabularTemplate) PrepareFlags(flags []Flag) []cliTabularFlagTemplate {
 			f.Default = strconv.FormatBool(boolFlag.Value)
 		}
 
-		for i, name := range flag.Names() {
+		for i, name := range appFlag.Names() {
 			name = strings.TrimSpace(name)
 
 			if i == 0 {

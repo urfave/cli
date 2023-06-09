@@ -103,7 +103,7 @@ func newFlagCategoriesFromFlags(fs []Flag) FlagCategories {
 	for _, fl := range fs {
 		if cf, ok := fl.(CategorizableFlag); ok {
 			if cf.GetCategory() != "" {
-				fc.AddFlag(cf.GetCategory(), cf)
+				fc.AddFlag(cf.GetCategory(), fl)
 			}
 		}
 	}
@@ -140,7 +140,7 @@ type VisibleFlagCategory interface {
 	// Name returns the category name string
 	Name() string
 	// Flags returns a slice of VisibleFlag sorted by name
-	Flags() []VisibleFlag
+	Flags() []Flag
 }
 
 type defaultVisibleFlagCategory struct {
@@ -152,7 +152,7 @@ func (fc *defaultVisibleFlagCategory) Name() string {
 	return fc.name
 }
 
-func (fc *defaultVisibleFlagCategory) Flags() []VisibleFlag {
+func (fc *defaultVisibleFlagCategory) Flags() []Flag {
 	vfNames := []string{}
 	for flName, fl := range fc.m {
 		if vf, ok := fl.(VisibleFlag); ok {
@@ -164,9 +164,9 @@ func (fc *defaultVisibleFlagCategory) Flags() []VisibleFlag {
 
 	sort.Strings(vfNames)
 
-	ret := make([]VisibleFlag, len(vfNames))
+	ret := make([]Flag, len(vfNames))
 	for i, flName := range vfNames {
-		ret[i] = fc.m[flName].(VisibleFlag)
+		ret[i] = fc.m[flName]
 	}
 
 	return ret

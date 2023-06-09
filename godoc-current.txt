@@ -31,34 +31,6 @@ var (
 	SuggestCommand            SuggestCommandFunc = suggestCommand
 	SuggestDidYouMeanTemplate string             = suggestDidYouMeanTemplate
 )
-var AppHelpTemplate = `NAME:
-   {{template "helpNameTemplate" .}}
-
-USAGE:
-   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
-
-VERSION:
-   {{.Version}}{{end}}{{end}}{{if .Description}}
-
-DESCRIPTION:
-   {{template "descriptionTemplate" .}}{{end}}
-{{- if len .Authors}}
-
-AUTHOR{{template "authorsTemplate" .}}{{end}}{{if .VisibleCommands}}
-
-COMMANDS:{{template "visibleCommandCategoryTemplate" .}}{{end}}{{if .VisibleFlagCategories}}
-
-GLOBAL OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
-
-GLOBAL OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}{{if .Copyright}}
-
-COPYRIGHT:
-   {{template "copyrightTemplate" .}}{{end}}
-`
-    AppHelpTemplate is the text template for the Default help topic. cli.go
-    uses text/template to render templates. You can render custom help text by
-    setting this variable.
-
 var CommandHelpTemplate = `NAME:
    {{template "helpNameTemplate" .}}
 
@@ -213,11 +185,42 @@ var OsExiter = os.Exit
     OsExiter is the function used when the app exits. If not set defaults to
     os.Exit.
 
+var RootCommandHelpTemplate = `NAME:
+   {{template "helpNameTemplate" .}}
+
+USAGE:
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .VisibleCommands}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
+
+VERSION:
+   {{.Version}}{{end}}{{end}}{{if .Description}}
+
+DESCRIPTION:
+   {{template "descriptionTemplate" .}}{{end}}
+{{- if len .Authors}}
+
+AUTHOR{{template "authorsTemplate" .}}{{end}}{{if .VisibleCommands}}
+
+COMMANDS:{{template "visibleCommandCategoryTemplate" .}}{{end}}{{if .VisibleFlagCategories}}
+
+GLOBAL OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
+
+GLOBAL OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}{{if .Copyright}}
+
+COPYRIGHT:
+   {{template "copyrightTemplate" .}}{{end}}
+`
+    RootCommandHelpTemplate is the text template for the Default help topic.
+    cli.go uses text/template to render templates. You can render custom help
+    text by setting this variable.
+
 var SubcommandHelpTemplate = `NAME:
    {{template "helpNameTemplate" .}}
 
 USAGE:
-   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleCommands}}command [command options] {{end}}{{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Description}}
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleCommands}}[command options] {{end}}{{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Category}}
+
+CATEGORY:
+   {{.Category}}{{end}}{{if .Description}}
 
 DESCRIPTION:
    {{template "descriptionTemplate" .}}{{end}}{{if .VisibleCommands}}
@@ -304,7 +307,6 @@ type ActionFunc func(*Context) error
     ActionFunc is the action to execute when no subcommands are specified
 
 type ActionableFlag interface {
-	Flag
 	RunAction(*Context) error
 }
     ActionableFlag is an interface that wraps Flag interface and RunAction
@@ -370,8 +372,6 @@ func (s *BoolWithInverseFlag) String() string
 func (s *BoolWithInverseFlag) Value() bool
 
 type CategorizableFlag interface {
-	VisibleFlag
-
 	// Returns the category of the flag
 	GetCategory() string
 }
@@ -453,10 +453,10 @@ type Command struct {
 	Metadata map[string]interface{}
 	// Carries a function which returns app specific info.
 	ExtraInfo func() map[string]string
-	// CustomAppHelpTemplate the text template for app help topic.
+	// CustomRootCommandHelpTemplate the text template for app help topic.
 	// cli.go uses text/template to render templates. You can
 	// render custom help text by setting this variable.
-	CustomAppHelpTemplate string
+	CustomRootCommandHelpTemplate string
 	// SliceFlagSeparator is used to customize the separator for SliceFlag, the default is ","
 	SliceFlagSeparator string
 	// DisableSliceFlagSeparator is used to disable SliceFlagSeparator, the default is false
@@ -472,8 +472,6 @@ type Command struct {
 	AllowExtFlags bool
 	// Treat all flags as normal arguments if true
 	SkipFlagParsing bool
-	// Flag exclusion group
-	MutuallyExclusiveFlags []MutuallyExclusiveFlags
 
 	// CustomHelpTemplate the text template for the command help topic.
 	// cli.go uses text/template to render templates. You can
@@ -484,6 +482,9 @@ type Command struct {
 	PrefixMatchCommands bool
 	// Custom suggest command for matching
 	SuggestCommandFunc SuggestCommandFunc
+
+	// Flag exclusion group
+	MutuallyExclusiveFlags []MutuallyExclusiveFlags
 
 	// Has unexported fields.
 }
@@ -501,7 +502,7 @@ func (cmd *Command) HasName(name string) bool
 func (cmd *Command) Names() []string
     Names returns the names including short names and aliases.
 
-func (cmd *Command) Run(ctx context.Context, arguments []string) error
+func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error)
     Run is the entry point to the command graph. The positional arguments are
     parsed according to the Flag and Command definitions and the matching Action
     functions are run.
@@ -679,8 +680,6 @@ type Countable interface {
     repetitive flags
 
 type DocGenerationFlag interface {
-	Flag
-
 	// TakesValue returns true if the flag takes a value, otherwise false
 	TakesValue() bool
 
@@ -765,11 +764,11 @@ type Flag interface {
     advanced flag parsing techniques, it is recommended that this interface be
     implemented.
 
-var BashCompletionFlag Flag = &BoolFlag{
+var GenerateShellCompletionFlag Flag = &BoolFlag{
 	Name:   "generate-shell-completion",
 	Hidden: true,
 }
-    BashCompletionFlag enables bash-completion for all commands and subcommands
+    GenerateShellCompletionFlag enables shell completion
 
 var HelpFlag Flag = &BoolFlag{
 	Name:    "help",
@@ -1018,8 +1017,6 @@ type PersistentFlag interface {
     persistent through subcommands
 
 type RequiredFlag interface {
-	Flag
-
 	// whether the flag is a required flag or not
 	IsRequired() bool
 }
@@ -1137,8 +1134,6 @@ func FilePaths(paths ...string) ValueSources
 func (v ValueSources) Get() (string, string, bool)
 
 type VisibleFlag interface {
-	Flag
-
 	// IsVisible returns true if the flag is not hidden, otherwise false
 	IsVisible() bool
 }
@@ -1148,7 +1143,7 @@ type VisibleFlagCategory interface {
 	// Name returns the category name string
 	Name() string
 	// Flags returns a slice of VisibleFlag sorted by name
-	Flags() []VisibleFlag
+	Flags() []Flag
 }
     VisibleFlagCategory is a category containing flags.
 
