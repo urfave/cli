@@ -573,7 +573,7 @@ type Context struct {
     application. Context can be used to retrieve context-specific args and
     parsed command-line options.
 
-func NewContext(cmd *Command, set *flag.FlagSet, parentCtx *Context) *Context
+func NewContext(cmd *Command, set *flag.FlagSet, parent *Context) *Context
     NewContext creates a new context. For use in when invoking a Command action.
 
 func (cCtx *Context) Args() Args
