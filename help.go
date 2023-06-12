@@ -133,7 +133,7 @@ func ShowAppHelp(cCtx *Context) error {
 	}
 
 	if cCtx.Command.ExtraInfo == nil {
-		HelpPrinter(cCtx.Command.Root().Writer, tmpl, cCtx.Command)
+		HelpPrinter(cCtx.Command.Root().Writer, tmpl, cCtx.Command.Root())
 		return nil
 	}
 
@@ -143,7 +143,7 @@ func ShowAppHelp(cCtx *Context) error {
 			"ExtraInfo": cCtx.Command.ExtraInfo,
 		}
 	}
-	HelpPrinterCustom(cCtx.Command.Root().Writer, tmpl, cCtx.Command, customAppData())
+	HelpPrinterCustom(cCtx.Command.Root().Writer, tmpl, cCtx.Command.Root(), customAppData())
 
 	return nil
 }

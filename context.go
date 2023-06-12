@@ -26,19 +26,19 @@ type Context struct {
 }
 
 // NewContext creates a new context. For use in when invoking a Command action.
-func NewContext(cmd *Command, set *flag.FlagSet, parentCtx *Context) *Context {
+func NewContext(cmd *Command, set *flag.FlagSet, parent *Context) *Context {
 	cCtx := &Context{
 		Command: cmd,
 		flagSet: set,
-		parent:  parentCtx,
+		parent:  parent,
 	}
 
-	if parentCtx != nil {
-		cCtx.Context = parentCtx.Context
-		cCtx.shellComplete = parentCtx.shellComplete
+	if parent != nil {
+		cCtx.Context = parent.Context
+		cCtx.shellComplete = parent.shellComplete
 
-		if parentCtx.flagSet == nil {
-			parentCtx.flagSet = &flag.FlagSet{}
+		if parent.flagSet == nil {
+			parent.flagSet = &flag.FlagSet{}
 		}
 	}
 

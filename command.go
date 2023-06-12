@@ -221,9 +221,6 @@ func (cmd *Command) setupDefaults(arguments []string) {
 	for _, subCmd := range cmd.Commands {
 		tracef("setting sub-command parent as self")
 		subCmd.parent = cmd
-
-		tracef("assigning subCmd.flagCategories from subCmd.Flags")
-		subCmd.flagCategories = newFlagCategoriesFromFlags(subCmd.Flags)
 	}
 
 	tracef("ensuring help command and flag")
