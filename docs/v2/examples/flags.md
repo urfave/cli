@@ -230,6 +230,52 @@ That flag can then be set with `--lang spanish` or `-l spanish`. Note that
 giving two different forms of the same flag in the same command invocation is an
 error.
 
+#### Multiple Values per Single Flag
+
+Using a slice flag allows you to pass multiple values for a single flag; the values will be provided as a slice:
+
+- `Int64SliceFlag`
+- `IntSliceFlag`
+- `StringSliceFlag`
+
+<!-- {
+  "args": ["&#45;&#45;greeting Hello", "&#45;&#45;greeting Hola"],
+  "output": "Hello, Hola"
+} -->
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+	"strings"
+
+	"github.com/urfave/cli/v3"
+)
+
+func main() {
+	app := &cli.App{
+		Flags: []cli.Flag{
+			&cli.StringSliceFlag{
+				Name:  "greeting",
+				Usage: "Pass multiple greetings",
+			},
+		},
+		Action: func(cCtx *cli.Context) error {
+			fmt.Println(strings.Join(cCtx.StringSlice("greeting"), `, `))
+			return nil
+		},
+	}
+
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
+Multiple values need to be passed as separate, repeating flags, e.g. `--greeting Hello --greeting Hola`.
+
 #### Ordering
 
 Flags for the application and commands are shown in the order they are defined.
