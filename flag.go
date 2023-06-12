@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
-	"syscall"
 	"time"
 )
 
@@ -373,7 +372,7 @@ func hasFlag(flags []Flag, fl Flag) bool {
 func flagFromEnvOrFile(envVars []string, filePaths []string) (value string, fromWhere string, found bool) {
 	for _, envVar := range envVars {
 		envVar = strings.TrimSpace(envVar)
-		if value, found := syscall.Getenv(envVar); found {
+		if value, found := os.LookupEnv(envVar); found {
 			return value, fmt.Sprintf("environment variable %q", envVar), true
 		}
 	}

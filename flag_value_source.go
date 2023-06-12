@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"syscall"
 )
 
 // FlagValueSource encapsulates a source which can be used to
@@ -36,7 +35,7 @@ type EnvSource string
 
 func (e EnvSource) Get() (string, bool) {
 	envVar := strings.TrimSpace(string(e))
-	return syscall.Getenv(envVar)
+	return os.LookupEnv(envVar)
 }
 
 func (e EnvSource) Identifier() string {

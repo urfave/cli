@@ -1,13 +1,30 @@
+<!--
+NOTE: This first section is intentionally identical to the top-level README.md at
+https://github.com/urfave/cli/blob/main/README.md
+-->
 # Welcome to urfave/cli
 
-[![GoDoc](https://godoc.org/github.com/urfave/cli?status.svg)](https://pkg.go.dev/github.com/urfave/cli/v2)
-[![codebeat](https://codebeat.co/badges/0a8f30aa-f975-404b-b878-5fab3ae1cc5f)](https://codebeat.co/projects/github-com-urfave-cli)
-[![Go Report Card](https://goreportcard.com/badge/urfave/cli)](https://goreportcard.com/report/urfave/cli)
-[![codecov](https://codecov.io/gh/urfave/cli/branch/main/graph/badge.svg)](https://codecov.io/gh/urfave/cli)
+[![Run Tests](https://github.com/urfave/cli/actions/workflows/cli.yml/badge.svg)](https://github.com/urfave/cli/actions/workflows/cli.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/urfave/cli/v3.svg)](https://pkg.go.dev/github.com/urfave/cli/v3)
+[![Go Report Card](https://goreportcard.com/badge/github.com/urfave/cli/v3)](https://goreportcard.com/report/github.com/urfave/cli/v3)
+[![codecov](https://codecov.io/gh/urfave/cli/branch/main/graph/badge.svg?token=t9YGWLh05g)](https://codecov.io/gh/urfave/cli)
 
-`urfave/cli` is a simple, fast, and fun package for building command line apps in Go. The
-goal is to enable developers to write fast and distributable command line applications in
-an expressive way.
+urfave/cli is a **declarative**, simple, fast, and fun package for building command line tools in Go featuring:
+
+- nestable commands with alias and prefix match support
+- flexible and permissive help system
+- dynamic shell completion for `bash`, `zsh`, `fish`, and `powershell`
+- `man` and markdown format documentation generation
+- input flag types for primitives, slices of primitives, time, duration, and others
+- compound short flag support (`-a` `-b` `-c` :arrow_right: `-abc`)
+- input value sources including:
+    - environment variables
+    - plain text files
+    - [structured file formats supported via the `urfave/cli-altsrc` package](https://github.com/urfave/cli-altsrc)
+
+<!--
+/END first section that is identical to README.md first section
+-->
 
 These are the guides for each major version:
 
