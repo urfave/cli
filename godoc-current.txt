@@ -890,6 +890,8 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 
 	Config C // Additional/Custom configuration associated with this flag type
 
+	Validator func(T) error // custom function to validate this value
+
 	OnlyOnce bool // whether this flag can be duplicated on the command line
 
 	// Has unexported fields.
@@ -1045,7 +1047,7 @@ type MapBase[T any, C any, VC ValueCreator[T, C]] struct {
 func NewMapBase[T any, C any, VC ValueCreator[T, C]](defaults map[string]T) *MapBase[T, C, VC]
     NewMapBase makes a *MapBase with default values
 
-func (i MapBase[T, C, VC]) Create(val map[string]T, p *map[string]T, c C) Value
+func (i MapBase[T, C, VC]) Create(val map[string]T, p *map[string]T, c C, validator func(map[string]T) error) Value
 
 func (i *MapBase[T, C, VC]) Get() interface{}
     Get returns the mapping of values set by this flag
@@ -1121,7 +1123,7 @@ type SliceBase[T any, C any, VC ValueCreator[T, C]] struct {
 func NewSliceBase[T any, C any, VC ValueCreator[T, C]](defaults ...T) *SliceBase[T, C, VC]
     NewIntSlice makes an *IntSlice with default values
 
-func (i SliceBase[T, C, VC]) Create(val []T, p *[]T, c C) Value
+func (i SliceBase[T, C, VC]) Create(val []T, p *[]T, config C, validator func([]T) error) Value
 
 func (i *SliceBase[T, C, VC]) Get() interface{}
     Get returns the slice of values set by this flag
@@ -1191,7 +1193,7 @@ type Value interface {
     flag.Value interface
 
 type ValueCreator[T any, C any] interface {
-	Create(T, *T, C) Value
+	Create(T, *T, C, func(T) error) Value
 	ToString(T) string
 }
     ValueCreator is responsible for creating a flag.Value emulation as well as

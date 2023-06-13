@@ -13,9 +13,10 @@ type MapBase[T any, C any, VC ValueCreator[T, C]] struct {
 	dict       *map[string]T
 	hasBeenSet bool
 	value      Value
+	validator  func(map[string]T) error
 }
 
-func (i MapBase[T, C, VC]) Create(val map[string]T, p *map[string]T, c C) Value {
+func (i MapBase[T, C, VC]) Create(val map[string]T, p *map[string]T, c C, validator func(map[string]T) error) Value {
 	*p = map[string]T{}
 	for k, v := range val {
 		(*p)[k] = v
@@ -24,8 +25,9 @@ func (i MapBase[T, C, VC]) Create(val map[string]T, p *map[string]T, c C) Value 
 	np := new(T)
 	var vc VC
 	return &MapBase[T, C, VC]{
-		dict:  p,
-		value: vc.Create(t, np, c),
+		dict:      p,
+		value:     vc.Create(t, np, c, nil),
+		validator: validator,
 	}
 }
 
@@ -38,14 +40,17 @@ func NewMapBase[T any, C any, VC ValueCreator[T, C]](defaults map[string]T) *Map
 
 // Set parses the value and appends it to the list of values
 func (i *MapBase[T, C, VC]) Set(value string) error {
-	if !i.hasBeenSet {
-		*i.dict = map[string]T{}
-		i.hasBeenSet = true
-	}
+	tmpMap := make(map[string]T)
 
 	if strings.HasPrefix(value, slPfx) {
 		// Deserializing assumes overwrite
-		_ = json.Unmarshal([]byte(strings.Replace(value, slPfx, "", 1)), &i.dict)
+		_ = json.Unmarshal([]byte(strings.Replace(value, slPfx, "", 1)), &tmpMap)
+		if i.validator != nil {
+			if err := i.validator(tmpMap); err != nil {
+				return err
+			}
+		}
+		*i.dict = tmpMap
 		i.hasBeenSet = true
 		return nil
 	}
@@ -62,7 +67,22 @@ func (i *MapBase[T, C, VC]) Set(value string) error {
 		if !ok {
 			return fmt.Errorf("unable to cast %v", i.value)
 		}
-		(*i.dict)[key] = tmp
+		tmpMap[key] = tmp
+	}
+
+	if i.validator != nil {
+		if err := i.validator(tmpMap); err != nil {
+			return err
+		}
+	}
+
+	if !i.hasBeenSet {
+		*i.dict = map[string]T{}
+		i.hasBeenSet = true
+	}
+
+	for k, v := range tmpMap {
+		(*i.dict)[k] = v
 	}
 
 	return nil

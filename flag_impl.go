@@ -65,7 +65,7 @@ func (v *valueWrapper) Count() int {
 //	T specifies the type
 //	C specifies the config for the type
 type ValueCreator[T any, C any] interface {
-	Create(T, *T, C) Value
+	Create(T, *T, C, func(T) error) Value
 	ToString(T) string
 }
 
@@ -103,6 +103,8 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 
 	Config C // Additional/Custom configuration associated with this flag type
 
+	Validator func(T) error // custom function to validate this value
+
 	OnlyOnce bool // whether this flag can be duplicated on the command line
 
 	// unexported fields for internal use
@@ -133,7 +135,7 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 		newVal := f.Value
 
 		if val, source, found := f.Sources.Get(); found {
-			tmpVal := f.creator.Create(f.Value, new(T), f.Config)
+			tmpVal := f.creator.Create(f.Value, new(T), f.Config, f.Validator)
 			if val != "" || reflect.TypeOf(f.Value).Kind() == reflect.String {
 				if err := tmpVal.Set(val); err != nil {
 					return fmt.Errorf("could not parse %q as %T value from %s for flag %s: %s", val, f.Value, source, f.Name, err)
@@ -150,9 +152,9 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 		}
 
 		if f.Destination == nil {
-			f.value = f.creator.Create(newVal, new(T), f.Config)
+			f.value = f.creator.Create(newVal, new(T), f.Config, f.Validator)
 		} else {
-			f.value = f.creator.Create(newVal, f.Destination, f.Config)
+			f.value = f.creator.Create(newVal, f.Destination, f.Config, f.Validator)
 		}
 	}
 

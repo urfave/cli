@@ -17,15 +17,17 @@ type StringConfig struct {
 type stringValue struct {
 	destination *string
 	trimSpace   bool
+	validator   func(string) error
 }
 
 // Below functions are to satisfy the ValueCreator interface
 
-func (i stringValue) Create(val string, p *string, c StringConfig) Value {
+func (i stringValue) Create(val string, p *string, c StringConfig, validator func(string) error) Value {
 	*p = val
 	return &stringValue{
 		destination: p,
 		trimSpace:   c.TrimSpace,
+		validator:   validator,
 	}
 }
 
@@ -41,6 +43,11 @@ func (i stringValue) ToString(b string) string {
 func (s *stringValue) Set(val string) error {
 	if s.trimSpace {
 		val = strings.TrimSpace(val)
+	}
+	if s.validator != nil {
+		if err := s.validator(val); err != nil {
+			return err
+		}
 	}
 	*s.destination = val
 	return nil

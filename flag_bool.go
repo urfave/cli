@@ -23,6 +23,7 @@ type BoolConfig struct {
 type boolValue struct {
 	destination *bool
 	count       *int
+	validator   func(bool) error
 }
 
 func (cCtx *Context) Bool(name string) bool {
@@ -35,7 +36,7 @@ func (cCtx *Context) Bool(name string) bool {
 // Below functions are to satisfy the ValueCreator interface
 
 // Create creates the bool value
-func (i boolValue) Create(val bool, p *bool, c BoolConfig) Value {
+func (i boolValue) Create(val bool, p *bool, c BoolConfig, validator func(bool) error) Value {
 	*p = val
 	if c.Count == nil {
 		c.Count = new(int)
@@ -43,6 +44,7 @@ func (i boolValue) Create(val bool, p *bool, c BoolConfig) Value {
 	return &boolValue{
 		destination: p,
 		count:       c.Count,
+		validator:   validator,
 	}
 }
 
@@ -58,6 +60,11 @@ func (b *boolValue) Set(s string) error {
 	if err != nil {
 		err = errors.New("parse error")
 		return err
+	}
+	if b.validator != nil {
+		if err := b.validator(v); err != nil {
+			return err
+		}
 	}
 	*b.destination = v
 	if b.count != nil {

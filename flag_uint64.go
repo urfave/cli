@@ -9,17 +9,19 @@ type Uint64Flag = FlagBase[uint64, IntegerConfig, uint64Value]
 
 // -- uint64 Value
 type uint64Value struct {
-	val  *uint64
-	base int
+	val       *uint64
+	base      int
+	validator func(uint64) error
 }
 
 // Below functions are to satisfy the ValueCreator interface
 
-func (i uint64Value) Create(val uint64, p *uint64, c IntegerConfig) Value {
+func (i uint64Value) Create(val uint64, p *uint64, c IntegerConfig, validator func(uint64) error) Value {
 	*p = val
 	return &uint64Value{
-		val:  p,
-		base: c.Base,
+		val:       p,
+		base:      c.Base,
+		validator: validator,
 	}
 }
 
@@ -33,6 +35,11 @@ func (i *uint64Value) Set(s string) error {
 	v, err := strconv.ParseUint(s, i.base, 64)
 	if err != nil {
 		return err
+	}
+	if i.validator != nil {
+		if err := i.validator(v); err != nil {
+			return err
+		}
 	}
 	*i.val = v
 	return err

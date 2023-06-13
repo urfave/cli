@@ -20,16 +20,18 @@ type timestampValue struct {
 	hasBeenSet bool
 	layout     string
 	location   *time.Location
+	validator  func(time.Time) error
 }
 
 // Below functions are to satisfy the ValueCreator interface
 
-func (i timestampValue) Create(val time.Time, p *time.Time, c TimestampConfig) Value {
+func (i timestampValue) Create(val time.Time, p *time.Time, c TimestampConfig, validator func(time.Time) error) Value {
 	*p = val
 	return &timestampValue{
 		timestamp: p,
 		layout:    c.Layout,
 		location:  c.Timezone,
+		validator: validator,
 	}
 }
 
@@ -60,6 +62,12 @@ func (t *timestampValue) Set(value string) error {
 
 	if err != nil {
 		return err
+	}
+
+	if t.validator != nil {
+		if err := t.validator(timestamp); err != nil {
+			return err
+		}
 	}
 
 	if t.timestamp != nil {

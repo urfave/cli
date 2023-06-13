@@ -14,17 +14,19 @@ type IntegerConfig struct {
 
 // -- int Value
 type intValue struct {
-	val  *int
-	base int
+	val       *int
+	base      int
+	validator func(int) error
 }
 
 // Below functions are to satisfy the ValueCreator interface
 
-func (i intValue) Create(val int, p *int, c IntegerConfig) Value {
+func (i intValue) Create(val int, p *int, config IntegerConfig, validator func(int) error) Value {
 	*p = val
 	return &intValue{
-		val:  p,
-		base: c.Base,
+		val:       p,
+		base:      config.Base,
+		validator: validator,
 	}
 }
 
@@ -38,6 +40,11 @@ func (i *intValue) Set(s string) error {
 	v, err := strconv.ParseInt(s, i.base, strconv.IntSize)
 	if err != nil {
 		return err
+	}
+	if i.validator != nil {
+		if err := i.validator(int(v)); err != nil {
+			return err
+		}
 	}
 	*i.val = int(v)
 	return err

@@ -12,17 +12,19 @@ type SliceBase[T any, C any, VC ValueCreator[T, C]] struct {
 	slice      *[]T
 	hasBeenSet bool
 	value      Value
+	validator  func([]T) error
 }
 
-func (i SliceBase[T, C, VC]) Create(val []T, p *[]T, c C) Value {
+func (i SliceBase[T, C, VC]) Create(val []T, p *[]T, config C, validator func([]T) error) Value {
 	*p = []T{}
 	*p = append(*p, val...)
 	var t T
 	np := new(T)
 	var vc VC
 	return &SliceBase[T, C, VC]{
-		slice: p,
-		value: vc.Create(t, np, c),
+		slice:     p,
+		value:     vc.Create(t, np, config, nil),
+		validator: validator,
 	}
 }
 
@@ -45,6 +47,8 @@ func (i *SliceBase[T, C, VC]) SetOne(value T) {
 
 // Set parses the value and appends it to the list of values
 func (i *SliceBase[T, C, VC]) Set(value string) error {
+	var tmpSlice []T
+
 	if !i.hasBeenSet {
 		*i.slice = []T{}
 		i.hasBeenSet = true
@@ -52,7 +56,13 @@ func (i *SliceBase[T, C, VC]) Set(value string) error {
 
 	if strings.HasPrefix(value, slPfx) {
 		// Deserializing assumes overwrite
-		_ = json.Unmarshal([]byte(strings.Replace(value, slPfx, "", 1)), &i.slice)
+		_ = json.Unmarshal([]byte(strings.Replace(value, slPfx, "", 1)), &tmpSlice)
+		if i.validator != nil {
+			if err := i.validator(tmpSlice); err != nil {
+				return err
+			}
+		}
+		i.slice = &tmpSlice
 		i.hasBeenSet = true
 		return nil
 	}
@@ -65,9 +75,21 @@ func (i *SliceBase[T, C, VC]) Set(value string) error {
 		if !ok {
 			return fmt.Errorf("unable to cast %v", i.value)
 		}
-		*i.slice = append(*i.slice, tmp)
+		tmpSlice = append(tmpSlice, tmp)
 	}
 
+	if i.validator != nil {
+		if err := i.validator(tmpSlice); err != nil {
+			return err
+		}
+	}
+
+	if !i.hasBeenSet {
+		*i.slice = []T{}
+		i.hasBeenSet = true
+	}
+
+	*i.slice = append(*i.slice, tmpSlice...)
 	return nil
 }
 
