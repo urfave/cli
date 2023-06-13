@@ -145,16 +145,15 @@ func (f *TimestampFlag) Apply(set *flag.FlagSet) error {
 
 	f.defaultValue = f.Value.clone()
 
-	if f.Destination != nil {
-		f.Destination.SetLayout(f.Layout)
-		f.Destination.SetLocation(f.Timezone)
-	}
-
 	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
 		if err := f.Value.Set(val); err != nil {
 			return fmt.Errorf("could not parse %q as timestamp value from %s for flag %s: %s", val, source, f.Name, err)
 		}
 		f.HasBeenSet = true
+	}
+
+	if f.Destination != nil {
+		*f.Destination = *f.Value
 	}
 
 	for _, name := range f.Names() {

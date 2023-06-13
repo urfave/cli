@@ -3459,6 +3459,28 @@ func TestTimestampFlagApply_WithDestination(t *testing.T) {
 	expect(t, *fl.Destination.timestamp, expectedResult)
 }
 
+func TestTimestampFlagApply_EnvWithDestination(t *testing.T) {
+	var tsValue Timestamp
+
+	app := NewApp()
+	app.Flags = []Flag{
+		&TimestampFlag{
+			Name:        "some-timestamp-flag",
+			EnvVars:     []string{"SOME_TIMESTAMP_FLAG"},
+			Layout:      time.RFC3339,
+			Destination: &tsValue,
+			Required:    true,
+		},
+	}
+
+	t.Setenv("SOME_TIMESTAMP_FLAG", "2021-03-02T06:20:00Z")
+
+	err := app.Run([]string{})
+
+	expect(t, err, nil)
+	expect(t, tsValue.Value().Format(time.RFC3339), "2021-03-02T06:20:00Z")
+}
+
 // Test issue #1254
 // StringSlice() with UseShortOptionHandling causes duplicated entries, depending on the ordering of the flags
 func TestSliceShortOptionHandle(t *testing.T) {
