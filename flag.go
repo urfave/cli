@@ -27,8 +27,8 @@ var (
 	commaWhitespace = regexp.MustCompile("[, ]+.*")
 )
 
-// BashCompletionFlag enables bash-completion for all commands and subcommands
-var BashCompletionFlag Flag = &BoolFlag{
+// GenerateShellCompletionFlag enables shell completion
+var GenerateShellCompletionFlag Flag = &BoolFlag{
 	Name:   "generate-shell-completion",
 	Hidden: true,
 }

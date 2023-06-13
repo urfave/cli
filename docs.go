@@ -18,9 +18,9 @@ import (
 	"github.com/cpuguy83/go-md2man/v2/md2man"
 )
 
-// ToTabularMarkdown creates a tabular markdown documentation for the `*App`.
+// ToTabularMarkdown creates a tabular markdown documentation for the `*Command`.
 // The function errors if either parsing or writing of the string fails.
-func (a *App) ToTabularMarkdown(appPath string) (string, error) {
+func (cmd *Command) ToTabularMarkdown(appPath string) (string, error) {
 	if appPath == "" {
 		appPath = "app"
 	}
@@ -41,13 +41,13 @@ func (a *App) ToTabularMarkdown(appPath string) (string, error) {
 
 	if err = t.ExecuteTemplate(&w, name, cliTabularAppTemplate{
 		AppPath:     appPath,
-		Name:        a.Name,
-		Description: tt.PrepareMultilineString(a.Description),
-		Usage:       tt.PrepareMultilineString(a.Usage),
-		UsageText:   strings.FieldsFunc(a.UsageText, func(r rune) bool { return r == '\n' }),
-		ArgsUsage:   tt.PrepareMultilineString(a.ArgsUsage),
-		GlobalFlags: tt.PrepareFlags(a.VisibleFlags()),
-		Commands:    tt.PrepareCommands(a.VisibleCommands(), appPath, "", 0),
+		Name:        cmd.Name,
+		Description: tt.PrepareMultilineString(cmd.Description),
+		Usage:       tt.PrepareMultilineString(cmd.Usage),
+		UsageText:   strings.FieldsFunc(cmd.UsageText, func(r rune) bool { return r == '\n' }),
+		ArgsUsage:   tt.PrepareMultilineString(cmd.ArgsUsage),
+		GlobalFlags: tt.PrepareFlags(cmd.VisibleFlags()),
+		Commands:    tt.PrepareCommands(cmd.VisibleCommands(), appPath, "", 0),
 	}); err != nil {
 		return "", err
 	}
@@ -57,7 +57,7 @@ func (a *App) ToTabularMarkdown(appPath string) (string, error) {
 
 // ToTabularToFileBetweenTags creates a tabular markdown documentation for the `*App` and updates the file between
 // the tags in the file. The function errors if either parsing or writing of the string fails.
-func (a *App) ToTabularToFileBetweenTags(appPath, filePath string, startEndTags ...string) error {
+func (cmd *Command) ToTabularToFileBetweenTags(appPath, filePath string, startEndTags ...string) error {
 	var start, end = "<!--GENERATED:CLI_DOCS-->", "<!--/GENERATED:CLI_DOCS-->" // default tags
 
 	if len(startEndTags) == 2 {
@@ -71,7 +71,7 @@ func (a *App) ToTabularToFileBetweenTags(appPath, filePath string, startEndTags 
 	}
 
 	// generate markdown
-	md, err := a.ToTabularMarkdown(appPath)
+	md, err := cmd.ToTabularMarkdown(appPath)
 	if err != nil {
 		return err
 	}
@@ -95,54 +95,54 @@ func (a *App) ToTabularToFileBetweenTags(appPath, filePath string, startEndTags 
 	return nil
 }
 
-// ToMarkdown creates a markdown string for the `*App`
+// ToMarkdown creates a markdown string for the `*Command`
 // The function errors if either parsing or writing of the string fails.
-func (a *App) ToMarkdown() (string, error) {
+func (cmd *Command) ToMarkdown() (string, error) {
 	var w bytes.Buffer
-	if err := a.writeDocTemplate(&w, 0); err != nil {
+	if err := cmd.writeDocTemplate(&w, 0); err != nil {
 		return "", err
 	}
 	return w.String(), nil
 }
 
-// ToMan creates a man page string with section number for the `*App`
+// ToMan creates a man page string with section number for the `*Command`
 // The function errors if either parsing or writing of the string fails.
-func (a *App) ToManWithSection(sectionNumber int) (string, error) {
+func (cmd *Command) ToManWithSection(sectionNumber int) (string, error) {
 	var w bytes.Buffer
-	if err := a.writeDocTemplate(&w, sectionNumber); err != nil {
+	if err := cmd.writeDocTemplate(&w, sectionNumber); err != nil {
 		return "", err
 	}
 	man := md2man.Render(w.Bytes())
 	return string(man), nil
 }
 
-// ToMan creates a man page string for the `*App`
+// ToMan creates a man page string for the `*Command`
 // The function errors if either parsing or writing of the string fails.
-func (a *App) ToMan() (string, error) {
-	man, err := a.ToManWithSection(8)
+func (cmd *Command) ToMan() (string, error) {
+	man, err := cmd.ToManWithSection(8)
 	return man, err
 }
 
-type cliTemplate struct {
-	App          *App
+type cliCommandTemplate struct {
+	Command      *Command
 	SectionNum   int
 	Commands     []string
 	GlobalArgs   []string
 	SynopsisArgs []string
 }
 
-func (a *App) writeDocTemplate(w io.Writer, sectionNum int) error {
+func (cmd *Command) writeDocTemplate(w io.Writer, sectionNum int) error {
 	const name = "cli"
 	t, err := template.New(name).Parse(MarkdownDocTemplate)
 	if err != nil {
 		return err
 	}
-	return t.ExecuteTemplate(w, name, &cliTemplate{
-		App:          a,
+	return t.ExecuteTemplate(w, name, &cliCommandTemplate{
+		Command:      cmd,
 		SectionNum:   sectionNum,
-		Commands:     prepareCommands(a.Commands, 0),
-		GlobalArgs:   prepareArgsWithValues(a.VisibleFlags()),
-		SynopsisArgs: prepareArgsSynopsis(a.VisibleFlags()),
+		Commands:     prepareCommands(cmd.Commands, 0),
+		GlobalArgs:   prepareArgsWithValues(cmd.VisibleFlags()),
+		SynopsisArgs: prepareArgsSynopsis(cmd.VisibleFlags()),
 	})
 }
 

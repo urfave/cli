@@ -10,21 +10,21 @@ import (
 
 // ToFishCompletion creates a fish completion string for the `*App`
 // The function errors if either parsing or writing of the string fails.
-func (a *App) ToFishCompletion() (string, error) {
+func (cmd *Command) ToFishCompletion() (string, error) {
 	var w bytes.Buffer
-	if err := a.writeFishCompletionTemplate(&w); err != nil {
+	if err := cmd.writeFishCompletionTemplate(&w); err != nil {
 		return "", err
 	}
 	return w.String(), nil
 }
 
-type fishCompletionTemplate struct {
-	App         *App
+type fishCommandCompletionTemplate struct {
+	Command     *Command
 	Completions []string
 	AllCommands []string
 }
 
-func (a *App) writeFishCompletionTemplate(w io.Writer) error {
+func (cmd *Command) writeFishCompletionTemplate(w io.Writer) error {
 	const name = "cli"
 	t, err := template.New(name).Parse(FishCompletionTemplate)
 	if err != nil {
@@ -33,38 +33,38 @@ func (a *App) writeFishCompletionTemplate(w io.Writer) error {
 	allCommands := []string{}
 
 	// Add global flags
-	completions := a.prepareFishFlags(a.VisibleFlags(), allCommands)
+	completions := cmd.prepareFishFlags(cmd.VisibleFlags(), allCommands)
 
 	// Add help flag
-	if !a.HideHelp {
+	if !cmd.HideHelp {
 		completions = append(
 			completions,
-			a.prepareFishFlags([]Flag{HelpFlag}, allCommands)...,
+			cmd.prepareFishFlags([]Flag{HelpFlag}, allCommands)...,
 		)
 	}
 
 	// Add version flag
-	if !a.HideVersion {
+	if !cmd.HideVersion {
 		completions = append(
 			completions,
-			a.prepareFishFlags([]Flag{VersionFlag}, allCommands)...,
+			cmd.prepareFishFlags([]Flag{VersionFlag}, allCommands)...,
 		)
 	}
 
 	// Add commands and their flags
 	completions = append(
 		completions,
-		a.prepareFishCommands(a.VisibleCommands(), &allCommands, []string{})...,
+		cmd.prepareFishCommands(cmd.VisibleCommands(), &allCommands, []string{})...,
 	)
 
-	return t.ExecuteTemplate(w, name, &fishCompletionTemplate{
-		App:         a,
+	return t.ExecuteTemplate(w, name, &fishCommandCompletionTemplate{
+		Command:     cmd,
 		Completions: completions,
 		AllCommands: allCommands,
 	})
 }
 
-func (a *App) prepareFishCommands(commands []*Command, allCommands *[]string, previousCommands []string) []string {
+func (cmd *Command) prepareFishCommands(commands []*Command, allCommands *[]string, previousCommands []string) []string {
 	completions := []string{}
 	for _, command := range commands {
 		if command.Hidden {
@@ -74,8 +74,8 @@ func (a *App) prepareFishCommands(commands []*Command, allCommands *[]string, pr
 		var completion strings.Builder
 		completion.WriteString(fmt.Sprintf(
 			"complete -r -c %s -n '%s' -a '%s'",
-			a.Name,
-			a.fishSubcommandHelper(previousCommands),
+			cmd.Name,
+			cmd.fishSubcommandHelper(previousCommands),
 			strings.Join(command.Names(), " "),
 		))
 
@@ -87,7 +87,7 @@ func (a *App) prepareFishCommands(commands []*Command, allCommands *[]string, pr
 		if !command.HideHelp {
 			completions = append(
 				completions,
-				a.prepareFishFlags([]Flag{HelpFlag}, command.Names())...,
+				cmd.prepareFishFlags([]Flag{HelpFlag}, command.Names())...,
 			)
 		}
 
@@ -95,14 +95,14 @@ func (a *App) prepareFishCommands(commands []*Command, allCommands *[]string, pr
 		completions = append(completions, completion.String())
 		completions = append(
 			completions,
-			a.prepareFishFlags(command.VisibleFlags(), command.Names())...,
+			cmd.prepareFishFlags(command.VisibleFlags(), command.Names())...,
 		)
 
 		// recursively iterate subcommands
 		if len(command.Commands) > 0 {
 			completions = append(
 				completions,
-				a.prepareFishCommands(
+				cmd.prepareFishCommands(
 					command.Commands, allCommands, command.Names(),
 				)...,
 			)
@@ -112,14 +112,14 @@ func (a *App) prepareFishCommands(commands []*Command, allCommands *[]string, pr
 	return completions
 }
 
-func (a *App) prepareFishFlags(flags []Flag, previousCommands []string) []string {
+func (cmd *Command) prepareFishFlags(flags []Flag, previousCommands []string) []string {
 	completions := []string{}
 	for _, f := range flags {
 		completion := &strings.Builder{}
 		completion.WriteString(fmt.Sprintf(
 			"complete -c %s -n '%s'",
-			a.Name,
-			a.fishSubcommandHelper(previousCommands),
+			cmd.Name,
+			cmd.fishSubcommandHelper(previousCommands),
 		))
 
 		fishAddFileFlag(f, completion)
@@ -168,8 +168,8 @@ func fishAddFileFlag(flag Flag, completion *strings.Builder) {
 	completion.WriteString(" -f")
 }
 
-func (a *App) fishSubcommandHelper(allCommands []string) string {
-	fishHelper := fmt.Sprintf("__fish_%s_no_subcommand", a.Name)
+func (cmd *Command) fishSubcommandHelper(allCommands []string) string {
+	fishHelper := fmt.Sprintf("__fish_%s_no_subcommand", cmd.Name)
 	if len(allCommands) > 0 {
 		fishHelper = fmt.Sprintf(
 			"__fish_seen_subcommand_from %s",
@@ -177,7 +177,6 @@ func (a *App) fishSubcommandHelper(allCommands []string) string {
 		)
 	}
 	return fishHelper
-
 }
 
 func escapeSingleQuotes(input string) string {
