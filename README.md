@@ -13,7 +13,7 @@ urfave/cli is a **declarative**, simple, fast, and fun package for building comm
 - `man` and markdown format documentation generation
 - input flag types for primitives, slices of primitives, time, duration, and others
 - compound short flag support (`-a` `-b` `-c` :arrow_right: `-abc`)
-- input value sources including:
+- options lookup from:
     - environment variables
     - plain text files
     - [structured file formats supported via the `urfave/cli-altsrc` package](https://github.com/urfave/cli-altsrc)
