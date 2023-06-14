@@ -7,7 +7,7 @@
 
 urfave/cli is a **declarative**, simple, fast, and fun package for building command line tools in Go featuring:
 
-- nestable commands with alias and prefix match support
+- commands and subcommands with alias and prefix match support
 - flexible and permissive help system
 - dynamic shell completion for `bash`, `zsh`, `fish`, and `powershell`
 - `man` and markdown format documentation generation
