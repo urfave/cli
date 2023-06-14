@@ -3,13 +3,12 @@ package cli
 import (
 	"errors"
 	"fmt"
-	"os"
 	"testing"
 )
 
 func TestSuggestFlag(t *testing.T) {
 	// Given
-	app := testApp()
+	app := buildExtendedTestCommand()
 
 	for _, testCase := range []struct {
 		provided, expected string
@@ -30,7 +29,7 @@ func TestSuggestFlag(t *testing.T) {
 
 func TestSuggestFlagHideHelp(t *testing.T) {
 	// Given
-	app := testApp()
+	app := buildExtendedTestCommand()
 
 	// When
 	res := suggestFlag(app.Flags, "hlp", true)
@@ -41,7 +40,7 @@ func TestSuggestFlagHideHelp(t *testing.T) {
 
 func TestSuggestFlagFromError(t *testing.T) {
 	// Given
-	app := testApp()
+	app := buildExtendedTestCommand()
 
 	for _, testCase := range []struct {
 		command, provided, expected string
@@ -63,7 +62,7 @@ func TestSuggestFlagFromError(t *testing.T) {
 
 func TestSuggestFlagFromErrorWrongError(t *testing.T) {
 	// Given
-	app := testApp()
+	app := buildExtendedTestCommand()
 
 	// When
 	_, err := app.suggestFlagFromError(errors.New("invalid"), "")
@@ -74,7 +73,7 @@ func TestSuggestFlagFromErrorWrongError(t *testing.T) {
 
 func TestSuggestFlagFromErrorWrongCommand(t *testing.T) {
 	// Given
-	app := testApp()
+	app := buildExtendedTestCommand()
 
 	// When
 	_, err := app.suggestFlagFromError(
@@ -88,7 +87,7 @@ func TestSuggestFlagFromErrorWrongCommand(t *testing.T) {
 
 func TestSuggestFlagFromErrorNoSuggestion(t *testing.T) {
 	// Given
-	app := testApp()
+	app := buildExtendedTestCommand()
 
 	// When
 	_, err := app.suggestFlagFromError(
@@ -102,7 +101,7 @@ func TestSuggestFlagFromErrorNoSuggestion(t *testing.T) {
 
 func TestSuggestCommand(t *testing.T) {
 	// Given
-	app := testApp()
+	app := buildExtendedTestCommand()
 
 	for _, testCase := range []struct {
 		provided, expected string
@@ -121,76 +120,4 @@ func TestSuggestCommand(t *testing.T) {
 		// Then
 		expect(t, res, testCase.expected)
 	}
-}
-
-func ExampleApp_Suggest() {
-	app := &App{
-		Name:                  "greet",
-		ErrWriter:             os.Stdout,
-		Suggest:               true,
-		HideHelp:              false,
-		HideHelpCommand:       true,
-		CustomAppHelpTemplate: "(this space intentionally left blank)\n",
-		Flags: []Flag{
-			&StringFlag{Name: "name", Value: "squirrel", Usage: "a name to say"},
-		},
-		Action: func(cCtx *Context) error {
-			fmt.Printf("Hello %v\n", cCtx.String("name"))
-			return nil
-		},
-	}
-
-	if app.Run([]string{"greet", "--nema", "chipmunk"}) == nil {
-		fmt.Println("Expected error")
-	}
-	// Output:
-	// Incorrect Usage: flag provided but not defined: -nema
-	//
-	// Did you mean "--name"?
-	//
-	// (this space intentionally left blank)
-}
-
-func ExampleApp_Suggest_command() {
-	app := &App{
-		Name:                  "greet",
-		ErrWriter:             os.Stdout,
-		Suggest:               true,
-		HideHelpCommand:       true,
-		CustomAppHelpTemplate: "(this space intentionally left blank)\n",
-		Flags: []Flag{
-			&StringFlag{Name: "name", Value: "squirrel", Usage: "a name to say"},
-		},
-		Action: func(cCtx *Context) error {
-			fmt.Printf("Hello %v\n", cCtx.String("name"))
-			return nil
-		},
-		Commands: []*Command{
-			{
-				Name:               "neighbors",
-				HideHelp:           false,
-				CustomHelpTemplate: "(this space intentionally left blank)\n",
-				Flags: []Flag{
-					&BoolFlag{Name: "smiling"},
-				},
-				Action: func(cCtx *Context) error {
-					if cCtx.Bool("smiling") {
-						fmt.Println("😀")
-					}
-					fmt.Println("Hello, neighbors")
-					return nil
-				},
-			},
-		},
-	}
-
-	if app.Run([]string{"greet", "neighbors", "--sliming"}) == nil {
-		fmt.Println("Expected error")
-	}
-	// Output:
-	// Incorrect Usage: flag provided but not defined: -sliming
-	//
-	// Did you mean "--smiling"?
-	//
-	// (this space intentionally left blank)
 }

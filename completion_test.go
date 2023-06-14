@@ -4,36 +4,37 @@ import (
 	"bytes"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestCompletionDisable(t *testing.T) {
-	a := &App{}
-	err := a.Run([]string{"foo", completionCommandName})
+	cmd := &Command{}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName})
 	if err == nil {
 		t.Error("Expected error for no help topic for completion")
 	}
 }
 
 func TestCompletionEnable(t *testing.T) {
-	a := &App{
+	cmd := &Command{
 		EnableShellCompletion: true,
 	}
-	err := a.Run([]string{"foo", completionCommandName})
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName})
 	if err == nil || !strings.Contains(err.Error(), "no shell provided") {
 		t.Errorf("expected no shell provided error instead got [%v]", err)
 	}
 }
 
 func TestCompletionEnableDiffCommandName(t *testing.T) {
-	defer func() {
-		completionCommand.Name = completionCommandName
-	}()
-
-	a := &App{
+	cmd := &Command{
 		EnableShellCompletion:      true,
 		ShellCompletionCommandName: "junky",
 	}
-	err := a.Run([]string{"foo", "junky"})
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", "junky"})
 	if err == nil || !strings.Contains(err.Error(), "no shell provided") {
 		t.Errorf("expected no shell provided error instead got [%v]", err)
 	}
@@ -41,29 +42,31 @@ func TestCompletionEnableDiffCommandName(t *testing.T) {
 
 func TestCompletionShell(t *testing.T) {
 	for k := range shellCompletions {
-		var b bytes.Buffer
+		out := &bytes.Buffer{}
+
 		t.Run(k, func(t *testing.T) {
-			a := &App{
+			cmd := &Command{
 				EnableShellCompletion: true,
-				Writer:                &b,
+				Writer:                out,
 			}
-			err := a.Run([]string{"foo", completionCommandName, k})
-			if err != nil {
-				t.Error(err)
-			}
+
+			r := require.New(t)
+
+			r.NoError(cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, k}))
+			r.Containsf(
+				k, out.String(),
+				"Expected output to contain shell name %[1]q", k,
+			)
 		})
-		output := b.String()
-		if !strings.Contains(output, k) {
-			t.Errorf("Expected output to contain shell name %v", output)
-		}
 	}
 }
 
 func TestCompletionInvalidShell(t *testing.T) {
-	a := &App{
+	cmd := &Command{
 		EnableShellCompletion: true,
 	}
-	err := a.Run([]string{"foo", completionCommandName, "junky-sheell"})
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, "junky-sheell"})
 	if err == nil {
 		t.Error("Expected error for invalid shell")
 	}

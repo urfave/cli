@@ -7,37 +7,50 @@ import (
 	"strings"
 )
 
+const (
+	contextContextKey = contextKey("cli.context")
+)
+
+type contextKey string
+
 // Context is a type that is passed through to
 // each Handler action in a cli application. Context
 // can be used to retrieve context-specific args and
 // parsed command-line options.
 type Context struct {
 	context.Context
-	App           *App
 	Command       *Command
 	shellComplete bool
 	flagSet       *flag.FlagSet
-	parentContext *Context
+	parent        *Context
 }
 
-// NewContext creates a new context. For use in when invoking an App or Command action.
-func NewContext(app *App, set *flag.FlagSet, parentCtx *Context) *Context {
-	c := &Context{App: app, flagSet: set, parentContext: parentCtx}
-	if parentCtx != nil {
-		c.Context = parentCtx.Context
-		c.shellComplete = parentCtx.shellComplete
-		if parentCtx.flagSet == nil {
-			parentCtx.flagSet = &flag.FlagSet{}
+// NewContext creates a new context. For use in when invoking a Command action.
+func NewContext(cmd *Command, set *flag.FlagSet, parent *Context) *Context {
+	cCtx := &Context{
+		Command: cmd,
+		flagSet: set,
+		parent:  parent,
+	}
+
+	if parent != nil {
+		cCtx.Context = parent.Context
+		cCtx.shellComplete = parent.shellComplete
+
+		if parent.flagSet == nil {
+			parent.flagSet = &flag.FlagSet{}
 		}
 	}
 
-	c.Command = &Command{}
-
-	if c.Context == nil {
-		c.Context = context.Background()
+	if cCtx.Command == nil {
+		cCtx.Command = &Command{}
 	}
 
-	return c
+	if cCtx.Context == nil {
+		cCtx.Context = context.Background()
+	}
+
+	return cCtx
 }
 
 // NumFlags returns the number of flags set
@@ -120,7 +133,7 @@ func (cCtx *Context) FlagNames() []string {
 func (cCtx *Context) Lineage() []*Context {
 	var lineage []*Context
 
-	for cur := cCtx; cur != nil; cur = cur.parentContext {
+	for cur := cCtx; cur != nil; cur = cur.parent {
 		lineage = append(lineage, cur)
 	}
 
@@ -163,16 +176,6 @@ func (cCtx *Context) lookupFlag(name string) Flag {
 		}
 
 		for _, f := range c.Command.Flags {
-			for _, n := range f.Names() {
-				if n == name {
-					return f
-				}
-			}
-		}
-	}
-
-	if cCtx.App != nil {
-		for _, f := range cCtx.App.Flags {
 			for _, n := range f.Names() {
 				if n == name {
 					return f
@@ -227,11 +230,11 @@ func (cCtx *Context) checkRequiredFlags(flags []Flag) requiredFlagsErr {
 
 func (cCtx *Context) onInvalidFlag(name string) {
 	for cCtx != nil {
-		if cCtx.App != nil && cCtx.App.InvalidFlagAccessHandler != nil {
-			cCtx.App.InvalidFlagAccessHandler(cCtx, name)
+		if cCtx.Command != nil && cCtx.Command.InvalidFlagAccessHandler != nil {
+			cCtx.Command.InvalidFlagAccessHandler(cCtx, name)
 			break
 		}
-		cCtx = cCtx.parentContext
+		cCtx = cCtx.parent
 	}
 }
 

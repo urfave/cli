@@ -141,7 +141,7 @@ func TestContext_Value(t *testing.T) {
 
 func TestContext_Value_InvalidFlagAccessHandler(t *testing.T) {
 	var flagName string
-	app := &App{
+	cmd := &Command{
 		InvalidFlagAccessHandler: func(_ *Context, name string) {
 			flagName = name
 		},
@@ -160,7 +160,8 @@ func TestContext_Value_InvalidFlagAccessHandler(t *testing.T) {
 			},
 		},
 	}
-	expect(t, app.Run([]string{"run", "command", "subcommand"}), nil)
+
+	expect(t, cmd.Run(buildTestContext(t), []string{"run", "command", "subcommand"}), nil)
 	expect(t, flagName, "missing")
 }
 
@@ -215,7 +216,7 @@ func TestContext_IsSet_fromEnv(t *testing.T) {
 	os.Clearenv()
 	_ = os.Setenv("APP_TIMEOUT_SECONDS", "15.5")
 	_ = os.Setenv("APP_PASSWORD", "")
-	a := App{
+	cmd := &Command{
 		Flags: []Flag{
 			&Float64Flag{Name: "timeout", Aliases: []string{"t"}, Sources: EnvVars("APP_TIMEOUT_SECONDS")},
 			&StringFlag{Name: "password", Aliases: []string{"p"}, Sources: EnvVars("APP_PASSWORD")},
@@ -234,7 +235,8 @@ func TestContext_IsSet_fromEnv(t *testing.T) {
 			return nil
 		},
 	}
-	_ = a.Run([]string{"run"})
+
+	_ = cmd.Run(buildTestContext(t), []string{"run"})
 	expect(t, timeoutIsSet, true)
 	expect(t, tIsSet, true)
 	expect(t, passwordIsSet, true)
@@ -242,8 +244,8 @@ func TestContext_IsSet_fromEnv(t *testing.T) {
 	expect(t, noEnvVarIsSet, false)
 	expect(t, nIsSet, false)
 
-	_ = os.Setenv("APP_UNPARSABLE", "foobar")
-	_ = a.Run([]string{"run"})
+	t.Setenv("APP_UNPARSABLE", "foobar")
+	_ = cmd.Run(buildTestContext(t), []string{"run"})
 	expect(t, unparsableIsSet, false)
 	expect(t, uIsSet, false)
 }
@@ -275,13 +277,13 @@ func TestContext_Set(t *testing.T) {
 func TestContext_Set_InvalidFlagAccessHandler(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	var flagName string
-	app := &App{
+	cmd := &Command{
 		InvalidFlagAccessHandler: func(_ *Context, name string) {
 			flagName = name
 		},
 	}
 
-	c := NewContext(app, set, nil)
+	c := NewContext(cmd, set, nil)
 	expect(t, c.Set("missing", "") != nil, true)
 	expect(t, flagName, "missing")
 }
@@ -612,7 +614,7 @@ func TestCheckRequiredFlags(t *testing.T) {
 			_ = set.Parse(test.parseInput)
 
 			c := &Context{}
-			ctx := NewContext(c.App, set, c)
+			ctx := NewContext(c.Command, set, c)
 			ctx.Command.Flags = test.flags
 
 			// logic under test
