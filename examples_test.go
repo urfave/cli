@@ -547,7 +547,8 @@ func ExampleCommand_Suggest() {
 
 func ExampleCommand_Suggest_command() {
 	cmd := &cli.Command{
-		Name: "greet",
+		ErrWriter: os.Stdout,
+		Name:      "greet",
 		Flags: []cli.Flag{
 			&cli.StringFlag{Name: "name", Value: "squirrel", Usage: "a name to say"},
 		},
@@ -558,7 +559,6 @@ func ExampleCommand_Suggest_command() {
 		Commands: []*cli.Command{
 			{
 				Name:               "neighbors",
-				ErrWriter:          os.Stdout,
 				HideHelp:           true,
 				HideHelpCommand:    true,
 				Suggest:            true,
