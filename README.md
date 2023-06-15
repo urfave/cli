@@ -11,9 +11,9 @@ urfave/cli is a **declarative**, simple, fast, and fun package for building comm
 - flexible and permissive help system
 - dynamic shell completion for `bash`, `zsh`, `fish`, and `powershell`
 - `man` and markdown format documentation generation
-- input flag types for primitives, slices of primitives, time, duration, and others
+- input flags for simple types, slices of simple types, time, duration, and others
 - compound short flag support (`-a` `-b` `-c` :arrow_right: `-abc`)
-- options lookup from:
+- input lookup from:
     - environment variables
     - plain text files
     - [structured file formats supported via the `urfave/cli-altsrc` package](https://github.com/urfave/cli-altsrc)

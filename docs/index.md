@@ -11,13 +11,13 @@ https://github.com/urfave/cli/blob/main/README.md
 
 urfave/cli is a **declarative**, simple, fast, and fun package for building command line tools in Go featuring:
 
-- nestable commands with alias and prefix match support
+- commands and subcommands with alias and prefix match support
 - flexible and permissive help system
 - dynamic shell completion for `bash`, `zsh`, `fish`, and `powershell`
 - `man` and markdown format documentation generation
-- input flag types for primitives, slices of primitives, time, duration, and others
+- input flags for simple types, slices of simple types, time, duration, and others
 - compound short flag support (`-a` `-b` `-c` :arrow_right: `-abc`)
-- input value sources including:
+- input lookup from:
     - environment variables
     - plain text files
     - [structured file formats supported via the `urfave/cli-altsrc` package](https://github.com/urfave/cli-altsrc)
