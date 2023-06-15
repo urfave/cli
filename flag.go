@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
-	"syscall"
 	"time"
 )
 
@@ -365,26 +364,6 @@ func hasFlag(flags []Flag, fl Flag) bool {
 	}
 
 	return false
-}
-
-// Return the first value from a list of environment variables and files
-// (which may or may not exist), a description of where the value was found,
-// and a boolean which is true if a value was found.
-func flagFromEnvOrFile(envVars []string, filePaths []string) (value string, fromWhere string, found bool) {
-	for _, envVar := range envVars {
-		envVar = strings.TrimSpace(envVar)
-		if value, found := syscall.Getenv(envVar); found {
-			return value, fmt.Sprintf("environment variable %q", envVar), true
-		}
-	}
-	for _, fileVar := range filePaths {
-		if fileVar != "" {
-			if data, err := os.ReadFile(fileVar); err == nil {
-				return string(data), fmt.Sprintf("file %q", filePaths), true
-			}
-		}
-	}
-	return "", "", false
 }
 
 func flagSplitMultiValues(val string) []string {

@@ -2558,43 +2558,6 @@ func (p *Parser) Get() interface{} {
 	return p
 }
 
-func TestFlagFromFile(t *testing.T) {
-	temp, err := os.CreateTemp("", "urfave_cli_test")
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	defer resetEnv(os.Environ())
-	os.Clearenv()
-	os.Setenv("APP_FOO", "123")
-
-	_, _ = io.WriteString(temp, "abc")
-	_ = temp.Close()
-	defer func() {
-		_ = os.Remove(temp.Name())
-	}()
-
-	filePathTests := []struct {
-		path     string
-		name     []string
-		expected string
-	}{
-		{"file-does-not-exist", []string{"APP_BAR"}, ""},
-		{"file-does-not-exist", []string{"APP_FOO"}, "123"},
-		{"file-does-not-exist", []string{"APP_FOO", "APP_BAR"}, "123"},
-		{temp.Name(), []string{"APP_FOO"}, "123"},
-		{temp.Name(), []string{"APP_BAR"}, "abc"},
-	}
-
-	for _, filePathTest := range filePathTests {
-		got, _, _ := flagFromEnvOrFile(filePathTest.name, []string{filePathTest.path})
-		if want := filePathTest.expected; got != want {
-			t.Errorf("Did not expect %v - Want %v", got, want)
-		}
-	}
-}
-
 func TestStringSlice_Serialized_Set(t *testing.T) {
 	sl0 := NewStringSlice("a", "b")
 	ser0 := sl0.Serialize()
