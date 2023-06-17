@@ -696,13 +696,6 @@ type DocGenerationMultiValueFlag interface {
 
 type DurationFlag = FlagBase[time.Duration, NoConfig, durationValue]
 
-type EnvSource string
-    EnvSource encapsulates an env
-
-func (e EnvSource) Get() (string, bool)
-
-func (e EnvSource) Identifier() string
-
 type ErrorFormatter interface {
 	Format(s fmt.State, verb rune)
 }
@@ -727,13 +720,6 @@ func Exit(message interface{}, exitCode int) ExitCoder
 type ExitErrHandlerFunc func(cCtx *Context, err error)
     ExitErrHandlerFunc is executed if provided in order to handle exitError
     values returned by Actions and Before/After functions.
-
-type FileSource string
-    FileSource encapsulates an file source
-
-func (f FileSource) Get() (string, bool)
-
-func (f FileSource) Identifier() string
 
 type Flag interface {
 	fmt.Stringer
@@ -780,7 +766,7 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	DefaultText string // default text of the flag for usage purposes
 	Usage       string // usage string for help output
 
-	Sources ValueSources // sources to load flag value from
+	Sources ValueSourceChain // sources to load flag value from
 
 	Required   bool // whether the flag is required or not
 	Hidden     bool // whether to hide the flag in help output
@@ -897,16 +883,6 @@ type FlagStringFunc func(Flag) string
 var FlagStringer FlagStringFunc = stringifyFlag
     FlagStringer converts a flag definition to a string. This is used by help to
     display a flag.
-
-type FlagValueSource interface {
-	// Returns the value from the source and if it was found
-	// otherwise returns an empty string & found is set to false
-	Get() (string, bool)
-
-	// The identifier for this source
-	Identifier() string
-}
-    FlagValueSource encapsulates a source which can be used to fetch a value
 
 type FlagsByName []Flag
     FlagsByName is a slice of Flag.
@@ -1107,18 +1083,30 @@ type ValueCreator[T any, C any] interface {
         T specifies the type
         C specifies the config for the type
 
-type ValueSources []FlagValueSource
-    ValueSources encapsulates all value sources
+type ValueSource interface {
+	fmt.Stringer
+	fmt.GoStringer
 
-func EnvVars(envs ...string) ValueSources
-    EnvVars is a helper function to encapsulate a bunch of envs together as
-    ValueSources
+	// Lookup returns the value from the source and if it was found
+	// or returns an empty string and false
+	Lookup() (string, bool)
+}
+    ValueSource is a source which can be used to look up a value, typically for
+    use with a cli.Flag
 
-func FilePaths(paths ...string) ValueSources
-    FilePaths is a helper function to encapsulate a bunch of file paths together
+type ValueSourceChain []ValueSource
+    ValueSourceChain is a slice of ValueSource that allows for lookup where the
+    first ValueSource to resolve is returned
+
+func EnvVars(keys ...string) ValueSourceChain
+    EnvVars is a helper function to encapsulate a number of EnvSource together
     as ValueSources
 
-func (v ValueSources) Get() (string, string, bool)
+func Files(paths ...string) ValueSourceChain
+    Files is a helper function to encapsulate a number of FileSource together as
+    ValueSources
+
+func (v ValueSourceChain) Lookup() (string, ValueSource, bool)
 
 type VisibleFlag interface {
 	// IsVisible returns true if the flag is not hidden, otherwise false
