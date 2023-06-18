@@ -17,8 +17,9 @@ type ValueSource interface {
 	Lookup() (string, bool)
 }
 
-// ValueSourceChain is a slice of ValueSource that allows for
-// lookup where the first ValueSource to resolve is returned
+// ValueSourceChain contains an ordered series of ValueSource that
+// allows for lookup where the first ValueSource to resolve is
+// returned
 type ValueSourceChain struct {
 	Chain []ValueSource
 }

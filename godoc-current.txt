@@ -1097,8 +1097,8 @@ type ValueSource interface {
 type ValueSourceChain struct {
 	Chain []ValueSource
 }
-    ValueSourceChain is a slice of ValueSource that allows for lookup where the
-    first ValueSource to resolve is returned
+    ValueSourceChain contains an ordered series of ValueSource that allows for
+    lookup where the first ValueSource to resolve is returned
 
 func EnvVars(keys ...string) ValueSourceChain
     EnvVars is a helper function to encapsulate a number of envVarValueSource
