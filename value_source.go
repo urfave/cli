@@ -30,7 +30,7 @@ func (vsc *ValueSourceChain) String() string {
 		s = append(s, vs.String())
 	}
 
-	return strings.Join(s, ", ")
+	return strings.Join(s, ",")
 }
 
 func (vsc *ValueSourceChain) GoString() string {
@@ -40,7 +40,7 @@ func (vsc *ValueSourceChain) GoString() string {
 		s = append(s, vs.GoString())
 	}
 
-	return fmt.Sprintf("ValueSourceChain{Chain:{%[1]s}}", strings.Join(s, ","))
+	return fmt.Sprintf("&ValueSourceChain{Chain:{%[1]s}}", strings.Join(s, ","))
 }
 
 func (vsc *ValueSourceChain) Lookup() (string, bool) {
@@ -67,8 +67,10 @@ func (e *envVarValueSource) Lookup() (string, bool) {
 	return os.LookupEnv(strings.TrimSpace(string(e.Key)))
 }
 
-func (e *envVarValueSource) String() string   { return fmt.Sprintf("environment variable %[1]q", e.Key) }
-func (e *envVarValueSource) GoString() string { return fmt.Sprintf("envVarValueSource(%[1]q)", e.Key) }
+func (e *envVarValueSource) String() string { return fmt.Sprintf("environment variable %[1]q", e.Key) }
+func (e *envVarValueSource) GoString() string {
+	return fmt.Sprintf("&envVarValueSource{Key:%[1]q}", e.Key)
+}
 
 // EnvVars is a helper function to encapsulate a number of
 // envVarValueSource together as a ValueSourceChain
@@ -92,8 +94,10 @@ func (f *fileValueSource) Lookup() (string, bool) {
 	return string(data), err == nil
 }
 
-func (f *fileValueSource) String() string   { return fmt.Sprintf("file %[1]q", f.Path) }
-func (f *fileValueSource) GoString() string { return fmt.Sprintf("fileValueSource(%[1]q)", f.Path) }
+func (f *fileValueSource) String() string { return fmt.Sprintf("file %[1]q", f.Path) }
+func (f *fileValueSource) GoString() string {
+	return fmt.Sprintf("&fileValueSource{Path:%[1]q}", f.Path)
+}
 
 // Files is a helper function to encapsulate a number of
 // fileValueSource together as a ValueSourceChain

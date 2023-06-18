@@ -10,22 +10,46 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestEnvSource(t *testing.T) {
-	t.Run("not found", func(t *testing.T) {
-		t.Setenv("foo", "bar")
+func TestEnvVarValueSource(t *testing.T) {
+	t.Run("implements ValueSource", func(t *testing.T) {
+		src := &envVarValueSource{Key: "foo"}
+		require.Implements(t, (*ValueSource)(nil), src)
 
-		s := &envVarValueSource{Key: "foo_1"}
-		_, ok := s.Lookup()
-		require.False(t, ok)
+		t.Run("not found", func(t *testing.T) {
+			t.Setenv("foo", "bar")
+
+			src := &envVarValueSource{Key: "foo_1"}
+			_, ok := src.Lookup()
+			require.False(t, ok)
+		})
+
+		t.Run("found", func(t *testing.T) {
+			t.Setenv("foo", "bar")
+
+			r := require.New(t)
+			src := &envVarValueSource{Key: "foo"}
+
+			str, ok := src.Lookup()
+			r.True(ok)
+			r.Equal(str, "bar")
+		})
+
 	})
 
-	t.Run("found", func(t *testing.T) {
-		t.Setenv("foo", "bar")
+	t.Run("implements fmt.Stringer", func(t *testing.T) {
+		src := &envVarValueSource{Key: "foo"}
+		r := require.New(t)
 
-		s := &envVarValueSource{Key: "foo"}
-		str, ok := s.Lookup()
-		require.True(t, ok)
-		require.Equal(t, str, "bar")
+		r.Implements((*fmt.Stringer)(nil), src)
+		r.Equal("environment variable \"foo\"", src.String())
+	})
+
+	t.Run("implements fmt.GoStringer", func(t *testing.T) {
+		src := &envVarValueSource{Key: "foo"}
+		r := require.New(t)
+
+		r.Implements((*fmt.GoStringer)(nil), src)
+		r.Equal("&envVarValueSource{Key:\"foo\"}", src.GoString())
 	})
 }
 
@@ -41,10 +65,48 @@ func TestEnvVars(t *testing.T) {
 	r.Contains(src.String(), "\"myfoo\"")
 }
 
-func TestFileSource(t *testing.T) {
-	f := &fileValueSource{Path: "junk_file_name"}
-	_, ok := f.Lookup()
-	require.False(t, ok)
+func TestFileValueSource(t *testing.T) {
+	t.Run("implements ValueSource", func(t *testing.T) {
+		r := require.New(t)
+		r.Nil(os.Chdir(t.TempDir()))
+
+		src := &fileValueSource{Path: "junk_file_name"}
+		r.Implements((*ValueSource)(nil), src)
+
+		t.Run("not found", func(t *testing.T) {
+			src := &fileValueSource{Path: "junk_file_name"}
+			_, ok := src.Lookup()
+			r.False(ok)
+		})
+
+		fileName := "existing_file"
+		t.Cleanup(func() { _ = os.Remove(fileName) })
+
+		r.Nil(os.WriteFile(fileName, []byte("pita"), 0644))
+
+		t.Run("found", func(t *testing.T) {
+			src := &fileValueSource{Path: fileName}
+			str, ok := src.Lookup()
+			r.True(ok)
+			r.Equal("pita", str)
+		})
+	})
+
+	t.Run("implements fmt.Stringer", func(t *testing.T) {
+		src := &fileValueSource{Path: "/dev/null"}
+		r := require.New(t)
+
+		r.Implements((*ValueSource)(nil), src)
+		r.Equal("file \"/dev/null\"", src.String())
+	})
+
+	t.Run("implements fmt.GoStringer", func(t *testing.T) {
+		src := &fileValueSource{Path: "/dev/null"}
+		r := require.New(t)
+
+		r.Implements((*ValueSource)(nil), src)
+		r.Equal("&fileValueSource{Path:\"/dev/null\"}", src.GoString())
+	})
 }
 
 func TestFilePaths(t *testing.T) {
@@ -63,10 +125,52 @@ func TestFilePaths(t *testing.T) {
 }
 
 func TestValueSourceChain(t *testing.T) {
-	r := require.New(t)
+	t.Run("implements ValueSource", func(t *testing.T) {
+		vsc := &ValueSourceChain{}
+		r := require.New(t)
 
-	vsc := &ValueSourceChain{}
+		r.Implements((*ValueSource)(nil), vsc)
 
-	r.Implements((*ValueSource)(nil), vsc)
-	r.Equal("ValueSourceChain{Chain:{}}", vsc.GoString())
+		_, ok := vsc.Lookup()
+		r.False(ok)
+	})
+
+	t.Run("implements fmt.GoStringer", func(t *testing.T) {
+		vsc := &ValueSourceChain{}
+		r := require.New(t)
+
+		r.Implements((*fmt.GoStringer)(nil), vsc)
+		r.Equal("&ValueSourceChain{Chain:{}}", vsc.GoString())
+
+		vsc.Chain = []ValueSource{
+			&staticValueSource{v: "yahtzee"},
+			&staticValueSource{v: "matzoh"},
+		}
+		r.Equal("&ValueSourceChain{Chain:{&staticValueSource{v:\"yahtzee\"},&staticValueSource{v:\"matzoh\"}}}", vsc.GoString())
+	})
+
+	t.Run("implements fmt.Stringer", func(t *testing.T) {
+		vsc := &ValueSourceChain{}
+		r := require.New(t)
+
+		r.Implements((*fmt.Stringer)(nil), vsc)
+		r.Equal("", vsc.String())
+
+		vsc.Chain = []ValueSource{
+			&staticValueSource{v: "soup"},
+			&staticValueSource{v: "salad"},
+			&staticValueSource{v: "pumpkins"},
+		}
+		r.Equal("soup,salad,pumpkins", vsc.String())
+	})
 }
+
+type staticValueSource struct {
+	v string
+}
+
+func (svs *staticValueSource) GoString() string {
+	return fmt.Sprintf("&staticValueSource{v:%[1]q}", svs.v)
+}
+func (svs *staticValueSource) String() string         { return svs.v }
+func (svs *staticValueSource) Lookup() (string, bool) { return svs.v, true }
