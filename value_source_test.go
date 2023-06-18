@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -49,10 +50,9 @@ func TestFileSource(t *testing.T) {
 func TestFilePaths(t *testing.T) {
 	r := require.New(t)
 
-	fileName := fmt.Sprintf("some_file_name_%[1]v", rand.Int())
+	fileName := filepath.Join(os.TempDir(), fmt.Sprintf("urfave-cli-tests-some_file_name_%[1]v", rand.Int()))
 	t.Cleanup(func() { _ = os.Remove(fileName) })
 
-	r.Nil(os.Chdir(t.TempDir()))
 	r.Nil(os.WriteFile(fileName, []byte("Hello"), 0644))
 
 	sources := Files("junk_file_name", fileName)

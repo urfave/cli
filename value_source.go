@@ -88,7 +88,7 @@ type fileValueSource struct {
 }
 
 func (f *fileValueSource) Lookup() (string, bool) {
-	data, err := os.ReadFile(string(f.Path))
+	data, err := os.ReadFile(f.Path)
 	return string(data), err == nil
 }
 
