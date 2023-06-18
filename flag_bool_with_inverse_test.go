@@ -199,7 +199,7 @@ func TestBoolWithInverseEnvVars(t *testing.T) {
 		return &BoolWithInverseFlag{
 			BoolFlag: &BoolFlag{
 				Name:    "env",
-				Sources: ValueSourceChain{&envVarValueSource{Key: "ENV"}},
+				Sources: EnvVars("ENV"),
 			},
 		}
 	}

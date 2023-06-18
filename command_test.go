@@ -51,7 +51,7 @@ func buildExtendedTestCommand() *Command {
 			Name:    "another-flag",
 			Aliases: []string{"b"},
 			Usage:   "another usage text",
-			Sources: ValueSourceChain{&envVarValueSource{Key: "EXAMPLE_VARIABLE_NAME"}},
+			Sources: EnvVars("EXAMPLE_VARIABLE_NAME"),
 		},
 		&BoolFlag{
 			Name:   "hidden-flag",
