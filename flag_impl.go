@@ -132,7 +132,7 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 	if !f.applied || !f.Persistent {
 		newVal := f.Value
 
-		if val, source, found := f.Sources.Lookup(); found {
+		if val, source, found := f.Sources.LookupWithSource(); found {
 			tmpVal := f.creator.Create(f.Value, new(T), f.Config)
 			if val != "" || reflect.TypeOf(f.Value).Kind() == reflect.String {
 				if err := tmpVal.Set(val); err != nil {
@@ -214,7 +214,7 @@ func (f *FlagBase[T, C, V]) GetUsage() string {
 func (f *FlagBase[T, C, V]) GetEnvVars() []string {
 	vals := []string{}
 
-	for _, src := range f.Sources {
+	for _, src := range f.Sources.Chain {
 		if v, ok := src.(*envVarValueSource); ok {
 			vals = append(vals, v.Key)
 		}

@@ -30,7 +30,7 @@ func TestEnvVars(t *testing.T) {
 	t.Setenv("myfoo", "mybar")
 
 	source := EnvVars("foo1", "myfoo")
-	str, src, ok := source.Lookup()
+	str, src, ok := source.LookupWithSource()
 
 	r := require.New(t)
 	r.True(ok)
@@ -51,8 +51,17 @@ func TestFilePaths(t *testing.T) {
 	r.Nil(os.WriteFile("some_file_name_1", []byte("Hello"), 0644))
 
 	sources := Files("junk_file_name", "some_file_name_1")
-	str, src, ok := sources.Lookup()
+	str, src, ok := sources.LookupWithSource()
 	r.True(ok)
 	r.Equal(str, "Hello")
 	r.Contains(src.String(), "\"some_file_name_1\"")
+}
+
+func TestValueSourceChain(t *testing.T) {
+	r := require.New(t)
+
+	vsc := &ValueSourceChain{}
+
+	r.Implements((*ValueSource)(nil), vsc)
+	r.Equal("ValueSourceChain{Chain:{}}", vsc.GoString())
 }

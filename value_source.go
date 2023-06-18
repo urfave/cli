@@ -19,10 +19,37 @@ type ValueSource interface {
 
 // ValueSourceChain is a slice of ValueSource that allows for
 // lookup where the first ValueSource to resolve is returned
-type ValueSourceChain []ValueSource
+type ValueSourceChain struct {
+	Chain []ValueSource
+}
 
-func (v ValueSourceChain) Lookup() (string, ValueSource, bool) {
-	for _, src := range v {
+func (vsc *ValueSourceChain) String() string {
+	s := []string{}
+
+	for _, vs := range vsc.Chain {
+		s = append(s, vs.String())
+	}
+
+	return strings.Join(s, ", ")
+}
+
+func (vsc *ValueSourceChain) GoString() string {
+	s := []string{}
+
+	for _, vs := range vsc.Chain {
+		s = append(s, vs.GoString())
+	}
+
+	return fmt.Sprintf("ValueSourceChain{Chain:{%[1]s}}", strings.Join(s, ","))
+}
+
+func (vsc *ValueSourceChain) Lookup() (string, bool) {
+	s, _, ok := vsc.LookupWithSource()
+	return s, ok
+}
+
+func (vsc *ValueSourceChain) LookupWithSource() (string, ValueSource, bool) {
+	for _, src := range vsc.Chain {
 		if value, found := src.Lookup(); found {
 			return value, src, true
 		}
@@ -44,13 +71,15 @@ func (e *envVarValueSource) String() string   { return fmt.Sprintf("environment 
 func (e *envVarValueSource) GoString() string { return fmt.Sprintf("envVarValueSource(%[1]q)", e.Key) }
 
 // EnvVars is a helper function to encapsulate a number of
-// EnvSource together as ValueSources
+// envVarValueSource together as a ValueSourceChain
 func EnvVars(keys ...string) ValueSourceChain {
-	vs := []ValueSource{}
+	vsc := ValueSourceChain{Chain: []ValueSource{}}
+
 	for _, key := range keys {
-		vs = append(vs, &envVarValueSource{Key: key})
+		vsc.Chain = append(vsc.Chain, &envVarValueSource{Key: key})
 	}
-	return vs
+
+	return vsc
 }
 
 // fileValueSource encapsulates a ValueSource from a file
@@ -67,11 +96,13 @@ func (f *fileValueSource) String() string   { return fmt.Sprintf("file %[1]q", f
 func (f *fileValueSource) GoString() string { return fmt.Sprintf("fileValueSource(%[1]q)", f.Path) }
 
 // Files is a helper function to encapsulate a number of
-// FileSource together as ValueSources
+// fileValueSource together as a ValueSourceChain
 func Files(paths ...string) ValueSourceChain {
-	vs := []ValueSource{}
+	vsc := ValueSourceChain{Chain: []ValueSource{}}
+
 	for _, path := range paths {
-		vs = append(vs, &fileValueSource{Path: path})
+		vsc.Chain = append(vsc.Chain, &fileValueSource{Path: path})
 	}
-	return vs
+
+	return vsc
 }

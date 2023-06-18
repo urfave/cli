@@ -1094,19 +1094,27 @@ type ValueSource interface {
     ValueSource is a source which can be used to look up a value, typically for
     use with a cli.Flag
 
-type ValueSourceChain []ValueSource
+type ValueSourceChain struct {
+	Chain []ValueSource
+}
     ValueSourceChain is a slice of ValueSource that allows for lookup where the
     first ValueSource to resolve is returned
 
 func EnvVars(keys ...string) ValueSourceChain
-    EnvVars is a helper function to encapsulate a number of EnvSource together
-    as ValueSources
+    EnvVars is a helper function to encapsulate a number of envVarValueSource
+    together as a ValueSourceChain
 
 func Files(paths ...string) ValueSourceChain
-    Files is a helper function to encapsulate a number of FileSource together as
-    ValueSources
+    Files is a helper function to encapsulate a number of fileValueSource
+    together as a ValueSourceChain
 
-func (v ValueSourceChain) Lookup() (string, ValueSource, bool)
+func (vsc *ValueSourceChain) GoString() string
+
+func (vsc *ValueSourceChain) Lookup() (string, bool)
+
+func (vsc *ValueSourceChain) LookupWithSource() (string, ValueSource, bool)
+
+func (vsc *ValueSourceChain) String() string
 
 type VisibleFlag interface {
 	// IsVisible returns true if the flag is not hidden, otherwise false
