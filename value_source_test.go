@@ -68,18 +68,16 @@ func TestEnvVars(t *testing.T) {
 func TestFileValueSource(t *testing.T) {
 	t.Run("implements ValueSource", func(t *testing.T) {
 		r := require.New(t)
-		r.Nil(os.Chdir(t.TempDir()))
 
-		src := &fileValueSource{Path: "junk_file_name"}
-		r.Implements((*ValueSource)(nil), src)
+		r.Implements((*ValueSource)(nil), &fileValueSource{})
 
 		t.Run("not found", func(t *testing.T) {
-			src := &fileValueSource{Path: "junk_file_name"}
+			src := &fileValueSource{Path: fmt.Sprintf("junk_file_name-%[1]v", rand.Int())}
 			_, ok := src.Lookup()
 			r.False(ok)
 		})
 
-		fileName := "existing_file"
+		fileName := filepath.Join(os.TempDir(), fmt.Sprintf("urfave-cli-testing-existing_file-%[1]v", rand.Int()))
 		t.Cleanup(func() { _ = os.Remove(fileName) })
 
 		r.Nil(os.WriteFile(fileName, []byte("pita"), 0644))

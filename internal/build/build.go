@@ -248,8 +248,9 @@ func TestActionFunc(c *cli.Context) error {
 
 		args = append(args, []string{
 			"-v",
+			"-race",
 			"--coverprofile", pkg + ".coverprofile",
-			"--covermode", "count",
+			"--covermode", "atomic",
 			"--cover", packageName,
 			packageName,
 		}...)
