@@ -47,6 +47,10 @@ func TestFileSource(t *testing.T) {
 func TestFilePaths(t *testing.T) {
 	r := require.New(t)
 
+	curDir, err := os.Getwd()
+	r.Nil(err)
+	t.Cleanup(func() { _ = os.Chdir(curDir) })
+
 	r.Nil(os.Chdir(t.TempDir()))
 	r.Nil(os.WriteFile("some_file_name_1", []byte("Hello"), 0644))
 
