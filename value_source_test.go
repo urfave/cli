@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"fmt"
+	"math/rand"
 	"os"
 	"testing"
 
@@ -47,18 +49,17 @@ func TestFileSource(t *testing.T) {
 func TestFilePaths(t *testing.T) {
 	r := require.New(t)
 
-	curDir, err := os.Getwd()
-	r.Nil(err)
-	t.Cleanup(func() { _ = os.Chdir(curDir) })
+	fileName := fmt.Sprintf("some_file_name_%[1]v", rand.Int())
+	t.Cleanup(func() { _ = os.Remove(fileName) })
 
 	r.Nil(os.Chdir(t.TempDir()))
-	r.Nil(os.WriteFile("some_file_name_1", []byte("Hello"), 0644))
+	r.Nil(os.WriteFile(fileName, []byte("Hello"), 0644))
 
-	sources := Files("junk_file_name", "some_file_name_1")
+	sources := Files("junk_file_name", fileName)
 	str, src, ok := sources.LookupWithSource()
 	r.True(ok)
 	r.Equal(str, "Hello")
-	r.Contains(src.String(), "\"some_file_name_1\"")
+	r.Contains(src.String(), fmt.Sprintf("%[1]q", fileName))
 }
 
 func TestValueSourceChain(t *testing.T) {
