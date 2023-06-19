@@ -133,6 +133,10 @@ func main() {
 To enable auto-completion for the current shell session, a bash script,
 `autocomplete/bash_autocomplete` is included in this repo.
 
+> :warning: The `bash-completion` package or equivalent that provides the
+> `_get_comp_words_by_ref` function for the target platform must be installed and
+> initialized for this completion script to work correctly.
+
 To use `autocomplete/bash_autocomplete` set an environment variable named `PROG`
 to the name of your program and then `source` the
 `autocomplete/bash_autocomplete` file.
