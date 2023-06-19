@@ -8,41 +8,50 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewContext(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
-	set.Int("myflag", 12, "doc")
-	set.Int64("myflagInt64", int64(12), "doc")
+	set.Int64("myflag", 12, "doc")
 	set.Uint("myflagUint", uint(93), "doc")
 	set.Uint64("myflagUint64", uint64(93), "doc")
 	set.Float64("myflag64", float64(17), "doc")
+
 	globalSet := flag.NewFlagSet("test", 0)
-	globalSet.Int("myflag", 42, "doc")
-	globalSet.Int64("myflagInt64", int64(42), "doc")
+	globalSet.Int64("myflag", 42, "doc")
 	globalSet.Uint("myflagUint", uint(33), "doc")
 	globalSet.Uint64("myflagUint64", uint64(33), "doc")
 	globalSet.Float64("myflag64", float64(47), "doc")
+
 	globalCtx := NewContext(nil, globalSet, nil)
+
 	command := &Command{Name: "mycommand"}
-	c := NewContext(nil, set, globalCtx)
-	c.Command = command
-	expect(t, c.Int("myflag"), 12)
-	expect(t, c.Uint("myflagUint"), uint(93))
-	expect(t, c.Uint64("myflagUint64"), uint64(93))
-	expect(t, c.Float64("myflag64"), float64(17))
-	expect(t, c.Command.Name, "mycommand")
+	cCtx := NewContext(nil, set, globalCtx)
+	cCtx.Command = command
+
+	r := require.New(t)
+	r.Equal(int64(12), cCtx.Int("myflag"))
+	r.Equal(uint(93), cCtx.Uint("myflagUint"))
+	r.Equal(uint64(93), cCtx.Uint64("myflagUint64"))
+	r.Equal(float64(17), cCtx.Float64("myflag64"))
+	r.Equal("mycommand", cCtx.Command.Name)
 }
 
 func TestContext_Int(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
-	set.Int("myflag", 12, "doc")
+	set.Int64("myflag", 12, "doc")
+
 	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.Int("top-flag", 13, "doc")
-	parentCtx := NewContext(nil, parentSet, nil)
-	c := NewContext(nil, set, parentCtx)
-	expect(t, c.Int("myflag"), 12)
-	expect(t, c.Int("top-flag"), 13)
+	parentSet.Int64("top-flag", 13, "doc")
+	parentCctx := NewContext(nil, parentSet, nil)
+
+	cCtx := NewContext(nil, set, parentCctx)
+
+	r := require.New(t)
+	r.Equal(int64(12), cCtx.Int("myflag"))
+	r.Equal(int64(13), cCtx.Int("top-flag"))
 }
 
 func TestContext_Uint(t *testing.T) {
@@ -253,13 +262,15 @@ func TestContext_NumFlags(t *testing.T) {
 
 func TestContext_Set(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
-	set.Int("int", 5, "an int")
-	c := NewContext(nil, set, nil)
+	set.Int64("int", int64(5), "an int")
+	cCtx := NewContext(nil, set, nil)
 
-	expect(t, c.IsSet("int"), false)
-	_ = c.Set("int", "1")
-	expect(t, c.Int("int"), 1)
-	expect(t, c.IsSet("int"), true)
+	r := require.New(t)
+
+	r.False(cCtx.IsSet("int"))
+	r.NoError(cCtx.Set("int", "1"))
+	r.Equal(int64(1), cCtx.Int("int"))
+	r.True(cCtx.IsSet("int"))
 }
 
 func TestContext_Set_InvalidFlagAccessHandler(t *testing.T) {

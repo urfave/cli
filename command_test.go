@@ -2759,26 +2759,6 @@ func TestFlagAction(t *testing.T) {
 			err:  "invalid int slice",
 		},
 		{
-			name: "flag_int64",
-			args: []string{"app", "--f_int64=1"},
-			exp:  "1 ",
-		},
-		{
-			name: "flag_int64_error",
-			args: []string{"app", "--f_int64=-1"},
-			err:  "negative int64",
-		},
-		{
-			name: "flag_int64_slice",
-			args: []string{"app", "--f_int64_slice=1,2,3"},
-			exp:  "[1 2 3] ",
-		},
-		{
-			name: "flag_int64_slice",
-			args: []string{"app", "--f_int64_slice=-1"},
-			err:  "invalid int64 slice",
-		},
-		{
 			name: "flag_timestamp",
 			args: []string{"app", "--f_timestamp", "2022-05-01 02:26:20"},
 			exp:  "2022-05-01T02:26:20Z ",
@@ -2947,16 +2927,6 @@ func TestFlagAction(t *testing.T) {
 							return err
 						},
 					},
-					&IntFlag{
-						Name: "f_int64",
-						Action: func(cCtx *Context, v int64) error {
-							if v < 0 {
-								return fmt.Errorf("negative int64")
-							}
-							_, err := cCtx.Command.Root().Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-							return err
-						},
-					},
 					&TimestampFlag{
 						Name: "f_timestamp",
 						Config: TimestampConfig{
@@ -3037,6 +3007,11 @@ func TestPersistentFlag(t *testing.T) {
 					persistentFlagActionCount++
 					return nil
 				},
+			},
+			&IntSliceFlag{
+				Name:        "persistentCommandSliceFlag",
+				Persistent:  true,
+				Destination: &persistentCommandSliceInt,
 			},
 			&Float64SliceFlag{
 				Name:       "persistentCommandFloatSliceFlag",
@@ -3155,6 +3130,9 @@ func TestFlagDuplicates(t *testing.T) {
 			&StringFlag{
 				Name:     "sflag",
 				OnlyOnce: true,
+			},
+			&IntSliceFlag{
+				Name: "isflag",
 			},
 			&Float64SliceFlag{
 				Name:     "fsflag",

@@ -194,29 +194,10 @@ func TestFlagsFromEnv(t *testing.T) {
 			errContains: `could not parse "foobar" as int64 value from environment variable ` +
 				`"SECONDS" for flag seconds:`,
 		},
-
-		{
-			name:   "IntFlag valid",
-			input:  "1",
-			output: 1,
-			fl:     &IntFlag{Name: "seconds", Sources: EnvVars("SECONDS")},
-		},
-		{
-			name:   "IntFlag invalid from octal",
-			input:  "08",
-			output: 8,
-			fl:     &IntFlag{Name: "seconds", Sources: EnvVars("SECONDS"), Config: IntegerConfig{Base: 10}},
-		},
-		{
-			name:   "IntFlag valid from octal",
-			input:  "755",
-			output: 493,
-			fl:     &IntFlag{Name: "seconds", Sources: EnvVars("SECONDS"), Config: IntegerConfig{Base: 8}},
-		},
 		{
 			name:   "IntFlag valid from hex",
 			input:  "deadBEEF",
-			output: 3735928559,
+			output: int64(3735928559),
 			fl:     &IntFlag{Name: "seconds", Sources: EnvVars("SECONDS"), Config: IntegerConfig{Base: 16}},
 		},
 		{
@@ -224,23 +205,7 @@ func TestFlagsFromEnv(t *testing.T) {
 			input:  "08",
 			output: 0,
 			fl:     &IntFlag{Name: "seconds", Sources: EnvVars("SECONDS"), Config: IntegerConfig{Base: 0}},
-			errContains: `could not parse "08" as int value from environment variable ` +
-				`"SECONDS" for flag seconds:`,
-		},
-		{
-			name:   "IntFlag invalid from float",
-			input:  "1.2",
-			output: 0,
-			fl:     &IntFlag{Name: "seconds", Sources: EnvVars("SECONDS")},
-			errContains: `could not parse "1.2" as int value from environment variable ` +
-				`"SECONDS" for flag seconds:`,
-		},
-		{
-			name:   "IntFlag invalid",
-			input:  "foobar",
-			output: 0,
-			fl:     &IntFlag{Name: "seconds", Sources: EnvVars("SECONDS")},
-			errContains: `could not parse "foobar" as int value from environment variable ` +
+			errContains: `could not parse "08" as int64 value from environment variable ` +
 				`"SECONDS" for flag seconds:`,
 		},
 
@@ -262,23 +227,23 @@ func TestFlagsFromEnv(t *testing.T) {
 		{
 			name:   "IntSliceFlag valid",
 			input:  "1,2",
-			output: []int{1, 2},
+			output: []int64{1, 2},
 			fl:     &IntSliceFlag{Name: "seconds", Sources: EnvVars("SECONDS")},
 		},
 		{
 			name:   "IntSliceFlag invalid from float",
 			input:  "1.2,2",
-			output: []int{},
+			output: []int64{},
 			fl:     &IntSliceFlag{Name: "seconds", Sources: EnvVars("SECONDS")},
-			errContains: `could not parse "1.2,2" as []int value from environment variable ` +
+			errContains: `could not parse "1.2,2" as []int64 value from environment variable ` +
 				`"SECONDS" for flag seconds:`,
 		},
 		{
 			name:   "IntSliceFlag invalid",
 			input:  "foobar",
-			output: []int{},
+			output: []int64{},
 			fl:     &IntSliceFlag{Name: "seconds", Sources: EnvVars("SECONDS")},
-			errContains: `could not parse "foobar" as []int value from environment variable ` +
+			errContains: `could not parse "foobar" as []int64 value from environment variable ` +
 				`"SECONDS" for flag seconds:`,
 		},
 
@@ -302,29 +267,6 @@ func TestFlagsFromEnv(t *testing.T) {
 			output: []uint{},
 			fl:     &UintSliceFlag{Name: "seconds", Sources: EnvVars("SECONDS")},
 			errContains: `could not parse "foobar" as []uint value from environment variable ` +
-				`"SECONDS" for flag seconds:`,
-		},
-
-		{
-			name:   "IntSliceFlag valid",
-			input:  "1,2",
-			output: []int64{1, 2},
-			fl:     &IntSliceFlag{Name: "seconds", Sources: EnvVars("SECONDS")},
-		},
-		{
-			name:   "IntSliceFlag invalid with float",
-			input:  "1.2,2",
-			output: []int64{},
-			fl:     &IntSliceFlag{Name: "seconds", Sources: EnvVars("SECONDS")},
-			errContains: `could not parse "1.2,2" as []int64 value from environment variable ` +
-				`"SECONDS" for flag seconds:`,
-		},
-		{
-			name:   "IntSliceFlag invalid",
-			input:  "foobar",
-			output: []int64{},
-			fl:     &IntSliceFlag{Name: "seconds", Sources: EnvVars("SECONDS")},
-			errContains: `could not parse "foobar" as []int64 value from environment variable ` +
 				`"SECONDS" for flag seconds:`,
 		},
 

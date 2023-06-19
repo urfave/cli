@@ -35,7 +35,7 @@ func (i intValue) ToString(b int64) string {
 // Below functions are to satisfy the flag.Value interface
 
 func (i *intValue) Set(s string) error {
-	v, err := strconv.ParseInt(s, 0, 64)
+	v, err := strconv.ParseInt(s, i.base, 64)
 	if err != nil {
 		return err
 	}
