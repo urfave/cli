@@ -28,7 +28,6 @@ func TestNewContext(t *testing.T) {
 	c := NewContext(nil, set, globalCtx)
 	c.Command = command
 	expect(t, c.Int("myflag"), 12)
-	expect(t, c.Int64("myflagInt64"), int64(12))
 	expect(t, c.Uint("myflagUint"), uint(93))
 	expect(t, c.Uint64("myflagUint64"), uint64(93))
 	expect(t, c.Float64("myflag64"), float64(17))
@@ -44,17 +43,6 @@ func TestContext_Int(t *testing.T) {
 	c := NewContext(nil, set, parentCtx)
 	expect(t, c.Int("myflag"), 12)
 	expect(t, c.Int("top-flag"), 13)
-}
-
-func TestContext_Int64(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Int64("myflagInt64", 12, "doc")
-	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.Int64("top-flag", 13, "doc")
-	parentCtx := NewContext(nil, parentSet, nil)
-	c := NewContext(nil, set, parentCtx)
-	expect(t, c.Int64("myflagInt64"), int64(12))
-	expect(t, c.Int64("top-flag"), int64(13))
 }
 
 func TestContext_Uint(t *testing.T) {

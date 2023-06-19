@@ -543,7 +543,7 @@ func TestCommand_VisibleFlagCategories(t *testing.T) {
 			&StringFlag{
 				Name: "strd", // no category set
 			},
-			&Int64Flag{
+			&IntFlag{
 				Name:     "intd",
 				Aliases:  []string{"altd1", "altd2"},
 				Category: "cat1",
@@ -1233,7 +1233,7 @@ func TestCommand_Float64Flag(t *testing.T) {
 }
 
 func TestCommand_ParseSliceFlags(t *testing.T) {
-	var parsedIntSlice []int
+	var parsedIntSlice []int64
 	var parsedStringSlice []string
 
 	cmd := &Command{
@@ -1241,7 +1241,7 @@ func TestCommand_ParseSliceFlags(t *testing.T) {
 			{
 				Name: "cmd",
 				Flags: []Flag{
-					&IntSliceFlag{Name: "p", Value: []int{}, Usage: "set one or more ip addr"},
+					&IntSliceFlag{Name: "p", Value: []int64{}, Usage: "set one or more ip addr"},
 					&StringSliceFlag{Name: "ip", Value: []string{}, Usage: "set one or more ports to open"},
 				},
 				Action: func(c *Context) error {
@@ -1255,7 +1255,7 @@ func TestCommand_ParseSliceFlags(t *testing.T) {
 
 	_ = cmd.Run(buildTestContext(t), []string{"", "cmd", "-p", "22", "-p", "80", "-ip", "8.8.8.8", "-ip", "8.8.4.4"})
 
-	IntsEquals := func(a, b []int) bool {
+	IntsEquals := func(a, b []int64) bool {
 		if len(a) != len(b) {
 			return false
 		}
@@ -1278,7 +1278,7 @@ func TestCommand_ParseSliceFlags(t *testing.T) {
 		}
 		return true
 	}
-	expectedIntSlice := []int{22, 80}
+	expectedIntSlice := []int64{22, 80}
 	expectedStringSlice := []string{"8.8.8.8", "8.8.4.4"}
 
 	if !IntsEquals(parsedIntSlice, expectedIntSlice) {
@@ -1291,7 +1291,7 @@ func TestCommand_ParseSliceFlags(t *testing.T) {
 }
 
 func TestCommand_ParseSliceFlagsWithMissingValue(t *testing.T) {
-	var parsedIntSlice []int
+	var parsedIntSlice []int64
 	var parsedStringSlice []string
 
 	cmd := &Command{
@@ -1313,7 +1313,7 @@ func TestCommand_ParseSliceFlagsWithMissingValue(t *testing.T) {
 
 	_ = cmd.Run(buildTestContext(t), []string{"", "cmd", "-a", "2", "-str", "A"})
 
-	expectedIntSlice := []int{2}
+	expectedIntSlice := []int64{2}
 	expectedStringSlice := []string{"A"}
 
 	if parsedIntSlice[0] != expectedIntSlice[0] {
@@ -2929,7 +2929,7 @@ func TestFlagAction(t *testing.T) {
 					},
 					&IntFlag{
 						Name: "f_int",
-						Action: func(cCtx *Context, v int) error {
+						Action: func(cCtx *Context, v int64) error {
 							if v < 0 {
 								return fmt.Errorf("negative int")
 							}
@@ -2939,7 +2939,7 @@ func TestFlagAction(t *testing.T) {
 					},
 					&IntSliceFlag{
 						Name: "f_int_slice",
-						Action: func(cCtx *Context, v []int) error {
+						Action: func(cCtx *Context, v []int64) error {
 							if len(v) > 0 && v[0] < 0 {
 								return fmt.Errorf("invalid int slice")
 							}
@@ -2947,21 +2947,11 @@ func TestFlagAction(t *testing.T) {
 							return err
 						},
 					},
-					&Int64Flag{
+					&IntFlag{
 						Name: "f_int64",
 						Action: func(cCtx *Context, v int64) error {
 							if v < 0 {
 								return fmt.Errorf("negative int64")
-							}
-							_, err := cCtx.Command.Root().Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-							return err
-						},
-					},
-					&Int64SliceFlag{
-						Name: "f_int64_slice",
-						Action: func(cCtx *Context, v []int64) error {
-							if len(v) > 0 && v[0] < 0 {
-								return fmt.Errorf("invalid int64 slice")
 							}
 							_, err := cCtx.Command.Root().Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 							return err
@@ -3030,7 +3020,7 @@ func TestFlagAction(t *testing.T) {
 }
 
 func TestPersistentFlag(t *testing.T) {
-	var topInt, topPersistentInt, subCommandInt, appOverrideInt int
+	var topInt, topPersistentInt, subCommandInt, appOverrideInt int64
 	var appFlag string
 	var appOverrideCmdInt int64
 	var appSliceFloat64 []float64
@@ -3047,11 +3037,6 @@ func TestPersistentFlag(t *testing.T) {
 					persistentFlagActionCount++
 					return nil
 				},
-			},
-			&Int64SliceFlag{
-				Name:        "persistentCommandSliceFlag",
-				Persistent:  true,
-				Destination: &persistentCommandSliceInt,
 			},
 			&Float64SliceFlag{
 				Name:       "persistentCommandFloatSliceFlag",
@@ -3077,7 +3062,7 @@ func TestPersistentFlag(t *testing.T) {
 						Persistent:  true,
 						Destination: &topPersistentInt,
 					},
-					&Int64Flag{
+					&IntFlag{
 						Name:        "paof",
 						Aliases:     []string{"persistentCommandOverrideFlag"},
 						Destination: &appOverrideCmdInt,
@@ -3170,9 +3155,6 @@ func TestFlagDuplicates(t *testing.T) {
 			&StringFlag{
 				Name:     "sflag",
 				OnlyOnce: true,
-			},
-			&Int64SliceFlag{
-				Name: "isflag",
 			},
 			&Float64SliceFlag{
 				Name:     "fsflag",
