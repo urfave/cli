@@ -108,7 +108,7 @@ func main() {
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:     "github-token",
-						Sources:  []cli.FlagValueSource{cli.EnvSource("MKDOCS_REMOTE_GITHUB_TOKEN")},
+						Sources:  cli.EnvVars("MKDOCS_REMOTE_GITHUB_TOKEN"),
 						Required: true,
 					},
 				},
@@ -248,8 +248,9 @@ func TestActionFunc(c *cli.Context) error {
 
 		args = append(args, []string{
 			"-v",
+			"-race",
 			"--coverprofile", pkg + ".coverprofile",
-			"--covermode", "count",
+			"--covermode", "atomic",
 			"--cover", packageName,
 			packageName,
 		}...)

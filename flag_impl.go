@@ -86,7 +86,7 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	DefaultText string // default text of the flag for usage purposes
 	Usage       string // usage string for help output
 
-	Sources ValueSources // sources to load flag value from
+	Sources ValueSourceChain // sources to load flag value from
 
 	Required   bool // whether the flag is required or not
 	Hidden     bool // whether to hide the flag in help output
@@ -132,16 +132,22 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 	if !f.applied || !f.Persistent {
 		newVal := f.Value
 
-		if val, source, found := f.Sources.Get(); found {
+		if val, source, found := f.Sources.LookupWithSource(); found {
 			tmpVal := f.creator.Create(f.Value, new(T), f.Config)
 			if val != "" || reflect.TypeOf(f.Value).Kind() == reflect.String {
 				if err := tmpVal.Set(val); err != nil {
-					return fmt.Errorf("could not parse %q as %T value from %s for flag %s: %s", val, f.Value, source, f.Name, err)
+					return fmt.Errorf(
+						"could not parse %[1]q as %[2]T value from %[3]s for flag %[4]s: %[5]s",
+						val, f.Value, source, f.Name, err,
+					)
 				}
 			} else if val == "" && reflect.TypeOf(f.Value).Kind() == reflect.Bool {
 				val = "false"
 				if err := tmpVal.Set(val); err != nil {
-					return fmt.Errorf("could not parse %q as %T value from %s for flag %s: %s", val, f.Value, source, f.Name, err)
+					return fmt.Errorf(
+						"could not parse %[1]q as %[2]T value from %[3]s for flag %[4]s: %[5]s",
+						val, f.Value, source, f.Name, err,
+					)
 				}
 			}
 
@@ -206,13 +212,15 @@ func (f *FlagBase[T, C, V]) GetUsage() string {
 
 // GetEnvVars returns the env vars for this flag
 func (f *FlagBase[T, C, V]) GetEnvVars() []string {
-	var envs []string
-	for _, src := range f.Sources {
-		if esrc, ok := src.(EnvSource); ok {
-			envs = append(envs, string(esrc))
+	vals := []string{}
+
+	for _, src := range f.Sources.Chain {
+		if v, ok := src.(*envVarValueSource); ok {
+			vals = append(vals, v.Key)
 		}
 	}
-	return envs
+
+	return vals
 }
 
 // TakesValue returns true if the flag takes a value, otherwise false
