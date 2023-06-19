@@ -931,14 +931,6 @@ func TestIntFlagValueFromContext(t *testing.T) {
 	require.Equal(t, int64(42), fl.Get(cCtx))
 }
 
-var int64FlagTests = []struct {
-	name     string
-	expected string
-}{
-	{"hats", "--hats value\t(default: 8589934592)"},
-	{"H", "-H value\t(default: 8589934592)"},
-}
-
 var uintFlagTests = []struct {
 	name     string
 	expected string
@@ -1226,22 +1218,6 @@ func TestIntSliceFlagValueFromContext(t *testing.T) {
 	cCtx := NewContext(nil, set, nil)
 	f := &IntSliceFlag{Name: "myflag"}
 	require.Equal(t, f.Get(cCtx), []int64{1, 2, 3})
-}
-
-var int64SliceFlagTests = []struct {
-	name     string
-	aliases  []string
-	value    []int64
-	expected string
-}{
-	{"heads", nil, []int64{}, "--heads value [ --heads value ]\t"},
-	{"H", nil, []int64{}, "-H value [ -H value ]\t"},
-	{
-		"heads",
-		[]string{"H"},
-		[]int64{2, 17179869184},
-		"--heads value, -H value [ --heads value, -H value ]\t(default: 2, 17179869184)",
-	},
 }
 
 var uintSliceFlagTests = []struct {
