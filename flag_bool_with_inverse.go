@@ -89,7 +89,7 @@ func (parent *BoolWithInverseFlag) initialize() {
 	parent.negativeFlag = &BoolFlag{
 		Category:    child.Category,
 		DefaultText: child.DefaultText,
-		Sources:     append(ValueSources{}, child.Sources...),
+		Sources:     ValueSourceChain{Chain: append([]ValueSource{}, child.Sources.Chain...)},
 		Usage:       child.Usage,
 		Required:    child.Required,
 		Hidden:      child.Hidden,
@@ -108,10 +108,11 @@ func (parent *BoolWithInverseFlag) initialize() {
 	parent.negativeFlag.Name = parent.inverseName()
 	parent.negativeFlag.Aliases = parent.inverseAliases()
 
-	if len(child.Sources) > 0 {
-		parent.negativeFlag.Sources = make(ValueSources, len(child.Sources))
+	if len(child.Sources.Chain) > 0 {
+		parent.negativeFlag.Sources = ValueSourceChain{Chain: make([]ValueSource, len(child.Sources.Chain))}
+
 		for idx, envVar := range child.GetEnvVars() {
-			parent.negativeFlag.Sources[idx] = EnvSource(strings.ToUpper(parent.InversePrefix) + envVar)
+			parent.negativeFlag.Sources.Chain[idx] = &envVarValueSource{Key: strings.ToUpper(parent.InversePrefix) + envVar}
 		}
 	}
 }
