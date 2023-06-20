@@ -32,7 +32,7 @@ func TestNewContext(t *testing.T) {
 	r := require.New(t)
 	r.Equal(int64(12), cCtx.Int("myflag"))
 	r.Equal(uint64(93), cCtx.Uint("myflagUint"))
-	r.Equal(float64(17), cCtx.Float64("myflag64"))
+	r.Equal(float64(17), cCtx.Float("myflag64"))
 	r.Equal("mycommand", cCtx.Command.Name)
 }
 
@@ -71,8 +71,8 @@ func TestContext_Float64(t *testing.T) {
 	parentSet.Float64("top-flag", float64(18), "doc")
 	parentCtx := NewContext(nil, parentSet, nil)
 	c := NewContext(nil, set, parentCtx)
-	expect(t, c.Float64("myflag"), float64(17))
-	expect(t, c.Float64("top-flag"), float64(18))
+	expect(t, c.Float("myflag"), float64(17))
+	expect(t, c.Float("top-flag"), float64(18))
 }
 
 func TestContext_Duration(t *testing.T) {
@@ -203,10 +203,10 @@ func TestContext_IsSet_fromEnv(t *testing.T) {
 	_ = os.Setenv("APP_PASSWORD", "")
 	cmd := &Command{
 		Flags: []Flag{
-			&Float64Flag{Name: "timeout", Aliases: []string{"t"}, Sources: EnvVars("APP_TIMEOUT_SECONDS")},
+			&FloatFlag{Name: "timeout", Aliases: []string{"t"}, Sources: EnvVars("APP_TIMEOUT_SECONDS")},
 			&StringFlag{Name: "password", Aliases: []string{"p"}, Sources: EnvVars("APP_PASSWORD")},
-			&Float64Flag{Name: "unparsable", Aliases: []string{"u"}, Sources: EnvVars("APP_UNPARSABLE")},
-			&Float64Flag{Name: "no-env-var", Aliases: []string{"n"}},
+			&FloatFlag{Name: "unparsable", Aliases: []string{"u"}, Sources: EnvVars("APP_UNPARSABLE")},
+			&FloatFlag{Name: "no-env-var", Aliases: []string{"n"}},
 		},
 		Action: func(ctx *Context) error {
 			timeoutIsSet = ctx.IsSet("timeout")
