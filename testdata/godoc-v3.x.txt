@@ -178,8 +178,7 @@ var NewFloat64Slice = NewSliceBase[float64, NoConfig, float64Value]
 var NewIntSlice = NewSliceBase[int64, IntegerConfig, intValue]
 var NewStringMap = NewMapBase[string, StringConfig, stringValue]
 var NewStringSlice = NewSliceBase[string, StringConfig, stringValue]
-var NewUint64Slice = NewSliceBase[uint64, IntegerConfig, uint64Value]
-var NewUintSlice = NewSliceBase[uint, IntegerConfig, uintValue]
+var NewUintSlice = NewSliceBase[uint64, IntegerConfig, uintValue]
 var OsExiter = os.Exit
     OsExiter is the function used when the app exits. If not set defaults to
     os.Exit.
@@ -635,17 +634,10 @@ func (cCtx *Context) StringSlice(name string) []string
 func (cCtx *Context) Timestamp(name string) *time.Time
     Timestamp gets the timestamp from a flag name
 
-func (cCtx *Context) Uint(name string) uint
-    Uint looks up the value of a local UintFlag, returns 0 if not found
+func (cCtx *Context) Uint(name string) uint64
+    Uint looks up the value of a local Uint64Flag, returns 0 if not found
 
-func (cCtx *Context) Uint64(name string) uint64
-    Uint64 looks up the value of a local Uint64Flag, returns 0 if not found
-
-func (cCtx *Context) Uint64Slice(name string) []uint64
-    Uint64Slice looks up the value of a local Uint64SliceFlag, returns nil if
-    not found
-
-func (cCtx *Context) UintSlice(name string) []uint
+func (cCtx *Context) UintSlice(name string) []uint64
     UintSlice looks up the value of a local UintSliceFlag, returns nil if not
     found
 
@@ -1040,17 +1032,11 @@ type TimestampConfig struct {
 
 type TimestampFlag = FlagBase[time.Time, TimestampConfig, timestampValue]
 
-type Uint64Flag = FlagBase[uint64, IntegerConfig, uint64Value]
+type UintFlag = FlagBase[uint64, IntegerConfig, uintValue]
 
-type Uint64Slice = SliceBase[uint64, IntegerConfig, uint64Value]
+type UintSlice = SliceBase[uint64, IntegerConfig, uintValue]
 
-type Uint64SliceFlag = FlagBase[[]uint64, IntegerConfig, Uint64Slice]
-
-type UintFlag = FlagBase[uint, IntegerConfig, uintValue]
-
-type UintSlice = SliceBase[uint, IntegerConfig, uintValue]
-
-type UintSliceFlag = FlagBase[[]uint, IntegerConfig, UintSlice]
+type UintSliceFlag = FlagBase[[]uint64, IntegerConfig, UintSlice]
 
 type Value interface {
 	flag.Value
