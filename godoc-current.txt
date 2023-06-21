@@ -175,8 +175,7 @@ Global flags:
 {{   end }}
 {{- end }}`
 var NewFloat64Slice = NewSliceBase[float64, NoConfig, float64Value]
-var NewInt64Slice = NewSliceBase[int64, IntegerConfig, int64Value]
-var NewIntSlice = NewSliceBase[int, IntegerConfig, intValue]
+var NewIntSlice = NewSliceBase[int64, IntegerConfig, intValue]
 var NewStringMap = NewMapBase[string, StringConfig, stringValue]
 var NewStringSlice = NewSliceBase[string, StringConfig, stringValue]
 var NewUint64Slice = NewSliceBase[uint64, IntegerConfig, uint64Value]
@@ -597,17 +596,10 @@ func (cCtx *Context) Float64Slice(name string) []float64
     Float64Slice looks up the value of a local Float64SliceFlag, returns nil if
     not found
 
-func (cCtx *Context) Int(name string) int
-    Int looks up the value of a local IntFlag, returns 0 if not found
-
-func (cCtx *Context) Int64(name string) int64
+func (cCtx *Context) Int(name string) int64
     Int64 looks up the value of a local Int64Flag, returns 0 if not found
 
-func (cCtx *Context) Int64Slice(name string) []int64
-    Int64Slice looks up the value of a local Int64SliceFlag, returns nil if not
-    found
-
-func (cCtx *Context) IntSlice(name string) []int
+func (cCtx *Context) IntSlice(name string) []int64
     IntSlice looks up the value of a local IntSliceFlag, returns nil if not
     found
 
@@ -899,17 +891,11 @@ type Float64Slice = SliceBase[float64, NoConfig, float64Value]
 
 type Float64SliceFlag = FlagBase[[]float64, NoConfig, Float64Slice]
 
-type Int64Flag = FlagBase[int64, IntegerConfig, int64Value]
+type IntFlag = FlagBase[int64, IntegerConfig, intValue]
 
-type Int64Slice = SliceBase[int64, IntegerConfig, int64Value]
+type IntSlice = SliceBase[int64, IntegerConfig, intValue]
 
-type Int64SliceFlag = FlagBase[[]int64, IntegerConfig, Int64Slice]
-
-type IntFlag = FlagBase[int, IntegerConfig, intValue]
-
-type IntSlice = SliceBase[int, IntegerConfig, intValue]
-
-type IntSliceFlag = FlagBase[[]int, IntegerConfig, IntSlice]
+type IntSliceFlag = FlagBase[[]int64, IntegerConfig, IntSlice]
 
 type IntegerConfig struct {
 	Base int

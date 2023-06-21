@@ -2,24 +2,24 @@ package cli
 
 import "flag"
 
-type IntSlice = SliceBase[int, IntegerConfig, intValue]
-type IntSliceFlag = FlagBase[[]int, IntegerConfig, IntSlice]
+type IntSlice = SliceBase[int64, IntegerConfig, intValue]
+type IntSliceFlag = FlagBase[[]int64, IntegerConfig, IntSlice]
 
-var NewIntSlice = NewSliceBase[int, IntegerConfig, intValue]
+var NewIntSlice = NewSliceBase[int64, IntegerConfig, intValue]
 
 // IntSlice looks up the value of a local IntSliceFlag, returns
 // nil if not found
-func (cCtx *Context) IntSlice(name string) []int {
+func (cCtx *Context) IntSlice(name string) []int64 {
 	if fs := cCtx.lookupFlagSet(name); fs != nil {
 		return lookupIntSlice(name, fs)
 	}
 	return nil
 }
 
-func lookupIntSlice(name string, set *flag.FlagSet) []int {
+func lookupIntSlice(name string, set *flag.FlagSet) []int64 {
 	f := set.Lookup(name)
 	if f != nil {
-		if slice, ok := f.Value.(flag.Getter).Get().([]int); ok {
+		if slice, ok := f.Value.(flag.Getter).Get().([]int64); ok {
 			return slice
 		}
 	}
