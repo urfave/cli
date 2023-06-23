@@ -1220,10 +1220,10 @@ func TestCommand_Float64Flag(t *testing.T) {
 
 	cmd := &Command{
 		Flags: []Flag{
-			&Float64Flag{Name: "height", Value: 1.5, Usage: "Set the height, in meters"},
+			&FloatFlag{Name: "height", Value: 1.5, Usage: "Set the height, in meters"},
 		},
 		Action: func(c *Context) error {
-			meters = c.Float64("height")
+			meters = c.Float("height")
 			return nil
 		},
 	}
@@ -2840,7 +2840,7 @@ func TestFlagAction(t *testing.T) {
 							return err
 						},
 					},
-					&Float64Flag{
+					&FloatFlag{
 						Name: "f_float64",
 						Action: func(cCtx *Context, v float64) error {
 							if v < 0 {
@@ -2850,7 +2850,7 @@ func TestFlagAction(t *testing.T) {
 							return err
 						},
 					},
-					&Float64SliceFlag{
+					&FloatSliceFlag{
 						Name: "f_float64_slice",
 						Action: func(cCtx *Context, v []float64) error {
 							if len(v) > 0 && v[0] < 0 {
@@ -2956,7 +2956,7 @@ func TestPersistentFlag(t *testing.T) {
 				Persistent:  true,
 				Destination: &persistentCommandSliceInt,
 			},
-			&Float64SliceFlag{
+			&FloatSliceFlag{
 				Name:       "persistentCommandFloatSliceFlag",
 				Persistent: true,
 				Value:      []float64{11.3, 12.5},
@@ -2996,7 +2996,7 @@ func TestPersistentFlag(t *testing.T) {
 							},
 						},
 						Action: func(ctx *Context) error {
-							appSliceFloat64 = ctx.Float64Slice("persistentCommandFloatSliceFlag")
+							appSliceFloat64 = ctx.FloatSlice("persistentCommandFloatSliceFlag")
 							return nil
 						},
 					},
@@ -3077,7 +3077,7 @@ func TestFlagDuplicates(t *testing.T) {
 			&IntSliceFlag{
 				Name: "isflag",
 			},
-			&Float64SliceFlag{
+			&FloatSliceFlag{
 				Name:     "fsflag",
 				OnlyOnce: true,
 			},
