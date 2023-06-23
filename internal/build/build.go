@@ -596,7 +596,7 @@ func EnsureMkdocsActionFunc(cCtx *cli.Context) error {
 		}
 	}
 
-	return runCmd("pip", "install", "-r", "mkdocs-requirements.txt")
+	return runCmd("pip", "install", "-r", "mkdocs-r.txt")
 }
 
 func SetMkdocsRemoteActionFunc(cCtx *cli.Context) error {
