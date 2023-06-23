@@ -19,7 +19,7 @@ func TestFlagMutuallyExclusiveFlags(t *testing.T) {
 						},
 					},
 					[]Flag{
-						&Int64Flag{
+						&IntFlag{
 							Name:    "t",
 							Aliases: []string{"ai"},
 						},

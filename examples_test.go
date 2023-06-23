@@ -419,10 +419,9 @@ func ExampleCommand_Run_sliceValues() {
 	cmd := &cli.Command{
 		Name: "multi_values",
 		Flags: []cli.Flag{
-			&cli.StringSliceFlag{Name: "stringSclice"},
-			&cli.Float64SliceFlag{Name: "float64Sclice"},
-			&cli.Int64SliceFlag{Name: "int64Sclice"},
-			&cli.IntSliceFlag{Name: "intSclice"},
+			&cli.StringSliceFlag{Name: "stringSlice"},
+			&cli.Float64SliceFlag{Name: "float64Slice"},
+			&cli.IntSliceFlag{Name: "intSlice"},
 		},
 		Action: func(cCtx *cli.Context) error {
 			for i, v := range cCtx.FlagNames() {
@@ -437,18 +436,16 @@ func ExampleCommand_Run_sliceValues() {
 	// Simulate command line arguments
 	os.Args = []string{
 		"multi_values",
-		"--stringSclice", "parsed1,parsed2", "--stringSclice", "parsed3,parsed4",
-		"--float64Sclice", "13.3,14.4", "--float64Sclice", "15.5,16.6",
-		"--int64Sclice", "13,14", "--int64Sclice", "15,16",
-		"--intSclice", "13,14", "--intSclice", "15,16",
+		"--stringSlice", "parsed1,parsed2", "--stringSlice", "parsed3,parsed4",
+		"--float64Slice", "13.3,14.4", "--float64Slice", "15.5,16.6",
+		"--intSlice", "13,14", "--intSlice", "15,16",
 	}
 
 	_ = cmd.Run(context.Background(), os.Args)
 	// Output:
-	// 0-float64Sclice []float64{13.3, 14.4, 15.5, 16.6}
-	// 1-int64Sclice []int64{13, 14, 15, 16}
-	// 2-intSclice []int{13, 14, 15, 16}
-	// 3-stringSclice []string{"parsed1", "parsed2", "parsed3", "parsed4"}
+	// 0-float64Slice []float64{13.3, 14.4, 15.5, 16.6}
+	// 1-intSlice []int64{13, 14, 15, 16}
+	// 2-stringSlice []string{"parsed1", "parsed2", "parsed3", "parsed4"}
 	// error: <nil>
 }
 
