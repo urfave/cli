@@ -86,20 +86,6 @@ not** be used in new development. Please see the [`v2` migration
 guide](./migrate-v1-to-v2.md) and feel free to open an issue or discussion if
 you need help with the migration to `v2`.
 
-### Build tags
-
-You can use the following build tags:
-
-#### `urfave_cli_no_docs`
-
-When set, this removes `ToMarkdown` and `ToMan` methods, so your application
-won't be able to call those. This reduces the resulting binary size by about
-300-400 KB (measured using Go 1.18.1 on Linux/amd64), due to fewer dependencies.
-
-```
-$ go build -tags urfave_cli_no_docs
-```
-
 ### Supported platforms
 
 cli is tested against multiple versions of Go on Linux, and against the latest

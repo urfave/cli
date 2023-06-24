@@ -409,16 +409,11 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 		helloSourceFilePath  = "./internal/example-hello-world/example-hello-world.go"
 		helloBuiltFilePath   = "./internal/example-hello-world/built-example"
 		desiredMaxBinarySize = 2.2
+		desiredMinBinarySize = 1.49
 		mbStringFormatter    = "%.1fMB"
 	)
 
-	desiredMinBinarySize := 1.675
-
 	tags := c.String("tags")
-
-	if strings.Contains(tags, "urfave_cli_no_docs") {
-		desiredMinBinarySize = 1.39
-	}
 
 	// get cli example size
 	cliSize, err := getSize(cliSourceFilePath, cliBuiltFilePath, tags)

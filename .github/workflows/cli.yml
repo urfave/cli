@@ -31,12 +31,6 @@ jobs:
         run: make lint
       - run: make vet
       - run: make test
-        env:
-          GFLAGS: -tags urfave_cli_no_docs
-      - run: make test
-      - run: make check-binary-size
-        env:
-          GFLAGS: -tags urfave_cli_no_docs
       - run: make check-binary-size
       - if: matrix.go == '1.20.x' && matrix.os == 'ubuntu-latest'
         run: make generate
