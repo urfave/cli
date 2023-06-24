@@ -17,6 +17,7 @@ permissions:
 jobs:
   create-fix-pull-requests:
     runs-on: ubuntu-latest
+    environment: frogbot
     steps:
       - uses: actions/checkout@v3
 
