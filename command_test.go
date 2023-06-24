@@ -1220,10 +1220,10 @@ func TestCommand_Float64Flag(t *testing.T) {
 
 	cmd := &Command{
 		Flags: []Flag{
-			&Float64Flag{Name: "height", Value: 1.5, Usage: "Set the height, in meters"},
+			&FloatFlag{Name: "height", Value: 1.5, Usage: "Set the height, in meters"},
 		},
 		Action: func(c *Context) error {
-			meters = c.Float64("height")
+			meters = c.Float("height")
 			return nil
 		},
 	}
@@ -1253,41 +1253,11 @@ func TestCommand_ParseSliceFlags(t *testing.T) {
 		},
 	}
 
-	_ = cmd.Run(buildTestContext(t), []string{"", "cmd", "-p", "22", "-p", "80", "-ip", "8.8.8.8", "-ip", "8.8.4.4"})
+	r := require.New(t)
 
-	IntsEquals := func(a, b []int64) bool {
-		if len(a) != len(b) {
-			return false
-		}
-		for i, v := range a {
-			if v != b[i] {
-				return false
-			}
-		}
-		return true
-	}
-
-	StrsEquals := func(a, b []string) bool {
-		if len(a) != len(b) {
-			return false
-		}
-		for i, v := range a {
-			if v != b[i] {
-				return false
-			}
-		}
-		return true
-	}
-	expectedIntSlice := []int64{22, 80}
-	expectedStringSlice := []string{"8.8.8.8", "8.8.4.4"}
-
-	if !IntsEquals(parsedIntSlice, expectedIntSlice) {
-		t.Errorf("%v does not match %v", parsedIntSlice, expectedIntSlice)
-	}
-
-	if !StrsEquals(parsedStringSlice, expectedStringSlice) {
-		t.Errorf("%v does not match %v", parsedStringSlice, expectedStringSlice)
-	}
+	r.NoError(cmd.Run(buildTestContext(t), []string{"", "cmd", "-p", "22", "-p", "80", "-ip", "8.8.8.8", "-ip", "8.8.4.4"}))
+	r.Equal([]int64{22, 80}, parsedIntSlice)
+	r.Equal([]string{"8.8.8.8", "8.8.4.4"}, parsedStringSlice)
 }
 
 func TestCommand_ParseSliceFlagsWithMissingValue(t *testing.T) {
@@ -1311,18 +1281,11 @@ func TestCommand_ParseSliceFlagsWithMissingValue(t *testing.T) {
 		},
 	}
 
-	_ = cmd.Run(buildTestContext(t), []string{"", "cmd", "-a", "2", "-str", "A"})
+	r := require.New(t)
 
-	expectedIntSlice := []int64{2}
-	expectedStringSlice := []string{"A"}
-
-	if parsedIntSlice[0] != expectedIntSlice[0] {
-		t.Errorf("%v does not match %v", parsedIntSlice[0], expectedIntSlice[0])
-	}
-
-	if parsedStringSlice[0] != expectedStringSlice[0] {
-		t.Errorf("%v does not match %v", parsedIntSlice[0], expectedIntSlice[0])
-	}
+	r.NoError(cmd.Run(buildTestContext(t), []string{"", "cmd", "-a", "2", "-str", "A"}))
+	r.Equal([]int64{2}, parsedIntSlice)
+	r.Equal([]string{"A"}, parsedStringSlice)
 }
 
 func TestCommand_DefaultStdin(t *testing.T) {
@@ -2776,16 +2739,6 @@ func TestFlagAction(t *testing.T) {
 		{
 			name: "flag_uint_error",
 			args: []string{"app", "--f_uint=0"},
-			err:  "zero uint",
-		},
-		{
-			name: "flag_uint64",
-			args: []string{"app", "--f_uint64=1"},
-			exp:  "1 ",
-		},
-		{
-			name: "flag_uint64_error",
-			args: []string{"app", "--f_uint64=0"},
 			err:  "zero uint64",
 		},
 		{
@@ -2887,7 +2840,7 @@ func TestFlagAction(t *testing.T) {
 							return err
 						},
 					},
-					&Float64Flag{
+					&FloatFlag{
 						Name: "f_float64",
 						Action: func(cCtx *Context, v float64) error {
 							if v < 0 {
@@ -2897,7 +2850,7 @@ func TestFlagAction(t *testing.T) {
 							return err
 						},
 					},
-					&Float64SliceFlag{
+					&FloatSliceFlag{
 						Name: "f_float64_slice",
 						Action: func(cCtx *Context, v []float64) error {
 							if len(v) > 0 && v[0] < 0 {
@@ -2942,16 +2895,6 @@ func TestFlagAction(t *testing.T) {
 					},
 					&UintFlag{
 						Name: "f_uint",
-						Action: func(cCtx *Context, v uint) error {
-							if v == 0 {
-								return fmt.Errorf("zero uint")
-							}
-							_, err := cCtx.Command.Root().Writer.Write([]byte(fmt.Sprintf("%v ", v)))
-							return err
-						},
-					},
-					&Uint64Flag{
-						Name: "f_uint64",
 						Action: func(cCtx *Context, v uint64) error {
 							if v == 0 {
 								return fmt.Errorf("zero uint64")
@@ -3013,7 +2956,7 @@ func TestPersistentFlag(t *testing.T) {
 				Persistent:  true,
 				Destination: &persistentCommandSliceInt,
 			},
-			&Float64SliceFlag{
+			&FloatSliceFlag{
 				Name:       "persistentCommandFloatSliceFlag",
 				Persistent: true,
 				Value:      []float64{11.3, 12.5},
@@ -3053,7 +2996,7 @@ func TestPersistentFlag(t *testing.T) {
 							},
 						},
 						Action: func(ctx *Context) error {
-							appSliceFloat64 = ctx.Float64Slice("persistentCommandFloatSliceFlag")
+							appSliceFloat64 = ctx.FloatSlice("persistentCommandFloatSliceFlag")
 							return nil
 						},
 					},
@@ -3134,7 +3077,7 @@ func TestFlagDuplicates(t *testing.T) {
 			&IntSliceFlag{
 				Name: "isflag",
 			},
-			&Float64SliceFlag{
+			&FloatSliceFlag{
 				Name:     "fsflag",
 				OnlyOnce: true,
 			},

@@ -15,14 +15,12 @@ import (
 func TestNewContext(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.Int64("myflag", 12, "doc")
-	set.Uint("myflagUint", uint(93), "doc")
-	set.Uint64("myflagUint64", uint64(93), "doc")
+	set.Uint64("myflagUint", uint64(93), "doc")
 	set.Float64("myflag64", float64(17), "doc")
 
 	globalSet := flag.NewFlagSet("test", 0)
 	globalSet.Int64("myflag", 42, "doc")
-	globalSet.Uint("myflagUint", uint(33), "doc")
-	globalSet.Uint64("myflagUint64", uint64(33), "doc")
+	globalSet.Uint64("myflagUint", uint64(33), "doc")
 	globalSet.Float64("myflag64", float64(47), "doc")
 
 	globalCtx := NewContext(nil, globalSet, nil)
@@ -33,9 +31,8 @@ func TestNewContext(t *testing.T) {
 
 	r := require.New(t)
 	r.Equal(int64(12), cCtx.Int("myflag"))
-	r.Equal(uint(93), cCtx.Uint("myflagUint"))
-	r.Equal(uint64(93), cCtx.Uint64("myflagUint64"))
-	r.Equal(float64(17), cCtx.Float64("myflag64"))
+	r.Equal(uint64(93), cCtx.Uint("myflagUint"))
+	r.Equal(float64(17), cCtx.Float("myflag64"))
 	r.Equal("mycommand", cCtx.Command.Name)
 }
 
@@ -56,24 +53,15 @@ func TestContext_Int(t *testing.T) {
 
 func TestContext_Uint(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
-	set.Uint("myflagUint", uint(13), "doc")
+	set.Uint64("myflagUint", uint64(13), "doc")
 	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.Uint("top-flag", uint(14), "doc")
+	parentSet.Uint64("top-flag", uint64(14), "doc")
 	parentCtx := NewContext(nil, parentSet, nil)
-	c := NewContext(nil, set, parentCtx)
-	expect(t, c.Uint("myflagUint"), uint(13))
-	expect(t, c.Uint("top-flag"), uint(14))
-}
+	cCtx := NewContext(nil, set, parentCtx)
 
-func TestContext_Uint64(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Uint64("myflagUint64", uint64(9), "doc")
-	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.Uint64("top-flag", uint64(10), "doc")
-	parentCtx := NewContext(nil, parentSet, nil)
-	c := NewContext(nil, set, parentCtx)
-	expect(t, c.Uint64("myflagUint64"), uint64(9))
-	expect(t, c.Uint64("top-flag"), uint64(10))
+	r := require.New(t)
+	r.Equal(uint64(13), cCtx.Uint("myflagUint"))
+	r.Equal(uint64(14), cCtx.Uint("top-flag"))
 }
 
 func TestContext_Float64(t *testing.T) {
@@ -83,8 +71,8 @@ func TestContext_Float64(t *testing.T) {
 	parentSet.Float64("top-flag", float64(18), "doc")
 	parentCtx := NewContext(nil, parentSet, nil)
 	c := NewContext(nil, set, parentCtx)
-	expect(t, c.Float64("myflag"), float64(17))
-	expect(t, c.Float64("top-flag"), float64(18))
+	expect(t, c.Float("myflag"), float64(17))
+	expect(t, c.Float("top-flag"), float64(18))
 }
 
 func TestContext_Duration(t *testing.T) {
@@ -215,10 +203,10 @@ func TestContext_IsSet_fromEnv(t *testing.T) {
 	_ = os.Setenv("APP_PASSWORD", "")
 	cmd := &Command{
 		Flags: []Flag{
-			&Float64Flag{Name: "timeout", Aliases: []string{"t"}, Sources: EnvVars("APP_TIMEOUT_SECONDS")},
+			&FloatFlag{Name: "timeout", Aliases: []string{"t"}, Sources: EnvVars("APP_TIMEOUT_SECONDS")},
 			&StringFlag{Name: "password", Aliases: []string{"p"}, Sources: EnvVars("APP_PASSWORD")},
-			&Float64Flag{Name: "unparsable", Aliases: []string{"u"}, Sources: EnvVars("APP_UNPARSABLE")},
-			&Float64Flag{Name: "no-env-var", Aliases: []string{"n"}},
+			&FloatFlag{Name: "unparsable", Aliases: []string{"u"}, Sources: EnvVars("APP_UNPARSABLE")},
+			&FloatFlag{Name: "no-env-var", Aliases: []string{"n"}},
 		},
 		Action: func(ctx *Context) error {
 			timeoutIsSet = ctx.IsSet("timeout")

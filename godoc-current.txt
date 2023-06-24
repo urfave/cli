@@ -174,12 +174,11 @@ Global flags:
 {{     template "command" $cmd }}
 {{   end }}
 {{- end }}`
-var NewFloat64Slice = NewSliceBase[float64, NoConfig, float64Value]
+var NewFloatSlice = NewSliceBase[float64, NoConfig, floatValue]
 var NewIntSlice = NewSliceBase[int64, IntegerConfig, intValue]
 var NewStringMap = NewMapBase[string, StringConfig, stringValue]
 var NewStringSlice = NewSliceBase[string, StringConfig, stringValue]
-var NewUint64Slice = NewSliceBase[uint64, IntegerConfig, uint64Value]
-var NewUintSlice = NewSliceBase[uint, IntegerConfig, uintValue]
+var NewUintSlice = NewSliceBase[uint64, IntegerConfig, uintValue]
 var OsExiter = os.Exit
     OsExiter is the function used when the app exits. If not set defaults to
     os.Exit.
@@ -589,12 +588,12 @@ func (cCtx *Context) FlagNames() []string
     FlagNames returns a slice of flag names used by the this context and all of
     its parent contexts.
 
-func (cCtx *Context) Float64(name string) float64
+func (cCtx *Context) Float(name string) float64
     Int looks up the value of a local IntFlag, returns 0 if not found
 
-func (cCtx *Context) Float64Slice(name string) []float64
-    Float64Slice looks up the value of a local Float64SliceFlag, returns nil if
-    not found
+func (cCtx *Context) FloatSlice(name string) []float64
+    FloatSlice looks up the value of a local FloatSliceFlag, returns nil if not
+    found
 
 func (cCtx *Context) Int(name string) int64
     Int64 looks up the value of a local Int64Flag, returns 0 if not found
@@ -635,17 +634,10 @@ func (cCtx *Context) StringSlice(name string) []string
 func (cCtx *Context) Timestamp(name string) *time.Time
     Timestamp gets the timestamp from a flag name
 
-func (cCtx *Context) Uint(name string) uint
-    Uint looks up the value of a local UintFlag, returns 0 if not found
+func (cCtx *Context) Uint(name string) uint64
+    Uint looks up the value of a local Uint64Flag, returns 0 if not found
 
-func (cCtx *Context) Uint64(name string) uint64
-    Uint64 looks up the value of a local Uint64Flag, returns 0 if not found
-
-func (cCtx *Context) Uint64Slice(name string) []uint64
-    Uint64Slice looks up the value of a local Uint64SliceFlag, returns nil if
-    not found
-
-func (cCtx *Context) UintSlice(name string) []uint
+func (cCtx *Context) UintSlice(name string) []uint64
     UintSlice looks up the value of a local UintSliceFlag, returns nil if not
     found
 
@@ -885,11 +877,11 @@ func (f FlagsByName) Less(i, j int) bool
 
 func (f FlagsByName) Swap(i, j int)
 
-type Float64Flag = FlagBase[float64, NoConfig, float64Value]
+type FloatFlag = FlagBase[float64, NoConfig, floatValue]
 
-type Float64Slice = SliceBase[float64, NoConfig, float64Value]
+type FloatSlice = SliceBase[float64, NoConfig, floatValue]
 
-type Float64SliceFlag = FlagBase[[]float64, NoConfig, Float64Slice]
+type FloatSliceFlag = FlagBase[[]float64, NoConfig, FloatSlice]
 
 type IntFlag = FlagBase[int64, IntegerConfig, intValue]
 
@@ -988,7 +980,7 @@ type SliceBase[T any, C any, VC ValueCreator[T, C]] struct {
     SliceBase wraps []T to satisfy flag.Value
 
 func NewSliceBase[T any, C any, VC ValueCreator[T, C]](defaults ...T) *SliceBase[T, C, VC]
-    NewIntSlice makes an *IntSlice with default values
+    NewSliceBase makes a *SliceBase with default values
 
 func (i SliceBase[T, C, VC]) Create(val []T, p *[]T, c C) Value
 
@@ -1040,17 +1032,11 @@ type TimestampConfig struct {
 
 type TimestampFlag = FlagBase[time.Time, TimestampConfig, timestampValue]
 
-type Uint64Flag = FlagBase[uint64, IntegerConfig, uint64Value]
+type UintFlag = FlagBase[uint64, IntegerConfig, uintValue]
 
-type Uint64Slice = SliceBase[uint64, IntegerConfig, uint64Value]
+type UintSlice = SliceBase[uint64, IntegerConfig, uintValue]
 
-type Uint64SliceFlag = FlagBase[[]uint64, IntegerConfig, Uint64Slice]
-
-type UintFlag = FlagBase[uint, IntegerConfig, uintValue]
-
-type UintSlice = SliceBase[uint, IntegerConfig, uintValue]
-
-type UintSliceFlag = FlagBase[[]uint, IntegerConfig, UintSlice]
+type UintSliceFlag = FlagBase[[]uint64, IntegerConfig, UintSlice]
 
 type Value interface {
 	flag.Value

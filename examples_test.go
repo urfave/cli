@@ -420,7 +420,7 @@ func ExampleCommand_Run_sliceValues() {
 		Name: "multi_values",
 		Flags: []cli.Flag{
 			&cli.StringSliceFlag{Name: "stringSlice"},
-			&cli.Float64SliceFlag{Name: "float64Slice"},
+			&cli.FloatSliceFlag{Name: "float64Slice"},
 			&cli.IntSliceFlag{Name: "intSlice"},
 		},
 		Action: func(cCtx *cli.Context) error {
