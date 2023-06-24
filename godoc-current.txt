@@ -71,109 +71,6 @@ end
 
 {{ range $v := .Completions }}{{ $v }}
 {{ end }}`
-var MarkdownDocTemplate = `{{if gt .SectionNum 0}}% {{ .Command.Name }} {{ .SectionNum }}
-
-{{end}}# NAME
-
-{{ .Command.Name }}{{ if .Command.Usage }} - {{ .Command.Usage }}{{ end }}
-
-# SYNOPSIS
-
-{{ .Command.Name }}
-{{ if .SynopsisArgs }}
-` + "```" + `
-{{ range $v := .SynopsisArgs }}{{ $v }}{{ end }}` + "```" + `
-{{ end }}{{ if .Command.Description }}
-# DESCRIPTION
-
-{{ .Command.Description }}
-{{ end }}
-**Usage**:
-
-` + "```" + `{{ if .Command.UsageText }}
-{{ .Command.UsageText }}
-{{ else }}
-{{ .Command.Name }} [GLOBAL OPTIONS] [command [COMMAND OPTIONS]] [ARGUMENTS...]
-{{ end }}` + "```" + `
-{{ if .GlobalArgs }}
-# GLOBAL OPTIONS
-{{ range $v := .GlobalArgs }}
-{{ $v }}{{ end }}
-{{ end }}{{ if .Commands }}
-# COMMANDS
-{{ range $v := .Commands }}
-{{ $v }}{{ end }}{{ end }}`
-var MarkdownTabularDocTemplate = `{{ define "flags" }}
-| Name | Description | Default value | Environment variables |
-|------|-------------|:-------------:|:---------------------:|
-{{   range $flag := . -}}
-{{- /**/ -}} | ` + "`" + `{{ $flag.Name }}{{ if $flag.TakesValue }}="…"{{ end }}` + "`" + ` {{ if $flag.Aliases }}(` + "`" + `{{ join $flag.Aliases "` + "`, `" + `" }}` + "`" + `) {{ end }}
-{{- /**/ -}} | {{ $flag.Usage }}
-{{- /**/ -}} | {{ if $flag.Default }}` + "`" + `{{ $flag.Default }}` + "`" + `{{ end }}
-{{- /**/ -}} | {{ if $flag.EnvVars }}` + "`" + `{{ join $flag.EnvVars "` + "`, `" + `" }}` + "`" + `{{ else }}*none*{{ end }}
-{{- /**/ -}} |
-{{   end }}
-{{ end }}
-
-{{ define "command" }}
-### ` + "`" + `{{ .Name }}` + "`" + ` {{ if gt .Level 0 }}sub{{ end }}command{{ if .Aliases }} (aliases: ` + "`" + `{{ join .Aliases "` + "`, `" + `" }}` + "`" + `){{ end }}
-{{   if .Usage }}
-{{     .Usage }}.
-{{   end }}
-{{   if .UsageText }}
-{{     range $line := .UsageText -}}
-> {{ $line }}
-{{     end -}}
-{{   end }}
-{{   if .Description }}
-{{     .Description }}.
-{{   end }}
-Usage:
-
-` + "```" + `bash
-$ {{ .AppPath }} [GLOBAL FLAGS] {{ .Name }}{{ if .Flags }} [COMMAND FLAGS]{{ end }} {{ if .ArgsUsage }}{{ .ArgsUsage }}{{ else }}[ARGUMENTS...]{{ end }}
-` + "```" + `
-
-{{   if .Flags -}}
-The following flags are supported:
-{{     template "flags" .Flags }}
-{{   end -}}
-
-{{   if .SubCommands -}}
-{{     range $subCmd := .SubCommands -}}
-{{       template "command" $subCmd }}
-{{     end -}}
-{{   end -}}
-{{ end }}
-
-## CLI interface{{ if .Name }} - {{ .Name }}{{ end }}
-
-{{ if .Description }}{{ .Description }}.
-{{ end }}
-{{ if .Usage }}{{ .Usage }}.
-{{ end }}
-{{ if .UsageText }}
-{{   range $line := .UsageText -}}
-> {{ $line }}
-{{   end -}}
-{{ end }}
-Usage:
-
-` + "```" + `bash
-$ {{ .AppPath }}{{ if .GlobalFlags }} [GLOBAL FLAGS]{{ end }} [COMMAND] [COMMAND FLAGS] {{ if .ArgsUsage }}{{ .ArgsUsage }}{{ else }}[ARGUMENTS...]{{ end }}
-` + "```" + `
-
-{{ if .GlobalFlags }}
-Global flags:
-
-{{ template "flags" .GlobalFlags }}
-
-{{ end -}}
-{{ if .Commands -}}
-{{   range $cmd := .Commands -}}
-{{     template "command" $cmd }}
-{{   end }}
-{{- end }}`
 var NewFloatSlice = NewSliceBase[float64, NoConfig, floatValue]
 var NewIntSlice = NewSliceBase[int64, IntegerConfig, intValue]
 var NewStringMap = NewMapBase[string, StringConfig, stringValue]
@@ -505,28 +402,6 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error
 func (cmd *Command) ToFishCompletion() (string, error)
     ToFishCompletion creates a fish completion string for the `*App` The
     function errors if either parsing or writing of the string fails.
-
-func (cmd *Command) ToMan() (string, error)
-    ToMan creates a man page string for the `*Command` The function errors if
-    either parsing or writing of the string fails.
-
-func (cmd *Command) ToManWithSection(sectionNumber int) (string, error)
-    ToMan creates a man page string with section number for the `*Command` The
-    function errors if either parsing or writing of the string fails.
-
-func (cmd *Command) ToMarkdown() (string, error)
-    ToMarkdown creates a markdown string for the `*Command` The function errors
-    if either parsing or writing of the string fails.
-
-func (cmd *Command) ToTabularMarkdown(appPath string) (string, error)
-    ToTabularMarkdown creates a tabular markdown documentation for the
-    `*Command`. The function errors if either parsing or writing of the string
-    fails.
-
-func (cmd *Command) ToTabularToFileBetweenTags(appPath, filePath string, startEndTags ...string) error
-    ToTabularToFileBetweenTags creates a tabular markdown documentation for
-    the `*App` and updates the file between the tags in the file. The function
-    errors if either parsing or writing of the string fails.
 
 func (cmd *Command) VisibleCategories() []CommandCategory
     VisibleCategories returns a slice of categories and commands that are

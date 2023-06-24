@@ -412,13 +412,9 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 		mbStringFormatter    = "%.1fMB"
 	)
 
-	desiredMinBinarySize := 1.675
+	desiredMinBinarySize := 1.59
 
 	tags := c.String("tags")
-
-	if strings.Contains(tags, "urfave_cli_no_docs") {
-		desiredMinBinarySize = 1.39
-	}
 
 	// get cli example size
 	cliSize, err := getSize(cliSourceFilePath, cliBuiltFilePath, tags)
