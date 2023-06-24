@@ -26,7 +26,7 @@ func (i SliceBase[T, C, VC]) Create(val []T, p *[]T, c C) Value {
 	}
 }
 
-// NewIntSlice makes an *IntSlice with default values
+// NewSliceBase makes a *SliceBase with default values
 func NewSliceBase[T any, C any, VC ValueCreator[T, C]](defaults ...T) *SliceBase[T, C, VC] {
 	return &SliceBase[T, C, VC]{
 		slice: &defaults,

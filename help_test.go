@@ -1202,7 +1202,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				Name: "cmd",
 				Flags: []Flag{
 					&BoolFlag{Name: "happiness"},
-					&Int64Flag{Name: "everybody-jump-on"},
+					&IntFlag{Name: "everybody-jump-on"},
 				},
 				Commands: []*Command{
 					{Name: "putz"},
@@ -1223,7 +1223,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				Name: "cmd",
 				Flags: []Flag{
 					&BoolFlag{Name: "happiness"},
-					&Int64Flag{Name: "everybody-jump-on"},
+					&IntFlag{Name: "everybody-jump-on"},
 				},
 			}},
 			cmd: &Command{
@@ -1245,7 +1245,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				Name: "cmd",
 				Flags: []Flag{
 					&BoolFlag{Name: "happiness"},
-					&Int64Flag{Name: "everybody-jump-on"},
+					&IntFlag{Name: "everybody-jump-on"},
 				},
 			}},
 			cmd: &Command{
