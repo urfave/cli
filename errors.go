@@ -55,8 +55,7 @@ type errRequiredFlags struct {
 }
 
 func (e *errRequiredFlags) Error() string {
-	numberOfMissingFlags := len(e.missingFlags)
-	if numberOfMissingFlags == 1 {
+	if len(e.missingFlags) == 1 {
 		return fmt.Sprintf("Required flag %q not set", e.missingFlags[0])
 	}
 	joinedMissingFlags := strings.Join(e.missingFlags, ", ")
