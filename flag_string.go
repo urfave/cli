@@ -55,8 +55,8 @@ func (s *stringValue) String() string {
 	return ""
 }
 
-func (cCtx *Context) String(name string) string {
-	if v, ok := cCtx.Value(name).(string); ok {
+func (cmd *Command) String(name string) string {
+	if v, ok := cmd.Value(name).(string); ok {
 		return v
 	}
 	return ""

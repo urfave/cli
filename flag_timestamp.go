@@ -85,8 +85,8 @@ func (t *timestampValue) Get() any {
 }
 
 // Timestamp gets the timestamp from a flag name
-func (cCtx *Context) Timestamp(name string) *time.Time {
-	if fs := cCtx.lookupFlagSet(name); fs != nil {
+func (cmd *Command) Timestamp(name string) *time.Time {
+	if fs := cmd.lookupFlagSet(name); fs != nil {
 		return lookupTimestamp(name, fs)
 	}
 	return nil

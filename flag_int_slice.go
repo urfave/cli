@@ -9,8 +9,8 @@ var NewIntSlice = NewSliceBase[int64, IntegerConfig, intValue]
 
 // IntSlice looks up the value of a local IntSliceFlag, returns
 // nil if not found
-func (cCtx *Context) IntSlice(name string) []int64 {
-	if fs := cCtx.lookupFlagSet(name); fs != nil {
+func (cmd *Command) IntSlice(name string) []int64 {
+	if fs := cmd.lookupFlagSet(name); fs != nil {
 		return lookupIntSlice(name, fs)
 	}
 	return nil

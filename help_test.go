@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"context"
 	"flag"
 	"fmt"
 	"io"
@@ -16,10 +17,7 @@ import (
 func Test_ShowAppHelp_NoAuthor(t *testing.T) {
 	output := new(bytes.Buffer)
 	cmd := &Command{Writer: output}
-
-	c := NewContext(cmd, nil, nil)
-
-	_ = ShowAppHelp(c)
+	_ = ShowAppHelp(cmd)
 
 	if bytes.Contains(output.Bytes(), []byte("AUTHOR(S):")) {
 		t.Errorf("expected\n%snot to include %s", output.String(), "AUTHOR(S):")
@@ -32,9 +30,7 @@ func Test_ShowAppHelp_NoVersion(t *testing.T) {
 
 	cmd.Version = ""
 
-	c := NewContext(cmd, nil, nil)
-
-	_ = ShowAppHelp(c)
+	_ = ShowAppHelp(cmd)
 
 	if bytes.Contains(output.Bytes(), []byte("VERSION:")) {
 		t.Errorf("expected\n%snot to include %s", output.String(), "VERSION:")
@@ -47,9 +43,7 @@ func Test_ShowAppHelp_HideVersion(t *testing.T) {
 
 	cmd.HideVersion = true
 
-	c := NewContext(cmd, nil, nil)
-
-	_ = ShowAppHelp(c)
+	_ = ShowAppHelp(cmd)
 
 	if bytes.Contains(output.Bytes(), []byte("VERSION:")) {
 		t.Errorf("expected\n%snot to include %s", output.String(), "VERSION:")
@@ -63,9 +57,7 @@ func Test_ShowAppHelp_MultiLineDescription(t *testing.T) {
 	cmd.HideVersion = true
 	cmd.Description = "multi\n  line"
 
-	c := NewContext(cmd, nil, nil)
-
-	_ = ShowAppHelp(c)
+	_ = ShowAppHelp(cmd)
 
 	if !bytes.Contains(output.Bytes(), []byte("DESCRIPTION:\n   multi\n     line")) {
 		t.Errorf("expected\n%s\nto include\n%s", output.String(), "DESCRIPTION:\n   multi\n     line")
@@ -90,8 +82,8 @@ func Test_Help_Custom_Flags(t *testing.T) {
 		Flags: []Flag{
 			&BoolFlag{Name: "foo", Aliases: []string{"h"}},
 		},
-		Action: func(ctx *Context) error {
-			if ctx.Bool("h") != true {
+		Action: func(_ context.Context, cmd *Command) error {
+			if cmd.Bool("h") != true {
 				t.Errorf("custom help flag not set")
 			}
 			return nil
@@ -120,8 +112,8 @@ func Test_Version_Custom_Flags(t *testing.T) {
 		Flags: []Flag{
 			&BoolFlag{Name: "foo", Aliases: []string{"v"}},
 		},
-		Action: func(ctx *Context) error {
-			if ctx.Bool("v") != true {
+		Action: func(_ context.Context, cmd *Command) error {
+			if cmd.Bool("v") != true {
 				t.Errorf("custom version flag not set")
 			}
 			return nil
@@ -134,14 +126,13 @@ func Test_Version_Custom_Flags(t *testing.T) {
 }
 
 func Test_helpCommand_Action_ErrorIfNoTopic(t *testing.T) {
-	cmd := &Command{}
+	cmd := &Command{
+		flagSet: flag.NewFlagSet("test", 0),
+	}
 
-	set := flag.NewFlagSet("test", 0)
-	_ = set.Parse([]string{"foo"})
+	_ = cmd.flagSet.Parse([]string{"foo"})
 
-	c := NewContext(cmd, set, nil)
-
-	err := helpCommandAction(c)
+	err := helpCommandAction(context.Background(), cmd)
 
 	if err == nil {
 		t.Fatalf("expected error from helpCommandAction(), but got nil")
@@ -220,9 +211,9 @@ func TestHelpCommand_FullName(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		out := &bytes.Buffer{}
-
 		t.Run(tc.name, func(t *testing.T) {
+			out := &bytes.Buffer{}
+
 			if tc.skip {
 				t.SkipNow()
 			}
@@ -275,14 +266,12 @@ func Test_helpCommand_HideHelpFlag(t *testing.T) {
 }
 
 func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
-	cmd := &Command{}
+	cmd := &Command{
+		flagSet: flag.NewFlagSet("test", 0),
+	}
+	_ = cmd.flagSet.Parse([]string{"foo"})
 
-	set := flag.NewFlagSet("test", 0)
-	_ = set.Parse([]string{"foo"})
-
-	c := NewContext(cmd, set, nil)
-
-	err := helpCommandAction(c)
+	err := helpCommandAction(context.Background(), cmd)
 
 	if err == nil {
 		t.Fatalf("expected error from helpCommandAction(), but got nil")
@@ -310,7 +299,7 @@ func TestShowAppHelp_CommandAliases(t *testing.T) {
 			{
 				Name:    "frobbly",
 				Aliases: []string{"fr", "frob"},
-				Action: func(ctx *Context) error {
+				Action: func(context.Context, *Command) error {
 					return nil
 				},
 			},
@@ -568,7 +557,7 @@ func TestShowCommandHelp_CommandAliases(t *testing.T) {
 			{
 				Name:    "frobbly",
 				Aliases: []string{"fr", "frob", "bork"},
-				Action: func(ctx *Context) error {
+				Action: func(context.Context, *Command) error {
 					return nil
 				},
 			},
@@ -586,7 +575,7 @@ func TestShowSubcommandHelp_CommandAliases(t *testing.T) {
 			{
 				Name:    "frobbly",
 				Aliases: []string{"fr", "frob", "bork"},
-				Action: func(ctx *Context) error {
+				Action: func(context.Context, *Command) error {
 					return nil
 				},
 			},
@@ -609,7 +598,7 @@ func TestShowCommandHelp_Customtemplate(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "frobbly",
-				Action: func(ctx *Context) error {
+				Action: func(context.Context, *Command) error {
 					return nil
 				},
 				CustomHelpTemplate: `NAME:
@@ -761,14 +750,14 @@ func TestShowAppHelp_HiddenCommand(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "frobbly",
-				Action: func(ctx *Context) error {
+				Action: func(context.Context, *Command) error {
 					return nil
 				},
 			},
 			{
 				Name:   "secretfrob",
 				Hidden: true,
-				Action: func(ctx *Context) error {
+				Action: func(context.Context, *Command) error {
 					return nil
 				},
 			},
@@ -932,14 +921,14 @@ func TestShowAppHelp_CustomAppTemplate(t *testing.T) {
 		Commands: []*Command{
 			{
 				Name: "frobbly",
-				Action: func(ctx *Context) error {
+				Action: func(context.Context, *Command) error {
 					return nil
 				},
 			},
 			{
 				Name:   "secretfrob",
 				Hidden: true,
-				Action: func(ctx *Context) error {
+				Action: func(context.Context, *Command) error {
 					return nil
 				},
 			},
@@ -1172,46 +1161,39 @@ func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 }
 
 func TestDefaultCompleteWithFlags(t *testing.T) {
-	origEnv := os.Environ()
 	origArgv := os.Args
+	t.Cleanup(func() { os.Args = origArgv })
 
-	t.Cleanup(func() {
-		os.Args = origArgv
-		resetEnv(origEnv)
-	})
-
-	os.Setenv("SHELL", "bash")
+	t.Setenv("SHELL", "bash")
 
 	for _, tc := range []struct {
 		name     string
-		c        *Context
 		cmd      *Command
 		argv     []string
 		expected string
 	}{
 		{
 			name:     "empty",
-			c:        &Context{Command: &Command{}},
 			cmd:      &Command{},
 			argv:     []string{"prog", "cmd"},
 			expected: "",
 		},
 		{
 			name: "typical-flag-suggestion",
-			c: &Context{Command: &Command{
-				Name: "cmd",
-				Flags: []Flag{
-					&BoolFlag{Name: "happiness"},
-					&IntFlag{Name: "everybody-jump-on"},
-				},
-				Commands: []*Command{
-					{Name: "putz"},
-				},
-			}},
 			cmd: &Command{
 				Flags: []Flag{
 					&BoolFlag{Name: "excitement"},
 					&StringFlag{Name: "hat-shape"},
+				},
+				parent: &Command{
+					Name: "cmd",
+					Flags: []Flag{
+						&BoolFlag{Name: "happiness"},
+						&IntFlag{Name: "everybody-jump-on"},
+					},
+					Commands: []*Command{
+						{Name: "putz"},
+					},
 				},
 			},
 			argv:     []string{"cmd", "--e", "--generate-shell-completion"},
@@ -1219,13 +1201,6 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 		},
 		{
 			name: "typical-command-suggestion",
-			c: &Context{Command: &Command{
-				Name: "cmd",
-				Flags: []Flag{
-					&BoolFlag{Name: "happiness"},
-					&IntFlag{Name: "everybody-jump-on"},
-				},
-			}},
 			cmd: &Command{
 				Name: "putz",
 				Commands: []*Command{
@@ -1235,19 +1210,19 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 					&BoolFlag{Name: "excitement"},
 					&StringFlag{Name: "hat-shape"},
 				},
+				parent: &Command{
+					Name: "cmd",
+					Flags: []Flag{
+						&BoolFlag{Name: "happiness"},
+						&IntFlag{Name: "everybody-jump-on"},
+					},
+				},
 			},
 			argv:     []string{"cmd", "--generate-shell-completion"},
 			expected: "futz\n",
 		},
 		{
 			name: "autocomplete-with-spaces",
-			c: &Context{Command: &Command{
-				Name: "cmd",
-				Flags: []Flag{
-					&BoolFlag{Name: "happiness"},
-					&IntFlag{Name: "everybody-jump-on"},
-				},
-			}},
 			cmd: &Command{
 				Name: "putz",
 				Commands: []*Command{
@@ -1257,6 +1232,13 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 					&BoolFlag{Name: "excitement"},
 					&StringFlag{Name: "hat-shape"},
 				},
+				parent: &Command{
+					Name: "cmd",
+					Flags: []Flag{
+						&BoolFlag{Name: "happiness"},
+						&IntFlag{Name: "everybody-jump-on"},
+					},
+				},
 			},
 			argv:     []string{"cmd", "--url", "http://localhost:8000", "h", "--generate-shell-completion"},
 			expected: "help\n",
@@ -1264,11 +1246,12 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 	} {
 		t.Run(tc.name, func(ct *testing.T) {
 			writer := &bytes.Buffer{}
-			tc.c.Command.Writer = writer
+			rootCmd := tc.cmd.Root()
+			rootCmd.Writer = writer
 
 			os.Args = tc.argv
 			f := DefaultCompleteWithFlags(tc.cmd)
-			f(tc.c)
+			f(context.Background(), tc.cmd)
 
 			written := writer.String()
 
@@ -1317,8 +1300,6 @@ Including newlines.
 And then another long line. Blah blah blah does anybody ever read these things?`,
 	}
 
-	c := NewContext(cmd, nil, nil)
-
 	HelpPrinter = func(w io.Writer, templ string, data interface{}) {
 		funcMap := map[string]interface{}{
 			"wrapAt": func() int {
@@ -1329,7 +1310,7 @@ And then another long line. Blah blah blah does anybody ever read these things?`
 		HelpPrinterCustom(w, templ, data, funcMap)
 	}
 
-	_ = ShowAppHelp(c)
+	_ = ShowAppHelp(cmd)
 
 	expected := `NAME:
     - here's a sample
@@ -1397,16 +1378,14 @@ func TestWrappedCommandHelp(t *testing.T) {
 				Usage:       "add a task to the list",
 				UsageText:   "this is an even longer way of describing adding a task to the list",
 				Description: "and a description long enough to wrap in this test case",
-				Action: func(c *Context) error {
+				Action: func(context.Context, *Command) error {
 					return nil
 				},
 			},
 		},
 	}
 	cmd.setupDefaults([]string{"cli.test"})
-
-	cCtx := NewContext(cmd, nil, nil)
-	cmd.setupCommandGraph(cCtx)
+	cmd.setupCommandGraph()
 
 	HelpPrinter = func(w io.Writer, templ string, data interface{}) {
 		funcMap := map[string]interface{}{
@@ -1420,7 +1399,7 @@ func TestWrappedCommandHelp(t *testing.T) {
 
 	r := require.New(t)
 
-	r.NoError(ShowCommandHelp(cCtx, "add"))
+	r.NoError(ShowCommandHelp(context.Background(), cmd, "add"))
 	r.Equal(`NAME:
    cli.test add - add a task
                   to the list
@@ -1465,7 +1444,7 @@ func TestWrappedSubcommandHelp(t *testing.T) {
 				Usage:       "add a task to the list",
 				UsageText:   "this is an even longer way of describing adding a task to the list",
 				Description: "and a description long enough to wrap in this test case",
-				Action: func(c *Context) error {
+				Action: func(context.Context, *Command) error {
 					return nil
 				},
 				Commands: []*Command{
@@ -1473,7 +1452,7 @@ func TestWrappedSubcommandHelp(t *testing.T) {
 						Name:      "grok",
 						Usage:     "remove an existing template",
 						UsageText: "longer usage text goes here, la la la, hopefully this is long enough to wrap even more",
-						Action: func(c *Context) error {
+						Action: func(context.Context, *Command) error {
 							return nil
 						},
 					},
@@ -1535,7 +1514,7 @@ func TestWrappedHelpSubcommand(t *testing.T) {
 				Usage:       "add a task to the list",
 				UsageText:   "this is an even longer way of describing adding a task to the list",
 				Description: "and a description long enough to wrap in this test case",
-				Action: func(c *Context) error {
+				Action: func(context.Context, *Command) error {
 					return nil
 				},
 				Commands: []*Command{
@@ -1543,7 +1522,7 @@ func TestWrappedHelpSubcommand(t *testing.T) {
 						Name:      "grok",
 						Usage:     "remove an existing template",
 						UsageText: "longer usage text goes here, la la la, hopefully this is long enough to wrap even more",
-						Action: func(c *Context) error {
+						Action: func(context.Context, *Command) error {
 							return nil
 						},
 						Flags: []Flag{

@@ -25,8 +25,8 @@ type boolValue struct {
 	count       *int
 }
 
-func (cCtx *Context) Bool(name string) bool {
-	if v, ok := cCtx.Value(name).(bool); ok {
+func (cmd *Command) Bool(name string) bool {
+	if v, ok := cmd.Value(name).(bool); ok {
 		return v
 	}
 	return false

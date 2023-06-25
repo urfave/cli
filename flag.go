@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -91,7 +92,7 @@ func (f FlagsByName) Swap(i, j int) {
 
 // ActionableFlag is an interface that wraps Flag interface and RunAction operation.
 type ActionableFlag interface {
-	RunAction(*Context) error
+	RunAction(context.Context, *Command) error
 }
 
 // Flag is a common interface related to parsing flags in cli.

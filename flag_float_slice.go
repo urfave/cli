@@ -11,8 +11,8 @@ var NewFloatSlice = NewSliceBase[float64, NoConfig, floatValue]
 
 // FloatSlice looks up the value of a local FloatSliceFlag, returns
 // nil if not found
-func (cCtx *Context) FloatSlice(name string) []float64 {
-	if fs := cCtx.lookupFlagSet(name); fs != nil {
+func (cmd *Command) FloatSlice(name string) []float64 {
+	if fs := cmd.lookupFlagSet(name); fs != nil {
 		return lookupFloatSlice(name, fs)
 	}
 	return nil

@@ -9,8 +9,8 @@ var NewStringMap = NewMapBase[string, StringConfig, stringValue]
 
 // StringMap looks up the value of a local StringMapFlag, returns
 // nil if not found
-func (cCtx *Context) StringMap(name string) map[string]string {
-	if fs := cCtx.lookupFlagSet(name); fs != nil {
+func (cmd *Command) StringMap(name string) map[string]string {
+	if fs := cmd.lookupFlagSet(name); fs != nil {
 		return lookupStringMap(name, fs)
 	}
 	return nil

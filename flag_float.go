@@ -38,8 +38,8 @@ func (f *floatValue) String() string { return strconv.FormatFloat(float64(*f), '
 
 // Int looks up the value of a local IntFlag, returns
 // 0 if not found
-func (cCtx *Context) Float(name string) float64 {
-	if v, ok := cCtx.Value(name).(float64); ok {
+func (cmd *Command) Float(name string) float64 {
+	if v, ok := cmd.Value(name).(float64); ok {
 		return v
 	}
 	return 0

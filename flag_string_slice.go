@@ -11,8 +11,8 @@ var NewStringSlice = NewSliceBase[string, StringConfig, stringValue]
 
 // StringSlice looks up the value of a local StringSliceFlag, returns
 // nil if not found
-func (cCtx *Context) StringSlice(name string) []string {
-	if fs := cCtx.lookupFlagSet(name); fs != nil {
+func (cmd *Command) StringSlice(name string) []string {
+	if fs := cmd.lookupFlagSet(name); fs != nil {
 		return lookupStringSlice(name, fs)
 	}
 	return nil
