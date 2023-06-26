@@ -21,7 +21,6 @@ type fnValue struct {
 	fn     func(string) error
 	isBool bool
 	v      Value
-	count  *int
 }
 
 func (f fnValue) Get() any           { return f.v.Get() }
@@ -41,7 +40,12 @@ func (f fnValue) Serialize() string {
 }
 
 func (f fnValue) IsBoolFlag() bool { return f.isBool }
-func (f fnValue) Count() int       { return *f.count }
+func (f fnValue) Count() int {
+	if s, ok := f.v.(Countable); ok {
+		return s.Count()
+	}
+	return 0
+}
 
 // ValueCreator is responsible for creating a flag.Value emulation
 // as well as custom formatting
@@ -97,12 +101,6 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	applied    bool  // whether the flag has been applied to a flag set already
 	creator    VC    // value creator for this flag type
 	value      Value // value representing this flag's value
-}
-
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f *FlagBase[T, C, V]) GetFlagValue() Value {
-	return f.value
 }
 
 // GetValue returns the flags value as string representation and an empty
@@ -177,7 +175,6 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 			},
 			isBool: isBool,
 			v:      f.value,
-			count:  &f.count,
 		}, name, f.Usage)
 	}
 
