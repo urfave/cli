@@ -169,3 +169,15 @@ func TestMultiErrorErrorsCopy(t *testing.T) {
 	me := newMultiError(errList...)
 	expect(t, errList, me.Errors())
 }
+
+func TestErrRequiredFlags_Error(t *testing.T) {
+	missingFlags := []string{"flag1", "flag2"}
+	err := &errRequiredFlags{missingFlags: missingFlags}
+	expectedMsg := "Required flags \"flag1, flag2\" not set"
+	expect(t, expectedMsg, err.Error())
+
+	missingFlags = []string{"flag1"}
+	err = &errRequiredFlags{missingFlags: missingFlags}
+	expectedMsg = "Required flag \"flag1\" not set"
+	expect(t, expectedMsg, err.Error())
+}
