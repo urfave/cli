@@ -156,6 +156,10 @@ var HelpPrinterCustom helpPrinterCustom = printHelpCustom
 
 FUNCTIONS
 
+func ConditionOrError(cond bool, err error) error
+    ConditionOrError ir a helper function to make writing validation functions
+    much easier
+
 func DefaultAppComplete(cCtx *Context)
     DefaultAppComplete prints the list of subcommands as the default app
     completion method
@@ -171,6 +175,18 @@ func HandleExitCoder(err error)
     code found, or exit code 1 if no ExitCoder is found.
 
     This function is the default error-handling behavior for an App.
+
+func Max[T constraints.Ordered](c T) func(T) error
+    Max means that the value to be checked needs to be atmost(and including) the
+    checked value
+
+func Min[T constraints.Ordered](c T) func(T) error
+    Min means that the value to be checked needs to be atleast(and including)
+    the checked value
+
+func RangeInclusive[T constraints.Ordered](a, b T) func(T) error
+    Max means that the value to be checked needs to be atmost(and including) the
+    checked value
 
 func ShowAppHelp(cCtx *Context) error
     ShowAppHelp is an action that displays the help.
@@ -194,6 +210,10 @@ func ShowSubcommandHelpAndExit(c *Context, exitCode int)
 
 func ShowVersion(cCtx *Context)
     ShowVersion prints the version number of the App
+
+func ValidationChain[T any](fns ...func(T) error) func(T) error
+    ValidationChain allows one to chain a sequence of validation functions to
+    construct a single validation function.
 
 
 TYPES
@@ -643,6 +663,8 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Config C // Additional/Custom configuration associated with this flag type
 
 	OnlyOnce bool // whether this flag can be duplicated on the command line
+
+	Validator func(T) error // custom function to validate this flag value
 
 	// Has unexported fields.
 }
