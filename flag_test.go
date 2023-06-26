@@ -1206,14 +1206,8 @@ func TestUintSliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	r := require.New(t)
 	r.NoError(fl.Apply(set))
 
-<<<<<<< HEAD
 	r.NoError(set.Parse(nil))
 	r.Equal([]uint64{1, 2}, set.Lookup("goat").Value.(flag.Getter).Get().([]uint64))
-=======
-	err := set.Parse(nil)
-	expect(t, err, nil)
-	expect(t, fl.value.(flag.Getter).Get().([]uint), []uint{1, 2})
->>>>>>> d16cd7e... Add new fv
 }
 
 func TestUintSliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
