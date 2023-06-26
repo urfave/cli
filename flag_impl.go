@@ -13,51 +13,35 @@ type Value interface {
 	flag.Getter
 }
 
-// simple wrapper to intercept Value operations
-// to check for duplicates
-type valueWrapper struct {
-	value    Value
-	count    int
-	onlyOnce bool
+type boolFlag interface {
+	IsBoolFlag() bool
 }
 
-func (v *valueWrapper) String() string {
-	if v.value == nil {
+type fnValue struct {
+	fn     func(string) error
+	isBool bool
+	v      Value
+	count  *int
+}
+
+func (f fnValue) Get() any           { return f.v.Get() }
+func (f fnValue) Set(s string) error { return f.fn(s) }
+func (f fnValue) String() string {
+	if f.v == nil {
 		return ""
 	}
-	return v.value.String()
+	return f.v.String()
 }
 
-func (v *valueWrapper) Set(s string) error {
-	if v.count == 1 && v.onlyOnce {
-		return fmt.Errorf("cant duplicate this flag")
-	}
-	v.count++
-	return v.value.Set(s)
-}
-
-func (v *valueWrapper) Get() any {
-	return v.value.Get()
-}
-
-func (v *valueWrapper) IsBoolFlag() bool {
-	_, ok := v.value.(*boolValue)
-	return ok
-}
-
-func (v *valueWrapper) Serialize() string {
-	if s, ok := v.value.(Serializer); ok {
+func (f fnValue) Serialize() string {
+	if s, ok := f.v.(Serializer); ok {
 		return s.Serialize()
 	}
-	return v.value.String()
+	return f.v.String()
 }
 
-func (v *valueWrapper) Count() int {
-	if s, ok := v.value.(Countable); ok {
-		return s.Count()
-	}
-	return 0
-}
+func (f fnValue) IsBoolFlag() bool { return f.isBool }
+func (f fnValue) Count() int       { return *f.count }
 
 // ValueCreator is responsible for creating a flag.Value emulation
 // as well as custom formatting
@@ -105,11 +89,20 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 
 	OnlyOnce bool // whether this flag can be duplicated on the command line
 
+	Validator func(T) error // custom function to validate this flag value
+
 	// unexported fields for internal use
+	count      int   // number of times the flag has been set
 	hasBeenSet bool  // whether the flag has been set from env or file
 	applied    bool  // whether the flag has been applied to a flag set already
 	creator    VC    // value creator for this flag type
 	value      Value // value representing this flag's value
+}
+
+// GetValue returns the flags value as string representation and an empty
+// string if the flag takes no value at all.
+func (f *FlagBase[T, C, V]) GetFlagValue() Value {
+	return f.value
 }
 
 // GetValue returns the flags value as string representation and an empty
@@ -162,13 +155,30 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 		}
 	}
 
-	vw := &valueWrapper{
-		value:    f.value,
-		onlyOnce: f.OnlyOnce,
+	isBool := false
+	if b, ok := f.value.(boolFlag); ok && b.IsBoolFlag() {
+		isBool = true
 	}
 
 	for _, name := range f.Names() {
-		set.Var(vw, name, f.Usage)
+		set.Var(fnValue{
+			fn: func(val string) error {
+				if f.count == 1 && f.OnlyOnce {
+					return fmt.Errorf("cant duplicate this flag")
+				}
+				f.count++
+				if err := f.value.Set(val); err != nil {
+					return err
+				}
+				if f.Validator != nil {
+					return f.Validator(f.value.Get().(T))
+				}
+				return nil
+			},
+			isBool: isBool,
+			v:      f.value,
+			count:  &f.count,
+		}, name, f.Usage)
 	}
 
 	f.applied = true

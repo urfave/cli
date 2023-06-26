@@ -2893,7 +2893,7 @@ func TestFlagAction(t *testing.T) {
 							return err
 						},
 					},
-					&UintFlag{
+					&Uint64Flag{
 						Name: "f_uint",
 						Action: func(cCtx *Context, v uint64) error {
 							if v == 0 {
