@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"fmt"
 	"strconv"
 )
 
@@ -18,7 +17,7 @@ func (f floatValue) Create(val float64, p *float64, c NoConfig) Value {
 }
 
 func (f floatValue) ToString(b float64) string {
-	return fmt.Sprintf("%v", b)
+	return strconv.FormatFloat(b, 'g', -1, 64)
 }
 
 // Below functions are to satisfy the flag.Value interface
