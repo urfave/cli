@@ -15,9 +15,10 @@ func ConditionOrError(cond bool, err error) error {
 	return err
 }
 
-// ValidationChain allows one to chain a sequence of validation
-// functions to construct a single validation function.
-func ValidationChain[T any](fns ...func(T) error) func(T) error {
+// ValidationChainAll allows one to chain a sequence of validation
+// functions to construct a single validation function. All the
+// individual validations must pass for the validation to succeed
+func ValidationChainAll[T any](fns ...func(T) error) func(T) error {
 	return func(v T) error {
 		for _, fn := range fns {
 			if err := fn(v); err != nil {
@@ -25,6 +26,23 @@ func ValidationChain[T any](fns ...func(T) error) func(T) error {
 			}
 		}
 		return nil
+	}
+}
+
+// ValidationChainAny allows one to chain a sequence of validation
+// functions to construct a single validation function. Atleast one
+// of the individual validations must pass for the validation to succeed
+func ValidationChainAny[T any](fns ...func(T) error) func(T) error {
+	return func(v T) error {
+		var errs []error
+		for _, fn := range fns {
+			if err := fn(v); err == nil {
+				return nil
+			} else {
+				errs = append(errs, err)
+			}
+		}
+		return fmt.Errorf("%+v", errs)
 	}
 }
 
@@ -47,5 +65,5 @@ func Max[T constraints.Ordered](c T) func(T) error {
 // Max means that the value to be checked needs to be atmost(and including)
 // the checked value
 func RangeInclusive[T constraints.Ordered](a, b T) func(T) error {
-	return ValidationChain[T](Min[T](a), Max[T](b))
+	return ValidationChainAll[T](Min[T](a), Max[T](b))
 }
