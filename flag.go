@@ -170,7 +170,7 @@ type PersistentFlag interface {
 	IsPersistent() bool
 }
 
-func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {
+func newFlagSet(name string, flags []Flag) (*flag.FlagSet, error) {
 	set := flag.NewFlagSet(name, flag.ContinueOnError)
 
 	for _, f := range flags {
@@ -178,7 +178,9 @@ func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {
 			return nil, err
 		}
 	}
+
 	set.SetOutput(io.Discard)
+
 	return set, nil
 }
 

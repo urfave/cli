@@ -194,28 +194,28 @@ func TestCommandFlagParsing(t *testing.T) {
 
 func TestParseAndRunShortOpts(t *testing.T) {
 	testCases := []struct {
-		testArgs     args
+		testArgs     stringSliceArgs
 		expectedErr  string
 		expectedArgs Args
 	}{
-		{testArgs: args{"test", "-a"}},
-		{testArgs: args{"test", "-c", "arg1", "arg2"}, expectedArgs: &args{"arg1", "arg2"}},
-		{testArgs: args{"test", "-f"}, expectedArgs: &args{}},
-		{testArgs: args{"test", "-ac", "--fgh"}, expectedArgs: &args{}},
-		{testArgs: args{"test", "-af"}, expectedArgs: &args{}},
-		{testArgs: args{"test", "-cf"}, expectedArgs: &args{}},
-		{testArgs: args{"test", "-acf"}, expectedArgs: &args{}},
-		{testArgs: args{"test", "--acf"}, expectedErr: "flag provided but not defined: -acf"},
-		{testArgs: args{"test", "-invalid"}, expectedErr: "flag provided but not defined: -invalid"},
-		{testArgs: args{"test", "-acf", "-invalid"}, expectedErr: "flag provided but not defined: -invalid"},
-		{testArgs: args{"test", "--invalid"}, expectedErr: "flag provided but not defined: -invalid"},
-		{testArgs: args{"test", "-acf", "--invalid"}, expectedErr: "flag provided but not defined: -invalid"},
-		{testArgs: args{"test", "-acf", "arg1", "-invalid"}, expectedArgs: &args{"arg1", "-invalid"}},
-		{testArgs: args{"test", "-acf", "arg1", "--invalid"}, expectedArgs: &args{"arg1", "--invalid"}},
-		{testArgs: args{"test", "-acfi", "not-arg", "arg1", "-invalid"}, expectedArgs: &args{"arg1", "-invalid"}},
-		{testArgs: args{"test", "-i", "ivalue"}, expectedArgs: &args{}},
-		{testArgs: args{"test", "-i", "ivalue", "arg1"}, expectedArgs: &args{"arg1"}},
-		{testArgs: args{"test", "-i"}, expectedErr: "flag needs an argument: -i"},
+		{testArgs: stringSliceArgs{"test", "-a"}},
+		{testArgs: stringSliceArgs{"test", "-c", "arg1", "arg2"}, expectedArgs: &stringSliceArgs{"arg1", "arg2"}},
+		{testArgs: stringSliceArgs{"test", "-f"}, expectedArgs: &stringSliceArgs{}},
+		{testArgs: stringSliceArgs{"test", "-ac", "--fgh"}, expectedArgs: &stringSliceArgs{}},
+		{testArgs: stringSliceArgs{"test", "-af"}, expectedArgs: &stringSliceArgs{}},
+		{testArgs: stringSliceArgs{"test", "-cf"}, expectedArgs: &stringSliceArgs{}},
+		{testArgs: stringSliceArgs{"test", "-acf"}, expectedArgs: &stringSliceArgs{}},
+		{testArgs: stringSliceArgs{"test", "--acf"}, expectedErr: "flag provided but not defined: -acf"},
+		{testArgs: stringSliceArgs{"test", "-invalid"}, expectedErr: "flag provided but not defined: -invalid"},
+		{testArgs: stringSliceArgs{"test", "-acf", "-invalid"}, expectedErr: "flag provided but not defined: -invalid"},
+		{testArgs: stringSliceArgs{"test", "--invalid"}, expectedErr: "flag provided but not defined: -invalid"},
+		{testArgs: stringSliceArgs{"test", "-acf", "--invalid"}, expectedErr: "flag provided but not defined: -invalid"},
+		{testArgs: stringSliceArgs{"test", "-acf", "arg1", "-invalid"}, expectedArgs: &stringSliceArgs{"arg1", "-invalid"}},
+		{testArgs: stringSliceArgs{"test", "-acf", "arg1", "--invalid"}, expectedArgs: &stringSliceArgs{"arg1", "--invalid"}},
+		{testArgs: stringSliceArgs{"test", "-acfi", "not-arg", "arg1", "-invalid"}, expectedArgs: &stringSliceArgs{"arg1", "-invalid"}},
+		{testArgs: stringSliceArgs{"test", "-i", "ivalue"}, expectedArgs: &stringSliceArgs{}},
+		{testArgs: stringSliceArgs{"test", "-i", "ivalue", "arg1"}, expectedArgs: &stringSliceArgs{"arg1"}},
+		{testArgs: stringSliceArgs{"test", "-i"}, expectedErr: "flag needs an argument: -i"},
 	}
 
 	for _, tc := range testCases {
@@ -407,12 +407,12 @@ func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
 
 func TestCommandSkipFlagParsing(t *testing.T) {
 	cases := []struct {
-		testArgs     args
-		expectedArgs *args
+		testArgs     stringSliceArgs
+		expectedArgs *stringSliceArgs
 		expectedErr  error
 	}{
-		{testArgs: args{"some-command", "some-arg", "--flag", "foo"}, expectedArgs: &args{"some-arg", "--flag", "foo"}, expectedErr: nil},
-		{testArgs: args{"some-command", "some-arg", "--flag=foo"}, expectedArgs: &args{"some-arg", "--flag=foo"}, expectedErr: nil},
+		{testArgs: stringSliceArgs{"some-command", "some-arg", "--flag", "foo"}, expectedArgs: &stringSliceArgs{"some-arg", "--flag", "foo"}, expectedErr: nil},
+		{testArgs: stringSliceArgs{"some-command", "some-arg", "--flag=foo"}, expectedArgs: &stringSliceArgs{"some-arg", "--flag=foo"}, expectedErr: nil},
 	}
 
 	for _, c := range cases {
@@ -438,14 +438,14 @@ func TestCommandSkipFlagParsing(t *testing.T) {
 
 func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 	cases := []struct {
-		testArgs    args
+		testArgs    stringSliceArgs
 		expectedOut string
 	}{
-		{testArgs: args{"--undefined"}, expectedOut: "found 0 args"},
-		{testArgs: args{"--number"}, expectedOut: "found 0 args"},
-		{testArgs: args{"--number", "forty-two"}, expectedOut: "found 0 args"},
-		{testArgs: args{"--number", "42"}, expectedOut: "found 0 args"},
-		{testArgs: args{"--number", "42", "newArg"}, expectedOut: "found 1 args"},
+		{testArgs: stringSliceArgs{"--undefined"}, expectedOut: "found 0 args"},
+		{testArgs: stringSliceArgs{"--number"}, expectedOut: "found 0 args"},
+		{testArgs: stringSliceArgs{"--number", "forty-two"}, expectedOut: "found 0 args"},
+		{testArgs: stringSliceArgs{"--number", "42"}, expectedOut: "found 0 args"},
+		{testArgs: stringSliceArgs{"--number", "42", "newArg"}, expectedOut: "found 1 args"},
 	}
 
 	for _, c := range cases {
@@ -467,7 +467,7 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 				},
 			}
 
-			osArgs := args{"bar"}
+			osArgs := stringSliceArgs{"bar"}
 			osArgs = append(osArgs, c.testArgs...)
 			osArgs = append(osArgs, "--generate-shell-completion")
 
@@ -2465,7 +2465,7 @@ func TestCustomHelpVersionFlags(t *testing.T) {
 
 func TestHandleExitCoder_Default(t *testing.T) {
 	app := buildMinimalTestCommand()
-	fs, err := flagSet(app.Name, app.Flags)
+	fs, err := newFlagSet(app.Name, app.Flags)
 	if err != nil {
 		t.Errorf("error creating FlagSet: %s", err)
 	}

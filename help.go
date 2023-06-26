@@ -313,6 +313,7 @@ func ShowSubcommandHelp(cmd *Command) error {
 
 // ShowVersion prints the version number of the App
 func ShowVersion(cmd *Command) {
+	tracef("showing version via VersionPrinter (cmd=%[1]q)", cmd.Name)
 	VersionPrinter(cmd)
 }
 
@@ -429,18 +430,6 @@ func checkVersion(cmd *Command) bool {
 	return found
 }
 
-func checkHelp(cmd *Command) bool {
-	found := false
-	for _, name := range HelpFlag.Names() {
-		if cmd.Bool(name) {
-			found = true
-			break
-		}
-	}
-
-	return found
-}
-
 func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
 	if !c.EnableShellCompletion {
 		return false, arguments
@@ -457,6 +446,8 @@ func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
 }
 
 func checkCompletions(ctx context.Context, cmd *Command) bool {
+	tracef("checking completions on command %[1]q", cmd.Name)
+
 	if !cmd.EnableShellCompletion {
 		return false
 	}

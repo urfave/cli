@@ -164,59 +164,60 @@ func (cmd *Command) Command(name string) *Command {
 	return nil
 }
 
-func (cmd *Command) setupDefaults(arguments []string) {
+func (cmd *Command) setupDefaults(osArgs []string) {
 	if cmd.didSetupDefaults {
-		tracef("already did setup")
+		tracef("already did setup (cmd=%[1]q)", cmd.Name)
 		return
 	}
 
 	cmd.didSetupDefaults = true
 
 	isRoot := cmd.parent == nil
-	tracef("isRoot? %[1]v", isRoot)
+	tracef("isRoot? %[1]v (cmd=%[2]q)", isRoot, cmd.Name)
 
 	if cmd.ShellComplete == nil {
-		tracef("setting default ShellComplete")
+		tracef("setting default ShellComplete (cmd=%[1]q)", cmd.Name)
 		cmd.ShellComplete = DefaultCompleteWithFlags(cmd)
 	}
 
 	if cmd.Name == "" && isRoot {
-		tracef("setting cmd.Name from first arg basename")
-		cmd.Name = filepath.Base(arguments[0])
+		name := filepath.Base(osArgs[0])
+		tracef("setting cmd.Name from first arg basename (cmd=%[1]q)", name)
+		cmd.Name = name
 	}
 
 	if cmd.Usage == "" && isRoot {
-		tracef("setting default Usage")
+		tracef("setting default Usage (cmd=%[1]q)", cmd.Name)
 		cmd.Usage = "A new cli application"
 	}
 
 	if cmd.Version == "" {
-		tracef("setting HideVersion=true due to empty Version")
+		tracef("setting HideVersion=true due to empty Version (cmd=%[1]q)", cmd.Name)
 		cmd.HideVersion = true
 	}
 
 	if cmd.Action == nil {
-		tracef("setting default Action as help command action")
+		tracef("setting default Action as help command action (cmd=%[1]q)", cmd.Name)
 		cmd.Action = helpCommandAction
 	}
 
 	if cmd.Reader == nil {
-		tracef("setting default Reader as os.Stdin")
+		tracef("setting default Reader as os.Stdin (cmd=%[1]q)", cmd.Name)
 		cmd.Reader = os.Stdin
 	}
 
 	if cmd.Writer == nil {
-		tracef("setting default Writer as os.Stdout")
+		tracef("setting default Writer as os.Stdout (cmd=%[1]q)", cmd.Name)
 		cmd.Writer = os.Stdout
 	}
 
 	if cmd.ErrWriter == nil {
-		tracef("setting default ErrWriter as os.Stderr")
+		tracef("setting default ErrWriter as os.Stderr (cmd=%[1]q)", cmd.Name)
 		cmd.ErrWriter = os.Stderr
 	}
 
 	if cmd.AllowExtFlags {
-		tracef("visiting all flags given AllowExtFlags=true")
+		tracef("visiting all flags given AllowExtFlags=true (cmd=%[1]q)", cmd.Name)
 		// add global flags added by other packages
 		flag.VisitAll(func(f *flag.Flag) {
 			// skip test flags
@@ -227,20 +228,19 @@ func (cmd *Command) setupDefaults(arguments []string) {
 	}
 
 	for _, subCmd := range cmd.Commands {
-		tracef("setting sub-command parent as self")
+		tracef("setting sub-command (cmd=%[1]q) parent as self (cmd=%[2]q)", subCmd.Name, cmd.Name)
 		subCmd.parent = cmd
 	}
 
-	tracef("ensuring help command and flag")
 	cmd.ensureHelp()
 
 	if !cmd.HideVersion && isRoot {
-		tracef("appending version flag")
+		tracef("appending version flag (cmd=%[1]q)", cmd.Name)
 		cmd.appendFlag(VersionFlag)
 	}
 
 	if cmd.PrefixMatchCommands && cmd.SuggestCommandFunc == nil {
-		tracef("setting default SuggestCommandFunc")
+		tracef("setting default SuggestCommandFunc (cmd=%[1]q)", cmd.Name)
 		cmd.SuggestCommandFunc = suggestCommand
 	}
 
@@ -248,42 +248,48 @@ func (cmd *Command) setupDefaults(arguments []string) {
 		completionCommand := buildCompletionCommand()
 
 		if cmd.ShellCompletionCommandName != "" {
-			tracef("setting completion command name from ShellCompletionCommandName")
+			tracef(
+				"setting completion command name (%[1]q) from "+
+					"cmd.ShellCompletionCommandName (cmd=%[2]q)",
+				cmd.ShellCompletionCommandName, cmd.Name,
+			)
 			completionCommand.Name = cmd.ShellCompletionCommandName
 		}
 
-		tracef("appending completionCommand")
+		tracef("appending completionCommand (cmd=%[1]q)", cmd.Name)
 		cmd.appendCommand(completionCommand)
 	}
 
-	tracef("setting command categories")
+	tracef("setting command categories (cmd=%[1]q)", cmd.Name)
 	cmd.categories = newCommandCategories()
 
 	for _, subCmd := range cmd.Commands {
 		cmd.categories.AddCommand(subCmd.Category, subCmd)
 	}
 
-	tracef("sorting command categories")
+	tracef("sorting command categories (cmd=%[1]q)", cmd.Name)
 	sort.Sort(cmd.categories.(*commandCategories))
 
-	tracef("setting flag categories")
+	tracef("setting flag categories (cmd=%[1]q)", cmd.Name)
 	cmd.flagCategories = newFlagCategoriesFromFlags(cmd.Flags)
 
 	if cmd.Metadata == nil {
-		tracef("setting default Metadata")
+		tracef("setting default Metadata (cmd=%[1]q)", cmd.Name)
 		cmd.Metadata = map[string]any{}
 	}
 
 	if len(cmd.SliceFlagSeparator) != 0 {
-		tracef("setting defaultSliceFlagSeparator from cmd.SliceFlagSeparator")
+		tracef("setting defaultSliceFlagSeparator from cmd.SliceFlagSeparator (cmd=%[1]q)", cmd.Name)
 		defaultSliceFlagSeparator = cmd.SliceFlagSeparator
 	}
 
-	tracef("setting disableSliceFlagSeparator from cmd.DisableSliceFlagSeparator")
+	tracef("setting disableSliceFlagSeparator from cmd.DisableSliceFlagSeparator (cmd=%[1]q)", cmd.Name)
 	disableSliceFlagSeparator = cmd.DisableSliceFlagSeparator
 }
 
 func (cmd *Command) setupCommandGraph() {
+	tracef("setting up command graph (cmd=%[1]q)", cmd.Name)
+
 	for _, subCmd := range cmd.Commands {
 		subCmd.parent = cmd
 		subCmd.setupSubcommand()
@@ -292,34 +298,38 @@ func (cmd *Command) setupCommandGraph() {
 }
 
 func (cmd *Command) setupSubcommand() {
+	tracef("setting up self as sub-command (cmd=%[1]q)", cmd.Name)
+
 	cmd.ensureHelp()
 
-	tracef("setting command categories")
+	tracef("setting command categories (cmd=%[1]q)", cmd.Name)
 	cmd.categories = newCommandCategories()
 
 	for _, subCmd := range cmd.Commands {
 		cmd.categories.AddCommand(subCmd.Category, subCmd)
 	}
 
-	tracef("sorting command categories")
+	tracef("sorting command categories (cmd=%[1]q)", cmd.Name)
 	sort.Sort(cmd.categories.(*commandCategories))
 
-	tracef("setting flag categories")
+	tracef("setting flag categories (cmd=%[1]q)", cmd.Name)
 	cmd.flagCategories = newFlagCategoriesFromFlags(cmd.Flags)
 }
 
 func (cmd *Command) ensureHelp() {
+	tracef("ensuring help (cmd=%[1]q)", cmd.Name)
+
 	helpCommand := buildHelpCommand(true)
 
 	if cmd.Command(helpCommand.Name) == nil && !cmd.HideHelp {
 		if !cmd.HideHelpCommand {
-			tracef("appending helpCommand")
+			tracef("appending helpCommand (cmd=%[1]q)", cmd.Name)
 			cmd.appendCommand(helpCommand)
 		}
 	}
 
 	if HelpFlag != nil && !cmd.HideHelp {
-		tracef("appending HelpFlag")
+		tracef("appending HelpFlag (cmd=%[1]q)", cmd.Name)
 		cmd.appendFlag(HelpFlag)
 	}
 }
@@ -327,10 +337,12 @@ func (cmd *Command) ensureHelp() {
 // Run is the entry point to the command graph. The positional
 // arguments are parsed according to the Flag and Command
 // definitions and the matching Action functions are run.
-func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error) {
-	cmd.setupDefaults(arguments)
+func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
+	tracef("running with arguments %[1]q (cmd=%[2]q)", osArgs, cmd.Name)
+	cmd.setupDefaults(osArgs)
 
 	if v, ok := ctx.Value(commandContextKey).(*Command); ok {
+		tracef("setting parent (cmd=%[1]q) command from context.Context value (cmd=%[2]q)", v.Name, cmd.Name)
 		cmd.parent = v
 	}
 
@@ -340,25 +352,35 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error
 	// flag name as the value of the flag before it which is undesirable
 	// note that we can only do this because the shell autocomplete function
 	// always appends the completion flag at the end of the command
-	enableShellCompletion, arguments := checkShellCompleteFlag(cmd, arguments)
+	enableShellCompletion, osArgs := checkShellCompleteFlag(cmd, osArgs)
+
+	tracef("setting cmd.EnableShellCompletion=%[1]v from checkShellCompleteFlag (cmd=%[2]q)", enableShellCompletion, cmd.Name)
 	cmd.EnableShellCompletion = enableShellCompletion
 
+	tracef("using post-checkShellCompleteFlag arguments %[1]q (cmd=%[2]q)", osArgs, cmd.Name)
+
+	tracef("setting self as cmd in context (cmd=%[1]q)", cmd.Name)
 	ctx = context.WithValue(ctx, commandContextKey, cmd)
 
 	if cmd.parent == nil {
 		cmd.setupCommandGraph()
 	}
 
-	argsArguments := args(arguments)
-	set, err := cmd.parseFlags(&argsArguments)
+	// TODO: this is some convoluted yikes {
+	var args Args = &stringSliceArgs{v: osArgs}
+	set, err := cmd.parseFlags(args)
 	cmd.flagSet = set
+	args = cmd.Args()
+	// }
+
+	tracef("using post-parse arguments %[1]q (cmd=%[2]q)", args, cmd.Name)
 
 	if checkCompletions(ctx, cmd) {
 		return nil
 	}
 
 	if err != nil {
-		tracef("setting deferErr from %[1]v", err)
+		tracef("setting deferErr from %[1]v (cmd=%[2]q)", err, cmd.Name)
 		deferErr = err
 
 		cmd.isInError = true
@@ -377,7 +399,7 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error
 			if cmd.parent == nil {
 				tracef("running ShowAppHelp")
 				if err := ShowAppHelp(cmd); err != nil {
-					tracef("SILENTLY IGNORING ERROR running ShowAppHelp %[1]v", err)
+					tracef("SILENTLY IGNORING ERROR running ShowAppHelp %[1]v (cmd=%[2]q)", err, cmd.Name)
 				}
 			} else {
 				tracef("running ShowCommandHelp with %[1]q", cmd.Name)
@@ -390,8 +412,10 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error
 		return err
 	}
 
-	if checkHelp(cmd) {
+	if cmd.checkHelp() {
 		return helpCommandAction(ctx, cmd)
+	} else {
+		tracef("no help is wanted (cmd=%[1]q)", cmd.Name)
 	}
 
 	if cmd.parent == nil && !cmd.HideVersion && checkVersion(cmd) {
@@ -433,13 +457,21 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error
 		}
 	}
 
+	tracef("running flag actions (cmd=%[1]q)", cmd.Name)
+
 	if err := runFlagActions(ctx, cmd, cmd.appliedFlags); err != nil {
 		return err
 	}
 
 	var subCmd *Command
-	if argsArguments.Present() {
-		name := argsArguments.First()
+
+	if args.Present() {
+		tracef("checking positional args %[1]q (cmd=%[2]q)", args, cmd.Name)
+
+		name := args.First()
+
+		tracef("using first positional argument as sub-command name=%[1]q (cmd=%[2]q)", name, cmd.Name)
+
 		if cmd.SuggestCommandFunc != nil {
 			name = cmd.SuggestCommandFunc(cmd.Commands, name)
 		}
@@ -465,19 +497,22 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error
 			}
 
 			if isFlagName || (hasDefault && (defaultHasSubcommands && isDefaultSubcommand)) {
-				argsWithDefault := cmd.argsWithDefaultCommand(&argsArguments)
-				if !reflect.DeepEqual(argsArguments, argsWithDefault) {
+				argsWithDefault := cmd.argsWithDefaultCommand(args)
+				if !reflect.DeepEqual(args, argsWithDefault) {
 					subCmd = cmd.Command(argsWithDefault.First())
 				}
 			}
 		}
 	} else if cmd.parent == nil && cmd.DefaultCommand != "" {
+		tracef("no positional args present; checking default command %[1]q (cmd=%[2]q)", cmd.DefaultCommand, cmd.Name)
+
 		if dc := cmd.Command(cmd.DefaultCommand); dc != cmd {
 			subCmd = dc
 		}
 	}
 
 	if subCmd != nil {
+		tracef("running sub-command %[1]q with arguments %[2]q (cmd=%[3]q)", subCmd.Name, cmd.Args(), cmd.Name)
 		return subCmd.Run(ctx, cmd.Args().Slice())
 	}
 
@@ -486,17 +521,29 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error
 	}
 
 	if err := cmd.Action(ctx, cmd); err != nil {
-		tracef("calling handleExitCoder with %[1]v", err)
+		tracef("calling handleExitCoder with %[1]v (cmd=%[2]q)", err, cmd.Name)
 		deferErr = cmd.handleExitCoder(ctx, err)
 	}
 
-	tracef("returning deferErr")
+	tracef("returning deferErr (cmd=%[1]q)", cmd.Name)
 	return deferErr
+}
+
+func (cmd *Command) checkHelp() bool {
+	tracef("checking if help is wanted (cmd=%[1]q)", cmd.Name)
+
+	for _, name := range HelpFlag.Names() {
+		if cmd.Bool(name) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (cmd *Command) newFlagSet() (*flag.FlagSet, error) {
 	cmd.appliedFlags = append(cmd.appliedFlags, cmd.allFlags()...)
-	return flagSet(cmd.Name, cmd.allFlags())
+	return newFlagSet(cmd.Name, cmd.allFlags())
 }
 
 func (cmd *Command) allFlags() []Flag {
@@ -540,14 +587,17 @@ func (cmd *Command) suggestFlagFromError(err error, commandName string) (string,
 	return fmt.Sprintf(SuggestDidYouMeanTemplate, suggestion) + "\n\n", nil
 }
 
-func (cmd *Command) parseFlags(argsArguments Args) (*flag.FlagSet, error) {
+func (cmd *Command) parseFlags(args Args) (*flag.FlagSet, error) {
+	tracef("parsing flags from arguments %[1]q (cmd=%[2]q)", args, cmd.Name)
+
 	set, err := cmd.newFlagSet()
 	if err != nil {
 		return nil, err
 	}
 
 	if cmd.SkipFlagParsing {
-		return set, set.Parse(append([]string{"--"}, argsArguments.Tail()...))
+		tracef("skipping flag parsing (cmd=%[1]q)", cmd.Name)
+		return set, set.Parse(append([]string{"--"}, args.Tail()...))
 	}
 
 	for pCmd := cmd.parent; pCmd != nil; pCmd = pCmd.parent {
@@ -579,7 +629,7 @@ func (cmd *Command) parseFlags(argsArguments Args) (*flag.FlagSet, error) {
 		}
 	}
 
-	if err := parseIter(set, cmd, argsArguments.Tail(), cmd.EnableShellCompletion); err != nil {
+	if err := parseIter(set, cmd, args.Tail(), cmd.EnableShellCompletion); err != nil {
 		return nil, err
 	}
 
@@ -677,9 +727,9 @@ func (cmd *Command) handleExitCoder(ctx context.Context, err error) error {
 func (cmd *Command) argsWithDefaultCommand(oldArgs Args) Args {
 	if cmd.DefaultCommand != "" {
 		rawArgs := append([]string{cmd.DefaultCommand}, oldArgs.Slice()...)
-		newArgs := args(rawArgs)
+		newArgs := &stringSliceArgs{v: rawArgs}
 
-		return &newArgs
+		return newArgs
 	}
 
 	return oldArgs
@@ -699,12 +749,14 @@ func (cmd *Command) lookupFlag(name string) Flag {
 		for _, f := range pCmd.Flags {
 			for _, n := range f.Names() {
 				if n == name {
+					tracef("flag found for name %[1]q (cmd=%[2]q)", name, cmd.Name)
 					return f
 				}
 			}
 		}
 	}
 
+	tracef("flag NOT found for name %[1]q (cmd=%[2]q)", name, cmd.Name)
 	return nil
 }
 
@@ -713,20 +765,27 @@ func (cmd *Command) lookupFlagSet(name string) *flag.FlagSet {
 		if pCmd.flagSet == nil {
 			continue
 		}
+
 		if f := pCmd.flagSet.Lookup(name); f != nil {
+			tracef("matching flag set found for name %[1]q (cmd=%[2]q)", name, cmd.Name)
 			return pCmd.flagSet
 		}
 	}
+
+	tracef("matching flag set NOT found for name %[1]q (cmd=%[2]q)", name, cmd.Name)
 	cmd.onInvalidFlag(context.TODO(), name)
 	return nil
 }
 
 func (cmd *Command) checkRequiredFlags() requiredFlagsErr {
-	var missingFlags []string
+	tracef("checking for required flags (cmd=%[1]q)", cmd.Name)
+
+	missingFlags := []string{}
+
 	for _, f := range cmd.Flags {
 		if rf, ok := f.(RequiredFlag); ok && rf.IsRequired() {
-			var flagPresent bool
-			var flagName string
+			flagPresent := false
+			flagName := ""
 
 			for _, key := range f.Names() {
 				flagName = key
@@ -743,8 +802,12 @@ func (cmd *Command) checkRequiredFlags() requiredFlagsErr {
 	}
 
 	if len(missingFlags) != 0 {
+		tracef("found missing required flags %[1]q (cmd=%[2]q)", missingFlags, cmd.Name)
+
 		return &errRequiredFlags{missingFlags: missingFlags}
 	}
+
+	tracef("all required flags set (cmd=%[1]q)", cmd.Name)
 
 	return nil
 }
@@ -775,33 +838,48 @@ func (cmd *Command) Set(name, value string) error {
 
 // IsSet determines if the flag was actually set
 func (cmd *Command) IsSet(name string) bool {
-	if fs := cmd.lookupFlagSet(name); fs != nil {
-		isSet := false
-		fs.Visit(func(f *flag.Flag) {
-			if f.Name == name {
-				isSet = true
-			}
-		})
-		if isSet {
-			return true
-		}
+	flSet := cmd.lookupFlagSet(name)
 
-		f := cmd.lookupFlag(name)
-		if f == nil {
-			return false
-		}
-
-		return f.IsSet()
+	if flSet == nil {
+		return false
 	}
 
-	return false
+	isSet := false
+
+	flSet.Visit(func(f *flag.Flag) {
+		if f.Name == name {
+			isSet = true
+		}
+	})
+
+	if isSet {
+		tracef("flag with name %[1]q found via flag set lookup (cmd=%[2]q)", name, cmd.Name)
+		return true
+	}
+
+	fl := cmd.lookupFlag(name)
+	if fl == nil {
+		tracef("flag with name %[1]q NOT found; assuming not set (cmd=%[2]q)", name, cmd.Name)
+		return false
+	}
+
+	isSet = fl.IsSet()
+	if isSet {
+		tracef("flag with name %[1]q is set (cmd=%[2]q)", name, cmd.Name)
+	} else {
+		tracef("flag with name %[1]q is NOT set (cmd=%[2]q)", name, cmd.Name)
+	}
+
+	return isSet
 }
 
 // LocalFlagNames returns a slice of flag names used in this
 // command.
 func (cmd *Command) LocalFlagNames() []string {
-	var names []string
+	names := []string{}
+
 	cmd.flagSet.Visit(makeFlagNameVisitor(&names))
+
 	// Check the flags which have been set via env or file
 	if cmd.Flags != nil {
 		for _, f := range cmd.Flags {
@@ -814,34 +892,37 @@ func (cmd *Command) LocalFlagNames() []string {
 	// Sort out the duplicates since flag could be set via multiple
 	// paths
 	m := map[string]struct{}{}
-	var unames []string
+	uniqNames := []string{}
+
 	for _, name := range names {
 		if _, ok := m[name]; !ok {
 			m[name] = struct{}{}
-			unames = append(unames, name)
+			uniqNames = append(uniqNames, name)
 		}
 	}
 
-	return unames
+	return uniqNames
 }
 
 // FlagNames returns a slice of flag names used by the this command
 // and all of its parent commands.
 func (cmd *Command) FlagNames() []string {
-	var names []string
-	for _, pCmd := range cmd.Lineage() {
-		names = append(names, pCmd.LocalFlagNames()...)
+	names := cmd.LocalFlagNames()
+
+	if cmd.parent != nil {
+		names = append(cmd.parent.FlagNames(), names...)
 	}
+
 	return names
 }
 
 // Lineage returns *this* command and all of its ancestor commands
 // in order from child to parent
 func (cmd *Command) Lineage() []*Command {
-	var lineage []*Command
+	lineage := []*Command{cmd}
 
-	for cur := cmd; cur != nil; cur = cur.parent {
-		lineage = append(lineage, cur)
+	if cmd.parent != nil {
+		lineage = append(lineage, cmd.parent.Lineage()...)
 	}
 
 	return lineage
@@ -860,16 +941,18 @@ func (cmd *Command) Count(name string) int {
 // Value returns the value of the flag corresponding to `name`
 func (cmd *Command) Value(name string) interface{} {
 	if fs := cmd.lookupFlagSet(name); fs != nil {
+		tracef("value found for name %[1]q (cmd=%[2]q)", name, cmd.Name)
 		return fs.Lookup(name).Value.(flag.Getter).Get()
 	}
+
+	tracef("value NOT found for name %[1]q (cmd=%[2]q)", name, cmd.Name)
 	return nil
 }
 
 // Args returns the command line arguments associated with the
 // command.
 func (cmd *Command) Args() Args {
-	ret := args(cmd.flagSet.Args())
-	return &ret
+	return &stringSliceArgs{v: cmd.flagSet.Args()}
 }
 
 // NArg returns the number of the command line arguments.
