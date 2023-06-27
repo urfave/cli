@@ -154,7 +154,11 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 
 		// Validate the given default or values set from external sources as well
 		if f.Validator != nil {
-			if err := f.Validator(f.value.Get().(T)); err != nil {
+			if v, ok := f.value.Get().(T); !ok {
+				return &typeError[T]{
+					other: f.value.Get(),
+				}
+			} else if err := f.Validator(v); err != nil {
 				return err
 			}
 		}
@@ -176,7 +180,11 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 					return err
 				}
 				if f.Validator != nil {
-					if err := f.Validator(f.value.Get().(T)); err != nil {
+					if v, ok := f.value.Get().(T); !ok {
+						return &typeError[T]{
+							other: f.value.Get(),
+						}
+					} else if err := f.Validator(v); err != nil {
 						return err
 					}
 				}
