@@ -366,12 +366,7 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 		cmd.setupCommandGraph()
 	}
 
-	// TODO: this is some convoluted yikes {
-	var args Args = &stringSliceArgs{v: osArgs}
-	set, err := cmd.parseFlags(args)
-	cmd.flagSet = set
-	args = cmd.Args()
-	// }
+	args, err := cmd.parseFlags(&stringSliceArgs{v: osArgs})
 
 	tracef("using post-parse arguments %[1]q (cmd=%[2]q)", args, cmd.Name)
 
@@ -587,17 +582,19 @@ func (cmd *Command) suggestFlagFromError(err error, commandName string) (string,
 	return fmt.Sprintf(SuggestDidYouMeanTemplate, suggestion) + "\n\n", nil
 }
 
-func (cmd *Command) parseFlags(args Args) (*flag.FlagSet, error) {
+func (cmd *Command) parseFlags(args Args) (Args, error) {
 	tracef("parsing flags from arguments %[1]q (cmd=%[2]q)", args, cmd.Name)
 
-	set, err := cmd.newFlagSet()
-	if err != nil {
-		return nil, err
+	if v, err := cmd.newFlagSet(); err != nil {
+		return args, err
+	} else {
+		cmd.flagSet = v
 	}
 
 	if cmd.SkipFlagParsing {
 		tracef("skipping flag parsing (cmd=%[1]q)", cmd.Name)
-		return set, set.Parse(append([]string{"--"}, args.Tail()...))
+
+		return cmd.Args(), cmd.flagSet.Parse(append([]string{"--"}, args.Tail()...))
 	}
 
 	for pCmd := cmd.parent; pCmd != nil; pCmd = pCmd.parent {
@@ -608,7 +605,7 @@ func (cmd *Command) parseFlags(args Args) (*flag.FlagSet, error) {
 			}
 
 			applyPersistentFlag := true
-			set.VisitAll(func(f *flag.Flag) {
+			cmd.flagSet.VisitAll(func(f *flag.Flag) {
 				for _, name := range fl.Names() {
 					if name == f.Name {
 						applyPersistentFlag = false
@@ -621,23 +618,23 @@ func (cmd *Command) parseFlags(args Args) (*flag.FlagSet, error) {
 				continue
 			}
 
-			if err := fl.Apply(set); err != nil {
-				return nil, err
+			if err := fl.Apply(cmd.flagSet); err != nil {
+				return cmd.Args(), err
 			}
 
 			cmd.appliedFlags = append(cmd.appliedFlags, fl)
 		}
 	}
 
-	if err := parseIter(set, cmd, args.Tail(), cmd.EnableShellCompletion); err != nil {
-		return nil, err
+	if err := parseIter(cmd.flagSet, cmd, args.Tail(), cmd.EnableShellCompletion); err != nil {
+		return cmd.Args(), err
 	}
 
-	if err := normalizeFlags(cmd.Flags, set); err != nil {
-		return nil, err
+	if err := normalizeFlags(cmd.Flags, cmd.flagSet); err != nil {
+		return cmd.Args(), err
 	}
 
-	return set, nil
+	return cmd.Args(), nil
 }
 
 // Names returns the names including short names and aliases.
