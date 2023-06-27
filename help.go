@@ -110,7 +110,7 @@ func helpCommandAction(ctx context.Context, cmd *Command) error {
 		}
 
 		tracef("running HelpPrinter with command %[1]q", cmd.Name)
-		HelpPrinter(cmd.Root().Writer, tmpl, cmd.Command)
+		HelpPrinter(cmd.Root().Writer, tmpl, cmd)
 
 		return nil
 	}

@@ -1835,145 +1835,163 @@ func TestCommand_CommandNotFound(t *testing.T) {
 }
 
 func TestCommand_OrderOfOperations(t *testing.T) {
-	counts := &opCounts{}
+	buildCmdCounts := func() (*Command, *opCounts) {
+		counts := &opCounts{}
 
-	resetCounts := func() { counts = &opCounts{} }
-
-	cmd := &Command{
-		EnableShellCompletion: true,
-		ShellComplete: func(context.Context, *Command) {
-			counts.Total++
-			counts.ShellComplete = counts.Total
-		},
-		OnUsageError: func(context.Context, *Command, error, bool) error {
-			counts.Total++
-			counts.OnUsageError = counts.Total
-			return errors.New("hay OnUsageError")
-		},
-		Writer: io.Discard,
-	}
-
-	beforeNoError := func(context.Context, *Command) error {
-		counts.Total++
-		counts.Before = counts.Total
-		return nil
-	}
-
-	beforeError := func(context.Context, *Command) error {
-		counts.Total++
-		counts.Before = counts.Total
-		return errors.New("hay Before")
-	}
-
-	cmd.Before = beforeNoError
-	cmd.CommandNotFound = func(context.Context, *Command, string) {
-		counts.Total++
-		counts.CommandNotFound = counts.Total
-	}
-
-	afterNoError := func(context.Context, *Command) error {
-		counts.Total++
-		counts.After = counts.Total
-		return nil
-	}
-
-	afterError := func(context.Context, *Command) error {
-		counts.Total++
-		counts.After = counts.Total
-		return errors.New("hay After")
-	}
-
-	cmd.After = afterNoError
-	cmd.Commands = []*Command{
-		{
-			Name: "bar",
-			Action: func(context.Context, *Command) error {
+		cmd := &Command{
+			EnableShellCompletion: true,
+			ShellComplete: func(context.Context, *Command) {
 				counts.Total++
-				counts.SubCommand = counts.Total
-				return nil
+				counts.ShellComplete = counts.Total
 			},
-		},
+			OnUsageError: func(context.Context, *Command, error, bool) error {
+				counts.Total++
+				counts.OnUsageError = counts.Total
+				return errors.New("hay OnUsageError")
+			},
+			Writer: io.Discard,
+		}
+
+		beforeNoError := func(context.Context, *Command) error {
+			counts.Total++
+			counts.Before = counts.Total
+			return nil
+		}
+
+		cmd.Before = beforeNoError
+		cmd.CommandNotFound = func(context.Context, *Command, string) {
+			counts.Total++
+			counts.CommandNotFound = counts.Total
+		}
+
+		afterNoError := func(context.Context, *Command) error {
+			counts.Total++
+			counts.After = counts.Total
+			return nil
+		}
+
+		cmd.After = afterNoError
+		cmd.Commands = []*Command{
+			{
+				Name: "bar",
+				Action: func(context.Context, *Command) error {
+					counts.Total++
+					counts.SubCommand = counts.Total
+					return nil
+				},
+			},
+		}
+
+		cmd.Action = func(context.Context, *Command) error {
+			counts.Total++
+			counts.Action = counts.Total
+			return nil
+		}
+
+		return cmd, counts
 	}
 
-	cmd.Action = func(context.Context, *Command) error {
-		counts.Total++
-		counts.Action = counts.Total
-		return nil
-	}
+	t.Run("on usage error", func(t *testing.T) {
+		cmd, counts := buildCmdCounts()
+		r := require.New(t)
 
-	_ = cmd.Run(buildTestContext(t), []string{"command", "--nope"})
-	expect(t, counts.OnUsageError, 1)
-	expect(t, counts.Total, 1)
+		_ = cmd.Run(buildTestContext(t), []string{"command", "--nope"})
+		r.Equal(1, counts.OnUsageError)
+		r.Equal(1, counts.Total)
+	})
 
-	resetCounts()
+	t.Run("shell complete", func(t *testing.T) {
+		cmd, counts := buildCmdCounts()
+		r := require.New(t)
 
-	_ = cmd.Run(buildTestContext(t), []string{"command", fmt.Sprintf("--%s", "generate-shell-completion")})
-	expect(t, counts.ShellComplete, 1)
-	expect(t, counts.Total, 1)
+		_ = cmd.Run(buildTestContext(t), []string{"command", "--" + "generate-shell-completion"})
+		r.Equal(1, counts.ShellComplete)
+		r.Equal(1, counts.Total)
+	})
 
-	resetCounts()
+	t.Run("nil on usage error", func(t *testing.T) {
+		cmd, counts := buildCmdCounts()
+		cmd.OnUsageError = nil
 
-	oldOnUsageError := cmd.OnUsageError
-	cmd.OnUsageError = nil
-	_ = cmd.Run(buildTestContext(t), []string{"command", "--nope"})
-	expect(t, counts.Total, 0)
-	cmd.OnUsageError = oldOnUsageError
+		_ = cmd.Run(buildTestContext(t), []string{"command", "--nope"})
+		require.Equal(t, 0, counts.Total)
+	})
 
-	resetCounts()
+	t.Run("before after action hooks", func(t *testing.T) {
+		cmd, counts := buildCmdCounts()
+		r := require.New(t)
 
-	_ = cmd.Run(buildTestContext(t), []string{"command", "foo"})
-	expect(t, counts.OnUsageError, 0)
-	expect(t, counts.Before, 1)
-	expect(t, counts.CommandNotFound, 0)
-	expect(t, counts.Action, 2)
-	expect(t, counts.After, 3)
-	expect(t, counts.Total, 3)
+		_ = cmd.Run(buildTestContext(t), []string{"command", "foo"})
+		r.Equal(0, counts.OnUsageError)
+		r.Equal(1, counts.Before)
+		r.Equal(0, counts.CommandNotFound)
+		r.Equal(2, counts.Action)
+		r.Equal(3, counts.After)
+		r.Equal(3, counts.Total)
+	})
 
-	resetCounts()
+	t.Run("before with error", func(t *testing.T) {
+		cmd, counts := buildCmdCounts()
+		cmd.Before = func(context.Context, *Command) error {
+			counts.Total++
+			counts.Before = counts.Total
+			return errors.New("hay Before")
+		}
 
-	cmd.Before = beforeError
-	_ = cmd.Run(buildTestContext(t), []string{"command", "bar"})
-	expect(t, counts.OnUsageError, 0)
-	expect(t, counts.Before, 1)
-	expect(t, counts.After, 2)
-	expect(t, counts.Total, 2)
-	cmd.Before = beforeNoError
+		r := require.New(t)
 
-	resetCounts()
+		_ = cmd.Run(buildTestContext(t), []string{"command", "bar"})
+		r.Equal(0, counts.OnUsageError)
+		r.Equal(1, counts.Before)
+		r.Equal(2, counts.After)
+		r.Equal(2, counts.Total)
+	})
 
-	cmd.After = nil
-	_ = cmd.Run(buildTestContext(t), []string{"command", "bar"})
-	expect(t, counts.OnUsageError, 0)
-	expect(t, counts.Before, 1)
-	expect(t, counts.SubCommand, 2)
-	expect(t, counts.Total, 2)
-	cmd.After = afterNoError
+	t.Run("nil after", func(t *testing.T) {
+		cmd, counts := buildCmdCounts()
+		cmd.After = nil
+		r := require.New(t)
 
-	resetCounts()
+		_ = cmd.Run(buildTestContext(t), []string{"command", "bar"})
+		r.Equal(0, counts.OnUsageError)
+		r.Equal(1, counts.Before)
+		r.Equal(2, counts.SubCommand)
+		r.Equal(2, counts.Total)
+	})
 
-	cmd.After = afterError
-	err := cmd.Run(buildTestContext(t), []string{"command", "bar"})
-	if err == nil {
-		t.Fatalf("expected a non-nil error")
-	}
-	expect(t, counts.OnUsageError, 0)
-	expect(t, counts.Before, 1)
-	expect(t, counts.SubCommand, 2)
-	expect(t, counts.After, 3)
-	expect(t, counts.Total, 3)
-	cmd.After = afterNoError
+	t.Run("after errors", func(t *testing.T) {
+		cmd, counts := buildCmdCounts()
+		cmd.After = func(context.Context, *Command) error {
+			counts.Total++
+			counts.After = counts.Total
+			return errors.New("hay After")
+		}
 
-	resetCounts()
+		r := require.New(t)
 
-	oldCommands := cmd.Commands
-	cmd.Commands = nil
-	_ = cmd.Run(buildTestContext(t), []string{"command"})
-	expect(t, counts.OnUsageError, 0)
-	expect(t, counts.Before, 1)
-	expect(t, counts.Action, 2)
-	expect(t, counts.After, 3)
-	expect(t, counts.Total, 3)
-	cmd.Commands = oldCommands
+		err := cmd.Run(buildTestContext(t), []string{"command", "bar"})
+		if err == nil {
+			t.Fatalf("expected a non-nil error")
+		}
+		r.Equal(0, counts.OnUsageError)
+		r.Equal(1, counts.Before)
+		r.Equal(2, counts.SubCommand)
+		r.Equal(3, counts.After)
+		r.Equal(3, counts.Total)
+	})
+
+	t.Run("nil commands", func(t *testing.T) {
+		cmd, counts := buildCmdCounts()
+		cmd.Commands = nil
+		r := require.New(t)
+
+		_ = cmd.Run(buildTestContext(t), []string{"command"})
+		r.Equal(0, counts.OnUsageError)
+		r.Equal(1, counts.Before)
+		r.Equal(2, counts.Action)
+		r.Equal(3, counts.After)
+		r.Equal(3, counts.Total)
+	})
 }
 
 func TestCommand_Run_CommandWithSubcommandHasHelpTopic(t *testing.T) {
