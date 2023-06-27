@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
@@ -15,7 +14,7 @@ func TestFlagDefaultValidation(t *testing.T) {
 		Flags: []Flag{
 			&IntFlag{
 				Name:  "if",
-				Value: 2,
+				Value: 2, // this value should fail validation
 				Validator: func(i int64) error {
 					if (i >= 3 && i <= 10) || (i >= 20 && i <= 24) {
 						return nil
@@ -29,7 +28,7 @@ func TestFlagDefaultValidation(t *testing.T) {
 	r := require.New(t)
 
 	// Default value of flag is 2 which should fail validation
-	err := cmd.Run(context.Background(), []string{"foo", "--if", "5"})
+	err := cmd.Run(buildTestContext(t), []string{"foo", "--if", "5"})
 	r.Error(err)
 }
 
@@ -42,16 +41,16 @@ func TestFlagValidation(t *testing.T) {
 		arg         string
 		errExpected bool
 	}{
-		/*{
+		{
 			name:        "first range less than min",
 			arg:         "2",
 			errExpected: true,
-		},*/
+		},
 		{
 			name: "first range min",
 			arg:  "3",
 		},
-		/*{
+		{
 			name: "first range mid",
 			arg:  "7",
 		},
@@ -85,7 +84,7 @@ func TestFlagValidation(t *testing.T) {
 			name:        "second range greater than max",
 			arg:         "27",
 			errExpected: true,
-		},*/
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -93,7 +92,7 @@ func TestFlagValidation(t *testing.T) {
 			Name: "foo",
 			Flags: []Flag{
 				&IntFlag{
-					Name:  "if",
+					Name:  "it",
 					Value: 5, // note that this value should pass validation
 					Validator: func(i int64) error {
 						if (i >= 3 && i <= 10) || (i >= 20 && i <= 24) {
@@ -105,7 +104,7 @@ func TestFlagValidation(t *testing.T) {
 			},
 		}
 
-		err := cmd.Run(context.Background(), []string{"foo", "--if", testCase.arg})
+		err := cmd.Run(buildTestContext(t), []string{"foo", "--it", testCase.arg})
 		if !testCase.errExpected {
 			r.NoError(err)
 		} else {
