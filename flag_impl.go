@@ -23,24 +23,24 @@ type fnValue struct {
 	v      Value
 }
 
-func (f fnValue) Get() any           { return f.v.Get() }
-func (f fnValue) Set(s string) error { return f.fn(s) }
-func (f fnValue) String() string {
+func (f *fnValue) Get() any           { return f.v.Get() }
+func (f *fnValue) Set(s string) error { return f.fn(s) }
+func (f *fnValue) String() string {
 	if f.v == nil {
 		return ""
 	}
 	return f.v.String()
 }
 
-func (f fnValue) Serialize() string {
+func (f *fnValue) Serialize() string {
 	if s, ok := f.v.(Serializer); ok {
 		return s.Serialize()
 	}
 	return f.v.String()
 }
 
-func (f fnValue) IsBoolFlag() bool { return f.isBool }
-func (f fnValue) Count() int {
+func (f *fnValue) IsBoolFlag() bool { return f.isBool }
+func (f *fnValue) Count() int {
 	if s, ok := f.v.(Countable); ok {
 		return s.Count()
 	}
@@ -151,6 +151,11 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 		} else {
 			f.value = f.creator.Create(newVal, f.Destination, f.Config)
 		}
+
+		// Validate the given default or values set from external sources as well
+		if f.Validator != nil {
+			return f.Validator(f.value.Get().(T))
+		}
 	}
 
 	isBool := false
@@ -159,7 +164,7 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 	}
 
 	for _, name := range f.Names() {
-		set.Var(fnValue{
+		set.Var(&fnValue{
 			fn: func(val string) error {
 				if f.count == 1 && f.OnlyOnce {
 					return fmt.Errorf("cant duplicate this flag")

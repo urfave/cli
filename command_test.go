@@ -3069,30 +3069,6 @@ func TestPersistentFlag(t *testing.T) {
 
 func TestFlagDuplicates(t *testing.T) {
 
-	cmd_get := func() *Command {
-		return &Command{
-			Flags: []Flag{
-				&StringFlag{
-					Name:     "sflag",
-					OnlyOnce: true,
-				},
-				&IntSliceFlag{
-					Name: "isflag",
-				},
-				&FloatSliceFlag{
-					Name:     "fsflag",
-					OnlyOnce: true,
-				},
-				&IntFlag{
-					Name: "iflag",
-				},
-			},
-			Action: func(ctx *Context) error {
-				return nil
-			},
-		}
-	}
-
 	tests := []struct {
 		name        string
 		args        []string
@@ -3120,7 +3096,29 @@ func TestFlagDuplicates(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := cmd_get().Run(buildTestContext(t), test.args)
+			cmd := &Command{
+				Flags: []Flag{
+					&StringFlag{
+						Name:     "sflag",
+						OnlyOnce: true,
+					},
+					&IntSliceFlag{
+						Name: "isflag",
+					},
+					&FloatSliceFlag{
+						Name:     "fsflag",
+						OnlyOnce: true,
+					},
+					&IntFlag{
+						Name: "iflag",
+					},
+				},
+				Action: func(ctx *Context) error {
+					return nil
+				},
+			}
+
+			err := cmd.Run(buildTestContext(t), test.args)
 			if test.errExpected && err == nil {
 				t.Error("expected error")
 			} else if !test.errExpected && err != nil {
