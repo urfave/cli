@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"fmt"
 	"strconv"
 )
 
@@ -24,7 +23,7 @@ func (i uintValue) Create(val uint64, p *uint64, c IntegerConfig) Value {
 }
 
 func (i uintValue) ToString(b uint64) string {
-	return fmt.Sprintf("%d", b)
+	return strconv.FormatUint(b, 10)
 }
 
 // Below functions are to satisfy the flag.Value interface

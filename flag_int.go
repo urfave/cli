@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"fmt"
 	"strconv"
 )
 
@@ -29,7 +28,7 @@ func (i intValue) Create(val int64, p *int64, c IntegerConfig) Value {
 }
 
 func (i intValue) ToString(b int64) string {
-	return fmt.Sprintf("%d", b)
+	return strconv.FormatInt(b, 10)
 }
 
 // Below functions are to satisfy the flag.Value interface

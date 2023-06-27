@@ -2,7 +2,6 @@ package cli
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 )
 
@@ -51,7 +50,7 @@ func (i boolValue) Create(val bool, p *bool, c BoolConfig) Value {
 
 // ToString formats the bool value
 func (i boolValue) ToString(b bool) string {
-	return fmt.Sprintf("%v", b)
+	return strconv.FormatBool(b)
 }
 
 // Below functions are to satisfy the flag.Value interface
