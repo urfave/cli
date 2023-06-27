@@ -1132,35 +1132,39 @@ func TestCommand_UseShortOptionHandlingCommand_missing_value(t *testing.T) {
 func TestCommand_UseShortOptionHandlingSubCommand(t *testing.T) {
 	var one, two bool
 	var name string
-	expected := "expectedName"
 
 	cmd := buildMinimalTestCommand()
 	cmd.UseShortOptionHandling = true
-	command := &Command{
-		Name: "cmd",
-	}
-	subCommand := &Command{
-		Name: "sub",
-		Flags: []Flag{
-			&BoolFlag{Name: "one", Aliases: []string{"o"}},
-			&BoolFlag{Name: "two", Aliases: []string{"t"}},
-			&StringFlag{Name: "name", Aliases: []string{"n"}},
+	cmd.Commands = []*Command{
+		{
+			Name: "cmd",
+			Commands: []*Command{
+				{
+					Name: "sub",
+					Flags: []Flag{
+						&BoolFlag{Name: "one", Aliases: []string{"o"}},
+						&BoolFlag{Name: "two", Aliases: []string{"t"}},
+						&StringFlag{Name: "name", Aliases: []string{"n"}},
+					},
+					Action: func(_ context.Context, cmd *Command) error {
+						one = cmd.Bool("one")
+						two = cmd.Bool("two")
+						name = cmd.String("name")
+						return nil
+					},
+				},
+			},
 		},
-		Action: func(_ context.Context, cmd *Command) error {
-			one = cmd.Bool("one")
-			two = cmd.Bool("two")
-			name = cmd.String("name")
-			return nil
-		},
 	}
-	command.Commands = []*Command{subCommand}
-	cmd.Commands = []*Command{command}
 
-	err := cmd.Run(buildTestContext(t), []string{"", "cmd", "sub", "-on", expected})
-	expect(t, err, nil)
-	expect(t, one, true)
-	expect(t, two, false)
-	expect(t, name, expected)
+	r := require.New(t)
+
+	expected := "expectedName"
+
+	r.NoError(cmd.Run(buildTestContext(t), []string{"", "cmd", "sub", "-on", expected}))
+	r.True(one)
+	r.False(two)
+	r.Equal(expected, name)
 }
 
 func TestCommand_UseShortOptionHandlingSubCommand_missing_value(t *testing.T) {

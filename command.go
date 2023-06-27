@@ -553,7 +553,7 @@ func (cmd *Command) allFlags() []Flag {
 }
 
 func (cmd *Command) useShortOptionHandling() bool {
-	return cmd.UseShortOptionHandling
+	return cmd.Root().UseShortOptionHandling
 }
 
 func (cmd *Command) suggestFlagFromError(err error, commandName string) (string, error) {
