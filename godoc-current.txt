@@ -644,6 +644,8 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 
 	OnlyOnce bool // whether this flag can be duplicated on the command line
 
+	Validator func(T) error // custom function to validate this flag value
+
 	// Has unexported fields.
 }
     FlagBase[T,C,VC] is a generic flag base which can be used as a boilerplate
