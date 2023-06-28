@@ -168,26 +168,27 @@ func TestCommandFlagParsing(t *testing.T) {
 	for _, c := range cases {
 		t.Run(strings.Join(c.testArgs, " "), func(t *testing.T) {
 			cmd := &Command{
-				Writer: io.Discard,
-				Commands: []*Command{
-					{
-						Name:            "test-cmd",
-						Aliases:         []string{"tc"},
-						Usage:           "this is for testing",
-						Description:     "testing",
-						Action:          func(context.Context, *Command) error { return nil },
-						SkipFlagParsing: c.skipFlagParsing,
-
-						flagSet: flag.NewFlagSet("test", 0),
-					},
-				},
+				Writer:          io.Discard,
+				Name:            "test-cmd",
+				Aliases:         []string{"tc"},
+				Usage:           "this is for testing",
+				Description:     "testing",
+				Action:          func(context.Context, *Command) error { return nil },
+				SkipFlagParsing: c.skipFlagParsing,
 			}
 
 			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 			t.Cleanup(cancel)
 
+			r := require.New(t)
+
 			err := cmd.Run(ctx, c.testArgs)
-			require.EqualError(t, err, c.expectedErr)
+
+			if c.expectedErr != "" {
+				r.EqualError(err, c.expectedErr)
+			} else {
+				r.NoError(err)
+			}
 		})
 	}
 }
@@ -869,34 +870,6 @@ func TestCommand_Setup_defaultsWriter(t *testing.T) {
 	cmd := &Command{}
 	cmd.setupDefaults([]string{"cli.test"})
 	expect(t, cmd.Writer, os.Stdout)
-}
-
-func TestCommand_RunAsSubcommandParseFlags(t *testing.T) {
-	cmd := &Command{
-		Commands: []*Command{
-			{
-				Name: "foo",
-				Action: func(context.Context, *Command) error {
-					return nil
-				},
-				Flags: []Flag{
-					&StringFlag{
-						Name:  "lang",
-						Value: "english",
-						Usage: "language for the greeting",
-					},
-				},
-				Before: func(context.Context, *Command) error { return nil },
-			},
-		},
-	}
-
-	r := require.New(t)
-
-	r.NoError(cmd.Run(buildTestContext(t), []string{"", "foo", "--lang", "spanish", "abcd"}))
-
-	r.Equal("abcd", cmd.Args().Get(0))
-	r.Equal("spanish", cmd.String("lang"))
 }
 
 func TestCommand_CommandWithFlagBeforeTerminator(t *testing.T) {

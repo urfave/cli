@@ -263,7 +263,7 @@ func (f *FlagBase[T, C, V]) GetDefaultText() string {
 	return v.ToString(f.Value)
 }
 
-// Get returns the flag’s value in the given Context.
+// Get returns the flag’s value in the given Command.
 func (f *FlagBase[T, C, V]) Get(cmd *Command) T {
 	if v, ok := cmd.Value(f.Name).(T); ok {
 		return v

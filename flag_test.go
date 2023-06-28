@@ -2857,7 +2857,7 @@ func TestSliceShortOptionHandle(t *testing.T) {
 			&BoolFlag{Name: "i"},
 			&BoolFlag{Name: "t"},
 		},
-	}).Run(buildTestContext(t), []string{"run", "foobar", "--net=foo", "-it"})
+	}).Run(buildTestContext(t), []string{"foobar", "--net=foo", "-it"})
 
 	r := require.New(t)
 
