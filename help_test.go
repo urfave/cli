@@ -1124,6 +1124,18 @@ func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 	if err != nil {
 		t.Errorf("Run returned unexpected error: %v", err)
 	}
+
+	var buf bytes.Buffer
+	app.Writer = &buf
+
+	err = app.Run([]string{"foo", "dummy"})
+	if err != nil {
+		t.Errorf("Run returned unexpected error: %v", err)
+	}
+
+	if !strings.Contains(buf.String(), "dummy2") {
+		t.Errorf("Expected out to contain \"dummy2\" %v", buf.String())
+	}
 }
 
 func TestHideHelpCommand_RunAsSubcommand_True_CustomTemplate(t *testing.T) {
