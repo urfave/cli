@@ -61,6 +61,10 @@ func main() {
 				Action: topRunAction("go", "vet", "./..."),
 			},
 			{
+				Name:   "go-generate",
+				Action: topRunAction("go", "generate", "./..."),
+			},
+			{
 				Name:   "test",
 				Action: TestActionFunc,
 			},

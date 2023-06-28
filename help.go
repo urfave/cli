@@ -316,7 +316,7 @@ func ShowVersion(cCtx *Context) {
 }
 
 func printVersion(cCtx *Context) {
-	_, _ = fmt.Fprintf(cCtx.Command.Root().Writer, "%v version %v\n", cCtx.Command.Name, cCtx.Command.Version)
+	_, _ = mprinter.Fprintf(cCtx.Command.Root().Writer, "%v version %v\n", cCtx.Command.Name, cCtx.Command.Version)
 }
 
 func handleTemplateError(err error) {

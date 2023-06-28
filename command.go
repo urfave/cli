@@ -368,7 +368,7 @@ func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error
 			err = cCtx.Command.handleExitCoder(cCtx, err)
 			return err
 		}
-		_, _ = fmt.Fprintf(cCtx.Command.Root().ErrWriter, "%s %s\n\n", "Incorrect Usage:", err.Error())
+		_, _ = mprinter.Fprintf(cCtx.Command.Root().ErrWriter, "%s %s\n\n", "Incorrect Usage:", err.Error())
 		if cCtx.Command.Suggest {
 			if suggestion, err := cmd.suggestFlagFromError(err, ""); err == nil {
 				fmt.Fprintf(cCtx.Command.Root().ErrWriter, "%s", suggestion)

@@ -1,0 +1,89 @@
+{
+    "language": "en-CA",
+    "messages": [
+        {
+            "id": "{Incorrect_Usage} {Error}",
+            "message": "{Incorrect_Usage} {Error}",
+            "translation": "",
+            "placeholders": [
+                {
+                    "id": "Incorrect_Usage",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "\"Incorrect Usage:\""
+                },
+                {
+                    "id": "Error",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "err.Error()"
+                }
+            ]
+        },
+        {
+            "id": "no shell provided for completion command. available shells are {Shells}",
+            "message": "no shell provided for completion command. available shells are {Shells}",
+            "translation": "",
+            "placeholders": [
+                {
+                    "id": "Shells",
+                    "string": "%+[1]v",
+                    "type": "[]string",
+                    "underlyingType": "[]string",
+                    "argNum": 1,
+                    "expr": "shells"
+                }
+            ]
+        },
+        {
+            "id": "unknown shell {S}, available shells are {Shells}",
+            "message": "unknown shell {S}, available shells are {Shells}",
+            "translation": "",
+            "placeholders": [
+                {
+                    "id": "S",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "s"
+                },
+                {
+                    "id": "Shells",
+                    "string": "%+[2]v",
+                    "type": "[]string",
+                    "underlyingType": "[]string",
+                    "argNum": 2,
+                    "expr": "shells"
+                }
+            ]
+        },
+        {
+            "id": "{Name} version {Version}",
+            "message": "{Name} version {Version}",
+            "translation": "",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "cCtx.Command.Name"
+                },
+                {
+                    "id": "Version",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "cCtx.Command.Version"
+                }
+            ]
+        }
+    ]
+}

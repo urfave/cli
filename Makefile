@@ -7,7 +7,7 @@
 GO_RUN_BUILD := go run internal/build/build.go
 
 .PHONY: all
-all: generate vet test check-binary-size gfmrun
+all: generate go-generate vet test check-binary-size gfmrun
 
 # NOTE: this is a special catch-all rule to run any of the commands
 # defined in internal/build/build.go with optional arguments passed

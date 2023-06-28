@@ -1,0 +1,97 @@
+{
+    "language": "en-GB",
+    "messages": [
+        {
+            "id": "{Incorrect_Usage} {Error}",
+            "message": "{Incorrect_Usage} {Error}",
+            "translation": "{Incorrect_Usage} {Error}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Incorrect_Usage",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "\"Incorrect Usage:\""
+                },
+                {
+                    "id": "Error",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "err.Error()"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "no shell provided for completion command. available shells are {Shells}",
+            "message": "no shell provided for completion command. available shells are {Shells}",
+            "translation": "no shell provided for completion command. available shells are {Shells}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Shells",
+                    "string": "%+[1]v",
+                    "type": "[]string",
+                    "underlyingType": "[]string",
+                    "argNum": 1,
+                    "expr": "shells"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "unknown shell {S}, available shells are {Shells}",
+            "message": "unknown shell {S}, available shells are {Shells}",
+            "translation": "unknown shell {S}, available shells are {Shells}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "S",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "s"
+                },
+                {
+                    "id": "Shells",
+                    "string": "%+[2]v",
+                    "type": "[]string",
+                    "underlyingType": "[]string",
+                    "argNum": 2,
+                    "expr": "shells"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "{Name} version {Version}",
+            "message": "{Name} version {Version}",
+            "translation": "{Name} version {Version}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "cCtx.Command.Name"
+                },
+                {
+                    "id": "Version",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "cCtx.Command.Version"
+                }
+            ],
+            "fuzzy": true
+        }
+    ]
+}

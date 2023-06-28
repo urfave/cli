@@ -2,7 +2,6 @@ package cli
 
 import (
 	"embed"
-	"fmt"
 	"sort"
 )
 
@@ -50,12 +49,12 @@ func completionCommandAction(cCtx *Context) error {
 	sort.Strings(shells)
 
 	if cCtx.Args().Len() == 0 {
-		return Exit(fmt.Sprintf("no shell provided for completion command. available shells are %+v", shells), 1)
+		return Exit(mprinter.Sprintf("no shell provided for completion command. available shells are %+v", shells), 1)
 	}
 	s := cCtx.Args().First()
 
 	if rc, ok := shellCompletions[s]; !ok {
-		return Exit(fmt.Sprintf("unknown shell %s, available shells are %+v", s, shells), 1)
+		return Exit(mprinter.Sprintf("unknown shell %s, available shells are %+v", s, shells), 1)
 	} else if c, err := rc(cCtx.Command); err != nil {
 		return Exit(err, 1)
 	} else {
