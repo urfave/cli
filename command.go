@@ -375,7 +375,7 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	}
 
 	if err != nil {
-		tracef("setting deferErr from %[1]v (cmd=%[2]q)", err, cmd.Name)
+		tracef("setting deferErr from %[1]q (cmd=%[2]q)", err, cmd.Name)
 		deferErr = err
 
 		cmd.isInError = true
@@ -537,8 +537,13 @@ func (cmd *Command) checkHelp() bool {
 }
 
 func (cmd *Command) newFlagSet() (*flag.FlagSet, error) {
-	cmd.appliedFlags = append(cmd.appliedFlags, cmd.allFlags()...)
-	return newFlagSet(cmd.Name, cmd.allFlags())
+	allFlags := cmd.allFlags()
+
+	cmd.appliedFlags = append(cmd.appliedFlags, allFlags...)
+
+	tracef("making new flag set (cmd=%[1]q)", cmd.Name)
+
+	return newFlagSet(cmd.Name, allFlags)
 }
 
 func (cmd *Command) allFlags() []Flag {
@@ -552,8 +557,16 @@ func (cmd *Command) allFlags() []Flag {
 	return flags
 }
 
+// useShortOptionHandling traverses Lineage() for *any* ancestors
+// with UseShortOptionHandling
 func (cmd *Command) useShortOptionHandling() bool {
-	return cmd.Root().UseShortOptionHandling
+	for _, pCmd := range cmd.Lineage() {
+		if pCmd.UseShortOptionHandling {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (cmd *Command) suggestFlagFromError(err error, commandName string) (string, error) {
@@ -597,16 +610,32 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		return cmd.Args(), cmd.flagSet.Parse(append([]string{"--"}, args.Tail()...))
 	}
 
+	tracef("walking command lineage for persistent flags (cmd=%[1]q)", cmd.Name)
+
 	for pCmd := cmd.parent; pCmd != nil; pCmd = pCmd.parent {
+		tracef(
+			"checking ancestor command=%[1]q for persistent flags (cmd=%[2]q)",
+			pCmd.Name, cmd.Name,
+		)
+
 		for _, fl := range pCmd.Flags {
+			flNames := fl.Names()
+
 			pfl, ok := fl.(PersistentFlag)
 			if !ok || !pfl.IsPersistent() {
+				tracef("skipping non-persistent flag %[1]q (cmd=%[2]q)", flNames, cmd.Name)
 				continue
 			}
 
+			tracef(
+				"checking for applying persistent flag=%[1]q pCmd=%[2]q (cmd=%[3]q)",
+				flNames, pCmd.Name, cmd.Name,
+			)
+
 			applyPersistentFlag := true
+
 			cmd.flagSet.VisitAll(func(f *flag.Flag) {
-				for _, name := range fl.Names() {
+				for _, name := range flNames {
 					if name == f.Name {
 						applyPersistentFlag = false
 						break
@@ -615,24 +644,35 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 			})
 
 			if !applyPersistentFlag {
+				tracef("not applying as persistent flag=%[1]q (cmd=%[2]q)", flNames, cmd.Name)
+
 				continue
 			}
+
+			tracef("applying as persistent flag=%[1]q (cmd=%[2]q)", flNames, cmd.Name)
 
 			if err := fl.Apply(cmd.flagSet); err != nil {
 				return cmd.Args(), err
 			}
 
+			tracef("appending to applied flags flag=%[1]q (cmd=%[2]q)", flNames, cmd.Name)
 			cmd.appliedFlags = append(cmd.appliedFlags, fl)
 		}
 	}
 
-	if err := parseIter(cmd.flagSet, cmd, args.Tail(), cmd.EnableShellCompletion); err != nil {
+	tracef("parsing flags iteratively tail=%[1]q (cmd=%[2]q)", args.Tail(), cmd.Name)
+
+	if err := parseIter(cmd.flagSet, cmd, args.Tail(), cmd.Root().EnableShellCompletion); err != nil {
 		return cmd.Args(), err
 	}
+
+	tracef("normalizing flags (cmd=%[1]q)", cmd.Name)
 
 	if err := normalizeFlags(cmd.Flags, cmd.flagSet); err != nil {
 		return cmd.Args(), err
 	}
+
+	tracef("done parsing flags (cmd=%[1]q)", cmd.Name)
 
 	return cmd.Args(), nil
 }

@@ -2832,38 +2832,37 @@ func TestTimestampFlagApply_WithDestination(t *testing.T) {
 func TestSliceShortOptionHandle(t *testing.T) {
 	wasCalled := false
 	err := (&Command{
-		Commands: []*Command{
-			{
-				Name:                   "foobar",
-				UseShortOptionHandling: true,
-				Action: func(_ context.Context, cmd *Command) error {
-					wasCalled = true
-					if cmd.Bool("i") != true {
-						t.Error("bool i not set")
-					}
-					if cmd.Bool("t") != true {
-						t.Error("bool i not set")
-					}
-					ss := cmd.StringSlice("net")
-					if !reflect.DeepEqual(ss, []string{"foo"}) {
-						t.Errorf("Got different slice(%v) than expected", ss)
-					}
-					return nil
-				},
-				Flags: []Flag{
-					&StringSliceFlag{Name: "net"},
-					&BoolFlag{Name: "i"},
-					&BoolFlag{Name: "t"},
-				},
-			},
+		Name:                   "foobar",
+		UseShortOptionHandling: true,
+		Action: func(_ context.Context, cmd *Command) error {
+			wasCalled = true
+
+			if !cmd.Bool("i") {
+				return fmt.Errorf("bool i not set")
+			}
+
+			if !cmd.Bool("t") {
+				return fmt.Errorf("bool i not set")
+			}
+
+			ss := cmd.StringSlice("net")
+			if !reflect.DeepEqual(ss, []string{"foo"}) {
+				return fmt.Errorf("got different slice %q than expected", ss)
+			}
+
+			return nil
+		},
+		Flags: []Flag{
+			&StringSliceFlag{Name: "net"},
+			&BoolFlag{Name: "i"},
+			&BoolFlag{Name: "t"},
 		},
 	}).Run(buildTestContext(t), []string{"run", "foobar", "--net=foo", "-it"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !wasCalled {
-		t.Fatal("Action callback was never called")
-	}
+
+	r := require.New(t)
+
+	r.NoError(err)
+	r.Truef(wasCalled, "action callback was never called")
 }
 
 // Test issue #1541
