@@ -45,7 +45,10 @@ func (i *uintValue) String() string { return strconv.FormatUint(uint64(*i.val), 
 // 0 if not found
 func (cmd *Command) Uint(name string) uint64 {
 	if v, ok := cmd.Value(name).(uint64); ok {
+		tracef("uint available for flag name %[1]q with value=%[2]v (cmd=%[3]q)", name, v, cmd.Name)
 		return v
 	}
+
+	tracef("uint NOT available for flag name %[1]q (cmd=%[2]q)", name, cmd.Name)
 	return 0
 }

@@ -57,7 +57,10 @@ func (s *stringValue) String() string {
 
 func (cmd *Command) String(name string) string {
 	if v, ok := cmd.Value(name).(string); ok {
+		tracef("string available for flag name %[1]q with value=%[2]v (cmd=%[3]q)", name, v, cmd.Name)
 		return v
 	}
+
+	tracef("string NOT available for flag name %[1]q (cmd=%[2]q)", name, cmd.Name)
 	return ""
 }
