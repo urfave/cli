@@ -156,11 +156,11 @@ var HelpPrinterCustom helpPrinterCustom = printHelpCustom
 
 FUNCTIONS
 
-func DefaultAppComplete(cCtx *Context)
+func DefaultAppComplete(ctx context.Context, cmd *Command)
     DefaultAppComplete prints the list of subcommands as the default app
     completion method
 
-func DefaultCompleteWithFlags(cmd *Command) func(cCtx *Context)
+func DefaultCompleteWithFlags(cmd *Command) func(ctx context.Context, cmd *Command)
 func FlagNames(name string, aliases []string) []string
 func HandleExitCoder(err error)
     HandleExitCoder handles errors implementing ExitCoder by printing their
@@ -172,42 +172,42 @@ func HandleExitCoder(err error)
 
     This function is the default error-handling behavior for an App.
 
-func ShowAppHelp(cCtx *Context) error
+func ShowAppHelp(cmd *Command) error
     ShowAppHelp is an action that displays the help.
 
-func ShowAppHelpAndExit(c *Context, exitCode int)
+func ShowAppHelpAndExit(cmd *Command, exitCode int)
     ShowAppHelpAndExit - Prints the list of subcommands for the app and exits
     with exit code.
 
-func ShowCommandHelp(cCtx *Context, commandName string) error
+func ShowCommandHelp(ctx context.Context, cmd *Command, commandName string) error
     ShowCommandHelp prints help for the given command
 
-func ShowCommandHelpAndExit(c *Context, command string, code int)
+func ShowCommandHelpAndExit(ctx context.Context, cmd *Command, command string, code int)
     ShowCommandHelpAndExit - exits with code after showing help
 
-func ShowSubcommandHelp(cCtx *Context) error
+func ShowSubcommandHelp(cmd *Command) error
     ShowSubcommandHelp prints help for the given subcommand
 
-func ShowSubcommandHelpAndExit(c *Context, exitCode int)
+func ShowSubcommandHelpAndExit(cmd *Command, exitCode int)
     ShowSubcommandHelpAndExit - Prints help for the given subcommand and exits
     with exit code.
 
-func ShowVersion(cCtx *Context)
+func ShowVersion(cmd *Command)
     ShowVersion prints the version number of the App
 
 
 TYPES
 
-type ActionFunc func(*Context) error
+type ActionFunc func(context.Context, *Command) error
     ActionFunc is the action to execute when no subcommands are specified
 
 type ActionableFlag interface {
-	RunAction(*Context) error
+	RunAction(context.Context, *Command) error
 }
     ActionableFlag is an interface that wraps Flag interface and RunAction
     operation.
 
-type AfterFunc func(*Context) error
+type AfterFunc func(context.Context, *Command) error
     AfterFunc is an action that executes after any subcommands are run and have
     finished. The AfterFunc is run even if Action() panics.
 
@@ -227,7 +227,7 @@ type Args interface {
 	Slice() []string
 }
 
-type BeforeFunc func(*Context) error
+type BeforeFunc func(context.Context, *Command) error
     BeforeFunc is an action that executes prior to any subcommands being run
     once the context is ready. If a non-nil error is returned, no subcommands
     are run.
@@ -258,7 +258,7 @@ func (s *BoolWithInverseFlag) IsSet() bool
 
 func (s *BoolWithInverseFlag) Names() []string
 
-func (s *BoolWithInverseFlag) RunAction(ctx *Context) error
+func (s *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) error
 
 func (s *BoolWithInverseFlag) String() string
     Example for BoolFlag{Name: "env"} --env (default: false) || --no-env
@@ -379,7 +379,28 @@ type Command struct {
     string slice of arguments such as os.Args. A given Command may contain Flags
     and sub-commands in Commands.
 
+func (cmd *Command) Args() Args
+    Args returns the command line arguments associated with the command.
+
+func (cmd *Command) Bool(name string) bool
+
 func (cmd *Command) Command(name string) *Command
+
+func (cmd *Command) Count(name string) int
+    Count returns the num of occurrences of this flag
+
+func (cmd *Command) Duration(name string) time.Duration
+
+func (cmd *Command) FlagNames() []string
+    FlagNames returns a slice of flag names used by the this command and all of
+    its parent commands.
+
+func (cmd *Command) Float(name string) float64
+    Int looks up the value of a local IntFlag, returns 0 if not found
+
+func (cmd *Command) FloatSlice(name string) []float64
+    FloatSlice looks up the value of a local FloatSliceFlag, returns nil if not
+    found
 
 func (cmd *Command) FullName() string
     FullName returns the full name of the command. For commands with parents
@@ -388,20 +409,69 @@ func (cmd *Command) FullName() string
 func (cmd *Command) HasName(name string) bool
     HasName returns true if Command.Name matches given name
 
+func (cmd *Command) Int(name string) int64
+    Int64 looks up the value of a local Int64Flag, returns 0 if not found
+
+func (cmd *Command) IntSlice(name string) []int64
+    IntSlice looks up the value of a local IntSliceFlag, returns nil if not
+    found
+
+func (cmd *Command) IsSet(name string) bool
+    IsSet determines if the flag was actually set
+
+func (cmd *Command) Lineage() []*Command
+    Lineage returns *this* command and all of its ancestor commands in order
+    from child to parent
+
+func (cmd *Command) LocalFlagNames() []string
+    LocalFlagNames returns a slice of flag names used in this command.
+
+func (cmd *Command) NArg() int
+    NArg returns the number of the command line arguments.
+
 func (cmd *Command) Names() []string
     Names returns the names including short names and aliases.
+
+func (cmd *Command) NumFlags() int
+    NumFlags returns the number of flags set
 
 func (cmd *Command) Root() *Command
     Root returns the Command at the root of the graph
 
-func (cmd *Command) Run(ctx context.Context, arguments []string) (deferErr error)
+func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error)
     Run is the entry point to the command graph. The positional arguments are
     parsed according to the Flag and Command definitions and the matching Action
     functions are run.
 
+func (cmd *Command) Set(name, value string) error
+    Set sets a context flag to a value.
+
+func (cmd *Command) String(name string) string
+
+func (cmd *Command) StringMap(name string) map[string]string
+    StringMap looks up the value of a local StringMapFlag, returns nil if not
+    found
+
+func (cmd *Command) StringSlice(name string) []string
+    StringSlice looks up the value of a local StringSliceFlag, returns nil if
+    not found
+
+func (cmd *Command) Timestamp(name string) *time.Time
+    Timestamp gets the timestamp from a flag name
+
 func (cmd *Command) ToFishCompletion() (string, error)
     ToFishCompletion creates a fish completion string for the `*App` The
     function errors if either parsing or writing of the string fails.
+
+func (cmd *Command) Uint(name string) uint64
+    Uint looks up the value of a local Uint64Flag, returns 0 if not found
+
+func (cmd *Command) UintSlice(name string) []uint64
+    UintSlice looks up the value of a local UintSliceFlag, returns nil if not
+    found
+
+func (cmd *Command) Value(name string) interface{}
+    Value returns the value of the flag corresponding to `name`
 
 func (cmd *Command) VisibleCategories() []CommandCategory
     VisibleCategories returns a slice of categories and commands that are
@@ -433,91 +503,8 @@ type CommandCategory interface {
 }
     CommandCategory is a category containing commands.
 
-type CommandNotFoundFunc func(*Context, string)
+type CommandNotFoundFunc func(context.Context, *Command, string)
     CommandNotFoundFunc is executed if the proper command cannot be found
-
-type Context struct {
-	context.Context
-	Command *Command
-
-	// Has unexported fields.
-}
-    Context is a type that is passed through to each Handler action in a cli
-    application. Context can be used to retrieve context-specific args and
-    parsed command-line options.
-
-func NewContext(cmd *Command, set *flag.FlagSet, parent *Context) *Context
-    NewContext creates a new context. For use in when invoking a Command action.
-
-func (cCtx *Context) Args() Args
-    Args returns the command line arguments associated with the context.
-
-func (cCtx *Context) Bool(name string) bool
-
-func (cCtx *Context) Count(name string) int
-    Count returns the num of occurrences of this flag
-
-func (cCtx *Context) Duration(name string) time.Duration
-
-func (cCtx *Context) FlagNames() []string
-    FlagNames returns a slice of flag names used by the this context and all of
-    its parent contexts.
-
-func (cCtx *Context) Float(name string) float64
-    Int looks up the value of a local IntFlag, returns 0 if not found
-
-func (cCtx *Context) FloatSlice(name string) []float64
-    FloatSlice looks up the value of a local FloatSliceFlag, returns nil if not
-    found
-
-func (cCtx *Context) Int(name string) int64
-    Int64 looks up the value of a local Int64Flag, returns 0 if not found
-
-func (cCtx *Context) IntSlice(name string) []int64
-    IntSlice looks up the value of a local IntSliceFlag, returns nil if not
-    found
-
-func (cCtx *Context) IsSet(name string) bool
-    IsSet determines if the flag was actually set
-
-func (cCtx *Context) Lineage() []*Context
-    Lineage returns *this* context and all of its ancestor contexts in order
-    from child to parent
-
-func (cCtx *Context) LocalFlagNames() []string
-    LocalFlagNames returns a slice of flag names used in this context.
-
-func (cCtx *Context) NArg() int
-    NArg returns the number of the command line arguments.
-
-func (cCtx *Context) NumFlags() int
-    NumFlags returns the number of flags set
-
-func (cCtx *Context) Set(name, value string) error
-    Set sets a context flag to a value.
-
-func (cCtx *Context) String(name string) string
-
-func (cCtx *Context) StringMap(name string) map[string]string
-    StringMap looks up the value of a local StringMapFlag, returns nil if not
-    found
-
-func (cCtx *Context) StringSlice(name string) []string
-    StringSlice looks up the value of a local StringSliceFlag, returns nil if
-    not found
-
-func (cCtx *Context) Timestamp(name string) *time.Time
-    Timestamp gets the timestamp from a flag name
-
-func (cCtx *Context) Uint(name string) uint64
-    Uint looks up the value of a local Uint64Flag, returns 0 if not found
-
-func (cCtx *Context) UintSlice(name string) []uint64
-    UintSlice looks up the value of a local UintSliceFlag, returns nil if not
-    found
-
-func (cCtx *Context) Value(name string) interface{}
-    Value returns the value of the flag corresponding to `name`
 
 type Countable interface {
 	Count() int
@@ -576,7 +563,7 @@ func Exit(message interface{}, exitCode int) ExitCoder
     can be avoided by overriding the ExitErrHandler function on an App or the
     package-global OsExiter function.
 
-type ExitErrHandlerFunc func(cCtx *Context, err error)
+type ExitErrHandlerFunc func(context.Context, *Command, error)
     ExitErrHandlerFunc is executed if provided in order to handle exitError
     values returned by Actions and Before/After functions.
 
@@ -638,7 +625,7 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 
 	TakesFile bool // whether this flag takes a file argument, mainly for shell completion purposes
 
-	Action func(*Context, T) error // Action callback to be called when flag is set
+	Action func(context.Context, *Command, T) error // Action callback to be called when flag is set
 
 	Config C // Additional/Custom configuration associated with this flag type
 
@@ -658,8 +645,8 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error
     Apply populates the flag given the flag set and environment
 
-func (f *FlagBase[T, C, V]) Get(ctx *Context) T
-    Get returns the flag’s value in the given Context.
+func (f *FlagBase[T, C, V]) Get(cmd *Command) T
+    Get returns the flag’s value in the given Command.
 
 func (f *FlagBase[T, C, V]) GetCategory() string
     GetCategory returns the category of the flag
@@ -696,7 +683,7 @@ func (f *FlagBase[T, C, V]) IsVisible() bool
 func (f *FlagBase[T, C, V]) Names() []string
     Names returns the names of the flag
 
-func (f *FlagBase[T, C, V]) RunAction(ctx *Context) error
+func (f *FlagBase[T, C, V]) RunAction(ctx context.Context, cmd *Command) error
     RunAction executes flag action if set
 
 func (f *FlagBase[T, C, V]) String() string
@@ -771,7 +758,7 @@ type IntegerConfig struct {
 }
     IntegerConfig is the configuration for all integer type flags
 
-type InvalidFlagAccessFunc func(*Context, string)
+type InvalidFlagAccessFunc func(context.Context, *Command, string)
     InvalidFlagAccessFunc is executed when an invalid flag is accessed from the
     context.
 
@@ -822,7 +809,7 @@ type MutuallyExclusiveFlags struct {
 type NoConfig struct{}
     NoConfig is for flags which dont need a custom configuration
 
-type OnUsageErrorFunc func(cCtx *Context, err error, isSubcommand bool) error
+type OnUsageErrorFunc func(ctx context.Context, cmd *Command, err error, isSubcommand bool) error
     OnUsageErrorFunc is executed if a usage error occurs. This is useful for
     displaying customized usage error messages. This function is able to replace
     the original error messages. If this function is not set, the "Incorrect
@@ -847,7 +834,7 @@ type Serializer interface {
 }
     Serializer is used to circumvent the limitations of flag.FlagSet.Set
 
-type ShellCompleteFunc func(*Context)
+type ShellCompleteFunc func(context.Context, *Command)
     ShellCompleteFunc is an action to execute when the shell completion flag is
     set
 

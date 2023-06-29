@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -91,7 +92,7 @@ func (f FlagsByName) Swap(i, j int) {
 
 // ActionableFlag is an interface that wraps Flag interface and RunAction operation.
 type ActionableFlag interface {
-	RunAction(*Context) error
+	RunAction(context.Context, *Command) error
 }
 
 // Flag is a common interface related to parsing flags in cli.
@@ -169,7 +170,7 @@ type PersistentFlag interface {
 	IsPersistent() bool
 }
 
-func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {
+func newFlagSet(name string, flags []Flag) (*flag.FlagSet, error) {
 	set := flag.NewFlagSet(name, flag.ContinueOnError)
 
 	for _, f := range flags {
@@ -177,7 +178,9 @@ func flagSet(name string, flags []Flag) (*flag.FlagSet, error) {
 			return nil, err
 		}
 	}
+
 	set.SetOutput(io.Discard)
+
 	return set, nil
 }
 

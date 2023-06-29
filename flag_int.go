@@ -48,9 +48,12 @@ func (i *intValue) String() string { return strconv.FormatInt(int64(*i.val), 10)
 
 // Int64 looks up the value of a local Int64Flag, returns
 // 0 if not found
-func (cCtx *Context) Int(name string) int64 {
-	if v, ok := cCtx.Value(name).(int64); ok {
+func (cmd *Command) Int(name string) int64 {
+	if v, ok := cmd.Value(name).(int64); ok {
+		tracef("int available for flag name %[1]q with value=%[2]v (cmd=%[3]q)", name, v, cmd.Name)
 		return v
 	}
+
+	tracef("int NOT available for flag name %[1]q (cmd=%[2]q)", name, cmd.Name)
 	return 0
 }

@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"embed"
 	"sort"
 )
@@ -40,7 +41,7 @@ func buildCompletionCommand() *Command {
 	}
 }
 
-func completionCommandAction(cCtx *Context) error {
+func completionCommandAction(ctx context.Context, cmd *Command) error {
 	var shells []string
 	for k := range shellCompletions {
 		shells = append(shells, k)
@@ -48,17 +49,17 @@ func completionCommandAction(cCtx *Context) error {
 
 	sort.Strings(shells)
 
-	if cCtx.Args().Len() == 0 {
+	if cmd.Args().Len() == 0 {
 		return Exit(mprinter.Sprintf("no shell provided for completion command. available shells are %+v", shells), 1)
 	}
-	s := cCtx.Args().First()
+	s := cmd.Args().First()
 
 	if rc, ok := shellCompletions[s]; !ok {
 		return Exit(mprinter.Sprintf("unknown shell %s, available shells are %+v", s, shells), 1)
-	} else if c, err := rc(cCtx.Command); err != nil {
+	} else if c, err := rc(cmd); err != nil {
 		return Exit(err, 1)
 	} else {
-		if _, err = cCtx.Command.Writer.Write([]byte(c)); err != nil {
+		if _, err = cmd.Writer.Write([]byte(c)); err != nil {
 			return Exit(err, 1)
 		}
 	}

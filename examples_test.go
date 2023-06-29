@@ -17,8 +17,8 @@ func ExampleCommand_Run() {
 		Flags: []cli.Flag{
 			&cli.StringFlag{Name: "name", Value: "pat", Usage: "a name to say"},
 		},
-		Action: func(cCtx *cli.Context) error {
-			fmt.Printf("Hello %[1]v\n", cCtx.String("name"))
+		Action: func(_ context.Context, cmd *cli.Command) error {
+			fmt.Printf("Hello %[1]v\n", cmd.String("name"))
 			return nil
 		},
 		Authors: []any{
@@ -62,8 +62,8 @@ func ExampleCommand_Run_subcommand() {
 								Usage: "Name of the person to greet",
 							},
 						},
-						Action: func(cCtx *cli.Context) error {
-							fmt.Println("Hello,", cCtx.String("name"))
+						Action: func(_ context.Context, cmd *cli.Command) error {
+							fmt.Println("Hello,", cmd.String("name"))
 							return nil
 						},
 					},
@@ -101,7 +101,7 @@ func ExampleCommand_Run_appHelp() {
 				Aliases:     []string{"d"},
 				Usage:       "use it to see a description",
 				Description: "This is how we describe describeit the function",
-				Action: func(*cli.Context) error {
+				Action: func(context.Context, *cli.Command) error {
 					fmt.Printf("i like to describe things")
 					return nil
 				},
@@ -149,8 +149,8 @@ func ExampleCommand_Run_commandHelp() {
 		Flags: []cli.Flag{
 			&cli.StringFlag{Name: "name", Value: "pat", Usage: "a name to say"},
 		},
-		Action: func(cCtx *cli.Context) error {
-			fmt.Fprintf(cCtx.Command.Root().Writer, "hello to %[1]q\n", cCtx.String("name"))
+		Action: func(_ context.Context, cmd *cli.Command) error {
+			fmt.Fprintf(cmd.Root().Writer, "hello to %[1]q\n", cmd.String("name"))
 			return nil
 		},
 		Commands: []*cli.Command{
@@ -159,7 +159,7 @@ func ExampleCommand_Run_commandHelp() {
 				Aliases:     []string{"d"},
 				Usage:       "use it to see a description",
 				Description: "This is how we describe describeit the function",
-				Action: func(*cli.Context) error {
+				Action: func(context.Context, *cli.Command) error {
 					fmt.Println("i like to describe things")
 					return nil
 				},
@@ -347,7 +347,7 @@ func ExampleCommand_Run_shellComplete_bash() {
 				Aliases:     []string{"d"},
 				Usage:       "use it to see a description",
 				Description: "This is how we describe describeit the function",
-				Action: func(*cli.Context) error {
+				Action: func(context.Context, *cli.Command) error {
 					fmt.Printf("i like to describe things")
 					return nil
 				},
@@ -355,7 +355,7 @@ func ExampleCommand_Run_shellComplete_bash() {
 				Name:        "next",
 				Usage:       "next example",
 				Description: "more stuff to see when generating shell completion",
-				Action: func(*cli.Context) error {
+				Action: func(context.Context, *cli.Command) error {
 					fmt.Printf("the next example")
 					return nil
 				},
@@ -386,7 +386,7 @@ func ExampleCommand_Run_shellComplete_zsh() {
 				Aliases:     []string{"d"},
 				Usage:       "use it to see a description",
 				Description: "This is how we describe describeit the function",
-				Action: func(*cli.Context) error {
+				Action: func(context.Context, *cli.Command) error {
 					fmt.Printf("i like to describe things")
 					return nil
 				},
@@ -394,7 +394,7 @@ func ExampleCommand_Run_shellComplete_zsh() {
 				Name:        "next",
 				Usage:       "next example",
 				Description: "more stuff to see when generating bash completion",
-				Action: func(*cli.Context) error {
+				Action: func(context.Context, *cli.Command) error {
 					fmt.Printf("the next example")
 					return nil
 				},
@@ -423,11 +423,11 @@ func ExampleCommand_Run_sliceValues() {
 			&cli.FloatSliceFlag{Name: "float64Slice"},
 			&cli.IntSliceFlag{Name: "intSlice"},
 		},
-		Action: func(cCtx *cli.Context) error {
-			for i, v := range cCtx.FlagNames() {
-				fmt.Printf("%d-%s %#v\n", i, v, cCtx.Value(v))
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			for i, v := range cmd.FlagNames() {
+				fmt.Printf("%d-%s %#v\n", i, v, cmd.Value(v))
 			}
-			err := cCtx.Err()
+			err := ctx.Err()
 			fmt.Println("error:", err)
 			return err
 		},
@@ -455,12 +455,12 @@ func ExampleCommand_Run_mapValues() {
 		Flags: []cli.Flag{
 			&cli.StringMapFlag{Name: "stringMap"},
 		},
-		Action: func(cCtx *cli.Context) error {
-			for i, v := range cCtx.FlagNames() {
-				fmt.Printf("%d-%s %#v\n", i, v, cCtx.StringMap(v))
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			for i, v := range cmd.FlagNames() {
+				fmt.Printf("%d-%s %#v\n", i, v, cmd.StringMap(v))
 			}
-			fmt.Printf("notfound %#v\n", cCtx.StringMap("notfound"))
-			err := cCtx.Err()
+			fmt.Printf("notfound %#v\n", cmd.StringMap("notfound"))
+			err := ctx.Err()
 			fmt.Println("error:", err)
 			return err
 		},
@@ -490,7 +490,7 @@ func ExampleBoolWithInverseFlag() {
 		Flags: []cli.Flag{
 			flagWithInverse,
 		},
-		Action: func(ctx *cli.Context) error {
+		Action: func(_ context.Context, cmd *cli.Command) error {
 			if flagWithInverse.IsSet() {
 				if flagWithInverse.Value() {
 					fmt.Println("env is set")
@@ -525,8 +525,8 @@ func ExampleCommand_Suggest() {
 		Flags: []cli.Flag{
 			&cli.StringFlag{Name: "name", Value: "squirrel", Usage: "a name to say"},
 		},
-		Action: func(cCtx *cli.Context) error {
-			fmt.Printf("Hello %v\n", cCtx.String("name"))
+		Action: func(_ context.Context, cmd *cli.Command) error {
+			fmt.Printf("Hello %v\n", cmd.String("name"))
 			return nil
 		},
 	}
@@ -549,8 +549,8 @@ func ExampleCommand_Suggest_command() {
 		Flags: []cli.Flag{
 			&cli.StringFlag{Name: "name", Value: "squirrel", Usage: "a name to say"},
 		},
-		Action: func(cCtx *cli.Context) error {
-			fmt.Printf("Hello %v\n", cCtx.String("name"))
+		Action: func(_ context.Context, cmd *cli.Command) error {
+			fmt.Printf("Hello %v\n", cmd.String("name"))
 			return nil
 		},
 		Commands: []*cli.Command{
@@ -563,8 +563,8 @@ func ExampleCommand_Suggest_command() {
 				Flags: []cli.Flag{
 					&cli.BoolFlag{Name: "smiling"},
 				},
-				Action: func(cCtx *cli.Context) error {
-					if cCtx.Bool("smiling") {
+				Action: func(_ context.Context, cmd *cli.Command) error {
+					if cmd.Bool("smiling") {
 						fmt.Println("😀")
 					}
 					fmt.Println("Hello, neighbors")
