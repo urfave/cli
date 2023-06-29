@@ -384,7 +384,7 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 			err = cmd.handleExitCoder(ctx, err)
 			return err
 		}
-		 mprinter.Fprintf(cmd.Root().ErrWriter, "Incorrect Usage: %s\n\n", err.Error())
+		mprinter.Fprintf(cmd.Root().ErrWriter, "Incorrect Usage: %s\n\n", err.Error())
 		if cmd.Suggest {
 			if suggestion, err := cmd.suggestFlagFromError(err, ""); err == nil {
 				fmt.Fprintf(cmd.Root().ErrWriter, "%s", suggestion)
