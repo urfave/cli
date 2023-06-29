@@ -432,7 +432,12 @@ func TestHelpNameConsistency(t *testing.T) {
 	// and SubcommandHelp templates to display the help name
 	// The inconsistency shows up when users use NewApp() as opposed to
 	// using App{...} directly
+	tmpTemplate := SubcommandHelpTemplate
 	SubcommandHelpTemplate = `{{.HelpName}}`
+	defer func() {
+		SubcommandHelpTemplate = tmpTemplate
+	}()
+
 	app := NewApp()
 	app.Name = "bar"
 	app.CustomAppHelpTemplate = `{{.HelpName}}`
