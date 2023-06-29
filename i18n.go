@@ -8,5 +8,6 @@ import (
 var mprinter *message.Printer
 
 func init() {
+	// TBD add language detection logic and fallback to en-US
 	mprinter = message.NewPrinter(message.MatchLanguage("en-US"))
 }

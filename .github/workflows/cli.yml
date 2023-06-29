@@ -25,12 +25,12 @@ jobs:
       - name: Set PATH
         run: echo "${GITHUB_WORKSPACE}/.local/bin" >>"${GITHUB_PATH}"
       - uses: actions/checkout@v3
+      - run: make ensure-gotext
+      - run: make go-generate
       - if: matrix.go == '1.20.x' && matrix.os == 'ubuntu-latest'
         run: make ensure-goimports
       - if: matrix.go == '1.20.x' && matrix.os == 'ubuntu-latest'
         run: make lint
-      - run: make ensure-gotext
-      - run: make go-generate
       - run: make vet
       - run: make test
       - run: make check-binary-size
