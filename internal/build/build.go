@@ -96,6 +96,10 @@ func main() {
 				Action: EnsureGoimportsActionFunc,
 			},
 			{
+				Name:   "ensure-gotext",
+				Action: EnsureGoTextActionFunc,
+			},
+			{
 				Name:   "ensure-gfmrun",
 				Action: EnsureGfmrunActionFunc,
 			},
@@ -532,6 +536,17 @@ func EnsureGoimportsActionFunc(cCtx *cli.Context) error {
 	os.Setenv("GOBIN", filepath.Join(top, ".local/bin"))
 
 	return runCmd("go", "install", "golang.org/x/tools/cmd/goimports@latest")
+}
+
+func EnsureGoTextActionFunc(cCtx *cli.Context) error {
+	top := cCtx.String("top")
+	if err := os.Chdir(top); err != nil {
+		return err
+	}
+
+	os.Setenv("GOBIN", filepath.Join(top, ".local/bin"))
+
+	return runCmd("go", "install", "golang.org/x/text/cmd/gotext@latest")
 }
 
 func EnsureGfmrunActionFunc(cCtx *cli.Context) error {

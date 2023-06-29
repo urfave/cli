@@ -29,6 +29,8 @@ jobs:
         run: make ensure-goimports
       - if: matrix.go == '1.20.x' && matrix.os == 'ubuntu-latest'
         run: make lint
+      - run: make ensure-gotext
+      - run: make go-generate
       - run: make vet
       - run: make test
       - run: make check-binary-size

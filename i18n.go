@@ -1,6 +1,7 @@
 package cli
 
 import (
+	_ "github.com/urfave/cli/v3/internal/translations"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
