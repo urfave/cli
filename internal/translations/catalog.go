@@ -39,30 +39,32 @@ func init() {
 }
 
 var messageKeyToIndex = map[string]int{
-	"%s %s\n\n":       0,
-	"%v version %v\n": 3,
+	"%v version %v\n":         3,
+	"Incorrect Usage: %s\n\n": 0,
 	"no shell provided for completion command. available shells are %+v": 1,
 	"unknown shell %s, available shells are %+v":                         2,
 }
 
 var en_GBIndex = []uint32{ // 5 elements
-	0x00000000, 0x00000012, 0x00000058, 0x00000089,
-	0x000000a2,
+	0x00000000, 0x0000001d, 0x00000063, 0x00000094,
+	0x000000ad,
 } // Size: 44 bytes
 
-const en_GBData string = "" + // Size: 162 bytes
-	"\x04\x00\x02\x0a\x0a\x0c\x02%[1]s %[2]s\x02no shell provided for complet" +
-	"ion command. available shells are %+[1]v\x02unknown shell %[1]s, availab" +
-	"le shells are %+[2]v\x04\x00\x01\x0a\x14\x02%[1]v version %[2]v"
+const en_GBData string = "" + // Size: 173 bytes
+	"\x04\x00\x02\x0a\x0a\x17\x02Incorrect Usage: %[1]s\x02no shell provided " +
+	"for completion command. available shells are %+[1]v\x02unknown shell %[1" +
+	"]s, available shells are %+[2]v\x04\x00\x01\x0a\x14\x02%[1]v version %[2" +
+	"]v"
 
 var en_USIndex = []uint32{ // 5 elements
-	0x00000000, 0x00000012, 0x00000058, 0x00000089,
-	0x000000a2,
+	0x00000000, 0x0000001d, 0x00000063, 0x00000094,
+	0x000000ad,
 } // Size: 44 bytes
 
-const en_USData string = "" + // Size: 162 bytes
-	"\x04\x00\x02\x0a\x0a\x0c\x02%[1]s %[2]s\x02no shell provided for complet" +
-	"ion command. available shells are %+[1]v\x02unknown shell %[1]s, availab" +
-	"le shells are %+[2]v\x04\x00\x01\x0a\x14\x02%[1]v version %[2]v"
+const en_USData string = "" + // Size: 173 bytes
+	"\x04\x00\x02\x0a\x0a\x17\x02Incorrect Usage: %[1]s\x02no shell provided " +
+	"for completion command. available shells are %+[1]v\x02unknown shell %[1" +
+	"]s, available shells are %+[2]v\x04\x00\x01\x0a\x14\x02%[1]v version %[2" +
+	"]v"
 
-	// Total table size 412 bytes (0KiB); checksum: 428FDDD9
+	// Total table size 434 bytes (0KiB); checksum: F631BB3

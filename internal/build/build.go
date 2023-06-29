@@ -544,14 +544,14 @@ func EnsureGoimportsActionFunc(ctx context.Context, cmd *cli.Command) error {
 }
 
 func EnsureGoTextActionFunc(ctx context.Context, cmd *cli.Command) error {
-	top := cCtx.String("top")
+	top := cmd.String("top")
 	if err := os.Chdir(top); err != nil {
 		return err
 	}
 
 	os.Setenv("GOBIN", filepath.Join(top, ".local/bin"))
 
-	return runCmd("go", "install", "golang.org/x/text/cmd/gotext@latest")
+	return runCmd(ctx, "go", "install", "golang.org/x/text/cmd/gotext@latest")
 }
 
 func EnsureGfmrunActionFunc(ctx context.Context, cmd *cli.Command) error {

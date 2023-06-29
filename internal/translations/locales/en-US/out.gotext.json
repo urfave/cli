@@ -2,25 +2,17 @@
     "language": "en-US",
     "messages": [
         {
-            "id": "{Incorrect_Usage} {Error}",
-            "message": "{Incorrect_Usage} {Error}",
-            "translation": "{Incorrect_Usage} {Error}",
+            "id": "Incorrect Usage: {Error}",
+            "message": "Incorrect Usage: {Error}",
+            "translation": "Incorrect Usage: {Error}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
-                    "id": "Incorrect_Usage",
+                    "id": "Error",
                     "string": "%[1]s",
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 1,
-                    "expr": "\"Incorrect Usage:\""
-                },
-                {
-                    "id": "Error",
-                    "string": "%[2]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 2,
                     "expr": "err.Error()"
                 }
             ],
@@ -80,7 +72,7 @@
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 1,
-                    "expr": "cCtx.Command.Name"
+                    "expr": "cmd.Name"
                 },
                 {
                     "id": "Version",
@@ -88,7 +80,7 @@
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 2,
-                    "expr": "cCtx.Command.Version"
+                    "expr": "cmd.Version"
                 }
             ],
             "fuzzy": true
