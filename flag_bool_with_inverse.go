@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"strings"
@@ -40,20 +41,20 @@ func (s *BoolWithInverseFlag) Value() bool {
 	return *s.posDest
 }
 
-func (s *BoolWithInverseFlag) RunAction(ctx *Context) error {
+func (s *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) error {
 	if *s.negDest && *s.posDest {
 		return fmt.Errorf("cannot set both flags `--%s` and `--%s`", s.positiveFlag.Name, s.negativeFlag.Name)
 	}
 
 	if *s.negDest {
-		err := ctx.Set(s.positiveFlag.Name, "false")
+		err := cmd.Set(s.positiveFlag.Name, "false")
 		if err != nil {
 			return err
 		}
 	}
 
 	if s.BoolFlag.Action != nil {
-		return s.BoolFlag.Action(ctx, s.Value())
+		return s.BoolFlag.Action(ctx, cmd, s.Value())
 	}
 
 	return nil

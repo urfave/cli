@@ -16,39 +16,42 @@ type Args interface {
 	Slice() []string
 }
 
-type args []string
+type stringSliceArgs struct {
+	v []string
+}
 
-func (a *args) Get(n int) string {
-	if len(*a) > n {
-		return (*a)[n]
+func (a *stringSliceArgs) Get(n int) string {
+	if len(a.v) > n {
+		return a.v[n]
 	}
 	return ""
 }
 
-func (a *args) First() string {
+func (a *stringSliceArgs) First() string {
 	return a.Get(0)
 }
 
-func (a *args) Tail() []string {
+func (a *stringSliceArgs) Tail() []string {
 	if a.Len() >= 2 {
-		tail := []string((*a)[1:])
+		tail := a.v[1:]
 		ret := make([]string, len(tail))
 		copy(ret, tail)
 		return ret
 	}
+
 	return []string{}
 }
 
-func (a *args) Len() int {
-	return len(*a)
+func (a *stringSliceArgs) Len() int {
+	return len(a.v)
 }
 
-func (a *args) Present() bool {
+func (a *stringSliceArgs) Present() bool {
 	return a.Len() != 0
 }
 
-func (a *args) Slice() []string {
-	ret := make([]string, len(*a))
-	copy(ret, *a)
+func (a *stringSliceArgs) Slice() []string {
+	ret := make([]string, len(a.v))
+	copy(ret, a.v)
 	return ret
 }

@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"reflect"
@@ -87,7 +88,7 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 
 	TakesFile bool // whether this flag takes a file argument, mainly for shell completion purposes
 
-	Action func(*Context, T) error // Action callback to be called when flag is set
+	Action func(context.Context, *Command, T) error // Action callback to be called when flag is set
 
 	Config C // Additional/Custom configuration associated with this flag type
 
@@ -262,9 +263,9 @@ func (f *FlagBase[T, C, V]) GetDefaultText() string {
 	return v.ToString(f.Value)
 }
 
-// Get returns the flag’s value in the given Context.
-func (f *FlagBase[T, C, V]) Get(ctx *Context) T {
-	if v, ok := ctx.Value(f.Name).(T); ok {
+// Get returns the flag’s value in the given Command.
+func (f *FlagBase[T, C, V]) Get(cmd *Command) T {
+	if v, ok := cmd.Value(f.Name).(T); ok {
 		return v
 	}
 	var t T
@@ -272,9 +273,9 @@ func (f *FlagBase[T, C, V]) Get(ctx *Context) T {
 }
 
 // RunAction executes flag action if set
-func (f *FlagBase[T, C, V]) RunAction(ctx *Context) error {
+func (f *FlagBase[T, C, V]) RunAction(ctx context.Context, cmd *Command) error {
 	if f.Action != nil {
-		return f.Action(ctx, f.Get(ctx))
+		return f.Action(ctx, cmd, f.Get(cmd))
 	}
 
 	return nil

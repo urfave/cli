@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -23,7 +24,7 @@ type boolWithInverseTestCase struct {
 func (tc *boolWithInverseTestCase) Run(t *testing.T, flagWithInverse *BoolWithInverseFlag) error {
 	cmd := &Command{
 		Flags:  []Flag{flagWithInverse},
-		Action: func(ctx *Context) error { return nil },
+		Action: func(context.Context, *Command) error { return nil },
 	}
 
 	for key, val := range tc.envVars {
@@ -115,12 +116,12 @@ func TestBoolWithInverseAction(t *testing.T) {
 				Name: "env",
 
 				// Setting env to the opposite to test flag Action is working as intended
-				Action: func(ctx *Context, value bool) error {
+				Action: func(_ context.Context, cmd *Command, value bool) error {
 					if value {
-						return ctx.Set("env", "false")
+						return cmd.Set("env", "false")
 					}
 
-					return ctx.Set("env", "true")
+					return cmd.Set("env", "true")
 				},
 			},
 		}

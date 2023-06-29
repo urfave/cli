@@ -13,14 +13,14 @@ type MutuallyExclusiveFlags struct {
 	Required bool
 }
 
-func (grp MutuallyExclusiveFlags) check(ctx *Context) error {
+func (grp MutuallyExclusiveFlags) check(cmd *Command) error {
 	oneSet := false
 	e := &mutuallyExclusiveGroup{}
 
 	for _, grpf := range grp.Flags {
 		for _, f := range grpf {
 			for _, name := range f.Names() {
-				if ctx.IsSet(name) {
+				if cmd.IsSet(name) {
 					if oneSet {
 						e.flag2Name = name
 						return e

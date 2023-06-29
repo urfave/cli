@@ -18,34 +18,50 @@ type iterativeParser interface {
 // completion when, the user-supplied options may be incomplete.
 func parseIter(set *flag.FlagSet, ip iterativeParser, args []string, shellComplete bool) error {
 	for {
+		tracef("parsing args %[1]q with %[2]T (name=%[3]q)", args, set, set.Name())
+
 		err := set.Parse(args)
 		if !ip.useShortOptionHandling() || err == nil {
 			if shellComplete {
+				tracef("returning nil due to shellComplete=true")
+
 				return nil
 			}
+
+			tracef("returning err %[1]q", err)
+
 			return err
 		}
+
+		tracef("finding flag from error %[1]q", err)
 
 		trimmed, trimErr := flagFromError(err)
 		if trimErr != nil {
 			return err
 		}
 
-		// regenerate the initial args with the split short opts
+		tracef("regenerating the initial args with the split short opts")
+
 		argsWereSplit := false
 		for i, arg := range args {
-			// skip args that are not part of the error message
+			tracef("skipping args that are not part of the error message (i=%[1]v arg=%[2]q)", i, arg)
+
 			if name := strings.TrimLeft(arg, "-"); name != trimmed {
 				continue
 			}
 
-			// if we can't split, the error was accurate
+			tracef("trying to split short option (arg=%[1]q)", arg)
+
 			shortOpts := splitShortOptions(set, arg)
 			if len(shortOpts) == 1 {
 				return err
 			}
 
-			// swap current argument with the split version
+			tracef(
+				"swapping current argument with the split version (shortOpts=%[1]q args=%[2]q)",
+				shortOpts, args,
+			)
+
 			// do not include args that parsed correctly so far as it would
 			// trigger Value.Set() on those args and would result in
 			// duplicates for slice type flags
@@ -54,8 +70,9 @@ func parseIter(set *flag.FlagSet, ip iterativeParser, args []string, shellComple
 			break
 		}
 
-		// This should be an impossible to reach code path, but in case the arg
-		// splitting failed to happen, this will prevent infinite loops
+		tracef("this should be an impossible to reach code path")
+		// but in case the arg splitting failed to happen, this
+		// will prevent infinite loops
 		if !argsWereSplit {
 			return err
 		}

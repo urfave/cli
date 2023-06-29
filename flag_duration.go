@@ -36,9 +36,12 @@ func (d *durationValue) Get() any { return time.Duration(*d) }
 
 func (d *durationValue) String() string { return (*time.Duration)(d).String() }
 
-func (cCtx *Context) Duration(name string) time.Duration {
-	if v, ok := cCtx.Value(name).(time.Duration); ok {
+func (cmd *Command) Duration(name string) time.Duration {
+	if v, ok := cmd.Value(name).(time.Duration); ok {
+		tracef("duration available for flag name %[1]q with value=%[2]v (cmd=%[3]q)", name, v, cmd.Name)
 		return v
 	}
+
+	tracef("bool NOT available for flag name %[1]q (cmd=%[2]q)", name, cmd.Name)
 	return 0
 }
