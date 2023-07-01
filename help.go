@@ -69,7 +69,7 @@ var helpCommand = &Command{
 		}
 
 		// Case 3, 5
-		if (len(cCtx.Command.Subcommands) == 1 && !cCtx.Command.HideHelp) ||
+		if (len(cCtx.Command.Subcommands) == 1 && !cCtx.Command.HideHelp && !cCtx.Command.HideHelpCommand) ||
 			(len(cCtx.Command.Subcommands) == 0 && cCtx.Command.HideHelp) {
 			templ := cCtx.Command.CustomHelpTemplate
 			if templ == "" {

@@ -432,7 +432,12 @@ func TestHelpNameConsistency(t *testing.T) {
 	// and SubcommandHelp templates to display the help name
 	// The inconsistency shows up when users use NewApp() as opposed to
 	// using App{...} directly
+	tmpTemplate := SubcommandHelpTemplate
 	SubcommandHelpTemplate = `{{.HelpName}}`
+	defer func() {
+		SubcommandHelpTemplate = tmpTemplate
+	}()
+
 	app := NewApp()
 	app.Name = "bar"
 	app.CustomAppHelpTemplate = `{{.HelpName}}`
@@ -1123,6 +1128,18 @@ func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 	err = app.Run([]string{"foo", "dummy", "--help"})
 	if err != nil {
 		t.Errorf("Run returned unexpected error: %v", err)
+	}
+
+	var buf bytes.Buffer
+	app.Writer = &buf
+
+	err = app.Run([]string{"foo", "dummy"})
+	if err != nil {
+		t.Errorf("Run returned unexpected error: %v", err)
+	}
+
+	if !strings.Contains(buf.String(), "dummy2") {
+		t.Errorf("Expected out to contain \"dummy2\" %v", buf.String())
 	}
 }
 
