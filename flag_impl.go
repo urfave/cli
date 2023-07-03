@@ -210,6 +210,10 @@ func (f *FlagBase[T, C, V]) IsSet() bool {
 	return f.hasBeenSet
 }
 
+func (f *FlagBase[T, C, V]) CanonicalName() string {
+	return f.Name
+}
+
 // Names returns the names of the flag
 func (f *FlagBase[T, C, V]) Names() []string {
 	return FlagNames(f.Name, f.Aliases)

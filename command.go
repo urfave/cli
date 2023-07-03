@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -10,6 +11,8 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+
+	"github.com/urfave/argh"
 )
 
 const (
@@ -139,6 +142,12 @@ type Command struct {
 	isInError bool
 	// track state of defaults
 	didSetupDefaults bool
+
+	// fields used by argh-based parsing {{
+	parserCfg    *argh.ParserConfig
+	cfg          *argh.CommandConfig
+	stringValues map[string]string
+	// }}
 }
 
 // FullName returns the full name of the command.
@@ -174,6 +183,16 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 
 	isRoot := cmd.parent == nil
 	tracef("isRoot? %[1]v (cmd=%[2]q)", isRoot, cmd.Name)
+
+	if isArghModeOn {
+		if isRoot {
+			cmd.parserCfg = argh.NewParserConfig()
+			cmd.cfg = cmd.parserCfg.Prog
+			cmd.cfg.NValue = argh.ZeroOrMoreValue
+		}
+
+		cmd.stringValues = map[string]string{}
+	}
 
 	if cmd.ShellComplete == nil {
 		tracef("setting default ShellComplete (cmd=%[1]q)", cmd.Name)
@@ -287,6 +306,49 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 	disableSliceFlagSeparator = cmd.DisableSliceFlagSeparator
 }
 
+func (cmd *Command) setupParser() {
+	tracef("setting up parser (cmd=%[1]q)", cmd.Name)
+
+	// TODO: add support for named positional args {{
+	cmd.cfg.NValue = 1
+	cmd.cfg.ValueNames = []string{}
+	// }}
+
+	for _, loopFlag := range cmd.Flags {
+		fl := loopFlag
+
+		// TODO: add support for flags with value counts other than 0 and 1
+		flagNValue := argh.NValue(0)
+		canonicalName := fl.Names()[0]
+
+		if v, ok := fl.(DocGenerationFlag); ok && v.TakesValue() {
+			flagNValue = argh.NValue(1)
+			canonicalName = v.CanonicalName()
+		}
+
+		flCfg := &argh.FlagConfig{
+			NValue: flagNValue,
+			On: func(cf argh.CommandFlag) {
+				tracef("flag %[1]q set (cmd=%[2]q)", fl.Names(), cmd.Name)
+
+				for k, v := range cf.Values {
+					cmd.stringValues[fmt.Sprintf("%[1]v.%[2]v", canonicalName, cf.Name, k)] = v
+				}
+			},
+		}
+
+		for _, name := range fl.Names() {
+			tracef("setting flag config in parser config name=%[1]q cfg=%+#[2]v flCfg=%+#[3]v (cmd=%[4]q)", name, cmd.cfg, flCfg, cmd.Name)
+
+			cmd.cfg.SetFlagConfig(name, flCfg)
+		}
+	}
+
+	for _, subCmd := range cmd.Commands {
+		subCmd.setupParser()
+	}
+}
+
 func (cmd *Command) setupCommandGraph() {
 	tracef("setting up command graph (cmd=%[1]q)", cmd.Name)
 
@@ -299,6 +361,21 @@ func (cmd *Command) setupCommandGraph() {
 
 func (cmd *Command) setupSubcommand() {
 	tracef("setting up self as sub-command (cmd=%[1]q)", cmd.Name)
+
+	if isArghModeOn {
+		cfg, ok := cmd.parent.cfg.GetCommandConfig(cmd.Name)
+		if !ok {
+			cfg = argh.CommandConfig{}
+		}
+
+		cfg.On = func(cf argh.CommandFlag) {
+			tracef("received command flag=%+#[1]v (cmd=%[2]q)", cmd.Name)
+		}
+
+		tracef("setting parser config on parent cfg=%+#[1]v (cmd=%[2]q)", &cfg, cmd.Name)
+		cmd.parent.cfg.SetCommandConfig(cmd.Name, &cfg)
+		cmd.cfg = &cfg
+	}
 
 	cmd.ensureHelp()
 
@@ -338,6 +415,15 @@ func (cmd *Command) ensureHelp() {
 // arguments are parsed according to the Flag and Command
 // definitions and the matching Action functions are run.
 func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
+	if isArghModeOn {
+		if err := cmd.runWithArgh(ctx, osArgs); err != nil {
+			tracef("setting deferErr from argh error: %[1]v", err)
+			deferErr = err
+		}
+
+		return
+	}
+
 	tracef("running with arguments %[1]q (cmd=%[2]q)", osArgs, cmd.Name)
 	cmd.setupDefaults(osArgs)
 
@@ -522,6 +608,44 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 
 	tracef("returning deferErr (cmd=%[1]q)", cmd.Name)
 	return deferErr
+}
+
+func (cmd *Command) runWithArgh(ctx context.Context, osArgs []string) error {
+	cmd.setupParser()
+
+	parseTree, parseErr := argh.ParseArgs(osArgs, cmd.Root().parserCfg)
+	if parseErr != nil {
+		tracef("argh parse error: %[1]v", parseErr)
+
+		return parseErr
+	}
+
+	if isTracingOn {
+		if b, err := json.Marshal(argh.ToAST(parseTree.Nodes)); err == nil {
+			tracef("argh ast: %[1]s", string(b))
+		}
+
+		if v, ok := os.LookupEnv("URFAVE_CLI_ARGH_DUMP_JSON"); ok {
+			if fd, err := os.Create(v); err == nil {
+				if err := json.NewEncoder(fd).Encode(
+					map[string]any{
+						"cfg":           cmd.cfg,
+						"string_values": cmd.stringValues,
+						"ast":           argh.ToAST(parseTree.Nodes),
+						"err":           parseErr,
+					},
+				); err != nil {
+					tracef("URFAVE_CLI_ARGH_DUMP_JSON err: %[1]v", err)
+				}
+
+				if err := fd.Close(); err != nil {
+					tracef("URFAVE_CLI_ARGH_DUMP_JSON err: %[1]v", err)
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 func (cmd *Command) checkHelp() bool {

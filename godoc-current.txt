@@ -516,6 +516,8 @@ type DocGenerationFlag interface {
 	// TakesValue returns true if the flag takes a value, otherwise false
 	TakesValue() bool
 
+	CanonicalName() string
+
 	// GetUsage returns the usage string for the flag
 	GetUsage() string
 
@@ -644,6 +646,8 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 
 func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error
     Apply populates the flag given the flag set and environment
+
+func (f *FlagBase[T, C, V]) CanonicalName() string
 
 func (f *FlagBase[T, C, V]) Get(cmd *Command) T
     Get returns the flag’s value in the given Command.

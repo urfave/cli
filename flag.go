@@ -123,6 +123,8 @@ type DocGenerationFlag interface {
 	// TakesValue returns true if the flag takes a value, otherwise false
 	TakesValue() bool
 
+	CanonicalName() string
+
 	// GetUsage returns the usage string for the flag
 	GetUsage() string
 

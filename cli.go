@@ -30,7 +30,8 @@ import (
 )
 
 var (
-	isTracingOn = os.Getenv("URFAVE_CLI_TRACING") == "on"
+	isTracingOn  = os.Getenv("URFAVE_CLI_TRACING") == "on"
+	isArghModeOn = os.Getenv("URFAVE_CLI_ARGH_MODE") == "on"
 )
 
 func tracef(format string, a ...any) {
