@@ -470,7 +470,7 @@ func (cmd *Command) UintSlice(name string) []uint64
     UintSlice looks up the value of a local UintSliceFlag, returns nil if not
     found
 
-func (cmd *Command) Value(name string) interface{}
+func (cmd *Command) Value(name string) any
     Value returns the value of the flag corresponding to `name`
 
 func (cmd *Command) VisibleCategories() []CommandCategory
@@ -513,11 +513,6 @@ type Countable interface {
     repetitive flags
 
 type DocGenerationFlag interface {
-	// TakesValue returns true if the flag takes a value, otherwise false
-	TakesValue() bool
-
-	CanonicalName() string
-
 	// GetUsage returns the usage string for the flag
 	GetUsage() string
 
@@ -575,10 +570,16 @@ type Flag interface {
 	// Apply Flag settings to the given flag set
 	Apply(*flag.FlagSet) error
 
-	// All possible names for this flag
+	// Names returns all possible names for this flag
 	Names() []string
 
-	// Whether the flag has been set or not
+	// CanonicalName returns the canonical name of the flag
+	CanonicalName() string
+
+	// TakesValue returns true if the flag takes a value, otherwise false
+	TakesValue() bool
+
+	// IsSet returns whether the flag has been set or not
 	IsSet() bool
 }
     Flag is a common interface related to parsing flags in cli. For more

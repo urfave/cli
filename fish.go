@@ -137,14 +137,14 @@ func (cmd *Command) prepareFishFlags(flags []Flag, previousCommands []string) []
 			}
 		}
 
-		if flag, ok := f.(DocGenerationFlag); ok {
-			if flag.TakesValue() {
-				completion.WriteString(" -r")
-			}
+		if f.TakesValue() {
+			completion.WriteString(" -r")
+		}
 
-			if flag.GetUsage() != "" {
+		if dfl, ok := f.(DocGenerationFlag); ok {
+			if dfl.GetUsage() != "" {
 				completion.WriteString(fmt.Sprintf(" -d '%s'",
-					escapeSingleQuotes(flag.GetUsage())))
+					escapeSingleQuotes(dfl.GetUsage())))
 			}
 		}
 

@@ -2371,6 +2371,10 @@ func (c *customBoolFlag) Names() []string {
 	return []string{c.Nombre}
 }
 
+func (c *customBoolFlag) CanonicalName() string {
+	return c.Nombre
+}
+
 func (c *customBoolFlag) TakesValue() bool {
 	return false
 }
@@ -3523,11 +3527,11 @@ func TestCommand_lookupFlagSet(t *testing.T) {
 
 	r := require.New(t)
 
-	fs := cmd.lookupFlagSet("top-flag")
-	r.Equal(pCmd.flagSet, fs)
+	flSet := cmd.lookupFlagSet("top-flag")
+	r.Equal(pCmd.flagSet, flSet)
 
-	fs = cmd.lookupFlagSet("local-flag")
-	r.Equal(cmd.flagSet, fs)
+	flSet = cmd.lookupFlagSet("local-flag")
+	r.Equal(cmd.flagSet, flSet)
 	r.Nil(cmd.lookupFlagSet("frob"))
 }
 

@@ -15,6 +15,10 @@ func (e *extFlag) Names() []string {
 	return []string{e.f.Name}
 }
 
+func (e *extFlag) CanonicalName() string {
+	return e.f.Name
+}
+
 func (e *extFlag) IsSet() bool {
 	return false
 }
