@@ -64,6 +64,8 @@ func helpCommandAction(ctx context.Context, cmd *Command) error {
 	args := cmd.Args()
 	firstArg := args.First()
 
+	tracef("args=%[1]q firstArg=%[2]q", args, firstArg)
+
 	// This action can be triggered by a "default" action of a command
 	// or via cmd.Run when cmd == helpCmd. So we have following possibilities
 	//

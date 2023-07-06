@@ -644,7 +644,7 @@ func (cmd *Command) runViaArgh(ctx context.Context, osArgs []string) (deferErr e
 
 	if isTracingOn {
 		if b, err := json.Marshal(argsAST); err == nil {
-			tracef("argh ast: %[1]s", string(b))
+			tracef("argh ast=%[1]s (cmd=%[2]q)", string(b), cmd.Name)
 		}
 	}
 
@@ -655,13 +655,18 @@ func (cmd *Command) runViaArgh(ctx context.Context, osArgs []string) (deferErr e
 
 		if v, ok := argsAST[0].(*argh.CommandFlag); ok {
 			name = v.Name
+			tracef("using first child name as sub-command name=%[1]q (cmd=%[2]q)", name, cmd.Name)
+		} else {
+			name = helpName
+			tracef("using sub-command name=%[1]q (cmd=%[2]q)", name, cmd.Name)
 		}
-
-		tracef("using first child name as sub-command name=%[1]q (cmd=%[2]q)", name, cmd.Name)
 
 		if cmd.SuggestCommandFunc != nil {
+			tracef("getting name suggestion from SuggestCommandFunc with name=%[1]q (cmd=%[2]q)", name, cmd.Name)
 			name = cmd.SuggestCommandFunc(cmd.Commands, name)
 		}
+
+		tracef("looking up local command by name=%[1]q (cmd=%[2]q)", name, cmd.Name)
 
 		subCmd = cmd.Command(name)
 		if subCmd == nil {
@@ -685,6 +690,7 @@ func (cmd *Command) runViaArgh(ctx context.Context, osArgs []string) (deferErr e
 			}
 
 			if isFlagName || (hasDefault && (defaultHasSubcommands && isDefaultSubcommand)) {
+				tracef("using default sub-command %[1]q (cmd=%[2]q)", cmd.DefaultCommand, cmd.Name)
 				subCmd = cmd.Command(cmd.DefaultCommand)
 			}
 		}
@@ -701,11 +707,14 @@ func (cmd *Command) runViaArgh(ctx context.Context, osArgs []string) (deferErr e
 		return subCmd.runViaArgh(ctx, nil)
 	}
 
-	if cmd.Action == nil {
-		cmd.Action = helpCommandAction
+	action := cmd.Action
+
+	if action == nil {
+		tracef("using help command action given nil action (cmd=%[1]q)", cmd.Name)
+		action = helpCommandAction
 	}
 
-	if err := cmd.Action(ctx, cmd); err != nil {
+	if err := action(ctx, cmd); err != nil {
 		tracef("calling handleExitCoder with %[1]v (cmd=%[2]q)", err, cmd.Name)
 		return cmd.handleExitCoder(ctx, err)
 	}
@@ -1281,7 +1290,18 @@ func (cmd *Command) valueViaArgh(name string) any {
 // command.
 func (cmd *Command) Args() Args {
 	if isArghModeOn {
-		return &stringSliceArgs{v: cmd.unParsed}
+		args := []string{}
+
+		for _, node := range argh.ToAST(cmd.parsed[selfParsedKey].Nodes) {
+			if v, ok := node.(*argh.Ident); ok {
+				args = append(args, v.Literal)
+			}
+		}
+
+		args = append(args, cmd.unParsed...)
+
+		tracef("returning un-parsed and ident literals as positional args %[1]q (cmd=%[2]q)", args, cmd.Name)
+		return &stringSliceArgs{v: args}
 	}
 
 	return &stringSliceArgs{v: cmd.flagSet.Args()}
