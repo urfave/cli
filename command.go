@@ -470,7 +470,7 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	}
 
 	if isArghModeOn {
-		return cmd.runViaArgh(ctx, osArgs)
+		return cmd.runWithArgh(ctx, osArgs)
 	}
 
 	args, err := cmd.parseFlags(&stringSliceArgs{v: osArgs})
@@ -630,14 +630,21 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	return deferErr
 }
 
-func (cmd *Command) runViaArgh(ctx context.Context, osArgs []string) (deferErr error) {
-	if cmd.parent == nil {
-		args, err := cmd.parseWithArgh(ctx, osArgs)
-		if err != nil {
-			return err
+func (cmd *Command) runWithArgh(ctx context.Context, osArgs []string) (deferErr error) {
+	err := func() error {
+		if cmd.parent != nil {
+			return nil
 		}
 
-		tracef("parsed via argh args=%[1]q (cmd=%[2]q)", args, cmd.Name)
+		args, err := cmd.parseWithArgh(ctx, osArgs)
+
+		tracef("parsed via argh args=%[1]q err=%[2]q (cmd=%[3]q)", args, err, cmd.Name)
+
+		return err
+	}()
+
+	if checkCompletions(ctx, cmd) {
+		return nil
 	}
 
 	argsAST := argh.ToAST(cmd.parsed[selfParsedKey].Nodes)
@@ -646,6 +653,97 @@ func (cmd *Command) runViaArgh(ctx context.Context, osArgs []string) (deferErr e
 		if b, err := json.Marshal(argsAST); err == nil {
 			tracef("argh ast=%[1]s (cmd=%[2]q)", string(b), cmd.Name)
 		}
+	}
+
+	if err != nil {
+		tracef("setting deferErr from %[1]q (cmd=%[2]q)", err, cmd.Name)
+		deferErr = err
+
+		cmd.isInError = true
+		if cmd.OnUsageError != nil {
+			err = cmd.OnUsageError(ctx, cmd, err, cmd.parent != nil)
+			err = cmd.handleExitCoder(ctx, err)
+			return err
+		}
+
+		errStr := err.Error()
+		if v, ok := err.(argh.ParserErrorList); ok {
+			errStr = v[0].Msg
+		}
+
+		fmt.Fprintf(cmd.Root().ErrWriter, "Incorrect Usage: %[1]s\n\n", errStr)
+
+		if cmd.Suggest {
+			if suggestion, err := cmd.suggestFlagFromError(err, ""); err == nil {
+				fmt.Fprintf(cmd.Root().ErrWriter, "%[1]s", suggestion)
+			}
+		}
+		if !cmd.HideHelp {
+			if cmd.parent == nil {
+				tracef("running ShowAppHelp")
+				if err := ShowAppHelp(cmd); err != nil {
+					tracef("SILENTLY IGNORING ERROR running ShowAppHelp %[1]v (cmd=%[2]q)", err, cmd.Name)
+				}
+			} else {
+				tracef("running ShowCommandHelp with %[1]q", cmd.Name)
+				if err := ShowCommandHelp(ctx, cmd, cmd.Name); err != nil {
+					tracef("SILENTLY IGNORING ERROR running ShowCommandHelp with %[1]q %[2]v", cmd.Name, err)
+				}
+			}
+		}
+
+		return err
+	}
+
+	if cmd.checkHelp() {
+		return helpCommandAction(ctx, cmd)
+	} else {
+		tracef("no help is wanted (cmd=%[1]q)", cmd.Name)
+	}
+
+	if cmd.parent == nil && !cmd.HideVersion && checkVersion(cmd) {
+		ShowVersion(cmd)
+		return nil
+	}
+
+	if cmd.After != nil && !cmd.EnableShellCompletion {
+		defer func() {
+			if err := cmd.After(ctx, cmd); err != nil {
+				err = cmd.handleExitCoder(ctx, err)
+
+				if deferErr != nil {
+					deferErr = newMultiError(deferErr, err)
+				} else {
+					deferErr = err
+				}
+			}
+		}()
+	}
+
+	if err := cmd.checkRequiredFlags(); err != nil {
+		cmd.isInError = true
+		_ = ShowSubcommandHelp(cmd)
+		return err
+	}
+
+	for _, grp := range cmd.MutuallyExclusiveFlags {
+		if err := grp.check(cmd); err != nil {
+			_ = ShowSubcommandHelp(cmd)
+			return err
+		}
+	}
+
+	if cmd.Before != nil && !cmd.EnableShellCompletion {
+		if err := cmd.Before(ctx, cmd); err != nil {
+			deferErr = cmd.handleExitCoder(ctx, err)
+			return deferErr
+		}
+	}
+
+	tracef("running flag actions (cmd=%[1]q)", cmd.Name)
+
+	if err := runFlagActions(ctx, cmd, cmd.appliedFlags); err != nil {
+		return err
 	}
 
 	var subCmd *Command
@@ -704,7 +802,7 @@ func (cmd *Command) runViaArgh(ctx context.Context, osArgs []string) (deferErr e
 
 	if subCmd != nil {
 		tracef("running sub-command %[1]q (cmd=%[2]q)", subCmd.Name, cmd.Name)
-		return subCmd.runViaArgh(ctx, nil)
+		return subCmd.runWithArgh(ctx, nil)
 	}
 
 	action := cmd.Action
@@ -730,12 +828,15 @@ func (cmd *Command) parseWithArgh(ctx context.Context, osArgs []string) (Args, e
 
 	var arghAST any
 	if parseTree != nil {
+		tracef("getting AST representation of parsed args (cmd=%[1]q)", cmd.Name)
 		arghAST = argh.ToAST(parseTree.Nodes)
 	}
 
 	if isTracingOn {
 		if v, ok := os.LookupEnv("URFAVE_CLI_ARGH_DUMP_JSON"); ok {
 			if fd, err := os.Create(v); err == nil {
+				tracef("dumping argh json to %[1]q (cmd=%[2]q)", v, cmd.Name)
+
 				if err := json.NewEncoder(fd).Encode(
 					map[string]any{
 						"cfg":       cmd.cfg,
@@ -1105,7 +1206,7 @@ func (cmd *Command) NumFlags() int {
 // Set sets a context flag to a value.
 func (cmd *Command) Set(name, value string) error {
 	if isArghModeOn {
-		return cmd.setViaArgh(name, value)
+		return cmd.setWithArgh(name, value)
 	}
 
 	if flSet := cmd.lookupFlagSet(name); flSet != nil {
@@ -1115,7 +1216,7 @@ func (cmd *Command) Set(name, value string) error {
 	return fmt.Errorf("no such flag -%s", name)
 }
 
-func (cmd *Command) setViaArgh(name, value string) error {
+func (cmd *Command) setWithArgh(name, value string) error {
 	cmd.parsed[name] = argh.CommandFlag{
 		Name: name,
 		Values: map[string]string{
@@ -1129,7 +1230,7 @@ func (cmd *Command) setViaArgh(name, value string) error {
 // IsSet determines if the flag was actually set
 func (cmd *Command) IsSet(name string) bool {
 	if isArghModeOn {
-		return cmd.isSetViaArgh(name)
+		return cmd.isSetWithArgh(name)
 	}
 
 	flSet := cmd.lookupFlagSet(name)
@@ -1167,8 +1268,8 @@ func (cmd *Command) IsSet(name string) bool {
 	return isSet
 }
 
-func (cmd *Command) isSetViaArgh(name string) bool {
-	// TODO: isSetViaArgh
+func (cmd *Command) isSetWithArgh(name string) bool {
+	// TODO: isSetWithArgh
 	return false
 }
 
@@ -1244,7 +1345,7 @@ func (cmd *Command) Lineage() []*Command {
 // Count returns the num of occurrences of this flag
 func (cmd *Command) Count(name string) int {
 	if isArghModeOn {
-		return cmd.countViaArgh(name)
+		return cmd.countWithArgh(name)
 	}
 
 	if flSet := cmd.lookupFlagSet(name); flSet != nil {
@@ -1256,15 +1357,15 @@ func (cmd *Command) Count(name string) int {
 	return 0
 }
 
-func (cmd *Command) countViaArgh(name string) int {
-	// TODO: countViaArgh
+func (cmd *Command) countWithArgh(name string) int {
+	// TODO: countWithArgh
 	return 0
 }
 
 // Value returns the value of the flag corresponding to `name`
 func (cmd *Command) Value(name string) any {
 	if isArghModeOn {
-		return cmd.valueViaArgh(name)
+		return cmd.valueWithArgh(name)
 	}
 
 	if flSet := cmd.lookupFlagSet(name); flSet != nil {
@@ -1276,7 +1377,7 @@ func (cmd *Command) Value(name string) any {
 	return nil
 }
 
-func (cmd *Command) valueViaArgh(name string) any {
+func (cmd *Command) valueWithArgh(name string) any {
 	if cf, ok := cmd.parsed[name]; ok {
 		if v, ok := cf.Values["0"]; ok {
 			return v
