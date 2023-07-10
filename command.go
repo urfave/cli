@@ -1154,10 +1154,6 @@ func (cmd *Command) lookupFlagSet(name string) *flag.FlagSet {
 	return nil
 }
 
-func (cmd *Command) lookupArghCommandConfigWithFlagNamed(name string) argh.CommandConfig {
-	return argh.CommandConfig{}
-}
-
 func (cmd *Command) checkRequiredFlags() requiredFlagsErr {
 	tracef("checking for required flags (cmd=%[1]q)", cmd.Name)
 

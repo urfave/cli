@@ -1379,8 +1379,12 @@ func TestWrappedCommandHelp(t *testing.T) {
 			},
 		},
 	}
+
 	cmd.setupDefaults([]string{"cli.test"})
-	cmd.setupCommandGraph()
+
+	r := require.New(t)
+
+	r.NoError(cmd.setupCommandGraph())
 
 	HelpPrinter = func(w io.Writer, templ string, data interface{}) {
 		funcMap := map[string]interface{}{
@@ -1391,8 +1395,6 @@ func TestWrappedCommandHelp(t *testing.T) {
 
 		HelpPrinterCustom(w, templ, data, funcMap)
 	}
-
-	r := require.New(t)
 
 	r.NoError(ShowCommandHelp(context.Background(), cmd, "add"))
 	r.Equal(`NAME:
