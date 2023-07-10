@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -104,11 +103,20 @@ type Flag interface {
 	// Apply Flag settings to the given flag set
 	Apply(*flag.FlagSet) error
 
+	// ApplyWithArgh applies the flag to the given command config
+	ApplyWithArgh(*Command) error
+
 	// Names returns all possible names for this flag
 	Names() []string
 
 	// CanonicalName returns the canonical name of the flag
 	CanonicalName() string
+
+	// Set sets the flag's value from string
+	Set(string) error
+
+	// GetValue returns the flag's value as a string
+	GetValue() string
 
 	// TakesValue returns true if the flag takes a value, otherwise false
 	TakesValue() bool
@@ -129,10 +137,6 @@ type DocGenerationFlag interface {
 	// GetUsage returns the usage string for the flag
 	GetUsage() string
 
-	// GetValue returns the flags value as string representation and an empty
-	// string if the flag takes no value at all.
-	GetValue() string
-
 	// GetDefaultText returns the default text for this flag
 	GetDefaultText() string
 
@@ -140,7 +144,7 @@ type DocGenerationFlag interface {
 	GetEnvVars() []string
 }
 
-// DocGenerationSliceFlag extends DocGenerationFlag for slice/map based flags.
+// DocGenerationMultiValueFlag extends DocGenerationFlag for slice/map based flags.
 type DocGenerationMultiValueFlag interface {
 	DocGenerationFlag
 
@@ -197,35 +201,48 @@ func copyFlag(name string, ff *flag.Flag, set *flag.FlagSet) {
 }
 
 func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
-	visited := make(map[string]bool)
+	visited := map[string]bool{}
+
 	set.Visit(func(f *flag.Flag) {
 		visited[f.Name] = true
 	})
+
 	for _, f := range flags {
 		parts := f.Names()
+
+		tracef("normalizing flag with names=%[1]q", parts)
+
 		if len(parts) == 1 {
 			continue
 		}
+
 		var ff *flag.Flag
+
 		for _, name := range parts {
-			name = strings.Trim(name, " ")
-			if visited[name] {
+			name = strings.TrimSpace(name)
+
+			if _, ok := visited[name]; ok {
 				if ff != nil {
-					return errors.New("Cannot use two forms of the same flag: " + name + " " + ff.Name)
+					return fmt.Errorf("cannot use two forms of the same flag: %[1]s %[2]s: %[3]w", name, ff.Name, Err)
 				}
+
 				ff = set.Lookup(name)
 			}
 		}
+
 		if ff == nil {
 			continue
 		}
+
 		for _, name := range parts {
-			name = strings.Trim(name, " ")
-			if !visited[name] {
+			name = strings.TrimSpace(name)
+
+			if _, ok := visited[name]; !ok {
 				copyFlag(name, ff, set)
 			}
 		}
 	}
+
 	return nil
 }
 

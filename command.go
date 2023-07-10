@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/urfave/argh"
@@ -21,8 +20,6 @@ const (
 	ignoreFlagPrefix = "test."
 
 	commandContextKey = contextKey("cli.context")
-
-	selfParsedKey = "_urfave_cli_self"
 )
 
 type contextKey string
@@ -146,11 +143,13 @@ type Command struct {
 	// track state of defaults
 	didSetupDefaults bool
 
+	osArgs []string
+
 	// fields used by argh-based parsing {{
 	parserCfg *argh.ParserConfig
 	cfg       *argh.CommandConfig
-	parsed    map[string]argh.CommandFlag
-	unParsed  []string
+	cf        *argh.CommandFlag
+	values    map[string]Value
 	// }}
 }
 
@@ -165,6 +164,14 @@ func (cmd *Command) FullName() string {
 	}
 
 	return strings.Join(append(namePath, cmd.Name), " ")
+}
+
+func (cmd *Command) OsArgs() []string {
+	if cmd.osArgs != nil {
+		return cmd.osArgs
+	}
+
+	return os.Args
 }
 
 func (cmd *Command) Command(name string) *Command {
@@ -192,14 +199,23 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 		if isRoot {
 			cmd.parserCfg = argh.NewParserConfig()
 			cmd.cfg = cmd.parserCfg.Prog
-		}
+			cmd.cfg.On = func(cf argh.CommandFlag) error {
+				tracef("received command flag=%+#[1]v (cmd=%[2]q)", cf, cmd.Name)
 
-		cmd.parsed = map[string]argh.CommandFlag{}
+				cmd.cf = &cf
+
+				return nil
+			}
+		}
+	}
+
+	if isRoot {
+		cmd.osArgs = osArgs
 	}
 
 	if cmd.ShellComplete == nil {
 		tracef("setting default ShellComplete (cmd=%[1]q)", cmd.Name)
-		cmd.ShellComplete = DefaultCompleteWithFlags(cmd)
+		cmd.ShellComplete = DefaultCompleteWithFlags
 	}
 
 	if cmd.Name == "" && isRoot {
@@ -244,7 +260,7 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 		flag.VisitAll(func(f *flag.Flag) {
 			// skip test flags
 			if !strings.HasPrefix(f.Name, ignoreFlagPrefix) {
-				cmd.Flags = append(cmd.Flags, &extFlag{f})
+				cmd.Flags = append(cmd.Flags, &extFlag{f: f})
 			}
 		})
 	}
@@ -309,87 +325,59 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 	disableSliceFlagSeparator = cmd.DisableSliceFlagSeparator
 }
 
-func (cmd *Command) setupParser() {
-	tracef("setting up parser (cmd=%[1]q)", cmd.Name)
-
-	cmd.cfg.On = func(cf argh.CommandFlag) {
-		tracef("setting values from command flag name=%[1]q (cmd=%[2]q)", cf.Name, cmd.Name)
-
-		cmd.parsed[selfParsedKey] = cf
-
-		unParsedKeys := []string{}
-
-		for key := range cf.Values {
-			if _, err := strconv.Atoi(key); err == nil {
-				unParsedKeys = append(unParsedKeys, key)
-			}
-		}
-
-		sort.Strings(unParsedKeys)
-
-		cmd.unParsed = make([]string, len(unParsedKeys))
-
-		for i, key := range unParsedKeys {
-			cmd.unParsed[i] = cf.Values[key]
-		}
-	}
-
-	for _, loopFlag := range cmd.Flags {
-		fl := loopFlag
-
-		// TODO: add support for flags with value counts other than 0 and 1
-		flagNValue := argh.NValue(0)
-
-		if fl.TakesValue() {
-			flagNValue = argh.NValue(1)
-		}
-
-		flCfg := &argh.FlagConfig{
-			NValue: flagNValue,
-			On: func(cf argh.CommandFlag) {
-				tracef("flag %[1]q set (cmd=%[2]q)", fl.Names(), cmd.Name)
-
-				cmd.parsed[fl.CanonicalName()] = cf
-			},
-		}
-
-		for _, name := range fl.Names() {
-			tracef("setting flag config in parser config name=%[1]q cfg=%+#[2]v flCfg=%+#[3]v (cmd=%[4]q)", name, cmd.cfg, flCfg, cmd.Name)
-
-			cmd.cfg.SetFlagConfig(name, flCfg)
-		}
-	}
-}
-
-func (cmd *Command) setupCommandGraph() {
+func (cmd *Command) setupCommandGraph() error {
 	tracef("setting up command graph (cmd=%[1]q)", cmd.Name)
 
 	if isArghModeOn {
-		cmd.setupParser()
+		cmd.values = map[string]Value{}
+
+		if err := cmd.setupParser(); err != nil {
+			return err
+		}
 	}
 
 	for _, subCmd := range cmd.Commands {
 		subCmd.parent = cmd
 		subCmd.setupSubcommand()
-		subCmd.setupCommandGraph()
+		if err := subCmd.setupCommandGraph(); err != nil {
+			return err
+		}
 	}
+
+	return nil
+}
+
+func (cmd *Command) setupParser() error {
+	allFlags := cmd.allFlags()
+
+	cmd.appliedFlags = append(cmd.appliedFlags, allFlags...)
+
+	tracef("adding flags to command config (cmd=%[1]q)", cmd.Name)
+
+	for _, f := range allFlags {
+		if err := f.ApplyWithArgh(cmd); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (cmd *Command) setupSubcommand() {
 	tracef("setting up self as sub-command (cmd=%[1]q)", cmd.Name)
 
 	if isArghModeOn {
-		cmd.parsed = map[string]argh.CommandFlag{}
-
 		cfg, ok := cmd.parent.cfg.GetCommandConfig(cmd.Name)
 		if !ok {
 			cfg = argh.CommandConfig{}
 		}
 
-		cfg.On = func(cf argh.CommandFlag) {
+		cfg.On = func(cf argh.CommandFlag) error {
 			tracef("received command flag=%+#[1]v (cmd=%[2]q)", cf, cmd.Name)
 
-			cmd.parsed[selfParsedKey] = cf
+			cmd.cf = &cf
+
+			return nil
 		}
 
 		tracef("setting parser config on parent cfg=%+#[1]v (cmd=%[2]q)", &cfg, cmd.Name)
@@ -456,6 +444,7 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	// note that we can only do this because the shell autocomplete function
 	// always appends the completion flag at the end of the command
 	enableShellCompletion, osArgs := checkShellCompleteFlag(cmd, osArgs)
+	tracef("post-checkShellCompleteFlag osArgs=%[1]q (cmd=%[2]q)", osArgs, cmd.Name)
 
 	tracef("setting cmd.EnableShellCompletion=%[1]v from checkShellCompleteFlag (cmd=%[2]q)", enableShellCompletion, cmd.Name)
 	cmd.EnableShellCompletion = enableShellCompletion
@@ -466,7 +455,9 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	ctx = context.WithValue(ctx, commandContextKey, cmd)
 
 	if cmd.parent == nil {
-		cmd.setupCommandGraph()
+		if err := cmd.setupCommandGraph(); err != nil {
+			return err
+		}
 	}
 
 	if isArghModeOn {
@@ -566,7 +557,7 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	var subCmd *Command
 
 	if args.Present() {
-		tracef("checking positional args %[1]q (cmd=%[2]q)", args, cmd.Name)
+		tracef("checking positional args %[1]q (cmd=%[2]q)", args.Slice(), cmd.Name)
 
 		name := args.First()
 
@@ -574,7 +565,10 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 
 		if cmd.SuggestCommandFunc != nil {
 			name = cmd.SuggestCommandFunc(cmd.Commands, name)
+
+			tracef("resolved name=%[1]q via cmd.SuggestCommandFunc (cmd=%[2]q)", name, cmd.Name)
 		}
+
 		subCmd = cmd.Command(name)
 		if subCmd == nil {
 			hasDefault := cmd.DefaultCommand != ""
@@ -612,21 +606,27 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	}
 
 	if subCmd != nil {
-		tracef("running sub-command %[1]q with arguments %[2]q (cmd=%[3]q)", subCmd.Name, cmd.Args(), cmd.Name)
-		deferErr = subCmd.Run(ctx, cmd.Args().Slice())
+		tracef("running sub-command %[1]q with arguments %[2]q (cmd=%[3]q)", subCmd.Name, args, cmd.Name)
+
+		deferErr = subCmd.Run(ctx, args.Slice())
+
 		return deferErr
 	}
 
 	if cmd.Action == nil {
+		tracef("setting command Action as helpCommandAction (cmd=%[1]q)", cmd.Name)
+
 		cmd.Action = helpCommandAction
 	}
 
 	if err := cmd.Action(ctx, cmd); err != nil {
 		tracef("calling handleExitCoder with %[1]v (cmd=%[2]q)", err, cmd.Name)
+
 		deferErr = cmd.handleExitCoder(ctx, err)
 	}
 
 	tracef("returning deferErr (cmd=%[1]q)", cmd.Name)
+
 	return deferErr
 }
 
@@ -643,17 +643,11 @@ func (cmd *Command) runWithArgh(ctx context.Context, osArgs []string) (deferErr 
 		return err
 	}()
 
-	if checkCompletions(ctx, cmd) {
-		return nil
-	}
-
-	argsAST := argh.ToAST(cmd.parsed[selfParsedKey].Nodes)
-
-	if isTracingOn {
-		if b, err := json.Marshal(argsAST); err == nil {
-			tracef("argh ast=%[1]s (cmd=%[2]q)", string(b), cmd.Name)
+	/*
+		if checkCompletionsWithArgh(ctx, cmd, err) {
+			return nil
 		}
-	}
+	*/
 
 	if err != nil {
 		tracef("setting deferErr from %[1]q (cmd=%[2]q)", err, cmd.Name)
@@ -744,6 +738,18 @@ func (cmd *Command) runWithArgh(ctx context.Context, osArgs []string) (deferErr 
 
 	if err := runFlagActions(ctx, cmd, cmd.appliedFlags); err != nil {
 		return err
+	}
+
+	if cmd.cf == nil {
+		panic("command On func was not called")
+	}
+
+	argsAST := argh.ToAST(cmd.cf.Nodes)
+
+	if isTracingOn {
+		if b, err := json.Marshal(argsAST); err == nil {
+			tracef("argh ast=%[1]s (cmd=%[2]q)", string(b), cmd.Name)
+		}
 	}
 
 	var subCmd *Command
@@ -839,11 +845,10 @@ func (cmd *Command) parseWithArgh(ctx context.Context, osArgs []string) (Args, e
 
 				if err := json.NewEncoder(fd).Encode(
 					map[string]any{
-						"cfg":       cmd.cfg,
-						"parsed":    cmd.parsed,
-						"un_parsed": cmd.unParsed,
-						"ast":       arghAST,
-						"err":       parseErr,
+						"cfg":    cmd.cfg,
+						"values": cmd.values,
+						"ast":    arghAST,
+						"err":    parseErr,
 					},
 				); err != nil {
 					tracef("URFAVE_CLI_ARGH_DUMP_JSON err: %[1]v", err)
@@ -856,7 +861,7 @@ func (cmd *Command) parseWithArgh(ctx context.Context, osArgs []string) (Args, e
 		}
 	}
 
-	return &stringSliceArgs{v: cmd.unParsed}, parseErr
+	return &stringSliceArgs{v: []string{}}, parseErr
 }
 
 func (cmd *Command) checkHelp() bool {
@@ -998,16 +1003,16 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 	tracef("parsing flags iteratively tail=%[1]q (cmd=%[2]q)", args.Tail(), cmd.Name)
 
 	if err := parseIter(cmd.flagSet, cmd, args.Tail(), cmd.Root().EnableShellCompletion); err != nil {
-		return cmd.Args(), err
+		return args, err
 	}
 
-	tracef("normalizing flags (cmd=%[1]q)", cmd.Name)
+	tracef("normalizing flags; args=%[1]q (cmd=%[1]q)", cmd.Args().Slice(), cmd.Name)
 
 	if err := normalizeFlags(cmd.Flags, cmd.flagSet); err != nil {
-		return cmd.Args(), err
+		return args, err
 	}
 
-	tracef("done parsing flags (cmd=%[1]q)", cmd.Name)
+	tracef("done parsing flags; args=%[1]q (cmd=%[2]q)", cmd.Args().Slice(), cmd.Name)
 
 	return cmd.Args(), nil
 }
@@ -1217,14 +1222,15 @@ func (cmd *Command) Set(name, value string) error {
 }
 
 func (cmd *Command) setWithArgh(name, value string) error {
-	cmd.parsed[name] = argh.CommandFlag{
-		Name: name,
-		Values: map[string]string{
-			"0": value,
-		},
+	for _, fl := range cmd.Flags {
+		for _, flName := range fl.Names() {
+			if flName == name {
+				return cmd.values[fl.CanonicalName()].(flag.Value).Set(value)
+			}
+		}
 	}
 
-	return nil
+	return fmt.Errorf("no such flag %[1]q: %[2]w", name, Err)
 }
 
 // IsSet determines if the flag was actually set
@@ -1378,9 +1384,11 @@ func (cmd *Command) Value(name string) any {
 }
 
 func (cmd *Command) valueWithArgh(name string) any {
-	if cf, ok := cmd.parsed[name]; ok {
-		if v, ok := cf.Values["0"]; ok {
-			return v
+	for _, fl := range cmd.allFlags() {
+		for _, flName := range fl.Names() {
+			if flName == name {
+				return cmd.values[fl.CanonicalName()].(flag.Getter).Get()
+			}
 		}
 	}
 
@@ -1391,21 +1399,27 @@ func (cmd *Command) valueWithArgh(name string) any {
 // command.
 func (cmd *Command) Args() Args {
 	if isArghModeOn {
+		if cmd.cf == nil {
+			panic("command On func was not called")
+		}
+
 		args := []string{}
 
-		for _, node := range argh.ToAST(cmd.parsed[selfParsedKey].Nodes) {
+		for _, node := range argh.ToAST(cmd.cf.Nodes) {
 			if v, ok := node.(*argh.Ident); ok {
 				args = append(args, v.Literal)
 			}
 		}
 
-		args = append(args, cmd.unParsed...)
-
 		tracef("returning un-parsed and ident literals as positional args %[1]q (cmd=%[2]q)", args, cmd.Name)
 		return &stringSliceArgs{v: args}
 	}
 
-	return &stringSliceArgs{v: cmd.flagSet.Args()}
+	flSetArgs := cmd.flagSet.Args()
+
+	tracef("returning un-parsed flag set args %[1]q (cmd=%[2]q)", flSetArgs, cmd.Name)
+
+	return &stringSliceArgs{v: flSetArgs}
 }
 
 // NArg returns the number of the command line arguments.

@@ -27,6 +27,9 @@ application:
 VARIABLES
 
 var (
+	Err = errors.New("urfave/cli error")
+)
+var (
 	SuggestFlag               SuggestFlagFunc    = suggestFlag
 	SuggestCommand            SuggestCommandFunc = suggestCommand
 	SuggestDidYouMeanTemplate string             = suggestDidYouMeanTemplate
@@ -53,6 +56,9 @@ OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}
 
 var (
 	DefaultInverseBoolPrefix = "no-"
+)
+var (
+	ErrFlagCannotBeDuplicated = fmt.Errorf("flag cannot be duplicated: %[1]w", Err)
 )
 var ErrWriter io.Writer = os.Stderr
     ErrWriter is used to write errors to the user. This can be anything
@@ -160,7 +166,7 @@ func DefaultAppComplete(ctx context.Context, cmd *Command)
     DefaultAppComplete prints the list of subcommands as the default app
     completion method
 
-func DefaultCompleteWithFlags(cmd *Command) func(ctx context.Context, cmd *Command)
+func DefaultCompleteWithFlags(ctx context.Context, cmd *Command)
 func FlagNames(name string, aliases []string) []string
 func HandleExitCoder(err error)
     HandleExitCoder handles errors implementing ExitCoder by printing their
@@ -435,6 +441,8 @@ func (cmd *Command) Names() []string
 func (cmd *Command) NumFlags() int
     NumFlags returns the number of flags set
 
+func (cmd *Command) OsArgs() []string
+
 func (cmd *Command) Root() *Command
     Root returns the Command at the root of the graph
 
@@ -516,10 +524,6 @@ type DocGenerationFlag interface {
 	// GetUsage returns the usage string for the flag
 	GetUsage() string
 
-	// GetValue returns the flags value as string representation and an empty
-	// string if the flag takes no value at all.
-	GetValue() string
-
 	// GetDefaultText returns the default text for this flag
 	GetDefaultText() string
 
@@ -535,7 +539,8 @@ type DocGenerationMultiValueFlag interface {
 	// IsMultiValueFlag returns true for flags that can be given multiple times.
 	IsMultiValueFlag() bool
 }
-    DocGenerationSliceFlag extends DocGenerationFlag for slice/map based flags.
+    DocGenerationMultiValueFlag extends DocGenerationFlag for slice/map based
+    flags.
 
 type DurationFlag = FlagBase[time.Duration, NoConfig, durationValue]
 
@@ -570,11 +575,20 @@ type Flag interface {
 	// Apply Flag settings to the given flag set
 	Apply(*flag.FlagSet) error
 
+	// ApplyWithArgh applies the flag to the given command config
+	ApplyWithArgh(*Command) error
+
 	// Names returns all possible names for this flag
 	Names() []string
 
 	// CanonicalName returns the canonical name of the flag
 	CanonicalName() string
+
+	// Set sets the flag's value from string
+	Set(string) error
+
+	// GetValue returns the flag's value as a string
+	GetValue() string
 
 	// TakesValue returns true if the flag takes a value, otherwise false
 	TakesValue() bool
@@ -648,6 +662,9 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error
     Apply populates the flag given the flag set and environment
 
+func (f *FlagBase[T, C, V]) ApplyWithArgh(cmd *Command) error
+    ApplyWithArgh populates the flag given the command config
+
 func (f *FlagBase[T, C, V]) CanonicalName() string
 
 func (f *FlagBase[T, C, V]) Get(cmd *Command) T
@@ -690,6 +707,8 @@ func (f *FlagBase[T, C, V]) Names() []string
 
 func (f *FlagBase[T, C, V]) RunAction(ctx context.Context, cmd *Command) error
     RunAction executes flag action if set
+
+func (f *FlagBase[T, C, V]) Set(val string) error
 
 func (f *FlagBase[T, C, V]) String() string
     String returns a readable representation of this value (for usage defaults)
@@ -908,11 +927,12 @@ type UintSlice = SliceBase[uint64, IntegerConfig, uintValue]
 type UintSliceFlag = FlagBase[[]uint64, IntegerConfig, UintSlice]
 
 type Value interface {
-	flag.Value
-	flag.Getter
+	String() string
+	Set(string) error
+	Get() any
 }
-    Value represents a value as used by cli. For now it implements the golang
-    flag.Value interface
+    Value represents a value as used by cli. It is essentially the same
+    interface as flag.Getter, which embeds flag.Value.
 
 type ValueCreator[T any, C any] interface {
 	Create(T, *T, C) Value

@@ -102,7 +102,7 @@ func (parent *BoolWithInverseFlag) initialize() {
 		hasBeenSet:  child.hasBeenSet,
 		applied:     child.applied,
 		creator:     boolValue{},
-		value:       child.value,
+		v:           child.v,
 	}
 
 	// Set inverse names ex: --env => --no-env

@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/urfave/argh"
 )
 
 var (
@@ -2383,12 +2384,24 @@ func (c *customBoolFlag) GetValue() string {
 	return "value"
 }
 
+func (c *customBoolFlag) Set(string) error {
+	return nil
+}
+
 func (c *customBoolFlag) GetUsage() string {
 	return "usage"
 }
 
 func (c *customBoolFlag) Apply(set *flag.FlagSet) error {
 	set.String(c.Nombre, c.Nombre, "")
+	return nil
+}
+
+func (c *customBoolFlag) ApplyWithArgh(cmd *Command) error {
+	cmd.cfg.SetFlagConfig(c.Nombre, &argh.FlagConfig{
+		On: func(cf argh.CommandFlag) error { return nil },
+	})
+
 	return nil
 }
 
@@ -2422,7 +2435,7 @@ func (c *customBoolFlag) GetDefaultText() string {
 
 func TestCustomFlagsUnused(t *testing.T) {
 	cmd := &Command{
-		Flags:  []Flag{&customBoolFlag{"custom"}},
+		Flags:  []Flag{&customBoolFlag{Nombre: "custom"}},
 		Writer: io.Discard,
 	}
 
@@ -2434,7 +2447,7 @@ func TestCustomFlagsUnused(t *testing.T) {
 
 func TestCustomFlagsUsed(t *testing.T) {
 	cmd := &Command{
-		Flags:  []Flag{&customBoolFlag{"custom"}},
+		Flags:  []Flag{&customBoolFlag{Nombre: "custom"}},
 		Writer: io.Discard,
 	}
 
@@ -2455,8 +2468,8 @@ func TestCustomHelpVersionFlags(t *testing.T) {
 		VersionFlag = versionFlag.(*BoolFlag)
 	}(HelpFlag, VersionFlag)
 
-	HelpFlag = &customBoolFlag{"help-custom"}
-	VersionFlag = &customBoolFlag{"version-custom"}
+	HelpFlag = &customBoolFlag{Nombre: "help-custom"}
+	VersionFlag = &customBoolFlag{Nombre: "version-custom"}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", "--help-custom=bar"})
 	if err != nil {

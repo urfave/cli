@@ -153,27 +153,34 @@ func ShowAppHelp(cmd *Command) error {
 
 // DefaultAppComplete prints the list of subcommands as the default app completion method
 func DefaultAppComplete(ctx context.Context, cmd *Command) {
-	DefaultCompleteWithFlags(nil)(ctx, cmd)
+	DefaultCompleteWithFlags(ctx, cmd)
 }
 
-func printCommandSuggestions(commands []*Command, writer io.Writer) {
-	for _, command := range commands {
-		if command.Hidden {
+func printCommandSuggestions(cmds []*Command, writer io.Writer) {
+	tracef("printing command suggestions")
+
+	for _, cmd := range cmds {
+		if cmd.Hidden {
+			tracef("skipping hidden (cmd=%[1]q)", cmd.Name)
 			continue
 		}
 		if strings.HasSuffix(os.Getenv("SHELL"), "zsh") {
-			for _, name := range command.Names() {
-				_, _ = fmt.Fprintf(writer, "%s:%s\n", name, command.Usage)
+			tracef("printing suggestions in zsh-compatible format (cmd=%[1]q)", cmd.Name)
+
+			for _, name := range cmd.Names() {
+				_, _ = fmt.Fprintf(writer, "%s:%s\n", name, cmd.Usage)
 			}
 		} else {
-			for _, name := range command.Names() {
+			tracef("printing suggestions in plain format (cmd=%[1]q)", cmd.Name)
+
+			for _, name := range cmd.Names() {
 				_, _ = fmt.Fprintf(writer, "%s\n", name)
 			}
 		}
 	}
 }
 
-func cliArgContains(flagName string) bool {
+func osArgsContains(osArgs []string, flagName string) bool {
 	for _, name := range strings.Split(flagName, ",") {
 		name = strings.TrimSpace(name)
 		count := utf8.RuneCountInString(name)
@@ -181,7 +188,7 @@ func cliArgContains(flagName string) bool {
 			count = 2
 		}
 		flag := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
-		for _, a := range os.Args {
+		for _, a := range osArgs {
 			if a == flag {
 				return true
 			}
@@ -190,14 +197,19 @@ func cliArgContains(flagName string) bool {
 	return false
 }
 
-func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
-	cur := strings.TrimPrefix(lastArg, "-")
-	cur = strings.TrimPrefix(cur, "-")
-	for _, flag := range flags {
-		if bflag, ok := flag.(*BoolFlag); ok && bflag.Hidden {
+func printFlagSuggestions(osArgs []string, arg string, flags []Flag, writer io.Writer) {
+	trimmedArg := strings.TrimPrefix(strings.TrimPrefix(arg, "-"), "-")
+
+	tracef(
+		"printing flag suggestions for arg=%[1]q in args=%[2]q (trimmed=%[3]q)",
+		arg, osArgs, trimmedArg,
+	)
+
+	for _, fl := range flags {
+		if bflag, ok := fl.(*BoolFlag); ok && bflag.Hidden {
 			continue
 		}
-		for _, name := range flag.Names() {
+		for _, name := range fl.Names() {
 			name = strings.TrimSpace(name)
 			// this will get total count utf8 letters in flag name
 			count := utf8.RuneCountInString(name)
@@ -206,11 +218,11 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 			}
 			// if flag name has more than one utf8 letter and last argument in cli has -- prefix then
 			// skip flag completion for short flags example -v or -x
-			if strings.HasPrefix(lastArg, "--") && count == 1 {
+			if strings.HasPrefix(arg, "--") && count == 1 {
 				continue
 			}
 			// match if last argument matches this flag and it is not repeated
-			if strings.HasPrefix(name, cur) && cur != name && !cliArgContains(name) {
+			if strings.HasPrefix(name, trimmedArg) && trimmedArg != name && !osArgsContains(osArgs, name) {
 				flagCompletion := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
 				fmt.Fprintln(writer, flagCompletion)
 			}
@@ -218,31 +230,22 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 	}
 }
 
-func DefaultCompleteWithFlags(cmd *Command) func(ctx context.Context, cmd *Command) {
-	return func(_ context.Context, cmd *Command) {
-		if len(os.Args) > 2 {
-			lastArg := os.Args[len(os.Args)-2]
+func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
+	osArgs := cmd.OsArgs()
 
-			if strings.HasPrefix(lastArg, "-") {
-				if cmd != nil {
-					printFlagSuggestions(lastArg, cmd.Flags, cmd.Root().Writer)
+	tracef("printing completions for os args=%[1]q (cmd=%[2]q)", osArgs, cmd.Name)
 
-					return
-				}
+	if len(osArgs) > 2 {
+		lastArg := osArgs[len(osArgs)-2]
 
-				printFlagSuggestions(lastArg, cmd.Flags, cmd.Root().Writer)
+		if strings.HasPrefix(lastArg, "-") {
+			printFlagSuggestions(osArgs, lastArg, cmd.Flags, cmd.Root().Writer)
 
-				return
-			}
-		}
-
-		if cmd != nil {
-			printCommandSuggestions(cmd.Commands, cmd.Root().Writer)
 			return
 		}
-
-		printCommandSuggestions(cmd.Commands, cmd.Root().Writer)
 	}
+
+	printCommandSuggestions(cmd.Commands, cmd.Root().Writer)
 }
 
 // ShowCommandHelpAndExit - exits with code after showing help
@@ -432,19 +435,25 @@ func checkVersion(cmd *Command) bool {
 	return found
 }
 
-func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
-	if !c.EnableShellCompletion {
-		return false, arguments
+func checkShellCompleteFlag(cmd *Command, osArgs []string) (bool, []string) {
+	if !cmd.EnableShellCompletion {
+		tracef("breaking without modification given cmd.EnableShellCompletion=false osArgs=%[1]q (cmd=%[2]q)", osArgs, cmd.Name)
+
+		return false, osArgs
 	}
 
-	pos := len(arguments) - 1
-	lastArg := arguments[pos]
+	pos := len(osArgs) - 1
+	lastArg := osArgs[pos]
 
 	if lastArg != "--generate-shell-completion" {
-		return false, arguments
+		tracef("shell completion flag NOT found; returning unaltered osArgs=%[1]q (cmd=%[2]q)", osArgs, cmd.Name)
+
+		return false, osArgs
 	}
 
-	return true, arguments[:pos]
+	tracef("shell completion flag found; returning osArgs=%[1]q (cmd=%[2]q)", osArgs[:pos], cmd.Name)
+
+	return true, osArgs[:pos]
 }
 
 func checkCompletions(ctx context.Context, cmd *Command) bool {

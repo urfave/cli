@@ -4,8 +4,10 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
-github.com/urfave/argh v0.2.1-0.20230702123329-da1ca8be8db5 h1:Wlo6nZHECi5IysPUZKOq8KN8AoT/6KsmdGBRidH6n1M=
-github.com/urfave/argh v0.2.1-0.20230702123329-da1ca8be8db5/go.mod h1:NUm2NMpNFfFIzbpD9qe98ZL7G3TYWiH1bynhvbJw2pY=
+github.com/urfave/argh v0.2.1-0.20230708000445-cafe4c3a5b9e h1:BZ10QwWTaQqWY8haiNrJjwzTbperhQ45+i3hz6iRFak=
+github.com/urfave/argh v0.2.1-0.20230708000445-cafe4c3a5b9e/go.mod h1:NUm2NMpNFfFIzbpD9qe98ZL7G3TYWiH1bynhvbJw2pY=
+github.com/urfave/argh v0.2.1-0.20230708095413-34b83847b2c7 h1:eN4zzCAEaSUZG7JriAvu0N8TVWSuTNe4hO5XV8iBUU0=
+github.com/urfave/argh v0.2.1-0.20230708095413-34b83847b2c7/go.mod h1:NUm2NMpNFfFIzbpD9qe98ZL7G3TYWiH1bynhvbJw2pY=
 github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 h1:bAn7/zixMGCfxrRTfdpNzjtPYqr8smhKouy9mxVdGPU=
 github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673/go.mod h1:N3UwUGtsrSj3ccvlPHLoLsHnpR27oXr4ZE984MbSER8=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=

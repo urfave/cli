@@ -5,13 +5,20 @@ import (
 	"flag"
 	"fmt"
 	"reflect"
+
+	"github.com/urfave/argh"
 )
 
-// Value represents a value as used by cli.
-// For now it implements the golang flag.Value interface
+var (
+	ErrFlagCannotBeDuplicated = fmt.Errorf("flag cannot be duplicated: %[1]w", Err)
+)
+
+// Value represents a value as used by cli. It is essentially the
+// same interface as flag.Getter, which embeds flag.Value.
 type Value interface {
-	flag.Value
-	flag.Getter
+	String() string
+	Set(string) error
+	Get() any
 }
 
 type boolFlag interface {
@@ -101,7 +108,7 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	hasBeenSet bool  // whether the flag has been set from env or file
 	applied    bool  // whether the flag has been applied to a flag set already
 	creator    VC    // value creator for this flag type
-	value      Value // value representing this flag's value
+	v          Value // value representing this flag's value
 }
 
 // GetValue returns the flags value as string representation and an empty
@@ -111,6 +118,10 @@ func (f *FlagBase[T, C, V]) GetValue() string {
 		return ""
 	}
 	return fmt.Sprintf("%v", f.Value)
+}
+
+func (f *FlagBase[T, C, V]) Set(val string) error {
+	return f.v.Set(val)
 }
 
 // Apply populates the flag given the flag set and environment
@@ -148,16 +159,16 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 		}
 
 		if f.Destination == nil {
-			f.value = f.creator.Create(newVal, new(T), f.Config)
+			f.v = f.creator.Create(newVal, new(T), f.Config)
 		} else {
-			f.value = f.creator.Create(newVal, f.Destination, f.Config)
+			f.v = f.creator.Create(newVal, f.Destination, f.Config)
 		}
 
 		// Validate the given default or values set from external sources as well
 		if f.Validator != nil {
-			if v, ok := f.value.Get().(T); !ok {
+			if v, ok := f.v.Get().(T); !ok {
 				return &typeError[T]{
-					other: f.value.Get(),
+					other: f.v.Get(),
 				}
 			} else if err := f.Validator(v); err != nil {
 				return err
@@ -166,7 +177,7 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 	}
 
 	isBool := false
-	if b, ok := f.value.(boolFlag); ok && b.IsBoolFlag() {
+	if b, ok := f.v.(boolFlag); ok && b.IsBoolFlag() {
 		isBool = true
 	}
 
@@ -177,13 +188,13 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 					return fmt.Errorf("cant duplicate this flag")
 				}
 				f.count++
-				if err := f.value.Set(val); err != nil {
+				if err := f.v.Set(val); err != nil {
 					return err
 				}
 				if f.Validator != nil {
-					if v, ok := f.value.Get().(T); !ok {
+					if v, ok := f.v.Get().(T); !ok {
 						return &typeError[T]{
-							other: f.value.Get(),
+							other: f.v.Get(),
 						}
 					} else if err := f.Validator(v); err != nil {
 						return err
@@ -192,8 +203,115 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 				return nil
 			},
 			isBool: isBool,
-			v:      f.value,
+			v:      f.v,
 		}, name, f.Usage)
+	}
+
+	f.applied = true
+	return nil
+}
+
+// ApplyWithArgh populates the flag given the command config
+func (f *FlagBase[T, C, V]) ApplyWithArgh(cmd *Command) error {
+	// TODO move this phase into a separate flag initialization function
+	// if flag has been applied previously then it would have already been set
+	// from env or file. So no need to apply the env set again. However
+	// lots of units tests prior to persistent flags assumed that the
+	// flag can be applied to different flag sets multiple times while still
+	// keeping the env set.
+	if !f.applied || !f.Persistent {
+		newVal := f.Value
+
+		if val, source, found := f.Sources.LookupWithSource(); found {
+			tmpVal := f.creator.Create(f.Value, new(T), f.Config)
+			if val != "" || reflect.TypeOf(f.Value).Kind() == reflect.String {
+				if err := tmpVal.Set(val); err != nil {
+					return fmt.Errorf(
+						"could not parse %[1]q as %[2]T value from %[3]s for flag %[4]s: %[5]w",
+						val, f.Value, source, f.Name, err,
+					)
+				}
+			} else if val == "" && reflect.TypeOf(f.Value).Kind() == reflect.Bool {
+				val = "false"
+				if err := tmpVal.Set(val); err != nil {
+					return fmt.Errorf(
+						"could not parse %[1]q as %[2]T value from %[3]s for flag %[4]s: %[5]w",
+						val, f.Value, source, f.Name, err,
+					)
+				}
+			}
+
+			newVal = tmpVal.Get().(T)
+			f.hasBeenSet = true
+		}
+
+		if f.Destination == nil {
+			f.v = f.creator.Create(newVal, new(T), f.Config)
+		} else {
+			f.v = f.creator.Create(newVal, f.Destination, f.Config)
+		}
+
+		tracef("setting flag value in command value map (flag=%[1]q)", f.CanonicalName())
+		cmd.values[f.CanonicalName()] = f.v
+
+		// Validate the given default or values set from external sources as well
+		if f.Validator != nil {
+			if v, ok := f.v.Get().(T); !ok {
+				return &typeError[T]{
+					other: f.v.Get(),
+				}
+			} else if err := f.Validator(v); err != nil {
+				return err
+			}
+		}
+	}
+
+	flagNValue := argh.NValue(0)
+
+	if f.TakesValue() {
+		flagNValue = argh.NValue(1)
+	}
+
+	if dfl, ok := f.v.(DocGenerationMultiValueFlag); ok && dfl.IsMultiValueFlag() {
+		flagNValue = argh.OneOrMoreValue
+	}
+
+	tracef("using flagNValue=%[1]v (flag=%[2]q)", flagNValue, f.CanonicalName())
+
+	flCfg := &argh.FlagConfig{
+		NValue: flagNValue,
+		On: func(cf argh.CommandFlag) error {
+			tracef("setting via On func (flag=%[1]q)", f.CanonicalName())
+
+			if f.count == 1 && f.OnlyOnce {
+				return fmt.Errorf("%[1]q: %[2]w", f.CanonicalName(), ErrFlagCannotBeDuplicated)
+			}
+
+			f.count++
+
+			for _, val := range stringMapToSlice(cf.Values) {
+				if err := f.v.Set(val); err != nil {
+					return err
+				}
+			}
+
+			if f.Validator != nil {
+				if v, ok := f.v.Get().(T); !ok {
+					return &typeError[T]{
+						other: f.v.Get(),
+					}
+				} else if err := f.Validator(v); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+	}
+
+	for _, name := range f.Names() {
+		tracef("setting flag config with name=%[1]q cfg=%[2]v", name, flCfg)
+		cmd.cfg.SetFlagConfig(name, flCfg)
 	}
 
 	f.applied = true
