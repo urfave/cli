@@ -95,6 +95,24 @@ func Test_Help_Custom_Flags(t *testing.T) {
 	require.Len(t, out.String(), 0)
 }
 
+func Test_Help_Nil_Flags(t *testing.T) {
+	oldFlag := HelpFlag
+	defer func() {
+		HelpFlag = oldFlag
+	}()
+	HelpFlag = nil
+
+	cmd := &Command{
+		Action: func(_ context.Context, cmd *Command) error {
+			return nil
+		},
+	}
+	out := new(bytes.Buffer)
+	cmd.Writer = out
+	_ = cmd.Run(buildTestContext(t), []string{"test"})
+	require.Len(t, out.String(), 0)
+}
+
 func Test_Version_Custom_Flags(t *testing.T) {
 	oldFlag := VersionFlag
 	defer func() {

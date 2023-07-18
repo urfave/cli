@@ -527,6 +527,10 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 func (cmd *Command) checkHelp() bool {
 	tracef("checking if help is wanted (cmd=%[1]q)", cmd.Name)
 
+	if HelpFlag == nil {
+		return false
+	}
+
 	for _, name := range HelpFlag.Names() {
 		if cmd.Bool(name) {
 			return true
