@@ -415,6 +415,9 @@ func checkVersion(cCtx *Context) bool {
 }
 
 func checkHelp(cCtx *Context) bool {
+	if HelpFlag == nil {
+		return false
+	}
 	found := false
 	for _, name := range HelpFlag.Names() {
 		if cCtx.Bool(name) {
@@ -424,24 +427,6 @@ func checkHelp(cCtx *Context) bool {
 	}
 
 	return found
-}
-
-func checkCommandHelp(c *Context, name string) bool {
-	if c.Bool("h") || c.Bool("help") {
-		_ = ShowCommandHelp(c, name)
-		return true
-	}
-
-	return false
-}
-
-func checkSubcommandHelp(cCtx *Context) bool {
-	if cCtx.Bool("h") || cCtx.Bool("help") {
-		_ = ShowSubcommandHelp(cCtx)
-		return true
-	}
-
-	return false
 }
 
 func checkShellCompleteFlag(a *App, arguments []string) (bool, []string) {
