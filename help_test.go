@@ -101,6 +101,26 @@ func Test_Help_Custom_Flags(t *testing.T) {
 	}
 }
 
+func Test_Help_Nil_Flags(t *testing.T) {
+	oldFlag := HelpFlag
+	defer func() {
+		HelpFlag = oldFlag
+	}()
+	HelpFlag = nil
+
+	app := App{
+		Action: func(context *Context) error {
+			return nil
+		},
+	}
+	output := new(bytes.Buffer)
+	app.Writer = output
+	_ = app.Run([]string{"test"})
+	if output.Len() > 0 {
+		t.Errorf("unexpected output: %s", output.String())
+	}
+}
+
 func Test_Version_Custom_Flags(t *testing.T) {
 	oldFlag := VersionFlag
 	defer func() {
