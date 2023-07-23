@@ -82,6 +82,7 @@ func main() {
 			{
 				Name:   "generate",
 				Action: GenerateActionFunc,
+				Usage:  "generate API docs",
 			},
 			{
 				Name: "yamlfmt",
@@ -496,6 +497,7 @@ func checkBinarySizeActionFunc(c *cli.Context) (err error) {
 func GenerateActionFunc(cCtx *cli.Context) error {
 	top := cCtx.Path("top")
 
+	log.Println("--- generating godoc-current.txt API reference ---")
 	cliDocs, err := sh("go", "doc", "-all", top)
 	if err != nil {
 		return err
@@ -514,6 +516,7 @@ func GenerateActionFunc(cCtx *cli.Context) error {
 		return err
 	}
 
+	log.Println("--- generating Go source files ---")
 	return runCmd("go", "generate", cCtx.Path("top")+"/...")
 }
 

@@ -4,6 +4,7 @@
 .*envrc
 .envrc
 .idea
+# goimports is installed here if not available
 /.local/
 /site/
 coverage.txt

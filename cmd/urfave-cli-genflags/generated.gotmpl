@@ -1,62 +1,63 @@
-// WARNING: this file is generated. DO NOT EDIT
+{{.HeaderWarning}}
 
 package {{.PackageName}}
 
-{{range .SortedFlagTypes}}
+{{range .SortedFlagTypes -}}
 // {{.TypeName}} is a flag with type {{if .ValuePointer}}*{{end}}{{.GoType}}
 type {{.TypeName}} struct {
-  Name string
+	Name string
 
-  Category string
-  DefaultText string
-  FilePath string
-  Usage string
+	Category    string
+	DefaultText string
+	FilePath    string
+	Usage       string
 
-  Required bool
-  Hidden bool
-  HasBeenSet bool
+	Required   bool
+	Hidden     bool
+	HasBeenSet bool
 
-  Value {{if .ValuePointer}}*{{end}}{{.GoType}}
-  Destination {{if .NoDestinationPointer}}{{else}}*{{end}}{{.GoType}}
+	Value       {{if .ValuePointer}}*{{end}}{{.GoType}}
+	Destination {{if .NoDestinationPointer}}{{else}}*{{end}}{{.GoType}}
 
-  Aliases []string
-  EnvVars []string
+	Aliases []string
+	EnvVars []string
 
-  defaultValue {{if .ValuePointer}}*{{end}}{{.GoType}}
-  
-  {{range .StructFields}}
-  {{.Name}} {{if .Pointer}}*{{end}}{{.Type}}
-  {{end}}
+	defaultValue {{if .ValuePointer}}*{{end}}{{.GoType}}
+{{ range .StructFields}}
+	{{.Name}} {{if .Pointer}}*{{end}}{{.Type}}
+{{end -}}
 }
 
-{{if .GenerateFmtStringerInterface}}
+{{if .GenerateFmtStringerInterface -}}
 // String returns a readable representation of this value (for usage defaults)
 func (f *{{.TypeName}}) String() string {
-  return {{$.UrfaveCLINamespace}}FlagStringer(f)
+	return {{$.UrfaveCLINamespace}}FlagStringer(f)
 }
+
 {{end}}{{/* /if .GenerateFmtStringerInterface */}}
 
-{{if .GenerateFlagInterface}}
+{{- if .GenerateFlagInterface -}}
 // IsSet returns whether or not the flag has been set through env or file
 func (f *{{.TypeName}}) IsSet() bool {
-  return f.HasBeenSet
+	return f.HasBeenSet
 }
 
 // Names returns the names of the flag
 func (f *{{.TypeName}}) Names() []string {
-  return {{$.UrfaveCLINamespace}}FlagNames(f.Name, f.Aliases)
+	return {{$.UrfaveCLINamespace}}FlagNames(f.Name, f.Aliases)
 }
 
 {{end}}{{/* /if .GenerateFlagInterface */}}
 
-{{if .GenerateRequiredFlagInterface}}
+{{- if .GenerateRequiredFlagInterface -}}
 // IsRequired returns whether or not the flag is required
 func (f *{{.TypeName}}) IsRequired() bool {
-  return f.Required
+	return f.Required
 }
+
 {{end}}{{/* /if .GenerateRequiredFlagInterface */}}
 
-{{if .GenerateVisibleFlagInterface}}
+{{- if .GenerateVisibleFlagInterface -}}
 // IsVisible returns true if the flag is not hidden, otherwise false
 func (f *{{.TypeName}}) IsVisible() bool {
 	return !f.Hidden
@@ -64,7 +65,7 @@ func (f *{{.TypeName}}) IsVisible() bool {
 {{end}}{{/* /if .GenerateVisibleFlagInterface */}}
 {{end}}{{/* /range .SortedFlagTypes */}}
 
-// vim{{/* 👻 */}}:ro
-{{/*
+{{- "// vim"}}:ro
+{{- /* 👻
 vim:filetype=gotexttmpl
 */}}

@@ -225,6 +225,10 @@ type Spec struct {
 	UrfaveCLITestNamespace string                     `yaml:"urfave_cli_test_namespace"`
 }
 
+func (Spec) HeaderWarning() string {
+	return "// WARNING: this file is generated. DO NOT EDIT"
+}
+
 func (gfs *Spec) SortedFlagTypes() []*FlagType {
 	typeNames := []string{}
 
