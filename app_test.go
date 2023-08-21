@@ -3087,3 +3087,92 @@ func TestFlagAction(t *testing.T) {
 		})
 	}
 }
+
+func TestDuplicateSubcommand(t *testing.T) {
+	var testdata = []struct {
+		app           *App
+		expectNoError bool
+	}{
+		{&App{
+			Name: "p1",
+		}, true},
+		{&App{
+			Name:     "p2",
+			Commands: []*Command{},
+		}, true},
+		{&App{
+			Name:     "p3",
+			Commands: []*Command{{Name: "sub1"}},
+		}, true},
+		{&App{
+			Name:     "p4",
+			Commands: []*Command{{Name: "sub1"}, {Name: "sub1"}},
+		}, false},
+		{&App{
+			Name:     "p5",
+			Commands: []*Command{{Name: "sub1"}, {Name: "sub2", Aliases: []string{"sub1"}}},
+		}, false},
+		{&App{
+			Name:     "p6",
+			Commands: []*Command{{Name: "sub1"}, {Name: "sub2"}},
+		}, true},
+	}
+	for _, tt := range testdata {
+		err := tt.app.Run([]string{})
+		if tt.expectNoError {
+			expect(t, err, nil)
+		} else {
+			expectNotEqual(t, err, nil)
+		}
+
+		err = checkDuplicatedCmds(tt.app.rootCommand)
+		if tt.expectNoError {
+			expect(t, err, nil)
+		} else {
+			expectNotEqual(t, err, nil)
+		}
+	}
+
+	var testNested = []struct {
+		app               *App
+		subcommandTocheck string
+		expectNoError     bool
+	}{
+		{
+			&App{
+				Name: "nested-0",
+				Commands: []*Command{
+					{Name: "sub1",
+						Subcommands: []*Command{
+							{Name: "sub1_a"},
+							{Name: "sub1_b"},
+						},
+					},
+					{Name: "sub2"}},
+			},
+			"sub1",
+			true},
+		{&App{
+			Name: "nested-1",
+			Commands: []*Command{
+				{Name: "sub1",
+					Subcommands: []*Command{
+						{Name: "sub1_a"},
+						{Name: "sub1_a"},
+					},
+				},
+				{Name: "sub2"}},
+		},
+			"sub1",
+			false},
+	}
+
+	for _, tt := range testNested {
+		err := tt.app.Run([]string{tt.app.Name, tt.subcommandTocheck})
+		if tt.expectNoError {
+			expect(t, err, nil)
+		} else {
+			expectNotEqual(t, err, nil)
+		}
+	}
+}

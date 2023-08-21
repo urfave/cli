@@ -329,6 +329,9 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 	a.rootCommand = a.newRootCommand()
 	cCtx.Command = a.rootCommand
 
+	if err := checkDuplicatedCmds(a.rootCommand); err != nil {
+		return err
+	}
 	return a.rootCommand.Run(cCtx, arguments...)
 }
 
