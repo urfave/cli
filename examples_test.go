@@ -7,7 +7,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/urfave/cli/v3"
+	// Alias the package import to make the examples runnable on pkg.go.dev.
+	//
+	// See issue #1811.
+	cli "github.com/urfave/cli/v3"
 )
 
 func ExampleCommand_Run() {
