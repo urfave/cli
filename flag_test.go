@@ -126,7 +126,8 @@ func TestBoolFlagCountFromContext(t *testing.T) {
 			},
 		}
 
-		app.Run(bct.input)
+		err := app.Run(bct.input)
+		expect(t, err, nil)
 
 	}
 }
