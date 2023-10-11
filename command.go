@@ -922,11 +922,9 @@ func (cmd *Command) LocalFlagNames() []string {
 	cmd.flagSet.Visit(makeFlagNameVisitor(&names))
 
 	// Check the flags which have been set via env or file
-	if cmd.Flags != nil {
-		for _, f := range cmd.Flags {
-			if f.IsSet() {
-				names = append(names, f.Names()...)
-			}
+	for _, f := range cmd.Flags {
+		if f.IsSet() {
+			names = append(names, f.Names()...)
 		}
 	}
 
