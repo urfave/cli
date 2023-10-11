@@ -23,7 +23,7 @@ func parseIter(set *flag.FlagSet, ip iterativeParser, args []string, shellComple
 		err := set.Parse(args)
 		if !ip.useShortOptionHandling() || err == nil {
 			if shellComplete {
-				tracef("returning nil due to shellComplete=true")
+				tracef("returning nil due to shellComplete=true (err=%[1]q)", err)
 
 				return nil
 			}
@@ -79,13 +79,29 @@ func parseIter(set *flag.FlagSet, ip iterativeParser, args []string, shellComple
 	}
 }
 
-const providedButNotDefinedErrMsg = "flag provided but not defined: -"
+const (
+	providedButNotDefinedErrMsg = "flag provided but not defined: -"
+	unknownFlagErrMsg           = "unknown flag "
+)
 
 // flagFromError tries to parse a provided flag from an error message. If the
 // parsing fials, it returns the input error and an empty string
 func flagFromError(err error) (string, error) {
+	if isArghModeOn {
+		return flagFromErrorWithArgh(err)
+	}
+
 	errStr := err.Error()
 	trimmed := strings.TrimPrefix(errStr, providedButNotDefinedErrMsg)
+	if errStr == trimmed {
+		return "", err
+	}
+	return trimmed, nil
+}
+
+func flagFromErrorWithArgh(err error) (string, error) {
+	errStr := err.Error()
+	trimmed := strings.ReplaceAll(strings.TrimPrefix(errStr, unknownFlagErrMsg), "\"", "")
 	if errStr == trimmed {
 		return "", err
 	}

@@ -1262,20 +1262,15 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			expected: "help\n",
 		},
 	} {
-		t.Run(tc.name, func(ct *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			writer := &bytes.Buffer{}
 			rootCmd := tc.cmd.Root()
 			rootCmd.Writer = writer
 
-			os.Args = tc.argv
-			f := DefaultCompleteWithFlags(tc.cmd)
-			f(context.Background(), tc.cmd)
+			tc.cmd.osArgs = tc.argv
+			DefaultCompleteWithFlags(context.Background(), tc.cmd)
 
-			written := writer.String()
-
-			if written != tc.expected {
-				ct.Errorf("written help does not match expected %q != %q", written, tc.expected)
-			}
+			require.Equal(t, tc.expected, writer.String())
 		})
 	}
 }
@@ -1402,8 +1397,12 @@ func TestWrappedCommandHelp(t *testing.T) {
 			},
 		},
 	}
+
 	cmd.setupDefaults([]string{"cli.test"})
-	cmd.setupCommandGraph()
+
+	r := require.New(t)
+
+	r.NoError(cmd.setupCommandGraph())
 
 	HelpPrinter = func(w io.Writer, templ string, data interface{}) {
 		funcMap := map[string]interface{}{
@@ -1414,8 +1413,6 @@ func TestWrappedCommandHelp(t *testing.T) {
 
 		HelpPrinterCustom(w, templ, data, funcMap)
 	}
-
-	r := require.New(t)
 
 	r.NoError(ShowCommandHelp(context.Background(), cmd, "add"))
 	r.Equal(`NAME:

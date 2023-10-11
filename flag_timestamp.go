@@ -86,9 +86,10 @@ func (t *timestampValue) Get() any {
 
 // Timestamp gets the timestamp from a flag name
 func (cmd *Command) Timestamp(name string) *time.Time {
-	if fs := cmd.lookupFlagSet(name); fs != nil {
-		return lookupTimestamp(name, fs, cmd.Name)
+	if flSet := cmd.lookupFlagSet(name); flSet != nil {
+		return lookupTimestamp(name, flSet, cmd.Name)
 	}
+
 	return nil
 }
 

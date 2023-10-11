@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -104,10 +103,25 @@ type Flag interface {
 	// Apply Flag settings to the given flag set
 	Apply(*flag.FlagSet) error
 
-	// All possible names for this flag
+	// ApplyWithArgh applies the flag to the given command config
+	ApplyWithArgh(*Command) error
+
+	// Names returns all possible names for this flag
 	Names() []string
 
-	// Whether the flag has been set or not
+	// CanonicalName returns the canonical name of the flag
+	CanonicalName() string
+
+	// Set sets the flag's value from string
+	Set(string) error
+
+	// GetValue returns the flag's value as a string
+	GetValue() string
+
+	// TakesValue returns true if the flag takes a value, otherwise false
+	TakesValue() bool
+
+	// IsSet returns whether the flag has been set or not
 	IsSet() bool
 }
 
@@ -120,15 +134,8 @@ type RequiredFlag interface {
 
 // DocGenerationFlag is an interface that allows documentation generation for the flag
 type DocGenerationFlag interface {
-	// TakesValue returns true if the flag takes a value, otherwise false
-	TakesValue() bool
-
 	// GetUsage returns the usage string for the flag
 	GetUsage() string
-
-	// GetValue returns the flags value as string representation and an empty
-	// string if the flag takes no value at all.
-	GetValue() string
 
 	// GetDefaultText returns the default text for this flag
 	GetDefaultText() string
@@ -137,7 +144,7 @@ type DocGenerationFlag interface {
 	GetEnvVars() []string
 }
 
-// DocGenerationSliceFlag extends DocGenerationFlag for slice/map based flags.
+// DocGenerationMultiValueFlag extends DocGenerationFlag for slice/map based flags.
 type DocGenerationMultiValueFlag interface {
 	DocGenerationFlag
 
@@ -194,35 +201,48 @@ func copyFlag(name string, ff *flag.Flag, set *flag.FlagSet) {
 }
 
 func normalizeFlags(flags []Flag, set *flag.FlagSet) error {
-	visited := make(map[string]bool)
+	visited := map[string]bool{}
+
 	set.Visit(func(f *flag.Flag) {
 		visited[f.Name] = true
 	})
+
 	for _, f := range flags {
 		parts := f.Names()
+
+		tracef("normalizing flag with names=%[1]q", parts)
+
 		if len(parts) == 1 {
 			continue
 		}
+
 		var ff *flag.Flag
+
 		for _, name := range parts {
-			name = strings.Trim(name, " ")
-			if visited[name] {
+			name = strings.TrimSpace(name)
+
+			if _, ok := visited[name]; ok {
 				if ff != nil {
-					return errors.New("Cannot use two forms of the same flag: " + name + " " + ff.Name)
+					return fmt.Errorf("cannot use two forms of the same flag: %[1]s %[2]s: %[3]w", name, ff.Name, Err)
 				}
+
 				ff = set.Lookup(name)
 			}
 		}
+
 		if ff == nil {
 			continue
 		}
+
 		for _, name := range parts {
-			name = strings.Trim(name, " ")
-			if !visited[name] {
+			name = strings.TrimSpace(name)
+
+			if _, ok := visited[name]; !ok {
 				copyFlag(name, ff, set)
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -328,15 +348,15 @@ func formatDefault(format string) string {
 	return " (default: " + format + ")"
 }
 
-func stringifyFlag(f Flag) string {
+func stringifyFlag(fl Flag) string {
 	// enforce DocGeneration interface on flags to avoid reflection
-	df, ok := f.(DocGenerationFlag)
+	dfl, ok := fl.(DocGenerationFlag)
 	if !ok {
 		return ""
 	}
 
-	placeholder, usage := unquoteUsage(df.GetUsage())
-	needsPlaceholder := df.TakesValue()
+	placeholder, usage := unquoteUsage(dfl.GetUsage())
+	needsPlaceholder := fl.TakesValue()
 
 	if needsPlaceholder && placeholder == "" {
 		placeholder = defaultPlaceholder
@@ -344,19 +364,19 @@ func stringifyFlag(f Flag) string {
 
 	defaultValueString := ""
 
-	if s := df.GetDefaultText(); s != "" {
+	if s := dfl.GetDefaultText(); s != "" {
 		defaultValueString = fmt.Sprintf(formatDefault("%s"), s)
 	}
 
 	usageWithDefault := strings.TrimSpace(usage + defaultValueString)
 
-	pn := prefixedNames(f.Names(), placeholder)
-	sliceFlag, ok := f.(DocGenerationMultiValueFlag)
+	pn := prefixedNames(fl.Names(), placeholder)
+	sliceFlag, ok := fl.(DocGenerationMultiValueFlag)
 	if ok && sliceFlag.IsMultiValueFlag() {
 		pn = pn + " [ " + pn + " ]"
 	}
 
-	return withEnvHint(df.GetEnvVars(), fmt.Sprintf("%s\t%s", pn, usageWithDefault))
+	return withEnvHint(dfl.GetEnvVars(), fmt.Sprintf("%s\t%s", pn, usageWithDefault))
 }
 
 func hasFlag(flags []Flag, fl Flag) bool {

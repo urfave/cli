@@ -23,14 +23,19 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"runtime"
+	"sort"
 	"strings"
 )
 
 var (
-	isTracingOn = os.Getenv("URFAVE_CLI_TRACING") == "on"
+	Err = errors.New("urfave/cli error")
+
+	isTracingOn  = os.Getenv("URFAVE_CLI_TRACING") == "on"
+	isArghModeOn = os.Getenv("URFAVE_CLI_ARGH_MODE") == "on"
 )
 
 func tracef(format string, a ...any) {
@@ -59,4 +64,22 @@ func tracef(format string, a ...any) {
 		}, ""),
 		a...,
 	)
+}
+
+func stringMapToSlice[T any](m map[string]T) []T {
+	keys := []string{}
+
+	for key := range m {
+		keys = append(keys, key)
+	}
+
+	sort.Strings(keys)
+
+	sl := []T{}
+
+	for _, key := range keys {
+		sl = append(sl, m[key])
+	}
+
+	return sl
 }

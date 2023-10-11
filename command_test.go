@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/urfave/argh"
 )
 
 var (
@@ -2371,6 +2372,10 @@ func (c *customBoolFlag) Names() []string {
 	return []string{c.Nombre}
 }
 
+func (c *customBoolFlag) CanonicalName() string {
+	return c.Nombre
+}
+
 func (c *customBoolFlag) TakesValue() bool {
 	return false
 }
@@ -2379,12 +2384,24 @@ func (c *customBoolFlag) GetValue() string {
 	return "value"
 }
 
+func (c *customBoolFlag) Set(string) error {
+	return nil
+}
+
 func (c *customBoolFlag) GetUsage() string {
 	return "usage"
 }
 
 func (c *customBoolFlag) Apply(set *flag.FlagSet) error {
 	set.String(c.Nombre, c.Nombre, "")
+	return nil
+}
+
+func (c *customBoolFlag) ApplyWithArgh(cmd *Command) error {
+	cmd.cfg.SetFlagConfig(c.Nombre, &argh.FlagConfig{
+		On: func(cf argh.CommandFlag) error { return nil },
+	})
+
 	return nil
 }
 
@@ -2418,7 +2435,7 @@ func (c *customBoolFlag) GetDefaultText() string {
 
 func TestCustomFlagsUnused(t *testing.T) {
 	cmd := &Command{
-		Flags:  []Flag{&customBoolFlag{"custom"}},
+		Flags:  []Flag{&customBoolFlag{Nombre: "custom"}},
 		Writer: io.Discard,
 	}
 
@@ -2430,7 +2447,7 @@ func TestCustomFlagsUnused(t *testing.T) {
 
 func TestCustomFlagsUsed(t *testing.T) {
 	cmd := &Command{
-		Flags:  []Flag{&customBoolFlag{"custom"}},
+		Flags:  []Flag{&customBoolFlag{Nombre: "custom"}},
 		Writer: io.Discard,
 	}
 
@@ -2451,8 +2468,8 @@ func TestCustomHelpVersionFlags(t *testing.T) {
 		VersionFlag = versionFlag.(*BoolFlag)
 	}(HelpFlag, VersionFlag)
 
-	HelpFlag = &customBoolFlag{"help-custom"}
-	VersionFlag = &customBoolFlag{"version-custom"}
+	HelpFlag = &customBoolFlag{Nombre: "help-custom"}
+	VersionFlag = &customBoolFlag{Nombre: "version-custom"}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", "--help-custom=bar"})
 	if err != nil {
@@ -3523,11 +3540,11 @@ func TestCommand_lookupFlagSet(t *testing.T) {
 
 	r := require.New(t)
 
-	fs := cmd.lookupFlagSet("top-flag")
-	r.Equal(pCmd.flagSet, fs)
+	flSet := cmd.lookupFlagSet("top-flag")
+	r.Equal(pCmd.flagSet, flSet)
 
-	fs = cmd.lookupFlagSet("local-flag")
-	r.Equal(cmd.flagSet, fs)
+	flSet = cmd.lookupFlagSet("local-flag")
+	r.Equal(cmd.flagSet, flSet)
 	r.Nil(cmd.lookupFlagSet("frob"))
 }
 
