@@ -61,6 +61,33 @@ func TestCompletionShell(t *testing.T) {
 	}
 }
 
+func TestCompletionSubcommand(t *testing.T) {
+	out := &bytes.Buffer{}
+
+	cmd := &Command{
+		EnableShellCompletion: true,
+		Writer:                out,
+		Commands: []*Command{
+			{
+				Name: "bar",
+				Commands: []*Command{
+					{
+						Name: "xyz",
+					},
+				},
+			},
+		},
+	}
+
+	r := require.New(t)
+
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "bar", "--generate-shell-completion"}))
+	r.Containsf(
+		out.String(), "xyz",
+		"Expected output to contain shell name %[1]q", "xyz",
+	)
+}
+
 func TestCompletionInvalidShell(t *testing.T) {
 	cmd := &Command{
 		EnableShellCompletion: true,

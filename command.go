@@ -139,6 +139,8 @@ type Command struct {
 	isInError bool
 	// track state of defaults
 	didSetupDefaults bool
+	// whether in shell completion mode
+	shellCompletion bool
 }
 
 // FullName returns the full name of the command.
@@ -244,7 +246,7 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 		cmd.SuggestCommandFunc = suggestCommand
 	}
 
-	if cmd.EnableShellCompletion {
+	if cmd.EnableShellCompletion || cmd.Root().shellCompletion {
 		completionCommand := buildCompletionCommand()
 
 		if cmd.ShellCompletionCommandName != "" {
@@ -346,16 +348,19 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 		cmd.parent = v
 	}
 
-	// handle the completion flag separately from the flagset since
-	// completion could be attempted after a flag, but before its value was put
-	// on the command line. this causes the flagset to interpret the completion
-	// flag name as the value of the flag before it which is undesirable
-	// note that we can only do this because the shell autocomplete function
-	// always appends the completion flag at the end of the command
-	enableShellCompletion, osArgs := checkShellCompleteFlag(cmd, osArgs)
+	if cmd.parent == nil {
+		// handle the completion flag separately from the flagset since
+		// completion could be attempted after a flag, but before its value was put
+		// on the command line. this causes the flagset to interpret the completion
+		// flag name as the value of the flag before it which is undesirable
+		// note that we can only do this because the shell autocomplete function
+		// always appends the completion flag at the end of the command
+		tracef("checking osArgs %v (cmd=%[2]q)", osArgs, cmd.Name)
+		cmd.shellCompletion, osArgs = checkShellCompleteFlag(cmd, osArgs)
 
-	tracef("setting cmd.EnableShellCompletion=%[1]v from checkShellCompleteFlag (cmd=%[2]q)", enableShellCompletion, cmd.Name)
-	cmd.EnableShellCompletion = enableShellCompletion
+		tracef("setting cmd.shellCompletion=%[1]v from checkShellCompleteFlag (cmd=%[2]q)", cmd.shellCompletion && cmd.EnableShellCompletion, cmd.Name)
+		cmd.shellCompletion = cmd.EnableShellCompletion && cmd.shellCompletion
+	}
 
 	tracef("using post-checkShellCompleteFlag arguments %[1]q (cmd=%[2]q)", osArgs, cmd.Name)
 
@@ -418,7 +423,7 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 		return nil
 	}
 
-	if cmd.After != nil && !cmd.EnableShellCompletion {
+	if cmd.After != nil && !cmd.Root().shellCompletion {
 		defer func() {
 			if err := cmd.After(ctx, cmd); err != nil {
 				err = cmd.handleExitCoder(ctx, err)
@@ -445,7 +450,7 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 		}
 	}
 
-	if cmd.Before != nil && !cmd.EnableShellCompletion {
+	if cmd.Before != nil && !cmd.Root().shellCompletion {
 		if err := cmd.Before(ctx, cmd); err != nil {
 			deferErr = cmd.handleExitCoder(ctx, err)
 			return deferErr
@@ -666,7 +671,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 
 	tracef("parsing flags iteratively tail=%[1]q (cmd=%[2]q)", args.Tail(), cmd.Name)
 
-	if err := parseIter(cmd.flagSet, cmd, args.Tail(), cmd.Root().EnableShellCompletion); err != nil {
+	if err := parseIter(cmd.flagSet, cmd, args.Tail(), cmd.Root().shellCompletion); err != nil {
 		return cmd.Args(), err
 	}
 

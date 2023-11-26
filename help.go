@@ -218,8 +218,16 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 
 func DefaultCompleteWithFlags(cmd *Command) func(ctx context.Context, cmd *Command) {
 	return func(_ context.Context, cmd *Command) {
-		if len(os.Args) > 2 {
-			lastArg := os.Args[len(os.Args)-2]
+		args := os.Args
+		if cmd != nil && cmd.flagSet != nil && cmd.parent != nil {
+			args = cmd.Args().Slice()
+			tracef("running default complete with flags[%v] on command %[1]q", args, cmd.Name)
+		} else {
+			tracef("running default complete with os.Args flags")
+		}
+		argsLen := len(args)
+		if argsLen > 2 {
+			lastArg := args[argsLen-2]
 
 			if strings.HasPrefix(lastArg, "-") {
 				if cmd != nil {
@@ -235,11 +243,10 @@ func DefaultCompleteWithFlags(cmd *Command) func(ctx context.Context, cmd *Comma
 		}
 
 		if cmd != nil {
+			tracef("printing command suggestions on command %[1]q", cmd.Name)
 			printCommandSuggestions(cmd.Commands, cmd.Root().Writer)
 			return
 		}
-
-		printCommandSuggestions(cmd.Commands, cmd.Root().Writer)
 	}
 }
 
@@ -431,7 +438,7 @@ func checkVersion(cmd *Command) bool {
 }
 
 func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
-	if !c.EnableShellCompletion {
+	if (c.parent == nil && !c.EnableShellCompletion) || (c.parent != nil && !c.Root().shellCompletion) {
 		return false, arguments
 	}
 
@@ -448,7 +455,7 @@ func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
 func checkCompletions(ctx context.Context, cmd *Command) bool {
 	tracef("checking completions on command %[1]q", cmd.Name)
 
-	if !cmd.EnableShellCompletion {
+	if !cmd.Root().shellCompletion {
 		return false
 	}
 
@@ -461,6 +468,7 @@ func checkCompletions(ctx context.Context, cmd *Command) bool {
 	}
 
 	if cmd.ShellComplete != nil {
+		tracef("running shell completion func for command %[1]q", cmd.Name)
 		cmd.ShellComplete(ctx, cmd)
 	}
 
