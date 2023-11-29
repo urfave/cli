@@ -33,16 +33,14 @@ func (f *PathFlag) GetDefaultText() string {
 	if f.DefaultText != "" {
 		return f.DefaultText
 	}
+	val := f.Value
 	if f.defaultValueSet {
-		if f.defaultValue == "" {
-			return f.defaultValue
-		}
-		return fmt.Sprintf("%q", f.defaultValue)
+		val = f.defaultValue
 	}
-	if f.Value == "" {
-		return f.Value
+	if val == "" {
+		return val
 	}
-	return fmt.Sprintf("%q", f.Value)
+	return fmt.Sprintf("%q", val)
 }
 
 // GetEnvVars returns the env vars for this flag

@@ -120,14 +120,13 @@ func (f *TimestampFlag) GetDefaultText() string {
 	if f.DefaultText != "" {
 		return f.DefaultText
 	}
+	val := f.Value
 	if f.defaultValueSet {
-		if f.defaultValue != nil && f.defaultValue.timestamp != nil {
-			return f.defaultValue.timestamp.String()
-		}
-	} else {
-		if f.Value != nil && f.Value.timestamp != nil {
-			return f.Value.timestamp.String()
-		}
+		val = f.defaultValue
+	}
+
+	if val != nil && val.timestamp != nil {
+		return val.timestamp.String()
 	}
 
 	return ""
