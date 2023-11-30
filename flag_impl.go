@@ -180,6 +180,7 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 				if err := f.value.Set(val); err != nil {
 					return err
 				}
+				f.hasBeenSet = true
 				if f.Validator != nil {
 					if v, ok := f.value.Get().(T); !ok {
 						return &typeError[T]{

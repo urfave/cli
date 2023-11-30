@@ -459,7 +459,7 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 
 	tracef("running flag actions (cmd=%[1]q)", cmd.Name)
 
-	if err := runFlagActions(ctx, cmd, cmd.appliedFlags); err != nil {
+	if err := cmd.runFlagActions(ctx); err != nil {
 		return err
 	}
 
@@ -1014,19 +1014,39 @@ func hasCommand(commands []*Command, command *Command) bool {
 	return false
 }
 
-func runFlagActions(ctx context.Context, cmd *Command, flags []Flag) error {
-	for _, fl := range flags {
+func (cmd *Command) runFlagActions(ctx context.Context) error {
+	if cmd.flagSet == nil {
+		return nil
+	}
+
+	for _, fl := range cmd.appliedFlags {
 		isSet := false
 
+		// check only local flagset for running local flag actions
 		for _, name := range fl.Names() {
-			if cmd.IsSet(name) {
-				isSet = true
+			cmd.flagSet.Visit(func(f *flag.Flag) {
+				if f.Name == name {
+					isSet = true
+				}
+			})
+			if isSet {
 				break
 			}
 		}
 
+		// If the flag hasnt been set on cmd line then we need to further
+		// check if it has been set via other means. If however it has
+		// been set by other means but it is persistent(and not set via current cmd)
+		// do not run the flag action
 		if !isSet {
-			continue
+			if !fl.IsSet() {
+				continue
+			}
+			if fl.IsSet() {
+				if pf, ok := fl.(PersistentFlag); ok && pf.IsPersistent() {
+					continue
+				}
+			}
 		}
 
 		if af, ok := fl.(ActionableFlag); ok {
