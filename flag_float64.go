@@ -32,7 +32,10 @@ func (f *Float64Flag) GetDefaultText() string {
 	if f.DefaultText != "" {
 		return f.DefaultText
 	}
-	return f.GetValue()
+	if f.defaultValueSet {
+		return fmt.Sprintf("%v", f.defaultValue)
+	}
+	return fmt.Sprintf("%v", f.Value)
 }
 
 // GetEnvVars returns the env vars for this flag
@@ -42,6 +45,9 @@ func (f *Float64Flag) GetEnvVars() []string {
 
 // Apply populates the flag given the flag set and environment
 func (f *Float64Flag) Apply(set *flag.FlagSet) error {
+	f.defaultValue = f.Value
+	f.defaultValueSet = true
+
 	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {
 		if val != "" {
 			valFloat, err := strconv.ParseFloat(val, 64)
