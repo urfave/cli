@@ -538,7 +538,8 @@ func TestCommand_PreservesSeparatorOnSubcommands(t *testing.T) {
 		SliceFlagSeparator: ";",
 	}
 
-	app.Run([]string{"app", "foo", "bar", "--my-flag", "1;2;3"})
+	err := app.Run([]string{"app", "foo", "bar", "--my-flag", "1;2;3"})
+	expect(t, err, nil)
 
 	expect(t, values, []string{"1", "2", "3"})
 }

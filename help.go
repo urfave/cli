@@ -376,17 +376,26 @@ func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs 
 
 	w := tabwriter.NewWriter(out, 1, 8, 2, ' ', 0)
 	t := template.Must(template.New("help").Funcs(funcMap).Parse(templ))
-	t.New("helpNameTemplate").Parse(helpNameTemplate)
-	t.New("usageTemplate").Parse(usageTemplate)
-	t.New("descriptionTemplate").Parse(descriptionTemplate)
-	t.New("visibleCommandTemplate").Parse(visibleCommandTemplate)
-	t.New("copyrightTemplate").Parse(copyrightTemplate)
-	t.New("versionTemplate").Parse(versionTemplate)
-	t.New("visibleFlagCategoryTemplate").Parse(visibleFlagCategoryTemplate)
-	t.New("visibleFlagTemplate").Parse(visibleFlagTemplate)
-	t.New("visibleGlobalFlagCategoryTemplate").Parse(strings.Replace(visibleFlagCategoryTemplate, "OPTIONS", "GLOBAL OPTIONS", -1))
-	t.New("authorsTemplate").Parse(authorsTemplate)
-	t.New("visibleCommandCategoryTemplate").Parse(visibleCommandCategoryTemplate)
+	templates := map[string]string{
+		"helpNameTemplate":                  helpNameTemplate,
+		"usageTemplate":                     usageTemplate,
+		"descriptionTemplate":               descriptionTemplate,
+		"visibleCommandTemplate":            visibleCommandTemplate,
+		"copyrightTemplate":                 copyrightTemplate,
+		"versionTemplate":                   versionTemplate,
+		"visibleFlagCategoryTemplate":       visibleFlagCategoryTemplate,
+		"visibleFlagTemplate":               visibleFlagTemplate,
+		"visibleGlobalFlagCategoryTemplate": strings.Replace(visibleFlagCategoryTemplate, "OPTIONS", "GLOBAL OPTIONS", -1),
+		"authorsTemplate":                   authorsTemplate,
+		"visibleCommandCategoryTemplate":    visibleCommandCategoryTemplate,
+	}
+	for name, value := range templates {
+		if _, err := t.New(name).Parse(value); err != nil {
+			if os.Getenv("CLI_TEMPLATE_ERROR_DEBUG") != "" {
+				_, _ = fmt.Fprintf(ErrWriter, "CLI TEMPLATE ERROR: %#v\n", err)
+			}
+		}
+	}
 
 	err := t.Execute(w, data)
 	if err != nil {

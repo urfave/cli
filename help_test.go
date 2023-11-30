@@ -1330,7 +1330,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			tc.a.HideHelp = true
 			tc.a.Writer = writer
 			os.Args = tc.argv
-			tc.a.Run(tc.argv)
+			_ = tc.a.Run(tc.argv)
 
 			written := writer.String()
 

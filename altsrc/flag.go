@@ -79,7 +79,9 @@ func (f *GenericFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceCo
 			continue
 		}
 		for _, n := range f.Names() {
-			_ = f.set.Set(n, value.String())
+			if err := f.set.Set(n, value.String()); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -109,10 +111,12 @@ func (f *StringSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSour
 				continue
 			}
 			underlyingFlag.Value = &sliceValue
-			f.set.Set(n, sliceValue.Serialize())
+			if err := f.set.Set(n, sliceValue.Serialize()); err != nil {
+				return err
+			}
 		}
 		if f.Destination != nil {
-			f.Destination.Set(sliceValue.Serialize())
+			_ = f.Destination.Set(sliceValue.Serialize())
 		}
 	}
 	return nil
@@ -143,7 +147,9 @@ func (f *IntSliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceC
 			underlyingFlag.Value = &sliceValue
 		}
 		if f.Destination != nil {
-			f.Destination.Set(sliceValue.Serialize())
+			if err := f.Destination.Set(sliceValue.Serialize()); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -174,7 +180,9 @@ func (f *Int64SliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourc
 			underlyingFlag.Value = &sliceValue
 		}
 		if f.Destination != nil {
-			f.Destination.Set(sliceValue.Serialize())
+			if err := f.Destination.Set(sliceValue.Serialize()); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -205,7 +213,9 @@ func (f *Float64SliceFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSou
 			underlyingFlag.Value = &sliceValue
 		}
 		if f.Destination != nil {
-			f.Destination.Set(sliceValue.Serialize())
+			if err := f.Destination.Set(sliceValue.Serialize()); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -225,7 +235,9 @@ func (f *BoolFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceConte
 			return err
 		}
 		for _, n := range f.Names() {
-			_ = f.set.Set(n, strconv.FormatBool(value))
+			if err := f.set.Set(n, strconv.FormatBool(value)); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -245,7 +257,9 @@ func (f *StringFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceCon
 			return err
 		}
 		for _, n := range f.Names() {
-			_ = f.set.Set(n, value)
+			if err := f.set.Set(n, value); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -275,7 +289,9 @@ func (f *PathFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceConte
 				}
 				value = filepath.Join(filepath.Dir(basePathAbs), value)
 			}
-			_ = f.set.Set(n, value)
+			if err := f.set.Set(n, value); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -295,7 +311,9 @@ func (f *IntFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContex
 			return err
 		}
 		for _, n := range f.Names() {
-			_ = f.set.Set(n, strconv.FormatInt(int64(value), 10))
+			if err := f.set.Set(n, strconv.FormatInt(int64(value), 10)); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -314,7 +332,9 @@ func (f *Int64Flag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceCont
 			return err
 		}
 		for _, n := range f.Names() {
-			_ = f.set.Set(n, strconv.FormatInt(value, 10))
+			if err := f.set.Set(n, strconv.FormatInt(value, 10)); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -333,7 +353,9 @@ func (f *UintFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceConte
 			return err
 		}
 		for _, n := range f.Names() {
-			_ = f.set.Set(n, strconv.FormatUint(uint64(value), 10))
+			if err := f.set.Set(n, strconv.FormatUint(uint64(value), 10)); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -352,7 +374,9 @@ func (f *Uint64Flag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceCon
 			return err
 		}
 		for _, n := range f.Names() {
-			_ = f.set.Set(n, strconv.FormatUint(value, 10))
+			if err := f.set.Set(n, strconv.FormatUint(value, 10)); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -372,7 +396,9 @@ func (f *DurationFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceC
 			return err
 		}
 		for _, n := range f.Names() {
-			_ = f.set.Set(n, value.String())
+			if err := f.set.Set(n, value.String()); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -393,7 +419,9 @@ func (f *Float64Flag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceCo
 		}
 		floatStr := float64ToString(value)
 		for _, n := range f.Names() {
-			_ = f.set.Set(n, floatStr)
+			if err := f.set.Set(n, floatStr); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

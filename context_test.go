@@ -325,7 +325,7 @@ func TestContext_Set_InvalidFlagAccessHandler(t *testing.T) {
 		},
 	}
 	c := NewContext(app, set, nil)
-	c.Set("missing", "")
+	expect(t, c.Set("missing", "") != nil, true)
 	expect(t, flagName, "missing")
 }
 
@@ -411,10 +411,12 @@ func TestNonNilContext(t *testing.T) {
 // *cli.Context always has a valid
 // context.Context
 func TestContextPropagation(t *testing.T) {
+	type testKey struct{}
+
 	parent := NewContext(nil, nil, nil)
-	parent.Context = context.WithValue(context.Background(), "key", "val")
+	parent.Context = context.WithValue(context.Background(), testKey{}, "val")
 	ctx := NewContext(nil, nil, parent)
-	val := ctx.Context.Value("key")
+	val := ctx.Context.Value(testKey{})
 	if val == nil {
 		t.Fatal("expected a parent context to be inherited but got nil")
 	}
