@@ -1015,9 +1015,6 @@ func hasCommand(commands []*Command, command *Command) bool {
 }
 
 func (cmd *Command) runFlagActions(ctx context.Context) error {
-	if cmd.flagSet == nil {
-		return nil
-	}
 
 	for _, fl := range cmd.appliedFlags {
 		isSet := false
@@ -1042,10 +1039,8 @@ func (cmd *Command) runFlagActions(ctx context.Context) error {
 			if !fl.IsSet() {
 				continue
 			}
-			if fl.IsSet() {
-				if pf, ok := fl.(PersistentFlag); ok && pf.IsPersistent() {
-					continue
-				}
+			if pf, ok := fl.(PersistentFlag); ok && pf.IsPersistent() {
+				continue
 			}
 		}
 
