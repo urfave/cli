@@ -512,7 +512,7 @@ for their given sources.
 
 Here is a more complete sample of a command using YAML support:
 
-<!-- <!-- {
+<!-- {
   "args": ["&#45;&#45;help"],
   "output": "&#45&#45;test value.*default: 0"
 } -->
@@ -525,27 +525,30 @@ import (
 	"context"
 
 	"github.com/urfave/cli/v3"
-	"github.com/urfave/cli-altsrc"
+	"github.com/urfave/cli-altsrc/v3"
 )
 
 func main() {
 	flags := []cli.Flag{
-		altsrc.NewIntFlag(&cli.IntFlag{Name: "test"}),
+		&cli.IntFlag{
+			Name: "test",
+			Sources: altsrc.YAML("key", "/path/to/file"),
+		},
 		&cli.StringFlag{Name: "load"},
 	}
 
 	cmd := &cli.Command{
-		Action: func(*cli.Context) error {
+		Action: func(context.Context, *cli.Command) error {
 			fmt.Println("--test value.*default: 0")
 			return nil
 		},
-		Before: altsrc.InitInputSourceWithContext(flags, altsrc.NewYamlSourceFromFlagFunc("load")),
+		//Before: altsrc.InitInputSourceWithContext(flags, altsrc.NewYamlSourceFromFlagFunc("load")),
 		Flags:  flags,
 	}
 
 	cmd.Run(context.Background(), os.Args)
 }
-``` -->
+```
 
 #### Required Flags
 
