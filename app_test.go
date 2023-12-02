@@ -101,6 +101,7 @@ func ExampleApp_Run_appHelp() {
 	app := &App{
 		Name:        "greet",
 		Version:     "0.1.0",
+		Args:        true,
 		Description: "This is how we describe greet the app",
 		Authors: []*Author{
 			{Name: "Harrison", Email: "harrison@lolwut.com"},
@@ -156,6 +157,7 @@ func ExampleApp_Run_commandHelp() {
 
 	app := &App{
 		Name: "greet",
+		Args: true,
 		Flags: []Flag{
 			&StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
 		},
@@ -190,6 +192,7 @@ func ExampleApp_Run_commandHelp() {
 func ExampleApp_Run_noAction() {
 	app := App{}
 	app.Name = "greet"
+	app.Args = true
 	_ = app.Run([]string{"greet"})
 	// Output:
 	// NAME:
@@ -208,6 +211,7 @@ func ExampleApp_Run_noAction() {
 func ExampleApp_Run_subcommandNoAction() {
 	app := &App{
 		Name: "greet",
+		Args: true,
 		Commands: []*Command{
 			{
 				Name:        "describeit",
@@ -2017,6 +2021,7 @@ func TestApp_Run_CommandSubcommandHelpName(t *testing.T) {
 		Name:        "foo",
 		Usage:       "foo commands",
 		Description: "This is a description",
+		Args:        true,
 		Subcommands: []*Command{subCmd},
 	}
 	app.Commands = []*Command{cmd}

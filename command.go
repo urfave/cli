@@ -20,6 +20,8 @@ type Command struct {
 	UsageText string
 	// A longer explanation of how the command works
 	Description string
+	// Whether this command supports arguments
+	Args bool
 	// A short description of the arguments of this command
 	ArgsUsage string
 	// The category the command is part of
