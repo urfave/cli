@@ -81,7 +81,7 @@ func main() {
 
 #### Custom auto-completion
 <!-- {
-  "args": ["complete", "&#45;&#45;generate&#45;bash&#45;completion"],
+  "args": ["complete", "&#45;&#45;generate&#45;shell&#45;completion"],
   "output": "laundry"
 } -->
 ```go
@@ -187,7 +187,7 @@ The default shell completion flag (`--generate-bash-completion`) is defined as
 `cli.EnableShellCompletion`, and may be redefined if desired, e.g.:
 
 <!-- {
-  "args": ["&#45;&#45;generate&#45;bash&#45;completion"],
+  "args": ["&#45;&#45;generate&#45;shell&#45;completion"],
   "output": "wat\nhelp\nh"
 } -->
 ```go

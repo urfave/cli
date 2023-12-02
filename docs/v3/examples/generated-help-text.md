@@ -34,16 +34,16 @@ import (
 
 func main() {
 	// EXAMPLE: Append to an existing template
-	cli.AppHelpTemplate = fmt.Sprintf(`%s
+	cli.RootCommandHelpTemplate = fmt.Sprintf(`%s
 
 WEBSITE: http://awesometown.example.com
 
 SUPPORT: support@awesometown.example.com
 
-`, cli.AppHelpTemplate)
+`, cli.RootCommandHelpTemplate)
 
 	// EXAMPLE: Override a template
-	cli.AppHelpTemplate = `NAME:
+	cli.RootCommandHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 USAGE:
    {{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}
@@ -69,7 +69,7 @@ VERSION:
 		fmt.Println("Ha HA.  I pwnd the help!!1")
 	}
 
-	(&cli.Command{}).Run(os.Args)
+	(&cli.Command{}).Run(context.Background(), os.Args)
 }
 ```
 
@@ -85,6 +85,7 @@ package main
 
 import (
 	"os"
+	"context"
 
 	"github.com/urfave/cli/v3"
 )
@@ -94,9 +95,9 @@ func main() {
 		Name:    "haaaaalp",
 		Aliases: []string{"halp"},
 		Usage:   "HALP",
-		EnvVars: []string{"SHOW_HALP", "HALPPLZ"},
+		Sources: cli.EnvVars("SHOW_HALP", "HALPPLZ"),
 	}
 
-	(&cli.Command{}).Run(os.Args)
+	(&cli.Command{}).Run(context.Background(), os.Args)
 }
 ```

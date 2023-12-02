@@ -241,7 +241,7 @@ error.
 
 Using a slice flag allows you to pass multiple values for a single flag; the values will be provided as a slice:
 
-- `Int64SliceFlag`
+- `UintSliceFlag`
 - `IntSliceFlag`
 - `StringSliceFlag`
 
@@ -512,7 +512,7 @@ for their given sources.
 
 Here is a more complete sample of a command using YAML support:
 
-<!-- {
+<!-- <!-- {
   "args": ["&#45;&#45;help"],
   "output": "&#45&#45;test value.*default: 0"
 } -->
@@ -525,7 +525,7 @@ import (
 	"context"
 
 	"github.com/urfave/cli/v3"
-	"github.com/urfave/altsrc"
+	"github.com/urfave/cli-altsrc"
 )
 
 func main() {
@@ -545,7 +545,7 @@ func main() {
 
 	cmd.Run(context.Background(), os.Args)
 }
-```
+``` -->
 
 #### Required Flags
 

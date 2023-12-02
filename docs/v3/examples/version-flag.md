@@ -56,6 +56,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"context"
 
 	"github.com/urfave/cli/v3"
 )
@@ -65,8 +66,8 @@ var (
 )
 
 func main() {
-	cli.VersionPrinter = func(ctx context.Context, cmd *cli.Command)) {
-		fmt.Printf("version=%s revision=%s\n", cCtx.App.Version, Revision)
+	cli.VersionPrinter = func(cmd *cli.Command) {
+		fmt.Printf("version=%s revision=%s\n", cmd.Root().Version, Revision)
 	}
 
 	cmd := &cli.Command{
