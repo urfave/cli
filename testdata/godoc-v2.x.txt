@@ -649,7 +649,7 @@ func (cCtx *Context) Bool(name string) bool
     Bool looks up the value of a local BoolFlag, returns false if not found
 
 func (cCtx *Context) Count(name string) int
-    Count returns the num of occurences of this flag
+    Count returns the num of occurrences of this flag
 
 func (cCtx *Context) Duration(name string) time.Duration
     Duration looks up the value of a local DurationFlag, returns 0 if not found
