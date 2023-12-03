@@ -246,7 +246,7 @@ Using a slice flag allows you to pass multiple values for a single flag; the val
 - `StringSliceFlag`
 
 <!-- {
-  "args": ["&#45;&#45;greeting Hello", "&#45;&#45;greeting Hola"],
+  "args": ["&#45;&#45;greeting", "Hello", "&#45;&#45;greeting", "Hola"],
   "output": "Hello, Hola"
 } -->
 ```go
@@ -294,7 +294,7 @@ For example this:
 
 <!-- {
   "args": ["&#45;&#45;help"],
-  "output": ".*Load configuration from FILE\n.*\n.*Language for the greeting.*"
+  "output": ".*Load configuration from FILE\n.*Language for the greeting.*"
 } -->
 ```go
 package main
