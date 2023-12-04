@@ -2588,6 +2588,8 @@ func TestWhenExitSubCommandWithCodeThenCommandQuitUnexpectedly(t *testing.T) {
 }
 
 func buildMinimalTestCommand() *Command {
+	// reset the help flag because tests may have set it
+	HelpFlag.(*BoolFlag).hasBeenSet = false
 	return &Command{Writer: io.Discard}
 }
 
@@ -3053,6 +3055,44 @@ func TestPersistentFlag(t *testing.T) {
 	if persistentFlagActionCount != 2 {
 		t.Errorf("Expected persistent flag action to be called 2 times instead called %d", persistentFlagActionCount)
 	}
+}
+
+func TestPersistentFlagIsSet(t *testing.T) {
+
+	result := ""
+	resultIsSet := false
+
+	app := &Command{
+		Name: "root",
+		Flags: []Flag{
+			&StringFlag{
+				Name:       "result",
+				Persistent: true,
+			},
+		},
+		Commands: []*Command{
+			{
+				Name: "sub",
+				Action: func(_ context.Context, cmd *Command) error {
+					result = cmd.String("result")
+					resultIsSet = cmd.IsSet("result")
+					return nil
+				},
+			},
+		},
+	}
+
+	r := require.New(t)
+
+	err := app.Run(context.Background(), []string{"root", "--result", "before", "sub"})
+	r.NoError(err)
+	r.Equal("before", result)
+	r.True(resultIsSet)
+
+	err = app.Run(context.Background(), []string{"root", "sub", "--result", "after"})
+	r.NoError(err)
+	r.Equal("after", result)
+	r.True(resultIsSet)
 }
 
 func TestFlagDuplicates(t *testing.T) {
