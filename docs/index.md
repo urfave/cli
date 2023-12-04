@@ -28,6 +28,7 @@ urfave/cli is a **declarative**, simple, fast, and fun package for building comm
 
 These are the guides for each major version:
 
+- [`v3`](./v3/getting-started.md)
 - [`v2`](./v2/getting-started.md)
 - [`v1`](./v1/getting-started.md)
 
@@ -66,7 +67,8 @@ The latest pre-release in progress on the [`main`
 branch](https://github.com/urfave/cli/tree/main) is the `v3` series which should
 be considered **alpha-level** with an unstable API. Occasional **alpha** tags
 are pushed to allow for limited stability without pinning to an arbitrary
-commit:
+commit. Please see the [`v3` migration
+guide](./migrate-v2-to-v3.md) on using v3 if you are upgrading from v2
 
 ```sh
 go get github.com/urfave/cli/v3@latest
