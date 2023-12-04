@@ -3254,6 +3254,44 @@ func TestCommand_Duration(t *testing.T) {
 	r.Equal(13*time.Second, cmd.Duration("top-flag"))
 }
 
+func TestCommand_Timestamp(t *testing.T) {
+	t1 := time.Time{}.Add(12 * time.Second)
+	t2 := time.Time{}.Add(13 * time.Second)
+
+	cmd := &Command{
+		Name: "hello",
+		Flags: []Flag{
+			&TimestampFlag{
+				Name:  "myflag",
+				Value: t1,
+			},
+		},
+		Action: func(ctx context.Context, c *Command) error {
+			return nil
+		},
+	}
+
+	pCmd := &Command{
+		Flags: []Flag{
+			&TimestampFlag{
+				Name:  "top-flag",
+				Value: t2,
+			},
+		},
+		Commands: []*Command{
+			cmd,
+		},
+	}
+
+	if err := pCmd.Run(context.Background(), []string{"foo", "hello"}); err != nil {
+		t.Error(err)
+	}
+
+	r := require.New(t)
+	r.Equal(t1, cmd.Timestamp("myflag"))
+	r.Equal(t2, cmd.Timestamp("top-flag"))
+}
+
 func TestCommand_String(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	set.String("myflag", "hello world", "doc")

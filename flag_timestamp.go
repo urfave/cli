@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"flag"
 	"fmt"
 	"time"
 )
@@ -85,25 +84,12 @@ func (t *timestampValue) Get() any {
 }
 
 // Timestamp gets the timestamp from a flag name
-func (cmd *Command) Timestamp(name string) *time.Time {
-	if fs := cmd.lookupFlagSet(name); fs != nil {
-		return lookupTimestamp(name, fs, cmd.Name)
-	}
-	return nil
-}
-
-// Fetches the timestamp value from the local timestampWrap
-func lookupTimestamp(name string, set *flag.FlagSet, cmdName string) *time.Time {
-	fl := set.Lookup(name)
-	if fl != nil {
-		if tv, ok := fl.Value.(*timestampValue); ok {
-			v := tv.Value()
-
-			tracef("timestamp available for flag name %[1]q with value=%[2]v (cmd=%[3]q)", name, v, cmdName)
-			return v
-		}
+func (cmd *Command) Timestamp(name string) time.Time {
+	if v, ok := cmd.Value(name).(time.Time); ok {
+		tracef("time.Time available for flag name %[1]q with value=%[2]v (cmd=%[3]q)", name, v, cmd.Name)
+		return v
 	}
 
-	tracef("timestamp NOT available for flag name %[1]q (cmd=%[2]q)", name, cmdName)
-	return nil
+	tracef("time.Time NOT available for flag name %[1]q (cmd=%[2]q)", name, cmd.Name)
+	return time.Time{}
 }
