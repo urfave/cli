@@ -456,7 +456,7 @@ func (cmd *Command) StringSlice(name string) []string
     StringSlice looks up the value of a local StringSliceFlag, returns nil if
     not found
 
-func (cmd *Command) Timestamp(name string) *time.Time
+func (cmd *Command) Timestamp(name string) time.Time
     Timestamp gets the timestamp from a flag name
 
 func (cmd *Command) ToFishCompletion() (string, error)
