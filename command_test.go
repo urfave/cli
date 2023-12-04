@@ -3283,7 +3283,9 @@ func TestCommand_Timestamp(t *testing.T) {
 		},
 	}
 
-	pCmd.Run(context.Background(), []string{"foo", "hello"})
+	if err := pCmd.Run(context.Background(), []string{"foo", "hello"}); err != nil {
+		t.Error(err)
+	}
 
 	r := require.New(t)
 	r.Equal(t1, cmd.Timestamp("myflag"))
