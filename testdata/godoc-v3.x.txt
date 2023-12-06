@@ -227,6 +227,26 @@ type Args interface {
 	Slice() []string
 }
 
+type Argument interface {
+	Parse([]string) ([]string, error)
+	Usage() string
+}
+
+type ArgumentBase[T any, C any, VC ValueCreator[T, C]] struct {
+	Name        string // the name of this argument
+	Value       T      // the default value of this argument
+	Destination *T     // the destination point for this argument
+	Values      *[]T   // all the values of this argument, only if multiple are supported
+	UsageText   string // the usage text to show
+	Min         int    // the min num of occurrences of this argument
+	Max         int    // the max num of occurrences of this argument, set to -1 for unlimited
+	Config      C      // config for this argument similar to Flag Config
+}
+
+func (a *ArgumentBase[T, C, VC]) Parse(s []string) ([]string, error)
+
+func (a *ArgumentBase[T, C, VC]) Usage() string
+
 type BeforeFunc func(context.Context, *Command) error
     BeforeFunc is an action that executes prior to any subcommands being run
     once the context is ready. If a non-nil error is returned, no subcommands
@@ -372,6 +392,8 @@ type Command struct {
 	SuggestCommandFunc SuggestCommandFunc
 	// Flag exclusion group
 	MutuallyExclusiveFlags []MutuallyExclusiveFlags
+	// Arguments to parse for this command
+	Arguments []Argument
 
 	// Has unexported fields.
 }
@@ -741,11 +763,15 @@ func (f FlagsByName) Less(i, j int) bool
 
 func (f FlagsByName) Swap(i, j int)
 
+type FloatArg = ArgumentBase[float64, NoConfig, floatValue]
+
 type FloatFlag = FlagBase[float64, NoConfig, floatValue]
 
 type FloatSlice = SliceBase[float64, NoConfig, floatValue]
 
 type FloatSliceFlag = FlagBase[[]float64, NoConfig, FloatSlice]
+
+type IntArg = ArgumentBase[int64, IntegerConfig, intValue]
 
 type IntFlag = FlagBase[int64, IntegerConfig, intValue]
 
@@ -868,6 +894,8 @@ func (i SliceBase[T, C, VC]) ToString(t []T) string
 func (i *SliceBase[T, C, VC]) Value() []T
     Value returns the slice of values set by this flag
 
+type StringArg = ArgumentBase[string, StringConfig, stringValue]
+
 type StringConfig struct {
 	// Whether to trim whitespace of parsed value
 	TrimSpace bool
@@ -877,6 +905,8 @@ type StringConfig struct {
 type StringFlag = FlagBase[string, StringConfig, stringValue]
 
 type StringMap = MapBase[string, StringConfig, stringValue]
+
+type StringMapArg = ArgumentBase[map[string]string, StringConfig, StringMap]
 
 type StringMapFlag = FlagBase[map[string]string, StringConfig, StringMap]
 
@@ -888,6 +918,8 @@ type SuggestCommandFunc func(commands []*Command, provided string) string
 
 type SuggestFlagFunc func(flags []Flag, provided string, hideHelp bool) string
 
+type TimestampArg = ArgumentBase[time.Time, TimestampConfig, timestampValue]
+
 type TimestampConfig struct {
 	Timezone *time.Location
 	Layout   string
@@ -895,6 +927,8 @@ type TimestampConfig struct {
     TimestampConfig defines the config for timestamp flags
 
 type TimestampFlag = FlagBase[time.Time, TimestampConfig, timestampValue]
+
+type UintArg = ArgumentBase[uint64, IntegerConfig, uintValue]
 
 type UintFlag = FlagBase[uint64, IntegerConfig, uintValue]
 
