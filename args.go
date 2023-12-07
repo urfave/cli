@@ -78,7 +78,21 @@ type ArgumentBase[T any, C any, VC ValueCreator[T, C]] struct {
 }
 
 func (a *ArgumentBase[T, C, VC]) Usage() string {
-	return a.UsageText
+	if a.UsageText != "" {
+		return a.UsageText
+	}
+
+	usageFormat := ""
+	if a.Min == 0 {
+		if a.Max == 1 {
+			usageFormat = "[%[1]s]"
+		} else {
+			usageFormat = "[%[1]s ...]"
+		}
+	} else {
+		usageFormat = "%[1]s [%[1]s ...]"
+	}
+	return fmt.Sprintf(usageFormat, a.Name)
 }
 
 func (a *ArgumentBase[T, C, VC]) Parse(s []string) ([]string, error) {
