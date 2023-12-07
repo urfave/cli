@@ -377,6 +377,11 @@ func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs 
 	if _, err := t.New("helpNameTemplate").Parse(helpNameTemplate); err != nil {
 		handleTemplateError(err)
 	}
+
+	if _, err := t.New("argsTemplate").Parse(argsTemplate); err != nil {
+		handleTemplateError(err)
+	}
+
 	if _, err := t.New("usageTemplate").Parse(usageTemplate); err != nil {
 		handleTemplateError(err)
 	}

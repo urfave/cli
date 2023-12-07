@@ -2026,8 +2026,9 @@ func TestCommand_Run_SubcommandFullPath(t *testing.T) {
 	out := &bytes.Buffer{}
 
 	subCmd := &Command{
-		Name:  "bar",
-		Usage: "does bar things",
+		Name:      "bar",
+		Usage:     "does bar things",
+		ArgsUsage: "[arguments...]",
 	}
 
 	cmd := &Command{

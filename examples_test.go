@@ -104,6 +104,7 @@ func ExampleCommand_Run_appHelp() {
 				Aliases:     []string{"d"},
 				Usage:       "use it to see a description",
 				Description: "This is how we describe describeit the function",
+				ArgsUsage:   "[arguments...]",
 				Action: func(context.Context, *cli.Command) error {
 					fmt.Printf("i like to describe things")
 					return nil
@@ -162,6 +163,7 @@ func ExampleCommand_Run_commandHelp() {
 				Aliases:     []string{"d"},
 				Usage:       "use it to see a description",
 				Description: "This is how we describe describeit the function",
+				ArgsUsage:   "[arguments...]",
 				Action: func(context.Context, *cli.Command) error {
 					fmt.Println("i like to describe things")
 					return nil
@@ -220,6 +222,7 @@ func ExampleCommand_Run_subcommandNoAction() {
 				Name:        "describeit",
 				Aliases:     []string{"d"},
 				Usage:       "use it to see a description",
+				ArgsUsage:   "[arguments...]",
 				Description: "This is how we describe describeit the function",
 			},
 		},

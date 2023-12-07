@@ -123,6 +123,8 @@ type Command struct {
 	SuggestCommandFunc SuggestCommandFunc
 	// Flag exclusion group
 	MutuallyExclusiveFlags []MutuallyExclusiveFlags
+	// Arguments to parse for this command
+	Arguments []Argument
 
 	// categories contains the categorized commands and is populated on app startup
 	categories CommandCategories
@@ -135,6 +137,8 @@ type Command struct {
 	parent *Command
 	// the flag.FlagSet for this command
 	flagSet *flag.FlagSet
+	// parsed args
+	parsedArgs Args
 	// track state of error handling
 	isInError bool
 	// track state of defaults
@@ -518,6 +522,18 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 
 	if cmd.Action == nil {
 		cmd.Action = helpCommandAction
+	} else if len(cmd.Arguments) > 0 {
+		rargs := cmd.Args().Slice()
+		tracef("calling argparse with %[1]v", rargs)
+		for _, arg := range cmd.Arguments {
+			var err error
+			rargs, err = arg.Parse(rargs)
+			if err != nil {
+				tracef("calling with %[1]v (cmd=%[2]q)", err, cmd.Name)
+				return err
+			}
+		}
+		cmd.parsedArgs = &stringSliceArgs{v: rargs}
 	}
 
 	if err := cmd.Action(ctx, cmd); err != nil {
@@ -607,6 +623,7 @@ func (cmd *Command) suggestFlagFromError(err error, commandName string) (string,
 func (cmd *Command) parseFlags(args Args) (Args, error) {
 	tracef("parsing flags from arguments %[1]q (cmd=%[2]q)", args, cmd.Name)
 
+	cmd.parsedArgs = nil
 	if v, err := cmd.newFlagSet(); err != nil {
 		return args, err
 	} else {
@@ -996,6 +1013,9 @@ func (cmd *Command) Value(name string) interface{} {
 // Args returns the command line arguments associated with the
 // command.
 func (cmd *Command) Args() Args {
+	if cmd.parsedArgs != nil {
+		return cmd.parsedArgs
+	}
 	return &stringSliceArgs{v: cmd.flagSet.Args()}
 }
 
