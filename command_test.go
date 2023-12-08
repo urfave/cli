@@ -2926,6 +2926,7 @@ func TestFlagAction(t *testing.T) {
 func TestPersistentFlag(t *testing.T) {
 	var topInt, topPersistentInt, subCommandInt, appOverrideInt int64
 	var appFlag string
+	var appRequiredFlag string
 	var appOverrideCmdInt int64
 	var appSliceFloat64 []float64
 	var persistentCommandSliceInt []int64
@@ -2956,6 +2957,12 @@ func TestPersistentFlag(t *testing.T) {
 				Name:        "persistentCommandOverrideFlag",
 				Persistent:  true,
 				Destination: &appOverrideInt,
+			},
+			&StringFlag{
+				Name:        "persistentRequiredCommandFlag",
+				Persistent:  true,
+				Required:    true,
+				Destination: &appRequiredFlag,
 			},
 		},
 		Commands: []*Command{
@@ -3005,6 +3012,7 @@ func TestPersistentFlag(t *testing.T) {
 		"--persistentCommandSliceFlag", "102",
 		"--persistentCommandFloatSliceFlag", "102.455",
 		"--paof", "105",
+		"--persistentRequiredCommandFlag", "hellor",
 		"subcmd",
 		"--cmdPersistentFlag", "20",
 		"--cmdFlag", "11",
@@ -3019,6 +3027,10 @@ func TestPersistentFlag(t *testing.T) {
 
 	if appFlag != "bar" {
 		t.Errorf("Expected 'bar' got %s", appFlag)
+	}
+
+	if appRequiredFlag != "hellor" {
+		t.Errorf("Expected 'hellor' got %s", appRequiredFlag)
 	}
 
 	if topInt != 12 {
@@ -3094,6 +3106,36 @@ func TestPersistentFlagIsSet(t *testing.T) {
 	r.NoError(err)
 	r.Equal("after", result)
 	r.True(resultIsSet)
+}
+
+func TestRequiredPersistentFlag(t *testing.T) {
+
+	app := &Command{
+		Name: "root",
+		Flags: []Flag{
+			&StringFlag{
+				Name:       "result",
+				Persistent: true,
+				Required:   true,
+			},
+		},
+		Commands: []*Command{
+			{
+				Name: "sub",
+				Action: func(ctx context.Context, c *Command) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	r := require.New(t)
+
+	err := app.Run(context.Background(), []string{"root", "sub"})
+	r.Error(err)
+
+	err = app.Run(context.Background(), []string{"root", "sub", "--result", "after"})
+	r.NoError(err)
 }
 
 func TestFlagDuplicates(t *testing.T) {

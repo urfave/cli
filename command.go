@@ -522,18 +522,26 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 
 	if cmd.Action == nil {
 		cmd.Action = helpCommandAction
-	} else if len(cmd.Arguments) > 0 {
-		rargs := cmd.Args().Slice()
-		tracef("calling argparse with %[1]v", rargs)
-		for _, arg := range cmd.Arguments {
-			var err error
-			rargs, err = arg.Parse(rargs)
-			if err != nil {
-				tracef("calling with %[1]v (cmd=%[2]q)", err, cmd.Name)
-				return err
-			}
+	} else {
+		if err := cmd.checkPersistentRequiredFlags(); err != nil {
+			cmd.isInError = true
+			_ = ShowSubcommandHelp(cmd)
+			return err
 		}
-		cmd.parsedArgs = &stringSliceArgs{v: rargs}
+
+		if len(cmd.Arguments) > 0 {
+			rargs := cmd.Args().Slice()
+			tracef("calling argparse with %[1]v", rargs)
+			for _, arg := range cmd.Arguments {
+				var err error
+				rargs, err = arg.Parse(rargs)
+				if err != nil {
+					tracef("calling with %[1]v (cmd=%[2]q)", err, cmd.Name)
+					return err
+				}
+			}
+			cmd.parsedArgs = &stringSliceArgs{v: rargs}
+		}
 	}
 
 	if err := cmd.Action(ctx, cmd); err != nil {
@@ -840,26 +848,59 @@ func (cmd *Command) lookupFlagSet(name string) *flag.FlagSet {
 	return nil
 }
 
+func (cmd *Command) checkRequiredFlag(f Flag) (bool, string) {
+	if rf, ok := f.(RequiredFlag); ok && rf.IsRequired() {
+		flagPresent := false
+		flagName := ""
+
+		for _, key := range f.Names() {
+			flagName = key
+
+			if cmd.IsSet(strings.TrimSpace(key)) {
+				flagPresent = true
+			}
+		}
+
+		if !flagPresent && flagName != "" {
+			return false, flagName
+		}
+	}
+	return true, ""
+}
+
 func (cmd *Command) checkRequiredFlags() requiredFlagsErr {
 	tracef("checking for required flags (cmd=%[1]q)", cmd.Name)
 
 	missingFlags := []string{}
 
 	for _, f := range cmd.Flags {
-		if rf, ok := f.(RequiredFlag); ok && rf.IsRequired() {
-			flagPresent := false
-			flagName := ""
-
-			for _, key := range f.Names() {
-				flagName = key
-
-				if cmd.IsSet(strings.TrimSpace(key)) {
-					flagPresent = true
-				}
+		if pf, ok := f.(PersistentFlag); !ok || !pf.IsPersistent() {
+			if ok, name := cmd.checkRequiredFlag(f); !ok {
+				missingFlags = append(missingFlags, name)
 			}
+		}
+	}
 
-			if !flagPresent && flagName != "" {
-				missingFlags = append(missingFlags, flagName)
+	if len(missingFlags) != 0 {
+		tracef("found missing required flags %[1]q (cmd=%[2]q)", missingFlags, cmd.Name)
+
+		return &errRequiredFlags{missingFlags: missingFlags}
+	}
+
+	tracef("all required flags set (cmd=%[1]q)", cmd.Name)
+
+	return nil
+}
+
+func (cmd *Command) checkPersistentRequiredFlags() requiredFlagsErr {
+	tracef("checking for required flags (cmd=%[1]q)", cmd.Name)
+
+	missingFlags := []string{}
+
+	for _, f := range cmd.appliedFlags {
+		if pf, ok := f.(PersistentFlag); ok && pf.IsPersistent() {
+			if ok, name := cmd.checkRequiredFlag(f); !ok {
+				missingFlags = append(missingFlags, name)
 			}
 		}
 	}
