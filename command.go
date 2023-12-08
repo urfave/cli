@@ -125,6 +125,9 @@ type Command struct {
 	MutuallyExclusiveFlags []MutuallyExclusiveFlags
 	// Arguments to parse for this command
 	Arguments []Argument
+	// Whether to read arguments from stdin
+	// applicable to root command only
+	ReadArgsFromStdin bool
 
 	// categories contains the categorized commands and is populated on app startup
 	categories CommandCategories
@@ -353,6 +356,24 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	}
 
 	if cmd.parent == nil {
+		if cmd.ReadArgsFromStdin {
+			b, err := io.ReadAll(os.Stdin)
+			if err != nil {
+				return err
+			}
+			tracef("got args from stdin %v (cmd=%[2]q)", string(b), cmd.Name)
+			// first split using newline
+			ssn := strings.Split(string(b), "\n")
+			ss := []string{}
+			// then remove leading and ending spaces
+			for _, s := range ssn {
+				trimmed := strings.TrimSpace(s)
+				if trimmed != "" {
+					ss = append(ss, trimmed)
+				}
+			}
+			osArgs = append(osArgs, ss...)
+		}
 		// handle the completion flag separately from the flagset since
 		// completion could be attempted after a flag, but before its value was put
 		// on the command line. this causes the flagset to interpret the completion

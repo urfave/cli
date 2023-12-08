@@ -394,6 +394,9 @@ type Command struct {
 	MutuallyExclusiveFlags []MutuallyExclusiveFlags
 	// Arguments to parse for this command
 	Arguments []Argument
+	// Whether to read arguments from stdin
+	// applicable to root command only
+	ReadArgsFromStdin bool
 
 	// Has unexported fields.
 }

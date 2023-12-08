@@ -3862,3 +3862,51 @@ func TestCommand_ParentCommand_Set(t *testing.T) {
 		t.Errorf("expect nil. set parent context flag return err: %s", err)
 	}
 }
+
+func TestCommandReadArgsFromStdIn(t *testing.T) {
+	r := require.New(t)
+
+	fp, err := os.CreateTemp("", "readargs")
+	r.NoError(err)
+	fp.WriteString(`--if
+10
+
+
+--sf  
+
+
+   bar
+`)
+	fp.Close()
+
+	oldIn := os.Stdin
+	defer func() {
+		os.Remove(fp.Name())
+		os.Stdin = oldIn
+	}()
+	os.Stdin, err = os.Open(fp.Name())
+	r.NoError(err)
+
+	cmd := buildMinimalTestCommand()
+	cmd.ReadArgsFromStdin = true
+	cmd.Flags = []Flag{
+		&IntFlag{
+			Name: "if",
+		},
+		&FloatFlag{
+			Name: "ff",
+		},
+		&StringFlag{
+			Name: "sf",
+		},
+	}
+
+	cmd.Action = func(ctx context.Context, c *Command) error {
+		r.Equal(int64(10), c.Int("if"))
+		r.Equal(float64(111.01), c.Float("ff"))
+		r.Equal("bar", c.String("sf"))
+		return nil
+	}
+
+	r.NoError(cmd.Run(context.Background(), []string{"app", "--ff", "111.01"}))
+}
