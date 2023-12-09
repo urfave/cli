@@ -3883,16 +3883,10 @@ bar2
 `)
 	fp.Close()
 
-	oldIn := os.Stdin
-	defer func() {
-		os.Remove(fp.Name())
-		os.Stdin = oldIn
-	}()
-	os.Stdin, err = os.Open(fp.Name())
-	r.NoError(err)
-
 	cmd := buildMinimalTestCommand()
 	cmd.ReadArgsFromStdin = true
+	cmd.Reader, err = os.Open(fp.Name())
+	r.NoError(err)
 	cmd.Flags = []Flag{
 		&IntFlag{
 			Name: "if",

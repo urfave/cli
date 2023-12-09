@@ -344,7 +344,7 @@ func (cmd *Command) ensureHelp() {
 }
 
 func (cmd *Command) parseArgsFromStdin() ([]string, error) {
-	b, err := io.ReadAll(os.Stdin)
+	b, err := io.ReadAll(cmd.Reader)
 	if err != nil {
 		return nil, err
 	}
