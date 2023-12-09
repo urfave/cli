@@ -3969,6 +3969,16 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 			args:        []string{"foo"},
 			expectError: true,
 		},
+		{
+			name: "incomplete string",
+			input: `
+			--ssf
+			"
+			hello
+			`,
+			args:          []string{"foo"},
+			expectedSlice: []string{"hello"},
+		},
 	}
 
 	for _, tst := range tests {

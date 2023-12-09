@@ -408,9 +408,10 @@ outer:
 				if token != "" {
 					args = append(args, token)
 					token = ""
-				} else {
-					//TODO. Should we pass in empty strings ?
 				}
+				/*else {
+					//TODO. Should we pass in empty strings ?
+				}*/
 				st = STATE_SEARCH_FOR_TOKEN
 			}
 		}
