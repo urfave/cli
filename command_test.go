@@ -3868,14 +3868,18 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 
 	fp, err := os.CreateTemp("", "readargs")
 	r.NoError(err)
-	fp.WriteString(`--if
+	fp.WriteString(`--if    
 10
 
 
---sf  
+--ssf      bar
 
+--ssf
+bar2
 
-   bar
+--ssf     "hello
+  123 
+44"
 `)
 	fp.Close()
 
@@ -3896,17 +3900,20 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 		&FloatFlag{
 			Name: "ff",
 		},
-		&StringFlag{
-			Name: "sf",
+		&StringSliceFlag{
+			Name: "ssf",
 		},
 	}
 
+	actionCalled := false
 	cmd.Action = func(ctx context.Context, c *Command) error {
 		r.Equal(int64(10), c.Int("if"))
 		r.Equal(float64(111.01), c.Float("ff"))
-		r.Equal("bar", c.String("sf"))
+		r.Equal([]string{"bar", "bar2", "hello\n  123 \n44"}, c.StringSlice("ssf"))
+		actionCalled = true
 		return nil
 	}
 
 	r.NoError(cmd.Run(context.Background(), []string{"app", "--ff", "111.01"}))
+	r.True(actionCalled)
 }

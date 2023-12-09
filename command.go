@@ -343,6 +343,61 @@ func (cmd *Command) ensureHelp() {
 	}
 }
 
+func (cmd *Command) parseArgsFromStdin() ([]string, error) {
+	b, err := io.ReadAll(os.Stdin)
+	if err != nil {
+		return nil, err
+	}
+	tracef("got args from stdin %v (cmd=%[2]q)", string(b), cmd.Name)
+
+	type state int
+	const (
+		STATE_SEARCH_FOR_TOKEN state = -1
+		STATE_IN_STRING        state = 0
+	)
+
+	st := STATE_SEARCH_FOR_TOKEN
+	linenum := 1
+	token := ""
+	args := []string{}
+
+	for _, ch := range string(b) {
+		switch st {
+		case STATE_SEARCH_FOR_TOKEN:
+			if ch == ' ' || ch == '\n' || ch == '"' {
+				if ch == '\n' {
+					linenum++
+				}
+				if token != "" {
+					args = append(args, token)
+					token = ""
+				}
+				if ch == '"' {
+					st = STATE_IN_STRING
+				}
+				continue
+			}
+			token += string(ch)
+		case STATE_IN_STRING:
+			if ch != '"' {
+				token += string(ch)
+			} else {
+				if token != "" {
+					args = append(args, token)
+					token = ""
+				} else {
+					//TODO. Should we pass in empty strings ?
+				}
+				st = STATE_SEARCH_FOR_TOKEN
+			}
+		}
+	}
+
+	tracef("parsed stdin args as %v (cmd=%[2]q)", args, cmd.Name)
+
+	return args, nil
+}
+
 // Run is the entry point to the command graph. The positional
 // arguments are parsed according to the Flag and Command
 // definitions and the matching Action functions are run.
@@ -357,22 +412,11 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 
 	if cmd.parent == nil {
 		if cmd.ReadArgsFromStdin {
-			b, err := io.ReadAll(os.Stdin)
-			if err != nil {
+			if args, err := cmd.parseArgsFromStdin(); err != nil {
 				return err
+			} else {
+				osArgs = append(osArgs, args...)
 			}
-			tracef("got args from stdin %v (cmd=%[2]q)", string(b), cmd.Name)
-			// first split using newline
-			ssn := strings.Split(string(b), "\n")
-			ss := []string{}
-			// then remove leading and ending spaces
-			for _, s := range ssn {
-				trimmed := strings.TrimSpace(s)
-				if trimmed != "" {
-					ss = append(ss, trimmed)
-				}
-			}
-			osArgs = append(osArgs, ss...)
 		}
 		// handle the completion flag separately from the flagset since
 		// completion could be attempted after a flag, but before its value was put
