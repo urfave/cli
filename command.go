@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bufio"
 	"context"
 	"flag"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"unicode"
 )
 
 const (
@@ -125,6 +127,9 @@ type Command struct {
 	MutuallyExclusiveFlags []MutuallyExclusiveFlags
 	// Arguments to parse for this command
 	Arguments []Argument
+	// Whether to read arguments from stdin
+	// applicable to root command only
+	ReadArgsFromStdin bool
 
 	// categories contains the categorized commands and is populated on app startup
 	categories CommandCategories
@@ -340,6 +345,83 @@ func (cmd *Command) ensureHelp() {
 	}
 }
 
+func (cmd *Command) parseArgsFromStdin() ([]string, error) {
+	type state int
+	const (
+		STATE_SEARCH_FOR_TOKEN state = -1
+		STATE_IN_STRING        state = 0
+	)
+
+	st := STATE_SEARCH_FOR_TOKEN
+	linenum := 1
+	token := ""
+	args := []string{}
+
+	breader := bufio.NewReader(cmd.Reader)
+
+outer:
+	for {
+		ch, _, err := breader.ReadRune()
+		if err == io.EOF {
+			switch st {
+			case STATE_SEARCH_FOR_TOKEN:
+				if token != "--" {
+					args = append(args, token)
+				}
+			case STATE_IN_STRING:
+				// make sure string is not empty
+				for _, t := range token {
+					if !unicode.IsSpace(t) {
+						args = append(args, token)
+					}
+				}
+			}
+			break outer
+		}
+		if err != nil {
+			return nil, err
+		}
+		switch st {
+		case STATE_SEARCH_FOR_TOKEN:
+			if unicode.IsSpace(ch) || ch == '"' {
+				if ch == '\n' {
+					linenum++
+				}
+				if token != "" {
+					// end the processing here
+					if token == "--" {
+						break outer
+					}
+					args = append(args, token)
+					token = ""
+				}
+				if ch == '"' {
+					st = STATE_IN_STRING
+				}
+				continue
+			}
+			token += string(ch)
+		case STATE_IN_STRING:
+			if ch != '"' {
+				token += string(ch)
+			} else {
+				if token != "" {
+					args = append(args, token)
+					token = ""
+				}
+				/*else {
+					//TODO. Should we pass in empty strings ?
+				}*/
+				st = STATE_SEARCH_FOR_TOKEN
+			}
+		}
+	}
+
+	tracef("parsed stdin args as %v (cmd=%[2]q)", args, cmd.Name)
+
+	return args, nil
+}
+
 // Run is the entry point to the command graph. The positional
 // arguments are parsed according to the Flag and Command
 // definitions and the matching Action functions are run.
@@ -353,6 +435,13 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	}
 
 	if cmd.parent == nil {
+		if cmd.ReadArgsFromStdin {
+			if args, err := cmd.parseArgsFromStdin(); err != nil {
+				return err
+			} else {
+				osArgs = append(osArgs, args...)
+			}
+		}
 		// handle the completion flag separately from the flagset since
 		// completion could be attempted after a flag, but before its value was put
 		// on the command line. this causes the flagset to interpret the completion

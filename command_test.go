@@ -3862,3 +3862,168 @@ func TestCommand_ParentCommand_Set(t *testing.T) {
 		t.Errorf("expect nil. set parent context flag return err: %s", err)
 	}
 }
+
+func TestCommandReadArgsFromStdIn(t *testing.T) {
+
+	tests := []struct {
+		name          string
+		input         string
+		args          []string
+		expectedInt   int64
+		expectedFloat float64
+		expectedSlice []string
+		expectError   bool
+	}{
+		{
+			name:          "empty",
+			input:         "",
+			args:          []string{"foo"},
+			expectedInt:   0,
+			expectedFloat: 0.0,
+			expectedSlice: []string{},
+		},
+		{
+			name: "empty2",
+			input: `
+			
+			`,
+			args:          []string{"foo"},
+			expectedInt:   0,
+			expectedFloat: 0.0,
+			expectedSlice: []string{},
+		},
+		{
+			name:          "intflag-from-input",
+			input:         "--if=100",
+			args:          []string{"foo"},
+			expectedInt:   100,
+			expectedFloat: 0.0,
+			expectedSlice: []string{},
+		},
+		{
+			name: "intflag-from-input2",
+			input: `
+			--if 
+
+			100`,
+			args:          []string{"foo"},
+			expectedInt:   100,
+			expectedFloat: 0.0,
+			expectedSlice: []string{},
+		},
+		{
+			name: "multiflag-from-input",
+			input: `
+			--if
+
+			100
+			--ff      100.1
+
+			--ssf hello
+			--ssf
+
+			"hello	
+  123
+44"
+			`,
+			args:          []string{"foo"},
+			expectedInt:   100,
+			expectedFloat: 100.1,
+			expectedSlice: []string{"hello", "hello\t\n  123\n44"},
+		},
+		{
+			name: "end-args",
+			input: `
+			--if
+
+			100
+			--
+			--ff      100.1
+
+			--ssf hello
+			--ssf
+
+			hell02
+			`,
+			args:          []string{"foo"},
+			expectedInt:   100,
+			expectedFloat: 0,
+			expectedSlice: []string{},
+		},
+		{
+			name: "invalid string",
+			input: `
+			"
+			`,
+			args:          []string{"foo"},
+			expectedInt:   0,
+			expectedFloat: 0,
+			expectedSlice: []string{},
+		},
+		{
+			name: "invalid string2",
+			input: `
+			--if
+			"
+			`,
+			args:        []string{"foo"},
+			expectError: true,
+		},
+		{
+			name: "incomplete string",
+			input: `
+			--ssf
+			"
+			hello
+			`,
+			args:          []string{"foo"},
+			expectedSlice: []string{"hello"},
+		},
+	}
+
+	for _, tst := range tests {
+		t.Run(tst.name, func(t *testing.T) {
+			r := require.New(t)
+
+			fp, err := os.CreateTemp("", "readargs")
+			r.NoError(err)
+			_, err = fp.Write([]byte(tst.input))
+			r.NoError(err)
+			fp.Close()
+
+			cmd := buildMinimalTestCommand()
+			cmd.ReadArgsFromStdin = true
+			cmd.Reader, err = os.Open(fp.Name())
+			r.NoError(err)
+			cmd.Flags = []Flag{
+				&IntFlag{
+					Name: "if",
+				},
+				&FloatFlag{
+					Name: "ff",
+				},
+				&StringSliceFlag{
+					Name: "ssf",
+				},
+			}
+
+			actionCalled := false
+			cmd.Action = func(ctx context.Context, c *Command) error {
+				r.Equal(tst.expectedInt, c.Int("if"))
+				r.Equal(tst.expectedFloat, c.Float("ff"))
+				r.Equal(tst.expectedSlice, c.StringSlice("ssf"))
+				actionCalled = true
+				return nil
+			}
+
+			err = cmd.Run(context.Background(), tst.args)
+			if !tst.expectError {
+				r.NoError(err)
+				r.True(actionCalled)
+			} else {
+				r.Error(err)
+			}
+
+		})
+	}
+}
