@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bufio"
 	"context"
 	"flag"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"unicode"
 )
 
 const (
@@ -344,12 +346,6 @@ func (cmd *Command) ensureHelp() {
 }
 
 func (cmd *Command) parseArgsFromStdin() ([]string, error) {
-	b, err := io.ReadAll(cmd.Reader)
-	if err != nil {
-		return nil, err
-	}
-	tracef("got args from stdin %v (cmd=%[2]q)", string(b), cmd.Name)
-
 	type state int
 	const (
 		STATE_SEARCH_FOR_TOKEN state = -1
@@ -361,14 +357,41 @@ func (cmd *Command) parseArgsFromStdin() ([]string, error) {
 	token := ""
 	args := []string{}
 
-	for _, ch := range string(b) {
+	breader := bufio.NewReader(cmd.Reader)
+
+outer:
+	for {
+		ch, _, err := breader.ReadRune()
+		if err == io.EOF {
+			switch st {
+			case STATE_SEARCH_FOR_TOKEN:
+				if token != "--" {
+					args = append(args, token)
+				}
+			case STATE_IN_STRING:
+				// make sure string is not empty
+				for _, t := range token {
+					if !unicode.IsSpace(t) {
+						args = append(args, token)
+					}
+				}
+			}
+			break outer
+		}
+		if err != nil {
+			return nil, err
+		}
 		switch st {
 		case STATE_SEARCH_FOR_TOKEN:
-			if ch == ' ' || ch == '\n' || ch == '"' {
+			if unicode.IsSpace(ch) || ch == '"' {
 				if ch == '\n' {
 					linenum++
 				}
 				if token != "" {
+					// end the processing here
+					if token == "--" {
+						break outer
+					}
 					args = append(args, token)
 					token = ""
 				}
