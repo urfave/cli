@@ -981,13 +981,13 @@ func Files(paths ...string) ValueSourceChain
     Files is a helper function to encapsulate a number of fileValueSource
     together as a ValueSourceChain
 
-func (vsc *ValueSourceChain) GoString() string
+func (vsc ValueSourceChain) GoString() string
 
-func (vsc *ValueSourceChain) Lookup() (string, bool)
+func (vsc ValueSourceChain) Lookup() (string, bool)
 
-func (vsc *ValueSourceChain) LookupWithSource() (string, ValueSource, bool)
+func (vsc ValueSourceChain) LookupWithSource() (string, ValueSource, bool)
 
-func (vsc *ValueSourceChain) String() string
+func (vsc ValueSourceChain) String() string
 
 type VisibleFlag interface {
 	// IsVisible returns true if the flag is not hidden, otherwise false

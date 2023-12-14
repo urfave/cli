@@ -24,7 +24,7 @@ type ValueSourceChain struct {
 	Chain []ValueSource
 }
 
-func (vsc *ValueSourceChain) String() string {
+func (vsc ValueSourceChain) String() string {
 	s := []string{}
 
 	for _, vs := range vsc.Chain {
@@ -34,7 +34,7 @@ func (vsc *ValueSourceChain) String() string {
 	return strings.Join(s, ",")
 }
 
-func (vsc *ValueSourceChain) GoString() string {
+func (vsc ValueSourceChain) GoString() string {
 	s := []string{}
 
 	for _, vs := range vsc.Chain {
@@ -44,12 +44,12 @@ func (vsc *ValueSourceChain) GoString() string {
 	return fmt.Sprintf("&ValueSourceChain{Chain:{%[1]s}}", strings.Join(s, ","))
 }
 
-func (vsc *ValueSourceChain) Lookup() (string, bool) {
+func (vsc ValueSourceChain) Lookup() (string, bool) {
 	s, _, ok := vsc.LookupWithSource()
 	return s, ok
 }
 
-func (vsc *ValueSourceChain) LookupWithSource() (string, ValueSource, bool) {
+func (vsc ValueSourceChain) LookupWithSource() (string, ValueSource, bool) {
 	for _, src := range vsc.Chain {
 		if value, found := src.Lookup(); found {
 			return value, src, true
