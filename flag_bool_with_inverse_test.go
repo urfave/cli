@@ -309,7 +309,7 @@ func TestBoolWithInverseRequired(t *testing.T) {
 		{
 			toBeSet: false,
 			value:   false,
-			err:     fmt.Errorf(`Required flag "env" not set`),
+			err:     fmt.Errorf(`Required flag "no-env" not set`),
 		},
 		{
 			args: []string{"--env", "--no-env"},

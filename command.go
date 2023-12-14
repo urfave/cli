@@ -943,10 +943,15 @@ func (cmd *Command) checkRequiredFlag(f Flag) (bool, string) {
 		flagName := ""
 
 		for _, key := range f.Names() {
-			flagName = key
+			// use the first name to return since that is the
+			// primary flag name
+			if flagName == "" {
+				flagName = key
+			}
 
 			if cmd.IsSet(strings.TrimSpace(key)) {
 				flagPresent = true
+				break
 			}
 		}
 
