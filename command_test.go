@@ -3835,7 +3835,7 @@ func TestCheckRequiredFlags(t *testing.T) {
 			expectedAnError:       true,
 			expectedErrorContents: []string{"Required flag \"names\" not set"},
 			flags: []Flag{
-				&StringSliceFlag{Name: "names, n", Required: true},
+				&StringSliceFlag{Name: "names", Aliases: []string{"n"}, Required: true},
 			},
 		},
 		{
