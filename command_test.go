@@ -341,7 +341,7 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 	}{
 		{testArgs: args{"--undefined"}, expectedOut: "found 0 args"},
 		{testArgs: args{"--number"}, expectedOut: "found 0 args"},
-		{testArgs: args{"--number", "fourty-two"}, expectedOut: "found 0 args"},
+		{testArgs: args{"--number", "forty-two"}, expectedOut: "found 0 args"},
 		{testArgs: args{"--number", "42"}, expectedOut: "found 0 args"},
 		{testArgs: args{"--number", "42", "newArg"}, expectedOut: "found 1 args"},
 	}
