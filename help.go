@@ -278,7 +278,7 @@ func ShowCommandHelp(ctx *Context, command string) error {
 
 	if ctx.App.CommandNotFound == nil {
 		errMsg := fmt.Sprintf("No help topic for '%v'", command)
-		if ctx.App.Suggest {
+		if ctx.App.Suggest && SuggestCommand != nil {
 			if suggestion := SuggestCommand(ctx.Command.Subcommands, command); suggestion != "" {
 				errMsg += ". " + suggestion
 			}
