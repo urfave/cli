@@ -15,19 +15,19 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        go: [1.19.x, 1.20.x]
+        go: [stable, oldstable]
     name: ${{ matrix.os }} @ Go ${{ matrix.go }}
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/setup-go@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go }}
       - name: Set PATH
         run: echo "${GITHUB_WORKSPACE}/.local/bin" >>"${GITHUB_PATH}"
-      - uses: actions/checkout@v3
-      - if: matrix.go == '1.20.x' && matrix.os == 'ubuntu-latest'
+      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-latest'
         run: make ensure-goimports
-      - if: matrix.go == '1.20.x' && matrix.os == 'ubuntu-latest'
+      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-latest'
         run: make lint
       - run: make vet
       - run: make test
@@ -40,12 +40,12 @@ jobs:
           GFLAGS: -tags urfave_cli_no_docs
       - run: make check-binary-size
       - run: make yamlfmt
-      - if: matrix.go == '1.20.x' && matrix.os == 'ubuntu-latest'
+      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-latest'
         run: make generate
       - run: make diffcheck
-      - if: matrix.go == '1.20.x' && matrix.os == 'ubuntu-latest'
+      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-latest'
         run: make v2diff
-      - if: success() && matrix.go == '1.20.x' && matrix.os == 'ubuntu-latest'
+      - if: success() && matrix.go == 'stable' && matrix.os == 'ubuntu-latest'
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -54,15 +54,15 @@ jobs:
     name: test-docs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
         with:
-          go-version: 1.20.x
-      - uses: actions/setup-node@v3
+          go-version: stable
+      - uses: actions/setup-node@v4
         with:
           node-version: '16'
       - name: Set PATH
         run: echo "${GITHUB_WORKSPACE}/.local/bin" >>"${GITHUB_PATH}"
-      - uses: actions/checkout@v3
       - run: make ensure-gfmrun
       - run: make gfmrun
         env:
@@ -76,7 +76,7 @@ jobs:
     needs: [test-docs]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - run: make ensure-mkdocs
