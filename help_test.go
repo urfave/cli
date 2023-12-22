@@ -1658,6 +1658,7 @@ func TestCategorizedHelp(t *testing.T) {
 	output := new(bytes.Buffer)
 	app := &App{
 		Name:   "cli.test",
+		Args:   true,
 		Writer: output,
 		Action: func(ctx *Context) error { return nil },
 		Flags: []Flag{
