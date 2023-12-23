@@ -987,15 +987,15 @@ func NewValueSourceChain(src ...ValueSource) ValueSourceChain
 
 func (vsc *ValueSourceChain) Append(other ValueSourceChain)
 
-func (vsc ValueSourceChain) EnvKeys() []string
+func (vsc *ValueSourceChain) EnvKeys() []string
 
-func (vsc ValueSourceChain) GoString() string
+func (vsc *ValueSourceChain) GoString() string
 
-func (vsc ValueSourceChain) Lookup() (string, bool)
+func (vsc *ValueSourceChain) Lookup() (string, bool)
 
-func (vsc ValueSourceChain) LookupWithSource() (string, ValueSource, bool)
+func (vsc *ValueSourceChain) LookupWithSource() (string, ValueSource, bool)
 
-func (vsc ValueSourceChain) String() string
+func (vsc *ValueSourceChain) String() string
 
 type VisibleFlag interface {
 	// IsVisible returns true if the flag is not hidden, otherwise false

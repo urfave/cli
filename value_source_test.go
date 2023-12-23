@@ -134,31 +134,31 @@ func TestValueSourceChain(t *testing.T) {
 	})
 
 	t.Run("implements fmt.GoStringer", func(t *testing.T) {
-		vsc := ValueSourceChain{}
+		vsc := &ValueSourceChain{}
 		r := require.New(t)
 
 		r.Implements((*fmt.GoStringer)(nil), vsc)
 		r.Equal("&ValueSourceChain{Chain:{}}", vsc.GoString())
 
-		vsc = NewValueSourceChain(&staticValueSource{v: "yahtzee"},
+		vsc1 := NewValueSourceChain(&staticValueSource{v: "yahtzee"},
 			&staticValueSource{v: "matzoh"},
 		)
-		r.Equal("&ValueSourceChain{Chain:{&staticValueSource{v:\"yahtzee\"},&staticValueSource{v:\"matzoh\"}}}", vsc.GoString())
+		r.Equal("&ValueSourceChain{Chain:{&staticValueSource{v:\"yahtzee\"},&staticValueSource{v:\"matzoh\"}}}", vsc1.GoString())
 	})
 
 	t.Run("implements fmt.Stringer", func(t *testing.T) {
-		vsc := ValueSourceChain{}
+		vsc := &ValueSourceChain{}
 		r := require.New(t)
 
 		r.Implements((*fmt.Stringer)(nil), vsc)
 		r.Equal("", vsc.String())
 
-		vsc = NewValueSourceChain(
+		vsc1 := NewValueSourceChain(
 			&staticValueSource{v: "soup"},
 			&staticValueSource{v: "salad"},
 			&staticValueSource{v: "pumpkins"},
 		)
-		r.Equal("soup,salad,pumpkins", vsc.String())
+		r.Equal("soup,salad,pumpkins", vsc1.String())
 	})
 }
 

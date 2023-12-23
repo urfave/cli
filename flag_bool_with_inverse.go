@@ -90,7 +90,7 @@ func (parent *BoolWithInverseFlag) initialize() {
 	parent.negativeFlag = &BoolFlag{
 		Category:    child.Category,
 		DefaultText: child.DefaultText,
-		Sources:     NewValueSourceChain(child.Sources.chain...),
+		Sources:     NewValueSourceChain(child.Sources.Chain...),
 		Usage:       child.Usage,
 		Required:    child.Required,
 		Hidden:      child.Hidden,
