@@ -12,13 +12,13 @@ import (
 
 func TestEnvVarValueSource(t *testing.T) {
 	t.Run("implements ValueSource", func(t *testing.T) {
-		src := &envVarValueSource{Key: "foo"}
+		src := EnvVar("foo")
 		require.Implements(t, (*ValueSource)(nil), src)
 
 		t.Run("not found", func(t *testing.T) {
 			t.Setenv("foo", "bar")
 
-			src := &envVarValueSource{Key: "foo_1"}
+			src := EnvVar("foo_1")
 			_, ok := src.Lookup()
 			require.False(t, ok)
 		})
@@ -27,7 +27,7 @@ func TestEnvVarValueSource(t *testing.T) {
 			t.Setenv("foo", "bar")
 
 			r := require.New(t)
-			src := &envVarValueSource{Key: "foo"}
+			src := EnvVar("foo")
 
 			str, ok := src.Lookup()
 			r.True(ok)
@@ -37,7 +37,7 @@ func TestEnvVarValueSource(t *testing.T) {
 	})
 
 	t.Run("implements fmt.Stringer", func(t *testing.T) {
-		src := &envVarValueSource{Key: "foo"}
+		src := EnvVar("foo")
 		r := require.New(t)
 
 		r.Implements((*fmt.Stringer)(nil), src)
@@ -45,7 +45,7 @@ func TestEnvVarValueSource(t *testing.T) {
 	})
 
 	t.Run("implements fmt.GoStringer", func(t *testing.T) {
-		src := &envVarValueSource{Key: "foo"}
+		src := EnvVar("foo")
 		r := require.New(t)
 
 		r.Implements((*fmt.GoStringer)(nil), src)
@@ -120,6 +120,16 @@ func TestFilePaths(t *testing.T) {
 	r.True(ok)
 	r.Equal(str, "Hello")
 	r.Contains(src.String(), fmt.Sprintf("%[1]q", fileName))
+}
+
+func TestValueSourceChainEnvKeys(t *testing.T) {
+	chain := NewValueSourceChain(
+		&staticValueSource{"hello"},
+	)
+	chain.Append(EnvVars("foo", "bar"))
+
+	r := require.New(t)
+	r.Equal([]string{"foo", "bar"}, chain.EnvKeys())
 }
 
 func TestValueSourceChain(t *testing.T) {
