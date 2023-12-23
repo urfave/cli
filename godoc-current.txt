@@ -967,8 +967,10 @@ type ValueSource interface {
     ValueSource is a source which can be used to look up a value, typically for
     use with a cli.Flag
 
+func EnvVar(key string) ValueSource
+
 type ValueSourceChain struct {
-	Chain []ValueSource
+	// Has unexported fields.
 }
     ValueSourceChain contains an ordered series of ValueSource that allows for
     lookup where the first ValueSource to resolve is returned
@@ -981,11 +983,17 @@ func Files(paths ...string) ValueSourceChain
     Files is a helper function to encapsulate a number of fileValueSource
     together as a ValueSourceChain
 
+func NewValueSourceChain(src ...ValueSource) ValueSourceChain
+
+func (vsc *ValueSourceChain) Append(other ValueSourceChain)
+
+func (vsc ValueSourceChain) EnvKeys() []string
+
 func (vsc *ValueSourceChain) GoString() string
 
 func (vsc *ValueSourceChain) Lookup() (string, bool)
 
-func (vsc *ValueSourceChain) LookupWithSource() (string, ValueSource, bool)
+func (vsc ValueSourceChain) LookupWithSource() (string, ValueSource, bool)
 
 func (vsc *ValueSourceChain) String() string
 

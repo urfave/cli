@@ -21,13 +21,35 @@ type ValueSource interface {
 // allows for lookup where the first ValueSource to resolve is
 // returned
 type ValueSourceChain struct {
-	Chain []ValueSource
+	chain []ValueSource
+}
+
+func NewValueSourceChain(src ...ValueSource) ValueSourceChain {
+	return ValueSourceChain{
+		chain: src,
+	}
+}
+
+func (vsc *ValueSourceChain) Append(other ValueSourceChain) {
+	vsc.chain = append(vsc.chain, other.chain...)
+}
+
+func (vsc ValueSourceChain) EnvKeys() []string {
+	vals := []string{}
+
+	for _, src := range vsc.chain {
+		if v, ok := src.(*envVarValueSource); ok {
+			vals = append(vals, v.Key)
+		}
+	}
+
+	return vals
 }
 
 func (vsc *ValueSourceChain) String() string {
 	s := []string{}
 
-	for _, vs := range vsc.Chain {
+	for _, vs := range vsc.chain {
 		s = append(s, vs.String())
 	}
 
@@ -37,7 +59,7 @@ func (vsc *ValueSourceChain) String() string {
 func (vsc *ValueSourceChain) GoString() string {
 	s := []string{}
 
-	for _, vs := range vsc.Chain {
+	for _, vs := range vsc.chain {
 		s = append(s, vs.GoString())
 	}
 
@@ -49,8 +71,8 @@ func (vsc *ValueSourceChain) Lookup() (string, bool) {
 	return s, ok
 }
 
-func (vsc *ValueSourceChain) LookupWithSource() (string, ValueSource, bool) {
-	for _, src := range vsc.Chain {
+func (vsc ValueSourceChain) LookupWithSource() (string, ValueSource, bool) {
+	for _, src := range vsc.chain {
 		if value, found := src.Lookup(); found {
 			return value, src, true
 		}
@@ -73,13 +95,19 @@ func (e *envVarValueSource) GoString() string {
 	return fmt.Sprintf("&envVarValueSource{Key:%[1]q}", e.Key)
 }
 
+func EnvVar(key string) ValueSource {
+	return &envVarValueSource{
+		Key: key,
+	}
+}
+
 // EnvVars is a helper function to encapsulate a number of
 // envVarValueSource together as a ValueSourceChain
 func EnvVars(keys ...string) ValueSourceChain {
-	vsc := ValueSourceChain{Chain: []ValueSource{}}
+	vsc := ValueSourceChain{chain: []ValueSource{}}
 
 	for _, key := range keys {
-		vsc.Chain = append(vsc.Chain, &envVarValueSource{Key: key})
+		vsc.chain = append(vsc.chain, &envVarValueSource{Key: key})
 	}
 
 	return vsc
@@ -103,10 +131,10 @@ func (f *fileValueSource) GoString() string {
 // Files is a helper function to encapsulate a number of
 // fileValueSource together as a ValueSourceChain
 func Files(paths ...string) ValueSourceChain {
-	vsc := ValueSourceChain{Chain: []ValueSource{}}
+	vsc := ValueSourceChain{chain: []ValueSource{}}
 
 	for _, path := range paths {
-		vsc.Chain = append(vsc.Chain, &fileValueSource{Path: path})
+		vsc.chain = append(vsc.chain, &fileValueSource{Path: path})
 	}
 
 	return vsc

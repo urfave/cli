@@ -238,15 +238,7 @@ func (f *FlagBase[T, C, V]) GetUsage() string {
 
 // GetEnvVars returns the env vars for this flag
 func (f *FlagBase[T, C, V]) GetEnvVars() []string {
-	vals := []string{}
-
-	for _, src := range f.Sources.Chain {
-		if v, ok := src.(*envVarValueSource); ok {
-			vals = append(vals, v.Key)
-		}
-	}
-
-	return vals
+	return f.Sources.EnvKeys()
 }
 
 // TakesValue returns true if the flag takes a value, otherwise false
