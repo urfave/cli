@@ -970,7 +970,7 @@ type ValueSource interface {
 func EnvVar(key string) ValueSource
 
 type ValueSourceChain struct {
-	// Has unexported fields.
+	Chain []ValueSource
 }
     ValueSourceChain contains an ordered series of ValueSource that allows for
     lookup where the first ValueSource to resolve is returned
