@@ -2888,11 +2888,31 @@ func TestFlagAction(t *testing.T) {
 					return err
 				},
 			},
+			&UintSliceFlag{
+				Name: "f_uint_slice",
+				Action: func(c *Context, v []uint) error {
+					if len(v) > 0 && v[0] == 0 {
+						return fmt.Errorf("invalid uint slice")
+					}
+					_, err := c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
+				},
+			},
 			&Uint64Flag{
 				Name: "f_uint64",
 				Action: func(c *Context, v uint64) error {
 					if v == 0 {
 						return fmt.Errorf("zero uint64")
+					}
+					_, err := c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
+				},
+			},
+			&Uint64SliceFlag{
+				Name: "f_uint64_slice",
+				Action: func(c *Context, v []uint64) error {
+					if len(v) > 0 && v[0] == 0 {
+						return fmt.Errorf("invalid uint64 slice")
 					}
 					_, err := c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 					return err
@@ -3049,9 +3069,29 @@ func TestFlagAction(t *testing.T) {
 			err:  fmt.Errorf("zero uint"),
 		},
 		{
+			name: "flag_uint_slice",
+			args: []string{"app", "--f_uint_slice=1,2,3"},
+			exp:  "[1 2 3] ",
+		},
+		{
+			name: "flag_uint_slice",
+			args: []string{"app", "--f_uint_slice=0"},
+			err:  fmt.Errorf("invalid uint slice"),
+		},
+		{
 			name: "flag_uint64",
 			args: []string{"app", "--f_uint64=1"},
 			exp:  "1 ",
+		},
+		{
+			name: "flag_uint64_slice",
+			args: []string{"app", "--f_uint64_slice=1,2,3"},
+			exp:  "[1 2 3] ",
+		},
+		{
+			name: "flag_uint64_slice",
+			args: []string{"app", "--f_uint64_slice=0"},
+			err:  fmt.Errorf("invalid uint64 slice"),
 		},
 		{
 			name: "flag_uint64_error",

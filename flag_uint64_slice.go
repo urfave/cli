@@ -190,6 +190,15 @@ func (f *Uint64SliceFlag) Get(ctx *Context) []uint64 {
 	return ctx.Uint64Slice(f.Name)
 }
 
+// RunAction executes flag action if set
+func (f *Uint64SliceFlag) RunAction(c *Context) error {
+	if f.Action != nil {
+		return f.Action(c, c.Uint64Slice(f.Name))
+	}
+
+	return nil
+}
+
 // Uint64Slice looks up the value of a local Uint64SliceFlag, returns
 // nil if not found
 func (cCtx *Context) Uint64Slice(name string) []uint64 {
