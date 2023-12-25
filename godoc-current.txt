@@ -967,6 +967,8 @@ type ValueSource interface {
     ValueSource is a source which can be used to look up a value, typically for
     use with a cli.Flag
 
+func EnvVar(key string) ValueSource
+
 type ValueSourceChain struct {
 	Chain []ValueSource
 }
@@ -980,6 +982,12 @@ func EnvVars(keys ...string) ValueSourceChain
 func Files(paths ...string) ValueSourceChain
     Files is a helper function to encapsulate a number of fileValueSource
     together as a ValueSourceChain
+
+func NewValueSourceChain(src ...ValueSource) ValueSourceChain
+
+func (vsc *ValueSourceChain) Append(other ValueSourceChain)
+
+func (vsc *ValueSourceChain) EnvKeys() []string
 
 func (vsc *ValueSourceChain) GoString() string
 

@@ -24,6 +24,28 @@ type ValueSourceChain struct {
 	Chain []ValueSource
 }
 
+func NewValueSourceChain(src ...ValueSource) ValueSourceChain {
+	return ValueSourceChain{
+		Chain: src,
+	}
+}
+
+func (vsc *ValueSourceChain) Append(other ValueSourceChain) {
+	vsc.Chain = append(vsc.Chain, other.Chain...)
+}
+
+func (vsc *ValueSourceChain) EnvKeys() []string {
+	vals := []string{}
+
+	for _, src := range vsc.Chain {
+		if v, ok := src.(*envVarValueSource); ok {
+			vals = append(vals, v.Key)
+		}
+	}
+
+	return vals
+}
+
 func (vsc *ValueSourceChain) String() string {
 	s := []string{}
 
@@ -71,6 +93,12 @@ func (e *envVarValueSource) Lookup() (string, bool) {
 func (e *envVarValueSource) String() string { return fmt.Sprintf("environment variable %[1]q", e.Key) }
 func (e *envVarValueSource) GoString() string {
 	return fmt.Sprintf("&envVarValueSource{Key:%[1]q}", e.Key)
+}
+
+func EnvVar(key string) ValueSource {
+	return &envVarValueSource{
+		Key: key,
+	}
 }
 
 // EnvVars is a helper function to encapsulate a number of
