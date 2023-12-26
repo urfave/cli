@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -83,9 +84,7 @@ func Test_Help_Custom_Flags(t *testing.T) {
 			&BoolFlag{Name: "foo", Aliases: []string{"h"}},
 		},
 		Action: func(_ context.Context, cmd *Command) error {
-			if cmd.Bool("h") != true {
-				t.Errorf("custom help flag not set")
-			}
+			assert.True(t, cmd.Bool("h"), "custom help flag not set")
 			return nil
 		},
 		Writer: out,
@@ -131,9 +130,7 @@ func Test_Version_Custom_Flags(t *testing.T) {
 			&BoolFlag{Name: "foo", Aliases: []string{"v"}},
 		},
 		Action: func(_ context.Context, cmd *Command) error {
-			if cmd.Bool("v") != true {
-				t.Errorf("custom version flag not set")
-			}
+			assert.True(t, cmd.Bool("v"), "custom version flag not set")
 			return nil
 		},
 		Writer: out,
@@ -151,23 +148,13 @@ func Test_helpCommand_Action_ErrorIfNoTopic(t *testing.T) {
 	_ = cmd.flagSet.Parse([]string{"foo"})
 
 	err := helpCommandAction(context.Background(), cmd)
-
-	if err == nil {
-		t.Fatalf("expected error from helpCommandAction(), but got nil")
-	}
+	require.Error(t, err, "expected error from helpCommandAction()")
 
 	exitErr, ok := err.(*exitError)
-	if !ok {
-		t.Fatalf("expected *exitError from helpCommandAction(), but instead got: %v", err.Error())
-	}
+	require.True(t, ok, "expected *exitError from helpCommandAction()")
 
-	if !strings.HasPrefix(exitErr.Error(), "No help topic for") {
-		t.Fatalf("expected an unknown help topic error, but got: %v", exitErr.Error())
-	}
-
-	if exitErr.exitCode != 3 {
-		t.Fatalf("expected exit value = 3, got %d instead", exitErr.exitCode)
-	}
+	require.Contains(t, exitErr.Error(), "No help topic for", "expected an unknown help topic error")
+	require.Equal(t, 3, exitErr.exitCode, "expected exit value = 3")
 }
 
 func Test_helpCommand_InHelpOutput(t *testing.T) {
@@ -179,13 +166,8 @@ func Test_helpCommand_InHelpOutput(t *testing.T) {
 
 	s := output.String()
 
-	if strings.Contains(s, "\nCOMMANDS:\nGLOBAL OPTIONS:\n") {
-		t.Fatalf("empty COMMANDS section detected: %q", s)
-	}
-
-	if !strings.Contains(s, "help, h") {
-		t.Fatalf("missing \"help, h\": %q", s)
-	}
+	require.NotContains(t, s, "\nCOMMANDS:\nGLOBAL OPTIONS:\n", "empty COMMANDS section detected")
+	require.Contains(t, s, "help, h", "missing \"help, h\"")
 }
 
 func TestHelpCommand_FullName(t *testing.T) {
@@ -267,20 +249,16 @@ func Test_helpCommand_HideHelpCommand(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"app", "help", "help"})
-	expect(t, err, nil)
+	assert.NoError(t, err)
 	got := buf.String()
 	notWant := "COMMANDS:"
-	if strings.Contains(got, notWant) {
-		t.Errorf("Not expected %q - Got %q", notWant, got)
-	}
+	assert.NotContains(t, got, notWant)
 }
 
 func Test_helpCommand_HideHelpFlag(t *testing.T) {
 	app := buildMinimalTestCommand()
 
-	if err := app.Run(buildTestContext(t), []string{"app", "help", "-h"}); err == nil {
-		t.Errorf("Expected flag error - Got nil")
-	}
+	assert.Error(t, app.Run(buildTestContext(t), []string{"app", "help", "-h"}), "Expected flag error - Got nil")
 }
 
 func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
@@ -290,23 +268,13 @@ func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 	_ = cmd.flagSet.Parse([]string{"foo"})
 
 	err := helpCommandAction(context.Background(), cmd)
-
-	if err == nil {
-		t.Fatalf("expected error from helpCommandAction(), but got nil")
-	}
+	require.Error(t, err, "expected error from helpCommandAction(), but got nil")
 
 	exitErr, ok := err.(*exitError)
-	if !ok {
-		t.Fatalf("expected *exitError from helpCommandAction(), but instead got: %v", err.Error())
-	}
+	require.True(t, ok, "expected *exitError from helpCommandAction(), but instead got: %v", err.Error())
 
-	if !strings.HasPrefix(exitErr.Error(), "No help topic for") {
-		t.Fatalf("expected an unknown help topic error, but got: %v", exitErr.Error())
-	}
-
-	if exitErr.exitCode != 3 {
-		t.Fatalf("expected exit value = 3, got %d instead", exitErr.exitCode)
-	}
+	require.Contains(t, exitErr.Error(), "No help topic for", "expected an unknown help topic error")
+	require.Equal(t, 3, exitErr.exitCode, "unexpected exit value")
 }
 
 func TestShowAppHelp_CommandAliases(t *testing.T) {
@@ -455,10 +423,7 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 				HelpPrinter = old
 			}(HelpPrinter)
 			HelpPrinter = func(w io.Writer, templ string, data interface{}) {
-				if templ != tt.wantTemplate {
-					t.Errorf("want template:\n%s\ngot template:\n%s", tt.wantTemplate, templ)
-				}
-
+				assert.Equal(t, tt.wantTemplate, templ, "template mismatch")
 				tt.printer(w, templ, data)
 			}
 
@@ -475,14 +440,10 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 			}
 
 			err := cmd.Run(buildTestContext(t), []string{"my-app", "help", tt.command})
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 
 			got := buf.String()
-			if got != tt.wantOutput {
-				t.Errorf("want output %q, got %q", tt.wantOutput, got)
-			}
+			assert.Equal(t, tt.wantOutput, got)
 		})
 	}
 }
@@ -605,9 +566,7 @@ func TestShowSubcommandHelp_CommandAliases(t *testing.T) {
 
 	_ = cmd.Run(buildTestContext(t), []string{"foo", "help"})
 
-	if !strings.Contains(output.String(), "frobbly, fr, frob, bork") {
-		t.Errorf("expected output to include all command aliases; got: %q", output.String())
-	}
+	assert.Contains(t, output.String(), "frobbly, fr, frob, bork", "expected output to include all command aliases")
 }
 
 func TestShowCommandHelp_Customtemplate(t *testing.T) {
@@ -640,17 +599,14 @@ EXAMPLES:
 
 	_ = cmd.Run(buildTestContext(t), []string{"foo", "help", "frobbly"})
 
-	if strings.Contains(output.String(), "2. Frobbly runs without this param locally.") {
-		t.Errorf("expected output to exclude \"2. Frobbly runs without this param locally.\"; got: %q", output.String())
-	}
+	assert.NotContains(t, output.String(), "2. Frobbly runs without this param locally.",
+		"expected output to exclude \"2. Frobbly runs without this param locally.\";")
 
-	if !strings.Contains(output.String(), "1. Frobbly runs with this param locally.") {
-		t.Errorf("expected output to include \"1. Frobbly runs with this param locally.\"; got: %q", output.String())
-	}
+	assert.Contains(t, output.String(), "1. Frobbly runs with this param locally.",
+		"expected output to include \"1. Frobbly runs with this param locally.\"")
 
-	if !strings.Contains(output.String(), "$ foo frobbly wobbly") {
-		t.Errorf("expected output to include \"$ foo frobbly wobbly\"; got: %q", output.String())
-	}
+	assert.Contains(t, output.String(), "$ foo frobbly wobbly",
+		"expected output to include \"$ foo frobbly wobbly\"")
 }
 
 func TestShowSubcommandHelp_CommandUsageText(t *testing.T) {
@@ -668,9 +624,8 @@ func TestShowSubcommandHelp_CommandUsageText(t *testing.T) {
 
 	_ = cmd.Run(buildTestContext(t), []string{"foo", "frobbly", "--help"})
 
-	if !strings.Contains(output.String(), "this is usage text") {
-		t.Errorf("expected output to include usage text; got: %q", output.String())
-	}
+	assert.Contains(t, output.String(), "this is usage text",
+		"expected output to include usage text")
 }
 
 func TestShowSubcommandHelp_MultiLine_CommandUsageText(t *testing.T) {
@@ -698,9 +653,8 @@ UsageText`,
    UsageText
 `
 
-	if !strings.Contains(output.String(), expected) {
-		t.Errorf("expected output to include usage text; got: %q", output.String())
-	}
+	assert.Contains(t, output.String(), expected,
+		"expected output to include usage text")
 }
 
 func TestShowSubcommandHelp_SubcommandUsageText(t *testing.T) {
@@ -723,9 +677,8 @@ func TestShowSubcommandHelp_SubcommandUsageText(t *testing.T) {
 
 	_ = cmd.Run(buildTestContext(t), []string{"foo", "frobbly", "bobbly", "--help"})
 
-	if !strings.Contains(output.String(), "this is usage text") {
-		t.Errorf("expected output to include usage text; got: %q", output.String())
-	}
+	assert.Contains(t, output.String(), "this is usage text",
+		"expected output to include usage text")
 }
 
 func TestShowSubcommandHelp_MultiLine_SubcommandUsageText(t *testing.T) {
@@ -758,9 +711,8 @@ UsageText`,
    UsageText
 `
 
-	if !strings.Contains(output.String(), expected) {
-		t.Errorf("expected output to include usage text; got: %q", output.String())
-	}
+	assert.Contains(t, output.String(), expected,
+		"expected output to include usage text")
 }
 
 func TestShowAppHelp_HiddenCommand(t *testing.T) {
@@ -787,13 +739,11 @@ func TestShowAppHelp_HiddenCommand(t *testing.T) {
 
 	_ = cmd.Run(buildTestContext(t), []string{"app", "--help"})
 
-	if strings.Contains(output.String(), "secretfrob") {
-		t.Errorf("expected output to exclude \"secretfrob\"; got: %q", output.String())
-	}
+	assert.NotContains(t, output.String(), "secretfrob",
+		"expected output to exclude \"secretfrob\"")
 
-	if !strings.Contains(output.String(), "frobbly") {
-		t.Errorf("expected output to include \"frobbly\"; got: %q", output.String())
-	}
+	assert.Contains(t, output.String(), "frobbly",
+		"expected output to include \"frobbly\"")
 }
 
 func TestShowAppHelp_HelpPrinter(t *testing.T) {
@@ -836,10 +786,7 @@ func TestShowAppHelp_HelpPrinter(t *testing.T) {
 				HelpPrinter = old
 			}(HelpPrinter)
 			HelpPrinter = func(w io.Writer, templ string, data interface{}) {
-				if templ != tt.wantTemplate {
-					t.Errorf("want template:\n%s\ngot template:\n%s", tt.wantTemplate, templ)
-				}
-
+				assert.Equal(t, tt.wantTemplate, templ, "unexpected template")
 				tt.printer(w, templ, data)
 			}
 
@@ -851,14 +798,9 @@ func TestShowAppHelp_HelpPrinter(t *testing.T) {
 			}
 
 			err := cmd.Run(buildTestContext(t), []string{"my-app", "help"})
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 
-			got := buf.String()
-			if got != tt.wantOutput {
-				t.Errorf("want output %q, got %q", tt.wantOutput, got)
-			}
+			assert.Equal(t, tt.wantOutput, buf.String())
 		})
 	}
 }
@@ -903,14 +845,8 @@ func TestShowAppHelp_HelpPrinterCustom(t *testing.T) {
 				HelpPrinterCustom = old
 			}(HelpPrinterCustom)
 			HelpPrinterCustom = func(w io.Writer, templ string, data interface{}, fm map[string]interface{}) {
-				if fm != nil {
-					t.Error("unexpected function map passed")
-				}
-
-				if templ != tt.wantTemplate {
-					t.Errorf("want template:\n%s\ngot template:\n%s", tt.wantTemplate, templ)
-				}
-
+				assert.Nil(t, fm, "unexpected function map passed")
+				assert.Equal(t, tt.wantTemplate, templ, "unexpected template")
 				tt.printer(w, templ, data, fm)
 			}
 
@@ -922,14 +858,8 @@ func TestShowAppHelp_HelpPrinterCustom(t *testing.T) {
 			}
 
 			err := cmd.Run(buildTestContext(t), []string{"my-app", "help"})
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			got := buf.String()
-			if got != tt.wantOutput {
-				t.Errorf("want output %q, got %q", tt.wantOutput, got)
-			}
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantOutput, buf.String())
 		})
 	}
 }
@@ -984,13 +914,8 @@ VERSION:
 
 	_ = cmd.Run(buildTestContext(t), []string{"app", "--help"})
 
-	if strings.Contains(output.String(), "secretfrob") {
-		t.Errorf("expected output to exclude \"secretfrob\"; got: %q", output.String())
-	}
-
-	if !strings.Contains(output.String(), "frobbly") {
-		t.Errorf("expected output to include \"frobbly\"; got: %q", output.String())
-	}
+	assert.NotContains(t, output.String(), "secretfrob", "expected output to exclude \"secretfrob\"")
+	assert.Contains(t, output.String(), "frobbly", "expected output to include \"frobbly\"")
 
 	if !strings.Contains(output.String(), "PLATFORM:") ||
 		!strings.Contains(output.String(), "OS:") ||
@@ -1025,9 +950,7 @@ func TestShowAppHelp_UsageText(t *testing.T) {
 
 	_ = cmd.Run(buildTestContext(t), []string{"foo"})
 
-	if !strings.Contains(output.String(), "This is a single line of UsageText") {
-		t.Errorf("expected output to include usage text; got: %q", output.String())
-	}
+	assert.Contains(t, output.String(), "This is a single line of UsageText", "expected output to include usage text")
 }
 
 func TestShowAppHelp_MultiLine_UsageText(t *testing.T) {
@@ -1055,9 +978,7 @@ App UsageText`,
    App UsageText
 `
 
-	if !strings.Contains(output.String(), expected) {
-		t.Errorf("expected output to include usage text; got: %q", output.String())
-	}
+	assert.Contains(t, output.String(), expected, "expected output to include usage text")
 }
 
 func TestShowAppHelp_CommandMultiLine_UsageText(t *testing.T) {
@@ -1091,9 +1012,7 @@ App UsageText`,
 		"                               output, long usage output, long usage output\n" +
 		"   grobbly, grb1, grbb2        this is another long help output for the run command, long usage \n" +
 		"                               output, long usage output"
-	if !strings.Contains(output.String(), expected) {
-		t.Errorf("expected output to include usage text; got: %q", output.String())
-	}
+	assert.Contains(t, output.String(), expected, "expected output to include usage text")
 }
 
 func TestHideHelpCommand(t *testing.T) {
@@ -1103,17 +1022,10 @@ func TestHideHelpCommand(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", "help"})
-	if err == nil {
-		t.Fatalf("expected a non-nil error")
-	}
-	if !strings.Contains(err.Error(), "No help topic for 'help'") {
-		t.Errorf("Run returned unexpected error: %v", err)
-	}
+	require.ErrorContains(t, err, "No help topic for 'help'")
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "--help"})
-	if err != nil {
-		t.Errorf("Run returned unexpected error: %v", err)
-	}
+	assert.NoError(t, err)
 }
 
 func TestHideHelpCommand_False(t *testing.T) {
@@ -1123,14 +1035,10 @@ func TestHideHelpCommand_False(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", "help"})
-	if err != nil {
-		t.Errorf("Run returned unexpected error: %v", err)
-	}
+	assert.NoError(t, err)
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "--help"})
-	if err != nil {
-		t.Errorf("Run returned unexpected error: %v", err)
-	}
+	assert.NoError(t, err)
 }
 
 func TestHideHelpCommand_WithHideHelp(t *testing.T) {
@@ -1141,20 +1049,10 @@ func TestHideHelpCommand_WithHideHelp(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", "help"})
-	if err == nil {
-		t.Fatalf("expected a non-nil error")
-	}
-	if !strings.Contains(err.Error(), "No help topic for 'help'") {
-		t.Errorf("Run returned unexpected error: %v", err)
-	}
+	require.ErrorContains(t, err, "No help topic for 'help'")
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "--help"})
-	if err == nil {
-		t.Fatalf("expected a non-nil error")
-	}
-	if !strings.Contains(err.Error(), "flag: help requested") {
-		t.Errorf("Run returned unexpected error: %v", err)
-	}
+	require.ErrorContains(t, err, "flag: help requested")
 }
 
 func TestHideHelpCommand_WithSubcommands(t *testing.T) {
@@ -1273,18 +1171,14 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 
 			written := writer.String()
 
-			if written != tc.expected {
-				ct.Errorf("written help does not match expected %q != %q", written, tc.expected)
-			}
+			assert.Equal(t, tc.expected, written, "written help does not match")
 		})
 	}
 }
 
 func TestWrap(t *testing.T) {
 	emptywrap := wrap("", 4, 16)
-	if emptywrap != "" {
-		t.Errorf("Wrapping empty line should return empty line. Got '%s'.", emptywrap)
-	}
+	assert.Empty(t, emptywrap, "Wrapping empty line should return empty line")
 }
 
 func TestWrappedHelp(t *testing.T) {
@@ -1373,10 +1267,7 @@ COPYRIGHT:
    ever read these things?
 `
 
-	if output.String() != expected {
-		t.Errorf("Unexpected wrapping, got:\n%s\nexpected: %s",
-			output.String(), expected)
-	}
+	assert.Equal(t, expected, output.String(), "Unexpected wrapping")
 }
 
 func TestWrappedCommandHelp(t *testing.T) {
@@ -1508,10 +1399,7 @@ OPTIONS:
       (default: false)
 `
 
-	if output.String() != expected {
-		t.Errorf("Unexpected wrapping, got:\n%s\nexpected: %s",
-			output.String(), expected)
-	}
+	assert.Equal(t, expected, output.String(), "Unexpected wrapping")
 }
 
 func TestWrappedHelpSubcommand(t *testing.T) {
