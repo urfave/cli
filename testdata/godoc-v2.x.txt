@@ -2146,6 +2146,9 @@ func (f *Uint64SliceFlag) IsVisible() bool
 func (f *Uint64SliceFlag) Names() []string
     Names returns the names of the flag
 
+func (f *Uint64SliceFlag) RunAction(c *Context) error
+    RunAction executes flag action if set
+
 func (f *Uint64SliceFlag) String() string
     String returns a readable representation of this value (for usage defaults)
 
@@ -2310,6 +2313,9 @@ func (f *UintSliceFlag) IsVisible() bool
 
 func (f *UintSliceFlag) Names() []string
     Names returns the names of the flag
+
+func (f *UintSliceFlag) RunAction(c *Context) error
+    RunAction executes flag action if set
 
 func (f *UintSliceFlag) String() string
     String returns a readable representation of this value (for usage defaults)
