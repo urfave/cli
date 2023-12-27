@@ -1482,3 +1482,62 @@ OPTIONS:
 		output.String(),
 	)
 }
+
+func TestCategorizedHelp(t *testing.T) {
+	// Reset HelpPrinter after this test.
+	defer func(old helpPrinter) {
+		HelpPrinter = old
+	}(HelpPrinter)
+
+	output := new(bytes.Buffer)
+	cmd := &Command{
+		Name:   "cli.test",
+		Writer: output,
+		Action: func(context.Context, *Command) error { return nil },
+		Flags: []Flag{
+			&StringFlag{
+				Name: "strd", // no category set
+			},
+			&IntFlag{
+				Name:     "intd",
+				Aliases:  []string{"altd1", "altd2"},
+				Category: "cat1",
+			},
+		},
+	}
+
+	HelpPrinter = func(w io.Writer, templ string, data interface{}) {
+		funcMap := map[string]interface{}{
+			"wrapAt": func() int {
+				return 30
+			},
+		}
+
+		HelpPrinterCustom(w, templ, data, funcMap)
+	}
+
+	r := require.New(t)
+	r.NoError(cmd.Run(buildTestContext(t), []string{"cli.test", "help"}))
+
+	r.Equal(`NAME:
+   cli.test - A new cli
+              application
+
+USAGE:
+   cli.test [global options] [command [command options]] [arguments...]
+
+COMMANDS:
+   help, h  Shows a list of
+            commands or help
+            for one command
+
+GLOBAL OPTIONS:
+   --help, -h    show help (default: false)
+   --strd value  
+
+   cat1
+
+   --intd value, --altd1 value, --altd2 value  (default: 0)
+
+`, output.String())
+}
