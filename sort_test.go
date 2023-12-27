@@ -1,6 +1,10 @@
 package cli
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 var lexicographicLessTests = []struct {
 	i        string
@@ -23,8 +27,6 @@ var lexicographicLessTests = []struct {
 func TestLexicographicLess(t *testing.T) {
 	for _, test := range lexicographicLessTests {
 		actual := lexicographicLess(test.i, test.j)
-		if test.expected != actual {
-			t.Errorf(`expected string "%s" to come before "%s"`, test.i, test.j)
-		}
+		assert.Equal(t, test.expected, actual)
 	}
 }

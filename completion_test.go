@@ -2,9 +2,9 @@ package cli
 
 import (
 	"bytes"
-	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -12,9 +12,7 @@ func TestCompletionDisable(t *testing.T) {
 	cmd := &Command{}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName})
-	if err == nil {
-		t.Error("Expected error for no help topic for completion")
-	}
+	assert.Error(t, err, "Expected error for no help topic for completion")
 }
 
 func TestCompletionEnable(t *testing.T) {
@@ -23,9 +21,7 @@ func TestCompletionEnable(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName})
-	if err == nil || !strings.Contains(err.Error(), "no shell provided") {
-		t.Errorf("expected no shell provided error instead got [%v]", err)
-	}
+	assert.ErrorContains(t, err, "no shell provided")
 }
 
 func TestCompletionEnableDiffCommandName(t *testing.T) {
@@ -35,9 +31,7 @@ func TestCompletionEnableDiffCommandName(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", "junky"})
-	if err == nil || !strings.Contains(err.Error(), "no shell provided") {
-		t.Errorf("expected no shell provided error instead got [%v]", err)
-	}
+	assert.ErrorContains(t, err, "no shell provided")
 }
 
 func TestCompletionShell(t *testing.T) {
@@ -94,7 +88,5 @@ func TestCompletionInvalidShell(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, "junky-sheell"})
-	if err == nil {
-		t.Error("Expected error for invalid shell")
-	}
+	assert.ErrorContains(t, err, "unknown shell junky-sheell")
 }

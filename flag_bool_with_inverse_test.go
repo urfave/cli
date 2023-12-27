@@ -333,31 +333,13 @@ func TestBoolWithInverseNames(t *testing.T) {
 	}
 	names := flag.Names()
 
-	if len(names) != 2 {
-		t.Errorf("expected 2 names, got %d", len(names))
-		return
-	}
-
-	if names[0] != "env" {
-		t.Errorf("expected first name to be `env`, got `%s`", names[0])
-		return
-	}
-
-	if names[1] != "no-env" {
-		t.Errorf("expected first name to be `no-env`, got `%s`", names[1])
-		return
-	}
+	require.Len(t, names, 2)
+	require.Equal(t, "env", names[0], "expected first name to be `env`")
+	require.Equal(t, "no-env", names[1], "expected first name to be `no-env`")
 
 	flagString := flag.String()
-	if strings.Contains(flagString, "--env") == false {
-		t.Errorf("expected `%s` to contain `--env`", flagString)
-		return
-	}
-
-	if strings.Contains(flagString, "--no-env") == false {
-		t.Errorf("expected `%s` to contain `--no-env`", flagString)
-		return
-	}
+	require.Contains(t, flagString, "--env")
+	require.Contains(t, flagString, "--no-env")
 }
 
 func TestBoolWithInverseDestination(t *testing.T) {
