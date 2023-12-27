@@ -526,12 +526,15 @@ func TestCommand_VisibleFlagCategories(t *testing.T) {
 	}
 
 	vfc := cmd.VisibleFlagCategories()
-	require.NotEmpty(t, vfc)
-	assert.Equal(t, vfc[0].Name(), "cat1", "expected category name cat1")
+	require.Len(t, vfc, 2)
 
-	require.Len(t, vfc[0].Flags(), 1, "expected flag category to have just one flag")
+	assert.Equal(t, vfc[0].Name(), "", "expected category name to be empty")
 
-	fl := vfc[0].Flags()[0]
+	assert.Equal(t, vfc[1].Name(), "cat1", "expected category name cat1")
+
+	require.Len(t, vfc[1].Flags(), 1, "expected flag category to have just one flag")
+
+	fl := vfc[1].Flags()[0]
 	assert.Equal(t, fl.Names(), []string{"intd", "altd1", "altd2"})
 }
 
