@@ -67,14 +67,14 @@ type Argument interface {
 }
 
 type ArgumentBase[T any, C any, VC ValueCreator[T, C]] struct {
-	Name        string // the name of this argument
-	Value       T      // the default value of this argument
-	Destination *T     // the destination point for this argument
-	Values      *[]T   // all the values of this argument, only if multiple are supported
-	UsageText   string // the usage text to show
-	Min         int    // the min num of occurrences of this argument
-	Max         int    // the max num of occurrences of this argument, set to -1 for unlimited
-	Config      C      // config for this argument similar to Flag Config
+	Name        string `json:"name"`      // the name of this argument
+	Value       T      `json:"value"`     // the default value of this argument
+	Destination *T     `json:"-"`         // the destination point for this argument
+	Values      *[]T   `json:"-"`         // all the values of this argument, only if multiple are supported
+	UsageText   string `json:"usageText"` // the usage text to show
+	Min         int    `json:"minTimes"`  // the min num of occurrences of this argument
+	Max         int    `json:"maxTimes"`  // the max num of occurrences of this argument, set to -1 for unlimited
+	Config      C      `json:"config"`    // config for this argument similar to Flag Config
 }
 
 func (a *ArgumentBase[T, C, VC]) Usage() string {

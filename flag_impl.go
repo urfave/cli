@@ -69,32 +69,22 @@ type NoConfig struct{}
 //	C specifies the configuration required(if any for that flag type)
 //	VC specifies the value creator which creates the flag.Value emulation
 type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
-	Name string // name of the flag
-
-	Category    string // category of the flag, if any
-	DefaultText string // default text of the flag for usage purposes
-	Usage       string // usage string for help output
-
-	Sources ValueSourceChain // sources to load flag value from
-
-	Required   bool // whether the flag is required or not
-	Hidden     bool // whether to hide the flag in help output
-	Persistent bool // whether the flag needs to be applied to subcommands as well
-
-	Value       T  // default value for this flag if not set by from any source
-	Destination *T // destination pointer for value when set
-
-	Aliases []string // Aliases that are allowed for this flag
-
-	TakesFile bool // whether this flag takes a file argument, mainly for shell completion purposes
-
-	Action func(context.Context, *Command, T) error // Action callback to be called when flag is set
-
-	Config C // Additional/Custom configuration associated with this flag type
-
-	OnlyOnce bool // whether this flag can be duplicated on the command line
-
-	Validator func(T) error // custom function to validate this flag value
+	Name        string                                   `json:"name"`         // name of the flag
+	Category    string                                   `json:"category"`     // category of the flag, if any
+	DefaultText string                                   `json:"defaultText"`  // default text of the flag for usage purposes
+	Usage       string                                   `json:"usage"`        // usage string for help output
+	Sources     ValueSourceChain                         `json:"-"`            // sources to load flag value from
+	Required    bool                                     `json:"required"`     // whether the flag is required or not
+	Hidden      bool                                     `json:"hidden"`       // whether to hide the flag in help output
+	Persistent  bool                                     `json:"persistent"`   // whether the flag needs to be applied to subcommands as well
+	Value       T                                        `json:"defaultValue"` // default value for this flag if not set by from any source
+	Destination *T                                       `json:"-"`            // destination pointer for value when set
+	Aliases     []string                                 `json:"aliases"`      // Aliases that are allowed for this flag
+	TakesFile   bool                                     `json:"takesFileArg"` // whether this flag takes a file argument, mainly for shell completion purposes
+	Action      func(context.Context, *Command, T) error `json:"-"`            // Action callback to be called when flag is set
+	Config      C                                        `json:"config"`       // Additional/Custom configuration associated with this flag type
+	OnlyOnce    bool                                     `json:"onlyOnce"`     // whether this flag can be duplicated on the command line
+	Validator   func(T) error                            `json:"-"`            // custom function to validate this flag value
 
 	// unexported fields for internal use
 	count      int   // number of times the flag has been set
