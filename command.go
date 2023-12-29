@@ -56,7 +56,7 @@ type Command struct {
 	HideHelpCommand bool `json:"hideHelpCommand"`
 	// Boolean to hide built-in version flag and the VERSION section of help
 	HideVersion bool `json:"hideVersion"`
-	// Boolean to enable shell completion com.mands
+	// Boolean to enable shell completion commands
 	EnableShellCompletion bool `json:"-"`
 	// Shell Completion generation command name
 	ShellCompletionCommandName string `json:"-"`
