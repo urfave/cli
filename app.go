@@ -229,8 +229,6 @@ func (a *App) Setup() {
 		a.separator.disabled = true
 	}
 
-	var newCommands []*Command
-
 	for _, c := range a.Commands {
 		cname := c.Name
 		if c.HelpName != "" {
@@ -239,9 +237,7 @@ func (a *App) Setup() {
 		c.separator = a.separator
 		c.HelpName = fmt.Sprintf("%s %s", a.HelpName, cname)
 		c.flagCategories = newFlagCategoriesFromFlags(c.Flags)
-		newCommands = append(newCommands, c)
 	}
-	a.Commands = newCommands
 
 	if a.Command(helpCommand.Name) == nil && !a.HideHelp {
 		if !a.HideHelpCommand {

@@ -132,15 +132,12 @@ func (c *Command) setup(ctx *Context) {
 	}
 	sort.Sort(c.categories.(*commandCategories))
 
-	var newCmds []*Command
 	for _, scmd := range c.Subcommands {
 		if scmd.HelpName == "" {
 			scmd.HelpName = fmt.Sprintf("%s %s", c.HelpName, scmd.Name)
 		}
 		scmd.separator = c.separator
-		newCmds = append(newCmds, scmd)
 	}
-	c.Subcommands = newCmds
 
 	if c.BashComplete == nil {
 		c.BashComplete = DefaultCompleteWithFlags(c)
