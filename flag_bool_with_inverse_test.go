@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	bothEnvFlagsAreSetError = fmt.Errorf("cannot set both flags `--env` and `--no-env`")
+	errBothEnvFlagsAreSet = fmt.Errorf("cannot set both flags `--env` and `--no-env`")
 )
 
 type boolWithInverseTestCase struct {
@@ -98,7 +98,7 @@ func TestBoolWithInverseBasic(t *testing.T) {
 		},
 		{
 			args: []string{"--env", "--no-env"},
-			err:  bothEnvFlagsAreSetError,
+			err:  errBothEnvFlagsAreSet,
 		},
 	}
 
@@ -146,7 +146,7 @@ func TestBoolWithInverseAction(t *testing.T) {
 		},
 		{
 			args: []string{"--env", "--no-env"},
-			err:  bothEnvFlagsAreSetError,
+			err:  errBothEnvFlagsAreSet,
 		},
 	}
 
@@ -184,7 +184,7 @@ func TestBoolWithInverseAlias(t *testing.T) {
 		},
 		{
 			args: []string{"--do-env", "--no-do-env"},
-			err:  bothEnvFlagsAreSetError,
+			err:  errBothEnvFlagsAreSet,
 		},
 	}
 
@@ -232,7 +232,7 @@ func TestBoolWithInverseEnvVars(t *testing.T) {
 			value:   false,
 		},
 		{
-			err: bothEnvFlagsAreSetError,
+			err: errBothEnvFlagsAreSet,
 			envVars: map[string]string{
 				"ENV":    "true",
 				"NO-ENV": "true",
@@ -313,7 +313,7 @@ func TestBoolWithInverseRequired(t *testing.T) {
 		},
 		{
 			args: []string{"--env", "--no-env"},
-			err:  bothEnvFlagsAreSetError,
+			err:  errBothEnvFlagsAreSet,
 		},
 	}
 
