@@ -12,7 +12,7 @@ func TestFlagMutuallyExclusiveFlags(t *testing.T) {
 		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
 			{
 				Flags: [][]Flag{
-					[]Flag{
+					{
 						&IntFlag{
 							Name: "i",
 						},
@@ -20,7 +20,7 @@ func TestFlagMutuallyExclusiveFlags(t *testing.T) {
 							Name: "s",
 						},
 					},
-					[]Flag{
+					{
 						&IntFlag{
 							Name:    "t",
 							Aliases: []string{"ai"},
