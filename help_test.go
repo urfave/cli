@@ -1176,6 +1176,28 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 	}
 }
 
+func TestMutuallyExclusiveFlags(t *testing.T) {
+	writer := &bytes.Buffer{}
+	cmd := &Command{
+		Name:   "cmd",
+		Writer: writer,
+		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
+			{
+				Flags: [][]Flag{
+					{
+						&StringFlag{
+							Name: "s1",
+						},
+					},
+				}},
+		},
+	}
+
+	ShowAppHelp(cmd)
+
+	assert.Contains(t, writer.String(), "--s1", "written help does not include mutex flag")
+}
+
 func TestWrap(t *testing.T) {
 	emptywrap := wrap("", 4, 16)
 	assert.Empty(t, emptywrap, "Wrapping empty line should return empty line")

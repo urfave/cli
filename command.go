@@ -855,7 +855,7 @@ func (cmd *Command) VisibleFlagCategories() []VisibleFlagCategory {
 
 // VisibleFlags returns a slice of the Flags with Hidden=false
 func (cmd *Command) VisibleFlags() []Flag {
-	return visibleFlags(cmd.Flags)
+	return visibleFlags(cmd.allFlags())
 }
 
 func (cmd *Command) appendFlag(fl Flag) {
