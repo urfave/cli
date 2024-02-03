@@ -283,7 +283,7 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 	sort.Sort(cmd.categories.(*commandCategories))
 
 	tracef("setting flag categories (cmd=%[1]q)", cmd.Name)
-	cmd.flagCategories = newFlagCategoriesFromFlags(cmd.Flags)
+	cmd.flagCategories = newFlagCategoriesFromFlags(cmd.allFlags())
 
 	if cmd.Metadata == nil {
 		tracef("setting default Metadata (cmd=%[1]q)", cmd.Name)
@@ -325,7 +325,7 @@ func (cmd *Command) setupSubcommand() {
 	sort.Sort(cmd.categories.(*commandCategories))
 
 	tracef("setting flag categories (cmd=%[1]q)", cmd.Name)
-	cmd.flagCategories = newFlagCategoriesFromFlags(cmd.Flags)
+	cmd.flagCategories = newFlagCategoriesFromFlags(cmd.allFlags())
 }
 
 func (cmd *Command) ensureHelp() {
@@ -848,7 +848,7 @@ func (cmd *Command) VisibleCommands() []*Command {
 // VisibleFlagCategories returns a slice containing all the visible flag categories with the flags they contain
 func (cmd *Command) VisibleFlagCategories() []VisibleFlagCategory {
 	if cmd.flagCategories == nil {
-		cmd.flagCategories = newFlagCategoriesFromFlags(cmd.Flags)
+		cmd.flagCategories = newFlagCategoriesFromFlags(cmd.allFlags())
 	}
 	return cmd.flagCategories.VisibleCategories()
 }

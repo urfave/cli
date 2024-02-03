@@ -1526,6 +1526,27 @@ func TestCategorizedHelp(t *testing.T) {
 				Category: "cat1",
 			},
 		},
+		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
+			{
+				Flags: [][]Flag{
+					{
+						&StringFlag{
+							Name: "mutexstd",
+						},
+						&IntFlag{
+							Name:     "mutexcat1",
+							Category: "cat1",
+						},
+					},
+					{
+						&IntFlag{
+							Name:     "mutexcat2",
+							Category: "cat2",
+						},
+					},
+				},
+			},
+		},
 	}
 
 	HelpPrinter = func(w io.Writer, templ string, data interface{}) {
@@ -1554,12 +1575,18 @@ COMMANDS:
             for one command
 
 GLOBAL OPTIONS:
-   --help, -h    show help (default: false)
-   --strd value  
+   --help, -h        show help (default: false)
+   --mutexstd value  
+   --strd value      
 
    cat1
 
    --intd value, --altd1 value, --altd2 value  (default: 0)
+   --mutexcat1 value                           (default: 0)
+
+   cat2
+
+   --mutexcat2 value  (default: 0)
 
 `, output.String())
 }
