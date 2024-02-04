@@ -1193,7 +1193,7 @@ func TestMutuallyExclusiveFlags(t *testing.T) {
 		},
 	}
 
-	ShowAppHelp(cmd)
+	_ = ShowAppHelp(cmd)
 
 	assert.Contains(t, writer.String(), "--s1", "written help does not include mutex flag")
 }
