@@ -1528,20 +1528,22 @@ func TestCategorizedHelp(t *testing.T) {
 		},
 		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
 			{
+				Category: "cat1",
 				Flags: [][]Flag{
 					{
 						&StringFlag{
-							Name: "mutexstd",
-						},
-						&IntFlag{
-							Name:     "mutexcat1",
-							Category: "cat1",
+							Name:     "m1",
+							Category: "overridden",
 						},
 					},
+				},
+			},
+			{
+				Flags: [][]Flag{
 					{
-						&IntFlag{
-							Name:     "mutexcat2",
-							Category: "cat2",
+						&StringFlag{
+							Name:     "m2",
+							Category: "ignored",
 						},
 					},
 				},
@@ -1575,18 +1577,14 @@ COMMANDS:
             for one command
 
 GLOBAL OPTIONS:
-   --help, -h        show help (default: false)
-   --mutexstd value  
-   --strd value      
+   --help, -h    show help (default: false)
+   --m2 value    
+   --strd value  
 
    cat1
 
    --intd value, --altd1 value, --altd2 value  (default: 0)
-   --mutexcat1 value                           (default: 0)
-
-   cat2
-
-   --mutexcat2 value  (default: 0)
+   --m1 value                                  
 
 `, output.String())
 }

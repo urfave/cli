@@ -11,6 +11,9 @@ type MutuallyExclusiveFlags struct {
 
 	// whether this group is required
 	Required bool
+
+	// Category to apply to all flags within group
+	Category string
 }
 
 func (grp MutuallyExclusiveFlags) check(cmd *Command) error {
@@ -40,4 +43,14 @@ func (grp MutuallyExclusiveFlags) check(cmd *Command) error {
 		return &mutuallyExclusiveGroupRequiredFlag{flags: &grp}
 	}
 	return nil
+}
+
+func (grp MutuallyExclusiveFlags) propagateCategory() {
+	for _, grpf := range grp.Flags {
+		for _, f := range grpf {
+			if cf, ok := f.(CategorizableFlag); ok {
+				cf.SetCategory(grp.Category)
+			}
+		}
+	}
 }

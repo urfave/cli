@@ -525,38 +525,32 @@ func TestCommand_VisibleFlagCategories(t *testing.T) {
 			},
 		},
 		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{{
+			Category: "cat2",
 			Flags: [][]Flag{
 				{
-					&BoolFlag{
-						Name: "mutexStrd",
-					},
-					&BoolFlag{
-						Name:     "mutexCat1",
-						Category: "cat1",
-					},
-					&BoolFlag{
-						Name:     "mutexCat2",
-						Category: "cat2",
+					&StringFlag{
+						Name: "mutex",
 					},
 				},
 			},
 		}},
 	}
 
+	cmd.MutuallyExclusiveFlags[0].propagateCategory()
+
 	vfc := cmd.VisibleFlagCategories()
 	require.Len(t, vfc, 3)
 
 	assert.Equal(t, vfc[0].Name(), "", "expected category name to be empty")
-	assert.Equal(t, vfc[0].Flags()[0].Names(), []string{"mutexStrd"})
+	assert.Equal(t, vfc[0].Flags()[0].Names(), []string{"strd"})
 
 	assert.Equal(t, vfc[1].Name(), "cat1", "expected category name cat1")
-	require.Len(t, vfc[1].Flags(), 2, "expected flag category to have two flags")
+	require.Len(t, vfc[1].Flags(), 1, "expected flag category to have one flag")
 	assert.Equal(t, vfc[1].Flags()[0].Names(), []string{"intd", "altd1", "altd2"})
-	assert.Equal(t, vfc[1].Flags()[1].Names(), []string{"mutexCat1"})
 
 	assert.Equal(t, vfc[2].Name(), "cat2", "expected category name cat2")
 	require.Len(t, vfc[2].Flags(), 1, "expected flag category to have one flag")
-	assert.Equal(t, vfc[2].Flags()[0].Names(), []string{"mutexCat2"})
+	assert.Equal(t, vfc[2].Flags()[0].Names(), []string{"mutex"})
 }
 
 func TestCommand_RunSubcommandWithDefault(t *testing.T) {

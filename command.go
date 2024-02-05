@@ -282,6 +282,11 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 	tracef("sorting command categories (cmd=%[1]q)", cmd.Name)
 	sort.Sort(cmd.categories.(*commandCategories))
 
+	tracef("setting category on mutually exclusive flags (cmd=%[1]q)", cmd.Name)
+	for _, grp := range cmd.MutuallyExclusiveFlags {
+		grp.propagateCategory()
+	}
+
 	tracef("setting flag categories (cmd=%[1]q)", cmd.Name)
 	cmd.flagCategories = newFlagCategoriesFromFlags(cmd.allFlags())
 
@@ -323,6 +328,11 @@ func (cmd *Command) setupSubcommand() {
 
 	tracef("sorting command categories (cmd=%[1]q)", cmd.Name)
 	sort.Sort(cmd.categories.(*commandCategories))
+
+	tracef("setting category on mutually exclusive flags (cmd=%[1]q)", cmd.Name)
+	for _, grp := range cmd.MutuallyExclusiveFlags {
+		grp.propagateCategory()
+	}
 
 	tracef("setting flag categories (cmd=%[1]q)", cmd.Name)
 	cmd.flagCategories = newFlagCategoriesFromFlags(cmd.allFlags())
