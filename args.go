@@ -132,7 +132,7 @@ func (a *ArgumentBase[T, C, VC]) Parse(s []string) ([]string, error) {
 		*a.Values = values
 	}
 
-	if a.Max == 1 && a.Destination != nil {
+	if a.Max == 1 && a.Destination != nil && len(values) > 0 {
 		*a.Destination = values[0]
 	}
 	return s[count:], nil
