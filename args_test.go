@@ -168,6 +168,6 @@ func TestSingleOptionalArg(t *testing.T) {
 	require.Equal(t, "", s1)
 
 	arg.Value = "bar"
-	require.NoError(t, cmd.Run(context.Background(), []string{"foo", "bar"}))
+	require.NoError(t, cmd.Run(context.Background(), []string{"foo"}))
 	require.Equal(t, "bar", s1)
 }
