@@ -1176,6 +1176,28 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 	}
 }
 
+func TestMutuallyExclusiveFlags(t *testing.T) {
+	writer := &bytes.Buffer{}
+	cmd := &Command{
+		Name:   "cmd",
+		Writer: writer,
+		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
+			{
+				Flags: [][]Flag{
+					{
+						&StringFlag{
+							Name: "s1",
+						},
+					},
+				}},
+		},
+	}
+
+	_ = ShowAppHelp(cmd)
+
+	assert.Contains(t, writer.String(), "--s1", "written help does not include mutex flag")
+}
+
 func TestWrap(t *testing.T) {
 	emptywrap := wrap("", 4, 16)
 	assert.Empty(t, emptywrap, "Wrapping empty line should return empty line")
@@ -1504,6 +1526,29 @@ func TestCategorizedHelp(t *testing.T) {
 				Category: "cat1",
 			},
 		},
+		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
+			{
+				Category: "cat1",
+				Flags: [][]Flag{
+					{
+						&StringFlag{
+							Name:     "m1",
+							Category: "overridden",
+						},
+					},
+				},
+			},
+			{
+				Flags: [][]Flag{
+					{
+						&StringFlag{
+							Name:     "m2",
+							Category: "ignored",
+						},
+					},
+				},
+			},
+		},
 	}
 
 	HelpPrinter = func(w io.Writer, templ string, data interface{}) {
@@ -1533,11 +1578,13 @@ COMMANDS:
 
 GLOBAL OPTIONS:
    --help, -h    show help (default: false)
+   --m2 value    
    --strd value  
 
    cat1
 
    --intd value, --altd1 value, --altd2 value  (default: 0)
+   --m1 value                                  
 
 `, output.String())
 }
