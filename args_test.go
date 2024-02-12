@@ -151,3 +151,26 @@ func TestArgsUsage(t *testing.T) {
 		})
 	}
 }
+
+func TestSingleOptionalArg(t *testing.T) {
+	cmd := buildMinimalTestCommand()
+	var s1 string
+	arg := &StringArg{
+		Min:         0,
+		Max:         1,
+		Destination: &s1,
+	}
+	cmd.Arguments = []Argument{
+		arg,
+	}
+
+	require.NoError(t, cmd.Run(context.Background(), []string{"foo"}))
+	require.Equal(t, "", s1)
+
+	arg.Value = "bar"
+	require.NoError(t, cmd.Run(context.Background(), []string{"foo"}))
+	require.Equal(t, "bar", s1)
+
+	require.NoError(t, cmd.Run(context.Background(), []string{"foo", "zbar"}))
+	require.Equal(t, "zbar", s1)
+}
