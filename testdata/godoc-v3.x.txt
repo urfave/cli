@@ -289,6 +289,9 @@ func (s *BoolWithInverseFlag) Value() bool
 type CategorizableFlag interface {
 	// Returns the category of the flag
 	GetCategory() string
+
+	// Sets the category of the flag
+	SetCategory(string)
 }
     CategorizableFlag is an interface that allows us to potentially use a flag
     in a categorized representation.
@@ -702,6 +705,8 @@ func (f *FlagBase[T, C, V]) Names() []string
 func (f *FlagBase[T, C, V]) RunAction(ctx context.Context, cmd *Command) error
     RunAction executes flag action if set
 
+func (f *FlagBase[T, C, V]) SetCategory(c string)
+
 func (f *FlagBase[T, C, V]) String() string
     String returns a readable representation of this value (for usage defaults)
 
@@ -821,6 +826,9 @@ type MutuallyExclusiveFlags struct {
 
 	// whether this group is required
 	Required bool
+
+	// Category to apply to all flags within group
+	Category string
 }
     MutuallyExclusiveFlags defines a mutually exclusive flag group Multiple
     option paths can be provided out of which only one can be defined on cmdline
