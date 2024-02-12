@@ -162,6 +162,9 @@ type VisibleFlag interface {
 type CategorizableFlag interface {
 	// Returns the category of the flag
 	GetCategory() string
+
+	// Sets the category of the flag
+	SetCategory(string)
 }
 
 // PersistentFlag is an interface to enable detection of flags which are persistent

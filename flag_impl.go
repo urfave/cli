@@ -221,6 +221,10 @@ func (f *FlagBase[T, C, V]) GetCategory() string {
 	return f.Category
 }
 
+func (f *FlagBase[T, C, V]) SetCategory(c string) {
+	f.Category = c
+}
+
 // GetUsage returns the usage string for the flag
 func (f *FlagBase[T, C, V]) GetUsage() string {
 	return f.Usage
