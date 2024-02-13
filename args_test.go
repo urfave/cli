@@ -216,7 +216,7 @@ func TestUnboundedArgs(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			arg.Values = &test.values
 			require.NoError(t, cmd.Run(context.Background(), test.args))
-			require.Equal(t, test.expected, test.values)
+			require.Equal(t, test.expected, *arg.Values)
 		})
 	}
 }
