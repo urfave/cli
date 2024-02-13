@@ -189,7 +189,7 @@ func TestUnboundedArgs(t *testing.T) {
 		{
 			name:     "cmd accepts no args",
 			args:     []string{"foo"},
-			expected: []string{},
+			expected: nil,
 		},
 		{
 			name:     "cmd uses given args",
@@ -197,16 +197,16 @@ func TestUnboundedArgs(t *testing.T) {
 			expected: []string{"bar", "baz"},
 		},
 		{
-			name:     "given args override default values",
-			args:     []string{"foo", "bar", "baz"},
-			values:   []string{"zbar", "zbaz"},
-			expected: []string{"bar", "baz"},
-		},
-		{
 			name:     "cmd uses default values",
 			args:     []string{"foo"},
 			values:   []string{"zbar", "zbaz"},
 			expected: []string{"zbar", "zbaz"},
+		},
+		{
+			name:     "given args override default values",
+			args:     []string{"foo", "bar", "baz"},
+			values:   []string{"zbar", "zbaz"},
+			expected: []string{"bar", "baz"},
 		},
 	}
 

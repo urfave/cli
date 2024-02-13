@@ -128,7 +128,7 @@ func (a *ArgumentBase[T, C, VC]) Parse(s []string) ([]string, error) {
 
 	if a.Values == nil {
 		a.Values = &values
-	} else {
+	} else if count > 0 {
 		*a.Values = values
 	}
 
@@ -139,6 +139,7 @@ func (a *ArgumentBase[T, C, VC]) Parse(s []string) ([]string, error) {
 			*a.Destination = t
 		}
 	}
+
 	return s[count:], nil
 }
 
