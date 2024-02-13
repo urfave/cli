@@ -118,7 +118,7 @@ func (a *ArgumentBase[T, C, VC]) Parse(s []string) ([]string, error) {
 		}
 		values = append(values, value.Get().(T))
 		count++
-		if count >= a.Max && a.Max != -1 {
+		if count >= a.Max && a.Max > -1 {
 			break
 		}
 	}
