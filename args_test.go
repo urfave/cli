@@ -174,3 +174,49 @@ func TestSingleOptionalArg(t *testing.T) {
 	require.NoError(t, cmd.Run(context.Background(), []string{"foo", "zbar"}))
 	require.Equal(t, "zbar", s1)
 }
+
+func TestUnboundedArgs(t *testing.T) {
+	arg := &StringArg{
+		Min: 0,
+		Max: -1,
+	}
+	tests := []struct {
+		name     string
+		args     []string
+		values   []string
+		expected []string
+	}{
+		{
+			name:     "cmd accepts no args",
+			args:     []string{"foo"},
+			expected: nil,
+		},
+		{
+			name:     "cmd uses given args",
+			args:     []string{"foo", "bar", "baz"},
+			expected: []string{"bar", "baz"},
+		},
+		{
+			name:     "cmd uses default values",
+			args:     []string{"foo"},
+			values:   []string{"zbar", "zbaz"},
+			expected: []string{"zbar", "zbaz"},
+		},
+		{
+			name:     "given args override default values",
+			args:     []string{"foo", "bar", "baz"},
+			values:   []string{"zbar", "zbaz"},
+			expected: []string{"bar", "baz"},
+		},
+	}
+
+	cmd := buildMinimalTestCommand()
+	cmd.Arguments = []Argument{arg}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			arg.Values = &test.values
+			require.NoError(t, cmd.Run(context.Background(), test.args))
+			require.Equal(t, test.expected, *arg.Values)
+		})
+	}
+}
