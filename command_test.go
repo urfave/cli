@@ -466,6 +466,11 @@ func TestCommand_VisibleFlagCategories(t *testing.T) {
 				Aliases:  []string{"altd1", "altd2"},
 				Category: "cat1",
 			},
+			&StringFlag{
+				Name:     "sfd",
+				Category: "cat2",
+				Hidden:   true,
+			},
 		},
 	}
 
