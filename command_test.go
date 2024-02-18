@@ -461,6 +461,10 @@ func TestCommand_VisibleFlagCategories(t *testing.T) {
 			&StringFlag{
 				Name: "strd", // no category set
 			},
+			&StringFlag{
+				Name:   "strd1", // no category set and also hidden
+				Hidden: true,
+			},
 			&Int64Flag{
 				Name:     "intd",
 				Aliases:  []string{"altd1", "altd2"},
