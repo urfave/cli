@@ -518,10 +518,19 @@ func TestCommand_VisibleFlagCategories(t *testing.T) {
 			&StringFlag{
 				Name: "strd", // no category set
 			},
+			&StringFlag{
+				Name:   "strd1", // no category set and also hidden
+				Hidden: true,
+			},
 			&IntFlag{
 				Name:     "intd",
 				Aliases:  []string{"altd1", "altd2"},
 				Category: "cat1",
+			},
+			&StringFlag{
+				Name:     "sfd",
+				Category: "cat2", // category set and hidden
+				Hidden:   true,
 			},
 		},
 		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{{
