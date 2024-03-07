@@ -167,6 +167,7 @@ func ExampleApp_Run_commandHelp() {
 				Aliases:     []string{"d"},
 				Usage:       "use it to see a description",
 				Description: "This is how we describe describeit the function",
+				Args:        true,
 				Action: func(c *Context) error {
 					fmt.Printf("i like to describe things")
 					return nil
@@ -227,7 +228,7 @@ func ExampleApp_Run_subcommandNoAction() {
 	//    greet describeit - use it to see a description
 	//
 	// USAGE:
-	//    greet describeit [command options] [arguments...]
+	//    greet describeit [command options]
 	//
 	// DESCRIPTION:
 	//    This is how we describe describeit the function
@@ -1912,6 +1913,7 @@ func TestApp_Run_SubcommandFullPath(t *testing.T) {
 	subCmd := &Command{
 		Name:  "bar",
 		Usage: "does bar things",
+		Args:  true,
 	}
 	cmd := &Command{
 		Name:        "foo",
@@ -1946,6 +1948,7 @@ func TestApp_Run_SubcommandHelpName(t *testing.T) {
 		Name:     "bar",
 		HelpName: "custom",
 		Usage:    "does bar things",
+		Args:     true,
 	}
 	cmd := &Command{
 		Name:        "foo",
@@ -1980,6 +1983,7 @@ func TestApp_Run_CommandHelpName(t *testing.T) {
 	subCmd := &Command{
 		Name:  "bar",
 		Usage: "does bar things",
+		Args:  true,
 	}
 	cmd := &Command{
 		Name:        "foo",
