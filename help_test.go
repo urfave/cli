@@ -1270,7 +1270,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				},
 			},
 			argv:     []string{"cmd", "--happiness", "putz", "--generate-bash-completion"},
-			expected: "futz\nhelp\nh\n",
+			expected: "futz\nhelp\n",
 		},
 		{
 			name: "typical-subcommand-subcommand-suggestion",

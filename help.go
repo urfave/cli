@@ -151,13 +151,9 @@ func printCommandSuggestions(commands []*Command, writer io.Writer) {
 			continue
 		}
 		if strings.HasSuffix(os.Getenv("SHELL"), "zsh") {
-			for _, name := range command.Names() {
-				_, _ = fmt.Fprintf(writer, "%s:%s\n", name, command.Usage)
-			}
+			_, _ = fmt.Fprintf(writer, "%s:%s\n", command.Name, command.Usage)
 		} else {
-			for _, name := range command.Names() {
-				_, _ = fmt.Fprintf(writer, "%s\n", name)
-			}
+			_, _ = fmt.Fprintf(writer, "%s\n", command.Name)
 		}
 	}
 }
@@ -186,23 +182,21 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 		if bflag, ok := flag.(*BoolFlag); ok && bflag.Hidden {
 			continue
 		}
-		for _, name := range flag.Names() {
-			name = strings.TrimSpace(name)
-			// this will get total count utf8 letters in flag name
-			count := utf8.RuneCountInString(name)
-			if count > 2 {
-				count = 2 // reuse this count to generate single - or -- in flag completion
-			}
-			// if flag name has more than one utf8 letter and last argument in cli has -- prefix then
-			// skip flag completion for short flags example -v or -x
-			if strings.HasPrefix(lastArg, "--") && count == 1 {
-				continue
-			}
-			// match if last argument matches this flag and it is not repeated
-			if strings.HasPrefix(name, cur) && cur != name && !cliArgContains(name) {
-				flagCompletion := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
-				_, _ = fmt.Fprintln(writer, flagCompletion)
-			}
+		name := strings.TrimSpace(flag.Names()[0])
+		// this will get total count utf8 letters in flag name
+		count := utf8.RuneCountInString(name)
+		if count > 2 {
+			count = 2 // reuse this count to generate single - or -- in flag completion
+		}
+		// if flag name has more than one utf8 letter and last argument in cli has -- prefix then
+		// skip flag completion for short flags example -v or -x
+		if strings.HasPrefix(lastArg, "--") && count == 1 {
+			continue
+		}
+		// match if last argument matches this flag and it is not repeated
+		if strings.HasPrefix(name, cur) && cur != name && !cliArgContains(name) {
+			flagCompletion := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
+			_, _ = fmt.Fprintln(writer, flagCompletion)
 		}
 	}
 }

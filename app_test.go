@@ -259,11 +259,8 @@ func ExampleApp_Run_bashComplete_withShortFlag() {
 	_ = app.Run(os.Args)
 	// Output:
 	// --other
-	// -o
 	// --xyz
-	// -x
 	// --help
-	// -h
 }
 
 func ExampleApp_Run_bashComplete_withLongFlag() {
@@ -360,10 +357,8 @@ func ExampleApp_Run_bashComplete() {
 	_ = app.Run(os.Args)
 	// Output:
 	// describeit
-	// d
 	// next
 	// help
-	// h
 }
 
 func ExampleApp_Run_zshComplete() {
@@ -398,10 +393,8 @@ func ExampleApp_Run_zshComplete() {
 	_ = app.Run(os.Args)
 	// Output:
 	// describeit:use it to see a description
-	// d:use it to see a description
 	// next:next example
 	// help:Shows a list of commands or help for one command
-	// h:Shows a list of commands or help for one command
 }
 
 func ExampleApp_Run_sliceValues() {
