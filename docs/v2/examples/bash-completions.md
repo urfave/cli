@@ -190,7 +190,7 @@ The default shell completion flag (`--generate-bash-completion`) is defined as
 
 <!-- {
   "args": ["&#45;&#45;generate&#45;bash&#45;completion"],
-  "output": "wat\nhelp\nh"
+  "output": "wat\nhelp\n"
 } -->
 ```go
 package main
