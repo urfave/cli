@@ -343,9 +343,16 @@ func NewApp() *App
     NewApp creates a new cli Application with some reasonable defaults for Name,
     Usage, Version and Action.
 
+func (a *App) AddExtension(e AppExtension)
+    AddExtension connects an extension to the App instance for use by myriad
+    extensions
+
 func (a *App) Command(name string) *Command
     Command returns the named command on App. Returns nil if the command does
     not exist
+
+func (a *App) GetExtension(name string) AppExtension
+    GetExtension looks up the named extension so it can be worked with as needed
 
 func (a *App) Run(arguments []string) (err error)
     Run is the entry point to the cli app. Parses the arguments slice and routes
@@ -401,6 +408,13 @@ func (a *App) VisibleFlagCategories() []VisibleFlagCategory
 
 func (a *App) VisibleFlags() []Flag
     VisibleFlags returns a slice of the Flags with Hidden=false
+
+type AppExtension interface {
+	// MyName returns the name this extension should be looked up by when using App.GetExtension()
+	MyName() string
+}
+    AppExtension defines an interface for extensions to implement so they can be
+    added to an App
 
 type Args interface {
 	// Get returns the nth argument, or else a blank string
@@ -2351,6 +2365,10 @@ func ApplyInputSourceValues(cCtx *cli.Context, inputSourceContext InputSourceCon
     ApplyInputSourceValue on flags implementing the FlagInputSourceExtension
     interface to initialize these flags to an alternate input source.
 
+func DetectNewSourceFromFlagFunc(flagFileName string) func(*cli.Context) (InputSourceContext, error)
+    DetectNewSourceFromFlagFunc creates a new InputSourceContext from a provided
+    flag name and source context.
+
 func InitInputSource(flags []cli.Flag, createInputSource func() (InputSourceContext, error)) cli.BeforeFunc
     InitInputSource is used to to setup an InputSourceContext on a cli.Command
     Before method. It will create a new input source based on the func provided.
@@ -2396,6 +2414,20 @@ func (f *BoolFlag) Apply(set *flag.FlagSet) error
 
 func (f *BoolFlag) ApplyInputSourceValue(cCtx *cli.Context, isc InputSourceContext) error
     ApplyInputSourceValue applies a Bool value to the flagSet if required
+
+type DetectableSourcesAppExtension struct {
+	// Has unexported fields.
+}
+
+func NewDetectableSourcesAppExtension() DetectableSourcesAppExtension
+
+func (e DetectableSourcesAppExtension) MyName() string
+    MyName satisfies the cli.AppExtension interface, providing a name to
+    register the extension under
+
+func (e DetectableSourcesAppExtension) RegisterDetectableSource(extension string, handler func(string) func(*cli.Context) (InputSourceContext, error))
+    RegisterDetectableSource lets developers add support for their own altsrc
+    filetypes to the autodetection list.
 
 type DurationFlag struct {
 	*cli.DurationFlag
