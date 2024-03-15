@@ -567,7 +567,8 @@ type DocGenerationMultiValueFlag interface {
 	// IsMultiValueFlag returns true for flags that can be given multiple times.
 	IsMultiValueFlag() bool
 }
-    DocGenerationSliceFlag extends DocGenerationFlag for slice/map based flags.
+    DocGenerationMultiValueFlag extends DocGenerationFlag for slice/map based
+    flags.
 
 type DurationFlag = FlagBase[time.Duration, NoConfig, durationValue]
 
