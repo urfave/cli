@@ -137,7 +137,7 @@ type DocGenerationFlag interface {
 	GetEnvVars() []string
 }
 
-// DocGenerationSliceFlag extends DocGenerationFlag for slice/map based flags.
+// DocGenerationMultiValueFlag extends DocGenerationFlag for slice/map based flags.
 type DocGenerationMultiValueFlag interface {
 	DocGenerationFlag
 
