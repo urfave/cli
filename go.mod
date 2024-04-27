@@ -4,8 +4,8 @@ go 1.18
 
 require (
 	github.com/BurntSushi/toml v1.3.2
-	github.com/cpuguy83/go-md2man/v2 v2.0.2
-	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673
+	github.com/cpuguy83/go-md2man/v2 v2.0.4
+	github.com/xrash/smetrics v0.0.0-20240312152122-5f08fbb34913
 	gopkg.in/yaml.v3 v3.0.1
 )
 
