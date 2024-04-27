@@ -12,16 +12,11 @@ greet - Some app
 .PP
 greet
 
-.PP
-.RS
-
-.nf
+.EX
 [--another-flag|-b]
 [--flag|--fl|-f]=[value]
 [--socket|-s]=[value]
-
-.fi
-.RE
+.EE
 
 
 .SH DESCRIPTION
@@ -31,14 +26,9 @@ app [first_arg] [second_arg]
 .PP
 \fBUsage\fP:
 
-.PP
-.RS
-
-.nf
+.EX
 greet [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
-
-.fi
-.RE
+.EE
 
 
 .SH GLOBAL OPTIONS
