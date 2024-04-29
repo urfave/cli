@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"github.com/xrash/smetrics"
+	"math"
 )
 
 const suggestDidYouMeanTemplate = "Did you mean %q?"
@@ -16,13 +16,84 @@ type SuggestFlagFunc func(flags []Flag, provided string, hideHelp bool) string
 
 type SuggestCommandFunc func(commands []*Command, provided string) string
 
+// Jaro is the measure of similarity between two strings.
+// The result is 1 for equal strings, and 0 for completely different strings.
+func jaroDistance(a, b string) float64 {
+	if len(a) == 0 && len(b) == 0 {
+		return 1
+	}
+	if len(a) == 0 || len(b) == 0 {
+		return 0
+	}
+
+	lenA := float64(len(a))
+	lenB := float64(len(b))
+	hashA := make([]bool, len(a))
+	hashB := make([]bool, len(b))
+	maxDistance := int(math.Max(0, math.Floor(math.Max(lenA, lenB)/2.0)-1))
+
+	var matches float64
+	for i := 0; i < len(a); i++ {
+		start := int(math.Max(0, float64(i-maxDistance)))
+		end := int(math.Min(lenB-1, float64(i+maxDistance)))
+
+		for j := start; j <= end; j++ {
+			if hashB[j] {
+				continue
+			}
+			if a[i] == b[j] {
+				hashA[i] = true
+				hashB[j] = true
+				matches++
+				break
+			}
+		}
+	}
+	if matches == 0 {
+		return 0
+	}
+
+	var transpositions float64
+	var j int
+	for i := 0; i < len(a); i++ {
+		if !hashA[i] {
+			continue
+		}
+		for !hashB[j] {
+			j++
+		}
+		if a[i] != b[j] {
+			transpositions++
+		}
+		j++
+	}
+
+	transpositions /= 2
+	return ((matches / lenA) + (matches / lenB) + ((matches - transpositions) / matches)) / 3.0
+}
+
+// jaroWinkler is more accurate when strings have a common prefix up to a defined maximum length.
 func jaroWinkler(a, b string) float64 {
-	// magic values are from https://github.com/xrash/smetrics/blob/039620a656736e6ad994090895784a7af15e0b80/jaro-winkler.go#L8
 	const (
 		boostThreshold = 0.7
 		prefixSize     = 4
 	)
-	return smetrics.JaroWinkler(a, b, boostThreshold, prefixSize)
+	jaroDist := jaroDistance(a, b)
+	if jaroDist <= boostThreshold {
+		return jaroDist
+	}
+
+	prefix := int(math.Min(float64(len(a)), math.Min(float64(prefixSize), float64(len(b)))))
+
+	var prefixMatch float64
+	for i := 0; i < prefix; i++ {
+		if a[i] == b[i] {
+			prefixMatch++
+		} else {
+			break
+		}
+	}
+	return jaroDist + 0.1*prefixMatch*(1.0-jaroDist)
 }
 
 func suggestFlag(flags []Flag, provided string, hideHelp bool) string {
