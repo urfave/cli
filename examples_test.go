@@ -269,11 +269,8 @@ func ExampleCommand_Run_shellComplete_bash_withShortFlag() {
 	_ = cmd.Run(context.Background(), os.Args)
 	// Output:
 	// --other
-	// -o
 	// --xyz
-	// -x
 	// --help
-	// -h
 }
 
 func ExampleCommand_Run_shellComplete_bash_withLongFlag() {
@@ -376,10 +373,8 @@ func ExampleCommand_Run_shellComplete_bash() {
 	_ = cmd.Run(context.Background(), os.Args)
 	// Output:
 	// describeit
-	// d
 	// next
 	// help
-	// h
 }
 
 func ExampleCommand_Run_shellComplete_zsh() {
@@ -415,10 +410,8 @@ func ExampleCommand_Run_shellComplete_zsh() {
 	_ = cmd.Run(context.Background(), os.Args)
 	// Output:
 	// describeit:use it to see a description
-	// d:use it to see a description
 	// next:next example
 	// help:Shows a list of commands or help for one command
-	// h:Shows a list of commands or help for one command
 }
 
 func ExampleCommand_Run_sliceValues() {
