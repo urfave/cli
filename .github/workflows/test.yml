@@ -1,4 +1,5 @@
-name: Run Tests
+name: Run tests
+
 on:
   push:
     branches:
@@ -8,20 +9,26 @@ on:
   pull_request:
     branches:
       - main
+
 permissions:
   contents: read
+
 jobs:
   test:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         go: [1.19.x, 1.20.x]
+
     name: ${{ matrix.os }} @ Go ${{ matrix.go }}
     runs-on: ${{ matrix.os }}
+
     steps:
-      - uses: actions/setup-go@v3
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
+
       - name: Set PATH
         run: echo "${GITHUB_WORKSPACE}/.local/bin" >>"${GITHUB_PATH}"
       - uses: actions/checkout@v3
@@ -47,38 +54,49 @@ jobs:
     name: test-docs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@v3
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
           go-version: 1.20.x
-      - uses: actions/setup-node@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: 16
+
       - name: Set PATH
         run: echo "${GITHUB_WORKSPACE}/.local/bin" >>"${GITHUB_PATH}"
-      - uses: actions/checkout@v3
+
+      - name: Clone repository
+        uses: actions/checkout@v4
+
       - run: make ensure-gfmrun
       - run: make gfmrun
         env:
           FLAGS: --walk docs/v3/
       - run: make diffcheck
+
   publish:
     permissions:
       contents: write
     # TODO: switch once v3 is out of alpha {{
     # if: startswith(github.ref, 'refs/tags/')
-    if: 'false'
+    if: false
     # }}
     name: publish
     needs: [test-docs]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - run: make ensure-mkdocs
         env:
           FLAGS: --upgrade-pip
+
       - run: make set-mkdocs-remote
         env:
           MKDOCS_REMOTE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - run: make deploy-mkdocs
