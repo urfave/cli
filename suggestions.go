@@ -16,8 +16,11 @@ type SuggestFlagFunc func(flags []Flag, provided string, hideHelp bool) string
 
 type SuggestCommandFunc func(commands []*Command, provided string) string
 
-// Jaro is the measure of similarity between two strings.
-// The result is 1 for equal strings, and 0 for completely different strings.
+// jaroDistance is the measure of similarity between two strings. It returns a
+// value between 0 and 1, where 1 indicates identical strings and 0 indicates
+// completely different strings.
+//
+// Adapted from https://github.com/xrash/smetrics/blob/5f08fbb34913bc8ab95bb4f2a89a0637ca922666/jaro.go.
 func jaroDistance(a, b string) float64 {
 	if len(a) == 0 && len(b) == 0 {
 		return 1
@@ -72,7 +75,10 @@ func jaroDistance(a, b string) float64 {
 	return ((matches / lenA) + (matches / lenB) + ((matches - transpositions) / matches)) / 3.0
 }
 
-// jaroWinkler is more accurate when strings have a common prefix up to a defined maximum length.
+// jaroWinkler is more accurate when strings have a common prefix up to a
+// defined maximum length.
+//
+// Adapted from https://github.com/xrash/smetrics/blob/5f08fbb34913bc8ab95bb4f2a89a0637ca922666/jaro-winkler.go.
 func jaroWinkler(a, b string) float64 {
 	const (
 		boostThreshold = 0.7
