@@ -61,7 +61,7 @@ type ValueCreator[T any, C any] interface {
 // NoConfig is for flags which dont need a custom configuration
 type NoConfig struct{}
 
-// FlagBase[T,C,VC] is a generic flag base which can be used
+// FlagBase [T,C,VC] is a generic flag base which can be used
 // as a boilerplate to implement the most common interfaces
 // used by urfave/cli.
 //

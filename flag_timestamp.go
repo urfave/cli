@@ -21,9 +21,11 @@ type timestampValue struct {
 	location   *time.Location
 }
 
+var _ ValueCreator[time.Time, TimestampConfig] = timestampValue{}
+
 // Below functions are to satisfy the ValueCreator interface
 
-func (i timestampValue) Create(val time.Time, p *time.Time, c TimestampConfig) Value {
+func (t timestampValue) Create(val time.Time, p *time.Time, c TimestampConfig) Value {
 	*p = val
 	return &timestampValue{
 		timestamp: p,
@@ -32,7 +34,7 @@ func (i timestampValue) Create(val time.Time, p *time.Time, c TimestampConfig) V
 	}
 }
 
-func (i timestampValue) ToString(b time.Time) string {
+func (t timestampValue) ToString(b time.Time) string {
 	if b.IsZero() {
 		return ""
 	}

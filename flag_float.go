@@ -35,7 +35,7 @@ func (f *floatValue) Get() any { return float64(*f) }
 
 func (f *floatValue) String() string { return strconv.FormatFloat(float64(*f), 'g', -1, 64) }
 
-// Int looks up the value of a local IntFlag, returns
+// Float looks up the value of a local FloatFlag, returns
 // 0 if not found
 func (cmd *Command) Float(name string) float64 {
 	if v, ok := cmd.Value(name).(float64); ok {

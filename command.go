@@ -359,11 +359,11 @@ func (cmd *Command) ensureHelp() {
 func (cmd *Command) parseArgsFromStdin() ([]string, error) {
 	type state int
 	const (
-		STATE_SEARCH_FOR_TOKEN state = -1
-		STATE_IN_STRING        state = 0
+		stateSearchForToken  state = -1
+		stateSearchForString state = 0
 	)
 
-	st := STATE_SEARCH_FOR_TOKEN
+	st := stateSearchForToken
 	linenum := 1
 	token := ""
 	args := []string{}
@@ -375,11 +375,11 @@ outer:
 		ch, _, err := breader.ReadRune()
 		if err == io.EOF {
 			switch st {
-			case STATE_SEARCH_FOR_TOKEN:
+			case stateSearchForToken:
 				if token != "--" {
 					args = append(args, token)
 				}
-			case STATE_IN_STRING:
+			case stateSearchForString:
 				// make sure string is not empty
 				for _, t := range token {
 					if !unicode.IsSpace(t) {
@@ -393,7 +393,7 @@ outer:
 			return nil, err
 		}
 		switch st {
-		case STATE_SEARCH_FOR_TOKEN:
+		case stateSearchForToken:
 			if unicode.IsSpace(ch) || ch == '"' {
 				if ch == '\n' {
 					linenum++
@@ -407,12 +407,12 @@ outer:
 					token = ""
 				}
 				if ch == '"' {
-					st = STATE_IN_STRING
+					st = stateSearchForString
 				}
 				continue
 			}
 			token += string(ch)
-		case STATE_IN_STRING:
+		case stateSearchForString:
 			if ch != '"' {
 				token += string(ch)
 			} else {
@@ -423,7 +423,7 @@ outer:
 				/*else {
 					//TODO. Should we pass in empty strings ?
 				}*/
-				st = STATE_SEARCH_FOR_TOKEN
+				st = stateSearchForToken
 			}
 		}
 	}
@@ -1181,7 +1181,6 @@ func hasCommand(commands []*Command, command *Command) bool {
 }
 
 func (cmd *Command) runFlagActions(ctx context.Context) error {
-
 	for _, fl := range cmd.appliedFlags {
 		isSet := false
 
