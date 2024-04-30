@@ -38,10 +38,11 @@ jobs:
       - if: matrix.go == '1.20.x' && matrix.os == 'ubuntu-latest'
         run: make v3diff
       - if: success() && matrix.go == '1.20.x' && matrix.os == 'ubuntu-latest'
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
+          verbose: true
 
   test-docs:
     name: test-docs
