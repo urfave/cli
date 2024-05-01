@@ -10,7 +10,6 @@ import (
 )
 
 func TestArgumentsRootCommand(t *testing.T) {
-
 	cmd := buildMinimalTestCommand()
 	var ival int64
 	var fval float64
@@ -48,7 +47,6 @@ func TestArgumentsRootCommand(t *testing.T) {
 }
 
 func TestArgumentsSubcommand(t *testing.T) {
-
 	cmd := buildMinimalTestCommand()
 	var ifval int64
 	var svals []string

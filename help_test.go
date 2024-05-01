@@ -1189,7 +1189,8 @@ func TestMutuallyExclusiveFlags(t *testing.T) {
 							Name: "s1",
 						},
 					},
-				}},
+				},
+			},
 		},
 	}
 

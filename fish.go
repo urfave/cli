@@ -133,7 +133,6 @@ func (cmd *Command) prepareFishFlags(flags []Flag, previousCommands []string) []
 				completion.WriteString(fmt.Sprintf(
 					" -s %s", strings.TrimSpace(opt),
 				))
-
 			}
 		}
 

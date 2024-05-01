@@ -8,7 +8,6 @@ import (
 )
 
 func TestFlagDefaultValidation(t *testing.T) {
-
 	cmd := &Command{
 		Name: "foo",
 		Flags: []Flag{
@@ -33,7 +32,6 @@ func TestFlagDefaultValidation(t *testing.T) {
 }
 
 func TestFlagValidation(t *testing.T) {
-
 	r := require.New(t)
 
 	testCases := []struct {

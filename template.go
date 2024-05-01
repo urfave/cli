@@ -1,18 +1,23 @@
 package cli
 
-var helpNameTemplate = `{{$v := offset .FullName 6}}{{wrap .FullName 3}}{{if .Usage}} - {{wrap .Usage $v}}{{end}}`
-var argsTemplate = `{{if .Arguments}}{{range .Arguments}}{{.Usage}}{{end}}{{end}}`
-var usageTemplate = `{{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.FullName}}{{if .VisibleFlags}} [command [command options]]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}{{template "argsTemplate" .}}{{end}}{{end}}`
-var descriptionTemplate = `{{wrap .Description 3}}`
-var authorsTemplate = `{{with $length := len .Authors}}{{if ne 1 $length}}S{{end}}{{end}}:
+var (
+	helpNameTemplate    = `{{$v := offset .FullName 6}}{{wrap .FullName 3}}{{if .Usage}} - {{wrap .Usage $v}}{{end}}`
+	argsTemplate        = `{{if .Arguments}}{{range .Arguments}}{{.Usage}}{{end}}{{end}}`
+	usageTemplate       = `{{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.FullName}}{{if .VisibleFlags}} [command [command options]]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}{{template "argsTemplate" .}}{{end}}{{end}}`
+	descriptionTemplate = `{{wrap .Description 3}}`
+	authorsTemplate     = `{{with $length := len .Authors}}{{if ne 1 $length}}S{{end}}{{end}}:
    {{range $index, $author := .Authors}}{{if $index}}
    {{end}}{{$author}}{{end}}`
+)
+
 var visibleCommandTemplate = `{{ $cv := offsetCommands .VisibleCommands 5}}{{range .VisibleCommands}}
    {{$s := join .Names ", "}}{{$s}}{{ $sp := subtract $cv (offset $s 3) }}{{ indent $sp ""}}{{wrap .Usage $cv}}{{end}}`
+
 var visibleCommandCategoryTemplate = `{{range .VisibleCategories}}{{if .Name}}
 
    {{.Name}}:{{range .VisibleCommands}}
      {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{template "visibleCommandTemplate" .}}{{end}}{{end}}`
+
 var visibleFlagCategoryTemplate = `{{range .VisibleFlagCategories}}
    {{if .Name}}{{.Name}}
 

@@ -1,7 +1,9 @@
 package cli
 
-type StringSlice = SliceBase[string, StringConfig, stringValue]
-type StringSliceFlag = FlagBase[[]string, StringConfig, StringSlice]
+type (
+	StringSlice     = SliceBase[string, StringConfig, stringValue]
+	StringSliceFlag = FlagBase[[]string, StringConfig, StringSlice]
+)
 
 var NewStringSlice = NewSliceBase[string, StringConfig, stringValue]
 

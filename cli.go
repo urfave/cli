@@ -29,9 +29,7 @@ import (
 	"strings"
 )
 
-var (
-	isTracingOn = os.Getenv("URFAVE_CLI_TRACING") == "on"
-)
+var isTracingOn = os.Getenv("URFAVE_CLI_TRACING") == "on"
 
 func tracef(format string, a ...any) {
 	if !isTracingOn {

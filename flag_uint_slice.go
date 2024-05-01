@@ -1,7 +1,9 @@
 package cli
 
-type UintSlice = SliceBase[uint64, IntegerConfig, uintValue]
-type UintSliceFlag = FlagBase[[]uint64, IntegerConfig, UintSlice]
+type (
+	UintSlice     = SliceBase[uint64, IntegerConfig, uintValue]
+	UintSliceFlag = FlagBase[[]uint64, IntegerConfig, UintSlice]
+)
 
 var NewUintSlice = NewSliceBase[uint64, IntegerConfig, uintValue]
 
