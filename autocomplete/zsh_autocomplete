@@ -1,20 +1,30 @@
-#compdef $PROG
+#compdef program
+compdef _program program
 
-_cli_zsh_autocomplete() {
-  local -a opts
-  local cur
-  cur=${words[-1]}
-  if [[ "$cur" == "-"* ]]; then
-    opts=("${(@f)$(${words[@]:0:#words[@]-1} ${cur} --generate-shell-completion)}")
-  else
-    opts=("${(@f)$(${words[@]:0:#words[@]-1} --generate-shell-completion)}")
-  fi
+# Replace all occurences of "program" in this file with the actual name of your
+# CLI program. We recommend using Find+Replace feature of your editor. Let's say
+# your CLI program is called "acme", then replace like so:
+# * program => acme
+# * _program => _acme
 
-  if [[ "${opts[1]}" != "" ]]; then
-    _describe 'values' opts
-  else
-    _files
-  fi
+_program() {
+	local -a opts
+	local cur
+	cur=${words[-1]}
+	if [[ "$cur" == "-"* ]]; then
+		opts=("${(@f)$(${words[@]:0:#words[@]-1} ${cur} --generate-shell-completion)}")
+	else
+		opts=("${(@f)$(${words[@]:0:#words[@]-1} --generate-shell-completion)}")
+	fi
+
+	if [[ "${opts[1]}" != "" ]]; then
+		_describe 'values' opts
+	else
+		_files
+	fi
 }
 
-compdef _cli_zsh_autocomplete $PROG
+# don't run the completion function when being source-ed or eval-ed
+if [ "$funcstack[1]" = "_program" ]; then
+	_program
+fi
