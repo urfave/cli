@@ -289,7 +289,7 @@ func testCleanup(packages []string) error {
 		}
 	}
 
-	return os.WriteFile("coverage.txt", out.Bytes(), 0644)
+	return os.WriteFile("coverage.txt", out.Bytes(), 0o644)
 }
 
 func GfmrunActionFunc(ctx context.Context, cmd *cli.Command) error {
@@ -499,7 +499,7 @@ func GenerateActionFunc(ctx context.Context, cmd *cli.Command) error {
 	return os.WriteFile(
 		filepath.Join(top, "godoc-current.txt"),
 		[]byte(cliDocs),
-		0644,
+		0o644,
 	)
 }
 
@@ -557,7 +557,7 @@ func EnsureGfmrunActionFunc(ctx context.Context, cmd *cli.Command) error {
 		return err
 	}
 
-	return downloadFile(gfmrunURL.String(), gfmrunExe, 0755, 0755)
+	return downloadFile(gfmrunURL.String(), gfmrunExe, 0o755, 0o755)
 }
 
 func EnsureMkdocsActionFunc(ctx context.Context, cmd *cli.Command) error {
@@ -642,7 +642,6 @@ func V3Diff(ctx context.Context, cmd *cli.Command) error {
 		"--label=b/godoc",
 		"godoc-current.txt",
 	)
-
 	if err != nil {
 		fmt.Printf("# %v ---> Hey! <---\n", badNewsEmoji)
 		fmt.Println(strings.TrimSpace(v3diffWarning))

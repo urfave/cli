@@ -4,8 +4,10 @@ import (
 	"flag"
 )
 
-type FloatSlice = SliceBase[float64, NoConfig, floatValue]
-type FloatSliceFlag = FlagBase[[]float64, NoConfig, FloatSlice]
+type (
+	FloatSlice     = SliceBase[float64, NoConfig, floatValue]
+	FloatSliceFlag = FlagBase[[]float64, NoConfig, FloatSlice]
+)
 
 var NewFloatSlice = NewSliceBase[float64, NoConfig, floatValue]
 

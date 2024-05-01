@@ -80,7 +80,6 @@ type mutuallyExclusiveGroupRequiredFlag struct {
 }
 
 func (e *mutuallyExclusiveGroupRequiredFlag) Error() string {
-
 	var missingFlags []string
 	for _, grpf := range e.flags.Flags {
 		var grpString []string

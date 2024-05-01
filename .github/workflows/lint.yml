@@ -14,6 +14,26 @@ permissions:
   contents: read
 
 jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.20"
+
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Set up gofumpt
+        run: go install mvdan.cc/gofumpt@latest
+
+      - name: Run gofumpt
+        run: |
+          non_formatted_files="$(gofumpt -l .)"
+          echo "$non_formatted_files"
+          test -z "$non_formatted_files"
+
   staticcheck:
     runs-on: ubuntu-latest
     steps:

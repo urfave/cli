@@ -1,7 +1,9 @@
 package cli
 
-type StringMap = MapBase[string, StringConfig, stringValue]
-type StringMapFlag = FlagBase[map[string]string, StringConfig, StringMap]
+type (
+	StringMap     = MapBase[string, StringConfig, stringValue]
+	StringMapFlag = FlagBase[map[string]string, StringConfig, StringMap]
+)
 
 var NewStringMap = NewMapBase[string, StringConfig, stringValue]
 

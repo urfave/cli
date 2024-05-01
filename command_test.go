@@ -2867,7 +2867,8 @@ func TestPersistentFlag(t *testing.T) {
 		},
 	}
 
-	err := cmd.Run(buildTestContext(t), []string{"app",
+	err := cmd.Run(buildTestContext(t), []string{
+		"app",
 		"--persistentCommandFlag", "hello",
 		"--persistentCommandSliceFlag", "100",
 		"--persistentCommandOverrideFlag", "102",
@@ -2903,7 +2904,6 @@ func TestPersistentFlag(t *testing.T) {
 }
 
 func TestPersistentFlagIsSet(t *testing.T) {
-
 	result := ""
 	resultIsSet := false
 
@@ -2939,7 +2939,6 @@ func TestPersistentFlagIsSet(t *testing.T) {
 }
 
 func TestRequiredPersistentFlag(t *testing.T) {
-
 	app := &Command{
 		Name: "root",
 		Flags: []Flag{
@@ -3701,7 +3700,6 @@ func TestCommand_ParentCommand_Set(t *testing.T) {
 }
 
 func TestCommandReadArgsFromStdIn(t *testing.T) {
-
 	tests := []struct {
 		name          string
 		input         string
@@ -3860,7 +3858,6 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 			} else {
 				r.Error(err)
 			}
-
 		})
 	}
 }

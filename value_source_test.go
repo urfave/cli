@@ -33,7 +33,6 @@ func TestEnvVarValueSource(t *testing.T) {
 			r.True(ok)
 			r.Equal(str, "bar")
 		})
-
 	})
 
 	t.Run("implements fmt.Stringer", func(t *testing.T) {
@@ -80,7 +79,7 @@ func TestFileValueSource(t *testing.T) {
 		fileName := filepath.Join(os.TempDir(), fmt.Sprintf("urfave-cli-testing-existing_file-%[1]v", rand.Int()))
 		t.Cleanup(func() { _ = os.Remove(fileName) })
 
-		r.Nil(os.WriteFile(fileName, []byte("pita"), 0644))
+		r.Nil(os.WriteFile(fileName, []byte("pita"), 0o644))
 
 		t.Run("found", func(t *testing.T) {
 			src := &fileValueSource{Path: fileName}
@@ -113,7 +112,7 @@ func TestFilePaths(t *testing.T) {
 	fileName := filepath.Join(os.TempDir(), fmt.Sprintf("urfave-cli-tests-some_file_name_%[1]v", rand.Int()))
 	t.Cleanup(func() { _ = os.Remove(fileName) })
 
-	r.Nil(os.WriteFile(fileName, []byte("Hello"), 0644))
+	r.Nil(os.WriteFile(fileName, []byte("Hello"), 0o644))
 
 	sources := Files("junk_file_name", fileName)
 	str, src, ok := sources.LookupWithSource()

@@ -9,9 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	errBothEnvFlagsAreSet = fmt.Errorf("cannot set both flags `--env` and `--no-env`")
-)
+var errBothEnvFlagsAreSet = fmt.Errorf("cannot set both flags `--env` and `--no-env`")
 
 type boolWithInverseTestCase struct {
 	args    []string
@@ -361,7 +359,6 @@ func TestBoolWithInverseDestination(t *testing.T) {
 	checkAndReset := func(expectedCount int, expectedValue bool) error {
 		if *count != expectedCount {
 			return fmt.Errorf("expected count to be %d, got %d", expectedCount, *count)
-
 		}
 
 		if *destination != expectedValue {
