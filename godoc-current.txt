@@ -51,9 +51,7 @@ OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}
     uses text/template to render templates. You can render custom help text by
     setting this variable.
 
-var (
-	DefaultInverseBoolPrefix = "no-"
-)
+var DefaultInverseBoolPrefix = "no-"
 var ErrWriter io.Writer = os.Stderr
     ErrWriter is used to write errors to the user. This can be anything
     implementing the io.Writer interface and defaults to os.Stderr.
@@ -270,21 +268,23 @@ type BoolWithInverseFlag struct {
 	// Has unexported fields.
 }
 
-func (s *BoolWithInverseFlag) Apply(set *flag.FlagSet) error
+func (parent *BoolWithInverseFlag) Apply(set *flag.FlagSet) error
 
-func (s *BoolWithInverseFlag) Flags() []Flag
+func (parent *BoolWithInverseFlag) Flags() []Flag
 
-func (s *BoolWithInverseFlag) IsSet() bool
+func (parent *BoolWithInverseFlag) IsSet() bool
 
-func (s *BoolWithInverseFlag) Names() []string
+func (parent *BoolWithInverseFlag) Names() []string
 
-func (s *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) error
+func (parent *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) error
 
-func (s *BoolWithInverseFlag) String() string
+func (parent *BoolWithInverseFlag) String() string
+    String implements the standard Stringer interface.
+
     Example for BoolFlag{Name: "env"} --env (default: false) || --no-env
     (default: false)
 
-func (s *BoolWithInverseFlag) Value() bool
+func (parent *BoolWithInverseFlag) Value() bool
 
 type CategorizableFlag interface {
 	// Returns the category of the flag
@@ -425,7 +425,7 @@ func (cmd *Command) FlagNames() []string
     its parent commands.
 
 func (cmd *Command) Float(name string) float64
-    Int looks up the value of a local IntFlag, returns 0 if not found
+    Float looks up the value of a local FloatFlag, returns 0 if not found
 
 func (cmd *Command) FloatSlice(name string) []float64
     FloatSlice looks up the value of a local FloatSliceFlag, returns nil if not
@@ -439,7 +439,7 @@ func (cmd *Command) HasName(name string) bool
     HasName returns true if Command.Name matches given name
 
 func (cmd *Command) Int(name string) int64
-    Int64 looks up the value of a local Int64Flag, returns 0 if not found
+    Int looks up the value of a local Int64Flag, returns 0 if not found
 
 func (cmd *Command) IntSlice(name string) []int64
     IntSlice looks up the value of a local IntSliceFlag, returns nil if not
@@ -655,7 +655,7 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 
 	// Has unexported fields.
 }
-    FlagBase[T,C,VC] is a generic flag base which can be used as a boilerplate
+    FlagBase [T,C,VC] is a generic flag base which can be used as a boilerplate
     to implement the most common interfaces used by urfave/cli.
 
         T specifies the type

@@ -7,9 +7,7 @@ import (
 	"strings"
 )
 
-var (
-	DefaultInverseBoolPrefix = "no-"
-)
+var DefaultInverseBoolPrefix = "no-"
 
 type BoolWithInverseFlag struct {
 	// The BoolFlag which the positive and negative flags are generated from
@@ -29,44 +27,42 @@ type BoolWithInverseFlag struct {
 	negDest *bool
 }
 
-func (s *BoolWithInverseFlag) Flags() []Flag {
-	return []Flag{s.positiveFlag, s.negativeFlag}
+func (parent *BoolWithInverseFlag) Flags() []Flag {
+	return []Flag{parent.positiveFlag, parent.negativeFlag}
 }
 
-func (s *BoolWithInverseFlag) IsSet() bool {
-	return (*s.posCount > 0) || (s.positiveFlag.IsSet() || s.negativeFlag.IsSet())
+func (parent *BoolWithInverseFlag) IsSet() bool {
+	return (*parent.posCount > 0) || (parent.positiveFlag.IsSet() || parent.negativeFlag.IsSet())
 }
 
-func (s *BoolWithInverseFlag) Value() bool {
-	return *s.posDest
+func (parent *BoolWithInverseFlag) Value() bool {
+	return *parent.posDest
 }
 
-func (s *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) error {
-	if *s.negDest && *s.posDest {
-		return fmt.Errorf("cannot set both flags `--%s` and `--%s`", s.positiveFlag.Name, s.negativeFlag.Name)
+func (parent *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) error {
+	if *parent.negDest && *parent.posDest {
+		return fmt.Errorf("cannot set both flags `--%s` and `--%s`", parent.positiveFlag.Name, parent.negativeFlag.Name)
 	}
 
-	if *s.negDest {
-		err := cmd.Set(s.positiveFlag.Name, "false")
+	if *parent.negDest {
+		err := cmd.Set(parent.positiveFlag.Name, "false")
 		if err != nil {
 			return err
 		}
 	}
 
-	if s.BoolFlag.Action != nil {
-		return s.BoolFlag.Action(ctx, cmd, s.Value())
+	if parent.BoolFlag.Action != nil {
+		return parent.BoolFlag.Action(ctx, cmd, parent.Value())
 	}
 
 	return nil
 }
 
-/*
-initialize creates a new BoolFlag that has an inverse flag
-
-consider a bool flag `--env`, there is no way to set it to false
-this function allows you to set `--env` or `--no-env` and in the command action
-it can be determined that BoolWithInverseFlag.IsSet()
-*/
+// Initialize creates a new BoolFlag that has an inverse flag
+//
+// consider a bool flag `--env`, there is no way to set it to false
+// this function allows you to set `--env` or `--no-env` and in the command action
+// it can be determined that BoolWithInverseFlag.IsSet().
 func (parent *BoolWithInverseFlag) initialize() {
 	child := parent.BoolFlag
 
@@ -138,45 +134,47 @@ func (parent *BoolWithInverseFlag) inverseAliases() (aliases []string) {
 	return
 }
 
-func (s *BoolWithInverseFlag) Apply(set *flag.FlagSet) error {
-	if s.positiveFlag == nil {
-		s.initialize()
+func (parent *BoolWithInverseFlag) Apply(set *flag.FlagSet) error {
+	if parent.positiveFlag == nil {
+		parent.initialize()
 	}
 
-	if err := s.positiveFlag.Apply(set); err != nil {
+	if err := parent.positiveFlag.Apply(set); err != nil {
 		return err
 	}
 
-	if err := s.negativeFlag.Apply(set); err != nil {
+	if err := parent.negativeFlag.Apply(set); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (s *BoolWithInverseFlag) Names() []string {
+func (parent *BoolWithInverseFlag) Names() []string {
 	// Get Names when flag has not been initialized
-	if s.positiveFlag == nil {
-		return append(s.BoolFlag.Names(), FlagNames(s.inverseName(), s.inverseAliases())...)
+	if parent.positiveFlag == nil {
+		return append(parent.BoolFlag.Names(), FlagNames(parent.inverseName(), parent.inverseAliases())...)
 	}
 
-	if *s.negDest {
-		return s.negativeFlag.Names()
+	if *parent.negDest {
+		return parent.negativeFlag.Names()
 	}
 
-	if *s.posDest {
-		return s.positiveFlag.Names()
+	if *parent.posDest {
+		return parent.positiveFlag.Names()
 	}
 
-	return append(s.negativeFlag.Names(), s.positiveFlag.Names()...)
+	return append(parent.negativeFlag.Names(), parent.positiveFlag.Names()...)
 }
 
+// String implements the standard Stringer interface.
+//
 // Example for BoolFlag{Name: "env"}
 // --env     (default: false) || --no-env    (default: false)
-func (s *BoolWithInverseFlag) String() string {
-	if s.positiveFlag == nil {
-		return fmt.Sprintf("%s || --%s", s.BoolFlag.String(), s.inverseName())
+func (parent *BoolWithInverseFlag) String() string {
+	if parent.positiveFlag == nil {
+		return fmt.Sprintf("%s || --%s", parent.BoolFlag.String(), parent.inverseName())
 	}
 
-	return fmt.Sprintf("%s || %s", s.positiveFlag.String(), s.negativeFlag.String())
+	return fmt.Sprintf("%s || %s", parent.positiveFlag.String(), parent.negativeFlag.String())
 }

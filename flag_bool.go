@@ -37,7 +37,7 @@ func (cmd *Command) Bool(name string) bool {
 // Below functions are to satisfy the ValueCreator interface
 
 // Create creates the bool value
-func (i boolValue) Create(val bool, p *bool, c BoolConfig) Value {
+func (b boolValue) Create(val bool, p *bool, c BoolConfig) Value {
 	*p = val
 	if c.Count == nil {
 		c.Count = new(int)
@@ -49,8 +49,8 @@ func (i boolValue) Create(val bool, p *bool, c BoolConfig) Value {
 }
 
 // ToString formats the bool value
-func (i boolValue) ToString(b bool) string {
-	return strconv.FormatBool(b)
+func (b boolValue) ToString(value bool) string {
+	return strconv.FormatBool(value)
 }
 
 // Below functions are to satisfy the flag.Value interface

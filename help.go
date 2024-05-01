@@ -558,7 +558,7 @@ func offset(input string, fixed int) int {
 // to find that offset we find the length of all the rows and use the max
 // to calculate the offset
 func offsetCommands(cmds []*Command, fixed int) int {
-	var max int = 0
+	max := 0
 	for _, cmd := range cmds {
 		s := strings.Join(cmd.Names(), ", ")
 		if len(s) > max {

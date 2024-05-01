@@ -21,7 +21,7 @@ type stringValue struct {
 
 // Below functions are to satisfy the ValueCreator interface
 
-func (i stringValue) Create(val string, p *string, c StringConfig) Value {
+func (s stringValue) Create(val string, p *string, c StringConfig) Value {
 	*p = val
 	return &stringValue{
 		destination: p,
@@ -29,11 +29,11 @@ func (i stringValue) Create(val string, p *string, c StringConfig) Value {
 	}
 }
 
-func (i stringValue) ToString(b string) string {
-	if b == "" {
-		return b
+func (s stringValue) ToString(val string) string {
+	if val == "" {
+		return val
 	}
-	return fmt.Sprintf("%q", b)
+	return fmt.Sprintf("%q", val)
 }
 
 // Below functions are to satisfy the flag.Value interface

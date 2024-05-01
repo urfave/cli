@@ -12,13 +12,13 @@ type durationValue time.Duration
 
 // Below functions are to satisfy the ValueCreator interface
 
-func (i durationValue) Create(val time.Duration, p *time.Duration, c NoConfig) Value {
+func (d durationValue) Create(val time.Duration, p *time.Duration, c NoConfig) Value {
 	*p = val
 	return (*durationValue)(p)
 }
 
-func (i durationValue) ToString(d time.Duration) string {
-	return fmt.Sprintf("%v", d)
+func (d durationValue) ToString(val time.Duration) string {
+	return fmt.Sprintf("%v", val)
 }
 
 // Below functions are to satisfy the flag.Value interface
