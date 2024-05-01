@@ -8,6 +8,33 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestJaroWinkler(t *testing.T) {
+	// Given
+	for _, testCase := range []struct {
+		a, b     string
+		expected float64
+	}{
+		{"", "", 1},
+		{"a", "", 0},
+		{"", "a", 0},
+		{"a", "a", 1},
+		{"a", "b", 0},
+		{"aa", "aa", 1},
+		{"aa", "bb", 0},
+		{"aaa", "aaa", 1},
+		{"aa", "ab", 0.6666666666666666},
+		{"aa", "ba", 0.6666666666666666},
+		{"ba", "aa", 0.6666666666666666},
+		{"ab", "aa", 0.6666666666666666},
+	} {
+		// When
+		res := jaroWinkler(testCase.a, testCase.b)
+
+		// Then
+		assert.Equal(t, testCase.expected, res)
+	}
+}
+
 func TestSuggestFlag(t *testing.T) {
 	// Given
 	app := buildExtendedTestCommand()
