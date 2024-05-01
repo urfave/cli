@@ -192,6 +192,11 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 			continue
 		}
 
+		usage := ""
+		if docFlag, ok := flag.(DocGenerationFlag); ok {
+			usage = docFlag.GetUsage()
+		}
+
 		name := strings.TrimSpace(flag.Names()[0])
 		// this will get total count utf8 letters in flag name
 		count := utf8.RuneCountInString(name)
@@ -206,8 +211,10 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 		// match if last argument matches this flag and it is not repeated
 		if strings.HasPrefix(name, cur) && cur != name && !cliArgContains(name) {
 			flagCompletion := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
+			if usage != "" && strings.HasSuffix(os.Getenv("SHELL"), "zsh") {
+				flagCompletion = fmt.Sprintf("%s:%s", flagCompletion, usage)
+			}
 			fmt.Fprintln(writer, flagCompletion)
-
 		}
 	}
 }
