@@ -1080,18 +1080,18 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 	origArgv := os.Args
 	t.Cleanup(func() { os.Args = origArgv })
 
-	t.Setenv("SHELL", "bash")
-
 	for _, tc := range []struct {
 		name     string
 		cmd      *Command
 		argv     []string
+		env      map[string]string
 		expected string
 	}{
 		{
 			name:     "empty",
 			cmd:      &Command{},
 			argv:     []string{"prog", "cmd"},
+			env:      map[string]string{"SHELL": "bash"},
 			expected: "",
 		},
 		{
@@ -1113,6 +1113,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				},
 			},
 			argv:     []string{"cmd", "--e", "--generate-shell-completion"},
+			env:      map[string]string{"SHELL": "bash"},
 			expected: "--excitement\n",
 		},
 		{
@@ -1135,6 +1136,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				},
 			},
 			argv:     []string{"cmd", "--generate-shell-completion"},
+			env:      map[string]string{"SHELL": "bash"},
 			expected: "futz\n",
 		},
 		{
@@ -1157,7 +1159,48 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				},
 			},
 			argv:     []string{"cmd", "--url", "http://localhost:8000", "h", "--generate-shell-completion"},
+			env:      map[string]string{"SHELL": "bash"},
 			expected: "help\n",
+		},
+		{
+			name: "zsh-autocomplete-with-flag-descriptions",
+			cmd: &Command{
+				Name: "putz",
+				Flags: []Flag{
+					&BoolFlag{Name: "excitement", Usage: "an exciting flag"},
+					&StringFlag{Name: "hat-shape"},
+				},
+				parent: &Command{
+					Name: "cmd",
+					Flags: []Flag{
+						&BoolFlag{Name: "happiness"},
+						&IntFlag{Name: "everybody-jump-on"},
+					},
+				},
+			},
+			argv:     []string{"cmd", "putz", "-e", "--generate-shell-completion"},
+			env:      map[string]string{"SHELL": "zsh"},
+			expected: "--excitement:an exciting flag\n",
+		},
+		{
+			name: "zsh-autocomplete-with-empty-flag-descriptions",
+			cmd: &Command{
+				Name: "putz",
+				Flags: []Flag{
+					&BoolFlag{Name: "excitement"},
+					&StringFlag{Name: "hat-shape"},
+				},
+				parent: &Command{
+					Name: "cmd",
+					Flags: []Flag{
+						&BoolFlag{Name: "happiness"},
+						&IntFlag{Name: "everybody-jump-on"},
+					},
+				},
+			},
+			argv:     []string{"cmd", "putz", "-e", "--generate-shell-completion"},
+			env:      map[string]string{"SHELL": "zsh"},
+			expected: "--excitement\n",
 		},
 	} {
 		t.Run(tc.name, func(ct *testing.T) {
@@ -1166,6 +1209,9 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			rootCmd.Writer = writer
 
 			os.Args = tc.argv
+			for k, v := range tc.env {
+				t.Setenv(k, v)
+			}
 			f := DefaultCompleteWithFlags(tc.cmd)
 			f(context.Background(), tc.cmd)
 
