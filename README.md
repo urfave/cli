@@ -35,7 +35,11 @@ a new discussion].
 
 If you found a bug or have a feature request, [create a new issue].
 
-Please keep in mind that this project is run entirely by unpaid volunteers.
+Please keep in mind that this project is run by unpaid volunteers.
+
+### License
+
+See [`LICENSE`](./LICENSE).
 
 [test_badge]: https://github.com/urfave/cli/actions/workflows/test.yml/badge.svg
 [test_link]: https://github.com/urfave/cli/actions/workflows/test.yml
