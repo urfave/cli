@@ -520,18 +520,18 @@ Here is a more complete sample of a command using YAML support:
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
-	"context"
 
+	altsrc "github.com/urfave/cli-altsrc/v3"
 	"github.com/urfave/cli/v3"
-	"github.com/urfave/cli-altsrc/v3"
 )
 
 func main() {
 	flags := []cli.Flag{
 		&cli.IntFlag{
-			Name: "test",
+			Name:    "test",
 			Sources: altsrc.YAML("key", "/path/to/file"),
 		},
 		&cli.StringFlag{Name: "load"},
@@ -542,8 +542,7 @@ func main() {
 			fmt.Println("--test value.*default: 0")
 			return nil
 		},
-		//Before: altsrc.InitInputSourceWithContext(flags, altsrc.NewYamlSourceFromFlagFunc("load")),
-		Flags:  flags,
+		Flags: flags,
 	}
 
 	cmd.Run(context.Background(), os.Args)

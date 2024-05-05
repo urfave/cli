@@ -79,9 +79,11 @@ jobs:
         uses: actions/checkout@v4
 
       - run: make ensure-gfmrun
+
       - run: make gfmrun
         env:
           FLAGS: --walk docs/v3/
+
       - run: make diffcheck
 
   publish:

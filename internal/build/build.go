@@ -42,7 +42,7 @@ const (
 )
 
 func main() {
-	top, err := func() (string, error) {
+	topDir, err := func() (string, error) {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
 
@@ -148,8 +148,8 @@ func main() {
 				Usage: "set build tags",
 			},
 			&cli.StringFlag{
-				Name:  "top",
-				Value: top,
+				Name:  "top-dir",
+				Value: topDir,
 			},
 			&cli.StringSliceFlag{
 				Name:  "packages",
@@ -175,7 +175,7 @@ func sh(ctx context.Context, exe string, args ...string) (string, error) {
 
 func topRunAction(arg string, args ...string) cli.ActionFunc {
 	return func(ctx context.Context, cmd *cli.Command) error {
-		if err := os.Chdir(cmd.String("top")); err != nil {
+		if err := os.Chdir(cmd.String("top-dir")); err != nil {
 			return err
 		}
 
@@ -232,7 +232,7 @@ func downloadFile(src, dest string, dirPerm, perm os.FileMode) error {
 }
 
 func VetActionFunc(ctx context.Context, cmd *cli.Command) error {
-	return runCmd(ctx, "go", "vet", cmd.String("top")+"/...")
+	return runCmd(ctx, "go", "vet", cmd.String("top-dir")+"/...")
 }
 
 func TestActionFunc(ctx context.Context, cmd *cli.Command) error {
@@ -293,7 +293,7 @@ func testCleanup(packages []string) error {
 }
 
 func GfmrunActionFunc(ctx context.Context, cmd *cli.Command) error {
-	top := cmd.String("top")
+	docsDir := filepath.Join(cmd.String("top-dir"), "docs")
 
 	bash, err := exec.LookPath("bash")
 	if err != nil {
@@ -318,7 +318,7 @@ func GfmrunActionFunc(ctx context.Context, cmd *cli.Command) error {
 
 	fmt.Fprintf(cmd.ErrWriter, "# ---> workspace/TMPDIR is %q\n", tmpDir)
 
-	if err := runCmd(ctx, "go", "work", "init", top); err != nil {
+	if err := runCmd(ctx, "go", "work", "init", docsDir); err != nil {
 		return err
 	}
 
@@ -489,22 +489,22 @@ func checkBinarySizeActionFunc(ctx context.Context, cmd *cli.Command) (err error
 }
 
 func GenerateActionFunc(ctx context.Context, cmd *cli.Command) error {
-	top := cmd.String("top")
+	topDir := cmd.String("top-dir")
 
-	cliDocs, err := sh(ctx, "go", "doc", "-all", top)
+	cliDocs, err := sh(ctx, "go", "doc", "-all", topDir)
 	if err != nil {
 		return err
 	}
 
 	return os.WriteFile(
-		filepath.Join(top, "godoc-current.txt"),
+		filepath.Join(topDir, "godoc-current.txt"),
 		[]byte(cliDocs),
 		0o644,
 	)
 }
 
 func DiffCheckActionFunc(ctx context.Context, cmd *cli.Command) error {
-	if err := os.Chdir(cmd.String("top")); err != nil {
+	if err := os.Chdir(cmd.String("top-dir")); err != nil {
 		return err
 	}
 
@@ -516,8 +516,8 @@ func DiffCheckActionFunc(ctx context.Context, cmd *cli.Command) error {
 }
 
 func EnsureGoimportsActionFunc(ctx context.Context, cmd *cli.Command) error {
-	top := cmd.String("top")
-	if err := os.Chdir(top); err != nil {
+	topDir := cmd.String("top-dir")
+	if err := os.Chdir(topDir); err != nil {
 		return err
 	}
 
@@ -525,21 +525,21 @@ func EnsureGoimportsActionFunc(ctx context.Context, cmd *cli.Command) error {
 		ctx,
 		"goimports",
 		"-d",
-		filepath.Join(top, "internal/build/build.go"),
+		filepath.Join(topDir, "internal/build/build.go"),
 	); err == nil {
 		return nil
 	}
 
-	os.Setenv("GOBIN", filepath.Join(top, ".local/bin"))
+	os.Setenv("GOBIN", filepath.Join(topDir, ".local/bin"))
 
 	return runCmd(ctx, "go", "install", "golang.org/x/tools/cmd/goimports@latest")
 }
 
 func EnsureGfmrunActionFunc(ctx context.Context, cmd *cli.Command) error {
-	top := cmd.String("top")
-	gfmrunExe := filepath.Join(top, ".local/bin/gfmrun")
+	topDir := cmd.String("top-dir")
+	gfmrunExe := filepath.Join(topDir, ".local/bin/gfmrun")
 
-	if err := os.Chdir(top); err != nil {
+	if err := os.Chdir(topDir); err != nil {
 		return err
 	}
 
@@ -561,7 +561,7 @@ func EnsureGfmrunActionFunc(ctx context.Context, cmd *cli.Command) error {
 }
 
 func EnsureMkdocsActionFunc(ctx context.Context, cmd *cli.Command) error {
-	if err := os.Chdir(cmd.String("top")); err != nil {
+	if err := os.Chdir(cmd.String("top-dir")); err != nil {
 		return err
 	}
 
@@ -584,7 +584,7 @@ func SetMkdocsRemoteActionFunc(ctx context.Context, cmd *cli.Command) error {
 		return errors.New("empty github token")
 	}
 
-	if err := os.Chdir(cmd.String("top")); err != nil {
+	if err := os.Chdir(cmd.String("top-dir")); err != nil {
 		return err
 	}
 
@@ -600,12 +600,12 @@ func SetMkdocsRemoteActionFunc(ctx context.Context, cmd *cli.Command) error {
 }
 
 func LintActionFunc(ctx context.Context, cmd *cli.Command) error {
-	top := cmd.String("top")
-	if err := os.Chdir(top); err != nil {
+	topDir := cmd.String("top-dir")
+	if err := os.Chdir(topDir); err != nil {
 		return err
 	}
 
-	out, err := sh(ctx, filepath.Join(top, ".local/bin/goimports"), "-l", ".")
+	out, err := sh(ctx, filepath.Join(topDir, ".local/bin/goimports"), "-l", ".")
 	if err != nil {
 		return err
 	}
@@ -621,7 +621,7 @@ func LintActionFunc(ctx context.Context, cmd *cli.Command) error {
 }
 
 func V3Diff(ctx context.Context, cmd *cli.Command) error {
-	if err := os.Chdir(cmd.String("top")); err != nil {
+	if err := os.Chdir(cmd.String("top-dir")); err != nil {
 		return err
 	}
 
