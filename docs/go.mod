@@ -1,6 +1,6 @@
 module github.com/urfave/cli/docs/v3
 
-go 1.22.2
+go 1.18
 
 replace github.com/urfave/cli/v3 => ../
 
