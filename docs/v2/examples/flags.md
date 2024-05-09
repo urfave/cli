@@ -470,6 +470,8 @@ func main() {
 }
 ```
 
+When `Value` is not set for the flag, but a matching environment variable is found, the value from the environment will be used in the generated docs as the default value.
+
 #### Values from files
 
 You can also have the default value set from file via `FilePath`.  e.g.
