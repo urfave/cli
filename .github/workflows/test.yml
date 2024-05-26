@@ -18,12 +18,14 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        go: [1.19.x, 1.20.x]
+        go: [stable, oldstable]
 
     name: ${{ matrix.os }} @ Go ${{ matrix.go }}
     runs-on: ${{ matrix.os }}
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -31,27 +33,26 @@ jobs:
 
       - name: Set PATH
         run: echo "${GITHUB_WORKSPACE}/.local/bin" >>"${GITHUB_PATH}"
-      - uses: actions/checkout@v4
 
-      - if: matrix.go == '1.20.x' && matrix.os == 'ubuntu-latest'
+      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-latest'
         run: make ensure-goimports
 
-      - if: matrix.go == '1.20.x' && matrix.os == 'ubuntu-latest'
+      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-latest'
         run: make lint
 
       - run: make vet
       - run: make test
       - run: make check-binary-size
 
-      - if: matrix.go == '1.20.x' && matrix.os == 'ubuntu-latest'
+      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-latest'
         run: make generate
 
       - run: make diffcheck
 
-      - if: matrix.go == '1.20.x' && matrix.os == 'ubuntu-latest'
+      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-latest'
         run: make v3diff
 
-      - if: success() && matrix.go == '1.20.x' && matrix.os == 'ubuntu-latest'
+      - if: success() && matrix.go == 'stable' && matrix.os == 'ubuntu-latest'
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -62,21 +63,20 @@ jobs:
     name: test-docs
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.20.x
+          go-version: stable
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: latest
 
       - name: Set PATH
         run: echo "${GITHUB_WORKSPACE}/.local/bin" >>"${GITHUB_PATH}"
-
-      - name: Clone repository
-        uses: actions/checkout@v4
 
       - run: make ensure-gfmrun
 
