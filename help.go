@@ -151,7 +151,7 @@ func ShowAppHelp(cmd *Command) error {
 
 // DefaultAppComplete prints the list of subcommands as the default app completion method
 func DefaultAppComplete(ctx context.Context, cmd *Command) {
-	DefaultCompleteWithFlags(nil)(ctx, cmd)
+	DefaultCompleteWithFlags(ctx, cmd)
 }
 
 func printCommandSuggestions(commands []*Command, writer io.Writer) {
@@ -219,37 +219,34 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 	}
 }
 
-func DefaultCompleteWithFlags(cmd *Command) func(ctx context.Context, cmd *Command) {
-	return func(_ context.Context, cmd *Command) {
-		args := os.Args
-		if cmd != nil && cmd.flagSet != nil && cmd.parent != nil {
-			args = cmd.Args().Slice()
-			tracef("running default complete with flags[%v] on command %[1]q", args, cmd.Name)
-		} else {
-			tracef("running default complete with os.Args flags")
-		}
-		argsLen := len(args)
-		if argsLen > 2 {
-			lastArg := args[argsLen-2]
+func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
+	args := os.Args
+	if cmd != nil && cmd.flagSet != nil && cmd.parent != nil {
+		args = cmd.Args().Slice()
+		tracef("running default complete with flags[%v] on command %[2]q", args, cmd.Name)
+	} else {
+		tracef("running default complete with os.Args flags[%v]", args)
+	}
+	argsLen := len(args)
+	lastArg := ""
+	// parent command will have --generate-shell-completion so we need
+	// to account for that
+	if argsLen > 1 {
+		lastArg = args[argsLen-2]
+	} else if argsLen > 0 {
+		lastArg = args[argsLen-1]
+	}
 
-			if strings.HasPrefix(lastArg, "-") {
-				if cmd != nil {
-					printFlagSuggestions(lastArg, cmd.Flags, cmd.Root().Writer)
+	if strings.HasPrefix(lastArg, "-") {
+		tracef("printing flag suggestion for flag[%v] on command %[1]q", lastArg, cmd.Name)
+		printFlagSuggestions(lastArg, cmd.Flags, cmd.Root().Writer)
+		return
+	}
 
-					return
-				}
-
-				printFlagSuggestions(lastArg, cmd.Flags, cmd.Root().Writer)
-
-				return
-			}
-		}
-
-		if cmd != nil {
-			tracef("printing command suggestions on command %[1]q", cmd.Name)
-			printCommandSuggestions(cmd.Commands, cmd.Root().Writer)
-			return
-		}
+	if cmd != nil {
+		tracef("printing command suggestions on command %[1]q", cmd.Name)
+		printCommandSuggestions(cmd.Commands, cmd.Root().Writer)
+		return
 	}
 }
 

@@ -1212,7 +1212,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			for k, v := range tc.env {
 				t.Setenv(k, v)
 			}
-			f := DefaultCompleteWithFlags(tc.cmd)
+			f := DefaultCompleteWithFlags
 			f(context.Background(), tc.cmd)
 
 			written := writer.String()

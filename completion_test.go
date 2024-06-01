@@ -67,6 +67,14 @@ func TestCompletionSubcommand(t *testing.T) {
 				Commands: []*Command{
 					{
 						Name: "xyz",
+						Flags: []Flag{
+							&StringFlag{
+								Name: "g",
+								Aliases: []string{
+									"t",
+								},
+							},
+						},
 					},
 				},
 			},
@@ -79,6 +87,14 @@ func TestCompletionSubcommand(t *testing.T) {
 	r.Containsf(
 		out.String(), "xyz",
 		"Expected output to contain shell name %[1]q", "xyz",
+	)
+
+	out.Reset()
+
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "bar", "xyz", "-", "--generate-shell-completion"}))
+	r.Containsf(
+		out.String(), "g",
+		"Expected output to contain shell name %[1]q", "g",
 	)
 }
 
