@@ -158,7 +158,7 @@ func DefaultAppComplete(ctx context.Context, cmd *Command)
     DefaultAppComplete prints the list of subcommands as the default app
     completion method
 
-func DefaultCompleteWithFlags(cmd *Command) func(ctx context.Context, cmd *Command)
+func DefaultCompleteWithFlags(ctx context.Context, cmd *Command)
 func FlagNames(name string, aliases []string) []string
 func HandleExitCoder(err error)
     HandleExitCoder handles errors implementing ExitCoder by printing their

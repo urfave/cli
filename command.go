@@ -189,7 +189,7 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 
 	if cmd.ShellComplete == nil {
 		tracef("setting default ShellComplete (cmd=%[1]q)", cmd.Name)
-		cmd.ShellComplete = DefaultCompleteWithFlags(cmd)
+		cmd.ShellComplete = DefaultCompleteWithFlags
 	}
 
 	if cmd.Name == "" && isRoot {
