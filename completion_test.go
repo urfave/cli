@@ -93,8 +93,8 @@ func TestCompletionSubcommand(t *testing.T) {
 
 	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "bar", "xyz", "-", "--generate-shell-completion"}))
 	r.Containsf(
-		out.String(), "g",
-		"Expected output to contain shell name %[1]q", "g",
+		out.String(), "-g",
+		"Expected output to contain flag %[1]q", "-g",
 	)
 }
 
