@@ -97,6 +97,14 @@ func TestCompletionSubcommand(t *testing.T) {
 		out.String(), "-g",
 		"Expected output to contain flag %[1]q", "-g",
 	)
+
+	out.Reset()
+
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "bar", "xyz", "--", "--generate-shell-completion"}))
+	r.Containsf(
+		out.String(), "-g",
+		"Expected output to contain flag %[1]q", "-g",
+	)
 }
 
 type mockWriter struct {

@@ -151,6 +151,8 @@ type Command struct {
 	didSetupDefaults bool
 	// whether in shell completion mode
 	shellCompletion bool
+	// run args
+	runArgs []string
 }
 
 // FullName returns the full name of the command.
@@ -183,6 +185,8 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 	}
 
 	cmd.didSetupDefaults = true
+
+	cmd.runArgs = osArgs
 
 	isRoot := cmd.parent == nil
 	tracef("isRoot? %[1]v (cmd=%[2]q)", isRoot, cmd.Name)
