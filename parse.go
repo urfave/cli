@@ -82,7 +82,7 @@ func parseIter(set *flag.FlagSet, ip iterativeParser, args []string, shellComple
 const providedButNotDefinedErrMsg = "flag provided but not defined: -"
 
 // flagFromError tries to parse a provided flag from an error message. If the
-// parsing fials, it returns the input error and an empty string
+// parsing fails, it returns the input error and an empty string
 func flagFromError(err error) (string, error) {
 	errStr := err.Error()
 	trimmed := strings.TrimPrefix(errStr, providedButNotDefinedErrMsg)

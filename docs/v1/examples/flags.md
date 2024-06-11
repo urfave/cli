@@ -101,7 +101,7 @@ func main() {
 }
 ```
 
-See full list of flags at http://godoc.org/github.com/urfave/cli
+See full list of flags at https://pkg.go.dev/github.com/urfave/cli
 
 #### Placeholder Values
 
