@@ -358,7 +358,7 @@ func stringifyFlag(f Flag) string {
 
 	defaultValueString := ""
 
-	// dont print default text for required flags
+	// don't print default text for required flags
 	if rf, ok := f.(RequiredFlag); !ok || !rf.IsRequired() {
 		isVisible := df.IsDefaultVisible()
 		if s := df.GetDefaultText(); isVisible && s != "" {
