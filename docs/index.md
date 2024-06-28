@@ -40,7 +40,7 @@ In addition to the version-specific guides, these other documents are available:
 
 ## Installation
 
-Using this package requires a working Go environment. [See the install instructions for Go](http://golang.org/doc/install.html).
+Using this package requires a working Go environment. [See the install instructions for Go](https://go.dev/doc/install).
 
 Go Modules are required when using this package. [See the go blog guide on using Go Modules](https://blog.golang.org/using-go-modules).
 

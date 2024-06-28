@@ -6,7 +6,7 @@
 
 # Change Log
 
-**ATTN**: This project uses [semantic versioning](http://semver.org/).
+**ATTN**: This project uses [semantic versioning](https://semver.org/).
 
 ## Unreleased - 2.X series
 
