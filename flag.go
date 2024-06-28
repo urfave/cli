@@ -35,18 +35,20 @@ var GenerateShellCompletionFlag Flag = &BoolFlag{
 
 // VersionFlag prints the version for the application
 var VersionFlag Flag = &BoolFlag{
-	Name:    "version",
-	Aliases: []string{"v"},
-	Usage:   "print the version",
+	Name:        "version",
+	Aliases:     []string{"v"},
+	Usage:       "print the version",
+	HideDefault: true,
 }
 
 // HelpFlag prints the help for all commands and subcommands.
 // Set to nil to disable the flag.  The subcommand
 // will still be added unless HideHelp or HideHelpCommand is set to true.
 var HelpFlag Flag = &BoolFlag{
-	Name:    "help",
-	Aliases: []string{"h"},
-	Usage:   "show help",
+	Name:        "help",
+	Aliases:     []string{"h"},
+	Usage:       "show help",
+	HideDefault: true,
 }
 
 // FlagStringer converts a flag definition to a string. This is used by help
@@ -155,6 +157,7 @@ type Countable interface {
 type VisibleFlag interface {
 	// IsVisible returns true if the flag is not hidden, otherwise false
 	IsVisible() bool
+	IsDefaultVisible() bool
 }
 
 // CategorizableFlag is an interface that allows us to potentially
@@ -346,8 +349,9 @@ func stringifyFlag(f Flag) string {
 	}
 
 	defaultValueString := ""
+	isVisible := f.(VisibleFlag).IsDefaultVisible()
 
-	if s := df.GetDefaultText(); s != "" {
+	if s := df.GetDefaultText(); isVisible && s != "" {
 		defaultValueString = fmt.Sprintf(formatDefault("%s"), s)
 	}
 

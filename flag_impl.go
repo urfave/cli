@@ -72,6 +72,7 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Name        string                                   `json:"name"`         // name of the flag
 	Category    string                                   `json:"category"`     // category of the flag, if any
 	DefaultText string                                   `json:"defaultText"`  // default text of the flag for usage purposes
+	HideDefault bool                                     `json:"hideDefault"`  // whether to hide the default value in output
 	Usage       string                                   `json:"usage"`        // usage string for help output
 	Sources     ValueSourceChain                         `json:"-"`            // sources to load flag value from
 	Required    bool                                     `json:"required"`     // whether the flag is required or not
@@ -214,6 +215,11 @@ func (f *FlagBase[T, C, V]) IsRequired() bool {
 // IsVisible returns true if the flag is not hidden, otherwise false
 func (f *FlagBase[T, C, V]) IsVisible() bool {
 	return !f.Hidden
+}
+
+// IsDefaultVisible returns true if the flag is not hidden, otherwise false
+func (f *FlagBase[T, C, V]) IsDefaultVisible() bool {
+	return !f.HideDefault
 }
 
 // GetCategory returns the category of the flag
