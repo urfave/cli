@@ -97,6 +97,7 @@ func ExampleCommand_Run_appHelp() {
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
+			&cli.StringFlag{Name: "id", Value: "abcd-dndndnd", Usage: "an id", Required: true},
 		},
 		Commands: []*cli.Command{
 			{
@@ -117,7 +118,7 @@ func ExampleCommand_Run_appHelp() {
 	defer cancel()
 
 	// Simulate the command line arguments
-	os.Args = []string{"greet", "help"}
+	os.Args = []string{"greet", "--id", "foo-x", "help"}
 
 	_ = cmd.Run(ctx, os.Args)
 	// Output:

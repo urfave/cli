@@ -357,10 +357,13 @@ func stringifyFlag(f Flag) string {
 	}
 
 	defaultValueString := ""
-	isVisible := df.IsDefaultVisible()
 
-	if s := df.GetDefaultText(); isVisible && s != "" {
-		defaultValueString = fmt.Sprintf(formatDefault("%s"), s)
+	// dont print default text for required flags
+	if rf, ok := f.(RequiredFlag); !ok || !rf.IsRequired() {
+		isVisible := df.IsDefaultVisible()
+		if s := df.GetDefaultText(); isVisible && s != "" {
+			defaultValueString = fmt.Sprintf(formatDefault("%s"), s)
+		}
 	}
 
 	usageWithDefault := strings.TrimSpace(usage + defaultValueString)
