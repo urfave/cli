@@ -217,6 +217,11 @@ func (f *FlagBase[T, C, V]) IsVisible() bool {
 	return !f.Hidden
 }
 
+// IsDefaultVisible returns true if the flag is not hidden, otherwise false
+func (f *FlagBase[T, C, V]) IsDefaultVisible() bool {
+	return !f.HideDefault
+}
+
 // GetCategory returns the category of the flag
 func (f *FlagBase[T, C, V]) GetCategory() string {
 	return f.Category

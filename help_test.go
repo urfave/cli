@@ -88,7 +88,7 @@ COMMANDS:
 
 GLOBAL OPTIONS:
    --foo value, -f value  
-   --help, -h             show help (default: false)
+   --help, -h             show help
 `
 
 	assert.Contains(t, output.String(), expected,
