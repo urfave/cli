@@ -161,7 +161,6 @@ type Countable interface {
 type VisibleFlag interface {
 	// IsVisible returns true if the flag is not hidden, otherwise false
 	IsVisible() bool
-	IsDefaultVisible() bool
 }
 
 // CategorizableFlag is an interface that allows us to potentially
