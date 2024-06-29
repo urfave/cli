@@ -81,7 +81,7 @@ step.
 #### docs output
 
 The documentation in the `docs` directory is automatically built via `mkdocs` into a
-static site and published when releases are pushed (see [RELEASING](./RELEASING/)). There
+static site and published when releases are pushed (see [RELEASING](./RELEASING.md)). There
 is no strict requirement to build the documentation when developing locally, but the
 following `make` targets may be used if desired:
 
