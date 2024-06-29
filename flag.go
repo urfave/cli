@@ -176,6 +176,11 @@ type PersistentFlag interface {
 	IsPersistent() bool
 }
 
+// IsDefaultVisible returns true if the flag is not hidden, otherwise false
+func (f *FlagBase[T, C, V]) IsDefaultVisible() bool {
+	return !f.HideDefault
+}
+
 func newFlagSet(name string, flags []Flag) (*flag.FlagSet, error) {
 	set := flag.NewFlagSet(name, flag.ContinueOnError)
 
