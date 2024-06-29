@@ -454,6 +454,15 @@ func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
 		return false, arguments
 	}
 
+	for _, arg := range arguments {
+		// If arguments include "--", shell completion is disabled
+		// because after "--" only positional arguments are accepted.
+		// https://unix.stackexchange.com/a/11382
+		if arg == "--" {
+			return false, arguments
+		}
+	}
+
 	return true, arguments[:pos]
 }
 

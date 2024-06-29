@@ -1662,3 +1662,68 @@ GLOBAL OPTIONS:
 
 `, output.String())
 }
+
+func Test_checkShellCompleteFlag(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name                string
+		cmd                 *Command
+		arguments           []string
+		wantShellCompletion bool
+		wantArgs            []string
+	}{
+		{
+			name:                "disable-shell-completion",
+			arguments:           []string{"--generate-shell-completion"},
+			cmd:                 &Command{},
+			wantShellCompletion: false,
+			wantArgs:            []string{"--generate-shell-completion"},
+		},
+		{
+			name:      "child-disable-shell-completion",
+			arguments: []string{"--generate-shell-completion"},
+			cmd: &Command{
+				parent: &Command{},
+			},
+			wantShellCompletion: false,
+			wantArgs:            []string{"--generate-shell-completion"},
+		},
+		{
+			name:      "last argument isn't --generate-shell-completion",
+			arguments: []string{"foo"},
+			cmd: &Command{
+				EnableShellCompletion: true,
+			},
+			wantShellCompletion: false,
+			wantArgs:            []string{"foo"},
+		},
+		{
+			name:      "arguments include double dash",
+			arguments: []string{"--", "foo", "--generate-shell-completion"},
+			cmd: &Command{
+				EnableShellCompletion: true,
+			},
+			wantShellCompletion: false,
+			wantArgs:            []string{"--", "foo", "--generate-shell-completion"},
+		},
+		{
+			name:      "shell completion",
+			arguments: []string{"foo", "--generate-shell-completion"},
+			cmd: &Command{
+				EnableShellCompletion: true,
+			},
+			wantShellCompletion: true,
+			wantArgs:            []string{"foo"},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			shellCompletion, args := checkShellCompleteFlag(tt.cmd, tt.arguments)
+			assert.Equal(t, tt.wantShellCompletion, shellCompletion)
+			assert.Equal(t, tt.wantArgs, args)
+		})
+	}
+}
