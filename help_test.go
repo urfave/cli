@@ -65,6 +65,36 @@ func Test_ShowAppHelp_MultiLineDescription(t *testing.T) {
 	}
 }
 
+func Test_Help_RequiredFlagsNoDefault(t *testing.T) {
+	output := new(bytes.Buffer)
+
+	cmd := &Command{
+		Flags: []Flag{
+			&IntFlag{Name: "foo", Aliases: []string{"f"}, Required: true},
+		},
+		Writer: output,
+	}
+
+	_ = cmd.Run(buildTestContext(t), []string{"test", "-h"})
+
+	expected := `NAME:
+   test - A new cli application
+
+USAGE:
+   test [global options] [command [command options]] [arguments...]
+
+COMMANDS:
+   help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --foo value, -f value  
+   --help, -h             show help
+`
+
+	assert.Contains(t, output.String(), expected,
+		"expected output to include usage text")
+}
+
 func Test_Help_Custom_Flags(t *testing.T) {
 	oldFlag := HelpFlag
 	defer func() {
@@ -1398,8 +1428,7 @@ COMMANDS:
             for one command
 
 OPTIONS:
-   --help, -h show help
-      (default: false)
+   --help, -h  show help
 `,
 		output.String(),
 	)
@@ -1464,8 +1493,7 @@ USAGE:
    even more
 
 OPTIONS:
-   --help, -h show help
-      (default: false)
+   --help, -h  show help
 `
 
 	assert.Equal(t, expected, output.String(), "Unexpected wrapping")
@@ -1545,8 +1573,7 @@ COMMANDS:
 OPTIONS:
    --test-f value my test
       usage
-   --help, -h show help
-      (default: false)
+   --help, -h  show help
 `,
 		output.String(),
 	)
@@ -1624,7 +1651,7 @@ COMMANDS:
             for one command
 
 GLOBAL OPTIONS:
-   --help, -h    show help (default: false)
+   --help, -h    show help
    --m2 value    
    --strd value  
 

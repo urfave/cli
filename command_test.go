@@ -3919,6 +3919,7 @@ func TestJSONExportCommand(t *testing.T) {
 					"usage": "",
 					"required": false,
 					"hidden": false,
+					"hideDefault": false,
 					"persistent": false,
 					"defaultValue": "",
 					"aliases": [
@@ -3938,6 +3939,7 @@ func TestJSONExportCommand(t *testing.T) {
 					"usage": "some usage text",
 					"required": false,
 					"hidden": false,
+					"hideDefault": false,
 					"persistent": false,
 					"defaultValue": false,
 					"aliases": [
@@ -3977,6 +3979,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"usage": "",
 				"required": false,
 				"hidden": false,
+				"hideDefault": false,
 				"persistent": false,
 				"defaultValue": "",
 				"aliases": [
@@ -3996,6 +3999,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"usage": "another usage text",
 				"required": false,
 				"hidden": false,
+				"hideDefault": false,
 				"persistent": false,
 				"defaultValue": false,
 				"aliases": [
@@ -4153,6 +4157,7 @@ func TestJSONExportCommand(t *testing.T) {
 					"usage": "some usage text",
 					"required": false,
 					"hidden": false,
+					"hideDefault": false,
 					"persistent": false,
 					"defaultValue": false,
 					"aliases": [
@@ -4192,6 +4197,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"usage": "",
 				"required": false,
 				"hidden": false,
+				"hideDefault": false,
 				"persistent": false,
 				"defaultValue": "",
 				"aliases": [
@@ -4211,6 +4217,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"usage": "another usage text",
 				"required": false,
 				"hidden": false,
+				"hideDefault": false,
 				"persistent": false,
 				"defaultValue": false,
 				"aliases": [
@@ -4250,6 +4257,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"usage": "some 'usage' text",
 			"required": false,
 			"hidden": false,
+			"hideDefault": false,
 			"persistent": false,
 			"defaultValue": "value",
 			"aliases": [
@@ -4268,6 +4276,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"usage": "",
 			"required": false,
 			"hidden": false,
+			"hideDefault": false,
 			"persistent": false,
 			"defaultValue": "",
 			"aliases": [
@@ -4287,6 +4296,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"usage": "another usage text",
 			"required": false,
 			"hidden": false,
+			"hideDefault": false,
 			"persistent": false,
 			"defaultValue": false,
 			"aliases": [
@@ -4305,6 +4315,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"usage": "",
 			"required": false,
 			"hidden": true,
+			"hideDefault": false,
 			"persistent": false,
 			"defaultValue": false,
 			"aliases": null,

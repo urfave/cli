@@ -557,6 +557,10 @@ type DocGenerationFlag interface {
 
 	// GetEnvVars returns the env vars for this flag
 	GetEnvVars() []string
+
+	// IsDefaultVisible returns whether the default value should be shown in
+	// help text
+	IsDefaultVisible() bool
 }
     DocGenerationFlag is an interface that allows documentation generation for
     the flag
@@ -620,18 +624,20 @@ var GenerateShellCompletionFlag Flag = &BoolFlag{
     GenerateShellCompletionFlag enables shell completion
 
 var HelpFlag Flag = &BoolFlag{
-	Name:    "help",
-	Aliases: []string{"h"},
-	Usage:   "show help",
+	Name:        "help",
+	Aliases:     []string{"h"},
+	Usage:       "show help",
+	HideDefault: true,
 }
     HelpFlag prints the help for all commands and subcommands. Set to nil to
     disable the flag. The subcommand will still be added unless HideHelp or
     HideHelpCommand is set to true.
 
 var VersionFlag Flag = &BoolFlag{
-	Name:    "version",
-	Aliases: []string{"v"},
-	Usage:   "print the version",
+	Name:        "version",
+	Aliases:     []string{"v"},
+	Usage:       "print the version",
+	HideDefault: true,
 }
     VersionFlag prints the version for the application
 
@@ -639,6 +645,7 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Name        string                                   `json:"name"`         // name of the flag
 	Category    string                                   `json:"category"`     // category of the flag, if any
 	DefaultText string                                   `json:"defaultText"`  // default text of the flag for usage purposes
+	HideDefault bool                                     `json:"hideDefault"`  // whether to hide the default value in output
 	Usage       string                                   `json:"usage"`        // usage string for help output
 	Sources     ValueSourceChain                         `json:"-"`            // sources to load flag value from
 	Required    bool                                     `json:"required"`     // whether the flag is required or not
@@ -683,6 +690,9 @@ func (f *FlagBase[T, C, V]) GetUsage() string
 func (f *FlagBase[T, C, V]) GetValue() string
     GetValue returns the flags value as string representation and an empty
     string if the flag takes no value at all.
+
+func (f *FlagBase[T, C, V]) IsDefaultVisible() bool
+    IsDefaultVisible returns true if the flag is not hidden, otherwise false
 
 func (f *FlagBase[T, C, VC]) IsMultiValueFlag() bool
     IsMultiValueFlag returns true if the value type T can take multiple values
