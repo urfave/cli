@@ -137,6 +137,10 @@ type DocGenerationFlag interface {
 
 	// GetEnvVars returns the env vars for this flag
 	GetEnvVars() []string
+
+	// IsDefaultVisible returns whether the default value should be shown in
+	// help text
+	IsDefaultVisible() bool
 }
 
 // DocGenerationMultiValueFlag extends DocGenerationFlag for slice/map based flags.
@@ -157,7 +161,6 @@ type Countable interface {
 type VisibleFlag interface {
 	// IsVisible returns true if the flag is not hidden, otherwise false
 	IsVisible() bool
-	IsDefaultVisible() bool
 }
 
 // CategorizableFlag is an interface that allows us to potentially
@@ -354,7 +357,7 @@ func stringifyFlag(f Flag) string {
 	}
 
 	defaultValueString := ""
-	isVisible := f.(VisibleFlag).IsDefaultVisible()
+	isVisible := df.IsDefaultVisible()
 
 	if s := df.GetDefaultText(); isVisible && s != "" {
 		defaultValueString = fmt.Sprintf(formatDefault("%s"), s)
