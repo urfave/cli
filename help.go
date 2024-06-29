@@ -248,7 +248,6 @@ func ShowCommandHelpAndExit(c *Context, command string, code int) {
 
 // ShowCommandHelp prints help for the given command
 func ShowCommandHelp(ctx *Context, command string) error {
-
 	commands := ctx.App.Commands
 	if ctx.Command.Subcommands != nil {
 		commands = ctx.Command.Subcommands
@@ -337,7 +336,6 @@ func ShowCommandCompletions(ctx *Context, command string) {
 			DefaultCompleteWithFlags(c)(ctx)
 		}
 	}
-
 }
 
 // printHelpCustom is the default implementation of HelpPrinterCustom.
@@ -345,7 +343,6 @@ func ShowCommandCompletions(ctx *Context, command string) {
 // The customFuncs map will be combined with a default template.FuncMap to
 // allow using arbitrary functions in template rendering.
 func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs map[string]interface{}) {
-
 	const maxLineLength = 10000
 
 	funcMap := template.FuncMap{
@@ -450,6 +447,15 @@ func checkShellCompleteFlag(a *App, arguments []string) (bool, []string) {
 		return false, arguments
 	}
 
+	for _, arg := range arguments {
+		// If arguments include "--", shell completion is disabled
+		// because after "--" only positional arguments are accepted.
+		// https://unix.stackexchange.com/a/11382
+		if arg == "--" {
+			return false, arguments
+		}
+	}
+
 	return true, arguments[:pos]
 }
 
@@ -499,7 +505,6 @@ func wrap(input string, offset int, wrapAt int) string {
 				ss = append(ss, wrapped)
 			} else {
 				ss = append(ss, padding+wrapped)
-
 			}
 
 		}

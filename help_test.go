@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"reflect"
 	"runtime"
 	"strings"
 	"testing"
@@ -1349,7 +1350,6 @@ func TestWrap(t *testing.T) {
 }
 
 func TestWrappedHelp(t *testing.T) {
-
 	// Reset HelpPrinter after this test.
 	defer func(old helpPrinter) {
 		HelpPrinter = old
@@ -1359,7 +1359,8 @@ func TestWrappedHelp(t *testing.T) {
 	app := &App{
 		Writer: output,
 		Flags: []Flag{
-			&BoolFlag{Name: "foo",
+			&BoolFlag{
+				Name:    "foo",
 				Aliases: []string{"h"},
 				Usage:   "here's a really long help text line, let's see where it wraps. blah blah blah and so on.",
 			},
@@ -1443,7 +1444,6 @@ COPYRIGHT:
 }
 
 func TestWrappedCommandHelp(t *testing.T) {
-
 	// Reset HelpPrinter after this test.
 	defer func(old helpPrinter) {
 		HelpPrinter = old
@@ -1504,7 +1504,6 @@ OPTIONS:
 }
 
 func TestWrappedSubcommandHelp(t *testing.T) {
-
 	// Reset HelpPrinter after this test.
 	defer func(old helpPrinter) {
 		HelpPrinter = old
@@ -1573,7 +1572,6 @@ OPTIONS:
 }
 
 func TestWrappedHelpSubcommand(t *testing.T) {
-
 	// Reset HelpPrinter after this test.
 	defer func(old helpPrinter) {
 		HelpPrinter = old
@@ -1712,5 +1710,67 @@ GLOBAL OPTIONS:
 	if output.String() != expected {
 		t.Errorf("Unexpected wrapping, got:\n%s\nexpected:\n%s",
 			output.String(), expected)
+	}
+}
+
+func Test_checkShellCompleteFlag(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name                string
+		app                 *App
+		arguments           []string
+		wantShellCompletion bool
+		wantArgs            []string
+	}{
+		{
+			name:                "disable bash completion",
+			arguments:           []string{"--generate-bash-completion"},
+			app:                 &App{},
+			wantShellCompletion: false,
+			wantArgs:            []string{"--generate-bash-completion"},
+		},
+		{
+			name:      "--generate-bash-completion isn't used",
+			arguments: []string{"foo"},
+			app: &App{
+				EnableBashCompletion: true,
+			},
+			wantShellCompletion: false,
+			wantArgs:            []string{"foo"},
+		},
+		{
+			name:      "arguments include double dash",
+			arguments: []string{"--", "foo", "--generate-bash-completion"},
+			app: &App{
+				EnableBashCompletion: true,
+			},
+			wantShellCompletion: false,
+			wantArgs:            []string{"--", "foo", "--generate-bash-completion"},
+		},
+		{
+			name:      "--generate-bash-completion",
+			arguments: []string{"foo", "--generate-bash-completion"},
+			app: &App{
+				EnableBashCompletion: true,
+			},
+			wantShellCompletion: true,
+			wantArgs:            []string{"foo"},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			shellCompletion, args := checkShellCompleteFlag(tt.app, tt.arguments)
+			if tt.wantShellCompletion != shellCompletion {
+				t.Errorf("Unexpected shell completion, got:\n%v\nexpected: %v",
+					shellCompletion, tt.wantShellCompletion)
+			}
+			if !reflect.DeepEqual(tt.wantArgs, args) {
+				t.Errorf("Unexpected arguments, got:\n%v\nexpected: %v",
+					args, tt.wantArgs)
+			}
+		})
 	}
 }
