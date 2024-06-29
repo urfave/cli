@@ -88,7 +88,7 @@ COMMANDS:
 
 GLOBAL OPTIONS:
    --foo value, -f value  
-   --help, -h             show help (default: false)
+   --help, -h             show help
 `
 
 	assert.Contains(t, output.String(), expected,
@@ -1428,8 +1428,7 @@ COMMANDS:
             for one command
 
 OPTIONS:
-   --help, -h show help
-      (default: false)
+   --help, -h  show help
 `,
 		output.String(),
 	)
@@ -1494,8 +1493,7 @@ USAGE:
    even more
 
 OPTIONS:
-   --help, -h show help
-      (default: false)
+   --help, -h  show help
 `
 
 	assert.Equal(t, expected, output.String(), "Unexpected wrapping")
@@ -1575,8 +1573,7 @@ COMMANDS:
 OPTIONS:
    --test-f value my test
       usage
-   --help, -h show help
-      (default: false)
+   --help, -h  show help
 `,
 		output.String(),
 	)
@@ -1654,7 +1651,7 @@ COMMANDS:
             for one command
 
 GLOBAL OPTIONS:
-   --help, -h    show help (default: false)
+   --help, -h    show help
    --m2 value    
    --strd value  
 

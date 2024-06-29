@@ -35,18 +35,20 @@ var GenerateShellCompletionFlag Flag = &BoolFlag{
 
 // VersionFlag prints the version for the application
 var VersionFlag Flag = &BoolFlag{
-	Name:    "version",
-	Aliases: []string{"v"},
-	Usage:   "print the version",
+	Name:        "version",
+	Aliases:     []string{"v"},
+	Usage:       "print the version",
+	HideDefault: true,
 }
 
 // HelpFlag prints the help for all commands and subcommands.
 // Set to nil to disable the flag.  The subcommand
 // will still be added unless HideHelp or HideHelpCommand is set to true.
 var HelpFlag Flag = &BoolFlag{
-	Name:    "help",
-	Aliases: []string{"h"},
-	Usage:   "show help",
+	Name:        "help",
+	Aliases:     []string{"h"},
+	Usage:       "show help",
+	HideDefault: true,
 }
 
 // FlagStringer converts a flag definition to a string. This is used by help
@@ -135,6 +137,10 @@ type DocGenerationFlag interface {
 
 	// GetEnvVars returns the env vars for this flag
 	GetEnvVars() []string
+
+	// IsDefaultVisible returns whether the default value should be shown in
+	// help text
+	IsDefaultVisible() bool
 }
 
 // DocGenerationMultiValueFlag extends DocGenerationFlag for slice/map based flags.
@@ -171,6 +177,11 @@ type CategorizableFlag interface {
 // through subcommands
 type PersistentFlag interface {
 	IsPersistent() bool
+}
+
+// IsDefaultVisible returns true if the flag is not hidden, otherwise false
+func (f *FlagBase[T, C, V]) IsDefaultVisible() bool {
+	return !f.HideDefault
 }
 
 func newFlagSet(name string, flags []Flag) (*flag.FlagSet, error) {
@@ -349,7 +360,8 @@ func stringifyFlag(f Flag) string {
 
 	// don't print default text for required flags
 	if rf, ok := f.(RequiredFlag); !ok || !rf.IsRequired() {
-		if s := df.GetDefaultText(); s != "" {
+		isVisible := df.IsDefaultVisible()
+		if s := df.GetDefaultText(); isVisible && s != "" {
 			defaultValueString = fmt.Sprintf(formatDefault("%s"), s)
 		}
 	}
