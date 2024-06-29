@@ -63,7 +63,7 @@ make
 Running the default `make` target (`all`) will ensure all of the critical steps are run to
 verify one's changes are harmonious in nature. The same steps are also run during the
 [continuous integration
-phase](https://github.com/urfave/cli/blob/main/.github/workflows/cli.yml).
+phase](https://github.com/urfave/cli/blob/main/.github/workflows/test.yml).
 
 In the event that the `v3diff` target exits non-zero, this is a signal that the public API
 surface area has changed. If the changes are acceptable, then manually running the
