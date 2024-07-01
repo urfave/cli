@@ -800,12 +800,6 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		return cmd.Args(), err
 	}
 
-	tracef("normalizing flags (cmd=%[1]q)", cmd.Name)
-
-	if err := normalizeFlags(cmd.Flags, cmd.flagSet); err != nil {
-		return cmd.Args(), err
-	}
-
 	tracef("done parsing flags (cmd=%[1]q)", cmd.Name)
 
 	return cmd.Args(), nil

@@ -83,28 +83,38 @@ func TestBoolFlagCountFromCommand(t *testing.T) {
 		expectedCount int
 	}{
 		{
-			input:         []string{"-tf", "-w", "-huh"},
+			input:         []string{"main", "-tf", "-w", "-huh"},
 			expectedVal:   true,
 			expectedCount: 3,
 		},
 		{
-			input:         []string{},
+			input:         []string{"main", "-huh"},
+			expectedVal:   true,
+			expectedCount: 1,
+		},
+		{
+			input:         []string{"main"},
 			expectedVal:   false,
 			expectedCount: 0,
 		},
 	}
 
+	bf := &BoolFlag{Name: "tf", Aliases: []string{"w", "huh"}}
 	for _, bct := range boolCountTests {
-		set := flag.NewFlagSet("test", 0)
-		cmd := &Command{flagSet: set}
-		tf := &BoolFlag{Name: "tf", Aliases: []string{"w", "huh"}}
+		cmd := &Command{
+			Flags: []Flag{
+				bf,
+			},
+		}
 		r := require.New(t)
 
-		r.NoError(tf.Apply(set))
-		r.NoError(set.Parse(bct.input))
+		r.NoError(cmd.Run(buildTestContext(t), bct.input))
 
-		r.Equal(bct.expectedVal, tf.Get(cmd))
-		r.Equal(bct.expectedCount, cmd.Count("tf"))
+		r.Equal(bct.expectedVal, cmd.Value(bf.Name))
+		r.Equal(bct.expectedCount, cmd.Count(bf.Name))
+		for _, alias := range bf.Aliases {
+			r.Equal(bct.expectedCount, cmd.Count(alias))
+		}
 	}
 }
 

@@ -3204,17 +3204,60 @@ func TestCommand_Bool(t *testing.T) {
 }
 
 func TestCommand_Value(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Int("myflag", 12, "doc")
-	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.Int("top-flag", 13, "doc")
-	pCmd := &Command{flagSet: parentSet}
-	cmd := &Command{flagSet: set, parent: pCmd}
+	subCmd := &Command{
+		Name: "test",
+		Flags: []Flag{
+			&IntFlag{
+				Name:    "myflag",
+				Usage:   "doc",
+				Aliases: []string{"m", "mf"},
+			},
+		},
+		Action: func(ctx context.Context, c *Command) error {
+			return nil
+		},
+	}
 
-	r := require.New(t)
-	r.Equal(12, cmd.Value("myflag"))
-	r.Equal(13, cmd.Value("top-flag"))
-	r.Nil(cmd.Value("unknown-flag"))
+	cmd := &Command{
+		Flags: []Flag{
+			&IntFlag{
+				Name:    "top-flag",
+				Usage:   "doc",
+				Aliases: []string{"t", "tf"},
+			},
+		},
+		Commands: []*Command{
+			subCmd,
+		},
+	}
+	t.Run("flag name", func(t *testing.T) {
+		r := require.New(t)
+		err := cmd.Run(buildTestContext(t), []string{"main", "--top-flag", "13", "test", "--myflag", "14"})
+
+		r.NoError(err)
+		r.Equal(int64(13), cmd.Value("top-flag"))
+		r.Equal(int64(13), cmd.Value("t"))
+		r.Equal(int64(13), cmd.Value("tf"))
+
+		r.Equal(int64(14), subCmd.Value("myflag"))
+		r.Equal(int64(14), subCmd.Value("m"))
+		r.Equal(int64(14), subCmd.Value("mf"))
+	})
+
+	t.Run("flag aliases", func(t *testing.T) {
+		r := require.New(t)
+		err := cmd.Run(buildTestContext(t), []string{"main", "-tf", "15", "test", "-m", "16"})
+
+		r.NoError(err)
+		r.Equal(int64(15), cmd.Value("top-flag"))
+		r.Equal(int64(15), cmd.Value("t"))
+		r.Equal(int64(15), cmd.Value("tf"))
+
+		r.Equal(int64(16), subCmd.Value("myflag"))
+		r.Equal(int64(16), subCmd.Value("m"))
+		r.Equal(int64(16), subCmd.Value("mf"))
+		r.Nil(cmd.Value("unknown-flag"))
+	})
 }
 
 func TestCommand_Value_InvalidFlagAccessHandler(t *testing.T) {
