@@ -237,6 +237,11 @@ func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 		lastArg = args[argsLen-1]
 	}
 
+	if len(cmd.runArgs) > 1 && cmd.runArgs[len(cmd.runArgs)-1] == "-" {
+		tracef("using last arg from cmd.runArgs [%v]", cmd.runArgs)
+		lastArg = "-"
+	}
+
 	if strings.HasPrefix(lastArg, "-") {
 		tracef("printing flag suggestion for flag[%v] on command %[1]q", lastArg, cmd.Name)
 		printFlagSuggestions(lastArg, cmd.Flags, cmd.Root().Writer)
