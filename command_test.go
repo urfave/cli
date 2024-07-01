@@ -3230,30 +3230,34 @@ func TestCommand_Value(t *testing.T) {
 			subCmd,
 		},
 	}
-	err := cmd.Run(buildTestContext(t), []string{"main", "--top-flag", "13", "test", "--myflag", "14"})
-	assert.NoError(t, err)
+	t.Run("flag name", func(t *testing.T) {
+		r := require.New(t)
+		err := cmd.Run(buildTestContext(t), []string{"main", "--top-flag", "13", "test", "--myflag", "14"})
 
-	r := require.New(t)
-	r.Equal(int64(13), cmd.Value("top-flag"))
-	r.Equal(int64(13), cmd.Value("t"))
-	r.Equal(int64(13), cmd.Value("tf"))
+		r.NoError(err)
+		r.Equal(int64(13), cmd.Value("top-flag"))
+		r.Equal(int64(13), cmd.Value("t"))
+		r.Equal(int64(13), cmd.Value("tf"))
 
-	r.Equal(int64(14), subCmd.Value("myflag"))
-	r.Equal(int64(14), subCmd.Value("m"))
-	r.Equal(int64(14), subCmd.Value("mf"))
+		r.Equal(int64(14), subCmd.Value("myflag"))
+		r.Equal(int64(14), subCmd.Value("m"))
+		r.Equal(int64(14), subCmd.Value("mf"))
+	})
 
-	// use only aliases here
-	err = cmd.Run(buildTestContext(t), []string{"main", "-tf", "15", "test", "-m", "16"})
-	assert.NoError(t, err)
+	t.Run("flag aliases", func(t *testing.T) {
+		r := require.New(t)
+		err := cmd.Run(buildTestContext(t), []string{"main", "-tf", "15", "test", "-m", "16"})
 
-	r.Equal(int64(15), cmd.Value("top-flag"))
-	r.Equal(int64(15), cmd.Value("t"))
-	r.Equal(int64(15), cmd.Value("tf"))
+		r.NoError(err)
+		r.Equal(int64(15), cmd.Value("top-flag"))
+		r.Equal(int64(15), cmd.Value("t"))
+		r.Equal(int64(15), cmd.Value("tf"))
 
-	r.Equal(int64(16), subCmd.Value("myflag"))
-	r.Equal(int64(16), subCmd.Value("m"))
-	r.Equal(int64(16), subCmd.Value("mf"))
-	r.Nil(cmd.Value("unknown-flag"))
+		r.Equal(int64(16), subCmd.Value("myflag"))
+		r.Equal(int64(16), subCmd.Value("m"))
+		r.Equal(int64(16), subCmd.Value("mf"))
+		r.Nil(cmd.Value("unknown-flag"))
+	})
 }
 
 func TestCommand_Value_InvalidFlagAccessHandler(t *testing.T) {
