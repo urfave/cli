@@ -153,6 +153,19 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 		}
 	}
 
+	hasGavenCommand := false
+	for _, arg := range arguments {
+		for _, cmd := range cCtx.App.Commands {
+			if strings.EqualFold(arg, cmd.Name) {
+				hasGavenCommand = true
+				break
+			}
+		}
+	}
+	if !hasGavenCommand {
+		arguments = append([]string{arguments[0], cCtx.App.DefaultCommand}, arguments[1:]...)
+	}
+
 	a := args(arguments)
 	set, err := c.parseFlags(&a, cCtx.shellComplete)
 	cCtx.flagSet = set
