@@ -128,6 +128,10 @@ func (f *fileValueSource) GoString() string {
 	return fmt.Sprintf("&fileValueSource{Path:%[1]q}", f.Path)
 }
 
+func File(path string) ValueSource {
+	return &fileValueSource{Path: path}
+}
+
 // Files is a helper function to encapsulate a number of
 // fileValueSource together as a ValueSourceChain
 func Files(paths ...string) ValueSourceChain {
