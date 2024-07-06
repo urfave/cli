@@ -162,7 +162,7 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 			}
 		}
 	}
-	if !hasGavenCommand {
+	if !hasGavenCommand && cCtx.App.DefaultCommand != "" {
 		arguments = append([]string{arguments[0], cCtx.App.DefaultCommand}, arguments[1:]...)
 	}
 
