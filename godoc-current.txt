@@ -979,6 +979,8 @@ type ValueSource interface {
 
 func EnvVar(key string) ValueSource
 
+func File(path string) ValueSource
+
 type ValueSourceChain struct {
 	Chain []ValueSource
 }
