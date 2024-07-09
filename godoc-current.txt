@@ -519,6 +519,8 @@ func (cmd *Command) VisibleFlags() []Flag
     VisibleFlags returns a slice of the Flags with Hidden=false
 
 func (cmd *Command) VisiblePersistentFlags() []Flag
+    VisiblePersistentFlags returns a slice of PersistentFlag with
+    Persistent=true and Hidden=false.
 
 type CommandCategories interface {
 	// AddCommand adds a command to a category, creating a new category if necessary.
