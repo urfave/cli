@@ -340,13 +340,13 @@ func (cmd *Command) setupSubcommand() {
 
 func (cmd *Command) hideHelp() bool {
 	tracef("hide help (cmd=%[1]q)", cmd.Name)
-	hideHelp := cmd.HideHelp
-
-	for parent := cmd.parent; parent != nil; parent = parent.parent {
-		hideHelp = hideHelp || parent.HideHelp
+	for c := cmd; c != nil; c = c.parent {
+		if c.HideHelp {
+			return true
+		}
 	}
 
-	return hideHelp
+	return false
 }
 
 func (cmd *Command) ensureHelp() {
