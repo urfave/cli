@@ -106,6 +106,8 @@ See full list of flags at https://pkg.go.dev/github.com/urfave/cli/v3
 
 For bool flags you can specify the flag multiple times to get a count(e.g -v -v -v or -vvv)
 
+> If you want to support the `-vvv` flag, you need to set `Command.UseShortOptionHandling`.
+
 <!-- {
   "args": ["&#45;&#45;foo", "&#45;&#45;foo"],
   "output": "count 2"
@@ -126,10 +128,12 @@ func main() {
 	var count int
 
 	cmd := &cli.Command{
+		UseShortOptionHandling: true,
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:        "foo",
 				Usage:       "foo greeting",
+				Aliases:     []string{"f"},
 				Config: cli.BoolConfig{
 					Count: &count,
 				},
