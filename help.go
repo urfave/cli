@@ -410,6 +410,10 @@ func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs 
 		handleTemplateError(err)
 	}
 
+	if _, err := t.New("visiblePersistentFlagTemplate").Parse(visiblePersistentFlagTemplate); err != nil {
+		handleTemplateError(err)
+	}
+
 	if _, err := t.New("visibleGlobalFlagCategoryTemplate").Parse(strings.Replace(visibleFlagCategoryTemplate, "OPTIONS", "GLOBAL OPTIONS", -1)); err != nil {
 		handleTemplateError(err)
 	}

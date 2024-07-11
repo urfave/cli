@@ -687,6 +687,51 @@ UsageText`,
 		"expected output to include usage text")
 }
 
+func TestShowSubcommandHelp_GlobalOptions(t *testing.T) {
+	cmd := &Command{
+		Flags: []Flag{
+			&StringFlag{
+				Name:       "foo",
+				Persistent: true,
+			},
+		},
+		Commands: []*Command{
+			{
+				Name: "frobbly",
+				Flags: []Flag{
+					&StringFlag{
+						Name: "bar",
+					},
+				},
+				Action: func(context.Context, *Command) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	output := &bytes.Buffer{}
+	cmd.Writer = output
+
+	_ = cmd.Run(buildTestContext(t), []string{"foo", "frobbly", "--help"})
+
+	expected := `NAME:
+   foo frobbly
+
+USAGE:
+   foo frobbly [command [command options]] 
+
+OPTIONS:
+   --bar value  
+   --help, -h   show help
+
+GLOBAL OPTIONS:
+   --foo value  
+`
+
+	assert.Contains(t, output.String(), expected, "expected output to include global options")
+}
+
 func TestShowSubcommandHelp_SubcommandUsageText(t *testing.T) {
 	cmd := &Command{
 		Commands: []*Command{

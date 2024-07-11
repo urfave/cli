@@ -881,6 +881,19 @@ func (cmd *Command) appendFlag(fl Flag) {
 	}
 }
 
+// VisiblePersistentFlags returns a slice of [PersistentFlag] with Persistent=true and Hidden=false.
+func (cmd *Command) VisiblePersistentFlags() []Flag {
+	var flags []Flag
+	for _, fl := range cmd.Root().Flags {
+		pfl, ok := fl.(PersistentFlag)
+		if !ok || !pfl.IsPersistent() {
+			continue
+		}
+		flags = append(flags, fl)
+	}
+	return visibleFlags(flags)
+}
+
 func (cmd *Command) appendCommand(aCmd *Command) {
 	if !hasCommand(cmd.Commands, aCmd) {
 		aCmd.parent = cmd

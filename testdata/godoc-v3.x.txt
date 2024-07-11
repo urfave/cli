@@ -45,7 +45,9 @@ DESCRIPTION:
 
 OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
 
-OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}
+OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}{{if .VisiblePersistentFlags}}
+
+GLOBAL OPTIONS:{{template "visiblePersistentFlagTemplate" .}}{{end}}
 `
     CommandHelpTemplate is the text template for the command help topic. cli.go
     uses text/template to render templates. You can render custom help text by
@@ -515,6 +517,10 @@ func (cmd *Command) VisibleFlagCategories() []VisibleFlagCategory
 
 func (cmd *Command) VisibleFlags() []Flag
     VisibleFlags returns a slice of the Flags with Hidden=false
+
+func (cmd *Command) VisiblePersistentFlags() []Flag
+    VisiblePersistentFlags returns a slice of PersistentFlag with
+    Persistent=true and Hidden=false.
 
 type CommandCategories interface {
 	// AddCommand adds a command to a category, creating a new category if necessary.

@@ -28,6 +28,9 @@ var visibleFlagCategoryTemplate = `{{range .VisibleFlagCategories}}
 var visibleFlagTemplate = `{{range $i, $e := .VisibleFlags}}
    {{wrap $e.String 6}}{{end}}`
 
+var visiblePersistentFlagTemplate = `{{range $i, $e := .VisiblePersistentFlags}}
+   {{wrap $e.String 6}}{{end}}`
+
 var versionTemplate = `{{if .Version}}{{if not .HideVersion}}
 
 VERSION:
@@ -80,7 +83,9 @@ DESCRIPTION:
 
 OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
 
-OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}
+OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}{{if .VisiblePersistentFlags}}
+
+GLOBAL OPTIONS:{{template "visiblePersistentFlagTemplate" .}}{{end}}
 `
 
 // SubcommandHelpTemplate is the text template for the subcommand help topic.
