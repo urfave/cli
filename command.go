@@ -109,6 +109,9 @@ type Command struct {
 	// single-character bool arguments into one
 	// i.e. foobar -o -v -> foobar -ov
 	UseShortOptionHandling bool `json:"useShortOptionHandling"`
+	// Boolean to enable reordering flags before passing them to the parser
+	// such that `cli -f <val> <arg>` behaves the same as `cli <arg> -f <val>`
+	AllowFlagsAfterArguments bool `json:"AllowFlagsAfterArguments"`
 	// Enable suggestions for commands and flags
 	Suggest bool `json:"suggest"`
 	// Allows global flags set by libraries which use flag.XXXVar(...) directly
@@ -744,9 +747,10 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		return cmd.Args(), cmd.flagSet.Parse(append([]string{"--"}, args.Tail()...))
 	}
 
-	tracef("reordering flags so they appear before the arguments")
-
-	args = reorderArgs(cmd.Flags, args)
+	if cmd.AllowFlagsAfterArguments {
+		tracef("reordering flags so they appear before the arguments")
+		args = reorderArgs(cmd, args)
+	}
 
 	tracef("walking command lineage for persistent flags (cmd=%[1]q)", cmd.Name)
 
@@ -1262,16 +1266,24 @@ func makeFlagNameVisitor(names *[]string) func(*flag.Flag) {
 
 // reorderArgs moves all flags (via reorderedArgs) before the rest of
 // the arguments (remainingArgs) as this is what flag expects.
-func reorderArgs(commandFlags []Flag, args Args) Args {
+func reorderArgs(cmd *Command, args Args) Args {
 	var remainingArgs, reorderedArgs []string
 
 	tail := args.Tail()
 
 	nextIndexMayContainValue := false
 	for i, arg := range tail {
+
+		subCmd := cmd.Command(arg)
+		if subCmd != nil {
+			cmd = subCmd
+			reorderedArgs = append(reorderedArgs, arg)
+			continue
+		}
+
 		// if we're expecting an option-value, check if this arg is a value, in
 		// which case it should be re-ordered next to its associated flag
-		if isFlag, _ := argIsFlag(commandFlags, arg); nextIndexMayContainValue && !isFlag {
+		if isFlag, _ := argIsFlag(cmd.Flags, arg); nextIndexMayContainValue && !isFlag {
 			nextIndexMayContainValue = false
 			reorderedArgs = append(reorderedArgs, arg)
 		} else if arg == "--" {
@@ -1287,7 +1299,7 @@ func reorderArgs(commandFlags []Flag, args Args) Args {
 			remainingArgs = append(remainingArgs, tail[i+1:]...)
 			break
 			// checks if this is an arg that should be re-ordered
-		} else if isFlag, isBooleanFlag := argIsFlag(commandFlags, arg); isFlag {
+		} else if isFlag, isBooleanFlag := argIsFlag(cmd.Flags, arg); isFlag {
 			// we have determined that this is a flag that we should re-order
 			reorderedArgs = append(reorderedArgs, arg)
 
