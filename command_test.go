@@ -60,6 +60,7 @@ func buildExtendedTestCommand() *Command {
 			Hidden: true,
 		},
 	}
+	cmd.AllowFlagsAfterArguments = true
 	cmd.Commands = []*Command{{
 		Aliases: []string{"c"},
 		Flags: []Flag{
@@ -4385,6 +4386,7 @@ func TestJSONExportCommand(t *testing.T) {
 		"sliceFlagSeparator": "",
 		"disableSliceFlagSeparator": false,
 		"useShortOptionHandling": false,
+		"allowFlagsAfterArguments": true,
 		"suggest": false,
 		"allowExtFlags": false,
 		"skipFlagParsing": false,

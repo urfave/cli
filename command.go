@@ -112,7 +112,7 @@ type Command struct {
 	// Boolean to enable reordering flags before passing them to the parser
 	// such that `cli -f <val> <arg>` behaves the same as `cli <arg> -f <val>`.
 	// This only has effect when set at the top-level command.
-	AllowFlagsAfterArguments bool `json:"allowFlagsAfterArguments"`
+	AllowFlagsAfterArguments bool `json:"allowFlagsAfterArguments,omitempty"`
 	// Enable suggestions for commands and flags
 	Suggest bool `json:"suggest"`
 	// Allows global flags set by libraries which use flag.XXXVar(...) directly
