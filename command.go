@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"sort"
 	"strings"
 	"unicode"
@@ -1282,6 +1283,7 @@ func reorderArgs(cmd *Command, args Args) Args {
 		}
 
 		isFlag, isBooleanFlag := cmd.argIsFlag(arg)
+
 		// if we're expecting an option-value, check if this arg is a value, in
 		// which case it should be re-ordered next to its associated flag
 		if nextIndexMayContainValue && !isFlag {
@@ -1336,33 +1338,40 @@ func (cmd *Command) argIsFlag(arg string) (isFlag bool, isBooleanFlag bool) {
 		shortFlags := strings.Split(arg[1:], "")
 		for s, shortFlag := range shortFlags {
 			// look through all the flags, to see if the `arg` is one of our flags
-			for _, flag := range cmd.Flags {
-				for _, key := range flag.Names() {
-					if key == shortFlag {
-						_, isBooleanFlag = flag.(boolFlag)
-						if isBooleanFlag {
-							// this is the default, expected case
-							continue
-						} else {
-							// only the last flag may not be a boolean
-							if s == len(shortFlag)-1 {
-								// this is an arg and not a boolean arg (it expects a value right after it)
-								return true, false
-							} else {
-								// this is not a valid flag bundle for this command
-								return false, false
-							}
-						}
-					} else {
-						// this short mode doesn't correspond to any flags for this Command
-						return false, false
-					}
+			var flag Flag
+			idx := slices.IndexFunc(cmd.Flags, func(f Flag) bool { return slices.Contains(f.Names(), shortFlag) })
+			if idx != -1 {
+				flag = cmd.Flags[idx]
+			} else {
+				vpf := cmd.VisiblePersistentFlags()
+				idx := slices.IndexFunc(vpf, func(f Flag) bool { return slices.Contains(f.Names(), shortFlag) })
+				if idx != -1 {
+					flag = vpf[idx]
+				} else {
+					// this short flag doesn't correspond to any flags for this Command
+					return false, false
 				}
 			}
 
-			// in this case we didn't exit, which means all the short flags are booleans
-			return true, true
+			// got a flag match
+			_, isBooleanFlag = flag.(boolFlag)
+			if isBooleanFlag {
+				// this is the default, most common case
+				continue
+			} else {
+				// only the last flag may not be a boolean
+				if s == len(shortFlag)-1 {
+					// this is an arg and not a boolean arg (it expects a value right after it)
+					return true, false
+				} else {
+					// this is not a valid flag bundle for this command
+					return false, false
+				}
+			}
 		}
+
+		// in this case we didn't exit, which means all the short flags are booleans
+		return true, true
 	} else {
 		// this line turns `-flag` into `flag`
 		arg, _ = strings.CutPrefix(arg, "-")
