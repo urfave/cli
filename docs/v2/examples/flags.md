@@ -107,8 +107,8 @@ For bool flags you can specify the flag multiple times to get a count(e.g -v -v 
 > If you want to support the `-vvv` flag, you need to set `App.UseShortOptionHandling`.
 
 <!-- {
-  "args": ["&#45;&#45;foo", "&#45;&#45;foo"],
-  "output": "count 2"
+  "args": ["&#45;&#45;foo", "&#45;&#45;foo", "&#45;fff",  "&#45;f"],
+  "output": "count 6"  
 } -->
 ```go
 package main
