@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"sort"
 	"strings"
 	"unicode"
@@ -109,6 +110,10 @@ type Command struct {
 	// single-character bool arguments into one
 	// i.e. foobar -o -v -> foobar -ov
 	UseShortOptionHandling bool `json:"useShortOptionHandling"`
+	// Boolean to enable reordering flags before passing them to the parser
+	// such that `cli -f <val> <arg>` behaves the same as `cli <arg> -f <val>`.
+	// This only has effect when set at the top-level command.
+	AllowFlagsAfterArguments bool `json:"allowFlagsAfterArguments,omitempty"`
 	// Enable suggestions for commands and flags
 	Suggest bool `json:"suggest"`
 	// Allows global flags set by libraries which use flag.XXXVar(...) directly
@@ -744,6 +749,11 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		return cmd.Args(), cmd.flagSet.Parse(append([]string{"--"}, args.Tail()...))
 	}
 
+	if cmd.AllowFlagsAfterArguments {
+		tracef("reordering flags so they appear before the arguments")
+		args = reorderArgs(cmd, args)
+	}
+
 	tracef("walking command lineage for persistent flags (cmd=%[1]q)", cmd.Name)
 
 	for pCmd := cmd.parent; pCmd != nil; pCmd = pCmd.parent {
@@ -1254,4 +1264,132 @@ func makeFlagNameVisitor(names *[]string) func(*flag.Flag) {
 			*names = append(*names, name)
 		}
 	}
+}
+
+// reorderArgs moves all flags (via reorderedArgs) before the rest of
+// the arguments (remainingArgs) as this is what flag expects.
+func reorderArgs(cmd *Command, args Args) Args {
+	var remainingArgs, reorderedArgs []string
+
+	tail := args.Tail()
+
+	nextIndexMayContainValue := false
+	for i, arg := range tail {
+		subCmd := cmd.Command(arg)
+		if subCmd != nil {
+			cmd = subCmd
+			reorderedArgs = append(reorderedArgs, arg)
+			continue
+		}
+
+		isFlag, isBooleanFlag := cmd.argIsFlag(arg)
+
+		// if we're expecting an option-value, check if this arg is a value, in
+		// which case it should be re-ordered next to its associated flag
+		if nextIndexMayContainValue && !isFlag {
+			nextIndexMayContainValue = false
+			reorderedArgs = append(reorderedArgs, arg)
+		} else if arg == "--" {
+			// don't reorder any args after the -- delimiter As described in the POSIX spec:
+			// https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02
+			// > Guideline 10:
+			// >   The first -- argument that is not an option-argument should be accepted
+			// >   as a delimiter indicating the end of options. Any following arguments
+			// >   should be treated as operands, even if they begin with the '-' character.
+
+			// make sure the "--" delimiter itself is at the start
+			remainingArgs = append([]string{"--"}, remainingArgs...)
+			remainingArgs = append(remainingArgs, tail[i+1:]...)
+			break
+			// checks if this is an arg that should be re-ordered
+		} else if isFlag {
+			// we have determined that this is a flag that we should re-order
+			reorderedArgs = append(reorderedArgs, arg)
+
+			// if this arg does not contain a "=", then the next index may contain the value for this flag
+			nextIndexMayContainValue = !strings.Contains(arg, "=") && !isBooleanFlag
+		} else {
+			// simply append any remaining args
+			remainingArgs = append(remainingArgs, arg)
+		}
+	}
+
+	return &stringSliceArgs{append([]string{args.First()}, append(reorderedArgs, remainingArgs...)...)}
+}
+
+// argIsFlag checks if an arg is one of our command flags
+func (cmd *Command) argIsFlag(arg string) (isFlag bool, isBooleanFlag bool) {
+	if arg == "-" || arg == "--" {
+		// `-` is never a flag
+		// `--` is an option-value when following a flag, and a delimiter indicating the end of options in other cases.
+		return false, false
+	}
+
+	// flags always start with a -
+	if !strings.HasPrefix(arg, "-") {
+		return false, false
+	}
+
+	// this line turns `--flag` into `flag`
+	arg, _ = strings.CutPrefix(arg, "--")
+
+	if cmd.useShortOptionHandling() && strings.HasPrefix(arg, "-") {
+		// assume this is a bunch of short flags bundled together
+		shortFlags := strings.Split(arg[1:], "")
+		for s, shortFlag := range shortFlags {
+			// look through all the flags, to see if the `arg` is one of our flags
+			var flag Flag
+			idx := slices.IndexFunc(cmd.Flags, func(f Flag) bool { return slices.Contains(f.Names(), shortFlag) })
+			if idx != -1 {
+				flag = cmd.Flags[idx]
+			} else {
+				vpf := cmd.VisiblePersistentFlags()
+				idx := slices.IndexFunc(vpf, func(f Flag) bool { return slices.Contains(f.Names(), shortFlag) })
+				if idx != -1 {
+					flag = vpf[idx]
+				} else {
+					// this short flag doesn't correspond to any flags for this Command
+					return false, false
+				}
+			}
+
+			// got a flag match
+			_, isBooleanFlag = flag.(boolFlag)
+			if isBooleanFlag {
+				// this is the default, most common case
+				continue
+			} else {
+				// only the last flag may not be a boolean
+				if s == len(shortFlag)-1 {
+					// this is an arg and not a boolean arg (it expects a value right after it)
+					return true, false
+				} else {
+					// this is not a valid flag bundle for this command
+					return false, false
+				}
+			}
+		}
+
+		// in this case we didn't exit, which means all the short flags are booleans
+		return true, true
+	} else {
+		// this line turns `-flag` into `flag`
+		arg, _ = strings.CutPrefix(arg, "-")
+
+		// this line turns `flag=value` into `flag`
+		arg = strings.Split(arg, "=")[0]
+
+		// look through all the flags, to see if the `arg` is one of our flags
+		for _, flag := range cmd.Flags {
+			for _, key := range flag.Names() {
+				if key == arg {
+					_, isBooleanFlag = flag.(boolFlag)
+					return true, isBooleanFlag
+				}
+			}
+		}
+	}
+
+	// return false if this arg was not one of our flags
+	return false, false
 }
