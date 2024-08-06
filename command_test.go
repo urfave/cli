@@ -2490,6 +2490,7 @@ func TestSetupInitializesOnlyNilWriters(t *testing.T) {
 }
 
 func TestFlagAction(t *testing.T) {
+	now := time.Now().UTC().Truncate(time.Minute)
 	testCases := []struct {
 		name string
 		args []string
@@ -2578,8 +2579,8 @@ func TestFlagAction(t *testing.T) {
 		},
 		{
 			name: "flag_timestamp",
-			args: []string{"app", "--f_timestamp", "2022-05-01 02:26:20"},
-			exp:  "2022-05-01T02:26:20Z ",
+			args: []string{"app", "--f_timestamp", now.Format(time.DateTime)},
+			exp:  now.UTC().Format(time.RFC3339) + " ",
 		},
 		{
 			name: "flag_timestamp_error",
@@ -2738,12 +2739,14 @@ func TestFlagAction(t *testing.T) {
 					&TimestampFlag{
 						Name: "f_timestamp",
 						Config: TimestampConfig{
+							Timezone:         time.UTC,
 							AvailableLayouts: []string{time.DateTime},
 						},
 						Action: func(_ context.Context, cmd *Command, v time.Time) error {
 							if v.IsZero() {
 								return fmt.Errorf("zero timestamp")
 							}
+
 							_, err := cmd.Root().Writer.Write([]byte(v.Format(time.RFC3339) + " "))
 							return err
 						},
