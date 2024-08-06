@@ -9,16 +9,16 @@ type TimestampFlag = FlagBase[time.Time, TimestampConfig, timestampValue]
 
 // TimestampConfig defines the config for timestamp flags
 type TimestampConfig struct {
-	Timezone *time.Location
-	Layout   string
+	Timezone         *time.Location
+	AvailableLayouts []string
 }
 
 // timestampValue wrap to satisfy golang's flag interface.
 type timestampValue struct {
-	timestamp  *time.Time
-	hasBeenSet bool
-	layout     string
-	location   *time.Location
+	timestamp        *time.Time
+	hasBeenSet       bool
+	availableLayouts []string
+	location         *time.Location
 }
 
 var _ ValueCreator[time.Time, TimestampConfig] = timestampValue{}
@@ -28,9 +28,9 @@ var _ ValueCreator[time.Time, TimestampConfig] = timestampValue{}
 func (t timestampValue) Create(val time.Time, p *time.Time, c TimestampConfig) Value {
 	*p = val
 	return &timestampValue{
-		timestamp: p,
-		layout:    c.Layout,
-		location:  c.Timezone,
+		timestamp:        p,
+		availableLayouts: c.AvailableLayouts,
+		location:         c.Timezone,
 	}
 }
 
@@ -53,14 +53,49 @@ func (t *timestampValue) Set(value string) error {
 	var timestamp time.Time
 	var err error
 
-	if t.location != nil {
-		timestamp, err = time.ParseInLocation(t.layout, value, t.location)
-	} else {
-		timestamp, err = time.Parse(t.layout, value)
+	if t.location == nil {
+		t.location = time.Local
+	}
+
+	for _, layout := range t.availableLayouts {
+		var locErr error
+
+		timestamp, locErr = time.ParseInLocation(layout, value, t.location)
+		// TODO: replace with errors.Join() after upgrading to go 1.20 or newer
+		// OR use external error wrapping, if acceptable
+		if locErr != nil {
+			if err == nil {
+				err = locErr
+				continue
+			}
+
+			err = fmt.Errorf("%v\n%v", err, locErr)
+			continue
+		}
+
+		err = nil
+		break
 	}
 
 	if err != nil {
 		return err
+	}
+
+	defaultTs, _ := time.ParseInLocation(time.TimeOnly, time.TimeOnly, timestamp.Location())
+
+	// If format is missing date, set it explicitly to current
+	if timestamp.Truncate(time.Hour*24).UnixNano() == defaultTs.Truncate(time.Hour*24).UnixNano() {
+		n := time.Now()
+		timestamp = time.Date(
+			n.Year(),
+			n.Month(),
+			n.Day(),
+			timestamp.Hour(),
+			timestamp.Minute(),
+			timestamp.Second(),
+			timestamp.Nanosecond(),
+			timestamp.Location(),
+		)
 	}
 
 	if t.timestamp != nil {
