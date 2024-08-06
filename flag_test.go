@@ -2257,25 +2257,25 @@ func TestStringMap_Serialized_Set(t *testing.T) {
 
 func TestTimestamp_set(t *testing.T) {
 	ts := timestampValue{
-		timestamp:  nil,
-		hasBeenSet: false,
-		layout:     "Jan 2, 2006 at 3:04pm (MST)",
+		timestamp:        nil,
+		hasBeenSet:       false,
+		availableLayouts: []string{"Jan 2, 2006 at 3:04pm (MST)"},
 	}
 
 	time1 := "Feb 3, 2013 at 7:54pm (PST)"
-	require.NoError(t, ts.Set(time1), "Failed to parse time %s with layout %s", time1, ts.layout)
+	require.NoError(t, ts.Set(time1), "Failed to parse time %s with layouts %v", time1, ts.availableLayouts)
 	require.True(t, ts.hasBeenSet, "hasBeenSet is not true after setting a time")
 
 	ts.hasBeenSet = false
-	ts.layout = time.RFC3339
+	ts.availableLayouts = []string{time.RFC3339}
 	time2 := "2006-01-02T15:04:05Z"
-	require.NoError(t, ts.Set(time2), "Failed to parse time %s with layout %s", time2, ts.layout)
+	require.NoError(t, ts.Set(time2), "Failed to parse time %s with layout %v", time2, ts.availableLayouts)
 	require.True(t, ts.hasBeenSet, "hasBeenSet is not true after setting a time")
 }
 
-func TestTimestampFlagApply(t *testing.T) {
+func TestTimestampFlagApply_SingleFormat(t *testing.T) {
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: time.RFC3339}}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{AvailableLayouts: []string{time.RFC3339}}}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
@@ -2284,9 +2284,37 @@ func TestTimestampFlagApply(t *testing.T) {
 	assert.Equal(t, expectedResult, set.Lookup("time").Value.(flag.Getter).Get())
 }
 
+func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
+	fl := TimestampFlag{
+		Name:    "time",
+		Aliases: []string{"t"},
+		Config: TimestampConfig{
+			Timezone: time.Local,
+			AvailableLayouts: []string{
+				time.DateTime,
+				time.TimeOnly,
+				time.Kitchen,
+			},
+		},
+	}
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	now := time.Now()
+	for timeStr, expectedRes := range map[string]time.Time{
+		now.Format(time.DateTime): now.Truncate(time.Second),
+		now.Format(time.TimeOnly): now.Truncate(time.Second),
+		now.Format(time.Kitchen):  now.Truncate(time.Minute),
+	} {
+		err := set.Parse([]string{"--time", timeStr})
+		assert.NoError(t, err)
+		assert.Equal(t, expectedRes, set.Lookup("time").Value.(flag.Getter).Get())
+	}
+}
+
 func TestTimestampFlagApplyValue(t *testing.T) {
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: time.RFC3339}, Value: expectedResult}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{AvailableLayouts: []string{time.RFC3339}}, Value: expectedResult}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
@@ -2296,7 +2324,7 @@ func TestTimestampFlagApplyValue(t *testing.T) {
 }
 
 func TestTimestampFlagApply_Fail_Parse_Wrong_Layout(t *testing.T) {
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: "randomlayout"}}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{AvailableLayouts: []string{"randomlayout"}}}
 	set := flag.NewFlagSet("test", 0)
 	set.SetOutput(io.Discard)
 	_ = fl.Apply(set)
@@ -2306,7 +2334,7 @@ func TestTimestampFlagApply_Fail_Parse_Wrong_Layout(t *testing.T) {
 }
 
 func TestTimestampFlagApply_Fail_Parse_Wrong_Time(t *testing.T) {
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: "Jan 2, 2006 at 3:04pm (MST)"}}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{AvailableLayouts: []string{"Jan 2, 2006 at 3:04pm (MST)"}}}
 	set := flag.NewFlagSet("test", 0)
 	set.SetOutput(io.Discard)
 	_ = fl.Apply(set)
@@ -2318,7 +2346,7 @@ func TestTimestampFlagApply_Fail_Parse_Wrong_Time(t *testing.T) {
 func TestTimestampFlagApply_Timezoned(t *testing.T) {
 	pdt := time.FixedZone("PDT", -7*60*60)
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: time.ANSIC, Timezone: pdt}}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{AvailableLayouts: []string{time.ANSIC}, Timezone: pdt}}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
@@ -2519,7 +2547,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 		},
 		{
 			name:    "timestamp",
-			flag:    &TimestampFlag{Name: "flag", Value: ts, Config: TimestampConfig{Layout: time.RFC3339}, Sources: EnvVars("tflag")},
+			flag:    &TimestampFlag{Name: "flag", Value: ts, Config: TimestampConfig{AvailableLayouts: []string{time.RFC3339}}, Sources: EnvVars("tflag")},
 			toParse: []string{"--flag", "2006-11-02T15:04:05Z"},
 			expect:  `--flag value	(default: 2005-01-02 15:04:05 +0000 UTC)` + withEnvHint([]string{"tflag"}, ""),
 			environ: map[string]string{
@@ -2603,7 +2631,7 @@ func TestFlagValue(t *testing.T) {
 func TestTimestampFlagApply_WithDestination(t *testing.T) {
 	var destination time.Time
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: time.RFC3339}, Destination: &destination}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{AvailableLayouts: []string{time.RFC3339}}, Destination: &destination}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
