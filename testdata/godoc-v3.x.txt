@@ -940,8 +940,8 @@ type SuggestFlagFunc func(flags []Flag, provided string, hideHelp bool) string
 type TimestampArg = ArgumentBase[time.Time, TimestampConfig, timestampValue]
 
 type TimestampConfig struct {
-	Timezone *time.Location
-	Layout   string
+	Timezone         *time.Location
+	AvailableLayouts []string
 }
     TimestampConfig defines the config for timestamp flags
 
