@@ -2369,7 +2369,7 @@ func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
 					return errors.New("got nil err")
 				}
 
-				found := regexp.MustCompile(`got nil/empty layouts slice"`).Match([]byte(err.Error()))
+				found := regexp.MustCompile(`got nil/empty layouts slice`).Match([]byte(err.Error()))
 				if !found {
 					return fmt.Errorf("given error does not satisfy pattern: %w", err)
 				}
@@ -2385,7 +2385,7 @@ func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
 					return errors.New("got nil err")
 				}
 
-				found := regexp.MustCompile(`got nil/empty layouts slice"`).Match([]byte(err.Error()))
+				found := regexp.MustCompile(`got nil/empty layouts slice`).Match([]byte(err.Error()))
 				if !found {
 					return fmt.Errorf("given error does not satisfy pattern: %w", err)
 				}
@@ -2411,7 +2411,7 @@ func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
 	for idx := range testCases {
 		testCase := testCases[idx]
 		t.Run(testCase.caseName, func(t *testing.T) {
-			t.Parallel()
+			// t.Parallel()
 			fl := TimestampFlag{
 				Name: "time",
 				Config: TimestampConfig{
@@ -2421,6 +2421,13 @@ func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
 
 			set := flag.NewFlagSet("test", 0)
 			_ = fl.Apply(set)
+
+			if len(testCase.layoutsPrecisions) == 0 {
+				err := set.Parse([]string{"--time", now.Format(time.RFC3339)})
+				if testCase.expErrValidation != nil {
+					assert.NoError(t, testCase.expErrValidation(err))
+				}
+			}
 
 			validLayouts := make([]string, 0, len(testCase.layoutsPrecisions))
 			invalidLayouts := make([]string, 0, len(testCase.layoutsPrecisions))
