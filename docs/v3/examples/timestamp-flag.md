@@ -28,7 +28,12 @@ import (
 func main() {
 	cmd := &cli.Command{
 		Flags: []cli.Flag{
-			&cli.TimestampFlag{Name: "meeting", Config: cli.TimestampConfig{Layout: "2006-01-02T15:04:05"}},
+			&cli.TimestampFlag{
+				Name: "meeting", 
+				Config: cli.TimestampConfig{
+					AvailableLayouts: []string{"2006-01-02T15:04:05"},
+				},
+			},
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			fmt.Printf("%s", cmd.Timestamp("meeting").String())
@@ -54,7 +59,13 @@ change behavior, a default timezone can be provided with flag definition:
 ```go
 cmd := &cli.Command{
 	Flags: []cli.Flag{
-		&cli.TimestampFlag{Name: "meeting", Config: cli.TimestampConfig{Layout: "2006-01-02T15:04:05", Timezone: time.Local}},
+		&cli.TimestampFlag{
+			Name: "meeting",
+			Config: cli.TimestampConfig{
+				Timezone: time.Local,
+				AvailableLayouts: []string{"2006-01-02T15:04:05"},
+			},
+		},
 	},
 }
 ```
