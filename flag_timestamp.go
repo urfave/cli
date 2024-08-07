@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"time"
 )
@@ -57,6 +58,10 @@ func (t *timestampValue) Set(value string) error {
 		t.location = time.UTC
 	}
 
+	if len(t.availableLayouts) == 0 {
+		return errors.New("got nil/empty layouts slice")
+	}
+
 	for _, layout := range t.availableLayouts {
 		var locErr error
 
@@ -83,13 +88,25 @@ func (t *timestampValue) Set(value string) error {
 
 	defaultTS, _ := time.ParseInLocation(time.TimeOnly, time.TimeOnly, timestamp.Location())
 
-	// If format is missing date, set it explicitly to current
+	n := time.Now()
+
+	// If format is missing date (or year only), set it explicitly to current
 	if timestamp.Truncate(time.Hour*24).UnixNano() == defaultTS.Truncate(time.Hour*24).UnixNano() {
-		n := time.Now()
 		timestamp = time.Date(
 			n.Year(),
 			n.Month(),
 			n.Day(),
+			timestamp.Hour(),
+			timestamp.Minute(),
+			timestamp.Second(),
+			timestamp.Nanosecond(),
+			timestamp.Location(),
+		)
+	} else if timestamp.Year() == 0 {
+		timestamp = time.Date(
+			n.Year(),
+			timestamp.Month(),
+			timestamp.Day(),
 			timestamp.Hour(),
 			timestamp.Minute(),
 			timestamp.Second(),
