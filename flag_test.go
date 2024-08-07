@@ -2395,6 +2395,7 @@ func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
 		},
 	}
 
+	// TODO: replace with maps.Keys() (go >= ), lo.Keys() if acceptable
 	getKeys := func(m map[string]time.Duration) []string {
 		keys := make([]string, 0, len(m))
 		for k := range m {
@@ -2420,6 +2421,7 @@ func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
 			validLayouts := make([]string, 0, len(testCase.layoutsPrecisions))
 			invalidLayouts := make([]string, 0, len(testCase.layoutsPrecisions))
 
+			// TODO: replace with lo.Filter if acceptable
 			for layout, prec := range testCase.layoutsPrecisions {
 				v, err := time.Parse(layout, now.Format(layout))
 				if err != nil || prec == 0 || now.Truncate(prec).UnixNano() != v.Truncate(prec).UnixNano() {
@@ -2460,6 +2462,7 @@ func TestTimestampFlagApply_ShortenedLayouts(t *testing.T) {
 		"15:04":         time.Minute,
 	}
 
+	// TODO: replace with maps.Keys() (go >= ), lo.Keys() if acceptable
 	getKeys := func(m map[string]time.Duration) []string {
 		keys := make([]string, 0, len(m))
 		for k := range m {
