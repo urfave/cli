@@ -54,7 +54,7 @@ func (t *timestampValue) Set(value string) error {
 	var err error
 
 	if t.location == nil {
-		t.location = time.Local
+		t.location = time.UTC
 	}
 
 	for _, layout := range t.availableLayouts {
