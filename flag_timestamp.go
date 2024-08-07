@@ -81,10 +81,10 @@ func (t *timestampValue) Set(value string) error {
 		return err
 	}
 
-	defaultTs, _ := time.ParseInLocation(time.TimeOnly, time.TimeOnly, timestamp.Location())
+	defaultTS, _ := time.ParseInLocation(time.TimeOnly, time.TimeOnly, timestamp.Location())
 
 	// If format is missing date, set it explicitly to current
-	if timestamp.Truncate(time.Hour*24).UnixNano() == defaultTs.Truncate(time.Hour*24).UnixNano() {
+	if timestamp.Truncate(time.Hour*24).UnixNano() == defaultTS.Truncate(time.Hour*24).UnixNano() {
 		n := time.Now()
 		timestamp = time.Date(
 			n.Year(),
