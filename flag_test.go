@@ -2397,6 +2397,10 @@ func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
 
 	// TODO: replace with maps.Keys() (go >= ), lo.Keys() if acceptable
 	getKeys := func(m map[string]time.Duration) []string {
+		if m == nil {
+			return nil
+		}
+
 		keys := make([]string, 0, len(m))
 		for k := range m {
 			keys = append(keys, k)
@@ -2464,6 +2468,10 @@ func TestTimestampFlagApply_ShortenedLayouts(t *testing.T) {
 
 	// TODO: replace with maps.Keys() (go >= ), lo.Keys() if acceptable
 	getKeys := func(m map[string]time.Duration) []string {
+		if m == nil {
+			return nil
+		}
+
 		keys := make([]string, 0, len(m))
 		for k := range m {
 			keys = append(keys, k)
