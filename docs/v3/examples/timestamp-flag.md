@@ -31,7 +31,7 @@ func main() {
 			&cli.TimestampFlag{
 				Name: "meeting", 
 				Config: cli.TimestampConfig{
-					AvailableLayouts: []string{"2006-01-02T15:04:05"},
+					Layouts: []string{"2006-01-02T15:04:05"},
 				},
 			},
 		},

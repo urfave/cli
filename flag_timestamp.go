@@ -10,16 +10,16 @@ type TimestampFlag = FlagBase[time.Time, TimestampConfig, timestampValue]
 
 // TimestampConfig defines the config for timestamp flags
 type TimestampConfig struct {
-	Timezone         *time.Location
-	AvailableLayouts []string
+	Timezone *time.Location
+	Layouts  []string
 }
 
 // timestampValue wrap to satisfy golang's flag interface.
 type timestampValue struct {
-	timestamp        *time.Time
-	hasBeenSet       bool
-	availableLayouts []string
-	location         *time.Location
+	timestamp  *time.Time
+	hasBeenSet bool
+	layouts    []string
+	location   *time.Location
 }
 
 var _ ValueCreator[time.Time, TimestampConfig] = timestampValue{}
@@ -29,9 +29,9 @@ var _ ValueCreator[time.Time, TimestampConfig] = timestampValue{}
 func (t timestampValue) Create(val time.Time, p *time.Time, c TimestampConfig) Value {
 	*p = val
 	return &timestampValue{
-		timestamp:        p,
-		availableLayouts: c.AvailableLayouts,
-		location:         c.Timezone,
+		timestamp: p,
+		layouts:   c.Layouts,
+		location:  c.Timezone,
 	}
 }
 
@@ -58,11 +58,11 @@ func (t *timestampValue) Set(value string) error {
 		t.location = time.UTC
 	}
 
-	if len(t.availableLayouts) == 0 {
+	if len(t.layouts) == 0 {
 		return errors.New("got nil/empty layouts slice")
 	}
 
-	for _, layout := range t.availableLayouts {
+	for _, layout := range t.layouts {
 		var locErr error
 
 		timestamp, locErr = time.ParseInLocation(layout, value, t.location)

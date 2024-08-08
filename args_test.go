@@ -68,7 +68,7 @@ func TestArgumentsSubcommand(t *testing.T) {
 					Max:         1,
 					Destination: &tval,
 					Config: TimestampConfig{
-						AvailableLayouts: []string{time.RFC3339},
+						Layouts: []string{time.RFC3339},
 					},
 				},
 				&StringArg{

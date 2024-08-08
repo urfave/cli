@@ -2739,8 +2739,8 @@ func TestFlagAction(t *testing.T) {
 					&TimestampFlag{
 						Name: "f_timestamp",
 						Config: TimestampConfig{
-							Timezone:         time.UTC,
-							AvailableLayouts: []string{time.DateTime},
+							Timezone: time.UTC,
+							Layouts:  []string{time.DateTime},
 						},
 						Action: func(_ context.Context, cmd *Command, v time.Time) error {
 							if v.IsZero() {
