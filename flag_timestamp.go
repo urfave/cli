@@ -66,15 +66,13 @@ func (t *timestampValue) Set(value string) error {
 		var locErr error
 
 		timestamp, locErr = time.ParseInLocation(layout, value, t.location)
-		// TODO: replace with errors.Join() after upgrading to go 1.20 or newer
-		// OR use external error wrapping, if acceptable
 		if locErr != nil {
 			if err == nil {
 				err = locErr
 				continue
 			}
 
-			err = fmt.Errorf("%v\n%v", err, locErr)
+			err = newMultiError(err, locErr)
 			continue
 		}
 
