@@ -11,7 +11,10 @@ type TimestampFlag = FlagBase[time.Time, TimestampConfig, timestampValue]
 // TimestampConfig defines the config for timestamp flags
 type TimestampConfig struct {
 	Timezone *time.Location
-	Layouts  []string
+	// Available layouts for flag value.
+	//
+	// Note that value for formats with missing year/date will be interpreted as current year/date respectively.
+	Layouts []string
 }
 
 // timestampValue wrap to satisfy golang's flag interface.
