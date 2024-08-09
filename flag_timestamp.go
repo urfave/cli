@@ -14,6 +14,8 @@ type TimestampConfig struct {
 	// Available layouts for flag value.
 	//
 	// Note that value for formats with missing year/date will be interpreted as current year/date respectively.
+	//
+	// Read more about time layouts: https://pkg.go.dev/time#pkg-constants
 	Layouts []string
 }
 
