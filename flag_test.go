@@ -2,11 +2,13 @@ package cli
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"os"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -2259,23 +2261,23 @@ func TestTimestamp_set(t *testing.T) {
 	ts := timestampValue{
 		timestamp:  nil,
 		hasBeenSet: false,
-		layout:     "Jan 2, 2006 at 3:04pm (MST)",
+		layouts:    []string{"Jan 2, 2006 at 3:04pm (MST)"},
 	}
 
 	time1 := "Feb 3, 2013 at 7:54pm (PST)"
-	require.NoError(t, ts.Set(time1), "Failed to parse time %s with layout %s", time1, ts.layout)
+	require.NoError(t, ts.Set(time1), "Failed to parse time %s with layouts %v", time1, ts.layouts)
 	require.True(t, ts.hasBeenSet, "hasBeenSet is not true after setting a time")
 
 	ts.hasBeenSet = false
-	ts.layout = time.RFC3339
+	ts.layouts = []string{time.RFC3339}
 	time2 := "2006-01-02T15:04:05Z"
-	require.NoError(t, ts.Set(time2), "Failed to parse time %s with layout %s", time2, ts.layout)
+	require.NoError(t, ts.Set(time2), "Failed to parse time %s with layout %v", time2, ts.layouts)
 	require.True(t, ts.hasBeenSet, "hasBeenSet is not true after setting a time")
 }
 
-func TestTimestampFlagApply(t *testing.T) {
+func TestTimestampFlagApply_SingleFormat(t *testing.T) {
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: time.RFC3339}}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layouts: []string{time.RFC3339}}}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
@@ -2284,9 +2286,226 @@ func TestTimestampFlagApply(t *testing.T) {
 	assert.Equal(t, expectedResult, set.Lookup("time").Value.(flag.Getter).Get())
 }
 
+func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
+	now := time.Now().UTC()
+
+	testCases := []struct {
+		caseName          string
+		layoutsPrecisions map[string]time.Duration
+		expRes            time.Time
+		expErrValidation  func(err error) (validation error)
+	}{
+		{
+			caseName: "all_valid_layouts",
+			layoutsPrecisions: map[string]time.Duration{
+				time.RFC3339:  time.Second,
+				time.DateTime: time.Second,
+				time.RFC1123:  time.Second,
+			},
+			expRes: now.Truncate(time.Second),
+		},
+		{
+			caseName: "one_invalid_layout",
+			layoutsPrecisions: map[string]time.Duration{
+				time.RFC3339:  time.Second,
+				time.DateTime: time.Second,
+				"foo":         0,
+			},
+			expRes: now.Truncate(time.Second),
+		},
+		{
+			caseName: "multiple_invalid_layouts",
+			layoutsPrecisions: map[string]time.Duration{
+				time.RFC3339:  time.Second,
+				"foo":         0,
+				time.DateTime: time.Second,
+				"bar":         0,
+			},
+			expRes: now.Truncate(time.Second),
+		},
+		{
+			caseName: "all_invalid_layouts",
+			layoutsPrecisions: map[string]time.Duration{
+				"foo":                      0,
+				"2024-08-07 74:01:82Z-100": 0,
+				"25:70":                    0,
+				"":                         0,
+			},
+			expErrValidation: func(err error) error {
+				if err == nil {
+					return errors.New("got nil err")
+				}
+
+				found := regexp.MustCompile(`(cannot parse ".+" as ".*")|(extra text: ".+")`).Match([]byte(err.Error()))
+				if !found {
+					return fmt.Errorf("given error does not satisfy pattern: %w", err)
+				}
+
+				return nil
+			},
+		},
+		{
+			caseName: "empty_layout",
+			layoutsPrecisions: map[string]time.Duration{
+				"": 0,
+			},
+			expErrValidation: func(err error) error {
+				if err == nil {
+					return errors.New("got nil err")
+				}
+
+				found := regexp.MustCompile(`extra text: ".+"`).Match([]byte(err.Error()))
+				if !found {
+					return fmt.Errorf("given error does not satisfy pattern: %w", err)
+				}
+
+				return nil
+			},
+		},
+		{
+			caseName: "nil_layouts_slice",
+			expErrValidation: func(err error) error {
+				if err == nil {
+					return errors.New("got nil err")
+				}
+
+				found := regexp.MustCompile(`got nil/empty layouts slice`).Match([]byte(err.Error()))
+				if !found {
+					return fmt.Errorf("given error does not satisfy pattern: %w", err)
+				}
+
+				return nil
+			},
+		},
+		{
+			caseName:          "empty_layouts_slice",
+			layoutsPrecisions: map[string]time.Duration{},
+			expErrValidation: func(err error) error {
+				if err == nil {
+					return errors.New("got nil err")
+				}
+
+				found := regexp.MustCompile(`got nil/empty layouts slice`).Match([]byte(err.Error()))
+				if !found {
+					return fmt.Errorf("given error does not satisfy pattern: %w", err)
+				}
+
+				return nil
+			},
+		},
+	}
+
+	// TODO: replace with maps.Keys() (go >= ), lo.Keys() if acceptable
+	getKeys := func(m map[string]time.Duration) []string {
+		if m == nil {
+			return nil
+		}
+
+		keys := make([]string, 0, len(m))
+		for k := range m {
+			keys = append(keys, k)
+		}
+		return keys
+	}
+
+	for idx := range testCases {
+		testCase := testCases[idx]
+		t.Run(testCase.caseName, func(t *testing.T) {
+			// t.Parallel()
+			fl := TimestampFlag{
+				Name: "time",
+				Config: TimestampConfig{
+					Layouts: getKeys(testCase.layoutsPrecisions),
+				},
+			}
+
+			set := flag.NewFlagSet("test", 0)
+			_ = fl.Apply(set)
+
+			if len(testCase.layoutsPrecisions) == 0 {
+				err := set.Parse([]string{"--time", now.Format(time.RFC3339)})
+				if testCase.expErrValidation != nil {
+					assert.NoError(t, testCase.expErrValidation(err))
+				}
+			}
+
+			validLayouts := make([]string, 0, len(testCase.layoutsPrecisions))
+			invalidLayouts := make([]string, 0, len(testCase.layoutsPrecisions))
+
+			// TODO: replace with lo.Filter if acceptable
+			for layout, prec := range testCase.layoutsPrecisions {
+				v, err := time.Parse(layout, now.Format(layout))
+				if err != nil || prec == 0 || now.Truncate(prec).UnixNano() != v.Truncate(prec).UnixNano() {
+					invalidLayouts = append(invalidLayouts, layout)
+					continue
+				}
+				validLayouts = append(validLayouts, layout)
+			}
+
+			for _, layout := range validLayouts {
+				err := set.Parse([]string{"--time", now.Format(layout)})
+				assert.NoError(t, err)
+				if !testCase.expRes.IsZero() {
+					assert.Equal(t, testCase.expRes, set.Lookup("time").Value.(flag.Getter).Get())
+				}
+			}
+
+			for range invalidLayouts {
+				err := set.Parse([]string{"--time", now.Format(time.RFC3339)})
+				if testCase.expErrValidation != nil {
+					assert.NoError(t, testCase.expErrValidation(err))
+				}
+			}
+		})
+	}
+}
+
+func TestTimestampFlagApply_ShortenedLayouts(t *testing.T) {
+	now := time.Now().UTC()
+
+	shortenedLayoutsPrecisions := map[string]time.Duration{
+		time.Kitchen:    time.Minute,
+		time.Stamp:      time.Second,
+		time.StampMilli: time.Millisecond,
+		time.StampMicro: time.Microsecond,
+		time.StampNano:  time.Nanosecond,
+		time.TimeOnly:   time.Second,
+		"15:04":         time.Minute,
+	}
+
+	// TODO: replace with maps.Keys() (go >= ), lo.Keys() if acceptable
+	getKeys := func(m map[string]time.Duration) []string {
+		if m == nil {
+			return nil
+		}
+
+		keys := make([]string, 0, len(m))
+		for k := range m {
+			keys = append(keys, k)
+		}
+		return keys
+	}
+
+	fl := TimestampFlag{
+		Name: "time",
+		Config: TimestampConfig{
+			Layouts: getKeys(shortenedLayoutsPrecisions),
+		},
+	}
+
+	set := flag.NewFlagSet("test", 0)
+	_ = fl.Apply(set)
+
+	for layout, prec := range shortenedLayoutsPrecisions {
+		err := set.Parse([]string{"--time", now.Format(layout)})
+		assert.NoError(t, err)
+		assert.Equal(t, now.Truncate(prec), set.Lookup("time").Value.(flag.Getter).Get())
+	}
+}
+
 func TestTimestampFlagApplyValue(t *testing.T) {
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: time.RFC3339}, Value: expectedResult}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layouts: []string{time.RFC3339}}, Value: expectedResult}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
@@ -2296,7 +2515,7 @@ func TestTimestampFlagApplyValue(t *testing.T) {
 }
 
 func TestTimestampFlagApply_Fail_Parse_Wrong_Layout(t *testing.T) {
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: "randomlayout"}}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layouts: []string{"randomlayout"}}}
 	set := flag.NewFlagSet("test", 0)
 	set.SetOutput(io.Discard)
 	_ = fl.Apply(set)
@@ -2306,7 +2525,7 @@ func TestTimestampFlagApply_Fail_Parse_Wrong_Layout(t *testing.T) {
 }
 
 func TestTimestampFlagApply_Fail_Parse_Wrong_Time(t *testing.T) {
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: "Jan 2, 2006 at 3:04pm (MST)"}}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layouts: []string{"Jan 2, 2006 at 3:04pm (MST)"}}}
 	set := flag.NewFlagSet("test", 0)
 	set.SetOutput(io.Discard)
 	_ = fl.Apply(set)
@@ -2318,7 +2537,7 @@ func TestTimestampFlagApply_Fail_Parse_Wrong_Time(t *testing.T) {
 func TestTimestampFlagApply_Timezoned(t *testing.T) {
 	pdt := time.FixedZone("PDT", -7*60*60)
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: time.ANSIC, Timezone: pdt}}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layouts: []string{time.ANSIC}, Timezone: pdt}}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
@@ -2519,7 +2738,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 		},
 		{
 			name:    "timestamp",
-			flag:    &TimestampFlag{Name: "flag", Value: ts, Config: TimestampConfig{Layout: time.RFC3339}, Sources: EnvVars("tflag")},
+			flag:    &TimestampFlag{Name: "flag", Value: ts, Config: TimestampConfig{Layouts: []string{time.RFC3339}}, Sources: EnvVars("tflag")},
 			toParse: []string{"--flag", "2006-11-02T15:04:05Z"},
 			expect:  `--flag value	(default: 2005-01-02 15:04:05 +0000 UTC)` + withEnvHint([]string{"tflag"}, ""),
 			environ: map[string]string{
@@ -2603,7 +2822,7 @@ func TestFlagValue(t *testing.T) {
 func TestTimestampFlagApply_WithDestination(t *testing.T) {
 	var destination time.Time
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
-	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layout: time.RFC3339}, Destination: &destination}
+	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layouts: []string{time.RFC3339}}, Destination: &destination}
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 
