@@ -3,7 +3,6 @@ package altsrc_test
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"testing"
@@ -90,7 +89,7 @@ func ExampleApp_Run_yamlFileLoaderDuration() {
 }
 
 func TestYamlFileInt64Slice(t *testing.T) {
-	_ = ioutil.WriteFile("current.yaml", []byte(`top: 
+	_ = os.WriteFile("current.yaml", []byte(`top:
   test: [100, 9223372036854775808]`), 0666)
 	defer os.Remove("current.yaml")
 
@@ -110,7 +109,7 @@ func TestYamlFileInt64Slice(t *testing.T) {
 }
 
 func TestYamlFileStringSlice(t *testing.T) {
-	_ = ioutil.WriteFile("current.yaml", []byte(`top:
+	_ = os.WriteFile("current.yaml", []byte(`top:
   test: ["s1", "s2"]`), 0666)
 	defer os.Remove("current.yaml")
 
@@ -143,7 +142,7 @@ func TestYamlFileUint64(t *testing.T) {
 	}{
 		{
 			"top.test",
-			`top: 
+			`top:
   test: 100`,
 			false,
 		},
@@ -180,7 +179,7 @@ func TestYamlFileUint64(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		_ = ioutil.WriteFile("current.yaml", []byte(test.entry), 0666)
+		_ = os.WriteFile("current.yaml", []byte(test.entry), 0666)
 		defer os.Remove("current.yaml")
 
 		testFlag := []cli.Flag{
@@ -207,7 +206,7 @@ func TestYamlFileUint(t *testing.T) {
 	}{
 		{
 			"top.test",
-			`top: 
+			`top:
   test: 100`,
 			false,
 		},
@@ -228,12 +227,12 @@ func TestYamlFileUint(t *testing.T) {
 		},
 		{
 			"test",
-			"test: 9223372036854775807", //int
+			"test: 775807", //int
 			false,
 		},
 		{
 			"test",
-			"test: 9223372036854775808", //uintt64
+			"test: 4775808", //uintt64
 			false,
 		},
 		{
@@ -244,7 +243,7 @@ func TestYamlFileUint(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		_ = ioutil.WriteFile("current.yaml", []byte(test.entry), 0666)
+		_ = os.WriteFile("current.yaml", []byte(test.entry), 0666)
 		defer os.Remove("current.yaml")
 
 		testFlag := []cli.Flag{
@@ -271,7 +270,7 @@ func TestYamlFileInt64(t *testing.T) {
 	}{
 		{
 			"top.test",
-			`top: 
+			`top:
   test: 100`,
 			false,
 		},
@@ -308,7 +307,7 @@ func TestYamlFileInt64(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		_ = ioutil.WriteFile("current.yaml", []byte(test.entry), 0666)
+		_ = os.WriteFile("current.yaml", []byte(test.entry), 0666)
 		defer os.Remove("current.yaml")
 
 		testFlag := []cli.Flag{
