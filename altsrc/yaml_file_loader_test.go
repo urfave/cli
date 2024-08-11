@@ -168,7 +168,7 @@ func TestYamlFileUint64(t *testing.T) {
 		},
 		{
 			"test",
-			"test: 9223372036854775808", //uintt64
+			"test: 9223372036854775808", //uint64
 			false,
 		},
 		{
@@ -232,7 +232,7 @@ func TestYamlFileUint(t *testing.T) {
 		},
 		{
 			"test",
-			"test: 4775808", //uintt64
+			"test: 4775808", //uint64
 			false,
 		},
 		{
@@ -296,7 +296,7 @@ func TestYamlFileInt64(t *testing.T) {
 		},
 		{
 			"test",
-			"test: 9223372036854775808", //uintt64
+			"test: 9223372036854775808", //uint64
 			true,
 		},
 		{
