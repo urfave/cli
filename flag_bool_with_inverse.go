@@ -183,10 +183,12 @@ func (parent *BoolWithInverseFlag) String() string {
 	out := FlagStringer(parent)
 	i := strings.Index(out, "\t")
 
+	prefix := "--"
+
 	// single character flags are prefixed with `-` instead of `--`
 	if len(parent.Name) == 1 {
-		return fmt.Sprintf("-[%s]%s%s", parent.inversePrefix(), parent.Name, out[i:])
+		prefix = "-"
 	}
 
-	return fmt.Sprintf("--[%s]%s%s", parent.inversePrefix(), parent.Name, out[i:])
+	return fmt.Sprintf("%s[%s]%s%s", prefix, parent.inversePrefix(), parent.Name, out[i:])
 }

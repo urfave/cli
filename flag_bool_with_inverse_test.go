@@ -406,10 +406,7 @@ func TestBoolWithInverseString(t *testing.T) {
 					Usage:    tc.usage,
 					Required: tc.required,
 				},
-			}
-
-			if tc.inversePrefix != "" {
-				flag.InversePrefix = tc.inversePrefix
+				InversePrefix: tc.inversePrefix,
 			}
 
 			require.Equal(t, tc.expected, flag.String())
