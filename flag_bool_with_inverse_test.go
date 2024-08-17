@@ -389,6 +389,13 @@ func TestBoolWithInverseString(t *testing.T) {
 			inversePrefix: "nope-",
 			expected:      "--[nope-]env\t",
 		},
+		{
+			testName:      "empty inverse prefix",
+			flagName:      "env",
+			required:      true,
+			inversePrefix: "",
+			expected:      "--[no-]env\t",
+		},
 	}
 
 	for _, tc := range tcs {
