@@ -335,9 +335,83 @@ func TestBoolWithInverseNames(t *testing.T) {
 	require.Equal(t, "env", names[0], "expected first name to be `env`")
 	require.Equal(t, "no-env", names[1], "expected first name to be `no-env`")
 
-	flagString := flag.String()
-	require.Contains(t, flagString, "--env")
-	require.Contains(t, flagString, "--no-env")
+	// flagString := flag.String()
+	// require.Contains(t, flagString, "--env")
+	// require.Contains(t, flagString, "--no-env")
+}
+
+func TestBoolWithInverseString(t *testing.T) {
+	tcs := []struct {
+		testName      string
+		flagName      string
+		required      bool
+		usage         string
+		inversePrefix string
+		expected      string
+	}{
+		{
+			testName: "single-char flag name",
+			flagName: "e",
+			required: true,
+			expected: "-[no-]e\t",
+		},
+		{
+			testName: "multi-char flag name",
+			flagName: "env",
+			required: true,
+			expected: "--[no-]env\t",
+		},
+		{
+			testName: "required with usage",
+			flagName: "env",
+			required: true,
+			usage:    "env usage",
+			expected: "--[no-]env\tenv usage",
+		},
+		{
+			testName: "required without usage",
+			flagName: "env",
+			required: true,
+			expected: "--[no-]env\t",
+		},
+		{
+			testName: "not required with default usage",
+			flagName: "env",
+			required: false,
+			expected: "--[no-]env\t(default: false)",
+		},
+		{
+			testName:      "custom inverse prefix",
+			flagName:      "env",
+			required:      true,
+			inversePrefix: "nope-",
+			expected:      "--[nope-]env\t",
+		},
+		{
+			testName: "empty inverse prefix",
+			flagName: "",
+			required: true,
+			expected: "--[no-]\t",
+		},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.testName, func(t *testing.T) {
+			flag := &BoolWithInverseFlag{
+				BoolFlag: &BoolFlag{
+					Name:     tc.flagName,
+					Usage:    tc.usage,
+					Required: tc.required,
+				},
+			}
+
+			if tc.inversePrefix != "" {
+				flag.InversePrefix = tc.inversePrefix
+			}
+
+			require.Equal(t, tc.expected, flag.String())
+		})
+	}
 }
 
 func TestBoolWithInverseDestination(t *testing.T) {
