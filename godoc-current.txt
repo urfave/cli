@@ -283,8 +283,7 @@ func (parent *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) 
 func (parent *BoolWithInverseFlag) String() string
     String implements the standard Stringer interface.
 
-    Example for BoolFlag{Name: "env"} --env (default: false) || --no-env
-    (default: false)
+    Example for BoolFlag{Name: "env"} --[no-]env (default: false)
 
 func (parent *BoolWithInverseFlag) Value() bool
 
