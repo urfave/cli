@@ -334,10 +334,6 @@ func TestBoolWithInverseNames(t *testing.T) {
 	require.Len(t, names, 2)
 	require.Equal(t, "env", names[0], "expected first name to be `env`")
 	require.Equal(t, "no-env", names[1], "expected first name to be `no-env`")
-
-	// flagString := flag.String()
-	// require.Contains(t, flagString, "--env")
-	// require.Contains(t, flagString, "--no-env")
 }
 
 func TestBoolWithInverseString(t *testing.T) {
