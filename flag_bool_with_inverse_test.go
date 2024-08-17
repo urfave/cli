@@ -346,6 +346,12 @@ func TestBoolWithInverseString(t *testing.T) {
 		expected      string
 	}{
 		{
+			testName: "empty inverse prefix",
+			flagName: "",
+			required: true,
+			expected: "--[no-]\t",
+		},
+		{
 			testName: "single-char flag name",
 			flagName: "e",
 			required: true,
@@ -382,12 +388,6 @@ func TestBoolWithInverseString(t *testing.T) {
 			required:      true,
 			inversePrefix: "nope-",
 			expected:      "--[nope-]env\t",
-		},
-		{
-			testName: "empty inverse prefix",
-			flagName: "",
-			required: true,
-			expected: "--[no-]\t",
 		},
 	}
 
