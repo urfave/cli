@@ -3921,6 +3921,7 @@ func TestJSONExportCommand(t *testing.T) {
 
 	expected := `{
 		"name": "greet",
+		"sortCategories": false,
 		"aliases": null,
 		"usage": "Some app",
 		"usageText": "app [first_arg] [second_arg]",
@@ -3932,6 +3933,7 @@ func TestJSONExportCommand(t *testing.T) {
 		"commands": [
 		  {
 			"name": "config",
+			"sortCategories": false, 
 			"aliases": [
 			  "c"
 			],
@@ -3945,6 +3947,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"commands": [
 			  {
 				"name": "sub-config",
+				"sortCategories": false,
 				"aliases": [
 				  "s",
 				  "ss"
@@ -4078,6 +4081,7 @@ func TestJSONExportCommand(t *testing.T) {
 		  },
 		  {
 			"name": "info",
+			"sortCategories": false,
 			"aliases": [
 			  "i",
 			  "in"
@@ -4111,6 +4115,7 @@ func TestJSONExportCommand(t *testing.T) {
 		  },
 		  {
 			"name": "some-command",
+			"sortCategories": false,
 			"aliases": null,
 			"usage": "",
 			"usageText": "",
@@ -4141,6 +4146,7 @@ func TestJSONExportCommand(t *testing.T) {
 		  },
 		  {
 			"name": "hidden-command",
+			"sortCategories": false,
 			"aliases": null,
 			"usage": "",
 			"usageText": "",
@@ -4171,6 +4177,7 @@ func TestJSONExportCommand(t *testing.T) {
 		  },
 		  {
 			"name": "usage",
+			"sortCategories": false,
 			"aliases": [
 			  "u"
 			],
@@ -4184,6 +4191,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"commands": [
 			  {
 				"name": "sub-usage",
+				"sortCategories": false,
 				"aliases": [
 				  "su"
 				],

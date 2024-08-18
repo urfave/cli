@@ -133,7 +133,7 @@ type Command struct {
 	ReadArgsFromStdin bool `json:"readArgsFromStdin"`
 	// If SortCategories is set to true, the categories will be sorted
 	// for the help output in increasing lexicographical order.
-	SortCategories bool
+	SortCategories bool `json:"sortCategories"`
 
 	// categories contains the categorized commands and is populated on app startup
 	categories CommandCategories
