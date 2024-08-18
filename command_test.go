@@ -543,6 +543,7 @@ func TestCommand_VisibleFlagCategories(t *testing.T) {
 				},
 			},
 		}},
+		SortCategories: true,
 	}
 
 	cmd.MutuallyExclusiveFlags[0].propagateCategory()

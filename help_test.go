@@ -1668,6 +1668,7 @@ func TestCategorizedHelp(t *testing.T) {
 				},
 			},
 		},
+		SortCategories: true,
 	}
 
 	HelpPrinter = func(w io.Writer, templ string, data interface{}) {
