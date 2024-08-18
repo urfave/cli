@@ -131,6 +131,9 @@ type Command struct {
 	// Whether to read arguments from stdin
 	// applicable to root command only
 	ReadArgsFromStdin bool `json:"readArgsFromStdin"`
+	// If SortCategories is set to true, the categories will be sorted
+	// for the help output in increasing lexicographical order.
+	SortCategories bool
 
 	// categories contains the categorized commands and is populated on app startup
 	categories CommandCategories
@@ -279,8 +282,10 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 		cmd.categories.AddCommand(subCmd.Category, subCmd)
 	}
 
-	tracef("sorting command categories (cmd=%[1]q)", cmd.Name)
-	sort.Sort(cmd.categories.(*commandCategories))
+	if cmd.SortCategories {
+		tracef("sorting command categories (cmd=%[1]q)", cmd.Name)
+		sort.Sort(cmd.categories.(*commandCategories))
+	}
 
 	tracef("setting category on mutually exclusive flags (cmd=%[1]q)", cmd.Name)
 	for _, grp := range cmd.MutuallyExclusiveFlags {
@@ -288,7 +293,7 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 	}
 
 	tracef("setting flag categories (cmd=%[1]q)", cmd.Name)
-	cmd.flagCategories = newFlagCategoriesFromFlags(cmd.allFlags())
+	cmd.flagCategories = newFlagCategoriesFromFlags(cmd.allFlags(), cmd.SortCategories)
 
 	if cmd.Metadata == nil {
 		tracef("setting default Metadata (cmd=%[1]q)", cmd.Name)
@@ -326,8 +331,10 @@ func (cmd *Command) setupSubcommand() {
 		cmd.categories.AddCommand(subCmd.Category, subCmd)
 	}
 
-	tracef("sorting command categories (cmd=%[1]q)", cmd.Name)
-	sort.Sort(cmd.categories.(*commandCategories))
+	if cmd.SortCategories {
+		tracef("sorting command categories (cmd=%[1]q)", cmd.Name)
+		sort.Sort(cmd.categories.(*commandCategories))
+	}
 
 	tracef("setting category on mutually exclusive flags (cmd=%[1]q)", cmd.Name)
 	for _, grp := range cmd.MutuallyExclusiveFlags {
@@ -335,7 +342,7 @@ func (cmd *Command) setupSubcommand() {
 	}
 
 	tracef("setting flag categories (cmd=%[1]q)", cmd.Name)
-	cmd.flagCategories = newFlagCategoriesFromFlags(cmd.allFlags())
+	cmd.flagCategories = newFlagCategoriesFromFlags(cmd.allFlags(), cmd.SortCategories)
 }
 
 func (cmd *Command) ensureHelp() {
@@ -852,7 +859,7 @@ func (cmd *Command) VisibleCommands() []*Command {
 // VisibleFlagCategories returns a slice containing all the visible flag categories with the flags they contain
 func (cmd *Command) VisibleFlagCategories() []VisibleFlagCategory {
 	if cmd.flagCategories == nil {
-		cmd.flagCategories = newFlagCategoriesFromFlags(cmd.allFlags())
+		cmd.flagCategories = newFlagCategoriesFromFlags(cmd.allFlags(), cmd.SortCategories)
 	}
 	return cmd.flagCategories.VisibleCategories()
 }

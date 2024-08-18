@@ -89,17 +89,19 @@ type FlagCategories interface {
 }
 
 type defaultFlagCategories struct {
-	m map[string]*defaultVisibleFlagCategory
+	m              map[string]*defaultVisibleFlagCategory
+	sortCategories bool
 }
 
-func newFlagCategories() FlagCategories {
+func newFlagCategories(sortCategories bool) FlagCategories {
 	return &defaultFlagCategories{
-		m: map[string]*defaultVisibleFlagCategory{},
+		m:              map[string]*defaultVisibleFlagCategory{},
+		sortCategories: sortCategories,
 	}
 }
 
-func newFlagCategoriesFromFlags(fs []Flag) FlagCategories {
-	fc := newFlagCategories()
+func newFlagCategoriesFromFlags(fs []Flag, sortCategories bool) FlagCategories {
+	fc := newFlagCategories(sortCategories)
 
 	var categorized bool
 
@@ -135,7 +137,7 @@ func newFlagCategoriesFromFlags(fs []Flag) FlagCategories {
 
 func (f *defaultFlagCategories) AddFlag(category string, fl Flag) {
 	if _, ok := f.m[category]; !ok {
-		f.m[category] = &defaultVisibleFlagCategory{name: category, m: map[string]Flag{}}
+		f.m[category] = &defaultVisibleFlagCategory{name: category, m: map[string]Flag{}, sortCategories: f.sortCategories}
 	}
 
 	f.m[category].m[fl.String()] = fl
@@ -147,7 +149,9 @@ func (f *defaultFlagCategories) VisibleCategories() []VisibleFlagCategory {
 		catNames = append(catNames, name)
 	}
 
-	sort.Strings(catNames)
+	if f.sortCategories {
+		sort.Strings(catNames)
+	}
 
 	ret := make([]VisibleFlagCategory, len(catNames))
 	for i, name := range catNames {
@@ -166,8 +170,9 @@ type VisibleFlagCategory interface {
 }
 
 type defaultVisibleFlagCategory struct {
-	name string
-	m    map[string]Flag
+	name           string
+	m              map[string]Flag
+	sortCategories bool
 }
 
 func (fc *defaultVisibleFlagCategory) Name() string {
@@ -184,7 +189,9 @@ func (fc *defaultVisibleFlagCategory) Flags() []Flag {
 		}
 	}
 
-	sort.Strings(vfNames)
+	if fc.sortCategories {
+		sort.Strings(vfNames)
+	}
 
 	ret := make([]Flag, len(vfNames))
 	for i, flName := range vfNames {
