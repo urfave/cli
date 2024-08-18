@@ -1708,6 +1708,124 @@ GLOBAL OPTIONS:
 `, output.String())
 }
 
+func TestCategorizedHelpWithSortCategories(t *testing.T) {
+	tcs := []struct {
+		name           string
+		sortCategories bool
+		expected       string
+	}{
+		{
+			name:           "SortCategories=true",
+			sortCategories: true,
+			expected: `NAME:
+   test - A new cli
+          application
+
+USAGE:
+   test [global options] [command [command options]] [arguments...]
+
+COMMANDS:
+   help, h  Shows a list of
+            commands or help
+            for one command
+
+GLOBAL OPTIONS:
+   --help, -h  show help
+
+   A
+
+   --A_flag_1 value  
+   --A_flag_2 value  
+
+   B
+
+   --B_flag_1 value  
+   --B_flag_2 value  
+
+`,
+		},
+		{
+			name:           "SortCategories=false",
+			sortCategories: false,
+			expected: `NAME:
+   test - A new cli
+          application
+
+USAGE:
+   test [global options] [command [command options]] [arguments...]
+
+COMMANDS:
+   help, h  Shows a list of
+            commands or help
+            for one command
+
+GLOBAL OPTIONS:
+   B
+
+   --B_flag_2 value  
+   --B_flag_1 value  
+
+   A
+
+   --A_flag_1 value  
+   --A_flag_2 value  
+
+   --help, -h  show help
+
+`},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			// Reset HelpPrinter after this test.
+			defer func(old helpPrinter) {
+				HelpPrinter = old
+			}(HelpPrinter)
+
+			output := new(bytes.Buffer)
+			cmd := &Command{
+				Name:   "test",
+				Writer: output,
+				Flags: []Flag{
+					&StringFlag{
+						Name:     "B_flag_2",
+						Category: "B",
+					},
+					&StringFlag{
+						Name:     "B_flag_1",
+						Category: "B",
+					},
+					&StringFlag{
+						Name:     "A_flag_1",
+						Category: "A",
+					},
+					&StringFlag{
+						Name:     "A_flag_2",
+						Category: "A",
+					},
+				},
+				Action:         func(context.Context, *Command) error { return nil },
+				SortCategories: tc.sortCategories,
+			}
+
+			HelpPrinter = func(w io.Writer, templ string, data interface{}) {
+				funcMap := map[string]interface{}{
+					"wrapAt": func() int {
+						return 30
+					},
+				}
+
+				HelpPrinterCustom(w, templ, data, funcMap)
+			}
+
+			r := require.New(t)
+			r.NoError(cmd.Run(buildTestContext(t), []string{"cli.test", "help"}))
+
+			r.Equal(tc.expected, output.String())
+		})
+	}
+}
+
 func Test_checkShellCompleteFlag(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
