@@ -1763,8 +1763,8 @@ COMMANDS:
 GLOBAL OPTIONS:
    B
 
-   --B_flag_2 value  
    --B_flag_1 value  
+   --B_flag_2 value  
 
    A
 

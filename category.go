@@ -137,7 +137,7 @@ func newFlagCategoriesFromFlags(fs []Flag, sortCategories bool) FlagCategories {
 
 func (f *defaultFlagCategories) AddFlag(category string, fl Flag) {
 	if _, ok := f.m[category]; !ok {
-		f.m[category] = &defaultVisibleFlagCategory{name: category, m: map[string]Flag{}, sortCategories: f.sortCategories}
+		f.m[category] = &defaultVisibleFlagCategory{name: category, m: map[string]Flag{}}
 	}
 
 	f.m[category].m[fl.String()] = fl
@@ -170,9 +170,8 @@ type VisibleFlagCategory interface {
 }
 
 type defaultVisibleFlagCategory struct {
-	name           string
-	m              map[string]Flag
-	sortCategories bool
+	name string
+	m    map[string]Flag
 }
 
 func (fc *defaultVisibleFlagCategory) Name() string {
@@ -189,9 +188,7 @@ func (fc *defaultVisibleFlagCategory) Flags() []Flag {
 		}
 	}
 
-	if fc.sortCategories {
-		sort.Strings(vfNames)
-	}
+	sort.Strings(vfNames)
 
 	ret := make([]Flag, len(vfNames))
 	for i, flName := range vfNames {
