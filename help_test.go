@@ -1773,7 +1773,8 @@ GLOBAL OPTIONS:
 
    --help, -h  show help
 
-`},
+`,
+		},
 	}
 
 	for _, tc := range tcs {
