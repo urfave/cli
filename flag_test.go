@@ -1078,7 +1078,7 @@ func TestIntSliceFlagApply_ParentContext(t *testing.T) {
 			{
 				Name: "child",
 				Action: func(_ context.Context, cmd *Command) error {
-					require.Equalf(t, []int64{1, 2, 3}, cmd.IntSlice("numbers"), "child context unable to view parent flag")
+					itesting.RequireEqualf(t, []int64{1, 2, 3}, cmd.IntSlice("numbers"), "child context unable to view parent flag")
 
 					return nil
 				},
@@ -1098,7 +1098,7 @@ func TestIntSliceFlag_SetFromParentCommand(t *testing.T) {
 		flagSet: flag.NewFlagSet("empty", 0),
 	}
 
-	require.Equalf(t, []int64{1, 2, 3, 4}, cmd.IntSlice("numbers"), "child context unable to view parent flag")
+	itesting.RequireEqualf(t, []int64{1, 2, 3, 4}, cmd.IntSlice("numbers"), "child context unable to view parent flag")
 }
 
 func TestIntSliceFlagValueFromCommand(t *testing.T) {
@@ -1205,7 +1205,7 @@ func TestUintSliceFlagApply_ParentContext(t *testing.T) {
 			{
 				Name: "child",
 				Action: func(_ context.Context, cmd *Command) error {
-					require.Equalf(
+					itesting.RequireEqualf(
 						t, []uint64{1, 2, 3}, cmd.UintSlice("numbers"),
 						"child context unable to view parent flag",
 					)
@@ -1350,7 +1350,7 @@ func TestUint64SliceFlagApply_ParentCommand(t *testing.T) {
 			{
 				Name: "child",
 				Action: func(_ context.Context, cmd *Command) error {
-					require.Equalf(
+					itesting.RequireEqualf(
 						t, []uint64{1, 2, 3}, cmd.UintSlice("numbers"),
 						"child context unable to view parent flag",
 					)
@@ -1549,7 +1549,7 @@ func TestFloat64SliceFlagApply_ParentCommand(t *testing.T) {
 			{
 				Name: "child",
 				Action: func(_ context.Context, cmd *Command) error {
-					require.Equalf(t, []float64{1.0, 2.0, 3.0}, cmd.FloatSlice("numbers"), "child context unable to view parent flag")
+					itesting.RequireEqualf(t, []float64{1.0, 2.0, 3.0}, cmd.FloatSlice("numbers"), "child context unable to view parent flag")
 					return nil
 				},
 			},
@@ -2038,7 +2038,7 @@ func TestParseMultiFloat64SliceFromEnv(t *testing.T) {
 			&FloatSliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: []float64{}, Sources: EnvVars("APP_INTERVALS")},
 		},
 		Action: func(_ context.Context, cmd *Command) error {
-			require.Equalf(t, []float64{0.1, -10.5}, cmd.FloatSlice("intervals"), "main name not set from env")
+			itesting.RequireEqualf(t, []float64{0.1, -10.5}, cmd.FloatSlice("intervals"), "main name not set from env")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run"})
@@ -2052,7 +2052,7 @@ func TestParseMultiFloat64SliceFromEnvCascade(t *testing.T) {
 			&FloatSliceFlag{Name: "intervals", Aliases: []string{"i"}, Value: []float64{}, Sources: EnvVars("COMPAT_INTERVALS", "APP_INTERVALS")},
 		},
 		Action: func(_ context.Context, cmd *Command) error {
-			require.Equalf(t, []float64{0.1234, -10.5}, cmd.FloatSlice("intervals"), "main name not set from env")
+			itesting.RequireEqualf(t, []float64{0.1234, -10.5}, cmd.FloatSlice("intervals"), "main name not set from env")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run"})
