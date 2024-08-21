@@ -18,6 +18,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	itesting "github.com/urfave/cli/v3/internal/testing"
 )
 
 var (
@@ -328,7 +330,7 @@ func TestCommand_OnUsageError_hasCommandContext(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"bar", "--flag=wrong"})
-	assert.ErrorContains(t, err, "intercepted in bar")
+	itesting.ErrorContains(t, err, "intercepted in bar")
 }
 
 func TestCommand_OnUsageError_WithWrongFlagValue(t *testing.T) {
@@ -338,13 +340,13 @@ func TestCommand_OnUsageError_WithWrongFlagValue(t *testing.T) {
 			&IntFlag{Name: "flag"},
 		},
 		OnUsageError: func(_ context.Context, _ *Command, err error, _ bool) error {
-			assert.ErrorContains(t, err, "invalid value \"wrong\"")
+			itesting.ErrorContains(t, err, "invalid value \"wrong\"")
 			return errors.New("intercepted: " + err.Error())
 		},
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"bar", "--flag=wrong"})
-	assert.ErrorContains(t, err, "intercepted: invalid value")
+	itesting.ErrorContains(t, err, "intercepted: invalid value")
 }
 
 func TestCommand_OnUsageError_WithSubcommand(t *testing.T) {
@@ -359,7 +361,7 @@ func TestCommand_OnUsageError_WithSubcommand(t *testing.T) {
 			&IntFlag{Name: "flag"},
 		},
 		OnUsageError: func(_ context.Context, _ *Command, err error, _ bool) error {
-			assert.ErrorContains(t, err, "invalid value \"wrong\"")
+			itesting.ErrorContains(t, err, "invalid value \"wrong\"")
 			return errors.New("intercepted: " + err.Error())
 		},
 	}
@@ -2022,7 +2024,7 @@ func TestCommand_Run_Help(t *testing.T) {
 
 			err := cmd.Run(buildTestContext(t), tt.helpArguments)
 			if tt.wantErr != nil {
-				assert.ErrorContains(t, err, tt.wantErr.Error())
+				itesting.ErrorContains(t, err, tt.wantErr.Error())
 			}
 
 			output := buf.String()
@@ -2220,8 +2222,8 @@ func TestCommand_Run_SubcommandDoesNotOverwriteErrorFromBefore(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", "bar"})
-	assert.ErrorContains(t, err, "before error")
-	assert.ErrorContains(t, err, "after error")
+	itesting.ErrorContains(t, err, "before error")
+	itesting.ErrorContains(t, err, "after error")
 }
 
 func TestCommand_OnUsageError_WithWrongFlagValue_ForSubcommand(t *testing.T) {
@@ -2231,7 +2233,7 @@ func TestCommand_OnUsageError_WithWrongFlagValue_ForSubcommand(t *testing.T) {
 		},
 		OnUsageError: func(_ context.Context, _ *Command, err error, isSubcommand bool) error {
 			assert.False(t, isSubcommand, "Expect subcommand")
-			assert.ErrorContains(t, err, "invalid value \"wrong\"")
+			itesting.ErrorContains(t, err, "invalid value \"wrong\"")
 			return errors.New("intercepted: " + err.Error())
 		},
 		Commands: []*Command{
@@ -2242,7 +2244,7 @@ func TestCommand_OnUsageError_WithWrongFlagValue_ForSubcommand(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", "--flag=wrong", "bar"})
-	assert.ErrorContains(t, err, "intercepted: invalid value", "Expect an intercepted error")
+	itesting.ErrorContains(t, err, "intercepted: invalid value", "Expect an intercepted error")
 }
 
 // A custom flag that conforms to the relevant interfaces, but has none of the
@@ -3723,7 +3725,7 @@ func TestCheckRequiredFlags(t *testing.T) {
 			}
 			for _, errString := range test.expectedErrorContents {
 				if err != nil {
-					assert.ErrorContains(t, err, errString)
+					itesting.ErrorContains(t, err, errString)
 				}
 			}
 		})

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	itesting "github.com/urfave/cli/v3/internal/testing"
@@ -23,7 +22,7 @@ func TestCompletionEnable(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName})
-	assert.ErrorContains(t, err, "no shell provided")
+	itesting.ErrorContains(t, err, "no shell provided")
 }
 
 func TestCompletionEnableDiffCommandName(t *testing.T) {
@@ -33,7 +32,7 @@ func TestCompletionEnableDiffCommandName(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", "junky"})
-	assert.ErrorContains(t, err, "no shell provided")
+	itesting.ErrorContains(t, err, "no shell provided")
 }
 
 func TestCompletionShell(t *testing.T) {
@@ -106,5 +105,5 @@ func TestCompletionInvalidShell(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, "junky-sheell"})
-	assert.ErrorContains(t, err, "unknown shell junky-sheell")
+	itesting.ErrorContains(t, err, "unknown shell junky-sheell")
 }
