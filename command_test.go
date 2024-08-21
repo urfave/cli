@@ -1333,7 +1333,7 @@ func TestCommand_SetStdout(t *testing.T) {
 
 	err := cmd.Run(buildTestContext(t), []string{"help"})
 	require.NoError(t, err)
-	assert.NotZero(t, w.Len(), "Command did not write output to desired writer.")
+	itesting.NotZero(t, w.Len(), "Command did not write output to desired writer.")
 }
 
 func TestCommand_BeforeFunc(t *testing.T) {
@@ -1403,7 +1403,7 @@ func TestCommand_BeforeFunc(t *testing.T) {
 	}
 
 	itesting.Equal(t, 1, counts.Before, "Before() not executed when expected")
-	assert.Zero(t, counts.SubCommand, "Subcommand executed when NOT expected")
+	itesting.Zero(t, counts.SubCommand, "Subcommand executed when NOT expected")
 }
 
 func TestCommand_BeforeAfterFuncShellCompletion(t *testing.T) {
