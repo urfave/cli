@@ -122,7 +122,7 @@ func Test_Help_Custom_Flags(t *testing.T) {
 	}
 
 	_ = cmd.Run(buildTestContext(t), []string{"test", "-h"})
-	require.Len(t, out.String(), 0)
+	itesting.RequireLen(t, out.String(), 0)
 }
 
 func Test_Help_Nil_Flags(t *testing.T) {
@@ -140,7 +140,7 @@ func Test_Help_Nil_Flags(t *testing.T) {
 	out := new(bytes.Buffer)
 	cmd.Writer = out
 	_ = cmd.Run(buildTestContext(t), []string{"test"})
-	require.Len(t, out.String(), 0)
+	itesting.RequireLen(t, out.String(), 0)
 }
 
 func Test_Version_Custom_Flags(t *testing.T) {
@@ -168,7 +168,7 @@ func Test_Version_Custom_Flags(t *testing.T) {
 	}
 
 	_ = cmd.Run(buildTestContext(t), []string{"test", "-v"})
-	require.Len(t, out.String(), 0)
+	itesting.RequireLen(t, out.String(), 0)
 }
 
 func Test_helpCommand_Action_ErrorIfNoTopic(t *testing.T) {

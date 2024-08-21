@@ -333,7 +333,7 @@ func TestBoolWithInverseNames(t *testing.T) {
 	}
 	names := flag.Names()
 
-	require.Len(t, names, 2)
+	itesting.RequireLen(t, names, 2)
 	itesting.RequireEqual(t, "env", names[0], "expected first name to be `env`")
 	itesting.RequireEqual(t, "no-env", names[1], "expected first name to be `no-env`")
 }
