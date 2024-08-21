@@ -633,9 +633,9 @@ func TestCommand_Command(t *testing.T) {
 
 	for _, test := range commandTests {
 		if test.expected {
-			assert.NotEmpty(t, cmd.Command(test.name))
+			itesting.NotEmpty(t, cmd.Command(test.name))
 		} else {
-			assert.Empty(t, cmd.Command(test.name))
+			itesting.Empty(t, cmd.Command(test.name))
 		}
 	}
 }
@@ -2202,7 +2202,7 @@ func TestCommand_VisibleCategories(t *testing.T) {
 	}
 
 	cmd.setupDefaults([]string{"cli.test"})
-	assert.Empty(t, cmd.VisibleCategories())
+	itesting.Empty(t, cmd.VisibleCategories())
 }
 
 func TestCommand_Run_SubcommandDoesNotOverwriteErrorFromBefore(t *testing.T) {

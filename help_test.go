@@ -1324,7 +1324,7 @@ func TestMutuallyExclusiveFlags(t *testing.T) {
 
 func TestWrap(t *testing.T) {
 	emptywrap := wrap("", 4, 16)
-	assert.Empty(t, emptywrap, "Wrapping empty line should return empty line")
+	itesting.Empty(t, emptywrap, "Wrapping empty line should return empty line")
 }
 
 func TestWrappedHelp(t *testing.T) {
