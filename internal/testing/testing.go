@@ -65,6 +65,23 @@ func ErrorIs(t *testing.T, err, target error, msgAndArgs ...interface{}) bool {
 	), msgAndArgs...)
 }
 
+func EqualError(t *testing.T, theError error, errString string, msgAndArgs ...interface{}) bool {
+	t.Helper()
+
+	if !Error(t, theError, msgAndArgs...) {
+		return false
+	}
+	expected := errString
+	actual := theError.Error()
+	// don't need to use deep equals here, we know they are both strings
+	if expected != actual {
+		return fail(t, fmt.Sprintf("Error message not equal:\n"+
+			"expected: %q\n"+
+			"actual  : %q", expected, actual), msgAndArgs...)
+	}
+	return true
+}
+
 // fail reports a failure through
 func fail(t *testing.T, failureMessage string, msgAndArgs ...interface{}) bool {
 	t.Helper()
