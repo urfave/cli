@@ -24,6 +24,16 @@ func NoError(t *testing.T, err error, msgAndArgs ...interface{}) bool {
 	return true
 }
 
+func RequireNoError(t *testing.T, err error, msgAndArgs ...interface{}) {
+	t.Helper()
+
+	if NoError(t, err, msgAndArgs...) {
+		return
+	}
+
+	t.FailNow()
+}
+
 func Error(t *testing.T, err error, msgAndArgs ...interface{}) bool {
 	if err == nil {
 		t.Helper()
@@ -31,6 +41,16 @@ func Error(t *testing.T, err error, msgAndArgs ...interface{}) bool {
 	}
 
 	return true
+}
+
+func RequireError(t *testing.T, err error, msgAndArgs ...interface{}) {
+	t.Helper()
+
+	if Error(t, err, msgAndArgs...) {
+		return
+	}
+
+	t.FailNow()
 }
 
 func ErrorContains(t *testing.T, theError error, contains string, msgAndArgs ...interface{}) bool {
