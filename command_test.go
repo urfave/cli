@@ -1382,7 +1382,7 @@ func TestCommand_BeforeFunc(t *testing.T) {
 	err = cmd.Run(buildTestContext(t), []string{"command", "--opt", "fail", "sub"})
 
 	// should be the same error produced by the Before func
-	assert.ErrorIs(t, err, beforeError, "Run error expected, but not received")
+	itesting.ErrorIs(t, err, beforeError, "Run error expected, but not received")
 	assert.Equal(t, 1, counts.Before, "Before() not executed when expected")
 	assert.Equal(t, 0, counts.SubCommand, "Subcommand executed when NOT expected")
 
@@ -1502,7 +1502,7 @@ func TestCommand_AfterFunc(t *testing.T) {
 	err = cmd.Run(buildTestContext(t), []string{"command", "--opt", "fail", "sub"})
 
 	// should be the same error produced by the Before func
-	assert.ErrorIs(t, err, afterError, "Run error expected, but not received")
+	itesting.ErrorIs(t, err, afterError, "Run error expected, but not received")
 	assert.Equal(t, 2, counts.After, "After() not executed when expected")
 	assert.Equal(t, 1, counts.SubCommand, "Subcommand not executed when expected")
 
@@ -1537,7 +1537,7 @@ func TestCommandNoHelpFlag(t *testing.T) {
 
 	err := cmd.Run(buildTestContext(t), []string{"test", "-h"})
 
-	assert.ErrorIs(t, err, flag.ErrHelp, "expected error about missing help flag")
+	itesting.ErrorIs(t, err, flag.ErrHelp, "expected error about missing help flag")
 }
 
 func TestRequiredFlagCommandRunBehavior(t *testing.T) {
