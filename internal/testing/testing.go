@@ -3,6 +3,7 @@ package testing
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"runtime"
 	"strings"
@@ -42,6 +43,26 @@ func ErrorContains(t *testing.T, theError error, contains string, msgAndArgs ...
 	}
 
 	return true
+}
+
+func ErrorIs(t *testing.T, err, target error, msgAndArgs ...interface{}) bool {
+	t.Helper()
+
+	if errors.Is(err, target) {
+		return true
+	}
+
+	var expectedText string
+	if target != nil {
+		expectedText = target.Error()
+	}
+
+	chain := buildErrorChainString(err)
+
+	return fail(t, fmt.Sprintf("Target error should be in err chain:\n"+
+		"expected: %q\n"+
+		"in chain: %s", expectedText, chain,
+	), msgAndArgs...)
 }
 
 // fail reports a failure through
@@ -206,4 +227,18 @@ func indentMessageLines(message string, longestLabelLen int) string {
 	}
 
 	return outBuf.String()
+}
+
+func buildErrorChainString(err error) string {
+	if err == nil {
+		return ""
+	}
+
+	e := errors.Unwrap(err)
+	chain := fmt.Sprintf("%q", err.Error())
+	for e != nil {
+		chain += fmt.Sprintf("\n\t%q", e.Error())
+		e = errors.Unwrap(e)
+	}
+	return chain
 }
