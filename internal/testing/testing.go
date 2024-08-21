@@ -168,6 +168,14 @@ func NotEmpty(t *testing.T, object interface{}, msgAndArgs ...interface{}) bool 
 	return pass
 }
 
+func Nil(t *testing.T, object interface{}, msgAndArgs ...interface{}) bool {
+	if isNil(object) {
+		return true
+	}
+	t.Helper()
+	return fail(t, fmt.Sprintf("Expected nil, but got: %#v", object), msgAndArgs...)
+}
+
 // fail reports a failure through
 func fail(t *testing.T, failureMessage string, msgAndArgs ...interface{}) bool {
 	t.Helper()
@@ -485,4 +493,35 @@ func isEmpty(object interface{}) bool {
 		zero := reflect.Zero(objValue.Type())
 		return reflect.DeepEqual(object, zero.Interface())
 	}
+}
+
+func isNil(object interface{}) bool {
+	if object == nil {
+		return true
+	}
+
+	value := reflect.ValueOf(object)
+	kind := value.Kind()
+	isNilableKind := containsKind(
+		[]reflect.Kind{
+			reflect.Chan, reflect.Func,
+			reflect.Interface, reflect.Map,
+			reflect.Ptr, reflect.Slice, reflect.UnsafePointer},
+		kind)
+
+	if isNilableKind && value.IsNil() {
+		return true
+	}
+
+	return false
+}
+
+func containsKind(kinds []reflect.Kind, kind reflect.Kind) bool {
+	for i := 0; i < len(kinds); i++ {
+		if kind == kinds[i] {
+			return true
+		}
+	}
+
+	return false
 }
