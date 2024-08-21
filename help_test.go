@@ -184,7 +184,7 @@ func Test_helpCommand_Action_ErrorIfNoTopic(t *testing.T) {
 	exitErr, ok := err.(*exitError)
 	itesting.RequireTrue(t, ok, "expected *exitError from helpCommandAction()")
 
-	require.Contains(t, exitErr.Error(), "No help topic for", "expected an unknown help topic error")
+	itesting.RequireContains(t, exitErr.Error(), "No help topic for", "expected an unknown help topic error")
 	itesting.RequireEqual(t, 3, exitErr.exitCode, "expected exit value = 3")
 }
 
@@ -197,8 +197,8 @@ func Test_helpCommand_InHelpOutput(t *testing.T) {
 
 	s := output.String()
 
-	require.NotContains(t, s, "\nCOMMANDS:\nGLOBAL OPTIONS:\n", "empty COMMANDS section detected")
-	require.Contains(t, s, "help, h", "missing \"help, h\"")
+	itesting.RequireNotContains(t, s, "\nCOMMANDS:\nGLOBAL OPTIONS:\n", "empty COMMANDS section detected")
+	itesting.RequireContains(t, s, "help, h", "missing \"help, h\"")
 }
 
 func TestHelpCommand_FullName(t *testing.T) {
@@ -304,7 +304,7 @@ func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 	exitErr, ok := err.(*exitError)
 	itesting.RequireTrue(t, ok, "expected *exitError from helpCommandAction(), but instead got: %v", err.Error())
 
-	require.Contains(t, exitErr.Error(), "No help topic for", "expected an unknown help topic error")
+	itesting.RequireContains(t, exitErr.Error(), "No help topic for", "expected an unknown help topic error")
 	itesting.RequireEqual(t, 3, exitErr.exitCode, "unexpected exit value")
 }
 
@@ -325,7 +325,7 @@ func TestShowAppHelp_CommandAliases(t *testing.T) {
 	}
 
 	_ = cmd.Run(buildTestContext(t), []string{"foo", "--help"})
-	require.Contains(t, out.String(), "frobbly, fr, frob")
+	itesting.RequireContains(t, out.String(), "frobbly, fr, frob")
 }
 
 func TestShowCommandHelp_AppendHelp(t *testing.T) {
@@ -576,7 +576,7 @@ func TestShowCommandHelp_CommandAliases(t *testing.T) {
 	}
 
 	_ = cmd.Run(buildTestContext(t), []string{"foo", "help", "fr"})
-	require.Contains(t, out.String(), "frobbly")
+	itesting.RequireContains(t, out.String(), "frobbly")
 }
 
 func TestShowSubcommandHelp_CommandAliases(t *testing.T) {

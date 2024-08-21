@@ -8,6 +8,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	itesting "github.com/urfave/cli/v3/internal/testing"
 )
 
 func TestEnvVarValueSource(t *testing.T) {

@@ -1963,8 +1963,8 @@ func TestCommand_Run_SubcommandFullPath(t *testing.T) {
 	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"foo", "bar", "--help"}))
 
 	outString := out.String()
-	require.Contains(t, outString, "foo bar - does bar things")
-	require.Contains(t, outString, "foo bar [command [command options]] [arguments...]")
+	itesting.RequireContains(t, outString, "foo bar - does bar things")
+	itesting.RequireContains(t, outString, "foo bar [command [command options]] [arguments...]")
 }
 
 func TestCommand_Run_Help(t *testing.T) {
