@@ -176,6 +176,14 @@ func Nil(t *testing.T, object interface{}, msgAndArgs ...interface{}) bool {
 	return fail(t, fmt.Sprintf("Expected nil, but got: %#v", object), msgAndArgs...)
 }
 
+func NotNil(t *testing.T, object interface{}, msgAndArgs ...interface{}) bool {
+	if !isNil(object) {
+		return true
+	}
+	t.Helper()
+	return fail(t, "Expected value not to be nil.", msgAndArgs...)
+}
+
 // fail reports a failure through
 func fail(t *testing.T, failureMessage string, msgAndArgs ...interface{}) bool {
 	t.Helper()
