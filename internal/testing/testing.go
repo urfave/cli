@@ -113,6 +113,22 @@ func RequireEqual(t *testing.T, expected, actual interface{}, msgAndArgs ...inte
 	t.FailNow()
 }
 
+func Equalf(t *testing.T, expected interface{}, actual interface{}, msg string, args ...interface{}) bool {
+	t.Helper()
+
+	return Equal(t, expected, actual, append([]interface{}{msg}, args...)...)
+}
+
+func RequireEqualf(t *testing.T, expected interface{}, actual interface{}, msg string, args ...interface{}) {
+	t.Helper()
+
+	if Equalf(t, expected, actual, msg, args...) {
+		return
+	}
+
+	t.FailNow()
+}
+
 func Contains(t *testing.T, s, contains interface{}, msgAndArgs ...interface{}) bool {
 	t.Helper()
 
