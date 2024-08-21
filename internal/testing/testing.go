@@ -206,6 +206,16 @@ func True(t *testing.T, value bool, msgAndArgs ...interface{}) bool {
 	return true
 }
 
+func RequireTrue(t *testing.T, value bool, msgAndArgs ...interface{}) {
+	t.Helper()
+
+	if True(t, value, msgAndArgs...) {
+		return
+	}
+
+	t.FailNow()
+}
+
 func False(t *testing.T, value bool, msgAndArgs ...interface{}) bool {
 	if value {
 		t.Helper()
@@ -213,6 +223,16 @@ func False(t *testing.T, value bool, msgAndArgs ...interface{}) bool {
 	}
 
 	return true
+}
+
+func RequireFalse(t *testing.T, value bool, msgAndArgs ...interface{}) {
+	t.Helper()
+
+	if False(t, value, msgAndArgs...) {
+		return
+	}
+
+	t.FailNow()
 }
 
 func Empty(t *testing.T, object interface{}, msgAndArgs ...interface{}) bool {
