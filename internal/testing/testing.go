@@ -85,6 +85,16 @@ func EqualError(t *testing.T, theError error, errString string, msgAndArgs ...in
 	return true
 }
 
+func RequireEqualError(t *testing.T, theError error, errString string, msgAndArgs ...interface{}) {
+	t.Helper()
+
+	if EqualError(t, theError, errString, msgAndArgs...) {
+		return
+	}
+
+	t.FailNow()
+}
+
 func Equal(t *testing.T, expected, actual interface{}, msgAndArgs ...interface{}) bool {
 	t.Helper()
 
