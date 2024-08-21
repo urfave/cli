@@ -130,6 +130,24 @@ func NotContains(t *testing.T, s, contains interface{}, msgAndArgs ...interface{
 	return true
 }
 
+func True(t *testing.T, value bool, msgAndArgs ...interface{}) bool {
+	if !value {
+		t.Helper()
+		return fail(t, "Should be true", msgAndArgs...)
+	}
+
+	return true
+}
+
+func False(t *testing.T, value bool, msgAndArgs ...interface{}) bool {
+	if value {
+		t.Helper()
+		return fail(t, "Should be false", msgAndArgs...)
+	}
+
+	return true
+}
+
 // fail reports a failure through
 func fail(t *testing.T, failureMessage string, msgAndArgs ...interface{}) bool {
 	t.Helper()
