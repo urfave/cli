@@ -183,6 +183,16 @@ func Contains(t *testing.T, s, contains interface{}, msgAndArgs ...interface{}) 
 	return true
 }
 
+func RequireContains(t *testing.T, s, contains interface{}, msgAndArgs ...interface{}) {
+	t.Helper()
+
+	if Contains(t, s, contains, msgAndArgs...) {
+		return
+	}
+
+	t.FailNow()
+}
+
 func NotContains(t *testing.T, s, contains interface{}, msgAndArgs ...interface{}) bool {
 	t.Helper()
 
@@ -195,6 +205,16 @@ func NotContains(t *testing.T, s, contains interface{}, msgAndArgs ...interface{
 	}
 
 	return true
+}
+
+func RequireNotContains(t *testing.T, s, contains interface{}, msgAndArgs ...interface{}) {
+	t.Helper()
+
+	if NotContains(t, s, contains, msgAndArgs...) {
+		return
+	}
+
+	t.FailNow()
 }
 
 func True(t *testing.T, value bool, msgAndArgs ...interface{}) bool {
