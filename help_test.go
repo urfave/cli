@@ -13,6 +13,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	itesting "github.com/urfave/cli/v3/internal/testing"
 )
 
 func Test_ShowAppHelp_NoAuthor(t *testing.T) {
@@ -279,7 +281,7 @@ func Test_helpCommand_HideHelpCommand(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"app", "help", "help"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	got := buf.String()
 	notWant := "COMMANDS:"
 	assert.NotContains(t, got, notWant)
@@ -1100,7 +1102,7 @@ func TestHideHelpCommand(t *testing.T) {
 	require.ErrorContains(t, err, "No help topic for 'help'")
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "--help"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 }
 
 func TestHideHelpCommand_False(t *testing.T) {
@@ -1110,10 +1112,10 @@ func TestHideHelpCommand_False(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", "help"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "--help"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 }
 
 func TestHideHelpCommand_WithHideHelp(t *testing.T) {

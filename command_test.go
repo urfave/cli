@@ -481,7 +481,7 @@ func TestCommand_CanAddVFlagOnSubCommands(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", "bar"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 }
 
 func TestCommand_VisibleSubcCommands(t *testing.T) {
@@ -586,7 +586,7 @@ func TestCommand_RunSubcommandWithDefault(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"app", "bar"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 
 	err = cmd.Run(buildTestContext(t), []string{"app"})
 	assert.EqualError(t, err, "should not run this subcommand")
@@ -603,9 +603,9 @@ func TestCommand_Run(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"command", "foo"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	err = cmd.Run(buildTestContext(t), []string{"command", "bar"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Equal(t, s, "foobar")
 }
 
@@ -669,7 +669,7 @@ func TestCommand_RunDefaultCommand(t *testing.T) {
 
 			err := cmd.Run(buildTestContext(t), []string{"c", test.cmdName})
 			if test.expected {
-				assert.NoError(t, err)
+				itesting.NoError(t, err)
 			} else {
 				assert.Error(t, err)
 			}
@@ -727,7 +727,7 @@ func TestCommand_RunDefaultCommandWithSubCommand(t *testing.T) {
 
 			err := cmd.Run(buildTestContext(t), []string{"c", test.cmdName, test.subCmd})
 			if test.expected {
-				assert.NoError(t, err)
+				itesting.NoError(t, err)
 			} else {
 				assert.Error(t, err)
 			}
@@ -811,7 +811,7 @@ func TestCommand_RunDefaultCommandWithFlags(t *testing.T) {
 
 			err := cmd.Run(buildTestContext(t), appArgs)
 			if test.expected {
-				assert.NoError(t, err)
+				itesting.NoError(t, err)
 			} else {
 				assert.Error(t, err)
 			}
@@ -846,7 +846,7 @@ func TestCommand_FlagsFromExtPackage(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", "-c", "cly", "--epflag", "10"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 
 	assert.Equal(t, someint, int(10))
 
@@ -1673,7 +1673,7 @@ func TestRequiredFlagCommandRunBehavior(t *testing.T) {
 					t.Errorf("expected a requiredFlagsErr, but got: %s", err)
 				}
 			} else {
-				assert.NoError(t, err)
+				itesting.NoError(t, err)
 			}
 		})
 	}
@@ -1926,7 +1926,7 @@ func TestCommand_Run_CommandWithSubcommandHasHelpTopic(t *testing.T) {
 			}
 
 			err := cmd.Run(buildTestContext(t), flagSet)
-			assert.NoError(t, err)
+			itesting.NoError(t, err)
 
 			output := buf.String()
 
@@ -2051,7 +2051,7 @@ func TestCommand_Run_Version(t *testing.T) {
 			}
 
 			err := cmd.Run(buildTestContext(t), args)
-			assert.NoError(t, err)
+			itesting.NoError(t, err)
 			assert.Contains(t, buf.String(), "0.1.0", "want version to contain 0.1.0")
 		})
 	}
@@ -2312,7 +2312,7 @@ func TestCustomFlagsUnused(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo"})
-	assert.NoError(t, err, "Run returned unexpected error")
+	itesting.NoError(t, err, "Run returned unexpected error")
 }
 
 func TestCustomFlagsUsed(t *testing.T) {
@@ -2322,7 +2322,7 @@ func TestCustomFlagsUsed(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", "--custom=bar"})
-	assert.NoError(t, err, "Run returned unexpected error")
+	itesting.NoError(t, err, "Run returned unexpected error")
 }
 
 func TestCustomHelpVersionFlags(t *testing.T) {
@@ -2340,13 +2340,13 @@ func TestCustomHelpVersionFlags(t *testing.T) {
 	VersionFlag = &customBoolFlag{"version-custom"}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", "--help-custom=bar"})
-	assert.NoError(t, err, "Run returned unexpected error")
+	itesting.NoError(t, err, "Run returned unexpected error")
 }
 
 func TestHandleExitCoder_Default(t *testing.T) {
 	app := buildMinimalTestCommand()
 	fs, err := newFlagSet(app.Name, app.Flags)
-	assert.NoError(t, err, "error creating FlagSet")
+	itesting.NoError(t, err, "error creating FlagSet")
 
 	app.flagSet = fs
 
@@ -2411,7 +2411,7 @@ func TestShellCompletionForIncompleteFlags(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"", "--test-completion", "--" + "generate-shell-completion"})
-	assert.NoError(t, err, "app should not return an error")
+	itesting.NoError(t, err, "app should not return an error")
 }
 
 func TestWhenExitSubCommandWithCodeThenCommandQuitUnexpectedly(t *testing.T) {
@@ -3055,35 +3055,35 @@ func TestShorthandCommand(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", "cth"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.True(t, cmd1 == 1 && cmd2 == 0, "Expected command1 to be trigerred once")
 
 	cmd1 = 0
 	cmd2 = 0
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "cthd"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.True(t, cmd1 == 1 && cmd2 == 0, "Expected command1 to be trigerred once")
 
 	cmd1 = 0
 	cmd2 = 0
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "cthe"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.True(t, cmd1 == 1 && cmd2 == 0, "Expected command1 to be trigerred once")
 
 	cmd1 = 0
 	cmd2 = 0
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "cthert"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.True(t, cmd1 == 0 && cmd2 == 1, "Expected command1 to be trigerred once")
 
 	cmd1 = 0
 	cmd2 = 0
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "cthet"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.True(t, cmd1 == 0 && cmd2 == 1, "Expected command1 to be trigerred once")
 }
 
@@ -3170,7 +3170,7 @@ func TestCommand_Timestamp(t *testing.T) {
 	}
 
 	err := pCmd.Run(context.Background(), []string{"foo", "hello"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 
 	r := require.New(t)
 	r.Equal(t1, cmd.Timestamp("myflag"))
@@ -3742,7 +3742,7 @@ func TestCommand_ParentCommand_Set(t *testing.T) {
 	}
 
 	err := cmd.Set("Name", "aaa")
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 }
 
 func TestCommandReadArgsFromStdIn(t *testing.T) {

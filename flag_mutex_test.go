@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	itesting "github.com/urfave/cli/v3/internal/testing"
 )
 
 func TestFlagMutuallyExclusiveFlags(t *testing.T) {
@@ -32,10 +32,10 @@ func TestFlagMutuallyExclusiveFlags(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "--i", "10"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "--i", "11", "--ai", "12"})
 	if err == nil {
@@ -58,7 +58,7 @@ func TestFlagMutuallyExclusiveFlags(t *testing.T) {
 	}
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "--i", "10"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "--i", "11", "--ai", "12"})
 	if err == nil {

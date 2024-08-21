@@ -15,6 +15,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	itesting "github.com/urfave/cli/v3/internal/testing"
 )
 
 var boolFlagTests = []struct {
@@ -47,7 +49,7 @@ func TestBoolFlagApply_SetsAllNames(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--wat", "-W", "--huh"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.True(t, v)
 }
 
@@ -70,10 +72,10 @@ func TestBoolFlagApply_SetsCount(t *testing.T) {
 	fl := BoolFlag{Name: "wat", Aliases: []string{"W", "huh"}, Destination: &v, Config: BoolConfig{Count: &count}}
 	set := flag.NewFlagSet("test", 0)
 	err := fl.Apply(set)
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 
 	err = set.Parse([]string{"--wat", "-W", "--huh"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.True(t, v)
 	assert.Equal(t, 3, count)
 }
@@ -592,7 +594,7 @@ func TestStringFlagHelpOutput(t *testing.T) {
 		fl := &StringFlag{Name: test.name, Aliases: test.aliases, Usage: test.usage, Value: test.value}
 		// create a tmp flagset
 		tfs := flag.NewFlagSet("test", 0)
-		assert.NoError(t, fl.Apply(tfs))
+		itesting.NoError(t, fl.Apply(tfs))
 		assert.Equal(t, test.expected, fl.String())
 	}
 }
@@ -654,7 +656,7 @@ func TestStringFlagApply_SetsAllNames(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--hay", "u", "-H", "yuu", "--hayyy", "YUUUU"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Equal(t, "YUUUU", v)
 }
 
@@ -743,7 +745,7 @@ func TestStringSliceFlagApply_SetsAllNames(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--goat", "aaa", "-G", "bbb", "--gooots", "eeeee"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 }
 
 func TestStringSliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
@@ -755,7 +757,7 @@ func TestStringSliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse(nil)
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Equal(t, []string{"vincent van goat", "scape goat"}, set.Lookup("goat").Value.(flag.Getter).Get())
 }
 
@@ -768,7 +770,7 @@ func TestStringSliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	err := set.Parse(nil)
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Equal(t, []string{"vincent van goat", "scape goat"}, set.Lookup("goat").Value.(flag.Getter).Get())
 }
 
@@ -781,7 +783,7 @@ func TestStringSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Equal(t, defValue, dest)
 }
 
@@ -975,7 +977,7 @@ func TestDurationFlagApply_SetsAllNames(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--howmuch", "30s", "-H", "5m", "--whyyy", "30h"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Equal(t, time.Hour*30, v)
 }
 
@@ -1027,7 +1029,7 @@ func TestIntSliceFlagApply_SetsAllNames(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--bits", "23", "-B", "3", "--bips", "99"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 }
 
 func TestIntSliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
@@ -1064,7 +1066,7 @@ func TestIntSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Equal(t, defValue, dest)
 }
 
@@ -1155,7 +1157,7 @@ func TestUintSliceFlagApply_SetsAllNames(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--bits", "23", "-B", "3", "--bips", "99"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 }
 
 func TestUintSliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
@@ -1191,7 +1193,7 @@ func TestUintSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Equal(t, defValue, dest)
 }
 
@@ -1298,7 +1300,7 @@ func TestUint64SliceFlagApply_SetsAllNames(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--bits", "23", "-B", "3", "--bips", "99"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 }
 
 func TestUint64SliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
@@ -1310,7 +1312,7 @@ func TestUint64SliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse(nil)
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Equal(t, []uint64{1, 2}, set.Lookup("goat").Value.(flag.Getter).Get().([]uint64))
 }
 
@@ -1323,7 +1325,7 @@ func TestUint64SliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	err := set.Parse(nil)
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Equal(t, []uint64{1, 2}, set.Lookup("goat").Value.(flag.Getter).Get().([]uint64))
 }
 
@@ -1336,7 +1338,7 @@ func TestUint64SliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Equal(t, defValue, dest)
 }
 
@@ -1432,7 +1434,7 @@ func TestFloat64FlagApply_SetsAllNames(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--noodles", "1.3", "-N", "11", "--nurbles", "43.33333"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Equal(t, float64(43.33333), v)
 }
 
@@ -1488,7 +1490,7 @@ func TestFloat64SliceFlagApply_SetsAllNames(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--bits", "23", "-B", "3", "--bips", "99"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 }
 
 func TestFloat64SliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
@@ -1501,7 +1503,7 @@ func TestFloat64SliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse(nil)
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Equal(t, []float64{1, 2}, set.Lookup("goat").Value.(flag.Getter).Get().([]float64))
 }
 
@@ -1514,7 +1516,7 @@ func TestFloat64SliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	err := set.Parse(nil)
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Equal(t, []float64{1, 2}, set.Lookup("goat").Value.(flag.Getter).Get().([]float64))
 }
 
@@ -1527,7 +1529,7 @@ func TestFloat64SliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Equal(t, defValue, dest)
 }
 
@@ -2282,7 +2284,7 @@ func TestTimestampFlagApply_SingleFormat(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Equal(t, expectedResult, set.Lookup("time").Value.(flag.Getter).Get())
 }
 
@@ -2425,7 +2427,7 @@ func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
 			if len(testCase.layoutsPrecisions) == 0 {
 				err := set.Parse([]string{"--time", now.Format(time.RFC3339)})
 				if testCase.expErrValidation != nil {
-					assert.NoError(t, testCase.expErrValidation(err))
+					itesting.NoError(t, testCase.expErrValidation(err))
 				}
 			}
 
@@ -2444,7 +2446,7 @@ func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
 
 			for _, layout := range validLayouts {
 				err := set.Parse([]string{"--time", now.Format(layout)})
-				assert.NoError(t, err)
+				itesting.NoError(t, err)
 				if !testCase.expRes.IsZero() {
 					assert.Equal(t, testCase.expRes, set.Lookup("time").Value.(flag.Getter).Get())
 				}
@@ -2453,7 +2455,7 @@ func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
 			for range invalidLayouts {
 				err := set.Parse([]string{"--time", now.Format(time.RFC3339)})
 				if testCase.expErrValidation != nil {
-					assert.NoError(t, testCase.expErrValidation(err))
+					itesting.NoError(t, testCase.expErrValidation(err))
 				}
 			}
 		})
@@ -2498,7 +2500,7 @@ func TestTimestampFlagApply_ShortenedLayouts(t *testing.T) {
 
 	for layout, prec := range shortenedLayoutsPrecisions {
 		err := set.Parse([]string{"--time", now.Format(layout)})
-		assert.NoError(t, err)
+		itesting.NoError(t, err)
 		assert.Equal(t, now.Truncate(prec), set.Lookup("time").Value.(flag.Getter).Get())
 	}
 }
@@ -2510,7 +2512,7 @@ func TestTimestampFlagApplyValue(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{""})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Equal(t, expectedResult, set.Lookup("time").Value.(flag.Getter).Get())
 }
 
@@ -2542,7 +2544,7 @@ func TestTimestampFlagApply_Timezoned(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--time", "Mon Jan 2 08:04:05 2006"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Equal(t, expectedResult.In(pdt), set.Lookup("time").Value.(flag.Getter).Get())
 }
 
@@ -2617,7 +2619,7 @@ func TestFlagDefaultValue(t *testing.T) {
 		set := flag.NewFlagSet("test", 0)
 		set.SetOutput(io.Discard)
 		_ = v.flag.Apply(set)
-		assert.NoError(t, set.Parse(v.toParse))
+		itesting.NoError(t, set.Parse(v.toParse))
 		assert.Equal(t, v.expect, v.flag.String())
 	}
 }
@@ -2812,7 +2814,7 @@ func TestFlagValue(t *testing.T) {
 			set := flag.NewFlagSet("test", 0)
 			set.SetOutput(io.Discard)
 			_ = v.flag.Apply(set)
-			assert.NoError(t, set.Parse(v.toParse))
+			itesting.NoError(t, set.Parse(v.toParse))
 			f := set.Lookup("flag")
 			require.Equal(t, v.expect, f.Value.String())
 		})
@@ -2827,7 +2829,7 @@ func TestTimestampFlagApply_WithDestination(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Equal(t, expectedResult, destination)
 }
 
@@ -2937,7 +2939,7 @@ func TestStringMapFlagApply_SetsAllNames(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--goat", "aaa=", "-G", "bbb=", "--gooots", "eeeee="})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 }
 
 func TestStringMapFlagApply_UsesEnvValues_noDefault(t *testing.T) {
@@ -2950,7 +2952,7 @@ func TestStringMapFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse(nil)
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Nil(t, val)
 	assert.Equal(t, map[string]string{"vincent van goat": "scape goat"}, set.Lookup("goat").Value.(flag.Getter).Get())
 }
@@ -2964,7 +2966,7 @@ func TestStringMapFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	err := set.Parse(nil)
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Equal(t, map[string]string{`some default`: `values here`}, val)
 	assert.Equal(t, map[string]string{"vincent van goat": "scape goat"}, set.Lookup("goat").Value.(flag.Getter).Get())
 }
@@ -2977,7 +2979,7 @@ func TestStringMapFlagApply_DefaultValueWithDestination(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{})
-	assert.NoError(t, err)
+	itesting.NoError(t, err)
 	assert.Equal(t, defValue, *fl.Destination)
 }
 
