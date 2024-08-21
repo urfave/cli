@@ -275,6 +275,16 @@ func Len(t *testing.T, object interface{}, length int, msgAndArgs ...interface{}
 	return true
 }
 
+func RequireLen(t *testing.T, object interface{}, length int, msgAndArgs ...interface{}) {
+	t.Helper()
+
+	if Len(t, object, length, msgAndArgs...) {
+		return
+	}
+
+	t.FailNow()
+}
+
 func JSONEq(t *testing.T, expected string, actual string, msgAndArgs ...interface{}) bool {
 	t.Helper()
 
