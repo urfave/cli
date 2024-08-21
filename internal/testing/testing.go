@@ -102,6 +102,20 @@ func Equal(t *testing.T, expected, actual interface{}, msgAndArgs ...interface{}
 	return true
 }
 
+func Contains(t *testing.T, s, contains interface{}, msgAndArgs ...interface{}) bool {
+	t.Helper()
+
+	ok, found := containsElement(s, contains)
+	if !ok {
+		return fail(t, fmt.Sprintf("%#v could not be applied builtin len()", s), msgAndArgs...)
+	}
+	if !found {
+		return fail(t, fmt.Sprintf("%#v does not contain %#v", s, contains), msgAndArgs...)
+	}
+
+	return true
+}
+
 // fail reports a failure through
 func fail(t *testing.T, failureMessage string, msgAndArgs ...interface{}) bool {
 	t.Helper()
@@ -352,4 +366,43 @@ func ObjectsAreEqual(expected, actual interface{}) bool {
 		return exp == nil && act == nil
 	}
 	return bytes.Equal(exp, act)
+}
+
+func containsElement(list interface{}, element interface{}) (ok, found bool) {
+
+	listValue := reflect.ValueOf(list)
+	listType := reflect.TypeOf(list)
+	if listType == nil {
+		return false, false
+	}
+	listKind := listType.Kind()
+	defer func() {
+		if e := recover(); e != nil {
+			ok = false
+			found = false
+		}
+	}()
+
+	if listKind == reflect.String {
+		elementValue := reflect.ValueOf(element)
+		return true, strings.Contains(listValue.String(), elementValue.String())
+	}
+
+	if listKind == reflect.Map {
+		mapKeys := listValue.MapKeys()
+		for i := 0; i < len(mapKeys); i++ {
+			if ObjectsAreEqual(mapKeys[i].Interface(), element) {
+				return true, true
+			}
+		}
+		return true, false
+	}
+
+	for i := 0; i < listValue.Len(); i++ {
+		if ObjectsAreEqual(listValue.Index(i).Interface(), element) {
+			return true, true
+		}
+	}
+	return true, false
+
 }
