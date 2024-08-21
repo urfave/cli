@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+
+	itesting "github.com/urfave/cli/v3/internal/testing"
 )
 
 func TestArgumentsRootCommand(t *testing.T) {
@@ -31,19 +33,19 @@ func TestArgumentsRootCommand(t *testing.T) {
 	}
 
 	require.NoError(t, cmd.Run(context.Background(), []string{"foo", "10"}))
-	require.Equal(t, int64(10), ival)
+	itesting.RequireEqual(t, int64(10), ival)
 
 	require.NoError(t, cmd.Run(context.Background(), []string{"foo", "12", "10.1"}))
-	require.Equal(t, int64(12), ival)
-	require.Equal(t, []float64{10.1}, fvals)
+	itesting.RequireEqual(t, int64(12), ival)
+	itesting.RequireEqual(t, []float64{10.1}, fvals)
 
 	require.NoError(t, cmd.Run(context.Background(), []string{"foo", "13", "10.1", "11.09"}))
-	require.Equal(t, int64(13), ival)
-	require.Equal(t, []float64{10.1, 11.09}, fvals)
+	itesting.RequireEqual(t, int64(13), ival)
+	itesting.RequireEqual(t, []float64{10.1, 11.09}, fvals)
 
 	require.Error(t, errors.New("No help topic for '12.1"), cmd.Run(context.Background(), []string{"foo", "13", "10.1", "11.09", "12.1"}))
-	require.Equal(t, int64(13), ival)
-	require.Equal(t, []float64{10.1, 11.09}, fvals)
+	itesting.RequireEqual(t, int64(13), ival)
+	itesting.RequireEqual(t, []float64{10.1, 11.09}, fvals)
 }
 
 func TestArgumentsSubcommand(t *testing.T) {
@@ -84,13 +86,13 @@ func TestArgumentsSubcommand(t *testing.T) {
 	require.Error(t, errors.New("sufficient count of arg sa not provided, given 0 expected 1"), cmd.Run(context.Background(), []string{"foo", "subcmd", "2006-01-02T15:04:05Z"}))
 
 	require.NoError(t, cmd.Run(context.Background(), []string{"foo", "subcmd", "2006-01-02T15:04:05Z", "fubar"}))
-	require.Equal(t, time.Date(2006, time.January, 2, 15, 4, 5, 0, time.UTC), tval)
-	require.Equal(t, []string{"fubar"}, svals)
+	itesting.RequireEqual(t, time.Date(2006, time.January, 2, 15, 4, 5, 0, time.UTC), tval)
+	itesting.RequireEqual(t, []string{"fubar"}, svals)
 
 	require.NoError(t, cmd.Run(context.Background(), []string{"foo", "subcmd", "--foo", "100", "2006-01-02T15:04:05Z", "fubar", "some"}))
-	require.Equal(t, int64(100), ifval)
-	require.Equal(t, time.Date(2006, time.January, 2, 15, 4, 5, 0, time.UTC), tval)
-	require.Equal(t, []string{"fubar", "some"}, svals)
+	itesting.RequireEqual(t, int64(100), ifval)
+	itesting.RequireEqual(t, time.Date(2006, time.January, 2, 15, 4, 5, 0, time.UTC), tval)
+	itesting.RequireEqual(t, []string{"fubar", "some"}, svals)
 }
 
 func TestArgsUsage(t *testing.T) {
@@ -145,7 +147,7 @@ func TestArgsUsage(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			arg.Min, arg.Max = test.min, test.max
-			require.Equal(t, test.expected, arg.Usage())
+			itesting.RequireEqual(t, test.expected, arg.Usage())
 		})
 	}
 }
@@ -163,14 +165,14 @@ func TestSingleOptionalArg(t *testing.T) {
 	}
 
 	require.NoError(t, cmd.Run(context.Background(), []string{"foo"}))
-	require.Equal(t, "", s1)
+	itesting.RequireEqual(t, "", s1)
 
 	arg.Value = "bar"
 	require.NoError(t, cmd.Run(context.Background(), []string{"foo"}))
-	require.Equal(t, "bar", s1)
+	itesting.RequireEqual(t, "bar", s1)
 
 	require.NoError(t, cmd.Run(context.Background(), []string{"foo", "zbar"}))
-	require.Equal(t, "zbar", s1)
+	itesting.RequireEqual(t, "zbar", s1)
 }
 
 func TestUnboundedArgs(t *testing.T) {
@@ -214,7 +216,7 @@ func TestUnboundedArgs(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			arg.Values = &test.values
 			require.NoError(t, cmd.Run(context.Background(), test.args))
-			require.Equal(t, test.expected, *arg.Values)
+			itesting.RequireEqual(t, test.expected, *arg.Values)
 		})
 	}
 }

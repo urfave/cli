@@ -185,7 +185,7 @@ func Test_helpCommand_Action_ErrorIfNoTopic(t *testing.T) {
 	require.True(t, ok, "expected *exitError from helpCommandAction()")
 
 	require.Contains(t, exitErr.Error(), "No help topic for", "expected an unknown help topic error")
-	require.Equal(t, 3, exitErr.exitCode, "expected exit value = 3")
+	itesting.RequireEqual(t, 3, exitErr.exitCode, "expected exit value = 3")
 }
 
 func Test_helpCommand_InHelpOutput(t *testing.T) {
@@ -305,7 +305,7 @@ func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 	require.True(t, ok, "expected *exitError from helpCommandAction(), but instead got: %v", err.Error())
 
 	require.Contains(t, exitErr.Error(), "No help topic for", "expected an unknown help topic error")
-	require.Equal(t, 3, exitErr.exitCode, "unexpected exit value")
+	itesting.RequireEqual(t, 3, exitErr.exitCode, "unexpected exit value")
 }
 
 func TestShowAppHelp_CommandAliases(t *testing.T) {

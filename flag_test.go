@@ -664,7 +664,7 @@ func TestStringFlagValueFromCommand(t *testing.T) {
 	set.String("myflag", "foobar", "doc")
 	cmd := &Command{flagSet: set}
 	f := &StringFlag{Name: "myflag"}
-	require.Equal(t, "foobar", f.Get(cmd))
+	itesting.RequireEqual(t, "foobar", f.Get(cmd))
 }
 
 var _ = []struct {
@@ -791,7 +791,7 @@ func TestStringSliceFlagValueFromCommand(t *testing.T) {
 	set.Var(NewStringSlice("a", "b", "c"), "myflag", "doc")
 	cmd := &Command{flagSet: set}
 	f := &StringSliceFlag{Name: "myflag"}
-	require.Equal(t, []string{"a", "b", "c"}, f.Get(cmd))
+	itesting.RequireEqual(t, []string{"a", "b", "c"}, f.Get(cmd))
 }
 
 var intFlagTests = []struct {
@@ -845,7 +845,7 @@ func TestIntFlagValueFromCommand(t *testing.T) {
 	set.Int64("myflag", int64(42), "doc")
 	cmd := &Command{flagSet: set}
 	fl := &IntFlag{Name: "myflag"}
-	require.Equal(t, int64(42), fl.Get(cmd))
+	itesting.RequireEqual(t, int64(42), fl.Get(cmd))
 }
 
 var uintFlagTests = []struct {
@@ -888,7 +888,7 @@ func TestUintFlagValueFromCommand(t *testing.T) {
 	set.Uint64("myflag", 42, "doc")
 	cmd := &Command{flagSet: set}
 	fl := &UintFlag{Name: "myflag"}
-	require.Equal(t, uint64(42), fl.Get(cmd))
+	itesting.RequireEqual(t, uint64(42), fl.Get(cmd))
 }
 
 var uint64FlagTests = []struct {
@@ -931,7 +931,7 @@ func TestUint64FlagValueFromCommand(t *testing.T) {
 	set.Uint64("myflag", 42, "doc")
 	cmd := &Command{flagSet: set}
 	f := &UintFlag{Name: "myflag"}
-	require.Equal(t, uint64(42), f.Get(cmd))
+	itesting.RequireEqual(t, uint64(42), f.Get(cmd))
 }
 
 var durationFlagTests = []struct {
@@ -985,7 +985,7 @@ func TestDurationFlagValueFromCommand(t *testing.T) {
 	set.Duration("myflag", 42*time.Second, "doc")
 	cmd := &Command{flagSet: set}
 	f := &DurationFlag{Name: "myflag"}
-	require.Equal(t, 42*time.Second, f.Get(cmd))
+	itesting.RequireEqual(t, 42*time.Second, f.Get(cmd))
 }
 
 var intSliceFlagTests = []struct {
@@ -1106,7 +1106,7 @@ func TestIntSliceFlagValueFromCommand(t *testing.T) {
 	set.Var(NewIntSlice(1, 2, 3), "myflag", "doc")
 	cmd := &Command{flagSet: set}
 	f := &IntSliceFlag{Name: "myflag"}
-	require.Equal(t, []int64{1, 2, 3}, f.Get(cmd))
+	itesting.RequireEqual(t, []int64{1, 2, 3}, f.Get(cmd))
 }
 
 var uintSliceFlagTests = []struct {
@@ -1129,7 +1129,7 @@ func TestUintSliceFlagHelpOutput(t *testing.T) {
 	for _, test := range uintSliceFlagTests {
 		t.Run(test.name, func(t *testing.T) {
 			fl := &UintSliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value}
-			require.Equal(t, test.expected, fl.String())
+			itesting.RequireEqual(t, test.expected, fl.String())
 		})
 	}
 }
@@ -1442,7 +1442,7 @@ func TestFloat64FlagValueFromCommand(t *testing.T) {
 	set.Float64("myflag", 1.23, "doc")
 	cmd := &Command{flagSet: set}
 	f := &FloatFlag{Name: "myflag"}
-	require.Equal(t, 1.23, f.Get(cmd))
+	itesting.RequireEqual(t, 1.23, f.Get(cmd))
 }
 
 var float64SliceFlagTests = []struct {
@@ -1537,7 +1537,7 @@ func TestFloat64SliceFlagValueFromCommand(t *testing.T) {
 	set.Var(NewFloatSlice(1.23, 4.56), "myflag", "doc")
 	cmd := &Command{flagSet: set}
 	f := &FloatSliceFlag{Name: "myflag"}
-	require.Equal(t, []float64{1.23, 4.56}, f.Get(cmd))
+	itesting.RequireEqual(t, []float64{1.23, 4.56}, f.Get(cmd))
 }
 
 func TestFloat64SliceFlagApply_ParentCommand(t *testing.T) {
@@ -1702,7 +1702,7 @@ func TestParseMultiIntSliceWithDestinationAndEnv(t *testing.T) {
 			&IntSliceFlag{Name: "serve", Aliases: []string{"s"}, Destination: &dest, Sources: EnvVars("APP_INTERVALS")},
 		},
 		Action: func(context.Context, *Command) error {
-			require.Equalf(t, []int64{10, 20}, dest, "main name not set")
+			itesting.RequireEqualf(t, []int64{10, 20}, dest, "main name not set")
 
 			return nil
 		},
@@ -2207,7 +2207,7 @@ func TestStringSlice_Serialized_Set(t *testing.T) {
 	sl1 := NewStringSlice("c", "d")
 	_ = sl1.Set(ser0)
 
-	require.Equal(t, sl0.String(), sl1.String(), "pre and post serialization do not match")
+	itesting.RequireEqual(t, sl0.String(), sl1.String(), "pre and post serialization do not match")
 }
 
 func TestIntSlice_Serialized_Set(t *testing.T) {
@@ -2219,7 +2219,7 @@ func TestIntSlice_Serialized_Set(t *testing.T) {
 	sl1 := NewIntSlice(3, 4)
 	_ = sl1.Set(ser0)
 
-	require.Equal(t, sl0.String(), sl1.String(), "pre and post serialization do not match")
+	itesting.RequireEqual(t, sl0.String(), sl1.String(), "pre and post serialization do not match")
 }
 
 func TestUintSlice_Serialized_Set(t *testing.T) {
@@ -2231,7 +2231,7 @@ func TestUintSlice_Serialized_Set(t *testing.T) {
 	sl1 := NewUintSlice(3, 4)
 	_ = sl1.Set(ser0)
 
-	require.Equal(t, sl0.String(), sl1.String(), "pre and post serialization do not match")
+	itesting.RequireEqual(t, sl0.String(), sl1.String(), "pre and post serialization do not match")
 }
 
 func TestUint64Slice_Serialized_Set(t *testing.T) {
@@ -2243,7 +2243,7 @@ func TestUint64Slice_Serialized_Set(t *testing.T) {
 	sl1 := NewUintSlice(3, 4)
 	_ = sl1.Set(ser0)
 
-	require.Equal(t, sl0.String(), sl1.String(), "pre and post serialization do not match")
+	itesting.RequireEqual(t, sl0.String(), sl1.String(), "pre and post serialization do not match")
 }
 
 func TestStringMap_Serialized_Set(t *testing.T) {
@@ -2255,7 +2255,7 @@ func TestStringMap_Serialized_Set(t *testing.T) {
 	m1 := NewStringMap(map[string]string{"c": "d"})
 	_ = m1.Set(ser0)
 
-	require.Equal(t, m0.String(), m1.String(), "pre and post serialization do not match")
+	itesting.RequireEqual(t, m0.String(), m1.String(), "pre and post serialization do not match")
 }
 
 func TestTimestamp_set(t *testing.T) {
@@ -2553,7 +2553,7 @@ func TestTimestampFlagValueFromCommand(t *testing.T) {
 	set.Var(newTimestamp(now), "myflag", "doc")
 	cmd := &Command{flagSet: set}
 	f := &TimestampFlag{Name: "myflag"}
-	require.Equal(t, now, f.Get(cmd))
+	itesting.RequireEqual(t, now, f.Get(cmd))
 }
 
 type flagDefaultTestCase struct {
@@ -2815,7 +2815,7 @@ func TestFlagValue(t *testing.T) {
 			_ = v.flag.Apply(set)
 			itesting.NoError(t, set.Parse(v.toParse))
 			f := set.Lookup("flag")
-			require.Equal(t, v.expect, f.Value.String())
+			itesting.RequireEqual(t, v.expect, f.Value.String())
 		})
 	}
 }
@@ -2878,9 +2878,9 @@ func TestCustomizedSliceFlagSeparator(t *testing.T) {
 	}()
 	opts := []string{"opt1", "opt2", "opt3,op", "opt4"}
 	ret := flagSplitMultiValues(strings.Join(opts, ";"))
-	require.Equal(t, 4, len(ret), "split slice flag failed")
+	itesting.RequireEqual(t, 4, len(ret), "split slice flag failed")
 	for idx, r := range ret {
-		require.Equal(t, opts[idx], r, "get %dth failed", idx)
+		itesting.RequireEqual(t, opts[idx], r, "get %dth failed", idx)
 	}
 }
 
@@ -2892,8 +2892,8 @@ func TestFlagSplitMultiValues_Disabled(t *testing.T) {
 
 	opts := []string{"opt1", "opt2", "opt3,op", "opt4"}
 	ret := flagSplitMultiValues(strings.Join(opts, defaultSliceFlagSeparator))
-	require.Equal(t, 1, len(ret), "failed to disable split slice flag")
-	require.Equal(t, strings.Join(opts, defaultSliceFlagSeparator), ret[0])
+	itesting.RequireEqual(t, 1, len(ret), "failed to disable split slice flag")
+	itesting.RequireEqual(t, strings.Join(opts, defaultSliceFlagSeparator), ret[0])
 }
 
 var stringMapFlagTests = []struct {
@@ -2987,7 +2987,7 @@ func TestStringMapFlagValueFromCommand(t *testing.T) {
 	set.Var(NewStringMap(map[string]string{"a": "b", "c": ""}), "myflag", "doc")
 	cmd := &Command{flagSet: set}
 	f := &StringMapFlag{Name: "myflag"}
-	require.Equal(t, map[string]string{"a": "b", "c": ""}, f.Get(cmd))
+	itesting.RequireEqual(t, map[string]string{"a": "b", "c": ""}, f.Get(cmd))
 }
 
 func TestStringMapFlagApply_Error(t *testing.T) {

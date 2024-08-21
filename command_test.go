@@ -313,8 +313,8 @@ func TestCommand_Run_BeforeSavesMetadata(t *testing.T) {
 	}
 
 	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo", "bar"}))
-	require.Equal(t, "hello world", receivedMsgFromAction)
-	require.Equal(t, "hello world", receivedMsgFromAfter)
+	itesting.RequireEqual(t, "hello world", receivedMsgFromAction)
+	itesting.RequireEqual(t, "hello world", receivedMsgFromAfter)
 }
 
 func TestCommand_OnUsageError_hasCommandContext(t *testing.T) {
@@ -378,7 +378,7 @@ func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
 				Name:  "baz",
 				Usage: "this is for testing",
 				Action: func(_ context.Context, cmd *Command) error {
-					require.Equal(t, io.Discard, cmd.Root().ErrWriter)
+					itesting.RequireEqual(t, io.Discard, cmd.Root().ErrWriter)
 
 					return nil
 				},
@@ -906,10 +906,10 @@ func TestCommand_CommandWithFlagBeforeTerminator(t *testing.T) {
 
 	require.NoError(t, cmd.Run(buildTestContext(t), []string{"", "cmd", "--option", "my-option", "my-arg", "--", "--notARealFlag"}))
 
-	require.Equal(t, "my-option", parsedOption)
-	require.Equal(t, "my-arg", args.Get(0))
-	require.Equal(t, "--", args.Get(1))
-	require.Equal(t, "--notARealFlag", args.Get(2))
+	itesting.RequireEqual(t, "my-option", parsedOption)
+	itesting.RequireEqual(t, "my-arg", args.Get(0))
+	itesting.RequireEqual(t, "--", args.Get(1))
+	itesting.RequireEqual(t, "--notARealFlag", args.Get(2))
 }
 
 func TestCommand_CommandWithDash(t *testing.T) {
@@ -929,8 +929,8 @@ func TestCommand_CommandWithDash(t *testing.T) {
 
 	require.NoError(t, cmd.Run(buildTestContext(t), []string{"", "cmd", "my-arg", "-"}))
 	require.NotNil(t, args)
-	require.Equal(t, "my-arg", args.Get(0))
-	require.Equal(t, "-", args.Get(1))
+	itesting.RequireEqual(t, "my-arg", args.Get(0))
+	itesting.RequireEqual(t, "-", args.Get(1))
 }
 
 func TestCommand_CommandWithNoFlagBeforeTerminator(t *testing.T) {
@@ -951,9 +951,9 @@ func TestCommand_CommandWithNoFlagBeforeTerminator(t *testing.T) {
 	require.NoError(t, cmd.Run(buildTestContext(t), []string{"", "cmd", "my-arg", "--", "notAFlagAtAll"}))
 
 	require.NotNil(t, args)
-	require.Equal(t, "my-arg", args.Get(0))
-	require.Equal(t, "--", args.Get(1))
-	require.Equal(t, "notAFlagAtAll", args.Get(2))
+	itesting.RequireEqual(t, "my-arg", args.Get(0))
+	itesting.RequireEqual(t, "--", args.Get(1))
+	itesting.RequireEqual(t, "notAFlagAtAll", args.Get(2))
 }
 
 func TestCommand_SkipFlagParsing(t *testing.T) {
@@ -1084,7 +1084,7 @@ func TestCommand_UseShortOptionHandlingCommand(t *testing.T) {
 	require.NoError(t, cmd.Run(buildTestContext(t), []string{"cmd", "-on", expected}))
 	require.True(t, one)
 	require.False(t, two)
-	require.Equal(t, expected, name)
+	itesting.RequireEqual(t, expected, name)
 }
 
 func TestCommand_UseShortOptionHandlingCommand_missing_value(t *testing.T) {
@@ -1138,7 +1138,7 @@ func TestCommand_UseShortOptionHandlingSubCommand(t *testing.T) {
 	require.NoError(t, cmd.Run(buildTestContext(t), []string{"", "cmd", "sub", "-on", expected}))
 	require.True(t, one)
 	require.False(t, two)
-	require.Equal(t, expected, name)
+	itesting.RequireEqual(t, expected, name)
 }
 
 func TestCommand_UseShortOptionHandlingSubCommand_missing_value(t *testing.T) {
@@ -1821,7 +1821,7 @@ func TestCommand_OrderOfOperations(t *testing.T) {
 		cmd.OnUsageError = nil
 
 		_ = cmd.Run(buildTestContext(t), []string{"command", "--nope"})
-		require.Equal(t, 0, counts.Total)
+		itesting.RequireEqual(t, 0, counts.Total)
 	})
 
 	t.Run("before after action hooks", func(t *testing.T) {
@@ -2099,7 +2099,7 @@ func TestCommand_Run_Categories(t *testing.T) {
 		},
 	})
 
-	require.Equal(t, &expect, cmd.categories)
+	itesting.RequireEqual(t, &expect, cmd.categories)
 
 	output := buf.String()
 
@@ -2933,12 +2933,12 @@ func TestPersistentFlagIsSet(t *testing.T) {
 
 	err := app.Run(context.Background(), []string{"root", "--result", "before", "sub"})
 	require.NoError(t, err)
-	require.Equal(t, "before", result)
+	itesting.RequireEqual(t, "before", result)
 	require.True(t, resultIsSet)
 
 	err = app.Run(context.Background(), []string{"root", "sub", "--result", "after"})
 	require.NoError(t, err)
-	require.Equal(t, "after", result)
+	itesting.RequireEqual(t, "after", result)
 	require.True(t, resultIsSet)
 }
 
@@ -3097,8 +3097,8 @@ func TestCommand_Int(t *testing.T) {
 	pCmd := &Command{flagSet: parentSet}
 	cmd := &Command{flagSet: set, parent: pCmd}
 
-	require.Equal(t, int64(12), cmd.Int("myflag"))
-	require.Equal(t, int64(13), cmd.Int("top-flag"))
+	itesting.RequireEqual(t, int64(12), cmd.Int("myflag"))
+	itesting.RequireEqual(t, int64(13), cmd.Int("top-flag"))
 }
 
 func TestCommand_Uint(t *testing.T) {
@@ -3109,8 +3109,8 @@ func TestCommand_Uint(t *testing.T) {
 	pCmd := &Command{flagSet: parentSet}
 	cmd := &Command{flagSet: set, parent: pCmd}
 
-	require.Equal(t, uint64(13), cmd.Uint("myflagUint"))
-	require.Equal(t, uint64(14), cmd.Uint("top-flag"))
+	itesting.RequireEqual(t, uint64(13), cmd.Uint("myflagUint"))
+	itesting.RequireEqual(t, uint64(14), cmd.Uint("top-flag"))
 }
 
 func TestCommand_Float64(t *testing.T) {
@@ -3309,7 +3309,7 @@ func TestCommand_NArg(t *testing.T) {
 	cmd := &Command{flagSet: set}
 	_ = set.Parse([]string{"--myflag", "bat", "baz"})
 
-	require.Equal(t, 2, cmd.NArg())
+	itesting.RequireEqual(t, 2, cmd.NArg())
 }
 
 func TestCommand_IsSet(t *testing.T) {
@@ -3394,7 +3394,7 @@ func TestCommand_NumFlags(t *testing.T) {
 	cmd := &Command{flagSet: set, parent: globalCmd}
 	_ = set.Parse([]string{"--myflag", "--otherflag=foo"})
 	_ = globalSet.Parse([]string{"--myflagGlobal"})
-	require.Equal(t, 2, cmd.NumFlags())
+	itesting.RequireEqual(t, 2, cmd.NumFlags())
 }
 
 func TestCommand_Set(t *testing.T) {
@@ -3440,7 +3440,7 @@ func TestCommand_LocalFlagNames(t *testing.T) {
 	actualFlags := cmd.LocalFlagNames()
 	sort.Strings(actualFlags)
 
-	require.Equal(t, []string{"one-flag", "two-flag"}, actualFlags)
+	itesting.RequireEqual(t, []string{"one-flag", "two-flag"}, actualFlags)
 }
 
 func TestCommand_FlagNames(t *testing.T) {
@@ -3457,7 +3457,7 @@ func TestCommand_FlagNames(t *testing.T) {
 	actualFlags := cmd.FlagNames()
 	sort.Strings(actualFlags)
 
-	require.Equal(t, []string{"one-flag", "top-flag", "two-flag"}, actualFlags)
+	itesting.RequireEqual(t, []string{"one-flag", "top-flag", "two-flag"}, actualFlags)
 }
 
 func TestCommand_Lineage(t *testing.T) {

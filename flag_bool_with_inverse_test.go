@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	itesting "github.com/urfave/cli/v3/internal/testing"
 )
 
 var errBothEnvFlagsAreSet = fmt.Errorf("cannot set both flags `--env` and `--no-env`")
@@ -332,8 +334,8 @@ func TestBoolWithInverseNames(t *testing.T) {
 	names := flag.Names()
 
 	require.Len(t, names, 2)
-	require.Equal(t, "env", names[0], "expected first name to be `env`")
-	require.Equal(t, "no-env", names[1], "expected first name to be `no-env`")
+	itesting.RequireEqual(t, "env", names[0], "expected first name to be `env`")
+	itesting.RequireEqual(t, "no-env", names[1], "expected first name to be `no-env`")
 }
 
 func TestBoolWithInverseString(t *testing.T) {
@@ -409,7 +411,7 @@ func TestBoolWithInverseString(t *testing.T) {
 				InversePrefix: tc.inversePrefix,
 			}
 
-			require.Equal(t, tc.expected, flag.String())
+			itesting.RequireEqual(t, tc.expected, flag.String())
 		})
 	}
 }
