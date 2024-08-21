@@ -93,7 +93,7 @@ GLOBAL OPTIONS:
    --help, -h             show help
 `
 
-	assert.Contains(t, output.String(), expected,
+	itesting.Contains(t, output.String(), expected,
 		"expected output to include usage text")
 }
 
@@ -598,7 +598,7 @@ func TestShowSubcommandHelp_CommandAliases(t *testing.T) {
 
 	_ = cmd.Run(buildTestContext(t), []string{"foo", "help"})
 
-	assert.Contains(t, output.String(), "frobbly, fr, frob, bork", "expected output to include all command aliases")
+	itesting.Contains(t, output.String(), "frobbly, fr, frob, bork", "expected output to include all command aliases")
 }
 
 func TestShowCommandHelp_Customtemplate(t *testing.T) {
@@ -634,10 +634,10 @@ EXAMPLES:
 	assert.NotContains(t, output.String(), "2. Frobbly runs without this param locally.",
 		"expected output to exclude \"2. Frobbly runs without this param locally.\";")
 
-	assert.Contains(t, output.String(), "1. Frobbly runs with this param locally.",
+	itesting.Contains(t, output.String(), "1. Frobbly runs with this param locally.",
 		"expected output to include \"1. Frobbly runs with this param locally.\"")
 
-	assert.Contains(t, output.String(), "$ foo frobbly wobbly",
+	itesting.Contains(t, output.String(), "$ foo frobbly wobbly",
 		"expected output to include \"$ foo frobbly wobbly\"")
 }
 
@@ -656,7 +656,7 @@ func TestShowSubcommandHelp_CommandUsageText(t *testing.T) {
 
 	_ = cmd.Run(buildTestContext(t), []string{"foo", "frobbly", "--help"})
 
-	assert.Contains(t, output.String(), "this is usage text",
+	itesting.Contains(t, output.String(), "this is usage text",
 		"expected output to include usage text")
 }
 
@@ -685,7 +685,7 @@ UsageText`,
    UsageText
 `
 
-	assert.Contains(t, output.String(), expected,
+	itesting.Contains(t, output.String(), expected,
 		"expected output to include usage text")
 }
 
@@ -731,7 +731,7 @@ GLOBAL OPTIONS:
    --foo value  
 `
 
-	assert.Contains(t, output.String(), expected, "expected output to include global options")
+	itesting.Contains(t, output.String(), expected, "expected output to include global options")
 }
 
 func TestShowSubcommandHelp_SubcommandUsageText(t *testing.T) {
@@ -754,7 +754,7 @@ func TestShowSubcommandHelp_SubcommandUsageText(t *testing.T) {
 
 	_ = cmd.Run(buildTestContext(t), []string{"foo", "frobbly", "bobbly", "--help"})
 
-	assert.Contains(t, output.String(), "this is usage text",
+	itesting.Contains(t, output.String(), "this is usage text",
 		"expected output to include usage text")
 }
 
@@ -788,7 +788,7 @@ UsageText`,
    UsageText
 `
 
-	assert.Contains(t, output.String(), expected,
+	itesting.Contains(t, output.String(), expected,
 		"expected output to include usage text")
 }
 
@@ -819,7 +819,7 @@ func TestShowAppHelp_HiddenCommand(t *testing.T) {
 	assert.NotContains(t, output.String(), "secretfrob",
 		"expected output to exclude \"secretfrob\"")
 
-	assert.Contains(t, output.String(), "frobbly",
+	itesting.Contains(t, output.String(), "frobbly",
 		"expected output to include \"frobbly\"")
 }
 
@@ -992,7 +992,7 @@ VERSION:
 	_ = cmd.Run(buildTestContext(t), []string{"app", "--help"})
 
 	assert.NotContains(t, output.String(), "secretfrob", "expected output to exclude \"secretfrob\"")
-	assert.Contains(t, output.String(), "frobbly", "expected output to include \"frobbly\"")
+	itesting.Contains(t, output.String(), "frobbly", "expected output to include \"frobbly\"")
 
 	if !strings.Contains(output.String(), "PLATFORM:") ||
 		!strings.Contains(output.String(), "OS:") ||
@@ -1027,7 +1027,7 @@ func TestShowAppHelp_UsageText(t *testing.T) {
 
 	_ = cmd.Run(buildTestContext(t), []string{"foo"})
 
-	assert.Contains(t, output.String(), "This is a single line of UsageText", "expected output to include usage text")
+	itesting.Contains(t, output.String(), "This is a single line of UsageText", "expected output to include usage text")
 }
 
 func TestShowAppHelp_MultiLine_UsageText(t *testing.T) {
@@ -1055,7 +1055,7 @@ App UsageText`,
    App UsageText
 `
 
-	assert.Contains(t, output.String(), expected, "expected output to include usage text")
+	itesting.Contains(t, output.String(), expected, "expected output to include usage text")
 }
 
 func TestShowAppHelp_CommandMultiLine_UsageText(t *testing.T) {
@@ -1089,7 +1089,7 @@ App UsageText`,
 		"                               output, long usage output, long usage output\n" +
 		"   grobbly, grb1, grbb2        this is another long help output for the run command, long usage \n" +
 		"                               output, long usage output"
-	assert.Contains(t, output.String(), expected, "expected output to include usage text")
+	itesting.Contains(t, output.String(), expected, "expected output to include usage text")
 }
 
 func TestHideHelpCommand(t *testing.T) {
@@ -1319,7 +1319,7 @@ func TestMutuallyExclusiveFlags(t *testing.T) {
 
 	_ = ShowAppHelp(cmd)
 
-	assert.Contains(t, writer.String(), "--s1", "written help does not include mutex flag")
+	itesting.Contains(t, writer.String(), "--s1", "written help does not include mutex flag")
 }
 
 func TestWrap(t *testing.T) {

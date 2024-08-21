@@ -1939,7 +1939,7 @@ func TestCommand_Run_CommandWithSubcommandHasHelpTopic(t *testing.T) {
 				subCmdBar.Name, subCmdBar.Usage,
 				subCmdBaz.Name, subCmdBaz.Usage,
 			} {
-				assert.Contains(t, output, shouldContain, "want help to contain %q, did not: \n%q", shouldContain, output)
+				itesting.Contains(t, output, shouldContain, "want help to contain %q, did not: \n%q", shouldContain, output)
 			}
 		})
 	}
@@ -2029,7 +2029,7 @@ func TestCommand_Run_Help(t *testing.T) {
 
 			output := buf.String()
 
-			assert.Contains(t, output, tt.wantContains, "want help to contain %q, did not: \n%q", "boom - make an explosive entrance", output)
+			itesting.Contains(t, output, tt.wantContains, "want help to contain %q, did not: \n%q", "boom - make an explosive entrance", output)
 		})
 	}
 }
@@ -2054,7 +2054,7 @@ func TestCommand_Run_Version(t *testing.T) {
 
 			err := cmd.Run(buildTestContext(t), args)
 			itesting.NoError(t, err)
-			assert.Contains(t, buf.String(), "0.1.0", "want version to contain 0.1.0")
+			itesting.Contains(t, buf.String(), "0.1.0", "want version to contain 0.1.0")
 		})
 	}
 }
@@ -2104,7 +2104,7 @@ func TestCommand_Run_Categories(t *testing.T) {
 
 	output := buf.String()
 
-	assert.Contains(t, output, "1:\n     command1", "want buffer to include category %q, did not: \n%q", "1:\n     command1", output)
+	itesting.Contains(t, output, "1:\n     command1", "want buffer to include category %q, did not: \n%q", "1:\n     command1", output)
 }
 
 func TestCommand_VisibleCategories(t *testing.T) {
@@ -2355,7 +2355,7 @@ func TestHandleExitCoder_Default(t *testing.T) {
 	_ = app.handleExitCoder(context.Background(), Exit("Default Behavior Error", 42))
 
 	output := fakeErrWriter.String()
-	assert.Contains(t, output, "Default", "Expected Default Behavior from Error Handler")
+	itesting.Contains(t, output, "Default", "Expected Default Behavior from Error Handler")
 }
 
 func TestHandleExitCoder_Custom(t *testing.T) {
@@ -2368,7 +2368,7 @@ func TestHandleExitCoder_Custom(t *testing.T) {
 	_ = cmd.handleExitCoder(context.Background(), Exit("Default Behavior Error", 42))
 
 	output := fakeErrWriter.String()
-	assert.Contains(t, output, "Custom", "Expected Custom Behavior from Error Handler")
+	itesting.Contains(t, output, "Custom", "Expected Custom Behavior from Error Handler")
 }
 
 func TestShellCompletionForIncompleteFlags(t *testing.T) {
