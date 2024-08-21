@@ -369,7 +369,7 @@ func ExampleApp_Run_bashComplete() {
 func ExampleApp_Run_zshComplete() {
 	// set args for examples sake
 	os.Args = []string{"greet", "--generate-bash-completion"}
-	_ = os.Setenv("SHELL", "/usr/bin/zsh")
+	_ = os.Setenv("0", "/usr/bin/zsh")
 
 	app := NewApp()
 	app.Name = "greet"
