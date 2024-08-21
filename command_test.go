@@ -1098,7 +1098,7 @@ func TestCommand_UseShortOptionHandlingCommand_missing_value(t *testing.T) {
 	}
 	cmd.Commands = []*Command{command}
 
-	require.EqualError(
+	itesting.RequireEqualError(
 		t,
 		cmd.Run(buildTestContext(t), []string{"", "cmd", "-n"}),
 		"flag needs an argument: -n",
