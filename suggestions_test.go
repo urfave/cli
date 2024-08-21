@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	itesting "github.com/urfave/cli/v3/internal/testing"
 )
 
@@ -33,7 +31,7 @@ func TestJaroWinkler(t *testing.T) {
 		res := jaroWinkler(testCase.a, testCase.b)
 
 		// Then
-		assert.Equal(t, testCase.expected, res)
+		itesting.Equal(t, testCase.expected, res)
 	}
 }
 
@@ -54,7 +52,7 @@ func TestSuggestFlag(t *testing.T) {
 		res := suggestFlag(app.Flags, testCase.provided, false)
 
 		// Then
-		assert.Equal(t, testCase.expected, res)
+		itesting.Equal(t, testCase.expected, res)
 	}
 }
 
@@ -66,7 +64,7 @@ func TestSuggestFlagHideHelp(t *testing.T) {
 	res := suggestFlag(app.Flags, "hlp", true)
 
 	// Then
-	assert.Equal(t, "--fl", res)
+	itesting.Equal(t, "--fl", res)
 }
 
 func TestSuggestFlagFromError(t *testing.T) {
@@ -87,7 +85,7 @@ func TestSuggestFlagFromError(t *testing.T) {
 		)
 
 		// Then
-		assert.Equal(t, fmt.Sprintf(SuggestDidYouMeanTemplate+"\n\n", testCase.expected), res)
+		itesting.Equal(t, fmt.Sprintf(SuggestDidYouMeanTemplate+"\n\n", testCase.expected), res)
 	}
 }
 
@@ -149,6 +147,6 @@ func TestSuggestCommand(t *testing.T) {
 		res := suggestCommand(app.Commands, testCase.provided)
 
 		// Then
-		assert.Equal(t, testCase.expected, res)
+		itesting.Equal(t, testCase.expected, res)
 	}
 }

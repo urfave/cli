@@ -455,7 +455,7 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 				HelpPrinter = old
 			}(HelpPrinter)
 			HelpPrinter = func(w io.Writer, templ string, data interface{}) {
-				assert.Equal(t, tt.wantTemplate, templ, "template mismatch")
+				itesting.Equal(t, tt.wantTemplate, templ, "template mismatch")
 				tt.printer(w, templ, data)
 			}
 
@@ -475,7 +475,7 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 			require.NoError(t, err)
 
 			got := buf.String()
-			assert.Equal(t, tt.wantOutput, got)
+			itesting.Equal(t, tt.wantOutput, got)
 		})
 	}
 }
@@ -863,7 +863,7 @@ func TestShowAppHelp_HelpPrinter(t *testing.T) {
 				HelpPrinter = old
 			}(HelpPrinter)
 			HelpPrinter = func(w io.Writer, templ string, data interface{}) {
-				assert.Equal(t, tt.wantTemplate, templ, "unexpected template")
+				itesting.Equal(t, tt.wantTemplate, templ, "unexpected template")
 				tt.printer(w, templ, data)
 			}
 
@@ -877,7 +877,7 @@ func TestShowAppHelp_HelpPrinter(t *testing.T) {
 			err := cmd.Run(buildTestContext(t), []string{"my-app", "help"})
 			require.NoError(t, err)
 
-			assert.Equal(t, tt.wantOutput, buf.String())
+			itesting.Equal(t, tt.wantOutput, buf.String())
 		})
 	}
 }
@@ -923,7 +923,7 @@ func TestShowAppHelp_HelpPrinterCustom(t *testing.T) {
 			}(HelpPrinterCustom)
 			HelpPrinterCustom = func(w io.Writer, templ string, data interface{}, fm map[string]interface{}) {
 				assert.Nil(t, fm, "unexpected function map passed")
-				assert.Equal(t, tt.wantTemplate, templ, "unexpected template")
+				itesting.Equal(t, tt.wantTemplate, templ, "unexpected template")
 				tt.printer(w, templ, data, fm)
 			}
 
@@ -936,7 +936,7 @@ func TestShowAppHelp_HelpPrinterCustom(t *testing.T) {
 
 			err := cmd.Run(buildTestContext(t), []string{"my-app", "help"})
 			require.NoError(t, err)
-			assert.Equal(t, tt.wantOutput, buf.String())
+			itesting.Equal(t, tt.wantOutput, buf.String())
 		})
 	}
 }
@@ -1294,7 +1294,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 
 			written := writer.String()
 
-			assert.Equal(t, tc.expected, written, "written help does not match")
+			itesting.Equal(t, tc.expected, written, "written help does not match")
 		})
 	}
 }
@@ -1413,7 +1413,7 @@ COPYRIGHT:
    ever read these things?
 `
 
-	assert.Equal(t, expected, output.String(), "Unexpected wrapping")
+	itesting.Equal(t, expected, output.String(), "Unexpected wrapping")
 }
 
 func TestWrappedCommandHelp(t *testing.T) {
@@ -1543,7 +1543,7 @@ OPTIONS:
    --help, -h  show help
 `
 
-	assert.Equal(t, expected, output.String(), "Unexpected wrapping")
+	itesting.Equal(t, expected, output.String(), "Unexpected wrapping")
 }
 
 func TestWrappedHelpSubcommand(t *testing.T) {
@@ -1769,8 +1769,8 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			shellCompletion, args := checkShellCompleteFlag(tt.cmd, tt.arguments)
-			assert.Equal(t, tt.wantShellCompletion, shellCompletion)
-			assert.Equal(t, tt.wantArgs, args)
+			itesting.Equal(t, tt.wantShellCompletion, shellCompletion)
+			itesting.Equal(t, tt.wantArgs, args)
 		})
 	}
 }

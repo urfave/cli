@@ -38,7 +38,7 @@ func TestBoolFlagHelpOutput(t *testing.T) {
 	for _, test := range boolFlagTests {
 		fl := &BoolFlag{Name: test.name}
 		output := fl.String()
-		assert.Equal(t, test.expected, output)
+		itesting.Equal(t, test.expected, output)
 	}
 }
 
@@ -77,7 +77,7 @@ func TestBoolFlagApply_SetsCount(t *testing.T) {
 	err = set.Parse([]string{"--wat", "-W", "--huh"})
 	itesting.NoError(t, err)
 	assert.True(t, v)
-	assert.Equal(t, 3, count)
+	itesting.Equal(t, 3, count)
 }
 
 func TestBoolFlagCountFromCommand(t *testing.T) {
@@ -569,7 +569,7 @@ func TestFlagStringifying(t *testing.T) {
 	} {
 		t.Run(tc.name, func(ct *testing.T) {
 			s := stringifyFlag(tc.fl)
-			assert.Equal(t, tc.expected, s, "stringified flag %q does not match expected", s)
+			itesting.Equal(t, tc.expected, s, "stringified flag %q does not match expected", s)
 		})
 	}
 }
@@ -595,14 +595,14 @@ func TestStringFlagHelpOutput(t *testing.T) {
 		// create a tmp flagset
 		tfs := flag.NewFlagSet("test", 0)
 		itesting.NoError(t, fl.Apply(tfs))
-		assert.Equal(t, test.expected, fl.String())
+		itesting.Equal(t, test.expected, fl.String())
 	}
 }
 
 func TestStringFlagDefaultText(t *testing.T) {
 	fl := &StringFlag{Name: "foo", Aliases: nil, Usage: "amount of `foo` requested", Value: "none", DefaultText: "all of it"}
 	expected := "--foo foo\tamount of foo requested (default: all of it)"
-	assert.Equal(t, expected, fl.String())
+	itesting.Equal(t, expected, fl.String())
 }
 
 func TestStringFlagWithEnvVarHelpOutput(t *testing.T) {
@@ -657,7 +657,7 @@ func TestStringFlagApply_SetsAllNames(t *testing.T) {
 
 	err := set.Parse([]string{"--hay", "u", "-H", "yuu", "--hayyy", "YUUUU"})
 	itesting.NoError(t, err)
-	assert.Equal(t, "YUUUU", v)
+	itesting.Equal(t, "YUUUU", v)
 }
 
 func TestStringFlagValueFromCommand(t *testing.T) {
@@ -719,7 +719,7 @@ var stringSliceFlagTests = []struct {
 func TestStringSliceFlagHelpOutput(t *testing.T) {
 	for _, test := range stringSliceFlagTests {
 		f := &StringSliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value}
-		assert.Equal(t, test.expected, f.String())
+		itesting.Equal(t, test.expected, f.String())
 	}
 }
 
@@ -758,7 +758,7 @@ func TestStringSliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 
 	err := set.Parse(nil)
 	itesting.NoError(t, err)
-	assert.Equal(t, []string{"vincent van goat", "scape goat"}, set.Lookup("goat").Value.(flag.Getter).Get())
+	itesting.Equal(t, []string{"vincent van goat", "scape goat"}, set.Lookup("goat").Value.(flag.Getter).Get())
 }
 
 func TestStringSliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
@@ -771,7 +771,7 @@ func TestStringSliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	_ = fl.Apply(set)
 	err := set.Parse(nil)
 	itesting.NoError(t, err)
-	assert.Equal(t, []string{"vincent van goat", "scape goat"}, set.Lookup("goat").Value.(flag.Getter).Get())
+	itesting.Equal(t, []string{"vincent van goat", "scape goat"}, set.Lookup("goat").Value.(flag.Getter).Get())
 }
 
 func TestStringSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
@@ -784,7 +784,7 @@ func TestStringSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 
 	err := set.Parse([]string{})
 	itesting.NoError(t, err)
-	assert.Equal(t, defValue, dest)
+	itesting.Equal(t, defValue, dest)
 }
 
 func TestStringSliceFlagValueFromCommand(t *testing.T) {
@@ -810,7 +810,7 @@ func TestIntFlagHelpOutput(t *testing.T) {
 		// create a temporary flag set to apply
 		tfs := flag.NewFlagSet("test", 0)
 		require.NoError(t, fl.Apply(tfs))
-		assert.Equal(t, test.expected, fl.String())
+		itesting.Equal(t, test.expected, fl.String())
 	}
 }
 
@@ -864,7 +864,7 @@ func TestUintFlagHelpOutput(t *testing.T) {
 		// create a temporary flag set to apply
 		tfs := flag.NewFlagSet("test", 0)
 		require.NoError(t, fl.Apply(tfs))
-		assert.Equal(t, test.expected, fl.String())
+		itesting.Equal(t, test.expected, fl.String())
 	}
 }
 
@@ -907,7 +907,7 @@ func TestUint64FlagHelpOutput(t *testing.T) {
 		// create a temporary flag set to apply
 		tfs := flag.NewFlagSet("test", 0)
 		require.NoError(t, fl.Apply(tfs))
-		assert.Equal(t, test.expected, fl.String())
+		itesting.Equal(t, test.expected, fl.String())
 	}
 }
 
@@ -950,7 +950,7 @@ func TestDurationFlagHelpOutput(t *testing.T) {
 		// create a temporary flag set to apply
 		tfs := flag.NewFlagSet("test", 0)
 		require.NoError(t, fl.Apply(tfs))
-		assert.Equal(t, test.expected, fl.String())
+		itesting.Equal(t, test.expected, fl.String())
 	}
 }
 
@@ -978,7 +978,7 @@ func TestDurationFlagApply_SetsAllNames(t *testing.T) {
 
 	err := set.Parse([]string{"--howmuch", "30s", "-H", "5m", "--whyyy", "30h"})
 	itesting.NoError(t, err)
-	assert.Equal(t, time.Hour*30, v)
+	itesting.Equal(t, time.Hour*30, v)
 }
 
 func TestDurationFlagValueFromCommand(t *testing.T) {
@@ -1003,7 +1003,7 @@ var intSliceFlagTests = []struct {
 func TestIntSliceFlagHelpOutput(t *testing.T) {
 	for _, test := range intSliceFlagTests {
 		fl := &IntSliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value}
-		assert.Equal(t, test.expected, fl.String())
+		itesting.Equal(t, test.expected, fl.String())
 	}
 }
 
@@ -1067,7 +1067,7 @@ func TestIntSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 
 	err := set.Parse([]string{})
 	itesting.NoError(t, err)
-	assert.Equal(t, defValue, dest)
+	itesting.Equal(t, defValue, dest)
 }
 
 func TestIntSliceFlagApply_ParentContext(t *testing.T) {
@@ -1194,7 +1194,7 @@ func TestUintSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 
 	err := set.Parse([]string{})
 	itesting.NoError(t, err)
-	assert.Equal(t, defValue, dest)
+	itesting.Equal(t, defValue, dest)
 }
 
 func TestUintSliceFlagApply_ParentContext(t *testing.T) {
@@ -1274,7 +1274,7 @@ var uint64SliceFlagTests = []struct {
 func TestUint64SliceFlagHelpOutput(t *testing.T) {
 	for _, test := range uint64SliceFlagTests {
 		fl := UintSliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value}
-		assert.Equal(t, test.expected, fl.String())
+		itesting.Equal(t, test.expected, fl.String())
 	}
 }
 
@@ -1313,7 +1313,7 @@ func TestUint64SliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 
 	err := set.Parse(nil)
 	itesting.NoError(t, err)
-	assert.Equal(t, []uint64{1, 2}, set.Lookup("goat").Value.(flag.Getter).Get().([]uint64))
+	itesting.Equal(t, []uint64{1, 2}, set.Lookup("goat").Value.(flag.Getter).Get().([]uint64))
 }
 
 func TestUint64SliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
@@ -1326,7 +1326,7 @@ func TestUint64SliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	_ = fl.Apply(set)
 	err := set.Parse(nil)
 	itesting.NoError(t, err)
-	assert.Equal(t, []uint64{1, 2}, set.Lookup("goat").Value.(flag.Getter).Get().([]uint64))
+	itesting.Equal(t, []uint64{1, 2}, set.Lookup("goat").Value.(flag.Getter).Get().([]uint64))
 }
 
 func TestUint64SliceFlagApply_DefaultValueWithDestination(t *testing.T) {
@@ -1339,7 +1339,7 @@ func TestUint64SliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 
 	err := set.Parse([]string{})
 	itesting.NoError(t, err)
-	assert.Equal(t, defValue, dest)
+	itesting.Equal(t, defValue, dest)
 }
 
 func TestUint64SliceFlagApply_ParentCommand(t *testing.T) {
@@ -1407,7 +1407,7 @@ var float64FlagTests = []struct {
 func TestFloat64FlagHelpOutput(t *testing.T) {
 	for _, test := range float64FlagTests {
 		f := &FloatFlag{Name: test.name, Value: 0.1}
-		assert.Equal(t, test.expected, f.String())
+		itesting.Equal(t, test.expected, f.String())
 	}
 }
 
@@ -1435,7 +1435,7 @@ func TestFloat64FlagApply_SetsAllNames(t *testing.T) {
 
 	err := set.Parse([]string{"--noodles", "1.3", "-N", "11", "--nurbles", "43.33333"})
 	itesting.NoError(t, err)
-	assert.Equal(t, float64(43.33333), v)
+	itesting.Equal(t, float64(43.33333), v)
 }
 
 func TestFloat64FlagValueFromCommand(t *testing.T) {
@@ -1465,7 +1465,7 @@ var float64SliceFlagTests = []struct {
 func TestFloat64SliceFlagHelpOutput(t *testing.T) {
 	for _, test := range float64SliceFlagTests {
 		fl := FloatSliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value}
-		assert.Equal(t, test.expected, fl.String())
+		itesting.Equal(t, test.expected, fl.String())
 	}
 }
 
@@ -1504,7 +1504,7 @@ func TestFloat64SliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 
 	err := set.Parse(nil)
 	itesting.NoError(t, err)
-	assert.Equal(t, []float64{1, 2}, set.Lookup("goat").Value.(flag.Getter).Get().([]float64))
+	itesting.Equal(t, []float64{1, 2}, set.Lookup("goat").Value.(flag.Getter).Get().([]float64))
 }
 
 func TestFloat64SliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
@@ -1517,7 +1517,7 @@ func TestFloat64SliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	_ = fl.Apply(set)
 	err := set.Parse(nil)
 	itesting.NoError(t, err)
-	assert.Equal(t, []float64{1, 2}, set.Lookup("goat").Value.(flag.Getter).Get().([]float64))
+	itesting.Equal(t, []float64{1, 2}, set.Lookup("goat").Value.(flag.Getter).Get().([]float64))
 }
 
 func TestFloat64SliceFlagApply_DefaultValueWithDestination(t *testing.T) {
@@ -1530,7 +1530,7 @@ func TestFloat64SliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 
 	err := set.Parse([]string{})
 	itesting.NoError(t, err)
-	assert.Equal(t, defValue, dest)
+	itesting.Equal(t, defValue, dest)
 }
 
 func TestFloat64SliceFlagValueFromCommand(t *testing.T) {
@@ -1564,8 +1564,8 @@ func TestParseMultiString(t *testing.T) {
 			&StringFlag{Name: "serve", Aliases: []string{"s"}},
 		},
 		Action: func(_ context.Context, cmd *Command) error {
-			assert.Equal(t, "10", cmd.String("serve"), "main name not set")
-			assert.Equal(t, "10", cmd.String("s"), "short name not set")
+			itesting.Equal(t, "10", cmd.String("serve"), "main name not set")
+			itesting.Equal(t, "10", cmd.String("s"), "short name not set")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run", "-s", "10"})
@@ -1581,7 +1581,7 @@ func TestParseDestinationString(t *testing.T) {
 			},
 		},
 		Action: func(context.Context, *Command) error {
-			assert.Equal(t, "10", dest, "expected destination String 10")
+			itesting.Equal(t, "10", dest, "expected destination String 10")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run", "--dest", "10"})
@@ -1595,8 +1595,8 @@ func TestParseMultiStringFromEnv(t *testing.T) {
 			&StringFlag{Name: "count", Aliases: []string{"c"}, Sources: EnvVars("APP_COUNT")},
 		},
 		Action: func(_ context.Context, cmd *Command) error {
-			assert.Equal(t, "20", cmd.String("count"), "main name not set")
-			assert.Equal(t, "20", cmd.String("c"), "short name not set")
+			itesting.Equal(t, "20", cmd.String("count"), "main name not set")
+			itesting.Equal(t, "20", cmd.String("c"), "short name not set")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run"})
@@ -1610,8 +1610,8 @@ func TestParseMultiStringFromEnvCascade(t *testing.T) {
 			&StringFlag{Name: "count", Aliases: []string{"c"}, Sources: EnvVars("COMPAT_COUNT", "APP_COUNT")},
 		},
 		Action: func(_ context.Context, cmd *Command) error {
-			assert.Equal(t, "20", cmd.String("count"), "main name not set")
-			assert.Equal(t, "20", cmd.String("c"), "short name not set")
+			itesting.Equal(t, "20", cmd.String("count"), "main name not set")
+			itesting.Equal(t, "20", cmd.String("c"), "short name not set")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run"})
@@ -1624,8 +1624,8 @@ func TestParseMultiStringSlice(t *testing.T) {
 		},
 		Action: func(_ context.Context, cmd *Command) error {
 			expected := []string{"10", "20"}
-			assert.Equal(t, expected, cmd.StringSlice("serve"), "main name not set")
-			assert.Equal(t, expected, cmd.StringSlice("s"), "short name not set")
+			itesting.Equal(t, expected, cmd.StringSlice("serve"), "main name not set")
+			itesting.Equal(t, expected, cmd.StringSlice("s"), "short name not set")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run", "-s", "10", "-s", "20"})
@@ -1638,8 +1638,8 @@ func TestParseMultiStringSliceWithDefaults(t *testing.T) {
 		},
 		Action: func(_ context.Context, cmd *Command) error {
 			expected := []string{"10", "20"}
-			assert.Equal(t, expected, cmd.StringSlice("serve"), "main name not set")
-			assert.Equal(t, expected, cmd.StringSlice("s"), "short name not set")
+			itesting.Equal(t, expected, cmd.StringSlice("serve"), "main name not set")
+			itesting.Equal(t, expected, cmd.StringSlice("s"), "short name not set")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run", "-s", "10", "-s", "20"})
@@ -1654,7 +1654,7 @@ func TestParseMultiStringSliceWithDestination(t *testing.T) {
 		},
 		Action: func(_ context.Context, cmd *Command) error {
 			expected := []string{"10", "20"}
-			assert.Equal(t, expected, dest, "destination val not set")
+			itesting.Equal(t, expected, dest, "destination val not set")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run", "-s", "10", "-s", "20"})
@@ -1670,7 +1670,7 @@ func TestParseMultiStringSliceWithDestinationAndEnv(t *testing.T) {
 		},
 		Action: func(_ context.Context, cmd *Command) error {
 			expected := []string{"10", "20"}
-			assert.Equal(t, expected, dest, "destination val not set")
+			itesting.Equal(t, expected, dest, "destination val not set")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run", "-s", "10", "-s", "20"})
@@ -1688,7 +1688,7 @@ func TestParseMultiFloat64SliceWithDestinationAndEnv(t *testing.T) {
 		},
 		Action: func(_ context.Context, cmd *Command) error {
 			expected := []float64{10, 20}
-			assert.Equal(t, expected, dest, "destination val not set")
+			itesting.Equal(t, expected, dest, "destination val not set")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run", "-s", "10", "-s", "20"})
@@ -1717,8 +1717,8 @@ func TestParseMultiStringSliceWithDefaultsUnset(t *testing.T) {
 		},
 		Action: func(_ context.Context, cmd *Command) error {
 			expected := []string{"9", "2"}
-			assert.Equal(t, expected, cmd.StringSlice("serve"), "main name not set")
-			assert.Equal(t, expected, cmd.StringSlice("s"), "short name not set")
+			itesting.Equal(t, expected, cmd.StringSlice("serve"), "main name not set")
+			itesting.Equal(t, expected, cmd.StringSlice("s"), "short name not set")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run"})
@@ -1735,8 +1735,8 @@ func TestParseMultiStringSliceFromEnv(t *testing.T) {
 		},
 		Action: func(_ context.Context, cmd *Command) error {
 			expected := []string{"20", "30", "40"}
-			assert.Equal(t, expected, cmd.StringSlice("intervals"), "main name not set from env")
-			assert.Equal(t, expected, cmd.StringSlice("i"), "short name not set from env")
+			itesting.Equal(t, expected, cmd.StringSlice("intervals"), "main name not set from env")
+			itesting.Equal(t, expected, cmd.StringSlice("i"), "short name not set from env")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run"})
@@ -1753,8 +1753,8 @@ func TestParseMultiStringSliceFromEnvWithDefaults(t *testing.T) {
 		},
 		Action: func(_ context.Context, cmd *Command) error {
 			expected := []string{"20", "30", "40"}
-			assert.Equal(t, expected, cmd.StringSlice("intervals"), "main name not set from env")
-			assert.Equal(t, expected, cmd.StringSlice("i"), "short name not set from env")
+			itesting.Equal(t, expected, cmd.StringSlice("intervals"), "main name not set from env")
+			itesting.Equal(t, expected, cmd.StringSlice("i"), "short name not set from env")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run"})
@@ -1771,8 +1771,8 @@ func TestParseMultiStringSliceFromEnvCascade(t *testing.T) {
 		},
 		Action: func(_ context.Context, cmd *Command) error {
 			expected := []string{"20", "30", "40"}
-			assert.Equal(t, expected, cmd.StringSlice("intervals"), "main name not set from env")
-			assert.Equal(t, expected, cmd.StringSlice("i"), "short name not set from env")
+			itesting.Equal(t, expected, cmd.StringSlice("intervals"), "main name not set from env")
+			itesting.Equal(t, expected, cmd.StringSlice("i"), "short name not set from env")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run"})
@@ -1789,8 +1789,8 @@ func TestParseMultiStringSliceFromEnvCascadeWithDefaults(t *testing.T) {
 		},
 		Action: func(_ context.Context, cmd *Command) error {
 			expected := []string{"20", "30", "40"}
-			assert.Equal(t, expected, cmd.StringSlice("intervals"), "main name not set from env")
-			assert.Equal(t, expected, cmd.StringSlice("i"), "short name not set from env")
+			itesting.Equal(t, expected, cmd.StringSlice("intervals"), "main name not set from env")
+			itesting.Equal(t, expected, cmd.StringSlice("i"), "short name not set from env")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run"})
@@ -1807,7 +1807,7 @@ func TestParseMultiStringSliceFromEnvWithDestination(t *testing.T) {
 			&StringSliceFlag{Name: "intervals", Aliases: []string{"i"}, Destination: &dest, Sources: EnvVars("APP_INTERVALS")},
 		},
 		Action: func(context.Context, *Command) error {
-			assert.Equal(t, []string{"20", "30", "40"}, dest, "destination value not set from env")
+			itesting.Equal(t, []string{"20", "30", "40"}, dest, "destination value not set from env")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run"})
@@ -1819,8 +1819,8 @@ func TestParseMultiInt(t *testing.T) {
 			&IntFlag{Name: "serve", Aliases: []string{"s"}},
 		},
 		Action: func(_ context.Context, cmd *Command) error {
-			assert.Equal(t, int64(10), cmd.Int("serve"), "main name not set")
-			assert.Equal(t, int64(10), cmd.Int("s"), "short name not set")
+			itesting.Equal(t, int64(10), cmd.Int("serve"), "main name not set")
+			itesting.Equal(t, int64(10), cmd.Int("s"), "short name not set")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run", "-s", "10"})
@@ -1836,7 +1836,7 @@ func TestParseDestinationInt(t *testing.T) {
 			},
 		},
 		Action: func(context.Context, *Command) error {
-			assert.Equal(t, int64(10), dest, "expected destination Int 10")
+			itesting.Equal(t, int64(10), dest, "expected destination Int 10")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run", "--dest", "10"})
@@ -1851,8 +1851,8 @@ func TestParseMultiIntFromEnv(t *testing.T) {
 			&IntFlag{Name: "timeout", Aliases: []string{"t"}, Sources: EnvVars("APP_TIMEOUT_SECONDS")},
 		},
 		Action: func(_ context.Context, cmd *Command) error {
-			assert.Equal(t, int64(10), cmd.Int("timeout"), "main name not set")
-			assert.Equal(t, int64(10), cmd.Int("t"), "short name not set")
+			itesting.Equal(t, int64(10), cmd.Int("timeout"), "main name not set")
+			itesting.Equal(t, int64(10), cmd.Int("t"), "short name not set")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run"})
@@ -1865,8 +1865,8 @@ func TestParseMultiIntFromEnvCascade(t *testing.T) {
 			&IntFlag{Name: "timeout", Aliases: []string{"t"}, Sources: EnvVars("COMPAT_TIMEOUT_SECONDS", "APP_TIMEOUT_SECONDS")},
 		},
 		Action: func(_ context.Context, cmd *Command) error {
-			assert.Equal(t, int64(10), cmd.Int("timeout"), "main name not set")
-			assert.Equal(t, int64(10), cmd.Int("t"), "short name not set")
+			itesting.Equal(t, int64(10), cmd.Int("timeout"), "main name not set")
+			itesting.Equal(t, int64(10), cmd.Int("t"), "short name not set")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run"})
@@ -1911,8 +1911,8 @@ func TestParseMultiIntSliceWithDefaultsUnset(t *testing.T) {
 		},
 		Action: func(_ context.Context, cmd *Command) error {
 			expected := []int64{9, 2}
-			assert.Equal(t, expected, cmd.IntSlice("serve"), "main name not set")
-			assert.Equal(t, expected, cmd.IntSlice("s"), "short name not set")
+			itesting.Equal(t, expected, cmd.IntSlice("serve"), "main name not set")
+			itesting.Equal(t, expected, cmd.IntSlice("s"), "short name not set")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run"})
@@ -1979,8 +1979,8 @@ func TestParseMultiFloat64(t *testing.T) {
 			&FloatFlag{Name: "serve", Aliases: []string{"s"}},
 		},
 		Action: func(_ context.Context, cmd *Command) error {
-			assert.Equal(t, 10.2, cmd.Float("serve"), "main name not set")
-			assert.Equal(t, 10.2, cmd.Float("s"), "short name not set")
+			itesting.Equal(t, 10.2, cmd.Float("serve"), "main name not set")
+			itesting.Equal(t, 10.2, cmd.Float("s"), "short name not set")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run", "-s", "10.2"})
@@ -1996,7 +1996,7 @@ func TestParseDestinationFloat64(t *testing.T) {
 			},
 		},
 		Action: func(context.Context, *Command) error {
-			assert.Equal(t, 10.2, dest, "expected destination Float64 10.2")
+			itesting.Equal(t, 10.2, dest, "expected destination Float64 10.2")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run", "--dest", "10.2"})
@@ -2009,8 +2009,8 @@ func TestParseMultiFloat64FromEnv(t *testing.T) {
 			&FloatFlag{Name: "timeout", Aliases: []string{"t"}, Sources: EnvVars("APP_TIMEOUT_SECONDS")},
 		},
 		Action: func(_ context.Context, cmd *Command) error {
-			assert.Equal(t, 15.5, cmd.Float("timeout"), "main name not set")
-			assert.Equal(t, 15.5, cmd.Float("t"), "short name not set")
+			itesting.Equal(t, 15.5, cmd.Float("timeout"), "main name not set")
+			itesting.Equal(t, 15.5, cmd.Float("t"), "short name not set")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run"})
@@ -2024,8 +2024,8 @@ func TestParseMultiFloat64FromEnvCascade(t *testing.T) {
 			&FloatFlag{Name: "timeout", Aliases: []string{"t"}, Sources: EnvVars("COMPAT_TIMEOUT_SECONDS", "APP_TIMEOUT_SECONDS")},
 		},
 		Action: func(_ context.Context, cmd *Command) error {
-			assert.Equal(t, 15.5, cmd.Float("timeout"), "main name not set")
-			assert.Equal(t, 15.5, cmd.Float("t"), "short name not set")
+			itesting.Equal(t, 15.5, cmd.Float("timeout"), "main name not set")
+			itesting.Equal(t, 15.5, cmd.Float("t"), "short name not set")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run"})
@@ -2155,8 +2155,8 @@ func TestParseBoolFromEnv(t *testing.T) {
 					&BoolFlag{Name: "debug", Aliases: []string{"d"}, Sources: EnvVars("DEBUG")},
 				},
 				Action: func(_ context.Context, cmd *Command) error {
-					assert.Equal(t, test.output, cmd.Bool("debug"))
-					assert.Equal(t, test.output, cmd.Bool("d"))
+					itesting.Equal(t, test.output, cmd.Bool("debug"))
+					itesting.Equal(t, test.output, cmd.Bool("d"))
 					return nil
 				},
 			}).Run(buildTestContext(t), []string{"run"})
@@ -2285,7 +2285,7 @@ func TestTimestampFlagApply_SingleFormat(t *testing.T) {
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
 	itesting.NoError(t, err)
-	assert.Equal(t, expectedResult, set.Lookup("time").Value.(flag.Getter).Get())
+	itesting.Equal(t, expectedResult, set.Lookup("time").Value.(flag.Getter).Get())
 }
 
 func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
@@ -2448,7 +2448,7 @@ func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
 				err := set.Parse([]string{"--time", now.Format(layout)})
 				itesting.NoError(t, err)
 				if !testCase.expRes.IsZero() {
-					assert.Equal(t, testCase.expRes, set.Lookup("time").Value.(flag.Getter).Get())
+					itesting.Equal(t, testCase.expRes, set.Lookup("time").Value.(flag.Getter).Get())
 				}
 			}
 
@@ -2501,7 +2501,7 @@ func TestTimestampFlagApply_ShortenedLayouts(t *testing.T) {
 	for layout, prec := range shortenedLayoutsPrecisions {
 		err := set.Parse([]string{"--time", now.Format(layout)})
 		itesting.NoError(t, err)
-		assert.Equal(t, now.Truncate(prec), set.Lookup("time").Value.(flag.Getter).Get())
+		itesting.Equal(t, now.Truncate(prec), set.Lookup("time").Value.(flag.Getter).Get())
 	}
 }
 
@@ -2513,7 +2513,7 @@ func TestTimestampFlagApplyValue(t *testing.T) {
 
 	err := set.Parse([]string{""})
 	itesting.NoError(t, err)
-	assert.Equal(t, expectedResult, set.Lookup("time").Value.(flag.Getter).Get())
+	itesting.Equal(t, expectedResult, set.Lookup("time").Value.(flag.Getter).Get())
 }
 
 func TestTimestampFlagApply_Fail_Parse_Wrong_Layout(t *testing.T) {
@@ -2545,7 +2545,7 @@ func TestTimestampFlagApply_Timezoned(t *testing.T) {
 
 	err := set.Parse([]string{"--time", "Mon Jan 2 08:04:05 2006"})
 	itesting.NoError(t, err)
-	assert.Equal(t, expectedResult.In(pdt), set.Lookup("time").Value.(flag.Getter).Get())
+	itesting.Equal(t, expectedResult.In(pdt), set.Lookup("time").Value.(flag.Getter).Get())
 }
 
 func TestTimestampFlagValueFromCommand(t *testing.T) {
@@ -2620,7 +2620,7 @@ func TestFlagDefaultValue(t *testing.T) {
 		set.SetOutput(io.Discard)
 		_ = v.flag.Apply(set)
 		itesting.NoError(t, set.Parse(v.toParse))
-		assert.Equal(t, v.expect, v.flag.String())
+		itesting.Equal(t, v.expect, v.flag.String())
 	}
 }
 
@@ -2765,7 +2765,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 		set.SetOutput(io.Discard)
 		require.NoError(t, v.flag.Apply(set))
 		require.NoError(t, set.Parse(v.toParse))
-		assert.Equal(t, v.expect, v.flag.String())
+		itesting.Equal(t, v.expect, v.flag.String())
 	}
 }
 
@@ -2830,7 +2830,7 @@ func TestTimestampFlagApply_WithDestination(t *testing.T) {
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
 	itesting.NoError(t, err)
-	assert.Equal(t, expectedResult, destination)
+	itesting.Equal(t, expectedResult, destination)
 }
 
 // Test issue #1254
@@ -2913,7 +2913,7 @@ var stringMapFlagTests = []struct {
 func TestStringMapFlagHelpOutput(t *testing.T) {
 	for _, test := range stringMapFlagTests {
 		f := &StringMapFlag{Name: test.name, Aliases: test.aliases, Value: test.value}
-		assert.Equal(t, test.expected, f.String())
+		itesting.Equal(t, test.expected, f.String())
 	}
 }
 
@@ -2954,7 +2954,7 @@ func TestStringMapFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	err := set.Parse(nil)
 	itesting.NoError(t, err)
 	assert.Nil(t, val)
-	assert.Equal(t, map[string]string{"vincent van goat": "scape goat"}, set.Lookup("goat").Value.(flag.Getter).Get())
+	itesting.Equal(t, map[string]string{"vincent van goat": "scape goat"}, set.Lookup("goat").Value.(flag.Getter).Get())
 }
 
 func TestStringMapFlagApply_UsesEnvValues_withDefault(t *testing.T) {
@@ -2967,8 +2967,8 @@ func TestStringMapFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	_ = fl.Apply(set)
 	err := set.Parse(nil)
 	itesting.NoError(t, err)
-	assert.Equal(t, map[string]string{`some default`: `values here`}, val)
-	assert.Equal(t, map[string]string{"vincent van goat": "scape goat"}, set.Lookup("goat").Value.(flag.Getter).Get())
+	itesting.Equal(t, map[string]string{`some default`: `values here`}, val)
+	itesting.Equal(t, map[string]string{"vincent van goat": "scape goat"}, set.Lookup("goat").Value.(flag.Getter).Get())
 }
 
 func TestStringMapFlagApply_DefaultValueWithDestination(t *testing.T) {
@@ -2980,7 +2980,7 @@ func TestStringMapFlagApply_DefaultValueWithDestination(t *testing.T) {
 
 	err := set.Parse([]string{})
 	itesting.NoError(t, err)
-	assert.Equal(t, defValue, *fl.Destination)
+	itesting.Equal(t, defValue, *fl.Destination)
 }
 
 func TestStringMapFlagValueFromCommand(t *testing.T) {

@@ -3,7 +3,7 @@ package cli
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	itesting "github.com/urfave/cli/v3/internal/testing"
 )
 
 var lexicographicLessTests = []struct {
@@ -27,6 +27,6 @@ var lexicographicLessTests = []struct {
 func TestLexicographicLess(t *testing.T) {
 	for _, test := range lexicographicLessTests {
 		actual := lexicographicLess(test.i, test.j)
-		assert.Equal(t, test.expected, actual)
+		itesting.Equal(t, test.expected, actual)
 	}
 }

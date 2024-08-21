@@ -417,8 +417,8 @@ func TestCommandSkipFlagParsing(t *testing.T) {
 			}
 
 			err := cmd.Run(buildTestContext(t), c.testArgs.Slice())
-			assert.Equal(t, c.expectedErr, err)
-			assert.Equal(t, c.expectedArgs, args)
+			itesting.Equal(t, c.expectedErr, err)
+			itesting.Equal(t, c.expectedArgs, args)
 		})
 	}
 }
@@ -509,7 +509,7 @@ func TestCommand_VisibleSubcCommands(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, cmd.VisibleCommands(), []*Command{subc1, subc3})
+	itesting.Equal(t, cmd.VisibleCommands(), []*Command{subc1, subc3})
 }
 
 func TestCommand_VisibleFlagCategories(t *testing.T) {
@@ -552,16 +552,16 @@ func TestCommand_VisibleFlagCategories(t *testing.T) {
 	vfc := cmd.VisibleFlagCategories()
 	require.Len(t, vfc, 3)
 
-	assert.Equal(t, vfc[0].Name(), "", "expected category name to be empty")
-	assert.Equal(t, vfc[0].Flags()[0].Names(), []string{"strd"})
+	itesting.Equal(t, vfc[0].Name(), "", "expected category name to be empty")
+	itesting.Equal(t, vfc[0].Flags()[0].Names(), []string{"strd"})
 
-	assert.Equal(t, vfc[1].Name(), "cat1", "expected category name cat1")
+	itesting.Equal(t, vfc[1].Name(), "cat1", "expected category name cat1")
 	require.Len(t, vfc[1].Flags(), 1, "expected flag category to have one flag")
-	assert.Equal(t, vfc[1].Flags()[0].Names(), []string{"intd", "altd1", "altd2"})
+	itesting.Equal(t, vfc[1].Flags()[0].Names(), []string{"intd", "altd1", "altd2"})
 
-	assert.Equal(t, vfc[2].Name(), "cat2", "expected category name cat2")
+	itesting.Equal(t, vfc[2].Name(), "cat2", "expected category name cat2")
 	require.Len(t, vfc[2].Flags(), 1, "expected flag category to have one flag")
-	assert.Equal(t, vfc[2].Flags()[0].Names(), []string{"mutex"})
+	itesting.Equal(t, vfc[2].Flags()[0].Names(), []string{"mutex"})
 }
 
 func TestCommand_RunSubcommandWithDefault(t *testing.T) {
@@ -608,7 +608,7 @@ func TestCommand_Run(t *testing.T) {
 	itesting.NoError(t, err)
 	err = cmd.Run(buildTestContext(t), []string{"command", "bar"})
 	itesting.NoError(t, err)
-	assert.Equal(t, s, "foobar")
+	itesting.Equal(t, s, "foobar")
 }
 
 var commandTests = []struct {
@@ -850,7 +850,7 @@ func TestCommand_FlagsFromExtPackage(t *testing.T) {
 	err := cmd.Run(buildTestContext(t), []string{"foo", "-c", "cly", "--epflag", "10"})
 	itesting.NoError(t, err)
 
-	assert.Equal(t, someint, int(10))
+	itesting.Equal(t, someint, int(10))
 
 	cmd = &Command{
 		Flags: []Flag{
@@ -876,13 +876,13 @@ func TestCommand_FlagsFromExtPackage(t *testing.T) {
 func TestCommand_Setup_defaultsReader(t *testing.T) {
 	cmd := &Command{}
 	cmd.setupDefaults([]string{"cli.test"})
-	assert.Equal(t, cmd.Reader, os.Stdin)
+	itesting.Equal(t, cmd.Reader, os.Stdin)
 }
 
 func TestCommand_Setup_defaultsWriter(t *testing.T) {
 	cmd := &Command{}
 	cmd.setupDefaults([]string{"cli.test"})
-	assert.Equal(t, cmd.Writer, os.Stdout)
+	itesting.Equal(t, cmd.Writer, os.Stdout)
 }
 
 func TestCommand_CommandWithFlagBeforeTerminator(t *testing.T) {
@@ -970,9 +970,9 @@ func TestCommand_SkipFlagParsing(t *testing.T) {
 
 	_ = cmd.Run(buildTestContext(t), []string{"", "--", "my-arg", "notAFlagAtAll"})
 
-	assert.Equal(t, args.Get(0), "--")
-	assert.Equal(t, args.Get(1), "my-arg")
-	assert.Equal(t, args.Get(2), "notAFlagAtAll")
+	itesting.Equal(t, args.Get(0), "--")
+	itesting.Equal(t, args.Get(1), "my-arg")
+	itesting.Equal(t, args.Get(2), "notAFlagAtAll")
 }
 
 func TestCommand_VisibleCommands(t *testing.T) {
@@ -1002,7 +1002,7 @@ func TestCommand_VisibleCommands(t *testing.T) {
 
 		if expectedCommand.Action != nil {
 			// comparing func addresses is OK!
-			assert.Equal(t, fmt.Sprintf("%p", expectedCommand.Action), fmt.Sprintf("%p", actualCommand.Action))
+			itesting.Equal(t, fmt.Sprintf("%p", expectedCommand.Action), fmt.Sprintf("%p", actualCommand.Action))
 		}
 
 		func() {
@@ -1017,7 +1017,7 @@ func TestCommand_VisibleCommands(t *testing.T) {
 			expectedCommand.Action = nil
 			actualCommand.Action = nil
 
-			assert.Equal(t, expectedCommand, actualCommand)
+			itesting.Equal(t, expectedCommand, actualCommand)
 		}()
 	}
 }
@@ -1044,7 +1044,7 @@ func TestCommand_UseShortOptionHandling(t *testing.T) {
 	_ = cmd.Run(buildTestContext(t), []string{"", "-on", expected})
 	assert.True(t, one)
 	assert.False(t, two)
-	assert.Equal(t, name, expected)
+	itesting.Equal(t, name, expected)
 }
 
 func TestCommand_UseShortOptionHandling_missing_value(t *testing.T) {
@@ -1185,11 +1185,11 @@ func TestCommand_UseShortOptionAfterSliceFlag(t *testing.T) {
 	}
 
 	_ = cmd.Run(buildTestContext(t), []string{"", "-e", "foo", "-on", expected})
-	assert.Equal(t, sliceVal, []string{"foo"})
-	assert.Equal(t, sliceValDest, []string{"foo"})
+	itesting.Equal(t, sliceVal, []string{"foo"})
+	itesting.Equal(t, sliceValDest, []string{"foo"})
 	assert.True(t, one)
 	assert.False(t, two)
-	assert.Equal(t, expected, name)
+	itesting.Equal(t, expected, name)
 }
 
 func TestCommand_Float64Flag(t *testing.T) {
@@ -1206,7 +1206,7 @@ func TestCommand_Float64Flag(t *testing.T) {
 	}
 
 	_ = cmd.Run(buildTestContext(t), []string{"", "--height", "1.93"})
-	assert.Equal(t, 1.93, meters)
+	itesting.Equal(t, 1.93, meters)
 }
 
 func TestCommand_ParseSliceFlags(t *testing.T) {
@@ -1269,14 +1269,14 @@ func TestCommand_DefaultStdin(t *testing.T) {
 	cmd := &Command{}
 	cmd.setupDefaults([]string{"cli.test"})
 
-	assert.Equal(t, cmd.Reader, os.Stdin, "Default input reader not set.")
+	itesting.Equal(t, cmd.Reader, os.Stdin, "Default input reader not set.")
 }
 
 func TestCommand_DefaultStdout(t *testing.T) {
 	cmd := &Command{}
 	cmd.setupDefaults([]string{"cli.test"})
 
-	assert.Equal(t, cmd.Writer, os.Stdout, "Default output writer not set.")
+	itesting.Equal(t, cmd.Writer, os.Stdout, "Default output writer not set.")
 }
 
 func TestCommand_SetStdin(t *testing.T) {
@@ -1293,7 +1293,7 @@ func TestCommand_SetStdin(t *testing.T) {
 
 	err := cmd.Run(buildTestContext(t), []string{"help"})
 	require.NoError(t, err)
-	assert.Equal(t, "Hello World!", string(buf), "Command did not read input from desired reader.")
+	itesting.Equal(t, "Hello World!", string(buf), "Command did not read input from desired reader.")
 }
 
 func TestCommand_SetStdin_Subcommand(t *testing.T) {
@@ -1320,7 +1320,7 @@ func TestCommand_SetStdin_Subcommand(t *testing.T) {
 
 	err := cmd.Run(buildTestContext(t), []string{"test", "command", "subcommand"})
 	require.NoError(t, err)
-	assert.Equal(t, "Hello World!", string(buf), "Command did not read input from desired reader.")
+	itesting.Equal(t, "Hello World!", string(buf), "Command did not read input from desired reader.")
 }
 
 func TestCommand_SetStdout(t *testing.T) {
@@ -1372,8 +1372,8 @@ func TestCommand_BeforeFunc(t *testing.T) {
 	err = cmd.Run(buildTestContext(t), []string{"command", "--opt", "succeed", "sub"})
 	require.NoError(t, err)
 
-	assert.Equal(t, 1, counts.Before, "Before() not executed when expected")
-	assert.Equal(t, 2, counts.SubCommand, "Subcommand not executed when expected")
+	itesting.Equal(t, 1, counts.Before, "Before() not executed when expected")
+	itesting.Equal(t, 2, counts.SubCommand, "Subcommand not executed when expected")
 
 	// reset
 	counts = &opCounts{}
@@ -1383,8 +1383,8 @@ func TestCommand_BeforeFunc(t *testing.T) {
 
 	// should be the same error produced by the Before func
 	itesting.ErrorIs(t, err, beforeError, "Run error expected, but not received")
-	assert.Equal(t, 1, counts.Before, "Before() not executed when expected")
-	assert.Equal(t, 0, counts.SubCommand, "Subcommand executed when NOT expected")
+	itesting.Equal(t, 1, counts.Before, "Before() not executed when expected")
+	itesting.Equal(t, 0, counts.SubCommand, "Subcommand executed when NOT expected")
 
 	// reset
 	counts = &opCounts{}
@@ -1402,7 +1402,7 @@ func TestCommand_BeforeFunc(t *testing.T) {
 		t.Errorf("MultiError expected, but not received")
 	}
 
-	assert.Equal(t, 1, counts.Before, "Before() not executed when expected")
+	itesting.Equal(t, 1, counts.Before, "Before() not executed when expected")
 	assert.Zero(t, counts.SubCommand, "Subcommand executed when NOT expected")
 }
 
@@ -1492,8 +1492,8 @@ func TestCommand_AfterFunc(t *testing.T) {
 	// run with the After() func succeeding
 	err = cmd.Run(buildTestContext(t), []string{"command", "--opt", "succeed", "sub"})
 	require.NoError(t, err)
-	assert.Equal(t, 2, counts.After, "After() not executed when expected")
-	assert.Equal(t, 1, counts.SubCommand, "Subcommand not executed when expected")
+	itesting.Equal(t, 2, counts.After, "After() not executed when expected")
+	itesting.Equal(t, 1, counts.SubCommand, "Subcommand not executed when expected")
 
 	// reset
 	counts = &opCounts{}
@@ -1503,8 +1503,8 @@ func TestCommand_AfterFunc(t *testing.T) {
 
 	// should be the same error produced by the Before func
 	itesting.ErrorIs(t, err, afterError, "Run error expected, but not received")
-	assert.Equal(t, 2, counts.After, "After() not executed when expected")
-	assert.Equal(t, 1, counts.SubCommand, "Subcommand not executed when expected")
+	itesting.Equal(t, 2, counts.After, "After() not executed when expected")
+	itesting.Equal(t, 1, counts.SubCommand, "Subcommand not executed when expected")
 
 	/*
 		reset
@@ -1521,8 +1521,8 @@ func TestCommand_AfterFunc(t *testing.T) {
 	// should be the same error produced by the Before func
 	require.NoError(t, err)
 
-	assert.Equal(t, 1, counts.After, "After() not executed when expected")
-	assert.Equal(t, 0, counts.SubCommand, "Subcommand not executed when expected")
+	itesting.Equal(t, 1, counts.After, "After() not executed when expected")
+	itesting.Equal(t, 0, counts.SubCommand, "Subcommand not executed when expected")
 }
 
 func TestCommandNoHelpFlag(t *testing.T) {
@@ -1737,9 +1737,9 @@ func TestCommand_CommandNotFound(t *testing.T) {
 
 	_ = cmd.Run(buildTestContext(t), []string{"command", "foo"})
 
-	assert.Equal(t, 1, counts.CommandNotFound, 1)
-	assert.Equal(t, 0, counts.SubCommand)
-	assert.Equal(t, 1, counts.Total)
+	itesting.Equal(t, 1, counts.CommandNotFound, 1)
+	itesting.Equal(t, 0, counts.SubCommand)
+	itesting.Equal(t, 1, counts.Total)
 }
 
 func TestCommand_OrderOfOperations(t *testing.T) {
@@ -2144,7 +2144,7 @@ func TestCommand_VisibleCategories(t *testing.T) {
 	}
 
 	cmd.setupDefaults([]string{"cli.test"})
-	assert.Equal(t, expected, cmd.VisibleCategories())
+	itesting.Equal(t, expected, cmd.VisibleCategories())
 
 	cmd = &Command{
 		Name:     "visible-categories",
@@ -2177,7 +2177,7 @@ func TestCommand_VisibleCategories(t *testing.T) {
 	}
 
 	cmd.setupDefaults([]string{"cli.test"})
-	assert.Equal(t, expected, cmd.VisibleCategories())
+	itesting.Equal(t, expected, cmd.VisibleCategories())
 
 	cmd = &Command{
 		Name:     "visible-categories",
@@ -2475,8 +2475,8 @@ func TestSetupInitializesBothWriters(t *testing.T) {
 
 	cmd.setupDefaults([]string{"cli.test"})
 
-	assert.Equal(t, cmd.ErrWriter, os.Stderr, "expected a.ErrWriter to be os.Stderr")
-	assert.Equal(t, cmd.Writer, os.Stdout, "expected a.Writer to be os.Stdout")
+	itesting.Equal(t, cmd.ErrWriter, os.Stderr, "expected a.ErrWriter to be os.Stderr")
+	itesting.Equal(t, cmd.Writer, os.Stdout, "expected a.Writer to be os.Stdout")
 }
 
 func TestSetupInitializesOnlyNilWriters(t *testing.T) {
@@ -2487,8 +2487,8 @@ func TestSetupInitializesOnlyNilWriters(t *testing.T) {
 
 	cmd.setupDefaults([]string{"cli.test"})
 
-	assert.Equal(t, cmd.ErrWriter, wr, "expected a.ErrWriter to be a *bytes.Buffer instance")
-	assert.Equal(t, cmd.Writer, os.Stdout, "expected a.Writer to be os.Stdout")
+	itesting.Equal(t, cmd.ErrWriter, wr, "expected a.ErrWriter to be a *bytes.Buffer instance")
+	itesting.Equal(t, cmd.Writer, os.Stdout, "expected a.Writer to be os.Stdout")
 }
 
 func TestFlagAction(t *testing.T) {
@@ -2893,19 +2893,19 @@ func TestPersistentFlag(t *testing.T) {
 
 	require.NoError(t, err)
 
-	assert.Equal(t, "bar", appFlag)
-	assert.Equal(t, "hellor", appRequiredFlag)
-	assert.Equal(t, int64(12), topInt)
-	assert.Equal(t, int64(20), topPersistentInt)
+	itesting.Equal(t, "bar", appFlag)
+	itesting.Equal(t, "hellor", appRequiredFlag)
+	itesting.Equal(t, int64(12), topInt)
+	itesting.Equal(t, int64(20), topPersistentInt)
 
 	// this should be changed from app since
 	// cmd overrides it
-	assert.Equal(t, int64(102), appOverrideInt)
-	assert.Equal(t, int64(11), subCommandInt)
-	assert.Equal(t, int64(105), appOverrideCmdInt)
-	assert.Equal(t, []int64{100, 102, 130}, persistentCommandSliceInt)
-	assert.Equal(t, []float64{102.455, 3.1445}, appSliceFloat64)
-	assert.Equal(t, int64(2), persistentFlagActionCount, "Expected persistent flag action to be called 2 times")
+	itesting.Equal(t, int64(102), appOverrideInt)
+	itesting.Equal(t, int64(11), subCommandInt)
+	itesting.Equal(t, int64(105), appOverrideCmdInt)
+	itesting.Equal(t, []int64{100, 102, 130}, persistentCommandSliceInt)
+	itesting.Equal(t, []float64{102.455, 3.1445}, appSliceFloat64)
+	itesting.Equal(t, int64(2), persistentFlagActionCount, "Expected persistent flag action to be called 2 times")
 }
 
 func TestPersistentFlagIsSet(t *testing.T) {
