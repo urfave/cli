@@ -179,7 +179,7 @@ func Test_helpCommand_Action_ErrorIfNoTopic(t *testing.T) {
 	_ = cmd.flagSet.Parse([]string{"foo"})
 
 	err := helpCommandAction(context.Background(), cmd)
-	require.Error(t, err, "expected error from helpCommandAction()")
+	itesting.RequireError(t, err, "expected error from helpCommandAction()")
 
 	exitErr, ok := err.(*exitError)
 	require.True(t, ok, "expected *exitError from helpCommandAction()")
@@ -299,7 +299,7 @@ func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 	_ = cmd.flagSet.Parse([]string{"foo"})
 
 	err := helpCommandAction(context.Background(), cmd)
-	require.Error(t, err, "expected error from helpCommandAction(), but got nil")
+	itesting.RequireError(t, err, "expected error from helpCommandAction(), but got nil")
 
 	exitErr, ok := err.(*exitError)
 	require.True(t, ok, "expected *exitError from helpCommandAction(), but instead got: %v", err.Error())
@@ -471,7 +471,7 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 			}
 
 			err := cmd.Run(buildTestContext(t), []string{"my-app", "help", tt.command})
-			require.NoError(t, err)
+			itesting.RequireNoError(t, err)
 
 			got := buf.String()
 			itesting.Equal(t, tt.wantOutput, got)
@@ -874,7 +874,7 @@ func TestShowAppHelp_HelpPrinter(t *testing.T) {
 			}
 
 			err := cmd.Run(buildTestContext(t), []string{"my-app", "help"})
-			require.NoError(t, err)
+			itesting.RequireNoError(t, err)
 
 			itesting.Equal(t, tt.wantOutput, buf.String())
 		})
@@ -934,7 +934,7 @@ func TestShowAppHelp_HelpPrinterCustom(t *testing.T) {
 			}
 
 			err := cmd.Run(buildTestContext(t), []string{"my-app", "help"})
-			require.NoError(t, err)
+			itesting.RequireNoError(t, err)
 			itesting.Equal(t, tt.wantOutput, buf.String())
 		})
 	}

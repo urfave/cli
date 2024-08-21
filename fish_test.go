@@ -3,7 +3,7 @@ package cli
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	itesting "github.com/urfave/cli/v3/internal/testing"
 )
 
 func TestFishCompletion(t *testing.T) {
@@ -18,6 +18,6 @@ func TestFishCompletion(t *testing.T) {
 	res, err := cmd.ToFishCompletion()
 
 	// Then
-	require.NoError(t, err)
+	itesting.RequireNoError(t, err)
 	expectFileContent(t, "testdata/expected-fish-full.fish", res)
 }

@@ -312,7 +312,7 @@ func TestCommand_Run_BeforeSavesMetadata(t *testing.T) {
 		},
 	}
 
-	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo", "bar"}))
+	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"foo", "bar"}))
 	itesting.RequireEqual(t, "hello world", receivedMsgFromAction)
 	itesting.RequireEqual(t, "hello world", receivedMsgFromAfter)
 }
@@ -386,7 +386,7 @@ func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
 		},
 	}
 
-	require.NoError(t, cmd.Run(buildTestContext(t), []string{"bar", "baz"}))
+	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"bar", "baz"}))
 }
 
 func TestCommandSkipFlagParsing(t *testing.T) {
@@ -904,7 +904,7 @@ func TestCommand_CommandWithFlagBeforeTerminator(t *testing.T) {
 		},
 	}
 
-	require.NoError(t, cmd.Run(buildTestContext(t), []string{"", "cmd", "--option", "my-option", "my-arg", "--", "--notARealFlag"}))
+	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"", "cmd", "--option", "my-option", "my-arg", "--", "--notARealFlag"}))
 
 	itesting.RequireEqual(t, "my-option", parsedOption)
 	itesting.RequireEqual(t, "my-arg", args.Get(0))
@@ -927,7 +927,7 @@ func TestCommand_CommandWithDash(t *testing.T) {
 		},
 	}
 
-	require.NoError(t, cmd.Run(buildTestContext(t), []string{"", "cmd", "my-arg", "-"}))
+	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"", "cmd", "my-arg", "-"}))
 	require.NotNil(t, args)
 	itesting.RequireEqual(t, "my-arg", args.Get(0))
 	itesting.RequireEqual(t, "-", args.Get(1))
@@ -948,7 +948,7 @@ func TestCommand_CommandWithNoFlagBeforeTerminator(t *testing.T) {
 		},
 	}
 
-	require.NoError(t, cmd.Run(buildTestContext(t), []string{"", "cmd", "my-arg", "--", "notAFlagAtAll"}))
+	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"", "cmd", "my-arg", "--", "notAFlagAtAll"}))
 
 	require.NotNil(t, args)
 	itesting.RequireEqual(t, "my-arg", args.Get(0))
@@ -1081,7 +1081,7 @@ func TestCommand_UseShortOptionHandlingCommand(t *testing.T) {
 		Writer:                 io.Discard,
 	}
 
-	require.NoError(t, cmd.Run(buildTestContext(t), []string{"cmd", "-on", expected}))
+	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"cmd", "-on", expected}))
 	require.True(t, one)
 	require.False(t, two)
 	itesting.RequireEqual(t, expected, name)
@@ -1135,7 +1135,7 @@ func TestCommand_UseShortOptionHandlingSubCommand(t *testing.T) {
 
 	expected := "expectedName"
 
-	require.NoError(t, cmd.Run(buildTestContext(t), []string{"", "cmd", "sub", "-on", expected}))
+	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"", "cmd", "sub", "-on", expected}))
 	require.True(t, one)
 	require.False(t, two)
 	itesting.RequireEqual(t, expected, name)
@@ -1291,7 +1291,7 @@ func TestCommand_SetStdin(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"help"})
-	require.NoError(t, err)
+	itesting.RequireNoError(t, err)
 	itesting.Equal(t, "Hello World!", string(buf), "Command did not read input from desired reader.")
 }
 
@@ -1318,7 +1318,7 @@ func TestCommand_SetStdin_Subcommand(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"test", "command", "subcommand"})
-	require.NoError(t, err)
+	itesting.RequireNoError(t, err)
 	itesting.Equal(t, "Hello World!", string(buf), "Command did not read input from desired reader.")
 }
 
@@ -1331,7 +1331,7 @@ func TestCommand_SetStdout(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"help"})
-	require.NoError(t, err)
+	itesting.RequireNoError(t, err)
 	itesting.NotZero(t, w.Len(), "Command did not write output to desired writer.")
 }
 
@@ -1369,7 +1369,7 @@ func TestCommand_BeforeFunc(t *testing.T) {
 
 	// run with the Before() func succeeding
 	err = cmd.Run(buildTestContext(t), []string{"command", "--opt", "succeed", "sub"})
-	require.NoError(t, err)
+	itesting.RequireNoError(t, err)
 
 	itesting.Equal(t, 1, counts.Before, "Before() not executed when expected")
 	itesting.Equal(t, 2, counts.SubCommand, "Subcommand not executed when expected")
@@ -1490,7 +1490,7 @@ func TestCommand_AfterFunc(t *testing.T) {
 
 	// run with the After() func succeeding
 	err = cmd.Run(buildTestContext(t), []string{"command", "--opt", "succeed", "sub"})
-	require.NoError(t, err)
+	itesting.RequireNoError(t, err)
 	itesting.Equal(t, 2, counts.After, "After() not executed when expected")
 	itesting.Equal(t, 1, counts.SubCommand, "Subcommand not executed when expected")
 
@@ -1518,7 +1518,7 @@ func TestCommand_AfterFunc(t *testing.T) {
 	err = cmd.Run(buildTestContext(t), []string{"command"})
 
 	// should be the same error produced by the Before func
-	require.NoError(t, err)
+	itesting.RequireNoError(t, err)
 
 	itesting.Equal(t, 1, counts.After, "After() not executed when expected")
 	itesting.Equal(t, 0, counts.SubCommand, "Subcommand not executed when expected")
@@ -1960,7 +1960,7 @@ func TestCommand_Run_SubcommandFullPath(t *testing.T) {
 		Writer:      out,
 	}
 
-	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo", "bar", "--help"}))
+	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"foo", "bar", "--help"}))
 
 	outString := out.String()
 	require.Contains(t, outString, "foo bar - does bar things")
@@ -2890,7 +2890,7 @@ func TestPersistentFlag(t *testing.T) {
 		"--persistentCommandFloatSliceFlag", "3.1445",
 	})
 
-	require.NoError(t, err)
+	itesting.RequireNoError(t, err)
 
 	itesting.Equal(t, "bar", appFlag)
 	itesting.Equal(t, "hellor", appRequiredFlag)
@@ -2932,12 +2932,12 @@ func TestPersistentFlagIsSet(t *testing.T) {
 	}
 
 	err := app.Run(context.Background(), []string{"root", "--result", "before", "sub"})
-	require.NoError(t, err)
+	itesting.RequireNoError(t, err)
 	itesting.RequireEqual(t, "before", result)
 	require.True(t, resultIsSet)
 
 	err = app.Run(context.Background(), []string{"root", "sub", "--result", "after"})
-	require.NoError(t, err)
+	itesting.RequireNoError(t, err)
 	itesting.RequireEqual(t, "after", result)
 	require.True(t, resultIsSet)
 }
@@ -2963,10 +2963,10 @@ func TestRequiredPersistentFlag(t *testing.T) {
 	}
 
 	err := app.Run(context.Background(), []string{"root", "sub"})
-	require.Error(t, err)
+	itesting.RequireError(t, err)
 
 	err = app.Run(context.Background(), []string{"root", "sub", "--result", "after"})
-	require.NoError(t, err)
+	itesting.RequireNoError(t, err)
 }
 
 func TestFlagDuplicates(t *testing.T) {
@@ -3918,7 +3918,7 @@ func TestJSONExportCommand(t *testing.T) {
 	}
 
 	out, err := json.Marshal(cmd)
-	require.NoError(t, err)
+	itesting.RequireNoError(t, err)
 
 	expected := `{
 		"name": "greet",

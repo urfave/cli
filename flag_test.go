@@ -808,7 +808,7 @@ func TestIntFlagHelpOutput(t *testing.T) {
 
 		// create a temporary flag set to apply
 		tfs := flag.NewFlagSet("test", 0)
-		require.NoError(t, fl.Apply(tfs))
+		itesting.RequireNoError(t, fl.Apply(tfs))
 		itesting.Equal(t, test.expected, fl.String())
 	}
 }
@@ -862,7 +862,7 @@ func TestUintFlagHelpOutput(t *testing.T) {
 
 		// create a temporary flag set to apply
 		tfs := flag.NewFlagSet("test", 0)
-		require.NoError(t, fl.Apply(tfs))
+		itesting.RequireNoError(t, fl.Apply(tfs))
 		itesting.Equal(t, test.expected, fl.String())
 	}
 }
@@ -905,7 +905,7 @@ func TestUint64FlagHelpOutput(t *testing.T) {
 
 		// create a temporary flag set to apply
 		tfs := flag.NewFlagSet("test", 0)
-		require.NoError(t, fl.Apply(tfs))
+		itesting.RequireNoError(t, fl.Apply(tfs))
 		itesting.Equal(t, test.expected, fl.String())
 	}
 }
@@ -948,7 +948,7 @@ func TestDurationFlagHelpOutput(t *testing.T) {
 
 		// create a temporary flag set to apply
 		tfs := flag.NewFlagSet("test", 0)
-		require.NoError(t, fl.Apply(tfs))
+		itesting.RequireNoError(t, fl.Apply(tfs))
 		itesting.Equal(t, test.expected, fl.String())
 	}
 }
@@ -2266,13 +2266,13 @@ func TestTimestamp_set(t *testing.T) {
 	}
 
 	time1 := "Feb 3, 2013 at 7:54pm (PST)"
-	require.NoError(t, ts.Set(time1), "Failed to parse time %s with layouts %v", time1, ts.layouts)
+	itesting.RequireNoError(t, ts.Set(time1), "Failed to parse time %s with layouts %v", time1, ts.layouts)
 	require.True(t, ts.hasBeenSet, "hasBeenSet is not true after setting a time")
 
 	ts.hasBeenSet = false
 	ts.layouts = []string{time.RFC3339}
 	time2 := "2006-01-02T15:04:05Z"
-	require.NoError(t, ts.Set(time2), "Failed to parse time %s with layout %v", time2, ts.layouts)
+	itesting.RequireNoError(t, ts.Set(time2), "Failed to parse time %s with layout %v", time2, ts.layouts)
 	require.True(t, ts.hasBeenSet, "hasBeenSet is not true after setting a time")
 }
 
@@ -2636,7 +2636,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 	os.Clearenv()
 
 	ts, err := time.Parse(time.RFC3339, "2005-01-02T15:04:05Z")
-	require.NoError(t, err)
+	itesting.RequireNoError(t, err)
 	cases := []*flagDefaultTestCaseWithEnv{
 		{
 			name:    "stringSlice",
@@ -2762,8 +2762,8 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 		}
 		set := flag.NewFlagSet("test", 0)
 		set.SetOutput(io.Discard)
-		require.NoError(t, v.flag.Apply(set))
-		require.NoError(t, set.Parse(v.toParse))
+		itesting.RequireNoError(t, v.flag.Apply(set))
+		itesting.RequireNoError(t, set.Parse(v.toParse))
 		itesting.Equal(t, v.expect, v.flag.String())
 	}
 }
