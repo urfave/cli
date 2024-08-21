@@ -184,6 +184,26 @@ func NotNil(t *testing.T, object interface{}, msgAndArgs ...interface{}) bool {
 	return fail(t, "Expected value not to be nil.", msgAndArgs...)
 }
 
+func Zero(t *testing.T, i interface{}, msgAndArgs ...interface{}) bool {
+	t.Helper()
+
+	if i != nil && !reflect.DeepEqual(i, reflect.Zero(reflect.TypeOf(i)).Interface()) {
+		return fail(t, fmt.Sprintf("Should be zero, but was %v", i), msgAndArgs...)
+	}
+
+	return true
+}
+
+func NotZero(t *testing.T, i interface{}, msgAndArgs ...interface{}) bool {
+	t.Helper()
+
+	if i == nil || reflect.DeepEqual(i, reflect.Zero(reflect.TypeOf(i)).Interface()) {
+		return fail(t, fmt.Sprintf("Should not be zero, but was %v", i), msgAndArgs...)
+	}
+
+	return true
+}
+
 // fail reports a failure through
 func fail(t *testing.T, failureMessage string, msgAndArgs ...interface{}) bool {
 	t.Helper()
