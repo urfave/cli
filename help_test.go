@@ -182,7 +182,7 @@ func Test_helpCommand_Action_ErrorIfNoTopic(t *testing.T) {
 	itesting.RequireError(t, err, "expected error from helpCommandAction()")
 
 	exitErr, ok := err.(*exitError)
-	require.True(t, ok, "expected *exitError from helpCommandAction()")
+	itesting.RequireTrue(t, ok, "expected *exitError from helpCommandAction()")
 
 	require.Contains(t, exitErr.Error(), "No help topic for", "expected an unknown help topic error")
 	itesting.RequireEqual(t, 3, exitErr.exitCode, "expected exit value = 3")
@@ -302,7 +302,7 @@ func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 	itesting.RequireError(t, err, "expected error from helpCommandAction(), but got nil")
 
 	exitErr, ok := err.(*exitError)
-	require.True(t, ok, "expected *exitError from helpCommandAction(), but instead got: %v", err.Error())
+	itesting.RequireTrue(t, ok, "expected *exitError from helpCommandAction(), but instead got: %v", err.Error())
 
 	require.Contains(t, exitErr.Error(), "No help topic for", "expected an unknown help topic error")
 	itesting.RequireEqual(t, 3, exitErr.exitCode, "unexpected exit value")

@@ -2267,13 +2267,13 @@ func TestTimestamp_set(t *testing.T) {
 
 	time1 := "Feb 3, 2013 at 7:54pm (PST)"
 	itesting.RequireNoError(t, ts.Set(time1), "Failed to parse time %s with layouts %v", time1, ts.layouts)
-	require.True(t, ts.hasBeenSet, "hasBeenSet is not true after setting a time")
+	itesting.RequireTrue(t, ts.hasBeenSet, "hasBeenSet is not true after setting a time")
 
 	ts.hasBeenSet = false
 	ts.layouts = []string{time.RFC3339}
 	time2 := "2006-01-02T15:04:05Z"
 	itesting.RequireNoError(t, ts.Set(time2), "Failed to parse time %s with layout %v", time2, ts.layouts)
-	require.True(t, ts.hasBeenSet, "hasBeenSet is not true after setting a time")
+	itesting.RequireTrue(t, ts.hasBeenSet, "hasBeenSet is not true after setting a time")
 }
 
 func TestTimestampFlagApply_SingleFormat(t *testing.T) {

@@ -20,7 +20,7 @@ func TestEnvVarValueSource(t *testing.T) {
 
 			src := EnvVar("foo_1")
 			_, ok := src.Lookup()
-			require.False(t, ok)
+			itesting.RequireFalse(t, ok)
 		})
 
 		t.Run("found", func(t *testing.T) {

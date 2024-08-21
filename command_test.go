@@ -1082,8 +1082,8 @@ func TestCommand_UseShortOptionHandlingCommand(t *testing.T) {
 	}
 
 	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"cmd", "-on", expected}))
-	require.True(t, one)
-	require.False(t, two)
+	itesting.RequireTrue(t, one)
+	itesting.RequireFalse(t, two)
 	itesting.RequireEqual(t, expected, name)
 }
 
@@ -1136,8 +1136,8 @@ func TestCommand_UseShortOptionHandlingSubCommand(t *testing.T) {
 	expected := "expectedName"
 
 	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"", "cmd", "sub", "-on", expected}))
-	require.True(t, one)
-	require.False(t, two)
+	itesting.RequireTrue(t, one)
+	itesting.RequireFalse(t, two)
 	itesting.RequireEqual(t, expected, name)
 }
 
@@ -2934,12 +2934,12 @@ func TestPersistentFlagIsSet(t *testing.T) {
 	err := app.Run(context.Background(), []string{"root", "--result", "before", "sub"})
 	itesting.RequireNoError(t, err)
 	itesting.RequireEqual(t, "before", result)
-	require.True(t, resultIsSet)
+	itesting.RequireTrue(t, resultIsSet)
 
 	err = app.Run(context.Background(), []string{"root", "sub", "--result", "after"})
 	itesting.RequireNoError(t, err)
 	itesting.RequireEqual(t, "after", result)
-	require.True(t, resultIsSet)
+	itesting.RequireTrue(t, resultIsSet)
 }
 
 func TestRequiredPersistentFlag(t *testing.T) {
@@ -3557,7 +3557,7 @@ func TestCommandAttributeAccessing(t *testing.T) {
 			set.Bool(test.setBoolInput, false, "usage documentation")
 			cmd := &Command{flagSet: set, parent: test.parent}
 
-			require.False(t, cmd.Bool(test.ctxBoolInput))
+			itesting.RequireFalse(t, cmd.Bool(test.ctxBoolInput))
 		})
 	}
 }
