@@ -16,7 +16,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	itesting "github.com/urfave/cli/v3/internal/testing"
@@ -4410,5 +4409,5 @@ func TestJSONExportCommand(t *testing.T) {
 		"readArgsFromStdin": false
 	  }
 `
-	assert.JSONEq(t, expected, string(out))
+	itesting.JSONEq(t, expected, string(out))
 }
