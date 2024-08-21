@@ -284,7 +284,7 @@ func Test_helpCommand_HideHelpCommand(t *testing.T) {
 	itesting.NoError(t, err)
 	got := buf.String()
 	notWant := "COMMANDS:"
-	assert.NotContains(t, got, notWant)
+	itesting.NotContains(t, got, notWant)
 }
 
 func Test_helpCommand_HideHelpFlag(t *testing.T) {
@@ -631,7 +631,7 @@ EXAMPLES:
 
 	_ = cmd.Run(buildTestContext(t), []string{"foo", "help", "frobbly"})
 
-	assert.NotContains(t, output.String(), "2. Frobbly runs without this param locally.",
+	itesting.NotContains(t, output.String(), "2. Frobbly runs without this param locally.",
 		"expected output to exclude \"2. Frobbly runs without this param locally.\";")
 
 	itesting.Contains(t, output.String(), "1. Frobbly runs with this param locally.",
@@ -816,7 +816,7 @@ func TestShowAppHelp_HiddenCommand(t *testing.T) {
 
 	_ = cmd.Run(buildTestContext(t), []string{"app", "--help"})
 
-	assert.NotContains(t, output.String(), "secretfrob",
+	itesting.NotContains(t, output.String(), "secretfrob",
 		"expected output to exclude \"secretfrob\"")
 
 	itesting.Contains(t, output.String(), "frobbly",
@@ -991,7 +991,7 @@ VERSION:
 
 	_ = cmd.Run(buildTestContext(t), []string{"app", "--help"})
 
-	assert.NotContains(t, output.String(), "secretfrob", "expected output to exclude \"secretfrob\"")
+	itesting.NotContains(t, output.String(), "secretfrob", "expected output to exclude \"secretfrob\"")
 	itesting.Contains(t, output.String(), "frobbly", "expected output to include \"frobbly\"")
 
 	if !strings.Contains(output.String(), "PLATFORM:") ||

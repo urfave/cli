@@ -1932,7 +1932,7 @@ func TestCommand_Run_CommandWithSubcommandHasHelpTopic(t *testing.T) {
 
 			output := buf.String()
 
-			assert.NotContains(t, output, "No help topic for", "expect a help topic, got none")
+			itesting.NotContains(t, output, "No help topic for", "expect a help topic, got none")
 
 			for _, shouldContain := range []string{
 				cmd.Name, cmd.Description,
