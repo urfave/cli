@@ -1098,7 +1098,7 @@ func TestHideHelpCommand(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", "help"})
-	require.ErrorContains(t, err, "No help topic for 'help'")
+	itesting.RequireErrorContains(t, err, "No help topic for 'help'")
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "--help"})
 	itesting.NoError(t, err)
@@ -1125,10 +1125,10 @@ func TestHideHelpCommand_WithHideHelp(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", "help"})
-	require.ErrorContains(t, err, "No help topic for 'help'")
+	itesting.RequireErrorContains(t, err, "No help topic for 'help'")
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "--help"})
-	require.ErrorContains(t, err, "flag: help requested")
+	itesting.RequireErrorContains(t, err, "flag: help requested")
 }
 
 func TestHideHelpCommand_WithSubcommands(t *testing.T) {

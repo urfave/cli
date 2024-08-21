@@ -280,8 +280,8 @@ func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 
 	err := cmd.Run(buildTestContext(t), []string{"bar"})
 
-	require.ErrorContains(t, err, "before error")
-	require.ErrorContains(t, err, "after error")
+	itesting.RequireErrorContains(t, err, "before error")
+	itesting.RequireErrorContains(t, err, "after error")
 }
 
 func TestCommand_Run_BeforeSavesMetadata(t *testing.T) {
@@ -365,7 +365,7 @@ func TestCommand_OnUsageError_WithSubcommand(t *testing.T) {
 		},
 	}
 
-	require.ErrorContains(t, cmd.Run(buildTestContext(t), []string{"bar", "--flag=wrong"}), "intercepted: invalid value")
+	itesting.RequireErrorContains(t, cmd.Run(buildTestContext(t), []string{"bar", "--flag=wrong"}), "intercepted: invalid value")
 }
 
 func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
