@@ -116,6 +116,20 @@ func Contains(t *testing.T, s, contains interface{}, msgAndArgs ...interface{}) 
 	return true
 }
 
+func NotContains(t *testing.T, s, contains interface{}, msgAndArgs ...interface{}) bool {
+	t.Helper()
+
+	ok, found := containsElement(s, contains)
+	if !ok {
+		return fail(t, fmt.Sprintf("%#v could not be applied builtin len()", s), msgAndArgs...)
+	}
+	if found {
+		return fail(t, fmt.Sprintf("%#v should not contain %#v", s, contains), msgAndArgs...)
+	}
+
+	return true
+}
+
 // fail reports a failure through
 func fail(t *testing.T, failureMessage string, msgAndArgs ...interface{}) bool {
 	t.Helper()
