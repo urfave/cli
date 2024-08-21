@@ -3022,7 +3022,7 @@ func TestFlagDuplicates(t *testing.T) {
 
 			err := cmd.Run(buildTestContext(t), test.args)
 			if test.errExpected {
-				assert.NotNil(t, err)
+				itesting.NotNil(t, err)
 			} else {
 				itesting.Nil(t, err)
 			}
@@ -3719,7 +3719,7 @@ func TestCheckRequiredFlags(t *testing.T) {
 
 			// assertions
 			if test.expectedAnError {
-				assert.NotNil(t, err)
+				itesting.NotNil(t, err)
 			} else {
 				itesting.Nil(t, err)
 			}
