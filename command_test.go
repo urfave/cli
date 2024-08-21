@@ -996,7 +996,7 @@ func TestCommand_VisibleCommands(t *testing.T) {
 		cmd.Commands[2], // help
 	}
 	actual := cmd.VisibleCommands()
-	assert.Len(t, actual, len(expected))
+	itesting.Len(t, actual, len(expected))
 	for i, actualCommand := range actual {
 		expectedCommand := expected[i]
 
