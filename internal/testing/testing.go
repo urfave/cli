@@ -204,6 +204,20 @@ func NotZero(t *testing.T, i interface{}, msgAndArgs ...interface{}) bool {
 	return true
 }
 
+func Len(t *testing.T, object interface{}, length int, msgAndArgs ...interface{}) bool {
+	t.Helper()
+
+	ok, l := getLen(object)
+	if !ok {
+		return fail(t, fmt.Sprintf("\"%s\" could not be applied builtin len()", object), msgAndArgs...)
+	}
+
+	if l != length {
+		return fail(t, fmt.Sprintf("\"%s\" should have %d item(s), but has %d", object, length, l), msgAndArgs...)
+	}
+	return true
+}
+
 // fail reports a failure through
 func fail(t *testing.T, failureMessage string, msgAndArgs ...interface{}) bool {
 	t.Helper()
@@ -552,4 +566,16 @@ func containsKind(kinds []reflect.Kind, kind reflect.Kind) bool {
 	}
 
 	return false
+}
+
+// getLen try to get length of object.
+// return (false, 0) if impossible.
+func getLen(x interface{}) (ok bool, length int) {
+	v := reflect.ValueOf(x)
+	defer func() {
+		if e := recover(); e != nil {
+			ok = false
+		}
+	}()
+	return true, v.Len()
 }
