@@ -6,13 +6,15 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	itesting "github.com/urfave/cli/v3/internal/testing"
 )
 
 func TestCompletionDisable(t *testing.T) {
 	cmd := &Command{}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName})
-	assert.Error(t, err, "Expected error for no help topic for completion")
+	itesting.Error(t, err, "Expected error for no help topic for completion")
 }
 
 func TestCompletionEnable(t *testing.T) {

@@ -2997,5 +2997,5 @@ func TestStringMapFlagApply_Error(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--goat", "aaa", "bbb="})
-	assert.Error(t, err)
+	itesting.Error(t, err)
 }

@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	itesting "github.com/urfave/cli/v3/internal/testing"
 )
 
 func TestJaroWinkler(t *testing.T) {
@@ -97,7 +99,7 @@ func TestSuggestFlagFromErrorWrongError(t *testing.T) {
 	_, err := app.suggestFlagFromError(errors.New("invalid"), "")
 
 	// Then
-	assert.Error(t, err)
+	itesting.Error(t, err)
 }
 
 func TestSuggestFlagFromErrorWrongCommand(t *testing.T) {
@@ -111,7 +113,7 @@ func TestSuggestFlagFromErrorWrongCommand(t *testing.T) {
 	)
 
 	// Then
-	assert.Error(t, err)
+	itesting.Error(t, err)
 }
 
 func TestSuggestFlagFromErrorNoSuggestion(t *testing.T) {
@@ -125,7 +127,7 @@ func TestSuggestFlagFromErrorNoSuggestion(t *testing.T) {
 	)
 
 	// Then
-	assert.Error(t, err)
+	itesting.Error(t, err)
 }
 
 func TestSuggestCommand(t *testing.T) {

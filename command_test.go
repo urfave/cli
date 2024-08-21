@@ -671,7 +671,7 @@ func TestCommand_RunDefaultCommand(t *testing.T) {
 			if test.expected {
 				itesting.NoError(t, err)
 			} else {
-				assert.Error(t, err)
+				itesting.Error(t, err)
 			}
 		})
 	}
@@ -729,7 +729,7 @@ func TestCommand_RunDefaultCommandWithSubCommand(t *testing.T) {
 			if test.expected {
 				itesting.NoError(t, err)
 			} else {
-				assert.Error(t, err)
+				itesting.Error(t, err)
 			}
 		})
 	}
@@ -813,7 +813,7 @@ func TestCommand_RunDefaultCommandWithFlags(t *testing.T) {
 			if test.expected {
 				itesting.NoError(t, err)
 			} else {
-				assert.Error(t, err)
+				itesting.Error(t, err)
 			}
 		})
 	}
@@ -868,7 +868,7 @@ func TestCommand_FlagsFromExtPackage(t *testing.T) {
 
 	// this should return an error since epflag shouldnt be registered
 	err = cmd.Run(buildTestContext(t), []string{"foo", "-c", "cly", "--epflag", "10"})
-	assert.Error(t, err)
+	itesting.Error(t, err)
 }
 
 func TestCommand_Setup_defaultsReader(t *testing.T) {
@@ -1668,7 +1668,7 @@ func TestRequiredFlagCommandRunBehavior(t *testing.T) {
 
 			// assertions
 			if test.expectedAnError {
-				assert.Error(t, err)
+				itesting.Error(t, err)
 				if _, ok := err.(requiredFlagsErr); test.expectedAnError && !ok {
 					t.Errorf("expected a requiredFlagsErr, but got: %s", err)
 				}

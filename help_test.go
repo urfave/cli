@@ -290,7 +290,7 @@ func Test_helpCommand_HideHelpCommand(t *testing.T) {
 func Test_helpCommand_HideHelpFlag(t *testing.T) {
 	app := buildMinimalTestCommand()
 
-	assert.Error(t, app.Run(buildTestContext(t), []string{"app", "help", "-h"}), "Expected flag error - Got nil")
+	itesting.Error(t, app.Run(buildTestContext(t), []string{"app", "help", "-h"}), "Expected flag error - Got nil")
 }
 
 func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
