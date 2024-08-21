@@ -591,7 +591,7 @@ func TestCommand_RunSubcommandWithDefault(t *testing.T) {
 	itesting.NoError(t, err)
 
 	err = cmd.Run(buildTestContext(t), []string{"app"})
-	assert.EqualError(t, err, "should not run this subcommand")
+	itesting.EqualError(t, err, "should not run this subcommand")
 }
 
 func TestCommand_Run(t *testing.T) {
@@ -1055,7 +1055,7 @@ func TestCommand_UseShortOptionHandling_missing_value(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"", "-n"})
-	assert.EqualError(t, err, "flag needs an argument: -n")
+	itesting.EqualError(t, err, "flag needs an argument: -n")
 }
 
 func TestCommand_UseShortOptionHandlingCommand(t *testing.T) {
@@ -1158,7 +1158,7 @@ func TestCommand_UseShortOptionHandlingSubCommand_missing_value(t *testing.T) {
 	cmd.Commands = []*Command{command}
 
 	err := cmd.Run(buildTestContext(t), []string{"", "cmd", "sub", "-n"})
-	assert.EqualError(t, err, "flag needs an argument: -n")
+	itesting.EqualError(t, err, "flag needs an argument: -n")
 }
 
 func TestCommand_UseShortOptionAfterSliceFlag(t *testing.T) {

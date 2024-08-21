@@ -2523,7 +2523,7 @@ func TestTimestampFlagApply_Fail_Parse_Wrong_Layout(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
-	assert.EqualError(t, err, "invalid value \"2006-01-02T15:04:05Z\" for flag -time: parsing time \"2006-01-02T15:04:05Z\" as \"randomlayout\": cannot parse \"2006-01-02T15:04:05Z\" as \"randomlayout\"")
+	itesting.EqualError(t, err, "invalid value \"2006-01-02T15:04:05Z\" for flag -time: parsing time \"2006-01-02T15:04:05Z\" as \"randomlayout\": cannot parse \"2006-01-02T15:04:05Z\" as \"randomlayout\"")
 }
 
 func TestTimestampFlagApply_Fail_Parse_Wrong_Time(t *testing.T) {
@@ -2533,7 +2533,7 @@ func TestTimestampFlagApply_Fail_Parse_Wrong_Time(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{"--time", "2006-01-02T15:04:05Z"})
-	assert.EqualError(t, err, "invalid value \"2006-01-02T15:04:05Z\" for flag -time: parsing time \"2006-01-02T15:04:05Z\" as \"Jan 2, 2006 at 3:04pm (MST)\": cannot parse \"2006-01-02T15:04:05Z\" as \"Jan\"")
+	itesting.EqualError(t, err, "invalid value \"2006-01-02T15:04:05Z\" for flag -time: parsing time \"2006-01-02T15:04:05Z\" as \"Jan 2, 2006 at 3:04pm (MST)\": cannot parse \"2006-01-02T15:04:05Z\" as \"Jan\"")
 }
 
 func TestTimestampFlagApply_Timezoned(t *testing.T) {
