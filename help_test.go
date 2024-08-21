@@ -11,7 +11,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	itesting "github.com/urfave/cli/v3/internal/testing"
@@ -922,7 +921,7 @@ func TestShowAppHelp_HelpPrinterCustom(t *testing.T) {
 				HelpPrinterCustom = old
 			}(HelpPrinterCustom)
 			HelpPrinterCustom = func(w io.Writer, templ string, data interface{}, fm map[string]interface{}) {
-				assert.Nil(t, fm, "unexpected function map passed")
+				itesting.Nil(t, fm, "unexpected function map passed")
 				itesting.Equal(t, tt.wantTemplate, templ, "unexpected template")
 				tt.printer(w, templ, data, fm)
 			}

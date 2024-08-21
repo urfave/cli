@@ -13,7 +13,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	itesting "github.com/urfave/cli/v3/internal/testing"
@@ -2953,7 +2952,7 @@ func TestStringMapFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 
 	err := set.Parse(nil)
 	itesting.NoError(t, err)
-	assert.Nil(t, val)
+	itesting.Nil(t, val)
 	itesting.Equal(t, map[string]string{"vincent van goat": "scape goat"}, set.Lookup("goat").Value.(flag.Getter).Get())
 }
 

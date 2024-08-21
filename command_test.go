@@ -3024,7 +3024,7 @@ func TestFlagDuplicates(t *testing.T) {
 			if test.errExpected {
 				assert.NotNil(t, err)
 			} else {
-				assert.Nil(t, err)
+				itesting.Nil(t, err)
 			}
 		})
 	}
@@ -3721,7 +3721,7 @@ func TestCheckRequiredFlags(t *testing.T) {
 			if test.expectedAnError {
 				assert.NotNil(t, err)
 			} else {
-				assert.Nil(t, err)
+				itesting.Nil(t, err)
 			}
 			for _, errString := range test.expectedErrorContents {
 				if err != nil {
