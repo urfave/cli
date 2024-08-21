@@ -68,6 +68,16 @@ func ErrorContains(t *testing.T, theError error, contains string, msgAndArgs ...
 	return true
 }
 
+func RequireErrorContains(t *testing.T, theError error, contains string, msgAndArgs ...interface{}) {
+	t.Helper()
+
+	if ErrorContains(t, theError, contains, msgAndArgs...) {
+		return
+	}
+
+	t.FailNow()
+}
+
 func ErrorIs(t *testing.T, err, target error, msgAndArgs ...interface{}) bool {
 	t.Helper()
 
