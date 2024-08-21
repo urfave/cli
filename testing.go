@@ -20,6 +20,30 @@ func NoError(t *testing.T, err error, msgAndArgs ...interface{}) bool {
 	return true
 }
 
+func Error(t *testing.T, err error, msgAndArgs ...interface{}) bool {
+	if err != nil {
+		t.Helper()
+		return fail(t, fmt.Sprintf("Received unexpected error:\n%+v", err), msgAndArgs...)
+	}
+
+	return true
+}
+
+func ErrorContains(t *testing.T, theError error, contains string, msgAndArgs ...interface{}) bool {
+	t.Helper()
+
+	if !Error(t, theError, msgAndArgs...) {
+		return false
+	}
+
+	actual := theError.Error()
+	if !strings.Contains(actual, contains) {
+		return fail(t, fmt.Sprintf("Error %#v does not contain %#v", actual, contains), msgAndArgs...)
+	}
+
+	return true
+}
+
 // fail reports a failure through
 func fail(t *testing.T, failureMessage string, msgAndArgs ...interface{}) bool {
 	t.Helper()
