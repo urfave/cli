@@ -21,7 +21,7 @@ func NoError(t *testing.T, err error, msgAndArgs ...interface{}) bool {
 }
 
 func Error(t *testing.T, err error, msgAndArgs ...interface{}) bool {
-	if err != nil {
+	if err == nil {
 		t.Helper()
 		return fail(t, fmt.Sprintf("Received unexpected error:\n%+v", err), msgAndArgs...)
 	}
