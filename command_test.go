@@ -1042,8 +1042,8 @@ func TestCommand_UseShortOptionHandling(t *testing.T) {
 	}
 
 	_ = cmd.Run(buildTestContext(t), []string{"", "-on", expected})
-	assert.True(t, one)
-	assert.False(t, two)
+	itesting.True(t, one)
+	itesting.False(t, two)
 	itesting.Equal(t, name, expected)
 }
 
@@ -1187,8 +1187,8 @@ func TestCommand_UseShortOptionAfterSliceFlag(t *testing.T) {
 	_ = cmd.Run(buildTestContext(t), []string{"", "-e", "foo", "-on", expected})
 	itesting.Equal(t, sliceVal, []string{"foo"})
 	itesting.Equal(t, sliceValDest, []string{"foo"})
-	assert.True(t, one)
-	assert.False(t, two)
+	itesting.True(t, one)
+	itesting.False(t, two)
 	itesting.Equal(t, expected, name)
 }
 
@@ -1696,7 +1696,7 @@ func TestCommandHelpPrinter(t *testing.T) {
 
 	_ = cmd.Run(buildTestContext(t), []string{"-h"})
 
-	assert.True(t, wasCalled, "Help printer expected to be called, but was not")
+	itesting.True(t, wasCalled, "Help printer expected to be called, but was not")
 }
 
 func TestCommand_VersionPrinter(t *testing.T) {
@@ -1713,7 +1713,7 @@ func TestCommand_VersionPrinter(t *testing.T) {
 	cmd := &Command{}
 	ShowVersion(cmd)
 
-	assert.True(t, wasCalled, "Version printer expected to be called, but was not")
+	itesting.True(t, wasCalled, "Version printer expected to be called, but was not")
 }
 
 func TestCommand_CommandNotFound(t *testing.T) {
@@ -2232,7 +2232,7 @@ func TestCommand_OnUsageError_WithWrongFlagValue_ForSubcommand(t *testing.T) {
 			&IntFlag{Name: "flag"},
 		},
 		OnUsageError: func(_ context.Context, _ *Command, err error, isSubcommand bool) error {
-			assert.False(t, isSubcommand, "Expect subcommand")
+			itesting.False(t, isSubcommand, "Expect subcommand")
 			itesting.ErrorContains(t, err, "invalid value \"wrong\"")
 			return errors.New("intercepted: " + err.Error())
 		},
@@ -3058,35 +3058,35 @@ func TestShorthandCommand(t *testing.T) {
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", "cth"})
 	itesting.NoError(t, err)
-	assert.True(t, cmd1 == 1 && cmd2 == 0, "Expected command1 to be trigerred once")
+	itesting.True(t, cmd1 == 1 && cmd2 == 0, "Expected command1 to be trigerred once")
 
 	cmd1 = 0
 	cmd2 = 0
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "cthd"})
 	itesting.NoError(t, err)
-	assert.True(t, cmd1 == 1 && cmd2 == 0, "Expected command1 to be trigerred once")
+	itesting.True(t, cmd1 == 1 && cmd2 == 0, "Expected command1 to be trigerred once")
 
 	cmd1 = 0
 	cmd2 = 0
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "cthe"})
 	itesting.NoError(t, err)
-	assert.True(t, cmd1 == 1 && cmd2 == 0, "Expected command1 to be trigerred once")
+	itesting.True(t, cmd1 == 1 && cmd2 == 0, "Expected command1 to be trigerred once")
 
 	cmd1 = 0
 	cmd2 = 0
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "cthert"})
 	itesting.NoError(t, err)
-	assert.True(t, cmd1 == 0 && cmd2 == 1, "Expected command1 to be trigerred once")
+	itesting.True(t, cmd1 == 0 && cmd2 == 1, "Expected command1 to be trigerred once")
 
 	cmd1 = 0
 	cmd2 = 0
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "cthet"})
 	itesting.NoError(t, err)
-	assert.True(t, cmd1 == 0 && cmd2 == 1, "Expected command1 to be trigerred once")
+	itesting.True(t, cmd1 == 0 && cmd2 == 1, "Expected command1 to be trigerred once")
 }
 
 func TestCommand_Int(t *testing.T) {

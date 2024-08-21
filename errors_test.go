@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	itesting "github.com/urfave/cli/v3/internal/testing"
 )
 
@@ -27,7 +25,7 @@ func TestHandleExitCoder_nil(t *testing.T) {
 	HandleExitCoder(nil)
 
 	itesting.Equal(t, 0, exitCode)
-	assert.False(t, called)
+	itesting.False(t, called)
 }
 
 func TestHandleExitCoder_ExitCoder(t *testing.T) {
@@ -46,7 +44,7 @@ func TestHandleExitCoder_ExitCoder(t *testing.T) {
 	HandleExitCoder(Exit("galactic perimeter breach", 9))
 
 	itesting.Equal(t, 9, exitCode)
-	assert.True(t, called)
+	itesting.True(t, called)
 }
 
 func TestHandleExitCoder_ErrorExitCoder(t *testing.T) {
@@ -65,7 +63,7 @@ func TestHandleExitCoder_ErrorExitCoder(t *testing.T) {
 	HandleExitCoder(Exit(errors.New("galactic perimeter breach"), 9))
 
 	itesting.Equal(t, 9, exitCode)
-	assert.True(t, called)
+	itesting.True(t, called)
 }
 
 func TestHandleExitCoder_MultiErrorWithExitCoder(t *testing.T) {
@@ -87,7 +85,7 @@ func TestHandleExitCoder_MultiErrorWithExitCoder(t *testing.T) {
 	HandleExitCoder(err)
 
 	itesting.Equal(t, 11, exitCode)
-	assert.True(t, called)
+	itesting.True(t, called)
 }
 
 func TestHandleExitCoder_MultiErrorWithoutExitCoder(t *testing.T) {
@@ -107,7 +105,7 @@ func TestHandleExitCoder_MultiErrorWithoutExitCoder(t *testing.T) {
 	HandleExitCoder(err)
 
 	itesting.Equal(t, 1, exitCode)
-	assert.True(t, called)
+	itesting.True(t, called)
 }
 
 // make a stub to not import pkg/errors
@@ -141,7 +139,7 @@ func TestHandleExitCoder_ErrorWithFormat(t *testing.T) {
 	err := Exit(NewErrorWithFormat("I am formatted"), 1)
 	HandleExitCoder(err)
 
-	assert.True(t, called)
+	itesting.True(t, called)
 	itesting.Equal(t, ErrWriter.(*bytes.Buffer).String(), "This the format: I am formatted\n")
 }
 
@@ -160,7 +158,7 @@ func TestHandleExitCoder_MultiErrorWithFormat(t *testing.T) {
 	err := newMultiError(NewErrorWithFormat("err1"), NewErrorWithFormat("err2"))
 	HandleExitCoder(err)
 
-	assert.True(t, called)
+	itesting.True(t, called)
 	itesting.Equal(t, ErrWriter.(*bytes.Buffer).String(), "This the format: err1\nThis the format: err2\n")
 }
 

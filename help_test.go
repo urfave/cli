@@ -116,7 +116,7 @@ func Test_Help_Custom_Flags(t *testing.T) {
 			&BoolFlag{Name: "foo", Aliases: []string{"h"}},
 		},
 		Action: func(_ context.Context, cmd *Command) error {
-			assert.True(t, cmd.Bool("h"), "custom help flag not set")
+			itesting.True(t, cmd.Bool("h"), "custom help flag not set")
 			return nil
 		},
 		Writer: out,
@@ -162,7 +162,7 @@ func Test_Version_Custom_Flags(t *testing.T) {
 			&BoolFlag{Name: "foo", Aliases: []string{"v"}},
 		},
 		Action: func(_ context.Context, cmd *Command) error {
-			assert.True(t, cmd.Bool("v"), "custom version flag not set")
+			itesting.True(t, cmd.Bool("v"), "custom version flag not set")
 			return nil
 		},
 		Writer: out,

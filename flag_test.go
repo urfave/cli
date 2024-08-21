@@ -50,7 +50,7 @@ func TestBoolFlagApply_SetsAllNames(t *testing.T) {
 
 	err := set.Parse([]string{"--wat", "-W", "--huh"})
 	itesting.NoError(t, err)
-	assert.True(t, v)
+	itesting.True(t, v)
 }
 
 func TestBoolFlagValueFromCommand(t *testing.T) {
@@ -76,7 +76,7 @@ func TestBoolFlagApply_SetsCount(t *testing.T) {
 
 	err = set.Parse([]string{"--wat", "-W", "--huh"})
 	itesting.NoError(t, err)
-	assert.True(t, v)
+	itesting.True(t, v)
 	itesting.Equal(t, 3, count)
 }
 
@@ -2065,8 +2065,8 @@ func TestParseMultiBool(t *testing.T) {
 			&BoolFlag{Name: "serve", Aliases: []string{"s"}},
 		},
 		Action: func(_ context.Context, cmd *Command) error {
-			assert.True(t, cmd.Bool("serve"), "main name not set")
-			assert.True(t, cmd.Bool("s"), "short name not set")
+			itesting.True(t, cmd.Bool("serve"), "main name not set")
+			itesting.True(t, cmd.Bool("s"), "short name not set")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run", "--serve"})
@@ -2079,8 +2079,8 @@ func TestParseBoolShortOptionHandle(t *testing.T) {
 				Name:                   "foobar",
 				UseShortOptionHandling: true,
 				Action: func(_ context.Context, cmd *Command) error {
-					assert.True(t, cmd.Bool("serve"), "main name not set")
-					assert.True(t, cmd.Bool("option"), "short name not set")
+					itesting.True(t, cmd.Bool("serve"), "main name not set")
+					itesting.True(t, cmd.Bool("option"), "short name not set")
 					return nil
 				},
 				Flags: []Flag{
@@ -2102,7 +2102,7 @@ func TestParseDestinationBool(t *testing.T) {
 			},
 		},
 		Action: func(context.Context, *Command) error {
-			assert.True(t, dest, "expected destination Bool true")
+			itesting.True(t, dest, "expected destination Bool true")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run", "--dest"})
@@ -2115,8 +2115,8 @@ func TestParseMultiBoolFromEnv(t *testing.T) {
 			&BoolFlag{Name: "debug", Aliases: []string{"d"}, Sources: EnvVars("APP_DEBUG")},
 		},
 		Action: func(_ context.Context, cmd *Command) error {
-			assert.True(t, cmd.Bool("debug"), "main name not set")
-			assert.True(t, cmd.Bool("d"), "short name not set")
+			itesting.True(t, cmd.Bool("debug"), "main name not set")
+			itesting.True(t, cmd.Bool("d"), "short name not set")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run"})
@@ -2129,8 +2129,8 @@ func TestParseMultiBoolFromEnvCascade(t *testing.T) {
 			&BoolFlag{Name: "debug", Aliases: []string{"d"}, Sources: EnvVars("COMPAT_DEBUG", "APP_DEBUG")},
 		},
 		Action: func(_ context.Context, cmd *Command) error {
-			assert.True(t, cmd.Bool("debug"), "main name not set from env")
-			assert.True(t, cmd.Bool("d"), "short name not set from env")
+			itesting.True(t, cmd.Bool("debug"), "main name not set from env")
+			itesting.True(t, cmd.Bool("d"), "short name not set from env")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run"})
@@ -2170,8 +2170,8 @@ func TestParseMultiBoolT(t *testing.T) {
 			&BoolFlag{Name: "implode", Aliases: []string{"i"}, Value: true},
 		},
 		Action: func(_ context.Context, cmd *Command) error {
-			assert.False(t, cmd.Bool("implode"), "main name not set")
-			assert.False(t, cmd.Bool("i"), "short name not set")
+			itesting.False(t, cmd.Bool("implode"), "main name not set")
+			itesting.False(t, cmd.Bool("i"), "short name not set")
 			return nil
 		},
 	}).Run(buildTestContext(t), []string{"run", "--implode=false"})
