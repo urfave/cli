@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
+	itesting "github.com/urfave/cli/v3/internal/testing"
 )
 
 func expectFileContent(t *testing.T, file, got string) {
@@ -15,9 +15,8 @@ func expectFileContent(t *testing.T, file, got string) {
 	// Ignore windows line endings
 	data = bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n"))
 
-	r := require.New(t)
-	r.NoError(err)
-	r.Equal(got, string(data))
+	itesting.RequireNoError(t, err)
+	itesting.RequireEqual(t, got, string(data))
 }
 
 func buildTestContext(t *testing.T) context.Context {

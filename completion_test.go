@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	itesting "github.com/urfave/cli/v3/internal/testing"
 )
 
@@ -45,10 +43,8 @@ func TestCompletionShell(t *testing.T) {
 				Writer:                out,
 			}
 
-			r := require.New(t)
-
-			r.NoError(cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, k}))
-			r.Containsf(
+			itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, k}))
+			itesting.RequireContainsf(t,
 				k, out.String(),
 				"Expected output to contain shell name %[1]q", k,
 			)
@@ -82,18 +78,16 @@ func TestCompletionSubcommand(t *testing.T) {
 		},
 	}
 
-	r := require.New(t)
-
-	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "bar", "--generate-shell-completion"}))
-	r.Containsf(
+	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"foo", "bar", "--generate-shell-completion"}))
+	itesting.RequireContainsf(t,
 		out.String(), "xyz",
 		"Expected output to contain shell name %[1]q", "xyz",
 	)
 
 	out.Reset()
 
-	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "bar", "xyz", "-", "--generate-shell-completion"}))
-	r.Containsf(
+	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"foo", "bar", "xyz", "-", "--generate-shell-completion"}))
+	itesting.RequireContainsf(t,
 		out.String(), "-g",
 		"Expected output to contain flag %[1]q", "-g",
 	)

@@ -6,8 +6,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	itesting "github.com/urfave/cli/v3/internal/testing"
 )
 
@@ -50,21 +48,19 @@ func (tc *boolWithInverseTestCase) Run(t *testing.T, flagWithInverse *BoolWithIn
 func runBoolWithInverseFlagTests(t *testing.T, newFlagMethod func() *BoolWithInverseFlag, cases []*boolWithInverseTestCase) error {
 	for _, tc := range cases {
 		t.Run(strings.Join(tc.args, " ")+fmt.Sprintf("%[1]v %[2]v %[3]v", tc.value, tc.toBeSet, tc.err), func(t *testing.T) {
-			r := require.New(t)
-
 			fl := newFlagMethod()
 
 			err := tc.Run(t, fl)
 			if err != nil && tc.err == nil {
-				r.NoError(err)
+				itesting.RequireNoError(t, err)
 			}
 
 			if err == nil && tc.err != nil {
-				r.Error(err)
+				itesting.RequireError(t, err)
 			}
 
 			if err != nil && tc.err != nil {
-				r.EqualError(err, tc.err.Error())
+				itesting.RequireEqualError(t, err, tc.err.Error())
 			}
 		})
 	}
