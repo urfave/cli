@@ -376,6 +376,31 @@ func RequireGreaterOrEqual(t *testing.T, e1 interface{}, e2 interface{}, msgAndA
 	t.FailNow()
 }
 
+func Implements(t *testing.T, interfaceObject interface{}, object interface{}, msgAndArgs ...interface{}) bool {
+	t.Helper()
+
+	interfaceType := reflect.TypeOf(interfaceObject).Elem()
+
+	if object == nil {
+		return fail(t, fmt.Sprintf("Cannot check if nil implements %v", interfaceType), msgAndArgs...)
+	}
+	if !reflect.TypeOf(object).Implements(interfaceType) {
+		return fail(t, fmt.Sprintf("%T must implement %v", object, interfaceType), msgAndArgs...)
+	}
+
+	return true
+}
+
+func RequireImplements(t *testing.T, interfaceObject interface{}, object interface{}, msgAndArgs ...interface{}) {
+	t.Helper()
+
+	if Implements(t, interfaceObject, object, msgAndArgs...) {
+		return
+	}
+
+	t.FailNow()
+}
+
 // fail reports a failure through
 func fail(t *testing.T, failureMessage string, msgAndArgs ...interface{}) bool {
 	t.Helper()
