@@ -299,6 +299,16 @@ func Nil(t *testing.T, object interface{}, msgAndArgs ...interface{}) bool {
 	return fail(t, fmt.Sprintf("Expected nil, but got: %#v", object), msgAndArgs...)
 }
 
+func RequireNil(t *testing.T, object interface{}, msgAndArgs ...interface{}) {
+	t.Helper()
+
+	if Nil(t, object, msgAndArgs...) {
+		return
+	}
+
+	t.FailNow()
+}
+
 func NotNil(t *testing.T, object interface{}, msgAndArgs ...interface{}) bool {
 	if !isNil(object) {
 		return true
