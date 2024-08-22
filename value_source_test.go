@@ -62,7 +62,6 @@ func TestEnvVars(t *testing.T) {
 
 func TestFileValueSource(t *testing.T) {
 	t.Run("implements ValueSource", func(t *testing.T) {
-
 		itesting.RequireImplements(t, (*ValueSource)(nil), &fileValueSource{})
 
 		t.Run("not found", func(t *testing.T) {
@@ -100,7 +99,6 @@ func TestFileValueSource(t *testing.T) {
 }
 
 func TestFilePaths(t *testing.T) {
-
 	fileName := filepath.Join(os.TempDir(), fmt.Sprintf("urfave-cli-tests-some_file_name_%[1]v", rand.Int()))
 	t.Cleanup(func() { _ = os.Remove(fileName) })
 

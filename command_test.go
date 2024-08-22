@@ -3817,7 +3817,6 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 
 	for _, tst := range tests {
 		t.Run(tst.name, func(t *testing.T) {
-
 			fp, err := os.CreateTemp("", "readargs")
 			itesting.RequireNoError(t, err)
 			_, err = fp.Write([]byte(tst.input))

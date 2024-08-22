@@ -519,7 +519,6 @@ func TestShowCommandHelp_HelpPrinterCustom(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-
 			defer func(old helpPrinterCustom) {
 				HelpPrinterCustom = old
 			}(HelpPrinterCustom)

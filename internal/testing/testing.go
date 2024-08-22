@@ -498,7 +498,6 @@ the problem actually occurred in calling code.*/
 // of each stack frame leading from the current test to the assert call that
 // failed.
 func callerInfo() []string {
-
 	var pc uintptr
 	var ok bool
 	var file string
@@ -696,7 +695,6 @@ func ObjectsAreEqual(expected, actual interface{}) bool {
 }
 
 func containsElement(list interface{}, element interface{}) (ok, found bool) {
-
 	listValue := reflect.ValueOf(list)
 	listType := reflect.TypeOf(list)
 	if listType == nil {
@@ -735,7 +733,6 @@ func containsElement(list interface{}, element interface{}) (ok, found bool) {
 
 // isEmpty gets whether the specified object is considered empty or not.
 func isEmpty(object interface{}) bool {
-
 	// get nil case out of the way
 	if object == nil {
 		return true
@@ -773,7 +770,8 @@ func isNil(object interface{}) bool {
 		[]reflect.Kind{
 			reflect.Chan, reflect.Func,
 			reflect.Interface, reflect.Map,
-			reflect.Ptr, reflect.Slice, reflect.UnsafePointer},
+			reflect.Ptr, reflect.Slice, reflect.UnsafePointer,
+		},
 		kind)
 
 	if isNilableKind && value.IsNil() {
@@ -1165,7 +1163,6 @@ func compare(obj1, obj2 interface{}, kind reflect.Kind) (CompareType, bool) {
 			bytesObj1, ok := obj1.([]byte)
 			if !ok {
 				bytesObj1 = obj1Value.Convert(bytesType).Interface().([]byte)
-
 			}
 			bytesObj2, ok := obj2.([]byte)
 			if !ok {
