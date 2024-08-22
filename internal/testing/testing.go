@@ -291,6 +291,16 @@ func NotNil(t *testing.T, object interface{}, msgAndArgs ...interface{}) bool {
 	return fail(t, "Expected value not to be nil.", msgAndArgs...)
 }
 
+func RequireNotNil(t *testing.T, object interface{}, msgAndArgs ...interface{}) {
+	t.Helper()
+
+	if NotNil(t, object, msgAndArgs...) {
+		return
+	}
+
+	t.FailNow()
+}
+
 func Zero(t *testing.T, i interface{}, msgAndArgs ...interface{}) bool {
 	t.Helper()
 
