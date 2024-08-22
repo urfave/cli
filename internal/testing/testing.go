@@ -18,6 +18,7 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
+// NoError asserts that a function returned no error (i.e. `err == nil`).
 func NoError(t *testing.T, err error, msgAndArgs ...interface{}) bool {
 	if err != nil {
 		t.Helper()
@@ -27,6 +28,8 @@ func NoError(t *testing.T, err error, msgAndArgs ...interface{}) bool {
 	return true
 }
 
+// RequireNoError asserts that a function returned no error (i.e. `err == nil`). If an error is found, it will stop the
+// test immediately.
 func RequireNoError(t *testing.T, err error, msgAndArgs ...interface{}) {
 	t.Helper()
 
@@ -37,6 +40,7 @@ func RequireNoError(t *testing.T, err error, msgAndArgs ...interface{}) {
 	t.FailNow()
 }
 
+// Error asserts that an error is not nil.
 func Error(t *testing.T, err error, msgAndArgs ...interface{}) bool {
 	if err == nil {
 		t.Helper()
@@ -46,6 +50,7 @@ func Error(t *testing.T, err error, msgAndArgs ...interface{}) bool {
 	return true
 }
 
+// RequireError asserts that an error is not nil. If the error is nil, the test will stop immediately.
 func RequireError(t *testing.T, err error, msgAndArgs ...interface{}) {
 	t.Helper()
 
@@ -56,6 +61,7 @@ func RequireError(t *testing.T, err error, msgAndArgs ...interface{}) {
 	t.FailNow()
 }
 
+// ErrorContains asserts that a specific error contains a specific string.
 func ErrorContains(t *testing.T, theError error, contains string, msgAndArgs ...interface{}) bool {
 	t.Helper()
 
@@ -71,6 +77,8 @@ func ErrorContains(t *testing.T, theError error, contains string, msgAndArgs ...
 	return true
 }
 
+// RequireErrorContains asserts that a specific error contains a specific string. If the string is not found, the test
+// will stop immediately.
 func RequireErrorContains(t *testing.T, theError error, contains string, msgAndArgs ...interface{}) {
 	t.Helper()
 
@@ -81,6 +89,7 @@ func RequireErrorContains(t *testing.T, theError error, contains string, msgAndA
 	t.FailNow()
 }
 
+// ErrorIs asserts that an error is of a specific type.
 func ErrorIs(t *testing.T, err, target error, msgAndArgs ...interface{}) bool {
 	t.Helper()
 
@@ -101,6 +110,7 @@ func ErrorIs(t *testing.T, err, target error, msgAndArgs ...interface{}) bool {
 	), msgAndArgs...)
 }
 
+// EqualError asserts that a function returned an error (i.e. `err != nil`) and that it is equal to the provided error.
 func EqualError(t *testing.T, theError error, errString string, msgAndArgs ...interface{}) bool {
 	t.Helper()
 
@@ -118,6 +128,8 @@ func EqualError(t *testing.T, theError error, errString string, msgAndArgs ...in
 	return true
 }
 
+// RequireEqualError asserts that a function returned an error (i.e. `err != nil`) and that it is equal to the provided
+// error. If the error is nil, the test will stop immediately.
 func RequireEqualError(t *testing.T, theError error, errString string, msgAndArgs ...interface{}) {
 	t.Helper()
 
@@ -128,6 +140,7 @@ func RequireEqualError(t *testing.T, theError error, errString string, msgAndArg
 	t.FailNow()
 }
 
+// Equal asserts that two objects are equal.
 func Equal(t *testing.T, expected, actual interface{}, msgAndArgs ...interface{}) bool {
 	t.Helper()
 
@@ -146,6 +159,7 @@ func Equal(t *testing.T, expected, actual interface{}, msgAndArgs ...interface{}
 	return true
 }
 
+// RequireEqual asserts that two objects are equal. If they are not, the test will stop immediately.
 func RequireEqual(t *testing.T, expected, actual interface{}, msgAndArgs ...interface{}) {
 	t.Helper()
 
@@ -156,12 +170,15 @@ func RequireEqual(t *testing.T, expected, actual interface{}, msgAndArgs ...inte
 	t.FailNow()
 }
 
+// Equalf asserts that two objects are equal and formats the output with additional information if the assertion fails.
 func Equalf(t *testing.T, expected interface{}, actual interface{}, msg string, args ...interface{}) bool {
 	t.Helper()
 
 	return Equal(t, expected, actual, append([]interface{}{msg}, args...)...)
 }
 
+// RequireEqualf asserts that two objects are equal and formats the output with additional information if the assertion
+// fails. If the assertion fails, the test will stop immediately.
 func RequireEqualf(t *testing.T, expected interface{}, actual interface{}, msg string, args ...interface{}) {
 	t.Helper()
 
@@ -172,6 +189,7 @@ func RequireEqualf(t *testing.T, expected interface{}, actual interface{}, msg s
 	t.FailNow()
 }
 
+// Contains asserts that the specified string contains the specified substring.
 func Contains(t *testing.T, s, contains string, msgAndArgs ...interface{}) bool {
 	t.Helper()
 
@@ -182,12 +200,16 @@ func Contains(t *testing.T, s, contains string, msgAndArgs ...interface{}) bool 
 	return true
 }
 
+// Containsf asserts that the specified string contains the specified substring and formats the output with additional
+// information if the assertion fails.
 func Containsf(t *testing.T, s, contains string, msg string, args ...interface{}) bool {
 	t.Helper()
 
 	return Contains(t, s, contains, append([]interface{}{msg}, args...)...)
 }
 
+// RequireContains asserts that the specified string contains the specified substring. If it does not, the test will
+// stop.
 func RequireContains(t *testing.T, s, contains string, msgAndArgs ...interface{}) {
 	t.Helper()
 
@@ -198,6 +220,8 @@ func RequireContains(t *testing.T, s, contains string, msgAndArgs ...interface{}
 	t.FailNow()
 }
 
+// RequireContainsf asserts that the specified string contains the specified substring and formats the output with
+// additional information if the assertion fails. If it does not, the test will stop.
 func RequireContainsf(t *testing.T, s, contains string, msg string, args ...interface{}) {
 	t.Helper()
 
@@ -208,6 +232,7 @@ func RequireContainsf(t *testing.T, s, contains string, msg string, args ...inte
 	t.FailNow()
 }
 
+// NotContains asserts that the specified string does NOT contain the specified substring.
 func NotContains(t *testing.T, s, contains string, msgAndArgs ...interface{}) bool {
 	t.Helper()
 
@@ -218,6 +243,8 @@ func NotContains(t *testing.T, s, contains string, msgAndArgs ...interface{}) bo
 	return true
 }
 
+// RequireNotContains asserts that the specified string does NOT contain the specified substring. If it does, the test
+// will stop.
 func RequireNotContains(t *testing.T, s, contains string, msgAndArgs ...interface{}) {
 	t.Helper()
 
@@ -228,6 +255,7 @@ func RequireNotContains(t *testing.T, s, contains string, msgAndArgs ...interfac
 	t.FailNow()
 }
 
+// True asserts that the specified value is true.
 func True(t *testing.T, value bool, msgAndArgs ...interface{}) bool {
 	if !value {
 		t.Helper()
@@ -237,12 +265,15 @@ func True(t *testing.T, value bool, msgAndArgs ...interface{}) bool {
 	return true
 }
 
+// Truef asserts that the specified value is true and formats the output with additional information if the assertion
+// fails.
 func Truef(t *testing.T, value bool, msg string, args ...interface{}) bool {
 	t.Helper()
 
 	return True(t, value, append([]interface{}{msg}, args...)...)
 }
 
+// RequireTrue asserts that the specified value is true. If it is not, the test will stop.
 func RequireTrue(t *testing.T, value bool, msgAndArgs ...interface{}) {
 	t.Helper()
 
@@ -253,6 +284,8 @@ func RequireTrue(t *testing.T, value bool, msgAndArgs ...interface{}) {
 	t.FailNow()
 }
 
+// RequireTruef asserts that the specified value is true and formats the output with additional information if the
+// assertion fails. If it is not, the test will stop.
 func RequireTruef(t *testing.T, value bool, msg string, args ...interface{}) {
 	t.Helper()
 
@@ -263,6 +296,7 @@ func RequireTruef(t *testing.T, value bool, msg string, args ...interface{}) {
 	t.FailNow()
 }
 
+// False asserts that the specified value is false.
 func False(t *testing.T, value bool, msgAndArgs ...interface{}) bool {
 	if value {
 		t.Helper()
@@ -272,6 +306,7 @@ func False(t *testing.T, value bool, msgAndArgs ...interface{}) bool {
 	return true
 }
 
+// RequireFalse asserts that the specified value is false. If it is not, the test will stop.
 func RequireFalse(t *testing.T, value bool, msgAndArgs ...interface{}) {
 	t.Helper()
 
@@ -282,6 +317,7 @@ func RequireFalse(t *testing.T, value bool, msgAndArgs ...interface{}) {
 	t.FailNow()
 }
 
+// Empty asserts that the specified object is empty.
 func Empty(t *testing.T, object interface{}, msgAndArgs ...interface{}) bool {
 	if !isEmpty(object) {
 		t.Helper()
@@ -291,6 +327,7 @@ func Empty(t *testing.T, object interface{}, msgAndArgs ...interface{}) bool {
 	return true
 }
 
+// NotEmpty asserts that the specified object is NOT empty.
 func NotEmpty(t *testing.T, object interface{}, msgAndArgs ...interface{}) bool {
 	if isEmpty(object) {
 		t.Helper()
@@ -300,6 +337,7 @@ func NotEmpty(t *testing.T, object interface{}, msgAndArgs ...interface{}) bool 
 	return true
 }
 
+// Nil asserts that the specified object is nil.
 func Nil(t *testing.T, object interface{}, msgAndArgs ...interface{}) bool {
 	if isNil(object) {
 		return true
@@ -308,6 +346,7 @@ func Nil(t *testing.T, object interface{}, msgAndArgs ...interface{}) bool {
 	return fail(t, fmt.Sprintf("Expected nil, but got: %#v", object), msgAndArgs...)
 }
 
+// RequireNil asserts that the specified object is nil. If it is not, the test will stop.
 func RequireNil(t *testing.T, object interface{}, msgAndArgs ...interface{}) {
 	t.Helper()
 
@@ -318,6 +357,7 @@ func RequireNil(t *testing.T, object interface{}, msgAndArgs ...interface{}) {
 	t.FailNow()
 }
 
+// NotNil asserts that the specified object is NOT nil.
 func NotNil(t *testing.T, object interface{}, msgAndArgs ...interface{}) bool {
 	if !isNil(object) {
 		return true
@@ -326,6 +366,7 @@ func NotNil(t *testing.T, object interface{}, msgAndArgs ...interface{}) bool {
 	return fail(t, "Expected value not to be nil.", msgAndArgs...)
 }
 
+// RequireNotNil asserts that the specified object is NOT nil. If it is, the test will stop.
 func RequireNotNil(t *testing.T, object interface{}, msgAndArgs ...interface{}) {
 	t.Helper()
 
@@ -336,6 +377,7 @@ func RequireNotNil(t *testing.T, object interface{}, msgAndArgs ...interface{}) 
 	t.FailNow()
 }
 
+// Zero asserts that i is the zero value for its type.
 func Zero(t *testing.T, i interface{}, msgAndArgs ...interface{}) bool {
 	t.Helper()
 
@@ -346,6 +388,7 @@ func Zero(t *testing.T, i interface{}, msgAndArgs ...interface{}) bool {
 	return true
 }
 
+// NotZero asserts that i is not the zero value for its type.
 func NotZero(t *testing.T, i interface{}, msgAndArgs ...interface{}) bool {
 	t.Helper()
 
@@ -356,6 +399,7 @@ func NotZero(t *testing.T, i interface{}, msgAndArgs ...interface{}) bool {
 	return true
 }
 
+// Len asserts that the specified object has specific length.
 func Len(t *testing.T, object interface{}, length int, msgAndArgs ...interface{}) bool {
 	t.Helper()
 
@@ -370,6 +414,7 @@ func Len(t *testing.T, object interface{}, length int, msgAndArgs ...interface{}
 	return true
 }
 
+// RequireLen asserts that the specified object has specific length. If it does not, the test will stop.
 func RequireLen(t *testing.T, object interface{}, length int, msgAndArgs ...interface{}) {
 	t.Helper()
 
@@ -380,6 +425,7 @@ func RequireLen(t *testing.T, object interface{}, length int, msgAndArgs ...inte
 	t.FailNow()
 }
 
+// JSONEq asserts that two JSON strings are equivalent.
 func JSONEq(t *testing.T, expected string, actual string, msgAndArgs ...interface{}) bool {
 	t.Helper()
 
@@ -396,6 +442,7 @@ func JSONEq(t *testing.T, expected string, actual string, msgAndArgs ...interfac
 	return Equal(t, expectedJSONAsInterface, actualJSONAsInterface, msgAndArgs...)
 }
 
+// GreaterOrEqual asserts that the first element is greater than or equal to the second element.
 func GreaterOrEqual[T constraints.Integer](t *testing.T, e1, e2 T, msgAndArgs ...interface{}) bool {
 	t.Helper()
 	if e1 >= e2 {
@@ -404,6 +451,8 @@ func GreaterOrEqual[T constraints.Integer](t *testing.T, e1, e2 T, msgAndArgs ..
 	return fail(t, fmt.Sprintf("\"%v\" is not greater than or equal to \"%v\"", e1, e2), msgAndArgs...)
 }
 
+// RequireGreaterOrEqual asserts that the first element is greater than or equal to the second element. If it is not, the
+// test will stop.
 func RequireGreaterOrEqual[T constraints.Integer](t *testing.T, e1, e2 T, msgAndArgs ...interface{}) {
 	t.Helper()
 
@@ -414,6 +463,7 @@ func RequireGreaterOrEqual[T constraints.Integer](t *testing.T, e1, e2 T, msgAnd
 	t.FailNow()
 }
 
+// Implements asserts that an object implements the specified interface.
 func Implements(t *testing.T, interfaceObject interface{}, object interface{}, msgAndArgs ...interface{}) bool {
 	t.Helper()
 
@@ -429,6 +479,7 @@ func Implements(t *testing.T, interfaceObject interface{}, object interface{}, m
 	return true
 }
 
+// RequireImplements asserts that an object implements the specified interface. If it does not, the test will stop.
 func RequireImplements(t *testing.T, interfaceObject interface{}, object interface{}, msgAndArgs ...interface{}) {
 	t.Helper()
 
