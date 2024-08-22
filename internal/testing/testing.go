@@ -283,23 +283,21 @@ func RequireFalse(t *testing.T, value bool, msgAndArgs ...interface{}) {
 }
 
 func Empty(t *testing.T, object interface{}, msgAndArgs ...interface{}) bool {
-	pass := isEmpty(object)
-	if !pass {
+	if !isEmpty(object) {
 		t.Helper()
 		return fail(t, fmt.Sprintf("Should be empty, but was %v", object), msgAndArgs...)
 	}
 
-	return pass
+	return true
 }
 
 func NotEmpty(t *testing.T, object interface{}, msgAndArgs ...interface{}) bool {
-	pass := !isEmpty(object)
-	if !pass {
+	if isEmpty(object) {
 		t.Helper()
 		return fail(t, fmt.Sprintf("Should NOT be empty, but was %v", object), msgAndArgs...)
 	}
 
-	return pass
+	return true
 }
 
 func Nil(t *testing.T, object interface{}, msgAndArgs ...interface{}) bool {
