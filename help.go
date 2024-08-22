@@ -150,7 +150,7 @@ func printCommandSuggestions(commands []*Command, writer io.Writer) {
 		if command.Hidden {
 			continue
 		}
-		if strings.HasSuffix(os.Getenv("SHELL"), "zsh") {
+		if strings.HasSuffix(os.Getenv("0"), "zsh") {
 			for _, name := range command.Names() {
 				_, _ = fmt.Fprintf(writer, "%s:%s\n", name, command.Usage)
 			}
