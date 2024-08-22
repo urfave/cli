@@ -226,10 +226,26 @@ func True(t *testing.T, value bool, msgAndArgs ...interface{}) bool {
 	return true
 }
 
+func Truef(t *testing.T, value bool, msg string, args ...interface{}) bool {
+	t.Helper()
+
+	return True(t, value, append([]interface{}{msg}, args...)...)
+}
+
 func RequireTrue(t *testing.T, value bool, msgAndArgs ...interface{}) {
 	t.Helper()
 
 	if True(t, value, msgAndArgs...) {
+		return
+	}
+
+	t.FailNow()
+}
+
+func RequireTruef(t *testing.T, value bool, msg string, args ...interface{}) {
+	t.Helper()
+
+	if Truef(t, value, msg, args...) {
 		return
 	}
 
