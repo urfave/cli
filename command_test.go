@@ -16,8 +16,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
-
 	itesting "github.com/urfave/cli/v3/internal/testing"
 )
 
@@ -182,14 +180,12 @@ func TestCommandFlagParsing(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 			t.Cleanup(cancel)
 
-			r := require.New(t)
-
 			err := cmd.Run(ctx, c.testArgs)
 
 			if c.expectedErr != "" {
-				r.EqualError(err, c.expectedErr)
+				itesting.RequireEqualError(t, err, c.expectedErr)
 			} else {
-				r.NoError(err)
+				itesting.RequireNoError(t, err)
 			}
 		})
 	}
@@ -245,22 +241,20 @@ func TestParseAndRunShortOpts(t *testing.T) {
 
 			err := cmd.Run(buildTestContext(t), tc.testArgs.Slice())
 
-			r := require.New(t)
-
 			if tc.expectedErr == "" {
-				r.NoError(err)
+				itesting.RequireNoError(t, err)
 			} else {
-				r.ErrorContains(err, tc.expectedErr)
+				itesting.RequireErrorContains(t, err, tc.expectedErr)
 			}
 
 			if tc.expectedArgs == nil {
 				if state["args"] != nil {
-					r.Len(state["args"].Slice(), 0)
+					itesting.RequireLen(t, state["args"].Slice(), 0)
 				} else {
-					r.Nil(state["args"])
+					itesting.RequireNil(t, state["args"])
 				}
 			} else {
-				r.Equal(tc.expectedArgs, state["args"])
+				itesting.RequireEqual(t, tc.expectedArgs, state["args"])
 			}
 		})
 	}
@@ -457,10 +451,8 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 			osArgs.v = append(osArgs.v, c.testArgs.Slice()...)
 			osArgs.v = append(osArgs.v, "--generate-shell-completion")
 
-			r := require.New(t)
-
-			r.NoError(cmd.Run(buildTestContext(t), osArgs.Slice()))
-			r.Equal(c.expectedOut, out.String())
+			itesting.RequireNoError(t, cmd.Run(buildTestContext(t), osArgs.Slice()))
+			itesting.RequireEqual(t, c.expectedOut, out.String())
 		})
 	}
 }
@@ -1229,11 +1221,9 @@ func TestCommand_ParseSliceFlags(t *testing.T) {
 		},
 	}
 
-	r := require.New(t)
-
-	r.NoError(cmd.Run(buildTestContext(t), []string{"", "cmd", "-p", "22", "-p", "80", "-ip", "8.8.8.8", "-ip", "8.8.4.4"}))
-	r.Equal([]int64{22, 80}, parsedIntSlice)
-	r.Equal([]string{"8.8.8.8", "8.8.4.4"}, parsedStringSlice)
+	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"", "cmd", "-p", "22", "-p", "80", "-ip", "8.8.8.8", "-ip", "8.8.4.4"}))
+	itesting.RequireEqual(t, []int64{22, 80}, parsedIntSlice)
+	itesting.RequireEqual(t, []string{"8.8.8.8", "8.8.4.4"}, parsedStringSlice)
 }
 
 func TestCommand_ParseSliceFlagsWithMissingValue(t *testing.T) {
@@ -1257,11 +1247,9 @@ func TestCommand_ParseSliceFlagsWithMissingValue(t *testing.T) {
 		},
 	}
 
-	r := require.New(t)
-
-	r.NoError(cmd.Run(buildTestContext(t), []string{"", "cmd", "-a", "2", "-str", "A"}))
-	r.Equal([]int64{2}, parsedIntSlice)
-	r.Equal([]string{"A"}, parsedStringSlice)
+	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"", "cmd", "-a", "2", "-str", "A"}))
+	itesting.RequireEqual(t, []int64{2}, parsedIntSlice)
+	itesting.RequireEqual(t, []string{"A"}, parsedStringSlice)
 }
 
 func TestCommand_DefaultStdin(t *testing.T) {
@@ -1438,10 +1426,8 @@ func TestCommand_BeforeAfterFuncShellCompletion(t *testing.T) {
 		Writer: io.Discard,
 	}
 
-	r := require.New(t)
-
 	// run with the Before() func succeeding
-	r.NoError(
+	itesting.RequireNoError(t,
 		cmd.Run(
 			buildTestContext(t),
 			[]string{
@@ -1452,9 +1438,9 @@ func TestCommand_BeforeAfterFuncShellCompletion(t *testing.T) {
 		),
 	)
 
-	r.Equalf(0, counts.Before, "Before was run")
-	r.Equal(0, counts.After, "After was run")
-	r.Equal(0, counts.SubCommand, "SubCommand was run")
+	itesting.RequireEqualf(t, 0, counts.Before, "Before was run")
+	itesting.RequireEqual(t, 0, counts.After, "After was run")
+	itesting.RequireEqual(t, 0, counts.SubCommand, "SubCommand was run")
 }
 
 func TestCommand_AfterFunc(t *testing.T) {
@@ -1800,20 +1786,18 @@ func TestCommand_OrderOfOperations(t *testing.T) {
 
 	t.Run("on usage error", func(t *testing.T) {
 		cmd, counts := buildCmdCounts()
-		r := require.New(t)
 
 		_ = cmd.Run(buildTestContext(t), []string{"command", "--nope"})
-		r.Equal(1, counts.OnUsageError)
-		r.Equal(1, counts.Total)
+		itesting.RequireEqual(t, 1, counts.OnUsageError)
+		itesting.RequireEqual(t, 1, counts.Total)
 	})
 
 	t.Run("shell complete", func(t *testing.T) {
 		cmd, counts := buildCmdCounts()
-		r := require.New(t)
 
 		_ = cmd.Run(buildTestContext(t), []string{"command", "--" + "generate-shell-completion"})
-		r.Equal(1, counts.ShellComplete)
-		r.Equal(1, counts.Total)
+		itesting.RequireEqual(t, 1, counts.ShellComplete)
+		itesting.RequireEqual(t, 1, counts.Total)
 	})
 
 	t.Run("nil on usage error", func(t *testing.T) {
@@ -1826,15 +1810,14 @@ func TestCommand_OrderOfOperations(t *testing.T) {
 
 	t.Run("before after action hooks", func(t *testing.T) {
 		cmd, counts := buildCmdCounts()
-		r := require.New(t)
 
 		_ = cmd.Run(buildTestContext(t), []string{"command", "foo"})
-		r.Equal(0, counts.OnUsageError)
-		r.Equal(1, counts.Before)
-		r.Equal(0, counts.CommandNotFound)
-		r.Equal(2, counts.Action)
-		r.Equal(3, counts.After)
-		r.Equal(3, counts.Total)
+		itesting.RequireEqual(t, 0, counts.OnUsageError)
+		itesting.RequireEqual(t, 1, counts.Before)
+		itesting.RequireEqual(t, 0, counts.CommandNotFound)
+		itesting.RequireEqual(t, 2, counts.Action)
+		itesting.RequireEqual(t, 3, counts.After)
+		itesting.RequireEqual(t, 3, counts.Total)
 	})
 
 	t.Run("before with error", func(t *testing.T) {
@@ -1845,25 +1828,22 @@ func TestCommand_OrderOfOperations(t *testing.T) {
 			return errors.New("hay Before")
 		}
 
-		r := require.New(t)
-
 		_ = cmd.Run(buildTestContext(t), []string{"command", "bar"})
-		r.Equal(0, counts.OnUsageError)
-		r.Equal(1, counts.Before)
-		r.Equal(2, counts.After)
-		r.Equal(2, counts.Total)
+		itesting.RequireEqual(t, 0, counts.OnUsageError)
+		itesting.RequireEqual(t, 1, counts.Before)
+		itesting.RequireEqual(t, 2, counts.After)
+		itesting.RequireEqual(t, 2, counts.Total)
 	})
 
 	t.Run("nil after", func(t *testing.T) {
 		cmd, counts := buildCmdCounts()
 		cmd.After = nil
-		r := require.New(t)
 
 		_ = cmd.Run(buildTestContext(t), []string{"command", "bar"})
-		r.Equal(0, counts.OnUsageError)
-		r.Equal(1, counts.Before)
-		r.Equal(2, counts.SubCommand)
-		r.Equal(2, counts.Total)
+		itesting.RequireEqual(t, 0, counts.OnUsageError)
+		itesting.RequireEqual(t, 1, counts.Before)
+		itesting.RequireEqual(t, 2, counts.SubCommand)
+		itesting.RequireEqual(t, 2, counts.Total)
 	})
 
 	t.Run("after errors", func(t *testing.T) {
@@ -1874,28 +1854,25 @@ func TestCommand_OrderOfOperations(t *testing.T) {
 			return errors.New("hay After")
 		}
 
-		r := require.New(t)
-
 		err := cmd.Run(buildTestContext(t), []string{"command", "bar"})
-		r.Error(err)
-		r.Equal(0, counts.OnUsageError)
-		r.Equal(1, counts.Before)
-		r.Equal(2, counts.SubCommand)
-		r.Equal(3, counts.After)
-		r.Equal(3, counts.Total)
+		itesting.RequireError(t, err)
+		itesting.RequireEqual(t, 0, counts.OnUsageError)
+		itesting.RequireEqual(t, 1, counts.Before)
+		itesting.RequireEqual(t, 2, counts.SubCommand)
+		itesting.RequireEqual(t, 3, counts.After)
+		itesting.RequireEqual(t, 3, counts.Total)
 	})
 
 	t.Run("nil commands", func(t *testing.T) {
 		cmd, counts := buildCmdCounts()
 		cmd.Commands = nil
-		r := require.New(t)
 
 		_ = cmd.Run(buildTestContext(t), []string{"command"})
-		r.Equal(0, counts.OnUsageError)
-		r.Equal(1, counts.Before)
-		r.Equal(2, counts.Action)
-		r.Equal(3, counts.After)
-		r.Equal(3, counts.Total)
+		itesting.RequireEqual(t, 0, counts.OnUsageError)
+		itesting.RequireEqual(t, 1, counts.Before)
+		itesting.RequireEqual(t, 2, counts.Action)
+		itesting.RequireEqual(t, 3, counts.After)
+		itesting.RequireEqual(t, 3, counts.Total)
 	})
 }
 
@@ -2451,16 +2428,14 @@ func TestWhenExitSubCommandWithCodeThenCommandQuitUnexpectedly(t *testing.T) {
 		exitCodeFromOsExiter = exitCode
 	}
 
-	r := require.New(t)
-
-	r.Error(cmd.Run(buildTestContext(t), []string{
+	itesting.RequireError(t, cmd.Run(buildTestContext(t), []string{
 		"myapp",
 		"cmd",
 		"subcmd",
 	}))
 
-	r.Equal(0, exitCodeFromOsExiter)
-	r.Equal(testCode, exitCodeFromExitErrHandler)
+	itesting.RequireEqual(t, 0, exitCodeFromOsExiter)
+	itesting.RequireEqual(t, testCode, exitCodeFromExitErrHandler)
 }
 
 func buildMinimalTestCommand() *Command {
@@ -2778,15 +2753,13 @@ func TestFlagAction(t *testing.T) {
 
 			err := cmd.Run(buildTestContext(t), test.args)
 
-			r := require.New(t)
-
 			if test.err != "" {
-				r.EqualError(err, test.err)
+				itesting.RequireEqualError(t, err, test.err)
 				return
 			}
 
-			r.NoError(err)
-			r.Equal(test.exp, out.String())
+			itesting.RequireNoError(t, err)
+			itesting.RequireEqual(t, test.exp, out.String())
 		})
 	}
 }
@@ -3121,9 +3094,8 @@ func TestCommand_Float64(t *testing.T) {
 	pCmd := &Command{flagSet: parentSet}
 	cmd := &Command{flagSet: set, parent: pCmd}
 
-	r := require.New(t)
-	r.Equal(float64(17), cmd.Float("myflag"))
-	r.Equal(float64(18), cmd.Float("top-flag"))
+	itesting.RequireEqual(t, float64(17), cmd.Float("myflag"))
+	itesting.RequireEqual(t, float64(18), cmd.Float("top-flag"))
 }
 
 func TestCommand_Duration(t *testing.T) {
@@ -3136,9 +3108,8 @@ func TestCommand_Duration(t *testing.T) {
 
 	cmd := &Command{flagSet: set, parent: pCmd}
 
-	r := require.New(t)
-	r.Equal(12*time.Second, cmd.Duration("myflag"))
-	r.Equal(13*time.Second, cmd.Duration("top-flag"))
+	itesting.RequireEqual(t, 12*time.Second, cmd.Duration("myflag"))
+	itesting.RequireEqual(t, 13*time.Second, cmd.Duration("top-flag"))
 }
 
 func TestCommand_Timestamp(t *testing.T) {
@@ -3173,9 +3144,8 @@ func TestCommand_Timestamp(t *testing.T) {
 	err := pCmd.Run(context.Background(), []string{"foo", "hello"})
 	itesting.NoError(t, err)
 
-	r := require.New(t)
-	r.Equal(t1, cmd.Timestamp("myflag"))
-	r.Equal(t2, cmd.Timestamp("top-flag"))
+	itesting.RequireEqual(t, t1, cmd.Timestamp("myflag"))
+	itesting.RequireEqual(t, t2, cmd.Timestamp("top-flag"))
 }
 
 func TestCommand_String(t *testing.T) {
@@ -3186,12 +3156,11 @@ func TestCommand_String(t *testing.T) {
 	pCmd := &Command{flagSet: parentSet}
 	cmd := &Command{flagSet: set, parent: pCmd}
 
-	r := require.New(t)
-	r.Equal("hello world", cmd.String("myflag"))
-	r.Equal("hai veld", cmd.String("top-flag"))
+	itesting.RequireEqual(t, "hello world", cmd.String("myflag"))
+	itesting.RequireEqual(t, "hai veld", cmd.String("top-flag"))
 
 	cmd = &Command{parent: pCmd}
-	r.Equal("hai veld", cmd.String("top-flag"))
+	itesting.RequireEqual(t, "hai veld", cmd.String("top-flag"))
 }
 
 func TestCommand_Bool(t *testing.T) {
@@ -3202,9 +3171,8 @@ func TestCommand_Bool(t *testing.T) {
 	pCmd := &Command{flagSet: parentSet}
 	cmd := &Command{flagSet: set, parent: pCmd}
 
-	r := require.New(t)
-	r.False(cmd.Bool("myflag"))
-	r.True(cmd.Bool("top-flag"))
+	itesting.RequireFalse(t, cmd.Bool("myflag"))
+	itesting.RequireTrue(t, cmd.Bool("top-flag"))
 }
 
 func TestCommand_Value(t *testing.T) {
@@ -3235,32 +3203,30 @@ func TestCommand_Value(t *testing.T) {
 		},
 	}
 	t.Run("flag name", func(t *testing.T) {
-		r := require.New(t)
 		err := cmd.Run(buildTestContext(t), []string{"main", "--top-flag", "13", "test", "--myflag", "14"})
 
-		r.NoError(err)
-		r.Equal(int64(13), cmd.Value("top-flag"))
-		r.Equal(int64(13), cmd.Value("t"))
-		r.Equal(int64(13), cmd.Value("tf"))
+		itesting.RequireNoError(t, err)
+		itesting.RequireEqual(t, int64(13), cmd.Value("top-flag"))
+		itesting.RequireEqual(t, int64(13), cmd.Value("t"))
+		itesting.RequireEqual(t, int64(13), cmd.Value("tf"))
 
-		r.Equal(int64(14), subCmd.Value("myflag"))
-		r.Equal(int64(14), subCmd.Value("m"))
-		r.Equal(int64(14), subCmd.Value("mf"))
+		itesting.RequireEqual(t, int64(14), subCmd.Value("myflag"))
+		itesting.RequireEqual(t, int64(14), subCmd.Value("m"))
+		itesting.RequireEqual(t, int64(14), subCmd.Value("mf"))
 	})
 
 	t.Run("flag aliases", func(t *testing.T) {
-		r := require.New(t)
 		err := cmd.Run(buildTestContext(t), []string{"main", "-tf", "15", "test", "-m", "16"})
 
-		r.NoError(err)
-		r.Equal(int64(15), cmd.Value("top-flag"))
-		r.Equal(int64(15), cmd.Value("t"))
-		r.Equal(int64(15), cmd.Value("tf"))
+		itesting.RequireNoError(t, err)
+		itesting.RequireEqual(t, int64(15), cmd.Value("top-flag"))
+		itesting.RequireEqual(t, int64(15), cmd.Value("t"))
+		itesting.RequireEqual(t, int64(15), cmd.Value("tf"))
 
-		r.Equal(int64(16), subCmd.Value("myflag"))
-		r.Equal(int64(16), subCmd.Value("m"))
-		r.Equal(int64(16), subCmd.Value("mf"))
-		r.Nil(cmd.Value("unknown-flag"))
+		itesting.RequireEqual(t, int64(16), subCmd.Value("myflag"))
+		itesting.RequireEqual(t, int64(16), subCmd.Value("m"))
+		itesting.RequireEqual(t, int64(16), subCmd.Value("mf"))
+		itesting.RequireNil(t, cmd.Value("unknown-flag"))
 	})
 }
 
@@ -3286,10 +3252,8 @@ func TestCommand_Value_InvalidFlagAccessHandler(t *testing.T) {
 		},
 	}
 
-	r := require.New(t)
-
-	r.NoError(cmd.Run(buildTestContext(t), []string{"run", "command", "subcommand"}))
-	r.Equal("missing", flagName)
+	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"run", "command", "subcommand"}))
+	itesting.RequireEqual(t, "missing", flagName)
 }
 
 func TestCommand_Args(t *testing.T) {
@@ -3298,9 +3262,8 @@ func TestCommand_Args(t *testing.T) {
 	cmd := &Command{flagSet: set}
 	_ = set.Parse([]string{"--myflag", "bat", "baz"})
 
-	r := require.New(t)
-	r.Equal(2, cmd.Args().Len())
-	r.True(cmd.Bool("myflag"))
+	itesting.RequireEqual(t, 2, cmd.Args().Len())
+	itesting.RequireTrue(t, cmd.Bool("myflag"))
 }
 
 func TestCommand_NArg(t *testing.T) {
@@ -3325,13 +3288,11 @@ func TestCommand_IsSet(t *testing.T) {
 	_ = set.Parse([]string{"--one-flag", "--two-flag", "--three-flag", "frob"})
 	_ = parentSet.Parse([]string{"--top-flag"})
 
-	r := require.New(t)
-
-	r.True(cmd.IsSet("one-flag"))
-	r.True(cmd.IsSet("two-flag"))
-	r.True(cmd.IsSet("three-flag"))
-	r.True(cmd.IsSet("top-flag"))
-	r.False(cmd.IsSet("bogus"))
+	itesting.RequireTrue(t, cmd.IsSet("one-flag"))
+	itesting.RequireTrue(t, cmd.IsSet("two-flag"))
+	itesting.RequireTrue(t, cmd.IsSet("three-flag"))
+	itesting.RequireTrue(t, cmd.IsSet("top-flag"))
+	itesting.RequireFalse(t, cmd.IsSet("bogus"))
 }
 
 // XXX Corresponds to hack in context.IsSet for flags with EnvVar field
@@ -3367,21 +3328,19 @@ func TestCommand_IsSet_fromEnv(t *testing.T) {
 		},
 	}
 
-	r := require.New(t)
-
-	r.NoError(cmd.Run(buildTestContext(t), []string{"run"}))
-	r.True(timeoutIsSet)
-	r.True(tIsSet)
-	r.True(passwordIsSet)
-	r.True(pIsSet)
-	r.False(noEnvVarIsSet)
-	r.False(nIsSet)
+	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"run"}))
+	itesting.RequireTrue(t, timeoutIsSet)
+	itesting.RequireTrue(t, tIsSet)
+	itesting.RequireTrue(t, passwordIsSet)
+	itesting.RequireTrue(t, pIsSet)
+	itesting.RequireFalse(t, noEnvVarIsSet)
+	itesting.RequireFalse(t, nIsSet)
 
 	t.Setenv("APP_UNPARSABLE", "foobar")
 
-	r.Error(cmd.Run(buildTestContext(t), []string{"run"}))
-	r.False(unparsableIsSet)
-	r.False(uIsSet)
+	itesting.RequireError(t, cmd.Run(buildTestContext(t), []string{"run"}))
+	itesting.RequireFalse(t, unparsableIsSet)
+	itesting.RequireFalse(t, uIsSet)
 }
 
 func TestCommand_NumFlags(t *testing.T) {
@@ -3402,12 +3361,10 @@ func TestCommand_Set(t *testing.T) {
 	set.Int64("int", int64(5), "an int")
 	cmd := &Command{flagSet: set}
 
-	r := require.New(t)
-
-	r.False(cmd.IsSet("int"))
-	r.NoError(cmd.Set("int", "1"))
-	r.Equal(int64(1), cmd.Int("int"))
-	r.True(cmd.IsSet("int"))
+	itesting.RequireFalse(t, cmd.IsSet("int"))
+	itesting.RequireNoError(t, cmd.Set("int", "1"))
+	itesting.RequireEqual(t, int64(1), cmd.Int("int"))
+	itesting.RequireTrue(t, cmd.IsSet("int"))
 }
 
 func TestCommand_Set_InvalidFlagAccessHandler(t *testing.T) {
@@ -3420,10 +3377,8 @@ func TestCommand_Set_InvalidFlagAccessHandler(t *testing.T) {
 		flagSet: set,
 	}
 
-	r := require.New(t)
-
-	r.True(cmd.Set("missing", "") != nil)
-	r.Equal("missing", flagName)
+	itesting.RequireTrue(t, cmd.Set("missing", "") != nil)
+	itesting.RequireEqual(t, "missing", flagName)
 }
 
 func TestCommand_LocalFlagNames(t *testing.T) {
@@ -3472,10 +3427,9 @@ func TestCommand_Lineage(t *testing.T) {
 
 	lineage := cmd.Lineage()
 
-	r := require.New(t)
-	r.Equal(2, len(lineage))
-	r.Equal(cmd, lineage[0])
-	r.Equal(pCmd, lineage[1])
+	itesting.RequireEqual(t, 2, len(lineage))
+	itesting.RequireEqual(t, cmd, lineage[0])
+	itesting.RequireEqual(t, pCmd, lineage[1])
 }
 
 func TestCommand_lookupFlagSet(t *testing.T) {
@@ -3488,14 +3442,12 @@ func TestCommand_lookupFlagSet(t *testing.T) {
 	_ = set.Parse([]string{"--local-flag"})
 	_ = parentSet.Parse([]string{"--top-flag"})
 
-	r := require.New(t)
-
 	fs := cmd.lookupFlagSet("top-flag")
-	r.Equal(pCmd.flagSet, fs)
+	itesting.RequireEqual(t, pCmd.flagSet, fs)
 
 	fs = cmd.lookupFlagSet("local-flag")
-	r.Equal(cmd.flagSet, fs)
-	r.Nil(cmd.lookupFlagSet("frob"))
+	itesting.RequireEqual(t, cmd.flagSet, fs)
+	itesting.RequireNil(t, cmd.lookupFlagSet("frob"))
 }
 
 func TestCommandAttributeAccessing(t *testing.T) {
@@ -3865,18 +3817,17 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 
 	for _, tst := range tests {
 		t.Run(tst.name, func(t *testing.T) {
-			r := require.New(t)
 
 			fp, err := os.CreateTemp("", "readargs")
-			r.NoError(err)
+			itesting.RequireNoError(t, err)
 			_, err = fp.Write([]byte(tst.input))
-			r.NoError(err)
+			itesting.RequireNoError(t, err)
 			fp.Close()
 
 			cmd := buildMinimalTestCommand()
 			cmd.ReadArgsFromStdin = true
 			cmd.Reader, err = os.Open(fp.Name())
-			r.NoError(err)
+			itesting.RequireNoError(t, err)
 			cmd.Flags = []Flag{
 				&IntFlag{
 					Name: "if",
@@ -3891,19 +3842,19 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 
 			actionCalled := false
 			cmd.Action = func(ctx context.Context, c *Command) error {
-				r.Equal(tst.expectedInt, c.Int("if"))
-				r.Equal(tst.expectedFloat, c.Float("ff"))
-				r.Equal(tst.expectedSlice, c.StringSlice("ssf"))
+				itesting.RequireEqual(t, tst.expectedInt, c.Int("if"))
+				itesting.RequireEqual(t, tst.expectedFloat, c.Float("ff"))
+				itesting.RequireEqual(t, tst.expectedSlice, c.StringSlice("ssf"))
 				actionCalled = true
 				return nil
 			}
 
 			err = cmd.Run(context.Background(), tst.args)
 			if !tst.expectError {
-				r.NoError(err)
-				r.True(actionCalled)
+				itesting.RequireNoError(t, err)
+				itesting.RequireTrue(t, actionCalled)
 			} else {
-				r.Error(err)
+				itesting.RequireError(t, err)
 			}
 		})
 	}
