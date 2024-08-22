@@ -928,7 +928,7 @@ func TestCommand_CommandWithDash(t *testing.T) {
 	}
 
 	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"", "cmd", "my-arg", "-"}))
-	require.NotNil(t, args)
+	itesting.RequireNotNil(t, args)
 	itesting.RequireEqual(t, "my-arg", args.Get(0))
 	itesting.RequireEqual(t, "-", args.Get(1))
 }
@@ -950,7 +950,7 @@ func TestCommand_CommandWithNoFlagBeforeTerminator(t *testing.T) {
 
 	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"", "cmd", "my-arg", "--", "notAFlagAtAll"}))
 
-	require.NotNil(t, args)
+	itesting.RequireNotNil(t, args)
 	itesting.RequireEqual(t, "my-arg", args.Get(0))
 	itesting.RequireEqual(t, "--", args.Get(1))
 	itesting.RequireEqual(t, "notAFlagAtAll", args.Get(2))
