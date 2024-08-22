@@ -172,27 +172,23 @@ func RequireEqualf(t *testing.T, expected interface{}, actual interface{}, msg s
 	t.FailNow()
 }
 
-func Contains(t *testing.T, s, contains interface{}, msgAndArgs ...interface{}) bool {
+func Contains(t *testing.T, s, contains string, msgAndArgs ...interface{}) bool {
 	t.Helper()
 
-	ok, found := containsElement(s, contains)
-	if !ok {
-		return fail(t, fmt.Sprintf("%#v could not be applied builtin len()", s), msgAndArgs...)
-	}
-	if !found {
+	if !strings.Contains(s, contains) {
 		return fail(t, fmt.Sprintf("%#v does not contain %#v", s, contains), msgAndArgs...)
 	}
 
 	return true
 }
 
-func Containsf(t *testing.T, s, contains interface{}, msg string, args ...interface{}) bool {
+func Containsf(t *testing.T, s, contains string, msg string, args ...interface{}) bool {
 	t.Helper()
 
 	return Contains(t, s, contains, append([]interface{}{msg}, args...)...)
 }
 
-func RequireContains(t *testing.T, s, contains interface{}, msgAndArgs ...interface{}) {
+func RequireContains(t *testing.T, s, contains string, msgAndArgs ...interface{}) {
 	t.Helper()
 
 	if Contains(t, s, contains, msgAndArgs...) {
@@ -202,7 +198,7 @@ func RequireContains(t *testing.T, s, contains interface{}, msgAndArgs ...interf
 	t.FailNow()
 }
 
-func RequireContainsf(t *testing.T, s, contains interface{}, msg string, args ...interface{}) {
+func RequireContainsf(t *testing.T, s, contains string, msg string, args ...interface{}) {
 	t.Helper()
 
 	if Containsf(t, s, contains, msg, args...) {
@@ -212,21 +208,17 @@ func RequireContainsf(t *testing.T, s, contains interface{}, msg string, args ..
 	t.FailNow()
 }
 
-func NotContains(t *testing.T, s, contains interface{}, msgAndArgs ...interface{}) bool {
+func NotContains(t *testing.T, s, contains string, msgAndArgs ...interface{}) bool {
 	t.Helper()
 
-	ok, found := containsElement(s, contains)
-	if !ok {
-		return fail(t, fmt.Sprintf("%#v could not be applied builtin len()", s), msgAndArgs...)
-	}
-	if found {
+	if strings.Contains(s, contains) {
 		return fail(t, fmt.Sprintf("%#v should not contain %#v", s, contains), msgAndArgs...)
 	}
 
 	return true
 }
 
-func RequireNotContains(t *testing.T, s, contains interface{}, msgAndArgs ...interface{}) {
+func RequireNotContains(t *testing.T, s, contains string, msgAndArgs ...interface{}) {
 	t.Helper()
 
 	if NotContains(t, s, contains, msgAndArgs...) {
@@ -698,43 +690,6 @@ func ObjectsAreEqual(expected, actual interface{}) bool {
 		return exp == nil && act == nil
 	}
 	return bytes.Equal(exp, act)
-}
-
-func containsElement(list interface{}, element interface{}) (ok, found bool) {
-	listValue := reflect.ValueOf(list)
-	listType := reflect.TypeOf(list)
-	if listType == nil {
-		return false, false
-	}
-	listKind := listType.Kind()
-	defer func() {
-		if e := recover(); e != nil {
-			ok = false
-			found = false
-		}
-	}()
-
-	if listKind == reflect.String {
-		elementValue := reflect.ValueOf(element)
-		return true, strings.Contains(listValue.String(), elementValue.String())
-	}
-
-	if listKind == reflect.Map {
-		mapKeys := listValue.MapKeys()
-		for i := 0; i < len(mapKeys); i++ {
-			if ObjectsAreEqual(mapKeys[i].Interface(), element) {
-				return true, true
-			}
-		}
-		return true, false
-	}
-
-	for i := 0; i < listValue.Len(); i++ {
-		if ObjectsAreEqual(listValue.Index(i).Interface(), element) {
-			return true, true
-		}
-	}
-	return true, false
 }
 
 // isEmpty gets whether the specified object is considered empty or not.
