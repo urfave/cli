@@ -15,7 +15,7 @@ import (
 func TestEnvVarValueSource(t *testing.T) {
 	t.Run("implements ValueSource", func(t *testing.T) {
 		src := EnvVar("foo")
-		require.Implements(t, (*ValueSource)(nil), src)
+		itesting.RequireImplements(t, (*ValueSource)(nil), src)
 
 		t.Run("not found", func(t *testing.T) {
 			t.Setenv("foo", "bar")
