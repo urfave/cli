@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	itesting "github.com/urfave/cli/v3/internal/testing"
 )
 
 func TestFlagDefaultValidation(t *testing.T) {
@@ -24,16 +24,12 @@ func TestFlagDefaultValidation(t *testing.T) {
 		},
 	}
 
-	r := require.New(t)
-
 	// Default value of flag is 2 which should fail validation
 	err := cmd.Run(buildTestContext(t), []string{"foo", "--if", "5"})
-	r.Error(err)
+	itesting.RequireError(t, err)
 }
 
 func TestFlagValidation(t *testing.T) {
-	r := require.New(t)
-
 	testCases := []struct {
 		name        string
 		arg         string
@@ -104,9 +100,9 @@ func TestFlagValidation(t *testing.T) {
 
 		err := cmd.Run(buildTestContext(t), []string{"foo", "--it", testCase.arg})
 		if !testCase.errExpected {
-			r.NoError(err)
+			itesting.RequireNoError(t, err)
 		} else {
-			r.Error(err)
+			itesting.RequireError(t, err)
 		}
 	}
 }

@@ -11,8 +11,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	itesting "github.com/urfave/cli/v3/internal/testing"
 )
 
@@ -265,9 +263,8 @@ func TestHelpCommand_FullName(t *testing.T) {
 				ErrWriter: out,
 			}
 
-			r := require.New(t)
-			r.NoError(cmd.Run(buildTestContext(t), tc.args))
-			r.Contains(out.String(), tc.contains)
+			itesting.RequireNoError(t, cmd.Run(buildTestContext(t), tc.args))
+			itesting.RequireContains(t, out.String(), tc.contains)
 		})
 	}
 }
@@ -341,9 +338,8 @@ func TestShowCommandHelp_AppendHelp(t *testing.T) {
 			hideHelp: true,
 			args:     []string{"app", "help"},
 			verify: func(t *testing.T, outString string) {
-				r := require.New(t)
-				r.NotContains(outString, "help, h  Shows a list of commands or help for one command")
-				r.NotContains(outString, "--help, -h  show help")
+				itesting.RequireNotContains(t, outString, "help, h  Shows a list of commands or help for one command")
+				itesting.RequireNotContains(t, outString, "--help, -h  show help")
 			},
 		},
 		{
@@ -351,27 +347,24 @@ func TestShowCommandHelp_AppendHelp(t *testing.T) {
 			hideHelpCommand: true,
 			args:            []string{"app", "--help"},
 			verify: func(t *testing.T, outString string) {
-				r := require.New(t)
-				r.NotContains(outString, "help, h  Shows a list of commands or help for one command")
-				r.Contains(outString, "--help, -h  show help")
+				itesting.RequireNotContains(t, outString, "help, h  Shows a list of commands or help for one command")
+				itesting.RequireContains(t, outString, "--help, -h  show help")
 			},
 		},
 		{
 			name: "with Subcommand",
 			args: []string{"app", "cmd", "help"},
 			verify: func(t *testing.T, outString string) {
-				r := require.New(t)
-				r.Contains(outString, "help, h  Shows a list of commands or help for one command")
-				r.Contains(outString, "--help, -h  show help")
+				itesting.RequireContains(t, outString, "help, h  Shows a list of commands or help for one command")
+				itesting.RequireContains(t, outString, "--help, -h  show help")
 			},
 		},
 		{
 			name: "without Subcommand",
 			args: []string{"app", "help"},
 			verify: func(t *testing.T, outString string) {
-				r := require.New(t)
-				r.Contains(outString, "help, h  Shows a list of commands or help for one command")
-				r.Contains(outString, "--help, -h  show help")
+				itesting.RequireContains(t, outString, "help, h  Shows a list of commands or help for one command")
+				itesting.RequireContains(t, outString, "--help, -h  show help")
 			},
 		},
 	}
@@ -526,15 +519,14 @@ func TestShowCommandHelp_HelpPrinterCustom(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			r := require.New(t)
 
 			defer func(old helpPrinterCustom) {
 				HelpPrinterCustom = old
 			}(HelpPrinterCustom)
 
 			HelpPrinterCustom = func(w io.Writer, tmpl string, data any, fm map[string]any) {
-				r.Nil(fm)
-				r.Equal(tc.wantTemplate, tmpl)
+				itesting.RequireNil(t, fm)
+				itesting.RequireEqual(t, tc.wantTemplate, tmpl)
 
 				tc.printer(w, tmpl, data, fm)
 			}
@@ -553,8 +545,8 @@ func TestShowCommandHelp_HelpPrinterCustom(t *testing.T) {
 
 			t.Logf("cmd.Run(ctx, %+[1]v)", tc.arguments)
 
-			r.NoError(cmd.Run(buildTestContext(t), tc.arguments))
-			r.Equal(tc.wantOutput, out.String())
+			itesting.RequireNoError(t, cmd.Run(buildTestContext(t), tc.arguments))
+			itesting.RequireEqual(t, tc.wantOutput, out.String())
 		})
 	}
 }
@@ -1146,10 +1138,8 @@ func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 		},
 	}
 
-	r := require.New(t)
-
-	r.ErrorContains(cmd.Run(buildTestContext(t), []string{"cli.test", "help"}), "No help topic for 'help'")
-	r.NoError(cmd.Run(buildTestContext(t), []string{"cli.test", "--help"}))
+	itesting.RequireErrorContains(t, cmd.Run(buildTestContext(t), []string{"cli.test", "help"}), "No help topic for 'help'")
+	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"cli.test", "--help"}))
 }
 
 func TestDefaultCompleteWithFlags(t *testing.T) {
@@ -1451,10 +1441,8 @@ func TestWrappedCommandHelp(t *testing.T) {
 		HelpPrinterCustom(w, templ, data, funcMap)
 	}
 
-	r := require.New(t)
-
-	r.NoError(ShowCommandHelp(context.Background(), cmd, "add"))
-	r.Equal(`NAME:
+	itesting.RequireNoError(t, ShowCommandHelp(context.Background(), cmd, "add"))
+	itesting.RequireEqual(t, `NAME:
    cli.test add - add a task
                   to the list
 
@@ -1596,10 +1584,8 @@ func TestWrappedHelpSubcommand(t *testing.T) {
 		HelpPrinterCustom(w, templ, data, funcMap)
 	}
 
-	r := require.New(t)
-
-	r.NoError(cmd.Run(buildTestContext(t), []string{"cli.test", "bar", "help", "grok"}))
-	r.Equal(`NAME:
+	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"cli.test", "bar", "help", "grok"}))
+	itesting.RequireEqual(t, `NAME:
    cli.test bar grok - remove
                        an
                        existing
@@ -1681,10 +1667,9 @@ func TestCategorizedHelp(t *testing.T) {
 		HelpPrinterCustom(w, templ, data, funcMap)
 	}
 
-	r := require.New(t)
-	r.NoError(cmd.Run(buildTestContext(t), []string{"cli.test", "help"}))
+	itesting.RequireNoError(t, cmd.Run(buildTestContext(t), []string{"cli.test", "help"}))
 
-	r.Equal(`NAME:
+	itesting.RequireEqual(t, `NAME:
    cli.test - A new cli
               application
 
