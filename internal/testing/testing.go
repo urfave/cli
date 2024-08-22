@@ -183,10 +183,26 @@ func Contains(t *testing.T, s, contains interface{}, msgAndArgs ...interface{}) 
 	return true
 }
 
+func Containsf(t *testing.T, s, contains interface{}, msg string, args ...interface{}) bool {
+	t.Helper()
+
+	return Contains(t, s, contains, append([]interface{}{msg}, args...)...)
+}
+
 func RequireContains(t *testing.T, s, contains interface{}, msgAndArgs ...interface{}) {
 	t.Helper()
 
 	if Contains(t, s, contains, msgAndArgs...) {
+		return
+	}
+
+	t.FailNow()
+}
+
+func RequireContainsf(t *testing.T, s, contains interface{}, msg string, args ...interface{}) {
+	t.Helper()
+
+	if Containsf(t, s, contains, msg, args...) {
 		return
 	}
 
