@@ -1,3 +1,4 @@
+// Package testing copies over the necessary code from the testify package to remove the dependency.
 package testing
 
 import (
