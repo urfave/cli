@@ -804,12 +804,6 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		return cmd.Args(), err
 	}
 
-	tracef("normalizing flags (cmd=%[1]q)", cmd.Name)
-
-	if err := normalizeFlags(cmd.Flags, cmd.flagSet); err != nil {
-		return cmd.Args(), err
-	}
-
 	tracef("done parsing flags (cmd=%[1]q)", cmd.Name)
 
 	return cmd.Args(), nil
@@ -876,6 +870,19 @@ func (cmd *Command) appendFlag(fl Flag) {
 	if !hasFlag(cmd.Flags, fl) {
 		cmd.Flags = append(cmd.Flags, fl)
 	}
+}
+
+// VisiblePersistentFlags returns a slice of [PersistentFlag] with Persistent=true and Hidden=false.
+func (cmd *Command) VisiblePersistentFlags() []Flag {
+	var flags []Flag
+	for _, fl := range cmd.Root().Flags {
+		pfl, ok := fl.(PersistentFlag)
+		if !ok || !pfl.IsPersistent() {
+			continue
+		}
+		flags = append(flags, fl)
+	}
+	return visibleFlags(flags)
 }
 
 func (cmd *Command) appendCommand(aCmd *Command) {

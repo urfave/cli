@@ -123,6 +123,14 @@ func (parent *BoolWithInverseFlag) inverseName() string {
 	return parent.InversePrefix + parent.BoolFlag.Name
 }
 
+func (parent *BoolWithInverseFlag) inversePrefix() string {
+	if parent.InversePrefix == "" {
+		return DefaultInverseBoolPrefix
+	}
+
+	return parent.InversePrefix
+}
+
 func (parent *BoolWithInverseFlag) inverseAliases() (aliases []string) {
 	if len(parent.BoolFlag.Aliases) > 0 {
 		aliases = make([]string, len(parent.BoolFlag.Aliases))
@@ -170,11 +178,17 @@ func (parent *BoolWithInverseFlag) Names() []string {
 // String implements the standard Stringer interface.
 //
 // Example for BoolFlag{Name: "env"}
-// --env     (default: false) || --no-env    (default: false)
+// --[no-]env	(default: false)
 func (parent *BoolWithInverseFlag) String() string {
-	if parent.positiveFlag == nil {
-		return fmt.Sprintf("%s || --%s", parent.BoolFlag.String(), parent.inverseName())
+	out := FlagStringer(parent)
+	i := strings.Index(out, "\t")
+
+	prefix := "--"
+
+	// single character flags are prefixed with `-` instead of `--`
+	if len(parent.Name) == 1 {
+		prefix = "-"
 	}
 
-	return fmt.Sprintf("%s || %s", parent.positiveFlag.String(), parent.negativeFlag.String())
+	return fmt.Sprintf("%s[%s]%s%s", prefix, parent.inversePrefix(), parent.Name, out[i:])
 }

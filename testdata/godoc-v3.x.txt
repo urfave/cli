@@ -45,7 +45,9 @@ DESCRIPTION:
 
 OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
 
-OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}
+OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}{{if .VisiblePersistentFlags}}
+
+GLOBAL OPTIONS:{{template "visiblePersistentFlagTemplate" .}}{{end}}
 `
     CommandHelpTemplate is the text template for the command help topic. cli.go
     uses text/template to render templates. You can render custom help text by
@@ -281,8 +283,7 @@ func (parent *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) 
 func (parent *BoolWithInverseFlag) String() string
     String implements the standard Stringer interface.
 
-    Example for BoolFlag{Name: "env"} --env (default: false) || --no-env
-    (default: false)
+	Example for BoolFlag{Name: "env"} --[no-]env (default: false)
 
 func (parent *BoolWithInverseFlag) Value() bool
 
@@ -516,6 +517,10 @@ func (cmd *Command) VisibleFlagCategories() []VisibleFlagCategory
 func (cmd *Command) VisibleFlags() []Flag
     VisibleFlags returns a slice of the Flags with Hidden=false
 
+func (cmd *Command) VisiblePersistentFlags() []Flag
+    VisiblePersistentFlags returns a slice of PersistentFlag with
+    Persistent=true and Hidden=false.
+
 type CommandCategories interface {
 	// AddCommand adds a command to a category, creating a new category if necessary.
 	AddCommand(category string, command *Command)
@@ -557,6 +562,10 @@ type DocGenerationFlag interface {
 
 	// GetEnvVars returns the env vars for this flag
 	GetEnvVars() []string
+
+	// IsDefaultVisible returns whether the default value should be shown in
+	// help text
+	IsDefaultVisible() bool
 }
     DocGenerationFlag is an interface that allows documentation generation for
     the flag
@@ -620,38 +629,42 @@ var GenerateShellCompletionFlag Flag = &BoolFlag{
     GenerateShellCompletionFlag enables shell completion
 
 var HelpFlag Flag = &BoolFlag{
-	Name:    "help",
-	Aliases: []string{"h"},
-	Usage:   "show help",
+	Name:        "help",
+	Aliases:     []string{"h"},
+	Usage:       "show help",
+	HideDefault: true,
 }
     HelpFlag prints the help for all commands and subcommands. Set to nil to
     disable the flag. The subcommand will still be added unless HideHelp or
     HideHelpCommand is set to true.
 
 var VersionFlag Flag = &BoolFlag{
-	Name:    "version",
-	Aliases: []string{"v"},
-	Usage:   "print the version",
+	Name:        "version",
+	Aliases:     []string{"v"},
+	Usage:       "print the version",
+	HideDefault: true,
 }
     VersionFlag prints the version for the application
 
 type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
-	Name        string                                   `json:"name"`         // name of the flag
-	Category    string                                   `json:"category"`     // category of the flag, if any
-	DefaultText string                                   `json:"defaultText"`  // default text of the flag for usage purposes
-	Usage       string                                   `json:"usage"`        // usage string for help output
-	Sources     ValueSourceChain                         `json:"-"`            // sources to load flag value from
-	Required    bool                                     `json:"required"`     // whether the flag is required or not
-	Hidden      bool                                     `json:"hidden"`       // whether to hide the flag in help output
-	Persistent  bool                                     `json:"persistent"`   // whether the flag needs to be applied to subcommands as well
-	Value       T                                        `json:"defaultValue"` // default value for this flag if not set by from any source
-	Destination *T                                       `json:"-"`            // destination pointer for value when set
-	Aliases     []string                                 `json:"aliases"`      // Aliases that are allowed for this flag
-	TakesFile   bool                                     `json:"takesFileArg"` // whether this flag takes a file argument, mainly for shell completion purposes
-	Action      func(context.Context, *Command, T) error `json:"-"`            // Action callback to be called when flag is set
-	Config      C                                        `json:"config"`       // Additional/Custom configuration associated with this flag type
-	OnlyOnce    bool                                     `json:"onlyOnce"`     // whether this flag can be duplicated on the command line
-	Validator   func(T) error                            `json:"-"`            // custom function to validate this flag value
+	Name             string                                   `json:"name"`             // name of the flag
+	Category         string                                   `json:"category"`         // category of the flag, if any
+	DefaultText      string                                   `json:"defaultText"`      // default text of the flag for usage purposes
+	HideDefault      bool                                     `json:"hideDefault"`      // whether to hide the default value in output
+	Usage            string                                   `json:"usage"`            // usage string for help output
+	Sources          ValueSourceChain                         `json:"-"`                // sources to load flag value from
+	Required         bool                                     `json:"required"`         // whether the flag is required or not
+	Hidden           bool                                     `json:"hidden"`           // whether to hide the flag in help output
+	Persistent       bool                                     `json:"persistent"`       // whether the flag needs to be applied to subcommands as well
+	Value            T                                        `json:"defaultValue"`     // default value for this flag if not set by from any source
+	Destination      *T                                       `json:"-"`                // destination pointer for value when set
+	Aliases          []string                                 `json:"aliases"`          // Aliases that are allowed for this flag
+	TakesFile        bool                                     `json:"takesFileArg"`     // whether this flag takes a file argument, mainly for shell completion purposes
+	Action           func(context.Context, *Command, T) error `json:"-"`                // Action callback to be called when flag is set
+	Config           C                                        `json:"config"`           // Additional/Custom configuration associated with this flag type
+	OnlyOnce         bool                                     `json:"onlyOnce"`         // whether this flag can be duplicated on the command line
+	Validator        func(T) error                            `json:"-"`                // custom function to validate this flag value
+	ValidateDefaults bool                                     `json:"validateDefaults"` // whether to validate defaults or not
 
 	// Has unexported fields.
 }
@@ -683,6 +696,9 @@ func (f *FlagBase[T, C, V]) GetUsage() string
 func (f *FlagBase[T, C, V]) GetValue() string
     GetValue returns the flags value as string representation and an empty
     string if the flag takes no value at all.
+
+func (f *FlagBase[T, C, V]) IsDefaultVisible() bool
+    IsDefaultVisible returns true if the flag is not hidden, otherwise false
 
 func (f *FlagBase[T, C, VC]) IsMultiValueFlag() bool
     IsMultiValueFlag returns true if the value type T can take multiple values
@@ -925,7 +941,12 @@ type TimestampArg = ArgumentBase[time.Time, TimestampConfig, timestampValue]
 
 type TimestampConfig struct {
 	Timezone *time.Location
-	Layout   string
+	// Available layouts for flag value.
+	//
+	// Note that value for formats with missing year/date will be interpreted as current year/date respectively.
+	//
+	// Read more about time layouts: https://pkg.go.dev/time#pkg-constants
+	Layouts []string
 }
     TimestampConfig defines the config for timestamp flags
 
@@ -968,6 +989,8 @@ type ValueSource interface {
     use with a cli.Flag
 
 func EnvVar(key string) ValueSource
+
+func File(path string) ValueSource
 
 type ValueSourceChain struct {
 	Chain []ValueSource

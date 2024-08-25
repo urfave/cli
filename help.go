@@ -159,7 +159,7 @@ func printCommandSuggestions(commands []*Command, writer io.Writer) {
 		if command.Hidden {
 			continue
 		}
-		if strings.HasSuffix(os.Getenv("SHELL"), "zsh") {
+		if strings.HasSuffix(os.Getenv("0"), "zsh") {
 			_, _ = fmt.Fprintf(writer, "%s:%s\n", command.Name, command.Usage)
 		} else {
 			_, _ = fmt.Fprintf(writer, "%s\n", command.Name)
@@ -415,6 +415,10 @@ func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs 
 		handleTemplateError(err)
 	}
 
+	if _, err := t.New("visiblePersistentFlagTemplate").Parse(visiblePersistentFlagTemplate); err != nil {
+		handleTemplateError(err)
+	}
+
 	if _, err := t.New("visibleGlobalFlagCategoryTemplate").Parse(strings.Replace(visibleFlagCategoryTemplate, "OPTIONS", "GLOBAL OPTIONS", -1)); err != nil {
 		handleTemplateError(err)
 	}
@@ -457,6 +461,15 @@ func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
 
 	if lastArg != "--generate-shell-completion" {
 		return false, arguments
+	}
+
+	for _, arg := range arguments {
+		// If arguments include "--", shell completion is disabled
+		// because after "--" only positional arguments are accepted.
+		// https://unix.stackexchange.com/a/11382
+		if arg == "--" {
+			return false, arguments
+		}
 	}
 
 	return true, arguments[:pos]

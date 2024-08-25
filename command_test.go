@@ -2490,6 +2490,7 @@ func TestSetupInitializesOnlyNilWriters(t *testing.T) {
 }
 
 func TestFlagAction(t *testing.T) {
+	now := time.Now().UTC().Truncate(time.Minute)
 	testCases := []struct {
 		name string
 		args []string
@@ -2578,8 +2579,8 @@ func TestFlagAction(t *testing.T) {
 		},
 		{
 			name: "flag_timestamp",
-			args: []string{"app", "--f_timestamp", "2022-05-01 02:26:20"},
-			exp:  "2022-05-01T02:26:20Z ",
+			args: []string{"app", "--f_timestamp", now.Format(time.DateTime)},
+			exp:  now.UTC().Format(time.RFC3339) + " ",
 		},
 		{
 			name: "flag_timestamp_error",
@@ -2738,12 +2739,14 @@ func TestFlagAction(t *testing.T) {
 					&TimestampFlag{
 						Name: "f_timestamp",
 						Config: TimestampConfig{
-							Layout: "2006-01-02 15:04:05",
+							Timezone: time.UTC,
+							Layouts:  []string{time.DateTime},
 						},
 						Action: func(_ context.Context, cmd *Command, v time.Time) error {
 							if v.IsZero() {
 								return fmt.Errorf("zero timestamp")
 							}
+
 							_, err := cmd.Root().Writer.Write([]byte(v.Format(time.RFC3339) + " "))
 							return err
 						},
@@ -3204,17 +3207,60 @@ func TestCommand_Bool(t *testing.T) {
 }
 
 func TestCommand_Value(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Int("myflag", 12, "doc")
-	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.Int("top-flag", 13, "doc")
-	pCmd := &Command{flagSet: parentSet}
-	cmd := &Command{flagSet: set, parent: pCmd}
+	subCmd := &Command{
+		Name: "test",
+		Flags: []Flag{
+			&IntFlag{
+				Name:    "myflag",
+				Usage:   "doc",
+				Aliases: []string{"m", "mf"},
+			},
+		},
+		Action: func(ctx context.Context, c *Command) error {
+			return nil
+		},
+	}
 
-	r := require.New(t)
-	r.Equal(12, cmd.Value("myflag"))
-	r.Equal(13, cmd.Value("top-flag"))
-	r.Nil(cmd.Value("unknown-flag"))
+	cmd := &Command{
+		Flags: []Flag{
+			&IntFlag{
+				Name:    "top-flag",
+				Usage:   "doc",
+				Aliases: []string{"t", "tf"},
+			},
+		},
+		Commands: []*Command{
+			subCmd,
+		},
+	}
+	t.Run("flag name", func(t *testing.T) {
+		r := require.New(t)
+		err := cmd.Run(buildTestContext(t), []string{"main", "--top-flag", "13", "test", "--myflag", "14"})
+
+		r.NoError(err)
+		r.Equal(int64(13), cmd.Value("top-flag"))
+		r.Equal(int64(13), cmd.Value("t"))
+		r.Equal(int64(13), cmd.Value("tf"))
+
+		r.Equal(int64(14), subCmd.Value("myflag"))
+		r.Equal(int64(14), subCmd.Value("m"))
+		r.Equal(int64(14), subCmd.Value("mf"))
+	})
+
+	t.Run("flag aliases", func(t *testing.T) {
+		r := require.New(t)
+		err := cmd.Run(buildTestContext(t), []string{"main", "-tf", "15", "test", "-m", "16"})
+
+		r.NoError(err)
+		r.Equal(int64(15), cmd.Value("top-flag"))
+		r.Equal(int64(15), cmd.Value("t"))
+		r.Equal(int64(15), cmd.Value("tf"))
+
+		r.Equal(int64(16), subCmd.Value("myflag"))
+		r.Equal(int64(16), subCmd.Value("m"))
+		r.Equal(int64(16), subCmd.Value("mf"))
+		r.Nil(cmd.Value("unknown-flag"))
+	})
 }
 
 func TestCommand_Value_InvalidFlagAccessHandler(t *testing.T) {
@@ -3720,7 +3766,7 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 		{
 			name: "empty2",
 			input: `
-			
+
 			`,
 			args:          []string{"foo"},
 			expectedInt:   0,
@@ -3738,7 +3784,7 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 		{
 			name: "intflag-from-input2",
 			input: `
-			--if 
+			--if
 
 			100`,
 			args:          []string{"foo"},
@@ -3757,14 +3803,14 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 			--ssf hello
 			--ssf
 
-			"hello	
+			"hello
   123
 44"
 			`,
 			args:          []string{"foo"},
 			expectedInt:   100,
 			expectedFloat: 100.1,
-			expectedSlice: []string{"hello", "hello\t\n  123\n44"},
+			expectedSlice: []string{"hello", "hello\n  123\n44"},
 		},
 		{
 			name: "end-args",
@@ -3919,6 +3965,7 @@ func TestJSONExportCommand(t *testing.T) {
 					"usage": "",
 					"required": false,
 					"hidden": false,
+					"hideDefault": false,
 					"persistent": false,
 					"defaultValue": "",
 					"aliases": [
@@ -3929,7 +3976,8 @@ func TestJSONExportCommand(t *testing.T) {
 					"config": {
 					  "TrimSpace": false
 					},
-					"onlyOnce": false
+					"onlyOnce": false,
+					"validateDefaults" : false
 				  },
 				  {
 					"name": "sub-command-flag",
@@ -3938,6 +3986,7 @@ func TestJSONExportCommand(t *testing.T) {
 					"usage": "some usage text",
 					"required": false,
 					"hidden": false,
+					"hideDefault": false,
 					"persistent": false,
 					"defaultValue": false,
 					"aliases": [
@@ -3947,7 +3996,8 @@ func TestJSONExportCommand(t *testing.T) {
 					"config": {
 					  "Count": null
 					},
-					"onlyOnce": false
+					"onlyOnce": false,
+					"validateDefaults" : false
 				  }
 				],
 				"hideHelp": false,
@@ -3977,6 +4027,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"usage": "",
 				"required": false,
 				"hidden": false,
+				"hideDefault": false,
 				"persistent": false,
 				"defaultValue": "",
 				"aliases": [
@@ -3987,7 +4038,8 @@ func TestJSONExportCommand(t *testing.T) {
 				"config": {
 				  "TrimSpace": false
 				},
-				"onlyOnce": false
+				"onlyOnce": false,
+				"validateDefaults" : false
 			  },
 			  {
 				"name": "another-flag",
@@ -3996,6 +4048,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"usage": "another usage text",
 				"required": false,
 				"hidden": false,
+				"hideDefault": false,
 				"persistent": false,
 				"defaultValue": false,
 				"aliases": [
@@ -4005,7 +4058,8 @@ func TestJSONExportCommand(t *testing.T) {
 				"config": {
 				  "Count": null
 				},
-				"onlyOnce": false
+				"onlyOnce": false,
+				"validateDefaults" : false
 			  }
 			],
 			"hideHelp": false,
@@ -4153,6 +4207,7 @@ func TestJSONExportCommand(t *testing.T) {
 					"usage": "some usage text",
 					"required": false,
 					"hidden": false,
+					"hideDefault": false,
 					"persistent": false,
 					"defaultValue": false,
 					"aliases": [
@@ -4162,7 +4217,8 @@ func TestJSONExportCommand(t *testing.T) {
 					"config": {
 					  "Count": null
 					},
-					"onlyOnce": false
+					"onlyOnce": false,
+					"validateDefaults" : false
 				  }
 				],
 				"hideHelp": false,
@@ -4192,6 +4248,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"usage": "",
 				"required": false,
 				"hidden": false,
+				"hideDefault": false,
 				"persistent": false,
 				"defaultValue": "",
 				"aliases": [
@@ -4202,7 +4259,8 @@ func TestJSONExportCommand(t *testing.T) {
 				"config": {
 				  "TrimSpace": false
 				},
-				"onlyOnce": false
+				"onlyOnce": false,
+				"validateDefaults" : false
 			  },
 			  {
 				"name": "another-flag",
@@ -4211,6 +4269,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"usage": "another usage text",
 				"required": false,
 				"hidden": false,
+				"hideDefault": false,
 				"persistent": false,
 				"defaultValue": false,
 				"aliases": [
@@ -4220,7 +4279,8 @@ func TestJSONExportCommand(t *testing.T) {
 				"config": {
 				  "Count": null
 				},
-				"onlyOnce": false
+				"onlyOnce": false,
+				"validateDefaults" : false
 			  }
 			],
 			"hideHelp": false,
@@ -4250,6 +4310,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"usage": "some 'usage' text",
 			"required": false,
 			"hidden": false,
+			"hideDefault": false,
 			"persistent": false,
 			"defaultValue": "value",
 			"aliases": [
@@ -4259,7 +4320,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"config": {
 			  "TrimSpace": false
 			},
-			"onlyOnce": false
+			"onlyOnce": false,
+			"validateDefaults" : false
 		  },
 		  {
 			"name": "flag",
@@ -4268,6 +4330,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"usage": "",
 			"required": false,
 			"hidden": false,
+			"hideDefault": false,
 			"persistent": false,
 			"defaultValue": "",
 			"aliases": [
@@ -4278,7 +4341,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"config": {
 			  "TrimSpace": false
 			},
-			"onlyOnce": false
+			"onlyOnce": false,
+			"validateDefaults" : false
 		  },
 		  {
 			"name": "another-flag",
@@ -4287,6 +4351,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"usage": "another usage text",
 			"required": false,
 			"hidden": false,
+			"hideDefault": false,
 			"persistent": false,
 			"defaultValue": false,
 			"aliases": [
@@ -4296,7 +4361,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"config": {
 			  "Count": null
 			},
-			"onlyOnce": false
+			"onlyOnce": false,
+			"validateDefaults" : false
 		  },
 		  {
 			"name": "hidden-flag",
@@ -4305,6 +4371,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"usage": "",
 			"required": false,
 			"hidden": true,
+			"hideDefault": false,
 			"persistent": false,
 			"defaultValue": false,
 			"aliases": null,
@@ -4312,7 +4379,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"config": {
 			  "Count": null
 			},
-			"onlyOnce": false
+			"onlyOnce": false,
+			"validateDefaults" : false
 		  }
 		],
 		"hideHelp": false,

@@ -20,6 +20,7 @@ func TestFlagDefaultValidation(t *testing.T) {
 					}
 					return fmt.Errorf("Value %d not in range [3,10] or [20,24]", i)
 				},
+				ValidateDefaults: true,
 			},
 		},
 	}

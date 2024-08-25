@@ -71,7 +71,7 @@ func TestFileValueSource(t *testing.T) {
 		r.Implements((*ValueSource)(nil), &fileValueSource{})
 
 		t.Run("not found", func(t *testing.T) {
-			src := &fileValueSource{Path: fmt.Sprintf("junk_file_name-%[1]v", rand.Int())}
+			src := File(fmt.Sprintf("junk_file_name-%[1]v", rand.Int()))
 			_, ok := src.Lookup()
 			r.False(ok)
 		})
@@ -82,7 +82,7 @@ func TestFileValueSource(t *testing.T) {
 		r.Nil(os.WriteFile(fileName, []byte("pita"), 0o644))
 
 		t.Run("found", func(t *testing.T) {
-			src := &fileValueSource{Path: fileName}
+			src := File(fileName)
 			str, ok := src.Lookup()
 			r.True(ok)
 			r.Equal("pita", str)
@@ -90,7 +90,7 @@ func TestFileValueSource(t *testing.T) {
 	})
 
 	t.Run("implements fmt.Stringer", func(t *testing.T) {
-		src := &fileValueSource{Path: "/dev/null"}
+		src := File("/dev/null")
 		r := require.New(t)
 
 		r.Implements((*ValueSource)(nil), src)
@@ -98,7 +98,7 @@ func TestFileValueSource(t *testing.T) {
 	})
 
 	t.Run("implements fmt.GoStringer", func(t *testing.T) {
-		src := &fileValueSource{Path: "/dev/null"}
+		src := File("/dev/null")
 		r := require.New(t)
 
 		r.Implements((*ValueSource)(nil), src)

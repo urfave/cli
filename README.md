@@ -21,7 +21,7 @@ command line tools in Go featuring:
   - environment variables
   - plain text files
   - structured file formats (supported via the
-    [`urfave/cli-altsrc`][urfave/cli-docs] module)
+    [`urfave/cli-altsrc`][urfave/cli-altsrc] module)
 
 ## Documentation
 
