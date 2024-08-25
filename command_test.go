@@ -3766,7 +3766,7 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 		{
 			name: "empty2",
 			input: `
-			
+
 			`,
 			args:          []string{"foo"},
 			expectedInt:   0,
@@ -3784,7 +3784,7 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 		{
 			name: "intflag-from-input2",
 			input: `
-			--if 
+			--if
 
 			100`,
 			args:          []string{"foo"},
@@ -3803,14 +3803,14 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 			--ssf hello
 			--ssf
 
-			"hello	
+			"hello
   123
 44"
 			`,
 			args:          []string{"foo"},
 			expectedInt:   100,
 			expectedFloat: 100.1,
-			expectedSlice: []string{"hello", "hello\t\n  123\n44"},
+			expectedSlice: []string{"hello", "hello\n  123\n44"},
 		},
 		{
 			name: "end-args",
@@ -3976,7 +3976,8 @@ func TestJSONExportCommand(t *testing.T) {
 					"config": {
 					  "TrimSpace": false
 					},
-					"onlyOnce": false
+					"onlyOnce": false,
+					"validateDefaults" : false
 				  },
 				  {
 					"name": "sub-command-flag",
@@ -3995,7 +3996,8 @@ func TestJSONExportCommand(t *testing.T) {
 					"config": {
 					  "Count": null
 					},
-					"onlyOnce": false
+					"onlyOnce": false,
+					"validateDefaults" : false
 				  }
 				],
 				"hideHelp": false,
@@ -4036,7 +4038,8 @@ func TestJSONExportCommand(t *testing.T) {
 				"config": {
 				  "TrimSpace": false
 				},
-				"onlyOnce": false
+				"onlyOnce": false,
+				"validateDefaults" : false
 			  },
 			  {
 				"name": "another-flag",
@@ -4055,7 +4058,8 @@ func TestJSONExportCommand(t *testing.T) {
 				"config": {
 				  "Count": null
 				},
-				"onlyOnce": false
+				"onlyOnce": false,
+				"validateDefaults" : false
 			  }
 			],
 			"hideHelp": false,
@@ -4213,7 +4217,8 @@ func TestJSONExportCommand(t *testing.T) {
 					"config": {
 					  "Count": null
 					},
-					"onlyOnce": false
+					"onlyOnce": false,
+					"validateDefaults" : false
 				  }
 				],
 				"hideHelp": false,
@@ -4254,7 +4259,8 @@ func TestJSONExportCommand(t *testing.T) {
 				"config": {
 				  "TrimSpace": false
 				},
-				"onlyOnce": false
+				"onlyOnce": false,
+				"validateDefaults" : false
 			  },
 			  {
 				"name": "another-flag",
@@ -4273,7 +4279,8 @@ func TestJSONExportCommand(t *testing.T) {
 				"config": {
 				  "Count": null
 				},
-				"onlyOnce": false
+				"onlyOnce": false,
+				"validateDefaults" : false
 			  }
 			],
 			"hideHelp": false,
@@ -4313,7 +4320,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"config": {
 			  "TrimSpace": false
 			},
-			"onlyOnce": false
+			"onlyOnce": false,
+			"validateDefaults" : false
 		  },
 		  {
 			"name": "flag",
@@ -4333,7 +4341,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"config": {
 			  "TrimSpace": false
 			},
-			"onlyOnce": false
+			"onlyOnce": false,
+			"validateDefaults" : false
 		  },
 		  {
 			"name": "another-flag",
@@ -4352,7 +4361,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"config": {
 			  "Count": null
 			},
-			"onlyOnce": false
+			"onlyOnce": false,
+			"validateDefaults" : false
 		  },
 		  {
 			"name": "hidden-flag",
@@ -4369,7 +4379,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"config": {
 			  "Count": null
 			},
-			"onlyOnce": false
+			"onlyOnce": false,
+			"validateDefaults" : false
 		  }
 		],
 		"hideHelp": false,
