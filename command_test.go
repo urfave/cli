@@ -3766,7 +3766,7 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 		{
 			name: "empty2",
 			input: `
-			
+
 			`,
 			args:          []string{"foo"},
 			expectedInt:   0,
@@ -3784,7 +3784,7 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 		{
 			name: "intflag-from-input2",
 			input: `
-			--if 
+			--if
 
 			100`,
 			args:          []string{"foo"},
@@ -3803,7 +3803,7 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 			--ssf hello
 			--ssf
 
-			"hello	
+			"hello
   123
 44"
 			`,
@@ -3906,6 +3906,11 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestZeroValueCommand(t *testing.T) {
+	var cmd Command
+	assert.NoError(t, cmd.Run(context.Background(), []string{"foo"}))
 }
 
 func TestJSONExportCommand(t *testing.T) {

@@ -2997,3 +2997,8 @@ func TestStringMapFlagApply_Error(t *testing.T) {
 	err := set.Parse([]string{"--goat", "aaa", "bbb="})
 	assert.Error(t, err)
 }
+
+func TestZeroValueMutexFlag(t *testing.T) {
+	var fl MutuallyExclusiveFlags
+	assert.NoError(t, fl.check(&Command{}))
+}

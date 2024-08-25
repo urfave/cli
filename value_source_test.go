@@ -7,8 +7,17 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestZeroValueSourceChain(t *testing.T) {
+	var vc ValueSourceChain
+	assert.Empty(t, vc.EnvKeys())
+	assert.NotEmpty(t, vc.GoString())
+	assert.Empty(t, vc.Chain)
+	assert.Empty(t, vc.String())
+}
 
 func TestEnvVarValueSource(t *testing.T) {
 	t.Run("implements ValueSource", func(t *testing.T) {
