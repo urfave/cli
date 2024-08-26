@@ -22,7 +22,7 @@ func parseIter(set *flag.FlagSet, ip iterativeParser, args []string, shellComple
 		err := set.Parse(args)
 		if !ip.useShortOptionHandling() || err == nil {
 			if shellComplete {
-				tracef("returning nil due to shellComplete=true err=%v", err)
+				tracef("returning nil due to shellComplete=true")
 
 				return nil
 			}
