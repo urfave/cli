@@ -101,9 +101,9 @@ func TestCompletionSubcommand(t *testing.T) {
 	out.Reset()
 
 	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "bar", "xyz", "--", "--generate-shell-completion"}))
-	r.Containsf(
+	r.NotContainsf(
 		out.String(), "-g",
-		"Expected output to contain flag %[1]q", "-g",
+		"Expected output to not contain flag %[1]q", "-g",
 	)
 }
 
