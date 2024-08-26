@@ -3908,6 +3908,11 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 	}
 }
 
+func TestZeroValueCommand(t *testing.T) {
+	var cmd Command
+	assert.NoError(t, cmd.Run(context.Background(), []string{"foo"}))
+}
+
 func TestJSONExportCommand(t *testing.T) {
 	cmd := buildExtendedTestCommand()
 	cmd.Arguments = []Argument{
