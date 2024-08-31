@@ -283,8 +283,7 @@ func (parent *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) 
 func (parent *BoolWithInverseFlag) String() string
     String implements the standard Stringer interface.
 
-    Example for BoolFlag{Name: "env"} --env (default: false) || --no-env
-    (default: false)
+	Example for BoolFlag{Name: "env"} --[no-]env (default: false)
 
 func (parent *BoolWithInverseFlag) Value() bool
 
@@ -648,23 +647,24 @@ var VersionFlag Flag = &BoolFlag{
     VersionFlag prints the version for the application
 
 type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
-	Name        string                                   `json:"name"`         // name of the flag
-	Category    string                                   `json:"category"`     // category of the flag, if any
-	DefaultText string                                   `json:"defaultText"`  // default text of the flag for usage purposes
-	HideDefault bool                                     `json:"hideDefault"`  // whether to hide the default value in output
-	Usage       string                                   `json:"usage"`        // usage string for help output
-	Sources     ValueSourceChain                         `json:"-"`            // sources to load flag value from
-	Required    bool                                     `json:"required"`     // whether the flag is required or not
-	Hidden      bool                                     `json:"hidden"`       // whether to hide the flag in help output
-	Persistent  bool                                     `json:"persistent"`   // whether the flag needs to be applied to subcommands as well
-	Value       T                                        `json:"defaultValue"` // default value for this flag if not set by from any source
-	Destination *T                                       `json:"-"`            // destination pointer for value when set
-	Aliases     []string                                 `json:"aliases"`      // Aliases that are allowed for this flag
-	TakesFile   bool                                     `json:"takesFileArg"` // whether this flag takes a file argument, mainly for shell completion purposes
-	Action      func(context.Context, *Command, T) error `json:"-"`            // Action callback to be called when flag is set
-	Config      C                                        `json:"config"`       // Additional/Custom configuration associated with this flag type
-	OnlyOnce    bool                                     `json:"onlyOnce"`     // whether this flag can be duplicated on the command line
-	Validator   func(T) error                            `json:"-"`            // custom function to validate this flag value
+	Name             string                                   `json:"name"`             // name of the flag
+	Category         string                                   `json:"category"`         // category of the flag, if any
+	DefaultText      string                                   `json:"defaultText"`      // default text of the flag for usage purposes
+	HideDefault      bool                                     `json:"hideDefault"`      // whether to hide the default value in output
+	Usage            string                                   `json:"usage"`            // usage string for help output
+	Sources          ValueSourceChain                         `json:"-"`                // sources to load flag value from
+	Required         bool                                     `json:"required"`         // whether the flag is required or not
+	Hidden           bool                                     `json:"hidden"`           // whether to hide the flag in help output
+	Persistent       bool                                     `json:"persistent"`       // whether the flag needs to be applied to subcommands as well
+	Value            T                                        `json:"defaultValue"`     // default value for this flag if not set by from any source
+	Destination      *T                                       `json:"-"`                // destination pointer for value when set
+	Aliases          []string                                 `json:"aliases"`          // Aliases that are allowed for this flag
+	TakesFile        bool                                     `json:"takesFileArg"`     // whether this flag takes a file argument, mainly for shell completion purposes
+	Action           func(context.Context, *Command, T) error `json:"-"`                // Action callback to be called when flag is set
+	Config           C                                        `json:"config"`           // Additional/Custom configuration associated with this flag type
+	OnlyOnce         bool                                     `json:"onlyOnce"`         // whether this flag can be duplicated on the command line
+	Validator        func(T) error                            `json:"-"`                // custom function to validate this flag value
+	ValidateDefaults bool                                     `json:"validateDefaults"` // whether to validate defaults or not
 
 	// Has unexported fields.
 }
@@ -941,7 +941,12 @@ type TimestampArg = ArgumentBase[time.Time, TimestampConfig, timestampValue]
 
 type TimestampConfig struct {
 	Timezone *time.Location
-	Layout   string
+	// Available layouts for flag value.
+	//
+	// Note that value for formats with missing year/date will be interpreted as current year/date respectively.
+	//
+	// Read more about time layouts: https://pkg.go.dev/time#pkg-constants
+	Layouts []string
 }
     TimestampConfig defines the config for timestamp flags
 

@@ -2490,6 +2490,7 @@ func TestSetupInitializesOnlyNilWriters(t *testing.T) {
 }
 
 func TestFlagAction(t *testing.T) {
+	now := time.Now().UTC().Truncate(time.Minute)
 	testCases := []struct {
 		name string
 		args []string
@@ -2578,8 +2579,8 @@ func TestFlagAction(t *testing.T) {
 		},
 		{
 			name: "flag_timestamp",
-			args: []string{"app", "--f_timestamp", "2022-05-01 02:26:20"},
-			exp:  "2022-05-01T02:26:20Z ",
+			args: []string{"app", "--f_timestamp", now.Format(time.DateTime)},
+			exp:  now.UTC().Format(time.RFC3339) + " ",
 		},
 		{
 			name: "flag_timestamp_error",
@@ -2738,12 +2739,14 @@ func TestFlagAction(t *testing.T) {
 					&TimestampFlag{
 						Name: "f_timestamp",
 						Config: TimestampConfig{
-							Layout: "2006-01-02 15:04:05",
+							Timezone: time.UTC,
+							Layouts:  []string{time.DateTime},
 						},
 						Action: func(_ context.Context, cmd *Command, v time.Time) error {
 							if v.IsZero() {
 								return fmt.Errorf("zero timestamp")
 							}
+
 							_, err := cmd.Root().Writer.Write([]byte(v.Format(time.RFC3339) + " "))
 							return err
 						},
@@ -3763,7 +3766,7 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 		{
 			name: "empty2",
 			input: `
-			
+
 			`,
 			args:          []string{"foo"},
 			expectedInt:   0,
@@ -3781,7 +3784,7 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 		{
 			name: "intflag-from-input2",
 			input: `
-			--if 
+			--if
 
 			100`,
 			args:          []string{"foo"},
@@ -3800,14 +3803,14 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 			--ssf hello
 			--ssf
 
-			"hello	
+			"hello
   123
 44"
 			`,
 			args:          []string{"foo"},
 			expectedInt:   100,
 			expectedFloat: 100.1,
-			expectedSlice: []string{"hello", "hello\t\n  123\n44"},
+			expectedSlice: []string{"hello", "hello\n  123\n44"},
 		},
 		{
 			name: "end-args",
@@ -3905,6 +3908,11 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 	}
 }
 
+func TestZeroValueCommand(t *testing.T) {
+	var cmd Command
+	assert.NoError(t, cmd.Run(context.Background(), []string{"foo"}))
+}
+
 func TestJSONExportCommand(t *testing.T) {
 	cmd := buildExtendedTestCommand()
 	cmd.Arguments = []Argument{
@@ -3973,7 +3981,8 @@ func TestJSONExportCommand(t *testing.T) {
 					"config": {
 					  "TrimSpace": false
 					},
-					"onlyOnce": false
+					"onlyOnce": false,
+					"validateDefaults" : false
 				  },
 				  {
 					"name": "sub-command-flag",
@@ -3992,7 +4001,8 @@ func TestJSONExportCommand(t *testing.T) {
 					"config": {
 					  "Count": null
 					},
-					"onlyOnce": false
+					"onlyOnce": false,
+					"validateDefaults" : false
 				  }
 				],
 				"hideHelp": false,
@@ -4033,7 +4043,8 @@ func TestJSONExportCommand(t *testing.T) {
 				"config": {
 				  "TrimSpace": false
 				},
-				"onlyOnce": false
+				"onlyOnce": false,
+				"validateDefaults" : false
 			  },
 			  {
 				"name": "another-flag",
@@ -4052,7 +4063,8 @@ func TestJSONExportCommand(t *testing.T) {
 				"config": {
 				  "Count": null
 				},
-				"onlyOnce": false
+				"onlyOnce": false,
+				"validateDefaults" : false
 			  }
 			],
 			"hideHelp": false,
@@ -4210,7 +4222,8 @@ func TestJSONExportCommand(t *testing.T) {
 					"config": {
 					  "Count": null
 					},
-					"onlyOnce": false
+					"onlyOnce": false,
+					"validateDefaults" : false
 				  }
 				],
 				"hideHelp": false,
@@ -4251,7 +4264,8 @@ func TestJSONExportCommand(t *testing.T) {
 				"config": {
 				  "TrimSpace": false
 				},
-				"onlyOnce": false
+				"onlyOnce": false,
+				"validateDefaults" : false
 			  },
 			  {
 				"name": "another-flag",
@@ -4270,7 +4284,8 @@ func TestJSONExportCommand(t *testing.T) {
 				"config": {
 				  "Count": null
 				},
-				"onlyOnce": false
+				"onlyOnce": false,
+				"validateDefaults" : false
 			  }
 			],
 			"hideHelp": false,
@@ -4310,7 +4325,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"config": {
 			  "TrimSpace": false
 			},
-			"onlyOnce": false
+			"onlyOnce": false,
+			"validateDefaults" : false
 		  },
 		  {
 			"name": "flag",
@@ -4330,7 +4346,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"config": {
 			  "TrimSpace": false
 			},
-			"onlyOnce": false
+			"onlyOnce": false,
+			"validateDefaults" : false
 		  },
 		  {
 			"name": "another-flag",
@@ -4349,7 +4366,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"config": {
 			  "Count": null
 			},
-			"onlyOnce": false
+			"onlyOnce": false,
+			"validateDefaults" : false
 		  },
 		  {
 			"name": "hidden-flag",
@@ -4366,7 +4384,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"config": {
 			  "Count": null
 			},
-			"onlyOnce": false
+			"onlyOnce": false,
+			"validateDefaults" : false
 		  }
 		],
 		"hideHelp": false,
