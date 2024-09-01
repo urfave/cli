@@ -338,21 +338,34 @@ func (cmd *Command) setupSubcommand() {
 	cmd.flagCategories = newFlagCategoriesFromFlags(cmd.allFlags())
 }
 
+func (cmd *Command) hideHelp() bool {
+	tracef("hide help (cmd=%[1]q)", cmd.Name)
+	for c := cmd; c != nil; c = c.parent {
+		if c.HideHelp {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (cmd *Command) ensureHelp() {
 	tracef("ensuring help (cmd=%[1]q)", cmd.Name)
 
 	helpCommand := buildHelpCommand(true)
 
-	if cmd.Command(helpCommand.Name) == nil && !cmd.HideHelp {
-		if !cmd.HideHelpCommand {
-			tracef("appending helpCommand (cmd=%[1]q)", cmd.Name)
-			cmd.appendCommand(helpCommand)
+	if !cmd.hideHelp() {
+		if cmd.Command(helpCommand.Name) == nil {
+			if !cmd.HideHelpCommand {
+				tracef("appending helpCommand (cmd=%[1]q)", cmd.Name)
+				cmd.appendCommand(helpCommand)
+			}
 		}
-	}
 
-	if HelpFlag != nil && !cmd.HideHelp {
-		tracef("appending HelpFlag (cmd=%[1]q)", cmd.Name)
-		cmd.appendFlag(HelpFlag)
+		if HelpFlag != nil {
+			tracef("appending HelpFlag (cmd=%[1]q)", cmd.Name)
+			cmd.appendFlag(HelpFlag)
+		}
 	}
 }
 
@@ -499,7 +512,7 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 				fmt.Fprintf(cmd.Root().ErrWriter, "%s", suggestion)
 			}
 		}
-		if !cmd.HideHelp {
+		if !cmd.hideHelp() {
 			if cmd.parent == nil {
 				tracef("running ShowAppHelp")
 				if err := ShowAppHelp(cmd); err != nil {
@@ -709,7 +722,7 @@ func (cmd *Command) suggestFlagFromError(err error, commandName string) (string,
 	}
 
 	flags := cmd.Flags
-	hideHelp := cmd.HideHelp
+	hideHelp := cmd.hideHelp()
 
 	if commandName != "" {
 		subCmd := cmd.Command(commandName)
