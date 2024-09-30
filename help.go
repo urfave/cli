@@ -467,9 +467,6 @@ func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
 		// because after "--" only positional arguments are accepted.
 		// https://unix.stackexchange.com/a/11382
 		if arg == "--" {
-			if lastArg == "--generate-shell-completion" {
-				return false, arguments[:pos-2]
-			}
 			return false, arguments
 		}
 	}
