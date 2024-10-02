@@ -554,12 +554,6 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 		}()
 	}
 
-	if err := cmd.checkRequiredFlags(); err != nil {
-		cmd.isInError = true
-		_ = ShowSubcommandHelp(cmd)
-		return err
-	}
-
 	for _, grp := range cmd.MutuallyExclusiveFlags {
 		if err := grp.check(cmd); err != nil {
 			_ = ShowSubcommandHelp(cmd)
@@ -636,6 +630,12 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	if cmd.Action == nil {
 		cmd.Action = helpCommandAction
 	} else {
+		if err := cmd.checkAllRequiredFlags(); err != nil {
+			cmd.isInError = true
+			_ = ShowSubcommandHelp(cmd)
+			return err
+		}
+
 		if err := cmd.checkPersistentRequiredFlags(); err != nil {
 			cmd.isInError = true
 			_ = ShowSubcommandHelp(cmd)
@@ -991,6 +991,15 @@ func (cmd *Command) checkRequiredFlag(f Flag) (bool, string) {
 		}
 	}
 	return true, ""
+}
+
+func (cmd *Command) checkAllRequiredFlags() requiredFlagsErr {
+	if cmd.parent != nil {
+		if err := cmd.parent.checkRequiredFlags(); err != nil {
+			return err
+		}
+	}
+	return cmd.checkRequiredFlags()
 }
 
 func (cmd *Command) checkRequiredFlags() requiredFlagsErr {

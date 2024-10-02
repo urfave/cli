@@ -2941,6 +2941,49 @@ func TestPersistentFlagIsSet(t *testing.T) {
 	require.True(t, resultIsSet)
 }
 
+func TestRequiredFlagDelayed(t *testing.T) {
+	sf := &StringFlag{
+		Name:     "result",
+		Required: true,
+	}
+
+	app := &Command{
+		Name: "root",
+		Flags: []Flag{
+			sf,
+		},
+		Commands: []*Command{
+			{
+				Name: "sub",
+				Flags: []Flag{
+					&IntFlag{
+						Name:     "if",
+						Required: true,
+					},
+				},
+				Action: func(ctx context.Context, c *Command) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	err := app.Run(context.Background(), []string{"root", "sub", "-h"})
+	require.NoError(t, err)
+
+	err = app.Run(context.Background(), []string{"root", "sub"})
+	expectedErr := &errRequiredFlags{
+		missingFlags: []string{sf.Name},
+	}
+	require.ErrorAs(t, err, &expectedErr)
+
+	err = app.Run(context.Background(), []string{"root", "sub", "--ih", "10"})
+	require.ErrorAs(t, err, &expectedErr)
+
+	err = app.Run(context.Background(), []string{"root", "sub", "--xx"})
+	require.ErrorAs(t, err, &expectedErr)
+}
+
 func TestRequiredPersistentFlag(t *testing.T) {
 	app := &Command{
 		Name: "root",
