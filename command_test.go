@@ -2941,6 +2941,76 @@ func TestPersistentFlagIsSet(t *testing.T) {
 	require.True(t, resultIsSet)
 }
 
+func TestRequiredFlagDelayed(t *testing.T) {
+	sf := &StringFlag{
+		Name:     "result",
+		Required: true,
+	}
+
+	expectedErr := &errRequiredFlags{
+		missingFlags: []string{sf.Name},
+	}
+
+	tests := []struct {
+		name        string
+		args        []string
+		errExpected error
+	}{
+		{
+			name:        "leaf help",
+			args:        []string{"root", "sub", "-h"},
+			errExpected: nil,
+		},
+		{
+			name:        "leaf action",
+			args:        []string{"root", "sub"},
+			errExpected: expectedErr,
+		},
+		{
+			name:        "leaf flags set",
+			args:        []string{"root", "sub", "--if", "10"},
+			errExpected: expectedErr,
+		},
+		{
+			name:        "leaf invalid flags set",
+			args:        []string{"root", "sub", "--xx"},
+			errExpected: expectedErr,
+		},
+	}
+
+	app := &Command{
+		Name: "root",
+		Flags: []Flag{
+			sf,
+		},
+		Commands: []*Command{
+			{
+				Name: "sub",
+				Flags: []Flag{
+					&IntFlag{
+						Name:     "if",
+						Required: true,
+					},
+				},
+				Action: func(ctx context.Context, c *Command) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := app.Run(context.Background(), test.args)
+			if test.errExpected == nil {
+				require.NoError(t, err)
+			} else {
+				require.ErrorAs(t, err, &test.errExpected)
+			}
+		})
+	}
+}
+
 func TestRequiredPersistentFlag(t *testing.T) {
 	app := &Command{
 		Name: "root",
