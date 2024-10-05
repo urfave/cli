@@ -2803,7 +2803,6 @@ func TestPersistentFlag(t *testing.T) {
 		Flags: []Flag{
 			&StringFlag{
 				Name:        "persistentCommandFlag",
-				Persistent:  true,
 				Destination: &appFlag,
 				Action: func(context.Context, *Command, string) error {
 					persistentFlagActionCount++
@@ -2812,22 +2811,18 @@ func TestPersistentFlag(t *testing.T) {
 			},
 			&IntSliceFlag{
 				Name:        "persistentCommandSliceFlag",
-				Persistent:  true,
 				Destination: &persistentCommandSliceInt,
 			},
 			&FloatSliceFlag{
-				Name:       "persistentCommandFloatSliceFlag",
-				Persistent: true,
-				Value:      []float64{11.3, 12.5},
+				Name:  "persistentCommandFloatSliceFlag",
+				Value: []float64{11.3, 12.5},
 			},
 			&IntFlag{
 				Name:        "persistentCommandOverrideFlag",
-				Persistent:  true,
 				Destination: &appOverrideInt,
 			},
 			&StringFlag{
 				Name:        "persistentRequiredCommandFlag",
-				Persistent:  true,
 				Required:    true,
 				Destination: &appRequiredFlag,
 			},
@@ -2839,16 +2834,17 @@ func TestPersistentFlag(t *testing.T) {
 					&IntFlag{
 						Name:        "cmdFlag",
 						Destination: &topInt,
+						Local:       true,
 					},
 					&IntFlag{
 						Name:        "cmdPersistentFlag",
-						Persistent:  true,
 						Destination: &topPersistentInt,
 					},
 					&IntFlag{
 						Name:        "paof",
 						Aliases:     []string{"persistentCommandOverrideFlag"},
 						Destination: &appOverrideCmdInt,
+						Local:       true,
 					},
 				},
 				Commands: []*Command{
@@ -2858,6 +2854,7 @@ func TestPersistentFlag(t *testing.T) {
 							&IntFlag{
 								Name:        "cmdFlag",
 								Destination: &subCommandInt,
+								Local:       true,
 							},
 						},
 						Action: func(_ context.Context, cmd *Command) error {
@@ -2914,8 +2911,7 @@ func TestPersistentFlagIsSet(t *testing.T) {
 		Name: "root",
 		Flags: []Flag{
 			&StringFlag{
-				Name:       "result",
-				Persistent: true,
+				Name: "result",
 			},
 		},
 		Commands: []*Command{
@@ -3016,9 +3012,8 @@ func TestRequiredPersistentFlag(t *testing.T) {
 		Name: "root",
 		Flags: []Flag{
 			&StringFlag{
-				Name:       "result",
-				Persistent: true,
-				Required:   true,
+				Name:     "result",
+				Required: true,
 			},
 		},
 		Commands: []*Command{
@@ -3418,10 +3413,10 @@ func TestCommand_IsSet_fromEnv(t *testing.T) {
 
 	cmd := &Command{
 		Flags: []Flag{
-			&FloatFlag{Name: "timeout", Aliases: []string{"t"}, Sources: EnvVars("APP_TIMEOUT_SECONDS")},
-			&StringFlag{Name: "password", Aliases: []string{"p"}, Sources: EnvVars("APP_PASSWORD")},
-			&FloatFlag{Name: "unparsable", Aliases: []string{"u"}, Sources: EnvVars("APP_UNPARSABLE")},
-			&FloatFlag{Name: "no-env-var", Aliases: []string{"n"}},
+			&FloatFlag{Name: "timeout", Aliases: []string{"t"}, Local: true, Sources: EnvVars("APP_TIMEOUT_SECONDS")},
+			&StringFlag{Name: "password", Aliases: []string{"p"}, Local: true, Sources: EnvVars("APP_PASSWORD")},
+			&FloatFlag{Name: "unparsable", Aliases: []string{"u"}, Local: true, Sources: EnvVars("APP_UNPARSABLE")},
+			&FloatFlag{Name: "no-env-var", Aliases: []string{"n"}, Local: true},
 		},
 		Action: func(_ context.Context, cmd *Command) error {
 			timeoutIsSet = cmd.IsSet("timeout")
@@ -3772,18 +3767,15 @@ func TestCheckRequiredFlags(t *testing.T) {
 				_ = os.Setenv(test.envVarInput[0], test.envVarInput[1])
 			}
 
-			set := flag.NewFlagSet("test", 0)
-			for _, flags := range test.flags {
-				_ = flags.Apply(set)
-			}
-			_ = set.Parse(test.parseInput)
-
 			cmd := &Command{
-				Flags:   test.flags,
-				flagSet: set,
+				Name:  "foo",
+				Flags: test.flags,
 			}
+			args := []string{"foo"}
+			args = append(args, test.parseInput...)
+			_ = cmd.Run(context.Background(), args)
 
-			err := cmd.checkRequiredFlags()
+			err := cmd.checkAllRequiredFlags()
 
 			// assertions
 			if test.expectedAnError {
@@ -4041,7 +4033,7 @@ func TestJSONExportCommand(t *testing.T) {
 					"required": false,
 					"hidden": false,
 					"hideDefault": false,
-					"persistent": false,
+					"local": false,
 					"defaultValue": "",
 					"aliases": [
 					  "sub-fl",
@@ -4062,7 +4054,7 @@ func TestJSONExportCommand(t *testing.T) {
 					"required": false,
 					"hidden": false,
 					"hideDefault": false,
-					"persistent": false,
+					"local": false,
 					"defaultValue": false,
 					"aliases": [
 					  "s"
@@ -4103,7 +4095,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"required": false,
 				"hidden": false,
 				"hideDefault": false,
-				"persistent": false,
+				"local": false,
 				"defaultValue": "",
 				"aliases": [
 				  "fl",
@@ -4124,7 +4116,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"required": false,
 				"hidden": false,
 				"hideDefault": false,
-				"persistent": false,
+				"local": false,
 				"defaultValue": false,
 				"aliases": [
 				  "b"
@@ -4283,7 +4275,7 @@ func TestJSONExportCommand(t *testing.T) {
 					"required": false,
 					"hidden": false,
 					"hideDefault": false,
-					"persistent": false,
+					"local": false,
 					"defaultValue": false,
 					"aliases": [
 					  "s"
@@ -4324,7 +4316,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"required": false,
 				"hidden": false,
 				"hideDefault": false,
-				"persistent": false,
+				"local": false,
 				"defaultValue": "",
 				"aliases": [
 				  "fl",
@@ -4345,7 +4337,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"required": false,
 				"hidden": false,
 				"hideDefault": false,
-				"persistent": false,
+				"local": false,
 				"defaultValue": false,
 				"aliases": [
 				  "b"
@@ -4386,7 +4378,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"required": false,
 			"hidden": false,
 			"hideDefault": false,
-			"persistent": false,
+			"local": false,
 			"defaultValue": "value",
 			"aliases": [
 			  "s"
@@ -4406,7 +4398,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"required": false,
 			"hidden": false,
 			"hideDefault": false,
-			"persistent": false,
+			"local": false,
 			"defaultValue": "",
 			"aliases": [
 			  "fl",
@@ -4427,7 +4419,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"required": false,
 			"hidden": false,
 			"hideDefault": false,
-			"persistent": false,
+			"local": false,
 			"defaultValue": false,
 			"aliases": [
 			  "b"
@@ -4447,7 +4439,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"required": false,
 			"hidden": true,
 			"hideDefault": false,
-			"persistent": false,
+			"local": false,
 			"defaultValue": false,
 			"aliases": null,
 			"takesFileArg": false,

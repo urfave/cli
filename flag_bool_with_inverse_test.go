@@ -199,6 +199,7 @@ func TestBoolWithInverseEnvVars(t *testing.T) {
 			BoolFlag: &BoolFlag{
 				Name:    "env",
 				Sources: EnvVars("ENV"),
+				Local:   true,
 			},
 		}
 	}
