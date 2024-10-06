@@ -185,16 +185,6 @@ func (f *FlagBase[T, C, V]) IsDefaultVisible() bool {
 	return !f.HideDefault
 }
 
-func generateHelpFlag() Flag {
-	return &BoolFlag{
-		Name:        "help",
-		Aliases:     []string{"h"},
-		Usage:       "show help",
-		HideDefault: true,
-		Local:       true,
-	}
-}
-
 func newFlagSet(name string, flags []Flag) (*flag.FlagSet, error) {
 	set := flag.NewFlagSet(name, flag.ContinueOnError)
 
