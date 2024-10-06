@@ -90,7 +90,7 @@ func (parent *BoolWithInverseFlag) initialize() {
 		Usage:       child.Usage,
 		Required:    child.Required,
 		Hidden:      child.Hidden,
-		Persistent:  child.Persistent,
+		Local:       child.Local,
 		Value:       child.Value,
 		Destination: parent.negDest,
 		TakesFile:   child.TakesFile,

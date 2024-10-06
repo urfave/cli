@@ -101,8 +101,8 @@ func TestBoolFlagCountFromCommand(t *testing.T) {
 		},
 	}
 
-	bf := &BoolFlag{Name: "tf", Aliases: []string{"w", "huh"}}
 	for _, bct := range boolCountTests {
+		bf := &BoolFlag{Name: "tf", Aliases: []string{"w", "huh"}}
 		cmd := &Command{
 			Flags: []Flag{
 				bf,

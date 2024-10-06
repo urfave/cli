@@ -636,12 +636,6 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 			return err
 		}
 
-		if err := cmd.checkPersistentRequiredFlags(); err != nil {
-			cmd.isInError = true
-			_ = ShowSubcommandHelp(cmd)
-			return err
-		}
-
 		if len(cmd.Arguments) > 0 {
 			rargs := cmd.Args().Slice()
 			tracef("calling argparse with %[1]v", rargs)
@@ -768,8 +762,8 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		for _, fl := range pCmd.Flags {
 			flNames := fl.Names()
 
-			pfl, ok := fl.(PersistentFlag)
-			if !ok || !pfl.IsPersistent() {
+			pfl, ok := fl.(LocalFlag)
+			if !ok || pfl.IsLocal() {
 				tracef("skipping non-persistent flag %[1]q (cmd=%[2]q)", flNames, cmd.Name)
 				continue
 			}
@@ -881,12 +875,12 @@ func (cmd *Command) appendFlag(fl Flag) {
 	}
 }
 
-// VisiblePersistentFlags returns a slice of [PersistentFlag] with Persistent=true and Hidden=false.
+// VisiblePersistentFlags returns a slice of [LocalFlag] with Persistent=true and Hidden=false.
 func (cmd *Command) VisiblePersistentFlags() []Flag {
 	var flags []Flag
 	for _, fl := range cmd.Root().Flags {
-		pfl, ok := fl.(PersistentFlag)
-		if !ok || !pfl.IsPersistent() {
+		pfl, ok := fl.(LocalFlag)
+		if !ok || pfl.IsLocal() {
 			continue
 		}
 		flags = append(flags, fl)
@@ -994,12 +988,12 @@ func (cmd *Command) checkRequiredFlag(f Flag) (bool, string) {
 }
 
 func (cmd *Command) checkAllRequiredFlags() requiredFlagsErr {
-	if cmd.parent != nil {
-		if err := cmd.parent.checkRequiredFlags(); err != nil {
+	for pCmd := cmd; pCmd != nil; pCmd = pCmd.parent {
+		if err := pCmd.checkRequiredFlags(); err != nil {
 			return err
 		}
 	}
-	return cmd.checkRequiredFlags()
+	return nil
 }
 
 func (cmd *Command) checkRequiredFlags() requiredFlagsErr {
@@ -1007,35 +1001,9 @@ func (cmd *Command) checkRequiredFlags() requiredFlagsErr {
 
 	missingFlags := []string{}
 
-	for _, f := range cmd.Flags {
-		if pf, ok := f.(PersistentFlag); !ok || !pf.IsPersistent() {
-			if ok, name := cmd.checkRequiredFlag(f); !ok {
-				missingFlags = append(missingFlags, name)
-			}
-		}
-	}
-
-	if len(missingFlags) != 0 {
-		tracef("found missing required flags %[1]q (cmd=%[2]q)", missingFlags, cmd.Name)
-
-		return &errRequiredFlags{missingFlags: missingFlags}
-	}
-
-	tracef("all required flags set (cmd=%[1]q)", cmd.Name)
-
-	return nil
-}
-
-func (cmd *Command) checkPersistentRequiredFlags() requiredFlagsErr {
-	tracef("checking for required flags (cmd=%[1]q)", cmd.Name)
-
-	missingFlags := []string{}
-
 	for _, f := range cmd.appliedFlags {
-		if pf, ok := f.(PersistentFlag); ok && pf.IsPersistent() {
-			if ok, name := cmd.checkRequiredFlag(f); !ok {
-				missingFlags = append(missingFlags, name)
-			}
+		if ok, name := cmd.checkRequiredFlag(f); !ok {
+			missingFlags = append(missingFlags, name)
 		}
 	}
 
@@ -1233,7 +1201,7 @@ func (cmd *Command) runFlagActions(ctx context.Context) error {
 			if !fl.IsSet() {
 				continue
 			}
-			if pf, ok := fl.(PersistentFlag); ok && pf.IsPersistent() {
+			if pf, ok := fl.(LocalFlag); ok && !pf.IsLocal() {
 				continue
 			}
 		}

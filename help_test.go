@@ -691,8 +691,7 @@ func TestShowSubcommandHelp_GlobalOptions(t *testing.T) {
 	cmd := &Command{
 		Flags: []Flag{
 			&StringFlag{
-				Name:       "foo",
-				Persistent: true,
+				Name: "foo",
 			},
 		},
 		Commands: []*Command{
@@ -700,7 +699,8 @@ func TestShowSubcommandHelp_GlobalOptions(t *testing.T) {
 				Name: "frobbly",
 				Flags: []Flag{
 					&StringFlag{
-						Name: "bar",
+						Name:  "bar",
+						Local: true,
 					},
 				},
 				Action: func(context.Context, *Command) error {

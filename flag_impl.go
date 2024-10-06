@@ -77,7 +77,7 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Sources          ValueSourceChain                         `json:"-"`                // sources to load flag value from
 	Required         bool                                     `json:"required"`         // whether the flag is required or not
 	Hidden           bool                                     `json:"hidden"`           // whether to hide the flag in help output
-	Persistent       bool                                     `json:"persistent"`       // whether the flag needs to be applied to subcommands as well
+	Local            bool                                     `json:"local"`            // whether the flag needs to be applied to subcommands as well
 	Value            T                                        `json:"defaultValue"`     // default value for this flag if not set by from any source
 	Destination      *T                                       `json:"-"`                // destination pointer for value when set
 	Aliases          []string                                 `json:"aliases"`          // Aliases that are allowed for this flag
@@ -107,13 +107,15 @@ func (f *FlagBase[T, C, V]) GetValue() string {
 
 // Apply populates the flag given the flag set and environment
 func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
+	tracef("apply (flag=%[1]q)", f.Name)
+
 	// TODO move this phase into a separate flag initialization function
 	// if flag has been applied previously then it would have already been set
 	// from env or file. So no need to apply the env set again. However
 	// lots of units tests prior to persistent flags assumed that the
 	// flag can be applied to different flag sets multiple times while still
 	// keeping the env set.
-	if !f.applied || !f.Persistent {
+	if !f.applied || f.Local {
 		newVal := f.Value
 
 		if val, source, found := f.Sources.LookupWithSource(); found {
@@ -278,7 +280,7 @@ func (f *FlagBase[T, C, VC]) IsMultiValueFlag() bool {
 	return kind == reflect.Slice || kind == reflect.Map
 }
 
-// IsPersistent returns true if flag needs to be persistent across subcommands
-func (f *FlagBase[T, C, VC]) IsPersistent() bool {
-	return f.Persistent
+// IsLocal returns false if flag needs to be persistent across subcommands
+func (f *FlagBase[T, C, VC]) IsLocal() bool {
+	return f.Local
 }
