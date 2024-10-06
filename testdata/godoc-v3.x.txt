@@ -644,6 +644,7 @@ var VersionFlag Flag = &BoolFlag{
 	Aliases:     []string{"v"},
 	Usage:       "print the version",
 	HideDefault: true,
+	Local:       true,
 }
     VersionFlag prints the version for the application
 
