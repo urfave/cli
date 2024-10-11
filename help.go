@@ -87,8 +87,13 @@ func helpCommandAction(ctx context.Context, cmd *Command) error {
 	// Case 4. $ app help foo
 	// foo is the command for which help needs to be shown
 	if firstArg != "" {
-		tracef("returning ShowCommandHelp with %[1]q", firstArg)
-		return ShowCommandHelp(ctx, cmd, firstArg)
+		if cmd.HasName(firstArg) {
+			tracef("returning ShowCommandHelp with %[1]q", firstArg)
+			return ShowCommandHelp(ctx, cmd, firstArg)
+		} else {
+			tracef("returning ShowAppHelp")
+			return ShowAppHelp(cmd)
+		}
 	}
 
 	// Case 1 & 2

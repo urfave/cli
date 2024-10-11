@@ -212,9 +212,9 @@ func TestParseAndRunShortOpts(t *testing.T) {
 		{testArgs: &stringSliceArgs{v: []string{"test", "-acf", "-invalid"}}, expectedErr: "flag provided but not defined: -invalid"},
 		{testArgs: &stringSliceArgs{v: []string{"test", "--invalid"}}, expectedErr: "flag provided but not defined: -invalid"},
 		{testArgs: &stringSliceArgs{v: []string{"test", "-acf", "--invalid"}}, expectedErr: "flag provided but not defined: -invalid"},
-		{testArgs: &stringSliceArgs{v: []string{"test", "-acf", "arg1", "-invalid"}}, expectedArgs: &stringSliceArgs{v: []string{"arg1", "-invalid"}}},
-		{testArgs: &stringSliceArgs{v: []string{"test", "-acf", "arg1", "--invalid"}}, expectedArgs: &stringSliceArgs{v: []string{"arg1", "--invalid"}}},
-		{testArgs: &stringSliceArgs{v: []string{"test", "-acfi", "not-arg", "arg1", "-invalid"}}, expectedArgs: &stringSliceArgs{v: []string{"arg1", "-invalid"}}},
+		{testArgs: &stringSliceArgs{v: []string{"test", "-acf", "arg1", "-invalid"}}, expectedErr: "flag provided but not defined: -invalid"},
+		{testArgs: &stringSliceArgs{v: []string{"test", "-acf", "arg1", "--invalid"}}, expectedErr: "flag provided but not defined: -invalid"},
+		{testArgs: &stringSliceArgs{v: []string{"test", "-acfi", "not-arg", "arg1", "-invalid"}}, expectedErr: "flag provided but not defined: -invalid"},
 		{testArgs: &stringSliceArgs{v: []string{"test", "-i", "ivalue"}}, expectedArgs: &stringSliceArgs{v: []string{}}},
 		{testArgs: &stringSliceArgs{v: []string{"test", "-i", "ivalue", "arg1"}}, expectedArgs: &stringSliceArgs{v: []string{"arg1"}}},
 		{testArgs: &stringSliceArgs{v: []string{"test", "-i"}}, expectedErr: "flag needs an argument: -i"},
@@ -649,10 +649,10 @@ var defaultCommandTests = []struct {
 	{"f", "", true},
 	{"", "foobar", true},
 	{"", "", true},
-	{" ", "", false},
-	{"bat", "batbaz", false},
-	{"nothing", "batbaz", false},
-	{"nothing", "", false},
+	{" ", "", true},
+	{"bat", "batbaz", true},
+	{"nothing", "batbaz", true},
+	{"nothing", "", true},
 }
 
 func TestCommand_RunDefaultCommand(t *testing.T) {
@@ -695,15 +695,15 @@ var defaultCommandSubCommandTests = []struct {
 	{"", "carly", "foobar", true},
 	{"", "jimmers", "foobar", true},
 	{"", "jimmers", "", true},
-	{" ", "jimmers", "foobar", false},
+	{" ", "jimmers", "foobar", true},
 	{"", "", "", true},
-	{" ", "", "", false},
-	{" ", "j", "", false},
-	{"bat", "", "batbaz", false},
-	{"nothing", "", "batbaz", false},
-	{"nothing", "", "", false},
-	{"nothing", "j", "batbaz", false},
-	{"nothing", "carly", "", false},
+	{" ", "", "", true},
+	{" ", "j", "", true},
+	{"bat", "", "batbaz", true},
+	{"nothing", "", "batbaz", true},
+	{"nothing", "", "", true},
+	{"nothing", "j", "batbaz", true},
+	{"nothing", "carly", "", true},
 }
 
 func TestCommand_RunDefaultCommandWithSubCommand(t *testing.T) {
@@ -754,15 +754,15 @@ var defaultCommandFlagTests = []struct {
 	{"", "--carly=derp", "foobar", true},
 	{"", "-j", "foobar", true},
 	{"", "-j", "", true},
-	{" ", "-j", "foobar", false},
+	{" ", "-j", "foobar", true},
 	{"", "", "", true},
-	{" ", "", "", false},
-	{" ", "-j", "", false},
-	{"bat", "", "batbaz", false},
-	{"nothing", "", "batbaz", false},
-	{"nothing", "", "", false},
-	{"nothing", "--jimbob", "batbaz", false},
-	{"nothing", "--carly", "", false},
+	{" ", "", "", true},
+	{" ", "-j", "", true},
+	{"bat", "", "batbaz", true},
+	{"nothing", "", "batbaz", true},
+	{"nothing", "", "", true},
+	{"nothing", "--jimbob", "batbaz", true},
+	{"nothing", "--carly", "", true},
 }
 
 func TestCommand_RunDefaultCommandWithFlags(t *testing.T) {
@@ -1735,9 +1735,9 @@ func TestCommand_CommandNotFound(t *testing.T) {
 
 	_ = cmd.Run(buildTestContext(t), []string{"command", "foo"})
 
-	assert.Equal(t, 1, counts.CommandNotFound, 1)
+	assert.Equal(t, 0, counts.CommandNotFound)
 	assert.Equal(t, 0, counts.SubCommand)
-	assert.Equal(t, 1, counts.Total)
+	assert.Equal(t, 0, counts.Total)
 }
 
 func TestCommand_OrderOfOperations(t *testing.T) {

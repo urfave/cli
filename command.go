@@ -802,14 +802,60 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 	}
 
 	tracef("parsing flags iteratively tail=%[1]q (cmd=%[2]q)", args.Tail(), cmd.Name)
+	defer tracef("done parsing flags (cmd=%[1]q)", cmd.Name)
 
-	if err := parseIter(cmd.flagSet, cmd, args.Tail(), cmd.Root().shellCompletion); err != nil {
-		return cmd.Args(), err
+	rargs := args.Tail()
+	posArgs := []string{}
+	for {
+		tracef("rearrange:1 (cmd=%[1]q) %[2]q", cmd.Name, rargs)
+		for {
+			tracef("rearrange:2 (cmd=%[1]q) %[2]q %[3]q", cmd.Name, posArgs, rargs)
+			if len(rargs) > 0 && len(rargs[0]) > 0 {
+				if rargs[0] == "--" {
+					posArgs = append(posArgs, rargs...)
+					cmd.parsedArgs = &stringSliceArgs{posArgs}
+					return cmd.parsedArgs, nil
+				}
+
+				if rargs[0][0] != '-' {
+					tracef("rearrange-3 (cmd=%[1]q) check %[2]q", cmd.Name, rargs[0])
+					if cmd.Command(rargs[0]) == nil {
+						posArgs = append(posArgs, rargs[0])
+						if len(rargs) > 0 {
+							rargs = rargs[1:]
+						} else {
+							rargs = []string{}
+							break
+						}
+					} else {
+						posArgs = append(posArgs, rargs...)
+						cmd.parsedArgs = &stringSliceArgs{posArgs}
+						return cmd.parsedArgs, nil
+					}
+				} else {
+					break
+				}
+			} else {
+				break
+			}
+		}
+		if err := parseIter(cmd.flagSet, cmd, rargs, cmd.Root().shellCompletion); err != nil {
+			posArgs = append(posArgs, cmd.flagSet.Args()...)
+			tracef("returning-1 (cmd=%[1]q) args %[2]q", cmd.Name, posArgs)
+			cmd.parsedArgs = &stringSliceArgs{posArgs}
+			return cmd.parsedArgs, err
+		}
+		tracef("rearrange-4 (cmd=%[1]q) check %[2]q", cmd.Name, cmd.flagSet.Args())
+		rargs = cmd.flagSet.Args()
+		if len(rargs) == 0 || len(rargs[0]) == 0 || rargs[0] == "-" {
+			break
+		}
 	}
 
-	tracef("done parsing flags (cmd=%[1]q)", cmd.Name)
-
-	return cmd.Args(), nil
+	posArgs = append(posArgs, cmd.flagSet.Args()...)
+	tracef("returning-2 (cmd=%[1]q) args %[2]q", cmd.Name, posArgs)
+	cmd.parsedArgs = &stringSliceArgs{posArgs}
+	return cmd.parsedArgs, nil
 }
 
 // Names returns the names including short names and aliases.
