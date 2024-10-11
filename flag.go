@@ -38,6 +38,7 @@ var VersionFlag Flag = &BoolFlag{
 	Aliases:     []string{"v"},
 	Usage:       "print the version",
 	HideDefault: true,
+	Local:       true,
 }
 
 // HelpFlag prints the help for all commands and subcommands.
@@ -48,6 +49,7 @@ var HelpFlag Flag = &BoolFlag{
 	Aliases:     []string{"h"},
 	Usage:       "show help",
 	HideDefault: true,
+	Local:       true,
 }
 
 // FlagStringer converts a flag definition to a string. This is used by help
@@ -172,10 +174,10 @@ type CategorizableFlag interface {
 	SetCategory(string)
 }
 
-// PersistentFlag is an interface to enable detection of flags which are persistent
-// through subcommands
-type PersistentFlag interface {
-	IsPersistent() bool
+// LocalFlag is an interface to enable detection of flags which are local
+// to current command
+type LocalFlag interface {
+	IsLocal() bool
 }
 
 // IsDefaultVisible returns true if the flag is not hidden, otherwise false
