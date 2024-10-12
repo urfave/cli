@@ -76,7 +76,7 @@ func main() {
 	}
 }
 ```
-![](/docs/v2/images/default-bash-autocomplete.gif)
+![](../images/default-bash-autocomplete.gif)
 
 #### Custom auto-completion
 <!-- {
@@ -126,7 +126,7 @@ func main() {
 	}
 }
 ```
-![](/docs/v2/images/custom-bash-autocomplete.gif)
+![](../images/custom-bash-autocomplete.gif)
 
 #### Enabling
 
@@ -229,10 +229,10 @@ $ source path/to/autocomplete/zsh_autocomplete
 ```
 
 #### ZSH default auto-complete example
-![](/docs/v2/images/default-zsh-autocomplete.gif)
+![](../images/default-zsh-autocomplete.gif)
 
 #### ZSH custom auto-complete example
-![](/docs/v2/images/custom-zsh-autocomplete.gif)
+![](../images/custom-zsh-autocomplete.gif)
 
 #### PowerShell Support
 
