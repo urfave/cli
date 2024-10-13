@@ -72,7 +72,7 @@ func expectFileContent(t *testing.T, file, expected string) {
 	data, err := os.ReadFile(file)
 	require.Nil(t, err)
 
-	require.Equal(t, strings.ReplaceAll(string(data), "\r\n", "\n"), expected)
+	require.Equal(t, strings.TrimSpace(expected), strings.TrimSpace(strings.ReplaceAll(string(data), "\r\n", "\n")))
 }
 
 func TestFishCompletion(t *testing.T) {

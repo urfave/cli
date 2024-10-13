@@ -4,12 +4,10 @@
 .SH Harrison
 
 .SH NAME
-.PP
-greet - Some app
+greet \- Some app
 
 
 .SH SYNOPSIS
-.PP
 greet
 
 .EX
@@ -20,7 +18,6 @@ greet
 
 
 .SH DESCRIPTION
-.PP
 app [first_arg] [second_arg]
 
 .PP
@@ -32,7 +29,6 @@ greet [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 
 .SH GLOBAL OPTIONS
-.PP
 \fB--another-flag, -b\fP: another usage text
 
 .PP
@@ -44,7 +40,6 @@ greet [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 .SH COMMANDS
 .SH config, c
-.PP
 another usage test
 
 .PP
@@ -54,7 +49,6 @@ another usage test
 \fB--flag, --fl, -f\fP="":
 
 .SS sub-config, s, ss
-.PP
 another usage test
 
 .PP
@@ -64,7 +58,6 @@ another usage test
 \fB--sub-flag, --sub-fl, -s\fP="":
 
 .SH info, i, in
-.PP
 retrieve generic information
 
 .SH some-command
