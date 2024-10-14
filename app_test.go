@@ -2047,7 +2047,7 @@ func TestApp_Run_CommandSubcommandHelpName(t *testing.T) {
 		t.Errorf("expected %q in output: %q", expected, output)
 	}
 
-	expected = "base foo command [command options] [arguments...]"
+	expected = "base foo [command options] [arguments...]"
 	if !strings.Contains(output, expected) {
 		t.Errorf("expected %q in output: %q", expected, output)
 	}
