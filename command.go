@@ -591,24 +591,11 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 			hasDefault := cmd.DefaultCommand != ""
 			isFlagName := checkStringSliceIncludes(name, cmd.FlagNames())
 
-			/*var (
-				isDefaultSubcommand   = false
-				defaultHasSubcommands = false
-			)*/
-
 			if hasDefault {
 				tracef("using default command=%[1]q (cmd=%[2]q)", cmd.DefaultCommand, cmd.Name)
-				/*dc := cmd.Command(cmd.DefaultCommand)
-				defaultHasSubcommands = len(dc.Commands) > 0
-				for _, dcSub := range dc.Commands {
-					if checkStringSliceIncludes(name, dcSub.Names()) {
-						isDefaultSubcommand = true
-						break
-					}
-				}*/
 			}
 
-			if isFlagName || hasDefault { // && //(defaultHasSubcommands && isDefaultSubcommand)) {
+			if isFlagName || hasDefault {
 				argsWithDefault := cmd.argsWithDefaultCommand(args)
 				tracef("using default command args=%[1]q (cmd=%[2]q)", argsWithDefault, cmd.Name)
 				if !reflect.DeepEqual(args, argsWithDefault) {
@@ -812,34 +799,44 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		tracef("rearrange:1 (cmd=%[1]q) %[2]q", cmd.Name, rargs)
 		for {
 			tracef("rearrange:2 (cmd=%[1]q) %[2]q %[3]q", cmd.Name, posArgs, rargs)
-			if len(rargs) > 0 && len(rargs[0]) > 0 {
-				if rargs[0] == "--" {
-					posArgs = append(posArgs, rargs...)
-					cmd.parsedArgs = &stringSliceArgs{posArgs}
-					return cmd.parsedArgs, nil
-				}
 
-				if rargs[0][0] != '-' {
-					tracef("rearrange-3 (cmd=%[1]q) check %[2]q", cmd.Name, rargs[0])
-					if cmd.Command(rargs[0]) == nil {
-						posArgs = append(posArgs, rargs[0])
-						if len(rargs) > 0 {
-							rargs = rargs[1:]
-						} else {
-							rargs = []string{}
-							break
-						}
-					} else {
-						posArgs = append(posArgs, rargs...)
-						cmd.parsedArgs = &stringSliceArgs{posArgs}
-						return cmd.parsedArgs, nil
-					}
-				} else {
-					break
-				}
-			} else {
+			// no more args to parse. Break out of inner loop
+			if len(rargs) == 0 || len(rargs[0]) == 0 {
 				break
 			}
+
+			// stop parsing once we see a "--"
+			if rargs[0] == "--" {
+				posArgs = append(posArgs, rargs...)
+				cmd.parsedArgs = &stringSliceArgs{posArgs}
+				return cmd.parsedArgs, nil
+			}
+
+			// let flagset parse this
+			if rargs[0][0] == '-' {
+				break
+			}
+
+			tracef("rearrange-3 (cmd=%[1]q) check %[2]q", cmd.Name, rargs[0])
+
+			// if there is a command by that name let the command handle the
+			// rest of the parsing
+			if cmd.Command(rargs[0]) != nil {
+				posArgs = append(posArgs, rargs...)
+				cmd.parsedArgs = &stringSliceArgs{posArgs}
+				return cmd.parsedArgs, nil
+			}
+
+			posArgs = append(posArgs, rargs[0])
+
+			// if this is the sole argument then
+			// break from inner loop
+			if len(rargs) == 1 {
+				rargs = []string{}
+				break
+			}
+
+			rargs = rargs[1:]
 		}
 		if err := parseIter(cmd.flagSet, cmd, rargs, cmd.Root().shellCompletion); err != nil {
 			posArgs = append(posArgs, cmd.flagSet.Args()...)
