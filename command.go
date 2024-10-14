@@ -591,24 +591,26 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 			hasDefault := cmd.DefaultCommand != ""
 			isFlagName := checkStringSliceIncludes(name, cmd.FlagNames())
 
-			var (
+			/*var (
 				isDefaultSubcommand   = false
 				defaultHasSubcommands = false
-			)
+			)*/
 
 			if hasDefault {
-				dc := cmd.Command(cmd.DefaultCommand)
+				tracef("using default command=%[1]q (cmd=%[2]q)", cmd.DefaultCommand, cmd.Name)
+				/*dc := cmd.Command(cmd.DefaultCommand)
 				defaultHasSubcommands = len(dc.Commands) > 0
 				for _, dcSub := range dc.Commands {
 					if checkStringSliceIncludes(name, dcSub.Names()) {
 						isDefaultSubcommand = true
 						break
 					}
-				}
+				}*/
 			}
 
-			if isFlagName || (hasDefault && (defaultHasSubcommands && isDefaultSubcommand)) {
+			if isFlagName || hasDefault { // && //(defaultHasSubcommands && isDefaultSubcommand)) {
 				argsWithDefault := cmd.argsWithDefaultCommand(args)
+				tracef("using default command args=%[1]q (cmd=%[2]q)", argsWithDefault, cmd.Name)
 				if !reflect.DeepEqual(args, argsWithDefault) {
 					subCmd = cmd.Command(argsWithDefault.First())
 				}
@@ -656,7 +658,7 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 		deferErr = cmd.handleExitCoder(ctx, err)
 	}
 
-	tracef("returning deferErr (cmd=%[1]q)", cmd.Name)
+	tracef("returning deferErr (cmd=%[1]q) %[2]q", cmd.Name, deferErr)
 	return deferErr
 }
 

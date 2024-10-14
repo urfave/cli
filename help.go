@@ -64,6 +64,8 @@ func helpCommandAction(ctx context.Context, cmd *Command) error {
 	args := cmd.Args()
 	firstArg := args.First()
 
+	tracef("doing help for cmd %[1]q with args %[2]q", cmd, args)
+
 	// This action can be triggered by a "default" action of a command
 	// or via cmd.Run when cmd == helpCmd. So we have following possibilities
 	//
@@ -87,13 +89,8 @@ func helpCommandAction(ctx context.Context, cmd *Command) error {
 	// Case 4. $ app help foo
 	// foo is the command for which help needs to be shown
 	if firstArg != "" {
-		if cmd.HasName(firstArg) {
-			tracef("returning ShowCommandHelp with %[1]q", firstArg)
-			return ShowCommandHelp(ctx, cmd, firstArg)
-		} else {
-			tracef("returning ShowAppHelp")
-			return ShowAppHelp(cmd)
-		}
+		tracef("returning ShowCommandHelp with %[1]q", firstArg)
+		return ShowCommandHelp(ctx, cmd, firstArg)
 	}
 
 	// Case 1 & 2
