@@ -678,10 +678,10 @@ func TestCommand_RunDefaultCommand(t *testing.T) {
 }
 
 var defaultCommandSubCommandTests = []struct {
-	cmdName    string
-	subCmd     string
-	defaultCmd string
-	expected   bool
+	cmdName        string
+	subCmd         string
+	defaultCmd     string
+	errNotExpected bool
 }{
 	{"foobar", "", "foobar", true},
 	{"foobar", "carly", "foobar", true},
@@ -726,7 +726,7 @@ func TestCommand_RunDefaultCommandWithSubCommand(t *testing.T) {
 			}
 
 			err := cmd.Run(buildTestContext(t), []string{"c", test.cmdName, test.subCmd})
-			if test.expected {
+			if test.errNotExpected {
 				assert.NoError(t, err)
 			} else {
 				assert.Error(t, err)
@@ -736,33 +736,33 @@ func TestCommand_RunDefaultCommandWithSubCommand(t *testing.T) {
 }
 
 var defaultCommandFlagTests = []struct {
-	cmdName    string
-	flag       string
-	defaultCmd string
-	expected   bool
+	cmdName        string
+	flag           string
+	defaultCmd     string
+	errNotExpected bool
 }{
-	/* {"foobar", "", "foobar", true},
+	{"foobar", "", "foobar", true},
 	{"foobar", "-c derp", "foobar", true},
 	{"batbaz", "", "foobar", true},
 	{"b", "", "", true},
 	{"f", "", "", true},
-	//{"", "", "foobar", true},
+	{"", "", "foobar", true},
 	{"", "", "", true},
-	//{"", "-j", "foobar", true},
-	//{"", "-j", "foobar", true},
+	{"", "-j", "foobar", true},
+	{"", "-j", "foobar", true},
 	{"", "-c derp", "foobar", true},
 	{"", "--carly=derp", "foobar", true},
-	//{"", "-j", "foobar", true},
+	{"", "-j", "foobar", true},
 	{"", "-j", "", true},
-	//{" ", "-j", "foobar", true}, */
-	/*{"", "", "", true},
-	{" ", "", "", true},
-	{" ", "-j", "", true},*/
-	//{"bat", "", "batbaz", true},
-	//{"nothing", "", "batbaz", true},
-	//{"nothing", "", "", true},
-	//{"nothing", "--jimbob", "batbaz", true},
-	//{"nothing", "--carly", "", true},
+	//{" ", "-j", "foobar", true},
+	{"", "", "", true},
+	//{" ", "", "", true},
+	//{" ", "-j", "", true},
+	{"bat", "", "batbaz", true},
+	{"nothing", "", "batbaz", true},
+	{"nothing", "", "", false},
+	{"nothing", "--jimbob", "batbaz", true},
+	{"nothing", "--carly", "", false},
 }
 
 func TestCommand_RunDefaultCommandWithFlags(t *testing.T) {
@@ -810,7 +810,7 @@ func TestCommand_RunDefaultCommandWithFlags(t *testing.T) {
 			appArgs = append(appArgs, test.cmdName)
 
 			err := cmd.Run(buildTestContext(t), appArgs)
-			if test.expected {
+			if test.errNotExpected {
 				assert.NoError(t, err)
 			} else {
 				assert.Error(t, err)
