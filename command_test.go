@@ -160,10 +160,10 @@ func TestCommandFlagParsing(t *testing.T) {
 	}{
 		// Test normal "not ignoring flags" flow
 		{testArgs: []string{"test-cmd", "-break", "blah", "blah"}, skipFlagParsing: false, useShortOptionHandling: false, expectedErr: "flag provided but not defined: -break"},
-		{testArgs: []string{"test-cmd", "blah", "blah"}, skipFlagParsing: true, useShortOptionHandling: false},   // Test SkipFlagParsing without any args that look like flags
-		{testArgs: []string{"test-cmd", "blah", "-break"}, skipFlagParsing: true, useShortOptionHandling: false}, // Test SkipFlagParsing with random flag arg
-		{testArgs: []string{"test-cmd", "blah", "-help"}, skipFlagParsing: true, useShortOptionHandling: false},  // Test SkipFlagParsing with "special" help flag arg
-		//{testArgs: []string{"test-cmd", "blah", "-h"}, skipFlagParsing: false, useShortOptionHandling: true},     // Test UseShortOptionHandling
+		{testArgs: []string{"test-cmd", "blah", "blah"}, skipFlagParsing: true, useShortOptionHandling: false},                                        // Test SkipFlagParsing without any args that look like flags
+		{testArgs: []string{"test-cmd", "blah", "-break"}, skipFlagParsing: true, useShortOptionHandling: false},                                      // Test SkipFlagParsing with random flag arg
+		{testArgs: []string{"test-cmd", "blah", "-help"}, skipFlagParsing: true, useShortOptionHandling: false},                                       // Test SkipFlagParsing with "special" help flag arg
+		{testArgs: []string{"test-cmd", "blah", "-h"}, skipFlagParsing: false, useShortOptionHandling: true, expectedErr: "No help topic for 'blah'"}, // Test UseShortOptionHandling
 	}
 
 	for _, c := range cases {
@@ -702,7 +702,7 @@ var defaultCommandSubCommandTests = []struct {
 	{"bat", "", "batbaz", true},
 	{"nothing", "", "batbaz", true},
 	{"nothing", "", "", false},
-	//{"nothing", "j", "batbaz", true},
+	{"nothing", "j", "batbaz", false},
 	{"nothing", "carly", "", false},
 }
 
