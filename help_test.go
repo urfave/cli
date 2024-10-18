@@ -175,7 +175,7 @@ func Test_helpCommand_Action_ErrorIfNoTopic(t *testing.T) {
 		flagSet: flag.NewFlagSet("test", 0),
 	}
 
-	_ = cmd.flagSet.Parse([]string{"foo"})
+	_ = cmd.Run(context.Background(), []string{"foo", "bar"})
 
 	err := helpCommandAction(context.Background(), cmd)
 	require.Error(t, err, "expected error from helpCommandAction()")
@@ -295,7 +295,7 @@ func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 	cmd := &Command{
 		flagSet: flag.NewFlagSet("test", 0),
 	}
-	_ = cmd.flagSet.Parse([]string{"foo"})
+	_ = cmd.Run(context.Background(), []string{"foo", "bar"})
 
 	err := helpCommandAction(context.Background(), cmd)
 	require.Error(t, err, "expected error from helpCommandAction(), but got nil")
