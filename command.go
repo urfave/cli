@@ -801,7 +801,11 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 			tracef("rearrange:2 (cmd=%[1]q) %[2]q %[3]q", cmd.Name, posArgs, rargs)
 
 			// no more args to parse. Break out of inner loop
-			if len(rargs) == 0 || len(rargs[0]) == 0 {
+			if len(rargs) == 0 {
+				break
+			}
+
+			if strings.TrimSpace(rargs[0]) == "" {
 				break
 			}
 
@@ -846,7 +850,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		}
 		tracef("rearrange-4 (cmd=%[1]q) check %[2]q", cmd.Name, cmd.flagSet.Args())
 		rargs = cmd.flagSet.Args()
-		if len(rargs) == 0 || len(rargs[0]) == 0 || rargs[0] == "-" {
+		if len(rargs) == 0 || strings.TrimSpace(rargs[0]) == "" || rargs[0] == "-" {
 			break
 		}
 	}
