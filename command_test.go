@@ -649,7 +649,7 @@ var defaultCommandTests = []struct {
 	{"f", "", true},
 	{"", "foobar", true},
 	{"", "", true},
-	//{" ", "", true},
+	{" ", "", false},
 	{"bat", "batbaz", true},
 	{"nothing", "batbaz", true},
 	{"nothing", "", false},
