@@ -422,6 +422,7 @@ func ExampleCommand_Run_sliceValues() {
 			&cli.FloatSliceFlag{Name: "float64Slice"},
 			&cli.IntSliceFlag{Name: "intSlice"},
 		},
+		HideHelp: true,
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			for i, v := range cmd.FlagNames() {
 				fmt.Printf("%d-%s %#v\n", i, v, cmd.Value(v))
@@ -454,6 +455,7 @@ func ExampleCommand_Run_mapValues() {
 		Flags: []cli.Flag{
 			&cli.StringMapFlag{Name: "stringMap"},
 		},
+		HideHelp: true,
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			for i, v := range cmd.FlagNames() {
 				fmt.Printf("%d-%s %#v\n", i, v, cmd.StringMap(v))

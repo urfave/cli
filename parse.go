@@ -6,7 +6,6 @@ import (
 )
 
 type iterativeParser interface {
-	newFlagSet() (*flag.FlagSet, error)
 	useShortOptionHandling() bool
 }
 
