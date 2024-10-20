@@ -680,9 +680,6 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error
     Apply populates the flag given the flag set and environment
 
-func (f *FlagBase[T, C, V]) Get(cmd *Command) T
-    Get returns the flag’s value in the given Command.
-
 func (f *FlagBase[T, C, V]) GetCategory() string
     GetCategory returns the category of the flag
 
