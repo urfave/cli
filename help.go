@@ -312,10 +312,6 @@ func ShowSubcommandHelpAndExit(cmd *Command, exitCode int) {
 
 // ShowSubcommandHelp prints help for the given subcommand
 func ShowSubcommandHelp(cmd *Command) error {
-	if cmd == nil {
-		return nil
-	}
-
 	HelpPrinter(cmd.Root().Writer, SubcommandHelpTemplate, cmd)
 	return nil
 }
