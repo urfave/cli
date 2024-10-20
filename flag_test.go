@@ -3030,3 +3030,10 @@ func TestExtFlag(t *testing.T) {
 	assert.Equal(t, "10", extF.GetDefaultText())
 	assert.Nil(t, extF.GetEnvVars())
 }
+
+func TestSliceValuesNil(t *testing.T) {
+	assert.Equal(t, []float64(nil), NewFloatSlice().Value())
+	assert.Equal(t, []int64(nil), NewIntSlice().Value())
+	assert.Equal(t, []uint64(nil), NewUintSlice().Value())
+	assert.Equal(t, []string(nil), NewStringSlice().Value())
+}
