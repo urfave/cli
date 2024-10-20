@@ -3,6 +3,7 @@ package cli
 import (
 	"bytes"
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -1778,4 +1779,21 @@ func TestNIndent(t *testing.T) {
 	assert.Equal(t, "\nfoo\n", nindent(0, "foo\n"))
 	assert.Equal(t, "\n  foo", nindent(2, "foo"))
 	assert.Equal(t, "\n  foo\n  ", nindent(2, "foo\n"))
+}
+
+func TestTemplateError(t *testing.T) {
+	oldew := ErrWriter
+	defer func() { ErrWriter = oldew }()
+
+	var buf bytes.Buffer
+	ErrWriter = &buf
+	err := errors.New("some error")
+
+	handleTemplateError(err)
+	assert.Equal(t, []byte(nil), buf.Bytes())
+
+	os.Setenv("CLI_TEMPLATE_ERROR_DEBUG", "true")
+	handleTemplateError(err)
+	assert.Contains(t, buf.String(), "CLI TEMPLATE ERROR")
+	assert.Contains(t, buf.String(), err.Error())
 }
