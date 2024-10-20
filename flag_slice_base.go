@@ -80,7 +80,7 @@ func (i *SliceBase[T, C, VC]) Serialize() string {
 // Value returns the slice of values set by this flag
 func (i *SliceBase[T, C, VC]) Value() []T {
 	if i.slice == nil {
-		return []T{}
+		return nil
 	}
 	return *i.slice
 }

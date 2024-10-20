@@ -3036,4 +3036,9 @@ func TestSliceValuesNil(t *testing.T) {
 	assert.Equal(t, []int64(nil), NewIntSlice().Value())
 	assert.Equal(t, []uint64(nil), NewUintSlice().Value())
 	assert.Equal(t, []string(nil), NewStringSlice().Value())
+
+	assert.Equal(t, []float64(nil), (&FloatSlice{}).Value())
+	assert.Equal(t, []int64(nil), (&IntSlice{}).Value())
+	assert.Equal(t, []uint64(nil), (&UintSlice{}).Value())
+	assert.Equal(t, []string(nil), (&StringSlice{}).Value())
 }
