@@ -1772,3 +1772,10 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 		})
 	}
 }
+
+func TestNIndent(t *testing.T) {
+	assert.Equal(t, "\nfoo", nindent(0, "foo"))
+	assert.Equal(t, "\nfoo\n", nindent(0, "foo\n"))
+	assert.Equal(t, "\n  foo", nindent(2, "foo"))
+	assert.Equal(t, "\n  foo\n  ", nindent(2, "foo\n"))
+}
