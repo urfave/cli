@@ -3042,3 +3042,10 @@ func TestSliceValuesNil(t *testing.T) {
 	assert.Equal(t, []uint64(nil), (&UintSlice{}).Value())
 	assert.Equal(t, []string(nil), (&StringSlice{}).Value())
 }
+
+func TestFileHint(t *testing.T) {
+	assert.Equal(t, "", withFileHint("", ""))
+	assert.Equal(t, " [/tmp/foo.txt]", withFileHint("/tmp/foo.txt", ""))
+	assert.Equal(t, "foo", withFileHint("", "foo"))
+	assert.Equal(t, "bar [/tmp/foo.txt]", withFileHint("/tmp/foo.txt", "bar"))
+}
