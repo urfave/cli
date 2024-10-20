@@ -60,8 +60,8 @@ func TestBoolFlagValueFromCommand(t *testing.T) {
 	ff := &BoolFlag{Name: "falseflag"}
 
 	r := require.New(t)
-	r.True(tf.Get(cmd))
-	r.False(ff.Get(cmd))
+	r.True(cmd.Bool(tf.Name))
+	r.False(cmd.Bool(ff.Name))
 }
 
 func TestBoolFlagApply_SetsCount(t *testing.T) {
@@ -663,7 +663,7 @@ func TestStringFlagValueFromCommand(t *testing.T) {
 	set.String("myflag", "foobar", "doc")
 	cmd := &Command{flagSet: set}
 	f := &StringFlag{Name: "myflag"}
-	require.Equal(t, "foobar", f.Get(cmd))
+	require.Equal(t, "foobar", cmd.String(f.Name))
 }
 
 var _ = []struct {
@@ -790,7 +790,7 @@ func TestStringSliceFlagValueFromCommand(t *testing.T) {
 	set.Var(NewStringSlice("a", "b", "c"), "myflag", "doc")
 	cmd := &Command{flagSet: set}
 	f := &StringSliceFlag{Name: "myflag"}
-	require.Equal(t, []string{"a", "b", "c"}, f.Get(cmd))
+	require.Equal(t, []string{"a", "b", "c"}, cmd.StringSlice(f.Name))
 }
 
 var intFlagTests = []struct {
@@ -844,7 +844,7 @@ func TestIntFlagValueFromCommand(t *testing.T) {
 	set.Int64("myflag", int64(42), "doc")
 	cmd := &Command{flagSet: set}
 	fl := &IntFlag{Name: "myflag"}
-	require.Equal(t, int64(42), fl.Get(cmd))
+	require.Equal(t, int64(42), cmd.Int(fl.Name))
 }
 
 var uintFlagTests = []struct {
@@ -887,7 +887,7 @@ func TestUintFlagValueFromCommand(t *testing.T) {
 	set.Uint64("myflag", 42, "doc")
 	cmd := &Command{flagSet: set}
 	fl := &UintFlag{Name: "myflag"}
-	require.Equal(t, uint64(42), fl.Get(cmd))
+	require.Equal(t, uint64(42), cmd.Uint(fl.Name))
 }
 
 var uint64FlagTests = []struct {
@@ -930,7 +930,7 @@ func TestUint64FlagValueFromCommand(t *testing.T) {
 	set.Uint64("myflag", 42, "doc")
 	cmd := &Command{flagSet: set}
 	f := &UintFlag{Name: "myflag"}
-	require.Equal(t, uint64(42), f.Get(cmd))
+	require.Equal(t, uint64(42), cmd.Uint(f.Name))
 }
 
 var durationFlagTests = []struct {
@@ -984,7 +984,7 @@ func TestDurationFlagValueFromCommand(t *testing.T) {
 	set.Duration("myflag", 42*time.Second, "doc")
 	cmd := &Command{flagSet: set}
 	f := &DurationFlag{Name: "myflag"}
-	require.Equal(t, 42*time.Second, f.Get(cmd))
+	require.Equal(t, 42*time.Second, cmd.Duration(f.Name))
 }
 
 var intSliceFlagTests = []struct {
@@ -1105,7 +1105,7 @@ func TestIntSliceFlagValueFromCommand(t *testing.T) {
 	set.Var(NewIntSlice(1, 2, 3), "myflag", "doc")
 	cmd := &Command{flagSet: set}
 	f := &IntSliceFlag{Name: "myflag"}
-	require.Equal(t, []int64{1, 2, 3}, f.Get(cmd))
+	require.Equal(t, []int64{1, 2, 3}, cmd.IntSlice(f.Name))
 }
 
 var uintSliceFlagTests = []struct {
@@ -1441,7 +1441,7 @@ func TestFloat64FlagValueFromCommand(t *testing.T) {
 	set.Float64("myflag", 1.23, "doc")
 	cmd := &Command{flagSet: set}
 	f := &FloatFlag{Name: "myflag"}
-	require.Equal(t, 1.23, f.Get(cmd))
+	require.Equal(t, 1.23, cmd.Float(f.Name))
 }
 
 var float64SliceFlagTests = []struct {
@@ -1536,7 +1536,7 @@ func TestFloat64SliceFlagValueFromCommand(t *testing.T) {
 	set.Var(NewFloatSlice(1.23, 4.56), "myflag", "doc")
 	cmd := &Command{flagSet: set}
 	f := &FloatSliceFlag{Name: "myflag"}
-	require.Equal(t, []float64{1.23, 4.56}, f.Get(cmd))
+	require.Equal(t, []float64{1.23, 4.56}, cmd.FloatSlice(f.Name))
 }
 
 func TestFloat64SliceFlagApply_ParentCommand(t *testing.T) {
@@ -2552,7 +2552,7 @@ func TestTimestampFlagValueFromCommand(t *testing.T) {
 	set.Var(newTimestamp(now), "myflag", "doc")
 	cmd := &Command{flagSet: set}
 	f := &TimestampFlag{Name: "myflag"}
-	require.Equal(t, now, f.Get(cmd))
+	require.Equal(t, now, cmd.Timestamp(f.Name))
 }
 
 type flagDefaultTestCase struct {
@@ -2986,7 +2986,7 @@ func TestStringMapFlagValueFromCommand(t *testing.T) {
 	set.Var(NewStringMap(map[string]string{"a": "b", "c": ""}), "myflag", "doc")
 	cmd := &Command{flagSet: set}
 	f := &StringMapFlag{Name: "myflag"}
-	require.Equal(t, map[string]string{"a": "b", "c": ""}, f.Get(cmd))
+	require.Equal(t, map[string]string{"a": "b", "c": ""}, cmd.StringMap(f.Name))
 }
 
 func TestStringMapFlagApply_Error(t *testing.T) {
