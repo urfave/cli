@@ -33,16 +33,6 @@ func NewSliceBase[T any, C any, VC ValueCreator[T, C]](defaults ...T) *SliceBase
 	}
 }
 
-// SetOne directly adds a value to the list of values
-func (i *SliceBase[T, C, VC]) SetOne(value T) {
-	if !i.hasBeenSet {
-		*i.slice = []T{}
-		i.hasBeenSet = true
-	}
-
-	*i.slice = append(*i.slice, value)
-}
-
 // Set parses the value and appends it to the list of values
 func (i *SliceBase[T, C, VC]) Set(value string) error {
 	if !i.hasBeenSet {

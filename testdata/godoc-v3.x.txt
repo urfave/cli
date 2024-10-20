@@ -901,9 +901,6 @@ func (i *SliceBase[T, C, VC]) Serialize() string
 func (i *SliceBase[T, C, VC]) Set(value string) error
     Set parses the value and appends it to the list of values
 
-func (i *SliceBase[T, C, VC]) SetOne(value T)
-    SetOne directly adds a value to the list of values
-
 func (i *SliceBase[T, C, VC]) String() string
     String returns a readable representation of this value (for usage defaults)
 
