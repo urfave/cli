@@ -3002,3 +3002,31 @@ func TestZeroValueMutexFlag(t *testing.T) {
 	var fl MutuallyExclusiveFlags
 	assert.NoError(t, fl.check(&Command{}))
 }
+
+func TestExtFlag(t *testing.T) {
+	fs := flag.NewFlagSet("foo", flag.ContinueOnError)
+
+	var iv intValue
+	var ipv int64
+
+	f := &flag.Flag{
+		Name:     "bar",
+		Usage:    "bar usage",
+		Value:    iv.Create(11, &ipv, IntegerConfig{}),
+		DefValue: "10",
+	}
+
+	extF := &extFlag{
+		f: f,
+	}
+
+	assert.NoError(t, extF.Apply(fs))
+	assert.Equal(t, []string{"bar"}, extF.Names())
+	assert.True(t, extF.IsVisible())
+	assert.False(t, extF.IsSet())
+	assert.False(t, extF.TakesValue())
+	assert.Equal(t, "bar usage", extF.GetUsage())
+	assert.Equal(t, "11", extF.GetValue())
+	assert.Equal(t, "10", extF.GetDefaultText())
+	assert.Nil(t, extF.GetEnvVars())
+}
