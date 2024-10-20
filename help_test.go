@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"text/template"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -1792,8 +1793,62 @@ func TestTemplateError(t *testing.T) {
 	handleTemplateError(err)
 	assert.Equal(t, []byte(nil), buf.Bytes())
 
-	os.Setenv("CLI_TEMPLATE_ERROR_DEBUG", "true")
+	t.Setenv("CLI_TEMPLATE_ERROR_DEBUG", "true")
 	handleTemplateError(err)
 	assert.Contains(t, buf.String(), "CLI TEMPLATE ERROR")
 	assert.Contains(t, buf.String(), err.Error())
+}
+
+func TestTemplateParse(t *testing.T) {
+	funcMap := template.FuncMap{
+		"join":           strings.Join,
+		"subtract":       subtract,
+		"indent":         indent,
+		"nindent":        nindent,
+		"trim":           strings.TrimSpace,
+		"wrap":           func(input string, offset int) string { return wrap(input, offset, 80) },
+		"offset":         offset,
+		"offsetCommands": offsetCommands,
+	}
+
+	tmpl := template.Must(template.New("help").Funcs(funcMap), nil)
+
+	_, err := tmpl.New("helpNameTemplate").Parse(helpNameTemplate)
+	assert.NoError(t, err)
+
+	_, err = tmpl.New("argsTemplate").Parse(argsTemplate)
+	assert.NoError(t, err)
+
+	_, err = tmpl.New("usageTemplate").Parse(usageTemplate)
+	assert.NoError(t, err)
+
+	_, err = tmpl.New("descriptionTemplate").Parse(descriptionTemplate)
+	assert.NoError(t, err)
+
+	_, err = tmpl.New("visibleCommandTemplate").Parse(visibleCommandTemplate)
+	assert.NoError(t, err)
+
+	_, err = tmpl.New("copyrightTemplate").Parse(copyrightTemplate)
+	assert.NoError(t, err)
+
+	_, err = tmpl.New("versionTemplate").Parse(versionTemplate)
+	assert.NoError(t, err)
+
+	_, err = tmpl.New("visibleFlagCategoryTemplate").Parse(visibleFlagCategoryTemplate)
+	assert.NoError(t, err)
+
+	_, err = tmpl.New("visibleFlagTemplate").Parse(visibleFlagTemplate)
+	assert.NoError(t, err)
+
+	_, err = tmpl.New("visiblePersistentFlagTemplate").Parse(visiblePersistentFlagTemplate)
+	assert.NoError(t, err)
+
+	_, err = tmpl.New("visibleGlobalFlagCategoryTemplate").Parse(strings.Replace(visibleFlagCategoryTemplate, "OPTIONS", "GLOBAL OPTIONS", -1))
+	assert.NoError(t, err)
+
+	_, err = tmpl.New("authorsTemplate").Parse(authorsTemplate)
+	assert.NoError(t, err)
+
+	_, err = tmpl.New("visibleCommandCategoryTemplate").Parse(visibleCommandCategoryTemplate)
+	assert.NoError(t, err)
 }

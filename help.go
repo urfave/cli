@@ -372,6 +372,7 @@ func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs 
 
 	w := tabwriter.NewWriter(out, 1, 8, 2, ' ', 0)
 	t := template.Must(template.New("help").Funcs(funcMap).Parse(templ))
+
 	if _, err := t.New("helpNameTemplate").Parse(helpNameTemplate); err != nil {
 		handleTemplateError(err)
 	}
