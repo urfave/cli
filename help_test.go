@@ -1776,10 +1776,36 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 }
 
 func TestNIndent(t *testing.T) {
-	assert.Equal(t, "\nfoo", nindent(0, "foo"))
-	assert.Equal(t, "\nfoo\n", nindent(0, "foo\n"))
-	assert.Equal(t, "\n  foo", nindent(2, "foo"))
-	assert.Equal(t, "\n  foo\n  ", nindent(2, "foo\n"))
+	t.Parallel()
+	tests := []struct {
+		numSpaces int
+		str       string
+		expected  string
+	}{
+		{
+			numSpaces: 0,
+			str:       "foo",
+			expected:  "\nfoo",
+		},
+		{
+			numSpaces: 0,
+			str:       "foo\n",
+			expected:  "\nfoo\n",
+		},
+		{
+			numSpaces: 2,
+			str:       "foo",
+			expected:  "\n  foo",
+		},
+		{
+			numSpaces: 3,
+			str:       "foo\n",
+			expected:  "\n   foo\n   ",
+		},
+	}
+	for _, test := range tests {
+		assert.Equal(t, test.expected, nindent(test.numSpaces, test.str))
+	}
 }
 
 func TestTemplateError(t *testing.T) {
@@ -1813,42 +1839,76 @@ func TestTemplateParse(t *testing.T) {
 
 	tmpl := template.Must(template.New("help").Funcs(funcMap), nil)
 
-	_, err := tmpl.New("helpNameTemplate").Parse(helpNameTemplate)
-	assert.NoError(t, err)
+	templates := []string{
+		helpNameTemplate,
+		argsTemplate,
+		usageTemplate,
+		descriptionTemplate,
+		visibleCommandTemplate,
+		copyrightTemplate,
+		versionTemplate,
+		visibleFlagCategoryTemplate,
+		visibleFlagTemplate,
+		visiblePersistentFlagTemplate,
+		strings.Replace(visibleFlagCategoryTemplate, "OPTIONS", "GLOBAL OPTIONS", -1),
+		authorsTemplate,
+		visibleCommandCategoryTemplate,
+	}
+	for _, template := range templates {
+		_, err := tmpl.New("fooTemplate").Parse(template)
+		assert.NoError(t, err)
+	}
+}
 
-	_, err = tmpl.New("argsTemplate").Parse(argsTemplate)
-	assert.NoError(t, err)
+func TestCliArgContainsFlag(t *testing.T) {
+	tests := []struct {
+		name     string
+		args     []string
+		contains bool
+	}{
+		{
+			name: "",
+			args: []string{},
+		},
+		{
+			name: "f",
+			args: []string{},
+		},
+		{
+			name: "f",
+			args: []string{"g", "foo", "f"},
+		},
+		{
+			name:     "f",
+			args:     []string{"-f", "foo", "f"},
+			contains: true,
+		},
+		{
+			name:     "f",
+			args:     []string{"g", "-f", "f"},
+			contains: true,
+		},
+		{
+			name:     "fh",
+			args:     []string{"g", "f", "--fh"},
+			contains: true,
+		},
+		{
+			name: "fhg",
+			args: []string{"-fhg", "f", "fh"},
+		},
+		{
+			name:     "fhg",
+			args:     []string{"--fhg", "f", "fh"},
+			contains: true,
+		},
+	}
 
-	_, err = tmpl.New("usageTemplate").Parse(usageTemplate)
-	assert.NoError(t, err)
-
-	_, err = tmpl.New("descriptionTemplate").Parse(descriptionTemplate)
-	assert.NoError(t, err)
-
-	_, err = tmpl.New("visibleCommandTemplate").Parse(visibleCommandTemplate)
-	assert.NoError(t, err)
-
-	_, err = tmpl.New("copyrightTemplate").Parse(copyrightTemplate)
-	assert.NoError(t, err)
-
-	_, err = tmpl.New("versionTemplate").Parse(versionTemplate)
-	assert.NoError(t, err)
-
-	_, err = tmpl.New("visibleFlagCategoryTemplate").Parse(visibleFlagCategoryTemplate)
-	assert.NoError(t, err)
-
-	_, err = tmpl.New("visibleFlagTemplate").Parse(visibleFlagTemplate)
-	assert.NoError(t, err)
-
-	_, err = tmpl.New("visiblePersistentFlagTemplate").Parse(visiblePersistentFlagTemplate)
-	assert.NoError(t, err)
-
-	_, err = tmpl.New("visibleGlobalFlagCategoryTemplate").Parse(strings.Replace(visibleFlagCategoryTemplate, "OPTIONS", "GLOBAL OPTIONS", -1))
-	assert.NoError(t, err)
-
-	_, err = tmpl.New("authorsTemplate").Parse(authorsTemplate)
-	assert.NoError(t, err)
-
-	_, err = tmpl.New("visibleCommandCategoryTemplate").Parse(visibleCommandCategoryTemplate)
-	assert.NoError(t, err)
+	for _, test := range tests {
+		if test.contains {
+			assert.True(t, cliArgContains(test.name, test.args))
+		} else {
+			assert.False(t, cliArgContains(test.name, test.args))
+		}
+	}
 }

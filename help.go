@@ -169,7 +169,7 @@ func printCommandSuggestions(commands []*Command, writer io.Writer) {
 	}
 }
 
-func cliArgContains(flagName string) bool {
+func cliArgContains(flagName string, args []string) bool {
 	for _, name := range strings.Split(flagName, ",") {
 		name = strings.TrimSpace(name)
 		count := utf8.RuneCountInString(name)
@@ -177,7 +177,7 @@ func cliArgContains(flagName string) bool {
 			count = 2
 		}
 		flag := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
-		for _, a := range os.Args {
+		for _, a := range args {
 			if a == flag {
 				return true
 			}
@@ -211,7 +211,7 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 			continue
 		}
 		// match if last argument matches this flag and it is not repeated
-		if strings.HasPrefix(name, cur) && cur != name && !cliArgContains(name) {
+		if strings.HasPrefix(name, cur) && cur != name && !cliArgContains(name, os.Args) {
 			flagCompletion := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
 			if usage != "" && strings.HasSuffix(os.Getenv("SHELL"), "zsh") {
 				flagCompletion = fmt.Sprintf("%s:%s", flagCompletion, usage)
