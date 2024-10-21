@@ -11,7 +11,6 @@ import (
 	"runtime"
 	"strings"
 	"testing"
-	"text/template"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -1194,6 +1193,51 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			expected: "--excitement\n",
 		},
 		{
+			name: "typical-flag-suggestion-hidden-bool",
+			cmd: &Command{
+				Flags: []Flag{
+					&BoolFlag{Name: "excitement", Hidden: true},
+					&StringFlag{Name: "hat-shape"},
+				},
+				parent: &Command{
+					Name: "cmd",
+					Flags: []Flag{
+						&BoolFlag{Name: "happiness"},
+						&IntFlag{Name: "everybody-jump-on"},
+					},
+					Commands: []*Command{
+						{Name: "putz"},
+					},
+				},
+			},
+			argv:     []string{"cmd", "--e", "--generate-shell-completion"},
+			env:      map[string]string{"SHELL": "bash"},
+			expected: "",
+		},
+		// TODO. Need to fix
+		/*{
+			name: "flag-suggestion-end-args",
+			cmd: &Command{
+				Flags: []Flag{
+					&BoolFlag{Name: "excitement"},
+					&StringFlag{Name: "hat-shape"},
+				},
+				parent: &Command{
+					Name: "cmd",
+					Flags: []Flag{
+						&BoolFlag{Name: "happiness"},
+						&IntFlag{Name: "everybody-jump-on"},
+					},
+					Commands: []*Command{
+						{Name: "putz"},
+					},
+				},
+			},
+			argv:     []string{"cmd", "--e", "--", "--generate-shell-completion"},
+			env:      map[string]string{"SHELL": "bash"},
+			expected: "",
+		},*/
+		{
 			name: "typical-command-suggestion",
 			cmd: &Command{
 				Name: "putz",
@@ -1825,41 +1869,6 @@ func TestTemplateError(t *testing.T) {
 	assert.Contains(t, buf.String(), err.Error())
 }
 
-func TestTemplateParse(t *testing.T) {
-	funcMap := template.FuncMap{
-		"join":           strings.Join,
-		"subtract":       subtract,
-		"indent":         indent,
-		"nindent":        nindent,
-		"trim":           strings.TrimSpace,
-		"wrap":           func(input string, offset int) string { return wrap(input, offset, 80) },
-		"offset":         offset,
-		"offsetCommands": offsetCommands,
-	}
-
-	tmpl := template.Must(template.New("help").Funcs(funcMap), nil)
-
-	templates := []string{
-		helpNameTemplate,
-		argsTemplate,
-		usageTemplate,
-		descriptionTemplate,
-		visibleCommandTemplate,
-		copyrightTemplate,
-		versionTemplate,
-		visibleFlagCategoryTemplate,
-		visibleFlagTemplate,
-		visiblePersistentFlagTemplate,
-		strings.Replace(visibleFlagCategoryTemplate, "OPTIONS", "GLOBAL OPTIONS", -1),
-		authorsTemplate,
-		visibleCommandCategoryTemplate,
-	}
-	for _, template := range templates {
-		_, err := tmpl.New("fooTemplate").Parse(template)
-		assert.NoError(t, err)
-	}
-}
-
 func TestCliArgContainsFlag(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -1931,4 +1940,45 @@ func TestCommandHelpSuggest(t *testing.T) {
 
 func TestWrapLine(t *testing.T) {
 	assert.Equal(t, "    ", wrapLine("    ", 0, 3, " "))
+}
+
+func TestPrintHelpCustomTemplateError(t *testing.T) {
+	tmpls := []*string{
+		&helpNameTemplate,
+		&argsTemplate,
+		&usageTemplate,
+		&descriptionTemplate,
+		&visibleCommandTemplate,
+		&copyrightTemplate,
+		&versionTemplate,
+		&visibleFlagCategoryTemplate,
+		&visibleFlagTemplate,
+		&visiblePersistentFlagTemplate,
+		&visibleFlagCategoryTemplate,
+		&authorsTemplate,
+		&visibleCommandCategoryTemplate,
+	}
+
+	oldErrWriter := ErrWriter
+	defer func() { ErrWriter = oldErrWriter }()
+
+	t.Setenv("CLI_TEMPLATE_ERROR_DEBUG", "true")
+
+	for _, tmpl := range tmpls {
+		oldtmpl := *tmpl
+		// safety mechanism in case something fails
+		defer func(stmpl *string) { *stmpl = oldtmpl }(tmpl)
+
+		errBuf := &bytes.Buffer{}
+		ErrWriter = errBuf
+		buf := &bytes.Buffer{}
+
+		*tmpl = "{{junk"
+		printHelpCustom(buf, "", "", nil)
+
+		assert.Contains(t, errBuf.String(), "CLI TEMPLATE ERROR")
+
+		// reset template back.
+		*tmpl = oldtmpl
+	}
 }
