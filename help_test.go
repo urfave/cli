@@ -1214,8 +1214,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			env:      map[string]string{"SHELL": "bash"},
 			expected: "",
 		},
-		// TODO. Need to fix
-		/*{
+		{
 			name: "flag-suggestion-end-args",
 			cmd: &Command{
 				Flags: []Flag{
@@ -1236,7 +1235,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			argv:     []string{"cmd", "--e", "--", "--generate-shell-completion"},
 			env:      map[string]string{"SHELL": "bash"},
 			expected: "",
-		},*/
+		},
 		{
 			name: "typical-command-suggestion",
 			cmd: &Command{
