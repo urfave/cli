@@ -51,11 +51,7 @@ func (i *SliceBase[T, C, VC]) Set(value string) error {
 		if err := i.value.Set(strings.TrimSpace(s)); err != nil {
 			return err
 		}
-		tmp, ok := i.value.Get().(T)
-		if !ok {
-			return fmt.Errorf("unable to cast %v", i.value)
-		}
-		*i.slice = append(*i.slice, tmp)
+		*i.slice = append(*i.slice, i.value.Get().(T))
 	}
 
 	return nil

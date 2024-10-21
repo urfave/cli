@@ -81,12 +81,6 @@ func (e *mutuallyExclusiveGroupRequiredFlag) Error() string {
 		for _, f := range grpf {
 			grpString = append(grpString, f.Names()...)
 		}
-		if len(e.flags.Flags) == 1 {
-			err := errRequiredFlags{
-				missingFlags: grpString,
-			}
-			return err.Error()
-		}
 		missingFlags = append(missingFlags, strings.Join(grpString, " "))
 	}
 
