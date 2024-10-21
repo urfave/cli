@@ -30,7 +30,11 @@ func buildTestContext(t *testing.T) context.Context {
 
 func TestTracing(t *testing.T) {
 	olderr := os.Stderr
-	defer func() { os.Stderr = olderr }()
+	oldtracing := isTracingOn
+	defer func() {
+		os.Stderr = olderr
+		isTracingOn = oldtracing
+	}()
 
 	file, err := os.CreateTemp(os.TempDir(), "cli*")
 	assert.NoError(t, err)
