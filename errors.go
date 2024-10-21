@@ -198,12 +198,3 @@ func handleMultiError(multiErr MultiError) int {
 	}
 	return code
 }
-
-type typeError[T any] struct {
-	other any
-}
-
-func (te *typeError[T]) Error() string {
-	var t T
-	return fmt.Sprintf("Expected type %T got instead %T", t, te.other)
-}

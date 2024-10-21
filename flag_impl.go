@@ -112,13 +112,7 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 					)
 				}
 			} else if val == "" && reflect.TypeOf(f.Value).Kind() == reflect.Bool {
-				val = "false"
-				if err := tmpVal.Set(val); err != nil {
-					return fmt.Errorf(
-						"could not parse %[1]q as %[2]T value from %[3]s for flag %[4]s: %[5]s",
-						val, f.Value, source, f.Name, err,
-					)
-				}
+				_ = tmpVal.Set("false")
 			}
 
 			newVal = tmpVal.Get().(T)
@@ -133,11 +127,7 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 
 		// Validate the given default or values set from external sources as well
 		if f.Validator != nil && f.ValidateDefaults {
-			if v, ok := f.value.Get().(T); !ok {
-				return &typeError[T]{
-					other: f.value.Get(),
-				}
-			} else if err := f.Validator(v); err != nil {
+			if err := f.Validator(f.value.Get().(T)); err != nil {
 				return err
 			}
 		}
@@ -160,11 +150,7 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 				}
 				f.hasBeenSet = true
 				if f.Validator != nil {
-					if v, ok := f.value.Get().(T); !ok {
-						return &typeError[T]{
-							other: f.value.Get(),
-						}
-					} else if err := f.Validator(v); err != nil {
+					if err := f.Validator(f.value.Get().(T)); err != nil {
 						return err
 					}
 				}
