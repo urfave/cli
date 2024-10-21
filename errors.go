@@ -47,7 +47,6 @@ func (m *multiError) Errors() []error {
 
 type requiredFlagsErr interface {
 	error
-	getMissingFlags() []string
 }
 
 type errRequiredFlags struct {
@@ -60,10 +59,6 @@ func (e *errRequiredFlags) Error() string {
 	}
 	joinedMissingFlags := strings.Join(e.missingFlags, ", ")
 	return fmt.Sprintf("Required flags %q not set", joinedMissingFlags)
-}
-
-func (e *errRequiredFlags) getMissingFlags() []string {
-	return e.missingFlags
 }
 
 type mutuallyExclusiveGroup struct {
@@ -146,10 +141,6 @@ func (ee *exitError) Error() string {
 
 func (ee *exitError) ExitCode() int {
 	return ee.exitCode
-}
-
-func (ee *exitError) Unwrap() error {
-	return ee.err
 }
 
 // HandleExitCoder handles errors implementing ExitCoder by printing their
