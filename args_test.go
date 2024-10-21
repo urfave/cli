@@ -44,6 +44,19 @@ func TestArgumentsRootCommand(t *testing.T) {
 	require.Error(t, errors.New("No help topic for '12.1"), cmd.Run(context.Background(), []string{"foo", "13", "10.1", "11.09", "12.1"}))
 	require.Equal(t, int64(13), ival)
 	require.Equal(t, []float64{10.1, 11.09}, fvals)
+
+	cmd.Arguments = append(cmd.Arguments,
+		&StringArg{
+			Name: "sa",
+		},
+		&UintArg{
+			Name: "ua",
+			Min:  2,
+			Max:  1, // max is less than min
+		},
+	)
+
+	require.NoError(t, cmd.Run(context.Background(), []string{"foo", "10"}))
 }
 
 func TestArgumentsSubcommand(t *testing.T) {
@@ -103,6 +116,7 @@ func TestArgsUsage(t *testing.T) {
 		name     string
 		min      int
 		max      int
+		usage    string
 		expected string
 	}{
 		{
@@ -110,6 +124,13 @@ func TestArgsUsage(t *testing.T) {
 			min:      0,
 			max:      1,
 			expected: "[ia]",
+		},
+		{
+			name:     "optional",
+			min:      0,
+			max:      1,
+			usage:    "[my optional usage]",
+			expected: "[my optional usage]",
 		},
 		{
 			name:     "zero or more",
@@ -144,7 +165,7 @@ func TestArgsUsage(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			arg.Min, arg.Max = test.min, test.max
+			arg.Min, arg.Max, arg.UsageText = test.min, test.max, test.usage
 			require.Equal(t, test.expected, arg.Usage())
 		})
 	}

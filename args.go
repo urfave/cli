@@ -98,11 +98,11 @@ func (a *ArgumentBase[T, C, VC]) Usage() string {
 func (a *ArgumentBase[T, C, VC]) Parse(s []string) ([]string, error) {
 	tracef("calling arg%[1] parse with args %[2]", &a.Name, s)
 	if a.Max == 0 {
-		fmt.Printf("WARNING args %s has max 0, not parsing argument", a.Name)
+		fmt.Printf("WARNING args %s has max 0, not parsing argument\n", a.Name)
 		return s, nil
 	}
 	if a.Max != -1 && a.Min > a.Max {
-		fmt.Printf("WARNING args %s has min[%d] > max[%d], not parsing argument", a.Name, a.Min, a.Max)
+		fmt.Printf("WARNING args %s has min[%d] > max[%d], not parsing argument\n", a.Name, a.Min, a.Max)
 		return s, nil
 	}
 

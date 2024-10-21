@@ -3,6 +3,7 @@ package cli
 import (
 	"bytes"
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"text/template"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -1771,4 +1773,158 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 			assert.Equal(t, tt.wantArgs, args)
 		})
 	}
+}
+
+func TestNIndent(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		numSpaces int
+		str       string
+		expected  string
+	}{
+		{
+			numSpaces: 0,
+			str:       "foo",
+			expected:  "\nfoo",
+		},
+		{
+			numSpaces: 0,
+			str:       "foo\n",
+			expected:  "\nfoo\n",
+		},
+		{
+			numSpaces: 2,
+			str:       "foo",
+			expected:  "\n  foo",
+		},
+		{
+			numSpaces: 3,
+			str:       "foo\n",
+			expected:  "\n   foo\n   ",
+		},
+	}
+	for _, test := range tests {
+		assert.Equal(t, test.expected, nindent(test.numSpaces, test.str))
+	}
+}
+
+func TestTemplateError(t *testing.T) {
+	oldew := ErrWriter
+	defer func() { ErrWriter = oldew }()
+
+	var buf bytes.Buffer
+	ErrWriter = &buf
+	err := errors.New("some error")
+
+	handleTemplateError(err)
+	assert.Equal(t, []byte(nil), buf.Bytes())
+
+	t.Setenv("CLI_TEMPLATE_ERROR_DEBUG", "true")
+	handleTemplateError(err)
+	assert.Contains(t, buf.String(), "CLI TEMPLATE ERROR")
+	assert.Contains(t, buf.String(), err.Error())
+}
+
+func TestTemplateParse(t *testing.T) {
+	funcMap := template.FuncMap{
+		"join":           strings.Join,
+		"subtract":       subtract,
+		"indent":         indent,
+		"nindent":        nindent,
+		"trim":           strings.TrimSpace,
+		"wrap":           func(input string, offset int) string { return wrap(input, offset, 80) },
+		"offset":         offset,
+		"offsetCommands": offsetCommands,
+	}
+
+	tmpl := template.Must(template.New("help").Funcs(funcMap), nil)
+
+	templates := []string{
+		helpNameTemplate,
+		argsTemplate,
+		usageTemplate,
+		descriptionTemplate,
+		visibleCommandTemplate,
+		copyrightTemplate,
+		versionTemplate,
+		visibleFlagCategoryTemplate,
+		visibleFlagTemplate,
+		visiblePersistentFlagTemplate,
+		strings.Replace(visibleFlagCategoryTemplate, "OPTIONS", "GLOBAL OPTIONS", -1),
+		authorsTemplate,
+		visibleCommandCategoryTemplate,
+	}
+	for _, template := range templates {
+		_, err := tmpl.New("fooTemplate").Parse(template)
+		assert.NoError(t, err)
+	}
+}
+
+func TestCliArgContainsFlag(t *testing.T) {
+	tests := []struct {
+		name     string
+		args     []string
+		contains bool
+	}{
+		{
+			name: "",
+			args: []string{},
+		},
+		{
+			name: "f",
+			args: []string{},
+		},
+		{
+			name: "f",
+			args: []string{"g", "foo", "f"},
+		},
+		{
+			name:     "f",
+			args:     []string{"-f", "foo", "f"},
+			contains: true,
+		},
+		{
+			name:     "f",
+			args:     []string{"g", "-f", "f"},
+			contains: true,
+		},
+		{
+			name:     "fh",
+			args:     []string{"g", "f", "--fh"},
+			contains: true,
+		},
+		{
+			name: "fhg",
+			args: []string{"-fhg", "f", "fh"},
+		},
+		{
+			name:     "fhg",
+			args:     []string{"--fhg", "f", "fh"},
+			contains: true,
+		},
+	}
+
+	for _, test := range tests {
+		if test.contains {
+			assert.True(t, cliArgContains(test.name, test.args))
+		} else {
+			assert.False(t, cliArgContains(test.name, test.args))
+		}
+	}
+}
+
+func TestCommandHelpSuggest(t *testing.T) {
+	cmd := &Command{
+		Suggest: true,
+		Commands: []*Command{
+			{
+				Name: "putz",
+			},
+		},
+	}
+
+	cmd.setupDefaults([]string{"foo"})
+
+	err := ShowCommandHelp(context.Background(), cmd, "put")
+	assert.ErrorContains(t, err, "No help topic for 'put'. putz")
 }

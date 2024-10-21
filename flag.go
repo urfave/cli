@@ -73,26 +73,6 @@ var FlagEnvHinter FlagEnvHintFunc = withEnvHint
 // details. This is used by the default FlagStringer.
 var FlagFileHinter FlagFileHintFunc = withFileHint
 
-// FlagsByName is a slice of Flag.
-type FlagsByName []Flag
-
-func (f FlagsByName) Len() int {
-	return len(f)
-}
-
-func (f FlagsByName) Less(i, j int) bool {
-	if len(f[j].Names()) == 0 {
-		return false
-	} else if len(f[i].Names()) == 0 {
-		return true
-	}
-	return lexicographicLess(f[i].Names()[0], f[j].Names()[0])
-}
-
-func (f FlagsByName) Swap(i, j int) {
-	f[i], f[j] = f[j], f[i]
-}
-
 // ActionableFlag is an interface that wraps Flag interface and RunAction operation.
 type ActionableFlag interface {
 	RunAction(context.Context, *Command) error
@@ -128,10 +108,6 @@ type DocGenerationFlag interface {
 
 	// GetUsage returns the usage string for the flag
 	GetUsage() string
-
-	// GetValue returns the flags value as string representation and an empty
-	// string if the flag takes no value at all.
-	GetValue() string
 
 	// GetDefaultText returns the default text for this flag
 	GetDefaultText() string

@@ -33,16 +33,6 @@ func NewSliceBase[T any, C any, VC ValueCreator[T, C]](defaults ...T) *SliceBase
 	}
 }
 
-// SetOne directly adds a value to the list of values
-func (i *SliceBase[T, C, VC]) SetOne(value T) {
-	if !i.hasBeenSet {
-		*i.slice = []T{}
-		i.hasBeenSet = true
-	}
-
-	*i.slice = append(*i.slice, value)
-}
-
 // Set parses the value and appends it to the list of values
 func (i *SliceBase[T, C, VC]) Set(value string) error {
 	if !i.hasBeenSet {
@@ -61,11 +51,7 @@ func (i *SliceBase[T, C, VC]) Set(value string) error {
 		if err := i.value.Set(strings.TrimSpace(s)); err != nil {
 			return err
 		}
-		tmp, ok := i.value.Get().(T)
-		if !ok {
-			return fmt.Errorf("unable to cast %v", i.value)
-		}
-		*i.slice = append(*i.slice, tmp)
+		*i.slice = append(*i.slice, i.value.Get().(T))
 	}
 
 	return nil
@@ -90,7 +76,7 @@ func (i *SliceBase[T, C, VC]) Serialize() string {
 // Value returns the slice of values set by this flag
 func (i *SliceBase[T, C, VC]) Value() []T {
 	if i.slice == nil {
-		return []T{}
+		return nil
 	}
 	return *i.slice
 }
