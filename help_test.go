@@ -1928,3 +1928,7 @@ func TestCommandHelpSuggest(t *testing.T) {
 	err := ShowCommandHelp(context.Background(), cmd, "put")
 	assert.ErrorContains(t, err, "No help topic for 'put'. putz")
 }
+
+func TestWrapLine(t *testing.T) {
+	assert.Equal(t, "    ", wrapLine("    ", 0, 3, " "))
+}

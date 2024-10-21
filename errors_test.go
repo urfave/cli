@@ -94,7 +94,7 @@ type exitFormatter struct {
 }
 
 func (f *exitFormatter) Format(s fmt.State, verb rune) {
-	s.Write([]byte("some other special"))
+	_, _ = s.Write([]byte("some other special"))
 }
 
 func (f *exitFormatter) ExitCode() int {
