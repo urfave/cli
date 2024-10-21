@@ -33,13 +33,6 @@ func (f *fnValue) String() string {
 	return f.v.String()
 }
 
-func (f *fnValue) Serialize() string {
-	if s, ok := f.v.(Serializer); ok {
-		return s.Serialize()
-	}
-	return f.v.String()
-}
-
 func (f *fnValue) IsBoolFlag() bool { return f.isBool }
 func (f *fnValue) Count() int {
 	if s, ok := f.v.(Countable); ok {
