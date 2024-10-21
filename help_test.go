@@ -1912,3 +1912,19 @@ func TestCliArgContainsFlag(t *testing.T) {
 		}
 	}
 }
+
+func TestCommandHelpSuggest(t *testing.T) {
+	cmd := &Command{
+		Suggest: true,
+		Commands: []*Command{
+			{
+				Name: "putz",
+			},
+		},
+	}
+
+	cmd.setupDefaults([]string{"foo"})
+
+	err := ShowCommandHelp(context.Background(), cmd, "put")
+	assert.ErrorContains(t, err, "No help topic for 'put'. putz")
+}
