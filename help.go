@@ -239,6 +239,11 @@ func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 		lastArg = args[argsLen-1]
 	}
 
+	if len(cmd.runArgs) > 1 && cmd.runArgs[len(cmd.runArgs)-1] == "-" {
+		tracef("using last arg from cmd.runArgs [%v]", cmd.runArgs)
+		lastArg = "-"
+	}
+
 	if strings.HasPrefix(lastArg, "-") {
 		tracef("printing flag suggestion for flag[%v] on command %[1]q", lastArg, cmd.Name)
 		printFlagSuggestions(lastArg, cmd.Flags, cmd.Root().Writer)
@@ -465,6 +470,9 @@ func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
 		// because after "--" only positional arguments are accepted.
 		// https://unix.stackexchange.com/a/11382
 		if arg == "--" {
+			if lastArg == "--generate-shell-completion" {
+				return false, arguments[:pos-2]
+			}
 			return false, arguments
 		}
 	}
