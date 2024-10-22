@@ -9,6 +9,7 @@ import (
 	"os"
 	"reflect"
 	"regexp"
+	"sort"
 	"strings"
 	"testing"
 	"time"
@@ -3048,4 +3049,32 @@ func TestFileHint(t *testing.T) {
 	assert.Equal(t, " [/tmp/foo.txt]", withFileHint("/tmp/foo.txt", ""))
 	assert.Equal(t, "foo", withFileHint("", "foo"))
 	assert.Equal(t, "bar [/tmp/foo.txt]", withFileHint("/tmp/foo.txt", "bar"))
+}
+
+func TestFlagsByName(t *testing.T) {
+	flags := []Flag{
+		&StringFlag{
+			Name: "b2",
+		},
+		&IntFlag{
+			Name: "a0",
+		},
+		&FloatFlag{
+			Name: "b1",
+		},
+	}
+
+	flagsByName := FlagsByName(flags)
+	sort.Sort(flagsByName)
+
+	assert.Equal(t, len(flags), flagsByName.Len())
+
+	var prev Flag
+	for _, f := range flags {
+		if prev == nil {
+			prev = f
+		} else {
+			assert.LessOrEqual(t, prev.Names()[0], f.Names()[0])
+		}
+	}
 }

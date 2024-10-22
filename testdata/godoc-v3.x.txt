@@ -761,6 +761,15 @@ var FlagStringer FlagStringFunc = stringifyFlag
     FlagStringer converts a flag definition to a string. This is used by help to
     display a flag.
 
+type FlagsByName []Flag
+    FlagsByName is a slice of Flag.
+
+func (f FlagsByName) Len() int
+
+func (f FlagsByName) Less(i, j int) bool
+
+func (f FlagsByName) Swap(i, j int)
+
 type FloatArg = ArgumentBase[float64, NoConfig, floatValue]
 
 type FloatFlag = FlagBase[float64, NoConfig, floatValue]
