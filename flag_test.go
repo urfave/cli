@@ -3071,10 +3071,9 @@ func TestFlagsByName(t *testing.T) {
 
 	var prev Flag
 	for _, f := range flags {
-		if prev == nil {
-			prev = f
-		} else {
+		if prev != nil {
 			assert.LessOrEqual(t, prev.Names()[0], f.Names()[0])
 		}
+		prev = f
 	}
 }
