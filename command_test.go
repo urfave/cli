@@ -3975,6 +3975,21 @@ func TestZeroValueCommand(t *testing.T) {
 	assert.NoError(t, cmd.Run(context.Background(), []string{"foo"}))
 }
 
+func TestCommandInvalidName(t *testing.T) {
+	var cmd Command
+	assert.Equal(t, int64(0), cmd.Int("foo"))
+	assert.Equal(t, uint64(0), cmd.Uint("foo"))
+	assert.Equal(t, float64(0), cmd.Float("foo"))
+	assert.Equal(t, "", cmd.String("foo"))
+	assert.Equal(t, time.Time{}, cmd.Timestamp("foo"))
+	assert.Equal(t, time.Duration(0), cmd.Duration("foo"))
+
+	assert.Equal(t, []int64(nil), cmd.IntSlice("foo"))
+	assert.Equal(t, []uint64(nil), cmd.UintSlice("foo"))
+	assert.Equal(t, []float64(nil), cmd.FloatSlice("foo"))
+	assert.Equal(t, []string(nil), cmd.StringSlice("foo"))
+}
+
 func TestJSONExportCommand(t *testing.T) {
 	cmd := buildExtendedTestCommand()
 	cmd.Arguments = []Argument{

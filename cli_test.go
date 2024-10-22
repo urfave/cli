@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,4 +26,34 @@ func buildTestContext(t *testing.T) context.Context {
 	t.Cleanup(cancel)
 
 	return ctx
+}
+
+func TestTracing(t *testing.T) {
+	olderr := os.Stderr
+	oldtracing := isTracingOn
+	defer func() {
+		os.Stderr = olderr
+		isTracingOn = oldtracing
+	}()
+
+	file, err := os.CreateTemp(os.TempDir(), "cli*")
+	assert.NoError(t, err)
+	os.Stderr = file
+
+	// Note we cant really set the env since the isTracingOn
+	// is read at module startup so any changes mid code
+	// wont take effect
+	isTracingOn = false
+	tracef("something")
+
+	isTracingOn = true
+	tracef("foothing")
+
+	assert.NoError(t, file.Close())
+
+	b, err := os.ReadFile(file.Name())
+	assert.NoError(t, err)
+
+	assert.Contains(t, string(b), "foothing")
+	assert.NotContains(t, string(b), "something")
 }

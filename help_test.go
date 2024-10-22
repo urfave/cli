@@ -3,6 +3,7 @@ package cli
 import (
 	"bytes"
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -1192,6 +1193,50 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			expected: "--excitement\n",
 		},
 		{
+			name: "typical-flag-suggestion-hidden-bool",
+			cmd: &Command{
+				Flags: []Flag{
+					&BoolFlag{Name: "excitement", Hidden: true},
+					&StringFlag{Name: "hat-shape"},
+				},
+				parent: &Command{
+					Name: "cmd",
+					Flags: []Flag{
+						&BoolFlag{Name: "happiness"},
+						&IntFlag{Name: "everybody-jump-on"},
+					},
+					Commands: []*Command{
+						{Name: "putz"},
+					},
+				},
+			},
+			argv:     []string{"cmd", "--e", "--generate-shell-completion"},
+			env:      map[string]string{"SHELL": "bash"},
+			expected: "",
+		},
+		{
+			name: "flag-suggestion-end-args",
+			cmd: &Command{
+				Flags: []Flag{
+					&BoolFlag{Name: "excitement"},
+					&StringFlag{Name: "hat-shape"},
+				},
+				parent: &Command{
+					Name: "cmd",
+					Flags: []Flag{
+						&BoolFlag{Name: "happiness"},
+						&IntFlag{Name: "everybody-jump-on"},
+					},
+					Commands: []*Command{
+						{Name: "putz"},
+					},
+				},
+			},
+			argv:     []string{"cmd", "--e", "--", "--generate-shell-completion"},
+			env:      map[string]string{"SHELL": "bash"},
+			expected: "",
+		},
+		{
 			name: "typical-command-suggestion",
 			cmd: &Command{
 				Name: "putz",
@@ -1770,5 +1815,169 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 			assert.Equal(t, tt.wantShellCompletion, shellCompletion)
 			assert.Equal(t, tt.wantArgs, args)
 		})
+	}
+}
+
+func TestNIndent(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		numSpaces int
+		str       string
+		expected  string
+	}{
+		{
+			numSpaces: 0,
+			str:       "foo",
+			expected:  "\nfoo",
+		},
+		{
+			numSpaces: 0,
+			str:       "foo\n",
+			expected:  "\nfoo\n",
+		},
+		{
+			numSpaces: 2,
+			str:       "foo",
+			expected:  "\n  foo",
+		},
+		{
+			numSpaces: 3,
+			str:       "foo\n",
+			expected:  "\n   foo\n   ",
+		},
+	}
+	for _, test := range tests {
+		assert.Equal(t, test.expected, nindent(test.numSpaces, test.str))
+	}
+}
+
+func TestTemplateError(t *testing.T) {
+	oldew := ErrWriter
+	defer func() { ErrWriter = oldew }()
+
+	var buf bytes.Buffer
+	ErrWriter = &buf
+	err := errors.New("some error")
+
+	handleTemplateError(err)
+	assert.Equal(t, []byte(nil), buf.Bytes())
+
+	t.Setenv("CLI_TEMPLATE_ERROR_DEBUG", "true")
+	handleTemplateError(err)
+	assert.Contains(t, buf.String(), "CLI TEMPLATE ERROR")
+	assert.Contains(t, buf.String(), err.Error())
+}
+
+func TestCliArgContainsFlag(t *testing.T) {
+	tests := []struct {
+		name     string
+		args     []string
+		contains bool
+	}{
+		{
+			name: "",
+			args: []string{},
+		},
+		{
+			name: "f",
+			args: []string{},
+		},
+		{
+			name: "f",
+			args: []string{"g", "foo", "f"},
+		},
+		{
+			name:     "f",
+			args:     []string{"-f", "foo", "f"},
+			contains: true,
+		},
+		{
+			name:     "f",
+			args:     []string{"g", "-f", "f"},
+			contains: true,
+		},
+		{
+			name:     "fh",
+			args:     []string{"g", "f", "--fh"},
+			contains: true,
+		},
+		{
+			name: "fhg",
+			args: []string{"-fhg", "f", "fh"},
+		},
+		{
+			name:     "fhg",
+			args:     []string{"--fhg", "f", "fh"},
+			contains: true,
+		},
+	}
+
+	for _, test := range tests {
+		if test.contains {
+			assert.True(t, cliArgContains(test.name, test.args))
+		} else {
+			assert.False(t, cliArgContains(test.name, test.args))
+		}
+	}
+}
+
+func TestCommandHelpSuggest(t *testing.T) {
+	cmd := &Command{
+		Suggest: true,
+		Commands: []*Command{
+			{
+				Name: "putz",
+			},
+		},
+	}
+
+	cmd.setupDefaults([]string{"foo"})
+
+	err := ShowCommandHelp(context.Background(), cmd, "put")
+	assert.ErrorContains(t, err, "No help topic for 'put'. putz")
+}
+
+func TestWrapLine(t *testing.T) {
+	assert.Equal(t, "    ", wrapLine("    ", 0, 3, " "))
+}
+
+func TestPrintHelpCustomTemplateError(t *testing.T) {
+	tmpls := []*string{
+		&helpNameTemplate,
+		&argsTemplate,
+		&usageTemplate,
+		&descriptionTemplate,
+		&visibleCommandTemplate,
+		&copyrightTemplate,
+		&versionTemplate,
+		&visibleFlagCategoryTemplate,
+		&visibleFlagTemplate,
+		&visiblePersistentFlagTemplate,
+		&visibleFlagCategoryTemplate,
+		&authorsTemplate,
+		&visibleCommandCategoryTemplate,
+	}
+
+	oldErrWriter := ErrWriter
+	defer func() { ErrWriter = oldErrWriter }()
+
+	t.Setenv("CLI_TEMPLATE_ERROR_DEBUG", "true")
+
+	for _, tmpl := range tmpls {
+		oldtmpl := *tmpl
+		// safety mechanism in case something fails
+		defer func(stmpl *string) { *stmpl = oldtmpl }(tmpl)
+
+		errBuf := &bytes.Buffer{}
+		ErrWriter = errBuf
+		buf := &bytes.Buffer{}
+
+		*tmpl = "{{junk"
+		printHelpCustom(buf, "", "", nil)
+
+		assert.Contains(t, errBuf.String(), "CLI TEMPLATE ERROR")
+
+		// reset template back.
+		*tmpl = oldtmpl
 	}
 }

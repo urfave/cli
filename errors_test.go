@@ -81,11 +81,60 @@ func TestHandleExitCoder_MultiErrorWithExitCoder(t *testing.T) {
 
 	exitErr := Exit("galactic perimeter breach", 9)
 	exitErr2 := Exit("last ExitCoder", 11)
+
 	err := newMultiError(errors.New("wowsa"), errors.New("egad"), exitErr, exitErr2)
 	HandleExitCoder(err)
 
 	assert.Equal(t, 11, exitCode)
 	assert.True(t, called)
+}
+
+type exitFormatter struct {
+	code int
+}
+
+func (f *exitFormatter) Format(s fmt.State, verb rune) {
+	_, _ = s.Write([]byte("some other special"))
+}
+
+func (f *exitFormatter) ExitCode() int {
+	return f.code
+}
+
+func (f *exitFormatter) Error() string {
+	return fmt.Sprintf("my special error code %d", f.code)
+}
+
+func TestHandleExitCoder_ErrorFormatter(t *testing.T) {
+	exitCode := 0
+	called := false
+
+	OsExiter = func(rc int) {
+		if !called {
+			exitCode = rc
+			called = true
+		}
+	}
+
+	oldWriter := ErrWriter
+	var buf bytes.Buffer
+	ErrWriter = &buf
+	defer func() {
+		OsExiter = fakeOsExiter
+		ErrWriter = oldWriter
+	}()
+
+	exitErr := Exit("galactic perimeter breach", 9)
+	exitErr2 := Exit("last ExitCoder", 11)
+	exitErr3 := &exitFormatter{code: 12}
+
+	// add some recursion for multi error to fix test coverage
+	err := newMultiError(errors.New("wowsa"), errors.New("egad"), exitErr3, newMultiError(exitErr, exitErr2))
+	HandleExitCoder(err)
+
+	assert.Equal(t, 11, exitCode)
+	assert.True(t, called)
+	assert.Contains(t, buf.String(), "some other special")
 }
 
 func TestHandleExitCoder_MultiErrorWithoutExitCoder(t *testing.T) {

@@ -33,13 +33,6 @@ func (f *fnValue) String() string {
 	return f.v.String()
 }
 
-func (f *fnValue) Serialize() string {
-	if s, ok := f.v.(Serializer); ok {
-		return s.Serialize()
-	}
-	return f.v.String()
-}
-
 func (f *fnValue) IsBoolFlag() bool { return f.isBool }
 func (f *fnValue) Count() int {
 	if s, ok := f.v.(Countable); ok {
@@ -96,15 +89,6 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	value      Value // value representing this flag's value
 }
 
-// GetValue returns the flags value as string representation and an empty
-// string if the flag takes no value at all.
-func (f *FlagBase[T, C, V]) GetValue() string {
-	if reflect.TypeOf(f.Value).Kind() == reflect.Bool {
-		return ""
-	}
-	return fmt.Sprintf("%v", f.Value)
-}
-
 // Apply populates the flag given the flag set and environment
 func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 	tracef("apply (flag=%[1]q)", f.Name)
@@ -128,13 +112,7 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 					)
 				}
 			} else if val == "" && reflect.TypeOf(f.Value).Kind() == reflect.Bool {
-				val = "false"
-				if err := tmpVal.Set(val); err != nil {
-					return fmt.Errorf(
-						"could not parse %[1]q as %[2]T value from %[3]s for flag %[4]s: %[5]s",
-						val, f.Value, source, f.Name, err,
-					)
-				}
+				_ = tmpVal.Set("false")
 			}
 
 			newVal = tmpVal.Get().(T)
@@ -149,11 +127,7 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 
 		// Validate the given default or values set from external sources as well
 		if f.Validator != nil && f.ValidateDefaults {
-			if v, ok := f.value.Get().(T); !ok {
-				return &typeError[T]{
-					other: f.value.Get(),
-				}
-			} else if err := f.Validator(v); err != nil {
+			if err := f.Validator(f.value.Get().(T)); err != nil {
 				return err
 			}
 		}
@@ -176,11 +150,7 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 				}
 				f.hasBeenSet = true
 				if f.Validator != nil {
-					if v, ok := f.value.Get().(T); !ok {
-						return &typeError[T]{
-							other: f.value.Get(),
-						}
-					} else if err := f.Validator(v); err != nil {
+					if err := f.Validator(f.value.Get().(T)); err != nil {
 						return err
 					}
 				}
@@ -254,19 +224,10 @@ func (f *FlagBase[T, C, V]) GetDefaultText() string {
 	return v.ToString(f.Value)
 }
 
-// Get returns the flag’s value in the given Command.
-func (f *FlagBase[T, C, V]) Get(cmd *Command) T {
-	if v, ok := cmd.Value(f.Name).(T); ok {
-		return v
-	}
-	var t T
-	return t
-}
-
 // RunAction executes flag action if set
 func (f *FlagBase[T, C, V]) RunAction(ctx context.Context, cmd *Command) error {
 	if f.Action != nil {
-		return f.Action(ctx, cmd, f.Get(cmd))
+		return f.Action(ctx, cmd, cmd.Value(f.Name).(T))
 	}
 
 	return nil

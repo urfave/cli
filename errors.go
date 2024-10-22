@@ -47,7 +47,6 @@ func (m *multiError) Errors() []error {
 
 type requiredFlagsErr interface {
 	error
-	getMissingFlags() []string
 }
 
 type errRequiredFlags struct {
@@ -60,10 +59,6 @@ func (e *errRequiredFlags) Error() string {
 	}
 	joinedMissingFlags := strings.Join(e.missingFlags, ", ")
 	return fmt.Sprintf("Required flags %q not set", joinedMissingFlags)
-}
-
-func (e *errRequiredFlags) getMissingFlags() []string {
-	return e.missingFlags
 }
 
 type mutuallyExclusiveGroup struct {
@@ -85,12 +80,6 @@ func (e *mutuallyExclusiveGroupRequiredFlag) Error() string {
 		var grpString []string
 		for _, f := range grpf {
 			grpString = append(grpString, f.Names()...)
-		}
-		if len(e.flags.Flags) == 1 {
-			err := errRequiredFlags{
-				missingFlags: grpString,
-			}
-			return err.Error()
 		}
 		missingFlags = append(missingFlags, strings.Join(grpString, " "))
 	}
@@ -148,10 +137,6 @@ func (ee *exitError) ExitCode() int {
 	return ee.exitCode
 }
 
-func (ee *exitError) Unwrap() error {
-	return ee.err
-}
-
 // HandleExitCoder handles errors implementing ExitCoder by printing their
 // message and calling OsExiter with the given exit code.
 //
@@ -197,13 +182,4 @@ func handleMultiError(multiErr MultiError) int {
 		}
 	}
 	return code
-}
-
-type typeError[T any] struct {
-	other any
-}
-
-func (te *typeError[T]) Error() string {
-	var t T
-	return fmt.Sprintf("Expected type %T got instead %T", t, te.other)
 }
