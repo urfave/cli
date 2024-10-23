@@ -3085,12 +3085,16 @@ func TestNonStringMap(t *testing.T) {
 
 	p := map[string]float64{}
 
+	var fv floatValue
+
 	f := &floatMap{
-		dict: &p,
+		value: &fv,
 	}
 
 	assert.Equal(t, map[string]float64{}, f.Value())
+	f.dict = &p
+	assert.Equal(t, map[string]float64{}, f.Value())
 	assert.Equal(t, "map[string]float64{}", f.String())
 
-	assert.Error(t, f.Set("invalid value"))
+	assert.ErrorContains(t, f.Set("invalid=value"), "ParseFloat")
 }
