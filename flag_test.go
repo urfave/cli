@@ -3081,11 +3081,16 @@ func TestFlagsByName(t *testing.T) {
 func TestNonStringMap(t *testing.T) {
 	type (
 		floatMap = MapBase[float64, NoConfig, floatValue]
-		//floatMapFlag = FlagBase[map[string]float64, NoConfig, floatMap]
 	)
 
-	f := &floatMap{}
+	p := map[string]float64{}
+
+	f := &floatMap{
+		dict: &p,
+	}
 
 	assert.Equal(t, map[string]float64{}, f.Value())
 	assert.Equal(t, "map[string]float64{}", f.String())
+
+	assert.Error(t, f.Set("invalid value"))
 }
