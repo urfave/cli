@@ -9,6 +9,7 @@ import (
 	"os"
 	"reflect"
 	"regexp"
+	"runtime"
 	"sort"
 	"strings"
 	"testing"
@@ -3097,4 +3098,32 @@ func TestNonStringMap(t *testing.T) {
 	assert.Equal(t, "map[string]float64{}", f.String())
 
 	assert.ErrorContains(t, f.Set("invalid=value"), "ParseFloat")
+}
+
+func TestUnqouteUsage(t *testing.T) {
+	tests := []struct {
+		str      string
+		expStr   string
+		expUsage string
+	}{
+		{"foo", "", "foo"},
+		{"foo something", "", "foo something"},
+		{"foo `bar 11`", "bar 11", "foo bar 11"},
+		{"foo `bar 11` sobar", "bar 11", "foo bar 11 sobar"},
+		{"foo `bar 11", "", "foo `bar 11"},
+	}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("unquote %d", i), func(t *testing.T) {
+			str, usage := unquoteUsage(test.str)
+			assert.Equal(t, test.expStr, str)
+			assert.Equal(t, test.expUsage, usage)
+		})
+	}
+}
+
+func TestEnvHintWindows(t *testing.T) {
+	if runtime.GOOS == "windows" && os.Getenv("PSHOME") == "" {
+		assert.Equal(t, "something [%foo%, %bar%, %ss%]", withEnvHint([]string{"foo", "bar", "ss"}, "something"))
+	}
 }
