@@ -71,17 +71,11 @@ func (b *boolValue) Set(s string) error {
 func (b *boolValue) Get() interface{} { return *b.destination }
 
 func (b *boolValue) String() string {
-	if b.destination != nil {
-		return strconv.FormatBool(*b.destination)
-	}
-	return strconv.FormatBool(false)
+	return strconv.FormatBool(*b.destination)
 }
 
 func (b *boolValue) IsBoolFlag() bool { return true }
 
 func (b *boolValue) Count() int {
-	if b.count != nil {
-		return *b.count
-	}
-	return 0
+	return *b.count
 }
