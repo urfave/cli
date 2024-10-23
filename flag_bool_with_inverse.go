@@ -113,16 +113,12 @@ func (parent *BoolWithInverseFlag) initialize() {
 }
 
 func (parent *BoolWithInverseFlag) inverseName() string {
-	if parent.InversePrefix == "" {
-		parent.InversePrefix = DefaultInverseBoolPrefix
-	}
-
-	return parent.InversePrefix + parent.BoolFlag.Name
+	return parent.inversePrefix() + parent.BoolFlag.Name
 }
 
 func (parent *BoolWithInverseFlag) inversePrefix() string {
 	if parent.InversePrefix == "" {
-		return DefaultInverseBoolPrefix
+		parent.InversePrefix = DefaultInverseBoolPrefix
 	}
 
 	return parent.InversePrefix

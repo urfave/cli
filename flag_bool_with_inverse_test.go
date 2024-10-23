@@ -237,6 +237,18 @@ func TestBoolWithInverseEnvVars(t *testing.T) {
 				"NO-ENV": "true",
 			},
 		},
+		{
+			err: fmt.Errorf("could not parse \"true_env\" as bool value from environment variable \"ENV\" for flag env: parse error"),
+			envVars: map[string]string{
+				"ENV": "true_env",
+			},
+		},
+		{
+			err: fmt.Errorf("could not parse \"false_env\" as bool value from environment variable \"NO-ENV\" for flag no-env: parse error"),
+			envVars: map[string]string{
+				"NO-ENV": "false_env",
+			},
+		},
 	}
 
 	err := runBoolWithInverseFlagTests(t, flagMethod, testCases)
