@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -98,11 +99,47 @@ func TestCompletionSubcommand(t *testing.T) {
 	)
 }
 
+type mockWriter struct {
+	err error
+}
+
+func (mw *mockWriter) Write(p []byte) (int, error) {
+	if mw.err != nil {
+		return 0, mw.err
+	}
+	return len(p), nil
+}
+
 func TestCompletionInvalidShell(t *testing.T) {
 	cmd := &Command{
 		EnableShellCompletion: true,
 	}
 
-	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, "junky-sheell"})
+	unknownShellName := "junky-sheell"
+	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, unknownShellName})
 	assert.ErrorContains(t, err, "unknown shell junky-sheell")
+
+	enableError := true
+	shellCompletions[unknownShellName] = func(c *Command) (string, error) {
+		if enableError {
+			return "", fmt.Errorf("cant do completion")
+		}
+		return "something", nil
+	}
+	defer func() {
+		delete(shellCompletions, unknownShellName)
+	}()
+
+	err = cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, unknownShellName})
+	assert.ErrorContains(t, err, "cant do completion")
+
+	// now disable shell completion error
+	enableError = false
+	c := cmd.Command(completionCommandName)
+	assert.NotNil(t, c)
+	c.Writer = &mockWriter{
+		err: fmt.Errorf("writer error"),
+	}
+	err = cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, unknownShellName})
+	assert.ErrorContains(t, err, "writer error")
 }
