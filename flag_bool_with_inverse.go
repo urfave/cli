@@ -45,10 +45,7 @@ func (parent *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) 
 	}
 
 	if *parent.negDest {
-		err := cmd.Set(parent.positiveFlag.Name, "false")
-		if err != nil {
-			return err
-		}
+		_ = cmd.Set(parent.positiveFlag.Name, "false")
 	}
 
 	if parent.BoolFlag.Action != nil {
