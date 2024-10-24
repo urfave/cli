@@ -1794,7 +1794,7 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 				EnableShellCompletion: true,
 			},
 			wantShellCompletion: false,
-			wantArgs:            []string{"--", "foo", "--generate-shell-completion"},
+			wantArgs:            []string{"--", "foo"},
 		},
 		{
 			name:      "shell completion",
