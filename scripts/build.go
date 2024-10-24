@@ -153,7 +153,7 @@ func main() {
 			},
 			&cli.StringSliceFlag{
 				Name:  "packages",
-				Value: []string{"cli", "internal/build"},
+				Value: []string{"cli", "scripts"},
 			},
 		},
 	}
@@ -408,10 +408,10 @@ func GfmrunActionFunc(ctx context.Context, cmd *cli.Command) error {
 // of https://github.com/urfave/cli/issues/1057
 func checkBinarySizeActionFunc(ctx context.Context, cmd *cli.Command) (err error) {
 	const (
-		cliSourceFilePath    = "./internal/example-cli/example-cli.go"
-		cliBuiltFilePath     = "./internal/example-cli/built-example"
-		helloSourceFilePath  = "./internal/example-hello-world/example-hello-world.go"
-		helloBuiltFilePath   = "./internal/example-hello-world/built-example"
+		cliSourceFilePath    = "./examples/example-cli/example-cli.go"
+		cliBuiltFilePath     = "./examples/example-cli/built-example"
+		helloSourceFilePath  = "./examples/example-hello-world/example-hello-world.go"
+		helloBuiltFilePath   = "./examples/example-hello-world/built-example"
 		desiredMaxBinarySize = 2.2
 		desiredMinBinarySize = 1.49
 		mbStringFormatter    = "%.1fMB"
@@ -457,7 +457,7 @@ func checkBinarySizeActionFunc(ctx context.Context, cmd *cli.Command) (err error
 		fmt.Println("") // visual spacing
 		fmt.Println("     The binary is smaller than the target min size, which is great news!")
 		fmt.Println("     That means that your changes are shrinking the binary size.")
-		fmt.Println("     You'll want to go into ./internal/build/build.go and decrease")
+		fmt.Println("     You'll want to go into ./scripts/build.go and decrease")
 		fmt.Println("     the desiredMinBinarySize, and also probably decrease the ")
 		fmt.Println("     desiredMaxBinarySize by the same amount. That will ensure that")
 		fmt.Println("     future PRs will enforce the newly shrunk binary sizes.")
@@ -477,7 +477,7 @@ func checkBinarySizeActionFunc(ctx context.Context, cmd *cli.Command) (err error
 		fmt.Println("     Larger binary sizes for this package can dissuade its use.")
 		fmt.Println("     If this change is worth the increase, then we can up the")
 		fmt.Println("     desired max binary size. To do that you'll want to go into")
-		fmt.Println("     ./internal/build/build.go and increase the desiredMaxBinarySize,")
+		fmt.Println("     ./scripts/build.go and increase the desiredMaxBinarySize,")
 		fmt.Println("     and increase the desiredMinBinarySize by the same amount.")
 		fmt.Println("") // visual spacing
 		os.Exit(1)
@@ -525,7 +525,7 @@ func EnsureGoimportsActionFunc(ctx context.Context, cmd *cli.Command) error {
 		ctx,
 		"goimports",
 		"-d",
-		filepath.Join(topDir, "internal/build/build.go"),
+		filepath.Join(topDir, "scripts/build.go"),
 	); err == nil {
 		return nil
 	}

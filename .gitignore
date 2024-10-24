@@ -7,5 +7,5 @@
 /.local/
 /site/
 coverage.txt
-internal/*/built-example
+examples/*/built-example
 vendor
