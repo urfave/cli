@@ -7,3 +7,5 @@ coverage:
     patch:
       default:
         threshold: 5%
+ignore:
+  - internal
