@@ -8,4 +8,5 @@ coverage:
       default:
         threshold: 5%
 ignore:
-  - internal
+  - examples
+  - scripts
