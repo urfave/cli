@@ -3990,6 +3990,34 @@ func TestCommandInvalidName(t *testing.T) {
 	assert.Equal(t, []string(nil), cmd.StringSlice("foo"))
 }
 
+func TestCommandCategories(t *testing.T) {
+	var cc commandCategories = []*commandCategory{
+		{
+			name:     "foo",
+			commands: []*Command{},
+		},
+		{
+			name:     "bar",
+			commands: []*Command{},
+		},
+		{
+			name:     "goo",
+			commands: nil,
+		},
+	}
+
+	sort.Sort(&cc)
+
+	var prev *commandCategory
+	for _, c := range cc {
+		if prev != nil {
+			assert.LessOrEqual(t, prev.name, c.name)
+		}
+		prev = c
+		assert.Equal(t, []*Command(nil), c.VisibleCommands())
+	}
+}
+
 func TestJSONExportCommand(t *testing.T) {
 	cmd := buildExtendedTestCommand()
 	cmd.Arguments = []Argument{
