@@ -4,13 +4,13 @@
 # are very important so that maintainers and contributors can focus their
 # attention on files that are primarily Go.
 
-GO_RUN_BUILD := go run internal/build/build.go
+GO_RUN_BUILD := go run scripts/build.go
 
 .PHONY: all
 all: generate vet test check-binary-size gfmrun
 
 # NOTE: this is a special catch-all rule to run any of the commands
-# defined in internal/build/build.go with optional arguments passed
+# defined in scripts/build.go with optional arguments passed
 # via GFLAGS (global flags) and FLAGS (command-specific flags), e.g.:
 #
 #   $ make test GFLAGS='--packages cli'
