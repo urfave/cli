@@ -9,6 +9,8 @@ import (
 
 const (
 	completionCommandName = "generate-completion"
+	completionFlagName    = "generate-shell-completion"
+	completionFlag        = "--" + completionFlagName
 )
 
 var (

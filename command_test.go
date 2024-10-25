@@ -454,7 +454,7 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 
 			osArgs := &stringSliceArgs{v: []string{"bar"}}
 			osArgs.v = append(osArgs.v, c.testArgs.Slice()...)
-			osArgs.v = append(osArgs.v, "--generate-shell-completion")
+			osArgs.v = append(osArgs.v, completionFlag)
 
 			r := require.New(t)
 
@@ -1446,7 +1446,7 @@ func TestCommand_BeforeAfterFuncShellCompletion(t *testing.T) {
 			[]string{
 				"command",
 				"--opt", "succeed",
-				"sub", "--generate-shell-completion",
+				"sub", completionFlag,
 			},
 		),
 	)
@@ -1810,7 +1810,7 @@ func TestCommand_OrderOfOperations(t *testing.T) {
 		cmd, counts := buildCmdCounts()
 		r := require.New(t)
 
-		_ = cmd.Run(buildTestContext(t), []string{"command", "--" + "generate-shell-completion"})
+		_ = cmd.Run(buildTestContext(t), []string{"command", completionFlag})
 		r.Equal(1, counts.ShellComplete)
 		r.Equal(1, counts.Total)
 	})
@@ -2410,7 +2410,7 @@ func TestShellCompletionForIncompleteFlags(t *testing.T) {
 		Writer: io.Discard,
 	}
 
-	err := cmd.Run(buildTestContext(t), []string{"", "--test-completion", "--" + "generate-shell-completion"})
+	err := cmd.Run(buildTestContext(t), []string{"", "--test-completion", completionFlag})
 	assert.NoError(t, err, "app should not return an error")
 }
 
