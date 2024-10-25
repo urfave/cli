@@ -461,7 +461,7 @@ func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
 	pos := len(arguments) - 1
 	lastArg := arguments[pos]
 
-	if lastArg != "--generate-shell-completion" {
+	if lastArg != completionFlag {
 		return false, arguments
 	}
 

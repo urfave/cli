@@ -28,7 +28,7 @@ var (
 
 // GenerateShellCompletionFlag enables shell completion
 var GenerateShellCompletionFlag Flag = &BoolFlag{
-	Name:   "generate-shell-completion",
+	Name:   completionFlagName,
 	Hidden: true,
 }
 
