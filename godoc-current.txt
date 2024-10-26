@@ -247,7 +247,7 @@ func (a *ArgumentBase[T, C, VC]) Parse(s []string) ([]string, error)
 
 func (a *ArgumentBase[T, C, VC]) Usage() string
 
-type BeforeFunc func(context.Context, *Command) error
+type BeforeFunc func(context.Context, *Command) (context.Context, error)
     BeforeFunc is an action that executes prior to any subcommands being run
     once the context is ready. If a non-nil error is returned, no subcommands
     are run.

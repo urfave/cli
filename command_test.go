@@ -268,8 +268,8 @@ func TestParseAndRunShortOpts(t *testing.T) {
 func TestCommand_Run_DoesNotOverwriteErrorFromBefore(t *testing.T) {
 	cmd := &Command{
 		Name: "bar",
-		Before: func(context.Context, *Command) error {
-			return fmt.Errorf("before error")
+		Before: func(context.Context, *Command) (context.Context, error) {
+			return nil, fmt.Errorf("before error")
 		},
 		After: func(context.Context, *Command) error {
 			return fmt.Errorf("after error")
@@ -289,9 +289,9 @@ func TestCommand_Run_BeforeSavesMetadata(t *testing.T) {
 
 	cmd := &Command{
 		Name: "bar",
-		Before: func(_ context.Context, cmd *Command) error {
+		Before: func(_ context.Context, cmd *Command) (context.Context, error) {
 			cmd.Metadata["msg"] = "hello world"
-			return nil
+			return nil, nil
 		},
 		Action: func(_ context.Context, cmd *Command) error {
 			msg, ok := cmd.Metadata["msg"]
@@ -1340,15 +1340,15 @@ func TestCommand_BeforeFunc(t *testing.T) {
 	var err error
 
 	cmd := &Command{
-		Before: func(_ context.Context, cmd *Command) error {
+		Before: func(_ context.Context, cmd *Command) (context.Context, error) {
 			counts.Total++
 			counts.Before = counts.Total
 			s := cmd.String("opt")
 			if s == "fail" {
-				return beforeError
+				return nil, beforeError
 			}
 
-			return nil
+			return nil, nil
 		},
 		Commands: []*Command{
 			{
@@ -1411,10 +1411,10 @@ func TestCommand_BeforeAfterFuncShellCompletion(t *testing.T) {
 
 	cmd := &Command{
 		EnableShellCompletion: true,
-		Before: func(context.Context, *Command) error {
+		Before: func(context.Context, *Command) (context.Context, error) {
 			counts.Total++
 			counts.Before = counts.Total
-			return nil
+			return nil, nil
 		},
 		After: func(context.Context, *Command) error {
 			counts.Total++
@@ -1758,10 +1758,10 @@ func TestCommand_OrderOfOperations(t *testing.T) {
 			Writer: io.Discard,
 		}
 
-		beforeNoError := func(context.Context, *Command) error {
+		beforeNoError := func(context.Context, *Command) (context.Context, error) {
 			counts.Total++
 			counts.Before = counts.Total
-			return nil
+			return nil, nil
 		}
 
 		cmd.Before = beforeNoError
@@ -1838,10 +1838,10 @@ func TestCommand_OrderOfOperations(t *testing.T) {
 
 	t.Run("before with error", func(t *testing.T) {
 		cmd, counts := buildCmdCounts()
-		cmd.Before = func(context.Context, *Command) error {
+		cmd.Before = func(context.Context, *Command) (context.Context, error) {
 			counts.Total++
 			counts.Before = counts.Total
-			return errors.New("hay Before")
+			return nil, errors.New("hay Before")
 		}
 
 		r := require.New(t)
@@ -2213,7 +2213,7 @@ func TestCommand_Run_SubcommandDoesNotOverwriteErrorFromBefore(t *testing.T) {
 					},
 				},
 				Name:   "bar",
-				Before: func(context.Context, *Command) error { return fmt.Errorf("before error") },
+				Before: func(context.Context, *Command) (context.Context, error) { return nil, fmt.Errorf("before error") },
 				After:  func(context.Context, *Command) error { return fmt.Errorf("after error") },
 			},
 		},
