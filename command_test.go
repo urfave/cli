@@ -289,16 +289,17 @@ func TestCommand_Run_BeforeSavesMetadata(t *testing.T) {
 
 	cmd := &Command{
 		Name: "bar",
-		Before: func(_ context.Context, cmd *Command) (context.Context, error) {
+		Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
 			cmd.Metadata["msg"] = "hello world"
 			return nil, nil
 		},
-		Action: func(_ context.Context, cmd *Command) error {
+		Action: func(ctx context.Context, cmd *Command) error {
 			msg, ok := cmd.Metadata["msg"]
 			if !ok {
 				return errors.New("msg not found")
 			}
 			receivedMsgFromAction = msg.(string)
+
 			return nil
 		},
 		After: func(_ context.Context, cmd *Command) error {
@@ -314,6 +315,40 @@ func TestCommand_Run_BeforeSavesMetadata(t *testing.T) {
 	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo", "bar"}))
 	require.Equal(t, "hello world", receivedMsgFromAction)
 	require.Equal(t, "hello world", receivedMsgFromAfter)
+}
+
+func TestCommand_Run_BeforeReturnNewContext(t *testing.T) {
+	var receivedValFromAction, receivedValFromAfter string
+	type key string
+
+	bkey := key("bkey")
+
+	cmd := &Command{
+		Name: "bar",
+		Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+			return context.WithValue(ctx, bkey, "bval"), nil
+		},
+		Action: func(ctx context.Context, cmd *Command) error {
+			if val := ctx.Value(bkey); val == nil {
+				return errors.New("bkey value not found")
+			} else {
+				receivedValFromAction = val.(string)
+			}
+			return nil
+		},
+		After: func(ctx context.Context, cmd *Command) error {
+			if val := ctx.Value(bkey); val == nil {
+				return errors.New("bkey value not found")
+			} else {
+				receivedValFromAfter = val.(string)
+			}
+			return nil
+		},
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo", "bar"}))
+	require.Equal(t, "bval", receivedValFromAfter)
+	require.Equal(t, "bval", receivedValFromAction)
 }
 
 func TestCommand_OnUsageError_hasCommandContext(t *testing.T) {
