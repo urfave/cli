@@ -122,6 +122,16 @@ func TestCompletionSubcommand(t *testing.T) {
 			},
 			notContains: true,
 		},
+		{
+			name:     "sub sub command no completion extra args",
+			args:     []string{"foo", "bar", "xyz", "--", "sargs", completionFlag},
+			contains: "-g",
+			msg:      "Expected output to contain flag %[1]q",
+			msgArgs: []interface{}{
+				"-g",
+			},
+			notContains: true,
+		},
 	}
 
 	for _, test := range tests {
@@ -159,6 +169,7 @@ func TestCompletionSubcommand(t *testing.T) {
 			r := require.New(t)
 
 			r.NoError(cmd.Run(buildTestContext(t), test.args))
+			t.Log(out.String())
 			if test.notContains {
 				r.NotContainsf(out.String(), test.contains, test.msg, test.msgArgs...)
 			} else {
