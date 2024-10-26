@@ -57,46 +57,126 @@ func TestCompletionShell(t *testing.T) {
 }
 
 func TestCompletionSubcommand(t *testing.T) {
-	out := &bytes.Buffer{}
+	tests := []struct {
+		name        string
+		args        []string
+		contains    string
+		msg         string
+		msgArgs     []interface{}
+		notContains bool
+	}{
+		{
+			name:     "subcommand general completion",
+			args:     []string{"foo", "bar", completionFlag},
+			contains: "xyz",
+			msg:      "Expected output to contain shell name %[1]q",
+			msgArgs: []interface{}{
+				"xyz",
+			},
+		},
+		{
+			name:     "subcommand flag completion",
+			args:     []string{"foo", "bar", "-", completionFlag},
+			contains: "l1",
+			msg:      "Expected output to contain shell name %[1]q",
+			msgArgs: []interface{}{
+				"l1",
+			},
+		},
+		{
+			name:     "subcommand flag no completion",
+			args:     []string{"foo", "bar", "--", completionFlag},
+			contains: "l1",
+			msg:      "Expected output to contain shell name %[1]q",
+			msgArgs: []interface{}{
+				"l1",
+			},
+			notContains: true,
+		},
+		{
+			name:     "sub sub command general completion",
+			args:     []string{"foo", "bar", "xyz", completionFlag},
+			contains: "-g",
+			msg:      "Expected output to contain flag %[1]q",
+			msgArgs: []interface{}{
+				"-g",
+			},
+			notContains: true,
+		},
+		{
+			name:     "sub sub command flag completion",
+			args:     []string{"foo", "bar", "xyz", "-", completionFlag},
+			contains: "-g",
+			msg:      "Expected output to contain flag %[1]q",
+			msgArgs: []interface{}{
+				"-g",
+			},
+		},
+		{
+			name:     "sub sub command no completion",
+			args:     []string{"foo", "bar", "xyz", "--", completionFlag},
+			contains: "-g",
+			msg:      "Expected output to contain flag %[1]q",
+			msgArgs: []interface{}{
+				"-g",
+			},
+			notContains: true,
+		},
+		{
+			name:     "sub sub command no completion extra args",
+			args:     []string{"foo", "bar", "xyz", "--", "sargs", completionFlag},
+			contains: "-g",
+			msg:      "Expected output to contain flag %[1]q",
+			msgArgs: []interface{}{
+				"-g",
+			},
+			notContains: true,
+		},
+	}
 
-	cmd := &Command{
-		EnableShellCompletion: true,
-		Writer:                out,
-		Commands: []*Command{
-			{
-				Name: "bar",
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			out := &bytes.Buffer{}
+
+			cmd := &Command{
+				EnableShellCompletion: true,
+				Writer:                out,
 				Commands: []*Command{
 					{
-						Name: "xyz",
+						Name: "bar",
 						Flags: []Flag{
 							&StringFlag{
-								Name: "g",
-								Aliases: []string{
-									"t",
+								Name: "l1",
+							},
+						},
+						Commands: []*Command{
+							{
+								Name: "xyz",
+								Flags: []Flag{
+									&StringFlag{
+										Name: "g",
+										Aliases: []string{
+											"t",
+										},
+									},
 								},
 							},
 						},
 					},
 				},
-			},
-		},
+			}
+
+			r := require.New(t)
+
+			r.NoError(cmd.Run(buildTestContext(t), test.args))
+			t.Log(out.String())
+			if test.notContains {
+				r.NotContainsf(out.String(), test.contains, test.msg, test.msgArgs...)
+			} else {
+				r.Containsf(out.String(), test.contains, test.msg, test.msgArgs...)
+			}
+		})
 	}
-
-	r := require.New(t)
-
-	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "bar", "--generate-shell-completion"}))
-	r.Containsf(
-		out.String(), "xyz",
-		"Expected output to contain shell name %[1]q", "xyz",
-	)
-
-	out.Reset()
-
-	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "bar", "xyz", "-", "--generate-shell-completion"}))
-	r.Containsf(
-		out.String(), "-g",
-		"Expected output to contain flag %[1]q", "-g",
-	)
 }
 
 type mockWriter struct {

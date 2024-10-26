@@ -89,6 +89,9 @@ func helpCommandAction(ctx context.Context, cmd *Command) error {
 	// Case 4. $ app help foo
 	// foo is the command for which help needs to be shown
 	if firstArg != "" {
+		if firstArg == "--" {
+			return nil
+		}
 		tracef("returning ShowCommandHelp with %[1]q", firstArg)
 		return ShowCommandHelp(ctx, cmd, firstArg)
 	}
@@ -458,7 +461,7 @@ func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
 	pos := len(arguments) - 1
 	lastArg := arguments[pos]
 
-	if lastArg != "--generate-shell-completion" {
+	if lastArg != completionFlag {
 		return false, arguments
 	}
 
@@ -467,7 +470,7 @@ func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
 		// because after "--" only positional arguments are accepted.
 		// https://unix.stackexchange.com/a/11382
 		if arg == "--" {
-			return false, arguments
+			return false, arguments[:pos]
 		}
 	}
 
@@ -478,6 +481,7 @@ func checkCompletions(ctx context.Context, cmd *Command) bool {
 	tracef("checking completions on command %[1]q", cmd.Name)
 
 	if !cmd.Root().shellCompletion {
+		tracef("completion not enabled skipping %[1]q", cmd.Name)
 		return false
 	}
 
@@ -488,6 +492,8 @@ func checkCompletions(ctx context.Context, cmd *Command) bool {
 			return false
 		}
 	}
+
+	tracef("no subcommand found for completiot %[1]q", cmd.Name)
 
 	if cmd.ShellComplete != nil {
 		tracef("running shell completion func for command %[1]q", cmd.Name)
