@@ -24,7 +24,8 @@ _program() {
 	fi
 }
 
-# don't run the completion function when being source-ed or eval-ed
+# Don't run the completion function when being source-ed or eval-ed.
+# See https://github.com/urfave/cli/issues/1874 for discussion.
 if [ "$funcstack[1]" = "_program" ]; then
 	_program
 fi
