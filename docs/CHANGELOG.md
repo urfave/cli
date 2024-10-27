@@ -71,7 +71,7 @@ The V2 changes were all shipped in [urfave/cli/pull/892](https://github.com/urfa
 ### Added
 
 - Added `NewStringSlice` and `NewIntSlice` for creating their related types
-- Added `Float64SliceFlag` for unmarshalling a list of floats from the user
+- Added `Float64SliceFlag` for unmarshaling a list of floats from the user
 - Added `Context.Lineage` to get all contexts from current up to global
 - Added `Context.LocalFlagNames` to get the flag names from *only* the current context
 - Added `BoolFlag.Value` to handle both default-false and default-true
