@@ -1,0 +1,6 @@
+# https://github.com/crate-ci/typos
+[default.extend-words]
+som = "som"
+halp = "halp"
+pn = "pn"
+ser = "ser"
