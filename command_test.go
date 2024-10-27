@@ -3121,35 +3121,35 @@ func TestShorthandCommand(t *testing.T) {
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", "cth"})
 	assert.NoError(t, err)
-	assert.True(t, cmd1 == 1 && cmd2 == 0, "Expected command1 to be trigerred once")
+	assert.True(t, cmd1 == 1 && cmd2 == 0, "Expected command1 to be triggered once")
 
 	cmd1 = 0
 	cmd2 = 0
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "cthd"})
 	assert.NoError(t, err)
-	assert.True(t, cmd1 == 1 && cmd2 == 0, "Expected command1 to be trigerred once")
+	assert.True(t, cmd1 == 1 && cmd2 == 0, "Expected command1 to be triggered once")
 
 	cmd1 = 0
 	cmd2 = 0
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "cthe"})
 	assert.NoError(t, err)
-	assert.True(t, cmd1 == 1 && cmd2 == 0, "Expected command1 to be trigerred once")
+	assert.True(t, cmd1 == 1 && cmd2 == 0, "Expected command1 to be triggered once")
 
 	cmd1 = 0
 	cmd2 = 0
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "cthert"})
 	assert.NoError(t, err)
-	assert.True(t, cmd1 == 0 && cmd2 == 1, "Expected command1 to be trigerred once")
+	assert.True(t, cmd1 == 0 && cmd2 == 1, "Expected command1 to be triggered once")
 
 	cmd1 = 0
 	cmd2 = 0
 
 	err = cmd.Run(buildTestContext(t), []string{"foo", "cthet"})
 	assert.NoError(t, err)
-	assert.True(t, cmd1 == 0 && cmd2 == 1, "Expected command1 to be trigerred once")
+	assert.True(t, cmd1 == 0 && cmd2 == 1, "Expected command1 to be triggered once")
 }
 
 func TestCommand_Int(t *testing.T) {

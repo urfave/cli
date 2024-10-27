@@ -3100,7 +3100,7 @@ func TestNonStringMap(t *testing.T) {
 	assert.ErrorContains(t, f.Set("invalid=value"), "ParseFloat")
 }
 
-func TestUnqouteUsage(t *testing.T) {
+func TestUnquoteUsage(t *testing.T) {
 	tests := []struct {
 		str      string
 		expStr   string
