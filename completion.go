@@ -44,7 +44,7 @@ func buildCompletionCommand() *Command {
 	}
 }
 
-func completionCommandAction(ctx context.Context, cmd *Command) error {
+func completionCommandAction(_ context.Context, cmd *Command) error {
 	var shells []string
 	for k := range shellCompletions {
 		shells = append(shells, k)
