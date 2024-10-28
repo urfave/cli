@@ -405,7 +405,7 @@ func ExampleCommand_Run_shellComplete_zsh() {
 
 	// Simulate a zsh environment and command line arguments
 	os.Args = []string{"greet", "--generate-shell-completion"}
-	os.Setenv("0", "/usr/bin/zsh")
+	os.Setenv("SHELL", "/usr/bin/zsh")
 
 	_ = cmd.Run(context.Background(), os.Args)
 	// Output:
