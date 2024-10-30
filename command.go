@@ -562,9 +562,11 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	}
 
 	if cmd.Before != nil && !cmd.Root().shellCompletion {
-		if err := cmd.Before(ctx, cmd); err != nil {
+		if bctx, err := cmd.Before(ctx, cmd); err != nil {
 			deferErr = cmd.handleExitCoder(ctx, err)
 			return deferErr
+		} else if bctx != nil {
+			ctx = bctx
 		}
 	}
 
