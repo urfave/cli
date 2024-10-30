@@ -111,9 +111,9 @@ func main() {
 				ShellComplete: func(ctx context.Context, cmd *cli.Command) {
 					fmt.Fprintf(cmd.Root().Writer, "--better\n")
 				},
-				Before: func(ctx context.Context, cmd *cli.Command) error {
+				Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
 					fmt.Fprintf(cmd.Root().Writer, "brace for impact\n")
-					return nil
+					return nil, nil
 				},
 				After: func(ctx context.Context, cmd *cli.Command) error {
 					fmt.Fprintf(cmd.Root().Writer, "did we lose anyone?\n")
