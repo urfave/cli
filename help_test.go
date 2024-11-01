@@ -358,7 +358,6 @@ func TestShowCommandHelp_AppendHelp(t *testing.T) {
 			args: []string{"app", "cmd", "help"},
 			verify: func(t *testing.T, outString string) {
 				r := require.New(t)
-				r.Contains(outString, "help, h  Shows a list of commands or help for one command")
 				r.Contains(outString, "--help, -h  show help")
 			},
 		},
@@ -1509,11 +1508,6 @@ DESCRIPTION:
    enough to wrap in this test
    case
 
-COMMANDS:
-   help, h  Shows a list of
-            commands or help
-            for one command
-
 OPTIONS:
    --help, -h  show help
 `,
@@ -1652,11 +1646,6 @@ USAGE:
    this is long enough to wrap
    even more
 
-COMMANDS:
-   help, h  Shows a list of
-            commands or help
-            for one command
-
 OPTIONS:
    --test-f value my test
       usage
@@ -1730,12 +1719,7 @@ func TestCategorizedHelp(t *testing.T) {
               application
 
 USAGE:
-   cli.test [global options] [command [command options]] [arguments...]
-
-COMMANDS:
-   help, h  Shows a list of
-            commands or help
-            for one command
+   cli.test [global options] [arguments...]
 
 GLOBAL OPTIONS:
    --help, -h    show help
