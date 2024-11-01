@@ -98,6 +98,7 @@ func ExampleCommand_Run_appHelp() {
 		Flags: []cli.Flag{
 			&cli.StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
 		},
+		Arguments: cli.AnyArguments,
 		Commands: []*cli.Command{
 			{
 				Name:        "describeit",
@@ -191,7 +192,7 @@ func ExampleCommand_Run_commandHelp() {
 }
 
 func ExampleCommand_Run_noAction() {
-	cmd := &cli.Command{Name: "greet"}
+	cmd := &cli.Command{Name: "greet"} //, Arguments: cli.AnyArguments}
 
 	// Simulate the command line arguments
 	os.Args = []string{"greet"}
@@ -202,7 +203,7 @@ func ExampleCommand_Run_noAction() {
 	//    greet - A new cli application
 	//
 	// USAGE:
-	//    greet [global options] [arguments...]
+	//    greet [global options]
 	//
 	// GLOBAL OPTIONS:
 	//    --help, -h  show help
