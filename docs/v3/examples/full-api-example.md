@@ -153,9 +153,9 @@ func main() {
 		ShellComplete: func(ctx context.Context, cmd *cli.Command) {
 			fmt.Fprintf(cmd.Root().Writer, "lipstick\nkiss\nme\nlipstick\nringo\n")
 		},
-		Before: func(ctx context.Context, cmd *cli.Command) error {
+		Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
 			fmt.Fprintf(cmd.Root().Writer, "HEEEERE GOES\n")
-			return nil
+			return nil, nil
 		},
 		After: func(ctx context.Context, cmd *cli.Command) error {
 			fmt.Fprintf(cmd.Root().Writer, "Phew!\n")
