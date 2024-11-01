@@ -82,10 +82,7 @@ func Test_Help_RequiredFlagsNoDefault(t *testing.T) {
    test - A new cli application
 
 USAGE:
-   test [global options] [command [command options]] [arguments...]
-
-COMMANDS:
-   help, h  Shows a list of commands or help for one command
+   test [global options] [arguments...]
 
 GLOBAL OPTIONS:
    --foo value, -f value  
@@ -198,7 +195,7 @@ func Test_helpCommand_InHelpOutput(t *testing.T) {
 	s := output.String()
 
 	require.NotContains(t, s, "\nCOMMANDS:\nGLOBAL OPTIONS:\n", "empty COMMANDS section detected")
-	require.Contains(t, s, "help, h", "missing \"help, h\"")
+	require.Contains(t, s, "--help, -h", "missing \"--help, --h\"")
 }
 
 func TestHelpCommand_FullName(t *testing.T) {

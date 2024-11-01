@@ -900,9 +900,10 @@ func (cmd *Command) VisibleCategories() []CommandCategory {
 func (cmd *Command) VisibleCommands() []*Command {
 	var ret []*Command
 	for _, command := range cmd.Commands {
-		if !command.Hidden {
-			ret = append(ret, command)
+		if command.Hidden || command.Name == helpName {
+			continue
 		}
+		ret = append(ret, command)
 	}
 	return ret
 }

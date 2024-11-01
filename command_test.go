@@ -1026,7 +1026,6 @@ func TestCommand_VisibleCommands(t *testing.T) {
 	cmd.setupDefaults([]string{"cli.test"})
 	expected := []*Command{
 		cmd.Commands[0],
-		cmd.Commands[2], // help
 	}
 	actual := cmd.VisibleCommands()
 	assert.Len(t, actual, len(expected))
