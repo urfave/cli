@@ -501,7 +501,9 @@ getting data from a yaml file below.
 
 ```go
   // --- >8 ---
-  command.Before = altsrc.InitInputSourceWithContext(command.Flags, NewYamlSourceFromFlagFunc("load"))
+  command.Before = func(ctx context.Context, cmd *Command) (context.Context, error) {
+	return ctx, altsrc.InitInputSourceWithContext(command.Flags, NewYamlSourceFromFlagFunc("load"))
+  }
 ```
 
 The code above will use the "load" string as a flag name to get the file name of
