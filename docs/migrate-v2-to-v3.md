@@ -123,7 +123,7 @@ in addition to other specific args. This allows handler functions to utilize con
 blocking/time-specific operations and so on
 
 * OLD: `type BeforeFunc func(*Context) error`
-* NEW: `type BeforeFunc func(context.Context, *cli.Command) error`
+* NEW: `type BeforeFunc func(context.Context, *cli.Command) (context.Context, error)`
 
 * OLD: `type AfterFunc func(*Context) error`
 * NEW: `type AfterFunc func(context.Context, *cli.Command) error`
