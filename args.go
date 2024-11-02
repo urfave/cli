@@ -66,6 +66,13 @@ type Argument interface {
 	Usage() string
 }
 
+// AnyArguments to differentiate between no arguments(nil) vs aleast one
+var AnyArguments = []Argument{
+	&StringArg{
+		Max: -1,
+	},
+}
+
 type ArgumentBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Name        string `json:"name"`      // the name of this argument
 	Value       T      `json:"value"`     // the default value of this argument

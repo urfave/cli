@@ -3,7 +3,7 @@ package cli
 var (
 	helpNameTemplate    = `{{$v := offset .FullName 6}}{{wrap .FullName 3}}{{if .Usage}} - {{wrap .Usage $v}}{{end}}`
 	argsTemplate        = `{{if .Arguments}}{{range .Arguments}}{{.Usage}}{{end}}{{end}}`
-	usageTemplate       = `{{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.FullName}}{{if .VisibleFlags}} [command [command options]]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}{{template "argsTemplate" .}}{{end}}{{end}}`
+	usageTemplate       = `{{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.FullName}}{{if .VisibleFlags}} [command [command options]]{{end}}{{if .ArgsUsage}} {{.ArgsUsage}}{{else}}{{if .Arguments}} {{template "argsTemplate" .}}{{end}}{{end}}{{end}}`
 	descriptionTemplate = `{{wrap .Description 3}}`
 	authorsTemplate     = `{{with $length := len .Authors}}{{if ne 1 $length}}S{{end}}{{end}}:
    {{range $index, $author := .Authors}}{{if $index}}
@@ -45,7 +45,7 @@ var RootCommandHelpTemplate = `NAME:
    {{template "helpNameTemplate" .}}
 
 USAGE:
-   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.FullName}} {{if .VisibleFlags}}[global options]{{end}}{{if .VisibleCommands}} [command [command options]]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.FullName}} {{if .VisibleFlags}}[global options]{{end}}{{if .VisibleCommands}} [command [command options]]{{end}}{{if .ArgsUsage}} {{.ArgsUsage}}{{else}}{{if .Arguments}} [arguments...]{{end}}{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
 
 VERSION:
    {{.Version}}{{end}}{{end}}{{if .Description}}
@@ -95,7 +95,7 @@ var SubcommandHelpTemplate = `NAME:
    {{template "helpNameTemplate" .}}
 
 USAGE:
-   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.FullName}} {{if .VisibleCommands}}[command [command options]] {{end}}{{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Category}}
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.FullName}}{{if .VisibleCommands}} [command [command options]] {{end}}{{if .ArgsUsage}} {{.ArgsUsage}}{{else}}{{if .Arguments}} [arguments...]{{end}}{{end}}{{end}}{{if .Category}}
 
 CATEGORY:
    {{.Category}}{{end}}{{if .Description}}

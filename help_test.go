@@ -73,7 +73,8 @@ func Test_Help_RequiredFlagsNoDefault(t *testing.T) {
 		Flags: []Flag{
 			&IntFlag{Name: "foo", Aliases: []string{"f"}, Required: true},
 		},
-		Writer: output,
+		Arguments: AnyArguments,
+		Writer:    output,
 	}
 
 	_ = cmd.Run(buildTestContext(t), []string{"test", "-h"})
@@ -716,7 +717,7 @@ func TestShowSubcommandHelp_GlobalOptions(t *testing.T) {
    foo frobbly
 
 USAGE:
-   foo frobbly [command [command options]] 
+   foo frobbly [command [command options]]
 
 OPTIONS:
    --bar value  
@@ -1719,7 +1720,7 @@ func TestCategorizedHelp(t *testing.T) {
               application
 
 USAGE:
-   cli.test [global options] [arguments...]
+   cli.test [global options]
 
 GLOBAL OPTIONS:
    --help, -h    show help
