@@ -31,7 +31,11 @@ var (
 	SuggestCommand            SuggestCommandFunc = suggestCommand
 	SuggestDidYouMeanTemplate string             = suggestDidYouMeanTemplate
 )
-var AnyArguments = []Argument{nil}
+var AnyArguments = []Argument{
+	&StringArg{
+		Max: -1,
+	},
+}
     AnyArguments to differentiate between no arguments(nil) vs aleast one
 
 var CommandHelpTemplate = `NAME:

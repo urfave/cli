@@ -192,7 +192,7 @@ func ExampleCommand_Run_commandHelp() {
 }
 
 func ExampleCommand_Run_noAction() {
-	cmd := &cli.Command{Name: "greet"} //, Arguments: cli.AnyArguments}
+	cmd := &cli.Command{Name: "greet"}
 
 	// Simulate the command line arguments
 	os.Args = []string{"greet"}
