@@ -560,6 +560,10 @@ type DocGenerationFlag interface {
 	// GetUsage returns the usage string for the flag
 	GetUsage() string
 
+	// GetValue returns the flags value as string representation and an empty
+	// string if the flag takes no value at all.
+	GetValue() string
+
 	// GetDefaultText returns the default text for this flag
 	GetDefaultText() string
 
@@ -694,6 +698,10 @@ func (f *FlagBase[T, C, V]) GetEnvVars() []string
 
 func (f *FlagBase[T, C, V]) GetUsage() string
     GetUsage returns the usage string for the flag
+
+func (f *FlagBase[T, C, V]) GetValue() string
+    GetValue returns the flags value as string representation and an empty
+    string if the flag takes no value at all.
 
 func (f *FlagBase[T, C, V]) IsDefaultVisible() bool
     IsDefaultVisible returns true if the flag is not hidden, otherwise false

@@ -129,6 +129,10 @@ type DocGenerationFlag interface {
 	// GetUsage returns the usage string for the flag
 	GetUsage() string
 
+	// GetValue returns the flags value as string representation and an empty
+	// string if the flag takes no value at all.
+	GetValue() string
+
 	// GetDefaultText returns the default text for this flag
 	GetDefaultText() string
 
