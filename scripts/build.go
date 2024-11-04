@@ -208,7 +208,7 @@ func downloadFile(src, dest string, dirPerm, perm os.FileMode) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 300 {
-		return fmt.Errorf("download response %[1]v", resp.StatusCode)
+		return fmt.Errorf("download file from %[2]s into %[3]s: response %[1]v", resp.StatusCode, src, dest)
 	}
 
 	if err := os.MkdirAll(filepath.Dir(dest), dirPerm); err != nil {
