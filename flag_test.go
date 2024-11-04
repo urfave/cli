@@ -3127,3 +3127,9 @@ func TestEnvHintWindows(t *testing.T) {
 		assert.Equal(t, "something [%foo%, %bar%, %ss%]", withEnvHint([]string{"foo", "bar", "ss"}, "something"))
 	}
 }
+
+func TestDocGetValue(t *testing.T) {
+	assert.Equal(t, "", (&BoolFlag{Name: "foo", Value: true}).GetValue())
+	assert.Equal(t, "", (&BoolFlag{Name: "foo", Value: false}).GetValue())
+	assert.Equal(t, "bar", (&StringFlag{Name: "foo", Value: "bar"}).GetValue())
+}

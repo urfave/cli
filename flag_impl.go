@@ -92,7 +92,7 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *FlagBase[T, C, V]) GetValue() string {
-	if reflect.TypeOf(f.Value).Kind() == reflect.Bool {
+	if !f.TakesValue() {
 		return ""
 	}
 	return fmt.Sprintf("%v", f.Value)
