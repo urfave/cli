@@ -89,6 +89,15 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	value      Value // value representing this flag's value
 }
 
+// GetValue returns the flags value as string representation and an empty
+// string if the flag takes no value at all.
+func (f *FlagBase[T, C, V]) GetValue() string {
+	if !f.TakesValue() {
+		return ""
+	}
+	return fmt.Sprintf("%v", f.Value)
+}
+
 // Apply populates the flag given the flag set and environment
 func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 	tracef("apply (flag=%[1]q)", f.Name)
