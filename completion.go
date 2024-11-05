@@ -79,12 +79,12 @@ func genBashCompletion(appName string) string {
 
 # Macs have bash3 for which the bash-completion package doesn't include
 # _init_completion. This is a minimal version of that function.
-_cli_init_completion() {
+__%[1]s_init_completion() {
   COMPREPLY=()
   _get_comp_words_by_ref "$@" cur prev words cword
 }
 
-_cli_bash_autocomplete() {
+__%[1]s_bash_autocomplete() {
   if [[ "${COMP_WORDS[0]}" != "source" ]]; then
     local cur opts base words
     COMPREPLY=()
@@ -92,7 +92,7 @@ _cli_bash_autocomplete() {
     if declare -F _init_completion >/dev/null 2>&1; then
       _init_completion -n "=:" || return
     else
-      _cli_init_completion -n "=:" || return
+      __%[1]s_init_completion -n "=:" || return
     fi
     words=("${words[@]:0:$cword}")
     if [[ "$cur" == "-"* ]]; then
@@ -106,7 +106,7 @@ _cli_bash_autocomplete() {
   fi
 }
 
-complete -o bashdefault -o default -o nospace -F _cli_bash_autocomplete %[1]s
+complete -o bashdefault -o default -o nospace -F __%[1]s_bash_autocomplete %[1]s
 `, appName)
 }
 
