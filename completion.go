@@ -10,8 +10,7 @@ const (
 	completionCommandName = "completion"
 
 	// This flag is supposed to only be used by the completion script itself to generate completions on the fly.
-	completionFlagName = "generate-shell-completion"
-	completionFlag     = "--" + completionFlagName
+	completionFlag = "--generate-shell-completion"
 )
 
 var shellCompletions = map[string]renderCompletionFunc{
