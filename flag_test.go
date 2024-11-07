@@ -1625,6 +1625,7 @@ func TestGenericFlagValueFromCommand(t *testing.T) {
 
 	assert.NoError(t, cmd.Run(buildTestContext(t), []string{"foo", "--myflag", "abc,def"}))
 	assert.Equal(t, &Parser{"abc", "def"}, cmd.Generic("myflag"))
+	assert.Nil(t, cmd.Generic("someother"))
 }
 
 func TestParseGenericFromEnv(t *testing.T) {
@@ -3266,4 +3267,11 @@ func TestGenericFlag_SatisfiesDocFlagInterface(t *testing.T) {
 	var f DocGenerationFlag = &GenericFlag{}
 
 	_ = f.GetUsage()
+}
+
+func TestGenericValue(t *testing.T) {
+	g := &genericValue{}
+	assert.NoError(t, g.Set("something"))
+	assert.Nil(t, g.Get())
+	assert.Empty(t, g.String())
 }
