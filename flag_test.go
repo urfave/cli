@@ -3245,6 +3245,24 @@ func TestGenericFlag_SatisfiesFlagInterface(t *testing.T) {
 	_ = f.Names()
 }
 
+func TestGenericValue_SatisfiesBoolInterface(t *testing.T) {
+	var f boolFlag = &genericValue{}
+
+	assert.False(t, f.IsBoolFlag())
+
+	fv := floatValue(0)
+	f = &genericValue{
+		val: &fv,
+	}
+
+	assert.False(t, f.IsBoolFlag())
+
+	f = &genericValue{
+		val: &boolValue{},
+	}
+	assert.True(t, f.IsBoolFlag())
+}
+
 func TestGenericFlag_SatisfiesFmtStringerInterface(t *testing.T) {
 	var f fmt.Stringer = &GenericFlag{}
 
