@@ -238,7 +238,12 @@ func TestFlagsFromEnv(t *testing.T) {
 			errContains: `could not parse "foobar" as []float64 value from environment ` +
 				`variable "SECONDS" for flag seconds:`,
 		},
-
+		{
+			name:   "Generic",
+			input:  "foo,bar",
+			output: &Parser{"foo", "bar"},
+			fl:     &GenericFlag{Name: "names", Value: &Parser{}, Sources: EnvVars("NAMES")},
+		},
 		{
 			name:   "IntSliceFlag valid",
 			input:  "1,2",
@@ -460,6 +465,16 @@ func TestFlagStringifying(t *testing.T) {
 			name:     "float64-slice-flag-with-default-text",
 			fl:       &FloatSliceFlag{Name: "pepperonis", DefaultText: "shaved"},
 			expected: "--pepperonis value [ --pepperonis value ]\t(default: shaved)",
+		},
+		{
+			name:     "generic-flag",
+			fl:       &GenericFlag{Name: "yogurt"},
+			expected: "--yogurt value\t",
+		},
+		{
+			name:     "generic-flag-with-default-text",
+			fl:       &GenericFlag{Name: "ricotta", DefaultText: "plops"},
+			expected: "--ricotta value\t(default: plops)",
 		},
 		{
 			name:     "int-flag",
@@ -1556,6 +1571,85 @@ func TestFloat64SliceFlagApply_ParentCommand(t *testing.T) {
 			},
 		},
 	}).Run(buildTestContext(t), []string{"run", "child"})
+}
+
+var genericFlagTests = []struct {
+	name     string
+	value    Value
+	expected string
+}{
+	{"toads", &Parser{"abc", "def"}, "--toads value\ttest flag (default: abc,def)"},
+	{"t", &Parser{"abc", "def"}, "-t value\ttest flag (default: abc,def)"},
+}
+
+func TestGenericFlagHelpOutput(t *testing.T) {
+	for _, test := range genericFlagTests {
+		fl := &GenericFlag{Name: test.name, Value: test.value, Usage: "test flag"}
+		// create a temporary flag set to apply
+		tfs := flag.NewFlagSet("test", 0)
+		assert.NoError(t, fl.Apply(tfs))
+		assert.Equal(t, test.expected, fl.String())
+	}
+}
+
+func TestGenericFlagWithEnvVarHelpOutput(t *testing.T) {
+	defer resetEnv(os.Environ())
+	os.Clearenv()
+	_ = os.Setenv("APP_ZAP", "3")
+
+	for _, test := range genericFlagTests {
+		fl := &GenericFlag{Name: test.name, Sources: EnvVars("APP_ZAP")}
+		output := fl.String()
+
+		expectedSuffix := withEnvHint([]string{"APP_ZAP"}, "")
+		if !strings.HasSuffix(output, expectedSuffix) {
+			t.Errorf("%s does not end with"+expectedSuffix, output)
+		}
+	}
+}
+
+func TestGenericFlagApply_SetsAllNames(t *testing.T) {
+	fl := GenericFlag{Name: "orbs", Aliases: []string{"O", "obrs"}, Value: &Parser{}}
+	set := flag.NewFlagSet("test", 0)
+	assert.NoError(t, fl.Apply(set))
+	assert.NoError(t, set.Parse([]string{"--orbs", "eleventy,3", "-O", "4,bloop", "--obrs", "19,s"}))
+}
+
+func TestGenericFlagValueFromCommand(t *testing.T) {
+	cmd := &Command{
+		Name: "foo",
+		Flags: []Flag{
+			&GenericFlag{Name: "myflag", Value: &Parser{}},
+		},
+	}
+
+	assert.NoError(t, cmd.Run(buildTestContext(t), []string{"foo", "--myflag", "abc,def"}))
+	assert.Equal(t, &Parser{"abc", "def"}, cmd.Generic("myflag"))
+	assert.Nil(t, cmd.Generic("someother"))
+}
+
+func TestParseGenericFromEnv(t *testing.T) {
+	t.Setenv("APP_SERVE", "20,30")
+	cmd := &Command{
+		Flags: []Flag{
+			&GenericFlag{
+				Name:    "serve",
+				Aliases: []string{"s"},
+				Value:   &Parser{},
+				Sources: EnvVars("APP_SERVE"),
+			},
+		},
+		Action: func(ctx context.Context, cmd *Command) error {
+			if !reflect.DeepEqual(cmd.Generic("serve"), &Parser{"20", "30"}) {
+				t.Errorf("main name not set from env")
+			}
+			if !reflect.DeepEqual(cmd.Generic("s"), &Parser{"20", "30"}) {
+				t.Errorf("short name not set from env")
+			}
+			return nil
+		},
+	}
+	assert.NoError(t, cmd.Run(buildTestContext(t), []string{"run"}))
 }
 
 func TestParseMultiString(t *testing.T) {
@@ -2756,6 +2850,16 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 				"ssflag": "some-other-env_value=",
 			},
 		},
+		// TODO
+		/*{
+			name:    "generic",
+			flag:    &GenericFlag{Name: "flag", Value: &Parser{"11", "12"}, Sources: EnvVars("gflag")},
+			toParse: []string{"--flag", "15,16"},
+			expect:  `--flag value	(default: 11,12)` + withEnvHint([]string{"gflag"}, ""),
+			environ: map[string]string{
+				"gflag": "13,14",
+			},
+		},*/
 	}
 	for _, v := range cases {
 		for key, val := range v.environ {
@@ -3132,4 +3236,60 @@ func TestDocGetValue(t *testing.T) {
 	assert.Equal(t, "", (&BoolFlag{Name: "foo", Value: true}).GetValue())
 	assert.Equal(t, "", (&BoolFlag{Name: "foo", Value: false}).GetValue())
 	assert.Equal(t, "bar", (&StringFlag{Name: "foo", Value: "bar"}).GetValue())
+}
+
+func TestGenericFlag_SatisfiesFlagInterface(t *testing.T) {
+	var f Flag = &GenericFlag{}
+
+	_ = f.IsSet()
+	_ = f.Names()
+}
+
+func TestGenericValue_SatisfiesBoolInterface(t *testing.T) {
+	var f boolFlag = &genericValue{}
+
+	assert.False(t, f.IsBoolFlag())
+
+	fv := floatValue(0)
+	f = &genericValue{
+		val: &fv,
+	}
+
+	assert.False(t, f.IsBoolFlag())
+
+	f = &genericValue{
+		val: &boolValue{},
+	}
+	assert.True(t, f.IsBoolFlag())
+}
+
+func TestGenericFlag_SatisfiesFmtStringerInterface(t *testing.T) {
+	var f fmt.Stringer = &GenericFlag{}
+
+	_ = f.String()
+}
+
+func TestGenericFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
+	var f RequiredFlag = &GenericFlag{}
+
+	_ = f.IsRequired()
+}
+
+func TestGenericFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
+	var f VisibleFlag = &GenericFlag{}
+
+	_ = f.IsVisible()
+}
+
+func TestGenericFlag_SatisfiesDocFlagInterface(t *testing.T) {
+	var f DocGenerationFlag = &GenericFlag{}
+
+	_ = f.GetUsage()
+}
+
+func TestGenericValue(t *testing.T) {
+	g := &genericValue{}
+	assert.NoError(t, g.Set("something"))
+	assert.Nil(t, g.Get())
+	assert.Empty(t, g.String())
 }

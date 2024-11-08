@@ -174,6 +174,11 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 	return nil
 }
 
+// IsDefaultVisible returns true if the flag is not hidden, otherwise false
+func (f *FlagBase[T, C, V]) IsDefaultVisible() bool {
+	return !f.HideDefault
+}
+
 // String returns a readable representation of this value (for usage defaults)
 func (f *FlagBase[T, C, V]) String() string {
 	return FlagStringer(f)
@@ -221,7 +226,7 @@ func (f *FlagBase[T, C, V]) GetEnvVars() []string {
 // TakesValue returns true if the flag takes a value, otherwise false
 func (f *FlagBase[T, C, V]) TakesValue() bool {
 	var t T
-	return reflect.TypeOf(t).Kind() != reflect.Bool
+	return reflect.TypeOf(t) == nil || reflect.TypeOf(t).Kind() != reflect.Bool
 }
 
 // GetDefaultText returns the default text for this flag
@@ -246,6 +251,9 @@ func (f *FlagBase[T, C, V]) RunAction(ctx context.Context, cmd *Command) error {
 // values from cmd line. This is true for slice and map type flags
 func (f *FlagBase[T, C, VC]) IsMultiValueFlag() bool {
 	// TBD how to specify
+	if reflect.TypeOf(f.Value) == nil {
+		return false
+	}
 	kind := reflect.TypeOf(f.Value).Kind()
 	return kind == reflect.Slice || kind == reflect.Map
 }

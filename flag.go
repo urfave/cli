@@ -180,11 +180,6 @@ type LocalFlag interface {
 	IsLocal() bool
 }
 
-// IsDefaultVisible returns true if the flag is not hidden, otherwise false
-func (f *FlagBase[T, C, V]) IsDefaultVisible() bool {
-	return !f.HideDefault
-}
-
 func newFlagSet(name string, flags []Flag) (*flag.FlagSet, error) {
 	set := flag.NewFlagSet(name, flag.ContinueOnError)
 
@@ -307,7 +302,6 @@ func stringifyFlag(f Flag) string {
 	if !ok {
 		return ""
 	}
-
 	placeholder, usage := unquoteUsage(df.GetUsage())
 	needsPlaceholder := df.TakesValue()
 

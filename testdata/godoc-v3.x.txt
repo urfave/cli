@@ -443,6 +443,9 @@ func (cmd *Command) FullName() string
     FullName returns the full name of the command. For commands with parents
     this ensures that the parent commands are part of the command path.
 
+func (cmd *Command) Generic(name string) Value
+    Generic looks up the value of a local GenericFlag, returns nil if not found
+
 func (cmd *Command) HasName(name string) bool
     HasName returns true if Command.Name matches given name
 
@@ -792,6 +795,8 @@ type FloatFlag = FlagBase[float64, NoConfig, floatValue]
 type FloatSlice = SliceBase[float64, NoConfig, floatValue]
 
 type FloatSliceFlag = FlagBase[[]float64, NoConfig, FloatSlice]
+
+type GenericFlag = FlagBase[Value, NoConfig, genericValue]
 
 type IntArg = ArgumentBase[int64, IntegerConfig, intValue]
 
