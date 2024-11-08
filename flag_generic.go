@@ -46,6 +46,14 @@ func (f *genericValue) String() string {
 	return ""
 }
 
+func (f *genericValue) IsBoolFlag() bool {
+	if f.val == nil {
+		return false
+	}
+	bf, ok := f.val.(boolFlag)
+	return ok && bf.IsBoolFlag()
+}
+
 // Generic looks up the value of a local GenericFlag, returns
 // nil if not found
 func (cmd *Command) Generic(name string) Value {
