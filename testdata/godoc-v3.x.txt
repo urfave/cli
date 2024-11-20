@@ -591,6 +591,11 @@ type DocGenerationMultiValueFlag interface {
 
 type DurationFlag = FlagBase[time.Duration, NoConfig, durationValue]
 
+type EnvValueSource interface {
+	IsFromEnv() bool
+	Key() string
+}
+
 type ErrorFormatter interface {
 	Format(s fmt.State, verb rune)
 }
@@ -848,6 +853,12 @@ func (i MapBase[T, C, VC]) ToString(t map[string]T) string
 func (i *MapBase[T, C, VC]) Value() map[string]T
     Value returns the mapping of values set by this flag
 
+type MapSource struct {
+	// Has unexported fields.
+}
+
+func NewMapSource(name string, m map[any]any) *MapSource
+
 type MultiError interface {
 	error
 	Errors() []error
@@ -999,6 +1010,8 @@ type ValueSource interface {
 func EnvVar(key string) ValueSource
 
 func File(path string) ValueSource
+
+func NewMapValueSource(key string, ms *MapSource) ValueSource
 
 type ValueSourceChain struct {
 	Chain []ValueSource

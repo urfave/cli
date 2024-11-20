@@ -17,6 +17,11 @@ type ValueSource interface {
 	Lookup() (string, bool)
 }
 
+type EnvValueSource interface {
+	IsFromEnv() bool
+	Key() string
+}
+
 // ValueSourceChain contains an ordered series of ValueSource that
 // allows for lookup where the first ValueSource to resolve is
 // returned
@@ -38,8 +43,8 @@ func (vsc *ValueSourceChain) EnvKeys() []string {
 	vals := []string{}
 
 	for _, src := range vsc.Chain {
-		if v, ok := src.(*envVarValueSource); ok {
-			vals = append(vals, v.Key)
+		if v, ok := src.(EnvValueSource); ok {
+			vals = append(vals, v.Key())
 		}
 	}
 
@@ -83,21 +88,29 @@ func (vsc *ValueSourceChain) LookupWithSource() (string, ValueSource, bool) {
 
 // envVarValueSource encapsulates a ValueSource from an environment variable
 type envVarValueSource struct {
-	Key string
+	key string
 }
 
 func (e *envVarValueSource) Lookup() (string, bool) {
-	return os.LookupEnv(strings.TrimSpace(string(e.Key)))
+	return os.LookupEnv(strings.TrimSpace(string(e.key)))
 }
 
-func (e *envVarValueSource) String() string { return fmt.Sprintf("environment variable %[1]q", e.Key) }
+func (e *envVarValueSource) IsFromEnv() bool {
+	return true
+}
+
+func (e *envVarValueSource) Key() string {
+	return e.key
+}
+
+func (e *envVarValueSource) String() string { return fmt.Sprintf("environment variable %[1]q", e.key) }
 func (e *envVarValueSource) GoString() string {
-	return fmt.Sprintf("&envVarValueSource{Key:%[1]q}", e.Key)
+	return fmt.Sprintf("&envVarValueSource{Key:%[1]q}", e.key)
 }
 
 func EnvVar(key string) ValueSource {
 	return &envVarValueSource{
-		Key: key,
+		key: key,
 	}
 }
 
@@ -107,7 +120,7 @@ func EnvVars(keys ...string) ValueSourceChain {
 	vsc := ValueSourceChain{Chain: []ValueSource{}}
 
 	for _, key := range keys {
-		vsc.Chain = append(vsc.Chain, &envVarValueSource{Key: key})
+		vsc.Chain = append(vsc.Chain, EnvVar(key))
 	}
 
 	return vsc
@@ -138,8 +151,80 @@ func Files(paths ...string) ValueSourceChain {
 	vsc := ValueSourceChain{Chain: []ValueSource{}}
 
 	for _, path := range paths {
-		vsc.Chain = append(vsc.Chain, &fileValueSource{Path: path})
+		vsc.Chain = append(vsc.Chain, File(path))
 	}
 
 	return vsc
+}
+
+type MapSource struct {
+	name string
+	m    map[any]any
+}
+
+func NewMapSource(name string, m map[any]any) *MapSource {
+	return &MapSource{
+		name: name,
+		m:    m,
+	}
+}
+
+func (ms *MapSource) lookup(name string) (any, bool) {
+	// nestedVal checks if the name has '.' delimiters.
+	// If so, it tries to traverse the tree by the '.' delimited sections to find
+	// a nested value for the key.
+	if sections := strings.Split(name, "."); len(sections) > 1 {
+		node := ms.m
+		for _, section := range sections[:len(sections)-1] {
+			child, ok := node[section]
+			if !ok {
+				return nil, false
+			}
+
+			switch child := child.(type) {
+			case map[string]any:
+				node = make(map[any]any, len(child))
+				for k, v := range child {
+					node[k] = v
+				}
+			case map[any]any:
+				node = child
+			default:
+				return nil, false
+			}
+		}
+		if val, ok := node[sections[len(sections)-1]]; ok {
+			return val, true
+		}
+	}
+
+	return nil, false
+}
+
+type mapValueSource struct {
+	key string
+	ms  *MapSource
+}
+
+func NewMapValueSource(key string, ms *MapSource) ValueSource {
+	return &mapValueSource{
+		key: key,
+		ms:  ms,
+	}
+}
+
+func (mvs *mapValueSource) String() string {
+	return fmt.Sprintf("map source key %[1]q from %[2]q", mvs.key, mvs.ms.name)
+}
+
+func (mvs *mapValueSource) GoString() string {
+	return fmt.Sprintf("&mapValueSource{key:%[1]q, src:%[2]q}", mvs.key, mvs.ms.m)
+}
+
+func (mvs *mapValueSource) Lookup() (string, bool) {
+	if v, ok := mvs.ms.lookup(mvs.key); !ok {
+		return "", false
+	} else {
+		return fmt.Sprintf("%+v", v), true
+	}
 }
