@@ -24,6 +24,19 @@ type EnvValueSource interface {
 	Key() string
 }
 
+// MapSource is a source which can be used to look up a value
+// based on a key
+// typically for use with a cli.Flag
+type MapSource interface {
+	fmt.Stringer
+	fmt.GoStringer
+
+	// Lookup returns the value from the source based on key
+	// and if it was found
+	// or returns an empty string and false
+	Lookup(string) (any, bool)
+}
+
 // ValueSourceChain contains an ordered series of ValueSource that
 // allows for lookup where the first ValueSource to resolve is
 // returned
@@ -159,19 +172,24 @@ func Files(paths ...string) ValueSourceChain {
 	return vsc
 }
 
-type MapSource struct {
+type mapSource struct {
 	name string
 	m    map[any]any
 }
 
-func NewMapSource(name string, m map[any]any) *MapSource {
-	return &MapSource{
+func NewMapSource(name string, m map[any]any) MapSource {
+	return &mapSource{
 		name: name,
 		m:    m,
 	}
 }
 
-func (ms *MapSource) lookup(name string) (any, bool) {
+func (ms *mapSource) String() string { return fmt.Sprintf("map source %[1]q", ms.name) }
+func (ms *mapSource) GoString() string {
+	return fmt.Sprintf("&mapSource{name:%[1]q}", ms.name)
+}
+
+func (ms *mapSource) Lookup(name string) (any, bool) {
 	// nestedVal checks if the name has '.' delimiters.
 	// If so, it tries to traverse the tree by the '.' delimited sections to find
 	// a nested value for the key.
@@ -205,10 +223,10 @@ func (ms *MapSource) lookup(name string) (any, bool) {
 
 type mapValueSource struct {
 	key string
-	ms  *MapSource
+	ms  MapSource
 }
 
-func NewMapValueSource(key string, ms *MapSource) ValueSource {
+func NewMapValueSource(key string, ms MapSource) ValueSource {
 	return &mapValueSource{
 		key: key,
 		ms:  ms,
@@ -216,15 +234,15 @@ func NewMapValueSource(key string, ms *MapSource) ValueSource {
 }
 
 func (mvs *mapValueSource) String() string {
-	return fmt.Sprintf("map source key %[1]q from %[2]q", mvs.key, mvs.ms.name)
+	return fmt.Sprintf("key %[1]q from %[2]s", mvs.key, mvs.ms.String())
 }
 
 func (mvs *mapValueSource) GoString() string {
-	return fmt.Sprintf("&mapValueSource{key:%[1]q, src:%[2]q}", mvs.key, mvs.ms.m)
+	return fmt.Sprintf("&mapValueSource{key:%[1]q, src:%[2]s}", mvs.key, mvs.ms.GoString())
 }
 
 func (mvs *mapValueSource) Lookup() (string, bool) {
-	if v, ok := mvs.ms.lookup(mvs.key); !ok {
+	if v, ok := mvs.ms.Lookup(mvs.key); !ok {
 		return "", false
 	} else {
 		return fmt.Sprintf("%+v", v), true
