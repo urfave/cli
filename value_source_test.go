@@ -290,7 +290,7 @@ func TestMapValueSource(t *testing.T) {
 			key:  "foo.bar.t.gh",
 			m: map[any]any{
 				"foo": map[any]any{
-					"bar": map[any]any{
+					"bar": map[string]any{
 						"t": map[any]any{
 							"gh": []int{10},
 						},
