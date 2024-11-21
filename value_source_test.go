@@ -316,3 +316,15 @@ func TestMapValueSource(t *testing.T) {
 		})
 	}
 }
+
+func TestMapValueSourceStringer(t *testing.T) {
+	m := map[any]any{
+		"foo": map[any]any{
+			"bar": 10,
+		},
+	}
+	mvs := NewMapValueSource("bar", NewMapSource("test", m))
+
+	assert.Equal(t, `&mapValueSource{key:"bar", src:map["foo":map["bar":'\n']]}`, mvs.GoString())
+	assert.Equal(t, `map source key "bar" from "test"`, mvs.String())
+}
