@@ -854,11 +854,19 @@ func (i MapBase[T, C, VC]) ToString(t map[string]T) string
 func (i *MapBase[T, C, VC]) Value() map[string]T
     Value returns the mapping of values set by this flag
 
-type MapSource struct {
-	// Has unexported fields.
-}
+type MapSource interface {
+	fmt.Stringer
+	fmt.GoStringer
 
-func NewMapSource(name string, m map[any]any) *MapSource
+	// Lookup returns the value from the source based on key
+	// and if it was found
+	// or returns an empty string and false
+	Lookup(string) (any, bool)
+}
+    MapSource is a source which can be used to look up a value based on a key
+    typically for use with a cli.Flag
+
+func NewMapSource(name string, m map[any]any) MapSource
 
 type MultiError interface {
 	error
@@ -1012,7 +1020,7 @@ func EnvVar(key string) ValueSource
 
 func File(path string) ValueSource
 
-func NewMapValueSource(key string, ms *MapSource) ValueSource
+func NewMapValueSource(key string, ms MapSource) ValueSource
 
 type ValueSourceChain struct {
 	Chain []ValueSource
