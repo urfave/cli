@@ -595,6 +595,7 @@ type EnvValueSource interface {
 	IsFromEnv() bool
 	Key() string
 }
+    EnvValueSource is to specifically detect env sources when printing help text
 
 type ErrorFormatter interface {
 	Format(s fmt.State, verb rune)

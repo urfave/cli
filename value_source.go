@@ -17,6 +17,8 @@ type ValueSource interface {
 	Lookup() (string, bool)
 }
 
+// EnvValueSource is to specifically detect env sources when
+// printing help text
 type EnvValueSource interface {
 	IsFromEnv() bool
 	Key() string
@@ -43,7 +45,7 @@ func (vsc *ValueSourceChain) EnvKeys() []string {
 	vals := []string{}
 
 	for _, src := range vsc.Chain {
-		if v, ok := src.(EnvValueSource); ok {
+		if v, ok := src.(EnvValueSource); ok && v.IsFromEnv() {
 			vals = append(vals, v.Key())
 		}
 	}
