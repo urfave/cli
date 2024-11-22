@@ -106,7 +106,7 @@ func (parent *BoolWithInverseFlag) initialize() {
 		sources := []ValueSource{}
 
 		for _, envVar := range child.GetEnvVars() {
-			sources = append(sources, &envVarValueSource{Key: strings.ToUpper(parent.InversePrefix) + envVar})
+			sources = append(sources, EnvVar(strings.ToUpper(parent.InversePrefix)+envVar))
 		}
 		parent.negativeFlag.Sources = NewValueSourceChain(sources...)
 	}

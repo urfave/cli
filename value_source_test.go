@@ -189,3 +189,142 @@ func (svs *staticValueSource) GoString() string {
 }
 func (svs *staticValueSource) String() string         { return svs.v }
 func (svs *staticValueSource) Lookup() (string, bool) { return svs.v, true }
+
+func TestMapValueSource(t *testing.T) {
+	tests := []struct {
+		name  string
+		m     map[any]any
+		key   string
+		val   string
+		found bool
+	}{
+		{
+			name: "No map no key",
+		},
+		{
+			name: "No map with key",
+			key:  "foo",
+		},
+		{
+			name: "Empty map no key",
+			m:    map[any]any{},
+		},
+		{
+			name: "Empty map with key",
+			key:  "foo",
+			m:    map[any]any{},
+		},
+		{
+			name: "Level 1 no key",
+			key:  ".foob",
+			m: map[any]any{
+				"foo": 10,
+			},
+		},
+		{
+			name: "Level 2",
+			key:  "foo.bar",
+			m: map[any]any{
+				"foo": map[any]any{
+					"bar": 10,
+				},
+			},
+			val:   "10",
+			found: true,
+		},
+		{
+			name: "Level 2 invalid key",
+			key:  "foo.bar1",
+			m: map[any]any{
+				"foo": map[any]any{
+					"bar": "10",
+				},
+			},
+		},
+		{
+			name: "Level 3 no entry",
+			key:  "foo.bar.t",
+			m: map[any]any{
+				"foo": map[any]any{
+					"bar": "sss",
+				},
+			},
+		},
+		{
+			name: "Level 3",
+			key:  "foo.bar.t",
+			m: map[any]any{
+				"foo": map[any]any{
+					"bar": map[any]any{
+						"t": "sss",
+					},
+				},
+			},
+			val:   "sss",
+			found: true,
+		},
+		{
+			name: "Level 3 invalid key",
+			key:  "foo.bar.t",
+			m: map[any]any{
+				"foo": map[any]any{
+					"bar": map[any]any{
+						"t1": 10,
+					},
+				},
+			},
+		},
+		{
+			name: "Level 4 no entry",
+			key:  "foo.bar.t.gh",
+			m: map[any]any{
+				"foo": map[any]any{
+					"bar": map[any]any{
+						"t1": 10,
+					},
+				},
+			},
+		},
+		{
+			name: "Level 4 slice entry",
+			key:  "foo.bar.t.gh",
+			m: map[any]any{
+				"foo": map[any]any{
+					"bar": map[string]any{
+						"t": map[any]any{
+							"gh": []int{10},
+						},
+					},
+				},
+			},
+			val:   "[10]",
+			found: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.key, func(t *testing.T) {
+			ms := NewMapSource("test", test.m)
+			m := NewMapValueSource(test.key, ms)
+			val, b := m.Lookup()
+			if !test.found {
+				assert.False(t, b)
+			} else {
+				assert.True(t, b)
+				assert.Equal(t, val, test.val)
+			}
+		})
+	}
+}
+
+func TestMapValueSourceStringer(t *testing.T) {
+	m := map[any]any{
+		"foo": map[any]any{
+			"bar": 10,
+		},
+	}
+	mvs := NewMapValueSource("bar", NewMapSource("test", m))
+
+	assert.Equal(t, `&mapValueSource{key:"bar", src:&mapSource{name:"test"}}`, mvs.GoString())
+	assert.Equal(t, `key "bar" from map source "test"`, mvs.String())
+}

@@ -591,6 +591,12 @@ type DocGenerationMultiValueFlag interface {
 
 type DurationFlag = FlagBase[time.Duration, NoConfig, durationValue]
 
+type EnvValueSource interface {
+	IsFromEnv() bool
+	Key() string
+}
+    EnvValueSource is to specifically detect env sources when printing help text
+
 type ErrorFormatter interface {
 	Format(s fmt.State, verb rune)
 }
@@ -848,6 +854,20 @@ func (i MapBase[T, C, VC]) ToString(t map[string]T) string
 func (i *MapBase[T, C, VC]) Value() map[string]T
     Value returns the mapping of values set by this flag
 
+type MapSource interface {
+	fmt.Stringer
+	fmt.GoStringer
+
+	// Lookup returns the value from the source based on key
+	// and if it was found
+	// or returns an empty string and false
+	Lookup(string) (any, bool)
+}
+    MapSource is a source which can be used to look up a value based on a key
+    typically for use with a cli.Flag
+
+func NewMapSource(name string, m map[any]any) MapSource
+
 type MultiError interface {
 	error
 	Errors() []error
@@ -999,6 +1019,8 @@ type ValueSource interface {
 func EnvVar(key string) ValueSource
 
 func File(path string) ValueSource
+
+func NewMapValueSource(key string, ms MapSource) ValueSource
 
 type ValueSourceChain struct {
 	Chain []ValueSource
