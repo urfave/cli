@@ -23,27 +23,18 @@ var (
 	shellCompletions = map[string]renderCompletion{
 		"bash": func(c *Command, appName string) (string, error) {
 			b, err := autoCompleteFS.ReadFile("autocomplete/bash_autocomplete")
-			if err != nil {
-				return "", fmt.Errorf("read file: %w", err)
-			}
-			return fmt.Sprintf(string(b), appName), nil
+			return fmt.Sprintf(string(b), appName), err
 		},
 		"zsh": func(c *Command, appName string) (string, error) {
 			b, err := autoCompleteFS.ReadFile("autocomplete/zsh_autocomplete")
-			if err != nil {
-				return "", fmt.Errorf("read file: %w", err)
-			}
-			return fmt.Sprintf(string(b), appName), nil
+			return fmt.Sprintf(string(b), appName), err
 		},
 		"fish": func(c *Command, appName string) (string, error) {
 			return c.ToFishCompletion()
 		},
 		"pwsh": func(c *Command, appName string) (string, error) {
 			b, err := autoCompleteFS.ReadFile("autocomplete/powershell_autocomplete.ps1")
-			if err != nil {
-				return "", fmt.Errorf("read file: %w", err)
-			}
-			return string(b), nil
+			return string(b), err
 		},
 	}
 )
