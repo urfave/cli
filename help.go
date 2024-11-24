@@ -190,9 +190,8 @@ func cliArgContains(flagName string, args []string) bool {
 }
 
 func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
-	// Trim the prefix twice to handle both "-short" and "--long" flags.
-	cur := strings.TrimPrefix(lastArg, "-")
-	cur = strings.TrimPrefix(cur, "-")
+	// Trim to handle both "-short" and "--long" flags.
+	cur := strings.TrimLeft(lastArg, "-")
 	for _, flag := range flags {
 		if bflag, ok := flag.(*BoolFlag); ok && bflag.Hidden {
 			continue
