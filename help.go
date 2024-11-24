@@ -191,8 +191,8 @@ func cliArgContains(flagName string, args []string) bool {
 
 func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 	// Trim the prefix twice to handle both "-short" and "--long" flags.
-	currentArg := strings.TrimPrefix(lastArg, "-")
-	currentArg = strings.TrimPrefix(currentArg, "-")
+	cur := strings.TrimPrefix(lastArg, "-")
+	cur = strings.TrimPrefix(cur, "-")
 	for _, flag := range flags {
 		if bflag, ok := flag.(*BoolFlag); ok && bflag.Hidden {
 			continue
@@ -215,7 +215,7 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 			continue
 		}
 		// match if last argument matches this flag and it is not repeated
-		if strings.HasPrefix(name, currentArg) && currentArg != name && !cliArgContains(name, os.Args) {
+		if strings.HasPrefix(name, cur) && cur != name && !cliArgContains(name, os.Args) {
 			flagCompletion := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
 			if usage != "" && strings.HasSuffix(os.Getenv("SHELL"), "zsh") {
 				flagCompletion = fmt.Sprintf("%s:%s", flagCompletion, usage)
