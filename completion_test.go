@@ -200,7 +200,7 @@ func TestCompletionInvalidShell(t *testing.T) {
 	assert.ErrorContains(t, err, "unknown shell junky-sheell")
 
 	enableError := true
-	shellCompletions[unknownShellName] = func(c *Command) (string, error) {
+	shellCompletions[unknownShellName] = func(c *Command, appName string) (string, error) {
 		if enableError {
 			return "", fmt.Errorf("cant do completion")
 		}
