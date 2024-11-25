@@ -257,7 +257,7 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 	}
 
 	if cmd.EnableShellCompletion || cmd.Root().shellCompletion {
-		completionCommand := buildCompletionCommand(osArgs[0])
+		completionCommand := buildCompletionCommand(cmd.Name)
 
 		if cmd.ShellCompletionCommandName != "" {
 			tracef(
