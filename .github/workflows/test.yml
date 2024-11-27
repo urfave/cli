@@ -89,10 +89,7 @@ jobs:
   publish:
     permissions:
       contents: write
-    # TODO: switch once v3 is out of alpha {{
-    # if: startswith(github.ref, 'refs/tags/')
-    if: false
-    # }}
+    if: startswith(github.ref, 'refs/tags/')
     name: publish
     needs: [test-docs]
     runs-on: ubuntu-latest
