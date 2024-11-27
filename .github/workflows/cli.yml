@@ -71,7 +71,9 @@ jobs:
   publish:
     permissions:
       contents: write
-    if: startswith(github.ref, 'refs/tags/')
+    # let v3 handle docs
+    # if: startswith(github.ref, 'refs/tags/')
+    if: false
     name: publish
     needs: [test-docs]
     runs-on: ubuntu-latest
