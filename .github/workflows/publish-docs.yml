@@ -50,6 +50,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Create and activate virtual environment
+        run: |
+          python -m venv venv
+          source venv/bin/activate          
+          
       - run: make ensure-mkdocs
         env:
           FLAGS: --upgrade-pip
