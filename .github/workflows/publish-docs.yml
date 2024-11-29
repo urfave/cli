@@ -50,12 +50,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Create and activate virtual environment
+      - name: Create virtual environment
         run: |
           python -m venv venv
-          source venv/bin/activate          
           
-      - run: make ensure-mkdocs
+      - run: |
+          source venv/bin/activate          
+          make ensure-mkdocs
         env:
           FLAGS: --upgrade-pip
 
@@ -63,5 +64,7 @@ jobs:
         env:
           MKDOCS_REMOTE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: make deploy-mkdocs
+      - run: |
+          source venv/bin/activate          
+          make deploy-mkdocs
         
