@@ -55,7 +55,7 @@ jobs:
           python -m venv venv
           
       - run: |
-          source venv/bin/activate          
+          . venv/bin/activate          
           make ensure-mkdocs
         env:
           FLAGS: --upgrade-pip
@@ -65,6 +65,6 @@ jobs:
           MKDOCS_REMOTE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - run: |
-          source venv/bin/activate          
+          . venv/bin/activate          
           make deploy-mkdocs
         
