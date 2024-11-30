@@ -15,7 +15,25 @@ nav:
       - Code of Conduct: CODE_OF_CONDUCT.md
       - Releasing: RELEASING.md
       - Security: SECURITY.md
+      - Migrate v2 to v3: migrate-v2-to-v3.md
       - Migrate v1 to v2: migrate-v1-to-v2.md
+  - v3 Manual:
+      - Getting Started: v3/getting-started.md
+      - Migrating From Older Releases: v3/migrating-from-older-releases.md
+      - Examples:
+          - Greet: v3/examples/greet.md
+          - Arguments: v3/examples/arguments.md
+          - Flags: v3/examples/flags.md
+          - Subcommands: v3/examples/subcommands.md
+          - Subcommands Categories: v3/examples/subcommands-categories.md
+          - Exit Codes: v3/examples/exit-codes.md
+          - Combining Short Options: v3/examples/combining-short-options.md
+          - Bash Completions: v3/examples/bash-completions.md
+          - Generated Help Text: v3/examples/generated-help-text.md
+          - Version Flag: v3/examples/version-flag.md
+          - Timestamp Flag: v3/examples/timestamp-flag.md
+          - Suggestions: v3/examples/suggestions.md
+          - Full API Example: v3/examples/full-api-example.md
   - v2 Manual:
       - Getting Started: v2/getting-started.md
       - Migrating From Older Releases: v2/migrating-from-older-releases.md
