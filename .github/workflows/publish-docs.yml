@@ -34,13 +34,13 @@ jobs:
 
       - run: make gfmrun
         env:
-            FLAGS: --walk docs/v3/
+          FLAGS: --walk docs/v3/
 
       - run: make diffcheck
 
   publish:
     permissions:
-        contents: write
+      contents: write
     if: startswith(github.ref, 'refs/tags/')
     name: publish
     needs: [test-docs]
@@ -50,21 +50,19 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Create virtual environment
-        run: |
-          python -m venv venv
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: mkdocs-reqs.txt
           
-      - run: |
-          . venv/bin/activate          
-          make ensure-mkdocs
-        env:
-          FLAGS: --upgrade-pip
+      - name: Ensure mkdocs is available
+        run: make ensure-mkdocs
 
-      - run: make set-mkdocs-remote
+      - name: Set mkdocs remote
+        run: make set-mkdocs-remote
         env:
           MKDOCS_REMOTE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: |
-          . venv/bin/activate          
-          make deploy-mkdocs
-        
+      - name: Deploy via mkdocs
+        run: make deploy-mkdocs
