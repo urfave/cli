@@ -58,16 +58,12 @@ jobs:
           cache-dependency-path: mkdocs-reqs.txt
           
       - name: Ensure mkdocs is available
-        run: |
-          pip install -r mkdocs-reqs.txt
-          pip freeze
+        run: make ensure-mkdocs
 
       - name: Set mkdocs remote
-        run: |
-          git remote rm origin
-          git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/urfave/cli.git"
+        run: make set-mkdocs-remote
+        env:
+          MKDOCS_REMOTE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Deploy via mkdocs
-        run: |
-          which mkdocs
-          mkdocs gh-deploy --force
+        run: make deploy-mkdocs
