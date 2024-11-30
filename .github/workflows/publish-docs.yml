@@ -75,4 +75,6 @@ jobs:
 
       - name: Deploy via mkdocs
         #run: make deploy-mkdocs
-        run: mkdocs gh-deploy --force
+        run: |
+          which mkdocs
+          mkdocs gh-deploy --force
