@@ -61,7 +61,9 @@ jobs:
         #run: make ensure-mkdocs
         #env:
         #  FLAGS: --upgrade-pip
-        run: pip install -r mkdocs-reqs.txt
+        run: |
+          pip install -r mkdocs-reqs.txt
+          pip freeze
 
       - name: Set mkdocs remote
         #run: make set-mkdocs-remote
