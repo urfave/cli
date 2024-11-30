@@ -68,4 +68,5 @@ jobs:
           MKDOCS_REMOTE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Deploy via mkdocs
-        run: make deploy-mkdocs
+        #run: make deploy-mkdocs
+        run: mkdocs gh-deploy --force
