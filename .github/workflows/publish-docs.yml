@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - publish-docs-python-shuffle
     tags:
       - v3.*
 
@@ -41,7 +42,7 @@ jobs:
   publish:
     permissions:
       contents: write
-    if: startswith(github.ref, 'refs/tags/')
+    #if: startswith(github.ref, 'refs/tags/')
     name: publish
     needs: [test-docs]
     runs-on: ubuntu-latest
