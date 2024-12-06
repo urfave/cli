@@ -7,7 +7,10 @@ import "context"
 type ShellCompleteDirective int
 
 // ShellCompleteFunc is an action to execute when the shell completion flag is set
-type ShellCompleteFunc func(ctx context.Context, cmd *Command, args []string, toComplete string) ([]string, ShellCompleteDirective)
+// type ShellCompleteFunc func(ctx context.Context, cmd *Command, args []string, toComplete string) ([]string, ShellCompleteDirective)
+
+// ShellCompleteFunc is an action to execute when the shell completion flag is set
+type ShellCompleteFunc func(context.Context, *Command)
 
 // BeforeFunc is an action that executes prior to any subcommands being run once
 // the context is ready.  If a non-nil error is returned, no subcommands are
