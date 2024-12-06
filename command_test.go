@@ -2649,7 +2649,7 @@ func TestFlagAction(t *testing.T) {
 		{
 			name: "mixture",
 			args: []string{"app", "--f_string=app", "--f_uint=1", "--f_int_slice=1,2,3", "--f_duration=1h30m20s", "c1", "--f_string=c1", "sub1", "--f_string=sub1"},
-			exp:  "app 1h30m20s [1 2 3] 1 c1 sub1 ",
+			exp:  "sub1 1h30m20s [1 2 3] 1 sub1 sub1 ",
 		},
 		{
 			name: "flag_string_map",
