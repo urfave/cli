@@ -2,8 +2,12 @@ package cli
 
 import "context"
 
+// ShellCompleteDirective is a bit map representing the different behaviors the
+// shell can be instructed to have once completions have been provided.
+type ShellCompleteDirective int
+
 // ShellCompleteFunc is an action to execute when the shell completion flag is set
-type ShellCompleteFunc func(context.Context, *Command)
+type ShellCompleteFunc func(ctx context.Context, cmd *Command, args []string, toComplete string) ([]string, ShellCompleteDirective)
 
 // BeforeFunc is an action that executes prior to any subcommands being run once
 // the context is ready.  If a non-nil error is returned, no subcommands are
