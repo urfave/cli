@@ -3842,7 +3842,6 @@ func TestCommand_ParentCommand_Set(t *testing.T) {
 }
 
 func TestCommandStringDashOption(t *testing.T) {
-
 	tests := []struct {
 		name                string
 		shortOptionHandling bool
