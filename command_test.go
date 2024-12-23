@@ -3841,6 +3841,51 @@ func TestCommand_ParentCommand_Set(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestCommandStringDashOption(t *testing.T) {
+	tests := []struct {
+		name                string
+		shortOptionHandling bool
+		args                []string
+	}{
+		{
+			name: "double dash separate value",
+			args: []string{"foo", "--bar", "-", "test"},
+		},
+		{
+			name: "single dash separate value",
+			args: []string{"foo", "-bar", "-", "test"},
+		},
+		{
+			name:                "single dash combined value",
+			args:                []string{"foo", "-b-", "test"},
+			shortOptionHandling: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			cmd := &Command{
+				Name:                   "foo",
+				UseShortOptionHandling: test.shortOptionHandling,
+				Flags: []Flag{
+					&StringFlag{
+						Name:    "bar",
+						Aliases: []string{"b"},
+					},
+				},
+				Action: func(ctx context.Context, c *Command) error {
+					return nil
+				},
+			}
+
+			err := cmd.Run(buildTestContext(t), test.args)
+			assert.NoError(t, err)
+
+			assert.Equal(t, "-", cmd.String("b"))
+		})
+	}
+}
+
 func TestCommandReadArgsFromStdIn(t *testing.T) {
 	tests := []struct {
 		name          string
