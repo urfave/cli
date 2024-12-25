@@ -135,6 +135,30 @@ func (f *FlagBase[T, C, V]) TypeName() string {
 	}
 }
 
+// PostParse populates the flag given the flag set and environment
+func (f *FlagBase[T, C, V]) PostParse() error {
+	tracef("postparse (flag=%[1]q)", f.Name)
+
+	if !f.hasBeenSet {
+		if val, source, found := f.Sources.LookupWithSource(); found {
+			if val != "" || reflect.TypeOf(f.Value).Kind() == reflect.String {
+				if err := f.value.Set(val); err != nil {
+					return fmt.Errorf(
+						"could not parse %[1]q as %[2]T value from %[3]s for flag %[4]s: %[5]s",
+						val, f.Value, source, f.Name, err,
+					)
+				}
+			} else if val == "" && reflect.TypeOf(f.Value).Kind() == reflect.Bool {
+				_ = f.value.Set("false")
+			}
+
+			f.hasBeenSet = true
+		}
+	}
+
+	return nil
+}
+
 // Apply populates the flag given the flag set and environment
 func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 	tracef("apply (flag=%[1]q)", f.Name)
@@ -147,23 +171,6 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 	// keeping the env set.
 	if !f.applied || f.Local {
 		newVal := f.Value
-
-		if val, source, found := f.Sources.LookupWithSource(); found {
-			tmpVal := f.creator.Create(f.Value, new(T), f.Config)
-			if val != "" || reflect.TypeOf(f.Value).Kind() == reflect.String {
-				if err := tmpVal.Set(val); err != nil {
-					return fmt.Errorf(
-						"could not parse %[1]q as %[2]T value from %[3]s for flag %[4]s: %[5]s",
-						val, f.Value, source, f.Name, err,
-					)
-				}
-			} else if val == "" && reflect.TypeOf(f.Value).Kind() == reflect.Bool {
-				_ = tmpVal.Set("false")
-			}
-
-			newVal = tmpVal.Get().(T)
-			f.hasBeenSet = true
-		}
 
 		if f.Destination == nil {
 			f.value = f.creator.Create(newVal, new(T), f.Config)
