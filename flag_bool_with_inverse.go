@@ -135,6 +135,20 @@ func (parent *BoolWithInverseFlag) inverseAliases() (aliases []string) {
 	return
 }
 
+func (parent *BoolWithInverseFlag) PostParse() error {
+	if parent.positiveFlag != nil {
+		if err := parent.positiveFlag.PostParse(); err != nil {
+			return err
+		}
+	}
+	if parent.negativeFlag != nil {
+		if err := parent.negativeFlag.PostParse(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (parent *BoolWithInverseFlag) Apply(set *flag.FlagSet) error {
 	if parent.positiveFlag == nil {
 		parent.initialize()

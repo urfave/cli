@@ -104,6 +104,8 @@ type ActionableFlag interface {
 type Flag interface {
 	fmt.Stringer
 
+	PostParse() error
+
 	// Apply Flag settings to the given flag set
 	Apply(*flag.FlagSet) error
 
