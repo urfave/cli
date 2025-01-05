@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"sort"
 	"strings"
 	"unicode"
@@ -561,23 +562,7 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 		}
 	}
 
-	if cmd.Before != nil && !cmd.Root().shellCompletion {
-		if bctx, err := cmd.Before(ctx, cmd); err != nil {
-			deferErr = cmd.handleExitCoder(ctx, err)
-			return deferErr
-		} else if bctx != nil {
-			ctx = bctx
-		}
-	}
-
-	tracef("running flag actions (cmd=%[1]q)", cmd.Name)
-
-	if err := cmd.runFlagActions(ctx); err != nil {
-		return err
-	}
-
 	var subCmd *Command
-
 	if args.Present() {
 		tracef("checking positional args %[1]q (cmd=%[2]q)", args, cmd.Name)
 
@@ -613,11 +598,46 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 		}
 	}
 
+	// If a subcommand has been resolved, let it handle the remaining execution.
 	if subCmd != nil {
 		tracef("running sub-command %[1]q with arguments %[2]q (cmd=%[3]q)", subCmd.Name, cmd.Args(), cmd.Name)
 		return subCmd.Run(ctx, cmd.Args().Slice())
 	}
 
+	// This code path is the innermost command execution. Here we actually
+	// perform the command action.
+	//
+	// First, resolve the chain of nested commands up to the parent.
+	var cmdChain []*Command
+	for p := cmd; p != nil; p = p.parent {
+		cmdChain = append(cmdChain, p)
+	}
+	slices.Reverse(cmdChain)
+
+	// Run Before actions in order.
+	for _, cmd := range cmdChain {
+		if cmd.Before == nil {
+			continue
+		}
+		if bctx, err := cmd.Before(ctx, cmd); err != nil {
+			deferErr = cmd.handleExitCoder(ctx, err)
+			return deferErr
+		} else if bctx != nil {
+			ctx = bctx
+		}
+	}
+
+	// Run flag actions in order.
+	// These take a context, so this has to happen after Before actions.
+	for _, cmd := range cmdChain {
+		tracef("running flag actions (cmd=%[1]q)", cmd.Name)
+		if err := cmd.runFlagActions(ctx); err != nil {
+			deferErr = cmd.handleExitCoder(ctx, err)
+			return deferErr
+		}
+	}
+
+	// Run the command action.
 	if cmd.Action == nil {
 		cmd.Action = helpCommandAction
 	} else {

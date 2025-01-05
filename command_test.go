@@ -1438,6 +1438,43 @@ func TestCommand_BeforeFunc(t *testing.T) {
 	assert.Zero(t, counts.SubCommand, "Subcommand executed when NOT expected")
 }
 
+func TestCommand_BeforeFuncPersistentFlag(t *testing.T) {
+	counts := &opCounts{}
+	beforeError := fmt.Errorf("fail")
+	var err error
+
+	cmd := &Command{
+		Before: func(_ context.Context, cmd *Command) (context.Context, error) {
+			counts.Before++
+			s := cmd.String("opt")
+			if s != "value" {
+				return nil, beforeError
+			}
+			return nil, nil
+		},
+		Commands: []*Command{
+			{
+				Name: "sub",
+				Action: func(context.Context, *Command) error {
+					counts.SubCommand++
+					return nil
+				},
+			},
+		},
+		Flags: []Flag{
+			&StringFlag{Name: "opt"},
+		},
+		Writer: io.Discard,
+	}
+
+	// Check that --opt value is available in root command Before hook,
+	// even when it was set on the subcommand.
+	err = cmd.Run(buildTestContext(t), []string{"command", "sub", "--opt", "value"})
+	require.NoError(t, err)
+	assert.Equal(t, 1, counts.Before, "Before() not executed when expected")
+	assert.Equal(t, 1, counts.SubCommand, "Subcommand not executed when expected")
+}
+
 func TestCommand_BeforeAfterFuncShellCompletion(t *testing.T) {
 	t.Skip("TODO: is '--generate-shell-completion' (flag) still supported?")
 
@@ -2649,7 +2686,7 @@ func TestFlagAction(t *testing.T) {
 		{
 			name: "mixture",
 			args: []string{"app", "--f_string=app", "--f_uint=1", "--f_int_slice=1,2,3", "--f_duration=1h30m20s", "c1", "--f_string=c1", "sub1", "--f_string=sub1"},
-			exp:  "app 1h30m20s [1 2 3] 1 c1 sub1 ",
+			exp:  "sub1 1h30m20s [1 2 3] 1 sub1 sub1 ",
 		},
 		{
 			name: "flag_string_map",
