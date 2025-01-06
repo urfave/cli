@@ -109,7 +109,7 @@ func main() {
 				},
 				SkipFlagParsing:    false,
 				HideHelp:           false,
-				HideHelpCommands:   false,
+				HideHelpCommand:    false,
 				Hidden:             false,
 				HelpName:           "doo!",
 				BashComplete: func(cCtx *cli.Context) {
@@ -157,7 +157,7 @@ func main() {
 		},
 		EnableBashCompletion: true,
 		HideHelp:             false,
-		HideHelpCommands:     false,
+		HideHelpCommand:      false,
 		HideVersion:          false,
 		BashComplete: func(cCtx *cli.Context) {
 			fmt.Fprintf(cCtx.App.Writer, "lipstick\nkiss\nme\nlipstick\nringo\n")
