@@ -6,6 +6,10 @@ type extFlag struct {
 	f *flag.Flag
 }
 
+func (e *extFlag) PostParse() error {
+	return nil
+}
+
 func (e *extFlag) Apply(fs *flag.FlagSet) error {
 	fs.Var(e.f.Value, e.f.Name, e.f.Usage)
 	return nil

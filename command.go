@@ -541,6 +541,12 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 		return nil
 	}
 
+	for _, flag := range cmd.Flags {
+		if err := flag.PostParse(); err != nil {
+			return err
+		}
+	}
+
 	if cmd.After != nil && !cmd.Root().shellCompletion {
 		defer func() {
 			if err := cmd.After(ctx, cmd); err != nil {

@@ -2343,6 +2343,10 @@ func (c *customBoolFlag) GetUsage() string {
 	return "usage"
 }
 
+func (c *customBoolFlag) PostParse() error {
+	return nil
+}
+
 func (c *customBoolFlag) Apply(set *flag.FlagSet) error {
 	set.String(c.Nombre, c.Nombre, "")
 	return nil
