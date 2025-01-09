@@ -98,6 +98,21 @@ func (f *FlagBase[T, C, V]) GetValue() string {
 	return fmt.Sprintf("%v", f.Value)
 }
 
+// GetFlagType returns the type of the flag.
+func (f *FlagBase[T, C, V]) GetFlagType() string {
+	ty := reflect.TypeOf(f.Value)
+	if ty == nil {
+		return ""
+	}
+	// if it is a Slice, then return the slice type. Will nested slices be used in the future?
+	if ty.Kind() == reflect.Slice {
+		elemType := ty.Elem()
+		return "[]" + elemType.Name()
+	}
+	// TODO. Hashmap is a bit difficult to judge, it will be fixed in the future
+	return ty.Name()
+}
+
 // Apply populates the flag given the flag set and environment
 func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 	tracef("apply (flag=%[1]q)", f.Name)

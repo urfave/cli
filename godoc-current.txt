@@ -705,6 +705,9 @@ func (f *FlagBase[T, C, V]) GetDefaultText() string
 func (f *FlagBase[T, C, V]) GetEnvVars() []string
     GetEnvVars returns the env vars for this flag
 
+func (f *FlagBase[T, C, V]) GetFlagType() string
+    GetFlagType returns the type of the flag.
+
 func (f *FlagBase[T, C, V]) GetUsage() string
     GetUsage returns the usage string for the flag
 
@@ -784,6 +787,11 @@ type FlagStringFunc func(Flag) string
 var FlagStringer FlagStringFunc = stringifyFlag
     FlagStringer converts a flag definition to a string. This is used by help to
     display a flag.
+
+type FlagType interface {
+	GetFlagType() string
+}
+    FlagType is an interface to detect if a flag is a string, bool, etc.
 
 type FlagsByName []Flag
     FlagsByName is a slice of Flag.
