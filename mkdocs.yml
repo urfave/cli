@@ -28,7 +28,7 @@ nav:
           - Subcommands Categories: v3/examples/subcommands-categories.md
           - Exit Codes: v3/examples/exit-codes.md
           - Combining Short Options: v3/examples/combining-short-options.md
-          - Bash Completions: v3/examples/bash-completions.md
+          - Shell Completions: v3/examples/shell-completions.md
           - Generated Help Text: v3/examples/generated-help-text.md
           - Version Flag: v3/examples/version-flag.md
           - Timestamp Flag: v3/examples/timestamp-flag.md
@@ -87,10 +87,15 @@ theme:
     - navigation.sections
     - navigation.tabs
     - navigation.tabs.sticky
+
 plugins:
   - git-revision-date-localized
   - search
+  - redirects:
+      redirect_maps:
+        'v3/examples/bash-completions.md': 'v3/examples/shell-completions.md'
   - tags
+
 # NOTE: this is the recommended configuration from
 # https://squidfunk.github.io/mkdocs-material/setup/extensions/#recommended-configuration
 markdown_extensions:
