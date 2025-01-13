@@ -98,6 +98,27 @@ func (f *FlagBase[T, C, V]) GetValue() string {
 	return fmt.Sprintf("%v", f.Value)
 }
 
+// TypeName returns the type of the flag.
+func (f *FlagBase[T, C, V]) TypeName() string {
+	ty := reflect.TypeOf(f.Value)
+	if ty == nil {
+		return ""
+	}
+	switch ty.Kind() {
+	// if it is a Slice, then return the slice's inner type. Will nested slices be used in the future?
+	case reflect.Slice:
+		elemType := ty.Elem()
+		return elemType.Name()
+	// if it is a Map, then return the map's key and value types.
+	case reflect.Map:
+		keyType := ty.Key()
+		valueType := ty.Elem()
+		return fmt.Sprintf("%s=%s", keyType.Name(), valueType.Name())
+	default:
+		return ty.Name()
+	}
+}
+
 // Apply populates the flag given the flag set and environment
 func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 	tracef("apply (flag=%[1]q)", f.Name)

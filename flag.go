@@ -180,6 +180,11 @@ type LocalFlag interface {
 	IsLocal() bool
 }
 
+// FlagType is an interface to detect if a flag is a string, bool, etc.
+type FlagType interface {
+	TypeName() string
+}
+
 func newFlagSet(name string, flags []Flag) (*flag.FlagSet, error) {
 	set := flag.NewFlagSet(name, flag.ContinueOnError)
 
@@ -304,9 +309,14 @@ func stringifyFlag(f Flag) string {
 	}
 	placeholder, usage := unquoteUsage(df.GetUsage())
 	needsPlaceholder := df.TakesValue()
-
+	// if needsPlaceholder is true, placeholder is empty
 	if needsPlaceholder && placeholder == "" {
-		placeholder = defaultPlaceholder
+		// try to get type from flag
+		if ft, ok := f.(FlagType); ok && ft.TypeName() != "" {
+			placeholder = ft.TypeName()
+		} else {
+			placeholder = defaultPlaceholder
+		}
 	}
 
 	defaultValueString := ""
