@@ -2706,7 +2706,7 @@ func TestFlagDefaultValue(t *testing.T) {
 			name:    "stringMap",
 			flag:    &StringMapFlag{Name: "flag", Value: map[string]string{"default1": "default2"}},
 			toParse: []string{"--flag", "parsed="},
-			expect:  `--flag value [ --flag value ]	(default: default1="default2")`,
+			expect:  `--flag string=string [ --flag string=string ]	(default: default1="default2")`,
 		},
 	}
 	for _, v := range cases {
@@ -2845,7 +2845,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "stringMap",
 			flag:    &StringMapFlag{Name: "flag", Value: map[string]string{"default1": "default2"}, Sources: EnvVars("ssflag")},
 			toParse: []string{"--flag", "parsed="},
-			expect:  `--flag value [ --flag value ]	(default: default1="default2")` + withEnvHint([]string{"ssflag"}, ""),
+			expect:  `--flag string=string [ --flag string=string ]	(default: default1="default2")` + withEnvHint([]string{"ssflag"}, ""),
 			environ: map[string]string{
 				"ssflag": "some-other-env_value=",
 			},
@@ -3007,11 +3007,11 @@ var stringMapFlagTests = []struct {
 	value    map[string]string
 	expected string
 }{
-	{"foo", nil, nil, "--foo value [ --foo value ]\t"},
-	{"f", nil, nil, "-f value [ -f value ]\t"},
-	{"f", nil, map[string]string{"Lipstick": ""}, "-f value [ -f value ]\t(default: Lipstick=)"},
-	{"test", nil, map[string]string{"Something": ""}, "--test value [ --test value ]\t(default: Something=)"},
-	{"dee", []string{"d"}, map[string]string{"Inka": "Dinka", "dooo": ""}, "--dee value, -d value [ --dee value, -d value ]\t(default: Inka=\"Dinka\", dooo=)"},
+	{"foo", nil, nil, "--foo string=string [ --foo string=string ]\t"},
+	{"f", nil, nil, "-f string=string [ -f string=string ]\t"},
+	{"f", nil, map[string]string{"Lipstick": ""}, "-f string=string [ -f string=string ]\t(default: Lipstick=)"},
+	{"test", nil, map[string]string{"Something": ""}, "--test string=string [ --test string=string ]\t(default: Something=)"},
+	{"dee", []string{"d"}, map[string]string{"Inka": "Dinka", "dooo": ""}, "--dee string=string, -d string=string [ --dee string=string, -d string=string ]\t(default: Inka=\"Dinka\", dooo=)"},
 }
 
 func TestStringMapFlagHelpOutput(t *testing.T) {
