@@ -104,12 +104,11 @@ func (f *FlagBase[T, C, V]) GetFlagType() string {
 	if ty == nil {
 		return ""
 	}
-	// if it is a Slice, then return the slice type. Will nested slices be used in the future?
+	// if it is a Slice, then return the slice's inner type. Will nested slices be used in the future?
 	if ty.Kind() == reflect.Slice {
 		elemType := ty.Elem()
-		return "[]" + elemType.Name()
+		return elemType.Name()
 	}
-	// TODO. Hashmap is a bit difficult to judge, it will be fixed in the future
 	return ty.Name()
 }
 

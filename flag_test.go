@@ -459,12 +459,12 @@ func TestFlagStringifying(t *testing.T) {
 		{
 			name:     "float64-slice-flag",
 			fl:       &FloatSliceFlag{Name: "pizzas"},
-			expected: "--pizzas []float64 [ --pizzas []float64 ]\t",
+			expected: "--pizzas float64 [ --pizzas float64 ]\t",
 		},
 		{
 			name:     "float64-slice-flag-with-default-text",
 			fl:       &FloatSliceFlag{Name: "pepperonis", DefaultText: "shaved"},
-			expected: "--pepperonis []float64 [ --pepperonis []float64 ]\t(default: shaved)",
+			expected: "--pepperonis float64 [ --pepperonis float64 ]\t(default: shaved)",
 		},
 		{
 			name:     "generic-flag",
@@ -489,7 +489,7 @@ func TestFlagStringifying(t *testing.T) {
 		{
 			name:     "int-slice-flag",
 			fl:       &IntSliceFlag{Name: "pencils"},
-			expected: "--pencils []int64 [ --pencils []int64 ]\t",
+			expected: "--pencils int64 [ --pencils int64 ]\t",
 		},
 		{
 			name:     "int-slice-flag-with-default-text",
@@ -499,7 +499,7 @@ func TestFlagStringifying(t *testing.T) {
 		{
 			name:     "uint-slice-flag",
 			fl:       &UintSliceFlag{Name: "pencils"},
-			expected: "--pencils []uint64 [ --pencils []uint64 ]\t",
+			expected: "--pencils uint64 [ --pencils uint64 ]\t",
 		},
 		{
 			name:     "uint-slice-flag-with-default-text",
@@ -519,12 +519,12 @@ func TestFlagStringifying(t *testing.T) {
 		{
 			name:     "uint64-slice-flag",
 			fl:       &UintSliceFlag{Name: "drawers"},
-			expected: "--drawers []uint64 [ --drawers []uint64 ]\t",
+			expected: "--drawers uint64 [ --drawers uint64 ]\t",
 		},
 		{
 			name:     "uint64-slice-flag-with-default-text",
 			fl:       &UintSliceFlag{Name: "handles", DefaultText: "-2"},
-			expected: "--handles []uint64 [ --handles []uint64 ]\t(default: -2)",
+			expected: "--handles uint64 [ --handles uint64 ]\t(default: -2)",
 		},
 		{
 			name:     "string-flag",
@@ -539,12 +539,12 @@ func TestFlagStringifying(t *testing.T) {
 		{
 			name:     "string-slice-flag",
 			fl:       &StringSliceFlag{Name: "meow-sounds"},
-			expected: "--meow-sounds []string [ --meow-sounds []string ]\t",
+			expected: "--meow-sounds string [ --meow-sounds string ]\t",
 		},
 		{
 			name:     "string-slice-flag-with-default-text",
 			fl:       &StringSliceFlag{Name: "moo-sounds", DefaultText: "awoo"},
-			expected: "--moo-sounds []string [ --moo-sounds []string ]\t(default: awoo)",
+			expected: "--moo-sounds string [ --moo-sounds string ]\t(default: awoo)",
 		},
 		{
 			name:     "timestamp-flag",
@@ -724,11 +724,11 @@ var stringSliceFlagTests = []struct {
 	value    []string
 	expected string
 }{
-	{"foo", nil, []string{}, "--foo []string [ --foo []string ]\t"},
-	{"f", nil, []string{}, "-f []string [ -f []string ]\t"},
-	{"f", nil, []string{"Lipstick"}, "-f []string [ -f []string ]\t(default: \"Lipstick\")"},
-	{"test", nil, []string{"Something"}, "--test []string [ --test []string ]\t(default: \"Something\")"},
-	{"dee", []string{"d"}, []string{"Inka", "Dinka", "dooo"}, "--dee []string, -d []string [ --dee []string, -d []string ]\t(default: \"Inka\", \"Dinka\", \"dooo\")"},
+	{"foo", nil, []string{}, "--foo string [ --foo string ]\t"},
+	{"f", nil, []string{}, "-f string [ -f string ]\t"},
+	{"f", nil, []string{"Lipstick"}, "-f string [ -f string ]\t(default: \"Lipstick\")"},
+	{"test", nil, []string{"Something"}, "--test string [ --test string ]\t(default: \"Something\")"},
+	{"dee", []string{"d"}, []string{"Inka", "Dinka", "dooo"}, "--dee string, -d string [ --dee string, -d string ]\t(default: \"Inka\", \"Dinka\", \"dooo\")"},
 }
 
 func TestStringSliceFlagHelpOutput(t *testing.T) {
@@ -1010,9 +1010,9 @@ var intSliceFlagTests = []struct {
 	value    []int64
 	expected string
 }{
-	{"heads", nil, []int64{}, "--heads []int64 [ --heads []int64 ]\t"},
-	{"H", nil, []int64{}, "-H []int64 [ -H []int64 ]\t"},
-	{"H", []string{"heads"}, []int64{9, 3}, "-H []int64, --heads []int64 [ -H []int64, --heads []int64 ]\t(default: 9, 3)"},
+	{"heads", nil, []int64{}, "--heads int64 [ --heads int64 ]\t"},
+	{"H", nil, []int64{}, "-H int64 [ -H int64 ]\t"},
+	{"H", []string{"heads"}, []int64{9, 3}, "-H int64, --heads int64 [ -H int64, --heads int64 ]\t(default: 9, 3)"},
 }
 
 func TestIntSliceFlagHelpOutput(t *testing.T) {
@@ -1131,13 +1131,13 @@ var uintSliceFlagTests = []struct {
 	value    []uint64
 	expected string
 }{
-	{"heads", nil, []uint64{}, "--heads []uint64 [ --heads []uint64 ]\t"},
-	{"H", nil, []uint64{}, "-H []uint64 [ -H []uint64 ]\t"},
+	{"heads", nil, []uint64{}, "--heads uint64 [ --heads uint64 ]\t"},
+	{"H", nil, []uint64{}, "-H uint64 [ -H uint64 ]\t"},
 	{
 		"heads",
 		[]string{"H"},
 		[]uint64{2, 17179869184},
-		"--heads []uint64, -H []uint64 [ --heads []uint64, -H []uint64 ]\t(default: 2, 17179869184)",
+		"--heads uint64, -H uint64 [ --heads uint64, -H uint64 ]\t(default: 2, 17179869184)",
 	},
 }
 
@@ -1276,13 +1276,13 @@ var uint64SliceFlagTests = []struct {
 	value    []uint64
 	expected string
 }{
-	{"heads", nil, []uint64{}, "--heads []uint64 [ --heads []uint64 ]\t"},
-	{"H", nil, []uint64{}, "-H []uint64 [ -H []uint64 ]\t"},
+	{"heads", nil, []uint64{}, "--heads uint64 [ --heads uint64 ]\t"},
+	{"H", nil, []uint64{}, "-H uint64 [ -H uint64 ]\t"},
 	{
 		"heads",
 		[]string{"H"},
 		[]uint64{2, 17179869184},
-		"--heads []uint64, -H []uint64 [ --heads []uint64, -H []uint64 ]\t(default: 2, 17179869184)",
+		"--heads uint64, -H uint64 [ --heads uint64, -H uint64 ]\t(default: 2, 17179869184)",
 	},
 }
 
@@ -1467,13 +1467,13 @@ var float64SliceFlagTests = []struct {
 	value    []float64
 	expected string
 }{
-	{"heads", nil, []float64{}, "--heads []float64 [ --heads []float64 ]\t"},
-	{"H", nil, []float64{}, "-H []float64 [ -H []float64 ]\t"},
+	{"heads", nil, []float64{}, "--heads float64 [ --heads float64 ]\t"},
+	{"H", nil, []float64{}, "-H float64 [ -H float64 ]\t"},
 	{
 		"heads",
 		[]string{"H"},
 		[]float64{0.1234, -10.5},
-		"--heads []float64, -H []float64 [ --heads []float64, -H []float64 ]\t(default: 0.1234, -10.5)",
+		"--heads float64, -H float64 [ --heads float64, -H float64 ]\t(default: 0.1234, -10.5)",
 	},
 }
 
@@ -2664,25 +2664,25 @@ func TestFlagDefaultValue(t *testing.T) {
 			name:    "stringSlice",
 			flag:    &StringSliceFlag{Name: "flag", Value: []string{"default1", "default2"}},
 			toParse: []string{"--flag", "parsed"},
-			expect:  `--flag []string [ --flag []string ]	(default: "default1", "default2")`,
+			expect:  `--flag string [ --flag string ]	(default: "default1", "default2")`,
 		},
 		{
 			name:    "float64Slice",
 			flag:    &FloatSliceFlag{Name: "flag", Value: []float64{1.1, 2.2}},
 			toParse: []string{"--flag", "13.3"},
-			expect:  `--flag []float64 [ --flag []float64 ]	(default: 1.1, 2.2)`,
+			expect:  `--flag float64 [ --flag float64 ]	(default: 1.1, 2.2)`,
 		},
 		{
 			name:    "intSlice",
 			flag:    &IntSliceFlag{Name: "flag", Value: []int64{1, 2}},
 			toParse: []string{"--flag", "13"},
-			expect:  `--flag []int64 [ --flag []int64 ]	(default: 1, 2)`,
+			expect:  `--flag int64 [ --flag int64 ]	(default: 1, 2)`,
 		},
 		{
 			name:    "uintSlice",
 			flag:    &UintSliceFlag{Name: "flag", Value: []uint64{1, 2}},
 			toParse: []string{"--flag", "13"},
-			expect:  `--flag []uint64 [ --flag []uint64 ]	(default: 1, 2)`,
+			expect:  `--flag uint64 [ --flag uint64 ]	(default: 1, 2)`,
 		},
 		{
 			name:    "string",
@@ -2737,7 +2737,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "stringSlice",
 			flag:    &StringSliceFlag{Name: "flag", Value: []string{"default1", "default2"}, Sources: EnvVars("ssflag")},
 			toParse: []string{"--flag", "parsed"},
-			expect:  `--flag []string [ --flag []string ]	(default: "default1", "default2")` + withEnvHint([]string{"ssflag"}, ""),
+			expect:  `--flag string [ --flag string ]	(default: "default1", "default2")` + withEnvHint([]string{"ssflag"}, ""),
 			environ: map[string]string{
 				"ssflag": "some-other-env_value",
 			},
@@ -2746,7 +2746,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "float64Slice",
 			flag:    &FloatSliceFlag{Name: "flag", Value: []float64{1.1, 2.2}, Sources: EnvVars("fsflag")},
 			toParse: []string{"--flag", "13.3"},
-			expect:  `--flag []float64 [ --flag []float64 ]	(default: 1.1, 2.2)` + withEnvHint([]string{"fsflag"}, ""),
+			expect:  `--flag float64 [ --flag float64 ]	(default: 1.1, 2.2)` + withEnvHint([]string{"fsflag"}, ""),
 			environ: map[string]string{
 				"fsflag": "20304.222",
 			},
@@ -2755,7 +2755,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "intSlice",
 			flag:    &IntSliceFlag{Name: "flag", Value: []int64{1, 2}, Sources: EnvVars("isflag")},
 			toParse: []string{"--flag", "13"},
-			expect:  `--flag []int64 [ --flag []int64 ]	(default: 1, 2)` + withEnvHint([]string{"isflag"}, ""),
+			expect:  `--flag int64 [ --flag int64 ]	(default: 1, 2)` + withEnvHint([]string{"isflag"}, ""),
 			environ: map[string]string{
 				"isflag": "101",
 			},
@@ -2764,7 +2764,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "uintSlice",
 			flag:    &UintSliceFlag{Name: "flag", Value: []uint64{1, 2}, Sources: EnvVars("uisflag")},
 			toParse: []string{"--flag", "13"},
-			expect:  `--flag []uint64 [ --flag []uint64 ]	(default: 1, 2)` + withEnvHint([]string{"uisflag"}, ""),
+			expect:  `--flag uint64 [ --flag uint64 ]	(default: 1, 2)` + withEnvHint([]string{"uisflag"}, ""),
 			environ: map[string]string{
 				"uisflag": "3",
 			},
