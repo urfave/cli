@@ -142,6 +142,8 @@ type DocGenerationFlag interface {
 	// IsDefaultVisible returns whether the default value should be shown in
 	// help text
 	IsDefaultVisible() bool
+	// TypeName to detect if a flag is a string, bool, etc.
+	TypeName() string
 }
 
 // DocGenerationMultiValueFlag extends DocGenerationFlag for slice/map based flags.
@@ -178,11 +180,6 @@ type CategorizableFlag interface {
 // to current command
 type LocalFlag interface {
 	IsLocal() bool
-}
-
-// FlagType is an interface to detect if a flag is a string, bool, etc.
-type FlagType interface {
-	GetFlagType() string
 }
 
 func newFlagSet(name string, flags []Flag) (*flag.FlagSet, error) {
@@ -312,8 +309,8 @@ func stringifyFlag(f Flag) string {
 	// if needsPlaceholder is true, placeholder is empty
 	if needsPlaceholder && placeholder == "" {
 		// try to get type from flag
-		if v1, ok := f.(FlagType); ok && v1.GetFlagType() != "" {
-			placeholder = v1.GetFlagType()
+		if tname := df.TypeName(); tname != "" {
+			placeholder = tname
 		} else {
 			placeholder = defaultPlaceholder
 		}

@@ -86,8 +86,8 @@ USAGE:
    test [global options] [arguments...]
 
 GLOBAL OPTIONS:
-   --foo int64, -f int64  
-   --help, -h             show help
+   --foo int, -f int  
+   --help, -h         show help
 `
 
 	assert.Contains(t, output.String(), expected,
@@ -1729,8 +1729,8 @@ GLOBAL OPTIONS:
 
    cat1
 
-   --intd int64, --altd1 int64, --altd2 int64  (default: 0)
-   --m1 string                                 
+   --intd int, --altd1 int, --altd2 int  (default: 0)
+   --m1 string                           
 
 `, output.String())
 }
