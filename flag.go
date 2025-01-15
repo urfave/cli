@@ -142,6 +142,8 @@ type DocGenerationFlag interface {
 	// IsDefaultVisible returns whether the default value should be shown in
 	// help text
 	IsDefaultVisible() bool
+	// TypeName to detect if a flag is a string, bool, etc.
+	TypeName() string
 }
 
 // DocGenerationMultiValueFlag extends DocGenerationFlag for slice/map based flags.
@@ -304,9 +306,14 @@ func stringifyFlag(f Flag) string {
 	}
 	placeholder, usage := unquoteUsage(df.GetUsage())
 	needsPlaceholder := df.TakesValue()
-
+	// if needsPlaceholder is true, placeholder is empty
 	if needsPlaceholder && placeholder == "" {
-		placeholder = defaultPlaceholder
+		// try to get type from flag
+		if tname := df.TypeName(); tname != "" {
+			placeholder = tname
+		} else {
+			placeholder = defaultPlaceholder
+		}
 	}
 
 	defaultValueString := ""

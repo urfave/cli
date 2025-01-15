@@ -143,7 +143,7 @@ func ExampleCommand_Run_appHelp() {
 	//    help, h        Shows a list of commands or help for one command
 	//
 	// GLOBAL OPTIONS:
-	//    --name value   a name to say (default: "bob")
+	//    --name string  a name to say (default: "bob")
 	//    --help, -h     show help
 	//    --version, -v  print the version
 }
