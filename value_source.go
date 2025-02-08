@@ -189,12 +189,19 @@ func (ms *mapSource) GoString() string {
 	return fmt.Sprintf("&mapSource{name:%[1]q}", ms.name)
 }
 
+// Lookup returns a value from the map source. The lookup name may be a dot-separated path into the map.
+// If that is the case, it will recursively traverse the map based on the '.' delimited sections to find
+// a nested value for the key.
 func (ms *mapSource) Lookup(name string) (any, bool) {
-	// nestedVal checks if the name has '.' delimiters.
-	// If so, it tries to traverse the tree by the '.' delimited sections to find
-	// a nested value for the key.
-	if sections := strings.Split(name, "."); len(sections) > 1 {
-		node := ms.m
+	sections := strings.Split(name, ".")
+	if name == "" || len(sections) == 0 {
+		return nil, false
+	}
+
+	node := ms.m
+
+	// traverse into the map based on the dot-separated sections
+	if len(sections) >= 2 { // the last section is the value we want, we will return it directly at the end
 		for _, section := range sections[:len(sections)-1] {
 			child, ok := node[section]
 			if !ok {
@@ -213,11 +220,11 @@ func (ms *mapSource) Lookup(name string) (any, bool) {
 				return nil, false
 			}
 		}
-		if val, ok := node[sections[len(sections)-1]]; ok {
-			return val, true
-		}
 	}
 
+	if val, ok := node[sections[len(sections)-1]]; ok {
+		return val, true
+	}
 	return nil, false
 }
 

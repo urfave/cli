@@ -222,6 +222,15 @@ func TestMapValueSource(t *testing.T) {
 			},
 		},
 		{
+			name: "Level 1",
+			key:  "foobar",
+			m: map[any]any{
+				"foobar": 10,
+			},
+			val:   "10",
+			found: true,
+		},
+		{
 			name: "Level 2",
 			key:  "foo.bar",
 			m: map[any]any{
@@ -237,6 +246,15 @@ func TestMapValueSource(t *testing.T) {
 			key:  "foo.bar1",
 			m: map[any]any{
 				"foo": map[any]any{
+					"bar": "10",
+				},
+			},
+		},
+		{
+			name: "Level 2 string map type",
+			key:  "foo.bar1",
+			m: map[any]any{
+				"foo": map[string]any{
 					"bar": "10",
 				},
 			},
