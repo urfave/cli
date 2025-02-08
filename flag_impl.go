@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 // Value represents a value as used by cli.
@@ -96,6 +97,42 @@ func (f *FlagBase[T, C, V]) GetValue() string {
 		return ""
 	}
 	return fmt.Sprintf("%v", f.Value)
+}
+
+// TypeName returns the type of the flag.
+func (f *FlagBase[T, C, V]) TypeName() string {
+	ty := reflect.TypeOf(f.Value)
+	if ty == nil {
+		return ""
+	}
+	// convert the typename to generic type
+	convertToGenericType := func(name string) string {
+		prefixMap := map[string]string{
+			"float": "float",
+			"int":   "int",
+			"uint":  "uint",
+		}
+		for prefix, genericType := range prefixMap {
+			if strings.HasPrefix(name, prefix) {
+				return genericType
+			}
+		}
+		return strings.ToLower(name)
+	}
+
+	switch ty.Kind() {
+	// if it is a Slice, then return the slice's inner type. Will nested slices be used in the future?
+	case reflect.Slice:
+		elemType := ty.Elem()
+		return convertToGenericType(elemType.Name())
+	// if it is a Map, then return the map's key and value types.
+	case reflect.Map:
+		keyType := ty.Key()
+		valueType := ty.Elem()
+		return fmt.Sprintf("%s=%s", convertToGenericType(keyType.Name()), convertToGenericType(valueType.Name()))
+	default:
+		return convertToGenericType(ty.Name())
+	}
 }
 
 // Apply populates the flag given the flag set and environment

@@ -86,8 +86,8 @@ USAGE:
    test [global options] [arguments...]
 
 GLOBAL OPTIONS:
-   --foo value, -f value  
-   --help, -h             show help
+   --foo int, -f int  
+   --help, -h         show help
 `
 
 	assert.Contains(t, output.String(), expected,
@@ -720,11 +720,11 @@ USAGE:
    foo frobbly [command [command options]]
 
 OPTIONS:
-   --bar value  
-   --help, -h   show help
+   --bar string  
+   --help, -h    show help
 
 GLOBAL OPTIONS:
-   --foo value  
+   --foo string  
 `
 
 	assert.Contains(t, output.String(), expected, "expected output to include global options")
@@ -1648,7 +1648,7 @@ USAGE:
    even more
 
 OPTIONS:
-   --test-f value my test
+   --test-f string my test
       usage
    --help, -h  show help
 `,
@@ -1723,14 +1723,14 @@ USAGE:
    cli.test [global options]
 
 GLOBAL OPTIONS:
-   --help, -h    show help
-   --m2 value    
-   --strd value  
+   --help, -h     show help
+   --m2 string    
+   --strd string  
 
    cat1
 
-   --intd value, --altd1 value, --altd2 value  (default: 0)
-   --m1 value                                  
+   --intd int, --altd1 int, --altd2 int  (default: 0)
+   --m1 string                           
 
 `, output.String())
 }
