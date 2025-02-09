@@ -772,6 +772,8 @@ func TestStringSliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse(nil)
+
+	_ = fl.PostParse()
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"vincent van goat", "scape goat"}, set.Lookup("goat").Value.(flag.Getter).Get())
 }
@@ -785,6 +787,7 @@ func TestStringSliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	set := flag.NewFlagSet("test", 0)
 	_ = fl.Apply(set)
 	err := set.Parse(nil)
+	_ = fl.PostParse()
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"vincent van goat", "scape goat"}, set.Lookup("goat").Value.(flag.Getter).Get())
 }
@@ -798,6 +801,8 @@ func TestStringSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{})
+
+	_ = fl.PostParse()
 	assert.NoError(t, err)
 	assert.Equal(t, defValue, dest)
 }
@@ -1056,6 +1061,7 @@ func TestIntSliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	r := require.New(t)
 	r.NoError(fl.Apply(set))
 	r.NoError(set.Parse(nil))
+	r.NoError(fl.PostParse())
 	r.Equal([]int64{1, 2}, set.Lookup("goat").Value.(flag.Getter).Get())
 }
 
@@ -1068,6 +1074,7 @@ func TestIntSliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	r := require.New(t)
 	r.NoError(fl.Apply(set))
 	r.NoError(set.Parse(nil))
+	r.NoError(fl.PostParse())
 	r.Equal([]int64{3, 4}, val)
 	r.Equal([]int64{1, 2}, set.Lookup("goat").Value.(flag.Getter).Get())
 }
@@ -1081,6 +1088,7 @@ func TestIntSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse([]string{})
+	assert.NoError(t, fl.PostParse())
 	assert.NoError(t, err)
 	assert.Equal(t, defValue, dest)
 }
@@ -1184,6 +1192,7 @@ func TestUintSliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	r.NoError(fl.Apply(set))
 
 	r.NoError(set.Parse(nil))
+	r.NoError(fl.PostParse())
 	r.Equal([]uint64{1, 2}, set.Lookup("goat").Value.(flag.Getter).Get().([]uint64))
 }
 
@@ -1195,6 +1204,7 @@ func TestUintSliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	r := require.New(t)
 	r.NoError(fl.Apply(set))
 	r.NoError(set.Parse(nil))
+	r.NoError(fl.PostParse())
 	r.Equal([]uint64{3, 4}, val.Value())
 	r.Equal([]uint64{1, 2}, set.Lookup("goat").Value.(flag.Getter).Get().([]uint64))
 }
@@ -1209,6 +1219,7 @@ func TestUintSliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 
 	err := set.Parse([]string{})
 	assert.NoError(t, err)
+	assert.NoError(t, fl.PostParse())
 	assert.Equal(t, defValue, dest)
 }
 
@@ -1328,6 +1339,7 @@ func TestUint64SliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 
 	err := set.Parse(nil)
 	assert.NoError(t, err)
+	assert.NoError(t, fl.PostParse())
 	assert.Equal(t, []uint64{1, 2}, set.Lookup("goat").Value.(flag.Getter).Get().([]uint64))
 }
 
@@ -1341,6 +1353,7 @@ func TestUint64SliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	_ = fl.Apply(set)
 	err := set.Parse(nil)
 	assert.NoError(t, err)
+	assert.NoError(t, fl.PostParse())
 	assert.Equal(t, []uint64{1, 2}, set.Lookup("goat").Value.(flag.Getter).Get().([]uint64))
 }
 
@@ -1354,6 +1367,7 @@ func TestUint64SliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 
 	err := set.Parse([]string{})
 	assert.NoError(t, err)
+	assert.NoError(t, fl.PostParse())
 	assert.Equal(t, defValue, dest)
 }
 
@@ -1519,6 +1533,7 @@ func TestFloat64SliceFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 
 	err := set.Parse(nil)
 	assert.NoError(t, err)
+	assert.NoError(t, fl.PostParse())
 	assert.Equal(t, []float64{1, 2}, set.Lookup("goat").Value.(flag.Getter).Get().([]float64))
 }
 
@@ -1532,6 +1547,7 @@ func TestFloat64SliceFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	_ = fl.Apply(set)
 	err := set.Parse(nil)
 	assert.NoError(t, err)
+	assert.NoError(t, fl.PostParse())
 	assert.Equal(t, []float64{1, 2}, set.Lookup("goat").Value.(flag.Getter).Get().([]float64))
 }
 
@@ -3056,7 +3072,9 @@ func TestStringMapFlagApply_UsesEnvValues_noDefault(t *testing.T) {
 	_ = fl.Apply(set)
 
 	err := set.Parse(nil)
+
 	assert.NoError(t, err)
+	assert.NoError(t, fl.PostParse())
 	assert.Nil(t, val)
 	assert.Equal(t, map[string]string{"vincent van goat": "scape goat"}, set.Lookup("goat").Value.(flag.Getter).Get())
 }
@@ -3071,6 +3089,7 @@ func TestStringMapFlagApply_UsesEnvValues_withDefault(t *testing.T) {
 	_ = fl.Apply(set)
 	err := set.Parse(nil)
 	assert.NoError(t, err)
+	assert.NoError(t, fl.PostParse())
 	assert.Equal(t, map[string]string{`some default`: `values here`}, val)
 	assert.Equal(t, map[string]string{"vincent van goat": "scape goat"}, set.Lookup("goat").Value.(flag.Getter).Get())
 }

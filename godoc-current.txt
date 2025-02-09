@@ -285,6 +285,8 @@ func (parent *BoolWithInverseFlag) IsSet() bool
 
 func (parent *BoolWithInverseFlag) Names() []string
 
+func (parent *BoolWithInverseFlag) PostParse() error
+
 func (parent *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) error
 
 func (parent *BoolWithInverseFlag) String() string
@@ -627,6 +629,8 @@ type ExitErrHandlerFunc func(context.Context, *Command, error)
 type Flag interface {
 	fmt.Stringer
 
+	PostParse() error
+
 	// Apply Flag settings to the given flag set
 	Apply(*flag.FlagSet) error
 
@@ -735,6 +739,9 @@ func (f *FlagBase[T, C, V]) IsVisible() bool
 
 func (f *FlagBase[T, C, V]) Names() []string
     Names returns the names of the flag
+
+func (f *FlagBase[T, C, V]) PostParse() error
+    PostParse populates the flag given the flag set and environment
 
 func (f *FlagBase[T, C, V]) RunAction(ctx context.Context, cmd *Command) error
     RunAction executes flag action if set
