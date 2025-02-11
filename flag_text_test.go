@@ -14,11 +14,11 @@ import (
 
 type badMarshaller struct{}
 
-func (_ badMarshaller) UnmarshalText(_ []byte) error {
+func (badMarshaller) UnmarshalText(_ []byte) error {
 	return nil
 }
 
-func (_ badMarshaller) MarshalText() ([]byte, error) {
+func (badMarshaller) MarshalText() ([]byte, error) {
 	return nil, errors.New("bad")
 }
 
