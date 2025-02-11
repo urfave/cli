@@ -22,6 +22,10 @@ func (badMarshaller) MarshalText() ([]byte, error) {
 	return nil, errors.New("bad")
 }
 
+func ptr[T any](v T) *T {
+	return &v
+}
+
 func TestTextFlag(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -33,17 +37,17 @@ func TestTextFlag(t *testing.T) {
 		{
 			name: "empty",
 			flag: TextFlag{
-				Name:  "log-level",
-				Value: &slog.LevelVar{},
+				Name:        "log-level",
+				Destination: ptr[TextMarshalUnmarshaller](&slog.LevelVar{}),
 			},
 			want: "INFO",
 		},
 		{
 			name: "info",
 			flag: TextFlag{
-				Name:  "log-level",
-				Value: &slog.LevelVar{},
-				Validator: func(v TextMarshalUnMarshaller) error {
+				Name:        "log-level",
+				Destination: ptr[TextMarshalUnmarshaller](&slog.LevelVar{}),
+				Validator: func(v TextMarshalUnmarshaller) error {
 					text, err := v.MarshalText()
 					if err != nil {
 						return err
@@ -62,8 +66,8 @@ func TestTextFlag(t *testing.T) {
 		{
 			name: "debug",
 			flag: TextFlag{
-				Name:  "log-level",
-				Value: &slog.LevelVar{},
+				Name:        "log-level",
+				Destination: ptr[TextMarshalUnmarshaller](&slog.LevelVar{}),
 			},
 			args: []string{"--log-level", "debug"},
 			want: "DEBUG",
@@ -71,9 +75,9 @@ func TestTextFlag(t *testing.T) {
 		{
 			name: "debug_with_trim",
 			flag: TextFlag{
-				Name:   "log-level",
-				Value:  &slog.LevelVar{},
-				Config: StringConfig{TrimSpace: true},
+				Name:        "log-level",
+				Destination: ptr[TextMarshalUnmarshaller](&slog.LevelVar{}),
+				Config:      StringConfig{TrimSpace: true},
 			},
 			args: []string{"--log-level", " debug   "},
 			want: "DEBUG",
@@ -81,8 +85,8 @@ func TestTextFlag(t *testing.T) {
 		{
 			name: "invalid",
 			flag: TextFlag{
-				Name:  "log-level",
-				Value: &slog.LevelVar{},
+				Name:        "log-level",
+				Destination: ptr[TextMarshalUnmarshaller](&slog.LevelVar{}),
 			},
 			args:    []string{"--log-level", "invalid"},
 			want:    "INFO",
@@ -91,11 +95,44 @@ func TestTextFlag(t *testing.T) {
 		{
 			name: "bad_marshaller",
 			flag: TextFlag{
-				Name:  "text",
-				Value: &badMarshaller{},
+				Name:        "text",
+				Value:       &badMarshaller{},
+				Destination: ptr[TextMarshalUnmarshaller](&badMarshaller{}),
 			},
 			args:    []string{"--text", "foo"},
 			wantErr: true,
+		},
+		{
+			name: "default",
+			flag: TextFlag{
+				Name: "log-level",
+				Value: func() *slog.LevelVar {
+					var l slog.LevelVar
+
+					l.Set(slog.LevelWarn)
+
+					return &l
+				}(),
+				Destination: ptr[TextMarshalUnmarshaller](&slog.LevelVar{}),
+			},
+			args: []string{},
+			want: "WARN",
+		},
+		{
+			name: "override_default",
+			flag: TextFlag{
+				Name: "log-level",
+				Value: func() *slog.LevelVar {
+					var l slog.LevelVar
+
+					l.Set(slog.LevelWarn)
+
+					return &l
+				}(),
+				Destination: ptr[TextMarshalUnmarshaller](&slog.LevelVar{}),
+			},
+			args: []string{"--log-level", "error"},
+			want: "ERROR",
 		},
 	}
 
@@ -114,12 +151,15 @@ func TestTextFlag(t *testing.T) {
 
 			require.False(t, (err != nil) && !tt.wantErr, tt.name)
 
-			if tt.wantErr {
-				require.Equal(t, tt.flag.GetDefaultText(), tt.want)
+			if tt.flag.Value != nil {
+				assert.Equal(t, tt.want, tt.flag.GetDefaultText())
 			}
 
-			assert.Equal(t, set.Lookup(tt.flag.Name).Value.String(), tt.want)
-			assert.Equal(t, tt.flag.GetDefaultText(), tt.want)
+			if tt.wantErr {
+				return
+			}
+
+			assert.Equal(t, tt.want, set.Lookup(tt.flag.Name).Value.String())
 		})
 	}
 }
