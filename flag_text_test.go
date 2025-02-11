@@ -12,6 +12,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type badMarshaller struct{}
+
+func (_ badMarshaller) UnmarshalText(_ []byte) error {
+	return nil
+}
+
+func (_ badMarshaller) MarshalText() ([]byte, error) {
+	return nil, errors.New("bad")
+}
+
 func TestTextFlag(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -76,6 +86,16 @@ func TestTextFlag(t *testing.T) {
 				Value: &slog.LevelVar{},
 			},
 			args:    []string{"--log-level", "invalid"},
+			want:    "INFO",
+			wantErr: true,
+		},
+		{
+			name: "bad_marshaller",
+			flag: TextFlag{
+				Name:  "text",
+				Value: &badMarshaller{},
+			},
+			args:    []string{"--text", "foo"},
 			wantErr: true,
 		},
 	}
@@ -95,7 +115,7 @@ func TestTextFlag(t *testing.T) {
 			require.False(t, (err != nil) && !tt.wantErr, tt.name)
 
 			if tt.wantErr {
-				return
+				require.Equal(t, tt.flag.GetDefaultText(), tt.want)
 			}
 
 			assert.Equal(t, set.Lookup(tt.flag.Name).Value.String(), tt.want)
