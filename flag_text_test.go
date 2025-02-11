@@ -7,6 +7,9 @@ import (
 	"log/slog"
 	"slices"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTextFlag(t *testing.T) {
@@ -36,8 +39,9 @@ func TestTextFlag(t *testing.T) {
 						return err
 					}
 
-					if slices.Compare(text, []byte("INFO")) != 0 {
-						return errors.New("expected empty string")
+					if !slices.Equal(text, []byte("INFO")) {
+						return errors.New("expected \"INFO\"")
+
 					}
 
 					return nil
@@ -85,23 +89,17 @@ func TestTextFlag(t *testing.T) {
 				set.SetOutput(io.Discard)
 			}
 
-			if err := tt.flag.Apply(set); err != nil {
-				t.Fatalf("Apply(%v) failed: %v", tt.args, err)
-			}
+			require.NoError(t, tt.flag.Apply(set))
 
 			err := set.Parse(tt.args)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Parse() error = %v, wantErr %v", err, tt.wantErr)
+			require.False(t, (err != nil) && !tt.wantErr, tt.name)
 
-				return
-			} else if (err != nil) == tt.wantErr {
-				// Expected error.
+			if tt.wantErr {
 				return
 			}
 
-			if got := tt.flag.GetValue(); got != tt.want {
-				t.Errorf("Value = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, set.Lookup(tt.flag.Name).Value.String(), tt.want)
+			assert.Equal(t, tt.flag.GetDefaultText(), tt.want)
 		})
 	}
 }
