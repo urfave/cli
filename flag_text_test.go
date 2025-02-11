@@ -51,7 +51,6 @@ func TestTextFlag(t *testing.T) {
 
 					if !slices.Equal(text, []byte("INFO")) {
 						return errors.New("expected \"INFO\"")
-
 					}
 
 					return nil
@@ -112,6 +111,7 @@ func TestTextFlag(t *testing.T) {
 			require.NoError(t, tt.flag.Apply(set))
 
 			err := set.Parse(tt.args)
+
 			require.False(t, (err != nil) && !tt.wantErr, tt.name)
 
 			if tt.wantErr {
