@@ -5,16 +5,16 @@ import (
 	"strings"
 )
 
-type TextMarshalUnmarshaller interface {
+type TextMarshalUnmarshaler interface {
 	encoding.TextMarshaler
 	encoding.TextUnmarshaler
 }
 
-// TextFlag enables you to set types that satisfies [TextMarshalUnmarshaller] using flags such as log levels.
-type TextFlag = FlagBase[TextMarshalUnmarshaller, StringConfig, TextValue]
+// TextFlag enables you to set types that satisfies [TextMarshalUnmarshaler] using flags such as log levels.
+type TextFlag = FlagBase[TextMarshalUnmarshaler, StringConfig, TextValue]
 
 type TextValue struct {
-	Value  *TextMarshalUnmarshaller
+	Value  *TextMarshalUnmarshaler
 	Config StringConfig
 }
 
@@ -39,9 +39,11 @@ func (f TextValue) Get() any {
 	return *f.Value
 }
 
-func (f TextValue) Create(v TextMarshalUnmarshaller, p *TextMarshalUnmarshaller, c StringConfig) Value {
+func (f TextValue) Create(v TextMarshalUnmarshaler, p *TextMarshalUnmarshaler, c StringConfig) Value {
 	if v != nil {
-		*p = v
+		b, _ := v.MarshalText()
+
+		_ = (*p).UnmarshalText(b)
 	}
 
 	return &TextValue{
@@ -50,7 +52,7 @@ func (f TextValue) Create(v TextMarshalUnmarshaller, p *TextMarshalUnmarshaller,
 	}
 }
 
-func (f TextValue) ToString(v TextMarshalUnmarshaller) string {
+func (f TextValue) ToString(v TextMarshalUnmarshaler) string {
 	text, err := v.MarshalText()
 	if err != nil {
 		return ""
