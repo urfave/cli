@@ -981,7 +981,7 @@ type TextFlag = FlagBase[TextMarshalUnmarshaler, StringConfig, TextValue]
     TextFlag enables you to set types that satisfies TextMarshalUnmarshaler
     using flags such as log levels.
 
-type TextMarshalUnMarshaller interface {
+type TextMarshalUnmarshaler interface {
 	encoding.TextMarshaler
 	encoding.TextUnmarshaler
 }
@@ -991,15 +991,15 @@ type TextValue struct {
 	Config StringConfig
 }
 
-func (v TextValue) Create(t TextMarshalUnmarshaler, p *TextMarshalUnmarshaler, c StringConfig) Value
+func (f TextValue) Create(v TextMarshalUnmarshaler, p *TextMarshalUnmarshaler, c StringConfig) Value
 
-func (v TextValue) Get() any
+func (f TextValue) Get() any
 
-func (v TextValue) Set(s string) error
+func (f TextValue) Set(s string) error
 
-func (v TextValue) String() string
+func (f TextValue) String() string
 
-func (v TextValue) ToString(t TextMarshalUnmarshaler) string
+func (f TextValue) ToString(v TextMarshalUnmarshaler) string
 
 type TimestampArg = ArgumentBase[time.Time, TimestampConfig, timestampValue]
 
