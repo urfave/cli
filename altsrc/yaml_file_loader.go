@@ -1,6 +1,7 @@
 // Disabling building of yaml support in cases where golang is 1.0 or 1.1
 // as the encoding library is not implemented or supported.
 
+//go:build go1.2
 // +build go1.2
 
 package altsrc
@@ -14,7 +15,7 @@ import (
 
 	"github.com/golib/cli"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type yamlSourceContext struct {

@@ -1,68 +1,50 @@
 # Golang CircleCI 2.0 configuration file
 #
 # Check https://circleci.com/docs/2.0/language-go/ for more details
-version: 2
+version: 2.1
 defaults: &defaults
   #### TEMPLATE_NOTE: go expects specific checkout path representing url
   #### expecting it in the form of
   ####   /go/src/github.com/circleci/go-tool
   ####   /go/src/bitbucket.org/circleci/go-tool
-  working_directory: /go/glib/cli
+  working_directory: github.com/golib/cli
+  parallelism: 2
 default_steps: &default_steps
   steps:
-    - checkout
+    - checkout # checkout source code
 
     # specify any bash command here prefixed with `run: `
-    - run: go mod tidy
-    - run: go test -v -timeout 30s
-    - run: go test -v -timeout 30s -race
+    - run: git submodule update --init
+    - run: go test -v -timeout 30s github.com/golib/cli
+    - run: go test -v -race -timeout 30s github.com/golib/cli
 jobs:
-  go1.6:
+  go1-24:
     <<: *defaults
     docker:
       # specify the version
-      - image: golang:1.6
+      - image: cimg/go:1.24
 
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/postgres:9.4
     <<: *default_steps
-
-  go1.7:
+  go1-19:
     <<: *defaults
     docker:
       # specify the version
-      - image: golang:1.7
+      - image: cimg/go:1.19
 
-    <<: *default_steps
-
-  go1.8:
-    <<: *defaults
-    docker:
-      # specify the version
-      - image: circleci/golang:1.8
-
-    <<: *default_steps
-
-  go1.11:
-    <<: *defaults
-    docker:
-      # specify the version
-      - image: circleci/golang:1.11
-
-    <<: *default_steps
-
-  latest:
-    <<: *defaults
-    docker:
-      # specify the version
-      - image: circleci/golang:latest
-
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/postgres:9.4
     <<: *default_steps
 
 workflows:
-  version: 2
-  testing:
+  version: 2.1
+  build_and_test:
     jobs:
-      # - go1.6
-      # - go1.7
-      # - go1.8
-      - go1.11
-      - latest
+      - go1-24
+      #- go1-19
+

@@ -1,7 +1,9 @@
 cli
 ===
 
-[![CircleCI](https://circleci.com/gh/golib/cli/tree/master.svg?style=svg)](https://circleci.com/gh/golib/cli/tree/master) [![Coverage](http://gocover.io/_badge/github.com/golib/cli?0)](http://gocover.io/github.com/golib/cli) [![GoDoc](https://godoc.org/github.com/golib/cli?status.svg)](http://godoc.org/github.com/golib/cli)
+> DEPRECATED: please use new version of `github.com/urfave/cli`!
+
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/golib/cli/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/golib/cli/tree/master)
 
 **Notice:** This is the library forked from `https://github.com/urfave/cli`
 
