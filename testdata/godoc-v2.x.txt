@@ -27,15 +27,15 @@ application:
 VARIABLES
 
 var (
-	SuggestFlag               SuggestFlagFunc    = suggestFlag
-	SuggestCommand            SuggestCommandFunc = suggestCommand
+	SuggestFlag               SuggestFlagFunc    = nil // initialized in suggestions.go unless built with urfave_cli_no_suggest
+	SuggestCommand            SuggestCommandFunc = nil // initialized in suggestions.go unless built with urfave_cli_no_suggest
 	SuggestDidYouMeanTemplate string             = suggestDidYouMeanTemplate
 )
 var AppHelpTemplate = `NAME:
    {{template "helpNameTemplate" .}}
 
 USAGE:
-   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}}{{if .ArgsUsage}} {{.ArgsUsage}}{{else}}{{if .Args}} [arguments...]{{end}}{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
 
 VERSION:
    {{.Version}}{{end}}{{end}}{{if .Description}}
@@ -136,7 +136,10 @@ var SubcommandHelpTemplate = `NAME:
    {{template "helpNameTemplate" .}}
 
 USAGE:
-   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleFlags}}command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Description}}
+   {{template "usageTemplate" .}}{{if .Category}}
+
+CATEGORY:
+   {{.Category}}{{end}}{{if .Description}}
 
 DESCRIPTION:
    {{template "descriptionTemplate" .}}{{end}}{{if .VisibleCommands}}
@@ -253,6 +256,8 @@ type App struct {
 	Usage string
 	// Text to override the USAGE section of help
 	UsageText string
+	// Whether this command supports arguments
+	Args bool
 	// Description of the program argument format.
 	ArgsUsage string
 	// Version of the program
@@ -523,6 +528,8 @@ type Command struct {
 	UsageText string
 	// A longer explanation of how the command works
 	Description string
+	// Whether this command supports arguments
+	Args bool
 	// A short description of the arguments of this command
 	ArgsUsage string
 	// The category the command is part of
@@ -2142,6 +2149,9 @@ func (f *Uint64SliceFlag) IsVisible() bool
 func (f *Uint64SliceFlag) Names() []string
     Names returns the names of the flag
 
+func (f *Uint64SliceFlag) RunAction(c *Context) error
+    RunAction executes flag action if set
+
 func (f *Uint64SliceFlag) String() string
     String returns a readable representation of this value (for usage defaults)
 
@@ -2306,6 +2316,9 @@ func (f *UintSliceFlag) IsVisible() bool
 
 func (f *UintSliceFlag) Names() []string
     Names returns the names of the flag
+
+func (f *UintSliceFlag) RunAction(c *Context) error
+    RunAction executes flag action if set
 
 func (f *UintSliceFlag) String() string
     String returns a readable representation of this value (for usage defaults)

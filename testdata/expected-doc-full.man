@@ -2,45 +2,31 @@
 .TH greet 8
 
 .SH NAME
-.PP
-greet - Some app
+greet \- Some app
 
 
 .SH SYNOPSIS
-.PP
 greet
 
-.PP
-.RS
-
-.nf
+.EX
 [--another-flag|-b]
 [--flag|--fl|-f]=[value]
 [--socket|-s]=[value]
-
-.fi
-.RE
+.EE
 
 
 .SH DESCRIPTION
-.PP
 Description of the application.
 
 .PP
 \fBUsage\fP:
 
-.PP
-.RS
-
-.nf
+.EX
 app [first_arg] [second_arg]
-
-.fi
-.RE
+.EE
 
 
 .SH GLOBAL OPTIONS
-.PP
 \fB--another-flag, -b\fP: another usage text
 
 .PP
@@ -52,7 +38,6 @@ app [first_arg] [second_arg]
 
 .SH COMMANDS
 .SH config, c
-.PP
 another usage test
 
 .PP
@@ -62,7 +47,6 @@ another usage test
 \fB--flag, --fl, -f\fP="":
 
 .SS sub-config, s, ss
-.PP
 another usage test
 
 .PP
@@ -72,18 +56,13 @@ another usage test
 \fB--sub-flag, --sub-fl, -s\fP="":
 
 .SH info, i, in
-.PP
 retrieve generic information
 
 .SH some-command
 .SH usage, u
-.PP
 standard usage text
 
-.PP
-.RS
-
-.nf
+.EX
 Usage for the usage text
 - formatted:  Based on the specified ConfigMap and summon secrets.yml
 - list:       Inspect the environment for a specific process running on a Pod
@@ -94,9 +73,7 @@ func() { ... }
 ```
 
 Should be a part of the same code block
-
-.fi
-.RE
+.EE
 
 .PP
 \fB--another-flag, -b\fP: another usage text
@@ -105,7 +82,6 @@ Should be a part of the same code block
 \fB--flag, --fl, -f\fP="":
 
 .SS sub-usage, su
-.PP
 standard usage text
 
 .PP

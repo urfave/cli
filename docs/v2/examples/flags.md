@@ -104,9 +104,11 @@ See full list of flags at https://pkg.go.dev/github.com/urfave/cli/v2
 
 For bool flags you can specify the flag multiple times to get a count(e.g -v -v -v or -vvv)
 
+> If you want to support the `-vvv` flag, you need to set `App.UseShortOptionHandling`.
+
 <!-- {
-  "args": ["&#45;&#45;foo", "&#45;&#45;foo"],
-  "output": "count 2"
+  "args": ["&#45;&#45;f", "&#45;&#45;f", "&#45;fff",  "&#45;f"],
+  "output": "count 6"
 } -->
 ```go
 package main
@@ -123,10 +125,12 @@ func main() {
 	var count int
 
 	app := &cli.App{
+		UseShortOptionHandling: true,
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:        "foo",
 				Usage:       "foo greeting",
+				Aliases:     []string{"f"},
 				Count: &count,
 			},
 		},
@@ -470,6 +474,8 @@ func main() {
 }
 ```
 
+When `Value` is not set for the flag, but a matching environment variable is found, the value from the environment will be used in the generated docs as the default value.
+
 #### Values from files
 
 You can also have the default value set from file via `FilePath`.  e.g.
@@ -506,8 +512,8 @@ func main() {
 }
 ```
 
-Note that default values set from file (e.g. `FilePath`) take precedence over
-default values set from the environment (e.g. `EnvVar`).
+Note that default values set from the environment (e.g. `EnvVar`) take precedence over
+default values set from file (e.g. `FilePath`).
 
 #### Values from alternate input sources (YAML, TOML, and others)
 

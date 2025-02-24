@@ -1,9 +1,13 @@
 package cli
 
 import (
-	"bytes"
+	"context"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
 	"testing"
+	"time"
 )
 
 func TestFishCompletion(t *testing.T) {
@@ -135,11 +139,54 @@ Should be a part of the same code block
 	return app
 }
 
-func expectFileContent(t *testing.T, file, got string) {
+func expectFileContent(t *testing.T, file, expected string) {
 	data, err := os.ReadFile(file)
-	// Ignore windows line endings
-	// TODO: Replace with bytes.ReplaceAll when support for Go 1.11 is dropped
-	data = bytes.Replace(data, []byte("\r\n"), []byte("\n"), -1)
-	expect(t, err, nil)
-	expect(t, got, string(data))
+	if err != nil {
+		t.FailNow()
+	}
+
+	expected = strings.TrimSpace(expected)
+	actual := strings.TrimSpace(strings.ReplaceAll(string(data), "\r\n", "\n"))
+
+	if expected != actual {
+		t.Logf("file %q content does not match expected", file)
+
+		tryDiff(t, expected, actual)
+
+		t.FailNow()
+	}
+}
+
+func tryDiff(t *testing.T, a, b string) {
+	diff, err := exec.LookPath("diff")
+	if err != nil {
+		t.Logf("no diff tool available")
+
+		return
+	}
+
+	td := t.TempDir()
+	aPath := filepath.Join(td, "a")
+	bPath := filepath.Join(td, "b")
+
+	if err := os.WriteFile(aPath, []byte(a), 0o0644); err != nil {
+		t.Logf("failed to write: %v", err)
+		t.FailNow()
+
+		return
+	}
+
+	if err := os.WriteFile(bPath, []byte(b), 0o0644); err != nil {
+		t.Logf("failed to write: %v", err)
+		t.FailNow()
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	t.Cleanup(cancel)
+
+	cmd := exec.CommandContext(ctx, diff, "-u", aPath, bPath)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	_ = cmd.Run()
 }

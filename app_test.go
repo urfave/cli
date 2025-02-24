@@ -101,6 +101,7 @@ func ExampleApp_Run_appHelp() {
 	app := &App{
 		Name:        "greet",
 		Version:     "0.1.0",
+		Args:        true,
 		Description: "This is how we describe greet the app",
 		Authors: []*Author{
 			{Name: "Harrison", Email: "harrison@lolwut.com"},
@@ -156,6 +157,7 @@ func ExampleApp_Run_commandHelp() {
 
 	app := &App{
 		Name: "greet",
+		Args: true,
 		Flags: []Flag{
 			&StringFlag{Name: "name", Value: "bob", Usage: "a name to say"},
 		},
@@ -165,6 +167,7 @@ func ExampleApp_Run_commandHelp() {
 				Aliases:     []string{"d"},
 				Usage:       "use it to see a description",
 				Description: "This is how we describe describeit the function",
+				Args:        true,
 				Action: func(c *Context) error {
 					fmt.Printf("i like to describe things")
 					return nil
@@ -190,6 +193,7 @@ func ExampleApp_Run_commandHelp() {
 func ExampleApp_Run_noAction() {
 	app := App{}
 	app.Name = "greet"
+	app.Args = true
 	_ = app.Run([]string{"greet"})
 	// Output:
 	// NAME:
@@ -208,6 +212,7 @@ func ExampleApp_Run_noAction() {
 func ExampleApp_Run_subcommandNoAction() {
 	app := &App{
 		Name: "greet",
+		Args: true,
 		Commands: []*Command{
 			{
 				Name:        "describeit",
@@ -223,7 +228,7 @@ func ExampleApp_Run_subcommandNoAction() {
 	//    greet describeit - use it to see a description
 	//
 	// USAGE:
-	//    greet describeit [command options] [arguments...]
+	//    greet describeit [command options]
 	//
 	// DESCRIPTION:
 	//    This is how we describe describeit the function
@@ -364,7 +369,7 @@ func ExampleApp_Run_bashComplete() {
 func ExampleApp_Run_zshComplete() {
 	// set args for examples sake
 	os.Args = []string{"greet", "--generate-bash-completion"}
-	_ = os.Setenv("SHELL", "/usr/bin/zsh")
+	_ = os.Setenv("0", "/usr/bin/zsh")
 
 	app := NewApp()
 	app.Name = "greet"
@@ -1908,6 +1913,7 @@ func TestApp_Run_SubcommandFullPath(t *testing.T) {
 	subCmd := &Command{
 		Name:  "bar",
 		Usage: "does bar things",
+		Args:  true,
 	}
 	cmd := &Command{
 		Name:        "foo",
@@ -1942,6 +1948,7 @@ func TestApp_Run_SubcommandHelpName(t *testing.T) {
 		Name:     "bar",
 		HelpName: "custom",
 		Usage:    "does bar things",
+		Args:     true,
 	}
 	cmd := &Command{
 		Name:        "foo",
@@ -1976,6 +1983,7 @@ func TestApp_Run_CommandHelpName(t *testing.T) {
 	subCmd := &Command{
 		Name:  "bar",
 		Usage: "does bar things",
+		Args:  true,
 	}
 	cmd := &Command{
 		Name:        "foo",
@@ -2017,6 +2025,7 @@ func TestApp_Run_CommandSubcommandHelpName(t *testing.T) {
 		Name:        "foo",
 		Usage:       "foo commands",
 		Description: "This is a description",
+		Args:        true,
 		Subcommands: []*Command{subCmd},
 	}
 	app.Commands = []*Command{cmd}
@@ -2038,7 +2047,7 @@ func TestApp_Run_CommandSubcommandHelpName(t *testing.T) {
 		t.Errorf("expected %q in output: %q", expected, output)
 	}
 
-	expected = "base foo command [command options] [arguments...]"
+	expected = "base foo [command options] [arguments...]"
 	if !strings.Contains(output, expected) {
 		t.Errorf("expected %q in output: %q", expected, output)
 	}
@@ -2883,11 +2892,31 @@ func TestFlagAction(t *testing.T) {
 					return err
 				},
 			},
+			&UintSliceFlag{
+				Name: "f_uint_slice",
+				Action: func(c *Context, v []uint) error {
+					if len(v) > 0 && v[0] == 0 {
+						return fmt.Errorf("invalid uint slice")
+					}
+					_, err := c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
+				},
+			},
 			&Uint64Flag{
 				Name: "f_uint64",
 				Action: func(c *Context, v uint64) error {
 					if v == 0 {
 						return fmt.Errorf("zero uint64")
+					}
+					_, err := c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+					return err
+				},
+			},
+			&Uint64SliceFlag{
+				Name: "f_uint64_slice",
+				Action: func(c *Context, v []uint64) error {
+					if len(v) > 0 && v[0] == 0 {
+						return fmt.Errorf("invalid uint64 slice")
 					}
 					_, err := c.App.Writer.Write([]byte(fmt.Sprintf("%v ", v)))
 					return err
@@ -3044,9 +3073,29 @@ func TestFlagAction(t *testing.T) {
 			err:  fmt.Errorf("zero uint"),
 		},
 		{
+			name: "flag_uint_slice",
+			args: []string{"app", "--f_uint_slice=1,2,3"},
+			exp:  "[1 2 3] ",
+		},
+		{
+			name: "flag_uint_slice",
+			args: []string{"app", "--f_uint_slice=0"},
+			err:  fmt.Errorf("invalid uint slice"),
+		},
+		{
 			name: "flag_uint64",
 			args: []string{"app", "--f_uint64=1"},
 			exp:  "1 ",
+		},
+		{
+			name: "flag_uint64_slice",
+			args: []string{"app", "--f_uint64_slice=1,2,3"},
+			exp:  "[1 2 3] ",
+		},
+		{
+			name: "flag_uint64_slice",
+			args: []string{"app", "--f_uint64_slice=0"},
+			err:  fmt.Errorf("invalid uint64 slice"),
 		},
 		{
 			name: "flag_uint64_error",
