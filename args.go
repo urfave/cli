@@ -64,6 +64,7 @@ func (a *stringSliceArgs) Slice() []string {
 type Argument interface {
 	Parse([]string) ([]string, error)
 	Usage() string
+	Get() any
 }
 
 // AnyArguments to differentiate between no arguments(nil) vs aleast one
@@ -148,6 +149,16 @@ func (a *ArgumentBase[T, C, VC]) Parse(s []string) ([]string, error) {
 	}
 
 	return s[count:], nil
+}
+
+func (a *ArgumentBase[T, C, VC]) Get() any {
+	if a.Values == nil {
+		return nil
+	}
+	if a.Max == 1 {
+		return (*a.Values)[0]
+	}
+	return *a.Values
 }
 
 type (

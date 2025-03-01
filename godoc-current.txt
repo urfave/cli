@@ -249,6 +249,7 @@ type Args interface {
 type Argument interface {
 	Parse([]string) ([]string, error)
 	Usage() string
+	Get() any
 }
 
 type ArgumentBase[T any, C any, VC ValueCreator[T, C]] struct {
@@ -261,6 +262,8 @@ type ArgumentBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Max         int    `json:"maxTimes"`  // the max num of occurrences of this argument, set to -1 for unlimited
 	Config      C      `json:"config"`    // config for this argument similar to Flag Config
 }
+
+func (a *ArgumentBase[T, C, VC]) Get() any
 
 func (a *ArgumentBase[T, C, VC]) Parse(s []string) ([]string, error)
 
