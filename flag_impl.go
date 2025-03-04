@@ -160,7 +160,7 @@ func (f *FlagBase[T, C, V]) PostParse() error {
 }
 
 // Apply populates the flag given the flag set and environment
-func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
+func (f *FlagBase[T, C, V]) ValueToApply() Value {
 	tracef("apply (flag=%[1]q)", f.Name)
 
 	// TODO move this phase into a separate flag initialization function
@@ -181,7 +181,7 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 		// Validate the given default or values set from external sources as well
 		if f.Validator != nil && f.ValidateDefaults {
 			if err := f.Validator(f.value.Get().(T)); err != nil {
-				return err
+				return f.value
 			}
 		}
 	}
@@ -191,31 +191,29 @@ func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error {
 		isBool = true
 	}
 
-	for _, name := range f.Names() {
-		set.Var(&fnValue{
-			fn: func(val string) error {
-				if f.count == 1 && f.OnlyOnce {
-					return fmt.Errorf("cant duplicate this flag")
-				}
-				f.count++
-				if err := f.value.Set(val); err != nil {
+	return &fnValue{
+		fn: func(val string) error {
+			if f.count == 1 && f.OnlyOnce {
+				return fmt.Errorf("cant duplicate this flag")
+			}
+			f.count++
+			if err := f.value.Set(val); err != nil {
+				return err
+			}
+			f.hasBeenSet = true
+			if f.Validator != nil {
+				if err := f.Validator(f.value.Get().(T)); err != nil {
 					return err
 				}
-				f.hasBeenSet = true
-				if f.Validator != nil {
-					if err := f.Validator(f.value.Get().(T)); err != nil {
-						return err
-					}
-				}
-				return nil
-			},
-			isBool: isBool,
-			v:      f.value,
-		}, name, f.Usage)
+			}
+			return nil
+		},
+		isBool: isBool,
+		v:      f.value,
 	}
 
-	f.applied = true
-	return nil
+	//f.applied = true
+	//return nil
 }
 
 // IsDefaultVisible returns true if the flag is not hidden, otherwise false

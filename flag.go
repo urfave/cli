@@ -2,9 +2,7 @@ package cli
 
 import (
 	"context"
-	"flag"
 	"fmt"
-	"io"
 	"os"
 	"regexp"
 	"runtime"
@@ -107,7 +105,7 @@ type Flag interface {
 	PostParse() error
 
 	// Apply Flag settings to the given flag set
-	Apply(*flag.FlagSet) error
+	ValueToApply() Value
 
 	// All possible names for this flag
 	Names() []string
@@ -182,20 +180,6 @@ type CategorizableFlag interface {
 // to current command
 type LocalFlag interface {
 	IsLocal() bool
-}
-
-func newFlagSet(name string, flags []Flag) (*flag.FlagSet, error) {
-	set := flag.NewFlagSet(name, flag.ContinueOnError)
-
-	for _, f := range flags {
-		if err := f.Apply(set); err != nil {
-			return nil, err
-		}
-	}
-
-	set.SetOutput(io.Discard)
-
-	return set, nil
 }
 
 func visibleFlags(fl []Flag) []Flag {

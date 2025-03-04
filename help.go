@@ -226,7 +226,7 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 
 func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 	args := os.Args
-	if cmd != nil && cmd.flagSet != nil && cmd.parent != nil {
+	if cmd != nil && cmd.parent != nil {
 		args = cmd.Args().Slice()
 		tracef("running default complete with flags[%v] on command %[2]q", args, cmd.Name)
 	} else {

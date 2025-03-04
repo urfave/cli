@@ -142,8 +142,6 @@ type Command struct {
 	// The parent of this command. This value will be nil for the
 	// command at the root of the graph.
 	parent *Command
-	// the flag.FlagSet for this command
-	flagSet *flag.FlagSet
 	// parsed args
 	parsedArgs Args
 	// track state of error handling
@@ -693,16 +691,6 @@ func (cmd *Command) checkHelp() bool {
 	return false
 }
 
-func (cmd *Command) newFlagSet() (*flag.FlagSet, error) {
-	allFlags := cmd.allFlags()
-
-	cmd.appliedFlags = append(cmd.appliedFlags, allFlags...)
-
-	tracef("making new flag set (cmd=%[1]q)", cmd.Name)
-
-	return newFlagSet(cmd.Name, allFlags)
-}
-
 func (cmd *Command) allFlags() []Flag {
 	var flags []Flag
 	flags = append(flags, cmd.Flags...)
@@ -756,16 +744,11 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 	tracef("parsing flags from arguments %[1]q (cmd=%[2]q)", args, cmd.Name)
 
 	cmd.parsedArgs = nil
-	if v, err := cmd.newFlagSet(); err != nil {
-		return args, err
-	} else {
-		cmd.flagSet = v
-	}
 
 	if cmd.SkipFlagParsing {
 		tracef("skipping flag parsing (cmd=%[1]q)", cmd.Name)
 
-		return cmd.Args(), cmd.flagSet.Parse(append([]string{"--"}, args.Tail()...))
+		return cmd.Args(), nil
 	}
 
 	tracef("walking command lineage for persistent flags (cmd=%[1]q)", cmd.Name)
@@ -792,14 +775,14 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 
 			applyPersistentFlag := true
 
-			cmd.flagSet.VisitAll(func(f *flag.Flag) {
+			/*cmd.flagSet.VisitAll(func(f *flag.Flag) {
 				for _, name := range flNames {
 					if name == f.Name {
 						applyPersistentFlag = false
 						break
 					}
 				}
-			})
+			})*/
 
 			if !applyPersistentFlag {
 				tracef("not applying as persistent flag=%[1]q (cmd=%[2]q)", flNames, cmd.Name)
@@ -808,10 +791,6 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 			}
 
 			tracef("applying as persistent flag=%[1]q (cmd=%[2]q)", flNames, cmd.Name)
-
-			if err := fl.Apply(cmd.flagSet); err != nil {
-				return cmd.Args(), err
-			}
 
 			tracef("appending to applied flags flag=%[1]q (cmd=%[2]q)", flNames, cmd.Name)
 			cmd.appliedFlags = append(cmd.appliedFlags, fl)
@@ -825,65 +804,89 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 	posArgs := []string{}
 	for {
 		tracef("rearrange:1 (cmd=%[1]q) %[2]q", cmd.Name, rargs)
-		for {
-			tracef("rearrange:2 (cmd=%[1]q) %[2]q %[3]q", cmd.Name, posArgs, rargs)
 
-			// no more args to parse. Break out of inner loop
-			if len(rargs) == 0 {
-				break
-			}
+		// no more args to parse. Break out of inner loop
+		if len(rargs) == 0 {
+			break
+		}
 
-			if strings.TrimSpace(rargs[0]) == "" {
-				break
-			}
+		firstArg := rargs[0]
+		if strings.TrimSpace(firstArg) == "" {
+			break
+		}
 
-			// stop parsing once we see a "--"
-			if rargs[0] == "--" {
-				posArgs = append(posArgs, rargs...)
-				cmd.parsedArgs = &stringSliceArgs{posArgs}
+		// stop parsing once we see a "--"
+		if firstArg == "--" {
+			posArgs = append(posArgs, rargs...)
+			cmd.parsedArgs = &stringSliceArgs{posArgs}
+			return cmd.parsedArgs, nil
+		}
+
+		//
+		if firstArg[0] == '-' {
+			fName, fValue, err := getFlagNameValue(firstArg)
+			if err != nil {
 				return cmd.parsedArgs, nil
 			}
-
-			// let flagset parse this
-			if rargs[0][0] == '-' {
-				break
+			f := cmd.lookupFlag(fName)
+			if f == nil {
+				if !cmd.useShortOptionHandling() {
+					return cmd.parsedArgs, fmt.Errorf("Invalid flag")
+				}
+				// try to split args
+				for _, c := range fName {
+					if sf := cmd.lookupFlag(string(c)); sf == nil {
+						return cmd.parsedArgs, fmt.Errorf("invalid flag")
+					} else if fb, ok := f.(boolFlag); !ok || !fb.IsBoolFlag() {
+						return cmd.parsedArgs, fmt.Errorf("non bool flag provided for short options")
+					} else if err := sf.ValueToApply().Set("true"); err != nil {
+						return cmd.parsedArgs, err
+					}
+				}
+			}
+			if fb, ok := f.(boolFlag); ok && fb.IsBoolFlag() {
+				if fValue == "" {
+					fValue = "true"
+				}
+				if err := f.ValueToApply().Set(fValue); err != nil {
+					return cmd.parsedArgs, err
+				}
+			} else if fValue == "" && len(rargs) == 1 {
+				return cmd.parsedArgs, fmt.Errorf("not enough args")
+			} else {
+				if fValue == "" {
+					fValue = rargs[1]
+				}
+				if err := f.ValueToApply().Set(fValue); err != nil {
+					return cmd.parsedArgs, err
+				}
 			}
 
-			tracef("rearrange-3 (cmd=%[1]q) check %[2]q", cmd.Name, rargs[0])
+		} else { // positional argument probably
+			tracef("rearrange-3 (cmd=%[1]q) check %[2]q", cmd.Name, firstArg)
 
 			// if there is a command by that name let the command handle the
 			// rest of the parsing
-			if cmd.Command(rargs[0]) != nil {
+			if cmd.Command(firstArg) != nil {
 				posArgs = append(posArgs, rargs...)
 				cmd.parsedArgs = &stringSliceArgs{posArgs}
 				return cmd.parsedArgs, nil
 			}
 
-			posArgs = append(posArgs, rargs[0])
+			posArgs = append(posArgs, firstArg)
 
 			// if this is the sole argument then
 			// break from inner loop
 			if len(rargs) == 1 {
-				rargs = []string{}
-				break
+				cmd.parsedArgs = &stringSliceArgs{posArgs}
+				return cmd.parsedArgs, nil
 			}
 
 			rargs = rargs[1:]
 		}
-		if err := parseIter(cmd.flagSet, cmd, rargs, cmd.Root().shellCompletion); err != nil {
-			posArgs = append(posArgs, cmd.flagSet.Args()...)
-			tracef("returning-1 (cmd=%[1]q) args %[2]q", cmd.Name, posArgs)
-			cmd.parsedArgs = &stringSliceArgs{posArgs}
-			return cmd.parsedArgs, err
-		}
-		tracef("rearrange-4 (cmd=%[1]q) check %[2]q", cmd.Name, cmd.flagSet.Args())
-		rargs = cmd.flagSet.Args()
-		if len(rargs) == 0 || strings.TrimSpace(rargs[0]) == "" || rargs[0] == "-" {
-			break
-		}
 	}
 
-	posArgs = append(posArgs, cmd.flagSet.Args()...)
+	posArgs = append(posArgs, rargs...)
 	tracef("returning-2 (cmd=%[1]q) args %[2]q", cmd.Name, posArgs)
 	cmd.parsedArgs = &stringSliceArgs{posArgs}
 	return cmd.parsedArgs, nil
@@ -1007,36 +1010,26 @@ func (cmd *Command) Root() *Command {
 	return cmd.parent.Root()
 }
 
+func (cmd *Command) lFlag(name string) Flag {
+	for _, f := range cmd.Flags {
+		for _, n := range f.Names() {
+			if n == name {
+				tracef("flag found for name %[1]q (cmd=%[2]q)", name, cmd.Name)
+				return f
+			}
+		}
+	}
+	return nil
+}
+
 func (cmd *Command) lookupFlag(name string) Flag {
 	for _, pCmd := range cmd.Lineage() {
-		for _, f := range pCmd.Flags {
-			for _, n := range f.Names() {
-				if n == name {
-					tracef("flag found for name %[1]q (cmd=%[2]q)", name, cmd.Name)
-					return f
-				}
-			}
+		if f := pCmd.lFlag(name); f != nil {
+			return f
 		}
 	}
 
 	tracef("flag NOT found for name %[1]q (cmd=%[2]q)", name, cmd.Name)
-	return nil
-}
-
-func (cmd *Command) lookupFlagSet(name string) *flag.FlagSet {
-	for _, pCmd := range cmd.Lineage() {
-		if pCmd.flagSet == nil {
-			continue
-		}
-
-		if f := pCmd.flagSet.Lookup(name); f != nil {
-			tracef("matching flag set found for name %[1]q (cmd=%[2]q)", name, cmd.Name)
-			return pCmd.flagSet
-		}
-	}
-
-	tracef("matching flag set NOT found for name %[1]q (cmd=%[2]q)", name, cmd.Name)
-	cmd.onInvalidFlag(context.TODO(), name)
 	return nil
 }
 
@@ -1108,13 +1101,19 @@ func (cmd *Command) onInvalidFlag(ctx context.Context, name string) {
 
 // NumFlags returns the number of flags set
 func (cmd *Command) NumFlags() int {
-	return cmd.flagSet.NFlag()
+	count := 0
+	for _, f := range cmd.appliedFlags {
+		if f.IsSet() {
+			count++
+		}
+	}
+	return count //cmd.flagSet.NFlag()
 }
 
 // Set sets a context flag to a value.
 func (cmd *Command) Set(name, value string) error {
-	if fs := cmd.lookupFlagSet(name); fs != nil {
-		return fs.Set(name, value)
+	if f := cmd.lookupFlag(name); f != nil {
+		return f.ValueToApply().Set(value)
 	}
 
 	return fmt.Errorf("no such flag -%s", name)
@@ -1122,32 +1121,13 @@ func (cmd *Command) Set(name, value string) error {
 
 // IsSet determines if the flag was actually set
 func (cmd *Command) IsSet(name string) bool {
-	flSet := cmd.lookupFlagSet(name)
-
-	if flSet == nil {
-		return false
-	}
-
-	isSet := false
-
-	flSet.Visit(func(f *flag.Flag) {
-		if f.Name == name {
-			isSet = true
-		}
-	})
-
-	if isSet {
-		tracef("flag with name %[1]q found via flag set lookup (cmd=%[2]q)", name, cmd.Name)
-		return true
-	}
-
 	fl := cmd.lookupFlag(name)
 	if fl == nil {
 		tracef("flag with name %[1]q NOT found; assuming not set (cmd=%[2]q)", name, cmd.Name)
 		return false
 	}
 
-	isSet = fl.IsSet()
+	isSet := fl.IsSet()
 	if isSet {
 		tracef("flag with name %[1]q is set (cmd=%[2]q)", name, cmd.Name)
 	} else {
@@ -1162,10 +1142,8 @@ func (cmd *Command) IsSet(name string) bool {
 func (cmd *Command) LocalFlagNames() []string {
 	names := []string{}
 
-	cmd.flagSet.Visit(makeFlagNameVisitor(&names))
-
 	// Check the flags which have been set via env or file
-	for _, f := range cmd.Flags {
+	for _, f := range cmd.allFlags() {
 		if f.IsSet() {
 			names = append(names, f.Names()...)
 		}
@@ -1212,19 +1190,17 @@ func (cmd *Command) Lineage() []*Command {
 
 // Count returns the num of occurrences of this flag
 func (cmd *Command) Count(name string) int {
-	if fs := cmd.lookupFlagSet(name); fs != nil {
-		if cf, ok := fs.Lookup(name).Value.(Countable); ok {
-			return cf.Count()
-		}
+	if cf, ok := cmd.lookupFlag(name).ValueToApply().(Countable); ok {
+		return cf.Count()
 	}
 	return 0
 }
 
 // Value returns the value of the flag corresponding to `name`
 func (cmd *Command) Value(name string) interface{} {
-	if fs := cmd.lookupFlagSet(name); fs != nil {
+	if fs := cmd.lookupFlag(name); fs != nil {
 		tracef("value found for name %[1]q (cmd=%[2]q)", name, cmd.Name)
-		return fs.Lookup(name).Value.(flag.Getter).Get()
+		return fs.ValueToApply().Get()
 	}
 
 	tracef("value NOT found for name %[1]q (cmd=%[2]q)", name, cmd.Name)
@@ -1237,7 +1213,7 @@ func (cmd *Command) Args() Args {
 	if cmd.parsedArgs != nil {
 		return cmd.parsedArgs
 	}
-	return &stringSliceArgs{v: cmd.flagSet.Args()}
+	return &stringSliceArgs{v: []string{}}
 }
 
 // NArg returns the number of the command line arguments.
@@ -1256,32 +1232,12 @@ func hasCommand(commands []*Command, command *Command) bool {
 }
 
 func (cmd *Command) runFlagActions(ctx context.Context) error {
-	for _, fl := range cmd.appliedFlags {
-		isSet := false
-
-		// check only local flagset for running local flag actions
-		for _, name := range fl.Names() {
-			cmd.flagSet.Visit(func(f *flag.Flag) {
-				if f.Name == name {
-					isSet = true
-				}
-			})
-			if isSet {
-				break
-			}
+	for _, fl := range cmd.allFlags() {
+		if !fl.IsSet() {
+			continue
 		}
-
-		// If the flag hasnt been set on cmd line then we need to further
-		// check if it has been set via other means. If however it has
-		// been set by other means but it is persistent(and not set via current cmd)
-		// do not run the flag action
-		if !isSet {
-			if !fl.IsSet() {
-				continue
-			}
-			if pf, ok := fl.(LocalFlag); ok && !pf.IsLocal() {
-				continue
-			}
+		if pf, ok := fl.(LocalFlag); ok && !pf.IsLocal() {
+			continue
 		}
 
 		if af, ok := fl.(ActionableFlag); ok {

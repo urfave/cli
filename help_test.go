@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -170,9 +169,7 @@ func Test_Version_Custom_Flags(t *testing.T) {
 }
 
 func Test_helpCommand_Action_ErrorIfNoTopic(t *testing.T) {
-	cmd := &Command{
-		flagSet: flag.NewFlagSet("test", 0),
-	}
+	cmd := &Command{}
 
 	_ = cmd.Run(context.Background(), []string{"foo", "bar"})
 
@@ -291,9 +288,7 @@ func Test_helpCommand_HideHelpFlag(t *testing.T) {
 }
 
 func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
-	cmd := &Command{
-		flagSet: flag.NewFlagSet("test", 0),
-	}
+	cmd := &Command{}
 	_ = cmd.Run(context.Background(), []string{"foo", "bar"})
 
 	err := helpCommandAction(context.Background(), cmd)

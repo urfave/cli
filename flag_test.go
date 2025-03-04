@@ -2659,10 +2659,15 @@ func TestTimestampFlagApply_Timezoned(t *testing.T) {
 }
 
 func TestTimestampFlagValueFromCommand(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
 	now := time.Now()
-	set.Var(newTimestamp(now), "myflag", "doc")
-	cmd := &Command{flagSet: set}
+	cmd := &Command{
+		Flags: []Flag{
+			&TimestampFlag{
+				Name:  "myflag",
+				Value: now,
+			},
+		},
+	}
 	f := &TimestampFlag{Name: "myflag"}
 	require.Equal(t, now, cmd.Timestamp(f.Name))
 }
@@ -2726,10 +2731,12 @@ func TestFlagDefaultValue(t *testing.T) {
 		},
 	}
 	for _, v := range cases {
-		set := flag.NewFlagSet("test", 0)
-		set.SetOutput(io.Discard)
-		_ = v.flag.Apply(set)
-		assert.NoError(t, set.Parse(v.toParse))
+		cmd := &Command{
+			Flags: []Flag{
+				v.flag,
+			},
+		}
+		assert.NoError(t, cmd.Run(context.Background(), v.toParse))
 		assert.Equal(t, v.expect, v.flag.String())
 	}
 }
@@ -2881,10 +2888,12 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 		for key, val := range v.environ {
 			os.Setenv(key, val)
 		}
-		set := flag.NewFlagSet("test", 0)
-		set.SetOutput(io.Discard)
-		require.NoError(t, v.flag.Apply(set))
-		require.NoError(t, set.Parse(v.toParse))
+		cmd := &Command{
+			Flags: []Flag{
+				v.flag,
+			},
+		}
+		require.NoError(t, cmd.Run(context.Background(), v.toParse))
 		assert.Equal(t, v.expect, v.flag.String())
 	}
 }
@@ -2931,12 +2940,14 @@ func TestFlagValue(t *testing.T) {
 	}
 	for _, v := range cases {
 		t.Run(v.name, func(t *testing.T) {
-			set := flag.NewFlagSet("test", 0)
-			set.SetOutput(io.Discard)
-			_ = v.flag.Apply(set)
-			assert.NoError(t, set.Parse(v.toParse))
-			f := set.Lookup("flag")
-			require.Equal(t, v.expect, f.Value.String())
+			cmd := &Command{
+				Flags: []Flag{
+					v.flag,
+				},
+			}
+			assert.NoError(t, cmd.Run(context.Background(), v.toParse))
+			f := cmd.lookupFlag("flag")
+			require.Equal(t, v.expect, f.ValueToApply().String())
 		})
 	}
 }

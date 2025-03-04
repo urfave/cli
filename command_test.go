@@ -2347,9 +2347,8 @@ func (c *customBoolFlag) PostParse() error {
 	return nil
 }
 
-func (c *customBoolFlag) Apply(set *flag.FlagSet) error {
-	set.String(c.Nombre, c.Nombre, "")
-	return nil
+func (c *customBoolFlag) ValueToApply() Value {
+	return &boolValue{}
 }
 
 func (c *customBoolFlag) RunAction(context.Context, *Command) error {
@@ -2420,11 +2419,6 @@ func TestCustomHelpVersionFlags(t *testing.T) {
 
 func TestHandleExitCoder_Default(t *testing.T) {
 	app := buildMinimalTestCommand()
-	fs, err := newFlagSet(app.Name, app.Flags)
-	assert.NoError(t, err, "error creating FlagSet")
-
-	app.flagSet = fs
-
 	_ = app.handleExitCoder(context.Background(), Exit("Default Behavior Error", 42))
 
 	output := fakeErrWriter.String()
@@ -3228,37 +3222,69 @@ func TestShorthandCommand(t *testing.T) {
 }
 
 func TestCommand_Int(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Int64("myflag", 12, "doc")
-
-	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.Int64("top-flag", 13, "doc")
-	pCmd := &Command{flagSet: parentSet}
-	cmd := &Command{flagSet: set, parent: pCmd}
+	pCmd := &Command{
+		Flags: []Flag{
+			&IntFlag{
+				Name:  "myflag",
+				Value: 12,
+			},
+		},
+	}
+	cmd := &Command{
+		Flags: []Flag{
+			&IntFlag{
+				Name:  "top-flag",
+				Value: 13,
+			},
+		},
+		parent: pCmd,
+	}
 
 	require.Equal(t, int64(12), cmd.Int("myflag"))
 	require.Equal(t, int64(13), cmd.Int("top-flag"))
 }
 
 func TestCommand_Uint(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Uint64("myflagUint", uint64(13), "doc")
-	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.Uint64("top-flag", uint64(14), "doc")
-	pCmd := &Command{flagSet: parentSet}
-	cmd := &Command{flagSet: set, parent: pCmd}
+	pCmd := &Command{
+		Flags: []Flag{
+			&IntFlag{
+				Name:  "myflagUint",
+				Value: 13,
+			},
+		},
+	}
+	cmd := &Command{
+		Flags: []Flag{
+			&IntFlag{
+				Name:  "top-flag",
+				Value: 14,
+			},
+		},
+		parent: pCmd,
+	}
 
 	require.Equal(t, uint64(13), cmd.Uint("myflagUint"))
 	require.Equal(t, uint64(14), cmd.Uint("top-flag"))
 }
 
 func TestCommand_Float64(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Float64("myflag", float64(17), "doc")
-	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.Float64("top-flag", float64(18), "doc")
-	pCmd := &Command{flagSet: parentSet}
-	cmd := &Command{flagSet: set, parent: pCmd}
+	pCmd := &Command{
+		Flags: []Flag{
+			&FloatFlag{
+				Name:  "myflag",
+				Value: 17,
+			},
+		},
+	}
+	cmd := &Command{
+		Flags: []Flag{
+			&FloatFlag{
+				Name:  "top-flag",
+				Value: 18,
+			},
+		},
+		parent: pCmd,
+	}
 
 	r := require.New(t)
 	r.Equal(float64(17), cmd.Float("myflag"))
@@ -3266,14 +3292,23 @@ func TestCommand_Float64(t *testing.T) {
 }
 
 func TestCommand_Duration(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Duration("myflag", 12*time.Second, "doc")
-
-	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.Duration("top-flag", 13*time.Second, "doc")
-	pCmd := &Command{flagSet: parentSet}
-
-	cmd := &Command{flagSet: set, parent: pCmd}
+	pCmd := &Command{
+		Flags: []Flag{
+			&DurationFlag{
+				Name:  "myflag",
+				Value: 12 * time.Second,
+			},
+		},
+	}
+	cmd := &Command{
+		Flags: []Flag{
+			&DurationFlag{
+				Name:  "top-flag",
+				Value: 13 * time.Second,
+			},
+		},
+		parent: pCmd,
+	}
 
 	r := require.New(t)
 	r.Equal(12*time.Second, cmd.Duration("myflag"))
@@ -3318,28 +3353,48 @@ func TestCommand_Timestamp(t *testing.T) {
 }
 
 func TestCommand_String(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.String("myflag", "hello world", "doc")
-	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.String("top-flag", "hai veld", "doc")
-	pCmd := &Command{flagSet: parentSet}
-	cmd := &Command{flagSet: set, parent: pCmd}
+	pCmd := &Command{
+		Flags: []Flag{
+			&StringFlag{
+				Name:  "myflag",
+				Value: "hello world",
+			},
+		},
+	}
+	cmd := &Command{
+		Flags: []Flag{
+			&StringFlag{
+				Name:  "top-flag",
+				Value: "hai veld",
+			},
+		},
+		parent: pCmd,
+	}
 
 	r := require.New(t)
 	r.Equal("hello world", cmd.String("myflag"))
 	r.Equal("hai veld", cmd.String("top-flag"))
 
-	cmd = &Command{parent: pCmd}
 	r.Equal("hai veld", cmd.String("top-flag"))
 }
 
 func TestCommand_Bool(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Bool("myflag", false, "doc")
-	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.Bool("top-flag", true, "doc")
-	pCmd := &Command{flagSet: parentSet}
-	cmd := &Command{flagSet: set, parent: pCmd}
+	pCmd := &Command{
+		Flags: []Flag{
+			&BoolFlag{
+				Name: "myflag",
+			},
+		},
+	}
+	cmd := &Command{
+		Flags: []Flag{
+			&BoolFlag{
+				Name:  "top-flag",
+				Value: true,
+			},
+		},
+		parent: pCmd,
+	}
 
 	r := require.New(t)
 	r.False(cmd.Bool("myflag"))
@@ -3432,37 +3487,50 @@ func TestCommand_Value_InvalidFlagAccessHandler(t *testing.T) {
 }
 
 func TestCommand_Args(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Bool("myflag", false, "doc")
-	cmd := &Command{flagSet: set}
-	_ = set.Parse([]string{"--myflag", "bat", "baz"})
+	cmd := &Command{
+		Flags: []Flag{
+			&BoolFlag{
+				Name: "myflag",
+			},
+		},
+	}
+	_ = cmd.Run(context.Background(), []string{"--myflag", "bat", "baz"})
 
 	r := require.New(t)
 	r.Equal(2, cmd.Args().Len())
 	r.True(cmd.Bool("myflag"))
-}
-
-func TestCommand_NArg(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Bool("myflag", false, "doc")
-	cmd := &Command{flagSet: set}
-	_ = set.Parse([]string{"--myflag", "bat", "baz"})
-
-	require.Equal(t, 2, cmd.NArg())
+	r.Equal(t, 2, cmd.NArg())
 }
 
 func TestCommand_IsSet(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Bool("one-flag", false, "doc")
-	set.Bool("two-flag", false, "doc")
-	set.String("three-flag", "hello world", "doc")
-	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.Bool("top-flag", true, "doc")
-	pCmd := &Command{flagSet: parentSet}
-	cmd := &Command{flagSet: set, parent: pCmd}
+	cmd := &Command{
+		Flags: []Flag{
+			&BoolFlag{
+				Name: "one-flag",
+			},
+			&BoolFlag{
+				Name: "two-flag",
+			},
+			&StringFlag{
+				Name:  "three-flag",
+				Value: "hello world",
+			},
+		},
+	}
+	pCmd := &Command{
+		Name: "root",
+		Flags: []Flag{
+			&BoolFlag{
+				Name:  "top-flag",
+				Value: true,
+			},
+		},
+		Commands: []*Command{
+			cmd,
+		},
+	}
 
-	_ = set.Parse([]string{"--one-flag", "--two-flag", "--three-flag", "frob"})
-	_ = parentSet.Parse([]string{"--top-flag"})
+	pCmd.Run(context.Background(), []string{"--one-flag", "--top-flag", "--two-flag", "--three-flag", "frob"})
 
 	r := require.New(t)
 
@@ -3524,23 +3592,57 @@ func TestCommand_IsSet_fromEnv(t *testing.T) {
 }
 
 func TestCommand_NumFlags(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Bool("myflag", false, "doc")
-	set.String("otherflag", "hello world", "doc")
-	globalSet := flag.NewFlagSet("test", 0)
-	globalSet.Bool("myflagGlobal", true, "doc")
-	globalCmd := &Command{flagSet: globalSet}
-	cmd := &Command{flagSet: set, parent: globalCmd}
-	_ = set.Parse([]string{"--myflag", "--otherflag=foo"})
-	_ = globalSet.Parse([]string{"--myflagGlobal"})
+	rootCmd := &Command{
+		Flags: []Flag{
+			&BoolFlag{
+				Name:  "myflagGlobal",
+				Value: true,
+			},
+		},
+	}
+	cmd := &Command{
+		Flags: []Flag{
+			&BoolFlag{
+				Name: "myflag",
+			},
+			&StringFlag{
+				Name:  "otherflag",
+				Value: "hello world",
+			},
+		},
+	}
+
+	_ = cmd.Run(context.Background(), []string{"--myflag", "--otherflag=foo"})
+	_ = rootCmd.Run(context.Background(), []string{"--myflagGlobal"})
 	require.Equal(t, 2, cmd.NumFlags())
+	actualFlags := cmd.LocalFlagNames()
+	sort.Strings(actualFlags)
+
+	require.Equal(t, []string{"one-flag", "two-flag"}, actualFlags)
+
+	actualFlags = cmd.FlagNames()
+	sort.Strings(actualFlags)
+
+	require.Equal(t, []string{"one-flag", "top-flag", "two-flag"}, actualFlags)
+
+	lineage := cmd.Lineage()
+
+	r := require.New(t)
+	r.Equal(2, len(lineage))
+	r.Equal(cmd, lineage[0])
+	r.Equal(rootCmd, lineage[1])
+
 }
 
 func TestCommand_Set(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Int64("int", int64(5), "an int")
-	cmd := &Command{flagSet: set}
-
+	cmd := &Command{
+		Flags: []Flag{
+			&IntFlag{
+				Name:  "int",
+				Value: 5,
+			},
+		},
+	}
 	r := require.New(t)
 
 	r.False(cmd.IsSet("int"))
@@ -3550,13 +3652,11 @@ func TestCommand_Set(t *testing.T) {
 }
 
 func TestCommand_Set_InvalidFlagAccessHandler(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
 	var flagName string
 	cmd := &Command{
 		InvalidFlagAccessHandler: func(_ context.Context, _ *Command, name string) {
 			flagName = name
 		},
-		flagSet: set,
 	}
 
 	r := require.New(t)
@@ -3565,76 +3665,34 @@ func TestCommand_Set_InvalidFlagAccessHandler(t *testing.T) {
 	r.Equal("missing", flagName)
 }
 
-func TestCommand_LocalFlagNames(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Bool("one-flag", false, "doc")
-	set.String("two-flag", "hello world", "doc")
-	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.Bool("top-flag", true, "doc")
-	pCmd := &Command{flagSet: parentSet}
-	cmd := &Command{flagSet: set, parent: pCmd}
-	_ = set.Parse([]string{"--one-flag", "--two-flag=foo"})
-	_ = parentSet.Parse([]string{"--top-flag"})
-
-	actualFlags := cmd.LocalFlagNames()
-	sort.Strings(actualFlags)
-
-	require.Equal(t, []string{"one-flag", "two-flag"}, actualFlags)
-}
-
-func TestCommand_FlagNames(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Bool("one-flag", false, "doc")
-	set.String("two-flag", "hello world", "doc")
-	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.Bool("top-flag", true, "doc")
-	pCmd := &Command{flagSet: parentSet}
-	cmd := &Command{flagSet: set, parent: pCmd}
-	_ = set.Parse([]string{"--one-flag", "--two-flag=foo"})
-	_ = parentSet.Parse([]string{"--top-flag"})
-
-	actualFlags := cmd.FlagNames()
-	sort.Strings(actualFlags)
-
-	require.Equal(t, []string{"one-flag", "top-flag", "two-flag"}, actualFlags)
-}
-
-func TestCommand_Lineage(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Bool("local-flag", false, "doc")
-	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.Bool("top-flag", true, "doc")
-	pCmd := &Command{flagSet: parentSet}
-	cmd := &Command{flagSet: set, parent: pCmd}
-	_ = set.Parse([]string{"--local-flag"})
-	_ = parentSet.Parse([]string{"--top-flag"})
-
-	lineage := cmd.Lineage()
-
-	r := require.New(t)
-	r.Equal(2, len(lineage))
-	r.Equal(cmd, lineage[0])
-	r.Equal(pCmd, lineage[1])
-}
-
-func TestCommand_lookupFlagSet(t *testing.T) {
-	set := flag.NewFlagSet("test", 0)
-	set.Bool("local-flag", false, "doc")
-	parentSet := flag.NewFlagSet("test", 0)
-	parentSet.Bool("top-flag", true, "doc")
-	pCmd := &Command{flagSet: parentSet}
-	cmd := &Command{flagSet: set, parent: pCmd}
-	_ = set.Parse([]string{"--local-flag"})
-	_ = parentSet.Parse([]string{"--top-flag"})
+func TestCommand_lookupFlag(t *testing.T) {
+	pCmd := &Command{
+		Flags: []Flag{
+			&BoolFlag{
+				Name:  "top-flag",
+				Value: true,
+			},
+		},
+	}
+	cmd := &Command{
+		Flags: []Flag{
+			&BoolFlag{
+				Name: "local-flag",
+			},
+		},
+		parent: pCmd,
+	}
+	_ = cmd.Run(context.Background(), []string{"--local-flag"})
+	_ = pCmd.Run(context.Background(), []string{"--top-flag"})
 
 	r := require.New(t)
 
-	fs := cmd.lookupFlagSet("top-flag")
-	r.Equal(pCmd.flagSet, fs)
+	fs := cmd.lookupFlag("top-flag")
+	r.Equal(pCmd.Flags[0], fs)
 
-	fs = cmd.lookupFlagSet("local-flag")
-	r.Equal(cmd.flagSet, fs)
-	r.Nil(cmd.lookupFlagSet("frob"))
+	fs = cmd.lookupFlag("local-flag")
+	r.Equal(cmd.Flags[0], fs)
+	r.Nil(cmd.lookupFlag("frob"))
 }
 
 func TestCommandAttributeAccessing(t *testing.T) {
@@ -3692,9 +3750,7 @@ func TestCommandAttributeAccessing(t *testing.T) {
 
 	for _, test := range tdata {
 		t.Run(test.testCase, func(t *testing.T) {
-			set := flag.NewFlagSet("some-flag-set-name", 0)
-			set.Bool(test.setBoolInput, false, "usage documentation")
-			cmd := &Command{flagSet: set, parent: test.parent}
+			cmd := &Command{parent: test.parent}
 
 			require.False(t, cmd.Bool(test.ctxBoolInput))
 		})
@@ -3868,13 +3924,13 @@ func TestCheckRequiredFlags(t *testing.T) {
 }
 
 func TestCommand_ParentCommand_Set(t *testing.T) {
-	parentSet := flag.NewFlagSet("parent", flag.ContinueOnError)
-	parentSet.String("Name", "", "")
-
 	cmd := &Command{
-		flagSet: flag.NewFlagSet("child", flag.ContinueOnError),
 		parent: &Command{
-			flagSet: parentSet,
+			Flags: []Flag{
+				&StringFlag{
+					Name: "Name",
+				},
+			},
 		},
 	}
 
