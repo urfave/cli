@@ -150,8 +150,8 @@ func (f *StringSliceFlag) Apply(set *flag.FlagSet) error {
 		setValue = f.Value.clone()
 	default:
 		setValue = new(StringSlice)
-		setValue.WithSeparatorSpec(f.separator)
 	}
+	setValue.WithSeparatorSpec(f.separator)
 
 	setValue.keepSpace = f.KeepSpace
 
