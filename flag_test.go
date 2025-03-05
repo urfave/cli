@@ -2165,6 +2165,66 @@ func TestParseMultiStringSliceWithDestination(t *testing.T) {
 	}).Run([]string{"run", "-s", "10", "-s", "20"})
 }
 
+func TestParseMultiStringSliceDisableSeparator(t *testing.T) {
+	tests := []struct {
+		name       string
+		val        *StringSlice
+		dest       *StringSlice
+		disableSep bool
+		input      []string
+		expected   []string
+	}{
+		{
+			name:     "Basic",
+			input:    []string{"-s", "10", "-s", "20"},
+			expected: []string{"10", "20"},
+		},
+		{
+			name:     "Basic Sep",
+			input:    []string{"-s", "10,20"},
+			expected: []string{"10", "20"},
+		},
+		{
+			name:       "Basic Disable Sep",
+			disableSep: true,
+			input:      []string{"-s", "10,20"},
+			expected:   []string{"10,20"},
+		},
+		{
+			name:       "Basic Disable Sep dest set",
+			disableSep: true,
+			dest:       NewStringSlice("11", "22"),
+			input:      []string{"-s", "10,20"},
+			expected:   []string{"10,20"},
+		},
+		{
+			name:       "Basic Disable Sep value set",
+			disableSep: true,
+			val:        NewStringSlice("11", "22"),
+			input:      []string{"-s", "10,201"},
+			expected:   []string{"10,201"},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			inputs := []string{"run"}
+			inputs = append(inputs, test.input...)
+			_ = (&App{
+				DisableSliceFlagSeparator: test.disableSep,
+				Flags: []Flag{
+					&StringSliceFlag{Name: "serve", Aliases: []string{"s"}, Destination: test.dest, Value: test.val},
+				},
+				Action: func(ctx *Context) error {
+					if !reflect.DeepEqual(ctx.StringSlice("serve"), test.expected) {
+						t.Errorf("Expected: %v != %v", test.expected, ctx.StringSlice("serve"))
+					}
+					return nil
+				},
+			}).Run(inputs)
+		})
+	}
+}
+
 func TestParseMultiStringSliceWithDestinationAndEnv(t *testing.T) {
 	defer resetEnv(os.Environ())
 	os.Clearenv()
