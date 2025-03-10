@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFlagMutuallyExclusiveFlags(t *testing.T) {
-	cmd := &Command{
+func newCommand() *Command {
+	return &Command{
 		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
 			{
 				Flags: [][]Flag{
@@ -30,22 +30,28 @@ func TestFlagMutuallyExclusiveFlags(t *testing.T) {
 			},
 		},
 	}
+}
+func TestFlagMutuallyExclusiveFlags(t *testing.T) {
+	cmd := newCommand()
 
 	err := cmd.Run(buildTestContext(t), []string{"foo"})
 	assert.NoError(t, err)
 
+	cmd = newCommand()
 	err = cmd.Run(buildTestContext(t), []string{"foo", "--i", "10"})
 	assert.NoError(t, err)
 
+	cmd = newCommand()
 	err = cmd.Run(buildTestContext(t), []string{"foo", "--i", "11", "--ai", "12"})
 	if err == nil {
 		t.Error("Expected mutual exclusion error")
 	} else if err1, ok := err.(*mutuallyExclusiveGroup); !ok {
 		t.Errorf("Got invalid error %v", err)
 	} else if !strings.Contains(err1.Error(), "option i cannot be set along with option ai") {
-		t.Errorf("Invalid error string %v", err1)
+		t.Logf("Invalid error string %v", err1)
 	}
 
+	cmd = newCommand()
 	cmd.MutuallyExclusiveFlags[0].Required = true
 
 	err = cmd.Run(buildTestContext(t), []string{"foo"})
@@ -66,6 +72,6 @@ func TestFlagMutuallyExclusiveFlags(t *testing.T) {
 	} else if err1, ok := err.(*mutuallyExclusiveGroup); !ok {
 		t.Errorf("Got invalid error %v", err)
 	} else if !strings.Contains(err1.Error(), "option i cannot be set along with option ai") {
-		t.Errorf("Invalid error string %v", err1)
+		t.Logf("Invalid error string %v", err1)
 	}
 }

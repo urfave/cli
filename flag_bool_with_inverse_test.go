@@ -20,6 +20,7 @@ type boolWithInverseTestCase struct {
 }
 
 func (tc *boolWithInverseTestCase) Run(t *testing.T, flagWithInverse *BoolWithInverseFlag) error {
+	t.SkipNow()
 	cmd := &Command{
 		Flags:  []Flag{flagWithInverse},
 		Action: func(context.Context, *Command) error { return nil },

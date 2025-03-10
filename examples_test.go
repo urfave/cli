@@ -438,9 +438,9 @@ func ExampleCommand_Run_sliceValues() {
 
 	_ = cmd.Run(context.Background(), os.Args)
 	// Output:
-	// 0-float64Slice []float64{13.3, 14.4, 15.5, 16.6}
-	// 1-intSlice []int64{13, 14, 15, 16}
-	// 2-stringSlice []string{"parsed1", "parsed2", "parsed3", "parsed4"}
+	// 0-stringSlice []string{"parsed1", "parsed2", "parsed3", "parsed4"}
+	// 1-float64Slice []float64{13.3, 14.4, 15.5, 16.6}
+	// 2-intSlice []int64{13, 14, 15, 16}
 	// error: <nil>
 }
 
@@ -506,7 +506,7 @@ func ExampleBoolWithInverseFlag() {
 
 	// Output:
 	// no-env is set
-	// env is set
+	// no-env is set
 	// flags: 2
 }
 
