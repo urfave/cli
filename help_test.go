@@ -1146,7 +1146,6 @@ func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 }
 
 func TestDefaultCompleteWithFlags(t *testing.T) {
-	t.SkipNow()
 	origArgv := os.Args
 	t.Cleanup(func() { os.Args = origArgv })
 
@@ -1292,7 +1291,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 					},
 				},
 			},
-			argv:     []string{"cmd", "putz", "-e", completionFlag},
+			argv:     []string{"putz", "-e", completionFlag},
 			env:      map[string]string{"SHELL": "zsh"},
 			expected: "--excitement:an exciting flag\n",
 		},
@@ -1312,7 +1311,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 					},
 				},
 			},
-			argv:     []string{"cmd", "putz", "-e", completionFlag},
+			argv:     []string{"putz", "-e", completionFlag},
 			env:      map[string]string{"SHELL": "zsh"},
 			expected: "--excitement\n",
 		},
@@ -1324,14 +1323,17 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 
 			os.Args = tc.argv
 			for k, v := range tc.env {
-				t.Setenv(k, v)
+				ct.Setenv(k, v)
+			}
+			tc.cmd.parsedArgs = &stringSliceArgs{
+				tc.argv[1:],
 			}
 			f := DefaultCompleteWithFlags
-			f(context.Background(), tc.cmd)
+			f(buildTestContext(ct), tc.cmd)
 
 			written := writer.String()
 
-			assert.Equal(t, tc.expected, written, "written help does not match")
+			assert.Equal(ct, tc.expected, written, "written help does not match")
 		})
 	}
 }

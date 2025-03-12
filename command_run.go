@@ -120,6 +120,7 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 		cmd.shellCompletion = cmd.EnableShellCompletion && cmd.shellCompletion
 	}
 
+	cmd.inputArgs = osArgs
 	tracef("using post-checkShellCompleteFlag arguments %[1]q (cmd=%[2]q)", osArgs, cmd.Name)
 
 	tracef("setting self as cmd in context (cmd=%[1]q)", cmd.Name)

@@ -793,8 +793,8 @@ var defaultCommandFlagTests = []struct {
 	{"", "-j", "", true},
 	{" ", "-j", "foobar", true},
 	{"", "", "", true},
-	{" ", "", "", false},
-	{" ", "-j", "", false},
+	{" ", "", "", true},
+	{" ", "-j", "", true},
 	{"bat", "", "batbaz", true},
 	{"nothing", "", "batbaz", true},
 	{"nothing", "", "", false},
@@ -803,7 +803,6 @@ var defaultCommandFlagTests = []struct {
 }
 
 func TestCommand_RunDefaultCommandWithFlags(t *testing.T) {
-	t.SkipNow()
 	for _, test := range defaultCommandFlagTests {
 		testTitle := fmt.Sprintf("command=%[1]s-flag=%[2]s-default=%[3]s", test.cmdName, test.flag, test.defaultCmd)
 		t.Run(testTitle, func(t *testing.T) {
@@ -2356,7 +2355,10 @@ func (c *customBoolFlag) PostParse() error {
 }
 
 func (c *customBoolFlag) Get() any {
-	return &boolValue{}
+	dest := false
+	return &boolValue{
+		destination: &dest,
+	}
 }
 
 func (c *customBoolFlag) Set(s string) error {

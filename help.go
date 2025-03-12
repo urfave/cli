@@ -225,10 +225,7 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 }
 
 func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
-	args := cmd.inputArgs
-	if args == nil {
-		args = []string{}
-	}
+	args := os.Args
 	if cmd != nil && cmd.parent != nil {
 		args = cmd.Args().Slice()
 		tracef("running default complete with flags[%v] on command %[2]q", args, cmd.Name)
@@ -241,9 +238,9 @@ func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 	// to account for that
 	if argsLen > 1 {
 		lastArg = args[argsLen-2]
-	} else if argsLen > 0 {
+	} /*else if argsLen > 0 {
 		lastArg = args[argsLen-1]
-	}
+	}*/
 
 	if lastArg == "--" {
 		tracef("not printing flag suggestion as last arg is --")
