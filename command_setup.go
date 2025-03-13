@@ -15,7 +15,6 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 	}
 
 	cmd.didSetupDefaults = true
-	cmd.inputArgs = osArgs
 
 	isRoot := cmd.parent == nil
 	tracef("isRoot? %[1]v (cmd=%[2]q)", isRoot, cmd.Name)

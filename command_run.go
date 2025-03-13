@@ -120,7 +120,6 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 		cmd.shellCompletion = cmd.EnableShellCompletion && cmd.shellCompletion
 	}
 
-	cmd.inputArgs = osArgs
 	tracef("using post-checkShellCompleteFlag arguments %[1]q (cmd=%[2]q)", osArgs, cmd.Name)
 
 	tracef("setting self as cmd in context (cmd=%[1]q)", cmd.Name)
@@ -131,7 +130,19 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	}
 
 	var rargs Args = &stringSliceArgs{v: osArgs}
-	args, err := cmd.parseFlags(&stringSliceArgs{rargs.Tail()})
+	var args Args = &stringSliceArgs{rargs.Tail()}
+	var err error
+	if cmd.SkipFlagParsing {
+		tracef("skipping flag parsing (cmd=%[1]q)", cmd.Name)
+	} else {
+		for _, f := range cmd.allFlags() {
+			if err := f.PreParse(); err != nil {
+				return err
+			}
+		}
+
+		args, err = cmd.parseFlags(args)
+	}
 
 	tracef("using post-parse arguments %[1]q (cmd=%[2]q)", args, cmd.Name)
 

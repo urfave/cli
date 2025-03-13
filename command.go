@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"slices"
 	"strings"
 )
 
@@ -144,7 +145,6 @@ type Command struct {
 	didSetupDefaults bool
 	// whether in shell completion mode
 	shellCompletion bool
-	inputArgs       []string
 }
 
 // FullName returns the full name of the command.
@@ -173,17 +173,7 @@ func (cmd *Command) Command(name string) *Command {
 func (cmd *Command) checkHelp() bool {
 	tracef("checking if help is wanted (cmd=%[1]q)", cmd.Name)
 
-	if HelpFlag == nil {
-		return false
-	}
-
-	for _, name := range HelpFlag.Names() {
-		if cmd.Bool(name) {
-			return true
-		}
-	}
-
-	return false
+	return HelpFlag != nil && slices.ContainsFunc(HelpFlag.Names(), cmd.Bool)
 }
 
 func (cmd *Command) allFlags() []Flag {

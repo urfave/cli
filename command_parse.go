@@ -24,12 +24,6 @@ func flagFromError(err error) (string, error) {
 func (cmd *Command) parseFlags(args Args) (Args, error) {
 	tracef("parsing flags from arguments %[1]q (cmd=%[2]q)", args, cmd.Name)
 
-	if cmd.SkipFlagParsing {
-		tracef("skipping flag parsing (cmd=%[1]q)", cmd.Name)
-		cmd.parsedArgs = args
-		return cmd.parsedArgs, nil
-	}
-
 	cmd.setFlags = map[Flag]struct{}{}
 	cmd.appliedFlags = cmd.allFlags()
 
@@ -77,15 +71,6 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		}
 	}
 
-	for _, f := range cmd.allFlags() {
-		f.PreParse()
-	}
-
-	/*defer func() {
-		for _, f := range cmd.allFlags() {
-			f.PostParse()
-		}
-	}()*/
 	tracef("parsing flags iteratively tail=%[1]q (cmd=%[2]q)", args.Tail(), cmd.Name)
 	defer tracef("done parsing flags (cmd=%[1]q)", cmd.Name)
 

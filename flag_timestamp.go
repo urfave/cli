@@ -47,12 +47,7 @@ func (t timestampValue) ToString(b time.Time) string {
 	return fmt.Sprintf("%v", b)
 }
 
-// Timestamp constructor(for internal testing only)
-func newTimestamp(timestamp time.Time) *timestampValue {
-	return &timestampValue{timestamp: &timestamp}
-}
-
-// Below functions are to satisfy the flag.Value interface
+// Below functions are to satisfy the Value interface
 
 // Parses the string value to timestamp
 func (t *timestampValue) Set(value string) error {
