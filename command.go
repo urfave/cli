@@ -232,13 +232,7 @@ func (cmd *Command) Names() []string {
 
 // HasName returns true if Command.Name matches given name
 func (cmd *Command) HasName(name string) bool {
-	for _, n := range cmd.Names() {
-		if n == name {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(cmd.Names(), name)
 }
 
 // VisibleCategories returns a slice of categories and commands that are
