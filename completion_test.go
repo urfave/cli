@@ -169,7 +169,6 @@ func TestCompletionSubcommand(t *testing.T) {
 			r := require.New(t)
 
 			r.NoError(cmd.Run(buildTestContext(t), test.args))
-			t.Log(out.String())
 			if test.notContains {
 				r.NotContainsf(out.String(), test.contains, test.msg, test.msgArgs...)
 			} else {

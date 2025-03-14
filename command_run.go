@@ -132,15 +132,16 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	var rargs Args = &stringSliceArgs{v: osArgs}
 	var args Args = &stringSliceArgs{rargs.Tail()}
 	var err error
+	for _, f := range cmd.allFlags() {
+		if err := f.PreParse(); err != nil {
+			return err
+		}
+	}
+
 	if cmd.SkipFlagParsing {
 		tracef("skipping flag parsing (cmd=%[1]q)", cmd.Name)
+		cmd.parsedArgs = args
 	} else {
-		for _, f := range cmd.allFlags() {
-			if err := f.PreParse(); err != nil {
-				return err
-			}
-		}
-
 		args, err = cmd.parseFlags(args)
 	}
 

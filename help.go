@@ -238,13 +238,17 @@ func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 	// to account for that
 	if argsLen > 1 {
 		lastArg = args[argsLen-2]
-	} /*else if argsLen > 0 {
+	} else if argsLen > 0 {
 		lastArg = args[argsLen-1]
-	}*/
+	}
 
 	if lastArg == "--" {
 		tracef("not printing flag suggestion as last arg is --")
 		return
+	}
+
+	if lastArg == completionFlag {
+		lastArg = ""
 	}
 
 	if strings.HasPrefix(lastArg, "-") {
@@ -493,7 +497,7 @@ func checkCompletions(ctx context.Context, cmd *Command) bool {
 		}
 	}
 
-	tracef("no subcommand found for completiot %[1]q", cmd.Name)
+	tracef("no subcommand found for completion %[1]q", cmd.Name)
 
 	if cmd.ShellComplete != nil {
 		tracef("running shell completion func for command %[1]q", cmd.Name)
