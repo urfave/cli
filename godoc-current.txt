@@ -277,8 +277,6 @@ type BoolWithInverseFlag struct {
 	// Has unexported fields.
 }
 
-func (parent *BoolWithInverseFlag) Apply(set *flag.FlagSet) error
-
 func (parent *BoolWithInverseFlag) Flags() []Flag
 
 func (parent *BoolWithInverseFlag) IsSet() bool
@@ -288,6 +286,8 @@ func (parent *BoolWithInverseFlag) Names() []string
 func (parent *BoolWithInverseFlag) PostParse() error
 
 func (parent *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) error
+
+func (parent *BoolWithInverseFlag) Set(val string) error
 
 func (parent *BoolWithInverseFlag) String() string
     String implements the standard Stringer interface.
@@ -628,11 +628,14 @@ type ExitErrHandlerFunc func(context.Context, *Command, error)
 
 type Flag interface {
 	fmt.Stringer
+	Get() any
+
+	PreParse() error
 
 	PostParse() error
 
 	// Apply Flag settings to the given flag set
-	Apply(*flag.FlagSet) error
+	Set(string) error
 
 	// All possible names for this flag
 	Names() []string
@@ -699,8 +702,10 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
         C specifies the configuration required(if any for that flag type)
         VC specifies the value creator which creates the flag.Value emulation
 
-func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error
-    Apply populates the flag given the flag set and environment
+func (f *FlagBase[T, C, VC]) Count() int
+    Count returns the number of times this flag has been invoked
+
+func (f *FlagBase[T, C, V]) Get() any
 
 func (f *FlagBase[T, C, V]) GetCategory() string
     GetCategory returns the category of the flag
@@ -717,6 +722,9 @@ func (f *FlagBase[T, C, V]) GetUsage() string
 func (f *FlagBase[T, C, V]) GetValue() string
     GetValue returns the flags value as string representation and an empty
     string if the flag takes no value at all.
+
+func (f *FlagBase[T, C, VC]) IsBoolFlag() bool
+    IsBoolFlag returns whether the flag doesnt need to accept args
 
 func (f *FlagBase[T, C, V]) IsDefaultVisible() bool
     IsDefaultVisible returns true if the flag is not hidden, otherwise false
@@ -743,8 +751,13 @@ func (f *FlagBase[T, C, V]) Names() []string
 func (f *FlagBase[T, C, V]) PostParse() error
     PostParse populates the flag given the flag set and environment
 
+func (f *FlagBase[T, C, V]) PreParse() error
+
 func (f *FlagBase[T, C, V]) RunAction(ctx context.Context, cmd *Command) error
     RunAction executes flag action if set
+
+func (f *FlagBase[T, C, V]) Set(val string) error
+    Set applies given value from string
 
 func (f *FlagBase[T, C, V]) SetCategory(c string)
 

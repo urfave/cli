@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"strings"
 )
@@ -149,16 +148,16 @@ func (parent *BoolWithInverseFlag) PostParse() error {
 	return nil
 }
 
-func (parent *BoolWithInverseFlag) Apply(set *flag.FlagSet) error {
+func (parent *BoolWithInverseFlag) Set(val string) error {
 	if parent.positiveFlag == nil {
 		parent.initialize()
 	}
 
-	if err := parent.positiveFlag.Apply(set); err != nil {
+	if err := parent.positiveFlag.Set(val); err != nil {
 		return err
 	}
 
-	if err := parent.negativeFlag.Apply(set); err != nil {
+	if err := parent.negativeFlag.Set(val); err != nil {
 		return err
 	}
 
