@@ -2533,7 +2533,7 @@ func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
 			}
 
 			if len(testCase.layoutsPrecisions) == 0 {
-				err := fl.Set(now.Format(time.RFC3339))
+				err := fl.Set(fl.Name, now.Format(time.RFC3339))
 				if testCase.expErrValidation != nil {
 					assert.NoError(t, testCase.expErrValidation(err))
 				}
@@ -2553,7 +2553,7 @@ func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
 			}
 
 			for _, layout := range validLayouts {
-				err := fl.Set(now.Format(layout))
+				err := fl.Set(fl.Name, now.Format(layout))
 				assert.NoError(t, err)
 				if !testCase.expRes.IsZero() {
 					assert.Equal(t, testCase.expRes, fl.value.Get())
@@ -2561,7 +2561,7 @@ func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
 			}
 
 			for range invalidLayouts {
-				err := fl.Set(now.Format(time.RFC3339))
+				err := fl.Set(fl.Name, now.Format(time.RFC3339))
 				if testCase.expErrValidation != nil {
 					assert.NoError(t, testCase.expErrValidation(err))
 				}
@@ -2604,7 +2604,7 @@ func TestTimestampFlagApply_ShortenedLayouts(t *testing.T) {
 	}
 
 	for layout, prec := range shortenedLayoutsPrecisions {
-		err := fl.Set(now.Format(layout))
+		err := fl.Set(fl.Name, now.Format(layout))
 		assert.NoError(t, err)
 		assert.Equal(t, now.Truncate(prec), fl.value.Get())
 	}

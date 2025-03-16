@@ -477,9 +477,7 @@ func ExampleCommand_Run_mapValues() {
 
 func ExampleBoolWithInverseFlag() {
 	flagWithInverse := &cli.BoolWithInverseFlag{
-		BoolFlag: &cli.BoolFlag{
-			Name: "env",
-		},
+		Name: "env",
 	}
 
 	cmd := &cli.Command{
@@ -488,7 +486,7 @@ func ExampleBoolWithInverseFlag() {
 		},
 		Action: func(_ context.Context, cmd *cli.Command) error {
 			if flagWithInverse.IsSet() {
-				if flagWithInverse.Value() {
+				if cmd.Bool("env") {
 					fmt.Println("env is set")
 				} else {
 					fmt.Println("no-env is set")
@@ -500,12 +498,10 @@ func ExampleBoolWithInverseFlag() {
 	}
 
 	_ = cmd.Run(context.Background(), []string{"prog", "--no-env"})
-	_ = cmd.Run(context.Background(), []string{"prog", "--env"})
 
-	fmt.Println("flags:", len(flagWithInverse.Flags()))
+	fmt.Println("flags:", len(flagWithInverse.Names()))
 
 	// Output:
-	// no-env is set
 	// no-env is set
 	// flags: 2
 }

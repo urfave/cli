@@ -119,14 +119,14 @@ func (f *FlagBase[T, C, V]) PostParse() error {
 	if !f.hasBeenSet {
 		if val, source, found := f.Sources.LookupWithSource(); found {
 			if val != "" || reflect.TypeOf(f.Value).Kind() == reflect.String {
-				if err := f.Set(val); err != nil {
+				if err := f.Set(f.Name, val); err != nil {
 					return fmt.Errorf(
 						"could not parse %[1]q as %[2]T value from %[3]s for flag %[4]s: %[5]s",
 						val, f.Value, source, f.Name, err,
 					)
 				}
 			} else if val == "" && reflect.TypeOf(f.Value).Kind() == reflect.Bool {
-				_ = f.Set("false")
+				_ = f.Set(f.Name, "false")
 			}
 
 			f.hasBeenSet = true
@@ -156,7 +156,7 @@ func (f *FlagBase[T, C, V]) PreParse() error {
 }
 
 // Set applies given value from string
-func (f *FlagBase[T, C, V]) Set(val string) error {
+func (f *FlagBase[T, C, V]) Set(_ string, val string) error {
 	tracef("apply (flag=%[1]q)", f.Name)
 
 	// TODO move this phase into a separate flag initialization function

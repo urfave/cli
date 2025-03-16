@@ -14,7 +14,7 @@ func (e *extFlag) PostParse() error {
 	return nil
 }
 
-func (e *extFlag) Set(val string) error {
+func (e *extFlag) Set(_ string, val string) error {
 	return e.f.Value.Set(val)
 }
 

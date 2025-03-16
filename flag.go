@@ -106,7 +106,7 @@ type Flag interface {
 	PostParse() error
 
 	// Apply Flag settings to the given flag set
-	Set(string) error
+	Set(string, string) error
 
 	// All possible names for this flag
 	Names() []string

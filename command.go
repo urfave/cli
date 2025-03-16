@@ -339,7 +339,7 @@ func (cmd *Command) Root() *Command {
 
 func (cmd *Command) set(fName string, f Flag, val string) error {
 	cmd.setFlags[f] = struct{}{}
-	if err := f.Set(val); err != nil {
+	if err := f.Set(fName, val); err != nil {
 		return fmt.Errorf("invalid value %q for flag -%s: %v", val, fName, err)
 	}
 	return nil
@@ -450,7 +450,7 @@ func (cmd *Command) NumFlags() int {
 // Set sets a context flag to a value.
 func (cmd *Command) Set(name, value string) error {
 	if f := cmd.lookupFlag(name); f != nil {
-		return f.Set(value)
+		return f.Set(name, value)
 	}
 
 	return fmt.Errorf("no such flag -%s", name)

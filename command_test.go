@@ -2361,7 +2361,7 @@ func (c *customBoolFlag) Get() any {
 	}
 }
 
-func (c *customBoolFlag) Set(s string) error {
+func (c *customBoolFlag) Set(_, _ string) error {
 	return nil
 }
 
