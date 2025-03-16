@@ -190,10 +190,10 @@ func (f *FlagBase[T, C, V]) Set(_ string, val string) error {
 }
 
 func (f *FlagBase[T, C, V]) Get() any {
-	if f.value == nil {
-		f.PreParse()
+	if f.value != nil {
+		return f.value.Get()
 	}
-	return f.value.Get()
+	return f.Value
 }
 
 // IsDefaultVisible returns true if the flag is not hidden, otherwise false
@@ -287,9 +287,6 @@ func (f *FlagBase[T, C, VC]) IsLocal() bool {
 
 // IsBoolFlag returns whether the flag doesnt need to accept args
 func (f *FlagBase[T, C, VC]) IsBoolFlag() bool {
-	if f.value == nil {
-		f.PreParse()
-	}
 	bf, ok := f.value.(boolFlag)
 	return ok && bf.IsBoolFlag()
 }

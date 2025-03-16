@@ -175,11 +175,7 @@ func (bif *BoolWithInverseFlag) String() string {
 
 // IsBoolFlag returns whether the flag doesnt need to accept args
 func (bif *BoolWithInverseFlag) IsBoolFlag() bool {
-	if bif.value == nil {
-		bif.PreParse()
-	}
-	bf, ok := bif.value.(*boolValue)
-	return ok && bf.IsBoolFlag()
+	return true
 }
 
 // Count returns the number of times this flag has been invoked
