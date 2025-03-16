@@ -113,7 +113,7 @@ func (bif *BoolWithInverseFlag) PostParse() error {
 }
 
 func (bif *BoolWithInverseFlag) Set(name, val string) error {
-	if bif.count == 1 && bif.OnlyOnce {
+	if bif.count > 0 && bif.OnlyOnce {
 		return fmt.Errorf("cant duplicate this flag")
 	}
 
@@ -225,6 +225,6 @@ func (bif *BoolWithInverseFlag) IsDefaultVisible() bool {
 	return !bif.HideDefault
 }
 
-func (f *BoolWithInverseFlag) TypeName() string {
+func (bif *BoolWithInverseFlag) TypeName() string {
 	return "bool"
 }

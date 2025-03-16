@@ -338,7 +338,7 @@ func (bif *BoolWithInverseFlag) String() string
 
 func (bif *BoolWithInverseFlag) TakesValue() bool
 
-func (f *BoolWithInverseFlag) TypeName() string
+func (bif *BoolWithInverseFlag) TypeName() string
 
 type CategorizableFlag interface {
 	// Returns the category of the flag

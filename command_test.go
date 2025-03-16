@@ -3138,7 +3138,7 @@ func TestFlagDuplicates(t *testing.T) {
 	}{
 		{
 			name: "all args present once",
-			args: []string{"foo", "--sflag", "hello", "--isflag", "1", "--isflag", "2", "--fsflag", "2.0", "--iflag", "10"},
+			args: []string{"foo", "--sflag", "hello", "--isflag", "1", "--isflag", "2", "--fsflag", "2.0", "--iflag", "10", "--bifflag"},
 		},
 		{
 			name: "duplicate non slice flag(duplicatable)",
@@ -3152,6 +3152,11 @@ func TestFlagDuplicates(t *testing.T) {
 		{
 			name:        "duplicate slice flag(non duplicatable)",
 			args:        []string{"foo", "--sflag", "hello", "--isflag", "1", "--isflag", "2", "--fsflag", "2.0", "--fsflag", "3.0", "--iflag", "10"},
+			errExpected: true,
+		},
+		{
+			name:        "duplicate bool inverse flag(non duplicatable)",
+			args:        []string{"foo", "--bifflag", "--bifflag"},
 			errExpected: true,
 		},
 	}
@@ -3171,6 +3176,10 @@ func TestFlagDuplicates(t *testing.T) {
 						Name:     "fsflag",
 						OnlyOnce: true,
 					},
+					&BoolWithInverseFlag{
+						Name:     "bifflag",
+						OnlyOnce: true,
+					},
 					&IntFlag{
 						Name: "iflag",
 					},
@@ -3182,9 +3191,9 @@ func TestFlagDuplicates(t *testing.T) {
 
 			err := cmd.Run(buildTestContext(t), test.args)
 			if test.errExpected {
-				assert.NotNil(t, err)
+				assert.Error(t, err)
 			} else {
-				assert.Nil(t, err)
+				assert.NoError(t, err)
 			}
 		})
 	}

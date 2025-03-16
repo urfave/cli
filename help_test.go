@@ -1675,6 +1675,10 @@ func TestCategorizedHelp(t *testing.T) {
 				Aliases:  []string{"altd1", "altd2"},
 				Category: "cat1",
 			},
+			&BoolWithInverseFlag{
+				Name: "bf",
+				//Category: "cat1",
+			},
 		},
 		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
 			{

@@ -455,6 +455,11 @@ func TestFlagStringifying(t *testing.T) {
 			expected: "--wildly\t(default: scrambled)",
 		},
 		{
+			name:     "bool-inv-flag",
+			fl:       &BoolWithInverseFlag{Name: "vividly"},
+			expected: "--vividly, --no-vividly\t(default: false)",
+		},
+		{
 			name:     "duration-flag",
 			fl:       &DurationFlag{Name: "scream-for"},
 			expected: "--scream-for duration\t(default: 0s)",
@@ -2807,6 +2812,14 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			flag:    &BoolFlag{Name: "flag", Value: true, Sources: EnvVars("uflag")},
 			toParse: []string{"--flag=false"},
 			expect:  `--flag	(default: true)` + withEnvHint([]string{"uflag"}, ""),
+			environ: map[string]string{
+				"uflag": "false",
+			},
+		},
+		{
+			name:   "bool",
+			flag:   &BoolWithInverseFlag{Name: "flag", Value: true, Sources: EnvVars("uflag")},
+			expect: `--[no-]flag	(default: true)` + withEnvHint([]string{"uflag"}, ""),
 			environ: map[string]string{
 				"uflag": "false",
 			},
