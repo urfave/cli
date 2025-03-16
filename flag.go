@@ -99,10 +99,15 @@ type ActionableFlag interface {
 // this interface be implemented.
 type Flag interface {
 	fmt.Stringer
+
+	// Retrieve the value of the Flag
 	Get() any
 
+	// Lifecycle methods.
+	// flag callback prior to parsing
 	PreParse() error
 
+	// flag callback post parsing
 	PostParse() error
 
 	// Apply Flag settings to the given flag set
