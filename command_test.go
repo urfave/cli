@@ -885,7 +885,9 @@ func TestCommand_FlagsFromExtPackage(t *testing.T) {
 	err := cmd.Run(buildTestContext(t), []string{"foo", "-c", "cly", "--epflag", "10"})
 	assert.NoError(t, err)
 
-	assert.Equal(t, someint, int(10))
+	assert.Equal(t, int(10), someint)
+	// this exercises the extFlag.Get()
+	assert.Equal(t, int(10), cmd.Value("epflag"))
 
 	cmd = &Command{
 		Flags: []Flag{
