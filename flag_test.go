@@ -100,42 +100,55 @@ func TestBoolFlagApply_SetsCount(t *testing.T) {
 
 func TestBoolFlagCountFromCommand(t *testing.T) {
 	boolCountTests := []struct {
+		name          string
 		input         []string
 		expectedVal   bool
 		expectedCount int
 	}{
 		{
+			name:          "3 count",
 			input:         []string{"main", "-tf", "-w", "-huh"},
 			expectedVal:   true,
 			expectedCount: 3,
 		},
 		{
+			name:          "single count",
 			input:         []string{"main", "-huh"},
 			expectedVal:   true,
 			expectedCount: 1,
 		},
 		{
+			name:          "zero count",
 			input:         []string{"main"},
 			expectedVal:   false,
 			expectedCount: 0,
 		},
 	}
 
-	for _, bct := range boolCountTests {
-		bf := &BoolFlag{Name: "tf", Aliases: []string{"w", "huh"}}
-		cmd := &Command{
-			Flags: []Flag{
-				bf,
-			},
+	flags := func() []Flag {
+		return []Flag{
+			&BoolFlag{Name: "tf", Aliases: []string{"w", "huh"}},
+			&BoolWithInverseFlag{Name: "tf", Aliases: []string{"w", "huh"}},
 		}
-		r := require.New(t)
+	}
+	for index := range flags() {
+		for _, bct := range boolCountTests {
+			t.Run(bct.name, func(t *testing.T) {
+				bf := flags()[index]
+				cmd := &Command{
+					Flags: []Flag{
+						bf,
+					},
+				}
+				r := require.New(t)
 
-		r.NoError(cmd.Run(buildTestContext(t), bct.input))
+				r.NoError(cmd.Run(buildTestContext(t), bct.input))
 
-		r.Equal(bct.expectedVal, cmd.Value(bf.Name))
-		r.Equal(bct.expectedCount, cmd.Count(bf.Name))
-		for _, alias := range bf.Aliases {
-			r.Equal(bct.expectedCount, cmd.Count(alias))
+				for _, alias := range bf.Names() {
+					r.Equal(bct.expectedCount, cmd.Count(alias))
+					r.Equal(bct.expectedVal, cmd.Value(alias))
+				}
+			})
 		}
 	}
 }
@@ -3291,6 +3304,7 @@ func TestDocGetValue(t *testing.T) {
 	assert.Equal(t, "", (&BoolFlag{Name: "foo", Value: true}).GetValue())
 	assert.Equal(t, "", (&BoolFlag{Name: "foo", Value: false}).GetValue())
 	assert.Equal(t, "bar", (&StringFlag{Name: "foo", Value: "bar"}).GetValue())
+	assert.Equal(t, "", (&BoolWithInverseFlag{Name: "foo", Value: false}).GetValue())
 }
 
 func TestGenericFlag_SatisfiesFlagInterface(t *testing.T) {

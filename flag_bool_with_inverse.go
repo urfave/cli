@@ -117,7 +117,6 @@ func (bif *BoolWithInverseFlag) Set(name, val string) error {
 		return fmt.Errorf("cant duplicate this flag")
 	}
 
-	bif.count++
 	bif.hasBeenSet = true
 
 	if slices.Contains(append([]string{bif.Name}, bif.Aliases...), name) {
@@ -225,6 +224,8 @@ func (bif *BoolWithInverseFlag) IsDefaultVisible() bool {
 	return !bif.HideDefault
 }
 
+// TypeName is used for stringify/docs. For bool its a no-op
+// so nolint
 func (bif *BoolWithInverseFlag) TypeName() string {
-	return "bool"
+	return "bool" // nolint
 }

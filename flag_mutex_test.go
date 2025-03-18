@@ -19,6 +19,9 @@ func newCommand() *Command {
 						&StringFlag{
 							Name: "s",
 						},
+						&BoolWithInverseFlag{
+							Name: "b",
+						},
 					},
 					{
 						&IntFlag{
