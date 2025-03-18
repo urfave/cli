@@ -125,11 +125,6 @@ func (t *timestampValue) String() string {
 	return fmt.Sprintf("%#v", t.timestamp)
 }
 
-// Value returns the timestamp value stored in the flag
-func (t *timestampValue) Value() *time.Time {
-	return t.timestamp
-}
-
 // Get returns the flag structure
 func (t *timestampValue) Get() any {
 	return *t.timestamp

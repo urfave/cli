@@ -3,7 +3,6 @@ package cli
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"slices"
 	"strings"
 )
@@ -93,15 +92,14 @@ func (bif *BoolWithInverseFlag) PostParse() error {
 
 	if !bif.hasBeenSet {
 		if val, source, found := bif.Sources.LookupWithSource(); found {
-			if val != "" || reflect.TypeOf(bif.Value).Kind() == reflect.String {
-				if err := bif.Set(bif.Name, val); err != nil {
-					return fmt.Errorf(
-						"could not parse %[1]q as %[2]T value from %[3]s for flag %[4]s: %[5]s",
-						val, bif.Value, source, bif.Name, err,
-					)
-				}
-			} else if val == "" {
-				_ = bif.Set(bif.Name, "false")
+			if val == "" {
+				val = "false"
+			}
+			if err := bif.Set(bif.Name, val); err != nil {
+				return fmt.Errorf(
+					"could not parse %[1]q as %[2]T value from %[3]s for flag %[4]s: %[5]s",
+					val, bif.Value, source, bif.Name, err,
+				)
 			}
 
 			bif.hasBeenSet = true
@@ -224,7 +222,6 @@ func (bif *BoolWithInverseFlag) IsDefaultVisible() bool {
 }
 
 // TypeName is used for stringify/docs. For bool its a no-op
-// so nolint
 func (bif *BoolWithInverseFlag) TypeName() string {
-	return "bool" // nolint
+	return "bool"
 }

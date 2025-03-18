@@ -297,7 +297,7 @@ func (cmd *Command) VisiblePersistentFlags() []Flag {
 }
 
 func (cmd *Command) appendCommand(aCmd *Command) {
-	if !hasCommand(cmd.Commands, aCmd) {
+	if !slices.Contains(cmd.Commands, aCmd) {
 		aCmd.parent = cmd
 		cmd.Commands = append(cmd.Commands, aCmd)
 	}
@@ -467,8 +467,6 @@ func (cmd *Command) IsSet(name string) bool {
 	isSet := fl.IsSet()
 	if isSet {
 		tracef("flag with name %[1]q is set (cmd=%[2]q)", name, cmd.Name)
-	} else if _, isSet = cmd.setFlags[fl]; isSet {
-		tracef("flag with name %[1]q is set locally (cmd=%[2]q)", name, cmd.Name)
 	} else {
 		tracef("flag with name %[1]q is no set (cmd=%[2]q)", name, cmd.Name)
 	}
@@ -549,27 +547,12 @@ func (cmd *Command) Value(name string) interface{} {
 // Args returns the command line arguments associated with the
 // command.
 func (cmd *Command) Args() Args {
-	if cmd.parsedArgs != nil {
-		return cmd.parsedArgs
-	}
-	return &stringSliceArgs{
-		[]string{},
-	}
+	return cmd.parsedArgs
 }
 
 // NArg returns the number of the command line arguments.
 func (cmd *Command) NArg() int {
 	return cmd.Args().Len()
-}
-
-func hasCommand(commands []*Command, command *Command) bool {
-	for _, existing := range commands {
-		if command == existing {
-			return true
-		}
-	}
-
-	return false
 }
 
 func (cmd *Command) runFlagActions(ctx context.Context) error {
@@ -592,16 +575,4 @@ func (cmd *Command) runFlagActions(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-func checkStringSliceIncludes(want string, sSlice []string) bool {
-	found := false
-	for _, s := range sSlice {
-		if want == s {
-			found = true
-			break
-		}
-	}
-
-	return found
 }

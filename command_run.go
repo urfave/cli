@@ -237,7 +237,7 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 		subCmd = cmd.Command(name)
 		if subCmd == nil {
 			hasDefault := cmd.DefaultCommand != ""
-			isFlagName := checkStringSliceIncludes(name, cmd.FlagNames())
+			isFlagName := slices.Contains(cmd.FlagNames(), name)
 
 			if hasDefault {
 				tracef("using default command=%[1]q (cmd=%[2]q)", cmd.DefaultCommand, cmd.Name)

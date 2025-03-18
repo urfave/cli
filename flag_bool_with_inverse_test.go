@@ -330,7 +330,8 @@ func TestBoolWithInverseNames(t *testing.T) {
 	require.Equal(t, "env", names[0], "expected first name to be `env`")
 	require.Equal(t, "no-env", names[1], "expected first name to be `no-env`")
 
-	var _ DocGenerationFlag = flag
+	var d DocGenerationFlag = flag
+	require.Equal(t, "bool", d.TypeName())
 }
 
 func TestBoolWithInverseString(t *testing.T) {

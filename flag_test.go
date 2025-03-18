@@ -2380,6 +2380,26 @@ func TestStringMap_Serialized_Set(t *testing.T) {
 	require.Equal(t, m0.String(), m1.String(), "pre and post serialization do not match")
 }
 
+var timestampFlagTests = []struct {
+	name     string
+	aliases  []string
+	usage    string
+	expected string
+}{
+	{"foo", nil, "", "--foo time\t(default: 2020-04-10 01:01:01.000000001 +0000 UTC)"},
+	{"f", nil, "all", "-f time\tall (default: 2020-04-10 01:01:01.000000001 +0000 UTC)"},
+}
+
+func TestTimestampFlagHelpOutput(t *testing.T) {
+	tl, err := time.LoadLocation("UTC")
+	assert.NoError(t, err)
+	for _, test := range timestampFlagTests {
+		value := time.Date(2020, time.April, 10, 1, 1, 1, 1, tl)
+		fl := &TimestampFlag{Name: test.name, Aliases: test.aliases, Usage: test.usage, Value: value}
+		assert.Equal(t, test.expected, fl.String())
+	}
+}
+
 func TestTimestamp_set(t *testing.T) {
 	ts := timestampValue{
 		timestamp:  nil,
