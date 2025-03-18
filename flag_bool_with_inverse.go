@@ -49,7 +49,6 @@ func (bif *BoolWithInverseFlag) Get() any {
 }
 
 func (bif *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) error {
-
 	if bif.Action != nil {
 		return bif.Action(ctx, cmd, bif.Get().(bool))
 	}

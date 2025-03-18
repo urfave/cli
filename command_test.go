@@ -3570,9 +3570,9 @@ func TestCommand_IsSet(t *testing.T) {
 		},
 	}
 
-	pCmd.Run(context.Background(), []string{"foo", "frob", "--one-flag", "--top-flag", "--two-flag", "--three-flag", "dds"})
-
 	r := require.New(t)
+
+	r.NoError(pCmd.Run(context.Background(), []string{"foo", "frob", "--one-flag", "--top-flag", "--two-flag", "--three-flag", "dds"}))
 
 	r.True(cmd.IsSet("one-flag"))
 	r.True(cmd.IsSet("two-flag"))
@@ -3672,7 +3672,6 @@ func TestCommand_NumFlags(t *testing.T) {
 	r.Equal(2, len(lineage))
 	r.Equal(cmd, lineage[0])
 	r.Equal(rootCmd, lineage[1])
-
 }
 
 func TestCommand_Set(t *testing.T) {

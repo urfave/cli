@@ -77,10 +77,10 @@ func TestBoolFlagValueFromCommand(t *testing.T) {
 		tf,
 		ff,
 	}
-	cmd.Set(tf.Name, "true")
-	cmd.Set(ff.Name, "false")
 
 	r := require.New(t)
+	r.NoError(cmd.Set(tf.Name, "true"))
+	r.NoError(cmd.Set(ff.Name, "false"))
 	r.True(cmd.Bool(tf.Name))
 	r.False(cmd.Bool(ff.Name))
 }
@@ -715,7 +715,7 @@ func TestStringFlagValueFromCommand(t *testing.T) {
 			f,
 		},
 	}
-	cmd.Set("myflag", "foobar")
+	require.NoError(t, cmd.Set("myflag", "foobar"))
 	require.Equal(t, "foobar", cmd.String(f.Name))
 }
 
@@ -1486,7 +1486,6 @@ func TestFloat64FlagHelpOutput(t *testing.T) {
 }
 
 func TestFloat64FlagWithEnvVarHelpOutput(t *testing.T) {
-
 	t.Setenv("APP_BAZ", "99.4")
 
 	for _, test := range float64FlagTests {
@@ -1614,7 +1613,6 @@ func TestFloat64SliceFlagApply_DefaultValueWithDestination(t *testing.T) {
 }
 
 func TestFloat64SliceFlagValueFromCommand(t *testing.T) {
-
 	fl := FloatSliceFlag{Name: "myflag"}
 	cmd := &Command{
 		Flags: []Flag{
@@ -2913,7 +2911,6 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 	}
 	for _, v := range cases {
 		t.Run(v.name, func(t *testing.T) {
-
 			for key, val := range v.environ {
 				t.Setenv(key, val)
 			}

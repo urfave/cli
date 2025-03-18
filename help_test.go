@@ -1677,7 +1677,7 @@ func TestCategorizedHelp(t *testing.T) {
 			},
 			&BoolWithInverseFlag{
 				Name: "bf",
-				//Category: "cat1",
+				// Category: "cat1",
 			},
 		},
 		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{

@@ -211,7 +211,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		}
 	}
 
-	//posArgs = append(posArgs, rargs...)
+	// posArgs = append(posArgs, rargs...)
 	tracef("returning-2 (cmd=%[1]q) args %[2]q", cmd.Name, posArgs)
 	cmd.parsedArgs = &stringSliceArgs{posArgs}
 	return cmd.parsedArgs, nil

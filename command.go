@@ -444,7 +444,7 @@ func (cmd *Command) NumFlags() int {
 			count++
 		}
 	}
-	return count //cmd.flagSet.NFlag()
+	return count // cmd.flagSet.NFlag()
 }
 
 // Set sets a context flag to a value.

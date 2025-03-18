@@ -34,6 +34,7 @@ func newCommand() *Command {
 		},
 	}
 }
+
 func TestFlagMutuallyExclusiveFlags(t *testing.T) {
 	cmd := newCommand()
 
