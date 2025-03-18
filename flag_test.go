@@ -852,9 +852,9 @@ func TestStringSliceFlagValueFromCommand(t *testing.T) {
 		},
 	}
 
-	cmd.Set("myflag", "a")
-	cmd.Set("myflag", "b")
-	cmd.Set("myflag", "c")
+	require.NoError(t, cmd.Set("myflag", "a"))
+	require.NoError(t, cmd.Set("myflag", "b"))
+	require.NoError(t, cmd.Set("myflag", "c"))
 	require.Equal(t, []string{"a", "b", "c"}, cmd.StringSlice(f.Name))
 }
 
@@ -906,8 +906,7 @@ func TestIntFlagValueFromCommand(t *testing.T) {
 			fl,
 		},
 	}
-	cmd.Set("myflag", "42")
-
+	require.NoError(t, cmd.Set("myflag", "42"))
 	require.Equal(t, int64(42), cmd.Int(fl.Name))
 }
 
@@ -947,8 +946,7 @@ func TestUintFlagValueFromCommand(t *testing.T) {
 			fl,
 		},
 	}
-	cmd.Set("myflag", "42")
-
+	require.NoError(t, cmd.Set("myflag", "42"))
 	require.Equal(t, uint64(42), cmd.Uint(fl.Name))
 }
 
@@ -988,8 +986,7 @@ func TestUint64FlagValueFromCommand(t *testing.T) {
 			f,
 		},
 	}
-	cmd.Set("myflag", "42")
-
+	require.NoError(t, cmd.Set("myflag", "42"))
 	require.Equal(t, uint64(42), cmd.Uint(f.Name))
 }
 
@@ -1041,7 +1038,7 @@ func TestDurationFlagValueFromCommand(t *testing.T) {
 			f,
 		},
 	}
-	cmd.Set("myflag", "42s")
+	require.NoError(t, cmd.Set("myflag", "42s"))
 	require.Equal(t, 42*time.Second, cmd.Duration(f.Name))
 }
 
@@ -1172,9 +1169,9 @@ func TestIntSliceFlagValueFromCommand(t *testing.T) {
 			f,
 		},
 	}
-	cmd.Set("myflag", "1")
-	cmd.Set("myflag", "2")
-	cmd.Set("myflag", "3")
+	require.NoError(t, cmd.Set("myflag", "1"))
+	require.NoError(t, cmd.Set("myflag", "2"))
+	require.NoError(t, cmd.Set("myflag", "3"))
 	require.Equal(t, []int64{1, 2, 3}, cmd.IntSlice(f.Name))
 }
 
@@ -1519,7 +1516,7 @@ func TestFloat64FlagValueFromCommand(t *testing.T) {
 			fl,
 		},
 	}
-	cmd.Set("myflag", "1.23")
+	require.NoError(t, cmd.Set("myflag", "1.23"))
 	require.Equal(t, 1.23, cmd.Float(fl.Name))
 }
 
@@ -1620,9 +1617,8 @@ func TestFloat64SliceFlagValueFromCommand(t *testing.T) {
 		},
 	}
 	assert.NoError(t, cmd.Run(buildTestContext(t), []string{""}))
-	cmd.Set("myflag", "1.23")
-	cmd.Set("myflag", "4.56")
-
+	require.NoError(t, cmd.Set("myflag", "1.23"))
+	require.NoError(t, cmd.Set("myflag", "4.56"))
 	require.Equal(t, []float64{1.23, 4.56}, cmd.FloatSlice(fl.Name))
 }
 
@@ -3155,8 +3151,8 @@ func TestStringMapFlagValueFromCommand(t *testing.T) {
 		},
 	}
 	assert.NoError(t, cmd.Run(buildTestContext(t), []string{""}))
-	cmd.Set("myflag", "a=b")
-	cmd.Set("myflag", "c=")
+	require.NoError(t, cmd.Set("myflag", "a=b"))
+	require.NoError(t, cmd.Set("myflag", "c="))
 
 	require.Equal(t, map[string]string{"a": "b", "c": ""}, cmd.StringMap(f.Name))
 }
