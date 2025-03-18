@@ -130,19 +130,20 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	}
 
 	var rargs Args = &stringSliceArgs{v: osArgs}
-	var args Args = &stringSliceArgs{rargs.Tail()}
-	var err error
 	for _, f := range cmd.allFlags() {
 		if err := f.PreParse(); err != nil {
 			return err
 		}
 	}
 
+	var args Args = &stringSliceArgs{rargs.Tail()}
+	var err error
+
 	if cmd.SkipFlagParsing {
 		tracef("skipping flag parsing (cmd=%[1]q)", cmd.Name)
 		cmd.parsedArgs = args
 	} else {
-		args, err = cmd.parseFlags(args)
+		cmd.parsedArgs, err = cmd.parseFlags(args)
 	}
 
 	tracef("using post-parse arguments %[1]q (cmd=%[2]q)", args, cmd.Name)
@@ -223,10 +224,10 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	}
 
 	var subCmd *Command
-	if args.Present() {
-		tracef("checking positional args %[1]q (cmd=%[2]q)", args, cmd.Name)
+	if cmd.parsedArgs.Present() {
+		tracef("checking positional args %[1]q (cmd=%[2]q)", cmd.parsedArgs, cmd.Name)
 
-		name := args.First()
+		name := cmd.parsedArgs.First()
 
 		tracef("using first positional argument as sub-command name=%[1]q (cmd=%[2]q)", name, cmd.Name)
 

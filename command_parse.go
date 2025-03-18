@@ -60,7 +60,6 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 
 			if !applyPersistentFlag {
 				tracef("not applying as persistent flag=%[1]q (cmd=%[2]q)", flNames, cmd.Name)
-
 				continue
 			}
 
@@ -86,8 +85,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		// stop parsing once we see a "--"
 		if firstArg == "--" {
 			posArgs = append(posArgs, rargs...)
-			cmd.parsedArgs = &stringSliceArgs{posArgs}
-			return cmd.parsedArgs, nil
+			return &stringSliceArgs{posArgs}, nil
 		}
 
 		// handle positional args
@@ -99,8 +97,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 			// rest of the parsing
 			if cmd.Command(firstArg) != nil {
 				posArgs = append(posArgs, rargs...)
-				cmd.parsedArgs = &stringSliceArgs{posArgs}
-				return cmd.parsedArgs, nil
+				return &stringSliceArgs{posArgs}, nil
 			}
 
 			posArgs = append(posArgs, firstArg)
@@ -144,8 +141,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 				}
 				tracef("parse Apply bool flag (fName=%[1]q) (fVal=%[2]q)", flagName, flagVal)
 				if err := cmd.set(flagName, f, flagVal); err != nil {
-					cmd.parsedArgs = &stringSliceArgs{posArgs}
-					return cmd.parsedArgs, err
+					return &stringSliceArgs{posArgs}, err
 				}
 				continue
 			}
@@ -154,8 +150,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 			// not a bool flag so need to get the next arg
 			if flagVal == "" {
 				if len(rargs) == 1 {
-					cmd.parsedArgs = &stringSliceArgs{posArgs}
-					return cmd.parsedArgs, fmt.Errorf("%s%s", argumentNotProvidedErrMsg, firstArg)
+					return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", argumentNotProvidedErrMsg, firstArg)
 				}
 				flagVal = rargs[1]
 				rargs = rargs[1:]
@@ -163,8 +158,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 
 			tracef("setting non bool flag (fName=%[1]q) (fVal=%[2]q)", flagName, flagVal)
 			if err := cmd.set(flagName, f, flagVal); err != nil {
-				cmd.parsedArgs = &stringSliceArgs{posArgs}
-				return cmd.parsedArgs, err
+				return &stringSliceArgs{posArgs}, err
 			}
 
 			continue
@@ -172,15 +166,14 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 
 		// no flag lookup found and short handling is disabled
 		if !shortOptionHandling {
-			cmd.parsedArgs = &stringSliceArgs{posArgs}
-			return cmd.parsedArgs, fmt.Errorf("%s%s", providedButNotDefinedErrMsg, flagName)
+			return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", providedButNotDefinedErrMsg, flagName)
 		}
 
 		// try to split the flags
 		for index, c := range flagName {
 			tracef("processing flag (fName=%[1]q)", string(c))
 			if sf := cmd.lookupFlag(string(c)); sf == nil {
-				return cmd.parsedArgs, fmt.Errorf("%s%s", providedButNotDefinedErrMsg, flagName)
+				return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", providedButNotDefinedErrMsg, flagName)
 			} else if fb, ok := sf.(boolFlag); ok && fb.IsBoolFlag() {
 				fv := flagVal
 				if index == (len(flagName)-1) && flagVal == "" {
@@ -191,28 +184,24 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 				}
 				if err := cmd.set(flagName, sf, fv); err != nil {
 					tracef("processing flag.2 (fName=%[1]q)", string(c))
-					cmd.parsedArgs = &stringSliceArgs{posArgs}
-					return cmd.parsedArgs, err
+					return &stringSliceArgs{posArgs}, err
 				}
 			} else if index == len(flagName)-1 { // last flag can take an arg
 				if flagVal == "" {
 					if len(rargs) == 1 {
-						return cmd.parsedArgs, fmt.Errorf("%s%s", argumentNotProvidedErrMsg, string(c))
+						return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", argumentNotProvidedErrMsg, string(c))
 					}
 					flagVal = rargs[1]
 				}
 				tracef("parseFlags (flagName %[1]q) (flagVal %[2]q)", flagName, flagVal)
 				if err := cmd.set(flagName, sf, flagVal); err != nil {
 					tracef("processing flag.4 (fName=%[1]q)", string(c))
-					cmd.parsedArgs = &stringSliceArgs{posArgs}
-					return cmd.parsedArgs, err
+					return &stringSliceArgs{posArgs}, err
 				}
 			}
 		}
 	}
 
-	// posArgs = append(posArgs, rargs...)
 	tracef("returning-2 (cmd=%[1]q) args %[2]q", cmd.Name, posArgs)
-	cmd.parsedArgs = &stringSliceArgs{posArgs}
-	return cmd.parsedArgs, nil
+	return &stringSliceArgs{posArgs}, nil
 }
