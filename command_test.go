@@ -4233,6 +4233,11 @@ func TestCommandCategories(t *testing.T) {
 }
 
 func TestCommandSliceFlagSeparator(t *testing.T) {
+	oldSep := defaultSliceFlagSeparator
+	defer func() {
+		defaultSliceFlagSeparator = oldSep
+	}()
+
 	cmd := &Command{
 		SliceFlagSeparator: ";",
 		Flags: []Flag{
