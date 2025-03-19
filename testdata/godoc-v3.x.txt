@@ -339,7 +339,7 @@ func (bif *BoolWithInverseFlag) String() string
 func (bif *BoolWithInverseFlag) TakesValue() bool
 
 func (bif *BoolWithInverseFlag) TypeName() string
-    TypeName is used for stringify/docs. For bool its a no-op so nolint
+    TypeName is used for stringify/docs. For bool its a no-op
 
 type CategorizableFlag interface {
 	// Returns the category of the flag
