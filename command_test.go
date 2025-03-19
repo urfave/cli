@@ -4232,6 +4232,21 @@ func TestCommandCategories(t *testing.T) {
 	}
 }
 
+func TestCommandSliceFlagSeparator(t *testing.T) {
+	cmd := &Command{
+		SliceFlagSeparator: ";",
+		Flags: []Flag{
+			&StringSliceFlag{
+				Name: "foo",
+			},
+		},
+	}
+
+	r := require.New(t)
+	r.NoError(cmd.Run(buildTestContext(t), []string{"app", "--foo", "ff;dd;gg", "--foo", "t,u"}))
+	r.Equal([]string{"ff", "dd", "gg", "t,u"}, cmd.Value("foo"))
+}
+
 func TestJSONExportCommand(t *testing.T) {
 	cmd := buildExtendedTestCommand()
 	cmd.Arguments = []Argument{

@@ -298,29 +298,25 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 		}
 	}
 
-	// Run the command action.
-	if cmd.Action == nil {
-		cmd.Action = helpCommandAction
-	} else {
-		if err := cmd.checkAllRequiredFlags(); err != nil {
-			cmd.isInError = true
-			_ = ShowSubcommandHelp(cmd)
-			return err
-		}
+	if err := cmd.checkAllRequiredFlags(); err != nil {
+		cmd.isInError = true
+		_ = ShowSubcommandHelp(cmd)
+		return err
+	}
 
-		if len(cmd.Arguments) > 0 {
-			rargs := cmd.Args().Slice()
-			tracef("calling argparse with %[1]v", rargs)
-			for _, arg := range cmd.Arguments {
-				var err error
-				rargs, err = arg.Parse(rargs)
-				if err != nil {
-					tracef("calling with %[1]v (cmd=%[2]q)", err, cmd.Name)
-					return err
-				}
+	// Run the command action.
+	if len(cmd.Arguments) > 0 {
+		rargs := cmd.Args().Slice()
+		tracef("calling argparse with %[1]v", rargs)
+		for _, arg := range cmd.Arguments {
+			var err error
+			rargs, err = arg.Parse(rargs)
+			if err != nil {
+				tracef("calling with %[1]v (cmd=%[2]q)", err, cmd.Name)
+				return err
 			}
-			cmd.parsedArgs = &stringSliceArgs{v: rargs}
 		}
+		cmd.parsedArgs = &stringSliceArgs{v: rargs}
 	}
 
 	if err := cmd.Action(ctx, cmd); err != nil {

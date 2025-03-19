@@ -278,6 +278,10 @@ func TestBoolWithInverseWithPrefix(t *testing.T) {
 			args: []string{"--env", "--without-env"},
 			err:  fmt.Errorf("cannot set both flags `--env` and `--without-env`"),
 		},
+		{
+			args: []string{"--without-env", "--env"},
+			err:  fmt.Errorf("cannot set both flags `--env` and `--without-env`"),
+		},
 	}
 
 	err := runBoolWithInverseFlagTests(t, flagMethod, testCases)

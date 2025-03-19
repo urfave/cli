@@ -181,7 +181,11 @@ func TestFlagsFromEnv(t *testing.T) {
 			errContains: `could not parse "foobar" as bool value from environment variable ` +
 				`"DEBUG" for flag debug:`,
 		},
-
+		{
+			name:   "BoolInverse Empty",
+			output: false,
+			fl:     &BoolWithInverseFlag{Name: "debug", Sources: EnvVars("DEBUG")},
+		},
 		{
 			name:   "DurationFlag valid",
 			input:  "1s",
@@ -3050,10 +3054,11 @@ func TestSliceShortOptionHandle(t *testing.T) {
 
 // Test issue #1541
 func TestCustomizedSliceFlagSeparator(t *testing.T) {
-	defaultSliceFlagSeparator = ";"
+	oldSep := defaultSliceFlagSeparator
 	defer func() {
-		defaultSliceFlagSeparator = ","
+		defaultSliceFlagSeparator = oldSep
 	}()
+	defaultSliceFlagSeparator = ";"
 	opts := []string{"opt1", "opt2", "opt3,op", "opt4"}
 	ret := flagSplitMultiValues(strings.Join(opts, ";"))
 	require.Equal(t, 4, len(ret), "split slice flag failed")
