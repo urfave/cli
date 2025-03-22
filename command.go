@@ -347,11 +347,9 @@ func (cmd *Command) set(fName string, f Flag, val string) error {
 
 func (cmd *Command) lFlag(name string) Flag {
 	for _, f := range cmd.allFlags() {
-		for _, n := range f.Names() {
-			if n == name {
-				tracef("flag found for name %[1]q (cmd=%[2]q)", name, cmd.Name)
-				return f
-			}
+		if slices.Contains(f.Names(), name) {
+			tracef("flag found for name %[1]q (cmd=%[2]q)", name, cmd.Name)
+			return f
 		}
 	}
 	return nil
@@ -371,23 +369,8 @@ func (cmd *Command) lookupFlag(name string) Flag {
 
 func (cmd *Command) checkRequiredFlag(f Flag) (bool, string) {
 	if rf, ok := f.(RequiredFlag); ok && rf.IsRequired() {
-		flagPresent := false
-		flagName := ""
-
-		for _, key := range f.Names() {
-			// use the first name to return since that is the
-			// primary flag name
-			if flagName == "" {
-				flagName = key
-			}
-
-			if cmd.IsSet(strings.TrimSpace(key)) {
-				flagPresent = true
-				break
-			}
-		}
-
-		if !flagPresent && flagName != "" {
+		flagName := f.Names()[0]
+		if !f.IsSet() {
 			return false, flagName
 		}
 	}

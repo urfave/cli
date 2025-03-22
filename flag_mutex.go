@@ -16,22 +16,20 @@ type MutuallyExclusiveFlags struct {
 	Category string
 }
 
-func (grp MutuallyExclusiveFlags) check(cmd *Command) error {
+func (grp MutuallyExclusiveFlags) check(_ *Command) error {
 	oneSet := false
 	e := &mutuallyExclusiveGroup{}
 
 	for _, grpf := range grp.Flags {
 		for _, f := range grpf {
-			for _, name := range f.Names() {
-				if cmd.IsSet(name) {
-					if oneSet {
-						e.flag2Name = name
-						return e
-					}
-					e.flag1Name = name
-					oneSet = true
-					break
+			if f.IsSet() {
+				if oneSet {
+					e.flag2Name = f.Names()[0]
+					return e
 				}
+				e.flag1Name = f.Names()[0]
+				oneSet = true
+				break
 			}
 			if oneSet {
 				break
