@@ -74,6 +74,13 @@ func TestFlagMutuallyExclusiveFlags(t *testing.T) {
 			errStr:   "option i cannot be set along with option ai",
 			required: true,
 		},
+		{
+			name:     "set env var",
+			required: true,
+			envs: map[string]string{
+				"S_VAR": "some",
+			},
+		},
 	}
 
 	for _, test := range tests {

@@ -202,6 +202,12 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 		}
 	}
 
+	for _, grp := range cmd.MutuallyExclusiveFlags {
+		if err := grp.PostParse(); err != nil {
+			return err
+		}
+	}
+
 	if cmd.After != nil && !cmd.Root().shellCompletion {
 		defer func() {
 			if err := cmd.After(ctx, cmd); err != nil {
