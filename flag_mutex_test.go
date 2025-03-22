@@ -17,7 +17,8 @@ func newCommand() *Command {
 							Name: "i",
 						},
 						&StringFlag{
-							Name: "s",
+							Name:    "s",
+							Sources: EnvVars("S_VAR"),
 						},
 						&BoolWithInverseFlag{
 							Name: "b",
@@ -27,6 +28,7 @@ func newCommand() *Command {
 						&IntFlag{
 							Name:    "t",
 							Aliases: []string{"ai"},
+							Sources: EnvVars("T_VAR"),
 						},
 					},
 				},
@@ -36,46 +38,72 @@ func newCommand() *Command {
 }
 
 func TestFlagMutuallyExclusiveFlags(t *testing.T) {
-	cmd := newCommand()
 
-	err := cmd.Run(buildTestContext(t), []string{"foo"})
-	assert.NoError(t, err)
-
-	cmd = newCommand()
-	err = cmd.Run(buildTestContext(t), []string{"foo", "--i", "10"})
-	assert.NoError(t, err)
-
-	cmd = newCommand()
-	err = cmd.Run(buildTestContext(t), []string{"foo", "--i", "11", "--ai", "12"})
-	if err == nil {
-		t.Error("Expected mutual exclusion error")
-	} else if err1, ok := err.(*mutuallyExclusiveGroup); !ok {
-		t.Errorf("Got invalid error %v", err)
-	} else if !strings.Contains(err1.Error(), "option i cannot be set along with option ai") {
-		t.Logf("Invalid error string %v", err1)
+	tests := []struct {
+		name     string
+		args     []string
+		errStr   string
+		required bool
+		envs     map[string]string
+	}{
+		{
+			name: "simple",
+		},
+		{
+			name: "set one flag",
+			args: []string{"--i", "10"},
+		},
+		{
+			name:   "set both flags",
+			args:   []string{"--i", "11", "--ai", "12"},
+			errStr: "option i cannot be set along with option ai",
+		},
+		{
+			name:     "required none set",
+			required: true,
+			errStr:   "one of these flags needs to be provided",
+		},
+		{
+			name:     "required one set",
+			args:     []string{"--i", "10"},
+			required: true,
+		},
+		{
+			name:     "required both set",
+			args:     []string{"--i", "11", "--ai", "12"},
+			errStr:   "option i cannot be set along with option ai",
+			required: true,
+		},
 	}
 
-	cmd = newCommand()
-	cmd.MutuallyExclusiveFlags[0].Required = true
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if test.envs != nil {
+				for k, v := range test.envs {
+					t.Setenv(k, v)
+				}
+			}
+			cmd := newCommand()
+			cmd.MutuallyExclusiveFlags[0].Required = test.required
 
-	err = cmd.Run(buildTestContext(t), []string{"foo"})
-	if err == nil {
-		t.Error("Required flags error")
-	} else if err1, ok := err.(*mutuallyExclusiveGroupRequiredFlag); !ok {
-		t.Errorf("Got invalid error %v", err)
-	} else if !strings.Contains(err1.Error(), "one of") {
-		t.Errorf("Invalid error string %v", err1)
-	}
+			err := cmd.Run(buildTestContext(t), append([]string{"foo"}, test.args...))
+			if test.errStr == "" {
+				assert.NoError(t, err)
+				return
+			}
+			if err == nil {
+				t.Error("Expected mutual exclusion error")
+				return
+			}
 
-	err = cmd.Run(buildTestContext(t), []string{"foo", "--i", "10"})
-	assert.NoError(t, err)
-
-	err = cmd.Run(buildTestContext(t), []string{"foo", "--i", "11", "--ai", "12"})
-	if err == nil {
-		t.Error("Expected mutual exclusion error")
-	} else if err1, ok := err.(*mutuallyExclusiveGroup); !ok {
-		t.Errorf("Got invalid error %v", err)
-	} else if !strings.Contains(err1.Error(), "option i cannot be set along with option ai") {
-		t.Logf("Invalid error string %v", err1)
+			switch err.(type) {
+			case (*mutuallyExclusiveGroup), (*mutuallyExclusiveGroupRequiredFlag):
+				if !strings.Contains(err.Error(), test.errStr) {
+					t.Logf("Invalid error string %v", err)
+				}
+			default:
+				t.Errorf("got invalid error type %T", err)
+			}
+		})
 	}
 }
