@@ -196,14 +196,8 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 		return nil
 	}
 
-	for _, flag := range cmd.Flags {
+	for _, flag := range cmd.allFlags() {
 		if err := flag.PostParse(); err != nil {
-			return err
-		}
-	}
-
-	for _, grp := range cmd.MutuallyExclusiveFlags {
-		if err := grp.PostParse(); err != nil {
 			return err
 		}
 	}

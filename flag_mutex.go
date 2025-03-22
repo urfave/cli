@@ -16,17 +16,6 @@ type MutuallyExclusiveFlags struct {
 	Category string
 }
 
-func (grp MutuallyExclusiveFlags) PostParse() error {
-	for _, grpFlags := range grp.Flags {
-		for _, f := range grpFlags {
-			if err := f.PostParse(); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
 func (grp MutuallyExclusiveFlags) check(_ *Command) error {
 	oneSet := false
 	e := &mutuallyExclusiveGroup{}
