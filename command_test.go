@@ -912,13 +912,13 @@ func TestCommand_FlagsFromExtPackage(t *testing.T) {
 
 func TestCommand_Setup_defaultsReader(t *testing.T) {
 	cmd := &Command{}
-	cmd.setupDefaults([]string{"cli.test"})
+	cmd.setupDefaults([]string{"test"})
 	assert.Equal(t, cmd.Reader, os.Stdin)
 }
 
 func TestCommand_Setup_defaultsWriter(t *testing.T) {
 	cmd := &Command{}
-	cmd.setupDefaults([]string{"cli.test"})
+	cmd.setupDefaults([]string{"test"})
 	assert.Equal(t, cmd.Writer, os.Stdout)
 }
 
@@ -1026,7 +1026,7 @@ func TestCommand_VisibleCommands(t *testing.T) {
 		},
 	}
 
-	cmd.setupDefaults([]string{"cli.test"})
+	cmd.setupDefaults([]string{"test"})
 	expected := []*Command{
 		cmd.Commands[0],
 	}
@@ -1302,14 +1302,14 @@ func TestCommand_ParseSliceFlagsWithMissingValue(t *testing.T) {
 
 func TestCommand_DefaultStdin(t *testing.T) {
 	cmd := &Command{}
-	cmd.setupDefaults([]string{"cli.test"})
+	cmd.setupDefaults([]string{"test"})
 
 	assert.Equal(t, cmd.Reader, os.Stdin, "Default input reader not set.")
 }
 
 func TestCommand_DefaultStdout(t *testing.T) {
 	cmd := &Command{}
-	cmd.setupDefaults([]string{"cli.test"})
+	cmd.setupDefaults([]string{"test"})
 
 	assert.Equal(t, cmd.Writer, os.Stdout, "Default output writer not set.")
 }
@@ -2215,7 +2215,7 @@ func TestCommand_VisibleCategories(t *testing.T) {
 		},
 	}
 
-	cmd.setupDefaults([]string{"cli.test"})
+	cmd.setupDefaults([]string{"test"})
 	assert.Equal(t, expected, cmd.VisibleCategories())
 
 	cmd = &Command{
@@ -2248,7 +2248,7 @@ func TestCommand_VisibleCategories(t *testing.T) {
 		},
 	}
 
-	cmd.setupDefaults([]string{"cli.test"})
+	cmd.setupDefaults([]string{"test"})
 	assert.Equal(t, expected, cmd.VisibleCategories())
 
 	cmd = &Command{
@@ -2273,7 +2273,7 @@ func TestCommand_VisibleCategories(t *testing.T) {
 		},
 	}
 
-	cmd.setupDefaults([]string{"cli.test"})
+	cmd.setupDefaults([]string{"test"})
 	assert.Empty(t, cmd.VisibleCategories())
 }
 
@@ -2554,7 +2554,7 @@ func buildMinimalTestCommand() *Command {
 func TestSetupInitializesBothWriters(t *testing.T) {
 	cmd := &Command{}
 
-	cmd.setupDefaults([]string{"cli.test"})
+	cmd.setupDefaults([]string{"test"})
 
 	assert.Equal(t, cmd.ErrWriter, os.Stderr, "expected a.ErrWriter to be os.Stderr")
 	assert.Equal(t, cmd.Writer, os.Stdout, "expected a.Writer to be os.Stdout")
@@ -2566,7 +2566,7 @@ func TestSetupInitializesOnlyNilWriters(t *testing.T) {
 		ErrWriter: wr,
 	}
 
-	cmd.setupDefaults([]string{"cli.test"})
+	cmd.setupDefaults([]string{"test"})
 
 	assert.Equal(t, cmd.ErrWriter, wr, "expected a.ErrWriter to be a *bytes.Buffer instance")
 	assert.Equal(t, cmd.Writer, os.Stdout, "expected a.Writer to be os.Stdout")
@@ -4248,6 +4248,255 @@ func TestCommandSliceFlagSeparator(t *testing.T) {
 	r := require.New(t)
 	r.NoError(cmd.Run(buildTestContext(t), []string{"app", "--foo", "ff;dd;gg", "--foo", "t,u"}))
 	r.Equal([]string{"ff", "dd", "gg", "t,u"}, cmd.Value("foo"))
+}
+
+// TestStringFlagTerminator tests the string flag "--flag" with "--" terminator.
+func TestStringFlagTerminator(t *testing.T) {
+	tests := []struct {
+		name         string
+		input        []string
+		expectFlag   string
+		expectArgs   []string
+		expectErr    bool
+		errorContain string
+	}{
+		{
+			name:       "flag and args after terminator",
+			input:      []string{"test", "--flag", "x", "--", "test", "a1", "a2", "a3"},
+			expectFlag: "x",
+			expectArgs: []string{"test", "a1", "a2", "a3"},
+		},
+		/*	{
+			name:         "missing flag value due to terminator",
+			input:        []string{"test", "--flag", "--", "x"},
+			expectErr:    true,
+			errorContain: "flag needs an argument",
+		},*/
+		{
+			name:       "terminator with no trailing args",
+			input:      []string{"test", "--flag", "x", "--"},
+			expectFlag: "x",
+			expectArgs: []string{},
+		},
+		{
+			name:       "no terminator, only flag",
+			input:      []string{"test", "--flag", "x"},
+			expectFlag: "x",
+			expectArgs: []string{},
+		},
+		{
+			name:       "flag defined after --",
+			input:      []string{"test", "--", "x", "--flag=value"},
+			expectFlag: "",
+			expectArgs: []string{"x", "--flag=value"},
+		},
+		{
+			name:       "flag and without --",
+			input:      []string{"test", "--flag", "value", "x"},
+			expectFlag: "value",
+			expectArgs: []string{"x"},
+		},
+	}
+
+	for _, tc := range tests {
+
+		t.Run(tc.name, func(t *testing.T) {
+			var flagVal string
+			var argsVal []string
+
+			// build minimal command with a StringFlag "flag"
+			cmd := &Command{
+				Name: "test",
+				Flags: []Flag{
+					&StringFlag{
+						Name:        "flag",
+						Usage:       "a string flag",
+						Destination: &flagVal,
+					},
+				},
+				Action: func(ctx context.Context, c *Command) error {
+					argsVal = c.Args().Slice()
+					return nil
+				},
+			}
+
+			err := cmd.Run(context.Background(), tc.input)
+			if tc.expectErr {
+				assert.Error(t, err)
+				if err != nil {
+					assert.Contains(t, strings.ToLower(err.Error()), strings.ToLower(tc.errorContain))
+				}
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.expectFlag, flagVal)
+				assert.Equal(t, tc.expectArgs, argsVal)
+			}
+		})
+	}
+}
+
+// TestBoolFlagTerminator tests the bool flag
+func TestBoolFlagTerminator(t *testing.T) {
+	tests := []struct {
+		name         string
+		input        []string
+		expectFlag   bool
+		expectArgs   []string
+		expectErr    bool
+		errorContain string
+	}{
+		/*{
+			name:         "bool flag with invalid non-bool value",
+			input:        []string{"test", "--flag", "x", "--", "test", "a1", "a2", "a3"},
+			expectErr:    true,
+			errorContain: "invalid syntax",
+		},*/
+		{
+			name:       "bool flag omitted value defaults to true",
+			input:      []string{"test", "--flag", "--", "x"},
+			expectFlag: true,
+			expectArgs: []string{"x"},
+		},
+		{
+			name:       "bool flag explicitly set to false",
+			input:      []string{"test", "--flag=false", "--", "x"},
+			expectFlag: false,
+			expectArgs: []string{"x"},
+		},
+		{
+			name:       "bool flag defined after --",
+			input:      []string{"test", "--", "x", "--flag=true"},
+			expectFlag: false,
+			expectArgs: []string{"x", "--flag=true"},
+		},
+		{
+			name:       "bool flag and without --",
+			input:      []string{"test", "--flag=true", "x"},
+			expectFlag: true,
+			expectArgs: []string{"x"},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			var flagVal bool
+			var argsVal []string
+
+			// build minimal command with a BoolFlag "flag"
+			cmd := &Command{
+				Name: "test",
+				Flags: []Flag{
+					&BoolFlag{
+						Name:        "flag",
+						Usage:       "a bool flag",
+						Destination: &flagVal,
+					},
+				},
+				Action: func(ctx context.Context, c *Command) error {
+					argsVal = c.Args().Slice()
+					return nil
+				},
+			}
+
+			err := cmd.Run(context.Background(), tc.input)
+			if tc.expectErr {
+				assert.Error(t, err)
+				if err != nil {
+					assert.Contains(t, strings.ToLower(err.Error()), strings.ToLower(tc.errorContain))
+				}
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.expectFlag, flagVal)
+				assert.Equal(t, tc.expectArgs, argsVal)
+			}
+		})
+	}
+}
+
+// TestSliceStringFlagParsing tests the StringSliceFlag
+func TestSliceStringFlagParsing(t *testing.T) {
+	var sliceVal []string
+
+	cmdNoDelimiter := &Command{
+		Name: "test",
+		Flags: []Flag{
+			&StringSliceFlag{
+				Name:  "flag",
+				Usage: "a string slice flag without delimiter",
+			},
+		},
+		Action: func(ctx context.Context, c *Command) error {
+			sliceVal = c.StringSlice("flag")
+			return nil
+		},
+	}
+
+	/*cmdWithDelimiter := &Command{
+		Name: "test",
+		Flags: []Flag{
+			&StringSliceFlag{
+				Name:      "flag",
+				Usage:     "a string slice flag with delimiter",
+				Delimiter: ':',
+			},
+		},
+		Action: func(ctx context.Context, c *Command) error {
+			sliceVal = c.StringSlice("flag")
+			return nil
+		},
+	}*/
+
+	tests := []struct {
+		name         string
+		cmd          *Command
+		input        []string
+		expectSlice  []string
+		expectErr    bool
+		errorContain string
+	}{
+		{
+			name:        "single value without delimiter (no split)",
+			cmd:         cmdNoDelimiter,
+			input:       []string{"test", "--flag", "x"},
+			expectSlice: []string{"x"},
+		},
+		{
+			name:        "multiple values with comma (default split)",
+			cmd:         cmdNoDelimiter,
+			input:       []string{"test", "--flag", "x,y"},
+			expectSlice: []string{"x", "y"},
+		},
+		/*{
+			name:        "Case 10: with delimiter specified ':'",
+			cmd:         cmdWithDelimiter,
+			input:       []string{"test", "--flag", "x:y"},
+			expectSlice: []string{"x", "y"},
+		},*/
+		{
+			name:        "without delimiter specified, value remains unsplit",
+			cmd:         cmdNoDelimiter,
+			input:       []string{"test", "--flag", "x:y"},
+			expectSlice: []string{"x:y"},
+		},
+	}
+
+	for _, tc := range tests {
+		// Reset sliceVal
+		sliceVal = nil
+
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.cmd.Run(context.Background(), tc.input)
+			if tc.expectErr {
+				assert.Error(t, err)
+				if err != nil {
+					assert.Contains(t, strings.ToLower(err.Error()), strings.ToLower(tc.errorContain))
+				}
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.expectSlice, sliceVal)
+			}
+		})
+	}
 }
 
 func TestJSONExportCommand(t *testing.T) {
