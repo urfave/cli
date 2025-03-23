@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"testing"
 
@@ -149,6 +150,7 @@ func TestCompletionSubcommand(t *testing.T) {
 								Name: "l1",
 							},
 						},
+						Action: func(ctx context.Context, c *Command) error { return nil },
 						Commands: []*Command{
 							{
 								Name: "xyz",
@@ -160,6 +162,7 @@ func TestCompletionSubcommand(t *testing.T) {
 										},
 									},
 								},
+								Action: func(ctx context.Context, c *Command) error { return nil },
 							},
 						},
 					},

@@ -84,7 +84,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 
 		// stop parsing once we see a "--"
 		if firstArg == "--" {
-			posArgs = append(posArgs, rargs...)
+			posArgs = append(posArgs, rargs[1:]...)
 			return &stringSliceArgs{posArgs}, nil
 		}
 

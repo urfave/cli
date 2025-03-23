@@ -89,9 +89,9 @@ func helpCommandAction(ctx context.Context, cmd *Command) error {
 	// Case 4. $ app help foo
 	// foo is the command for which help needs to be shown
 	if firstArg != "" {
-		if firstArg == "--" {
+		/*	if firstArg == "--" {
 			return nil
-		}
+		}*/
 		tracef("returning ShowCommandHelp with %[1]q", firstArg)
 		return ShowCommandHelp(ctx, cmd, firstArg)
 	}
@@ -243,7 +243,7 @@ func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 	}
 
 	if lastArg == "--" {
-		tracef("not printing flag suggestion as last arg is --")
+		tracef("No completions due to termination")
 		return
 	}
 

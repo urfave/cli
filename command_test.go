@@ -946,8 +946,7 @@ func TestCommand_CommandWithFlagBeforeTerminator(t *testing.T) {
 
 	require.Equal(t, "my-option", parsedOption)
 	require.Equal(t, "my-arg", args.Get(0))
-	require.Equal(t, "--", args.Get(1))
-	require.Equal(t, "--notARealFlag", args.Get(2))
+	require.Equal(t, "--notARealFlag", args.Get(1))
 }
 
 func TestCommand_CommandWithDash(t *testing.T) {
@@ -990,8 +989,7 @@ func TestCommand_CommandWithNoFlagBeforeTerminator(t *testing.T) {
 
 	require.NotNil(t, args)
 	require.Equal(t, "my-arg", args.Get(0))
-	require.Equal(t, "--", args.Get(1))
-	require.Equal(t, "notAFlagAtAll", args.Get(2))
+	require.Equal(t, "notAFlagAtAll", args.Get(1))
 }
 
 func TestCommand_SkipFlagParsing(t *testing.T) {
