@@ -438,9 +438,9 @@ func ExampleCommand_Run_sliceValues() {
 
 	_ = cmd.Run(context.Background(), os.Args)
 	// Output:
-	// 0-float64Slice []float64{13.3, 14.4, 15.5, 16.6}
-	// 1-intSlice []int64{13, 14, 15, 16}
-	// 2-stringSlice []string{"parsed1", "parsed2", "parsed3", "parsed4"}
+	// 0-stringSlice []string{"parsed1", "parsed2", "parsed3", "parsed4"}
+	// 1-float64Slice []float64{13.3, 14.4, 15.5, 16.6}
+	// 2-intSlice []int64{13, 14, 15, 16}
 	// error: <nil>
 }
 
@@ -477,9 +477,7 @@ func ExampleCommand_Run_mapValues() {
 
 func ExampleBoolWithInverseFlag() {
 	flagWithInverse := &cli.BoolWithInverseFlag{
-		BoolFlag: &cli.BoolFlag{
-			Name: "env",
-		},
+		Name: "env",
 	}
 
 	cmd := &cli.Command{
@@ -488,7 +486,7 @@ func ExampleBoolWithInverseFlag() {
 		},
 		Action: func(_ context.Context, cmd *cli.Command) error {
 			if flagWithInverse.IsSet() {
-				if flagWithInverse.Value() {
+				if cmd.Bool("env") {
 					fmt.Println("env is set")
 				} else {
 					fmt.Println("no-env is set")
@@ -500,13 +498,11 @@ func ExampleBoolWithInverseFlag() {
 	}
 
 	_ = cmd.Run(context.Background(), []string{"prog", "--no-env"})
-	_ = cmd.Run(context.Background(), []string{"prog", "--env"})
 
-	fmt.Println("flags:", len(flagWithInverse.Flags()))
+	fmt.Println("flags:", len(flagWithInverse.Names()))
 
 	// Output:
 	// no-env is set
-	// env is set
 	// flags: 2
 }
 

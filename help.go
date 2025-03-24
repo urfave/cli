@@ -89,9 +89,9 @@ func helpCommandAction(ctx context.Context, cmd *Command) error {
 	// Case 4. $ app help foo
 	// foo is the command for which help needs to be shown
 	if firstArg != "" {
-		if firstArg == "--" {
+		/*	if firstArg == "--" {
 			return nil
-		}
+		}*/
 		tracef("returning ShowCommandHelp with %[1]q", firstArg)
 		return ShowCommandHelp(ctx, cmd, firstArg)
 	}
@@ -214,7 +214,7 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 			continue
 		}
 		// match if last argument matches this flag and it is not repeated
-		if strings.HasPrefix(name, cur) && cur != name && !cliArgContains(name, os.Args) {
+		if strings.HasPrefix(name, cur) && cur != name /* && !cliArgContains(name, os.Args)*/ {
 			flagCompletion := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
 			if usage != "" && strings.HasSuffix(os.Getenv("SHELL"), "zsh") {
 				flagCompletion = fmt.Sprintf("%s:%s", flagCompletion, usage)
@@ -226,7 +226,7 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 
 func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 	args := os.Args
-	if cmd != nil && cmd.flagSet != nil && cmd.parent != nil {
+	if cmd != nil && cmd.parent != nil {
 		args = cmd.Args().Slice()
 		tracef("running default complete with flags[%v] on command %[2]q", args, cmd.Name)
 	} else {
@@ -243,8 +243,12 @@ func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 	}
 
 	if lastArg == "--" {
-		tracef("not printing flag suggestion as last arg is --")
+		tracef("No completions due to termination")
 		return
+	}
+
+	if lastArg == completionFlag {
+		lastArg = ""
 	}
 
 	if strings.HasPrefix(lastArg, "-") {
@@ -493,7 +497,7 @@ func checkCompletions(ctx context.Context, cmd *Command) bool {
 		}
 	}
 
-	tracef("no subcommand found for completiot %[1]q", cmd.Name)
+	tracef("no subcommand found for completion %[1]q", cmd.Name)
 
 	if cmd.ShellComplete != nil {
 		tracef("running shell completion func for command %[1]q", cmd.Name)

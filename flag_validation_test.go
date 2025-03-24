@@ -27,8 +27,37 @@ func TestFlagDefaultValidation(t *testing.T) {
 
 	r := require.New(t)
 
+	// this is a simple call to test PreParse failure before
+	// parsing has been done
+	r.Error(cmd.Set("if", "11"))
+
 	// Default value of flag is 2 which should fail validation
 	err := cmd.Run(buildTestContext(t), []string{"foo", "--if", "5"})
+	r.Error(err)
+}
+
+func TestBoolInverseFlagDefaultValidation(t *testing.T) {
+	cmd := &Command{
+		Name: "foo",
+		Flags: []Flag{
+			&BoolWithInverseFlag{
+				Name:  "bif",
+				Value: true, // this value should fail validation
+				Validator: func(i bool) error {
+					if i {
+						return fmt.Errorf("invalid value")
+					}
+					return nil
+				},
+				ValidateDefaults: true,
+			},
+		},
+	}
+
+	r := require.New(t)
+
+	// Default value of flag is 2 which should fail validation
+	err := cmd.Run(buildTestContext(t), []string{"foo", "--bif"})
 	r.Error(err)
 }
 
@@ -110,4 +139,26 @@ func TestFlagValidation(t *testing.T) {
 			r.Error(err)
 		}
 	}
+}
+
+func TestBoolInverseFlagValidation(t *testing.T) {
+	r := require.New(t)
+
+	cmd := &Command{
+		Name: "foo",
+		Flags: []Flag{
+			&BoolWithInverseFlag{
+				Name: "it",
+				Validator: func(b bool) error {
+					if b {
+						return nil
+					}
+					return fmt.Errorf("not valid")
+				},
+			},
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", "--it=false"})
+	r.Error(err)
 }

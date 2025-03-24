@@ -267,34 +267,79 @@ type BoolConfig struct {
 type BoolFlag = FlagBase[bool, BoolConfig, boolValue]
 
 type BoolWithInverseFlag struct {
-	// The BoolFlag which the positive and negative flags are generated from
-	*BoolFlag
-
-	// The prefix used to indicate a negative value
-	// Default: `env` becomes `no-env`
-	InversePrefix string
+	Name             string                                      `json:"name"`             // name of the flag
+	Category         string                                      `json:"category"`         // category of the flag, if any
+	DefaultText      string                                      `json:"defaultText"`      // default text of the flag for usage purposes
+	HideDefault      bool                                        `json:"hideDefault"`      // whether to hide the default value in output
+	Usage            string                                      `json:"usage"`            // usage string for help output
+	Sources          ValueSourceChain                            `json:"-"`                // sources to load flag value from
+	Required         bool                                        `json:"required"`         // whether the flag is required or not
+	Hidden           bool                                        `json:"hidden"`           // whether to hide the flag in help output
+	Local            bool                                        `json:"local"`            // whether the flag needs to be applied to subcommands as well
+	Value            bool                                        `json:"defaultValue"`     // default value for this flag if not set by from any source
+	Destination      *bool                                       `json:"-"`                // destination pointer for value when set
+	Aliases          []string                                    `json:"aliases"`          // Aliases that are allowed for this flag
+	TakesFile        bool                                        `json:"takesFileArg"`     // whether this flag takes a file argument, mainly for shell completion purposes
+	Action           func(context.Context, *Command, bool) error `json:"-"`                // Action callback to be called when flag is set
+	OnlyOnce         bool                                        `json:"onlyOnce"`         // whether this flag can be duplicated on the command line
+	Validator        func(bool) error                            `json:"-"`                // custom function to validate this flag value
+	ValidateDefaults bool                                        `json:"validateDefaults"` // whether to validate defaults or not
+	Config           BoolConfig                                  `json:"config"`           // Additional/Custom configuration associated with this flag type
+	InversePrefix    string                                      `json:"invPrefix"`        // The prefix used to indicate a negative value. Default: `env` becomes `no-env`
 
 	// Has unexported fields.
 }
 
-func (parent *BoolWithInverseFlag) Apply(set *flag.FlagSet) error
+func (bif *BoolWithInverseFlag) Count() int
+    Count returns the number of times this flag has been invoked
 
-func (parent *BoolWithInverseFlag) Flags() []Flag
+func (bif *BoolWithInverseFlag) Get() any
 
-func (parent *BoolWithInverseFlag) IsSet() bool
+func (bif *BoolWithInverseFlag) GetCategory() string
+    GetCategory returns the category of the flag
 
-func (parent *BoolWithInverseFlag) Names() []string
+func (bif *BoolWithInverseFlag) GetDefaultText() string
+    GetDefaultText returns the default text for this flag
 
-func (parent *BoolWithInverseFlag) PostParse() error
+func (bif *BoolWithInverseFlag) GetEnvVars() []string
+    GetEnvVars returns the env vars for this flag
 
-func (parent *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) error
+func (bif *BoolWithInverseFlag) GetUsage() string
+    GetUsage returns the usage string for the flag
 
-func (parent *BoolWithInverseFlag) String() string
+func (bif *BoolWithInverseFlag) GetValue() string
+    GetValue returns the flags value as string representation and an empty
+    string if the flag takes no value at all.
+
+func (bif *BoolWithInverseFlag) IsBoolFlag() bool
+    IsBoolFlag returns whether the flag doesnt need to accept args
+
+func (bif *BoolWithInverseFlag) IsDefaultVisible() bool
+    IsDefaultVisible returns true if the flag is not hidden, otherwise false
+
+func (bif *BoolWithInverseFlag) IsSet() bool
+
+func (bif *BoolWithInverseFlag) Names() []string
+
+func (bif *BoolWithInverseFlag) PostParse() error
+
+func (bif *BoolWithInverseFlag) PreParse() error
+
+func (bif *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) error
+
+func (bif *BoolWithInverseFlag) Set(name, val string) error
+
+func (bif *BoolWithInverseFlag) SetCategory(c string)
+
+func (bif *BoolWithInverseFlag) String() string
     String implements the standard Stringer interface.
 
     Example for BoolFlag{Name: "env"} --[no-]env (default: false)
 
-func (parent *BoolWithInverseFlag) Value() bool
+func (bif *BoolWithInverseFlag) TakesValue() bool
+
+func (bif *BoolWithInverseFlag) TypeName() string
+    TypeName is used for stringify/docs. For bool its a no-op
 
 type CategorizableFlag interface {
 	// Returns the category of the flag
@@ -629,10 +674,18 @@ type ExitErrHandlerFunc func(context.Context, *Command, error)
 type Flag interface {
 	fmt.Stringer
 
+	// Retrieve the value of the Flag
+	Get() any
+
+	// Lifecycle methods.
+	// flag callback prior to parsing
+	PreParse() error
+
+	// flag callback post parsing
 	PostParse() error
 
 	// Apply Flag settings to the given flag set
-	Apply(*flag.FlagSet) error
+	Set(string, string) error
 
 	// All possible names for this flag
 	Names() []string
@@ -699,8 +752,10 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
         C specifies the configuration required(if any for that flag type)
         VC specifies the value creator which creates the flag.Value emulation
 
-func (f *FlagBase[T, C, V]) Apply(set *flag.FlagSet) error
-    Apply populates the flag given the flag set and environment
+func (f *FlagBase[T, C, VC]) Count() int
+    Count returns the number of times this flag has been invoked
+
+func (f *FlagBase[T, C, V]) Get() any
 
 func (f *FlagBase[T, C, V]) GetCategory() string
     GetCategory returns the category of the flag
@@ -717,6 +772,9 @@ func (f *FlagBase[T, C, V]) GetUsage() string
 func (f *FlagBase[T, C, V]) GetValue() string
     GetValue returns the flags value as string representation and an empty
     string if the flag takes no value at all.
+
+func (f *FlagBase[T, C, VC]) IsBoolFlag() bool
+    IsBoolFlag returns whether the flag doesnt need to accept args
 
 func (f *FlagBase[T, C, V]) IsDefaultVisible() bool
     IsDefaultVisible returns true if the flag is not hidden, otherwise false
@@ -743,8 +801,13 @@ func (f *FlagBase[T, C, V]) Names() []string
 func (f *FlagBase[T, C, V]) PostParse() error
     PostParse populates the flag given the flag set and environment
 
+func (f *FlagBase[T, C, V]) PreParse() error
+
 func (f *FlagBase[T, C, V]) RunAction(ctx context.Context, cmd *Command) error
     RunAction executes flag action if set
+
+func (f *FlagBase[T, C, V]) Set(_ string, val string) error
+    Set applies given value from string
 
 func (f *FlagBase[T, C, V]) SetCategory(c string)
 

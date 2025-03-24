@@ -2,200 +2,226 @@ package cli
 
 import (
 	"context"
-	"flag"
 	"fmt"
+	"slices"
 	"strings"
 )
 
 var DefaultInverseBoolPrefix = "no-"
 
 type BoolWithInverseFlag struct {
-	// The BoolFlag which the positive and negative flags are generated from
-	*BoolFlag
+	Name             string                                      `json:"name"`             // name of the flag
+	Category         string                                      `json:"category"`         // category of the flag, if any
+	DefaultText      string                                      `json:"defaultText"`      // default text of the flag for usage purposes
+	HideDefault      bool                                        `json:"hideDefault"`      // whether to hide the default value in output
+	Usage            string                                      `json:"usage"`            // usage string for help output
+	Sources          ValueSourceChain                            `json:"-"`                // sources to load flag value from
+	Required         bool                                        `json:"required"`         // whether the flag is required or not
+	Hidden           bool                                        `json:"hidden"`           // whether to hide the flag in help output
+	Local            bool                                        `json:"local"`            // whether the flag needs to be applied to subcommands as well
+	Value            bool                                        `json:"defaultValue"`     // default value for this flag if not set by from any source
+	Destination      *bool                                       `json:"-"`                // destination pointer for value when set
+	Aliases          []string                                    `json:"aliases"`          // Aliases that are allowed for this flag
+	TakesFile        bool                                        `json:"takesFileArg"`     // whether this flag takes a file argument, mainly for shell completion purposes
+	Action           func(context.Context, *Command, bool) error `json:"-"`                // Action callback to be called when flag is set
+	OnlyOnce         bool                                        `json:"onlyOnce"`         // whether this flag can be duplicated on the command line
+	Validator        func(bool) error                            `json:"-"`                // custom function to validate this flag value
+	ValidateDefaults bool                                        `json:"validateDefaults"` // whether to validate defaults or not
+	Config           BoolConfig                                  `json:"config"`           // Additional/Custom configuration associated with this flag type
+	InversePrefix    string                                      `json:"invPrefix"`        // The prefix used to indicate a negative value. Default: `env` becomes `no-env`
 
-	// The prefix used to indicate a negative value
-	// Default: `env` becomes `no-env`
-	InversePrefix string
-
-	positiveFlag *BoolFlag
-	negativeFlag *BoolFlag
-
-	// pointers obtained from the embedded bool flag
-	posDest  *bool
-	posCount *int
-
-	negDest *bool
+	// unexported fields for internal use
+	count      int   // number of times the flag has been set
+	hasBeenSet bool  // whether the flag has been set from env or file
+	applied    bool  // whether the flag has been applied to a flag set already
+	value      Value // value representing this flag's value
+	pset       bool
+	nset       bool
 }
 
-func (parent *BoolWithInverseFlag) Flags() []Flag {
-	return []Flag{parent.positiveFlag, parent.negativeFlag}
+func (bif *BoolWithInverseFlag) IsSet() bool {
+	return bif.hasBeenSet
 }
 
-func (parent *BoolWithInverseFlag) IsSet() bool {
-	return (*parent.posCount > 0) || (parent.positiveFlag.IsSet() || parent.negativeFlag.IsSet())
+func (bif *BoolWithInverseFlag) Get() any {
+	return bif.value.Get()
 }
 
-func (parent *BoolWithInverseFlag) Value() bool {
-	return *parent.posDest
-}
-
-func (parent *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) error {
-	if *parent.negDest && *parent.posDest {
-		return fmt.Errorf("cannot set both flags `--%s` and `--%s`", parent.positiveFlag.Name, parent.negativeFlag.Name)
-	}
-
-	if *parent.negDest {
-		_ = cmd.Set(parent.positiveFlag.Name, "false")
-	}
-
-	if parent.BoolFlag.Action != nil {
-		return parent.BoolFlag.Action(ctx, cmd, parent.Value())
+func (bif *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) error {
+	if bif.Action != nil {
+		return bif.Action(ctx, cmd, bif.Get().(bool))
 	}
 
 	return nil
 }
 
-// Initialize creates a new BoolFlag that has an inverse flag
-//
-// consider a bool flag `--env`, there is no way to set it to false
-// this function allows you to set `--env` or `--no-env` and in the command action
-// it can be determined that BoolWithInverseFlag.IsSet().
-func (parent *BoolWithInverseFlag) initialize() {
-	child := parent.BoolFlag
-
-	parent.negDest = new(bool)
-	if child.Destination != nil {
-		parent.posDest = child.Destination
-	} else {
-		parent.posDest = new(bool)
+func (bif *BoolWithInverseFlag) inversePrefix() string {
+	if bif.InversePrefix == "" {
+		bif.InversePrefix = DefaultInverseBoolPrefix
 	}
 
-	if child.Config.Count != nil {
-		parent.posCount = child.Config.Count
-	} else {
-		parent.posCount = new(int)
-	}
-
-	parent.positiveFlag = child
-	parent.positiveFlag.Destination = parent.posDest
-	parent.positiveFlag.Config.Count = parent.posCount
-
-	parent.negativeFlag = &BoolFlag{
-		Category:    child.Category,
-		DefaultText: child.DefaultText,
-		Sources:     NewValueSourceChain(child.Sources.Chain...),
-		Usage:       child.Usage,
-		Required:    child.Required,
-		Hidden:      child.Hidden,
-		Local:       child.Local,
-		Value:       child.Value,
-		Destination: parent.negDest,
-		TakesFile:   child.TakesFile,
-		OnlyOnce:    child.OnlyOnce,
-		hasBeenSet:  child.hasBeenSet,
-		applied:     child.applied,
-		creator:     boolValue{},
-		value:       child.value,
-	}
-
-	// Set inverse names ex: --env => --no-env
-	parent.negativeFlag.Name = parent.inverseName()
-	parent.negativeFlag.Aliases = parent.inverseAliases()
-
-	if len(child.Sources.EnvKeys()) > 0 {
-		sources := []ValueSource{}
-
-		for _, envVar := range child.GetEnvVars() {
-			sources = append(sources, EnvVar(strings.ToUpper(parent.InversePrefix)+envVar))
-		}
-		parent.negativeFlag.Sources = NewValueSourceChain(sources...)
-	}
+	return bif.InversePrefix
 }
 
-func (parent *BoolWithInverseFlag) inverseName() string {
-	return parent.inversePrefix() + parent.BoolFlag.Name
-}
-
-func (parent *BoolWithInverseFlag) inversePrefix() string {
-	if parent.InversePrefix == "" {
-		parent.InversePrefix = DefaultInverseBoolPrefix
+func (bif *BoolWithInverseFlag) PreParse() error {
+	count := bif.Config.Count
+	if count == nil {
+		count = &bif.count
+	}
+	dest := bif.Destination
+	if dest == nil {
+		dest = new(bool)
+	}
+	bif.value = &boolValue{
+		destination: dest,
+		count:       count,
 	}
 
-	return parent.InversePrefix
-}
-
-func (parent *BoolWithInverseFlag) inverseAliases() (aliases []string) {
-	if len(parent.BoolFlag.Aliases) > 0 {
-		aliases = make([]string, len(parent.BoolFlag.Aliases))
-		for idx, alias := range parent.BoolFlag.Aliases {
-			aliases[idx] = parent.InversePrefix + alias
-		}
-	}
-
-	return
-}
-
-func (parent *BoolWithInverseFlag) PostParse() error {
-	if parent.positiveFlag != nil {
-		if err := parent.positiveFlag.PostParse(); err != nil {
+	// Validate the given default or values set from external sources as well
+	if bif.Validator != nil && bif.ValidateDefaults {
+		if err := bif.Validator(bif.value.Get().(bool)); err != nil {
 			return err
 		}
 	}
-	if parent.negativeFlag != nil {
-		if err := parent.negativeFlag.PostParse(); err != nil {
-			return err
+	bif.applied = true
+	return nil
+}
+
+func (bif *BoolWithInverseFlag) PostParse() error {
+	tracef("postparse (flag=%[1]q)", bif.Name)
+
+	if !bif.hasBeenSet {
+		if val, source, found := bif.Sources.LookupWithSource(); found {
+			if val == "" {
+				val = "false"
+			}
+			if err := bif.Set(bif.Name, val); err != nil {
+				return fmt.Errorf(
+					"could not parse %[1]q as %[2]T value from %[3]s for flag %[4]s: %[5]s",
+					val, bif.Value, source, bif.Name, err,
+				)
+			}
+
+			bif.hasBeenSet = true
 		}
 	}
-	return nil
-}
-
-func (parent *BoolWithInverseFlag) Apply(set *flag.FlagSet) error {
-	if parent.positiveFlag == nil {
-		parent.initialize()
-	}
-
-	if err := parent.positiveFlag.Apply(set); err != nil {
-		return err
-	}
-
-	if err := parent.negativeFlag.Apply(set); err != nil {
-		return err
-	}
 
 	return nil
 }
 
-func (parent *BoolWithInverseFlag) Names() []string {
-	// Get Names when flag has not been initialized
-	if parent.positiveFlag == nil {
-		return append(parent.BoolFlag.Names(), FlagNames(parent.inverseName(), parent.inverseAliases())...)
+func (bif *BoolWithInverseFlag) Set(name, val string) error {
+	if bif.count > 0 && bif.OnlyOnce {
+		return fmt.Errorf("cant duplicate this flag")
 	}
 
-	if *parent.negDest {
-		return parent.negativeFlag.Names()
+	bif.hasBeenSet = true
+
+	if slices.Contains(append([]string{bif.Name}, bif.Aliases...), name) {
+		if bif.nset {
+			return fmt.Errorf("cannot set both flags `--%s` and `--%s`", bif.Name, bif.inversePrefix()+bif.Name)
+		}
+		if err := bif.value.Set(val); err != nil {
+			return err
+		}
+		bif.pset = true
+	} else {
+		if bif.pset {
+			return fmt.Errorf("cannot set both flags `--%s` and `--%s`", bif.Name, bif.inversePrefix()+bif.Name)
+		}
+		if err := bif.value.Set("false"); err != nil {
+			return err
+		}
+		bif.nset = true
 	}
 
-	if *parent.posDest {
-		return parent.positiveFlag.Names()
+	if bif.Validator != nil {
+		return bif.Validator(bif.value.Get().(bool))
+	}
+	return nil
+}
+
+func (bif *BoolWithInverseFlag) Names() []string {
+	names := append([]string{bif.Name}, bif.Aliases...)
+
+	for _, name := range names {
+		names = append(names, bif.inversePrefix()+name)
 	}
 
-	return append(parent.negativeFlag.Names(), parent.positiveFlag.Names()...)
+	return names
 }
 
 // String implements the standard Stringer interface.
 //
 // Example for BoolFlag{Name: "env"}
 // --[no-]env	(default: false)
-func (parent *BoolWithInverseFlag) String() string {
-	out := FlagStringer(parent)
+func (bif *BoolWithInverseFlag) String() string {
+	out := FlagStringer(bif)
+
 	i := strings.Index(out, "\t")
 
 	prefix := "--"
 
 	// single character flags are prefixed with `-` instead of `--`
-	if len(parent.Name) == 1 {
+	if len(bif.Name) == 1 {
 		prefix = "-"
 	}
 
-	return fmt.Sprintf("%s[%s]%s%s", prefix, parent.inversePrefix(), parent.Name, out[i:])
+	return fmt.Sprintf("%s[%s]%s%s", prefix, bif.inversePrefix(), bif.Name, out[i:])
+}
+
+// IsBoolFlag returns whether the flag doesnt need to accept args
+func (bif *BoolWithInverseFlag) IsBoolFlag() bool {
+	return true
+}
+
+// Count returns the number of times this flag has been invoked
+func (bif *BoolWithInverseFlag) Count() int {
+	return bif.count
+}
+
+// GetDefaultText returns the default text for this flag
+func (bif *BoolWithInverseFlag) GetDefaultText() string {
+	if bif.Required {
+		return bif.DefaultText
+	}
+	return boolValue{}.ToString(bif.Value)
+}
+
+// GetCategory returns the category of the flag
+func (bif *BoolWithInverseFlag) GetCategory() string {
+	return bif.Category
+}
+
+func (bif *BoolWithInverseFlag) SetCategory(c string) {
+	bif.Category = c
+}
+
+// GetUsage returns the usage string for the flag
+func (bif *BoolWithInverseFlag) GetUsage() string {
+	return bif.Usage
+}
+
+// GetEnvVars returns the env vars for this flag
+func (bif *BoolWithInverseFlag) GetEnvVars() []string {
+	return bif.Sources.EnvKeys()
+}
+
+// GetValue returns the flags value as string representation and an empty
+// string if the flag takes no value at all.
+func (bif *BoolWithInverseFlag) GetValue() string {
+	return ""
+}
+
+func (bif *BoolWithInverseFlag) TakesValue() bool {
+	return false
+}
+
+// IsDefaultVisible returns true if the flag is not hidden, otherwise false
+func (bif *BoolWithInverseFlag) IsDefaultVisible() bool {
+	return !bif.HideDefault
+}
+
+// TypeName is used for stringify/docs. For bool its a no-op
+func (bif *BoolWithInverseFlag) TypeName() string {
+	return "bool"
 }
