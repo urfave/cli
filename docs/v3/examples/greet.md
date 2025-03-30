@@ -61,6 +61,18 @@ cli also generates neat help text:
 ```sh-session
 $ greet help
 NAME:
+   greet - fight the loneliness!
+
+USAGE:
+   greet [global options]
+
+GLOBAL OPTIONS:
+   --help, -h  show help
+```
+
+In general a full help with flags and subcommands would give something like this
+```
+NAME:
     greet - fight the loneliness!
 
 USAGE:

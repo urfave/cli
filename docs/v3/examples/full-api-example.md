@@ -141,9 +141,20 @@ func main() {
 			&cli.BoolFlag{Value: true, Name: "fancier"},
 			&cli.DurationFlag{Name: "howlong", Aliases: []string{"H"}, Value: time.Second * 3},
 			&cli.FloatFlag{Name: "howmuch"},
-			&cli.IntFlag{Name: "longdistance"},
+			&cli.IntFlag{Name: "longdistance", Validator: func (t int) error {
+				if t < 10 {
+					return fmt.Errorf("10 miles isnt long distance!!!!")
+				}
+				return nil
+			}},
 			&cli.IntSliceFlag{Name: "intervals"},
-			&cli.StringFlag{Name: "dance-move", Aliases: []string{"d"}},
+			&cli.StringFlag{Name: "dance-move", Aliases: []string{"d"}, Validator: func(move string) error {
+				moves := []string{"salsa", "tap", "two-step", "lock-step"}
+				if !slices.Contains(moves, move) {
+					return fmt.Errorf("Havent learnt %s move yet", move)
+				}
+				return nil
+			}},
 			&cli.StringSliceFlag{Name: "names", Aliases: []string{"N"}},
 			&cli.UintFlag{Name: "age"},
 		},
