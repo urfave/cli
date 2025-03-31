@@ -313,6 +313,10 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 			rargs, err = arg.Parse(rargs)
 			if err != nil {
 				tracef("calling with %[1]v (cmd=%[2]q)", err, cmd.Name)
+				if cmd.OnUsageError != nil {
+					err = cmd.OnUsageError(ctx, cmd, err, cmd.parent != nil)
+				}
+				err = cmd.handleExitCoder(ctx, err)
 				return err
 			}
 		}

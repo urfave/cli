@@ -94,7 +94,14 @@ func TestArgumentsSubcommand(t *testing.T) {
 		},
 	}
 
+	numUsageErrors := 0
+	cmd.Commands[0].OnUsageError = func(ctx context.Context, cmd *Command, err error, isSubcommand bool) error {
+		numUsageErrors++
+		return err
+	}
+
 	require.Error(t, errors.New("sufficient count of arg sa not provided, given 0 expected 1"), cmd.Run(context.Background(), []string{"foo", "subcmd", "2006-01-02T15:04:05Z"}))
+	require.Equal(t, 1, numUsageErrors)
 
 	require.NoError(t, cmd.Run(context.Background(), []string{"foo", "subcmd", "2006-01-02T15:04:05Z", "fubar"}))
 	require.Equal(t, time.Date(2006, time.January, 2, 15, 4, 5, 0, time.UTC), tval)
