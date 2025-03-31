@@ -4501,7 +4501,7 @@ func TestSliceStringFlagParsing(t *testing.T) {
 func TestJSONExportCommand(t *testing.T) {
 	cmd := buildExtendedTestCommand()
 	cmd.Arguments = []Argument{
-		&IntArg{
+		&IntArgs{
 			Name: "fooi",
 		},
 	}
