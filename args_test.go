@@ -11,45 +11,43 @@ import (
 
 func TestArgumentsRootCommand(t *testing.T) {
 	cmd := buildMinimalTestCommand()
-	var ival int64
-	var fval float64
+	var ivals []int64
 	var fvals []float64
 	cmd.Arguments = []Argument{
-		&Int64Arg{
+		&IntArgs{
 			Name:        "ia",
 			Min:         1,
 			Max:         1,
-			Destination: &ival,
+			Destination: &ivals,
 		},
-		&FloatArg{
+		&FloatArgs{
 			Name:        "fa",
 			Min:         0,
 			Max:         2,
-			Destination: &fval,
-			Values:      &fvals,
+			Destination: &fvals,
 		},
 	}
 
 	require.NoError(t, cmd.Run(context.Background(), []string{"foo", "10"}))
-	require.Equal(t, int64(10), ival)
+	require.Equal(t, []int64{10}, ivals)
 
 	require.NoError(t, cmd.Run(context.Background(), []string{"foo", "12", "10.1"}))
-	require.Equal(t, int64(12), ival)
+	require.Equal(t, []int64{12}, ivals)
 	require.Equal(t, []float64{10.1}, fvals)
 
 	require.NoError(t, cmd.Run(context.Background(), []string{"foo", "13", "10.1", "11.09"}))
-	require.Equal(t, int64(13), ival)
+	require.Equal(t, []int64{13}, ivals)
 	require.Equal(t, []float64{10.1, 11.09}, fvals)
 
 	require.Error(t, errors.New("No help topic for '12.1"), cmd.Run(context.Background(), []string{"foo", "13", "10.1", "11.09", "12.1"}))
-	require.Equal(t, int64(13), ival)
+	require.Equal(t, []int64{13}, ivals)
 	require.Equal(t, []float64{10.1, 11.09}, fvals)
 
 	cmd.Arguments = append(cmd.Arguments,
-		&StringArg{
+		&StringArgs{
 			Name: "sa",
 		},
-		&Uint64Arg{
+		&UintArgs{
 			Name: "ua",
 			Min:  2,
 			Max:  1, // max is less than min
@@ -63,7 +61,7 @@ func TestArgumentsSubcommand(t *testing.T) {
 	cmd := buildMinimalTestCommand()
 	var ifval int64
 	var svals []string
-	var tval time.Time
+	var tvals []time.Time
 	cmd.Commands = []*Command{
 		{
 			Name: "subcmd",
@@ -75,20 +73,20 @@ func TestArgumentsSubcommand(t *testing.T) {
 				},
 			},
 			Arguments: []Argument{
-				&TimestampArg{
+				&TimestampArgs{
 					Name:        "ta",
 					Min:         1,
 					Max:         1,
-					Destination: &tval,
+					Destination: &tvals,
 					Config: TimestampConfig{
 						Layouts: []string{time.RFC3339},
 					},
 				},
-				&StringArg{
-					Name:   "sa",
-					Min:    1,
-					Max:    3,
-					Values: &svals,
+				&StringArgs{
+					Name:        "sa",
+					Min:         1,
+					Max:         3,
+					Destination: &svals,
 				},
 			},
 		},
@@ -104,17 +102,17 @@ func TestArgumentsSubcommand(t *testing.T) {
 	require.Equal(t, 1, numUsageErrors)
 
 	require.NoError(t, cmd.Run(context.Background(), []string{"foo", "subcmd", "2006-01-02T15:04:05Z", "fubar"}))
-	require.Equal(t, time.Date(2006, time.January, 2, 15, 4, 5, 0, time.UTC), tval)
+	require.Equal(t, []time.Time{time.Date(2006, time.January, 2, 15, 4, 5, 0, time.UTC)}, tvals)
 	require.Equal(t, []string{"fubar"}, svals)
 
 	require.NoError(t, cmd.Run(context.Background(), []string{"foo", "subcmd", "--foo", "100", "2006-01-02T15:04:05Z", "fubar", "some"}))
 	require.Equal(t, int64(100), ifval)
-	require.Equal(t, time.Date(2006, time.January, 2, 15, 4, 5, 0, time.UTC), tval)
+	require.Equal(t, []time.Time{time.Date(2006, time.January, 2, 15, 4, 5, 0, time.UTC)}, tvals)
 	require.Equal(t, []string{"fubar", "some"}, svals)
 }
 
 func TestArgsUsage(t *testing.T) {
-	arg := &Int64Arg{
+	arg := &IntArgs{
 		Name: "ia",
 		Min:  0,
 		Max:  1,
@@ -180,8 +178,8 @@ func TestArgsUsage(t *testing.T) {
 
 func TestSingleOptionalArg(t *testing.T) {
 	cmd := buildMinimalTestCommand()
-	var s1 string
-	arg := &StringArg{
+	var s1 []string
+	arg := &StringArgs{
 		Min:         0,
 		Max:         1,
 		Destination: &s1,
@@ -191,7 +189,7 @@ func TestSingleOptionalArg(t *testing.T) {
 	}
 
 	require.NoError(t, cmd.Run(context.Background(), []string{"foo"}))
-	require.Equal(t, "", s1)
+	require.Equal(t, []string{""}, s1)
 
 	arg.Value = "bar"
 	require.NoError(t, cmd.Run(context.Background(), []string{"foo"}))
@@ -202,7 +200,7 @@ func TestSingleOptionalArg(t *testing.T) {
 }
 
 func TestUnboundedArgs(t *testing.T) {
-	arg := &StringArg{
+	arg := &StringArgs{
 		Min: 0,
 		Max: -1,
 	}
@@ -240,9 +238,9 @@ func TestUnboundedArgs(t *testing.T) {
 	cmd.Arguments = []Argument{arg}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			arg.Values = &test.values
+			arg.Destination = &test.values
 			require.NoError(t, cmd.Run(context.Background(), test.args))
-			require.Equal(t, test.expected, *arg.Values)
+			require.Equal(t, test.expected, *arg.Destination)
 		})
 	}
 }

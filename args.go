@@ -62,6 +62,7 @@ func (a *stringSliceArgs) Slice() []string {
 }
 
 type Argument interface {
+	HasName(string) bool
 	Parse([]string) ([]string, error)
 	Usage() string
 	Get() any
@@ -69,23 +70,28 @@ type Argument interface {
 
 // AnyArguments to differentiate between no arguments(nil) vs aleast one
 var AnyArguments = []Argument{
-	&StringArg{
+	&StringArgs{
 		Max: -1,
 	},
 }
 
-type ArgumentBase[T any, C any, VC ValueCreator[T, C]] struct {
+type ArgumentsBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Name        string `json:"name"`      // the name of this argument
 	Value       T      `json:"value"`     // the default value of this argument
-	Destination *T     `json:"-"`         // the destination point for this argument
-	Values      *[]T   `json:"-"`         // all the values of this argument, only if multiple are supported
+	Destination *[]T   `json:"-"`         // the destination point for this argument
 	UsageText   string `json:"usageText"` // the usage text to show
 	Min         int    `json:"minTimes"`  // the min num of occurrences of this argument
 	Max         int    `json:"maxTimes"`  // the max num of occurrences of this argument, set to -1 for unlimited
 	Config      C      `json:"config"`    // config for this argument similar to Flag Config
+
+	values []T
 }
 
-func (a *ArgumentBase[T, C, VC]) Usage() string {
+func (a *ArgumentsBase[T, C, VC]) HasName(s string) bool {
+	return s == a.Name
+}
+
+func (a *ArgumentsBase[T, C, VC]) Usage() string {
 	if a.UsageText != "" {
 		return a.UsageText
 	}
@@ -103,7 +109,7 @@ func (a *ArgumentBase[T, C, VC]) Usage() string {
 	return fmt.Sprintf(usageFormat, a.Name)
 }
 
-func (a *ArgumentBase[T, C, VC]) Parse(s []string) ([]string, error) {
+func (a *ArgumentsBase[T, C, VC]) Parse(s []string) ([]string, error) {
 	tracef("calling arg%[1] parse with args %[2]", &a.Name, s)
 	if a.Max == 0 {
 		fmt.Printf("WARNING args %s has max 0, not parsing argument\n", a.Name)
@@ -118,13 +124,13 @@ func (a *ArgumentBase[T, C, VC]) Parse(s []string) ([]string, error) {
 	var vc VC
 	var t T
 	value := vc.Create(a.Value, &t, a.Config)
-	values := []T{}
+	a.values = []T{}
 
 	for _, arg := range s {
 		if err := value.Set(arg); err != nil {
 			return s, err
 		}
-		values = append(values, value.Get().(T))
+		a.values = append(a.values, value.Get().(T))
 		count++
 		if count >= a.Max && a.Max > -1 {
 			break
@@ -134,46 +140,67 @@ func (a *ArgumentBase[T, C, VC]) Parse(s []string) ([]string, error) {
 		return s, fmt.Errorf("sufficient count of arg %s not provided, given %d expected %d", a.Name, count, a.Min)
 	}
 
-	if a.Values == nil {
-		a.Values = &values
-	} else if count > 0 {
-		*a.Values = values
-	}
-
-	if a.Max == 1 && a.Destination != nil {
-		if len(values) > 0 {
-			*a.Destination = values[0]
-		} else {
-			*a.Destination = t
-		}
+	if a.Destination != nil {
+		*a.Destination = a.values
 	}
 
 	return s[count:], nil
 }
 
-func (a *ArgumentBase[T, C, VC]) Get() any {
-	if a.Values == nil {
-		return nil
-	}
-	if a.Max == 1 {
-		return (*a.Values)[0]
-	}
-	return *a.Values
+func (a *ArgumentsBase[T, C, VC]) Get() any {
+	return a.values
 }
 
 type (
-	FloatArg     = ArgumentBase[float64, NoConfig, floatValue]
-	IntArg       = ArgumentBase[int, IntegerConfig, intValue[int]]
-	Int8Arg      = ArgumentBase[int8, IntegerConfig, intValue[int8]]
-	Int16Arg     = ArgumentBase[int16, IntegerConfig, intValue[int16]]
-	Int32Arg     = ArgumentBase[int32, IntegerConfig, intValue[int32]]
-	Int64Arg     = ArgumentBase[int64, IntegerConfig, intValue[int64]]
-	StringArg    = ArgumentBase[string, StringConfig, stringValue]
-	StringMapArg = ArgumentBase[map[string]string, StringConfig, StringMap]
-	TimestampArg = ArgumentBase[time.Time, TimestampConfig, timestampValue]
-	UintArg      = ArgumentBase[uint, IntegerConfig, uintValue[uint]]
-	Uint8Arg     = ArgumentBase[uint8, IntegerConfig, uintValue[uint8]]
-	Uint16Arg    = ArgumentBase[uint16, IntegerConfig, uintValue[uint16]]
-	Uint32Arg    = ArgumentBase[uint32, IntegerConfig, uintValue[uint32]]
-	Uint64Arg    = ArgumentBase[uint64, IntegerConfig, uintValue[uint64]]
+	FloatArgs     = ArgumentsBase[float64, NoConfig, floatValue]
+	IntArgs       = ArgumentsBase[int64, IntegerConfig, intValue]
+	StringArgs    = ArgumentsBase[string, StringConfig, stringValue]
+	StringMapArgs = ArgumentsBase[map[string]string, StringConfig, StringMap]
+	TimestampArgs = ArgumentsBase[time.Time, TimestampConfig, timestampValue]
+	UintArgs      = ArgumentsBase[uint64, IntegerConfig, uintValue]
 )
+
+func (c *Command) StringArgs(name string) []string {
+	for _, arg := range c.Arguments {
+		if arg.HasName(name) {
+			return arg.Get().([]string)
+		}
+	}
+	return nil
+}
+
+func (c *Command) FloatArgs(name string) []float64 {
+	for _, arg := range c.Arguments {
+		if arg.HasName(name) {
+			return arg.Get().([]float64)
+		}
+	}
+	return nil
+}
+
+func (c *Command) IntArgs(name string) []int64 {
+	for _, arg := range c.Arguments {
+		if arg.HasName(name) {
+			return arg.Get().([]int64)
+		}
+	}
+	return nil
+}
+
+func (c *Command) UintArgs(name string) []uint64 {
+	for _, arg := range c.Arguments {
+		if arg.HasName(name) {
+			return arg.Get().([]uint64)
+		}
+	}
+	return nil
+}
+
+func (c *Command) TimestampArgs(name string) []time.Time {
+	for _, arg := range c.Arguments {
+		if arg.HasName(name) {
+			return arg.Get().([]time.Time)
+		}
+	}
+	return nil
+}

@@ -46,7 +46,7 @@ var (
 	SuggestDidYouMeanTemplate string             = suggestDidYouMeanTemplate
 )
 var AnyArguments = []Argument{
-	&StringArg{
+	&StringArgs{
 		Max: -1,
 	},
 }
@@ -247,27 +247,31 @@ type Args interface {
 }
 
 type Argument interface {
+	HasName(string) bool
 	Parse([]string) ([]string, error)
 	Usage() string
 	Get() any
 }
 
-type ArgumentBase[T any, C any, VC ValueCreator[T, C]] struct {
+type ArgumentsBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Name        string `json:"name"`      // the name of this argument
 	Value       T      `json:"value"`     // the default value of this argument
-	Destination *T     `json:"-"`         // the destination point for this argument
-	Values      *[]T   `json:"-"`         // all the values of this argument, only if multiple are supported
+	Destination *[]T   `json:"-"`         // the destination point for this argument
 	UsageText   string `json:"usageText"` // the usage text to show
 	Min         int    `json:"minTimes"`  // the min num of occurrences of this argument
 	Max         int    `json:"maxTimes"`  // the max num of occurrences of this argument, set to -1 for unlimited
 	Config      C      `json:"config"`    // config for this argument similar to Flag Config
+
+	// Has unexported fields.
 }
 
-func (a *ArgumentBase[T, C, VC]) Get() any
+func (a *ArgumentsBase[T, C, VC]) Get() any
 
-func (a *ArgumentBase[T, C, VC]) Parse(s []string) ([]string, error)
+func (a *ArgumentsBase[T, C, VC]) HasName(s string) bool
 
-func (a *ArgumentBase[T, C, VC]) Usage() string
+func (a *ArgumentsBase[T, C, VC]) Parse(s []string) ([]string, error)
+
+func (a *ArgumentsBase[T, C, VC]) Usage() string
 
 type BeforeFunc func(context.Context, *Command) (context.Context, error)
     BeforeFunc is an action that executes prior to any subcommands being run
@@ -497,6 +501,8 @@ func (cmd *Command) FlagNames() []string
 func (cmd *Command) Float(name string) float64
     Float looks up the value of a local FloatFlag, returns 0 if not found
 
+func (c *Command) FloatArgs(name string) []float64
+
 func (cmd *Command) FloatSlice(name string) []float64
     FloatSlice looks up the value of a local FloatSliceFlag, returns nil if not
     found
@@ -514,35 +520,9 @@ func (cmd *Command) HasName(name string) bool
 func (cmd *Command) Int(name string) int
     Int looks up the value of a local Int64Flag, returns 0 if not found
 
-func (cmd *Command) Int16(name string) int16
-    Int16 looks up the value of a local Int16Flag, returns 0 if not found
+func (c *Command) IntArgs(name string) []int64
 
-func (cmd *Command) Int16Slice(name string) []int16
-    Int16Slice looks up the value of a local Int16SliceFlag, returns nil if not
-    found
-
-func (cmd *Command) Int32(name string) int32
-    Int32 looks up the value of a local Int32Flag, returns 0 if not found
-
-func (cmd *Command) Int32Slice(name string) []int32
-    Int32Slice looks up the value of a local Int32SliceFlag, returns nil if not
-    found
-
-func (cmd *Command) Int64(name string) int64
-    Int64 looks up the value of a local Int64Flag, returns 0 if not found
-
-func (cmd *Command) Int64Slice(name string) []int64
-    Int64Slice looks up the value of a local Int64SliceFlag, returns nil if not
-    found
-
-func (cmd *Command) Int8(name string) int8
-    Int8 looks up the value of a local Int8Flag, returns 0 if not found
-
-func (cmd *Command) Int8Slice(name string) []int8
-    Int8Slice looks up the value of a local Int8SliceFlag, returns nil if not
-    found
-
-func (cmd *Command) IntSlice(name string) []int
+func (cmd *Command) IntSlice(name string) []int64
     IntSlice looks up the value of a local IntSliceFlag, returns nil if not
     found
 
@@ -578,6 +558,8 @@ func (cmd *Command) Set(name, value string) error
 
 func (cmd *Command) String(name string) string
 
+func (c *Command) StringArgs(name string) []string
+
 func (cmd *Command) StringMap(name string) map[string]string
     StringMap looks up the value of a local StringMapFlag, returns nil if not
     found
@@ -589,6 +571,8 @@ func (cmd *Command) StringSlice(name string) []string
 func (cmd *Command) Timestamp(name string) time.Time
     Timestamp gets the timestamp from a flag name
 
+func (c *Command) TimestampArgs(name string) []time.Time
+
 func (cmd *Command) ToFishCompletion() (string, error)
     ToFishCompletion creates a fish completion string for the `*App` The
     function errors if either parsing or writing of the string fails.
@@ -596,35 +580,9 @@ func (cmd *Command) ToFishCompletion() (string, error)
 func (cmd *Command) Uint(name string) uint
     Uint looks up the value of a local Uint64Flag, returns 0 if not found
 
-func (cmd *Command) Uint16(name string) uint16
-    Uint16 looks up the value of a local Uint16Flag, returns 0 if not found
+func (c *Command) UintArgs(name string) []uint64
 
-func (cmd *Command) Uint16Slice(name string) []uint16
-    Uint16Slice looks up the value of a local Uint16SliceFlag, returns nil if
-    not found
-
-func (cmd *Command) Uint32(name string) uint32
-    Uint32 looks up the value of a local Uint32Flag, returns 0 if not found
-
-func (cmd *Command) Uint32Slice(name string) []uint32
-    Uint32Slice looks up the value of a local Uint32SliceFlag, returns nil if
-    not found
-
-func (cmd *Command) Uint64(name string) uint64
-    Uint64 looks up the value of a local Uint64Flag, returns 0 if not found
-
-func (cmd *Command) Uint64Slice(name string) []uint64
-    Uint64Slice looks up the value of a local Uint64SliceFlag, returns nil if
-    not found
-
-func (cmd *Command) Uint8(name string) uint8
-    Uint8 looks up the value of a local Uint8Flag, returns 0 if not found
-
-func (cmd *Command) Uint8Slice(name string) []uint8
-    Uint8Slice looks up the value of a local Uint8SliceFlag, returns nil if not
-    found
-
-func (cmd *Command) UintSlice(name string) []uint
+func (cmd *Command) UintSlice(name string) []uint64
     UintSlice looks up the value of a local UintSliceFlag, returns nil if not
     found
 
@@ -940,7 +898,7 @@ func (f FlagsByName) Less(i, j int) bool
 
 func (f FlagsByName) Swap(i, j int)
 
-type FloatArg = ArgumentBase[float64, NoConfig, floatValue]
+type FloatArgs = ArgumentsBase[float64, NoConfig, floatValue]
 
 type FloatFlag = FlagBase[float64, NoConfig, floatValue]
 
@@ -950,11 +908,7 @@ type FloatSliceFlag = FlagBase[[]float64, NoConfig, FloatSlice]
 
 type GenericFlag = FlagBase[Value, NoConfig, genericValue]
 
-type Int16Arg = ArgumentBase[int16, IntegerConfig, intValue[int16]]
-
-type Int16Flag = FlagBase[int16, IntegerConfig, intValue[int16]]
-
-type Int16Slice = SliceBase[int16, IntegerConfig, intValue[int16]]
+type IntArgs = ArgumentsBase[int64, IntegerConfig, intValue]
 
 type Int16SliceFlag = FlagBase[[]int16, IntegerConfig, Int16Slice]
 
@@ -1119,7 +1073,7 @@ func (i SliceBase[T, C, VC]) ToString(t []T) string
 func (i *SliceBase[T, C, VC]) Value() []T
     Value returns the slice of values set by this flag
 
-type StringArg = ArgumentBase[string, StringConfig, stringValue]
+type StringArgs = ArgumentsBase[string, StringConfig, stringValue]
 
 type StringConfig struct {
 	// Whether to trim whitespace of parsed value
@@ -1131,7 +1085,7 @@ type StringFlag = FlagBase[string, StringConfig, stringValue]
 
 type StringMap = MapBase[string, StringConfig, stringValue]
 
-type StringMapArg = ArgumentBase[map[string]string, StringConfig, StringMap]
+type StringMapArgs = ArgumentsBase[map[string]string, StringConfig, StringMap]
 
 type StringMapFlag = FlagBase[map[string]string, StringConfig, StringMap]
 
@@ -1143,7 +1097,7 @@ type SuggestCommandFunc func(commands []*Command, provided string) string
 
 type SuggestFlagFunc func(flags []Flag, provided string, hideHelp bool) string
 
-type TimestampArg = ArgumentBase[time.Time, TimestampConfig, timestampValue]
+type TimestampArgs = ArgumentsBase[time.Time, TimestampConfig, timestampValue]
 
 type TimestampConfig struct {
 	Timezone *time.Location
@@ -1158,39 +1112,7 @@ type TimestampConfig struct {
 
 type TimestampFlag = FlagBase[time.Time, TimestampConfig, timestampValue]
 
-type Uint16Arg = ArgumentBase[uint16, IntegerConfig, uintValue[uint16]]
-
-type Uint16Flag = FlagBase[uint16, IntegerConfig, uintValue[uint16]]
-
-type Uint16Slice = SliceBase[uint16, IntegerConfig, uintValue[uint16]]
-
-type Uint16SliceFlag = FlagBase[[]uint16, IntegerConfig, Uint16Slice]
-
-type Uint32Arg = ArgumentBase[uint32, IntegerConfig, uintValue[uint32]]
-
-type Uint32Flag = FlagBase[uint32, IntegerConfig, uintValue[uint32]]
-
-type Uint32Slice = SliceBase[uint32, IntegerConfig, uintValue[uint32]]
-
-type Uint32SliceFlag = FlagBase[[]uint32, IntegerConfig, Uint32Slice]
-
-type Uint64Arg = ArgumentBase[uint64, IntegerConfig, uintValue[uint64]]
-
-type Uint64Flag = FlagBase[uint64, IntegerConfig, uintValue[uint64]]
-
-type Uint64Slice = SliceBase[uint64, IntegerConfig, uintValue[uint64]]
-
-type Uint64SliceFlag = FlagBase[[]uint64, IntegerConfig, Uint64Slice]
-
-type Uint8Arg = ArgumentBase[uint8, IntegerConfig, uintValue[uint8]]
-
-type Uint8Flag = FlagBase[uint8, IntegerConfig, uintValue[uint8]]
-
-type Uint8Slice = SliceBase[uint8, IntegerConfig, uintValue[uint8]]
-
-type Uint8SliceFlag = FlagBase[[]uint8, IntegerConfig, Uint8Slice]
-
-type UintArg = ArgumentBase[uint, IntegerConfig, uintValue[uint]]
+type UintArgs = ArgumentsBase[uint64, IntegerConfig, uintValue]
 
 type UintFlag = FlagBase[uint, IntegerConfig, uintValue[uint]]
 
