@@ -22,17 +22,24 @@ nav:
       - Migrating From Older Releases: v3/migrating-from-older-releases.md
       - Examples:
           - Greet: v3/examples/greet.md
-          - Arguments: v3/examples/arguments.md
-          - Flags: v3/examples/flags.md
-          - Subcommands: v3/examples/subcommands.md
-          - Subcommands Categories: v3/examples/subcommands-categories.md
-          - Exit Codes: v3/examples/exit-codes.md
-          - Combining Short Options: v3/examples/combining-short-options.md
-          - Shell Completions: v3/examples/shell-completions.md
-          - Generated Help Text: v3/examples/generated-help-text.md
-          - Version Flag: v3/examples/version-flag.md
-          - Timestamp Flag: v3/examples/timestamp-flag.md
-          - Suggestions: v3/examples/suggestions.md
+          - Flags: 
+              - Basics: v3/examples/flags/basics.md
+              - Value Sources: v3/examples/flags/value-sources.md
+              - Short Options: v3/examples/flags/short-options.md
+              - Advanced: v3/examples/flags/advanced.md
+          - Arguments: 
+              - Basics: v3/examples/arguments/basics.md
+              - Advanced: v3/examples/arguments/advanced.md
+          - Subcommands: 
+              - Basics: v3/examples/subcommands/basics.md
+              - Categories: v3/examples/subcommands/categories.md
+          - Completions:
+              - Shell Completions: v3/examples/completions/shell-completions.md
+          - Help Text:
+              - Generated Help Text: v3/examples/help/generated-help-text.md
+              - Suggestions: v3/examples/help/suggestions.md
+          - Error Handling:
+              - Exit Codes: v3/examples/exit-codes.md          
           - Full API Example: v3/examples/full-api-example.md
   - v2 Manual:
       - Getting Started: v2/getting-started.md
@@ -93,7 +100,7 @@ plugins:
   - search
   - redirects:
       redirect_maps:
-        'v3/examples/bash-completions.md': 'v3/examples/shell-completions.md'
+        'v3/examples/bash-completions.md': 'v3/examples/completions/shell-completions.md'
   - tags
 
 # NOTE: this is the recommended configuration from

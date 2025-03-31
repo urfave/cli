@@ -5,10 +5,113 @@ search:
   boost: 2
 ---
 
-You can enable completion commands by setting the `EnableShellCompletion` flag on
-the `Command` object to `true`.  By default, this setting will allow auto-completion
-for an command's subcommands, but you can write your own completion methods for the
-command or its subcommands as well.
+The urfave/cli v3 library supports programmable completion for apps utilizing its framework. This means
+that the completion is generated dynamically at runtime by invokiong the app itself with a special hidden
+flag. The urfave/cli searches for this flag and activates a different flow for command paths than regular flow
+The following shells are supported
+ - bash
+ - zsh
+ - fish
+ - powershell
+
+Enabling auto complete requires 2 things
+ - Setting the `EnableShellCompletion` field on root `Command` object to `true`. 
+ - Sourcing the completion script for that particular shell. 
+
+ The completion script for a particular shell can be retrieved by running the "completion" subcommand
+ on the app after the `EnableShellCompletion` field on root `Command` object has been set to `true`. 
+
+Consider the following program
+
+ ```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+	"context"
+
+	"github.com/urfave/cli/v3"
+)
+
+func main() {
+	cmd := &cli.Command{
+		Name: "greet",
+		EnableShellCompletion: true,
+		Commands: []*cli.Command{
+			{
+				Name:    "add",
+				Aliases: []string{"a"},
+				Usage:   "add a task to the list",
+				Action: func(ctx context.Context, cmd *cli.Command) error {
+					fmt.Println("added task: ", cmd.Args().First())
+					return nil
+				},
+			},
+			{
+				Name:    "complete",
+				Aliases: []string{"c"},
+				Usage:   "complete a task on the list",
+				Action: func(ctx context.Context, cmd *cli.Command) error {
+					fmt.Println("completed task: ", cmd.Args().First())
+					return nil
+				},
+			},
+			{
+				Name:    "template",
+				Aliases: []string{"t"},
+				Usage:   "options for task templates",
+				Commands: []*cli.Command{
+					{
+						Name:  "add",
+						Usage: "add a new template",
+						Action: func(ctx context.Context, cmd *cli.Command) error {
+							fmt.Println("new task template: ", cmd.Args().First())
+							return nil
+						},
+					},
+					{
+						Name:  "remove",
+						Usage: "remove an existing template",
+						Action: func(ctx context.Context, cmd *cli.Command) error {
+							fmt.Println("removed task template: ", cmd.Args().First())
+							return nil
+						},
+					},
+				},
+			},
+		},
+	}
+
+	if err := cmd.Run(context.Background(), os.Args); err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
+After compiling this app as `greet` we can generate the autocompletion as following
+in bash script
+
+```sh-session
+$ greet completion bash
+```
+
+This file can be saved to /etc/bash_completion.d/greet or $HOME/.bash_completion.d/greet
+where it will be automatically picked in new bash shells. For the current shell these
+can be sourced either using filename or from generation command directly
+
+```sh-session
+$ source ~/.bash_completion.d/greet
+```
+
+```sh-session
+$ source <(greet completion bash)
+```
+
+The procedure for other shells is similar to bash though the specific paths for each of the 
+shells may vary. Some of the sections below detail the setup need for other shells as
+well as examples in those shells.
 
 #### Default auto-completion
 
@@ -77,7 +180,7 @@ func main() {
 	}
 }
 ```
-![](../images/default-bash-autocomplete.gif)
+![](../../images/default-bash-autocomplete.gif)
 
 #### Custom auto-completion
 <!-- {
@@ -128,62 +231,11 @@ func main() {
 	}
 }
 ```
-![](../images/custom-bash-autocomplete.gif)
-
-#### Enabling
-
-To enable auto-completion for the current shell session, a bash script,
-`autocomplete/bash_autocomplete` is included in this repo.
-
-To use `autocomplete/bash_autocomplete` set an environment variable named `PROG`
-to the name of your program and then `source` the
-`autocomplete/bash_autocomplete` file.
-
-For example, if your cli program is called `myprogram`:
-
-```sh-session
-$ PROG=myprogram source path/to/cli/autocomplete/bash_autocomplete
-```
-
-Auto-completion is now enabled for the current shell, but will not persist into
-a new shell.
-
-#### Distribution and Persistent Autocompletion
-
-Copy `autocomplete/bash_autocomplete` into `/etc/bash_completion.d/` and rename
-it to the name of the program you wish to add autocomplete support for (or
-automatically install it there if you are distributing a package). Don't forget
-to source the file or restart your shell to activate the auto-completion.
-
-```sh-session
-$ sudo cp path/to/autocomplete/bash_autocomplete /etc/bash_completion.d/<myprogram>
-$ source /etc/bash_completion.d/<myprogram>
-```
-
-Alternatively, you can just document that users should `source` the generic
-`autocomplete/bash_autocomplete` and set `$PROG` within their bash configuration
-file, adding these lines:
-
-```sh-session
-$ PROG=<myprogram>
-$ source path/to/cli/autocomplete/bash_autocomplete
-```
-
-Keep in mind that if they are enabling auto-completion for more than one
-program, they will need to set `PROG` and source
-`autocomplete/bash_autocomplete` for each program, like so:
-
-```sh-session
-$ PROG=<program1>
-$ source path/to/cli/autocomplete/bash_autocomplete
-
-$ PROG=<program2>
-$ source path/to/cli/autocomplete/bash_autocomplete
-```
+![](../../images/custom-bash-autocomplete.gif)
 
 #### Customization
 
-The default shell completion flag (`--generate-bash-completion`) is defined as
+The default shell completion flag (`--generate-shell-completion`) is defined as
 `cli.EnableShellCompletion`, and may be redefined if desired, e.g.:
 
 <!-- {
@@ -219,10 +271,7 @@ func main() {
 
 #### ZSH Support
 
-Auto-completion for ZSH is also supported using the
-`autocomplete/zsh_autocomplete` file included in this repo. One environment
-variable is used, `PROG`.  Set `PROG` to the program name as before, and then
-`source path/to/autocomplete/zsh_autocomplete`.  Adding the following lines to
+Adding the following lines to
 your ZSH configuration file (usually `.zshrc`) will allow the auto-completion to
 persist across new shells:
 
@@ -232,18 +281,12 @@ $ source path/to/autocomplete/zsh_autocomplete
 ```
 
 #### ZSH default auto-complete example
-![](../images/default-zsh-autocomplete.gif)
-
-#### ZSH custom auto-complete example
-![](../images/custom-zsh-autocomplete.gif)
+![](../../images/default-zsh-autocomplete.gif)
 
 #### PowerShell Support
 
-Auto-completion for PowerShell is also supported using the
-`autocomplete/powershell_autocomplete.ps1` file included in this repo.
-
-Rename the script to `<my program>.ps1` and move it anywhere in your file
-system.  The location of script does not matter, only the file name of the
+Generate the completion script as save it to `<my program>.ps1` . This file can be moved to 
+anywhere in your file system.  The location of script does not matter, only the file name of the
 script has to match the your program's binary name.
 
 To activate it, enter:

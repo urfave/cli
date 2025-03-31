@@ -9,6 +9,7 @@ Calling `Command.Run` will not automatically call `os.Exit`, which means that by
 default the exit code will "fall through" to being `0`.  An explicit exit code
 may be set by returning a non-nil error that fulfills `cli.ExitCoder`, *or* a
 `cli.MultiError` that includes an error that fulfills `cli.ExitCoder`, e.g.:
+
 <!-- {
   "error": "Ginger croutons are not in the soup"
 } -->

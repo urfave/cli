@@ -37,13 +37,10 @@ NAME:
    hello - A new cli application
 
 USAGE:
-   hello [global options] [command [command options]] [arguments...]
-
-COMMANDS:
-   help, h  Shows a list of commands or help for one command
+   hello [global options]
 
 GLOBAL OPTIONS:
-   --help, -h  show help (default: false)
+   --help, -h  show help
 ```
 
 Let's add an action to execute and some help documentation:
@@ -78,6 +75,11 @@ func main() {
 	}
 }
 ```
+The output of above code is 
+
+```
+boom! I say!
+```
 
 Running this already gives you a ton of functionality, plus support for things
-like subcommands and flags, which are covered below.
+like subcommands and flags, which are covered in a separate section. 
