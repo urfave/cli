@@ -247,11 +247,19 @@ type Args interface {
 }
 
 type Argument interface {
+	// which this argument can be accessed using the given name
 	HasName(string) bool
+
+	// Parse the given args and return unparsed args and/or error
 	Parse([]string) ([]string, error)
+
+	// The usage template for this argument to use in help
 	Usage() string
+
+	// The Value of this Arg
 	Get() any
 }
+    Argument captures a positional argument that can be parsed
 
 type ArgumentsBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Name        string `json:"name"`      // the name of this argument
