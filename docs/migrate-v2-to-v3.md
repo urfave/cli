@@ -6,7 +6,7 @@ compiler errors. We hope this will be sufficient for most typical
 users.
 
 If you find any issues not covered by this document, please post a
-comment on [Issue 921](https://github.com/urfave/cli/issues/921) or
+comment on [the discussion](https://github.com/urfave/cli/discussions/2084) or
 consider sending a PR to help improve this guide.
 
 # Import string changed
