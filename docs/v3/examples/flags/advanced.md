@@ -12,7 +12,7 @@ e.g.
 
 <!-- {
   "args": ["&#45;&#45;help"],
-  "output": "&#45;&#45;lang value, &#45;l value.*language for the greeting.*default: \"english\""
+  "output": "&#45;&#45;lang string, &#45;l string.*language for the greeting.*default: \"english\""
 } -->
 ```go
 package main
@@ -336,7 +336,7 @@ For example this:
 
 <!-- {
   "args": ["&#45;&#45;help"],
-  "output": "&#45;&#45;port value"
+  "output": "&#45;&#45;port int"
 } -->
 ```go
 package main
