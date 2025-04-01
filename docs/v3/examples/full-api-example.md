@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"os"
 	"time"
+	"slices"
 
 	"github.com/urfave/cli/v3"
 )
@@ -141,7 +142,7 @@ func main() {
 			&cli.BoolFlag{Value: true, Name: "fancier"},
 			&cli.DurationFlag{Name: "howlong", Aliases: []string{"H"}, Value: time.Second * 3},
 			&cli.FloatFlag{Name: "howmuch"},
-			&cli.IntFlag{Name: "longdistance", Validator: func (t int) error {
+			&cli.IntFlag{Name: "longdistance", Validator: func (t int64) error {
 				if t < 10 {
 					return fmt.Errorf("10 miles isnt long distance!!!!")
 				}

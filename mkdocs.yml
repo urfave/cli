@@ -29,7 +29,7 @@ nav:
               - Advanced: v3/examples/flags/advanced.md
           - Arguments: 
               - Basics: v3/examples/arguments/basics.md
-              - Advanced: v3/examples/arguments/advanced.md
+              #- Advanced: v3/examples/arguments/advanced.md
           - Subcommands: 
               - Basics: v3/examples/subcommands/basics.md
               - Categories: v3/examples/subcommands/categories.md

@@ -177,7 +177,7 @@ Here is a more complete sample of a command using YAML support:
 
 <!-- {
   "args": ["&#45;&#45;help"],
-  "output": "&#45&#45;test value.*default: 0"
+  "output": "&#45&#45;test int.*default: 0"
 } -->
 ```go
 package main
