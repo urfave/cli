@@ -61,10 +61,19 @@ func (a *stringSliceArgs) Slice() []string {
 	return ret
 }
 
+// Argument captures a positional argument that can
+// be parsed
 type Argument interface {
+	// which this argument can be accessed using the given name
 	HasName(string) bool
+
+	// Parse the given args and return unparsed args and/or error
 	Parse([]string) ([]string, error)
+
+	// The usage template for this argument to use in help
 	Usage() string
+
+	// The Value of this Arg
 	Get() any
 }
 
@@ -126,10 +135,12 @@ func (a *ArgumentsBase[T, C, VC]) Parse(s []string) ([]string, error) {
 	value := vc.Create(a.Value, &t, a.Config)
 	a.values = []T{}
 
+	tracef("attempting arg%[1] parse", &a.Name)
 	for _, arg := range s {
 		if err := value.Set(arg); err != nil {
 			return s, err
 		}
+		tracef("set arg%[1] one value", &a.Name, value.Get().(T))
 		a.values = append(a.values, value.Get().(T))
 		count++
 		if count >= a.Max && a.Max > -1 {
@@ -141,7 +152,8 @@ func (a *ArgumentsBase[T, C, VC]) Parse(s []string) ([]string, error) {
 	}
 
 	if a.Destination != nil {
-		*a.Destination = a.values
+		tracef("appending destination")
+		*a.Destination = append(*a.Destination, a.values...)
 	}
 
 	return s[count:], nil
@@ -163,7 +175,11 @@ type (
 func (c *Command) StringArgs(name string) []string {
 	for _, arg := range c.Arguments {
 		if arg.HasName(name) {
-			return arg.Get().([]string)
+			if a, ok := arg.Get().([]string); ok {
+				return a
+			} else {
+				return nil
+			}
 		}
 	}
 	return nil
@@ -172,7 +188,11 @@ func (c *Command) StringArgs(name string) []string {
 func (c *Command) FloatArgs(name string) []float64 {
 	for _, arg := range c.Arguments {
 		if arg.HasName(name) {
-			return arg.Get().([]float64)
+			if a, ok := arg.Get().([]float64); ok {
+				return a
+			} else {
+				return nil
+			}
 		}
 	}
 	return nil
@@ -181,7 +201,11 @@ func (c *Command) FloatArgs(name string) []float64 {
 func (c *Command) IntArgs(name string) []int64 {
 	for _, arg := range c.Arguments {
 		if arg.HasName(name) {
-			return arg.Get().([]int64)
+			if a, ok := arg.Get().([]int64); ok {
+				return a
+			} else {
+				return nil
+			}
 		}
 	}
 	return nil
@@ -190,7 +214,11 @@ func (c *Command) IntArgs(name string) []int64 {
 func (c *Command) UintArgs(name string) []uint64 {
 	for _, arg := range c.Arguments {
 		if arg.HasName(name) {
-			return arg.Get().([]uint64)
+			if a, ok := arg.Get().([]uint64); ok {
+				return a
+			} else {
+				return nil
+			}
 		}
 	}
 	return nil
@@ -199,7 +227,11 @@ func (c *Command) UintArgs(name string) []uint64 {
 func (c *Command) TimestampArgs(name string) []time.Time {
 	for _, arg := range c.Arguments {
 		if arg.HasName(name) {
-			return arg.Get().([]time.Time)
+			if a, ok := arg.Get().([]time.Time); ok {
+				return a
+			} else {
+				return nil
+			}
 		}
 	}
 	return nil
