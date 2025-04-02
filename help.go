@@ -425,7 +425,7 @@ func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs 
 		handleTemplateError(err)
 	}
 
-	if _, err := t.New("visibleGlobalFlagCategoryTemplate").Parse(strings.Replace(visibleFlagCategoryTemplate, "OPTIONS", "GLOBAL OPTIONS", -1)); err != nil {
+	if _, err := t.New("visibleGlobalFlagCategoryTemplate").Parse(strings.ReplaceAll(visibleFlagCategoryTemplate, "OPTIONS", "GLOBAL OPTIONS")); err != nil {
 		handleTemplateError(err)
 	}
 
@@ -513,7 +513,7 @@ func subtract(a, b int) int {
 
 func indent(spaces int, v string) string {
 	pad := strings.Repeat(" ", spaces)
-	return pad + strings.Replace(v, "\n", "\n"+pad, -1)
+	return pad + strings.ReplaceAll(v, "\n", "\n"+pad)
 }
 
 func nindent(spaces int, v string) string {

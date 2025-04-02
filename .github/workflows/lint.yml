@@ -17,13 +17,13 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: stable
-
-      - name: Clone repository
-        uses: actions/checkout@v4
 
       - name: Set up gofumpt
         run: go install mvdan.cc/gofumpt@latest
@@ -34,36 +34,19 @@ jobs:
           echo "$non_formatted_files"
           test -z "$non_formatted_files"
 
-  staticcheck:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: stable
-
-      - name: Clone repository
-        uses: actions/checkout@v4
-
-      - name: Set up staticcheck
-        run: go install honnef.co/go/tools/cmd/staticcheck@latest
-
-      - name: Run staticcheck
-        run: staticcheck ./...
-
   golangci-lint:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: stable
 
-      - name: Clone repository
-        uses: actions/checkout@v4
-
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
           version: latest
