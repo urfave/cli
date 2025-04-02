@@ -17,13 +17,13 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: stable
-
-      - name: Clone repository
-        uses: actions/checkout@v4
 
       - name: Set up gofumpt
         run: go install mvdan.cc/gofumpt@latest
@@ -38,13 +38,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: stable
-
-      - name: Clone repository
-        uses: actions/checkout@v4
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v7
