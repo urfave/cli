@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"errors"
 	"testing"
 	"time"
 
@@ -100,60 +99,95 @@ func TestArgumentsRootCommand(t *testing.T) {
 }
 
 func TestArgumentsSubcommand(t *testing.T) {
-	cmd := buildMinimalTestCommand()
-	var ifval int64
-	var svals []string
-	var tvals []time.Time
-	cmd.Commands = []*Command{
+	tests := []struct {
+		name          string
+		args          []string
+		expectedIval  int64
+		expectedSvals []string
+		expectedTVals []time.Time
+		errStr        string
+	}{
 		{
-			Name: "subcmd",
-			Flags: []Flag{
-				&Int64Flag{
-					Name:        "foo",
-					Value:       10,
-					Destination: &ifval,
-				},
-			},
-			Arguments: []Argument{
-				&TimestampArgs{
-					Name:        "ta",
-					Min:         1,
-					Max:         1,
-					Destination: &tvals,
-					Config: TimestampConfig{
-						Layouts: []string{time.RFC3339},
-					},
-				},
-				&StringArgs{
-					Name:        "sa",
-					Min:         1,
-					Max:         3,
-					Destination: &svals,
-				},
-			},
+			name:   "insuff args",
+			args:   []string{"foo", "subcmd", "2006-01-02T15:04:05Z"},
+			errStr: "sufficient count of arg sa not provided, given 0 expected 1",
+		},
+		{
+			name:          "set sval and tval",
+			args:          []string{"foo", "subcmd", "2006-01-02T15:04:05Z", "fubar"},
+			expectedIval:  10,
+			expectedTVals: []time.Time{time.Date(2006, time.January, 2, 15, 4, 5, 0, time.UTC)},
+			expectedSvals: []string{"fubar"},
+		},
+		{
+			name:          "set sval, tval and ival",
+			args:          []string{"foo", "subcmd", "--foo", "100", "2006-01-02T15:04:05Z", "fubar", "some"},
+			expectedIval:  100,
+			expectedTVals: []time.Time{time.Date(2006, time.January, 2, 15, 4, 5, 0, time.UTC)},
+			expectedSvals: []string{"fubar", "some"},
 		},
 	}
 
-	numUsageErrors := 0
-	cmd.Commands[0].OnUsageError = func(ctx context.Context, cmd *Command, err error, isSubcommand bool) error {
-		numUsageErrors++
-		return err
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			cmd := buildMinimalTestCommand()
+			var ival int64
+			var svals []string
+			var tvals []time.Time
+			cmd.Commands = []*Command{
+				{
+					Name: "subcmd",
+					Flags: []Flag{
+						&IntFlag{
+							Name:        "foo",
+							Value:       10,
+							Destination: &ival,
+						},
+					},
+					Arguments: []Argument{
+						&TimestampArgs{
+							Name:        "ta",
+							Min:         1,
+							Max:         1,
+							Destination: &tvals,
+							Config: TimestampConfig{
+								Layouts: []string{time.RFC3339},
+							},
+						},
+						&StringArgs{
+							Name:        "sa",
+							Min:         1,
+							Max:         3,
+							Destination: &svals,
+						},
+					},
+				},
+			}
+
+			numUsageErrors := 0
+			cmd.Commands[0].OnUsageError = func(ctx context.Context, cmd *Command, err error, isSubcommand bool) error {
+				numUsageErrors++
+				return err
+			}
+
+			err := cmd.Run(buildTestContext(t), test.args)
+
+			r := require.New(t)
+
+			if test.errStr != "" {
+				r.ErrorContains(err, test.errStr)
+				r.Equal(1, numUsageErrors)
+			} else {
+				if test.expectedSvals != nil {
+					r.Equal(test.expectedSvals, svals)
+				}
+				if test.expectedTVals != nil {
+					r.Equal(test.expectedTVals, tvals)
+				}
+				r.Equal(test.expectedIval, ival)
+			}
+		})
 	}
-
-	require.Error(t, errors.New("sufficient count of arg sa not provided, given 0 expected 1"), cmd.Run(context.Background(), []string{"foo", "subcmd", "2006-01-02T15:04:05Z"}))
-	require.Equal(t, 1, numUsageErrors)
-
-	tvals = []time.Time{}
-	require.NoError(t, cmd.Run(context.Background(), []string{"foo", "subcmd", "2006-01-02T15:04:05Z", "fubar"}))
-	require.Equal(t, []time.Time{time.Date(2006, time.January, 2, 15, 4, 5, 0, time.UTC)}, tvals)
-	require.Equal(t, []string{"fubar"}, svals)
-
-	tvals = []time.Time{}
-	svals = []string{}
-	require.NoError(t, cmd.Run(context.Background(), []string{"foo", "subcmd", "--foo", "100", "2006-01-02T15:04:05Z", "fubar", "some"}))
-	require.Equal(t, int64(100), ifval)
-	require.Equal(t, []time.Time{time.Date(2006, time.January, 2, 15, 4, 5, 0, time.UTC)}, tvals)
-	require.Equal(t, []string{"fubar", "some"}, svals)
 }
 
 func TestArgsUsage(t *testing.T) {
@@ -222,26 +256,49 @@ func TestArgsUsage(t *testing.T) {
 }
 
 func TestSingleOptionalArg(t *testing.T) {
-	cmd := buildMinimalTestCommand()
-	var s1 []string
-	arg := &StringArgs{
-		Min:         0,
-		Max:         1,
-		Destination: &s1,
+	tests := []struct {
+		name     string
+		args     []string
+		argValue string
+		exp      []string
+	}{
+		{
+			name: "no args",
+			args: []string{"foo"},
+			exp:  nil,
+		},
+		/*{
+			name: "no arg with def value",
+			args: []string{"foo"},
+			exp:  []string{"bar"},
+		},*/
+		{
+			name: "one arg",
+			args: []string{"foo", "zbar"},
+			exp:  []string{"zbar"},
+		},
 	}
-	cmd.Arguments = []Argument{
-		arg,
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			cmd := buildMinimalTestCommand()
+			var s1 []string
+			arg := &StringArgs{
+				Min:         0,
+				Max:         1,
+				Value:       test.argValue,
+				Destination: &s1,
+			}
+			cmd.Arguments = []Argument{
+				arg,
+			}
+
+			err := cmd.Run(buildTestContext(t), test.args) //
+			r := require.New(t)
+			r.NoError(err)
+			r.Equal(test.exp, s1)
+		})
 	}
-
-	require.NoError(t, cmd.Run(context.Background(), []string{"foo"}))
-	require.Equal(t, []string{}, s1)
-
-	/*arg.Value = "bar"
-	require.NoError(t, cmd.Run(context.Background(), []string{"foo"}))
-	require.Equal(t, "bar", s1)*/
-
-	require.NoError(t, cmd.Run(context.Background(), []string{"foo", "zbar"}))
-	require.Equal(t, []string{"zbar"}, s1)
 }
 
 func TestUnboundedArgs(t *testing.T) {
