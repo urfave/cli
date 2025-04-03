@@ -2760,7 +2760,7 @@ func TestFlagAction(t *testing.T) {
 							if v[0] == "err" {
 								return fmt.Errorf("error string slice")
 							}
-							_, err := cmd.Root().Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+							_, err := fmt.Fprintf(cmd.Root().Writer, "%v ", v)
 							return err
 						},
 					},
@@ -2771,7 +2771,7 @@ func TestFlagAction(t *testing.T) {
 							if !v {
 								return fmt.Errorf("value is false")
 							}
-							_, err := cmd.Root().Writer.Write([]byte(fmt.Sprintf("%t ", v)))
+							_, err := fmt.Fprintf(cmd.Root().Writer, "%t ", v)
 							return err
 						},
 					},
@@ -2782,7 +2782,7 @@ func TestFlagAction(t *testing.T) {
 							if v == 0 {
 								return fmt.Errorf("empty duration")
 							}
-							_, err := cmd.Root().Writer.Write([]byte(v.String() + " "))
+							_, err := fmt.Fprintf(cmd.Root().Writer, v.String()+" ")
 							return err
 						},
 					},
@@ -2793,7 +2793,7 @@ func TestFlagAction(t *testing.T) {
 							if v < 0 {
 								return fmt.Errorf("negative float64")
 							}
-							_, err := cmd.Root().Writer.Write([]byte(strconv.FormatFloat(v, 'f', -1, 64) + " "))
+							_, err := fmt.Fprintf(cmd.Root().Writer, strconv.FormatFloat(v, 'f', -1, 64)+" ")
 							return err
 						},
 					},
@@ -2804,7 +2804,7 @@ func TestFlagAction(t *testing.T) {
 							if len(v) > 0 && v[0] < 0 {
 								return fmt.Errorf("invalid float64 slice")
 							}
-							_, err := cmd.Root().Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+							_, err := fmt.Fprintf(cmd.Root().Writer, "%v ", v)
 							return err
 						},
 					},
@@ -2815,7 +2815,7 @@ func TestFlagAction(t *testing.T) {
 							if v < 0 {
 								return fmt.Errorf("negative int")
 							}
-							_, err := cmd.Root().Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+							_, err := fmt.Fprintf(cmd.Root().Writer, "%v ", v)
 							return err
 						},
 					},
@@ -2826,7 +2826,7 @@ func TestFlagAction(t *testing.T) {
 							if len(v) > 0 && v[0] < 0 {
 								return fmt.Errorf("invalid int slice")
 							}
-							_, err := cmd.Root().Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+							_, err := fmt.Fprintf(cmd.Root().Writer, "%v ", v)
 							return err
 						},
 					},
@@ -2853,7 +2853,7 @@ func TestFlagAction(t *testing.T) {
 							if v == 0 {
 								return fmt.Errorf("zero uint64")
 							}
-							_, err := cmd.Root().Writer.Write([]byte(fmt.Sprintf("%v ", v)))
+							_, err := fmt.Fprintf(cmd.Root().Writer, "%v ", v)
 							return err
 						},
 					},
@@ -2864,7 +2864,7 @@ func TestFlagAction(t *testing.T) {
 							if _, ok := v["err"]; ok {
 								return fmt.Errorf("error string map")
 							}
-							_, err := cmd.Root().Writer.Write([]byte(fmt.Sprintf("%v", v)))
+							_, err := fmt.Fprintf(cmd.Root().Writer, "%v", v)
 							return err
 						},
 					},
