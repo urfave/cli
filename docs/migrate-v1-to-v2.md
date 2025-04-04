@@ -9,7 +9,7 @@ If you find any issues not covered by this document, please post a
 comment on [Issue 921](https://github.com/urfave/cli/issues/921) or
 consider sending a PR to help improve this guide.
 
-# Flags before args
+## Flags before args
 
 In v2 flags must come before args. This is more POSIX-compliant.  You
 may need to update scripts, user documentation, etc.
@@ -26,61 +26,75 @@ This will not:
 cli hello rick --shout
 ```
 
-# Import string changed
+## Import string changed
 
-* OLD: `import "github.com/urfave/cli"`
-* NEW: `import "github.com/urfave/cli/v2"`
+=== "v1"
+
+    `import "github.com/urfave/cli"`
+
+=== "v2"
+
+    `import "github.com/urfave/cli/v2"`
 
 Check each file for this and make the change.
 
 Shell command to find them all: `fgrep -rl github.com/urfave/cli *`
 
-# Flag aliases are done differently
+## Flag aliases are done differently
 
 Change `Name: "foo, f"` to `Name: "foo", Aliases: []string{"f"}`
 
-* OLD:
-```go
-cli.StringFlag{
-        Name: "config, cfg"
-}
-```
+=== "v1"
 
-* NEW:
-```go
-cli.StringFlag{
-        Name: "config",
-        Aliases: []string{"cfg"},
-}
-```
+    ```go
+    cli.StringFlag{
+            Name: "config, cfg"
+    }
+    ```
+
+=== "v2"
+    
+    ```go
+    cli.StringFlag{
+            Name: "config",
+            Aliases: []string{"cfg"},
+    }
+    ```
 
 Sadly v2 doesn't warn you if a comma is in the name.
 (https://github.com/urfave/cli/issues/1103)
 
-# EnvVar is now a list (EnvVars)
+## EnvVar is now a list (EnvVars)
 
 Change `EnvVar: "XXXXX"` to `EnvVars: []string{"XXXXX"}` (plural).
 
-* OLD:
-```go
-cli.StringFlag{
-        EnvVar: "APP_LANG"
-}
-```
+=== "v1"
 
-* NEW:
-```go
-cli.StringFlag{
-        EnvVars: []string{"APP_LANG"}
-}
-```
+    ```go
+    cli.StringFlag{
+            EnvVar: "APP_LANG"
+    }
+    ```
 
-# Actions returns errors
+=== "v2"
+
+    ```go
+    cli.StringFlag{
+            EnvVars: []string{"APP_LANG"}
+    }
+    ```
+
+## Actions returns errors
 
 A command's `Action:` now returns an `error`.
 
-* OLD: `Action: func(c *cli.Context) {`
-* NEW: `Action: func(c *cli.Context) error {`
+=== "v1"
+
+    `Action: func(c *cli.Context) {`
+
+=== "v2"
+
+    `Action: func(c *cli.Context) error {`
 
 Compiler messages you might see:
 
@@ -88,7 +102,7 @@ Compiler messages you might see:
 cannot use func literal (type func(*cli.Context)) as type cli.ActionFunc in field value
 ```
 
-# cli.Flag changed
+## cli.Flag changed
 
 `cli.Flag` is now a list of pointers.
 
@@ -97,17 +111,19 @@ What this means to you:
 If you make a list of flags, add a `&` in front of each
 item.   cli.BoolFlag, cli.StringFlag, etc.
 
-* OLD:
-```go
-        app.Flags = []cli.Flag{
-               cli.BoolFlag{
-```
+=== "v1"
 
-* NEW:
-```go
-        app.Flags = []cli.Flag{
-               &cli.BoolFlag{
-```
+    ```go
+            app.Flags = []cli.Flag{
+                   cli.BoolFlag{
+    ```
+
+=== "v2"
+    
+    ```go
+            app.Flags = []cli.Flag{
+                   &cli.BoolFlag{
+    ```
 
 Compiler messages you might see:
 
@@ -115,7 +131,7 @@ Compiler messages you might see:
 	cli.StringFlag does not implement cli.Flag (Apply method has pointer receiver)
 ```
 
-# Commands are now lists of pointers
+## Commands are now lists of pointers
 
 Occurrences of `[]Command` have been changed to `[]*Command`.
 
@@ -125,8 +141,13 @@ Look for `[]cli.Command{}` and change it to `[]*cli.Command{}`
 
 Example:
 
-* OLD: `var commands = []cli.Command{}`
-* NEW: `var commands = []*cli.Command{}`
+=== "v1"
+
+    `var commands = []cli.Command{}`
+
+=== "v2"
+
+    `var commands = []*cli.Command{}`
 
 Compiler messages you might see:
 
@@ -135,13 +156,18 @@ cannot convert commands (type []cli.Command) to type cli.CommandsByName
 cannot use commands (type []cli.Command) as type []*cli.Command in assignment
 ```
 
-# Lists of commands should be pointers
+## Lists of commands should be pointers
 
 If you are building up a list of commands, the individual items should
 now be pointers.
 
-* OLD: `cli.Command{`
-* NEW: `&cli.Command{`
+=== "v1"
+
+    `cli.Command{`
+
+=== "v2"
+
+    `&cli.Command{`
 
 Compiler messages you might see:
 
@@ -149,13 +175,18 @@ Compiler messages you might see:
 cannot use cli.Command literal (type cli.Command) as type *cli.Command in argument to
 ```
 
-# Appending Commands
+## Appending Commands
 
 Appending to a list of commands needs to be changed since the list is
 now pointers.
 
-* OLD: `commands = append(commands, *c)`
-* NEW: `commands = append(commands, c)`
+=== "v1"
+
+    `commands = append(commands, *c)`
+
+=== "v2"
+
+    `commands = append(commands, c)`
 
 Compiler messages you might see:
 
@@ -163,53 +194,56 @@ Compiler messages you might see:
 cannot use c (type *cli.Command) as type cli.Command in append
 ```
 
-# GlobalString, GlobalBool and its likes are deprecated
+## GlobalString, GlobalBool and its likes are deprecated
 
 Use simply `String` instead of `GlobalString`, `Bool` instead of `GlobalBool` 
 
-# BoolTFlag and BoolT are deprecated
+## BoolTFlag and BoolT are deprecated
 
 BoolTFlag was a Bool Flag with its default value set to true and BoolT was used to find any BoolTFlag used locally, so both are deprecated.
 
-* OLD: 
+=== "v1"
 
-```go
-cli.BoolTFlag{
-		Name:   FlagName,
-		Usage:  FlagUsage,
-		EnvVar: "FLAG_ENV_VAR",
-}
-```
-* NEW: 
-```go
-cli.BoolFlag{
-		Name:   FlagName,
-		Value:  true,
-		Usage:  FlagUsage,
-		EnvVar: "FLAG_ENV_VAR",
-}
-```
+    ```go
+    cli.BoolTFlag{
+            Name:   FlagName,
+            Usage:  FlagUsage,
+            EnvVar: "FLAG_ENV_VAR",
+    }
+    ```
 
+=== "v2"
+    
+    ```go
+    cli.BoolFlag{
+            Name:   FlagName,
+            Value:  true,
+            Usage:  FlagUsage,
+            EnvVar: "FLAG_ENV_VAR",
+    }
+    ```
 
-# &cli.StringSlice{""} replaced with cli.NewStringSlice("")
+## &cli.StringSlice{""} replaced with cli.NewStringSlice("")
 
 Example: 
 
-* OLD: 
+=== "v1"
 
-```go
-Value: &cli.StringSlice{""},
-```
-* NEW: 
-```go
-Value: cli.NewStringSlice(""),
-}
-```
-# Replace deprecated functions
+    ```go
+    Value: &cli.StringSlice{""},
+    ```
+
+=== "v2"
+    
+    ```go
+    Value: cli.NewStringSlice(""),
+    ```
+
+## Replace deprecated functions
 
 `cli.NewExitError()` is deprecated.  Use `cli.Exit()` instead.  ([Staticcheck](https://staticcheck.io/) detects this automatically and recommends replacement code.)
 
-# Everything else
+## Everything else
 
 Compile the code and work through any errors. Most should
 relate to issues listed above.
