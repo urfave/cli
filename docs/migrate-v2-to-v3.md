@@ -216,4 +216,27 @@ Compiler messages you might see(for ActionFunc):
 ```
 cannot use func literal (type func(*cli.Context) error) as type cli.ActionFunc in field value
 ```
-Similar messages would be shown for other funcs
+
+Similar messages would be shown for other funcs.
+
+## TimestampFlag
+
+=== "v2"
+
+    ```go
+    &cli.TimestampFlag{
+        Name:   "foo",
+        Layout: time.RFC3339,
+    }
+    ```
+
+=== "v3"
+
+    ```go
+    &cli.TimestampFlag{
+        Name:  "foo",
+        Config: cli.TimestampConfig{
+            Layouts: []string{time.RFC3339},
+        },
+    }
+    ```
