@@ -153,7 +153,7 @@ func (a *ArgumentsBase[T, C, VC]) Parse(s []string) ([]string, error) {
 
 	if a.Destination != nil {
 		tracef("appending destination")
-		*a.Destination = append(*a.Destination, a.values...)
+		*a.Destination = a.values // append(*a.Destination, a.values...)
 	}
 
 	return s[count:], nil
