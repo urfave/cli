@@ -23,7 +23,7 @@ Enabling auto complete requires 2 things
 
 Consider the following program
 
- ```go
+```go
 package main
 
 import (
