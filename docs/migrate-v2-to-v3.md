@@ -123,21 +123,25 @@ Shell command to find them all: `fgrep -rl github.com/urfave/cli/v2 *`
 === "v2"
 
     ```go
-    cli.StringFlag{
-            EnvVars: []string{"APP_LANG"},
+    altsrc.NewStringFlag(
+        &cli.StringFlag{
+            Name:     "key",
+            EnvVars:  []string{"APP_LANG"},
             FilePath: "/path/to/foo",
-    }
+        },
+    ),
     ```
 
 === "v3"
 
     ```go
     cli.StringFlag{
+        Name:     "key",
 		Sources: cli.ValueSourceChain{
 			Chain: []cli.ValueSource{
 				cli.EnvVar("APP_LANG"),
 				cli.File("/path/to/foo"),
-				altsrc.JSON("foo", "/path/to/"),
+				altsrc.JSON("key", "/path/to/foo"),
 			},
 		},
     }
