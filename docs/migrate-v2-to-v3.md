@@ -47,11 +47,9 @@ Shell command to find them all: `fgrep -rl github.com/urfave/cli/v2 *`
 
     ```go
     cli.StringFlag{
-		Sources: cli.ValueSourceChain{
-			Chain: []cli.ValueSource{
-				cli.File("/path/to/foo"),
-			},
-		},
+        Sources: cli.NewValueSourceChain(
+            cli.File("/path/to/foo"),
+        ),
     }
     ```
 
@@ -77,11 +75,9 @@ Shell command to find them all: `fgrep -rl github.com/urfave/cli/v2 *`
 
     ```go
     cli.StringFlag{
-		Sources: cli.ValueSourceChain{
-			Chain: []cli.ValueSource{
-				cli.EnvVar("APP_LANG")
-			},
-		},
+        Sources: cli.NewValueSourceChain(
+           cli.EnvVar("APP_LANG"),
+        ),
     }
     ```
 
@@ -135,16 +131,14 @@ Shell command to find them all: `fgrep -rl github.com/urfave/cli/v2 *`
 === "v3"
 
     ```go
-    cli.StringFlag{
-        Name:     "key",
-		Sources: cli.ValueSourceChain{
-			Chain: []cli.ValueSource{
-				cli.EnvVar("APP_LANG"),
-				cli.File("/path/to/foo"),
-				altsrc.JSON("key", "/path/to/foo"),
-			},
-		},
-    }
+    &cli.StringFlag{
+        Name: "key",
+        Sources: cli.NewValueSourceChain(
+            cli.EnvVar("APP_LANG"),
+            cli.File("/path/to/foo"),
+            altsrc.JSON("key", "/path/to/foo"),
+        ),
+    },
     ```
 
 In the above case the Envs are checked first and if not found then files are looked at and then finally the `altsrc`
