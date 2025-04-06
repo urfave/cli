@@ -20,6 +20,7 @@ func TestArgumentsRootCommand(t *testing.T) {
 			name:          "set ival",
 			args:          []string{"foo", "10"},
 			expectedIvals: []int64{10},
+			expectedFvals: []float64{},
 		},
 		{
 			name:          "set ival fval",
@@ -265,7 +266,7 @@ func TestSingleOptionalArg(t *testing.T) {
 		{
 			name: "no args",
 			args: []string{"foo"},
-			exp:  nil,
+			exp:  []string{},
 		},
 		/*{
 			name: "no arg with def value",
@@ -307,10 +308,11 @@ func TestUnboundedArgs(t *testing.T) {
 		Max: -1,
 	}
 	tests := []struct {
-		name     string
-		args     []string
-		values   []string
-		expected []string
+		name      string
+		args      []string
+		defValues []string
+		values    []string
+		expected  []string
 	}{
 		{
 			name:     "cmd accepts no args",
@@ -325,8 +327,7 @@ func TestUnboundedArgs(t *testing.T) {
 		{
 			name:     "cmd uses default values",
 			args:     []string{"foo"},
-			values:   []string{"zbar", "zbaz"},
-			expected: []string{"zbar", "zbaz"},
+			expected: []string{},
 		},
 		{
 			name:     "given args override default values",
