@@ -9,7 +9,7 @@ If you find any issues not covered by this document, please post a
 comment on [the discussion](https://github.com/urfave/cli/discussions/2084) or
 consider sending a PR to help improve this guide.
 
-## Import string changed
+## New Import
 
 === "v2"
 
@@ -23,7 +23,9 @@ Check each file for this and make the change.
 
 Shell command to find them all: `fgrep -rl github.com/urfave/cli/v2 *`
 
-## FilePath
+## Sources
+
+### FilePath
 
 Change `FilePath: "XXXXX"` to `Sources: Files("XXXXX")`.
 
@@ -43,7 +45,7 @@ Change `FilePath: "XXXXX"` to `Sources: Files("XXXXX")`.
     }
     ```
 
-## EnvVars
+### EnvVars
 
 Change `EnvVars: "XXXXX"` to `Sources: EnvVars("XXXXX")`.
 
@@ -63,7 +65,9 @@ Change `EnvVars: "XXXXX"` to `Sources: EnvVars("XXXXX")`.
     }
     ```
 
-## Altsrc has been moved out of the cli library into its own repo
+### Altsrc
+
+#### Altsrc is now a dedicated module
 
 === "v2"
 
@@ -71,9 +75,9 @@ Change `EnvVars: "XXXXX"` to `Sources: EnvVars("XXXXX")`.
 
 === "v3"
 
-    `import "github.com/urfave/cli-altsrc/v3"`
+    `import altsrc "github.com/urfave/cli-altsrc/v3"`
 
-## Altsrc is now a value source for cli
+#### Altsrc is now a value source for CLI
 
 === "v2"
     
@@ -91,8 +95,7 @@ Change `EnvVars: "XXXXX"` to `Sources: EnvVars("XXXXX")`.
     }
     ```
 
-## Order of precedence of envvars, filepaths, altsrc now depends on the order in which they are defined
-
+### Order of precedence of envvars, filepaths, altsrc now depends on the order in which they are defined
 
 === "v2"
 
@@ -123,19 +126,21 @@ In the above case the Envs are checked first and if not found then files are loo
 
 ## cli.Context has been removed
 
-All functions handled previously by cli.Context have been incorporated into `cli.Command`:
+All functions handled previously by `cli.Context` have been incorporated into `cli.Command`:
 
-* Change `cli.Context.IsSet` -> `cli.Command.IsSet`
-* Change `cli.Context.NumFlags` -> `cli.Command.NumFlags`
-* Change `cli.Context.FlagNames` -> `cli.Command.FlagNames`
-* Change `cli.Context.LocalFlagNames` -> `cli.Command.LocalFlagNames`
-* Change `cli.Context.Lineage` -> `cli.Command.Lineage`
-* Change `cli.Context.Count` -> `cli.Command.Count`
-* Change `cli.Context.Value` -> `cli.Command.Value`
-* Change `cli.Context.Args` -> `cli.Command.Args`
-* Change `cli.Context.NArg` -> `cli.Command.NArg`
+| v2                           | v3                           |
+|------------------------------|------------------------------|
+| `cli.Context.IsSet`          | `cli.Command.IsSet`          |
+| `cli.Context.NumFlags`       | `cli.Command.NumFlags`       |
+| `cli.Context.FlagNames`      | `cli.Command.FlagNames`      |
+| `cli.Context.LocalFlagNames` | `cli.Command.LocalFlagNames` |
+| `cli.Context.Lineage`        | `cli.Command.Lineage`        |
+| `cli.Context.Count`          | `cli.Command.Count`          |
+| `cli.Context.Value`          | `cli.Command.Value`          |
+| `cli.Context.Args`           | `cli.Command.Args`           |
+| `cli.Context.NArg`           | `cli.Command.NArg`           |
 
-## Handler func signatures have changed
+## Handler Function Signatures Changes
 
 All handler functions now take at least 2 arguments a `context.Context` and a pointer to `Cli.Command`
 in addition to other specific args. This allows handler functions to utilize `context.Context` for
@@ -238,5 +243,46 @@ Similar messages would be shown for other funcs.
         Config: cli.TimestampConfig{
             Layouts: []string{time.RFC3339},
         },
+    }
+    ```
+
+## Authors
+
+=== "v2"
+
+    ```go
+    &cli.App{
+        Authors: []*cli.Author{
+            {Name: "Some Guy", Email: "someguy@example.com"},
+        },
+    }
+    ```
+
+=== "v3"
+
+    ```go
+    // import "net/mail"
+    &cli.Command{
+        Authors: []any{
+            mail.Address{Name: "Some Guy", Address: "someguy@example.com"},
+        },
+    }
+    ```
+
+## BashCompletion/ShellCompletion
+
+=== "v2"
+
+    ```go
+    &cli.App{
+        EnableBashCompletion: true,
+    }
+    ```
+
+=== "v3"
+
+    ```go
+    &cli.Command{
+        EnableShellCompletion: true,
     }
     ```

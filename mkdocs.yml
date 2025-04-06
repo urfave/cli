@@ -43,6 +43,7 @@ nav:
           - Full API Example: v3/examples/full-api-example.md
   - v2 Manual:
       - Getting Started: v2/getting-started.md
+      - Migrating to v3: v2/migrating-to-v3.md
       - Migrating From Older Releases: v2/migrating-from-older-releases.md
       - Examples:
           - Greet: v2/examples/greet.md
