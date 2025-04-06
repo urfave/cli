@@ -102,8 +102,6 @@ Change `EnvVars: "XXXXX"` to `Sources: EnvVars("XXXXX")`.
     ```go
     cli.StringFlag{
             EnvVars: []string{"APP_LANG"},
-    }
-    cli.StringFlag{
             FilePath: "/path/to/foo",
     }
     ```
@@ -112,13 +110,13 @@ Change `EnvVars: "XXXXX"` to `Sources: EnvVars("XXXXX")`.
 
     ```go
     cli.StringFlag{
-            Sources: cli.ValueSourceChain{
-               Chain: {
-                    EnvVars("APP_LANG"),
-                    Files("/path/to/foo"),
-                    altsrc.JSON("foo", "/path/to/"),
-               }                
-            },
+		Sources: cli.ValueSourceChain{
+			Chain: []cli.ValueSource{
+				cli.EnvVar("APP_LANG"),
+				cli.File("/path/to/foo"),
+				altsrc.JSON("foo", "/path/to/"),
+			},
+		},
     }
     ```
 
