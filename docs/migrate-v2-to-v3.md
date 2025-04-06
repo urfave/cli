@@ -41,13 +41,13 @@ Change `FilePath: "XXXXX"` to `Sources: Files("XXXXX")`.
 
     ```go
     cli.StringFlag{
-            Sources: Files("/path/to/foo"),
+            Sources: cli.Files("/path/to/foo"),
     }
     ```
 
 ### EnvVars
 
-Change `EnvVars: "XXXXX"` to `Sources: EnvVars("XXXXX")`.
+Change `EnvVars: "XXXXX"` to `Sources: cli.EnvVars("XXXXX")`.
 
 === "v2"
 
@@ -61,7 +61,7 @@ Change `EnvVars: "XXXXX"` to `Sources: EnvVars("XXXXX")`.
 
     ```go
     cli.StringFlag{
-            Sources: EnvVars("APP_LANG"),
+            Sources: cli.EnvVars("APP_LANG"),
     }
     ```
 
