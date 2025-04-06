@@ -130,13 +130,19 @@ Shell command to find them all: `fgrep -rl github.com/urfave/cli/v2 *`
 
 === "v3"
 
+    Requires to use at least `github.com/urfave/cli-altsrc/v3@v3.0.0-alpha2.0.20250227140532-11fbec4d81a7` 
+
     ```go
+    import altsrcjson "github.com/urfave/cli-altsrc/v3/json"
+    
+    // ...
+
     &cli.StringFlag{
         Name: "key",
         Sources: cli.NewValueSourceChain(
             cli.EnvVar("APP_LANG"),
             cli.File("/path/to/foo"),
-            altsrc.JSON("key", "/path/to/foo"),
+            altsrcjson.JSON("key", altsrc.StringSourcer("/path/to/foo.json")),
         ),
     },
     ```
