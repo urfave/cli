@@ -27,8 +27,6 @@ Shell command to find them all: `fgrep -rl github.com/urfave/cli/v2 *`
 
 ### FilePath
 
-Change `FilePath: "XXXXX"` to `Sources: Files("XXXXX")`.
-
 === "v2"
 
     ```go
@@ -45,9 +43,19 @@ Change `FilePath: "XXXXX"` to `Sources: Files("XXXXX")`.
     }
     ```
 
-### EnvVars
+    or 
 
-Change `EnvVars: "XXXXX"` to `Sources: cli.EnvVars("XXXXX")`.
+    ```go
+    cli.StringFlag{
+		Sources: cli.ValueSourceChain{
+			Chain: []cli.ValueSource{
+				cli.File("/path/to/foo"),
+			},
+		},
+    }
+    ```
+
+### EnvVars
 
 === "v2"
 
@@ -62,6 +70,18 @@ Change `EnvVars: "XXXXX"` to `Sources: cli.EnvVars("XXXXX")`.
     ```go
     cli.StringFlag{
             Sources: cli.EnvVars("APP_LANG"),
+    }
+    ```
+
+    or 
+
+    ```go
+    cli.StringFlag{
+		Sources: cli.ValueSourceChain{
+			Chain: []cli.ValueSource{
+				cli.EnvVar("APP_LANG")
+			},
+		},
     }
     ```
 
