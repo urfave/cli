@@ -82,9 +82,12 @@ Change `EnvVars: "XXXXX"` to `Sources: EnvVars("XXXXX")`.
 === "v2"
     
     ```go
-    altsrc.StringFlag{
-        &cli.String{....}
-    }
+    altsrc.NewStringFlag(
+        &cli.StringFlag{
+            Name:        "key",
+            Value:       "/tmp/foo",
+        },
+    ),
     ```
 
 === "v3"
