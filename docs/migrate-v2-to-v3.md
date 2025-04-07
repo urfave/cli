@@ -9,7 +9,7 @@ If you find any issues not covered by this document, please post a
 comment on [the discussion](https://github.com/urfave/cli/discussions/2084) or
 consider sending a PR to help improve this guide.
 
-## Import string changed
+## New Import
 
 === "v2"
 
@@ -23,9 +23,9 @@ Check each file for this and make the change.
 
 Shell command to find them all: `fgrep -rl github.com/urfave/cli/v2 *`
 
-## FilePath
+## Sources
 
-Change `FilePath: "XXXXX"` to `Sources: Files("XXXXX")`.
+### FilePath
 
 === "v2"
 
@@ -39,13 +39,21 @@ Change `FilePath: "XXXXX"` to `Sources: Files("XXXXX")`.
 
     ```go
     cli.StringFlag{
-            Sources: Files("/path/to/foo"),
+            Sources: cli.Files("/path/to/foo"),
     }
     ```
 
-## EnvVars
+    or 
 
-Change `EnvVars: "XXXXX"` to `Sources: EnvVars("XXXXX")`.
+    ```go
+    cli.StringFlag{
+        Sources: cli.NewValueSourceChain(
+            cli.File("/path/to/foo"),
+        ),
+    }
+    ```
+
+### EnvVars
 
 === "v2"
 
@@ -59,11 +67,23 @@ Change `EnvVars: "XXXXX"` to `Sources: EnvVars("XXXXX")`.
 
     ```go
     cli.StringFlag{
-            Sources: EnvVars("APP_LANG"),
+            Sources: cli.EnvVars("APP_LANG"),
     }
     ```
 
-## Altsrc has been moved out of the cli library into its own repo
+    or 
+
+    ```go
+    cli.StringFlag{
+        Sources: cli.NewValueSourceChain(
+           cli.EnvVar("APP_LANG"),
+        ),
+    }
+    ```
+
+### Altsrc
+
+#### Altsrc is now a dedicated module
 
 === "v2"
 
@@ -71,71 +91,83 @@ Change `EnvVars: "XXXXX"` to `Sources: EnvVars("XXXXX")`.
 
 === "v3"
 
-    `import "github.com/urfave/cli-altsrc/v3"`
+    `import altsrc "github.com/urfave/cli-altsrc/v3"`
 
-## Altsrc is now a value source for cli
+#### Altsrc is now a value source for CLI
 
 === "v2"
     
     ```go
-    altsrc.StringFlag{
-        &cli.String{....}
-    }
+    altsrc.NewStringFlag(
+        &cli.StringFlag{
+            Name:        "key",
+            Value:       "/tmp/foo",
+        },
+    ),
     ```
 
 === "v3"
     
+    Requires to use at least `github.com/urfave/cli-altsrc/v3@v3.0.0-alpha2.0.20250227140532-11fbec4d81a7`
+
     ```go
     cli.StringFlag{
-        Sources: altsrc.JSON("key", "/tmp/foo")
+        Sources: cli.NewValueSourceChain(altsrcjson.JSON("key", altsrc.StringSourcer("/path/to/foo.json"))),
     }
     ```
 
-## Order of precedence of envvars, filepaths, altsrc now depends on the order in which they are defined
-
+### Order of precedence of envvars, filepaths, altsrc now depends on the order in which they are defined
 
 === "v2"
 
     ```go
-    cli.StringFlag{
-            EnvVars: []string{"APP_LANG"},
-    }
-    cli.StringFlag{
+    altsrc.NewStringFlag(
+        &cli.StringFlag{
+            Name:     "key",
+            EnvVars:  []string{"APP_LANG"},
             FilePath: "/path/to/foo",
-    }
+        },
+    ),
     ```
 
 === "v3"
 
+    Requires to use at least `github.com/urfave/cli-altsrc/v3@v3.0.0-alpha2.0.20250227140532-11fbec4d81a7` 
+
     ```go
-    cli.StringFlag{
-            Sources: cli.ValueSourceChain{
-               Chain: {
-                    EnvVars("APP_LANG"),
-                    Files("/path/to/foo"),
-                    altsrc.JSON("foo", "/path/to/"),
-               }                
-            },
-    }
+    import altsrcjson "github.com/urfave/cli-altsrc/v3/json"
+    
+    // ...
+
+    &cli.StringFlag{
+        Name: "key",
+        Sources: cli.NewValueSourceChain(
+            cli.EnvVar("APP_LANG"),
+            cli.File("/path/to/foo"),
+            altsrcjson.JSON("key", altsrc.StringSourcer("/path/to/foo.json")),
+        ),
+    },
     ```
 
 In the above case the Envs are checked first and if not found then files are looked at and then finally the `altsrc`
 
 ## cli.Context has been removed
 
-All functions handled previously by cli.Context have been incorporated into `cli.Command`:
+All functions handled previously by `cli.Context` have been incorporated into `cli.Command`:
 
-* Change `cli.Context.IsSet` -> `cli.Command.IsSet`
-* Change `cli.Context.NumFlags` -> `cli.Command.NumFlags`
-* Change `cli.Context.FlagNames` -> `cli.Command.FlagNames`
-* Change `cli.Context.LocalFlagNames` -> `cli.Command.LocalFlagNames`
-* Change `cli.Context.Lineage` -> `cli.Command.Lineage`
-* Change `cli.Context.Count` -> `cli.Command.Count`
-* Change `cli.Context.Value` -> `cli.Command.Value`
-* Change `cli.Context.Args` -> `cli.Command.Args`
-* Change `cli.Context.NArg` -> `cli.Command.NArg`
+| v2                           | v3                           |
+|------------------------------|------------------------------|
+| `cli.Context.IsSet`          | `cli.Command.IsSet`          |
+| `cli.Context.NumFlags`       | `cli.Command.NumFlags`       |
+| `cli.Context.FlagNames`      | `cli.Command.FlagNames`      |
+| `cli.Context.LocalFlagNames` | `cli.Command.LocalFlagNames` |
+| `cli.Context.Lineage`        | `cli.Command.Lineage`        |
+| `cli.Context.Count`          | `cli.Command.Count`          |
+| `cli.Context.Value`          | `cli.Command.Value`          |
+| `cli.Context.Args`           | `cli.Command.Args`           |
+| `cli.Context.NArg`           | `cli.Command.NArg`           |
 
-## Handler func signatures have changed
+## Handler Function Signatures Changes
 
 All handler functions now take at least 2 arguments a `context.Context` and a pointer to `Cli.Command`
 in addition to other specific args. This allows handler functions to utilize `context.Context` for
@@ -238,5 +270,46 @@ Similar messages would be shown for other funcs.
         Config: cli.TimestampConfig{
             Layouts: []string{time.RFC3339},
         },
+    }
+    ```
+
+## Authors
+
+=== "v2"
+
+    ```go
+    &cli.App{
+        Authors: []*cli.Author{
+            {Name: "Some Guy", Email: "someguy@example.com"},
+        },
+    }
+    ```
+
+=== "v3"
+
+    ```go
+    // import "net/mail"
+    &cli.Command{
+        Authors: []any{
+            mail.Address{Name: "Some Guy", Address: "someguy@example.com"},
+        },
+    }
+    ```
+
+## BashCompletion/ShellCompletion
+
+=== "v2"
+
+    ```go
+    &cli.App{
+        EnableBashCompletion: true,
+    }
+    ```
+
+=== "v3"
+
+    ```go
+    &cli.Command{
+        EnableShellCompletion: true,
     }
     ```
