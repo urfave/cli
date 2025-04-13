@@ -10,36 +10,47 @@ import (
 
 func TestArgumentsRootCommand(t *testing.T) {
 	tests := []struct {
-		name          string
-		args          []string
-		expectedIvals []int64
-		expectedFvals []float64
-		errStr        string
+		name           string
+		args           []string
+		expectedIvals  []int64
+		expectedUivals []uint64
+		expectedFvals  []float64
+		errStr         string
 	}{
 		{
-			name:          "set ival",
-			args:          []string{"foo", "10"},
-			expectedIvals: []int64{10},
-			expectedFvals: []float64{},
+			name:           "set ival",
+			args:           []string{"foo", "10"},
+			expectedIvals:  []int64{10},
+			expectedUivals: []uint64{},
 		},
 		{
-			name:          "set ival fval",
-			args:          []string{"foo", "12", "10.1"},
-			expectedIvals: []int64{12},
-			expectedFvals: []float64{10.1},
+			name:           "set ival uival",
+			args:           []string{"foo", "-10", "11"},
+			expectedIvals:  []int64{-10},
+			expectedUivals: []uint64{11},
+			expectedFvals:  []float64{},
 		},
 		{
-			name:          "set ival multu fvals",
-			args:          []string{"foo", "13", "10.1", "11.09"},
-			expectedIvals: []int64{13},
-			expectedFvals: []float64{10.1, 11.09},
+			name:           "set ival uival fval",
+			args:           []string{"foo", "-12", "14", "10.1"},
+			expectedIvals:  []int64{-12},
+			expectedUivals: []uint64{14},
+			expectedFvals:  []float64{10.1},
 		},
 		{
-			name:          "set fvals beyond max",
-			args:          []string{"foo", "13", "10.1", "11.09", "12.1"},
-			expectedIvals: []int64{13},
-			expectedFvals: []float64{10.1, 11.09},
-			errStr:        "No help topic for '12.1'",
+			name:           "set ival uival multu fvals",
+			args:           []string{"foo", "-13", "12", "10.1", "11.09"},
+			expectedIvals:  []int64{-13},
+			expectedUivals: []uint64{12},
+			expectedFvals:  []float64{10.1, 11.09},
+		},
+		{
+			name:           "set fvals beyond max",
+			args:           []string{"foo", "13", "10", "10.1", "11.09", "12.1"},
+			expectedIvals:  []int64{13},
+			expectedUivals: []uint64{10},
+			expectedFvals:  []float64{10.1, 11.09},
+			errStr:         "No help topic for '12.1'",
 		},
 	}
 
@@ -47,6 +58,7 @@ func TestArgumentsRootCommand(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			cmd := buildMinimalTestCommand()
 			var ivals []int64
+			var uivals []uint64
 			var fvals []float64
 			cmd.Arguments = []Argument{
 				&IntArgs{
@@ -54,6 +66,12 @@ func TestArgumentsRootCommand(t *testing.T) {
 					Min:         1,
 					Max:         1,
 					Destination: &ivals,
+				},
+				&UintArgs{
+					Name:        "uia",
+					Min:         1,
+					Max:         1,
+					Destination: &uivals,
 				},
 				&FloatArgs{
 					Name:        "fa",
@@ -72,8 +90,8 @@ func TestArgumentsRootCommand(t *testing.T) {
 			}
 			r.Equal(test.expectedIvals, ivals)
 			r.Equal(test.expectedIvals, cmd.IntArgs("ia"))
-			r.Equal(test.expectedFvals, fvals)
 			if test.expectedFvals != nil {
+				r.Equal(test.expectedFvals, fvals)
 				r.Equal(test.expectedFvals, cmd.FloatArgs("fa"))
 			} else {
 				r.Equal([]float64{}, cmd.FloatArgs("fa"))
@@ -181,9 +199,11 @@ func TestArgumentsSubcommand(t *testing.T) {
 			} else {
 				if test.expectedSvals != nil {
 					r.Equal(test.expectedSvals, svals)
+					r.Equal(test.expectedSvals, cmd.Commands[0].StringArgs("sa"))
 				}
 				if test.expectedTVals != nil {
 					r.Equal(test.expectedTVals, tvals)
+					r.Equal(test.expectedTVals, cmd.Commands[0].TimestampArgs("ta"))
 				}
 				r.Equal(test.expectedIval, ival)
 			}
