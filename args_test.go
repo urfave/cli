@@ -22,6 +22,7 @@ func TestArgumentsRootCommand(t *testing.T) {
 			args:           []string{"foo", "10"},
 			expectedIvals:  []int64{10},
 			expectedUivals: []uint64{},
+			expectedFvals:  []float64{},
 		},
 		{
 			name:           "set ival uival",
@@ -90,12 +91,10 @@ func TestArgumentsRootCommand(t *testing.T) {
 			}
 			r.Equal(test.expectedIvals, ivals)
 			r.Equal(test.expectedIvals, cmd.IntArgs("ia"))
-			if test.expectedFvals != nil {
+			r.Equal(test.expectedFvals, cmd.FloatArgs("fa"))
+			/*if test.expectedFvals != nil {
 				r.Equal(test.expectedFvals, fvals)
-				r.Equal(test.expectedFvals, cmd.FloatArgs("fa"))
-			} else {
-				r.Equal([]float64{}, cmd.FloatArgs("fa"))
-			}
+			}*/
 		})
 	}
 
@@ -115,6 +114,22 @@ func TestArgumentsRootCommand(t *testing.T) {
 
 	   require.NoError(t, cmd.Run(context.Background(), []string{"foo", "10"}))
 	*/
+}
+
+func TestArgumentsInvalidType(t *testing.T) {
+	cmd := buildMinimalTestCommand()
+	cmd.Arguments = []Argument{
+		&IntArgs{
+			Name: "ia",
+			Min:  1,
+			Max:  1,
+		},
+	}
+	r := require.New(t)
+	r.Nil(cmd.StringArgs("ia"))
+	r.Nil(cmd.FloatArgs("ia"))
+	r.Nil(cmd.UintArgs("ia"))
+	r.Nil(cmd.TimestampArgs("ia"))
 }
 
 func TestArgumentsSubcommand(t *testing.T) {
