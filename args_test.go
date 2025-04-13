@@ -92,6 +92,7 @@ func TestArgumentsRootCommand(t *testing.T) {
 			r.Equal(test.expectedIvals, ivals)
 			r.Equal(test.expectedIvals, cmd.IntArgs("ia"))
 			r.Equal(test.expectedFvals, cmd.FloatArgs("fa"))
+			r.Equal(test.expectedUivals, cmd.UintArgs("uia"))
 			/*if test.expectedFvals != nil {
 				r.Equal(test.expectedFvals, fvals)
 			}*/
@@ -130,6 +131,7 @@ func TestArgumentsInvalidType(t *testing.T) {
 	r.Nil(cmd.FloatArgs("ia"))
 	r.Nil(cmd.UintArgs("ia"))
 	r.Nil(cmd.TimestampArgs("ia"))
+	r.Nil(cmd.IntArgs("uia"))
 }
 
 func TestArgumentsSubcommand(t *testing.T) {
