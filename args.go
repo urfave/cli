@@ -197,6 +197,7 @@ func (c *Command) StringArgs(name string) []string {
 
 func (c *Command) FloatArgs(name string) []float64 {
 	val := c.getArgValue(name)
+	tracef("command %s found args %s %v", c.Name, name, val)
 	if a, ok := val.([]float64); ok {
 		return a
 	}
