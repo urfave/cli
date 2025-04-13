@@ -160,7 +160,10 @@ func (a *ArgumentsBase[T, C, VC]) Parse(s []string) ([]string, error) {
 }
 
 func (a *ArgumentsBase[T, C, VC]) Get() any {
-	return a.values
+	if a.values != nil {
+		return a.values
+	}
+	return []T{}
 }
 
 type (
@@ -172,67 +175,54 @@ type (
 	UintArgs      = ArgumentsBase[uint64, IntegerConfig, uintValue]
 )
 
-func (c *Command) StringArgs(name string) []string {
+func (c *Command) getArgValue(name string) any {
+	tracef("command %s looking for args %s", c.Name, name)
 	for _, arg := range c.Arguments {
 		if arg.HasName(name) {
-			if a, ok := arg.Get().([]string); ok {
-				return a
-			} else {
-				return nil
-			}
+			tracef("command %s found args %s", c.Name, name)
+			return arg.Get()
 		}
+	}
+	tracef("command %s did not find args %s", c.Name, name)
+	return nil
+}
+
+func (c *Command) StringArgs(name string) []string {
+	val := c.getArgValue(name)
+	if a, ok := val.([]string); ok {
+		return a
 	}
 	return nil
 }
 
 func (c *Command) FloatArgs(name string) []float64 {
-	for _, arg := range c.Arguments {
-		if arg.HasName(name) {
-			if a, ok := arg.Get().([]float64); ok {
-				return a
-			} else {
-				return nil
-			}
-		}
+	val := c.getArgValue(name)
+	if a, ok := val.([]float64); ok {
+		return a
 	}
 	return nil
 }
 
 func (c *Command) IntArgs(name string) []int64 {
-	for _, arg := range c.Arguments {
-		if arg.HasName(name) {
-			if a, ok := arg.Get().([]int64); ok {
-				return a
-			} else {
-				return nil
-			}
-		}
+	val := c.getArgValue(name)
+	if a, ok := val.([]int64); ok {
+		return a
 	}
 	return nil
 }
 
 func (c *Command) UintArgs(name string) []uint64 {
-	for _, arg := range c.Arguments {
-		if arg.HasName(name) {
-			if a, ok := arg.Get().([]uint64); ok {
-				return a
-			} else {
-				return nil
-			}
-		}
+	val := c.getArgValue(name)
+	if a, ok := val.([]uint64); ok {
+		return a
 	}
 	return nil
 }
 
 func (c *Command) TimestampArgs(name string) []time.Time {
-	for _, arg := range c.Arguments {
-		if arg.HasName(name) {
-			if a, ok := arg.Get().([]time.Time); ok {
-				return a
-			} else {
-				return nil
-			}
-		}
+	val := c.getArgValue(name)
+	if a, ok := val.([]time.Time); ok {
+		return a
 	}
 	return nil
 }
