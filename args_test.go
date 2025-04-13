@@ -25,6 +25,14 @@ func TestArgumentsRootCommand(t *testing.T) {
 			expectedFvals:  []float64{},
 		},
 		{
+			name:           "set invalid ival",
+			args:           []string{"foo", "10.0"},
+			expectedIvals:  []int64{},
+			expectedUivals: []uint64{},
+			expectedFvals:  []float64{},
+			errStr:         "strconv.ParseInt: parsing \"10.0\": invalid syntax",
+		},
+		{
 			name:           "set ival uival",
 			args:           []string{"foo", "-10", "11"},
 			expectedIvals:  []int64{-10},
@@ -88,8 +96,9 @@ func TestArgumentsRootCommand(t *testing.T) {
 
 			if test.errStr != "" {
 				r.ErrorContains(err, test.errStr)
+			} else {
+				r.Equal(test.expectedIvals, ivals)
 			}
-			r.Equal(test.expectedIvals, ivals)
 			r.Equal(test.expectedIvals, cmd.IntArgs("ia"))
 			r.Equal(test.expectedFvals, cmd.FloatArgs("fa"))
 			r.Equal(test.expectedUivals, cmd.UintArgs("uia"))
