@@ -307,32 +307,31 @@ func TestSingleOptionalArg(t *testing.T) {
 		name     string
 		args     []string
 		argValue string
-		exp      []string
+		exp      string
 	}{
 		{
 			name: "no args",
 			args: []string{"foo"},
-			exp:  []string{},
+			exp:  "",
 		},
-		/*{
-			name: "no arg with def value",
-			args: []string{"foo"},
-			exp:  []string{"bar"},
-		},*/
+		{
+			name:     "no arg with def value",
+			args:     []string{"foo"},
+			argValue: "bar",
+			exp:      "bar",
+		},
 		{
 			name: "one arg",
 			args: []string{"foo", "zbar"},
-			exp:  []string{"zbar"},
+			exp:  "zbar",
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			cmd := buildMinimalTestCommand()
-			var s1 []string
-			arg := &StringArgs{
-				Min:         0,
-				Max:         1,
+			var s1 string
+			arg := &StringArg{
 				Value:       test.argValue,
 				Destination: &s1,
 			}

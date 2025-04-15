@@ -84,6 +84,65 @@ var AnyArguments = []Argument{
 	},
 }
 
+type ArgumentBase[T any, C any, VC ValueCreator[T, C]] struct {
+	Name        string `json:"name"`      // the name of this argument
+	Value       T      `json:"value"`     // the default value of this argument
+	Destination *T     `json:"-"`         // the destination point for this argument
+	UsageText   string `json:"usageText"` // the usage text to show
+	Config      C      `json:"config"`    // config for this argument similar to Flag Config
+
+	value *T
+}
+
+func (a *ArgumentBase[T, C, VC]) HasName(s string) bool {
+	return s == a.Name
+}
+
+func (a *ArgumentBase[T, C, VC]) Usage() string {
+	if a.UsageText != "" {
+		return a.UsageText
+	}
+
+	usageFormat := "%[1]s"
+	return fmt.Sprintf(usageFormat, a.Name)
+}
+
+func (a *ArgumentBase[T, C, VC]) Parse(s []string) ([]string, error) {
+	tracef("calling arg%[1] parse with args %[2]", a.Name, s)
+
+	var vc VC
+	var t T
+	value := vc.Create(a.Value, &t, a.Config)
+	a.value = &t
+
+	tracef("attempting arg%[1] parse", &a.Name)
+	if len(s) > 0 {
+		if err := value.Set(s[0]); err != nil {
+			return s, err
+		}
+		*a.value = value.Get().(T)
+		tracef("set arg%[1] one value", a.Name, *a.value)
+	}
+
+	if a.Destination != nil {
+		tracef("setting destination")
+		*a.Destination = *a.value
+	}
+
+	if len(s) > 0 {
+		return s[1:], nil
+	}
+	return s, nil
+}
+
+func (a *ArgumentBase[T, C, VC]) Get() any {
+	if a.value != nil {
+		return *a.value
+	}
+	return a.Value
+}
+
+// ArgumentsBase is a base type for slice arguments
 type ArgumentsBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Name        string `json:"name"`      // the name of this argument
 	Value       T      `json:"value"`     // the default value of this argument
@@ -167,10 +226,16 @@ func (a *ArgumentsBase[T, C, VC]) Get() any {
 }
 
 type (
+	FloatArg      = ArgumentBase[float64, NoConfig, floatValue]
+	IntArg        = ArgumentBase[int64, IntegerConfig, intValue]
+	StringArg     = ArgumentBase[string, StringConfig, stringValue]
+	StringMapArgs = ArgumentBase[map[string]string, StringConfig, StringMap]
+	TimestampArg  = ArgumentBase[time.Time, TimestampConfig, timestampValue]
+	UintArg       = ArgumentBase[uint64, IntegerConfig, uintValue]
+
 	FloatArgs     = ArgumentsBase[float64, NoConfig, floatValue]
 	IntArgs       = ArgumentsBase[int64, IntegerConfig, intValue]
 	StringArgs    = ArgumentsBase[string, StringConfig, stringValue]
-	StringMapArgs = ArgumentsBase[map[string]string, StringConfig, StringMap]
 	TimestampArgs = ArgumentsBase[time.Time, TimestampConfig, timestampValue]
 	UintArgs      = ArgumentsBase[uint64, IntegerConfig, uintValue]
 )
@@ -187,6 +252,14 @@ func (c *Command) getArgValue(name string) any {
 	return nil
 }
 
+func (c *Command) StringArg(name string) string {
+	val := c.getArgValue(name)
+	if a, ok := val.(string); ok {
+		return a
+	}
+	return ""
+}
+
 func (c *Command) StringArgs(name string) []string {
 	val := c.getArgValue(name)
 	if a, ok := val.([]string); ok {
@@ -195,13 +268,28 @@ func (c *Command) StringArgs(name string) []string {
 	return nil
 }
 
+func (c *Command) FloatArg(name string) float64 {
+	val := c.getArgValue(name)
+	if a, ok := val.(float64); ok {
+		return a
+	}
+	return 0
+}
+
 func (c *Command) FloatArgs(name string) []float64 {
 	val := c.getArgValue(name)
-	tracef("command %s found args %s %v", c.Name, name, val)
 	if a, ok := val.([]float64); ok {
 		return a
 	}
 	return nil
+}
+
+func (c *Command) IntArg(name string) int64 {
+	val := c.getArgValue(name)
+	if a, ok := val.(int64); ok {
+		return a
+	}
+	return 0
 }
 
 func (c *Command) IntArgs(name string) []int64 {
@@ -212,12 +300,28 @@ func (c *Command) IntArgs(name string) []int64 {
 	return nil
 }
 
+func (c *Command) UintArg(name string) uint64 {
+	val := c.getArgValue(name)
+	if a, ok := val.(uint64); ok {
+		return a
+	}
+	return 0
+}
+
 func (c *Command) UintArgs(name string) []uint64 {
 	val := c.getArgValue(name)
 	if a, ok := val.([]uint64); ok {
 		return a
 	}
 	return nil
+}
+
+func (c *Command) TimestampArg(name string) time.Time {
+	val := c.getArgValue(name)
+	if a, ok := val.(time.Time); ok {
+		return a
+	}
+	return time.Time{}
 }
 
 func (c *Command) TimestampArgs(name string) []time.Time {
