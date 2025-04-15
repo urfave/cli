@@ -355,7 +355,7 @@ func TestCommand_OnUsageError_hasCommandContext(t *testing.T) {
 	cmd := &Command{
 		Name: "bar",
 		Flags: []Flag{
-			&IntFlag{Name: "flag"},
+			&Int64Flag{Name: "flag"},
 		},
 		OnUsageError: func(_ context.Context, cmd *Command, err error, _ bool) error {
 			return fmt.Errorf("intercepted in %s: %s", cmd.Name, err.Error())
@@ -370,7 +370,7 @@ func TestCommand_OnUsageError_WithWrongFlagValue(t *testing.T) {
 	cmd := &Command{
 		Name: "bar",
 		Flags: []Flag{
-			&IntFlag{Name: "flag"},
+			&Int64Flag{Name: "flag"},
 		},
 		OnUsageError: func(_ context.Context, _ *Command, err error, _ bool) error {
 			assert.ErrorContains(t, err, "strconv.ParseInt: parsing \"wrong\"")
@@ -391,7 +391,7 @@ func TestCommand_OnUsageError_WithSubcommand(t *testing.T) {
 			},
 		},
 		Flags: []Flag{
-			&IntFlag{Name: "flag"},
+			&Int64Flag{Name: "flag"},
 		},
 		OnUsageError: func(_ context.Context, _ *Command, err error, _ bool) error {
 			assert.ErrorContains(t, err, "parsing \"wrong\": invalid syntax")
@@ -478,7 +478,7 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 				Name:                  "bar",
 				Usage:                 "this is for testing",
 				Flags: []Flag{
-					&IntFlag{
+					&Int64Flag{
 						Name:  "number",
 						Usage: "A number to parse",
 					},
@@ -558,7 +558,7 @@ func TestCommand_VisibleFlagCategories(t *testing.T) {
 				Name:   "strd1", // no category set and also hidden
 				Hidden: true,
 			},
-			&IntFlag{
+			&Int64Flag{
 				Name:     "intd",
 				Aliases:  []string{"altd1", "altd2"},
 				Category: "cat1",
@@ -1253,11 +1253,11 @@ func TestCommand_ParseSliceFlags(t *testing.T) {
 			{
 				Name: "cmd",
 				Flags: []Flag{
-					&IntSliceFlag{Name: "p", Value: []int64{}, Usage: "set one or more ip addr"},
+					&Int64SliceFlag{Name: "p", Value: []int64{}, Usage: "set one or more ip addr"},
 					&StringSliceFlag{Name: "ip", Value: []string{}, Usage: "set one or more ports to open"},
 				},
 				Action: func(_ context.Context, cmd *Command) error {
-					parsedIntSlice = cmd.IntSlice("p")
+					parsedIntSlice = cmd.Int64Slice("p")
 					parsedStringSlice = cmd.StringSlice("ip")
 					return nil
 				},
@@ -1281,11 +1281,11 @@ func TestCommand_ParseSliceFlagsWithMissingValue(t *testing.T) {
 			{
 				Name: "cmd",
 				Flags: []Flag{
-					&IntSliceFlag{Name: "a", Usage: "set numbers"},
+					&Int64SliceFlag{Name: "a", Usage: "set numbers"},
 					&StringSliceFlag{Name: "str", Usage: "set strings"},
 				},
 				Action: func(_ context.Context, cmd *Command) error {
-					parsedIntSlice = cmd.IntSlice("a")
+					parsedIntSlice = cmd.Int64Slice("a")
 					parsedStringSlice = cmd.StringSlice("str")
 					return nil
 				},
@@ -2301,7 +2301,7 @@ func TestCommand_Run_SubcommandDoesNotOverwriteErrorFromBefore(t *testing.T) {
 func TestCommand_OnUsageError_WithWrongFlagValue_ForSubcommand(t *testing.T) {
 	cmd := &Command{
 		Flags: []Flag{
-			&IntFlag{Name: "flag"},
+			&Int64Flag{Name: "flag"},
 		},
 		OnUsageError: func(_ context.Context, _ *Command, err error, isSubcommand bool) error {
 			assert.False(t, isSubcommand, "Expect subcommand")
@@ -2455,7 +2455,7 @@ func TestHandleExitCoder_Custom(t *testing.T) {
 func TestShellCompletionForIncompleteFlags(t *testing.T) {
 	cmd := &Command{
 		Flags: []Flag{
-			&IntFlag{
+			&Int64Flag{
 				Name: "test-completion",
 			},
 		},
@@ -2808,7 +2808,7 @@ func TestFlagAction(t *testing.T) {
 							return err
 						},
 					},
-					&IntFlag{
+					&Int64Flag{
 						Name:  "f_int",
 						Local: true,
 						Action: func(_ context.Context, cmd *Command, v int64) error {
@@ -2819,7 +2819,7 @@ func TestFlagAction(t *testing.T) {
 							return err
 						},
 					},
-					&IntSliceFlag{
+					&Int64SliceFlag{
 						Name:  "f_int_slice",
 						Local: true,
 						Action: func(_ context.Context, cmd *Command, v []int64) error {
@@ -2846,7 +2846,7 @@ func TestFlagAction(t *testing.T) {
 							return err
 						},
 					},
-					&UintFlag{
+					&Uint64Flag{
 						Name:  "f_uint",
 						Local: true,
 						Action: func(_ context.Context, cmd *Command, v uint64) error {
@@ -2906,7 +2906,7 @@ func TestPersistentFlag(t *testing.T) {
 					return nil
 				},
 			},
-			&IntSliceFlag{
+			&Int64SliceFlag{
 				Name:        "persistentCommandSliceFlag",
 				Destination: &persistentCommandSliceInt,
 			},
@@ -2914,7 +2914,7 @@ func TestPersistentFlag(t *testing.T) {
 				Name:  "persistentCommandFloatSliceFlag",
 				Value: []float64{11.3, 12.5},
 			},
-			&IntFlag{
+			&Int64Flag{
 				Name:        "persistentCommandOverrideFlag",
 				Destination: &appOverrideInt,
 			},
@@ -2928,16 +2928,16 @@ func TestPersistentFlag(t *testing.T) {
 			{
 				Name: "cmd",
 				Flags: []Flag{
-					&IntFlag{
+					&Int64Flag{
 						Name:        "cmdFlag",
 						Destination: &topInt,
 						Local:       true,
 					},
-					&IntFlag{
+					&Int64Flag{
 						Name:        "cmdPersistentFlag",
 						Destination: &topPersistentInt,
 					},
-					&IntFlag{
+					&Int64Flag{
 						Name:        "paof",
 						Aliases:     []string{"persistentCommandOverrideFlag"},
 						Destination: &appOverrideCmdInt,
@@ -2948,7 +2948,7 @@ func TestPersistentFlag(t *testing.T) {
 					{
 						Name: "subcmd",
 						Flags: []Flag{
-							&IntFlag{
+							&Int64Flag{
 								Name:        "cmdFlag",
 								Destination: &subCommandInt,
 								Local:       true,
@@ -3080,7 +3080,7 @@ func TestRequiredFlagDelayed(t *testing.T) {
 			{
 				Name: "sub",
 				Flags: []Flag{
-					&IntFlag{
+					&Int64Flag{
 						Name:     "if",
 						Required: true,
 					},
@@ -3169,7 +3169,7 @@ func TestFlagDuplicates(t *testing.T) {
 						Name:     "sflag",
 						OnlyOnce: true,
 					},
-					&IntSliceFlag{
+					&Int64SliceFlag{
 						Name: "isflag",
 					},
 					&FloatSliceFlag{
@@ -3180,7 +3180,7 @@ func TestFlagDuplicates(t *testing.T) {
 						Name:     "bifflag",
 						OnlyOnce: true,
 					},
-					&IntFlag{
+					&Int64Flag{
 						Name: "iflag",
 					},
 				},
@@ -3261,7 +3261,7 @@ func TestShorthandCommand(t *testing.T) {
 func TestCommand_Int(t *testing.T) {
 	pCmd := &Command{
 		Flags: []Flag{
-			&IntFlag{
+			&Int64Flag{
 				Name:  "myflag",
 				Value: 12,
 			},
@@ -3269,7 +3269,7 @@ func TestCommand_Int(t *testing.T) {
 	}
 	cmd := &Command{
 		Flags: []Flag{
-			&IntFlag{
+			&Int64Flag{
 				Name:  "top-flag",
 				Value: 13,
 			},
@@ -3277,14 +3277,14 @@ func TestCommand_Int(t *testing.T) {
 		parent: pCmd,
 	}
 
-	require.Equal(t, int64(12), cmd.Int("myflag"))
-	require.Equal(t, int64(13), cmd.Int("top-flag"))
+	require.Equal(t, int64(12), cmd.Int64("myflag"))
+	require.Equal(t, int64(13), cmd.Int64("top-flag"))
 }
 
 func TestCommand_Uint(t *testing.T) {
 	pCmd := &Command{
 		Flags: []Flag{
-			&UintFlag{
+			&Uint64Flag{
 				Name:  "myflagUint",
 				Value: 13,
 			},
@@ -3292,7 +3292,7 @@ func TestCommand_Uint(t *testing.T) {
 	}
 	cmd := &Command{
 		Flags: []Flag{
-			&UintFlag{
+			&Uint64Flag{
 				Name:  "top-flag",
 				Value: 14,
 			},
@@ -3300,8 +3300,8 @@ func TestCommand_Uint(t *testing.T) {
 		parent: pCmd,
 	}
 
-	require.Equal(t, uint64(13), cmd.Uint("myflagUint"))
-	require.Equal(t, uint64(14), cmd.Uint("top-flag"))
+	require.Equal(t, uint64(13), cmd.Uint64("myflagUint"))
+	require.Equal(t, uint64(14), cmd.Uint64("top-flag"))
 }
 
 func TestCommand_Float64(t *testing.T) {
@@ -3442,7 +3442,7 @@ func TestCommand_Value(t *testing.T) {
 	subCmd := &Command{
 		Name: "test",
 		Flags: []Flag{
-			&IntFlag{
+			&Int64Flag{
 				Name:    "myflag",
 				Usage:   "doc",
 				Aliases: []string{"m", "mf"},
@@ -3455,7 +3455,7 @@ func TestCommand_Value(t *testing.T) {
 
 	cmd := &Command{
 		Flags: []Flag{
-			&IntFlag{
+			&Int64Flag{
 				Name:    "top-flag",
 				Usage:   "doc",
 				Aliases: []string{"t", "tf"},
@@ -3675,7 +3675,7 @@ func TestCommand_NumFlags(t *testing.T) {
 func TestCommand_Set(t *testing.T) {
 	cmd := &Command{
 		Flags: []Flag{
-			&IntFlag{
+			&Int64Flag{
 				Name:  "int",
 				Value: 5,
 			},
@@ -3685,7 +3685,7 @@ func TestCommand_Set(t *testing.T) {
 
 	r.False(cmd.IsSet("int"))
 	r.NoError(cmd.Set("int", "1"))
-	r.Equal(int64(1), cmd.Int("int"))
+	r.Equal(int64(1), cmd.Int64("int"))
 	r.True(cmd.IsSet("int"))
 }
 
@@ -4151,7 +4151,7 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 			cmd.Reader, err = os.Open(fp.Name())
 			r.NoError(err)
 			cmd.Flags = []Flag{
-				&IntFlag{
+				&Int64Flag{
 					Name: "if",
 				},
 				&FloatFlag{
@@ -4164,7 +4164,7 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 
 			actionCalled := false
 			cmd.Action = func(ctx context.Context, c *Command) error {
-				r.Equal(tst.expectedInt, c.Int("if"))
+				r.Equal(tst.expectedInt, c.Int64("if"))
 				r.Equal(tst.expectedFloat, c.Float("ff"))
 				r.Equal(tst.expectedSlice, c.StringSlice("ssf"))
 				actionCalled = true
@@ -4189,15 +4189,15 @@ func TestZeroValueCommand(t *testing.T) {
 
 func TestCommandInvalidName(t *testing.T) {
 	var cmd Command
-	assert.Equal(t, int64(0), cmd.Int("foo"))
-	assert.Equal(t, uint64(0), cmd.Uint("foo"))
+	assert.Equal(t, int64(0), cmd.Int64("foo"))
+	assert.Equal(t, uint64(0), cmd.Uint64("foo"))
 	assert.Equal(t, float64(0), cmd.Float("foo"))
 	assert.Equal(t, "", cmd.String("foo"))
 	assert.Equal(t, time.Time{}, cmd.Timestamp("foo"))
 	assert.Equal(t, time.Duration(0), cmd.Duration("foo"))
 
-	assert.Equal(t, []int64(nil), cmd.IntSlice("foo"))
-	assert.Equal(t, []uint64(nil), cmd.UintSlice("foo"))
+	assert.Equal(t, []int64(nil), cmd.Int64Slice("foo"))
+	assert.Equal(t, []uint64(nil), cmd.Uint64Slice("foo"))
 	assert.Equal(t, []float64(nil), cmd.FloatSlice("foo"))
 	assert.Equal(t, []string(nil), cmd.StringSlice("foo"))
 }
@@ -4501,7 +4501,7 @@ func TestSliceStringFlagParsing(t *testing.T) {
 func TestJSONExportCommand(t *testing.T) {
 	cmd := buildExtendedTestCommand()
 	cmd.Arguments = []Argument{
-		&IntArg{
+		&Int64Arg{
 			Name: "fooi",
 		},
 	}

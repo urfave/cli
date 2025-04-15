@@ -15,7 +15,7 @@ func TestArgumentsRootCommand(t *testing.T) {
 	var fval float64
 	var fvals []float64
 	cmd.Arguments = []Argument{
-		&IntArg{
+		&Int64Arg{
 			Name:        "ia",
 			Min:         1,
 			Max:         1,
@@ -49,7 +49,7 @@ func TestArgumentsRootCommand(t *testing.T) {
 		&StringArg{
 			Name: "sa",
 		},
-		&UintArg{
+		&Uint64Arg{
 			Name: "ua",
 			Min:  2,
 			Max:  1, // max is less than min
@@ -68,7 +68,7 @@ func TestArgumentsSubcommand(t *testing.T) {
 		{
 			Name: "subcmd",
 			Flags: []Flag{
-				&IntFlag{
+				&Int64Flag{
 					Name:        "foo",
 					Value:       10,
 					Destination: &ifval,
@@ -114,7 +114,7 @@ func TestArgumentsSubcommand(t *testing.T) {
 }
 
 func TestArgsUsage(t *testing.T) {
-	arg := &IntArg{
+	arg := &Int64Arg{
 		Name: "ia",
 		Min:  0,
 		Max:  1,

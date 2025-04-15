@@ -27,6 +27,20 @@ application:
 VARIABLES
 
 var (
+	NewIntSlice   = NewSliceBase[int, IntegerConfig, intValue[int]]
+	NewInt8Slice  = NewSliceBase[int8, IntegerConfig, intValue[int8]]
+	NewInt16Slice = NewSliceBase[int16, IntegerConfig, intValue[int16]]
+	NewInt32Slice = NewSliceBase[int32, IntegerConfig, intValue[int32]]
+	NewInt64Slice = NewSliceBase[int64, IntegerConfig, intValue[int64]]
+)
+var (
+	NewUintSlice   = NewSliceBase[uint, IntegerConfig, uintValue[uint]]
+	NewUint8Slice  = NewSliceBase[uint8, IntegerConfig, uintValue[uint8]]
+	NewUint16Slice = NewSliceBase[uint16, IntegerConfig, uintValue[uint16]]
+	NewUint32Slice = NewSliceBase[uint32, IntegerConfig, uintValue[uint32]]
+	NewUint64Slice = NewSliceBase[uint64, IntegerConfig, uintValue[uint64]]
+)
+var (
 	SuggestFlag               SuggestFlagFunc    = suggestFlag
 	SuggestCommand            SuggestCommandFunc = suggestCommand
 	SuggestDidYouMeanTemplate string             = suggestDidYouMeanTemplate
@@ -79,10 +93,8 @@ end
 {{ range $v := .Completions }}{{ $v }}
 {{ end }}`
 var NewFloatSlice = NewSliceBase[float64, NoConfig, floatValue]
-var NewIntSlice = NewSliceBase[int64, IntegerConfig, intValue]
 var NewStringMap = NewMapBase[string, StringConfig, stringValue]
 var NewStringSlice = NewSliceBase[string, StringConfig, stringValue]
-var NewUintSlice = NewSliceBase[uint64, IntegerConfig, uintValue]
 var OsExiter = os.Exit
     OsExiter is the function used when the app exits. If not set defaults to
     os.Exit.
@@ -496,10 +508,38 @@ func (cmd *Command) Generic(name string) Value
 func (cmd *Command) HasName(name string) bool
     HasName returns true if Command.Name matches given name
 
-func (cmd *Command) Int(name string) int64
+func (cmd *Command) Int(name string) int
     Int looks up the value of a local Int64Flag, returns 0 if not found
 
-func (cmd *Command) IntSlice(name string) []int64
+func (cmd *Command) Int16(name string) int16
+    Int16 looks up the value of a local Int16Flag, returns 0 if not found
+
+func (cmd *Command) Int16Slice(name string) []int16
+    Int16Slice looks up the value of a local Int16SliceFlag, returns nil if not
+    found
+
+func (cmd *Command) Int32(name string) int32
+    Int32 looks up the value of a local Int32Flag, returns 0 if not found
+
+func (cmd *Command) Int32Slice(name string) []int32
+    Int32Slice looks up the value of a local Int32SliceFlag, returns nil if not
+    found
+
+func (cmd *Command) Int64(name string) int64
+    Int64 looks up the value of a local Int64Flag, returns 0 if not found
+
+func (cmd *Command) Int64Slice(name string) []int64
+    Int64Slice looks up the value of a local Int64SliceFlag, returns nil if not
+    found
+
+func (cmd *Command) Int8(name string) int8
+    Int8 looks up the value of a local Int8Flag, returns 0 if not found
+
+func (cmd *Command) Int8Slice(name string) []int8
+    Int8Slice looks up the value of a local Int8SliceFlag, returns nil if not
+    found
+
+func (cmd *Command) IntSlice(name string) []int
     IntSlice looks up the value of a local IntSliceFlag, returns nil if not
     found
 
@@ -550,10 +590,38 @@ func (cmd *Command) ToFishCompletion() (string, error)
     ToFishCompletion creates a fish completion string for the `*App` The
     function errors if either parsing or writing of the string fails.
 
-func (cmd *Command) Uint(name string) uint64
+func (cmd *Command) Uint(name string) uint
     Uint looks up the value of a local Uint64Flag, returns 0 if not found
 
-func (cmd *Command) UintSlice(name string) []uint64
+func (cmd *Command) Uint16(name string) uint16
+    Uint16 looks up the value of a local Uint16Flag, returns 0 if not found
+
+func (cmd *Command) Uint16Slice(name string) []uint16
+    Uint16Slice looks up the value of a local Uint16SliceFlag, returns nil if
+    not found
+
+func (cmd *Command) Uint32(name string) uint32
+    Uint32 looks up the value of a local Uint32Flag, returns 0 if not found
+
+func (cmd *Command) Uint32Slice(name string) []uint32
+    Uint32Slice looks up the value of a local Uint32SliceFlag, returns nil if
+    not found
+
+func (cmd *Command) Uint64(name string) uint64
+    Uint64 looks up the value of a local Uint64Flag, returns 0 if not found
+
+func (cmd *Command) Uint64Slice(name string) []uint64
+    Uint64Slice looks up the value of a local Uint64SliceFlag, returns nil if
+    not found
+
+func (cmd *Command) Uint8(name string) uint8
+    Uint8 looks up the value of a local Uint8Flag, returns 0 if not found
+
+func (cmd *Command) Uint8Slice(name string) []uint8
+    Uint8Slice looks up the value of a local Uint8SliceFlag, returns nil if not
+    found
+
+func (cmd *Command) UintSlice(name string) []uint
     UintSlice looks up the value of a local UintSliceFlag, returns nil if not
     found
 
@@ -879,13 +947,45 @@ type FloatSliceFlag = FlagBase[[]float64, NoConfig, FloatSlice]
 
 type GenericFlag = FlagBase[Value, NoConfig, genericValue]
 
-type IntArg = ArgumentBase[int64, IntegerConfig, intValue]
+type Int16Arg = ArgumentBase[int16, IntegerConfig, intValue[int16]]
 
-type IntFlag = FlagBase[int64, IntegerConfig, intValue]
+type Int16Flag = FlagBase[int16, IntegerConfig, intValue[int16]]
 
-type IntSlice = SliceBase[int64, IntegerConfig, intValue]
+type Int16Slice = SliceBase[int16, IntegerConfig, intValue[int16]]
 
-type IntSliceFlag = FlagBase[[]int64, IntegerConfig, IntSlice]
+type Int16SliceFlag = FlagBase[[]int16, IntegerConfig, Int16Slice]
+
+type Int32Arg = ArgumentBase[int32, IntegerConfig, intValue[int32]]
+
+type Int32Flag = FlagBase[int32, IntegerConfig, intValue[int32]]
+
+type Int32Slice = SliceBase[int32, IntegerConfig, intValue[int32]]
+
+type Int32SliceFlag = FlagBase[[]int32, IntegerConfig, Int32Slice]
+
+type Int64Arg = ArgumentBase[int64, IntegerConfig, intValue[int64]]
+
+type Int64Flag = FlagBase[int64, IntegerConfig, intValue[int64]]
+
+type Int64Slice = SliceBase[int64, IntegerConfig, intValue[int64]]
+
+type Int64SliceFlag = FlagBase[[]int64, IntegerConfig, Int64Slice]
+
+type Int8Arg = ArgumentBase[int8, IntegerConfig, intValue[int8]]
+
+type Int8Flag = FlagBase[int8, IntegerConfig, intValue[int8]]
+
+type Int8Slice = SliceBase[int8, IntegerConfig, intValue[int8]]
+
+type Int8SliceFlag = FlagBase[[]int8, IntegerConfig, Int8Slice]
+
+type IntArg = ArgumentBase[int, IntegerConfig, intValue[int]]
+
+type IntFlag = FlagBase[int, IntegerConfig, intValue[int]]
+
+type IntSlice = SliceBase[int, IntegerConfig, intValue[int]]
+
+type IntSliceFlag = FlagBase[[]int, IntegerConfig, IntSlice]
 
 type IntegerConfig struct {
 	Base int
@@ -1055,13 +1155,45 @@ type TimestampConfig struct {
 
 type TimestampFlag = FlagBase[time.Time, TimestampConfig, timestampValue]
 
-type UintArg = ArgumentBase[uint64, IntegerConfig, uintValue]
+type Uint16Arg = ArgumentBase[uint16, IntegerConfig, uintValue[uint16]]
 
-type UintFlag = FlagBase[uint64, IntegerConfig, uintValue]
+type Uint16Flag = FlagBase[uint16, IntegerConfig, uintValue[uint16]]
 
-type UintSlice = SliceBase[uint64, IntegerConfig, uintValue]
+type Uint16Slice = SliceBase[uint16, IntegerConfig, uintValue[uint16]]
 
-type UintSliceFlag = FlagBase[[]uint64, IntegerConfig, UintSlice]
+type Uint16SliceFlag = FlagBase[[]uint16, IntegerConfig, Uint16Slice]
+
+type Uint32Arg = ArgumentBase[uint32, IntegerConfig, uintValue[uint32]]
+
+type Uint32Flag = FlagBase[uint32, IntegerConfig, uintValue[uint32]]
+
+type Uint32Slice = SliceBase[uint32, IntegerConfig, uintValue[uint32]]
+
+type Uint32SliceFlag = FlagBase[[]uint32, IntegerConfig, Uint32Slice]
+
+type Uint64Arg = ArgumentBase[uint64, IntegerConfig, uintValue[uint64]]
+
+type Uint64Flag = FlagBase[uint64, IntegerConfig, uintValue[uint64]]
+
+type Uint64Slice = SliceBase[uint64, IntegerConfig, uintValue[uint64]]
+
+type Uint64SliceFlag = FlagBase[[]uint64, IntegerConfig, Uint64Slice]
+
+type Uint8Arg = ArgumentBase[uint8, IntegerConfig, uintValue[uint8]]
+
+type Uint8Flag = FlagBase[uint8, IntegerConfig, uintValue[uint8]]
+
+type Uint8Slice = SliceBase[uint8, IntegerConfig, uintValue[uint8]]
+
+type Uint8SliceFlag = FlagBase[[]uint8, IntegerConfig, Uint8Slice]
+
+type UintArg = ArgumentBase[uint, IntegerConfig, uintValue[uint]]
+
+type UintFlag = FlagBase[uint, IntegerConfig, uintValue[uint]]
+
+type UintSlice = SliceBase[uint, IntegerConfig, uintValue[uint]]
+
+type UintSliceFlag = FlagBase[[]uint, IntegerConfig, UintSlice]
 
 type Value interface {
 	flag.Value

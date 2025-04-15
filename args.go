@@ -152,9 +152,17 @@ func (a *ArgumentBase[T, C, VC]) Parse(s []string) ([]string, error) {
 
 type (
 	FloatArg     = ArgumentBase[float64, NoConfig, floatValue]
-	IntArg       = ArgumentBase[int64, IntegerConfig, intValue]
+	IntArg       = ArgumentBase[int, IntegerConfig, intValue[int]]
+	Int8Arg      = ArgumentBase[int8, IntegerConfig, intValue[int8]]
+	Int16Arg     = ArgumentBase[int16, IntegerConfig, intValue[int16]]
+	Int32Arg     = ArgumentBase[int32, IntegerConfig, intValue[int32]]
+	Int64Arg     = ArgumentBase[int64, IntegerConfig, intValue[int64]]
 	StringArg    = ArgumentBase[string, StringConfig, stringValue]
 	StringMapArg = ArgumentBase[map[string]string, StringConfig, StringMap]
 	TimestampArg = ArgumentBase[time.Time, TimestampConfig, timestampValue]
-	UintArg      = ArgumentBase[uint64, IntegerConfig, uintValue]
+	UintArg      = ArgumentBase[uint, IntegerConfig, uintValue[uint]]
+	Uint8Arg     = ArgumentBase[uint8, IntegerConfig, uintValue[uint8]]
+	Uint16Arg    = ArgumentBase[uint16, IntegerConfig, uintValue[uint16]]
+	Uint32Arg    = ArgumentBase[uint32, IntegerConfig, uintValue[uint32]]
+	Uint64Arg    = ArgumentBase[uint64, IntegerConfig, uintValue[uint64]]
 )
