@@ -14,42 +14,42 @@ const (
 	completionFlag = "--generate-shell-completion"
 )
 
-type renderCompletion func(cmd *Command, appName string) (string, error)
+type renderCompletion func(cmd *Command) (string, error)
 
 var (
 	//go:embed autocomplete
 	autoCompleteFS embed.FS
 
 	shellCompletions = map[string]renderCompletion{
-		"bash": func(c *Command, appName string) (string, error) {
+		"bash": func(c *Command) (string, error) {
 			b, err := autoCompleteFS.ReadFile("autocomplete/bash_autocomplete")
-			return fmt.Sprintf(string(b), appName), err
+			return fmt.Sprintf(string(b), c.Name), err
 		},
-		"zsh": func(c *Command, appName string) (string, error) {
+		"zsh": func(c *Command) (string, error) {
 			b, err := autoCompleteFS.ReadFile("autocomplete/zsh_autocomplete")
-			return fmt.Sprintf(string(b), appName), err
+			return fmt.Sprintf(string(b), c.Name), err
 		},
-		"fish": func(c *Command, appName string) (string, error) {
+		"fish": func(c *Command) (string, error) {
 			return c.ToFishCompletion()
 		},
-		"pwsh": func(c *Command, appName string) (string, error) {
+		"pwsh": func(c *Command) (string, error) {
 			b, err := autoCompleteFS.ReadFile("autocomplete/powershell_autocomplete.ps1")
 			return string(b), err
 		},
 	}
 )
 
-func buildCompletionCommand(appName string) *Command {
+func buildCompletionCommand(rootCmd *Command) *Command {
 	return &Command{
 		Name:   completionCommandName,
 		Hidden: true,
 		Action: func(ctx context.Context, cmd *Command) error {
-			return printShellCompletion(ctx, cmd, appName)
+			return printShellCompletion(ctx, cmd, rootCmd)
 		},
 	}
 }
 
-func printShellCompletion(_ context.Context, cmd *Command, appName string) error {
+func printShellCompletion(_ context.Context, cmd *Command, rootCmd *Command) error {
 	var shells []string
 	for k := range shellCompletions {
 		shells = append(shells, k)
@@ -67,7 +67,7 @@ func printShellCompletion(_ context.Context, cmd *Command, appName string) error
 		return Exit(fmt.Sprintf("unknown shell %s, available shells are %+v", s, shells), 1)
 	}
 
-	completionScript, err := renderCompletion(cmd, appName)
+	completionScript, err := renderCompletion(rootCmd)
 	if err != nil {
 		return Exit(err, 1)
 	}
