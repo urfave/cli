@@ -12,52 +12,52 @@ func TestArgumentsRootCommand(t *testing.T) {
 	tests := []struct {
 		name           string
 		args           []string
-		expectedIvals  []int64
-		expectedUivals []uint64
+		expectedIvals  []int
+		expectedUivals []uint
 		expectedFvals  []float64
 		errStr         string
 	}{
 		{
 			name:           "set ival",
 			args:           []string{"foo", "10"},
-			expectedIvals:  []int64{10},
-			expectedUivals: []uint64{},
+			expectedIvals:  []int{10},
+			expectedUivals: []uint{},
 			expectedFvals:  []float64{},
 		},
 		{
 			name:           "set invalid ival",
 			args:           []string{"foo", "10.0"},
-			expectedIvals:  []int64{},
-			expectedUivals: []uint64{},
+			expectedIvals:  []int{},
+			expectedUivals: []uint{},
 			expectedFvals:  []float64{},
 			errStr:         "strconv.ParseInt: parsing \"10.0\": invalid syntax",
 		},
 		{
 			name:           "set ival uival",
 			args:           []string{"foo", "-10", "11"},
-			expectedIvals:  []int64{-10},
-			expectedUivals: []uint64{11},
+			expectedIvals:  []int{-10},
+			expectedUivals: []uint{11},
 			expectedFvals:  []float64{},
 		},
 		{
 			name:           "set ival uival fval",
 			args:           []string{"foo", "-12", "14", "10.1"},
-			expectedIvals:  []int64{-12},
-			expectedUivals: []uint64{14},
+			expectedIvals:  []int{-12},
+			expectedUivals: []uint{14},
 			expectedFvals:  []float64{10.1},
 		},
 		{
 			name:           "set ival uival multu fvals",
 			args:           []string{"foo", "-13", "12", "10.1", "11.09"},
-			expectedIvals:  []int64{-13},
-			expectedUivals: []uint64{12},
+			expectedIvals:  []int{-13},
+			expectedUivals: []uint{12},
 			expectedFvals:  []float64{10.1, 11.09},
 		},
 		{
 			name:           "set fvals beyond max",
 			args:           []string{"foo", "13", "10", "10.1", "11.09", "12.1"},
-			expectedIvals:  []int64{13},
-			expectedUivals: []uint64{10},
+			expectedIvals:  []int{13},
+			expectedUivals: []uint{10},
 			expectedFvals:  []float64{10.1, 11.09},
 			errStr:         "No help topic for '12.1'",
 		},
@@ -66,8 +66,8 @@ func TestArgumentsRootCommand(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			cmd := buildMinimalTestCommand()
-			var ivals []int64
-			var uivals []uint64
+			var ivals []int
+			var uivals []uint
 			var fvals []float64
 			cmd.Arguments = []Argument{
 				&IntArgs{
@@ -147,7 +147,7 @@ func TestArgumentsSubcommand(t *testing.T) {
 	tests := []struct {
 		name          string
 		args          []string
-		expectedIval  int64
+		expectedIval  int
 		expectedSvals []string
 		expectedTVals []time.Time
 		errStr        string
@@ -176,7 +176,7 @@ func TestArgumentsSubcommand(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			cmd := buildMinimalTestCommand()
-			var ival int64
+			var ival int
 			var svals []string
 			var tvals []time.Time
 			cmd.Commands = []*Command{

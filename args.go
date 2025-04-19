@@ -227,17 +227,33 @@ func (a *ArgumentsBase[T, C, VC]) Get() any {
 
 type (
 	FloatArg      = ArgumentBase[float64, NoConfig, floatValue]
-	IntArg        = ArgumentBase[int64, IntegerConfig, intValue]
+	IntArg        = ArgumentBase[int, IntegerConfig, intValue[int]]
+	Int8Arg       = ArgumentBase[int8, IntegerConfig, intValue[int8]]
+	Int16Arg      = ArgumentBase[int16, IntegerConfig, intValue[int16]]
+	Int32Arg      = ArgumentBase[int32, IntegerConfig, intValue[int32]]
+	Int64Arg      = ArgumentBase[int64, IntegerConfig, intValue[int64]]
 	StringArg     = ArgumentBase[string, StringConfig, stringValue]
 	StringMapArgs = ArgumentBase[map[string]string, StringConfig, StringMap]
 	TimestampArg  = ArgumentBase[time.Time, TimestampConfig, timestampValue]
-	UintArg       = ArgumentBase[uint64, IntegerConfig, uintValue]
+	UintArg       = ArgumentBase[uint, IntegerConfig, uintValue[uint]]
+	Uint8Arg      = ArgumentBase[uint8, IntegerConfig, uintValue[uint8]]
+	Uint16Arg     = ArgumentBase[uint16, IntegerConfig, uintValue[uint16]]
+	Uint32Arg     = ArgumentBase[uint32, IntegerConfig, uintValue[uint32]]
+	Uint64Arg     = ArgumentBase[uint64, IntegerConfig, uintValue[uint64]]
 
 	FloatArgs     = ArgumentsBase[float64, NoConfig, floatValue]
-	IntArgs       = ArgumentsBase[int64, IntegerConfig, intValue]
+	IntArgs       = ArgumentsBase[int, IntegerConfig, intValue[int]]
+	Int8Args      = ArgumentsBase[int8, IntegerConfig, intValue[int8]]
+	Int16Args     = ArgumentsBase[int16, IntegerConfig, intValue[int16]]
+	Int32Args     = ArgumentsBase[int32, IntegerConfig, intValue[int32]]
+	Int64Args     = ArgumentsBase[int64, IntegerConfig, intValue[int64]]
 	StringArgs    = ArgumentsBase[string, StringConfig, stringValue]
 	TimestampArgs = ArgumentsBase[time.Time, TimestampConfig, timestampValue]
-	UintArgs      = ArgumentsBase[uint64, IntegerConfig, uintValue]
+	UintArgs      = ArgumentsBase[uint, IntegerConfig, uintValue[uint]]
+	Uint8Args     = ArgumentsBase[uint8, IntegerConfig, uintValue[uint8]]
+	Uint16Args    = ArgumentsBase[uint16, IntegerConfig, uintValue[uint16]]
+	Uint32Args    = ArgumentsBase[uint32, IntegerConfig, uintValue[uint32]]
+	Uint64Args    = ArgumentsBase[uint64, IntegerConfig, uintValue[uint64]]
 )
 
 func (c *Command) getArgValue(name string) any {
@@ -252,82 +268,115 @@ func (c *Command) getArgValue(name string) any {
 	return nil
 }
 
-func (c *Command) StringArg(name string) string {
+func arg[T any](name string, c *Command) T {
 	val := c.getArgValue(name)
-	if a, ok := val.(string); ok {
+	if a, ok := val.(T); ok {
 		return a
 	}
-	return ""
+	var zero T
+	return zero
+}
+
+func (c *Command) StringArg(name string) string {
+	return arg[string](name, c)
 }
 
 func (c *Command) StringArgs(name string) []string {
-	val := c.getArgValue(name)
-	if a, ok := val.([]string); ok {
-		return a
-	}
-	return nil
+	return arg[[]string](name, c)
 }
 
 func (c *Command) FloatArg(name string) float64 {
-	val := c.getArgValue(name)
-	if a, ok := val.(float64); ok {
-		return a
-	}
-	return 0
+	return arg[float64](name, c)
 }
 
 func (c *Command) FloatArgs(name string) []float64 {
-	val := c.getArgValue(name)
-	if a, ok := val.([]float64); ok {
-		return a
-	}
-	return nil
+	return arg[[]float64](name, c)
 }
 
-func (c *Command) IntArg(name string) int64 {
-	val := c.getArgValue(name)
-	if a, ok := val.(int64); ok {
-		return a
-	}
-	return 0
+func (c *Command) IntArg(name string) int {
+	return arg[int](name, c)
 }
 
-func (c *Command) IntArgs(name string) []int64 {
-	val := c.getArgValue(name)
-	if a, ok := val.([]int64); ok {
-		return a
-	}
-	return nil
+func (c *Command) IntArgs(name string) []int {
+	return arg[[]int](name, c)
 }
 
-func (c *Command) UintArg(name string) uint64 {
-	val := c.getArgValue(name)
-	if a, ok := val.(uint64); ok {
-		return a
-	}
-	return 0
+func (c *Command) Int8Arg(name string) int8 {
+	return arg[int8](name, c)
 }
 
-func (c *Command) UintArgs(name string) []uint64 {
-	val := c.getArgValue(name)
-	if a, ok := val.([]uint64); ok {
-		return a
-	}
-	return nil
+func (c *Command) Int8Args(name string) []int8 {
+	return arg[[]int8](name, c)
+}
+
+func (c *Command) Int16Arg(name string) int16 {
+	return arg[int16](name, c)
+}
+
+func (c *Command) Int16Args(name string) []int16 {
+	return arg[[]int16](name, c)
+}
+
+func (c *Command) Int32Arg(name string) int32 {
+	return arg[int32](name, c)
+}
+
+func (c *Command) Int32Args(name string) []int32 {
+	return arg[[]int32](name, c)
+}
+
+func (c *Command) Int64Arg(name string) int64 {
+	return arg[int64](name, c)
+}
+
+func (c *Command) Int64Args(name string) []int64 {
+	return arg[[]int64](name, c)
+}
+
+func (c *Command) UintArg(name string) uint {
+	return arg[uint](name, c)
+}
+
+func (c *Command) Uint8Arg(name string) uint8 {
+	return arg[uint8](name, c)
+}
+
+func (c *Command) Uint16Arg(name string) uint16 {
+	return arg[uint16](name, c)
+}
+
+func (c *Command) Uint32Arg(name string) uint32 {
+	return arg[uint32](name, c)
+}
+
+func (c *Command) Uint64Arg(name string) uint64 {
+	return arg[uint64](name, c)
+}
+
+func (c *Command) UintArgs(name string) []uint {
+	return arg[[]uint](name, c)
+}
+
+func (c *Command) Uint8Args(name string) []uint8 {
+	return arg[[]uint8](name, c)
+}
+
+func (c *Command) Uint16Args(name string) []uint16 {
+	return arg[[]uint16](name, c)
+}
+
+func (c *Command) Uint32Args(name string) []uint32 {
+	return arg[[]uint32](name, c)
+}
+
+func (c *Command) Uint64Args(name string) []uint64 {
+	return arg[[]uint64](name, c)
 }
 
 func (c *Command) TimestampArg(name string) time.Time {
-	val := c.getArgValue(name)
-	if a, ok := val.(time.Time); ok {
-		return a
-	}
-	return time.Time{}
+	return arg[time.Time](name, c)
 }
 
 func (c *Command) TimestampArgs(name string) []time.Time {
-	val := c.getArgValue(name)
-	if a, ok := val.([]time.Time); ok {
-		return a
-	}
-	return nil
+	return arg[[]time.Time](name, c)
 }
