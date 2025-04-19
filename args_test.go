@@ -206,8 +206,16 @@ func TestArgumentsRootCommand(t *testing.T) {
 				r.Equal(test.expectedIvals, ivals)
 			}
 			r.Equal(test.expectedIvals, cmd.IntArgs("ia"))
+			r.Equal(int8(0), cmd.Int8Arg("ia"))
+			r.Equal(int16(0), cmd.Int16Arg("ia"))
+			r.Equal(int32(0), cmd.Int32Arg("ia"))
+			r.Equal(int64(0), cmd.Int64Arg("ia"))
 			r.Equal(test.expectedFvals, cmd.FloatArgs("fa"))
 			r.Equal(test.expectedUivals, cmd.UintArgs("uia"))
+			r.Equal(uint8(0), cmd.Uint8Arg("uia"))
+			r.Equal(uint16(0), cmd.Uint16Arg("uia"))
+			r.Equal(uint32(0), cmd.Uint32Arg("uia"))
+			r.Equal(uint64(0), cmd.Uint64Arg("uia"))
 			/*if test.expectedFvals != nil {
 				r.Equal(test.expectedFvals, fvals)
 			}*/
