@@ -402,7 +402,7 @@ func main() {
 				Usage:       "Use a randomized port",
 				Value:       0,
 				DefaultText: "random",
-				Action: func(ctx context.Context, cmd *cli.Command, v int64) error {
+				Action: func(ctx context.Context, cmd *cli.Command, v int) error {
 					if v >= 65536 {
 						return fmt.Errorf("Flag port value %v out of range[0-65535]", v)
 					}
