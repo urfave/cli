@@ -56,8 +56,16 @@ entered value on command line will be returned to user on query.
 In addition they can be invoked multiple times on the command line and values will be appended to original value
 of the flag and returned to the user as a slice
 
-- `UintSliceFlag`
 - `IntSliceFlag`
+- `Int8SliceFlag`
+- `Int16SliceFlag`
+- `Int32SliceFlag`
+- `Int64SliceFlag`
+- `UintSliceFlag`
+- `Uint8SliceFlag`
+- `Uint16SliceFlag`
+- `Uint32SliceFlag`
+- `Uint64SliceFlag`
 - `StringSliceFlag`
 - `FloatSliceFlag`
 
