@@ -328,6 +328,33 @@ func TestArgumentsSubcommand(t *testing.T) {
 	}
 }
 
+func TestArgUsage(t *testing.T) {
+	arg := &IntArg{
+		Name: "ia",
+	}
+	tests := []struct {
+		name     string
+		usage    string
+		expected string
+	}{
+		{
+			name:     "default",
+			expected: "ia",
+		},
+		{
+			name:     "usage",
+			usage:    "foo-usage",
+			expected: "foo-usage",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			arg.UsageText = test.usage
+			require.Equal(t, test.expected, arg.Usage())
+		})
+	}
+}
+
 func TestArgsUsage(t *testing.T) {
 	arg := &IntArgs{
 		Name: "ia",
