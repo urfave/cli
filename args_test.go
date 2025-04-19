@@ -23,10 +23,15 @@ func TestArgsIntTypes(t *testing.T) {
 	r.NoError(err)
 	r.Equal(10, ival)
 	r.Equal(10, cmd.IntArg("ia"))
+	r.Equal(0, cmd.IntArg("iab"))
 	r.Equal(int8(0), cmd.Int8Arg("ia"))
 	r.Equal(int16(0), cmd.Int16Arg("ia"))
 	r.Equal(int32(0), cmd.Int32Arg("ia"))
 	r.Equal(int64(0), cmd.Int64Arg("ia"))
+	r.Equal(float64(0), cmd.FloatArg("ia"))
+	r.Empty(cmd.StringArg("ia"))
+
+	r.Error(cmd.Run(buildTestContext(t), []string{"foo", "10.0"}))
 }
 
 func TestArgsIntSliceTypes(t *testing.T) {
@@ -50,6 +55,8 @@ func TestArgsIntSliceTypes(t *testing.T) {
 	r.Nil(cmd.Int16Args("ia"))
 	r.Nil(cmd.Int32Args("ia"))
 	r.Nil(cmd.Int64Args("ia"))
+
+	r.Error(cmd.Run(buildTestContext(t), []string{"foo", "10", "20.0"}))
 }
 
 func TestArgsUintTypes(t *testing.T) {
@@ -67,10 +74,13 @@ func TestArgsUintTypes(t *testing.T) {
 	r.NoError(err)
 	r.Equal(uint(10), ival)
 	r.Equal(uint(10), cmd.UintArg("ia"))
+	r.Equal(uint(0), cmd.UintArg("iab"))
 	r.Equal(uint8(0), cmd.Uint8Arg("ia"))
 	r.Equal(uint16(0), cmd.Uint16Arg("ia"))
 	r.Equal(uint32(0), cmd.Uint32Arg("ia"))
 	r.Equal(uint64(0), cmd.Uint64Arg("ia"))
+
+	r.Error(cmd.Run(buildTestContext(t), []string{"foo", "10.0"}))
 }
 
 func TestArgsUintSliceTypes(t *testing.T) {
@@ -94,6 +104,8 @@ func TestArgsUintSliceTypes(t *testing.T) {
 	r.Nil(cmd.Uint16Args("ia"))
 	r.Nil(cmd.Uint32Args("ia"))
 	r.Nil(cmd.Uint64Args("ia"))
+
+	r.Error(cmd.Run(buildTestContext(t), []string{"foo", "10", "20.0"}))
 }
 
 func TestArgumentsRootCommand(t *testing.T) {
@@ -195,23 +207,6 @@ func TestArgumentsRootCommand(t *testing.T) {
 			}*/
 		})
 	}
-
-	/*
-	   cmd.Arguments = append(cmd.Arguments,
-
-	   	&StringArgs{
-	   		Name: "sa",
-	   	},
-	   	&UintArgs{
-	   		Name: "ua",
-	   		Min:  2,
-	   		Max:  1, // max is less than min
-	   	},
-
-	   )
-
-	   require.NoError(t, cmd.Run(context.Background(), []string{"foo", "10"}))
-	*/
 }
 
 func TestArgumentsInvalidType(t *testing.T) {
@@ -230,6 +225,7 @@ func TestArgumentsInvalidType(t *testing.T) {
 	r.Nil(cmd.Int16Args("ia"))
 	r.Nil(cmd.Int32Args("ia"))
 	r.Nil(cmd.Int64Args("ia"))
+	r.Equal(time.Time{}, cmd.TimestampArg("ia"))
 	r.Nil(cmd.TimestampArgs("ia"))
 	r.Nil(cmd.UintArgs("ia"))
 	r.Nil(cmd.Uint8Args("ia"))
