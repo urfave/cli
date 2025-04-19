@@ -8,19 +8,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type intnum interface {
-	int | int8 | int16 | int32 | int64
-}
-
-type uintnum interface {
-	uint | uint8 | uint16 | uint32 | uint64
-}
-
-func intTypes[T intnum](t *testing.T) {
+func TestArgsIntTypes(t *testing.T) {
 	cmd := buildMinimalTestCommand()
-	var ival T
+	var ival int
 	cmd.Arguments = []Argument{
-		&ArgumentBase[T, IntegerConfig, intValue[T]]{
+		&IntArg{
 			Name:        "ia",
 			Destination: &ival,
 		},
@@ -29,15 +21,19 @@ func intTypes[T intnum](t *testing.T) {
 	err := cmd.Run(buildTestContext(t), []string{"foo", "10"})
 	r := require.New(t)
 	r.NoError(err)
-	r.Equal(T(10), ival)
-	r.Equal(T(10), arg[T]("ia", cmd))
+	r.Equal(10, ival)
+	r.Equal(10, cmd.IntArg("ia"))
+	r.Equal(int8(0), cmd.Int8Arg("ia"))
+	r.Equal(int16(0), cmd.Int16Arg("ia"))
+	r.Equal(int32(0), cmd.Int32Arg("ia"))
+	r.Equal(int64(0), cmd.Int64Arg("ia"))
 }
 
-func intArrTypes[T intnum](t *testing.T) {
+func TestArgsIntSliceTypes(t *testing.T) {
 	cmd := buildMinimalTestCommand()
-	var ival []T
+	var ival []int
 	cmd.Arguments = []Argument{
-		&ArgumentsBase[T, IntegerConfig, intValue[T]]{
+		&IntArgs{
 			Name:        "ia",
 			Min:         1,
 			Max:         -1,
@@ -45,18 +41,22 @@ func intArrTypes[T intnum](t *testing.T) {
 		},
 	}
 
-	err := cmd.Run(buildTestContext(t), []string{"foo", "10", "11", "12"})
+	err := cmd.Run(buildTestContext(t), []string{"foo", "10", "20", "30"})
 	r := require.New(t)
 	r.NoError(err)
-	r.Equal([]T{10, 11, 12}, ival)
-	r.Equal([]T{10, 11, 12}, arg[[]T]("ia", cmd))
+	r.Equal([]int{10, 20, 30}, ival)
+	r.Equal([]int{10, 20, 30}, cmd.IntArgs("ia"))
+	r.Nil(cmd.Int8Args("ia"))
+	r.Nil(cmd.Int16Args("ia"))
+	r.Nil(cmd.Int32Args("ia"))
+	r.Nil(cmd.Int64Args("ia"))
 }
 
-func uintTypes[T uintnum](t *testing.T) {
+func TestArgsUintTypes(t *testing.T) {
 	cmd := buildMinimalTestCommand()
-	var ival T
+	var ival uint
 	cmd.Arguments = []Argument{
-		&ArgumentBase[T, IntegerConfig, uintValue[T]]{
+		&UintArg{
 			Name:        "ia",
 			Destination: &ival,
 		},
@@ -65,15 +65,19 @@ func uintTypes[T uintnum](t *testing.T) {
 	err := cmd.Run(buildTestContext(t), []string{"foo", "10"})
 	r := require.New(t)
 	r.NoError(err)
-	r.Equal(T(10), ival)
-	r.Equal(T(10), arg[T]("ia", cmd))
+	r.Equal(uint(10), ival)
+	r.Equal(uint(10), cmd.UintArg("ia"))
+	r.Equal(uint8(0), cmd.Uint8Arg("ia"))
+	r.Equal(uint16(0), cmd.Uint16Arg("ia"))
+	r.Equal(uint32(0), cmd.Uint32Arg("ia"))
+	r.Equal(uint64(0), cmd.Uint64Arg("ia"))
 }
 
-func uintArrTypes[T uintnum](t *testing.T) {
+func TestArgsUintSliceTypes(t *testing.T) {
 	cmd := buildMinimalTestCommand()
-	var ival []T
+	var ival []uint
 	cmd.Arguments = []Argument{
-		&ArgumentsBase[T, IntegerConfig, uintValue[T]]{
+		&UintArgs{
 			Name:        "ia",
 			Min:         1,
 			Max:         -1,
@@ -81,37 +85,15 @@ func uintArrTypes[T uintnum](t *testing.T) {
 		},
 	}
 
-	err := cmd.Run(buildTestContext(t), []string{"foo", "10", "11", "12"})
+	err := cmd.Run(buildTestContext(t), []string{"foo", "10", "20", "30"})
 	r := require.New(t)
 	r.NoError(err)
-	r.Equal([]T{10, 11, 12}, ival)
-	r.Equal([]T{10, 11, 12}, arg[[]T]("ia", cmd))
-}
-
-func TestArgumentsRootCommandAllTypes(t *testing.T) {
-	intTypes[int](t)
-	intTypes[int8](t)
-	intTypes[int16](t)
-	intTypes[int32](t)
-	intTypes[int64](t)
-
-	uintTypes[uint](t)
-	uintTypes[uint8](t)
-	uintTypes[uint16](t)
-	uintTypes[uint32](t)
-	uintTypes[uint64](t)
-
-	intArrTypes[int](t)
-	intArrTypes[int8](t)
-	intArrTypes[int16](t)
-	intArrTypes[int32](t)
-	intArrTypes[int64](t)
-
-	uintArrTypes[uint](t)
-	uintArrTypes[uint8](t)
-	uintArrTypes[uint16](t)
-	uintArrTypes[uint32](t)
-	uintArrTypes[uint64](t)
+	r.Equal([]uint{10, 20, 30}, ival)
+	r.Equal([]uint{10, 20, 30}, cmd.UintArgs("ia"))
+	r.Nil(cmd.Uint8Args("ia"))
+	r.Nil(cmd.Uint16Args("ia"))
+	r.Nil(cmd.Uint32Args("ia"))
+	r.Nil(cmd.Uint64Args("ia"))
 }
 
 func TestArgumentsRootCommand(t *testing.T) {
@@ -206,16 +188,8 @@ func TestArgumentsRootCommand(t *testing.T) {
 				r.Equal(test.expectedIvals, ivals)
 			}
 			r.Equal(test.expectedIvals, cmd.IntArgs("ia"))
-			r.Equal(int8(0), cmd.Int8Arg("ia"))
-			r.Equal(int16(0), cmd.Int16Arg("ia"))
-			r.Equal(int32(0), cmd.Int32Arg("ia"))
-			r.Equal(int64(0), cmd.Int64Arg("ia"))
 			r.Equal(test.expectedFvals, cmd.FloatArgs("fa"))
 			r.Equal(test.expectedUivals, cmd.UintArgs("uia"))
-			r.Equal(uint8(0), cmd.Uint8Arg("uia"))
-			r.Equal(uint16(0), cmd.Uint16Arg("uia"))
-			r.Equal(uint32(0), cmd.Uint32Arg("uia"))
-			r.Equal(uint64(0), cmd.Uint64Arg("uia"))
 			/*if test.expectedFvals != nil {
 				r.Equal(test.expectedFvals, fvals)
 			}*/
@@ -252,9 +226,16 @@ func TestArgumentsInvalidType(t *testing.T) {
 	r := require.New(t)
 	r.Nil(cmd.StringArgs("ia"))
 	r.Nil(cmd.FloatArgs("ia"))
-	r.Nil(cmd.UintArgs("ia"))
+	r.Nil(cmd.Int8Args("ia"))
+	r.Nil(cmd.Int16Args("ia"))
+	r.Nil(cmd.Int32Args("ia"))
+	r.Nil(cmd.Int64Args("ia"))
 	r.Nil(cmd.TimestampArgs("ia"))
-	r.Nil(cmd.IntArgs("uia"))
+	r.Nil(cmd.UintArgs("ia"))
+	r.Nil(cmd.Uint8Args("ia"))
+	r.Nil(cmd.Uint16Args("ia"))
+	r.Nil(cmd.Uint32Args("ia"))
+	r.Nil(cmd.Uint64Args("ia"))
 }
 
 func TestArgumentsSubcommand(t *testing.T) {
