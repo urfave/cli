@@ -8,6 +8,112 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type intnum interface {
+	int | int8 | int16 | int32 | int64
+}
+
+type uintnum interface {
+	uint | uint8 | uint16 | uint32 | uint64
+}
+
+func intTypes[T intnum](t *testing.T) {
+	cmd := buildMinimalTestCommand()
+	var ival T
+	cmd.Arguments = []Argument{
+		&ArgumentBase[T, IntegerConfig, intValue[T]]{
+			Name:        "ia",
+			Destination: &ival,
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", "10"})
+	r := require.New(t)
+	r.NoError(err)
+	r.Equal(T(10), ival)
+	r.Equal(T(10), arg[T]("ia", cmd))
+}
+
+func intArrTypes[T intnum](t *testing.T) {
+	cmd := buildMinimalTestCommand()
+	var ival []T
+	cmd.Arguments = []Argument{
+		&ArgumentsBase[T, IntegerConfig, intValue[T]]{
+			Name:        "ia",
+			Min:         1,
+			Max:         -1,
+			Destination: &ival,
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", "10", "11", "12"})
+	r := require.New(t)
+	r.NoError(err)
+	r.Equal([]T{10, 11, 12}, ival)
+	r.Equal([]T{10, 11, 12}, arg[[]T]("ia", cmd))
+}
+
+func uintTypes[T uintnum](t *testing.T) {
+	cmd := buildMinimalTestCommand()
+	var ival T
+	cmd.Arguments = []Argument{
+		&ArgumentBase[T, IntegerConfig, uintValue[T]]{
+			Name:        "ia",
+			Destination: &ival,
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", "10"})
+	r := require.New(t)
+	r.NoError(err)
+	r.Equal(T(10), ival)
+	r.Equal(T(10), arg[T]("ia", cmd))
+}
+
+func uintArrTypes[T uintnum](t *testing.T) {
+	cmd := buildMinimalTestCommand()
+	var ival []T
+	cmd.Arguments = []Argument{
+		&ArgumentsBase[T, IntegerConfig, uintValue[T]]{
+			Name:        "ia",
+			Min:         1,
+			Max:         -1,
+			Destination: &ival,
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", "10", "11", "12"})
+	r := require.New(t)
+	r.NoError(err)
+	r.Equal([]T{10, 11, 12}, ival)
+	r.Equal([]T{10, 11, 12}, arg[[]T]("ia", cmd))
+}
+
+func TestArgumentsRootCommandAllTypes(t *testing.T) {
+	intTypes[int](t)
+	intTypes[int8](t)
+	intTypes[int16](t)
+	intTypes[int32](t)
+	intTypes[int64](t)
+
+	uintTypes[uint](t)
+	uintTypes[uint8](t)
+	uintTypes[uint16](t)
+	uintTypes[uint32](t)
+	uintTypes[uint64](t)
+
+	intArrTypes[int](t)
+	intArrTypes[int8](t)
+	intArrTypes[int16](t)
+	intArrTypes[int32](t)
+	intArrTypes[int64](t)
+
+	uintArrTypes[uint](t)
+	uintArrTypes[uint8](t)
+	uintArrTypes[uint16](t)
+	uintArrTypes[uint32](t)
+	uintArrTypes[uint64](t)
+}
+
 func TestArgumentsRootCommand(t *testing.T) {
 	tests := []struct {
 		name           string
