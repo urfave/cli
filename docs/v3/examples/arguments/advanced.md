@@ -139,7 +139,7 @@ func main() {
 			},
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
-			fmt.Printf("We got %v", cmd.IntArgs("someint"))
+			fmt.Println("We got ", cmd.IntArgs("someint"))
 			return nil
 		},
 	}
@@ -186,7 +186,7 @@ func main() {
 			},
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
-			fmt.Printf("We got %v", ivals)
+			fmt.Println("We got ", ivals)
 			return nil
 		},
 	}
