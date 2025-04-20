@@ -39,7 +39,7 @@ var (
 	}
 )
 
-func buildCompletionCommand(appName string) *Command {
+func BuildCompletionCommand(appName string) *Command {
 	return &Command{
 		Name:   completionCommandName,
 		Hidden: true,
