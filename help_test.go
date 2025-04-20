@@ -70,7 +70,7 @@ func Test_Help_RequiredFlagsNoDefault(t *testing.T) {
 
 	cmd := &Command{
 		Flags: []Flag{
-			&IntFlag{Name: "foo", Aliases: []string{"f"}, Required: true},
+			&Int64Flag{Name: "foo", Aliases: []string{"f"}, Required: true},
 		},
 		Arguments: AnyArguments,
 		Writer:    output,
@@ -1174,7 +1174,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 					Name: "cmd",
 					Flags: []Flag{
 						&BoolFlag{Name: "happiness"},
-						&IntFlag{Name: "everybody-jump-on"},
+						&Int64Flag{Name: "everybody-jump-on"},
 					},
 					Commands: []*Command{
 						{Name: "putz"},
@@ -1196,7 +1196,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 					Name: "cmd",
 					Flags: []Flag{
 						&BoolFlag{Name: "happiness"},
-						&IntFlag{Name: "everybody-jump-on"},
+						&Int64Flag{Name: "everybody-jump-on"},
 					},
 					Commands: []*Command{
 						{Name: "putz"},
@@ -1218,7 +1218,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 					Name: "cmd",
 					Flags: []Flag{
 						&BoolFlag{Name: "happiness"},
-						&IntFlag{Name: "everybody-jump-on"},
+						&Int64Flag{Name: "everybody-jump-on"},
 					},
 					Commands: []*Command{
 						{Name: "putz"},
@@ -1244,7 +1244,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 					Name: "cmd",
 					Flags: []Flag{
 						&BoolFlag{Name: "happiness"},
-						&IntFlag{Name: "everybody-jump-on"},
+						&Int64Flag{Name: "everybody-jump-on"},
 					},
 				},
 			},
@@ -1267,7 +1267,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 					Name: "cmd",
 					Flags: []Flag{
 						&BoolFlag{Name: "happiness"},
-						&IntFlag{Name: "everybody-jump-on"},
+						&Int64Flag{Name: "everybody-jump-on"},
 					},
 				},
 			},
@@ -1287,7 +1287,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 					Name: "cmd",
 					Flags: []Flag{
 						&BoolFlag{Name: "happiness"},
-						&IntFlag{Name: "everybody-jump-on"},
+						&Int64Flag{Name: "everybody-jump-on"},
 					},
 				},
 			},
@@ -1307,7 +1307,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 					Name: "cmd",
 					Flags: []Flag{
 						&BoolFlag{Name: "happiness"},
-						&IntFlag{Name: "everybody-jump-on"},
+						&Int64Flag{Name: "everybody-jump-on"},
 					},
 				},
 			},
@@ -1670,7 +1670,7 @@ func TestCategorizedHelp(t *testing.T) {
 			&StringFlag{
 				Name: "strd", // no category set
 			},
-			&IntFlag{
+			&Int64Flag{
 				Name:     "intd",
 				Aliases:  []string{"altd1", "altd2"},
 				Category: "cat1",

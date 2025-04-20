@@ -13,7 +13,7 @@ func newCommand() *Command {
 			{
 				Flags: [][]Flag{
 					{
-						&IntFlag{
+						&Int64Flag{
 							Name: "i",
 						},
 						&StringFlag{
@@ -25,7 +25,7 @@ func newCommand() *Command {
 						},
 					},
 					{
-						&IntFlag{
+						&Int64Flag{
 							Name:    "t",
 							Aliases: []string{"ai"},
 							Sources: EnvVars("T_VAR"),

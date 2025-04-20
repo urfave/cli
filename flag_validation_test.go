@@ -11,7 +11,7 @@ func TestFlagDefaultValidation(t *testing.T) {
 	cmd := &Command{
 		Name: "foo",
 		Flags: []Flag{
-			&IntFlag{
+			&Int64Flag{
 				Name:  "if",
 				Value: 2, // this value should fail validation
 				Validator: func(i int64) error {
@@ -119,7 +119,7 @@ func TestFlagValidation(t *testing.T) {
 		cmd := &Command{
 			Name: "foo",
 			Flags: []Flag{
-				&IntFlag{
+				&Int64Flag{
 					Name:  "it",
 					Value: 5, // note that this value should pass validation
 					Validator: func(i int64) error {
