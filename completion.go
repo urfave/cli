@@ -5,6 +5,7 @@ import (
 	"embed"
 	"fmt"
 	"sort"
+	"strings"
 )
 
 const (
@@ -60,7 +61,7 @@ func BuildCompletionCommand(appName string) *Command {
 		Name:        completionCommandName,
 		Hidden:      true,
 		Usage:       "Output shell completion script for bash, zsh, fish, or Powershell",
-		Description: completionDescription,
+		Description: strings.ReplaceAll(completionDescription, "$COMMAND", appName),
 		Action: func(ctx context.Context, cmd *Command) error {
 			return printShellCompletion(ctx, cmd, appName)
 		},
