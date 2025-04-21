@@ -30,7 +30,7 @@ var (
 			return fmt.Sprintf(string(b), appName), err
 		},
 		"fish": func(c *Command, appName string) (string, error) {
-			return c.ToFishCompletion()
+			return c.Root().ToFishCompletion()
 		},
 		"pwsh": func(c *Command, appName string) (string, error) {
 			b, err := autoCompleteFS.ReadFile("autocomplete/powershell_autocomplete.ps1")
