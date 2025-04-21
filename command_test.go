@@ -351,6 +351,121 @@ func TestCommand_Run_BeforeReturnNewContext(t *testing.T) {
 	require.Equal(t, "bval", receivedValFromAction)
 }
 
+func TestCommand_Run_BeforeReturnNewContextSubcommand(t *testing.T) {
+	type key string
+
+	bkey := key("bkey")
+	bkey2 := key("bkey2")
+
+	contextValues := make(map[string]string)
+	collectContextValues := func(ctx context.Context, name string) {
+		if val := ctx.Value(bkey); val != nil {
+			contextValues["bkey in "+name] = val.(string)
+		}
+		if val := ctx.Value(bkey2); val != nil {
+			contextValues["bkey2 in "+name] = val.(string)
+		}
+	}
+	cmd := &Command{
+		Name: "bar",
+		Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+			return context.WithValue(ctx, bkey, "bval"), nil
+		},
+		After: func(ctx context.Context, cmd *Command) error {
+			collectContextValues(ctx, "bar.After")
+			return nil
+		},
+		Commands: []*Command{
+			{
+				Name: "baz",
+				Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+					return context.WithValue(ctx, bkey2, "bval2"), nil
+				},
+				Action: func(ctx context.Context, cmd *Command) error {
+					collectContextValues(ctx, "baz.Action")
+					return nil
+				},
+				After: func(ctx context.Context, cmd *Command) error {
+					collectContextValues(ctx, "baz.After")
+					return nil
+				},
+			},
+		},
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"bar", "baz"}))
+	expected := map[string]string{
+		"bkey in bar.After":   "bval",
+		"bkey2 in bar.After":  "bval2",
+		"bkey in baz.Action":  "bval",
+		"bkey2 in baz.Action": "bval2",
+		"bkey in baz.After":   "bval",
+		"bkey2 in baz.After":  "bval2",
+	}
+	require.Equal(t, expected, contextValues)
+}
+
+func TestCommand_Run_FlagActionContext(t *testing.T) {
+	type key string
+
+	bkey := key("bkey")
+	bkey2 := key("bkey2")
+
+	contextValues := make(map[string]string)
+	collectContextValues := func(ctx context.Context, name string) {
+		if val := ctx.Value(bkey); val != nil {
+			contextValues["bkey in "+name] = val.(string)
+		}
+		if val := ctx.Value(bkey2); val != nil {
+			contextValues["bkey2 in "+name] = val.(string)
+		}
+	}
+	cmd := &Command{
+		Name: "bar",
+		Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+			return context.WithValue(ctx, bkey, "bval"), nil
+		},
+		Flags: []Flag{
+			&StringFlag{
+				Name: "foo",
+				Action: func(ctx context.Context, cmd *Command, _ string) error {
+					collectContextValues(ctx, "bar.foo.Action")
+					return nil
+				},
+			},
+		},
+		Commands: []*Command{
+			{
+				Name: "baz",
+				Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+					return context.WithValue(ctx, bkey2, "bval2"), nil
+				},
+				Flags: []Flag{
+					&StringFlag{
+						Name: "goo",
+						Action: func(ctx context.Context, cmd *Command, _ string) error {
+							collectContextValues(ctx, "baz.goo.Action")
+							return nil
+						},
+					},
+				},
+				Action: func(ctx context.Context, cmd *Command) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"bar", "--foo", "value", "baz", "--goo", "value"}))
+	expected := map[string]string{
+		"bkey in bar.foo.Action":  "bval",
+		"bkey2 in bar.foo.Action": "bval2",
+		"bkey in baz.goo.Action":  "bval",
+		"bkey2 in baz.goo.Action": "bval2",
+	}
+	require.Equal(t, expected, contextValues)
+}
+
 func TestCommand_OnUsageError_hasCommandContext(t *testing.T) {
 	cmd := &Command{
 		Name: "bar",

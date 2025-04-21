@@ -91,6 +91,11 @@ outer:
 // arguments are parsed according to the Flag and Command
 // definitions and the matching Action functions are run.
 func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
+	_, deferErr = cmd.run(ctx, osArgs)
+	return
+}
+
+func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context, deferErr error) {
 	tracef("running with arguments %[1]q (cmd=%[2]q)", osArgs, cmd.Name)
 	cmd.setupDefaults(osArgs)
 
@@ -102,7 +107,7 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	if cmd.parent == nil {
 		if cmd.ReadArgsFromStdin {
 			if args, err := cmd.parseArgsFromStdin(); err != nil {
-				return err
+				return ctx, err
 			} else {
 				osArgs = append(osArgs, args...)
 			}
@@ -132,7 +137,7 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	var rargs Args = &stringSliceArgs{v: osArgs}
 	for _, f := range cmd.allFlags() {
 		if err := f.PreParse(); err != nil {
-			return err
+			return ctx, err
 		}
 	}
 
@@ -149,7 +154,7 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	tracef("using post-parse arguments %[1]q (cmd=%[2]q)", args, cmd.Name)
 
 	if checkCompletions(ctx, cmd) {
-		return nil
+		return ctx, nil
 	}
 
 	if err != nil {
@@ -160,7 +165,7 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 		if cmd.OnUsageError != nil {
 			err = cmd.OnUsageError(ctx, cmd, err, cmd.parent != nil)
 			err = cmd.handleExitCoder(ctx, err)
-			return err
+			return ctx, err
 		}
 		fmt.Fprintf(cmd.Root().ErrWriter, "Incorrect Usage: %s\n\n", err.Error())
 		if cmd.Suggest {
@@ -182,23 +187,23 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 			}
 		}
 
-		return err
+		return ctx, err
 	}
 
 	if cmd.checkHelp() {
-		return helpCommandAction(ctx, cmd)
+		return ctx, helpCommandAction(ctx, cmd)
 	} else {
 		tracef("no help is wanted (cmd=%[1]q)", cmd.Name)
 	}
 
 	if cmd.parent == nil && !cmd.HideVersion && checkVersion(cmd) {
 		ShowVersion(cmd)
-		return nil
+		return ctx, nil
 	}
 
 	for _, flag := range cmd.allFlags() {
 		if err := flag.PostParse(); err != nil {
-			return err
+			return ctx, err
 		}
 	}
 
@@ -219,7 +224,7 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	for _, grp := range cmd.MutuallyExclusiveFlags {
 		if err := grp.check(cmd); err != nil {
 			_ = ShowSubcommandHelp(cmd)
-			return err
+			return ctx, err
 		}
 	}
 
@@ -262,7 +267,12 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	// If a subcommand has been resolved, let it handle the remaining execution.
 	if subCmd != nil {
 		tracef("running sub-command %[1]q with arguments %[2]q (cmd=%[3]q)", subCmd.Name, cmd.Args(), cmd.Name)
-		return subCmd.Run(ctx, cmd.Args().Slice())
+
+		// It is important that we overwrite the ctx variable in the current
+		// function so any defer'd functions use the new context returned
+		// from the sub command.
+		ctx, err = subCmd.run(ctx, cmd.Args().Slice())
+		return ctx, err
 	}
 
 	// This code path is the innermost command execution. Here we actually
@@ -282,7 +292,7 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 		}
 		if bctx, err := cmd.Before(ctx, cmd); err != nil {
 			deferErr = cmd.handleExitCoder(ctx, err)
-			return deferErr
+			return ctx, deferErr
 		} else if bctx != nil {
 			ctx = bctx
 		}
@@ -294,14 +304,14 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 		tracef("running flag actions (cmd=%[1]q)", cmd.Name)
 		if err := cmd.runFlagActions(ctx); err != nil {
 			deferErr = cmd.handleExitCoder(ctx, err)
-			return deferErr
+			return ctx, deferErr
 		}
 	}
 
 	if err := cmd.checkAllRequiredFlags(); err != nil {
 		cmd.isInError = true
 		_ = ShowSubcommandHelp(cmd)
-		return err
+		return ctx, err
 	}
 
 	// Run the command action.
@@ -317,7 +327,7 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 					err = cmd.OnUsageError(ctx, cmd, err, cmd.parent != nil)
 				}
 				err = cmd.handleExitCoder(ctx, err)
-				return err
+				return ctx, err
 			}
 		}
 		cmd.parsedArgs = &stringSliceArgs{v: rargs}
@@ -329,5 +339,5 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	}
 
 	tracef("returning deferErr (cmd=%[1]q) %[2]q", cmd.Name, deferErr)
-	return deferErr
+	return ctx, deferErr
 }
