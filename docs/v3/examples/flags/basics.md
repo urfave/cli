@@ -134,13 +134,21 @@ Note that most flag can be invoked multiple times but only the last value entere
 will be provided to the user(with some exceptions. See flags-advanced.md)
 
 The following basic flags are supported
-* IntFlag
-* UintFlag
-* BoolFlag
-* DurationFlag
-* FloatFlag
-* StringFlag
-* TimestampFlag
+- `IntFlag`
+- `Int8Flag`
+- `Int16Flag`
+- `Int32Flag`
+- `Int64Flag`
+- `UintFlag`
+- `Uint8Flag`
+- `Uint16Flag`
+- `Uint32Flag`
+- `Uint64Flag`
+- `BoolFlag`
+- `DurationFlag`
+- `FloatFlag`
+- `StringFlag`
+- `TimestampFlag`
 
 For full list of flags see https://pkg.go.dev/github.com/urfave/cli/v3
 

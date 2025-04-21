@@ -7,6 +7,10 @@ type extFlag struct {
 }
 
 func (e *extFlag) PreParse() error {
+	if e.f.DefValue != "" {
+		return e.Set("", e.f.DefValue)
+	}
+
 	return nil
 }
 

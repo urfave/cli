@@ -56,8 +56,16 @@ entered value on command line will be returned to user on query.
 In addition they can be invoked multiple times on the command line and values will be appended to original value
 of the flag and returned to the user as a slice
 
-- `UintSliceFlag`
 - `IntSliceFlag`
+- `Int8SliceFlag`
+- `Int16SliceFlag`
+- `Int32SliceFlag`
+- `Int64SliceFlag`
+- `UintSliceFlag`
+- `Uint8SliceFlag`
+- `Uint16SliceFlag`
+- `Uint32SliceFlag`
+- `Uint64SliceFlag`
 - `StringSliceFlag`
 - `FloatSliceFlag`
 
@@ -402,7 +410,7 @@ func main() {
 				Usage:       "Use a randomized port",
 				Value:       0,
 				DefaultText: "random",
-				Action: func(ctx context.Context, cmd *cli.Command, v int64) error {
+				Action: func(ctx context.Context, cmd *cli.Command, v int) error {
 					if v >= 65536 {
 						return fmt.Errorf("Flag port value %v out of range[0-65535]", v)
 					}

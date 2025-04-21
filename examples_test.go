@@ -246,7 +246,7 @@ func ExampleCommand_Run_shellComplete_bash_withShortFlag() {
 		Name:                  "greet",
 		EnableShellCompletion: true,
 		Flags: []cli.Flag{
-			&cli.IntFlag{
+			&cli.Int64Flag{
 				Name:    "other",
 				Aliases: []string{"o"},
 			},
@@ -273,7 +273,7 @@ func ExampleCommand_Run_shellComplete_bash_withLongFlag() {
 		Name:                  "greet",
 		EnableShellCompletion: true,
 		Flags: []cli.Flag{
-			&cli.IntFlag{
+			&cli.Int64Flag{
 				Name:    "other",
 				Aliases: []string{"o"},
 			},
@@ -305,7 +305,7 @@ func ExampleCommand_Run_shellComplete_bash_withMultipleLongFlag() {
 		Name:                  "greet",
 		EnableShellCompletion: true,
 		Flags: []cli.Flag{
-			&cli.IntFlag{
+			&cli.Int64Flag{
 				Name:    "int-flag",
 				Aliases: []string{"i"},
 			},
@@ -415,7 +415,7 @@ func ExampleCommand_Run_sliceValues() {
 		Flags: []cli.Flag{
 			&cli.StringSliceFlag{Name: "stringSlice"},
 			&cli.FloatSliceFlag{Name: "float64Slice"},
-			&cli.IntSliceFlag{Name: "intSlice"},
+			&cli.Int64SliceFlag{Name: "intSlice"},
 		},
 		HideHelp: true,
 		Action: func(ctx context.Context, cmd *cli.Command) error {
