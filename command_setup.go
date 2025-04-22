@@ -88,7 +88,7 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 		cmd.SuggestCommandFunc = suggestCommand
 	}
 
-	if cmd.EnableShellCompletion || cmd.Root().shellCompletion {
+	if isRoot && cmd.EnableShellCompletion {
 		completionCommand := BuildCompletionCommand(cmd.Name)
 
 		if cmd.ShellCompletionCommandName != "" {

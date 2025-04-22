@@ -5011,3 +5011,38 @@ func TestJSONExportCommand(t *testing.T) {
 `
 	assert.JSONEq(t, expected, string(out))
 }
+
+func TestCommand_ExclusiveFlagsWithAfter(t *testing.T) {
+	var called bool
+	cmd := &Command{
+		Name: "bar",
+		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
+			{
+				Category: "cat1",
+				Flags: [][]Flag{
+					{
+						&StringFlag{
+							Name: "foo",
+						},
+					},
+					{
+						&StringFlag{
+							Name: "foo2",
+						},
+					},
+				},
+			},
+		},
+		After: func(ctx context.Context, cmd *Command) error {
+			called = true
+			return nil
+		},
+	}
+
+	require.Error(t, cmd.Run(buildTestContext(t), []string{
+		"bar",
+		"--foo", "v1",
+		"--foo2", "v2",
+	}))
+	require.True(t, called)
+}
