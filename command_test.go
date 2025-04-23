@@ -351,28 +351,45 @@ func TestCommand_Run_BeforeReturnNewContext(t *testing.T) {
 	require.Equal(t, "bval", receivedValFromAction)
 }
 
-func TestCommand_Run_BeforeReturnNewContextSubcommand(t *testing.T) {
-	type key string
+type ctxKey string
 
-	bkey := key("bkey")
-	bkey2 := key("bkey2")
+// ctxCollector is a small helper to collect context values.
+type ctxCollector struct {
+	// keys are the keys to check the context for.
+	keys []ctxKey
 
-	contextValues := make(map[string]string)
-	collectContextValues := func(ctx context.Context, name string) {
-		if val := ctx.Value(bkey); val != nil {
-			contextValues["bkey in "+name] = val.(string)
-		}
-		if val := ctx.Value(bkey2); val != nil {
-			contextValues["bkey2 in "+name] = val.(string)
+	// m maps from function name to context name to value.
+	m map[string]map[ctxKey]string
+}
+
+func (cc *ctxCollector) collect(ctx context.Context, fnName string) {
+	if cc.m == nil {
+		cc.m = make(map[string]map[ctxKey]string)
+	}
+
+	if _, ok := cc.m[fnName]; !ok {
+		cc.m[fnName] = make(map[ctxKey]string)
+	}
+
+	for _, k := range cc.keys {
+		if val := ctx.Value(k); val != nil {
+			cc.m[fnName][k] = val.(string)
 		}
 	}
+}
+
+func TestCommand_Run_BeforeReturnNewContextSubcommand(t *testing.T) {
+	bkey := ctxKey("bkey")
+	bkey2 := ctxKey("bkey2")
+
+	cc := &ctxCollector{keys: []ctxKey{bkey, bkey2}}
 	cmd := &Command{
 		Name: "bar",
 		Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
 			return context.WithValue(ctx, bkey, "bval"), nil
 		},
 		After: func(ctx context.Context, cmd *Command) error {
-			collectContextValues(ctx, "bar.After")
+			cc.collect(ctx, "bar.After")
 			return nil
 		},
 		Commands: []*Command{
@@ -382,11 +399,11 @@ func TestCommand_Run_BeforeReturnNewContextSubcommand(t *testing.T) {
 					return context.WithValue(ctx, bkey2, "bval2"), nil
 				},
 				Action: func(ctx context.Context, cmd *Command) error {
-					collectContextValues(ctx, "baz.Action")
+					cc.collect(ctx, "baz.Action")
 					return nil
 				},
 				After: func(ctx context.Context, cmd *Command) error {
-					collectContextValues(ctx, "baz.After")
+					cc.collect(ctx, "baz.After")
 					return nil
 				},
 			},
@@ -394,32 +411,28 @@ func TestCommand_Run_BeforeReturnNewContextSubcommand(t *testing.T) {
 	}
 
 	require.NoError(t, cmd.Run(buildTestContext(t), []string{"bar", "baz"}))
-	expected := map[string]string{
-		"bkey in bar.After":   "bval",
-		"bkey2 in bar.After":  "bval2",
-		"bkey in baz.Action":  "bval",
-		"bkey2 in baz.Action": "bval2",
-		"bkey in baz.After":   "bval",
-		"bkey2 in baz.After":  "bval2",
+	expected := map[string]map[ctxKey]string{
+		"bar.After": {
+			bkey:  "bval",
+			bkey2: "bval2",
+		},
+		"baz.Action": {
+			bkey:  "bval",
+			bkey2: "bval2",
+		},
+		"baz.After": {
+			bkey:  "bval",
+			bkey2: "bval2",
+		},
 	}
-	require.Equal(t, expected, contextValues)
+	require.Equal(t, expected, cc.m)
 }
 
 func TestCommand_Run_FlagActionContext(t *testing.T) {
-	type key string
+	bkey := ctxKey("bkey")
+	bkey2 := ctxKey("bkey2")
 
-	bkey := key("bkey")
-	bkey2 := key("bkey2")
-
-	contextValues := make(map[string]string)
-	collectContextValues := func(ctx context.Context, name string) {
-		if val := ctx.Value(bkey); val != nil {
-			contextValues["bkey in "+name] = val.(string)
-		}
-		if val := ctx.Value(bkey2); val != nil {
-			contextValues["bkey2 in "+name] = val.(string)
-		}
-	}
+	cc := &ctxCollector{keys: []ctxKey{bkey, bkey2}}
 	cmd := &Command{
 		Name: "bar",
 		Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
@@ -429,7 +442,7 @@ func TestCommand_Run_FlagActionContext(t *testing.T) {
 			&StringFlag{
 				Name: "foo",
 				Action: func(ctx context.Context, cmd *Command, _ string) error {
-					collectContextValues(ctx, "bar.foo.Action")
+					cc.collect(ctx, "bar.foo.Action")
 					return nil
 				},
 			},
@@ -444,7 +457,7 @@ func TestCommand_Run_FlagActionContext(t *testing.T) {
 					&StringFlag{
 						Name: "goo",
 						Action: func(ctx context.Context, cmd *Command, _ string) error {
-							collectContextValues(ctx, "baz.goo.Action")
+							cc.collect(ctx, "baz.goo.Action")
 							return nil
 						},
 					},
@@ -457,13 +470,17 @@ func TestCommand_Run_FlagActionContext(t *testing.T) {
 	}
 
 	require.NoError(t, cmd.Run(buildTestContext(t), []string{"bar", "--foo", "value", "baz", "--goo", "value"}))
-	expected := map[string]string{
-		"bkey in bar.foo.Action":  "bval",
-		"bkey2 in bar.foo.Action": "bval2",
-		"bkey in baz.goo.Action":  "bval",
-		"bkey2 in baz.goo.Action": "bval2",
+	expected := map[string]map[ctxKey]string{
+		"bar.foo.Action": {
+			bkey:  "bval",
+			bkey2: "bval2",
+		},
+		"baz.goo.Action": {
+			bkey:  "bval",
+			bkey2: "bval2",
+		},
 	}
-	require.Equal(t, expected, contextValues)
+	require.Equal(t, expected, cc.m)
 }
 
 func TestCommand_OnUsageError_hasCommandContext(t *testing.T) {
