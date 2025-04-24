@@ -56,7 +56,7 @@ $COMMAND completion fish > ~/.config/fish/completions/$COMMAND.fish
 Output the script to path/to/autocomplete/$COMMAND.ps1 an run it.
 `
 
-func BuildCompletionCommand(appName string) *Command {
+func buildCompletionCommand(appName string) *Command {
 	return &Command{
 		Name:        completionCommandName,
 		Hidden:      true,
