@@ -351,6 +351,138 @@ func TestCommand_Run_BeforeReturnNewContext(t *testing.T) {
 	require.Equal(t, "bval", receivedValFromAction)
 }
 
+type ctxKey string
+
+// ctxCollector is a small helper to collect context values.
+type ctxCollector struct {
+	// keys are the keys to check the context for.
+	keys []ctxKey
+
+	// m maps from function name to context name to value.
+	m map[string]map[ctxKey]string
+}
+
+func (cc *ctxCollector) collect(ctx context.Context, fnName string) {
+	if cc.m == nil {
+		cc.m = make(map[string]map[ctxKey]string)
+	}
+
+	if _, ok := cc.m[fnName]; !ok {
+		cc.m[fnName] = make(map[ctxKey]string)
+	}
+
+	for _, k := range cc.keys {
+		if val := ctx.Value(k); val != nil {
+			cc.m[fnName][k] = val.(string)
+		}
+	}
+}
+
+func TestCommand_Run_BeforeReturnNewContextSubcommand(t *testing.T) {
+	bkey := ctxKey("bkey")
+	bkey2 := ctxKey("bkey2")
+
+	cc := &ctxCollector{keys: []ctxKey{bkey, bkey2}}
+	cmd := &Command{
+		Name: "bar",
+		Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+			return context.WithValue(ctx, bkey, "bval"), nil
+		},
+		After: func(ctx context.Context, cmd *Command) error {
+			cc.collect(ctx, "bar.After")
+			return nil
+		},
+		Commands: []*Command{
+			{
+				Name: "baz",
+				Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+					return context.WithValue(ctx, bkey2, "bval2"), nil
+				},
+				Action: func(ctx context.Context, cmd *Command) error {
+					cc.collect(ctx, "baz.Action")
+					return nil
+				},
+				After: func(ctx context.Context, cmd *Command) error {
+					cc.collect(ctx, "baz.After")
+					return nil
+				},
+			},
+		},
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"bar", "baz"}))
+	expected := map[string]map[ctxKey]string{
+		"bar.After": {
+			bkey:  "bval",
+			bkey2: "bval2",
+		},
+		"baz.Action": {
+			bkey:  "bval",
+			bkey2: "bval2",
+		},
+		"baz.After": {
+			bkey:  "bval",
+			bkey2: "bval2",
+		},
+	}
+	require.Equal(t, expected, cc.m)
+}
+
+func TestCommand_Run_FlagActionContext(t *testing.T) {
+	bkey := ctxKey("bkey")
+	bkey2 := ctxKey("bkey2")
+
+	cc := &ctxCollector{keys: []ctxKey{bkey, bkey2}}
+	cmd := &Command{
+		Name: "bar",
+		Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+			return context.WithValue(ctx, bkey, "bval"), nil
+		},
+		Flags: []Flag{
+			&StringFlag{
+				Name: "foo",
+				Action: func(ctx context.Context, cmd *Command, _ string) error {
+					cc.collect(ctx, "bar.foo.Action")
+					return nil
+				},
+			},
+		},
+		Commands: []*Command{
+			{
+				Name: "baz",
+				Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+					return context.WithValue(ctx, bkey2, "bval2"), nil
+				},
+				Flags: []Flag{
+					&StringFlag{
+						Name: "goo",
+						Action: func(ctx context.Context, cmd *Command, _ string) error {
+							cc.collect(ctx, "baz.goo.Action")
+							return nil
+						},
+					},
+				},
+				Action: func(ctx context.Context, cmd *Command) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"bar", "--foo", "value", "baz", "--goo", "value"}))
+	expected := map[string]map[ctxKey]string{
+		"bar.foo.Action": {
+			bkey:  "bval",
+			bkey2: "bval2",
+		},
+		"baz.goo.Action": {
+			bkey:  "bval",
+			bkey2: "bval2",
+		},
+	}
+	require.Equal(t, expected, cc.m)
+}
+
 func TestCommand_OnUsageError_hasCommandContext(t *testing.T) {
 	cmd := &Command{
 		Name: "bar",
