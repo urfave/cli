@@ -433,6 +433,8 @@ type Command struct {
 	ShellCompletionCommandName string `json:"-"`
 	// The function to call when checking for shell command completions
 	ShellComplete ShellCompleteFunc `json:"-"`
+	// The function to configure a shell completion command
+	ConfigureShellCompletionCommand ConfigureShellCompletionCommand `json:"-"`
 	// An action to execute before any subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no subcommands are run
 	Before BeforeFunc `json:"-"`
@@ -750,6 +752,10 @@ type CommandCategory interface {
 
 type CommandNotFoundFunc func(context.Context, *Command, string)
     CommandNotFoundFunc is executed if the proper command cannot be found
+
+type ConfigureShellCompletionCommand func(*Command)
+    ConfigureShellCompletionCommand is a function to configure a shell
+    completion command
 
 type Countable interface {
 	Count() int
