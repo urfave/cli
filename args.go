@@ -226,7 +226,9 @@ func (a *ArgumentsBase[T, C, VC]) Get() any {
 }
 
 type (
-	FloatArg      = ArgumentBase[float64, NoConfig, floatValue]
+	FloatArg      = ArgumentBase[float64, NoConfig, floatValue[float64]]
+	Float32Arg    = ArgumentBase[float32, NoConfig, floatValue[float32]]
+	Float64Arg    = ArgumentBase[float64, NoConfig, floatValue[float64]]
 	IntArg        = ArgumentBase[int, IntegerConfig, intValue[int]]
 	Int8Arg       = ArgumentBase[int8, IntegerConfig, intValue[int8]]
 	Int16Arg      = ArgumentBase[int16, IntegerConfig, intValue[int16]]
@@ -241,7 +243,9 @@ type (
 	Uint32Arg     = ArgumentBase[uint32, IntegerConfig, uintValue[uint32]]
 	Uint64Arg     = ArgumentBase[uint64, IntegerConfig, uintValue[uint64]]
 
-	FloatArgs     = ArgumentsBase[float64, NoConfig, floatValue]
+	FloatArgs     = ArgumentsBase[float64, NoConfig, floatValue[float64]]
+	Float32Args   = ArgumentsBase[float32, NoConfig, floatValue[float32]]
+	Float64Args   = ArgumentsBase[float64, NoConfig, floatValue[float64]]
 	IntArgs       = ArgumentsBase[int, IntegerConfig, intValue[int]]
 	Int8Args      = ArgumentsBase[int8, IntegerConfig, intValue[int8]]
 	Int16Args     = ArgumentsBase[int16, IntegerConfig, intValue[int16]]
@@ -290,6 +294,22 @@ func (c *Command) FloatArg(name string) float64 {
 }
 
 func (c *Command) FloatArgs(name string) []float64 {
+	return arg[[]float64](name, c)
+}
+
+func (c *Command) Float32Arg(name string) float32 {
+	return arg[float32](name, c)
+}
+
+func (c *Command) Float32Args(name string) []float32 {
+	return arg[[]float32](name, c)
+}
+
+func (c *Command) Float64Arg(name string) float64 {
+	return arg[float64](name, c)
+}
+
+func (c *Command) Float64Args(name string) []float64 {
 	return arg[[]float64](name, c)
 }
 

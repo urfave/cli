@@ -743,7 +743,7 @@ var _ = []struct {
 	}, "env: ENV_VAR, str: -f value\t"},
 }
 
-//func TestFlagEnvHinter(t *testing.T) {
+// func TestFlagEnvHinter(t *testing.T) {
 //	defer func() {
 //		FlagEnvHinter = withEnvHint
 //	}()
@@ -756,7 +756,7 @@ var _ = []struct {
 //			t.Errorf("%q does not match %q", output, test.expected)
 //		}
 //	}
-//}
+// }
 
 var stringSliceFlagTests = []struct {
 	name     string
@@ -2607,7 +2607,7 @@ func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
 }
 
 func TestTimestampFlagApply_ShortenedLayouts(t *testing.T) {
-	now := time.Now().UTC()
+	now := time.Now().In(time.UTC)
 
 	shortenedLayoutsPrecisions := map[string]time.Duration{
 		time.Kitchen:    time.Minute,
@@ -3289,12 +3289,12 @@ func TestFlagsByName(t *testing.T) {
 
 func TestNonStringMap(t *testing.T) {
 	type (
-		floatMap = MapBase[float64, NoConfig, floatValue]
+		floatMap = MapBase[float64, NoConfig, floatValue[float64]]
 	)
 
 	p := map[string]float64{}
 
-	var fv floatValue
+	var fv floatValue[float64]
 
 	f := &floatMap{
 		value: &fv,
@@ -3352,10 +3352,11 @@ func TestGenericFlag_SatisfiesFlagInterface(t *testing.T) {
 
 func TestGenericValue_SatisfiesBoolInterface(t *testing.T) {
 	var f boolFlag = &genericValue{}
+	var fpv float64
 
 	assert.False(t, f.IsBoolFlag())
 
-	fv := floatValue(0)
+	fv := floatValue[float64]{val: &fpv}
 	f = &genericValue{
 		val: &fv,
 	}
