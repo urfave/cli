@@ -27,6 +27,11 @@ application:
 VARIABLES
 
 var (
+	NewFloatSlice   = NewSliceBase[float64, NoConfig, floatValue[float64]]
+	NewFloat32Slice = NewSliceBase[float32, NoConfig, floatValue[float32]]
+	NewFloat64Slice = NewSliceBase[float64, NoConfig, floatValue[float64]]
+)
+var (
 	NewIntSlice   = NewSliceBase[int, IntegerConfig, intValue[int]]
 	NewInt8Slice  = NewSliceBase[int8, IntegerConfig, intValue[int8]]
 	NewInt16Slice = NewSliceBase[int16, IntegerConfig, intValue[int16]]
@@ -92,7 +97,6 @@ end
 
 {{ range $v := .Completions }}{{ $v }}
 {{ end }}`
-var NewFloatSlice = NewSliceBase[float64, NoConfig, floatValue]
 var NewStringMap = NewMapBase[string, StringConfig, stringValue]
 var NewStringSlice = NewSliceBase[string, StringConfig, stringValue]
 var OsExiter = os.Exit
@@ -527,6 +531,28 @@ func (cmd *Command) FlagNames() []string
 
 func (cmd *Command) Float(name string) float64
     Float looks up the value of a local FloatFlag, returns 0 if not found
+
+func (cmd *Command) Float32(name string) float32
+    Float32 looks up the value of a local Float32Flag, returns 0 if not found
+
+func (c *Command) Float32Arg(name string) float32
+
+func (c *Command) Float32Args(name string) []float32
+
+func (cmd *Command) Float32Slice(name string) []float32
+    Float32Slice looks up the value of a local Float32Slice, returns nil if not
+    found
+
+func (cmd *Command) Float64(name string) float64
+    Float64 looks up the value of a local Float32Flag, returns 0 if not found
+
+func (c *Command) Float64Arg(name string) float64
+
+func (c *Command) Float64Args(name string) []float64
+
+func (cmd *Command) Float64Slice(name string) []float64
+    Float64Slice looks up the value of a local Float64SliceFlag, returns nil if
+    not found
 
 func (c *Command) FloatArg(name string) float64
 
@@ -1023,13 +1049,33 @@ func (f FlagsByName) Less(i, j int) bool
 
 func (f FlagsByName) Swap(i, j int)
 
-type FloatArg = ArgumentBase[float64, NoConfig, floatValue]
+type Float32Arg = ArgumentBase[float32, NoConfig, floatValue[float32]]
 
-type FloatArgs = ArgumentsBase[float64, NoConfig, floatValue]
+type Float32Args = ArgumentsBase[float32, NoConfig, floatValue[float32]]
 
-type FloatFlag = FlagBase[float64, NoConfig, floatValue]
+type Float32Flag = FlagBase[float32, NoConfig, floatValue[float32]]
 
-type FloatSlice = SliceBase[float64, NoConfig, floatValue]
+type Float32Slice = SliceBase[float32, NoConfig, floatValue[float32]]
+
+type Float32SliceFlag = FlagBase[[]float32, NoConfig, Float32Slice]
+
+type Float64Arg = ArgumentBase[float64, NoConfig, floatValue[float64]]
+
+type Float64Args = ArgumentsBase[float64, NoConfig, floatValue[float64]]
+
+type Float64Flag = FlagBase[float64, NoConfig, floatValue[float64]]
+
+type Float64Slice = SliceBase[float64, NoConfig, floatValue[float64]]
+
+type Float64SliceFlag = FlagBase[[]float64, NoConfig, Float64Slice]
+
+type FloatArg = ArgumentBase[float64, NoConfig, floatValue[float64]]
+
+type FloatArgs = ArgumentsBase[float64, NoConfig, floatValue[float64]]
+
+type FloatFlag = FlagBase[float64, NoConfig, floatValue[float64]]
+
+type FloatSlice = SliceBase[float64, NoConfig, floatValue[float64]]
 
 type FloatSliceFlag = FlagBase[[]float64, NoConfig, FloatSlice]
 
