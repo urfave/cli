@@ -233,10 +233,10 @@ func main() {
 ```
 ![](../../images/custom-bash-autocomplete.gif)
 
-#### Make a completion command public
+#### Customize a completion command
 
 By default, a completion command is hidden, meaning the command isn't included in the help message.
-You can make it public by creating a completion command by `BuildCompletionCommand`, customizing the command, and appending it to the root command's `Commands`.
+You can customize it by setting root Command's `ConfigureShellCompletionCommand`.
 
 ```go
 package main
@@ -254,6 +254,11 @@ func main() {
 	cmd := &cli.Command{
 		Name: "greet",
 		// EnableShellCompletion is unnecessary
+		ConfigureShellCompletionCommand: func(cmd *cli.Command) { // cmd is a completion command
+			cmd.Hidden = false // Make a completion command public
+			cmd.Usage = "..." // Customize Usage
+			cmd.Description = "..." // Customize Description
+		},
 		Commands: []*cli.Command{
 			{
 				Name:  "hello",
@@ -265,9 +270,6 @@ func main() {
 			},
 		},
 	}
-	completion := cli.BuildCompletionCommand(cmd.Name) // Create a completion command
-	completion.Hidden = false                          // Make completion command public
-	cmd.Commands = append(cmd.Commands, completion)    // Append the completion command
 
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
 		log.Fatal(err)

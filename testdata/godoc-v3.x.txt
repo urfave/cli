@@ -509,8 +509,6 @@ type Command struct {
     string slice of arguments such as os.Args. A given Command may contain Flags
     and sub-commands in Commands.
 
-func BuildCompletionCommand(appName string) *Command
-
 func (cmd *Command) Args() Args
     Args returns the command line arguments associated with the command.
 
