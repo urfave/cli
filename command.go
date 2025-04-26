@@ -57,7 +57,7 @@ type Command struct {
 	// The function to call when checking for shell command completions
 	ShellComplete ShellCompleteFunc `json:"-"`
 	// The function to configure a shell completion command
-	ConfigureShellCompletionCommand ConfigureShellCompletionCommand
+	ConfigureShellCompletionCommand ConfigureShellCompletionCommand `json:"-"`
 	// An action to execute before any subcommands are run, but after the context is ready
 	// If a non-nil error is returned, no subcommands are run
 	Before BeforeFunc `json:"-"`
