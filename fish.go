@@ -71,7 +71,7 @@ func (cmd *Command) prepareFishCommands(commands []*Command, allCommands *[]stri
 		fmt.Fprintf(&completion,
 			"complete -r -c %s -n '%s' -a '%s'",
 			cmd.Name,
-			cmd.fishSubcommandHelper(previousCommands),
+			cmd.fishSubcommandHelper(previousCommands, commands),
 			strings.Join(command.Names(), " "),
 		)
 
@@ -116,7 +116,7 @@ func (cmd *Command) prepareFishFlags(flags []Flag, previousCommands []string) []
 		fmt.Fprintf(completion,
 			"complete -c %s -n '%s'",
 			cmd.Name,
-			cmd.fishSubcommandHelper(previousCommands),
+			cmd.fishFlagHelper(previousCommands),
 		)
 
 		fishAddFileFlag(f, completion)
@@ -165,7 +165,23 @@ func fishAddFileFlag(flag Flag, completion *strings.Builder) {
 	completion.WriteString(" -f")
 }
 
-func (cmd *Command) fishSubcommandHelper(allCommands []string) string {
+func (cmd *Command) fishSubcommandHelper(allCommands []string, siblings []*Command) string {
+	fishHelper := fmt.Sprintf("__fish_%s_no_subcommand", cmd.Name)
+	if len(allCommands) > 0 {
+		var siblingNames []string
+		for _, command := range siblings {
+			siblingNames = append(siblingNames, command.Names()...)
+		}
+		fishHelper = fmt.Sprintf(
+			"__fish_seen_subcommand_from %s; and not __fish_seen_subcommand_from %s",
+			strings.Join(allCommands, " "),
+			strings.Join(siblingNames, " "),
+		)
+	}
+	return fishHelper
+}
+
+func (cmd *Command) fishFlagHelper(allCommands []string) string {
 	fishHelper := fmt.Sprintf("__fish_%s_no_subcommand", cmd.Name)
 	if len(allCommands) > 0 {
 		fishHelper = fmt.Sprintf(

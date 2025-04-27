@@ -21,7 +21,7 @@ complete -r -c greet -n '__fish_greet_no_subcommand' -a 'config c' -d 'another u
 complete -c greet -n '__fish_seen_subcommand_from config c' -l flag -s fl -s f -r
 complete -c greet -n '__fish_seen_subcommand_from config c' -f -l another-flag -s b -d 'another usage text'
 complete -c greet -n '__fish_seen_subcommand_from sub-config s ss' -f -l help -s h -d 'show help'
-complete -r -c greet -n '__fish_seen_subcommand_from config c' -a 'sub-config s ss' -d 'another usage test'
+complete -r -c greet -n '__fish_seen_subcommand_from config c; and not __fish_seen_subcommand_from sub-config s ss' -a 'sub-config s ss' -d 'another usage test'
 complete -c greet -n '__fish_seen_subcommand_from sub-config s ss' -f -l sub-flag -s sub-fl -s s -r
 complete -c greet -n '__fish_seen_subcommand_from sub-config s ss' -f -l sub-command-flag -s s -d 'some usage text'
 complete -c greet -n '__fish_seen_subcommand_from info i in' -f -l help -s h -d 'show help'
@@ -33,5 +33,5 @@ complete -r -c greet -n '__fish_greet_no_subcommand' -a 'usage u' -d 'standard u
 complete -c greet -n '__fish_seen_subcommand_from usage u' -l flag -s fl -s f -r
 complete -c greet -n '__fish_seen_subcommand_from usage u' -f -l another-flag -s b -d 'another usage text'
 complete -c greet -n '__fish_seen_subcommand_from sub-usage su' -f -l help -s h -d 'show help'
-complete -r -c greet -n '__fish_seen_subcommand_from usage u' -a 'sub-usage su' -d 'standard usage text'
+complete -r -c greet -n '__fish_seen_subcommand_from usage u; and not __fish_seen_subcommand_from sub-usage su' -a 'sub-usage su' -d 'standard usage text'
 complete -c greet -n '__fish_seen_subcommand_from sub-usage su' -f -l sub-command-flag -s s -d 'some usage text'
