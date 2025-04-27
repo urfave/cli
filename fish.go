@@ -69,7 +69,7 @@ func (cmd *Command) prepareFishCommands(commands []*Command, allCommands *[]stri
 	for _, command := range commands {
 		var completion strings.Builder
 		fmt.Fprintf(&completion,
-			"complete -r -c %s -n '%s' -a '%s'",
+			"complete -x -c %s -n '%s' -a '%s'",
 			cmd.Name,
 			cmd.fishSubcommandHelper(previousCommands, commands),
 			strings.Join(command.Names(), " "),
