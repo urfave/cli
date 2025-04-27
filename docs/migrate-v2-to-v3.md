@@ -129,40 +129,6 @@ Shell command to find them all: `fgrep -rl github.com/urfave/cli/v2 *`
     }
     ```
 
-### cli.Float64Flag
-
-=== "v2"
-
-    ```go
-    cli.Float64Flag{
-            // ...
-    }
-    ```
-
-=== "v3"
-
-    ```go
-    cli.FloatFlag{
-            // ...
-    }
-    ```
-
-### cli.Context.Float64
-
-=== "v2"
-
-    ```go
-    // ctx is cli.Context
-    ctx.Float64("my-floating-flag")
-    ```
-
-=== "v3"
-
-    ```go
-    // cmd is cli.Command
-    cmd.Float("my-floating-flag")
-    ```
-
 ## Sources
 
 ### FilePath
