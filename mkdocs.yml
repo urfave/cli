@@ -35,6 +35,7 @@ nav:
               - Categories: v3/examples/subcommands/categories.md
           - Completions:
               - Shell Completions: v3/examples/completions/shell-completions.md
+              - Customizations: v3/examples/completions/customizations.md
           - Help Text:
               - Generated Help Text: v3/examples/help/generated-help-text.md
               - Suggestions: v3/examples/help/suggestions.md
