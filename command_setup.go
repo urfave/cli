@@ -88,7 +88,7 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 		cmd.SuggestCommandFunc = suggestCommand
 	}
 
-	if isRoot && cmd.EnableShellCompletion {
+	if isRoot && cmd.EnableShellCompletion || cmd.ConfigureShellCompletionCommand != nil {
 		completionCommand := buildCompletionCommand(cmd.Name)
 
 		if cmd.ShellCompletionCommandName != "" {
@@ -102,6 +102,9 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 
 		tracef("appending completionCommand (cmd=%[1]q)", cmd.Name)
 		cmd.appendCommand(completionCommand)
+		if cmd.ConfigureShellCompletionCommand != nil {
+			cmd.ConfigureShellCompletionCommand(completionCommand)
+		}
 	}
 
 	tracef("setting command categories (cmd=%[1]q)", cmd.Name)

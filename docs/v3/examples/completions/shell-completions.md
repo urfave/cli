@@ -233,6 +233,50 @@ func main() {
 ```
 ![](../../images/custom-bash-autocomplete.gif)
 
+#### Customize a completion command
+
+By default, a completion command is hidden, meaning the command isn't included in the help message.
+You can customize it by setting root Command's `ConfigureShellCompletionCommand`.
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/urfave/cli/v3"
+)
+
+func main() {
+	cmd := &cli.Command{
+		Name: "greet",
+		// EnableShellCompletion is unnecessary
+		ConfigureShellCompletionCommand: func(cmd *cli.Command) { // cmd is a completion command
+			cmd.Hidden = false // Make a completion command public
+			cmd.Usage = "..." // Customize Usage
+			cmd.Description = "..." // Customize Description
+		},
+		Commands: []*cli.Command{
+			{
+				Name:  "hello",
+				Usage: "Say hello",
+				Action: func(ctx context.Context, cmd *cli.Command) error {
+					fmt.Println("Hello")
+					return nil
+				},
+			},
+		},
+	}
+
+	if err := cmd.Run(context.Background(), os.Args); err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
 #### Customization
 
 The default shell completion flag (`--generate-shell-completion`) is defined as
