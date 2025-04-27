@@ -2607,7 +2607,7 @@ func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
 }
 
 func TestTimestampFlagApply_ShortenedLayouts(t *testing.T) {
-	now := time.Now().In(time.UTC)
+	now := time.Now().UTC()
 
 	shortenedLayoutsPrecisions := map[string]time.Duration{
 		time.Kitchen:    time.Minute,
@@ -2726,8 +2726,20 @@ func TestFlagDefaultValue(t *testing.T) {
 			expect:  `--flag string [ --flag string ]	(default: "default1", "default2")`,
 		},
 		{
-			name:    "float64Slice",
+			name:    "floatSlice",
 			flag:    &FloatSliceFlag{Name: "flag", Value: []float64{1.1, 2.2}},
+			toParse: []string{"--flag", "13.3"},
+			expect:  `--flag float [ --flag float ]	(default: 1.1, 2.2)`,
+		},
+		{
+			name:    "float32Slice",
+			flag:    &Float32SliceFlag{Name: "flag", Value: []float32{1.1, 2.2}},
+			toParse: []string{"--flag", "13.3"},
+			expect:  `--flag float [ --flag float ]	(default: 1.1, 2.2)`,
+		},
+		{
+			name:    "float64Slice",
+			flag:    &Float64SliceFlag{Name: "flag", Value: []float64{1.1, 2.2}},
 			toParse: []string{"--flag", "13.3"},
 			expect:  `--flag float [ --flag float ]	(default: 1.1, 2.2)`,
 		},
@@ -3243,11 +3255,15 @@ func TestExtFlag(t *testing.T) {
 
 func TestSliceValuesNil(t *testing.T) {
 	assert.Equal(t, []float64(nil), NewFloatSlice().Value())
+	assert.Equal(t, []float32(nil), NewFloat32Slice().Value())
+	assert.Equal(t, []float64(nil), NewFloat64Slice().Value())
 	assert.Equal(t, []int64(nil), NewInt64Slice().Value())
 	assert.Equal(t, []uint64(nil), NewUint64Slice().Value())
 	assert.Equal(t, []string(nil), NewStringSlice().Value())
 
 	assert.Equal(t, []float64(nil), (&FloatSlice{}).Value())
+	assert.Equal(t, []float32(nil), (&Float32Slice{}).Value())
+	assert.Equal(t, []float64(nil), (&Float64Slice{}).Value())
 	assert.Equal(t, []int64(nil), (&Int64Slice{}).Value())
 	assert.Equal(t, []uint64(nil), (&Uint64Slice{}).Value())
 	assert.Equal(t, []string(nil), (&StringSlice{}).Value())

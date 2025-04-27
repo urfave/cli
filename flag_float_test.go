@@ -167,3 +167,10 @@ func Test_Float64Flag(t *testing.T) {
 		})
 	}
 }
+
+func Test_floatValue_String(t *testing.T) {
+	var f float64 = 100
+	fv := floatValue[float64]{val: &f}
+
+	assert.Equal(t, "100", fv.String())
+}
