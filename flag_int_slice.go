@@ -24,40 +24,29 @@ var (
 // IntSlice looks up the value of a local IntSliceFlag, returns
 // nil if not found
 func (cmd *Command) IntSlice(name string) []int {
-	return getIntSlice[int](cmd, name)
+	return getNumberSlice[int](cmd, name)
 }
 
 // Int8Slice looks up the value of a local Int8SliceFlag, returns
 // nil if not found
 func (cmd *Command) Int8Slice(name string) []int8 {
-	return getIntSlice[int8](cmd, name)
+	return getNumberSlice[int8](cmd, name)
 }
 
 // Int16Slice looks up the value of a local Int16SliceFlag, returns
 // nil if not found
 func (cmd *Command) Int16Slice(name string) []int16 {
-	return getIntSlice[int16](cmd, name)
+	return getNumberSlice[int16](cmd, name)
 }
 
 // Int32Slice looks up the value of a local Int32SliceFlag, returns
 // nil if not found
 func (cmd *Command) Int32Slice(name string) []int32 {
-	return getIntSlice[int32](cmd, name)
+	return getNumberSlice[int32](cmd, name)
 }
 
 // Int64Slice looks up the value of a local Int64SliceFlag, returns
 // nil if not found
 func (cmd *Command) Int64Slice(name string) []int64 {
-	return getIntSlice[int64](cmd, name)
-}
-
-func getIntSlice[T int | int8 | int16 | int32 | int64](cmd *Command, name string) []T {
-	if v, ok := cmd.Value(name).([]T); ok {
-		tracef("int slice available for flag name %[1]q with value=%[2]v (cmd=%[3]q)", name, v, cmd.Name)
-
-		return v
-	}
-
-	tracef("int slice NOT available for flag name %[1]q (cmd=%[2]q)", name, cmd.Name)
-	return nil
+	return getNumberSlice[int64](cmd, name)
 }

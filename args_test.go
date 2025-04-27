@@ -8,6 +8,33 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestArgsFloatTypes(t *testing.T) {
+	cmd := buildMinimalTestCommand()
+	var fval float64
+	cmd.Arguments = []Argument{
+		&FloatArg{
+			Name:        "ia",
+			Destination: &fval,
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", "10"})
+	r := require.New(t)
+	r.NoError(err)
+	r.Equal(float64(10), fval)
+	r.Equal(float64(10), cmd.FloatArg("ia"))
+	r.Equal(float64(10), cmd.Float64Arg("ia"))
+	r.Equal(float32(0), cmd.Float32Arg("ia"))
+	r.Equal(float64(0), cmd.FloatArg("iab"))
+	r.Equal(int8(0), cmd.Int8Arg("ia"))
+	r.Equal(int16(0), cmd.Int16Arg("ia"))
+	r.Equal(int32(0), cmd.Int32Arg("ia"))
+	r.Equal(int64(0), cmd.Int64Arg("ia"))
+	r.Empty(cmd.StringArg("ia"))
+
+	r.Error(cmd.Run(buildTestContext(t), []string{"foo", "a"}))
+}
+
 func TestArgsIntTypes(t *testing.T) {
 	cmd := buildMinimalTestCommand()
 	var ival int
@@ -32,6 +59,29 @@ func TestArgsIntTypes(t *testing.T) {
 	r.Empty(cmd.StringArg("ia"))
 
 	r.Error(cmd.Run(buildTestContext(t), []string{"foo", "10.0"}))
+}
+
+func TestArgsFloatSliceTypes(t *testing.T) {
+	cmd := buildMinimalTestCommand()
+	var fval []float64
+	cmd.Arguments = []Argument{
+		&FloatArgs{
+			Name:        "ia",
+			Min:         1,
+			Max:         -1,
+			Destination: &fval,
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", "10", "20", "30"})
+	r := require.New(t)
+	r.NoError(err)
+	r.Equal([]float64{10, 20, 30}, fval)
+	r.Equal([]float64{10, 20, 30}, cmd.FloatArgs("ia"))
+	r.Equal([]float64{10, 20, 30}, cmd.Float64Args("ia"))
+	r.Nil(cmd.Float32Args("ia"))
+
+	r.Error(cmd.Run(buildTestContext(t), []string{"foo", "10", "a"}))
 }
 
 func TestArgsIntSliceTypes(t *testing.T) {

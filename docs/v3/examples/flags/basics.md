@@ -147,6 +147,8 @@ The following basic flags are supported
 - `BoolFlag`
 - `DurationFlag`
 - `FloatFlag`
+- `Float32Flag`
+- `Float64Flag`
 - `StringFlag`
 - `TimestampFlag`
 

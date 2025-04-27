@@ -743,7 +743,7 @@ var _ = []struct {
 	}, "env: ENV_VAR, str: -f value\t"},
 }
 
-//func TestFlagEnvHinter(t *testing.T) {
+// func TestFlagEnvHinter(t *testing.T) {
 //	defer func() {
 //		FlagEnvHinter = withEnvHint
 //	}()
@@ -756,7 +756,7 @@ var _ = []struct {
 //			t.Errorf("%q does not match %q", output, test.expected)
 //		}
 //	}
-//}
+// }
 
 var stringSliceFlagTests = []struct {
 	name     string
@@ -2726,8 +2726,20 @@ func TestFlagDefaultValue(t *testing.T) {
 			expect:  `--flag string [ --flag string ]	(default: "default1", "default2")`,
 		},
 		{
-			name:    "float64Slice",
+			name:    "floatSlice",
 			flag:    &FloatSliceFlag{Name: "flag", Value: []float64{1.1, 2.2}},
+			toParse: []string{"--flag", "13.3"},
+			expect:  `--flag float [ --flag float ]	(default: 1.1, 2.2)`,
+		},
+		{
+			name:    "float32Slice",
+			flag:    &Float32SliceFlag{Name: "flag", Value: []float32{1.1, 2.2}},
+			toParse: []string{"--flag", "13.3"},
+			expect:  `--flag float [ --flag float ]	(default: 1.1, 2.2)`,
+		},
+		{
+			name:    "float64Slice",
+			flag:    &Float64SliceFlag{Name: "flag", Value: []float64{1.1, 2.2}},
 			toParse: []string{"--flag", "13.3"},
 			expect:  `--flag float [ --flag float ]	(default: 1.1, 2.2)`,
 		},
@@ -3243,11 +3255,15 @@ func TestExtFlag(t *testing.T) {
 
 func TestSliceValuesNil(t *testing.T) {
 	assert.Equal(t, []float64(nil), NewFloatSlice().Value())
+	assert.Equal(t, []float32(nil), NewFloat32Slice().Value())
+	assert.Equal(t, []float64(nil), NewFloat64Slice().Value())
 	assert.Equal(t, []int64(nil), NewInt64Slice().Value())
 	assert.Equal(t, []uint64(nil), NewUint64Slice().Value())
 	assert.Equal(t, []string(nil), NewStringSlice().Value())
 
 	assert.Equal(t, []float64(nil), (&FloatSlice{}).Value())
+	assert.Equal(t, []float32(nil), (&Float32Slice{}).Value())
+	assert.Equal(t, []float64(nil), (&Float64Slice{}).Value())
 	assert.Equal(t, []int64(nil), (&Int64Slice{}).Value())
 	assert.Equal(t, []uint64(nil), (&Uint64Slice{}).Value())
 	assert.Equal(t, []string(nil), (&StringSlice{}).Value())
@@ -3289,12 +3305,12 @@ func TestFlagsByName(t *testing.T) {
 
 func TestNonStringMap(t *testing.T) {
 	type (
-		floatMap = MapBase[float64, NoConfig, floatValue]
+		floatMap = MapBase[float64, NoConfig, floatValue[float64]]
 	)
 
 	p := map[string]float64{}
 
-	var fv floatValue
+	var fv floatValue[float64]
 
 	f := &floatMap{
 		value: &fv,
@@ -3352,10 +3368,11 @@ func TestGenericFlag_SatisfiesFlagInterface(t *testing.T) {
 
 func TestGenericValue_SatisfiesBoolInterface(t *testing.T) {
 	var f boolFlag = &genericValue{}
+	var fpv float64
 
 	assert.False(t, f.IsBoolFlag())
 
-	fv := floatValue(0)
+	fv := floatValue[float64]{val: &fpv}
 	f = &genericValue{
 		val: &fv,
 	}
