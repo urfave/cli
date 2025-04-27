@@ -57,7 +57,7 @@ func (cmd *Command) Float32(name string) float32 {
 	return getFloat[float32](cmd, name)
 }
 
-// Float64 looks up the value of a local Float32Flag, returns
+// Float64 looks up the value of a local Float64Flag, returns
 // 0 if not found
 func (cmd *Command) Float64(name string) float64 {
 	return getFloat[float64](cmd, name)
