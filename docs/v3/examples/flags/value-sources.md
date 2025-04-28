@@ -200,10 +200,10 @@ func main() {
 	cmd := &cli.Command{
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:     "file",
-				Aliases:  []string{"f"},
-				Value:  "/path/to/default",
-				Usage:    "filename for mysql database",
+				Name:        "file",
+				Aliases:     []string{"f"},
+				Value:       "/path/to/default",
+				Usage:       "filename for mysql database",
 				Destination: &filename,
 			},
 			&cli.StringFlag{
