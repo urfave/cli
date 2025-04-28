@@ -2,7 +2,7 @@
 
 function __fish_greet_no_subcommand --description 'Test if there has been any subcommand yet'
     for i in (commandline -opc)
-        if contains -- $i config c sub-config s ss info i in some-command usage u sub-usage su
+        if contains -- $i config c info i in some-command hidden-command usage u
             return 1
         end
     end

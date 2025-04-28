@@ -30,16 +30,15 @@ func (cmd *Command) writeFishCompletionTemplate(w io.Writer) error {
 	if err != nil {
 		return err
 	}
-	allCommands := []string{}
 
 	// Add global flags
-	completions := cmd.prepareFishFlags(cmd.VisibleFlags(), allCommands)
+	completions := cmd.prepareFishFlags(cmd.VisibleFlags(), []string{})
 
 	// Add help flag
 	if !cmd.HideHelp {
 		completions = append(
 			completions,
-			cmd.prepareFishFlags([]Flag{HelpFlag}, allCommands)...,
+			cmd.prepareFishFlags([]Flag{HelpFlag}, []string{})...,
 		)
 	}
 
@@ -47,24 +46,29 @@ func (cmd *Command) writeFishCompletionTemplate(w io.Writer) error {
 	if !cmd.HideVersion {
 		completions = append(
 			completions,
-			cmd.prepareFishFlags([]Flag{VersionFlag}, allCommands)...,
+			cmd.prepareFishFlags([]Flag{VersionFlag}, []string{})...,
 		)
 	}
 
 	// Add commands and their flags
 	completions = append(
 		completions,
-		cmd.prepareFishCommands(cmd.VisibleCommands(), &allCommands, []string{})...,
+		cmd.prepareFishCommands(cmd.VisibleCommands(), []string{})...,
 	)
+
+	toplevelCommandNames := []string{}
+	for _, child := range cmd.Commands {
+		toplevelCommandNames = append(toplevelCommandNames, child.Names()...)
+	}
 
 	return t.ExecuteTemplate(w, name, &fishCommandCompletionTemplate{
 		Command:     cmd,
 		Completions: completions,
-		AllCommands: allCommands,
+		AllCommands: toplevelCommandNames,
 	})
 }
 
-func (cmd *Command) prepareFishCommands(commands []*Command, allCommands *[]string, previousCommands []string) []string {
+func (cmd *Command) prepareFishCommands(commands []*Command, previousCommands []string) []string {
 	completions := []string{}
 	for _, command := range commands {
 		var completion strings.Builder
@@ -88,7 +92,6 @@ func (cmd *Command) prepareFishCommands(commands []*Command, allCommands *[]stri
 			)
 		}
 
-		*allCommands = append(*allCommands, command.Names()...)
 		completions = append(completions, completion.String())
 		completions = append(
 			completions,
@@ -100,7 +103,7 @@ func (cmd *Command) prepareFishCommands(commands []*Command, allCommands *[]stri
 			completions = append(
 				completions,
 				cmd.prepareFishCommands(
-					command.Commands, allCommands, command.Names(),
+					command.Commands, command.Names(),
 				)...,
 			)
 		}
