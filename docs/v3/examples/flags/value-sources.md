@@ -7,6 +7,7 @@ search:
 
 Flags can have their default values set from different sources. The following sources are
 provided by default with `urfave/cli`
+
  - Environment
  - Text Files
 
@@ -14,10 +15,11 @@ The library also provides a framework for users to plugin their own implementati
 to be fetched via other mechanisms(http and so on). 
 
 In addition there is a `urfave/cli-altsrc` repo which hosts some common value sources to read 
+from files or via http/https. 
+
  - YAML
  - JSON
  - TOML
-from files or via http/https. 
 
 #### Values from the Environment
 
