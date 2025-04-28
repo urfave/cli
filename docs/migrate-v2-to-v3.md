@@ -23,6 +23,112 @@ Check each file for this and make the change.
 
 Shell command to find them all: `fgrep -rl github.com/urfave/cli/v2 *`
 
+## New Names
+
+### cli.App
+
+=== "v2"
+
+    ```go
+    cli.App{
+            // ...
+    }
+    ```
+
+=== "v3"
+
+    ```go
+    cli.Command{
+            // ...
+    }
+    ```
+
+### cli.App.EnableBashCompletion
+
+=== "v2"
+
+    ```go
+    cli.App{
+            EnableBashCompletion: true,
+    }
+    ```
+
+=== "v3"
+
+    ```go
+    cli.Command{
+            EnableShellCompletion: true,
+    }
+    ```
+
+### cli.App.CustomAppHelpTemplate
+
+=== "v2"
+
+    ```go
+    cli.App{
+            CustomAppHelpTemplate: "...",
+    }
+    ```
+
+=== "v3"
+
+    ```go
+    cli.Command{
+            CustomRootCommandHelpTemplate: "...",
+    }
+    ```
+
+### cli.App.RunContext
+
+=== "v2"
+
+    ```go
+    (&cli.App{}).RunContext(context.Background(), os.Args)
+    ```
+
+=== "v3"
+
+    ```go
+    (&cli.Command{}).Run(context.Background(), os.Args)
+    ```
+
+### cli.App.BashComplete
+
+=== "v2"
+
+    ```go
+    cli.App{
+            BashComplete: func(ctx *cli.Context) {},
+    }
+    ```
+
+=== "v3"
+
+    ```go
+    cli.Command{
+            ShellComplete: func(ctx context.Context, cmd *cli.Command) {},
+    }
+    ```
+
+### cli.Command.Subcommands
+
+=== "v2"
+
+    ```go
+    cli.Command{
+            Subcommands: []*cli.Command{},
+    }
+    ```
+
+=== "v3"
+
+    ```go
+    cli.Command{
+            Commands: []*cli.Command{},
+    }
+    ```
+
 ## Sources
 
 ### FilePath
@@ -293,23 +399,5 @@ Similar messages would be shown for other funcs.
         Authors: []any{
             mail.Address{Name: "Some Guy", Address: "someguy@example.com"},
         },
-    }
-    ```
-
-## BashCompletion/ShellCompletion
-
-=== "v2"
-
-    ```go
-    &cli.App{
-        EnableBashCompletion: true,
-    }
-    ```
-
-=== "v3"
-
-    ```go
-    &cli.Command{
-        EnableShellCompletion: true,
     }
     ```
