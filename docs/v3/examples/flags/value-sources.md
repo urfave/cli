@@ -207,9 +207,9 @@ func main() {
 				Destination: &filename,
 			},
 			&cli.StringFlag{
-				Name:     "password",
-				Aliases:  []string{"p"},
-				Usage:    "password for the mysql database",
+				Name:    "password",
+				Aliases: []string{"p"},
+				Usage:   "password for the mysql database",
 				Sources: altsrc.YAML("somekey", altsrc.NewStringPtrSourcer(&filename)),
 			},
 		},
