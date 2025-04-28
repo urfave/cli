@@ -165,9 +165,9 @@ func main() {
 	cmd := &cli.Command{
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:     "password",
-				Aliases:  []string{"p"},
-				Usage:    "password for the mysql database",
+				Name:    "password",
+				Aliases: []string{"p"},
+				Usage:   "password for the mysql database",
 				Sources: altsrc.YAML("somekey", altsrc.StringSourcer("/path/to/filename")),
 			},
 		},
