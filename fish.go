@@ -34,22 +34,6 @@ func (cmd *Command) writeFishCompletionTemplate(w io.Writer) error {
 	// Add global flags
 	completions := cmd.prepareFishFlags(cmd.VisibleFlags(), []string{})
 
-	// Add help flag
-	if !cmd.HideHelp {
-		completions = append(
-			completions,
-			cmd.prepareFishFlags([]Flag{HelpFlag}, []string{})...,
-		)
-	}
-
-	// Add version flag
-	if !cmd.HideVersion {
-		completions = append(
-			completions,
-			cmd.prepareFishFlags([]Flag{VersionFlag}, []string{})...,
-		)
-	}
-
 	// Add commands and their flags
 	completions = append(
 		completions,
@@ -84,14 +68,6 @@ func (cmd *Command) prepareFishCommands(commands []*Command, previousCommands []
 				" -d '%s'",
 				escapeSingleQuotes(command.Usage))
 		}
-
-		if !command.HideHelp {
-			completions = append(
-				completions,
-				cmd.prepareFishFlags([]Flag{HelpFlag}, command.Names())...,
-			)
-		}
-
 		completions = append(completions, completion.String())
 		completions = append(
 			completions,
