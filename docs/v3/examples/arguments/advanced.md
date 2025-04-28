@@ -7,8 +7,8 @@ search:
 
 The [Basics] showed how to access arguments for a command. They are all retrieved as strings which is fine
 but it we need to say get integers or timestamps the user would have to convert from string to desired type. 
-To ease the burden on users the `cli` library offers predefined <Type>Arg and <Type>Args structure to faciliate this
-The value of the argument can be retrieved using the command.<Type>Arg() function. For e.g
+To ease the burden on users the `cli` library offers predefined `{Type}Arg` and `{Type}Args` structure to faciliate this
+The value of the argument can be retrieved using the `command.{Type}Arg()` function. For e.g
 
 <!-- {
   "args" : ["10"],
@@ -52,7 +52,7 @@ $ greet 10
 We got 10
 ```
 
-Instead of using the cmd.XXXArg() function to retrieve the argument value a destination for the argument can be set
+Instead of using the `cmd.{Type}Arg()` function to retrieve the argument value a destination for the argument can be set
 for e.g
 
 <!-- {
@@ -152,9 +152,9 @@ func main() {
 
 Some things to note about multi value arguments
 
-1. They have XXXArgs type instead of XXXArg to differentiate them from single value arguments
-2. The Max field needs to be defined to a non zero value without which it cannot be parsed
-3. Max field value needs to be greater then the Min field value
+1. They are of `{Type}Args` type rather than `{Type}Arg` to differentiate them from single value arguments
+2. The `Max` field needs to be defined to a non zero value without which it cannot be parsed
+3. `Max` field value needs to be greater than the `Min` field value
 
 As with single value args the destination field can be set
 
@@ -214,11 +214,11 @@ Following multi value arguments are supported
 - `TimestampArgs`
 
 It goes without saying that the chain of arguments set in the Arguments slice need to be consistent. Generally a glob
-argument(max=-1) should be set for the argument at the end of the slice. To glob args we arent interested in we coud add
+argument(`max=-1`) should be set for the argument at the end of the slice. To glob args we arent interested in we coud add
 the following to the end of the Arguments slice and retrieve them as a slice
 
 ```
-	&StringArgs{
-		Max: -1,
-	},
+&StringArgs{
+	Max: -1,
+},
 ```

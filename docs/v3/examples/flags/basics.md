@@ -153,7 +153,7 @@ The following basic flags are supported
 - `StringFlag`
 - `TimestampFlag`
 
-For full list of flags see https://pkg.go.dev/github.com/urfave/cli/v3
+For full list of flags see [`https://pkg.go.dev/github.com/urfave/cli/v3`](https://pkg.go.dev/github.com/urfave/cli/v3)
 
 ### Timestamp Flag ###
 
