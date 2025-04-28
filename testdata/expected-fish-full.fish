@@ -22,6 +22,7 @@ complete -c greet -n '__fish_seen_subcommand_from sub-config s ss' -f -l sub-fla
 complete -c greet -n '__fish_seen_subcommand_from sub-config s ss' -f -l sub-command-flag -s s -d 'some usage text'
 complete -x -c greet -n '__fish_greet_no_subcommand' -a 'info i in' -d 'retrieve generic information'
 complete -x -c greet -n '__fish_greet_no_subcommand' -a 'some-command'
+complete -c greet -n '__fish_seen_subcommand_from hidden-command' -f -l completable
 complete -x -c greet -n '__fish_greet_no_subcommand' -a 'usage u' -d 'standard usage text'
 complete -c greet -n '__fish_seen_subcommand_from usage u' -l flag -s fl -s f -r
 complete -c greet -n '__fish_seen_subcommand_from usage u' -f -l another-flag -s b -d 'another usage text'

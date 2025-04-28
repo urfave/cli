@@ -37,7 +37,7 @@ func (cmd *Command) writeFishCompletionTemplate(w io.Writer) error {
 	// Add commands and their flags
 	completions = append(
 		completions,
-		cmd.prepareFishCommands(cmd.VisibleCommands(), []string{})...,
+		cmd.prepareFishCommands(cmd.Commands, []string{})...,
 	)
 
 	toplevelCommandNames := []string{}
@@ -55,20 +55,22 @@ func (cmd *Command) writeFishCompletionTemplate(w io.Writer) error {
 func (cmd *Command) prepareFishCommands(commands []*Command, previousCommands []string) []string {
 	completions := []string{}
 	for _, command := range commands {
-		var completion strings.Builder
-		fmt.Fprintf(&completion,
-			"complete -x -c %s -n '%s' -a '%s'",
-			cmd.Name,
-			cmd.fishSubcommandHelper(previousCommands, commands),
-			strings.Join(command.Names(), " "),
-		)
-
-		if command.Usage != "" {
+		if !command.Hidden {
+			var completion strings.Builder
 			fmt.Fprintf(&completion,
-				" -d '%s'",
-				escapeSingleQuotes(command.Usage))
+				"complete -x -c %s -n '%s' -a '%s'",
+				cmd.Name,
+				cmd.fishSubcommandHelper(previousCommands, commands),
+				strings.Join(command.Names(), " "),
+			)
+
+			if command.Usage != "" {
+				fmt.Fprintf(&completion,
+					" -d '%s'",
+					escapeSingleQuotes(command.Usage))
+			}
+			completions = append(completions, completion.String())
 		}
-		completions = append(completions, completion.String())
 		completions = append(
 			completions,
 			cmd.prepareFishFlags(command.VisibleFlags(), command.Names())...,
