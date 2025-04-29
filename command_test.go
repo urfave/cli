@@ -98,6 +98,11 @@ func buildExtendedTestCommand() *Command {
 	}, {
 		Name:   "hidden-command",
 		Hidden: true,
+		Flags: []Flag{
+			&BoolFlag{
+				Name: "completable",
+			},
+		},
 	}, {
 		Aliases: []string{"u"},
 		Flags: []Flag{
@@ -4876,7 +4881,26 @@ func TestJSONExportCommand(t *testing.T) {
 			"defaultCommand": "",
 			"category": "",
 			"commands": null,
-			"flags": null,
+			"flags": [
+			  {
+				"name": "completable",
+				"category": "",
+				"defaultText": "",
+				"usage": "",
+				"required": false,
+				"hidden": false,
+				"hideDefault": false,
+				"local": false,
+				"defaultValue": false,
+				"aliases": null,
+				"takesFileArg": false,
+				"config": {
+				  "Count": null
+				},
+				"onlyOnce": false,
+				"validateDefaults": false
+			  }
+			],
 			"hideHelp": false,
 			"hideHelpCommand": false,
 			"hideVersion": false,
