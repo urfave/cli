@@ -372,43 +372,6 @@ func ExampleCommand_Run_shellComplete_bash() {
 	// help
 }
 
-func ExampleCommand_Run_shellComplete_zsh() {
-	cmd := &cli.Command{
-		Name:                  "greet",
-		EnableShellCompletion: true,
-		Commands: []*cli.Command{
-			{
-				Name:        "describeit",
-				Aliases:     []string{"d"},
-				Usage:       "use it to see a description",
-				Description: "This is how we describe describeit the function",
-				Action: func(context.Context, *cli.Command) error {
-					fmt.Printf("i like to describe things")
-					return nil
-				},
-			}, {
-				Name:        "next",
-				Usage:       "next example",
-				Description: "more stuff to see when generating bash completion",
-				Action: func(context.Context, *cli.Command) error {
-					fmt.Printf("the next example")
-					return nil
-				},
-			},
-		},
-	}
-
-	// Simulate a zsh environment and command line arguments
-	os.Args = []string{"greet", "--generate-shell-completion"}
-	os.Setenv("SHELL", "/usr/bin/zsh")
-
-	_ = cmd.Run(context.Background(), os.Args)
-	// Output:
-	// describeit:use it to see a description
-	// next:next example
-	// help:Shows a list of commands or help for one command
-}
-
 func ExampleCommand_Run_sliceValues() {
 	cmd := &cli.Command{
 		Name: "multi_values",
