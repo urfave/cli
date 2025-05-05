@@ -61,7 +61,7 @@ func (cmd *Command) prepareFishCommands(commands []*Command, previousCommands []
 				"complete -x -c %s -n '%s' -a '%s'",
 				cmd.Name,
 				cmd.fishSubcommandHelper(previousCommands, commands),
-				strings.Join(command.Names(), " "),
+				command.Name,
 			)
 
 			if command.Usage != "" {
