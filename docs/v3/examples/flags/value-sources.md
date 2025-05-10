@@ -159,6 +159,7 @@ import (
 
 	"github.com/urfave/cli/v3"
 	"github.com/urfave/cli-altsrc/v3"
+	yaml "github.com/urfave/cli-altsrc/v3/yaml"
 )
 
 func main() {
@@ -168,7 +169,7 @@ func main() {
 				Name:    "password",
 				Aliases: []string{"p"},
 				Usage:   "password for the mysql database",
-				Sources: altsrc.YAML("somekey", altsrc.StringSourcer("/path/to/filename")),
+				Sources: cli.NewValueSourceChain(yaml.YAML("somekey", altsrc.StringSourcer("/path/to/filename"))),
 			},
 		},
 	}
@@ -193,6 +194,7 @@ import (
 
 	"github.com/urfave/cli/v3"
 	"github.com/urfave/cli-altsrc/v3"
+	yaml "github.com/urfave/cli-altsrc/v3/yaml"
 )
 
 func main() {
@@ -210,7 +212,7 @@ func main() {
 				Name:    "password",
 				Aliases: []string{"p"},
 				Usage:   "password for the mysql database",
-				Sources: altsrc.YAML("somekey", altsrc.NewStringPtrSourcer(&filename)),
+				Sources: cli.NewValueSourceChain(yaml.YAML("somekey", altsrc.NewStringPtrSourcer(&filename))),
 			},
 		},
 	}
