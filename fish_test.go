@@ -19,6 +19,7 @@ func TestFishCompletion(t *testing.T) {
 			Name:      "foofile",
 			TakesFile: true,
 		})
+	cmd.setupCommandGraph()
 
 	oldTemplate := FishCompletionTemplate
 	defer func() { FishCompletionTemplate = oldTemplate }()
