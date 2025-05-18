@@ -379,6 +379,25 @@ Similar messages would be shown for other funcs.
     }
     ```
 
+## PathFlag
+
+=== "v2"
+
+    ```go
+    &cli.PathFlag{
+        Name:   "foo",
+    }
+    ```
+
+=== "v3"
+
+    ```go
+    &cli.StringFlag{
+        Name:  "foo",
+        TakesFiles: true,
+    }
+    ```
+
 ## Authors
 
 === "v2"
