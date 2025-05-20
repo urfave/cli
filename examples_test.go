@@ -232,7 +232,7 @@ func ExampleCommand_Run_subcommandNoAction() {
 	//    greet describeit - use it to see a description
 	//
 	// USAGE:
-	//    greet describeit [command [command options]] [arguments...]
+	//    greet describeit [options] [arguments...]
 	//
 	// DESCRIPTION:
 	//    This is how we describe describeit the function

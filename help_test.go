@@ -713,7 +713,7 @@ func TestShowSubcommandHelp_GlobalOptions(t *testing.T) {
    foo frobbly
 
 USAGE:
-   foo frobbly [command [command options]]
+   foo frobbly [options]
 
 OPTIONS:
    --bar string  
