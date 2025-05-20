@@ -489,4 +489,22 @@ func TestBoolWithInverseDestination(t *testing.T) {
 		t.Error(err)
 		return
 	}
+
+	f := flagMethod()
+	f.Value = true
+	err = (&boolWithInverseTestCase{
+		args:    []string{},
+		toBeSet: false,
+		value:   true,
+	}).Run(t, f)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = checkAndReset(0, true)
+	if err != nil {
+		t.Error(err)
+		return
+	}
 }

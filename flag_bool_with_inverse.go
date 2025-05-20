@@ -72,6 +72,7 @@ func (bif *BoolWithInverseFlag) PreParse() error {
 	if dest == nil {
 		dest = new(bool)
 	}
+	*dest = bif.Value
 	bif.value = &boolValue{
 		destination: dest,
 		count:       count,
