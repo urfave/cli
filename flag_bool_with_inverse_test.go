@@ -508,3 +508,15 @@ func TestBoolWithInverseDestination(t *testing.T) {
 		return
 	}
 }
+
+func TestBoolWithInverseFlag_SatisfiesRequiredFlagInterface(t *testing.T) {
+	var f RequiredFlag = &BoolWithInverseFlag{}
+
+	_ = f.IsRequired()
+}
+
+func TestBoolWithInverseFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
+	var f VisibleFlag = &BoolWithInverseFlag{}
+
+	_ = f.IsVisible()
+}

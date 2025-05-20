@@ -371,6 +371,10 @@ func (bif *BoolWithInverseFlag) IsSet() bool
 
 func (bif *BoolWithInverseFlag) Names() []string
 
+func (bif *BoolWithInverseFlag) IsRequired() bool
+
+func (bif *BoolWithInverseFlag) IsVisible() bool
+
 func (bif *BoolWithInverseFlag) PostParse() error
 
 func (bif *BoolWithInverseFlag) PreParse() error
