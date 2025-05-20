@@ -2174,7 +2174,7 @@ func TestCommand_Run_SubcommandFullPath(t *testing.T) {
 
 	outString := out.String()
 	require.Contains(t, outString, "foo bar - does bar things")
-	require.Contains(t, outString, "foo bar [command [command options]] [arguments...]")
+	require.Contains(t, outString, "foo bar [options] [arguments...]")
 }
 
 func TestCommand_Run_Help(t *testing.T) {
