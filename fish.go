@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"slices"
 	"strings"
 	"text/template"
 )
@@ -173,14 +172,12 @@ func fishFlagHelper(binary string, command *Command) string {
 func commandAncestry(command *Command) string {
 	var ancestry []string
 	ancestors := command.Lineage()
-	slices.Reverse(ancestors)
-	ancestors = ancestors[1:]
-	for _, ancestor := range ancestors {
+	for i := len(ancestors) - 2; i >= 0; i-- {
 		ancestry = append(
 			ancestry,
 			fmt.Sprintf(
 				"__fish_seen_subcommand_from %s",
-				strings.Join(ancestor.Names(), " "),
+				strings.Join(ancestors[i].Names(), " "),
 			),
 		)
 	}
