@@ -1726,6 +1726,7 @@ USAGE:
    cli.test [global options]
 
 GLOBAL OPTIONS:
+   --[no-]bf      (default: false)
    --help, -h     show help
    --m2 string    
    --strd string  

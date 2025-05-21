@@ -151,6 +151,14 @@ func (bif *BoolWithInverseFlag) Names() []string {
 	return names
 }
 
+func (bif *BoolWithInverseFlag) IsRequired() bool {
+	return bif.Required
+}
+
+func (bif *BoolWithInverseFlag) IsVisible() bool {
+	return !bif.Hidden
+}
+
 // String implements the standard Stringer interface.
 //
 // Example for BoolFlag{Name: "env"}
