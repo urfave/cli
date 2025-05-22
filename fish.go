@@ -151,9 +151,10 @@ func fishSubcommandHelper(binary string, command *Command, siblings []*Command) 
 		for _, sibling := range siblings {
 			siblingNames = append(siblingNames, sibling.Names()...)
 		}
+		ancestry := commandAncestry(command)
 		fishHelper = fmt.Sprintf(
-			"__fish_seen_subcommand_from %s; and not __fish_seen_subcommand_from %s",
-			strings.Join(command.Names(), " "),
+			"%s; and not __fish_seen_subcommand_from %s",
+			ancestry,
 			strings.Join(siblingNames, " "),
 		)
 	}
@@ -163,12 +164,24 @@ func fishSubcommandHelper(binary string, command *Command, siblings []*Command) 
 func fishFlagHelper(binary string, command *Command) string {
 	fishHelper := fmt.Sprintf("__fish_%s_no_subcommand", binary)
 	if len(command.Lineage()) > 1 {
-		fishHelper = fmt.Sprintf(
-			"__fish_seen_subcommand_from %s",
-			strings.Join(command.Names(), " "),
-		)
+		fishHelper = commandAncestry(command)
 	}
 	return fishHelper
+}
+
+func commandAncestry(command *Command) string {
+	var ancestry []string
+	ancestors := command.Lineage()
+	for i := len(ancestors) - 2; i >= 0; i-- {
+		ancestry = append(
+			ancestry,
+			fmt.Sprintf(
+				"__fish_seen_subcommand_from %s",
+				strings.Join(ancestors[i].Names(), " "),
+			),
+		)
+	}
+	return strings.Join(ancestry, "; and ")
 }
 
 func escapeSingleQuotes(input string) string {
