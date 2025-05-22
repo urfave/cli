@@ -72,6 +72,7 @@ func (bif *BoolWithInverseFlag) PreParse() error {
 	if dest == nil {
 		dest = new(bool)
 	}
+	*dest = bif.Value
 	bif.value = &boolValue{
 		destination: dest,
 		count:       count,
@@ -148,6 +149,14 @@ func (bif *BoolWithInverseFlag) Names() []string {
 	}
 
 	return names
+}
+
+func (bif *BoolWithInverseFlag) IsRequired() bool {
+	return bif.Required
+}
+
+func (bif *BoolWithInverseFlag) IsVisible() bool {
+	return !bif.Hidden
 }
 
 // String implements the standard Stringer interface.
