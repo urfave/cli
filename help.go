@@ -502,6 +502,9 @@ func checkCompletions(ctx context.Context, cmd *Command) bool {
 	if cmd.ShellComplete != nil {
 		tracef("running shell completion func for command %[1]q", cmd.Name)
 		cmd.ShellComplete(ctx, cmd)
+	} else {
+		tracef("running default shell completion func for command %[1]q", cmd.Name)
+		DefaultCompleteWithFlags(ctx, cmd)
 	}
 
 	return true
