@@ -223,7 +223,11 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 
 	for _, grp := range cmd.MutuallyExclusiveFlags {
 		if err := grp.check(cmd); err != nil {
-			_ = ShowSubcommandHelp(cmd)
+			if cmd.OnUsageError != nil {
+				err = cmd.OnUsageError(ctx, cmd, err, cmd.parent != nil)
+			} else {
+				_ = ShowSubcommandHelp(cmd)
+			}
 			return ctx, err
 		}
 	}
