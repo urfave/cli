@@ -55,6 +55,10 @@ func (bif *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) err
 	return nil
 }
 
+func (bif *BoolWithInverseFlag) IsLocal() bool {
+	return bif.Local
+}
+
 func (bif *BoolWithInverseFlag) inversePrefix() string {
 	if bif.InversePrefix == "" {
 		bif.InversePrefix = DefaultInverseBoolPrefix

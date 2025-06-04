@@ -367,6 +367,8 @@ func (bif *BoolWithInverseFlag) IsBoolFlag() bool
 func (bif *BoolWithInverseFlag) IsDefaultVisible() bool
     IsDefaultVisible returns true if the flag is not hidden, otherwise false
 
+func (bif *BoolWithInverseFlag) IsLocal() bool
+
 func (bif *BoolWithInverseFlag) IsRequired() bool
 
 func (bif *BoolWithInverseFlag) IsSet() bool
