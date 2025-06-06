@@ -5168,6 +5168,77 @@ func TestJSONExportCommand(t *testing.T) {
 	assert.JSONEq(t, expected, string(out))
 }
 
+func TestCommand_ExclusiveFlags(t *testing.T) {
+	var (
+		foo1 = &StringFlag{
+			Name: "foo1",
+		}
+		foo2 = &StringFlag{
+			Name: "foo2",
+		}
+	)
+	cmd := &Command{
+		Name: "bar",
+		Flags: []Flag{
+			foo1,
+			foo2,
+		},
+		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
+			{
+				Flags: [][]Flag{
+					{
+						foo1,
+					},
+					{
+						foo2,
+					},
+				},
+			},
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"bar", "--foo1", "var1", "--foo2", "var2"})
+
+	require.Equal(t, "option foo1 cannot be set along with option foo2", err.Error())
+}
+
+func TestCommand_ExclusiveFlagsWithOnUsageError(t *testing.T) {
+	var (
+		foo1 = &StringFlag{
+			Name: "foo1",
+		}
+		foo2 = &StringFlag{
+			Name: "foo2",
+		}
+	)
+	cmd := &Command{
+		Name: "bar",
+		Flags: []Flag{
+			foo1,
+			foo2,
+		},
+		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
+			{
+				Flags: [][]Flag{
+					{
+						foo1,
+					},
+					{
+						foo2,
+					},
+				},
+			},
+		},
+		OnUsageError: func(_ context.Context, _ *Command, _ error, _ bool) error {
+			return errors.New("my custom error")
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"bar", "--foo1", "v1", "--foo2", "v2"})
+
+	require.Equal(t, "my custom error", err.Error())
+}
+
 func TestCommand_ExclusiveFlagsWithAfter(t *testing.T) {
 	var called bool
 	cmd := &Command{
