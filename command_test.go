@@ -5195,6 +5195,7 @@ func TestCommand_ExclusiveFlags(t *testing.T) {
 }
 
 func TestCommand_ExclusiveFlagsWithOnUsageError(t *testing.T) {
+	expectedErr := errors.New("my custom error")
 	cmd := &Command{
 		Name: "bar",
 		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
@@ -5214,13 +5215,13 @@ func TestCommand_ExclusiveFlagsWithOnUsageError(t *testing.T) {
 			},
 		},
 		OnUsageError: func(_ context.Context, _ *Command, _ error, _ bool) error {
-			return errors.New("my custom error")
+			return expectedErr
 		},
 	}
 
-	err := cmd.Run(buildTestContext(t), []string{"bar", "--foo1", "v1", "--foo2", "v2"})
+	actualErr := cmd.Run(buildTestContext(t), []string{"bar", "--foo1", "v1", "--foo2", "v2"})
 
-	require.Equal(t, "my custom error", err.Error())
+	require.ErrorIs(t, actualErr, expectedErr)
 }
 
 func TestCommand_ExclusiveFlagsWithAfter(t *testing.T) {
