@@ -5169,28 +5169,20 @@ func TestJSONExportCommand(t *testing.T) {
 }
 
 func TestCommand_ExclusiveFlags(t *testing.T) {
-	var (
-		foo1 = &StringFlag{
-			Name: "foo1",
-		}
-		foo2 = &StringFlag{
-			Name: "foo2",
-		}
-	)
 	cmd := &Command{
 		Name: "bar",
-		Flags: []Flag{
-			foo1,
-			foo2,
-		},
 		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
 			{
 				Flags: [][]Flag{
 					{
-						foo1,
+						&StringFlag{
+							Name: "foo1",
+						},
 					},
 					{
-						foo2,
+						&StringFlag{
+							Name: "foo2",
+						},
 					},
 				},
 			},
@@ -5203,28 +5195,20 @@ func TestCommand_ExclusiveFlags(t *testing.T) {
 }
 
 func TestCommand_ExclusiveFlagsWithOnUsageError(t *testing.T) {
-	var (
-		foo1 = &StringFlag{
-			Name: "foo1",
-		}
-		foo2 = &StringFlag{
-			Name: "foo2",
-		}
-	)
 	cmd := &Command{
 		Name: "bar",
-		Flags: []Flag{
-			foo1,
-			foo2,
-		},
 		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
 			{
 				Flags: [][]Flag{
 					{
-						foo1,
+						&StringFlag{
+							Name: "foo1",
+						},
 					},
 					{
-						foo2,
+						&StringFlag{
+							Name: "foo2",
+						},
 					},
 				},
 			},
