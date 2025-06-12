@@ -131,6 +131,15 @@ COPYRIGHT:
     cli.go uses text/template to render templates. You can render custom help
     text by setting this variable.
 
+var ShowAppHelp = showAppHelp
+    ShowAppHelp is an action that displays the help
+
+var ShowCommandHelp = showCommandHelp
+    ShowCommandHelp prints help for the given command
+
+var ShowSubcommandHelp = showSubcommandHelp
+    ShowSubcommandHelp prints help for the given subcommand
+
 var SubcommandHelpTemplate = `NAME:
    {{template "helpNameTemplate" .}}
 
@@ -195,21 +204,12 @@ func HandleExitCoder(err error)
 
     This function is the default error-handling behavior for an App.
 
-func ShowAppHelp(cmd *Command) error
-    ShowAppHelp is an action that displays the help.
-
 func ShowAppHelpAndExit(cmd *Command, exitCode int)
     ShowAppHelpAndExit - Prints the list of subcommands for the app and exits
     with exit code.
 
-func ShowCommandHelp(ctx context.Context, cmd *Command, commandName string) error
-    ShowCommandHelp prints help for the given command
-
 func ShowCommandHelpAndExit(ctx context.Context, cmd *Command, command string, code int)
     ShowCommandHelpAndExit - exits with code after showing help
-
-func ShowSubcommandHelp(cmd *Command) error
-    ShowSubcommandHelp prints help for the given subcommand
 
 func ShowSubcommandHelpAndExit(cmd *Command, exitCode int)
     ShowSubcommandHelpAndExit - Prints help for the given subcommand and exits
