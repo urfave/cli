@@ -44,6 +44,23 @@ Using this package requires a working Go environment. [See the install instructi
 
 Go Modules are required when using this package. [See the go blog guide on using Go Modules](https://blog.golang.org/using-go-modules).
 
+### Using `v3` releases
+
+The latest `v3` release may be installed via the `/v3` suffix. The state of the [`main`
+branch](https://github.com/urfave/cli/tree/main) at any given time may correspond to a
+`v3` series release or pre-release.  Please see the [`v3` migration
+guide](./migrate-v2-to-v3.md) on using v3 if you are upgrading from v2.
+
+```sh
+go get github.com/urfave/cli/v3@latest
+```
+
+```go
+import (
+  "github.com/urfave/cli/v3" // imports as package "cli"
+)
+```
+
 ### Using `v2` releases
 
 The `v2` series is the recommended version for new development. Ongoing
@@ -58,25 +75,6 @@ go get github.com/urfave/cli/v2@latest
 ```go
 import (
   "github.com/urfave/cli/v2" // imports as package "cli"
-)
-```
-
-### Using **alpha-level** `v3` releases
-
-The latest pre-release in progress on the [`main`
-branch](https://github.com/urfave/cli/tree/main) is the `v3` series which should
-be considered **alpha-level** with an unstable API. Occasional **alpha** tags
-are pushed to allow for limited stability without pinning to an arbitrary
-commit. Please see the [`v3` migration
-guide](./migrate-v2-to-v3.md) on using v3 if you are upgrading from v2
-
-```sh
-go get github.com/urfave/cli/v3@latest
-```
-
-```go
-import (
-  "github.com/urfave/cli/v3" // imports as package "cli"
 )
 ```
 
