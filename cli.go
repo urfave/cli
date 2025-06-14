@@ -21,5 +21,3 @@
 //		app.Run(os.Args)
 //	}
 package cli
-
-//go:generate make -C cmd/urfave-cli-genflags run
