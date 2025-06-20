@@ -314,7 +314,11 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 
 	if err := cmd.checkAllRequiredFlags(); err != nil {
 		cmd.isInError = true
-		_ = ShowSubcommandHelp(cmd)
+		if cmd.OnUsageError != nil {
+			err = cmd.OnUsageError(ctx, cmd, err, cmd.parent != nil)
+		} else {
+			_ = ShowSubcommandHelp(cmd)
+		}
 		return ctx, err
 	}
 
