@@ -324,7 +324,11 @@ func ShowSubcommandHelpAndExit(cmd *Command, exitCode int) {
 
 // ShowSubcommandHelp prints help for the given subcommand
 func ShowSubcommandHelp(cmd *Command) error {
-	HelpPrinter(cmd.Root().Writer, SubcommandHelpTemplate, cmd)
+	tmpl := cmd.CustomHelpTemplate
+	if tmpl == "" {
+		tmpl = SubcommandHelpTemplate
+	}
+	HelpPrinter(cmd.Root().Writer, tmpl, cmd)
 	return nil
 }
 
