@@ -633,6 +633,68 @@ EXAMPLES:
 		"expected output to include \"$ foo frobbly wobbly\"")
 }
 
+func TestShowCommandHelp_CustomtemplateWithSubcommandsHideHelpCommand(t *testing.T) {
+	cmd :=
+		&Command{
+			Name: "parent",
+			Commands: []*Command{
+				{
+					Name: "child",
+					Action: func(context.Context, *Command) error {
+						return nil
+					},
+					HideHelpCommand: true,
+					CustomHelpTemplate: `NAME:
+   {{.FullName}} - {{.Usage}}
+
+USAGE:
+   {{.FullName}} [FLAGS] TARGET [TARGET ...]
+
+FLAGS:
+  {{range .VisibleFlags}}{{.}}
+  {{end}}
+CUSTOM SECTION:
+   This is a custom help template for a subcommand.
+   Parent command: {{with .Parent}}{{.Name}}{{end}}
+`,
+				},
+			},
+		}
+	output := &bytes.Buffer{}
+	cmd.Writer = output
+
+	// Test both ways of showing help
+	testCases := []struct {
+		name string
+		args []string
+	}{
+		{
+			name: "using --help flag",
+			args: []string{"parent", "child", "--help"},
+		},
+		{
+			name: "using help command",
+			args: []string{"parent", "help", "child"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			output.Reset()
+			_ = cmd.Run(buildTestContext(t), tc.args)
+
+			assert.Contains(t, output.String(), "This is a custom help template for a subcommand.",
+				"expected output to include custom section")
+
+			assert.Contains(t, output.String(), "CUSTOM SECTION:",
+				"expected output to include custom section header")
+
+			assert.Contains(t, output.String(), "parent child",
+				"expected output to include full command path")
+		})
+	}
+}
+
 func TestShowSubcommandHelp_CommandUsageText(t *testing.T) {
 	cmd := &Command{
 		Commands: []*Command{
