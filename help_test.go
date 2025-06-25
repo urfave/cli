@@ -634,17 +634,16 @@ EXAMPLES:
 }
 
 func TestShowCommandHelp_CustomtemplateWithSubcommandsHideHelpCommand(t *testing.T) {
-	cmd :=
-		&Command{
-			Name: "parent",
-			Commands: []*Command{
-				{
-					Name: "child",
-					Action: func(context.Context, *Command) error {
-						return nil
-					},
-					HideHelpCommand: true,
-					CustomHelpTemplate: `NAME:
+	cmd := &Command{
+		Name: "parent",
+		Commands: []*Command{
+			{
+				Name: "child",
+				Action: func(context.Context, *Command) error {
+					return nil
+				},
+				HideHelpCommand: true,
+				CustomHelpTemplate: `NAME:
    {{.FullName}} - {{.Usage}}
 
 USAGE:
@@ -657,9 +656,9 @@ CUSTOM SECTION:
    This is a custom help template for a subcommand.
    Parent command: {{with .Parent}}{{.Name}}{{end}}
 `,
-				},
 			},
-		}
+		},
+	}
 	output := &bytes.Buffer{}
 	cmd.Writer = output
 
