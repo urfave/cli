@@ -4743,7 +4743,8 @@ func TestJSONExportCommand(t *testing.T) {
 				"prefixMatchCommands": false,
 				"mutuallyExclusiveFlags": null,
 				"arguments": null,
-				"readArgsFromStdin": false
+				"readArgsFromStdin": false,
+				"stopOnNthArg": null
 			  }
 			],
 			"flags": [
@@ -4805,7 +4806,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"prefixMatchCommands": false,
 			"mutuallyExclusiveFlags": null,
 			"arguments": null,
-			"readArgsFromStdin": false
+			"readArgsFromStdin": false,
+			"stopOnNthArg": null
 		  },
 		  {
 			"name": "info",
@@ -4838,7 +4840,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"prefixMatchCommands": false,
 			"mutuallyExclusiveFlags": null,
 			"arguments": null,
-			"readArgsFromStdin": false
+			"readArgsFromStdin": false,
+			"stopOnNthArg": null
 		  },
 		  {
 			"name": "some-command",
@@ -4868,7 +4871,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"prefixMatchCommands": false,
 			"mutuallyExclusiveFlags": null,
 			"arguments": null,
-			"readArgsFromStdin": false
+			"readArgsFromStdin": false,
+			"stopOnNthArg": null
 		  },
 		  {
 			"name": "hidden-command",
@@ -4917,7 +4921,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"prefixMatchCommands": false,
 			"mutuallyExclusiveFlags": null,
 			"arguments": null,
-			"readArgsFromStdin": false
+			"readArgsFromStdin": false,
+			"stopOnNthArg": null
 		  },
 		  {
 			"name": "usage",
@@ -4983,7 +4988,8 @@ func TestJSONExportCommand(t *testing.T) {
 				"prefixMatchCommands": false,
 				"mutuallyExclusiveFlags": null,
 				"arguments": null,
-				"readArgsFromStdin": false
+				"readArgsFromStdin": false,
+				"stopOnNthArg": null
 			  }
 			],
 			"flags": [
@@ -5045,7 +5051,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"prefixMatchCommands": false,
 			"mutuallyExclusiveFlags": null,
 			"arguments": null,
-			"readArgsFromStdin": false
+			"readArgsFromStdin": false,
+			"stopOnNthArg": null
 		  }
 		],
 		"flags": [
@@ -5162,7 +5169,8 @@ func TestJSONExportCommand(t *testing.T) {
 			}
 		  }
 		],
-		"readArgsFromStdin": false
+		"readArgsFromStdin": false,
+		"stopOnNthArg": null
 	  }
 `
 	assert.JSONEq(t, expected, string(out))

@@ -89,6 +89,13 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 			return &stringSliceArgs{posArgs}, nil
 		}
 
+		// Check if we've reached the Nth argument and should stop flag parsing
+		if cmd.StopOnNthArg != nil && len(posArgs) == *cmd.StopOnNthArg {
+			// Append current arg and all remaining args without parsing
+			posArgs = append(posArgs, rargs[0:]...)
+			return &stringSliceArgs{posArgs}, nil
+		}
+
 		// handle positional args
 		if firstArg[0] != '-' {
 			// positional argument probably
