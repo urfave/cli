@@ -5,7 +5,7 @@ search:
   boost: 2
 ---
 
-If default completion isnt sufficient additional customizations are available 
+If default completion isn't sufficient additional customizations are available 
 
 - custom auto-completion
 - customizing completion command

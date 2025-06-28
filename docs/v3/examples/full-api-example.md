@@ -144,7 +144,7 @@ func main() {
 			&cli.FloatFlag{Name: "howmuch"},
 			&cli.IntFlag{Name: "longdistance", Validator: func (t int) error {
 				if t < 10 {
-					return fmt.Errorf("10 miles isnt long distance!!!!")
+					return fmt.Errorf("10 miles isn't long distance!!!!")
 				}
 				return nil
 			}},
