@@ -7,7 +7,7 @@ search:
 
 The [Basics] showed how to access arguments for a command. They are all retrieved as strings which is fine
 but it we need to say get integers or timestamps the user would have to convert from string to desired type. 
-To ease the burden on users the `cli` library offers predefined `{Type}Arg` and `{Type}Args` structure to faciliate this
+To ease the burden on users the `cli` library offers predefined `{Type}Arg` and `{Type}Args` structure to faciliate this.
 The value of the argument can be retrieved using the `command.{Type}Arg()` function. For e.g
 
 <!-- {
@@ -152,9 +152,9 @@ func main() {
 
 Some things to note about multi value arguments
 
-1. They are of `{Type}Args` type rather than `{Type}Arg` to differentiate them from single value arguments
-2. The `Max` field needs to be defined to a non zero value without which it cannot be parsed
-3. `Max` field value needs to be greater than the `Min` field value
+1. They are of `{Type}Args` type rather than `{Type}Arg` to differentiate them from single value arguments.
+2. The `Max` field needs to be defined to a non zero value without which it cannot be parsed.
+3. `Max` field value needs to be greater than the `Min` field value.
 
 As with single value args the destination field can be set
 
