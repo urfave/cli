@@ -44,6 +44,15 @@ var HelpPrinterCustom helpPrinterCustom = printHelpCustom
 // VersionPrinter prints the version for the App
 var VersionPrinter = printVersion
 
+// ShowAppHelp is an action that displays the help
+var ShowAppHelp = showAppHelp
+
+// ShowCommandHelp prints help for the given command
+var ShowCommandHelp = showCommandHelp
+
+// ShowSubcommandHelp prints help for the given subcommand
+var ShowSubcommandHelp = showSubcommandHelp
+
 func buildHelpCommand(withAction bool) *Command {
 	cmd := &Command{
 		Name:      helpName,
@@ -131,7 +140,7 @@ func ShowAppHelpAndExit(cmd *Command, exitCode int) {
 }
 
 // ShowAppHelp is an action that displays the help.
-func ShowAppHelp(cmd *Command) error {
+func showAppHelp(cmd *Command) error {
 	tmpl := cmd.CustomRootCommandHelpTemplate
 	if tmpl == "" {
 		tracef("using RootCommandHelpTemplate")
@@ -270,8 +279,7 @@ func ShowCommandHelpAndExit(ctx context.Context, cmd *Command, command string, c
 	os.Exit(code)
 }
 
-// ShowCommandHelp prints help for the given command
-func ShowCommandHelp(ctx context.Context, cmd *Command, commandName string) error {
+func showCommandHelp(ctx context.Context, cmd *Command, commandName string) error {
 	for _, subCmd := range cmd.Commands {
 		if !subCmd.HasName(commandName) {
 			continue
@@ -322,8 +330,7 @@ func ShowSubcommandHelpAndExit(cmd *Command, exitCode int) {
 	os.Exit(exitCode)
 }
 
-// ShowSubcommandHelp prints help for the given subcommand
-func ShowSubcommandHelp(cmd *Command) error {
+func showSubcommandHelp(cmd *Command) error {
 	HelpPrinter(cmd.Root().Writer, SubcommandHelpTemplate, cmd)
 	return nil
 }
