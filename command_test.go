@@ -4096,6 +4096,21 @@ func TestCheckRequiredFlags(t *testing.T) {
 	}
 }
 
+func TestCheckRequiredFlagsWithOnUsageError(t *testing.T) {
+	expectedError := errors.New("OnUsageError")
+	cmd := &Command{
+		Name: "foo",
+		Flags: []Flag{
+			&StringFlag{Name: "requiredFlag", Required: true},
+		},
+		OnUsageError: func(_ context.Context, _ *Command, _ error, _ bool) error {
+			return expectedError
+		},
+	}
+	actualError := cmd.Run(buildTestContext(t), []string{"requiredFlag"})
+	require.ErrorIs(t, actualError, expectedError)
+}
+
 func TestCommand_ParentCommand_Set(t *testing.T) {
 	cmd := &Command{
 		parent: &Command{
