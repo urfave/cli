@@ -4311,6 +4311,9 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 				},
 				&StringSliceFlag{
 					Name: "ssf",
+					Config: StringConfig{
+						TrimSpace: true,
+					},
 				},
 			}
 
