@@ -47,8 +47,21 @@ func (i *SliceBase[T, C, VC]) Set(value string) error {
 		return nil
 	}
 
+	trimSpace := true
+	// hack. How do we know if we should trim spaces?
+	// it makes sense only for string slice flags which have
+	// an option to not trim spaces. So by default we trim spaces
+	// otherwise we let the underlying value type handle it.
+	var t T
+	if reflect.TypeOf(t).Kind() == reflect.String {
+		trimSpace = false
+	}
+
 	for _, s := range flagSplitMultiValues(value) {
-		if err := i.value.Set(strings.TrimSpace(s)); err != nil {
+		if trimSpace {
+			s = strings.TrimSpace(s)
+		}
+		if err := i.value.Set(s); err != nil {
 			return err
 		}
 		*i.slice = append(*i.slice, i.value.Get().(T))
