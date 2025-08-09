@@ -66,7 +66,7 @@ verify one's changes are harmonious in nature. The same steps are also run durin
 [continuous integration
 phase](https://github.com/urfave/cli/blob/main/.github/workflows/test.yml).
 
-`gfmrun` is required to run the examples, and without it `make all` may fail.
+`gfmrun` is required to run the examples, and without it `make all` will fail.
 
 You can find `gfmrun` here:
 
