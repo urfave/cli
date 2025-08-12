@@ -14,7 +14,7 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-24.04, macos-15, windows-2025]
         go: [stable, oldstable]
     name: ${{ matrix.os }} @ Go ${{ matrix.go }}
     runs-on: ${{ matrix.os }}
@@ -25,9 +25,9 @@ jobs:
           go-version: ${{ matrix.go }}
       - name: Set PATH
         run: echo "${GITHUB_WORKSPACE}/.local/bin" >>"${GITHUB_PATH}"
-      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-latest'
+      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-24.04'
         run: make ensure-goimports
-      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-latest'
+      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-24.04'
         run: make lint
       - run: make vet
       - run: make test
@@ -40,19 +40,19 @@ jobs:
           GFLAGS: -tags urfave_cli_no_docs
       - run: make check-binary-size
       - run: make yamlfmt
-      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-latest'
+      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-24.04'
         run: make generate
       - run: make diffcheck
-      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-latest'
+      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-24.04'
         run: make v2diff
-      - if: success() && matrix.go == 'stable' && matrix.os == 'ubuntu-latest'
+      - if: success() && matrix.go == 'stable' && matrix.os == 'ubuntu-24.04'
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
   test-docs:
     name: test-docs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -76,7 +76,7 @@ jobs:
     if: false
     name: publish
     needs: [test-docs]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
