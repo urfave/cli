@@ -13,7 +13,7 @@ permissions:
 jobs:
   test-docs:
     name: test-docs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -44,7 +44,7 @@ jobs:
     if: startswith(github.ref, 'refs/tags/')
     name: publish
     needs: [test-docs]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
