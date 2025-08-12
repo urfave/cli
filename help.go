@@ -139,7 +139,7 @@ func helpCommandAction(ctx context.Context, cmd *Command) error {
 // ShowRootCommandHelpAndExit prints the list of subcommands and exits with exit code.
 func ShowRootCommandHelpAndExit(cmd *Command, exitCode int) {
 	_ = ShowRootCommandHelp(cmd)
-	os.Exit(exitCode)
+	OsExiter(exitCode)
 }
 
 // ShowAppHelpAndExit is a backward-compatible name for ShowRootCommandHelp.
@@ -285,7 +285,7 @@ func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 // ShowCommandHelpAndExit exits with code after showing help via ShowCommandHelp.
 func ShowCommandHelpAndExit(ctx context.Context, cmd *Command, command string, code int) {
 	_ = ShowCommandHelp(ctx, cmd, command)
-	os.Exit(code)
+	OsExiter(code)
 }
 
 // DefaultShowCommandHelp is the default implementation of ShowCommandHelp.
@@ -337,7 +337,7 @@ func DefaultShowCommandHelp(ctx context.Context, cmd *Command, commandName strin
 // ShowSubcommandHelpAndExit prints help for the given subcommand via ShowSubcommandHelp and exits with exit code.
 func ShowSubcommandHelpAndExit(cmd *Command, exitCode int) {
 	_ = ShowSubcommandHelp(cmd)
-	os.Exit(exitCode)
+	OsExiter(exitCode)
 }
 
 // DefaultShowSubcommandHelp is the default implementation of ShowSubcommandHelp.

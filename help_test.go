@@ -65,6 +65,49 @@ func Test_ShowRootCommandHelp_MultiLineDescription(t *testing.T) {
 	}
 }
 
+func TestShowCommandHelpAndExit(t *testing.T) {
+	output := new(bytes.Buffer)
+	cmd := &Command{
+		Commands: []*Command{
+			{
+				Name:   "ok",
+				Writer: output,
+			},
+		},
+		Writer: output,
+	}
+
+	ShowCommandHelpAndExit(context.Background(), cmd, "ok", 42)
+
+	require.Equal(t, 42, lastExitCode)
+}
+
+func TestShowRootCommandHelpAndExit(t *testing.T) {
+	output := new(bytes.Buffer)
+	cmd := &Command{Writer: output}
+
+	ShowRootCommandHelpAndExit(cmd, 42)
+
+	require.Equal(t, 42, lastExitCode)
+}
+
+func TestShowSubcommandHelpAndExit(t *testing.T) {
+	output := new(bytes.Buffer)
+	ok := &Command{
+		Name:   "ok",
+		Writer: output,
+	}
+	cmd := &Command{
+		Commands: []*Command{ok},
+		Writer:   output,
+	}
+	_ = cmd
+
+	ShowSubcommandHelpAndExit(ok, 42)
+
+	require.Equal(t, 42, lastExitCode)
+}
+
 func Test_Help_RequiredFlagsNoDefault(t *testing.T) {
 	output := new(bytes.Buffer)
 
