@@ -79,6 +79,10 @@ GLOBAL OPTIONS:{{template "visiblePersistentFlagTemplate" .}}{{end}}
     uses text/template to render templates. You can render custom help text by
     setting this variable.
 
+var DefaultAppComplete = DefaultRootCommandComplete
+    DefaultAppComplete is a backward-compatible name for
+    DefaultRootCommandComplete.
+
 var DefaultInverseBoolPrefix = "no-"
 var ErrWriter io.Writer = os.Stderr
     ErrWriter is used to write errors to the user. This can be anything
@@ -131,13 +135,19 @@ COPYRIGHT:
     cli.go uses text/template to render templates. You can render custom help
     text by setting this variable.
 
-var ShowAppHelp = showAppHelp
-    ShowAppHelp is an action that displays the help
+var ShowAppHelp = ShowRootCommandHelp
+    ShowAppHelp is a backward-compatible name for ShowRootCommandHelp.
 
-var ShowCommandHelp = showCommandHelp
+var ShowAppHelpAndExit = ShowRootCommandHelpAndExit
+    ShowAppHelpAndExit is a backward-compatible name for ShowRootCommandHelp.
+
+var ShowCommandHelp = DefaultShowCommandHelp
     ShowCommandHelp prints help for the given command
 
-var ShowSubcommandHelp = showSubcommandHelp
+var ShowRootCommandHelp = DefaultShowRootCommandHelp
+    ShowRootCommandHelp is an action that displays help for the root command.
+
+var ShowSubcommandHelp = DefaultShowSubcommandHelp
     ShowSubcommandHelp prints help for the given subcommand
 
 var SubcommandHelpTemplate = `NAME:
@@ -162,37 +172,40 @@ OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}
     cli.go uses text/template to render templates. You can render custom help
     text by setting this variable.
 
-var VersionPrinter = printVersion
-    VersionPrinter prints the version for the App
-
-var HelpPrinter helpPrinter = printHelp
-    HelpPrinter is a function that writes the help output. If not set
-    explicitly, this calls HelpPrinterCustom using only the default template
-    functions.
-
-    If custom logic for printing help is required, this function can be
-    overridden. If the ExtraInfo field is defined on an App, this function
-    should not be modified, as HelpPrinterCustom will be used directly in order
-    to capture the extra information.
-
-var HelpPrinterCustom helpPrinterCustom = printHelpCustom
-    HelpPrinterCustom is a function that writes the help output. It is used as
-    the default implementation of HelpPrinter, and may be called directly if the
-    ExtraInfo field is set on an App.
-
-    In the default implementation, if the customFuncs argument contains a
-    "wrapAt" key, which is a function which takes no arguments and returns an
-    int, this int value will be used to produce a "wrap" function used by the
-    default template to wrap long lines.
+var VersionPrinter = DefaultPrintVersion
+    VersionPrinter prints the version for the root Command.
 
 
 FUNCTIONS
 
-func DefaultAppComplete(ctx context.Context, cmd *Command)
-    DefaultAppComplete prints the list of subcommands as the default app
-    completion method
-
 func DefaultCompleteWithFlags(ctx context.Context, cmd *Command)
+func DefaultPrintHelp(out io.Writer, templ string, data any)
+    DefaultPrintHelp is the default implementation of HelpPrinter.
+
+func DefaultPrintHelpCustom(out io.Writer, templ string, data any, customFuncs map[string]any)
+    DefaultPrintHelpCustom is the default implementation of HelpPrinterCustom.
+
+    The customFuncs map will be combined with a default template.FuncMap to
+    allow using arbitrary functions in template rendering.
+
+func DefaultPrintVersion(cmd *Command)
+    DefaultPrintVersion is the default implementation of VersionPrinter.
+
+func DefaultRootCommandComplete(ctx context.Context, cmd *Command)
+    DefaultRootCommandComplete prints the list of subcommands as the default
+    completion method.
+
+func DefaultShowCommandHelp(ctx context.Context, cmd *Command, commandName string) error
+    DefaultShowCommandHelp is the default implementation of ShowCommandHelp.
+
+func DefaultShowRootCommandHelp(cmd *Command) error
+    DefaultShowRootCommandHelp is the default implementation of
+    ShowRootCommandHelp.
+
+func DefaultShowSubcommandHelp(cmd *Command) error
+    DefaultShowSubcommandHelp is the default implementation of
+    ShowSubcommandHelp.
+
 func FlagNames(name string, aliases []string) []string
 func HandleExitCoder(err error)
     HandleExitCoder handles errors implementing ExitCoder by printing their
@@ -202,21 +215,22 @@ func HandleExitCoder(err error)
     for the ExitCoder interface, and OsExiter will be called with the last exit
     code found, or exit code 1 if no ExitCoder is found.
 
-    This function is the default error-handling behavior for an App.
-
-func ShowAppHelpAndExit(cmd *Command, exitCode int)
-    ShowAppHelpAndExit - Prints the list of subcommands for the app and exits
-    with exit code.
+    This function is the default error-handling behavior for a Command.
 
 func ShowCommandHelpAndExit(ctx context.Context, cmd *Command, command string, code int)
-    ShowCommandHelpAndExit - exits with code after showing help
+    ShowCommandHelpAndExit exits with code after showing help via
+    ShowCommandHelp.
+
+func ShowRootCommandHelpAndExit(cmd *Command, exitCode int)
+    ShowRootCommandHelpAndExit prints the list of subcommands and exits with
+    exit code.
 
 func ShowSubcommandHelpAndExit(cmd *Command, exitCode int)
-    ShowSubcommandHelpAndExit - Prints help for the given subcommand and exits
-    with exit code.
+    ShowSubcommandHelpAndExit prints help for the given subcommand via
+    ShowSubcommandHelp and exits with exit code.
 
 func ShowVersion(cmd *Command)
-    ShowVersion prints the version number of the App
+    ShowVersion prints the version number of the root Command.
 
 
 TYPES
@@ -472,9 +486,9 @@ type Command struct {
 	Writer io.Writer `json:"-"`
 	// ErrWriter writes error output
 	ErrWriter io.Writer `json:"-"`
-	// ExitErrHandler processes any error encountered while running an App before
-	// it is returned to the caller. If no function is provided, HandleExitCoder
-	// is used as the default behavior.
+	// ExitErrHandler processes any error encountered while running a Command before it is
+	// returned to the caller. If no function is provided, HandleExitCoder is used as the
+	// default behavior.
 	ExitErrHandler ExitErrHandlerFunc `json:"-"`
 	// Other custom info
 	Metadata map[string]interface{} `json:"metadata"`
@@ -687,7 +701,7 @@ func (c *Command) TimestampArg(name string) time.Time
 func (c *Command) TimestampArgs(name string) []time.Time
 
 func (cmd *Command) ToFishCompletion() (string, error)
-    ToFishCompletion creates a fish completion string for the `*App` The
+    ToFishCompletion creates a fish completion string for the `*Command` The
     function errors if either parsing or writing of the string fails.
 
 func (cmd *Command) Uint(name string) uint
@@ -847,16 +861,15 @@ type ExitCoder interface {
 	error
 	ExitCode() int
 }
-    ExitCoder is the interface checked by `App` and `Command` for a custom exit
-    code
+    ExitCoder is the interface checked by `Command` for a custom exit code.
 
-func Exit(message interface{}, exitCode int) ExitCoder
+func Exit(message any, exitCode int) ExitCoder
     Exit wraps a message and exit code into an error, which by default is
     handled with a call to os.Exit during default error handling.
 
-    This is the simplest way to trigger a non-zero exit code for an App
-    without having to call os.Exit manually. During testing, this behavior
-    can be avoided by overriding the ExitErrHandler function on an App or the
+    This is the simplest way to trigger a non-zero exit code for a Command
+    without having to call os.Exit manually. During testing, this behavior can
+    be avoided by overriding the ExitErrHandler function on a Command or the
     package-global OsExiter function.
 
 type ExitErrHandlerFunc func(context.Context, *Command, error)
@@ -1092,6 +1105,32 @@ type FloatSlice = SliceBase[float64, NoConfig, floatValue[float64]]
 type FloatSliceFlag = FlagBase[[]float64, NoConfig, FloatSlice]
 
 type GenericFlag = FlagBase[Value, NoConfig, genericValue]
+
+type HelpPrinterCustomFunc func(w io.Writer, templ string, data any, customFunc map[string]any)
+    Prints help for the Command with custom template function.
+
+var HelpPrinterCustom HelpPrinterCustomFunc = DefaultPrintHelpCustom
+    HelpPrinterCustom is a function that writes the help output. It is used as
+    the default implementation of HelpPrinter, and may be called directly if the
+    ExtraInfo field is set on a Command.
+
+    In the default implementation, if the customFuncs argument contains a
+    "wrapAt" key, which is a function which takes no arguments and returns an
+    int, this int value will be used to produce a "wrap" function used by the
+    default template to wrap long lines.
+
+type HelpPrinterFunc func(w io.Writer, templ string, data any)
+    HelpPrinterFunc prints help for the Command.
+
+var HelpPrinter HelpPrinterFunc = DefaultPrintHelp
+    HelpPrinter is a function that writes the help output. If not set
+    explicitly, this calls HelpPrinterCustom using only the default template
+    functions.
+
+    If custom logic for printing help is required, this function can be
+    overridden. If the ExtraInfo field is defined on a Command, this function
+    should not be modified, as HelpPrinterCustom will be used directly in order
+    to capture the extra information.
 
 type Int16Arg = ArgumentBase[int16, IntegerConfig, intValue[int16]]
 
