@@ -16,42 +16,45 @@ const (
 	helpAlias = "h"
 )
 
-// Prints help for the App or Command
-type helpPrinter func(w io.Writer, templ string, data interface{})
+// HelpPrinterFunc prints help for the Command.
+type HelpPrinterFunc func(w io.Writer, templ string, data any)
 
-// Prints help for the App or Command with custom template function.
-type helpPrinterCustom func(w io.Writer, templ string, data interface{}, customFunc map[string]interface{})
+// Prints help for the Command with custom template function.
+type HelpPrinterCustomFunc func(w io.Writer, templ string, data any, customFunc map[string]any)
 
 // HelpPrinter is a function that writes the help output. If not set explicitly,
 // this calls HelpPrinterCustom using only the default template functions.
 //
 // If custom logic for printing help is required, this function can be
-// overridden. If the ExtraInfo field is defined on an App, this function
+// overridden. If the ExtraInfo field is defined on a Command, this function
 // should not be modified, as HelpPrinterCustom will be used directly in order
 // to capture the extra information.
-var HelpPrinter helpPrinter = printHelp
+var HelpPrinter HelpPrinterFunc = DefaultPrintHelp
 
 // HelpPrinterCustom is a function that writes the help output. It is used as
 // the default implementation of HelpPrinter, and may be called directly if
-// the ExtraInfo field is set on an App.
+// the ExtraInfo field is set on a Command.
 //
 // In the default implementation, if the customFuncs argument contains a
 // "wrapAt" key, which is a function which takes no arguments and returns
 // an int, this int value will be used to produce a "wrap" function used
 // by the default template to wrap long lines.
-var HelpPrinterCustom helpPrinterCustom = printHelpCustom
+var HelpPrinterCustom HelpPrinterCustomFunc = DefaultPrintHelpCustom
 
-// VersionPrinter prints the version for the App
-var VersionPrinter = printVersion
+// VersionPrinter prints the version for the root Command.
+var VersionPrinter = DefaultPrintVersion
 
-// ShowAppHelp is an action that displays the help
-var ShowAppHelp = showAppHelp
+// ShowRootCommandHelp is an action that displays help for the root command.
+var ShowRootCommandHelp = DefaultShowRootCommandHelp
+
+// ShowAppHelp is a backward-compatible name for ShowRootCommandHelp.
+var ShowAppHelp = ShowRootCommandHelp
 
 // ShowCommandHelp prints help for the given command
-var ShowCommandHelp = showCommandHelp
+var ShowCommandHelp = DefaultShowCommandHelp
 
 // ShowSubcommandHelp prints help for the given subcommand
-var ShowSubcommandHelp = showSubcommandHelp
+var ShowSubcommandHelp = DefaultShowSubcommandHelp
 
 func buildHelpCommand(withAction bool) *Command {
 	cmd := &Command{
@@ -109,8 +112,8 @@ func helpCommandAction(ctx context.Context, cmd *Command) error {
 	// Special case when running help on main app itself as opposed to individual
 	// commands/subcommands
 	if cmd.parent == nil {
-		tracef("returning ShowAppHelp")
-		_ = ShowAppHelp(cmd)
+		tracef("returning ShowRootCommandHelp")
+		_ = ShowRootCommandHelp(cmd)
 		return nil
 	}
 
@@ -133,14 +136,17 @@ func helpCommandAction(ctx context.Context, cmd *Command) error {
 	return ShowSubcommandHelp(cmd)
 }
 
-// ShowAppHelpAndExit - Prints the list of subcommands for the app and exits with exit code.
-func ShowAppHelpAndExit(cmd *Command, exitCode int) {
-	_ = ShowAppHelp(cmd)
-	os.Exit(exitCode)
+// ShowRootCommandHelpAndExit prints the list of subcommands and exits with exit code.
+func ShowRootCommandHelpAndExit(cmd *Command, exitCode int) {
+	_ = ShowRootCommandHelp(cmd)
+	OsExiter(exitCode)
 }
 
-// ShowAppHelp is an action that displays the help.
-func showAppHelp(cmd *Command) error {
+// ShowAppHelpAndExit is a backward-compatible name for ShowRootCommandHelp.
+var ShowAppHelpAndExit = ShowRootCommandHelpAndExit
+
+// DefaultShowRootCommandHelp is the default implementation of ShowRootCommandHelp.
+func DefaultShowRootCommandHelp(cmd *Command) error {
 	tmpl := cmd.CustomRootCommandHelpTemplate
 	if tmpl == "" {
 		tracef("using RootCommandHelpTemplate")
@@ -163,10 +169,13 @@ func showAppHelp(cmd *Command) error {
 	return nil
 }
 
-// DefaultAppComplete prints the list of subcommands as the default app completion method
-func DefaultAppComplete(ctx context.Context, cmd *Command) {
+// DefaultRootCommandComplete prints the list of subcommands as the default completion method.
+func DefaultRootCommandComplete(ctx context.Context, cmd *Command) {
 	DefaultCompleteWithFlags(ctx, cmd)
 }
+
+// DefaultAppComplete is a backward-compatible name for DefaultRootCommandComplete.
+var DefaultAppComplete = DefaultRootCommandComplete
 
 func printCommandSuggestions(commands []*Command, writer io.Writer) {
 	for _, command := range commands {
@@ -273,13 +282,14 @@ func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 	}
 }
 
-// ShowCommandHelpAndExit - exits with code after showing help
+// ShowCommandHelpAndExit exits with code after showing help via ShowCommandHelp.
 func ShowCommandHelpAndExit(ctx context.Context, cmd *Command, command string, code int) {
 	_ = ShowCommandHelp(ctx, cmd, command)
-	os.Exit(code)
+	OsExiter(code)
 }
 
-func showCommandHelp(ctx context.Context, cmd *Command, commandName string) error {
+// DefaultShowCommandHelp is the default implementation of ShowCommandHelp.
+func DefaultShowCommandHelp(ctx context.Context, cmd *Command, commandName string) error {
 	for _, subCmd := range cmd.Commands {
 		if !subCmd.HasName(commandName) {
 			continue
@@ -324,24 +334,26 @@ func showCommandHelp(ctx context.Context, cmd *Command, commandName string) erro
 	return nil
 }
 
-// ShowSubcommandHelpAndExit - Prints help for the given subcommand and exits with exit code.
+// ShowSubcommandHelpAndExit prints help for the given subcommand via ShowSubcommandHelp and exits with exit code.
 func ShowSubcommandHelpAndExit(cmd *Command, exitCode int) {
 	_ = ShowSubcommandHelp(cmd)
-	os.Exit(exitCode)
+	OsExiter(exitCode)
 }
 
-func showSubcommandHelp(cmd *Command) error {
+// DefaultShowSubcommandHelp is the default implementation of ShowSubcommandHelp.
+func DefaultShowSubcommandHelp(cmd *Command) error {
 	HelpPrinter(cmd.Root().Writer, SubcommandHelpTemplate, cmd)
 	return nil
 }
 
-// ShowVersion prints the version number of the App
+// ShowVersion prints the version number of the root Command.
 func ShowVersion(cmd *Command) {
 	tracef("showing version via VersionPrinter (cmd=%[1]q)", cmd.Name)
 	VersionPrinter(cmd)
 }
 
-func printVersion(cmd *Command) {
+// DefaultPrintVersion is the default implementation of VersionPrinter.
+func DefaultPrintVersion(cmd *Command) {
 	_, _ = fmt.Fprintf(cmd.Root().Writer, "%v version %v\n", cmd.Name, cmd.Version)
 }
 
@@ -357,11 +369,11 @@ func handleTemplateError(err error) {
 	}
 }
 
-// printHelpCustom is the default implementation of HelpPrinterCustom.
+// DefaultPrintHelpCustom is the default implementation of HelpPrinterCustom.
 //
 // The customFuncs map will be combined with a default template.FuncMap to
 // allow using arbitrary functions in template rendering.
-func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs map[string]interface{}) {
+func DefaultPrintHelpCustom(out io.Writer, templ string, data any, customFuncs map[string]any) {
 	const maxLineLength = 10000
 
 	tracef("building default funcMap")
@@ -450,7 +462,8 @@ func printHelpCustom(out io.Writer, templ string, data interface{}, customFuncs 
 	_ = w.Flush()
 }
 
-func printHelp(out io.Writer, templ string, data interface{}) {
+// DefaultPrintHelp is the default implementation of HelpPrinter.
+func DefaultPrintHelp(out io.Writer, templ string, data any) {
 	HelpPrinterCustom(out, templ, data, nil)
 }
 

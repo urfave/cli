@@ -185,9 +185,9 @@ func main() {
 			return nil
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
-			cli.DefaultAppComplete(ctx, cmd)
+			cli.DefaultRootCommandComplete(ctx, cmd)
 			cli.HandleExitCoder(errors.New("not an exit coder, though"))
-			cli.ShowAppHelp(cmd)
+			cli.ShowRootCommandHelp(cmd)
 			cli.ShowCommandHelp(ctx, cmd, "also-nope")
 			cli.ShowSubcommandHelp(cmd)
 			cli.ShowVersion(cmd)

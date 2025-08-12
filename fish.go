@@ -8,7 +8,7 @@ import (
 	"text/template"
 )
 
-// ToFishCompletion creates a fish completion string for the `*App`
+// ToFishCompletion creates a fish completion string for the `*Command`
 // The function errors if either parsing or writing of the string fails.
 func (cmd *Command) ToFishCompletion() (string, error) {
 	var w bytes.Buffer
