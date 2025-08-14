@@ -54,7 +54,7 @@ jobs:
         with:
           python-version: '3.13'
           cache: pip
-          cache-dependency-path: mkdocs-reqs.txt
+          cache-dependency-path: mkdocs-requirements.txt
           
       - name: Ensure mkdocs is available
         run: make ensure-mkdocs
