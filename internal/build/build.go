@@ -519,7 +519,7 @@ func GenerateActionFunc(cCtx *cli.Context) error {
 	}
 
 	log.Println("--- generating Go source files ---")
-	return runCmd("go", "generate", cCtx.Path("top")+"/...")
+	return runCmd("make", "-C", cCtx.Path("top")+"/cmd/urfave-cli-genflags", "run")
 }
 
 func YAMLFmtActionFunc(cCtx *cli.Context) error {
