@@ -99,6 +99,11 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 	tracef("running with arguments %[1]q (cmd=%[2]q)", osArgs, cmd.Name)
 	cmd.setupDefaults(osArgs)
 
+	// Validate StopOnNthArg
+	if cmd.StopOnNthArg != nil && *cmd.StopOnNthArg < 0 {
+		return ctx, fmt.Errorf("StopOnNthArg must be non-negative, got %d", *cmd.StopOnNthArg)
+	}
+
 	if v, ok := ctx.Value(commandContextKey).(*Command); ok {
 		tracef("setting parent (cmd=%[1]q) command from context.Context value (cmd=%[2]q)", v.Name, cmd.Name)
 		cmd.parent = v
