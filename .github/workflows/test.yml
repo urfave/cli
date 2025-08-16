@@ -17,14 +17,14 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-24.04, macos-15, windows-2025]
         go: [stable, oldstable]
 
     name: ${{ matrix.os }} @ Go ${{ matrix.go }}
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -34,25 +34,25 @@ jobs:
       - name: Set PATH
         run: echo "${GITHUB_WORKSPACE}/.local/bin" >>"${GITHUB_PATH}"
 
-      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-latest'
+      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-24.04'
         run: make ensure-goimports
 
-      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-latest'
+      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-24.04'
         run: make lint
 
       - run: make vet
       - run: make test
       - run: make check-binary-size
 
-      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-latest'
+      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-24.04'
         run: make generate
 
       - run: make diffcheck
 
-      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-latest'
+      - if: matrix.go == 'stable' && matrix.os == 'ubuntu-24.04'
         run: make v3diff
 
-      - if: success() && matrix.go == 'stable' && matrix.os == 'ubuntu-latest'
+      - if: success() && matrix.go == 'stable' && matrix.os == 'ubuntu-24.04'
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

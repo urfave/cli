@@ -66,6 +66,18 @@ verify one's changes are harmonious in nature. The same steps are also run durin
 [continuous integration
 phase](https://github.com/urfave/cli/blob/main/.github/workflows/test.yml).
 
+`gfmrun` is required to run the examples, and without it `make all` will fail.
+
+You can find `gfmrun` here:
+
+- [urfave/gfmrun](https://github.com/urfave/gfmrun)
+
+To install `gfmrun`, you can use `go install`:
+
+```
+go install github.com/urfave/gfmrun/cmd/gfmrun@latest
+```
+
 In the event that the `v3diff` target exits non-zero, this is a signal that the public API
 surface area has changed. If the changes are acceptable, then manually running the
 approval step will "promote" the current `go doc` output:

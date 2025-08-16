@@ -180,9 +180,9 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 		}
 		if !cmd.hideHelp() {
 			if cmd.parent == nil {
-				tracef("running ShowAppHelp")
-				if err := ShowAppHelp(cmd); err != nil {
-					tracef("SILENTLY IGNORING ERROR running ShowAppHelp %[1]v (cmd=%[2]q)", err, cmd.Name)
+				tracef("running ShowRootCommandHelp")
+				if err := ShowRootCommandHelp(cmd); err != nil {
+					tracef("SILENTLY IGNORING ERROR running ShowRootCommandHelp %[1]v (cmd=%[2]q)", err, cmd.Name)
 				}
 			} else {
 				tracef("running ShowCommandHelp with %[1]q", cmd.Name)
@@ -319,7 +319,11 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 
 	if err := cmd.checkAllRequiredFlags(); err != nil {
 		cmd.isInError = true
-		_ = ShowSubcommandHelp(cmd)
+		if cmd.OnUsageError != nil {
+			err = cmd.OnUsageError(ctx, cmd, err, cmd.parent != nil)
+		} else {
+			_ = ShowSubcommandHelp(cmd)
+		}
 		return ctx, err
 	}
 

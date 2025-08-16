@@ -85,9 +85,9 @@ type Command struct {
 	Writer io.Writer `json:"-"`
 	// ErrWriter writes error output
 	ErrWriter io.Writer `json:"-"`
-	// ExitErrHandler processes any error encountered while running an App before
-	// it is returned to the caller. If no function is provided, HandleExitCoder
-	// is used as the default behavior.
+	// ExitErrHandler processes any error encountered while running a Command before it is
+	// returned to the caller. If no function is provided, HandleExitCoder is used as the
+	// default behavior.
 	ExitErrHandler ExitErrHandlerFunc `json:"-"`
 	// Other custom info
 	Metadata map[string]interface{} `json:"metadata"`

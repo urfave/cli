@@ -350,6 +350,12 @@ func TestFlagsFromEnv(t *testing.T) {
 			output: []string{"foo", "bar"},
 			fl:     &StringSliceFlag{Name: "names", Sources: EnvVars("NAMES"), Config: StringConfig{TrimSpace: true}},
 		},
+		{
+			name:   "StringSliceFlag valid without TrimSpace",
+			input:  "foo , bar ",
+			output: []string{"foo ", " bar "},
+			fl:     &StringSliceFlag{Name: "names", Sources: EnvVars("NAMES")},
+		},
 
 		{
 			name:   "StringMapFlag valid",

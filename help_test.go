@@ -15,54 +15,97 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_ShowAppHelp_NoAuthor(t *testing.T) {
+func Test_ShowRootCommandHelp_NoAuthor(t *testing.T) {
 	output := new(bytes.Buffer)
 	cmd := &Command{Writer: output}
-	_ = ShowAppHelp(cmd)
+	_ = ShowRootCommandHelp(cmd)
 
 	if bytes.Contains(output.Bytes(), []byte("AUTHOR(S):")) {
 		t.Errorf("expected\n%snot to include %s", output.String(), "AUTHOR(S):")
 	}
 }
 
-func Test_ShowAppHelp_NoVersion(t *testing.T) {
+func Test_ShowRootCommandHelp_NoVersion(t *testing.T) {
 	output := new(bytes.Buffer)
 	cmd := &Command{Writer: output}
 
 	cmd.Version = ""
 
-	_ = ShowAppHelp(cmd)
+	_ = ShowRootCommandHelp(cmd)
 
 	if bytes.Contains(output.Bytes(), []byte("VERSION:")) {
 		t.Errorf("expected\n%snot to include %s", output.String(), "VERSION:")
 	}
 }
 
-func Test_ShowAppHelp_HideVersion(t *testing.T) {
+func Test_ShowRootCommandHelp_HideVersion(t *testing.T) {
 	output := new(bytes.Buffer)
 	cmd := &Command{Writer: output}
 
 	cmd.HideVersion = true
 
-	_ = ShowAppHelp(cmd)
+	_ = ShowRootCommandHelp(cmd)
 
 	if bytes.Contains(output.Bytes(), []byte("VERSION:")) {
 		t.Errorf("expected\n%snot to include %s", output.String(), "VERSION:")
 	}
 }
 
-func Test_ShowAppHelp_MultiLineDescription(t *testing.T) {
+func Test_ShowRootCommandHelp_MultiLineDescription(t *testing.T) {
 	output := new(bytes.Buffer)
 	cmd := &Command{Writer: output}
 
 	cmd.HideVersion = true
 	cmd.Description = "multi\n  line"
 
-	_ = ShowAppHelp(cmd)
+	_ = ShowRootCommandHelp(cmd)
 
 	if !bytes.Contains(output.Bytes(), []byte("DESCRIPTION:\n   multi\n     line")) {
 		t.Errorf("expected\n%s\nto include\n%s", output.String(), "DESCRIPTION:\n   multi\n     line")
 	}
+}
+
+func TestShowCommandHelpAndExit(t *testing.T) {
+	output := new(bytes.Buffer)
+	cmd := &Command{
+		Commands: []*Command{
+			{
+				Name:   "ok",
+				Writer: output,
+			},
+		},
+		Writer: output,
+	}
+
+	ShowCommandHelpAndExit(context.Background(), cmd, "ok", 42)
+
+	require.Equal(t, 42, lastExitCode)
+}
+
+func TestShowRootCommandHelpAndExit(t *testing.T) {
+	output := new(bytes.Buffer)
+	cmd := &Command{Writer: output}
+
+	ShowRootCommandHelpAndExit(cmd, 42)
+
+	require.Equal(t, 42, lastExitCode)
+}
+
+func TestShowSubcommandHelpAndExit(t *testing.T) {
+	output := new(bytes.Buffer)
+	ok := &Command{
+		Name:   "ok",
+		Writer: output,
+	}
+	cmd := &Command{
+		Commands: []*Command{ok},
+		Writer:   output,
+	}
+	_ = cmd
+
+	ShowSubcommandHelpAndExit(ok, 42)
+
+	require.Equal(t, 42, lastExitCode)
 }
 
 func Test_Help_RequiredFlagsNoDefault(t *testing.T) {
@@ -302,7 +345,7 @@ func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 	require.Equal(t, 3, exitErr.exitCode, "unexpected exit value")
 }
 
-func TestShowAppHelp_CommandAliases(t *testing.T) {
+func TestShowRootCommandHelp_CommandAliases(t *testing.T) {
 	out := &bytes.Buffer{}
 
 	cmd := &Command{
@@ -402,7 +445,7 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 	tests := []struct {
 		name         string
 		template     string
-		printer      helpPrinter
+		printer      HelpPrinterFunc
 		command      string
 		wantTemplate string
 		wantOutput   string
@@ -443,7 +486,7 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			defer func(old helpPrinter) {
+			defer func(old HelpPrinterFunc) {
 				HelpPrinter = old
 			}(HelpPrinter)
 			HelpPrinter = func(w io.Writer, templ string, data interface{}) {
@@ -480,7 +523,7 @@ func TestShowCommandHelp_HelpPrinterCustom(t *testing.T) {
 	testCases := []struct {
 		name         string
 		template     string
-		printer      helpPrinterCustom
+		printer      HelpPrinterCustomFunc
 		arguments    []string
 		wantTemplate string
 		wantOutput   string
@@ -509,7 +552,7 @@ func TestShowCommandHelp_HelpPrinterCustom(t *testing.T) {
 			printer: func(w io.Writer, templ string, data any, _ map[string]any) {
 				// Pass a custom function to ensure it gets used
 				fm := map[string]any{"doublecho": doublecho}
-				printHelpCustom(w, templ, data, fm)
+				DefaultPrintHelpCustom(w, templ, data, fm)
 			},
 			arguments:    []string{"my-app", "help", "my-command"},
 			wantTemplate: "{{doublecho .Name}}",
@@ -521,7 +564,7 @@ func TestShowCommandHelp_HelpPrinterCustom(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			r := require.New(t)
 
-			defer func(old helpPrinterCustom) {
+			defer func(old HelpPrinterCustomFunc) {
 				HelpPrinterCustom = old
 			}(HelpPrinterCustom)
 
@@ -784,7 +827,7 @@ UsageText`,
 		"expected output to include usage text")
 }
 
-func TestShowAppHelp_HiddenCommand(t *testing.T) {
+func TestShowRootCommandHelp_HiddenCommand(t *testing.T) {
 	cmd := &Command{
 		Commands: []*Command{
 			{
@@ -815,7 +858,7 @@ func TestShowAppHelp_HiddenCommand(t *testing.T) {
 		"expected output to include \"frobbly\"")
 }
 
-func TestShowAppHelp_HelpPrinter(t *testing.T) {
+func TestShowRootCommandHelp_HelpPrinter(t *testing.T) {
 	doublecho := func(text string) string {
 		return text + " " + text
 	}
@@ -823,7 +866,7 @@ func TestShowAppHelp_HelpPrinter(t *testing.T) {
 	tests := []struct {
 		name         string
 		template     string
-		printer      helpPrinter
+		printer      HelpPrinterFunc
 		wantTemplate string
 		wantOutput   string
 	}{
@@ -841,8 +884,8 @@ func TestShowAppHelp_HelpPrinter(t *testing.T) {
 			template: "{{doublecho .Name}}",
 			printer: func(w io.Writer, templ string, data interface{}) {
 				// Pass a custom function to ensure it gets used
-				fm := map[string]interface{}{"doublecho": doublecho}
-				printHelpCustom(w, templ, data, fm)
+				fm := map[string]any{"doublecho": doublecho}
+				DefaultPrintHelpCustom(w, templ, data, fm)
 			},
 			wantTemplate: "{{doublecho .Name}}",
 			wantOutput:   "my-app my-app",
@@ -851,7 +894,7 @@ func TestShowAppHelp_HelpPrinter(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			defer func(old helpPrinter) {
+			defer func(old HelpPrinterFunc) {
 				HelpPrinter = old
 			}(HelpPrinter)
 			HelpPrinter = func(w io.Writer, templ string, data interface{}) {
@@ -874,7 +917,7 @@ func TestShowAppHelp_HelpPrinter(t *testing.T) {
 	}
 }
 
-func TestShowAppHelp_HelpPrinterCustom(t *testing.T) {
+func TestShowRootCommandHelp_HelpPrinterCustom(t *testing.T) {
 	doublecho := func(text string) string {
 		return text + " " + text
 	}
@@ -882,7 +925,7 @@ func TestShowAppHelp_HelpPrinterCustom(t *testing.T) {
 	tests := []struct {
 		name         string
 		template     string
-		printer      helpPrinterCustom
+		printer      HelpPrinterCustomFunc
 		wantTemplate string
 		wantOutput   string
 	}{
@@ -900,8 +943,8 @@ func TestShowAppHelp_HelpPrinterCustom(t *testing.T) {
 			template: "{{doublecho .Name}}",
 			printer: func(w io.Writer, templ string, data interface{}, _ map[string]interface{}) {
 				// Pass a custom function to ensure it gets used
-				fm := map[string]interface{}{"doublecho": doublecho}
-				printHelpCustom(w, templ, data, fm)
+				fm := map[string]any{"doublecho": doublecho}
+				DefaultPrintHelpCustom(w, templ, data, fm)
 			},
 			wantTemplate: "{{doublecho .Name}}",
 			wantOutput:   "my-app my-app",
@@ -910,7 +953,7 @@ func TestShowAppHelp_HelpPrinterCustom(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			defer func(old helpPrinterCustom) {
+			defer func(old HelpPrinterCustomFunc) {
 				HelpPrinterCustom = old
 			}(HelpPrinterCustom)
 			HelpPrinterCustom = func(w io.Writer, templ string, data interface{}, fm map[string]interface{}) {
@@ -933,7 +976,7 @@ func TestShowAppHelp_HelpPrinterCustom(t *testing.T) {
 	}
 }
 
-func TestShowAppHelp_CustomAppTemplate(t *testing.T) {
+func TestShowRootCommandHelp_CustomAppTemplate(t *testing.T) {
 	cmd := &Command{
 		Commands: []*Command{
 			{
@@ -1004,7 +1047,7 @@ VERSION:
 	}
 }
 
-func TestShowAppHelp_UsageText(t *testing.T) {
+func TestShowRootCommandHelp_UsageText(t *testing.T) {
 	cmd := &Command{
 		UsageText: "This is a single line of UsageText",
 		Commands: []*Command{
@@ -1022,7 +1065,7 @@ func TestShowAppHelp_UsageText(t *testing.T) {
 	assert.Contains(t, output.String(), "This is a single line of UsageText", "expected output to include usage text")
 }
 
-func TestShowAppHelp_MultiLine_UsageText(t *testing.T) {
+func TestShowRootCommandHelp_MultiLine_UsageText(t *testing.T) {
 	cmd := &Command{
 		UsageText: `This is a
 multi
@@ -1050,7 +1093,7 @@ App UsageText`,
 	assert.Contains(t, output.String(), expected, "expected output to include usage text")
 }
 
-func TestShowAppHelp_CommandMultiLine_UsageText(t *testing.T) {
+func TestShowRootCommandHelp_CommandMultiLine_UsageText(t *testing.T) {
 	cmd := &Command{
 		UsageText: `This is a
 multi
@@ -1356,7 +1399,7 @@ func TestMutuallyExclusiveFlags(t *testing.T) {
 		},
 	}
 
-	_ = ShowAppHelp(cmd)
+	_ = ShowRootCommandHelp(cmd)
 
 	assert.Contains(t, writer.String(), "--s1", "written help does not include mutex flag")
 }
@@ -1368,7 +1411,7 @@ func TestWrap(t *testing.T) {
 
 func TestWrappedHelp(t *testing.T) {
 	// Reset HelpPrinter after this test.
-	defer func(old helpPrinter) {
+	defer func(old HelpPrinterFunc) {
 		HelpPrinter = old
 	}(HelpPrinter)
 
@@ -1407,7 +1450,7 @@ And then another long line. Blah blah blah does anybody ever read these things?`
 		HelpPrinterCustom(w, templ, data, funcMap)
 	}
 
-	_ = ShowAppHelp(cmd)
+	_ = ShowRootCommandHelp(cmd)
 
 	expected := `NAME:
     - here's a sample
@@ -1457,7 +1500,7 @@ COPYRIGHT:
 
 func TestWrappedCommandHelp(t *testing.T) {
 	// Reset HelpPrinter after this test.
-	defer func(old helpPrinter) {
+	defer func(old HelpPrinterFunc) {
 		HelpPrinter = old
 	}(HelpPrinter)
 
@@ -1517,7 +1560,7 @@ OPTIONS:
 
 func TestWrappedSubcommandHelp(t *testing.T) {
 	// Reset HelpPrinter after this test.
-	defer func(old helpPrinter) {
+	defer func(old HelpPrinterFunc) {
 		HelpPrinter = old
 	}(HelpPrinter)
 
@@ -1582,7 +1625,7 @@ OPTIONS:
 
 func TestWrappedHelpSubcommand(t *testing.T) {
 	// Reset HelpPrinter after this test.
-	defer func(old helpPrinter) {
+	defer func(old HelpPrinterFunc) {
 		HelpPrinter = old
 	}(HelpPrinter)
 
@@ -1657,7 +1700,7 @@ OPTIONS:
 
 func TestCategorizedHelp(t *testing.T) {
 	// Reset HelpPrinter after this test.
-	defer func(old helpPrinter) {
+	defer func(old HelpPrinterFunc) {
 		HelpPrinter = old
 	}(HelpPrinter)
 
@@ -1959,7 +2002,7 @@ func TestPrintHelpCustomTemplateError(t *testing.T) {
 		buf := &bytes.Buffer{}
 
 		*tmpl = "{{junk"
-		printHelpCustom(buf, "", "", nil)
+		DefaultPrintHelpCustom(buf, "", "", nil)
 
 		assert.Contains(t, errBuf.String(), "CLI TEMPLATE ERROR")
 
