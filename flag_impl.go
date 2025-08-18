@@ -247,8 +247,7 @@ func (f *FlagBase[T, C, V]) GetEnvVars() []string {
 
 // TakesValue returns true if the flag takes a value, otherwise false
 func (f *FlagBase[T, C, V]) TakesValue() bool {
-	var t T
-	return reflect.TypeOf(t) == nil || reflect.TypeOf(t).Kind() != reflect.Bool
+	return reflect.TypeOf(f.Value) == nil || reflect.TypeOf(f.Value).Kind() != reflect.Bool
 }
 
 // GetDefaultText returns the default text for this flag
@@ -256,8 +255,7 @@ func (f *FlagBase[T, C, V]) GetDefaultText() string {
 	if f.DefaultText != "" {
 		return f.DefaultText
 	}
-	var v V
-	return v.ToString(f.Value)
+	return f.creator.ToString(f.Value)
 }
 
 // RunAction executes flag action if set
