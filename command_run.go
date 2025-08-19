@@ -196,6 +196,26 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 	}
 
 	if cmd.checkHelp() {
+		if cmd.Root().EnableBeforeForHelp {
+			var cmdChain []*Command
+			for p := cmd; p != nil; p = p.parent {
+				cmdChain = append(cmdChain, p)
+			}
+			slices.Reverse(cmdChain)
+
+			for _, c := range cmdChain {
+				if c.Before == nil {
+					continue
+				}
+				if bctx, err := c.Before(ctx, c); err != nil {
+					deferErr = cmd.handleExitCoder(ctx, err)
+					return ctx, deferErr
+				} else if bctx != nil {
+					ctx = bctx
+				}
+			}
+		}
+
 		return ctx, helpCommandAction(ctx, cmd)
 	} else {
 		tracef("no help is wanted (cmd=%[1]q)", cmd.Name)
