@@ -22,11 +22,6 @@ jobs:
         with:
           go-version: stable
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v5
-        with:
-          node-version: latest
-
       - name: Set PATH
         run: echo "${GITHUB_WORKSPACE}/.local/bin" >>"${GITHUB_PATH}"
 
@@ -55,7 +50,7 @@ jobs:
           python-version: '3.13'
           cache: pip
           cache-dependency-path: mkdocs-requirements.txt
-          
+
       - name: Ensure mkdocs is available
         run: make ensure-mkdocs
 
