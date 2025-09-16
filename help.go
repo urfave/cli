@@ -56,12 +56,18 @@ var ShowCommandHelp = DefaultShowCommandHelp
 // ShowSubcommandHelp prints help for the given subcommand
 var ShowSubcommandHelp = DefaultShowSubcommandHelp
 
+// UsageCommandHelp is the text to override the USAGE section of the help command
+var UsageCommandHelp = "Shows a list of commands or help for one command"
+
+// ArgsUsageCommandHelp is a short description of the arguments of the help command
+var ArgsUsageCommandHelp = "[command]"
+
 func buildHelpCommand(withAction bool) *Command {
 	cmd := &Command{
 		Name:      helpName,
 		Aliases:   []string{helpAlias},
-		Usage:     "Shows a list of commands or help for one command",
-		ArgsUsage: "[command]",
+		Usage:     UsageCommandHelp,
+		ArgsUsage: ArgsUsageCommandHelp,
 		HideHelp:  true,
 	}
 
