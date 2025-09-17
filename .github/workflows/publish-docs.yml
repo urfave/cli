@@ -18,14 +18,9 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: stable
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: latest
 
       - name: Set PATH
         run: echo "${GITHUB_WORKSPACE}/.local/bin" >>"${GITHUB_PATH}"
@@ -50,12 +45,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.13'
           cache: pip
           cache-dependency-path: mkdocs-requirements.txt
-          
+
       - name: Ensure mkdocs is available
         run: make ensure-mkdocs
 
