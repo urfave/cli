@@ -14,7 +14,7 @@ func prefixFor(name string) (prefix string) {
 		prefix = "--"
 	}
 
-	return
+	return prefix
 }
 
 // Returns the placeholder, if any, and the unquoted usage string.

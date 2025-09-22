@@ -92,7 +92,7 @@ outer:
 // definitions and the matching Action functions are run.
 func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 	_, deferErr = cmd.run(ctx, osArgs)
-	return
+	return deferErr
 }
 
 func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context, deferErr error) {
