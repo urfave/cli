@@ -268,6 +268,57 @@ func ExampleCommand_Run_shellComplete_bash_withShortFlag() {
 	// --help
 }
 
+func ExampleCommand_Run_shellComplete_bash_withDoubleDashFlag() {
+	cmd := &cli.Command{
+		Name:                  "greet",
+		EnableShellCompletion: true,
+		Flags: []cli.Flag{
+			&cli.Int64Flag{
+				Name:    "other",
+				Aliases: []string{"o"},
+			},
+			&cli.StringFlag{
+				Name:    "xyz",
+				Aliases: []string{"x"},
+			},
+		},
+	}
+
+	// Simulate a bash environment and command line arguments
+	os.Setenv("SHELL", "bash")
+	os.Args = []string{"greet", "--", "--generate-shell-completion"}
+
+	_ = cmd.Run(context.Background(), os.Args)
+	// Output:
+	// --other
+	// --xyz
+	// --help
+}
+
+func ExampleCommand_Run_shellComplete_bash_withDoubleDashFlag_Control() {
+	cmd := &cli.Command{
+		Name:                  "greet",
+		EnableShellCompletion: true,
+		Flags: []cli.Flag{
+			&cli.Int64Flag{
+				Name:    "other",
+				Aliases: []string{"o"},
+			},
+			&cli.StringFlag{
+				Name:    "xyz",
+				Aliases: []string{"x"},
+			},
+		},
+	}
+
+	// Simulate a bash environment and command line arguments
+	os.Setenv("SHELL", "bash")
+	os.Args = []string{"greet", "--", "x", "--generate-shell-completion"}
+
+	_ = cmd.Run(context.Background(), os.Args)
+	// Output:
+}
+
 func ExampleCommand_Run_shellComplete_bash_withLongFlag() {
 	cmd := &cli.Command{
 		Name:                  "greet",
