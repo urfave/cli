@@ -2,7 +2,7 @@ package cli
 
 var (
 	helpNameTemplate    = `{{$v := offset .FullName 6}}{{wrap .FullName 3}}{{if .Usage}} - {{wrap .Usage $v}}{{end}}`
-	argsTemplate        = `{{if .Arguments}}{{range .Arguments}}{{.Usage}}{{end}}{{end}}`
+	argsTemplate        = `{{if .Arguments}}{{range .Arguments}}{{.Usage}} {{end}}{{end}}`
 	usageTemplate       = `{{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.FullName}}{{if .VisibleFlags}} [options]{{end}}{{if .VisibleCommands}} [command [command options]]{{end}}{{if .ArgsUsage}} {{.ArgsUsage}}{{else}}{{if .Arguments}} {{template "argsTemplate" .}}{{end}}{{end}}{{end}}`
 	descriptionTemplate = `{{wrap .Description 3}}`
 	authorsTemplate     = `{{with $length := len .Authors}}{{if ne 1 $length}}S{{end}}{{end}}:
