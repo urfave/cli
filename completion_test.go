@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -179,6 +180,51 @@ func TestCompletionSubcommand(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMutuallyExclusiveFlagsCompletion(t *testing.T) {
+	osArgsBak := os.Args
+	defer func() {
+		os.Args = osArgsBak
+	}()
+	out := &bytes.Buffer{}
+
+	cmd := &Command{
+		EnableShellCompletion: true,
+		Writer:                out,
+		Flags: []Flag{
+			&StringFlag{
+				Name: "l1",
+			},
+		},
+		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
+			{
+				Flags: [][]Flag{
+					{
+						&StringFlag{
+							Name: "m1",
+						},
+						&StringFlag{
+							Name: "m2",
+						},
+					},
+					{
+						&StringFlag{
+							Name: "l2",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	os.Args = []string{"foo", "-", completionFlag}
+	err := cmd.Run(buildTestContext(t), os.Args)
+	assert.NoError(t, err, "Expected no error for completion")
+	assert.Contains(t, out.String(), "l1", "Expected output to contain flag l1")
+	assert.Contains(t, out.String(), "m1", "Expected output to contain flag m1")
+	assert.Contains(t, out.String(), "m2", "Expected output to contain flag m2")
+	assert.Contains(t, out.String(), "l2", "Expected output to contain flag l2")
 }
 
 type mockWriter struct {
