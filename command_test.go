@@ -3024,7 +3024,7 @@ func TestFlagAction(t *testing.T) {
 	}
 }
 
-func TestLocalFlag(t *testing.T) {
+func TestLocalFlagError(t *testing.T) {
 	var topInt int64
 
 	cmd := &Command{
