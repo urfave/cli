@@ -70,10 +70,8 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *FlagBase[T, C, V]) GetValue() string {
-	if !f.TakesValue() {
-		return ""
-	}
-	return fmt.Sprintf("%v", f.Value)
+	var v V
+	return v.ToString(f.Value)
 }
 
 // TypeName returns the type of the flag.
@@ -253,11 +251,7 @@ func (f *FlagBase[T, C, V]) TakesValue() bool {
 
 // GetDefaultText returns the default text for this flag
 func (f *FlagBase[T, C, V]) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	var v V
-	return v.ToString(f.Value)
+	return f.DefaultText
 }
 
 // RunAction executes flag action if set

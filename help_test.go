@@ -1479,8 +1479,7 @@ GLOBAL OPTIONS:
       really long help text
       line, let's see where it
       wraps. blah blah blah
-      and so on. (default:
-      false)
+      and so on.
 
 COPYRIGHT:
    Here's a sample copyright
