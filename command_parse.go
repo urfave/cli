@@ -144,7 +144,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 
 		tracef("flagName:2 (fName=%[1]q) (fVal=%[2]q)", flagName, flagVal)
 
-		f := cmd.lookupFlag(flagName)
+		f := cmd.lookupAppliedFlag(flagName)
 		// found a flag matching given flagName
 		if f != nil {
 			tracef("Trying flag type (fName=%[1]q) (type=%[2]T)", flagName, f)

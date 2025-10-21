@@ -3024,6 +3024,34 @@ func TestFlagAction(t *testing.T) {
 	}
 }
 
+func TestLocalFlagError(t *testing.T) {
+	var topInt int64
+
+	cmd := &Command{
+		Flags: []Flag{
+			&Int64Flag{
+				Name:        "cmdFlag",
+				Destination: &topInt,
+				Local:       true,
+			},
+		},
+		Commands: []*Command{
+			{
+				Name: "subcmd",
+			},
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{
+		"app",
+		"subcmd",
+		"--cmdFlag", "11",
+	})
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "flag provided but not defined: -cmdFlag")
+}
+
 func TestPersistentFlag(t *testing.T) {
 	var topInt, topPersistentInt, subCommandInt, appOverrideInt int64
 	var appFlag string
