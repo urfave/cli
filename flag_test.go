@@ -44,8 +44,8 @@ var boolFlagTests = []struct {
 	name     string
 	expected string
 }{
-	{"help", "--help\t(default: false)"},
-	{"h", "-h\t(default: false)"},
+	{"help", "--help\t"},
+	{"h", "-h\t"},
 }
 
 func TestBoolFlagHelpOutput(t *testing.T) {
@@ -470,7 +470,7 @@ func TestFlagStringifying(t *testing.T) {
 		{
 			name:     "bool-flag",
 			fl:       &BoolFlag{Name: "vividly"},
-			expected: "--vividly\t(default: false)",
+			expected: "--vividly\t",
 		},
 		{
 			name:     "bool-flag-with-default-text",
@@ -2771,7 +2771,7 @@ func TestFlagDefaultValue(t *testing.T) {
 			name:    "bool",
 			flag:    &BoolFlag{Name: "flag", Value: true},
 			toParse: []string{"--flag=false"},
-			expect:  `--flag	(default: true)`,
+			expect:  `--flag	`,
 		},
 		{
 			name:    "uint",
@@ -2866,7 +2866,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "bool",
 			flag:    &BoolFlag{Name: "flag", Value: true, Sources: EnvVars("uflag")},
 			toParse: []string{"--flag=false"},
-			expect:  `--flag	(default: true)` + withEnvHint([]string{"uflag"}, ""),
+			expect:  `--flag	` + withEnvHint([]string{"uflag"}, ""),
 			environ: map[string]string{
 				"uflag": "false",
 			},
@@ -3359,9 +3359,9 @@ func TestEnvHintWindows(t *testing.T) {
 }
 
 func TestDocGetValue(t *testing.T) {
-	assert.Equal(t, "", (&BoolFlag{Name: "foo", Value: true}).GetValue())
-	assert.Equal(t, "", (&BoolFlag{Name: "foo", Value: false}).GetValue())
-	assert.Equal(t, "bar", (&StringFlag{Name: "foo", Value: "bar"}).GetValue())
+	assert.Equal(t, "true", (&BoolFlag{Name: "foo", Value: true}).GetValue())
+	assert.Equal(t, "false", (&BoolFlag{Name: "foo", Value: false}).GetValue())
+	assert.Equal(t, "\"bar\"", (&StringFlag{Name: "foo", Value: "bar"}).GetValue())
 	assert.Equal(t, "", (&BoolWithInverseFlag{Name: "foo", Value: false}).GetValue())
 }
 
