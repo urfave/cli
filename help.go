@@ -251,27 +251,29 @@ func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 		tracef("running default complete with os.Args flags[%v]", args)
 	}
 	argsLen := len(args)
-	lastArg := ""
+	var lastButOneArg, lastArg string
 	// parent command will have --generate-shell-completion so we need
 	// to account for that
 	if argsLen > 1 {
-		lastArg = args[argsLen-2]
+		lastButOneArg = args[argsLen-2]
+		lastArg = args[argsLen-1]
 	} else if argsLen > 0 {
+		lastButOneArg = args[argsLen-1]
 		lastArg = args[argsLen-1]
 	}
 
-	if lastArg == "--" {
+	if lastButOneArg == "--" && lastArg != completionFlag {
 		tracef("No completions due to termination")
 		return
 	}
 
-	if lastArg == completionFlag {
-		lastArg = ""
+	if lastButOneArg == completionFlag {
+		lastButOneArg = ""
 	}
 
-	if strings.HasPrefix(lastArg, "-") {
-		tracef("printing flag suggestion for flag[%v] on command %[1]q", lastArg, cmd.Name)
-		printFlagSuggestions(lastArg, cmd.Flags, cmd.Root().Writer)
+	if strings.HasPrefix(lastButOneArg, "-") {
+		tracef("printing flag suggestion for flag[%v] on command %[1]q", lastButOneArg, cmd.Name)
+		printFlagSuggestions(lastButOneArg, cmd.Flags, cmd.Root().Writer)
 		return
 	}
 
@@ -489,11 +491,11 @@ func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
 		return false, arguments
 	}
 
-	for _, arg := range arguments {
-		// If arguments include "--", shell completion is disabled
-		// because after "--" only positional arguments are accepted.
+	for i, arg := range arguments {
+		// If there is "--" which doesn't go right before
+		// "--generate-shell-completion", shell completion is disabled.
 		// https://unix.stackexchange.com/a/11382
-		if arg == "--" {
+		if arg == "--" && i != len(arguments)-2 {
 			return false, arguments[:pos]
 		}
 	}
