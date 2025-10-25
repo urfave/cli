@@ -130,14 +130,6 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 		cmd.Metadata = map[string]any{}
 	}
 
-	if len(cmd.SliceFlagSeparator) != 0 {
-		tracef("setting defaultSliceFlagSeparator from cmd.SliceFlagSeparator (cmd=%[1]q)", cmd.Name)
-		defaultSliceFlagSeparator = cmd.SliceFlagSeparator
-	}
-
-	tracef("setting disableSliceFlagSeparator from cmd.DisableSliceFlagSeparator (cmd=%[1]q)", cmd.Name)
-	disableSliceFlagSeparator = cmd.DisableSliceFlagSeparator
-
 	cmd.setFlags = map[Flag]struct{}{}
 }
 

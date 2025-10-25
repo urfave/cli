@@ -19,6 +19,20 @@ type boolFlag interface {
 	IsBoolFlag() bool
 }
 
+type multiValueParsingConfig struct {
+	// SliceFlagSeparator is used to customize the separator for SliceFlag, the default is ","
+	SliceFlagSeparator string
+	// DisableSliceFlagSeparator is used to disable SliceFlagSeparator, the default is false
+	DisableSliceFlagSeparator bool
+	// MapFlagKeyValueSeparator is used to customize the separator for MapFlag, the default is "="
+	MapFlagKeyValueSeparator string
+}
+
+type multiValueParsingConfigSetter interface {
+	// configuration of parsing
+	setMultiValueParsingConfig(c multiValueParsingConfig)
+}
+
 // ValueCreator is responsible for creating a flag.Value emulation
 // as well as custom formatting
 //
@@ -132,6 +146,14 @@ func (f *FlagBase[T, C, V]) PostParse() error {
 	}
 
 	return nil
+}
+
+// pass configuration of parsing to value
+func (f *FlagBase[T, C, V]) setMultiValueParsingConfig(c multiValueParsingConfig) {
+	tracef("setMultiValueParsingConfig %T, %+v", f.value, f.value)
+	if cf, ok := f.value.(multiValueParsingConfigSetter); ok {
+		cf.setMultiValueParsingConfig(c)
+	}
 }
 
 func (f *FlagBase[T, C, V]) PreParse() error {
