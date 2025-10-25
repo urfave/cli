@@ -155,6 +155,8 @@ type Command struct {
 	didSetupDefaults bool
 	// whether in shell completion mode
 	shellCompletion bool
+	// whether global help flag was added
+	globaHelpFlagAdded bool
 }
 
 // FullName returns the full name of the command.

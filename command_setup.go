@@ -200,15 +200,27 @@ func (cmd *Command) ensureHelp() {
 		}
 
 		if HelpFlag != nil {
-			// TODO need to remove hack
-			if hf, ok := HelpFlag.(*BoolFlag); ok {
-				hf.applied = false
-				hf.hasBeenSet = false
-				hf.Value = false
-				hf.value = nil
+			if !cmd.globaHelpFlagAdded {
+				var localHelpFlag Flag
+				if globalHelpFlag, ok := HelpFlag.(*BoolFlag); ok {
+					// clone HelpFlag
+					localHelpFlag = &BoolFlag{
+						Name:        globalHelpFlag.Name,
+						Aliases:     globalHelpFlag.Aliases,
+						Usage:       globalHelpFlag.Usage,
+						HideDefault: globalHelpFlag.HideDefault,
+						Local:       globalHelpFlag.Local,
+					}
+				} else {
+					localHelpFlag = HelpFlag
+				}
+
+				tracef("appending HelpFlag (cmd=%[1]q)", cmd.Name)
+				cmd.appendFlag(localHelpFlag)
+				cmd.globaHelpFlagAdded = true
+			} else {
+				tracef("HelpFlag already added, skip (cmd=%[1]q)", cmd.Name)
 			}
-			tracef("appending HelpFlag (cmd=%[1]q)", cmd.Name)
-			cmd.appendFlag(HelpFlag)
 		}
 	}
 }
