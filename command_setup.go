@@ -80,7 +80,24 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 
 	if !cmd.HideVersion && isRoot {
 		tracef("appending version flag (cmd=%[1]q)", cmd.Name)
-		cmd.appendFlag(VersionFlag)
+		if !cmd.globaVersionFlagAdded {
+			var localVersionFlag Flag
+			if globalVersionFlag, ok := VersionFlag.(*BoolFlag); ok {
+				// clone VersionFlag
+				localVersionFlag = &BoolFlag{
+					Name:        globalVersionFlag.Name,
+					Aliases:     globalVersionFlag.Aliases,
+					Usage:       globalVersionFlag.Usage,
+					HideDefault: globalVersionFlag.HideDefault,
+					Local:       globalVersionFlag.Local,
+				}
+			} else {
+				localVersionFlag = VersionFlag
+			}
+
+			cmd.appendFlag(localVersionFlag)
+			cmd.globaVersionFlagAdded = true
+		}
 	}
 
 	if cmd.PrefixMatchCommands && cmd.SuggestCommandFunc == nil {

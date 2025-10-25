@@ -159,6 +159,8 @@ type Command struct {
 	shellCompletion bool
 	// whether global help flag was added
 	globaHelpFlagAdded bool
+	// whether global version flag was added
+	globaVersionFlagAdded bool
 }
 
 // FullName returns the full name of the command.
