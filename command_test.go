@@ -5284,3 +5284,31 @@ func TestCommand_ExclusiveFlagsWithAfter(t *testing.T) {
 	}))
 	require.True(t, called)
 }
+
+func TestCommand_ParallelRun(t *testing.T) {
+	t.Parallel()
+
+	for i := 0; i < 10; i++ {
+		t.Run(fmt.Sprintf("run_%d", i), func(t *testing.T) {
+			t.Parallel()
+
+			defer func() {
+				if r := recover(); r != nil {
+					t.Errorf("unexpected panic - '%s'", r)
+				}
+			}()
+
+			cmd := &Command{
+				Name:  "debug",
+				Usage: "make an explosive entrance",
+				Action: func(_ context.Context, cmd *Command) error {
+					return nil
+				},
+			}
+
+			if err := cmd.Run(context.Background(), nil); err != nil {
+				fmt.Printf("%s\n", err)
+			}
+		})
+	}
+}
