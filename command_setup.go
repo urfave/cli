@@ -83,14 +83,8 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 		if !cmd.globaVersionFlagAdded {
 			var localVersionFlag Flag
 			if globalVersionFlag, ok := VersionFlag.(*BoolFlag); ok {
-				// clone VersionFlag
-				localVersionFlag = &BoolFlag{
-					Name:        globalVersionFlag.Name,
-					Aliases:     globalVersionFlag.Aliases,
-					Usage:       globalVersionFlag.Usage,
-					HideDefault: globalVersionFlag.HideDefault,
-					Local:       globalVersionFlag.Local,
-				}
+				flag := *globalVersionFlag
+				localVersionFlag = &flag
 			} else {
 				localVersionFlag = VersionFlag
 			}
@@ -212,14 +206,8 @@ func (cmd *Command) ensureHelp() {
 			if !cmd.globaHelpFlagAdded {
 				var localHelpFlag Flag
 				if globalHelpFlag, ok := HelpFlag.(*BoolFlag); ok {
-					// clone HelpFlag
-					localHelpFlag = &BoolFlag{
-						Name:        globalHelpFlag.Name,
-						Aliases:     globalHelpFlag.Aliases,
-						Usage:       globalHelpFlag.Usage,
-						HideDefault: globalHelpFlag.HideDefault,
-						Local:       globalHelpFlag.Local,
-					}
+					flag := *globalHelpFlag
+					localHelpFlag = &flag
 				} else {
 					localHelpFlag = HelpFlag
 				}
