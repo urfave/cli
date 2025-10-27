@@ -227,9 +227,8 @@ func flagSplitMultiValues(val string, sliceSeparator string, disableSliceSeparat
 		return []string{val}
 	}
 
-	if len(sliceSeparator) != 0 {
-		return strings.Split(val, sliceSeparator)
-	} else {
-		return strings.Split(val, defaultSliceFlagSeparator)
+	if len(sliceSeparator) == 0 {
+		sliceSeparator = defaultSliceFlagSeparator
 	}
+	return strings.Split(val, sliceSeparator)
 }

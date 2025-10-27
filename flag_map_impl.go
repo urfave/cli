@@ -10,12 +10,10 @@ import (
 
 // MapBase wraps map[string]T to satisfy flag.Value
 type MapBase[T any, C any, VC ValueCreator[T, C]] struct {
-	dict                  *map[string]T
-	hasBeenSet            bool
-	value                 Value
-	sliceSeparator        string
-	disableSliceSeparator bool
-	keyValueSeparator     string
+	dict             *map[string]T
+	hasBeenSet       bool
+	value            Value
+	multiValueConfig multiValueParsingConfig
 }
 
 func (i MapBase[T, C, VC]) Create(val map[string]T, p *map[string]T, c C) Value {
@@ -41,10 +39,14 @@ func NewMapBase[T any, C any, VC ValueCreator[T, C]](defaults map[string]T) *Map
 
 // configuration of slicing
 func (i *MapBase[T, C, VC]) setMultiValueParsingConfig(c multiValueParsingConfig) {
-	i.disableSliceSeparator = c.DisableSliceFlagSeparator
-	i.sliceSeparator = c.SliceFlagSeparator
-	i.keyValueSeparator = c.MapFlagKeyValueSeparator
-	tracef("set map parsing config - keyValueSeparator '%s', slice separator '%s', disable separator:%v", i.keyValueSeparator, i.sliceSeparator, i.disableSliceSeparator)
+	i.multiValueConfig = c
+	mvc := &i.multiValueConfig
+	tracef(
+		"set map parsing config - keyValueSeparator '%s', slice separator '%s', disable separator:%v",
+		mvc.MapFlagKeyValueSeparator,
+		mvc.SliceFlagSeparator,
+		mvc.DisableSliceFlagSeparator,
+	)
 }
 
 // Set parses the value and appends it to the list of values
@@ -61,13 +63,20 @@ func (i *MapBase[T, C, VC]) Set(value string) error {
 		return nil
 	}
 
-	keyValueSeparator := i.keyValueSeparator
+	mvc := &i.multiValueConfig
+	keyValueSeparator := mvc.MapFlagKeyValueSeparator
 	if len(keyValueSeparator) == 0 {
 		keyValueSeparator = defaultMapFlagKeyValueSeparator
 	}
 
-	tracef("splitting map value '%s', keyValueSeparator '%s', slice separator '%s', disable separator:%v", value, keyValueSeparator, i.sliceSeparator, i.disableSliceSeparator)
-	for _, item := range flagSplitMultiValues(value, i.sliceSeparator, i.disableSliceSeparator) {
+	tracef(
+		"splitting map value '%s', keyValueSeparator '%s', slice separator '%s', disable separator:%v",
+		value,
+		keyValueSeparator,
+		mvc.SliceFlagSeparator,
+		mvc.DisableSliceFlagSeparator,
+	)
+	for _, item := range flagSplitMultiValues(value, mvc.SliceFlagSeparator, mvc.DisableSliceFlagSeparator) {
 		key, value, ok := strings.Cut(item, keyValueSeparator)
 		if !ok {
 			return fmt.Errorf("item %q is missing separator %q", item, keyValueSeparator)
