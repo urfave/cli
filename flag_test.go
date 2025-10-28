@@ -3090,13 +3090,8 @@ func TestSliceShortOptionHandle(t *testing.T) {
 
 // Test issue #1541
 func TestCustomizedSliceFlagSeparator(t *testing.T) {
-	oldSep := defaultSliceFlagSeparator
-	defer func() {
-		defaultSliceFlagSeparator = oldSep
-	}()
-	defaultSliceFlagSeparator = ";"
 	opts := []string{"opt1", "opt2", "opt3,op", "opt4"}
-	ret := flagSplitMultiValues(strings.Join(opts, ";"))
+	ret := flagSplitMultiValues(strings.Join(opts, ";"), ";", disableSliceFlagSeparator)
 	require.Equal(t, 4, len(ret), "split slice flag failed")
 	for idx, r := range ret {
 		require.Equal(t, opts[idx], r, "get %dth failed", idx)
@@ -3104,13 +3099,8 @@ func TestCustomizedSliceFlagSeparator(t *testing.T) {
 }
 
 func TestFlagSplitMultiValues_Disabled(t *testing.T) {
-	disableSliceFlagSeparator = true
-	defer func() {
-		disableSliceFlagSeparator = false
-	}()
-
 	opts := []string{"opt1", "opt2", "opt3,op", "opt4"}
-	ret := flagSplitMultiValues(strings.Join(opts, defaultSliceFlagSeparator))
+	ret := flagSplitMultiValues(strings.Join(opts, defaultSliceFlagSeparator), defaultSliceFlagSeparator, true)
 	require.Equal(t, 1, len(ret), "failed to disable split slice flag")
 	require.Equal(t, strings.Join(opts, defaultSliceFlagSeparator), ret[0])
 }
