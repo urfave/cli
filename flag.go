@@ -10,7 +10,7 @@ import (
 
 const defaultPlaceholder = "value"
 
-var (
+const (
 	defaultSliceFlagSeparator       = ","
 	defaultMapFlagKeyValueSeparator = "="
 	disableSliceFlagSeparator       = false
@@ -222,10 +222,13 @@ func hasFlag(flags []Flag, fl Flag) bool {
 	return false
 }
 
-func flagSplitMultiValues(val string) []string {
-	if disableSliceFlagSeparator {
+func flagSplitMultiValues(val string, sliceSeparator string, disableSliceSeparator bool) []string {
+	if disableSliceSeparator {
 		return []string{val}
 	}
 
-	return strings.Split(val, defaultSliceFlagSeparator)
+	if len(sliceSeparator) == 0 {
+		sliceSeparator = defaultSliceFlagSeparator
+	}
+	return strings.Split(val, sliceSeparator)
 }

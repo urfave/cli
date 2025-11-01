@@ -101,6 +101,8 @@ type Command struct {
 	SliceFlagSeparator string `json:"sliceFlagSeparator"`
 	// DisableSliceFlagSeparator is used to disable SliceFlagSeparator, the default is false
 	DisableSliceFlagSeparator bool `json:"disableSliceFlagSeparator"`
+	// MapFlagKeyValueSeparator is used to customize the separator for MapFlag, the default is "="
+	MapFlagKeyValueSeparator string `json:"mapFlagKeyValueSeparator"`
 	// Boolean to enable short-option handling so user can combine several
 	// single-character bool arguments into one
 	// i.e. foobar -o -v -> foobar -ov
@@ -155,6 +157,10 @@ type Command struct {
 	didSetupDefaults bool
 	// whether in shell completion mode
 	shellCompletion bool
+	// whether global help flag was added
+	globaHelpFlagAdded bool
+	// whether global version flag was added
+	globaVersionFlagAdded bool
 }
 
 // FullName returns the full name of the command.
@@ -349,6 +355,7 @@ func (cmd *Command) Root() *Command {
 
 func (cmd *Command) set(fName string, f Flag, val string) error {
 	cmd.setFlags[f] = struct{}{}
+	cmd.setMultiValueParsingConfig(f)
 	if err := f.Set(fName, val); err != nil {
 		return fmt.Errorf("invalid value %q for flag -%s: %v", val, fName, err)
 	}
@@ -440,9 +447,21 @@ func (cmd *Command) NumFlags() int {
 	return count // cmd.flagSet.NFlag()
 }
 
+func (cmd *Command) setMultiValueParsingConfig(f Flag) {
+	tracef("setMultiValueParsingConfig %T, %+v", f, f)
+	if cf, ok := f.(multiValueParsingConfigSetter); ok {
+		cf.setMultiValueParsingConfig(multiValueParsingConfig{
+			SliceFlagSeparator:        cmd.SliceFlagSeparator,
+			DisableSliceFlagSeparator: cmd.DisableSliceFlagSeparator,
+			MapFlagKeyValueSeparator:  cmd.MapFlagKeyValueSeparator,
+		})
+	}
+}
+
 // Set sets a context flag to a value.
 func (cmd *Command) Set(name, value string) error {
 	if f := cmd.lookupFlag(name); f != nil {
+		cmd.setMultiValueParsingConfig(f)
 		return f.Set(name, value)
 	}
 
