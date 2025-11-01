@@ -20,8 +20,7 @@ milestones and import paths to which they correspond are:
 
 <https://github.com/urfave/cli/tree/main>
 
-The majority of active development and issue management is targeting the `main` branch,
-which is currently in *alpha*.
+The majority of active development and issue management is targeting the `main` branch.
 
 - :arrow_right: [`v3.x`](https://github.com/urfave/cli/milestone/5)
 - :arrow_right: `github.com/urfave/cli/v3`
@@ -29,11 +28,13 @@ which is currently in *alpha*.
 The `main` branch includes tooling to help with keeping track of `v3.x` series backward
 compatibility. More details on this process are in the development workflow section below.
 
-#### `v1` branch
+#### `v1-maint` branch
 
-<https://github.com/urfave/cli/tree/v1>
+<https://github.com/urfave/cli/tree/v1-maint>
 
-The `v1` branch is no longer maintained.
+The `v1-maint` branch **MUST** only receive bug fixes in the `v1.22.x` series. There is no
+strict rule regarding bug fixes to the `v3.x` or `v2.23.x` series being backported to the
+`v1.22.x` series.
 
 - :arrow_right: [`v1.22.x`](https://github.com/urfave/cli/milestone/11)
 - :arrow_right: `github.com/urfave/cli`
@@ -64,6 +65,18 @@ Running the default `make` target (`all`) will ensure all of the critical steps 
 verify one's changes are harmonious in nature. The same steps are also run during the
 [continuous integration
 phase](https://github.com/urfave/cli/blob/main/.github/workflows/test.yml).
+
+`gfmrun` is required to run the examples, and without it `make all` will fail.
+
+You can find `gfmrun` here:
+
+- [urfave/gfmrun](https://github.com/urfave/gfmrun)
+
+To install `gfmrun`, you can use `go install`:
+
+```
+go install github.com/urfave/gfmrun/cmd/gfmrun@latest
+```
 
 In the event that the `v3diff` target exits non-zero, this is a signal that the public API
 surface area has changed. If the changes are acceptable, then manually running the

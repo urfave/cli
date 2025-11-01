@@ -44,8 +44,8 @@ var boolFlagTests = []struct {
 	name     string
 	expected string
 }{
-	{"help", "--help\t(default: false)"},
-	{"h", "-h\t(default: false)"},
+	{"help", "--help\t"},
+	{"h", "-h\t"},
 }
 
 func TestBoolFlagHelpOutput(t *testing.T) {
@@ -350,6 +350,12 @@ func TestFlagsFromEnv(t *testing.T) {
 			output: []string{"foo", "bar"},
 			fl:     &StringSliceFlag{Name: "names", Sources: EnvVars("NAMES"), Config: StringConfig{TrimSpace: true}},
 		},
+		{
+			name:   "StringSliceFlag valid without TrimSpace",
+			input:  "foo , bar ",
+			output: []string{"foo ", " bar "},
+			fl:     &StringSliceFlag{Name: "names", Sources: EnvVars("NAMES")},
+		},
 
 		{
 			name:   "StringMapFlag valid",
@@ -464,7 +470,7 @@ func TestFlagStringifying(t *testing.T) {
 		{
 			name:     "bool-flag",
 			fl:       &BoolFlag{Name: "vividly"},
-			expected: "--vividly\t(default: false)",
+			expected: "--vividly\t",
 		},
 		{
 			name:     "bool-flag-with-default-text",
@@ -743,7 +749,7 @@ var _ = []struct {
 	}, "env: ENV_VAR, str: -f value\t"},
 }
 
-//func TestFlagEnvHinter(t *testing.T) {
+// func TestFlagEnvHinter(t *testing.T) {
 //	defer func() {
 //		FlagEnvHinter = withEnvHint
 //	}()
@@ -756,7 +762,7 @@ var _ = []struct {
 //			t.Errorf("%q does not match %q", output, test.expected)
 //		}
 //	}
-//}
+// }
 
 var stringSliceFlagTests = []struct {
 	name     string
@@ -2726,8 +2732,20 @@ func TestFlagDefaultValue(t *testing.T) {
 			expect:  `--flag string [ --flag string ]	(default: "default1", "default2")`,
 		},
 		{
-			name:    "float64Slice",
+			name:    "floatSlice",
 			flag:    &FloatSliceFlag{Name: "flag", Value: []float64{1.1, 2.2}},
+			toParse: []string{"--flag", "13.3"},
+			expect:  `--flag float [ --flag float ]	(default: 1.1, 2.2)`,
+		},
+		{
+			name:    "float32Slice",
+			flag:    &Float32SliceFlag{Name: "flag", Value: []float32{1.1, 2.2}},
+			toParse: []string{"--flag", "13.3"},
+			expect:  `--flag float [ --flag float ]	(default: 1.1, 2.2)`,
+		},
+		{
+			name:    "float64Slice",
+			flag:    &Float64SliceFlag{Name: "flag", Value: []float64{1.1, 2.2}},
 			toParse: []string{"--flag", "13.3"},
 			expect:  `--flag float [ --flag float ]	(default: 1.1, 2.2)`,
 		},
@@ -2753,7 +2771,7 @@ func TestFlagDefaultValue(t *testing.T) {
 			name:    "bool",
 			flag:    &BoolFlag{Name: "flag", Value: true},
 			toParse: []string{"--flag=false"},
-			expect:  `--flag	(default: true)`,
+			expect:  `--flag	`,
 		},
 		{
 			name:    "uint",
@@ -2848,7 +2866,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "bool",
 			flag:    &BoolFlag{Name: "flag", Value: true, Sources: EnvVars("uflag")},
 			toParse: []string{"--flag=false"},
-			expect:  `--flag	(default: true)` + withEnvHint([]string{"uflag"}, ""),
+			expect:  `--flag	` + withEnvHint([]string{"uflag"}, ""),
 			environ: map[string]string{
 				"uflag": "false",
 			},
@@ -3072,13 +3090,8 @@ func TestSliceShortOptionHandle(t *testing.T) {
 
 // Test issue #1541
 func TestCustomizedSliceFlagSeparator(t *testing.T) {
-	oldSep := defaultSliceFlagSeparator
-	defer func() {
-		defaultSliceFlagSeparator = oldSep
-	}()
-	defaultSliceFlagSeparator = ";"
 	opts := []string{"opt1", "opt2", "opt3,op", "opt4"}
-	ret := flagSplitMultiValues(strings.Join(opts, ";"))
+	ret := flagSplitMultiValues(strings.Join(opts, ";"), ";", disableSliceFlagSeparator)
 	require.Equal(t, 4, len(ret), "split slice flag failed")
 	for idx, r := range ret {
 		require.Equal(t, opts[idx], r, "get %dth failed", idx)
@@ -3086,13 +3099,8 @@ func TestCustomizedSliceFlagSeparator(t *testing.T) {
 }
 
 func TestFlagSplitMultiValues_Disabled(t *testing.T) {
-	disableSliceFlagSeparator = true
-	defer func() {
-		disableSliceFlagSeparator = false
-	}()
-
 	opts := []string{"opt1", "opt2", "opt3,op", "opt4"}
-	ret := flagSplitMultiValues(strings.Join(opts, defaultSliceFlagSeparator))
+	ret := flagSplitMultiValues(strings.Join(opts, defaultSliceFlagSeparator), defaultSliceFlagSeparator, true)
 	require.Equal(t, 1, len(ret), "failed to disable split slice flag")
 	require.Equal(t, strings.Join(opts, defaultSliceFlagSeparator), ret[0])
 }
@@ -3243,11 +3251,15 @@ func TestExtFlag(t *testing.T) {
 
 func TestSliceValuesNil(t *testing.T) {
 	assert.Equal(t, []float64(nil), NewFloatSlice().Value())
+	assert.Equal(t, []float32(nil), NewFloat32Slice().Value())
+	assert.Equal(t, []float64(nil), NewFloat64Slice().Value())
 	assert.Equal(t, []int64(nil), NewInt64Slice().Value())
 	assert.Equal(t, []uint64(nil), NewUint64Slice().Value())
 	assert.Equal(t, []string(nil), NewStringSlice().Value())
 
 	assert.Equal(t, []float64(nil), (&FloatSlice{}).Value())
+	assert.Equal(t, []float32(nil), (&Float32Slice{}).Value())
+	assert.Equal(t, []float64(nil), (&Float64Slice{}).Value())
 	assert.Equal(t, []int64(nil), (&Int64Slice{}).Value())
 	assert.Equal(t, []uint64(nil), (&Uint64Slice{}).Value())
 	assert.Equal(t, []string(nil), (&StringSlice{}).Value())
@@ -3289,12 +3301,12 @@ func TestFlagsByName(t *testing.T) {
 
 func TestNonStringMap(t *testing.T) {
 	type (
-		floatMap = MapBase[float64, NoConfig, floatValue]
+		floatMap = MapBase[float64, NoConfig, floatValue[float64]]
 	)
 
 	p := map[string]float64{}
 
-	var fv floatValue
+	var fv floatValue[float64]
 
 	f := &floatMap{
 		value: &fv,
@@ -3337,9 +3349,9 @@ func TestEnvHintWindows(t *testing.T) {
 }
 
 func TestDocGetValue(t *testing.T) {
-	assert.Equal(t, "", (&BoolFlag{Name: "foo", Value: true}).GetValue())
-	assert.Equal(t, "", (&BoolFlag{Name: "foo", Value: false}).GetValue())
-	assert.Equal(t, "bar", (&StringFlag{Name: "foo", Value: "bar"}).GetValue())
+	assert.Equal(t, "true", (&BoolFlag{Name: "foo", Value: true}).GetValue())
+	assert.Equal(t, "false", (&BoolFlag{Name: "foo", Value: false}).GetValue())
+	assert.Equal(t, "\"bar\"", (&StringFlag{Name: "foo", Value: "bar"}).GetValue())
 	assert.Equal(t, "", (&BoolWithInverseFlag{Name: "foo", Value: false}).GetValue())
 }
 
@@ -3352,10 +3364,11 @@ func TestGenericFlag_SatisfiesFlagInterface(t *testing.T) {
 
 func TestGenericValue_SatisfiesBoolInterface(t *testing.T) {
 	var f boolFlag = &genericValue{}
+	var fpv float64
 
 	assert.False(t, f.IsBoolFlag())
 
-	fv := floatValue(0)
+	fv := floatValue[float64]{val: &fpv}
 	f = &genericValue{
 		val: &fv,
 	}

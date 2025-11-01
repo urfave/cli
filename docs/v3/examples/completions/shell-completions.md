@@ -9,17 +9,19 @@ The urfave/cli v3 library supports programmable completion for apps utilizing it
 that the completion is generated dynamically at runtime by invokiong the app itself with a special hidden
 flag. The urfave/cli searches for this flag and activates a different flow for command paths than regular flow
 The following shells are supported
+
  - bash
  - zsh
  - fish
  - powershell
 
 Enabling auto complete requires 2 things
+
  - Setting the `EnableShellCompletion` field on root `Command` object to `true`. 
  - Sourcing the completion script for that particular shell. 
 
- The completion script for a particular shell can be retrieved by running the "completion" subcommand
- on the app after the `EnableShellCompletion` field on root `Command` object has been set to `true`. 
+The completion script for a particular shell can be retrieved by running the "completion" subcommand
+on the app after the `EnableShellCompletion` field on root `Command` object has been set to `true`. 
 
 Consider the following program
 
@@ -181,93 +183,6 @@ func main() {
 }
 ```
 ![](../../images/default-bash-autocomplete.gif)
-
-#### Custom auto-completion
-<!-- {
-  "args": ["complete", "&#45;&#45;generate&#45;shell&#45;completion"],
-  "output": "laundry"
-} -->
-```go
-package main
-
-import (
-	"fmt"
-	"log"
-	"os"
-	"context"
-
-	"github.com/urfave/cli/v3"
-)
-
-func main() {
-	tasks := []string{"cook", "clean", "laundry", "eat", "sleep", "code"}
-
-	cmd := &cli.Command{
-		EnableShellCompletion: true,
-		Commands: []*cli.Command{
-			{
-				Name:    "complete",
-				Aliases: []string{"c"},
-				Usage:   "complete a task on the list",
-				Action: func(ctx context.Context, cmd *cli.Command) error {
-					fmt.Println("completed task: ", cmd.Args().First())
-					return nil
-				},
-				ShellComplete: func(ctx context.Context, cmd *cli.Command) {
-					// This will complete if no args are passed
-					if cmd.NArg() > 0 {
-						return
-					}
-					for _, t := range tasks {
-						fmt.Println(t)
-					}
-				},
-			},
-		},
-	}
-
-	if err := cmd.Run(context.Background(), os.Args); err != nil {
-		log.Fatal(err)
-	}
-}
-```
-![](../../images/custom-bash-autocomplete.gif)
-
-#### Customization
-
-The default shell completion flag (`--generate-shell-completion`) is defined as
-`cli.EnableShellCompletion`, and may be redefined if desired, e.g.:
-
-<!-- {
-  "args": ["&#45;&#45;generate&#45;shell&#45;completion"],
-  "output": "wat\nhelp\n"
-} -->
-```go
-package main
-
-import (
-	"log"
-	"os"
-	"context"
-
-	"github.com/urfave/cli/v3"
-)
-
-func main() {
-	cmd := &cli.Command{
-		EnableShellCompletion: true,
-		Commands: []*cli.Command{
-			{
-				Name: "wat",
-			},
-		},
-	}
-
-	if err := cmd.Run(context.Background(), os.Args); err != nil {
-		log.Fatal(err)
-	}
-}
-```
 
 #### ZSH Support
 

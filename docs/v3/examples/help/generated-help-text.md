@@ -11,11 +11,10 @@ or subcommand, and break execution.
 
 #### Customization
 
-All of the help text generation may be customized, and at multiple levels.  The
-templates are exposed as variables `AppHelpTemplate`, `CommandHelpTemplate`, and
-`SubcommandHelpTemplate` which may be reassigned or augmented, and full override
-is possible by assigning a compatible func to the `cli.HelpPrinter` variable,
-e.g.:
+All of the help text generation may be customized, and at multiple levels. The templates
+are exposed as variables `RootCommandHelpTemplate`, `CommandHelpTemplate`, and
+`SubcommandHelpTemplate` which may be reassigned or augmented, and full override is
+possible by assigning a compatible func to the `cli.HelpPrinter` variable, e.g.:
 
 <!-- {
   "output": "Ha HA.  I pwnd the help!!1"

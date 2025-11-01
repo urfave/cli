@@ -20,6 +20,9 @@ type ActionFunc func(context.Context, *Command) error
 // CommandNotFoundFunc is executed if the proper command cannot be found
 type CommandNotFoundFunc func(context.Context, *Command, string)
 
+// ConfigureShellCompletionCommand is a function to configure a shell completion command
+type ConfigureShellCompletionCommand func(*Command)
+
 // OnUsageErrorFunc is executed if a usage error occurs. This is useful for displaying
 // customized usage error messages.  This function is able to replace the
 // original error messages.  If this function is not set, the "Incorrect usage"

@@ -56,8 +56,16 @@ entered value on command line will be returned to user on query.
 In addition they can be invoked multiple times on the command line and values will be appended to original value
 of the flag and returned to the user as a slice
 
-- `UintSliceFlag`
 - `IntSliceFlag`
+- `Int8SliceFlag`
+- `Int16SliceFlag`
+- `Int32SliceFlag`
+- `Int64SliceFlag`
+- `UintSliceFlag`
+- `Uint8SliceFlag`
+- `Uint16SliceFlag`
+- `Uint32SliceFlag`
+- `Uint64SliceFlag`
 - `StringSliceFlag`
 - `FloatSliceFlag`
 
@@ -326,6 +334,107 @@ If the command is run without the `lang` flag, the user will see the following m
 Required flag "lang" not set
 ```
 
+#### Flag Groups
+
+You can make groups of flags that are mutually exclusive of each other.
+This provides the ability to provide configuration options out of which
+only one can be defined on the command line.
+
+Take for example this app that looks up a user using one of multiple options:
+
+<!-- {
+  "error": "one of these flags needs to be provided: login, id"
+} -->
+```go
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/urfave/cli/v3"
+)
+
+func main() {
+	cmd := &cli.Command{
+		Name: "authors",
+		MutuallyExclusiveFlags: []cli.MutuallyExclusiveFlags{
+			{
+				Required: true,
+				Flags: [][]cli.Flag{
+					{
+						&cli.StringFlag{
+							Name:  "login",
+							Usage: "the username of the user",
+						},
+					},
+					{
+						&cli.StringFlag{
+							Name:  "id",
+							Usage: "the user id (defaults to 'me' for current user)",
+						},
+					},
+				},
+			},
+		},
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			u, err := getUser(ctx, cmd)
+			if err != nil {
+				return err
+			}
+			data, err := json.Marshal(u)
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(data))
+			return nil
+		},
+	}
+
+	if err := cmd.Run(context.Background(), os.Args); err != nil {
+		log.Fatal(err)
+	}
+}
+
+type User struct {
+	Id        string `json:"id"`
+	Login     string `json:"login"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+}
+
+// Mock function that returns a static user value.
+// Would retrieve a user from an API or database with other functions.
+func getUser(ctx context.Context, cmd *cli.Command) (User, error) {
+	u := User{
+		Id:        "abc123",
+		Login:     "vwoolf@example.com",
+		FirstName: "Virginia",
+		LastName:  "Woolf",
+	}
+	if login := cmd.String("login"); login != "" {
+		fmt.Printf("Getting user by login: %s\n", login)
+		u.Login = login
+	}
+	if id := cmd.String("id"); id != "" {
+		fmt.Printf("Getting user by id: %s\n", id)
+		u.Id = id
+	}
+	return u, nil
+}
+```
+
+If the command is run without either the `login` or `id` flag, the user will
+see the following message
+
+```
+one of these flags needs to be provided: login, id
+```
+
+
 #### Default Values for help output
 
 Sometimes it's useful to specify a flag's default help-text value within the
@@ -402,7 +511,7 @@ func main() {
 				Usage:       "Use a randomized port",
 				Value:       0,
 				DefaultText: "random",
-				Action: func(ctx context.Context, cmd *cli.Command, v int64) error {
+				Action: func(ctx context.Context, cmd *cli.Command, v int) error {
 					if v >= 65536 {
 						return fmt.Errorf("Flag port value %v out of range[0-65535]", v)
 					}

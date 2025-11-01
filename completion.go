@@ -5,6 +5,7 @@ import (
 	"embed"
 	"fmt"
 	"sort"
+	"strings"
 )
 
 const (
@@ -30,7 +31,7 @@ var (
 			return fmt.Sprintf(string(b), appName), err
 		},
 		"fish": func(c *Command, appName string) (string, error) {
-			return c.ToFishCompletion()
+			return c.Root().ToFishCompletion()
 		},
 		"pwsh": func(c *Command, appName string) (string, error) {
 			b, err := autoCompleteFS.ReadFile("autocomplete/powershell_autocomplete.ps1")
@@ -39,10 +40,28 @@ var (
 	}
 )
 
+const completionDescription = `Output shell completion script for bash, zsh, fish, or Powershell.
+Source the output to enable completion.
+
+# .bashrc
+source <($COMMAND completion bash)
+
+# .zshrc
+source <($COMMAND completion zsh)
+
+# fish
+$COMMAND completion fish > ~/.config/fish/completions/$COMMAND.fish
+
+# Powershell
+Output the script to path/to/autocomplete/$COMMAND.ps1 an run it.
+`
+
 func buildCompletionCommand(appName string) *Command {
 	return &Command{
-		Name:   completionCommandName,
-		Hidden: true,
+		Name:        completionCommandName,
+		Hidden:      true,
+		Usage:       "Output shell completion script for bash, zsh, fish, or Powershell",
+		Description: strings.ReplaceAll(completionDescription, "$COMMAND", appName),
 		Action: func(ctx context.Context, cmd *Command) error {
 			return printShellCompletion(ctx, cmd, appName)
 		},

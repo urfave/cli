@@ -19,6 +19,20 @@ type boolFlag interface {
 	IsBoolFlag() bool
 }
 
+type multiValueParsingConfig struct {
+	// SliceFlagSeparator is used to customize the separator for SliceFlag, the default is ","
+	SliceFlagSeparator string
+	// DisableSliceFlagSeparator is used to disable SliceFlagSeparator, the default is false
+	DisableSliceFlagSeparator bool
+	// MapFlagKeyValueSeparator is used to customize the separator for MapFlag, the default is "="
+	MapFlagKeyValueSeparator string
+}
+
+type multiValueParsingConfigSetter interface {
+	// configuration of parsing
+	setMultiValueParsingConfig(c multiValueParsingConfig)
+}
+
 // ValueCreator is responsible for creating a flag.Value emulation
 // as well as custom formatting
 //
@@ -70,10 +84,8 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *FlagBase[T, C, V]) GetValue() string {
-	if !f.TakesValue() {
-		return ""
-	}
-	return fmt.Sprintf("%v", f.Value)
+	var v V
+	return v.ToString(f.Value)
 }
 
 // TypeName returns the type of the flag.
@@ -134,6 +146,14 @@ func (f *FlagBase[T, C, V]) PostParse() error {
 	}
 
 	return nil
+}
+
+// pass configuration of parsing to value
+func (f *FlagBase[T, C, V]) setMultiValueParsingConfig(c multiValueParsingConfig) {
+	tracef("setMultiValueParsingConfig %T, %+v", f.value, f.value)
+	if cf, ok := f.value.(multiValueParsingConfigSetter); ok {
+		cf.setMultiValueParsingConfig(c)
+	}
 }
 
 func (f *FlagBase[T, C, V]) PreParse() error {
@@ -253,11 +273,7 @@ func (f *FlagBase[T, C, V]) TakesValue() bool {
 
 // GetDefaultText returns the default text for this flag
 func (f *FlagBase[T, C, V]) GetDefaultText() string {
-	if f.DefaultText != "" {
-		return f.DefaultText
-	}
-	var v V
-	return v.ToString(f.Value)
+	return f.DefaultText
 }
 
 // RunAction executes flag action if set

@@ -98,6 +98,11 @@ func buildExtendedTestCommand() *Command {
 	}, {
 		Name:   "hidden-command",
 		Hidden: true,
+		Flags: []Flag{
+			&BoolFlag{
+				Name: "completable",
+			},
+		},
 	}, {
 		Aliases: []string{"u"},
 		Flags: []Flag{
@@ -349,6 +354,138 @@ func TestCommand_Run_BeforeReturnNewContext(t *testing.T) {
 	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo", "bar"}))
 	require.Equal(t, "bval", receivedValFromAfter)
 	require.Equal(t, "bval", receivedValFromAction)
+}
+
+type ctxKey string
+
+// ctxCollector is a small helper to collect context values.
+type ctxCollector struct {
+	// keys are the keys to check the context for.
+	keys []ctxKey
+
+	// m maps from function name to context name to value.
+	m map[string]map[ctxKey]string
+}
+
+func (cc *ctxCollector) collect(ctx context.Context, fnName string) {
+	if cc.m == nil {
+		cc.m = make(map[string]map[ctxKey]string)
+	}
+
+	if _, ok := cc.m[fnName]; !ok {
+		cc.m[fnName] = make(map[ctxKey]string)
+	}
+
+	for _, k := range cc.keys {
+		if val := ctx.Value(k); val != nil {
+			cc.m[fnName][k] = val.(string)
+		}
+	}
+}
+
+func TestCommand_Run_BeforeReturnNewContextSubcommand(t *testing.T) {
+	bkey := ctxKey("bkey")
+	bkey2 := ctxKey("bkey2")
+
+	cc := &ctxCollector{keys: []ctxKey{bkey, bkey2}}
+	cmd := &Command{
+		Name: "bar",
+		Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+			return context.WithValue(ctx, bkey, "bval"), nil
+		},
+		After: func(ctx context.Context, cmd *Command) error {
+			cc.collect(ctx, "bar.After")
+			return nil
+		},
+		Commands: []*Command{
+			{
+				Name: "baz",
+				Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+					return context.WithValue(ctx, bkey2, "bval2"), nil
+				},
+				Action: func(ctx context.Context, cmd *Command) error {
+					cc.collect(ctx, "baz.Action")
+					return nil
+				},
+				After: func(ctx context.Context, cmd *Command) error {
+					cc.collect(ctx, "baz.After")
+					return nil
+				},
+			},
+		},
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"bar", "baz"}))
+	expected := map[string]map[ctxKey]string{
+		"bar.After": {
+			bkey:  "bval",
+			bkey2: "bval2",
+		},
+		"baz.Action": {
+			bkey:  "bval",
+			bkey2: "bval2",
+		},
+		"baz.After": {
+			bkey:  "bval",
+			bkey2: "bval2",
+		},
+	}
+	require.Equal(t, expected, cc.m)
+}
+
+func TestCommand_Run_FlagActionContext(t *testing.T) {
+	bkey := ctxKey("bkey")
+	bkey2 := ctxKey("bkey2")
+
+	cc := &ctxCollector{keys: []ctxKey{bkey, bkey2}}
+	cmd := &Command{
+		Name: "bar",
+		Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+			return context.WithValue(ctx, bkey, "bval"), nil
+		},
+		Flags: []Flag{
+			&StringFlag{
+				Name: "foo",
+				Action: func(ctx context.Context, cmd *Command, _ string) error {
+					cc.collect(ctx, "bar.foo.Action")
+					return nil
+				},
+			},
+		},
+		Commands: []*Command{
+			{
+				Name: "baz",
+				Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+					return context.WithValue(ctx, bkey2, "bval2"), nil
+				},
+				Flags: []Flag{
+					&StringFlag{
+						Name: "goo",
+						Action: func(ctx context.Context, cmd *Command, _ string) error {
+							cc.collect(ctx, "baz.goo.Action")
+							return nil
+						},
+					},
+				},
+				Action: func(ctx context.Context, cmd *Command) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"bar", "--foo", "value", "baz", "--goo", "value"}))
+	expected := map[string]map[ctxKey]string{
+		"bar.foo.Action": {
+			bkey:  "bval",
+			bkey2: "bval2",
+		},
+		"baz.goo.Action": {
+			bkey:  "bval",
+			bkey2: "bval2",
+		},
+	}
+	require.Equal(t, expected, cc.m)
 }
 
 func TestCommand_OnUsageError_hasCommandContext(t *testing.T) {
@@ -2037,7 +2174,7 @@ func TestCommand_Run_SubcommandFullPath(t *testing.T) {
 
 	outString := out.String()
 	require.Contains(t, outString, "foo bar - does bar things")
-	require.Contains(t, outString, "foo bar [command [command options]] [arguments...]")
+	require.Contains(t, outString, "foo bar [options] [arguments...]")
 }
 
 func TestCommand_Run_Help(t *testing.T) {
@@ -3959,6 +4096,21 @@ func TestCheckRequiredFlags(t *testing.T) {
 	}
 }
 
+func TestCheckRequiredFlagsWithOnUsageError(t *testing.T) {
+	expectedError := errors.New("OnUsageError")
+	cmd := &Command{
+		Name: "foo",
+		Flags: []Flag{
+			&StringFlag{Name: "requiredFlag", Required: true},
+		},
+		OnUsageError: func(_ context.Context, _ *Command, _ error, _ bool) error {
+			return expectedError
+		},
+	}
+	actualError := cmd.Run(buildTestContext(t), []string{"requiredFlag"})
+	require.ErrorIs(t, actualError, expectedError)
+}
+
 func TestCommand_ParentCommand_Set(t *testing.T) {
 	cmd := &Command{
 		parent: &Command{
@@ -4159,6 +4311,9 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 				},
 				&StringSliceFlag{
 					Name: "ssf",
+					Config: StringConfig{
+						TrimSpace: true,
+					},
 				},
 			}
 
@@ -4231,11 +4386,6 @@ func TestCommandCategories(t *testing.T) {
 }
 
 func TestCommandSliceFlagSeparator(t *testing.T) {
-	oldSep := defaultSliceFlagSeparator
-	defer func() {
-		defaultSliceFlagSeparator = oldSep
-	}()
-
 	cmd := &Command{
 		SliceFlagSeparator: ";",
 		Flags: []Flag{
@@ -4248,6 +4398,26 @@ func TestCommandSliceFlagSeparator(t *testing.T) {
 	r := require.New(t)
 	r.NoError(cmd.Run(buildTestContext(t), []string{"app", "--foo", "ff;dd;gg", "--foo", "t,u"}))
 	r.Equal([]string{"ff", "dd", "gg", "t,u"}, cmd.Value("foo"))
+}
+
+func TestCommandMapKeyValueFlagSeparator(t *testing.T) {
+	cmd := &Command{
+		MapFlagKeyValueSeparator: ":",
+		Flags: []Flag{
+			&StringMapFlag{
+				Name: "f_string_map",
+			},
+		},
+	}
+
+	r := require.New(t)
+	r.NoError(cmd.Run(buildTestContext(t), []string{"app", "--f_string_map", "s1:s2,s3:", "--f_string_map", "s4:s5"}))
+	exp := map[string]string{
+		"s1": "s2",
+		"s3": "",
+		"s4": "s5",
+	}
+	r.Equal(exp, cmd.Value("f_string_map"))
 }
 
 // TestStringFlagTerminator tests the string flag "--flag" with "--" terminator.
@@ -4501,7 +4671,7 @@ func TestSliceStringFlagParsing(t *testing.T) {
 func TestJSONExportCommand(t *testing.T) {
 	cmd := buildExtendedTestCommand()
 	cmd.Arguments = []Argument{
-		&Int64Arg{
+		&IntArgs{
 			Name: "fooi",
 		},
 	}
@@ -4599,6 +4769,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"metadata": null,
 				"sliceFlagSeparator": "",
 				"disableSliceFlagSeparator": false,
+				"mapFlagKeyValueSeparator": "",
 				"useShortOptionHandling": false,
 				"suggest": false,
 				"allowExtFlags": false,
@@ -4606,7 +4777,8 @@ func TestJSONExportCommand(t *testing.T) {
 				"prefixMatchCommands": false,
 				"mutuallyExclusiveFlags": null,
 				"arguments": null,
-				"readArgsFromStdin": false
+				"readArgsFromStdin": false,
+				"stopOnNthArg": null
 			  }
 			],
 			"flags": [
@@ -4661,6 +4833,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"metadata": null,
 			"sliceFlagSeparator": "",
 			"disableSliceFlagSeparator": false,
+			"mapFlagKeyValueSeparator": "",
 			"useShortOptionHandling": false,
 			"suggest": false,
 			"allowExtFlags": false,
@@ -4668,7 +4841,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"prefixMatchCommands": false,
 			"mutuallyExclusiveFlags": null,
 			"arguments": null,
-			"readArgsFromStdin": false
+			"readArgsFromStdin": false,
+			"stopOnNthArg": null
 		  },
 		  {
 			"name": "info",
@@ -4694,6 +4868,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"metadata": null,
 			"sliceFlagSeparator": "",
 			"disableSliceFlagSeparator": false,
+			"mapFlagKeyValueSeparator": "",
 			"useShortOptionHandling": false,
 			"suggest": false,
 			"allowExtFlags": false,
@@ -4701,7 +4876,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"prefixMatchCommands": false,
 			"mutuallyExclusiveFlags": null,
 			"arguments": null,
-			"readArgsFromStdin": false
+			"readArgsFromStdin": false,
+			"stopOnNthArg": null
 		  },
 		  {
 			"name": "some-command",
@@ -4724,6 +4900,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"metadata": null,
 			"sliceFlagSeparator": "",
 			"disableSliceFlagSeparator": false,
+			"mapFlagKeyValueSeparator": "",
 			"useShortOptionHandling": false,
 			"suggest": false,
 			"allowExtFlags": false,
@@ -4731,7 +4908,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"prefixMatchCommands": false,
 			"mutuallyExclusiveFlags": null,
 			"arguments": null,
-			"readArgsFromStdin": false
+			"readArgsFromStdin": false,
+			"stopOnNthArg": null
 		  },
 		  {
 			"name": "hidden-command",
@@ -4744,7 +4922,26 @@ func TestJSONExportCommand(t *testing.T) {
 			"defaultCommand": "",
 			"category": "",
 			"commands": null,
-			"flags": null,
+			"flags": [
+			  {
+				"name": "completable",
+				"category": "",
+				"defaultText": "",
+				"usage": "",
+				"required": false,
+				"hidden": false,
+				"hideDefault": false,
+				"local": false,
+				"defaultValue": false,
+				"aliases": null,
+				"takesFileArg": false,
+				"config": {
+				  "Count": null
+				},
+				"onlyOnce": false,
+				"validateDefaults": false
+			  }
+			],
 			"hideHelp": false,
 			"hideHelpCommand": false,
 			"hideVersion": false,
@@ -4754,6 +4951,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"metadata": null,
 			"sliceFlagSeparator": "",
 			"disableSliceFlagSeparator": false,
+			"mapFlagKeyValueSeparator": "",
 			"useShortOptionHandling": false,
 			"suggest": false,
 			"allowExtFlags": false,
@@ -4761,7 +4959,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"prefixMatchCommands": false,
 			"mutuallyExclusiveFlags": null,
 			"arguments": null,
-			"readArgsFromStdin": false
+			"readArgsFromStdin": false,
+			"stopOnNthArg": null
 		  },
 		  {
 			"name": "usage",
@@ -4820,6 +5019,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"metadata": null,
 				"sliceFlagSeparator": "",
 				"disableSliceFlagSeparator": false,
+				"mapFlagKeyValueSeparator": "",
 				"useShortOptionHandling": false,
 				"suggest": false,
 				"allowExtFlags": false,
@@ -4827,7 +5027,8 @@ func TestJSONExportCommand(t *testing.T) {
 				"prefixMatchCommands": false,
 				"mutuallyExclusiveFlags": null,
 				"arguments": null,
-				"readArgsFromStdin": false
+				"readArgsFromStdin": false,
+				"stopOnNthArg": null
 			  }
 			],
 			"flags": [
@@ -4882,6 +5083,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"metadata": null,
 			"sliceFlagSeparator": "",
 			"disableSliceFlagSeparator": false,
+			"mapFlagKeyValueSeparator": "",
 			"useShortOptionHandling": false,
 			"suggest": false,
 			"allowExtFlags": false,
@@ -4889,7 +5091,8 @@ func TestJSONExportCommand(t *testing.T) {
 			"prefixMatchCommands": false,
 			"mutuallyExclusiveFlags": null,
 			"arguments": null,
-			"readArgsFromStdin": false
+			"readArgsFromStdin": false,
+			"stopOnNthArg": null
 		  }
 		],
 		"flags": [
@@ -4988,6 +5191,7 @@ func TestJSONExportCommand(t *testing.T) {
 		"metadata": null,
 		"sliceFlagSeparator": "",
 		"disableSliceFlagSeparator": false,
+		"mapFlagKeyValueSeparator": "",
 		"useShortOptionHandling": false,
 		"suggest": false,
 		"allowExtFlags": false,
@@ -5006,8 +5210,128 @@ func TestJSONExportCommand(t *testing.T) {
 			}
 		  }
 		],
-		"readArgsFromStdin": false
+		"readArgsFromStdin": false,
+		"stopOnNthArg": null
 	  }
 `
 	assert.JSONEq(t, expected, string(out))
+}
+
+func TestCommand_ExclusiveFlags(t *testing.T) {
+	cmd := &Command{
+		Name: "bar",
+		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
+			{
+				Flags: [][]Flag{
+					{
+						&StringFlag{
+							Name: "foo1",
+						},
+					},
+					{
+						&StringFlag{
+							Name: "foo2",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"bar", "--foo1", "var1", "--foo2", "var2"})
+
+	require.Equal(t, "option foo1 cannot be set along with option foo2", err.Error())
+}
+
+func TestCommand_ExclusiveFlagsWithOnUsageError(t *testing.T) {
+	expectedErr := errors.New("my custom error")
+	cmd := &Command{
+		Name: "bar",
+		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
+			{
+				Flags: [][]Flag{
+					{
+						&StringFlag{
+							Name: "foo1",
+						},
+					},
+					{
+						&StringFlag{
+							Name: "foo2",
+						},
+					},
+				},
+			},
+		},
+		OnUsageError: func(_ context.Context, _ *Command, _ error, _ bool) error {
+			return expectedErr
+		},
+	}
+
+	actualErr := cmd.Run(buildTestContext(t), []string{"bar", "--foo1", "v1", "--foo2", "v2"})
+
+	require.ErrorIs(t, actualErr, expectedErr)
+}
+
+func TestCommand_ExclusiveFlagsWithAfter(t *testing.T) {
+	var called bool
+	cmd := &Command{
+		Name: "bar",
+		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
+			{
+				Category: "cat1",
+				Flags: [][]Flag{
+					{
+						&StringFlag{
+							Name: "foo",
+						},
+					},
+					{
+						&StringFlag{
+							Name: "foo2",
+						},
+					},
+				},
+			},
+		},
+		After: func(ctx context.Context, cmd *Command) error {
+			called = true
+			return nil
+		},
+	}
+
+	require.Error(t, cmd.Run(buildTestContext(t), []string{
+		"bar",
+		"--foo", "v1",
+		"--foo2", "v2",
+	}))
+	require.True(t, called)
+}
+
+func TestCommand_ParallelRun(t *testing.T) {
+	t.Parallel()
+
+	for i := 0; i < 10; i++ {
+		t.Run(fmt.Sprintf("run_%d", i), func(t *testing.T) {
+			t.Parallel()
+
+			defer func() {
+				if r := recover(); r != nil {
+					t.Errorf("unexpected panic - '%s'", r)
+				}
+			}()
+
+			cmd := &Command{
+				Name:  "debug",
+				Usage: "make an explosive entrance",
+				Action: func(_ context.Context, cmd *Command) error {
+					return nil
+				},
+			}
+
+			if err := cmd.Run(context.Background(), nil); err != nil {
+				fmt.Printf("%s\n", err)
+			}
+		})
+	}
 }

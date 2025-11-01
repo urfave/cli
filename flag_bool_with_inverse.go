@@ -55,6 +55,10 @@ func (bif *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) err
 	return nil
 }
 
+func (bif *BoolWithInverseFlag) IsLocal() bool {
+	return bif.Local
+}
+
 func (bif *BoolWithInverseFlag) inversePrefix() string {
 	if bif.InversePrefix == "" {
 		bif.InversePrefix = DefaultInverseBoolPrefix
@@ -72,6 +76,7 @@ func (bif *BoolWithInverseFlag) PreParse() error {
 	if dest == nil {
 		dest = new(bool)
 	}
+	*dest = bif.Value
 	bif.value = &boolValue{
 		destination: dest,
 		count:       count,
@@ -148,6 +153,14 @@ func (bif *BoolWithInverseFlag) Names() []string {
 	}
 
 	return names
+}
+
+func (bif *BoolWithInverseFlag) IsRequired() bool {
+	return bif.Required
+}
+
+func (bif *BoolWithInverseFlag) IsVisible() bool {
+	return !bif.Hidden
 }
 
 // String implements the standard Stringer interface.

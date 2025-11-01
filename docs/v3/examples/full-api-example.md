@@ -142,9 +142,9 @@ func main() {
 			&cli.BoolFlag{Value: true, Name: "fancier"},
 			&cli.DurationFlag{Name: "howlong", Aliases: []string{"H"}, Value: time.Second * 3},
 			&cli.FloatFlag{Name: "howmuch"},
-			&cli.IntFlag{Name: "longdistance", Validator: func (t int64) error {
+			&cli.IntFlag{Name: "longdistance", Validator: func (t int) error {
 				if t < 10 {
-					return fmt.Errorf("10 miles isnt long distance!!!!")
+					return fmt.Errorf("10 miles isn't long distance!!!!")
 				}
 				return nil
 			}},
@@ -185,9 +185,9 @@ func main() {
 			return nil
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
-			cli.DefaultAppComplete(ctx, cmd)
+			cli.DefaultRootCommandComplete(ctx, cmd)
 			cli.HandleExitCoder(errors.New("not an exit coder, though"))
-			cli.ShowAppHelp(cmd)
+			cli.ShowRootCommandHelp(cmd)
 			cli.ShowCommandHelp(ctx, cmd, "also-nope")
 			cli.ShowSubcommandHelp(cmd)
 			cli.ShowVersion(cmd)

@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"strings"
+	"unicode"
 )
 
 const (
@@ -88,6 +89,13 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 			return &stringSliceArgs{posArgs}, nil
 		}
 
+		// Check if we've reached the Nth argument and should stop flag parsing
+		if cmd.StopOnNthArg != nil && len(posArgs) == *cmd.StopOnNthArg {
+			// Append current arg and all remaining args without parsing
+			posArgs = append(posArgs, rargs[0:]...)
+			return &stringSliceArgs{posArgs}, nil
+		}
+
 		// handle positional args
 		if firstArg[0] != '-' {
 			// positional argument probably
@@ -117,6 +125,11 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		if firstArg[1] == '-' {
 			numMinuses++
 			shortOptionHandling = false
+		} else if !unicode.IsLetter(rune(firstArg[1])) {
+			// this is not a flag
+			tracef("parseFlags not a unicode letter. Stop parsing")
+			posArgs = append(posArgs, rargs...)
+			return &stringSliceArgs{posArgs}, nil
 		}
 
 		tracef("parseFlags (shortOptionHandling=%[1]q)", shortOptionHandling)
