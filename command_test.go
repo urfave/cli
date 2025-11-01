@@ -4535,11 +4535,6 @@ func TestCommandCategories(t *testing.T) {
 }
 
 func TestCommandSliceFlagSeparator(t *testing.T) {
-	oldSep := defaultSliceFlagSeparator
-	defer func() {
-		defaultSliceFlagSeparator = oldSep
-	}()
-
 	cmd := &Command{
 		SliceFlagSeparator: ";",
 		Flags: []Flag{
@@ -4552,6 +4547,26 @@ func TestCommandSliceFlagSeparator(t *testing.T) {
 	r := require.New(t)
 	r.NoError(cmd.Run(buildTestContext(t), []string{"app", "--foo", "ff;dd;gg", "--foo", "t,u"}))
 	r.Equal([]string{"ff", "dd", "gg", "t,u"}, cmd.Value("foo"))
+}
+
+func TestCommandMapKeyValueFlagSeparator(t *testing.T) {
+	cmd := &Command{
+		MapFlagKeyValueSeparator: ":",
+		Flags: []Flag{
+			&StringMapFlag{
+				Name: "f_string_map",
+			},
+		},
+	}
+
+	r := require.New(t)
+	r.NoError(cmd.Run(buildTestContext(t), []string{"app", "--f_string_map", "s1:s2,s3:", "--f_string_map", "s4:s5"}))
+	exp := map[string]string{
+		"s1": "s2",
+		"s3": "",
+		"s4": "s5",
+	}
+	r.Equal(exp, cmd.Value("f_string_map"))
 }
 
 // TestStringFlagTerminator tests the string flag "--flag" with "--" terminator.
@@ -4904,6 +4919,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"metadata": null,
 				"sliceFlagSeparator": "",
 				"disableSliceFlagSeparator": false,
+				"mapFlagKeyValueSeparator": "",
 				"useShortOptionHandling": false,
 				"suggest": false,
 				"allowExtFlags": false,
@@ -4968,6 +4984,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"metadata": null,
 			"sliceFlagSeparator": "",
 			"disableSliceFlagSeparator": false,
+			"mapFlagKeyValueSeparator": "",
 			"useShortOptionHandling": false,
 			"suggest": false,
 			"allowExtFlags": false,
@@ -5003,6 +5020,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"metadata": null,
 			"sliceFlagSeparator": "",
 			"disableSliceFlagSeparator": false,
+			"mapFlagKeyValueSeparator": "",
 			"useShortOptionHandling": false,
 			"suggest": false,
 			"allowExtFlags": false,
@@ -5035,6 +5053,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"metadata": null,
 			"sliceFlagSeparator": "",
 			"disableSliceFlagSeparator": false,
+			"mapFlagKeyValueSeparator": "",
 			"useShortOptionHandling": false,
 			"suggest": false,
 			"allowExtFlags": false,
@@ -5086,6 +5105,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"metadata": null,
 			"sliceFlagSeparator": "",
 			"disableSliceFlagSeparator": false,
+			"mapFlagKeyValueSeparator": "",
 			"useShortOptionHandling": false,
 			"suggest": false,
 			"allowExtFlags": false,
@@ -5154,6 +5174,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"metadata": null,
 				"sliceFlagSeparator": "",
 				"disableSliceFlagSeparator": false,
+				"mapFlagKeyValueSeparator": "",
 				"useShortOptionHandling": false,
 				"suggest": false,
 				"allowExtFlags": false,
@@ -5218,6 +5239,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"metadata": null,
 			"sliceFlagSeparator": "",
 			"disableSliceFlagSeparator": false,
+			"mapFlagKeyValueSeparator": "",
 			"useShortOptionHandling": false,
 			"suggest": false,
 			"allowExtFlags": false,
@@ -5326,6 +5348,7 @@ func TestJSONExportCommand(t *testing.T) {
 		"metadata": null,
 		"sliceFlagSeparator": "",
 		"disableSliceFlagSeparator": false,
+		"mapFlagKeyValueSeparator": "",
 		"useShortOptionHandling": false,
 		"suggest": false,
 		"allowExtFlags": false,
@@ -5440,4 +5463,32 @@ func TestCommand_ExclusiveFlagsWithAfter(t *testing.T) {
 		"--foo2", "v2",
 	}))
 	require.True(t, called)
+}
+
+func TestCommand_ParallelRun(t *testing.T) {
+	t.Parallel()
+
+	for i := 0; i < 10; i++ {
+		t.Run(fmt.Sprintf("run_%d", i), func(t *testing.T) {
+			t.Parallel()
+
+			defer func() {
+				if r := recover(); r != nil {
+					t.Errorf("unexpected panic - '%s'", r)
+				}
+			}()
+
+			cmd := &Command{
+				Name:  "debug",
+				Usage: "make an explosive entrance",
+				Action: func(_ context.Context, cmd *Command) error {
+					return nil
+				},
+			}
+
+			if err := cmd.Run(context.Background(), nil); err != nil {
+				fmt.Printf("%s\n", err)
+			}
+		})
+	}
 }

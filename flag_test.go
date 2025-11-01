@@ -44,8 +44,8 @@ var boolFlagTests = []struct {
 	name     string
 	expected string
 }{
-	{"help", "--help\t(default: false)"},
-	{"h", "-h\t(default: false)"},
+	{"help", "--help\t"},
+	{"h", "-h\t"},
 }
 
 func TestBoolFlagHelpOutput(t *testing.T) {
@@ -470,7 +470,7 @@ func TestFlagStringifying(t *testing.T) {
 		{
 			name:     "bool-flag",
 			fl:       &BoolFlag{Name: "vividly"},
-			expected: "--vividly\t(default: false)",
+			expected: "--vividly\t",
 		},
 		{
 			name:     "bool-flag-with-default-text",
@@ -2771,7 +2771,7 @@ func TestFlagDefaultValue(t *testing.T) {
 			name:    "bool",
 			flag:    &BoolFlag{Name: "flag", Value: true},
 			toParse: []string{"--flag=false"},
-			expect:  `--flag	(default: true)`,
+			expect:  `--flag	`,
 		},
 		{
 			name:    "uint",
@@ -2866,7 +2866,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "bool",
 			flag:    &BoolFlag{Name: "flag", Value: true, Sources: EnvVars("uflag")},
 			toParse: []string{"--flag=false"},
-			expect:  `--flag	(default: true)` + withEnvHint([]string{"uflag"}, ""),
+			expect:  `--flag	` + withEnvHint([]string{"uflag"}, ""),
 			environ: map[string]string{
 				"uflag": "false",
 			},
@@ -3090,13 +3090,8 @@ func TestSliceShortOptionHandle(t *testing.T) {
 
 // Test issue #1541
 func TestCustomizedSliceFlagSeparator(t *testing.T) {
-	oldSep := defaultSliceFlagSeparator
-	defer func() {
-		defaultSliceFlagSeparator = oldSep
-	}()
-	defaultSliceFlagSeparator = ";"
 	opts := []string{"opt1", "opt2", "opt3,op", "opt4"}
-	ret := flagSplitMultiValues(strings.Join(opts, ";"))
+	ret := flagSplitMultiValues(strings.Join(opts, ";"), ";", disableSliceFlagSeparator)
 	require.Equal(t, 4, len(ret), "split slice flag failed")
 	for idx, r := range ret {
 		require.Equal(t, opts[idx], r, "get %dth failed", idx)
@@ -3104,13 +3099,8 @@ func TestCustomizedSliceFlagSeparator(t *testing.T) {
 }
 
 func TestFlagSplitMultiValues_Disabled(t *testing.T) {
-	disableSliceFlagSeparator = true
-	defer func() {
-		disableSliceFlagSeparator = false
-	}()
-
 	opts := []string{"opt1", "opt2", "opt3,op", "opt4"}
-	ret := flagSplitMultiValues(strings.Join(opts, defaultSliceFlagSeparator))
+	ret := flagSplitMultiValues(strings.Join(opts, defaultSliceFlagSeparator), defaultSliceFlagSeparator, true)
 	require.Equal(t, 1, len(ret), "failed to disable split slice flag")
 	require.Equal(t, strings.Join(opts, defaultSliceFlagSeparator), ret[0])
 }
@@ -3359,9 +3349,9 @@ func TestEnvHintWindows(t *testing.T) {
 }
 
 func TestDocGetValue(t *testing.T) {
-	assert.Equal(t, "", (&BoolFlag{Name: "foo", Value: true}).GetValue())
-	assert.Equal(t, "", (&BoolFlag{Name: "foo", Value: false}).GetValue())
-	assert.Equal(t, "bar", (&StringFlag{Name: "foo", Value: "bar"}).GetValue())
+	assert.Equal(t, "true", (&BoolFlag{Name: "foo", Value: true}).GetValue())
+	assert.Equal(t, "false", (&BoolFlag{Name: "foo", Value: false}).GetValue())
+	assert.Equal(t, "\"bar\"", (&StringFlag{Name: "foo", Value: "bar"}).GetValue())
 	assert.Equal(t, "", (&BoolWithInverseFlag{Name: "foo", Value: false}).GetValue())
 }
 

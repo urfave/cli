@@ -80,7 +80,18 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 
 	if !cmd.HideVersion && isRoot {
 		tracef("appending version flag (cmd=%[1]q)", cmd.Name)
-		cmd.appendFlag(VersionFlag)
+		if !cmd.globaVersionFlagAdded {
+			var localVersionFlag Flag
+			if globalVersionFlag, ok := VersionFlag.(*BoolFlag); ok {
+				flag := *globalVersionFlag
+				localVersionFlag = &flag
+			} else {
+				localVersionFlag = VersionFlag
+			}
+
+			cmd.appendFlag(localVersionFlag)
+			cmd.globaVersionFlagAdded = true
+		}
 	}
 
 	if cmd.PrefixMatchCommands && cmd.SuggestCommandFunc == nil {
@@ -129,14 +140,6 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 		tracef("setting default Metadata (cmd=%[1]q)", cmd.Name)
 		cmd.Metadata = map[string]any{}
 	}
-
-	if len(cmd.SliceFlagSeparator) != 0 {
-		tracef("setting defaultSliceFlagSeparator from cmd.SliceFlagSeparator (cmd=%[1]q)", cmd.Name)
-		defaultSliceFlagSeparator = cmd.SliceFlagSeparator
-	}
-
-	tracef("setting disableSliceFlagSeparator from cmd.DisableSliceFlagSeparator (cmd=%[1]q)", cmd.Name)
-	disableSliceFlagSeparator = cmd.DisableSliceFlagSeparator
 
 	cmd.setFlags = map[Flag]struct{}{}
 }
@@ -200,15 +203,21 @@ func (cmd *Command) ensureHelp() {
 		}
 
 		if HelpFlag != nil {
-			// TODO need to remove hack
-			if hf, ok := HelpFlag.(*BoolFlag); ok {
-				hf.applied = false
-				hf.hasBeenSet = false
-				hf.Value = false
-				hf.value = nil
+			if !cmd.globaHelpFlagAdded {
+				var localHelpFlag Flag
+				if globalHelpFlag, ok := HelpFlag.(*BoolFlag); ok {
+					flag := *globalHelpFlag
+					localHelpFlag = &flag
+				} else {
+					localHelpFlag = HelpFlag
+				}
+
+				tracef("appending HelpFlag (cmd=%[1]q)", cmd.Name)
+				cmd.appendFlag(localHelpFlag)
+				cmd.globaHelpFlagAdded = true
+			} else {
+				tracef("HelpFlag already added, skip (cmd=%[1]q)", cmd.Name)
 			}
-			tracef("appending HelpFlag (cmd=%[1]q)", cmd.Name)
-			cmd.appendFlag(HelpFlag)
 		}
 	}
 }

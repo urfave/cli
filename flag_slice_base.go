@@ -9,9 +9,11 @@ import (
 
 // SliceBase wraps []T to satisfy flag.Value
 type SliceBase[T any, C any, VC ValueCreator[T, C]] struct {
-	slice      *[]T
-	hasBeenSet bool
-	value      Value
+	slice                 *[]T
+	hasBeenSet            bool
+	value                 Value
+	sliceSeparator        string
+	disableSliceSeparator bool
 }
 
 func (i SliceBase[T, C, VC]) Create(val []T, p *[]T, c C) Value {
@@ -31,6 +33,13 @@ func NewSliceBase[T any, C any, VC ValueCreator[T, C]](defaults ...T) *SliceBase
 	return &SliceBase[T, C, VC]{
 		slice: &defaults,
 	}
+}
+
+// configuration of slicing
+func (i *SliceBase[T, C, VC]) setMultiValueParsingConfig(c multiValueParsingConfig) {
+	i.disableSliceSeparator = c.DisableSliceFlagSeparator
+	i.sliceSeparator = c.SliceFlagSeparator
+	tracef("set slice parsing config - slice separator '%s', disable separator:%v", i.sliceSeparator, i.disableSliceSeparator)
 }
 
 // Set parses the value and appends it to the list of values
@@ -57,7 +66,8 @@ func (i *SliceBase[T, C, VC]) Set(value string) error {
 		trimSpace = false
 	}
 
-	for _, s := range flagSplitMultiValues(value) {
+	tracef("splitting slice value '%s', separator '%s', disable separator:%v", value, i.sliceSeparator, i.disableSliceSeparator)
+	for _, s := range flagSplitMultiValues(value, i.sliceSeparator, i.disableSliceSeparator) {
 		if trimSpace {
 			s = strings.TrimSpace(s)
 		}
