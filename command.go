@@ -384,6 +384,21 @@ func (cmd *Command) lookupFlag(name string) Flag {
 	return nil
 }
 
+// this looks up only allowed flags, i.e. local flags for current command
+// or persistent flags from ancestors
+func (cmd *Command) lookupAppliedFlag(name string) Flag {
+	for _, f := range cmd.appliedFlags {
+		if slices.Contains(f.Names(), name) {
+			tracef("appliedFlag found for name %[1]q (cmd=%[2]q)", name, cmd.Name)
+			return f
+		}
+	}
+
+	tracef("lookupAppliedflag NOT found for name %[1]q (cmd=%[2]q)", name, cmd.Name)
+	cmd.onInvalidFlag(context.TODO(), name)
+	return nil
+}
+
 func (cmd *Command) checkRequiredFlag(f Flag) (bool, string) {
 	if rf, ok := f.(RequiredFlag); ok && rf.IsRequired() {
 		flagName := f.Names()[0]
