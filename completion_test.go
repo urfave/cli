@@ -194,7 +194,7 @@ func TestMutuallyExclusiveFlagsCompletion(t *testing.T) {
 		Writer:                out,
 		Flags: []Flag{
 			&StringFlag{
-				Name: "l1",
+				Name: "gf",
 			},
 		},
 		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
@@ -202,15 +202,15 @@ func TestMutuallyExclusiveFlagsCompletion(t *testing.T) {
 				Flags: [][]Flag{
 					{
 						&StringFlag{
-							Name: "m1",
+							Name: "mexg1_1",
 						},
 						&StringFlag{
-							Name: "m2",
+							Name: "mexg1_2",
 						},
 					},
 					{
 						&StringFlag{
-							Name: "l2",
+							Name: "mexg2_1",
 						},
 					},
 				},
@@ -218,13 +218,70 @@ func TestMutuallyExclusiveFlagsCompletion(t *testing.T) {
 		},
 	}
 
-	os.Args = []string{"foo", "-", completionFlag}
-	err := cmd.Run(buildTestContext(t), os.Args)
-	assert.NoError(t, err, "Expected no error for completion")
-	assert.Contains(t, out.String(), "l1", "Expected output to contain flag l1")
-	assert.Contains(t, out.String(), "m1", "Expected output to contain flag m1")
-	assert.Contains(t, out.String(), "m2", "Expected output to contain flag m2")
-	assert.Contains(t, out.String(), "l2", "Expected output to contain flag l2")
+	tests := []struct {
+		name          string
+		args          []string
+		expectGlobal  bool
+		expectMexg1_1 bool
+		expectMexg1_2 bool
+		expectMexg2_1 bool
+	}{
+		{
+			name:          "flag completion all",
+			args:          []string{"foo", "-", completionFlag},
+			expectGlobal:  true,
+			expectMexg1_1: true,
+			expectMexg1_2: true,
+			expectMexg2_1: true,
+		},
+		{
+			name:          "flag completion local",
+			args:          []string{"foo", "-mex", completionFlag},
+			expectMexg1_1: true,
+			expectMexg1_2: true,
+			expectMexg2_1: true,
+		},
+		{
+			name:          "flag completion local group-1",
+			args:          []string{"foo", "-mexg1", completionFlag},
+			expectMexg1_1: true,
+			expectMexg1_2: true,
+		},
+		{
+			name:          "flag completion local group-2",
+			args:          []string{"foo", "-mexg2", completionFlag},
+			expectMexg2_1: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			out.Reset()
+			os.Args = test.args
+			err := cmd.Run(buildTestContext(t), os.Args)
+			assert.NoError(t, err, "Expected no error for completion")
+			if test.expectGlobal {
+				assert.Contains(t, out.String(), "gf", "Expected output to contain flag gf")
+			} else {
+				assert.NotContains(t, out.String(), "gf", "Expected output to not contain flag gf")
+			}
+			if test.expectMexg1_1 {
+				assert.Contains(t, out.String(), "mexg1_1", "Expected output to contain flag mexg1_1")
+			} else {
+				assert.NotContains(t, out.String(), "mexg1_1", "Expected output to not contain flag mexg1_1")
+			}
+			if test.expectMexg1_2 {
+				assert.Contains(t, out.String(), "mexg1_2", "Expected output to contain flag mexg1_2")
+			} else {
+				assert.NotContains(t, out.String(), "mexg1_2", "Expected output to not contain flag mexg1_2")
+			}
+			if test.expectMexg2_1 {
+				assert.Contains(t, out.String(), "mexg2_1", "Expected output to contain flag mexg2_1")
+			} else {
+				assert.NotContains(t, out.String(), "mexg2_1", "Expected output to not contain flag mexg2_1")
+			}
+		})
+	}
 }
 
 type mockWriter struct {
