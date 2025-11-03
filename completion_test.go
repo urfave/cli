@@ -252,6 +252,17 @@ func TestMutuallyExclusiveFlagsCompletion(t *testing.T) {
 			args:          []string{"foo", "-mexg2", completionFlag},
 			expectMexg2_1: true,
 		},
+		{
+			name:          "flag completion local group-1 twice",
+			args:          []string{"foo", "-mexg1-1", "-mex", completionFlag},
+			expectMexg1_1: true,
+			expectMexg1_2: true,
+		},
+		{
+			name:          "flag completion local group-2 twice",
+			args:          []string{"foo", "-mexg2-1", "-mex", completionFlag},
+			expectMexg2_1: true,
+		},
 	}
 
 	for _, test := range tests {
