@@ -207,8 +207,13 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 	}
 
 	for _, flag := range cmd.allFlags() {
+		isSet := flag.IsSet()
 		if err := flag.PostParse(); err != nil {
 			return ctx, err
+		}
+		// add env set flags here
+		if !isSet && flag.IsSet() {
+			cmd.setFlags[flag] = struct{}{}
 		}
 	}
 
