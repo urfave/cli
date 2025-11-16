@@ -136,10 +136,12 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 
 		flagName := firstArg[numMinuses:]
 		flagVal := ""
+		valFromEqual := false
 		tracef("flagName:1 (fName=%[1]q)", flagName)
 		if index := strings.Index(flagName, "="); index != -1 {
 			flagVal = flagName[index+1:]
 			flagName = flagName[:index]
+			valFromEqual = true
 		}
 
 		tracef("flagName:2 (fName=%[1]q) (fVal=%[2]q)", flagName, flagVal)
@@ -162,7 +164,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 			tracef("processing non bool flag (fName=%[1]q)", flagName)
 			// not a bool flag so need to get the next arg
 			if flagVal == "" {
-				if len(rargs) == 1 {
+				if len(rargs) == 1 || valFromEqual {
 					return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", argumentNotProvidedErrMsg, firstArg)
 				}
 				flagVal = rargs[1]
