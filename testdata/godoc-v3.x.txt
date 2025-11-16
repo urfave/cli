@@ -57,6 +57,10 @@ var AnyArguments = []Argument{
 }
     AnyArguments to differentiate between no arguments(nil) vs aleast one
 
+var ArgsUsageCommandHelp = "[command]"
+    ArgsUsageCommandHelp is a short description of the arguments of the help
+    command
+
 var CommandHelpTemplate = `NAME:
    {{template "helpNameTemplate" .}}
 
@@ -171,6 +175,10 @@ OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}
     SubcommandHelpTemplate is the text template for the subcommand help topic.
     cli.go uses text/template to render templates. You can render custom help
     text by setting this variable.
+
+var UsageCommandHelp = "Shows a list of commands or help for one command"
+    UsageCommandHelp is the text to override the USAGE section of the help
+    command
 
 var VersionPrinter = DefaultPrintVersion
     VersionPrinter prints the version for the root Command.

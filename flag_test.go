@@ -1727,6 +1727,28 @@ func TestParseGenericFromEnv(t *testing.T) {
 	assert.NoError(t, cmd.Run(buildTestContext(t), []string{"run"}))
 }
 
+func TestFlagActionFromEnv(t *testing.T) {
+	t.Setenv("X", "42")
+	x := 0
+
+	cmd := &Command{
+		Flags: []Flag{
+			&IntFlag{
+				Name:    "x",
+				Sources: EnvVars("X"),
+				Action: func(ctx context.Context, cmd *Command, v int) error {
+					x = v
+					return nil
+				},
+			},
+		},
+	}
+
+	assert.NoError(t, cmd.Run(buildTestContext(t), []string{"run"}))
+	assert.Equal(t, cmd.Int("x"), 42)
+	assert.Equal(t, x, 42)
+}
+
 func TestParseMultiString(t *testing.T) {
 	_ = (&Command{
 		Flags: []Flag{
