@@ -2728,6 +2728,11 @@ func TestFlagAction(t *testing.T) {
 			err:  "flag needs an argument: --f_string=",
 		},
 		{
+			name: "flag_string_error2",
+			args: []string{"app", "--f_string=", "--f_bool"},
+			err:  "flag needs an argument: --f_string=",
+		},
+		{
 			name: "flag_string_slice",
 			args: []string{"app", "--f_string_slice=s1,s2,s3"},
 			exp:  "[s1 s2 s3] ",
