@@ -6,11 +6,16 @@ import (
 )
 
 type extFlag struct {
-	f *flag.Flag
+	f        *flag.Flag
+	category string
 }
 
 func (e *extFlag) PreParse() error {
-	if e.f.DefValue != "" {
+	// The flag package sets DefValue to the value's String(), so only reset
+	// a value that has changed since, e.g. in a previous run. Some flags
+	// don't accept their own DefValue, such as klog's -log_backtrace_at
+	// (":0"), and setting it unchanged would fail.
+	if e.f.DefValue != "" && e.f.Value.String() != e.f.DefValue {
 		return e.Set("", e.f.DefValue)
 	}
 
@@ -46,7 +51,33 @@ func (e *extFlag) IsVisible() bool {
 }
 
 func (e *extFlag) TakesValue() bool {
+	return !e.IsBoolFlag()
+}
+
+func (e *extFlag) IsBoolFlag() bool {
+	bf, ok := e.f.Value.(boolFlag)
+	return ok && bf.IsBoolFlag()
+}
+
+func (e *extFlag) IsDefaultVisible() bool {
+	return e.f.DefValue != ""
+}
+
+func (e *extFlag) TypeName() string {
+	name, _ := flag.UnquoteUsage(e.f)
+	return name
+}
+
+func (e *extFlag) IsLocal() bool {
 	return false
+}
+
+func (e *extFlag) GetCategory() string {
+	return e.category
+}
+
+func (e *extFlag) SetCategory(c string) {
+	e.category = c
 }
 
 func (e *extFlag) GetUsage() string {
