@@ -2009,3 +2009,26 @@ func TestPrintHelpCustomTemplateError(t *testing.T) {
 		*tmpl = oldtmpl
 	}
 }
+
+func TestCustomUsageCommandHelp(t *testing.T) {
+	old := UsageCommandHelp
+	defer func() { UsageCommandHelp = old }()
+
+	UsageCommandHelp = "Custom usage help command"
+
+	out := &bytes.Buffer{}
+	cmd := &Command{
+		Name: "app",
+		Commands: []*Command{
+			{
+				Name:     "cmd",
+				Commands: []*Command{{Name: "subcmd"}},
+			},
+		},
+		Writer:    out,
+		ErrWriter: out,
+	}
+
+	_ = cmd.Run(buildTestContext(t), []string{"app", "help"})
+	assert.Contains(t, out.String(), UsageCommandHelp)
+}

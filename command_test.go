@@ -2877,6 +2877,11 @@ func TestFlagAction(t *testing.T) {
 			err:  "flag needs an argument: --f_string=",
 		},
 		{
+			name: "flag_string_error2",
+			args: []string{"app", "--f_string=", "--f_bool"},
+			err:  "flag needs an argument: --f_string=",
+		},
+		{
 			name: "flag_string_slice",
 			args: []string{"app", "--f_string_slice=s1,s2,s3"},
 			exp:  "[s1 s2 s3] ",
@@ -3171,6 +3176,34 @@ func TestFlagAction(t *testing.T) {
 			r.Equal(test.exp, out.String())
 		})
 	}
+}
+
+func TestLocalFlagError(t *testing.T) {
+	var topInt int64
+
+	cmd := &Command{
+		Flags: []Flag{
+			&Int64Flag{
+				Name:        "cmdFlag",
+				Destination: &topInt,
+				Local:       true,
+			},
+		},
+		Commands: []*Command{
+			{
+				Name: "subcmd",
+			},
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{
+		"app",
+		"subcmd",
+		"--cmdFlag", "11",
+	})
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "flag provided but not defined: -cmdFlag")
 }
 
 func TestPersistentFlag(t *testing.T) {
