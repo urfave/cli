@@ -77,11 +77,6 @@ func (f FlagsByName) Len() int {
 }
 
 func (f FlagsByName) Less(i, j int) bool {
-	if len(f[j].Names()) == 0 {
-		return false
-	} else if len(f[i].Names()) == 0 {
-		return true
-	}
 	return lexicographicLess(f[i].Names()[0], f[j].Names()[0])
 }
 

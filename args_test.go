@@ -8,6 +8,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestArgNotSet(t *testing.T) {
+	arg := &StringArg{
+		Name:  "sa",
+		Value: "foo",
+	}
+
+	require.Equal(t, "foo", arg.Get())
+}
+
 func TestArgsFloatTypes(t *testing.T) {
 	cmd := buildMinimalTestCommand()
 	var fval float64
