@@ -867,12 +867,12 @@ var defaultCommandSubCommandTests = []struct {
 	{"", "jimbob", "foobar", true},
 	{"", "j", "foobar", true},
 	{"", "carly", "foobar", true},
-	{"", "jimmers", "foobar", true},
+	{"", "jimmers", "foobar", false},
 	{"", "jimmers", "", true},
-	{" ", "jimmers", "foobar", true},
-	/*{"", "", "", true},
+	{" ", "jimmers", "foobar", false},
+	{"", "", "", true},
 	{" ", "", "", false},
-	{" ", "j", "", false},*/
+	{" ", "j", "", false},
 	{"bat", "", "batbaz", true},
 	{"nothing", "", "batbaz", true},
 	{"nothing", "", "", false},
@@ -917,6 +917,7 @@ var defaultCommandFlagTests = []struct {
 }{
 	{"foobar", "", "foobar", true},
 	{"foobar", "-c derp", "foobar", true},
+	{"foobar", "-c=", "foobar", true},
 	{"batbaz", "", "foobar", true},
 	{"b", "", "", true},
 	{"f", "", "", true},
@@ -930,13 +931,14 @@ var defaultCommandFlagTests = []struct {
 	{"", "-j", "", true},
 	{" ", "-j", "foobar", true},
 	{"", "", "", true},
-	{" ", "", "", true},
-	{" ", "-j", "", true},
+	{" ", "", "", false},
+	{" ", "-j", "", false},
 	{"bat", "", "batbaz", true},
 	{"nothing", "", "batbaz", true},
 	{"nothing", "", "", false},
 	{"nothing", "--jimbob", "batbaz", true},
 	{"nothing", "--carly", "", false},
+	{"nothing", "--carly=", "", false},
 }
 
 func TestCommand_RunDefaultCommandWithFlags(t *testing.T) {

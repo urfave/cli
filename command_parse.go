@@ -80,6 +80,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 
 		firstArg := strings.TrimSpace(rargs[0])
 		if len(firstArg) == 0 {
+			posArgs = append(posArgs, rargs[0:]...)
 			break
 		}
 
