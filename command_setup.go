@@ -66,7 +66,7 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 		flag.VisitAll(func(f *flag.Flag) {
 			// skip test flags
 			if !strings.HasPrefix(f.Name, ignoreFlagPrefix) {
-				cmd.Flags = append(cmd.Flags, &extFlag{f})
+				cmd.Flags = append(cmd.Flags, &extFlag{f, ""})
 			}
 		})
 	}
