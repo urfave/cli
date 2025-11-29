@@ -50,7 +50,8 @@ func (b boolValue) Create(val bool, p *bool, c BoolConfig) Value {
 
 // ToString formats the bool value
 func (b boolValue) ToString(value bool) string {
-	return strconv.FormatBool(value)
+	b.destination = &value
+	return b.String()
 }
 
 // Below functions are to satisfy the flag.Value interface

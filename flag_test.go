@@ -1749,6 +1749,29 @@ func TestFlagActionFromEnv(t *testing.T) {
 	assert.Equal(t, x, 42)
 }
 
+func TestParseShortOptionBoolError(t *testing.T) {
+	cmd := buildMinimalTestCommand()
+	cmd.UseShortOptionHandling = true
+	cmd.Flags = []Flag{
+		&BoolFlag{Name: "debug", Aliases: []string{"d"}},
+		&BoolFlag{Name: "verbose", Aliases: []string{"v"}},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"run", "-vd=notabool"})
+	assert.Error(t, err, "expected error parsing invalid bool")
+}
+
+func TestParseShortOptionIntError(t *testing.T) {
+	cmd := buildMinimalTestCommand()
+	cmd.Flags = []Flag{
+		&IntFlag{Name: "port", Aliases: []string{"p"}},
+		&BoolFlag{Name: "debug", Aliases: []string{"d"}},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"run", "-dp=notanint"})
+	assert.Error(t, err, "expected error parsing invalid int")
+}
+
 func TestParseMultiString(t *testing.T) {
 	_ = (&Command{
 		Flags: []Flag{
@@ -3292,6 +3315,17 @@ func TestFileHint(t *testing.T) {
 	assert.Equal(t, " [/tmp/foo.txt]", withFileHint("/tmp/foo.txt", ""))
 	assert.Equal(t, "foo", withFileHint("", "foo"))
 	assert.Equal(t, "bar [/tmp/foo.txt]", withFileHint("/tmp/foo.txt", "bar"))
+}
+
+func TestHasFlags(t *testing.T) {
+	flagToCheck := &StringFlag{Name: "foo"}
+	flags := []Flag{
+		&StringFlag{Name: "bar"},
+		&Int64Flag{Name: "baz"},
+		flagToCheck,
+	}
+
+	assert.True(t, hasFlag(flags, flagToCheck))
 }
 
 func TestFlagsByName(t *testing.T) {
