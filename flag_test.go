@@ -3269,6 +3269,26 @@ func TestZeroValueMutexFlag(t *testing.T) {
 	assert.NoError(t, fl.check(&Command{}))
 }
 
+func TestMutexFlagCategory(t *testing.T) {
+	cmd := buildMinimalTestCommand()
+	cmd.Category = "TestCmd"
+	cmd.MutuallyExclusiveFlags = []MutuallyExclusiveFlags{
+		{
+			Flags: [][]Flag{
+				{
+					&StringFlag{Name: "foo", Category: "Group1"},
+					&IntFlag{Name: "bar", Category: "Group1"},
+				},
+				{
+					&StringFlag{Name: "baz", Category: "Group2"},
+				},
+			},
+		},
+	}
+
+	assert.NoError(t, cmd.Run(buildTestContext(t), []string{"", "--foo", "value"}))
+}
+
 func TestExtFlag(t *testing.T) {
 	var iv intValue[int64]
 	var ipv int64
@@ -3466,4 +3486,16 @@ func TestGenericValue(t *testing.T) {
 	assert.NoError(t, g.Set("something"))
 	assert.Nil(t, g.Get())
 	assert.Empty(t, g.String())
+}
+
+func TestEndValue(t *testing.T) {
+	cmd := buildMinimalTestCommand()
+	cmd.UseShortOptionHandling = true
+	cmd.Flags = []Flag{
+		&IntFlag{Name: "debug", Aliases: []string{"d"}},
+		&IntFlag{Name: "count", Aliases: []string{"c"}},
+	}
+
+	assert.Error(t, cmd.Run(buildTestContext(t), []string{"foo", "-cd="}))
+	assert.Error(t, cmd.Run(buildTestContext(t), []string{"foo", "-cd=s"}))
 }
