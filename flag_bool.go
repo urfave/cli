@@ -76,7 +76,3 @@ func (b *boolValue) String() string {
 }
 
 func (b *boolValue) IsBoolFlag() bool { return true }
-
-func (b *boolValue) Count() int {
-	return *b.count
-}
