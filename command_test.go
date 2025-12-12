@@ -814,37 +814,79 @@ func TestCommand_Command(t *testing.T) {
 var defaultCommandTests = []struct {
 	cmdName        string
 	defaultCmd     string
+	args           []string
 	errNotExpected bool
 }{
-	{"foobar", "foobar", true},
-	{"batbaz", "foobar", true},
-	{"b", "", true},
-	{"f", "", true},
-	{"", "foobar", true},
-	// TBD
-	//{"", "", true},
-	//{" ", "", false},
-	{"bat", "batbaz", true},
-	{"nothing", "batbaz", true},
-	{"nothing", "", false},
+	{"foobar", "foobar", nil, true},
+	{"batbaz", "foobar", nil, true},
+	{"b", "", nil, true},
+	{"f", "", nil, true},
+	{"", "foobar", nil, true},
+	{"", "", nil, true},
+	{" ", "", nil, true},
+	{"bat", "batbaz", nil, true},
+	{"nothing", "batbaz", nil, true},
+	{"nothing", "", nil, false},
+	{"foobar", "foobar", []string{"xy", "zdf"}, true},
+	{"", "foobar", []string{"xy", "zdf"}, true},
 }
 
 func TestCommand_RunDefaultCommand(t *testing.T) {
 	for _, test := range defaultCommandTests {
-		testTitle := fmt.Sprintf("command=%[1]s-default=%[2]s", test.cmdName, test.defaultCmd)
+		testTitle := fmt.Sprintf("command=%[1]s-default=%[2]s-args=%[3]v", test.cmdName, test.defaultCmd, test.args)
 		t.Run(testTitle, func(t *testing.T) {
+			fooCount := 0
+			var fooArgs Args
+			barCount := 0
 			cmd := &Command{
 				DefaultCommand: test.defaultCmd,
 				Commands: []*Command{
-					{Name: "foobar", Aliases: []string{"f"}},
-					{Name: "batbaz", Aliases: []string{"b"}},
+					{
+						Name:    "foobar",
+						Aliases: []string{"f"},
+						Action: func(ctx context.Context, c *Command) error {
+							fooCount++
+							fooArgs = c.Args()
+							return nil
+						},
+					},
+					{
+						Name:    "batbaz",
+						Aliases: []string{"b"},
+						Action: func(ctx context.Context, c *Command) error {
+							barCount++
+							return nil
+						},
+					},
 				},
 			}
 
-			err := cmd.Run(buildTestContext(t), []string{"c", test.cmdName})
+			runArgs := []string{"c"}
+			if test.cmdName != "" {
+				runArgs = append(runArgs, test.cmdName)
+			}
+			if test.args != nil {
+				runArgs = append(runArgs, test.args...)
+			}
+			err := cmd.Run(buildTestContext(t), runArgs)
 			if test.errNotExpected {
 				assert.NoError(t, err)
+				if fooCount == 0 && barCount == 0 && test.defaultCmd != "" {
+					t.Errorf("expected one of the commands to run")
+				}
+				if fooCount > 0 {
+					expectedArgs := &stringSliceArgs{v: []string{}}
+					if len(test.args) > 0 && (test.args[0] == "foobar" || test.args[0] == "f") {
+						expectedArgs = &stringSliceArgs{v: test.args[1:]}
+					} else if test.args != nil {
+						expectedArgs = &stringSliceArgs{v: test.args}
+					}
+					assert.Equal(t, expectedArgs, fooArgs)
+				}
 			} else {
+				if fooCount > 0 || barCount > 0 {
+					t.Errorf("expected no commands to run")
+				}
 				assert.Error(t, err)
 			}
 		})
@@ -867,14 +909,14 @@ var defaultCommandSubCommandTests = []struct {
 	{"", "jimbob", "foobar", true},
 	{"", "j", "foobar", true},
 	{"", "carly", "foobar", true},
-	{"", "jimmers", "foobar", true},
-	{"", "jimmers", "", true},
+	{"", "jimmers", "foobar", false},
+	{"", "jimmers", "", false},
 	{" ", "jimmers", "foobar", true},
-	/*{"", "", "", true},
-	{" ", "", "", false},
-	{" ", "j", "", false},*/
-	{"bat", "", "batbaz", true},
-	{"nothing", "", "batbaz", true},
+	{"", "", "", true},
+	{" ", "", "", true},
+	{" ", "j", "", true},
+	{"bat", "", "batbaz", false},
+	{"nothing", "", "batbaz", false},
 	{"nothing", "", "", false},
 	{"nothing", "j", "batbaz", false},
 	{"nothing", "carly", "", false},
@@ -899,7 +941,14 @@ func TestCommand_RunDefaultCommandWithSubCommand(t *testing.T) {
 				},
 			}
 
-			err := cmd.Run(buildTestContext(t), []string{"c", test.cmdName, test.subCmd})
+			runArgs := []string{"c"}
+			if test.cmdName != "" {
+				runArgs = append(runArgs, test.cmdName)
+			}
+			if test.subCmd != "" {
+				runArgs = append(runArgs, test.subCmd)
+			}
+			err := cmd.Run(buildTestContext(t), runArgs)
 			if test.errNotExpected {
 				assert.NoError(t, err)
 			} else {
@@ -932,10 +981,10 @@ var defaultCommandFlagTests = []struct {
 	{"", "", "", true},
 	{" ", "", "", true},
 	{" ", "-j", "", true},
-	{"bat", "", "batbaz", true},
-	{"nothing", "", "batbaz", true},
+	{"bat", "", "batbaz", false},
+	{"nothing", "", "batbaz", false},
 	{"nothing", "", "", false},
-	{"nothing", "--jimbob", "batbaz", true},
+	{"nothing", "--jimbob", "batbaz", false},
 	{"nothing", "--carly", "", false},
 }
 
