@@ -65,6 +65,7 @@ func buildCompletionCommand(appName string) *Command {
 		Action: func(ctx context.Context, cmd *Command) error {
 			return printShellCompletion(ctx, cmd, appName)
 		},
+		isCompletionCommand: true,
 	}
 }
 

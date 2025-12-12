@@ -20,6 +20,12 @@ func TestCompletionDisable(t *testing.T) {
 func TestCompletionEnable(t *testing.T) {
 	cmd := &Command{
 		EnableShellCompletion: true,
+		Flags: []Flag{
+			&BoolFlag{
+				Name:     "goo",
+				Required: true,
+			},
+		},
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName})
