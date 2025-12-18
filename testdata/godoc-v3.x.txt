@@ -1355,6 +1355,29 @@ type SuggestCommandFunc func(commands []*Command, provided string) string
 
 type SuggestFlagFunc func(flags []Flag, provided string, hideHelp bool) string
 
+type TextFlag = FlagBase[TextMarshalUnmarshaler, NoConfig, TextValue]
+    TextFlag enables you to set types that satisfies TextMarshalUnmarshaler
+    using flags such as log levels.
+
+type TextMarshalUnmarshaler interface {
+	encoding.TextMarshaler
+	encoding.TextUnmarshaler
+}
+
+type TextValue struct {
+	Value TextMarshalUnmarshaler
+}
+
+func (f TextValue) Create(v TextMarshalUnmarshaler, p *TextMarshalUnmarshaler, _ NoConfig) Value
+
+func (f TextValue) Get() any
+
+func (f TextValue) Set(s string) error
+
+func (f TextValue) String() string
+
+func (f TextValue) ToString(v TextMarshalUnmarshaler) string
+
 type TimestampArg = ArgumentBase[time.Time, TimestampConfig, timestampValue]
 
 type TimestampArgs = ArgumentsBase[time.Time, TimestampConfig, timestampValue]
