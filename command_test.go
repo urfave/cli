@@ -96,6 +96,10 @@ func buildExtendedTestCommand() *Command {
 	}, {
 		Name: "some-command",
 	}, {
+		Name:          "custom",
+		ShellComplete: func(ctx context.Context, c *Command) {},
+		HideHelp:      true,
+	}, {
 		Name:   "hidden-command",
 		Hidden: true,
 		Flags: []Flag{
@@ -4992,6 +4996,36 @@ func TestJSONExportCommand(t *testing.T) {
 			"arguments": null,
 			"readArgsFromStdin": false,
 			"stopOnNthArg": null
+		  },
+		  {
+			"name": "custom",
+			"aliases": null,
+			"usage": "",
+			"usageText": "",
+			"argsUsage": "",
+			"version": "",
+			"description": "",
+			"defaultCommand": "",
+			"category": "",
+			"commands": null,
+			"flags": null,
+			"hideHelp": true,
+			"hideHelpCommand": false,
+			"hideVersion": false,
+			"hidden": false,
+			"authors": null,
+			"copyright": "",
+			"metadata": null,
+			"sliceFlagSeparator": "",
+			"disableSliceFlagSeparator": false,
+			"useShortOptionHandling": false,
+			"suggest": false,
+			"allowExtFlags": false,
+			"skipFlagParsing": false,
+			"prefixMatchCommands": false,
+			"mutuallyExclusiveFlags": null,
+			"arguments": null,
+			"readArgsFromStdin": false
 		  },
 		  {
 			"name": "hidden-command",
