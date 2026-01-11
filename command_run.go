@@ -141,8 +141,8 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 	var rargs Args = &stringSliceArgs{v: osArgs}
 	var args Args = &stringSliceArgs{rargs.Tail()}
 
-	if cmd.isCompletionCommand {
-		tracef("completion command detected, skipping pre-parse (cmd=%[1]q)", cmd.Name)
+	if cmd.isCompletionCommand || cmd.Name == helpName {
+		tracef("special command detected, skipping pre-parse (cmd=%[1]q)", cmd.Name)
 		cmd.parsedArgs = args
 		return ctx, cmd.Action(ctx, cmd)
 	}

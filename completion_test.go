@@ -21,7 +21,7 @@ func TestCompletionEnable(t *testing.T) {
 	cmd := &Command{
 		EnableShellCompletion: true,
 		Flags: []Flag{
-			&BoolFlag{
+			&StringFlag{
 				Name:     "goo",
 				Required: true,
 			},

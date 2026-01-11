@@ -108,7 +108,7 @@ func TestShowSubcommandHelpAndExit(t *testing.T) {
 	require.Equal(t, 42, lastExitCode)
 }
 
-func Test_Help_RequiredFlagsNoDefault(t *testing.T) {
+func Test_HelpFlag_RequiredFlagsNoDefault(t *testing.T) {
 	output := new(bytes.Buffer)
 
 	cmd := &Command{
@@ -120,6 +120,34 @@ func Test_Help_RequiredFlagsNoDefault(t *testing.T) {
 	}
 
 	_ = cmd.Run(buildTestContext(t), []string{"test", "-h"})
+
+	expected := `NAME:
+   test - A new cli application
+
+USAGE:
+   test [global options] [arguments...]
+
+GLOBAL OPTIONS:
+   --foo int, -f int  
+   --help, -h         show help
+`
+
+	assert.Contains(t, output.String(), expected,
+		"expected output to include usage text")
+}
+
+func Test_HelpCommand_RequiredFlagsNoDefault(t *testing.T) {
+	output := new(bytes.Buffer)
+
+	cmd := &Command{
+		Flags: []Flag{
+			&Int64Flag{Name: "foo", Aliases: []string{"f"}, Required: true},
+		},
+		Arguments: AnyArguments,
+		Writer:    output,
+	}
+
+	_ = cmd.Run(buildTestContext(t), []string{"test", "help"})
 
 	expected := `NAME:
    test - A new cli application
