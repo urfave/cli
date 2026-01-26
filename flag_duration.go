@@ -45,6 +45,6 @@ func (cmd *Command) Duration(name string) time.Duration {
 		return v
 	}
 
-	tracef("bool NOT available for flag name %[1]q (cmd=%[2]q)", name, cmd.Name)
+	tracef("duration NOT available for flag name %[1]q (cmd=%[2]q)", name, cmd.Name)
 	return 0
 }
