@@ -1413,7 +1413,7 @@ func TestCommand_UseShortOptionAfterSliceFlag(t *testing.T) {
 	assert.Equal(t, expected, name)
 }
 
-func TestCommand_UseShortOptionWithRootArg(t *testing.T) {
+func TestCommand_UseShortOptionWithArg(t *testing.T) {
 
 	var rootPath string
 	cmd := &Command{
