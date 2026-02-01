@@ -1413,6 +1413,34 @@ func TestCommand_UseShortOptionAfterSliceFlag(t *testing.T) {
 	assert.Equal(t, expected, name)
 }
 
+func TestCommand_UseShortOptionWithRootArg(t *testing.T) {
+
+	var rootPath string
+	cmd := &Command{
+		UseShortOptionHandling: true,
+		Commands: []*Command{
+			{
+				Name:  "short",
+				Usage: "complete a task on the list",
+				Arguments: []Argument{
+					&StringArg{Name: "root", UsageText: "Root path", Destination: &rootPath},
+				},
+				Flags: []Flag{
+					&BoolFlag{Name: "serve", Aliases: []string{"s"}},
+					&BoolFlag{Name: "option", Aliases: []string{"o"}},
+					&StringFlag{Name: "message", Aliases: []string{"m"}},
+				},
+				Action: func(ctx context.Context, cmd *Command) error {
+					return nil
+				},
+			},
+		},
+	}
+	err := cmd.Run(buildTestContext(t), []string{"app", "short", "-som", "hello", "/path/to/root"})
+	require.NoError(t, err)
+	require.Equal(t, "/path/to/root", rootPath)
+}
+
 func TestCommand_Float64Flag(t *testing.T) {
 	var meters float64
 
