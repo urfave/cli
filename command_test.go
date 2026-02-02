@@ -1414,7 +1414,6 @@ func TestCommand_UseShortOptionAfterSliceFlag(t *testing.T) {
 }
 
 func TestCommand_UseShortOptionWithArg(t *testing.T) {
-
 	var rootPath string
 	cmd := &Command{
 		UseShortOptionHandling: true,
