@@ -207,6 +207,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 						return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", argumentNotProvidedErrMsg, string(c))
 					}
 					flagVal = rargs[1]
+					rargs = rargs[1:]
 				}
 				tracef("parseFlags (flagName %[1]q) (flagVal %[2]q)", flagName, flagVal)
 				if err := cmd.set(flagName, sf, flagVal); err != nil {
