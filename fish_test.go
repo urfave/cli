@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -37,4 +38,24 @@ func TestFishCompletion(t *testing.T) {
 	// Then
 	require.NoError(t, err)
 	expectFileContent(t, "testdata/expected-fish-full.fish", res)
+}
+
+func TestFishCompletionShellComplete(t *testing.T) {
+	cmd := buildExtendedTestCommand()
+	cmd.ShellComplete = func(context.Context, *Command) {}
+
+	configCmd := cmd.Command("config")
+	configCmd.ShellComplete = func(context.Context, *Command) {}
+
+	subConfigCmd := configCmd.Command("sub-config")
+	subConfigCmd.ShellComplete = func(context.Context, *Command) {}
+
+	cmd.setupCommandGraph()
+
+	res, err := cmd.ToFishCompletion()
+	require.NoError(t, err)
+
+	assert.Contains(t, res, "complete -c greet -n '__fish_greet_no_subcommand' -xa '(greet --generate-shell-completion 2>/dev/null)'")
+	assert.Contains(t, res, "complete -c greet -n '__fish_seen_subcommand_from config c' -xa '(greet config --generate-shell-completion 2>/dev/null)'")
+	assert.Contains(t, res, "complete -c greet -n '__fish_seen_subcommand_from config c; and __fish_seen_subcommand_from sub-config s ss' -xa '(greet config sub-config --generate-shell-completion 2>/dev/null)'")
 }
