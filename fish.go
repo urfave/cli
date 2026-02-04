@@ -53,8 +53,21 @@ func (cmd *Command) writeFishCompletionTemplate(w io.Writer) error {
 }
 
 func prepareFishCommands(binary string, parent *Command) []string {
-	commands := parent.Commands
 	completions := []string{}
+	if parent.ShellComplete != nil {
+		var completion strings.Builder
+		fmt.Fprintf(&completion,
+			"complete -x -c %s -n '%s' -a '%s'",
+			binary,
+			commandAncestry(parent),
+			"(eval command (commandline -pc) "+completionFlag+")",
+		)
+		completions = append(
+			completions,
+			completion.String(),
+		)
+	}
+	commands := parent.Commands
 	for _, command := range commands {
 		if !command.Hidden {
 			var completion strings.Builder
