@@ -275,7 +275,7 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 				subCmd = cmd.Command(argsWithDefault.First())
 				cmd.parsedArgs = argsWithDefault
 				if !hasDefault && cmd.parsedArgs.Len() > 0 && cmd.parsedArgs.First() == "" {
-					&stringSliceArgs{cmd.parsedArgs.Tail()}
+					cmd.parsedArgs = &stringSliceArgs{cmd.parsedArgs.Tail()}
 				}
 			}
 		}
