@@ -5417,3 +5417,33 @@ func TestCommand_ParallelRun(t *testing.T) {
 		})
 	}
 }
+
+func TestCommand_FlagNameNoDefaultCommand(t *testing.T) {
+	var gotArgs Args
+
+	app := &Command{HideHelpCommand: true, HideHelp: true}
+	app.Commands = []*Command{&Command{
+		Name: "foo",
+		Flags: []Flag{
+			&BoolFlag{
+				Name: "list",
+			},
+		},
+		Action: func(ctx context.Context, c *Command) error {
+			gotArgs = c.Args()
+			return nil
+		},
+	}}
+
+	// flag has to be set to execute code path
+	app.Commands[0].Flags[0].Set("list", "true")
+
+	err := app.Run(context.Background(), []string{"list", "foo", "list"})
+	if err != nil {
+		t.Errorf("Unexpected error: got %v, want nil", err)
+		return
+	}
+
+	var wantArgs Args = &stringSliceArgs{v: []string{"list"}}
+	assert.Equal(t, wantArgs, gotArgs)
+}
