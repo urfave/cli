@@ -1298,6 +1298,28 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			},
 			argv:     []string{"cmd", "--e", "--", completionFlag},
 			env:      map[string]string{"SHELL": "bash"},
+			expected: "--excitement\n--hat-shape\n",
+		},
+		{
+			name: "double-dash-in-the-middle",
+			cmd: &Command{
+				Flags: []Flag{
+					&BoolFlag{Name: "excitement"},
+					&StringFlag{Name: "hat-shape"},
+				},
+				parent: &Command{
+					Name: "cmd",
+					Flags: []Flag{
+						&BoolFlag{Name: "happiness"},
+						&Int64Flag{Name: "everybody-jump-on"},
+					},
+					Commands: []*Command{
+						{Name: "putz"},
+					},
+				},
+			},
+			argv:     []string{"cmd", "--", "--e"},
+			env:      map[string]string{"SHELL": "bash"},
 			expected: "",
 		},
 		{
@@ -1851,6 +1873,15 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 			},
 			wantShellCompletion: false,
 			wantArgs:            []string{"--", "foo"},
+		},
+		{
+			name:      "double dash is just before --generate-shell-completion",
+			arguments: []string{"foo", "--", completionFlag},
+			cmd: &Command{
+				EnableShellCompletion: true,
+			},
+			wantShellCompletion: true,
+			wantArgs:            []string{"foo", "--"},
 		},
 		{
 			name:      "shell completion",
