@@ -1399,6 +1399,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			tc.cmd.parsedArgs = &stringSliceArgs{
 				tc.argv[1:],
 			}
+			tc.cmd.appliedFlags = tc.cmd.Flags
 			f := DefaultCompleteWithFlags
 			f(buildTestContext(ct), tc.cmd)
 
