@@ -457,6 +457,8 @@ type Command struct {
 	HideHelp bool `json:"hideHelp"`
 	// Ignored if HideHelp is true.
 	HideHelpCommand bool `json:"hideHelpCommand"`
+	// Boolean to enable Before function execution before showing help
+	EnableBeforeForHelp bool `json:"enableBeforeForHelp"`
 	// Boolean to hide built-in version flag and the VERSION section of help
 	HideVersion bool `json:"hideVersion"`
 	// Boolean to enable shell completion commands

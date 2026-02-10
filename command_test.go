@@ -1664,6 +1664,155 @@ func TestCommand_BeforeFuncPersistentFlag(t *testing.T) {
 	assert.Equal(t, 1, counts.SubCommand, "Subcommand not executed when expected")
 }
 
+func TestCommand_BeforeWithHelpCommand(t *testing.T) {
+	counts := &opCounts{}
+
+	cmd := &Command{
+		Name:                "testapp",
+		EnableBeforeForHelp: true,
+		Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+			counts.Before++
+			return ctx, nil
+		},
+		Commands: []*Command{
+			{
+				Name: "subcmd",
+				Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+					counts.SubCommand++
+					return ctx, nil
+				},
+				Action: func(context.Context, *Command) error {
+					return nil
+				},
+			},
+		},
+		Writer: io.Discard,
+	}
+
+	testCases := []struct {
+		name     string
+		args     []string
+		expected opCounts
+	}{
+		{
+			name:     "help command should execute Before functions",
+			args:     []string{"testapp", "help"},
+			expected: opCounts{Before: 1, SubCommand: 0},
+		},
+		{
+			name:     "help flag should execute Before functions",
+			args:     []string{"testapp", "--help"},
+			expected: opCounts{Before: 1, SubCommand: 0},
+		},
+		{
+			name:     "help flag short form should execute Before functions",
+			args:     []string{"testapp", "-h"},
+			expected: opCounts{Before: 1, SubCommand: 0},
+		},
+		{
+			name:     "subcommand help command should execute Before functions",
+			args:     []string{"testapp", "subcmd", "help"},
+			expected: opCounts{Before: 1, SubCommand: 1},
+		},
+		{
+			name:     "subcommand help flag should execute Before functions",
+			args:     []string{"testapp", "subcmd", "--help"},
+			expected: opCounts{Before: 1, SubCommand: 1},
+		},
+		{
+			name:     "subcommand help flag short should execute Before functions",
+			args:     []string{"testapp", "subcmd", "-h"},
+			expected: opCounts{Before: 1, SubCommand: 1},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			*counts = opCounts{}
+
+			err := cmd.Run(buildTestContext(t), tc.args)
+			require.NoError(t, err)
+
+			assert.Equal(t, tc.expected.Before, counts.Before, "Before() not executed expected number of times")
+			assert.Equal(t, tc.expected.SubCommand, counts.SubCommand, "SubCommand Before() not executed expected number of times")
+		})
+	}
+}
+
+func TestCommand_BeforeWithHelpCommand_DefaultBehavior(t *testing.T) {
+	counts := &opCounts{}
+
+	cmd := &Command{
+		Name: "testapp",
+		Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+			counts.Before++
+			return ctx, nil
+		},
+		Commands: []*Command{
+			{
+				Name: "subcmd",
+				Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+					counts.SubCommand++
+					return ctx, nil
+				},
+				Action: func(context.Context, *Command) error {
+					return nil
+				},
+			},
+		},
+		Writer: io.Discard,
+	}
+
+	testCases := []struct {
+		name     string
+		args     []string
+		expected opCounts
+	}{
+		{
+			name:     "help command executes Before functions (normal command behavior)",
+			args:     []string{"testapp", "help"},
+			expected: opCounts{Before: 1, SubCommand: 0},
+		},
+		{
+			name:     "help flag should NOT execute Before functions by default",
+			args:     []string{"testapp", "--help"},
+			expected: opCounts{Before: 0, SubCommand: 0},
+		},
+		{
+			name:     "help flag short form should NOT execute Before functions by default",
+			args:     []string{"testapp", "-h"},
+			expected: opCounts{Before: 0, SubCommand: 0},
+		},
+		{
+			name:     "subcommand help command executes Before functions (normal command behavior)",
+			args:     []string{"testapp", "subcmd", "help"},
+			expected: opCounts{Before: 1, SubCommand: 1},
+		},
+		{
+			name:     "subcommand help flag should NOT execute Before functions by default",
+			args:     []string{"testapp", "subcmd", "--help"},
+			expected: opCounts{Before: 0, SubCommand: 0},
+		},
+		{
+			name:     "subcommand help flag short should NOT execute Before functions by default",
+			args:     []string{"testapp", "subcmd", "-h"},
+			expected: opCounts{Before: 0, SubCommand: 0},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			*counts = opCounts{}
+
+			err := cmd.Run(buildTestContext(t), tc.args)
+			require.NoError(t, err)
+
+			assert.Equal(t, tc.expected.Before, counts.Before, "Before() execution count mismatch")
+			assert.Equal(t, tc.expected.SubCommand, counts.SubCommand, "SubCommand Before() execution count mismatch")
+		})
+	}
+}
+
 func TestCommand_BeforeAfterFuncShellCompletion(t *testing.T) {
 	t.Skip("TODO: is '--generate-shell-completion' (flag) still supported?")
 
@@ -4844,6 +4993,7 @@ func TestJSONExportCommand(t *testing.T) {
 				],
 				"hideHelp": false,
 				"hideHelpCommand": false,
+				"enableBeforeForHelp": false,
 				"hideVersion": false,
 				"hidden": false,
 				"authors": null,
@@ -4908,6 +5058,7 @@ func TestJSONExportCommand(t *testing.T) {
 			],
 			"hideHelp": false,
 			"hideHelpCommand": false,
+			"enableBeforeForHelp": false,
 			"hideVersion": false,
 			"hidden": false,
 			"authors": null,
@@ -4943,6 +5094,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"flags": null,
 			"hideHelp": false,
 			"hideHelpCommand": false,
+			"enableBeforeForHelp": false,
 			"hideVersion": false,
 			"hidden": false,
 			"authors": null,
@@ -4975,6 +5127,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"flags": null,
 			"hideHelp": false,
 			"hideHelpCommand": false,
+			"enableBeforeForHelp": false,
 			"hideVersion": false,
 			"hidden": false,
 			"authors": null,
@@ -5026,6 +5179,7 @@ func TestJSONExportCommand(t *testing.T) {
 			],
 			"hideHelp": false,
 			"hideHelpCommand": false,
+			"enableBeforeForHelp": false,
 			"hideVersion": false,
 			"hidden": true,
 			"authors": null,
@@ -5094,6 +5248,7 @@ func TestJSONExportCommand(t *testing.T) {
 				],
 				"hideHelp": false,
 				"hideHelpCommand": false,
+				"enableBeforeForHelp": false,
 				"hideVersion": false,
 				"hidden": false,
 				"authors": null,
@@ -5158,6 +5313,7 @@ func TestJSONExportCommand(t *testing.T) {
 			],
 			"hideHelp": false,
 			"hideHelpCommand": false,
+			"enableBeforeForHelp": false,
 			"hideVersion": false,
 			"hidden": false,
 			"authors": null,
@@ -5260,6 +5416,7 @@ func TestJSONExportCommand(t *testing.T) {
 		],
 		"hideHelp": false,
 		"hideHelpCommand": false,
+		"enableBeforeForHelp": false,
 		"hideVersion": false,
 		"hidden": false,
 		"authors": [
