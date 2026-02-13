@@ -5422,18 +5422,20 @@ func TestCommand_FlagNameNoDefaultCommand(t *testing.T) {
 	var gotArgs Args
 
 	app := &Command{HideHelpCommand: true, HideHelp: true}
-	app.Commands = []*Command{&Command{
-		Name: "foo",
-		Flags: []Flag{
-			&BoolFlag{
-				Name: "list",
+	app.Commands = []*Command{
+		&Command{
+			Name: "foo",
+			Flags: []Flag{
+				&BoolFlag{
+					Name: "list",
+				},
+			},
+			Action: func(ctx context.Context, c *Command) error {
+				gotArgs = c.Args()
+				return nil
 			},
 		},
-		Action: func(ctx context.Context, c *Command) error {
-			gotArgs = c.Args()
-			return nil
-		},
-	}}
+	}
 
 	// flag has to be set to execute code path
 	if err := app.Commands[0].Flags[0].Set("list", "true"); err != nil {
