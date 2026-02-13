@@ -5436,7 +5436,9 @@ func TestCommand_FlagNameNoDefaultCommand(t *testing.T) {
 	}}
 
 	// flag has to be set to execute code path
-	app.Commands[0].Flags[0].Set("list", "true")
+	if err := app.Commands[0].Flags[0].Set("list", "true"); err != nil {
+		t.Fatalf("Unexpected error setting flag: got %v, want nil", err)
+	}
 
 	err := app.Run(context.Background(), []string{"list", "foo", "list"})
 	if err != nil {
