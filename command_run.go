@@ -141,7 +141,7 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 	var rargs Args = &stringSliceArgs{v: osArgs}
 	var args Args = &stringSliceArgs{rargs.Tail()}
 
-	if cmd.isCompletionCommand || cmd.Name == helpName {
+	if cmd.isCompletionCommand || isHelpCommand(cmd) {
 		tracef("special command detected, skipping pre-parse (cmd=%[1]q)", cmd.Name)
 		cmd.parsedArgs = args
 		return ctx, cmd.Action(ctx, cmd)
@@ -364,4 +364,23 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 
 	tracef("returning deferErr (cmd=%[1]q) %[2]q", cmd.Name, deferErr)
 	return ctx, deferErr
+}
+
+func isHelpCommand(cmd *Command) bool {
+	if cmd.Name != helpName {
+		return false
+	}
+	if len(cmd.Aliases) != 1 {
+		return false
+	}
+	if cmd.Aliases[0] != helpAlias {
+		return false
+	}
+	if cmd.Usage != UsageCommandHelp {
+		return false
+	}
+	if cmd.ArgsUsage != ArgsUsageCommandHelp {
+		return false
+	}
+	return true
 }
