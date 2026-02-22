@@ -36,7 +36,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 			pCmd.Name, cmd.Name,
 		)
 
-		for _, fl := range pCmd.Flags {
+		for _, fl := range pCmd.allFlags() {
 			flNames := fl.Names()
 
 			pfl, ok := fl.(LocalFlag)

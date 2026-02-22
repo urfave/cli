@@ -9,6 +9,7 @@ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZN
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/stretchr/testify v1.10.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
+github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/urfave/cli-altsrc/v3 v3.0.0-alpha2 h1:j4SaBpPB8++L0c0KuTnz/Yus3UQoWJ54hQjhIMW8rCM=
 github.com/urfave/cli-altsrc/v3 v3.0.0-alpha2/go.mod h1:Q79oyIY/z4jtzIrKEK6MUeWC7/szGr46x4QdOaOAIWc=
 github.com/urfave/cli-altsrc/v3 v3.0.1 h1:v+gHk59syLk8ao9rYybZs43+D5ut/gzj0omqQ1XYl8k=

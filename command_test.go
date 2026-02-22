@@ -5444,3 +5444,40 @@ func TestCommand_ParallelRun(t *testing.T) {
 		})
 	}
 }
+
+func TestCommand_ExclusiveFlagsPersistentPropagation(t *testing.T) {
+	var subCmdAlphaValue string
+
+	cmd := &Command{
+		Name: "root",
+		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
+			{
+				Flags: [][]Flag{
+					{
+						&StringFlag{
+							Name: "alpha",
+						},
+					},
+					{
+						&StringFlag{
+							Name: "beta",
+						},
+					},
+				},
+			},
+		},
+		Commands: []*Command{
+			{
+				Name: "sub",
+				Action: func(_ context.Context, cmd *Command) error {
+					subCmdAlphaValue = cmd.String("alpha")
+					return nil
+				},
+			},
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"root", "sub", "--alpha", "hello"})
+	require.NoError(t, err)
+	assert.Equal(t, "hello", subCmdAlphaValue)
+}
