@@ -1,0 +1,5053 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://cli.urfave.org/CHANGELOG/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>CHANGELOG - urfave/cli</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#change-log" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="urfave/cli" class="md-header__button md-logo" aria-label="urfave/cli" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            urfave/cli
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CHANGELOG
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/urfave/cli" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href=".." class="md-tabs__link">
+          
+  
+  
+  Home
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../v3/getting-started/" class="md-tabs__link">
+          
+  
+  
+  v3 Manual
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../v2/getting-started/" class="md-tabs__link">
+          
+  
+  
+  v2 Manual
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../v1/getting-started/" class="md-tabs__link">
+          
+  
+  
+  v1 Manual
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="urfave/cli" class="md-nav__button md-logo" aria-label="urfave/cli" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    urfave/cli
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/urfave/cli" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Home
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Welcome
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CONTRIBUTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CODE_OF_CONDUCT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Code of Conduct
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../RELEASING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releasing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../SECURITY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migrate-v2-to-v3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrate v2 to v3
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migrate-v1-to-v2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrate v1 to v2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v3 Manual
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    v3 Manual
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v3/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v3/migrating-from-older-releases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrating From Older Releases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v3/examples/greet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Greet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_2" id="__nav_2_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Flags
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Flags
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v3/examples/flags/basics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Basics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v3/examples/flags/value-sources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Value Sources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v3/examples/flags/short-options/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Short Options
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v3/examples/flags/advanced/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_3" id="__nav_2_3_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arguments
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Arguments
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v3/examples/arguments/basics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Basics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v3/examples/arguments/advanced/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_4" id="__nav_2_3_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Subcommands
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Subcommands
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v3/examples/subcommands/basics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Basics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v3/examples/subcommands/categories/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Categories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_5" id="__nav_2_3_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Completions
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Completions
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v3/examples/completions/shell-completions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shell Completions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v3/examples/completions/customizations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Customizations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_6" id="__nav_2_3_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Help Text
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Help Text
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v3/examples/help/generated-help-text/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generated Help Text
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v3/examples/help/suggestions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Suggestions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_7" id="__nav_2_3_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Handling
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Error Handling
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v3/examples/exit-codes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exit Codes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v3/examples/full-api-example/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full API Example
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v2 Manual
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    v2 Manual
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v2/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v2/migrating-to-v3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrating to v3
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v2/migrating-from-older-releases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrating From Older Releases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v2/examples/greet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Greet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v2/examples/arguments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arguments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v2/examples/flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Flags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v2/examples/subcommands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Subcommands
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v2/examples/subcommands-categories/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Subcommands Categories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v2/examples/exit-codes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exit Codes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v2/examples/combining-short-options/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Combining Short Options
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v2/examples/bash-completions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bash Completions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v2/examples/generated-help-text/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generated Help Text
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v2/examples/version-flag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Version Flag
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v2/examples/timestamp-flag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Timestamp Flag
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v2/examples/suggestions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Suggestions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v2/examples/full-api-example/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full API Example
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1 Manual
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    v1 Manual
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v1/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v1/migrating-to-v2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrating to v2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v1/examples/greet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Greet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v1/examples/arguments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arguments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v1/examples/flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Flags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v1/examples/subcommands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Subcommands
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v1/examples/subcommands-categories/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Subcommands (Categories)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v1/examples/exit-codes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exit Codes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v1/examples/combining-short-options/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Combining Short Options
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v1/examples/bash-completions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bash Completions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v1/examples/generated-help-text/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generated Help Text
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v1/examples/version-flag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Version Flag
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#unreleased-2x-series" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unreleased - 2.X series
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#220-2020-03-08" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2.0 - 2020-03-08
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2.0 - 2020-03-08">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#added" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#211-2019-12-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1.1 - 2019-12-24
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.1.1 - 2019-12-24">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#210-2019-12-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1.0 - 2019-12-24
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.1.0 - 2019-12-24">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#added_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#200-2019-11-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.0.0 - 2019-11-17
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.0.0 - 2019-11-17">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unreleased-122x-series" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unreleased - 1.22.X series
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1224-2020-03-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.22.4 - 2020-03-31
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.22.4 - 2020-03-31">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1223-2020-02-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.22.3 - 2020-02-25
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.22.3 - 2020-02-25">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1222-2019-11-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.22.2 - 2019-11-17
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.22.2 - 2019-11-17">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1221-2019-09-11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.22.1 - 2019-09-11
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.22.1 - 2019-09-11">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1220-2019-09-07" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.22.0 - 2019-09-07
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.22.0 - 2019-09-07">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#added_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1210-2019-08-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.21.0 - 2019-08-02
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.21.0 - 2019-08-02">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#added_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1200-2017-08-10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.20.0 - 2017-08-10
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.20.0 - 2017-08-10">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#added_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1191-2016-11-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.19.1 - 2016-11-21
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.19.1 - 2016-11-21">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1190-2016-11-19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.19.0 - 2016-11-19
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.19.0 - 2016-11-19">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1181-2016-08-28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [1.18.1] - 2016-08-28
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[1.18.1] - 2016-08-28">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1180-2016-06-27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.18.0 - 2016-06-27
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.18.0 - 2016-06-27">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1171-2016-08-28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [1.17.1] - 2016-08-28
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[1.17.1] - 2016-08-28">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1170-2016-05-09" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.17.0 - 2016-05-09
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.17.0 - 2016-05-09">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1161-2016-08-28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [1.16.1] - 2016-08-28
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[1.16.1] - 2016-08-28">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1160-2016-05-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.16.0 - 2016-05-02
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.16.0 - 2016-05-02">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1150-2016-04-30" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.15.0 - 2016-04-30
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.15.0 - 2016-04-30">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deprecated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deprecated
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1140-2016-04-03-backfilled-2016-04-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.14.0 - 2016-04-03 (backfilled 2016-04-25)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.14.0 - 2016-04-03 (backfilled 2016-04-25)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1130-2016-03-06-backfilled-2016-04-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.13.0 - 2016-03-06 (backfilled 2016-04-25)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.13.0 - 2016-03-06 (backfilled 2016-04-25)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1120-2016-02-17-backfilled-2016-04-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.12.0 - 2016-02-17 (backfilled 2016-04-25)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.12.0 - 2016-02-17 (backfilled 2016-04-25)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1111-2015-12-21-backfilled-2016-04-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.11.1 - 2015-12-21 (backfilled 2016-04-25)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.11.1 - 2015-12-21 (backfilled 2016-04-25)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1110-2015-11-15-backfilled-2016-04-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.11.0 - 2015-11-15 (backfilled 2016-04-25)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.11.0 - 2015-11-15 (backfilled 2016-04-25)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1102-2015-10-29-backfilled-2016-04-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.10.2 - 2015-10-29 (backfilled 2016-04-25)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.10.2 - 2015-10-29 (backfilled 2016-04-25)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1101-2015-10-21-backfilled-2016-04-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.10.1 - 2015-10-21 (backfilled 2016-04-25)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.10.1 - 2015-10-21 (backfilled 2016-04-25)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1100-2015-10-06-backfilled-2016-04-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.10.0 - 2015-10-06 (backfilled 2016-04-25)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.10.0 - 2015-10-06 (backfilled 2016-04-25)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#190-2015-09-08-backfilled-2016-04-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.9.0 - 2015-09-08 (backfilled 2016-04-25)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.9.0 - 2015-09-08 (backfilled 2016-04-25)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#180-2015-06-30-backfilled-2016-04-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.0 - 2015-06-30 (backfilled 2016-04-25)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.8.0 - 2015-06-30 (backfilled 2016-04-25)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#171-2015-06-11-backfilled-2016-04-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.7.1 - 2015-06-11 (backfilled 2016-04-25)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.7.1 - 2015-06-11 (backfilled 2016-04-25)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#170-2015-05-03-backfilled-2016-04-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.7.0 - 2015-05-03 (backfilled 2016-04-25)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.7.0 - 2015-05-03 (backfilled 2016-04-25)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#160-2015-03-23-backfilled-2016-04-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.6.0 - 2015-03-23 (backfilled 2016-04-25)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.6.0 - 2015-03-23 (backfilled 2016-04-25)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deprecated_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deprecated
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_29" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#150-2015-02-20-backfilled-2016-04-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.0 - 2015-02-20 (backfilled 2016-04-25)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.5.0 - 2015-02-20 (backfilled 2016-04-25)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_30" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#141-2015-01-09-backfilled-2016-04-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.1 - 2015-01-09 (backfilled 2016-04-25)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.1 - 2015-01-09 (backfilled 2016-04-25)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#140-2014-12-12-backfilled-2016-04-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.0 - 2014-12-12 (backfilled 2016-04-25)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.0 - 2014-12-12 (backfilled 2016-04-25)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#131-2014-11-13-backfilled-2016-04-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.1 - 2014-11-13 (backfilled 2016-04-25)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.3.1 - 2014-11-13 (backfilled 2016-04-25)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#130-2014-08-10-backfilled-2016-04-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.0 - 2014-08-10 (backfilled 2016-04-25)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.3.0 - 2014-08-10 (backfilled 2016-04-25)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#120-2014-08-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.0 - 2014-08-02
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.0 - 2014-08-02">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#110-2014-07-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.0 - 2014-07-15
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.1.0 - 2014-07-15">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#100-2013-11-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.0.0 - 2013-11-01
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.0 - 2013-11-01">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#010-2013-07-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.1.0 - 2013-07-22
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.0 - 2013-07-22">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_29" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<blockquote>
+<p><img alt="⚠" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/26a0.svg" title=":warning:" /> This document is no longer being actively maintained. Please see the
+<a href="https://github.com/urfave/cli/releases">releases page</a> for all release notes
+and related hypermedia for releases <code>&gt;= 1.22.5</code>, <code>&gt;= 2.3.0</code>.</p>
+</blockquote>
+<hr />
+<h1 id="change-log">Change Log<a class="headerlink" href="#change-log" title="Permanent link">&para;</a></h1>
+<p><strong>ATTN</strong>: This project uses <a href="https://semver.org/">semantic versioning</a>.</p>
+<h2 id="unreleased-2x-series">Unreleased - 2.X series<a class="headerlink" href="#unreleased-2x-series" title="Permanent link">&para;</a></h2>
+<p>View <a href="https://github.com/urfave/cli/compare/v2.2.0...HEAD">unreleased 2.X</a> series changes.</p>
+<h2 id="220-2020-03-08"><a href="https://github.com/urfave/cli/compare/v2.1.1...v2.2.0">2.2.0</a> - 2020-03-08<a class="headerlink" href="#220-2020-03-08" title="Permanent link">&para;</a></h2>
+<p>These release notes were written for the git hash <a href="https://github.com/urfave/cli/tree/d648edd48d89ef3a841b1ec75c2ebbd4de5f748f">d648edd48d89ef3a841b1ec75c2ebbd4de5f748f</a></p>
+<h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fixed zsh completion scripts in <a href="https://github.com/urfave/cli/pull/1062">urfave/cli/pull/1062</a> via <a href="https://github.com/zhsj">@zhsj</a></li>
+<li>Fixed description of subcommand to be more consistent in <a href="https://github.com/urfave/cli/pull/1054">urfave/cli/pull/1054</a> via <a href="https://github.com/itchyny">@itchyny</a></li>
+<li>Fixed possible runtime panic in slice parsing in <a href="https://github.com/urfave/cli/pull/1049">urfave/cli/pull/1049</a> via <a href="https://github.com/saschagrunert">@saschagrunert</a></li>
+<li>Fixed invalid man page header generation in <a href="https://github.com/urfave/cli/pull/1041">urfave/cli/pull/1041</a> via <a href="https://github.com/saschagrunert">@saschagrunert</a></li>
+</ul>
+<h3 id="changed">Changed<a class="headerlink" href="#changed" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Improved auto-completion instructions and added example gifs in <a href="https://github.com/urfave/cli/pull/1059">urfave/cli/pull/1059</a> via <a href="https://github.com/masonj188">@masonj188</a></li>
+<li>Removed the author from generated man pages in <a href="https://github.com/urfave/cli/pull/1041">urfave/cli/pull/1041</a> via <a href="https://github.com/saschagrunert">@saschagrunert</a></li>
+</ul>
+<h3 id="added">Added<a class="headerlink" href="#added" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added destination field to <code>StringSliceFlag</code> in <a href="https://github.com/urfave/cli/pull/1078">urfave/cli/pull/1078</a> via <a href="https://github.com/davidsbond">@davidsbond</a></li>
+<li>Added <code>HideHelpCommand</code>. While <code>HideHelp</code> hides both <code>help</code> command and <code>--help</code> flag, <code>HideHelpCommand</code> only hides <code>help</code> command and leave <code>--help</code> flag as-is in <a href="https://github.com/urfave/cli/pull/1083">urfave/cli/pull/1083</a> via <a href="https://github.com/AkihiroSuda">@AkihiroSuda</a></li>
+<li>Added timestampFlag docs in <a href="https://github.com/urfave/cli/pull/997">urfave/cli/pull/997</a> via <a href="https://github.com/drov0">@drov0</a></li>
+<li>Added required flags documentation in <a href="https://github.com/urfave/cli/pull/1008">urfave/cli/pull/1008</a> via <a href="https://github.com/lynncyrin">@lynncyrin</a>, <a href="https://github.com/anberns">@anberns</a></li>
+</ul>
+<h2 id="211-2019-12-24"><a href="https://github.com/urfave/cli/compare/v2.1.0...v2.1.1">2.1.1</a> - 2019-12-24<a class="headerlink" href="#211-2019-12-24" title="Permanent link">&para;</a></h2>
+<h3 id="fixed_1">Fixed<a class="headerlink" href="#fixed_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fixed a <code>Context</code> regression introduced in <code>v2.1.0</code> in <a href="https://github.com/urfave/cli/pull/1014">urfave/cli/pull/1014</a> via <a href="https://github.com/lynncyrin">@lynncyrin</a></li>
+</ul>
+<h2 id="210-2019-12-24"><a href="https://github.com/urfave/cli/compare/v2.0.0...v2.1.0">2.1.0</a> - 2019-12-24<a class="headerlink" href="#210-2019-12-24" title="Permanent link">&para;</a></h2>
+<p>These release notes were written for the git hash <a href="https://github.com/urfave/cli/tree/ae84df4cef4a2a6f1a0cb1d41ea0f3af8755e5a8">ae84df4cef4a2a6f1a0cb1d41ea0f3af8755e5a8</a></p>
+<h3 id="fixed_2">Fixed<a class="headerlink" href="#fixed_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fixed some golint errors in <a href="https://github.com/urfave/cli/pull/988">urfave/cli/pull/988</a> via <a href="https://github.com/liamchampton">@liamchampton</a></li>
+<li>Fixed a panic with flag completion <a href="https://github.com/urfave/cli/pull/946">urfave/cli/pull/946</a> via <a href="https://github.com/unRob">@unRob</a></li>
+</ul>
+<h3 id="changed_1">Changed<a class="headerlink" href="#changed_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Changed docs generation to use visible flags in <a href="https://github.com/urfave/cli/pull/999">urfave/cli/pull/999</a> via <a href="https://github.com/subpop">@subpop</a></li>
+<li>Changed <code>App.Run</code> to use an optional context for timeouts and cancellation in <a href="https://github.com/urfave/cli/pull/975">urfave/cli/pull/975</a> via <a href="https://github.com/marwan-at-work">@marwan-at-work</a></li>
+<li>Changed version info to be hidden if the user has not defined a version in <a href="https://github.com/urfave/cli/pull/955">urfave/cli/pull/955</a> via <a href="https://github.com/asahasrabuddhe">@asahasrabuddhe</a></li>
+<li>Changed docs generation to take into account multiple authors in <a href="https://github.com/urfave/cli/pull/900">urfave/cli/pull/900</a> via <a href="https://github.com/saschagrunert">@saschagrunert</a></li>
+<li>Changed context to expose a <code>Value</code> accessor in <a href="https://github.com/urfave/cli/pull/741">urfave/cli/pull/741</a> via <a href="https://github.com/corruptmemory">@corruptmemory</a></li>
+</ul>
+<h3 id="added_1">Added<a class="headerlink" href="#added_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added timestamp flag in <a href="https://github.com/urfave/cli/pull/987">urfave/cli/pull/987</a> via <a href="https://github.com/drov0">@drov0</a></li>
+</ul>
+<h2 id="200-2019-11-17"><a href="https://github.com/urfave/cli/compare/v1.22.2...v2.0.0">2.0.0</a> - 2019-11-17<a class="headerlink" href="#200-2019-11-17" title="Permanent link">&para;</a></h2>
+<p>The V2 changes were all shipped in <a href="https://github.com/urfave/cli/pull/892">urfave/cli/pull/892</a>, which was created with the effort of over a dozen participants! They are:</p>
+<p><a href="https://github.com/asahasrabuddhe">@asahasrabuddhe</a>, <a href="https://github.com/meatballhat">@meatballhat</a>, <a href="https://github.com/jszwedko">@jszwedko</a>, <a href="https://github.com/lynncyrin">@lynncyrin</a>, <a href="https://github.com/AudriusButkevicius">@AudriusButkevicius</a>, <a href="https://github.com/saschagrunert">@saschagrunert</a>, <a href="https://github.com/rliebz">@rliebz</a>, <a href="https://github.com/johnweldon">@johnweldon</a>, <a href="https://github.com/nlewo">@nlewo</a>, <a href="https://github.com/grubernaut">@grubernaut</a>, <a href="https://github.com/OneOfOne">@OneOfOne</a>, <a href="https://github.com/VMitov">@VMitov</a>, <a href="https://github.com/cbranch">@cbranch</a>, <a href="https://github.com/marwan-at-work">@marwan-at-work</a>, <a href="https://github.com/uudashr">@uudashr</a>, <a href="https://github.com/bfreis">@bfreis</a></p>
+<h3 id="added_2">Added<a class="headerlink" href="#added_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added <code>NewStringSlice</code> and <code>NewIntSlice</code> for creating their related types</li>
+<li>Added <code>Float64SliceFlag</code> for unmarshaling a list of floats from the user</li>
+<li>Added <code>Context.Lineage</code> to get all contexts from current up to global</li>
+<li>Added <code>Context.LocalFlagNames</code> to get the flag names from <em>only</em> the current context</li>
+<li>Added <code>BoolFlag.Value</code> to handle both default-false and default-true</li>
+<li>Added <code>IsSet</code> method to the <code>Flag</code> interface which allows us to detect whether or not a flag has been set</li>
+</ul>
+<h3 id="changed_2">Changed<a class="headerlink" href="#changed_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>Context.FlagNames</code> now returns all flags in the context lineage</li>
+<li><code>Context.IsSet</code> now considers the full context lineage</li>
+</ul>
+<h3 id="removed">Removed<a class="headerlink" href="#removed" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Removed the ability to specify <code>&amp;StringSlice{...string}</code> or <code>&amp;IntSlice{...int}</code>.</li>
+<li>Removed adapter code for deprecated <code>Action</code> func signature</li>
+<li>Deprecated <code>App.Author</code>, <code>App.Email</code>, and <code>Command.ShortName</code> fields</li>
+<li>Removed all <code>Context.Global*</code> methods, as the non-global versions now traverse up
+  the context lineage automatically.</li>
+<li>Removed <code>Context.Parent</code> method, as this is now available via <code>Context.Lineage</code></li>
+<li>Removed <code>BoolTFlag</code> and related code, as this is now available via <code>BoolFlag.Value</code></li>
+</ul>
+<h2 id="unreleased-122x-series">Unreleased - 1.22.X series<a class="headerlink" href="#unreleased-122x-series" title="Permanent link">&para;</a></h2>
+<p>View <a href="https://github.com/urfave/cli/compare/v1.22.4...v1">unreleased 1.22.X</a> series changes.</p>
+<h2 id="1224-2020-03-31"><a href="https://github.com/urfave/cli/compare/v1.22.3...v1.22.4">1.22.4</a> - 2020-03-31<a class="headerlink" href="#1224-2020-03-31" title="Permanent link">&para;</a></h2>
+<h3 id="fixed_3">Fixed<a class="headerlink" href="#fixed_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fixed a panic with flag completion in <a href="https://github.com/urfave/cli/pull/1101">urfave/cli/pull/1101</a> via <a href="https://github.com/unRob">@unRob</a>, <a href="https://github.com/VirrageS">@VirrageS</a></li>
+</ul>
+<h2 id="1223-2020-02-25"><a href="https://github.com/urfave/cli/compare/v1.22.2...v1.22.3">1.22.3</a> - 2020-02-25<a class="headerlink" href="#1223-2020-02-25" title="Permanent link">&para;</a></h2>
+<h3 id="fixed_4">Fixed<a class="headerlink" href="#fixed_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>String flag no longer persists the default value if the flag is explicitly initialized in <a href="https://github.com/urfave/cli/pull/981">urfave/cli/pull/981</a> via <a href="https://github.com/asahasrabuddhe">@asahasrabuddhe</a></li>
+<li><code>context.IsSet()</code> returns <code>true</code> or <code>false</code> correctly regardless of whether the short name or the full name of the flag is passed to it in <a href="https://github.com/urfave/cli/pull/978">urfave/cli/pull/978</a> via <a href="https://github.com/asahasrabuddhe">@asahasrabuddhe</a></li>
+<li>Hide version if the version is not set by the user in <a href="https://github.com/urfave/cli/pull/954">urfave/cli/pull/954</a> via <a href="https://github.com/asahasrabuddhe">@asahasrabuddhe</a></li>
+</ul>
+<h2 id="1222-2019-11-17"><a href="https://github.com/urfave/cli/compare/v1.22.1...v1.22.2">1.22.2</a> - 2019-11-17<a class="headerlink" href="#1222-2019-11-17" title="Permanent link">&para;</a></h2>
+<h3 id="fixed_5">Fixed<a class="headerlink" href="#fixed_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fix v1.21.0 pass through regression in <a href="https://github.com/urfave/cli/pull/872">urfave/cli/pull/872</a> via <a href="https://github.com/lynncyrin">@lynncyrin</a></li>
+<li>Fix infinite loop when parsing invalid flags for apps with short option handling in <a href="https://github.com/urfave/cli/pull/911">urfave/cli/pull/911</a> via <a href="https://github.com/rliebz">@rliebz</a></li>
+<li>Fix zsh autocomplete in <a href="https://github.com/urfave/cli/pull/906">urfave/cli/pull/906</a> via <a href="https://github.com/gnowxilef">@gnowxilef</a></li>
+<li>Fix typo in <code>DocGenerationFlag.TakesValue()</code> docstring in <a href="https://github.com/urfave/cli/pull/902">urfave/cli/pull/902</a> via <a href="https://github.com/benmoose">@benmoose</a></li>
+<li>Avoid panic for missing flag value in <a href="https://github.com/urfave/cli/pull/893">urfave/cli/pull/893</a> via <a href="https://github.com/rliebz">@rliebz</a></li>
+</ul>
+<h3 id="changed_3">Changed<a class="headerlink" href="#changed_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Simplify <code>HelpPrinter</code> and <code>CustomHelpPrinter</code> behaviors in <a href="https://github.com/urfave/cli/pull/912">urfave/cli/pull/912</a> via <a href="https://github.com/rliebz">@rliebz</a></li>
+</ul>
+<h2 id="1221-2019-09-11"><a href="https://github.com/urfave/cli/compare/v1.22.0...v1.22.1">1.22.1</a> - 2019-09-11<a class="headerlink" href="#1221-2019-09-11" title="Permanent link">&para;</a></h2>
+<h3 id="fixed_6">Fixed<a class="headerlink" href="#fixed_6" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Hide output of hidden commands on man pages in <a href="https://github.com/urfave/cli/pull/889">urfave/cli/pull/889</a> via <a href="https://github.com/crosbymichael">@crosbymichael</a></li>
+<li>Don't generate fish completion for hidden commands <a href="https://github.com/urfave/891">urfave/cli/pull/891</a> via <a href="https://github.com/saschagrunert">@saschagrunert</a></li>
+<li>Using short flag names for required flags throws an error in <a href="https://github.com/urfave/cli/pull/890">urfave/cli/pull/890</a> via <a href="https://github.com/asahasrabuddhe">@asahasrabuddhe</a></li>
+</ul>
+<h3 id="changed_4">Changed<a class="headerlink" href="#changed_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Remove flag code generation logic, legacy python test runner in <a href="https://github.com/urfave/cli/pull/883">urfave/cli/pull/883</a> via <a href="https://github.com/asahasrabuddhe">@asahasrabuddhe</a></li>
+<li>Enable Go Modules support, drop support for <code>Go 1.10</code> add support for <code>Go 1.13</code> in <a href="https://github.com/urfave/cli/pull/885">urfave/cli/pull/885</a> via <a href="https://github.com/asahasrabuddhe">@asahasrabuddhe</a></li>
+</ul>
+<h2 id="1220-2019-09-07"><a href="https://github.com/urfave/cli/compare/v1.21.0...v1.22.0">1.22.0</a> - 2019-09-07<a class="headerlink" href="#1220-2019-09-07" title="Permanent link">&para;</a></h2>
+<h3 id="fixed_7">Fixed<a class="headerlink" href="#fixed_7" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fix Subcommands not falling back to <code>app.ExitEventHandler</code> in <a href="https://github.com/urfave/cli/pull/856">urfave/cli/pull/856</a> via <a href="https://github.com/FaranIdo">@FaranIdo</a></li>
+</ul>
+<h3 id="changed_5">Changed<a class="headerlink" href="#changed_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Clarify that altsrc supports both TOML and JSON in <a href="https://github.com/urfave/cli/pull/774">urfave/cli/pull/774</a> via <a href="https://github.com/whereswaldon">@whereswaldon</a></li>
+<li>Made the exit code example more clear in <a href="https://github.com/urfave/cli/pull/823">urfave/cli/pull/823</a> via <a href="https://github.com/xordspar0">@xordspar0</a></li>
+<li>Removed the use of python for internal flag generation in <a href="https://github.com/urfave/cli/pull/836">urfave/cli/pull/836</a> via <a href="https://github.com/asahasrabuddhe">@asahasrabuddhe</a></li>
+<li>Changed the supported go versions to <code>1.10</code>, <code>1.11</code>, <code>1.12</code> in <a href="https://github.com/urfave/cli/pull/843">urfave/cli/pull/843</a> via <a href="https://github.com/lafriks">@lafriks</a></li>
+<li>Changed the v1 releases section in the readme in <a href="https://github.com/urfave/cli/pull/862">urfave/cli/pull/862</a> via <a href="https://github.com/russoj88">@russoj88</a></li>
+<li>Cleaned up go modules in <a href="https://github.com/urfave/cli/pull/874">urfave/cli/pull/874</a> via <a href="https://github.com/saschagrunert">@saschagrunert</a></li>
+</ul>
+<h3 id="added_3">Added<a class="headerlink" href="#added_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added <code>UseShortOptionHandling</code> for combining short flags in <a href="https://github.com/urfave/cli/pull/735">urfave/cli/pull/735</a> via <a href="https://github.com/rliebz">@rliebz</a></li>
+<li>Added support for flags bash completion in <a href="https://github.com/urfave/cli/pull/808">urfave/cli/pull/808</a> via <a href="https://github.com/yogeshlonkar">@yogeshlonkar</a></li>
+<li>Added the <code>TakesFile</code> indicator to flag in <a href="https://github.com/urfave/cli/pull/851">urfave/cli/pull/851</a> via <a href="https://github.com/saschagrunert">@saschagrunert</a></li>
+<li>Added fish shell completion support in <a href="https://github.com/urfave/cli/pull/848">urfave/cli/pull/848</a> via <a href="https://github.com/saschagrunert">@saschagrunert</a></li>
+</ul>
+<h2 id="1210-2019-08-02"><a href="https://github.com/urfave/cli/compare/v1.20.0...v1.21.0">1.21.0</a> - 2019-08-02<a class="headerlink" href="#1210-2019-08-02" title="Permanent link">&para;</a></h2>
+<h3 id="fixed_8">Fixed<a class="headerlink" href="#fixed_8" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fix using "slice" flag types with <code>EnvVar</code> in <a href="https://github.com/urfave/cli/pull/687">urfave/cli/pull/687</a> via <a href="https://github.com/joshuarubin">@joshuarubin</a></li>
+<li>Fix regression of <code>SkipFlagParsing</code> behavior in <a href="https://github.com/urfave/cli/pull/697">urfave/cli/pull/697</a> via <a href="https://github.com/jszwedko">@jszwedko</a></li>
+<li>Fix handling <code>ShortOptions</code> and <code>SkipArgReorder</code> in <a href="https://github.com/urfave/cli/pull/686">urfave/cli/pull/686</a> via <a href="https://github.com/baude">@baude</a></li>
+<li>Fix args reordering when bool flags are present in <a href="https://github.com/urfave/cli/pull/712">urfave/cli/pull/712</a> via <a href="https://github.com/windler">@windler</a></li>
+<li>Fix parsing of short options in <a href="https://github.com/urfave/cli/pull/758">urfave/cli/pull/758</a> via <a href="https://github.com/vrothberg">@vrothberg</a></li>
+<li>Fix unaligned indents for the command help messages in <a href="https://github.com/urfave/cli/pull/806">urfave/cli/pull/806</a> via <a href="https://github.com/mingrammer">@mingrammer</a></li>
+</ul>
+<h3 id="changed_6">Changed<a class="headerlink" href="#changed_6" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Cleaned up help output in <a href="https://github.com/urfave/cli/pull/664">urfave/cli/pull/664</a> via <a href="https://github.com/maguro">@maguro</a></li>
+<li>Remove redundant nil checks in <a href="https://github.com/urfave/cli/pull/773">urfave/cli/pull/773</a> via <a href="https://github.com/teresy">@teresy</a></li>
+<li>Case is now considered when sorting strings in <a href="https://github.com/urfave/cli/pull/676">urfave/cli/pull/676</a> via <a href="https://github.com/rliebz">@rliebz</a></li>
+</ul>
+<h3 id="added_4">Added<a class="headerlink" href="#added_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added <em>"required flags"</em> support in <a href="https://github.com/urfave/cli/pull/819">urfave/cli/pull/819</a> via <a href="https://github.com/lynncyrin/">@lynncyrin</a></li>
+<li>Backport JSON <code>InputSource</code> to v1 in <a href="https://github.com/urfave/cli/pull/598">urfave/cli/pull/598</a> via <a href="https://github.com/jszwedko">@jszwedko</a></li>
+<li>Allow more customization of flag help strings in <a href="https://github.com/urfave/cli/pull/661">urfave/cli/pull/661</a> via <a href="https://github.com/rliebz">@rliebz</a></li>
+<li>Allow custom <code>ExitError</code> handler function in <a href="https://github.com/urfave/cli/pull/628">urfave/cli/pull/628</a> via <a href="https://github.com/phinnaeus">@phinnaeus</a></li>
+<li>Allow loading a variable from a file in <a href="https://github.com/urfave/cli/pull/675">urfave/cli/pull/675</a> via <a href="https://github.com/jmccann">@jmccann</a></li>
+<li>Allow combining short bool names in <a href="https://github.com/urfave/cli/pull/684">urfave/cli/pull/684</a> via <a href="https://github.com/baude">@baude</a></li>
+<li>Added test coverage to context in <a href="https://github.com/urfave/cli/pull/788">urfave/cli/pull/788</a> via <a href="https://github.com/benzvan">@benzvan</a></li>
+<li>Added go module support in <a href="https://github.com/urfave/cli/pull/831">urfave/cli/pull/831</a> via <a href="https://github.com/saschagrunert">@saschagrunert</a></li>
+</ul>
+<h2 id="1200-2017-08-10"><a href="https://github.com/urfave/cli/compare/v1.19.1...v1.20.0">1.20.0</a> - 2017-08-10<a class="headerlink" href="#1200-2017-08-10" title="Permanent link">&para;</a></h2>
+<h3 id="fixed_9">Fixed<a class="headerlink" href="#fixed_9" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>HandleExitCoder</code> is now correctly iterates over all errors in
+  a <code>MultiError</code>. The exit code is the exit code of the last error or <code>1</code> if
+  there are no <code>ExitCoder</code>s in the <code>MultiError</code>.</li>
+<li>Fixed YAML file loading on Windows (previously would fail validate the file path)</li>
+<li>Subcommand <code>Usage</code>, <code>Description</code>, <code>ArgsUsage</code>, <code>OnUsageError</code> correctly
+  propagated</li>
+<li><code>ErrWriter</code> is now passed downwards through command structure to avoid the
+  need to redefine it</li>
+<li>Pass <code>Command</code> context into <code>OnUsageError</code> rather than parent context so that
+  all fields are available</li>
+<li>Errors occurring in <code>Before</code> funcs are no longer double printed</li>
+<li>Use <code>UsageText</code> in the help templates for commands and subcommands if
+  defined; otherwise build the usage as before (was previously ignoring this
+  field)</li>
+<li><code>IsSet</code> and <code>GlobalIsSet</code> now correctly return whether a flag is set if
+  a program calls <code>Set</code> or <code>GlobalSet</code> directly after flag parsing (would
+  previously only return <code>true</code> if the flag was set during parsing)</li>
+</ul>
+<h3 id="changed_7">Changed<a class="headerlink" href="#changed_7" title="Permanent link">&para;</a></h3>
+<ul>
+<li>No longer exit the program on command/subcommand error if the error raised is
+  not an <code>OsExiter</code>. This exiting behavior was introduced in 1.19.0, but was
+  determined to be a regression in functionality. See <a href="https://github.com/urfave/cli/pull/595">the
+  PR</a> for discussion.</li>
+</ul>
+<h3 id="added_5">Added<a class="headerlink" href="#added_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>CommandsByName</code> type was added to make it easy to sort <code>Command</code>s by name,
+  alphabetically</li>
+<li><code>altsrc</code> now handles loading of string and int arrays from TOML</li>
+<li>Support for definition of custom help templates for <code>App</code> via
+  <code>CustomAppHelpTemplate</code></li>
+<li>Support for arbitrary key/value fields on <code>App</code> to be used with
+  <code>CustomAppHelpTemplate</code> via <code>ExtraInfo</code></li>
+<li><code>HelpFlag</code>, <code>VersionFlag</code>, and <code>BashCompletionFlag</code> changed to explicitly be
+  <code>cli.Flag</code>s allowing for the use of custom flags satisfying the <code>cli.Flag</code>
+  interface to be used.</li>
+</ul>
+<h2 id="1191-2016-11-21"><a href="https://github.com/urfave/cli/compare/v1.19.0...v1.19.1">1.19.1</a> - 2016-11-21<a class="headerlink" href="#1191-2016-11-21" title="Permanent link">&para;</a></h2>
+<h3 id="fixed_10">Fixed<a class="headerlink" href="#fixed_10" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fixes regression introduced in 1.19.0 where using an <code>ActionFunc</code> as
+  the <code>Action</code> for a command would cause it to error rather than calling the
+  function. Should not have a affected declarative cases using <code>func(c
+  *cli.Context) err)</code>.</li>
+<li>Shell completion now handles the case where the user specifies
+  <code>--generate-bash-completion</code> immediately after a flag that takes an argument.
+  Previously it call the application with <code>--generate-bash-completion</code> as the
+  flag value.</li>
+</ul>
+<h2 id="1190-2016-11-19"><a href="https://github.com/urfave/cli/compare/v1.18.0...v1.19.0">1.19.0</a> - 2016-11-19<a class="headerlink" href="#1190-2016-11-19" title="Permanent link">&para;</a></h2>
+<h3 id="added_6">Added<a class="headerlink" href="#added_6" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>FlagsByName</code> was added to make it easy to sort flags (e.g. <code>sort.Sort(cli.FlagsByName(app.Flags))</code>)</li>
+<li>A <code>Description</code> field was added to <code>App</code> for a more detailed description of
+  the application (similar to the existing <code>Description</code> field on <code>Command</code>)</li>
+<li>Flag type code generation via <code>go generate</code></li>
+<li>Write to stderr and exit 1 if action returns non-nil error</li>
+<li>Added support for TOML to the <code>altsrc</code> loader</li>
+<li><code>SkipArgReorder</code> was added to allow users to skip the argument reordering.
+  This is useful if you want to consider all "flags" after an argument as
+  arguments rather than flags (the default behavior of the stdlib <code>flag</code>
+  library). This is backported functionality from the <a href="https://github.com/urfave/cli/pull/398">removal of the flag
+  reordering</a> in the unreleased version
+  2</li>
+<li>For formatted errors (those implementing <code>ErrorFormatter</code>), the errors will
+  be formatted during output. Compatible with <code>pkg/errors</code>.</li>
+</ul>
+<h3 id="changed_8">Changed<a class="headerlink" href="#changed_8" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Raise minimum tested/supported Go version to 1.2+</li>
+</ul>
+<h3 id="fixed_11">Fixed<a class="headerlink" href="#fixed_11" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Consider empty environment variables as set (previously environment variables
+  with the equivalent of <code>""</code> would be skipped rather than their value used).</li>
+<li>Return an error if the value in a given environment variable cannot be parsed
+  as the flag type. Previously these errors were silently swallowed.</li>
+<li>Print full error when an invalid flag is specified (which includes the invalid flag)</li>
+<li><code>App.Writer</code> defaults to <code>stdout</code> when <code>nil</code></li>
+<li>If no action is specified on a command or app, the help is now printed instead of <code>panic</code>ing</li>
+<li><code>App.Metadata</code> is initialized automatically now (previously was <code>nil</code> unless initialized)</li>
+<li>Correctly show help message if <code>-h</code> is provided to a subcommand</li>
+<li><code>context.(Global)IsSet</code> now respects environment variables. Previously it
+  would return <code>false</code> if a flag was specified in the environment rather than
+  as an argument</li>
+<li>Removed deprecation warnings to STDERR to avoid them leaking to the end-user</li>
+<li><code>altsrc</code>s import paths were updated to use <code>gopkg.in/urfave/cli.v1</code>. This
+  fixes issues that occurred when <code>gopkg.in/urfave/cli.v1</code> was imported as well
+  as <code>altsrc</code> where Go would complain that the types didn't match</li>
+</ul>
+<h2 id="1181-2016-08-28">[1.18.1] - 2016-08-28<a class="headerlink" href="#1181-2016-08-28" title="Permanent link">&para;</a></h2>
+<h3 id="fixed_12">Fixed<a class="headerlink" href="#fixed_12" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Removed deprecation warnings to STDERR to avoid them leaking to the end-user (backported)</li>
+</ul>
+<h2 id="1180-2016-06-27"><a href="https://github.com/urfave/cli/compare/v1.17.0...v1.18.0">1.18.0</a> - 2016-06-27<a class="headerlink" href="#1180-2016-06-27" title="Permanent link">&para;</a></h2>
+<h3 id="added_7">Added<a class="headerlink" href="#added_7" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>./runtests</code> test runner with coverage tracking by default</li>
+<li>testing on OS X</li>
+<li>testing on Windows</li>
+<li><code>UintFlag</code>, <code>Uint64Flag</code>, and <code>Int64Flag</code> types and supporting code</li>
+</ul>
+<h3 id="changed_9">Changed<a class="headerlink" href="#changed_9" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use spaces for alignment in help/usage output instead of tabs, making the
+  output alignment consistent regardless of tab width</li>
+</ul>
+<h3 id="fixed_13">Fixed<a class="headerlink" href="#fixed_13" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Printing of command aliases in help text</li>
+<li>Printing of visible flags for both struct and struct pointer flags</li>
+<li>Display the <code>help</code> subcommand when using <code>CommandCategories</code></li>
+<li>No longer swallows <code>panic</code>s that occur within the <code>Action</code>s themselves when
+  detecting the signature of the <code>Action</code> field</li>
+</ul>
+<h2 id="1171-2016-08-28">[1.17.1] - 2016-08-28<a class="headerlink" href="#1171-2016-08-28" title="Permanent link">&para;</a></h2>
+<h3 id="fixed_14">Fixed<a class="headerlink" href="#fixed_14" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Removed deprecation warnings to STDERR to avoid them leaking to the end-user</li>
+</ul>
+<h2 id="1170-2016-05-09"><a href="https://github.com/urfave/cli/compare/v1.16.0...v1.17.0">1.17.0</a> - 2016-05-09<a class="headerlink" href="#1170-2016-05-09" title="Permanent link">&para;</a></h2>
+<h3 id="added_8">Added<a class="headerlink" href="#added_8" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Pluggable flag-level help text rendering via <code>cli.DefaultFlagStringFunc</code></li>
+<li><code>context.GlobalBoolT</code> was added as an analogue to <code>context.GlobalBool</code></li>
+<li>Support for hiding commands by setting <code>Hidden: true</code> -- this will hide the
+  commands in help output</li>
+</ul>
+<h3 id="changed_10">Changed<a class="headerlink" href="#changed_10" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>Float64Flag</code>, <code>IntFlag</code>, and <code>DurationFlag</code> default values are no longer
+  quoted in help text output.</li>
+<li>All flag types now include <code>(default: {value})</code> strings following usage when a
+  default value can be (reasonably) detected.</li>
+<li><code>IntSliceFlag</code> and <code>StringSliceFlag</code> usage strings are now more consistent
+  with non-slice flag types</li>
+<li>Apps now exit with a code of 3 if an unknown subcommand is specified
+  (previously they printed "No help topic for...", but still exited 0. This
+  makes it easier to script around apps built using <code>cli</code> since they can trust
+  that a 0 exit code indicated a successful execution.</li>
+<li>cleanups based on <a href="https://goreportcard.com/report/github.com/urfave/cli">Go Report Card
+  feedback</a></li>
+</ul>
+<h2 id="1161-2016-08-28">[1.16.1] - 2016-08-28<a class="headerlink" href="#1161-2016-08-28" title="Permanent link">&para;</a></h2>
+<h3 id="fixed_15">Fixed<a class="headerlink" href="#fixed_15" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Removed deprecation warnings to STDERR to avoid them leaking to the end-user</li>
+</ul>
+<h2 id="1160-2016-05-02"><a href="https://github.com/urfave/cli/compare/v1.15.0...v1.16.0">1.16.0</a> - 2016-05-02<a class="headerlink" href="#1160-2016-05-02" title="Permanent link">&para;</a></h2>
+<h3 id="added_9">Added<a class="headerlink" href="#added_9" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>Hidden</code> field on all flag struct types to omit from generated help text</li>
+</ul>
+<h3 id="changed_11">Changed<a class="headerlink" href="#changed_11" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>BashCompletionFlag</code> (<code>--enable-bash-completion</code>) is now omitted from
+generated help text via the <code>Hidden</code> field</li>
+</ul>
+<h3 id="fixed_16">Fixed<a class="headerlink" href="#fixed_16" title="Permanent link">&para;</a></h3>
+<ul>
+<li>handling of error values in <code>HandleAction</code> and <code>HandleExitCoder</code></li>
+</ul>
+<h2 id="1150-2016-04-30"><a href="https://github.com/urfave/cli/compare/v1.14.0...v1.15.0">1.15.0</a> - 2016-04-30<a class="headerlink" href="#1150-2016-04-30" title="Permanent link">&para;</a></h2>
+<h3 id="added_10">Added<a class="headerlink" href="#added_10" title="Permanent link">&para;</a></h3>
+<ul>
+<li>This file!</li>
+<li>Support for placeholders in flag usage strings</li>
+<li><code>App.Metadata</code> map for arbitrary data/state management</li>
+<li><code>Set</code> and <code>GlobalSet</code> methods on <code>*cli.Context</code> for altering values after
+parsing.</li>
+<li>Support for nested lookup of dot-delimited keys in structures loaded from
+YAML.</li>
+</ul>
+<h3 id="changed_12">Changed<a class="headerlink" href="#changed_12" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The <code>App.Action</code> and <code>Command.Action</code> now prefer a return signature of
+<code>func(*cli.Context) error</code>, as defined by <code>cli.ActionFunc</code>.  If a non-nil
+<code>error</code> is returned, there may be two outcomes:<ul>
+<li>If the error fulfills <code>cli.ExitCoder</code>, then <code>os.Exit</code> will be called
+automatically</li>
+<li>Else the error is bubbled up and returned from <code>App.Run</code></li>
+</ul>
+</li>
+<li>Specifying an <code>Action</code> with the legacy return signature of
+<code>func(*cli.Context)</code> will produce a deprecation message to stderr</li>
+<li>Specifying an <code>Action</code> that is not a <code>func</code> type will produce a non-zero exit
+from <code>App.Run</code></li>
+<li>Specifying an <code>Action</code> func that has an invalid (input) signature will
+produce a non-zero exit from <code>App.Run</code></li>
+</ul>
+<h3 id="deprecated">Deprecated<a class="headerlink" href="#deprecated" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a name="deprecated-cli-app-runandexitonerror"></a>
+<code>cli.App.RunAndExitOnError</code>, which should now be done by returning an error
+that fulfills <code>cli.ExitCoder</code> to <code>cli.App.Run</code>.</li>
+<li><a name="deprecated-cli-app-action-signature"></a> the legacy signature for
+<code>cli.App.Action</code> of <code>func(*cli.Context)</code>, which should now have a return
+signature of <code>func(*cli.Context) error</code>, as defined by <code>cli.ActionFunc</code>.</li>
+</ul>
+<h3 id="fixed_17">Fixed<a class="headerlink" href="#fixed_17" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added missing <code>*cli.Context.GlobalFloat64</code> method</li>
+</ul>
+<h2 id="1140-2016-04-03-backfilled-2016-04-25"><a href="https://github.com/urfave/cli/compare/v1.13.0...v1.14.0">1.14.0</a> - 2016-04-03 (backfilled 2016-04-25)<a class="headerlink" href="#1140-2016-04-03-backfilled-2016-04-25" title="Permanent link">&para;</a></h2>
+<h3 id="added_11">Added<a class="headerlink" href="#added_11" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Codebeat badge</li>
+<li>Support for categorization via <code>CategorizedHelp</code> and <code>Categories</code> on app.</li>
+</ul>
+<h3 id="changed_13">Changed<a class="headerlink" href="#changed_13" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use <code>filepath.Base</code> instead of <code>path.Base</code> in <code>Name</code> and <code>HelpName</code>.</li>
+</ul>
+<h3 id="fixed_18">Fixed<a class="headerlink" href="#fixed_18" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Ensure version is not shown in help text when <code>HideVersion</code> set.</li>
+</ul>
+<h2 id="1130-2016-03-06-backfilled-2016-04-25"><a href="https://github.com/urfave/cli/compare/v1.12.0...v1.13.0">1.13.0</a> - 2016-03-06 (backfilled 2016-04-25)<a class="headerlink" href="#1130-2016-03-06-backfilled-2016-04-25" title="Permanent link">&para;</a></h2>
+<h3 id="added_12">Added<a class="headerlink" href="#added_12" title="Permanent link">&para;</a></h3>
+<ul>
+<li>YAML file input support.</li>
+<li><code>NArg</code> method on context.</li>
+</ul>
+<h2 id="1120-2016-02-17-backfilled-2016-04-25"><a href="https://github.com/urfave/cli/compare/v1.11.1...v1.12.0">1.12.0</a> - 2016-02-17 (backfilled 2016-04-25)<a class="headerlink" href="#1120-2016-02-17-backfilled-2016-04-25" title="Permanent link">&para;</a></h2>
+<h3 id="added_13">Added<a class="headerlink" href="#added_13" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Custom usage error handling.</li>
+<li>Custom text support in <code>USAGE</code> section of help output.</li>
+<li>Improved help messages for empty strings.</li>
+<li>AppVeyor CI configuration.</li>
+</ul>
+<h3 id="changed_14">Changed<a class="headerlink" href="#changed_14" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Removed <code>panic</code> from default help printer func.</li>
+<li>De-duping and optimizations.</li>
+</ul>
+<h3 id="fixed_19">Fixed<a class="headerlink" href="#fixed_19" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Correctly handle <code>Before</code>/<code>After</code> at command level when no subcommands.</li>
+<li>Case of literal <code>-</code> argument causing flag reordering.</li>
+<li>Environment variable hints on Windows.</li>
+<li>Docs updates.</li>
+</ul>
+<h2 id="1111-2015-12-21-backfilled-2016-04-25"><a href="https://github.com/urfave/cli/compare/v1.11.0...v1.11.1">1.11.1</a> - 2015-12-21 (backfilled 2016-04-25)<a class="headerlink" href="#1111-2015-12-21-backfilled-2016-04-25" title="Permanent link">&para;</a></h2>
+<h3 id="changed_15">Changed<a class="headerlink" href="#changed_15" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use <code>path.Base</code> in <code>Name</code> and <code>HelpName</code></li>
+<li>Export <code>GetName</code> on flag types.</li>
+</ul>
+<h3 id="fixed_20">Fixed<a class="headerlink" href="#fixed_20" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Flag parsing when skipping is enabled.</li>
+<li>Test output cleanup.</li>
+<li>Move completion check to account for empty input case.</li>
+</ul>
+<h2 id="1110-2015-11-15-backfilled-2016-04-25"><a href="https://github.com/urfave/cli/compare/v1.10.2...v1.11.0">1.11.0</a> - 2015-11-15 (backfilled 2016-04-25)<a class="headerlink" href="#1110-2015-11-15-backfilled-2016-04-25" title="Permanent link">&para;</a></h2>
+<h3 id="added_14">Added<a class="headerlink" href="#added_14" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Destination scan support for flags.</li>
+<li>Testing against <code>tip</code> in Travis CI config.</li>
+</ul>
+<h3 id="changed_16">Changed<a class="headerlink" href="#changed_16" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Go version in Travis CI config.</li>
+</ul>
+<h3 id="fixed_21">Fixed<a class="headerlink" href="#fixed_21" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Removed redundant tests.</li>
+<li>Use correct example naming in tests.</li>
+</ul>
+<h2 id="1102-2015-10-29-backfilled-2016-04-25"><a href="https://github.com/urfave/cli/compare/v1.10.1...v1.10.2">1.10.2</a> - 2015-10-29 (backfilled 2016-04-25)<a class="headerlink" href="#1102-2015-10-29-backfilled-2016-04-25" title="Permanent link">&para;</a></h2>
+<h3 id="fixed_22">Fixed<a class="headerlink" href="#fixed_22" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Remove unused var in bash completion.</li>
+</ul>
+<h2 id="1101-2015-10-21-backfilled-2016-04-25"><a href="https://github.com/urfave/cli/compare/v1.10.0...v1.10.1">1.10.1</a> - 2015-10-21 (backfilled 2016-04-25)<a class="headerlink" href="#1101-2015-10-21-backfilled-2016-04-25" title="Permanent link">&para;</a></h2>
+<h3 id="added_15">Added<a class="headerlink" href="#added_15" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Coverage and reference logos in README.</li>
+</ul>
+<h3 id="fixed_23">Fixed<a class="headerlink" href="#fixed_23" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use specified values in help and version parsing.</li>
+<li>Only display app version and help message once.</li>
+</ul>
+<h2 id="1100-2015-10-06-backfilled-2016-04-25"><a href="https://github.com/urfave/cli/compare/v1.9.0...v1.10.0">1.10.0</a> - 2015-10-06 (backfilled 2016-04-25)<a class="headerlink" href="#1100-2015-10-06-backfilled-2016-04-25" title="Permanent link">&para;</a></h2>
+<h3 id="added_16">Added<a class="headerlink" href="#added_16" title="Permanent link">&para;</a></h3>
+<ul>
+<li>More tests for existing functionality.</li>
+<li><code>ArgsUsage</code> at app and command level for help text flexibility.</li>
+</ul>
+<h3 id="fixed_24">Fixed<a class="headerlink" href="#fixed_24" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Honor <code>HideHelp</code> and <code>HideVersion</code> in <code>App.Run</code>.</li>
+<li>Remove juvenile word from README.</li>
+</ul>
+<h2 id="190-2015-09-08-backfilled-2016-04-25"><a href="https://github.com/urfave/cli/compare/v1.8.0...v1.9.0">1.9.0</a> - 2015-09-08 (backfilled 2016-04-25)<a class="headerlink" href="#190-2015-09-08-backfilled-2016-04-25" title="Permanent link">&para;</a></h2>
+<h3 id="added_17">Added<a class="headerlink" href="#added_17" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>FullName</code> on command with accompanying help output update.</li>
+<li>Set default <code>$PROG</code> in bash completion.</li>
+</ul>
+<h3 id="changed_17">Changed<a class="headerlink" href="#changed_17" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Docs formatting.</li>
+</ul>
+<h3 id="fixed_25">Fixed<a class="headerlink" href="#fixed_25" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Removed self-referential imports in tests.</li>
+</ul>
+<h2 id="180-2015-06-30-backfilled-2016-04-25"><a href="https://github.com/urfave/cli/compare/v1.7.1...v1.8.0">1.8.0</a> - 2015-06-30 (backfilled 2016-04-25)<a class="headerlink" href="#180-2015-06-30-backfilled-2016-04-25" title="Permanent link">&para;</a></h2>
+<h3 id="added_18">Added<a class="headerlink" href="#added_18" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Support for <code>Copyright</code> at app level.</li>
+<li><code>Parent</code> func at context level to walk up context lineage.</li>
+</ul>
+<h3 id="fixed_26">Fixed<a class="headerlink" href="#fixed_26" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Global flag processing at top level.</li>
+</ul>
+<h2 id="171-2015-06-11-backfilled-2016-04-25"><a href="https://github.com/urfave/cli/compare/v1.7.0...v1.7.1">1.7.1</a> - 2015-06-11 (backfilled 2016-04-25)<a class="headerlink" href="#171-2015-06-11-backfilled-2016-04-25" title="Permanent link">&para;</a></h2>
+<h3 id="added_19">Added<a class="headerlink" href="#added_19" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Aggregate errors from <code>Before</code>/<code>After</code> funcs.</li>
+<li>Doc comments on flag structs.</li>
+<li>Include non-global flags when checking version and help.</li>
+<li>Travis CI config updates.</li>
+</ul>
+<h3 id="fixed_27">Fixed<a class="headerlink" href="#fixed_27" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Ensure slice type flags have non-nil values.</li>
+<li>Collect global flags from the full command hierarchy.</li>
+<li>Docs prose.</li>
+</ul>
+<h2 id="170-2015-05-03-backfilled-2016-04-25"><a href="https://github.com/urfave/cli/compare/v1.6.0...v1.7.0">1.7.0</a> - 2015-05-03 (backfilled 2016-04-25)<a class="headerlink" href="#170-2015-05-03-backfilled-2016-04-25" title="Permanent link">&para;</a></h2>
+<h3 id="changed_18">Changed<a class="headerlink" href="#changed_18" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>HelpPrinter</code> signature includes output writer.</li>
+</ul>
+<h3 id="fixed_28">Fixed<a class="headerlink" href="#fixed_28" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Specify go 1.1+ in docs.</li>
+<li>Set <code>Writer</code> when running command as app.</li>
+</ul>
+<h2 id="160-2015-03-23-backfilled-2016-04-25"><a href="https://github.com/urfave/cli/compare/v1.5.0...v1.6.0">1.6.0</a> - 2015-03-23 (backfilled 2016-04-25)<a class="headerlink" href="#160-2015-03-23-backfilled-2016-04-25" title="Permanent link">&para;</a></h2>
+<h3 id="added_20">Added<a class="headerlink" href="#added_20" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Multiple author support.</li>
+<li><code>NumFlags</code> at context level.</li>
+<li><code>Aliases</code> at command level.</li>
+</ul>
+<h3 id="deprecated_1">Deprecated<a class="headerlink" href="#deprecated_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>ShortName</code> at command level.</li>
+</ul>
+<h3 id="fixed_29">Fixed<a class="headerlink" href="#fixed_29" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Subcommand help output.</li>
+<li>Backward compatible support for deprecated <code>Author</code> and <code>Email</code> fields.</li>
+<li>Docs regarding <code>Names</code>/<code>Aliases</code>.</li>
+</ul>
+<h2 id="150-2015-02-20-backfilled-2016-04-25"><a href="https://github.com/urfave/cli/compare/v1.4.1...v1.5.0">1.5.0</a> - 2015-02-20 (backfilled 2016-04-25)<a class="headerlink" href="#150-2015-02-20-backfilled-2016-04-25" title="Permanent link">&para;</a></h2>
+<h3 id="added_21">Added<a class="headerlink" href="#added_21" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>After</code> hook func support at app and command level.</li>
+</ul>
+<h3 id="fixed_30">Fixed<a class="headerlink" href="#fixed_30" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use parsed context when running command as subcommand.</li>
+<li>Docs prose.</li>
+</ul>
+<h2 id="141-2015-01-09-backfilled-2016-04-25"><a href="https://github.com/urfave/cli/compare/v1.4.0...v1.4.1">1.4.1</a> - 2015-01-09 (backfilled 2016-04-25)<a class="headerlink" href="#141-2015-01-09-backfilled-2016-04-25" title="Permanent link">&para;</a></h2>
+<h3 id="added_22">Added<a class="headerlink" href="#added_22" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Support for hiding <code>-h / --help</code> flags, but not <code>help</code> subcommand.</li>
+<li>Stop flag parsing after <code>--</code>.</li>
+</ul>
+<h3 id="fixed_31">Fixed<a class="headerlink" href="#fixed_31" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Help text for generic flags to specify single value.</li>
+<li>Use double quotes in output for defaults.</li>
+<li>Use <code>ParseInt</code> instead of <code>ParseUint</code> for int environment var values.</li>
+<li>Use <code>0</code> as base when parsing int environment var values.</li>
+</ul>
+<h2 id="140-2014-12-12-backfilled-2016-04-25"><a href="https://github.com/urfave/cli/compare/v1.3.1...v1.4.0">1.4.0</a> - 2014-12-12 (backfilled 2016-04-25)<a class="headerlink" href="#140-2014-12-12-backfilled-2016-04-25" title="Permanent link">&para;</a></h2>
+<h3 id="added_23">Added<a class="headerlink" href="#added_23" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Support for environment variable lookup "cascade".</li>
+<li>Support for <code>Stdout</code> on app for output redirection.</li>
+</ul>
+<h3 id="fixed_32">Fixed<a class="headerlink" href="#fixed_32" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Print command help instead of app help in <code>ShowCommandHelp</code>.</li>
+</ul>
+<h2 id="131-2014-11-13-backfilled-2016-04-25"><a href="https://github.com/urfave/cli/compare/v1.3.0...v1.3.1">1.3.1</a> - 2014-11-13 (backfilled 2016-04-25)<a class="headerlink" href="#131-2014-11-13-backfilled-2016-04-25" title="Permanent link">&para;</a></h2>
+<h3 id="added_24">Added<a class="headerlink" href="#added_24" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Docs and example code updates.</li>
+</ul>
+<h3 id="changed_19">Changed<a class="headerlink" href="#changed_19" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Default <code>-v / --version</code> flag made optional.</li>
+</ul>
+<h2 id="130-2014-08-10-backfilled-2016-04-25"><a href="https://github.com/urfave/cli/compare/v1.2.0...v1.3.0">1.3.0</a> - 2014-08-10 (backfilled 2016-04-25)<a class="headerlink" href="#130-2014-08-10-backfilled-2016-04-25" title="Permanent link">&para;</a></h2>
+<h3 id="added_25">Added<a class="headerlink" href="#added_25" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>FlagNames</code> at context level.</li>
+<li>Exposed <code>VersionPrinter</code> var for more control over version output.</li>
+<li>Zsh completion hook.</li>
+<li><code>AUTHOR</code> section in default app help template.</li>
+<li>Contribution guidelines.</li>
+<li><code>DurationFlag</code> type.</li>
+</ul>
+<h2 id="120-2014-08-02"><a href="https://github.com/urfave/cli/compare/v1.1.0...v1.2.0">1.2.0</a> - 2014-08-02<a class="headerlink" href="#120-2014-08-02" title="Permanent link">&para;</a></h2>
+<h3 id="added_26">Added<a class="headerlink" href="#added_26" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Support for environment variable defaults on flags plus tests.</li>
+</ul>
+<h2 id="110-2014-07-15"><a href="https://github.com/urfave/cli/compare/v1.0.0...v1.1.0">1.1.0</a> - 2014-07-15<a class="headerlink" href="#110-2014-07-15" title="Permanent link">&para;</a></h2>
+<h3 id="added_27">Added<a class="headerlink" href="#added_27" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Bash completion.</li>
+<li>Optional hiding of built-in help command.</li>
+<li>Optional skipping of flag parsing at command level.</li>
+<li><code>Author</code>, <code>Email</code>, and <code>Compiled</code> metadata on app.</li>
+<li><code>Before</code> hook func support at app and command level.</li>
+<li><code>CommandNotFound</code> func support at app level.</li>
+<li>Command reference available on context.</li>
+<li><code>GenericFlag</code> type.</li>
+<li><code>Float64Flag</code> type.</li>
+<li><code>BoolTFlag</code> type.</li>
+<li><code>IsSet</code> flag helper on context.</li>
+<li>More flag lookup funcs at context level.</li>
+<li>More tests &amp; docs.</li>
+</ul>
+<h3 id="changed_20">Changed<a class="headerlink" href="#changed_20" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Help template updates to account for presence/absence of flags.</li>
+<li>Separated subcommand help template.</li>
+<li>Exposed <code>HelpPrinter</code> var for more control over help output.</li>
+</ul>
+<h2 id="100-2013-11-01"><a href="https://github.com/urfave/cli/compare/v0.1.0...v1.0.0">1.0.0</a> - 2013-11-01<a class="headerlink" href="#100-2013-11-01" title="Permanent link">&para;</a></h2>
+<h3 id="added_28">Added<a class="headerlink" href="#added_28" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>help</code> flag in default app flag set and each command flag set.</li>
+<li>Custom handling of argument parsing errors.</li>
+<li>Command lookup by name at app level.</li>
+<li><code>StringSliceFlag</code> type and supporting <code>StringSlice</code> type.</li>
+<li><code>IntSliceFlag</code> type and supporting <code>IntSlice</code> type.</li>
+<li>Slice type flag lookups by name at context level.</li>
+<li>Export of app and command help functions.</li>
+<li>More tests &amp; docs.</li>
+</ul>
+<h2 id="010-2013-07-22">0.1.0 - 2013-07-22<a class="headerlink" href="#010-2013-07-22" title="Permanent link">&para;</a></h2>
+<h3 id="added_29">Added<a class="headerlink" href="#added_29" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Initial implementation.</li>
+</ul>
+
+
+
+
+
+
+
+  
+    
+  
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="October 27, 2024 12:58:58 UTC">October 27, 2024</span>
+  </span>
+
+    
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.annotate", "navigation.top", "navigation.instant", "navigation.expand", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
