@@ -797,6 +797,52 @@ GLOBAL OPTIONS:
 	assert.Contains(t, output.String(), expected, "expected output to include global options")
 }
 
+func TestShowSubcommandHelp_GlobalOptions_HideHelpCommand(t *testing.T) {
+	cmd := &Command{
+		Flags: []Flag{
+			&StringFlag{
+				Name: "foo",
+			},
+		},
+		Commands: []*Command{
+			{
+				Name:            "frobbly",
+				HideHelpCommand: true,
+				Flags: []Flag{
+					&StringFlag{
+						Name:  "bar",
+						Local: true,
+					},
+				},
+				Action: func(context.Context, *Command) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	output := &bytes.Buffer{}
+	cmd.Writer = output
+
+	_ = cmd.Run(buildTestContext(t), []string{"foo", "frobbly", "--help"})
+
+	expected := `NAME:
+   foo frobbly
+
+USAGE:
+   foo frobbly [options]
+
+OPTIONS:
+   --bar string  
+   --help, -h    show help
+
+GLOBAL OPTIONS:
+   --foo string  
+`
+
+	assert.Contains(t, output.String(), expected, "expected output to include global options")
+}
+
 func TestShowSubcommandHelp_SubcommandUsageText(t *testing.T) {
 	cmd := &Command{
 		Commands: []*Command{

@@ -124,8 +124,7 @@ func helpCommandAction(ctx context.Context, cmd *Command) error {
 	}
 
 	// Case 3, 5
-	if (len(cmd.Commands) == 1 && !cmd.HideHelp) ||
-		(len(cmd.Commands) == 0 && cmd.HideHelp) {
+	if len(cmd.VisibleCommands()) == 0 {
 
 		tmpl := cmd.CustomHelpTemplate
 		if tmpl == "" {
