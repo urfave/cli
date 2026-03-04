@@ -237,14 +237,18 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 		}()
 	}
 
-	for _, grp := range cmd.MutuallyExclusiveFlags {
-		if err := grp.check(cmd); err != nil {
-			if cmd.OnUsageError != nil {
-				err = cmd.OnUsageError(ctx, cmd, err, cmd.parent != nil)
-			} else {
-				_ = ShowSubcommandHelp(cmd)
+	// Walk the parent chain to check mutually exclusive flag groups
+	// defined on ancestor commands, since persistent flags are inherited.
+	for pCmd := cmd; pCmd != nil; pCmd = pCmd.parent {
+		for _, grp := range pCmd.MutuallyExclusiveFlags {
+			if err := grp.check(cmd); err != nil {
+				if cmd.OnUsageError != nil {
+					err = cmd.OnUsageError(ctx, cmd, err, cmd.parent != nil)
+				} else {
+					_ = ShowSubcommandHelp(cmd)
+				}
+				return ctx, err
 			}
-			return ctx, err
 		}
 	}
 
