@@ -10,6 +10,44 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestCompletionHelp(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+	}{
+		{
+			name: "short help flag",
+			args: []string{"foo", completionCommandName, "-h"},
+		},
+		{
+			name: "long help flag",
+			args: []string{"foo", completionCommandName, "--help"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			out := &bytes.Buffer{}
+
+			cmd := &Command{
+				EnableShellCompletion: true,
+				Writer:                out,
+				Flags: []Flag{
+					&StringFlag{
+						Name:     "required-flag",
+						Required: true,
+					},
+				},
+			}
+
+			r := require.New(t)
+
+			r.NoError(cmd.Run(buildTestContext(t), test.args))
+			r.Contains(out.String(), "USAGE")
+		})
+	}
+}
+
 func TestCompletionDisable(t *testing.T) {
 	cmd := &Command{}
 

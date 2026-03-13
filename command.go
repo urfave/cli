@@ -409,6 +409,9 @@ func (cmd *Command) checkRequiredFlag(f Flag) (bool, string) {
 
 func (cmd *Command) checkAllRequiredFlags() requiredFlagsErr {
 	for pCmd := cmd; pCmd != nil; pCmd = pCmd.parent {
+		if pCmd.isCompletionCommand {
+			break
+		}
 		if err := pCmd.checkRequiredFlags(); err != nil {
 			return err
 		}
