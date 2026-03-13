@@ -110,10 +110,7 @@ func TestCompletionShell(t *testing.T) {
 			r := require.New(t)
 
 			r.NoError(cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, k}))
-			r.Containsf(
-				k, out.String(),
-				"Expected output to contain shell name %[1]q", k,
-			)
+			r.NotEmpty(out.String(), "Expected non-empty completion output for shell %q", k)
 		})
 	}
 }
@@ -272,4 +269,33 @@ func TestCompletionShellRenderError(t *testing.T) {
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, unknownShellName})
 	assert.ErrorContains(t, err, "cant do completion")
+}
+
+type mockWriter struct {
+	err error
+}
+
+func (mw *mockWriter) Write(p []byte) (int, error) {
+	if mw.err != nil {
+		return 0, mw.err
+	}
+	return len(p), nil
+}
+
+func TestCompletionShellWriteError(t *testing.T) {
+	shellName := "mock-shell"
+	shellCompletions[shellName] = func(c *Command, appName string) (string, error) {
+		return "something", nil
+	}
+	defer func() {
+		delete(shellCompletions, shellName)
+	}()
+
+	cmd := &Command{
+		EnableShellCompletion: true,
+		Writer:                &mockWriter{err: fmt.Errorf("writer error")},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, shellName})
+	assert.ErrorContains(t, err, "writer error")
 }

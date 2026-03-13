@@ -82,7 +82,7 @@ func buildShellCompletionSubcommand(shell string, render renderCompletion, appNa
 			if err != nil {
 				return Exit(err, 1)
 			}
-			_, err = cmd.Writer.Write([]byte(completionScript))
+			_, err = cmd.Root().Writer.Write([]byte(completionScript))
 			if err != nil {
 				return Exit(err, 1)
 			}
