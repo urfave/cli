@@ -303,6 +303,9 @@ func (cmd *Command) appendFlag(fl Flag) {
 
 // VisiblePersistentFlags returns a slice of [LocalFlag] with Persistent=true and Hidden=false.
 func (cmd *Command) VisiblePersistentFlags() []Flag {
+	if cmd.isCompletionCommand {
+		return nil
+	}
 	var flags []Flag
 	for _, fl := range cmd.Root().Flags {
 		pfl, ok := fl.(LocalFlag)

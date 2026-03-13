@@ -52,6 +52,7 @@ func TestCompletionHelp(t *testing.T) {
 
 			r.NoError(cmd.Run(buildTestContext(t), test.args))
 			r.Contains(out.String(), "USAGE")
+			r.NotContains(out.String(), "GLOBAL OPTIONS")
 		})
 	}
 }
