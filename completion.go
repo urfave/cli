@@ -4,7 +4,6 @@ import (
 	"context"
 	"embed"
 	"fmt"
-	"sort"
 	"strings"
 )
 
@@ -58,45 +57,36 @@ Output the script to path/to/autocomplete/$COMMAND.ps1 an run it.
 `
 
 func buildCompletionCommand(appName string) *Command {
-	return &Command{
-		Name:        completionCommandName,
-		Hidden:      true,
-		Usage:       "Output shell completion script for bash, zsh, fish, or Powershell",
-		Description: strings.ReplaceAll(completionDescription, "$COMMAND", appName),
-		Action: func(ctx context.Context, cmd *Command) error {
-			return printShellCompletion(ctx, cmd, appName)
-		},
+	cmd := &Command{
+		Name:                completionCommandName,
+		Hidden:              true,
+		Usage:               "Output shell completion script for bash, zsh, fish, or Powershell",
+		Description:         strings.ReplaceAll(completionDescription, "$COMMAND", appName),
 		isCompletionCommand: true,
 	}
+
+	for shell, render := range shellCompletions {
+		cmd.Commands = append(cmd.Commands, buildShellCompletionSubcommand(shell, render, appName))
+	}
+
+	return cmd
 }
 
-func printShellCompletion(_ context.Context, cmd *Command, appName string) error {
-	var shells []string
-	for k := range shellCompletions {
-		shells = append(shells, k)
+func buildShellCompletionSubcommand(shell string, render renderCompletion, appName string) *Command {
+	return &Command{
+		Name:                shell,
+		Usage:               fmt.Sprintf("Output %s completion script", shell),
+		isCompletionCommand: true,
+		Action: func(ctx context.Context, cmd *Command) error {
+			completionScript, err := render(cmd, appName)
+			if err != nil {
+				return Exit(err, 1)
+			}
+			_, err = cmd.Root().Writer.Write([]byte(completionScript))
+			if err != nil {
+				return Exit(err, 1)
+			}
+			return nil
+		},
 	}
-
-	sort.Strings(shells)
-
-	if cmd.Args().Len() == 0 {
-		return Exit(fmt.Sprintf("no shell provided for completion command. available shells are %+v", shells), 1)
-	}
-	s := cmd.Args().First()
-
-	renderCompletion, ok := shellCompletions[s]
-	if !ok {
-		return Exit(fmt.Sprintf("unknown shell %s, available shells are %+v", s, shells), 1)
-	}
-
-	completionScript, err := renderCompletion(cmd, appName)
-	if err != nil {
-		return Exit(err, 1)
-	}
-
-	_, err = cmd.Writer.Write([]byte(completionScript))
-	if err != nil {
-		return Exit(err, 1)
-	}
-
-	return nil
 }
