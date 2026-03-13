@@ -23,6 +23,14 @@ func TestCompletionHelp(t *testing.T) {
 			name: "long help flag",
 			args: []string{"foo", completionCommandName, "--help"},
 		},
+		{
+			name: "completion bash short help flag",
+			args: []string{"foo", completionCommandName, "bash", "-h"},
+		},
+		{
+			name: "completion bash long help flag",
+			args: []string{"foo", completionCommandName, "bash", "--help"},
+		},
 	}
 
 	for _, test := range tests {
@@ -56,8 +64,11 @@ func TestCompletionDisable(t *testing.T) {
 }
 
 func TestCompletionEnable(t *testing.T) {
+	out := &bytes.Buffer{}
+
 	cmd := &Command{
 		EnableShellCompletion: true,
+		Writer:                out,
 		Flags: []Flag{
 			&StringFlag{
 				Name:     "goo",
@@ -66,18 +77,23 @@ func TestCompletionEnable(t *testing.T) {
 		},
 	}
 
-	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName})
-	assert.ErrorContains(t, err, "no shell provided")
+	r := require.New(t)
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", completionCommandName}))
+	r.Contains(out.String(), "USAGE")
 }
 
 func TestCompletionEnableDiffCommandName(t *testing.T) {
+	out := &bytes.Buffer{}
+
 	cmd := &Command{
 		EnableShellCompletion:      true,
 		ShellCompletionCommandName: "junky",
+		Writer:                     out,
 	}
 
-	err := cmd.Run(buildTestContext(t), []string{"foo", "junky"})
-	assert.ErrorContains(t, err, "no shell provided")
+	r := require.New(t)
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "junky"}))
+	r.Contains(out.String(), "USAGE")
 }
 
 func TestCompletionShell(t *testing.T) {
@@ -225,17 +241,6 @@ func TestCompletionSubcommand(t *testing.T) {
 	}
 }
 
-type mockWriter struct {
-	err error
-}
-
-func (mw *mockWriter) Write(p []byte) (int, error) {
-	if mw.err != nil {
-		return 0, mw.err
-	}
-	return len(p), nil
-}
-
 func TestCompletionInvalidShell(t *testing.T) {
 	cmd := &Command{
 		EnableShellCompletion: true,
@@ -243,7 +248,11 @@ func TestCompletionInvalidShell(t *testing.T) {
 
 	unknownShellName := "junky-sheell"
 	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, unknownShellName})
-	assert.ErrorContains(t, err, "unknown shell junky-sheell")
+	assert.ErrorContains(t, err, fmt.Sprintf("No help topic for '%s'", unknownShellName))
+}
+
+func TestCompletionShellRenderError(t *testing.T) {
+	unknownShellName := "junky-sheell"
 
 	enableError := true
 	shellCompletions[unknownShellName] = func(c *Command, appName string) (string, error) {
@@ -256,16 +265,10 @@ func TestCompletionInvalidShell(t *testing.T) {
 		delete(shellCompletions, unknownShellName)
 	}()
 
-	err = cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, unknownShellName})
-	assert.ErrorContains(t, err, "cant do completion")
-
-	// now disable shell completion error
-	enableError = false
-	c := cmd.Command(completionCommandName)
-	assert.NotNil(t, c)
-	c.Writer = &mockWriter{
-		err: fmt.Errorf("writer error"),
+	cmd := &Command{
+		EnableShellCompletion: true,
 	}
-	err = cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, unknownShellName})
-	assert.ErrorContains(t, err, "writer error")
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, unknownShellName})
+	assert.ErrorContains(t, err, "cant do completion")
 }
