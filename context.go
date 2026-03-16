@@ -106,6 +106,9 @@ func (c *Context) IsSet(name string) bool {
 				filePathValue := val.FieldByName("FilePath")
 				if filePathValue.IsValid() {
 					eachName(filePathValue.String(), func(filePath string) {
+						if filePath == "" {
+							return
+						}
 						if _, err := os.Stat(filePath); err == nil {
 							c.setFlags[name] = true
 							return
@@ -117,6 +120,9 @@ func (c *Context) IsSet(name string) bool {
 				if envVarValue.IsValid() {
 					eachName(envVarValue.String(), func(envVar string) {
 						envVar = strings.TrimSpace(envVar)
+						if envVar == "" {
+							return
+						}
 						if _, ok := syscall.Getenv(envVar); ok {
 							c.setFlags[name] = true
 							return
