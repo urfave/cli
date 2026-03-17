@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -182,6 +183,119 @@ func TestCompletionSubcommand(t *testing.T) {
 				r.NotContainsf(out.String(), test.contains, test.msg, test.msgArgs...)
 			} else {
 				r.Containsf(out.String(), test.contains, test.msg, test.msgArgs...)
+			}
+		})
+	}
+}
+
+func TestMutuallyExclusiveFlagsCompletion(t *testing.T) {
+	osArgsBak := os.Args
+	defer func() {
+		os.Args = osArgsBak
+	}()
+	out := &bytes.Buffer{}
+
+	cmd := &Command{
+		EnableShellCompletion: true,
+		Writer:                out,
+		Flags: []Flag{
+			&StringFlag{
+				Name: "gf",
+			},
+		},
+		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
+			{
+				Flags: [][]Flag{
+					{
+						&StringFlag{
+							Name: "mexg1_1",
+						},
+						&StringFlag{
+							Name: "mexg1_2",
+						},
+					},
+					{
+						&StringFlag{
+							Name: "mexg2_1",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	tests := []struct {
+		name          string
+		args          []string
+		expectGlobal  bool
+		expectMexg1_1 bool
+		expectMexg1_2 bool
+		expectMexg2_1 bool
+	}{
+		{
+			name:          "flag completion all",
+			args:          []string{"foo", "-", completionFlag},
+			expectGlobal:  true,
+			expectMexg1_1: true,
+			expectMexg1_2: true,
+			expectMexg2_1: true,
+		},
+		{
+			name:          "flag completion local",
+			args:          []string{"foo", "-mex", completionFlag},
+			expectMexg1_1: true,
+			expectMexg1_2: true,
+			expectMexg2_1: true,
+		},
+		{
+			name:          "flag completion local group-1",
+			args:          []string{"foo", "-mexg1", completionFlag},
+			expectMexg1_1: true,
+			expectMexg1_2: true,
+		},
+		{
+			name:          "flag completion local group-2",
+			args:          []string{"foo", "-mexg2", completionFlag},
+			expectMexg2_1: true,
+		},
+		{
+			name:          "flag completion local group-1 twice",
+			args:          []string{"foo", "-mexg1-1", "-mex", completionFlag},
+			expectMexg1_1: true,
+			expectMexg1_2: true,
+		},
+		{
+			name:          "flag completion local group-2 twice",
+			args:          []string{"foo", "-mexg2-1", "-mex", completionFlag},
+			expectMexg2_1: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			out.Reset()
+			os.Args = test.args
+			err := cmd.Run(buildTestContext(t), os.Args)
+			assert.NoError(t, err, "Expected no error for completion")
+			if test.expectGlobal {
+				assert.Contains(t, out.String(), "gf", "Expected output to contain flag gf")
+			} else {
+				assert.NotContains(t, out.String(), "gf", "Expected output to not contain flag gf")
+			}
+			if test.expectMexg1_1 {
+				assert.Contains(t, out.String(), "mexg1_1", "Expected output to contain flag mexg1_1")
+			} else {
+				assert.NotContains(t, out.String(), "mexg1_1", "Expected output to not contain flag mexg1_1")
+			}
+			if test.expectMexg1_2 {
+				assert.Contains(t, out.String(), "mexg1_2", "Expected output to contain flag mexg1_2")
+			} else {
+				assert.NotContains(t, out.String(), "mexg1_2", "Expected output to not contain flag mexg1_2")
+			}
+			if test.expectMexg2_1 {
+				assert.Contains(t, out.String(), "mexg2_1", "Expected output to contain flag mexg2_1")
+			} else {
+				assert.NotContains(t, out.String(), "mexg2_1", "Expected output to not contain flag mexg2_1")
 			}
 		})
 	}
