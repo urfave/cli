@@ -571,7 +571,7 @@ func TestShowCommandHelp_HelpPrinterCustom(t *testing.T) {
 				fmt.Fprint(w, "yo")
 			},
 			arguments:    []string{"my-app", "help", "my-command"},
-			wantTemplate: SubcommandHelpTemplate,
+			wantTemplate: CommandHelpTemplate,
 			wantOutput:   "yo",
 		},
 		{
