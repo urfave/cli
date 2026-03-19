@@ -125,16 +125,8 @@ func helpCommandAction(ctx context.Context, cmd *Command) error {
 
 	// Case 3, 5
 	if len(cmd.VisibleCommands()) == 0 {
-
-		tmpl := cmd.CustomHelpTemplate
-		if tmpl == "" {
-			tmpl = CommandHelpTemplate
-		}
-
 		tracef("running HelpPrinter with command %[1]q", cmd.Name)
-		HelpPrinter(cmd.Root().Writer, tmpl, cmd)
-
-		return nil
+		return ShowCommandHelp(ctx, cmd.parent, cmd.Name)
 	}
 
 	tracef("running ShowSubcommandHelp")
