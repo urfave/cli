@@ -296,7 +296,7 @@ func DefaultShowCommandHelp(ctx context.Context, cmd *Command, commandName strin
 
 		tmpl := subCmd.CustomHelpTemplate
 		if tmpl == "" {
-			if len(subCmd.Commands) == 0 {
+			if len(subCmd.VisibleCommands()) == 0 {
 				tracef("using CommandHelpTemplate")
 				tmpl = CommandHelpTemplate
 			} else {
