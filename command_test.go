@@ -1973,7 +1973,7 @@ func TestCommandHelpPrinter(t *testing.T) {
 	}()
 
 	wasCalled := false
-	HelpPrinter = func(io.Writer, string, interface{}) {
+	HelpPrinter = func(io.Writer, string, any) {
 		wasCalled = true
 	}
 

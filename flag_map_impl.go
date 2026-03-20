@@ -115,7 +115,7 @@ func (i *MapBase[T, C, VC]) Value() map[string]T {
 }
 
 // Get returns the mapping of values set by this flag
-func (i *MapBase[T, C, VC]) Get() interface{} {
+func (i *MapBase[T, C, VC]) Get() any {
 	return *i.dict
 }
 
