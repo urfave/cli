@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 )
@@ -208,13 +209,7 @@ func FlagNames(name string, aliases []string) []string {
 }
 
 func hasFlag(flags []Flag, fl Flag) bool {
-	for _, existing := range flags {
-		if fl == existing {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(flags, fl)
 }
 
 func flagSplitMultiValues(val string, sliceSeparator string, disableSliceSeparator bool) []string {
