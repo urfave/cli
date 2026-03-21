@@ -2,7 +2,7 @@
 
 function __fish_greet_no_subcommand --description 'Test if there has been any subcommand yet'
     for i in (commandline -opc)
-        if contains -- $i config c info i in some-command hidden-command usage u
+        if contains -- $i config c info i in some-command custom hidden-command usage u
             return 1
         end
     end
@@ -30,6 +30,8 @@ complete -x -c greet -n '__fish_seen_subcommand_from info i in; and not __fish_s
 complete -x -c greet -n '__fish_greet_no_subcommand' -a 'some-command'
 complete -c greet -n '__fish_seen_subcommand_from some-command' -f -l help -s h -d 'show help'
 complete -x -c greet -n '__fish_seen_subcommand_from some-command; and not __fish_seen_subcommand_from help h' -a 'help' -d 'Shows a list of commands or help for one command'
+complete -x -c greet -n '__fish_greet_no_subcommand' -a 'custom'
+complete -x -c greet -n '__fish_seen_subcommand_from custom' -a '(eval command (commandline -pc) --generate-shell-completion)'
 complete -c greet -n '__fish_seen_subcommand_from hidden-command' -f -l completable
 complete -c greet -n '__fish_seen_subcommand_from hidden-command' -f -l help -s h -d 'show help'
 complete -x -c greet -n '__fish_seen_subcommand_from hidden-command; and not __fish_seen_subcommand_from help h' -a 'help' -d 'Shows a list of commands or help for one command'
