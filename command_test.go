@@ -1973,7 +1973,7 @@ func TestCommandHelpPrinter(t *testing.T) {
 	}()
 
 	wasCalled := false
-	HelpPrinter = func(io.Writer, string, interface{}) {
+	HelpPrinter = func(io.Writer, string, any) {
 		wasCalled = true
 	}
 
@@ -5420,7 +5420,7 @@ func TestCommand_ExclusiveFlagsWithAfter(t *testing.T) {
 func TestCommand_ParallelRun(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		t.Run(fmt.Sprintf("run_%d", i), func(t *testing.T) {
 			t.Parallel()
 
