@@ -3,7 +3,7 @@ package cli
 import (
 	"context"
 	"fmt"
-	"regexp"
+	"slices"
 	"strings"
 	"time"
 )
@@ -16,11 +16,7 @@ const (
 	disableSliceFlagSeparator       = false
 )
 
-var (
-	slPfx = fmt.Sprintf("sl:::%d:::", time.Now().UTC().UnixNano())
-
-	commaWhitespace = regexp.MustCompile("[, ]+.*")
-)
+var slPfx = fmt.Sprintf("sl:::%d:::", time.Now().UTC().UnixNano())
 
 // GenerateShellCompletionFlag enables shell completion
 var GenerateShellCompletionFlag Flag = &BoolFlag{
@@ -201,20 +197,18 @@ func FlagNames(name string, aliases []string) []string {
 		// Strip off anything after the first found comma or space, which
 		// *hopefully* makes it a tiny bit more obvious that unexpected behavior is
 		// caused by using the v1 form of stringly typed "Name".
-		ret = append(ret, commaWhitespace.ReplaceAllString(part, ""))
+		if i := strings.IndexAny(part, ", "); i >= 0 {
+			ret = append(ret, part[:i])
+		} else {
+			ret = append(ret, part)
+		}
 	}
 
 	return ret
 }
 
 func hasFlag(flags []Flag, fl Flag) bool {
-	for _, existing := range flags {
-		if fl == existing {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(flags, fl)
 }
 
 func flagSplitMultiValues(val string, sliceSeparator string, disableSliceSeparator bool) []string {

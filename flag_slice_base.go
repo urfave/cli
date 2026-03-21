@@ -105,7 +105,7 @@ func (i *SliceBase[T, C, VC]) Value() []T {
 }
 
 // Get returns the slice of values set by this flag
-func (i *SliceBase[T, C, VC]) Get() interface{} {
+func (i *SliceBase[T, C, VC]) Get() any {
 	return *i.slice
 }
 
