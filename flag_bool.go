@@ -69,7 +69,7 @@ func (b *boolValue) Set(s string) error {
 	return err
 }
 
-func (b *boolValue) Get() interface{} { return *b.destination }
+func (b *boolValue) Get() any { return *b.destination }
 
 func (b *boolValue) String() string {
 	return strconv.FormatBool(*b.destination)
