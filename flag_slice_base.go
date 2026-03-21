@@ -82,12 +82,12 @@ func (i *SliceBase[T, C, VC]) Set(value string) error {
 
 // String returns a readable representation of this value (for usage defaults)
 func (i *SliceBase[T, C, VC]) String() string {
-	v := i.Value()
-	var t T
-	if reflect.TypeOf(t).Kind() == reflect.String {
-		return fmt.Sprintf("%v", v)
+	var defaultVals []string
+	var v VC
+	for _, s := range *i.slice {
+		defaultVals = append(defaultVals, v.ToString(s))
 	}
-	return fmt.Sprintf("%T{%s}", v, i.ToString(v))
+	return strings.Join(defaultVals, ", ")
 }
 
 // Serialize allows SliceBase to fulfill Serializer
@@ -105,15 +105,11 @@ func (i *SliceBase[T, C, VC]) Value() []T {
 }
 
 // Get returns the slice of values set by this flag
-func (i *SliceBase[T, C, VC]) Get() interface{} {
+func (i *SliceBase[T, C, VC]) Get() any {
 	return *i.slice
 }
 
 func (i SliceBase[T, C, VC]) ToString(t []T) string {
-	var defaultVals []string
-	var v VC
-	for _, s := range t {
-		defaultVals = append(defaultVals, v.ToString(s))
-	}
-	return strings.Join(defaultVals, ", ")
+	i.slice = &t
+	return i.String()
 }

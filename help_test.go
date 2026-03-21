@@ -108,7 +108,7 @@ func TestShowSubcommandHelpAndExit(t *testing.T) {
 	require.Equal(t, 42, lastExitCode)
 }
 
-func Test_Help_RequiredFlagsNoDefault(t *testing.T) {
+func Test_HelpFlag_RequiredFlagsNoDefault(t *testing.T) {
 	output := new(bytes.Buffer)
 
 	cmd := &Command{
@@ -120,6 +120,34 @@ func Test_Help_RequiredFlagsNoDefault(t *testing.T) {
 	}
 
 	_ = cmd.Run(buildTestContext(t), []string{"test", "-h"})
+
+	expected := `NAME:
+   test - A new cli application
+
+USAGE:
+   test [global options] [arguments...]
+
+GLOBAL OPTIONS:
+   --foo int, -f int  
+   --help, -h         show help
+`
+
+	assert.Contains(t, output.String(), expected,
+		"expected output to include usage text")
+}
+
+func Test_HelpCommand_RequiredFlagsNoDefault(t *testing.T) {
+	output := new(bytes.Buffer)
+
+	cmd := &Command{
+		Flags: []Flag{
+			&Int64Flag{Name: "foo", Aliases: []string{"f"}, Required: true},
+		},
+		Arguments: AnyArguments,
+		Writer:    output,
+	}
+
+	_ = cmd.Run(buildTestContext(t), []string{"test", "help"})
 
 	expected := `NAME:
    test - A new cli application
@@ -453,7 +481,7 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 		{
 			name:     "no-command",
 			template: "",
-			printer: func(w io.Writer, _ string, _ interface{}) {
+			printer: func(w io.Writer, _ string, _ any) {
 				fmt.Fprint(w, "yo")
 			},
 			command:      "",
@@ -489,7 +517,7 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 			defer func(old HelpPrinterFunc) {
 				HelpPrinter = old
 			}(HelpPrinter)
-			HelpPrinter = func(w io.Writer, templ string, data interface{}) {
+			HelpPrinter = func(w io.Writer, templ string, data any) {
 				assert.Equal(t, tt.wantTemplate, templ, "template mismatch")
 				tt.printer(w, templ, data)
 			}
@@ -769,6 +797,52 @@ GLOBAL OPTIONS:
 	assert.Contains(t, output.String(), expected, "expected output to include global options")
 }
 
+func TestShowSubcommandHelp_GlobalOptions_HideHelpCommand(t *testing.T) {
+	cmd := &Command{
+		Flags: []Flag{
+			&StringFlag{
+				Name: "foo",
+			},
+		},
+		Commands: []*Command{
+			{
+				Name:            "frobbly",
+				HideHelpCommand: true,
+				Flags: []Flag{
+					&StringFlag{
+						Name:  "bar",
+						Local: true,
+					},
+				},
+				Action: func(context.Context, *Command) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	output := &bytes.Buffer{}
+	cmd.Writer = output
+
+	_ = cmd.Run(buildTestContext(t), []string{"foo", "frobbly", "--help"})
+
+	expected := `NAME:
+   foo frobbly
+
+USAGE:
+   foo frobbly [options]
+
+OPTIONS:
+   --bar string  
+   --help, -h    show help
+
+GLOBAL OPTIONS:
+   --foo string  
+`
+
+	assert.Contains(t, output.String(), expected, "expected output to include global options")
+}
+
 func TestShowSubcommandHelp_SubcommandUsageText(t *testing.T) {
 	cmd := &Command{
 		Commands: []*Command{
@@ -873,7 +947,7 @@ func TestShowRootCommandHelp_HelpPrinter(t *testing.T) {
 		{
 			name:     "standard-command",
 			template: "",
-			printer: func(w io.Writer, _ string, _ interface{}) {
+			printer: func(w io.Writer, _ string, _ any) {
 				fmt.Fprint(w, "yo")
 			},
 			wantTemplate: RootCommandHelpTemplate,
@@ -882,7 +956,7 @@ func TestShowRootCommandHelp_HelpPrinter(t *testing.T) {
 		{
 			name:     "custom-template-command",
 			template: "{{doublecho .Name}}",
-			printer: func(w io.Writer, templ string, data interface{}) {
+			printer: func(w io.Writer, templ string, data any) {
 				// Pass a custom function to ensure it gets used
 				fm := map[string]any{"doublecho": doublecho}
 				DefaultPrintHelpCustom(w, templ, data, fm)
@@ -897,7 +971,7 @@ func TestShowRootCommandHelp_HelpPrinter(t *testing.T) {
 			defer func(old HelpPrinterFunc) {
 				HelpPrinter = old
 			}(HelpPrinter)
-			HelpPrinter = func(w io.Writer, templ string, data interface{}) {
+			HelpPrinter = func(w io.Writer, templ string, data any) {
 				assert.Equal(t, tt.wantTemplate, templ, "unexpected template")
 				tt.printer(w, templ, data)
 			}
@@ -932,7 +1006,7 @@ func TestShowRootCommandHelp_HelpPrinterCustom(t *testing.T) {
 		{
 			name:     "standard-command",
 			template: "",
-			printer: func(w io.Writer, _ string, _ interface{}, _ map[string]interface{}) {
+			printer: func(w io.Writer, _ string, _ any, _ map[string]any) {
 				fmt.Fprint(w, "yo")
 			},
 			wantTemplate: RootCommandHelpTemplate,
@@ -941,7 +1015,7 @@ func TestShowRootCommandHelp_HelpPrinterCustom(t *testing.T) {
 		{
 			name:     "custom-template-command",
 			template: "{{doublecho .Name}}",
-			printer: func(w io.Writer, templ string, data interface{}, _ map[string]interface{}) {
+			printer: func(w io.Writer, templ string, data any, _ map[string]any) {
 				// Pass a custom function to ensure it gets used
 				fm := map[string]any{"doublecho": doublecho}
 				DefaultPrintHelpCustom(w, templ, data, fm)
@@ -956,7 +1030,7 @@ func TestShowRootCommandHelp_HelpPrinterCustom(t *testing.T) {
 			defer func(old HelpPrinterCustomFunc) {
 				HelpPrinterCustom = old
 			}(HelpPrinterCustom)
-			HelpPrinterCustom = func(w io.Writer, templ string, data interface{}, fm map[string]interface{}) {
+			HelpPrinterCustom = func(w io.Writer, templ string, data any, fm map[string]any) {
 				assert.Nil(t, fm, "unexpected function map passed")
 				assert.Equal(t, tt.wantTemplate, templ, "unexpected template")
 				tt.printer(w, templ, data, fm)
@@ -1440,8 +1514,8 @@ Including newlines.
 And then another long line. Blah blah blah does anybody ever read these things?`,
 	}
 
-	HelpPrinter = func(w io.Writer, templ string, data interface{}) {
-		funcMap := map[string]interface{}{
+	HelpPrinter = func(w io.Writer, templ string, data any) {
+		funcMap := map[string]any{
 			"wrapAt": func() int {
 				return 30
 			},
@@ -1523,8 +1597,8 @@ func TestWrappedCommandHelp(t *testing.T) {
 	cmd.setupDefaults([]string{"cli.test"})
 	cmd.setupCommandGraph()
 
-	HelpPrinter = func(w io.Writer, templ string, data interface{}) {
-		funcMap := map[string]interface{}{
+	HelpPrinter = func(w io.Writer, templ string, data any) {
+		funcMap := map[string]any{
 			"wrapAt": func() int {
 				return 30
 			},
@@ -1591,8 +1665,8 @@ func TestWrappedSubcommandHelp(t *testing.T) {
 		},
 	}
 
-	HelpPrinter = func(w io.Writer, templ string, data interface{}) {
-		funcMap := map[string]interface{}{
+	HelpPrinter = func(w io.Writer, templ string, data any) {
+		funcMap := map[string]any{
 			"wrapAt": func() int {
 				return 30
 			},
@@ -1663,8 +1737,8 @@ func TestWrappedHelpSubcommand(t *testing.T) {
 		},
 	}
 
-	HelpPrinter = func(w io.Writer, templ string, data interface{}) {
-		funcMap := map[string]interface{}{
+	HelpPrinter = func(w io.Writer, templ string, data any) {
+		funcMap := map[string]any{
 			"wrapAt": func() int {
 				return 30
 			},
@@ -1747,8 +1821,8 @@ func TestCategorizedHelp(t *testing.T) {
 		},
 	}
 
-	HelpPrinter = func(w io.Writer, templ string, data interface{}) {
-		funcMap := map[string]interface{}{
+	HelpPrinter = func(w io.Writer, templ string, data any) {
+		funcMap := map[string]any{
 			"wrapAt": func() int {
 				return 30
 			},

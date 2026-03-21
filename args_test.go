@@ -8,6 +8,43 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestArgNotSet(t *testing.T) {
+	arg := &StringArg{
+		Name:  "sa",
+		Value: "foo",
+	}
+
+	require.Equal(t, "foo", arg.Get())
+}
+
+func TestArgsMaxNotSet(t *testing.T) {
+	arg := &StringArgs{
+		Name:  "sa",
+		Value: "foo",
+	}
+
+	cmd := buildMinimalTestCommand()
+	cmd.Arguments = []Argument{arg}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", "bar"})
+	require.ErrorContains(t, err, "args sa has max 0, not parsing argument")
+}
+
+func TestArgsMinGtMax(t *testing.T) {
+	arg := &StringArgs{
+		Name:  "sa",
+		Value: "foo",
+		Min:   2,
+		Max:   1,
+	}
+
+	cmd := buildMinimalTestCommand()
+	cmd.Arguments = []Argument{arg}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", "bar"})
+	require.ErrorContains(t, err, "args sa has min[2] > max[1], not parsing argument")
+}
+
 func TestArgsFloatTypes(t *testing.T) {
 	cmd := buildMinimalTestCommand()
 	var fval float64

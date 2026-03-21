@@ -92,7 +92,7 @@ func jaroWinkler(a, b string) float64 {
 	prefix := int(math.Min(float64(len(a)), math.Min(float64(prefixSize), float64(len(b)))))
 
 	var prefixMatch float64
-	for i := 0; i < prefix; i++ {
+	for i := range prefix {
 		if a[i] == b[i] {
 			prefixMatch++
 		} else {

@@ -44,7 +44,8 @@ func (t timestampValue) ToString(b time.Time) string {
 	if b.IsZero() {
 		return ""
 	}
-	return fmt.Sprintf("%v", b)
+	t.timestamp = &b
+	return t.String()
 }
 
 // Below functions are to satisfy the Value interface
@@ -122,7 +123,7 @@ func (t *timestampValue) Set(value string) error {
 
 // String returns a readable representation of this value (for usage defaults)
 func (t *timestampValue) String() string {
-	return fmt.Sprintf("%#v", t.timestamp)
+	return fmt.Sprintf("%v", t.timestamp)
 }
 
 // Get returns the flag structure

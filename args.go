@@ -180,12 +180,10 @@ func (a *ArgumentsBase[T, C, VC]) Usage() string {
 func (a *ArgumentsBase[T, C, VC]) Parse(s []string) ([]string, error) {
 	tracef("calling arg%[1] parse with args %[2]", &a.Name, s)
 	if a.Max == 0 {
-		fmt.Printf("WARNING args %s has max 0, not parsing argument\n", a.Name)
-		return s, nil
+		return s, fmt.Errorf("args %s has max 0, not parsing argument", a.Name)
 	}
 	if a.Max != -1 && a.Min > a.Max {
-		fmt.Printf("WARNING args %s has min[%d] > max[%d], not parsing argument\n", a.Name, a.Min, a.Max)
-		return s, nil
+		return s, fmt.Errorf("args %s has min[%d] > max[%d], not parsing argument", a.Name, a.Min, a.Max)
 	}
 
 	count := 0

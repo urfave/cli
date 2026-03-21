@@ -36,7 +36,7 @@ func (p *Parser) String() string {
 	return fmt.Sprintf("%s,%s", p[0], p[1])
 }
 
-func (p *Parser) Get() interface{} {
+func (p *Parser) Get() any {
 	return p
 }
 
@@ -1749,6 +1749,29 @@ func TestFlagActionFromEnv(t *testing.T) {
 	assert.Equal(t, x, 42)
 }
 
+func TestParseShortOptionBoolError(t *testing.T) {
+	cmd := buildMinimalTestCommand()
+	cmd.UseShortOptionHandling = true
+	cmd.Flags = []Flag{
+		&BoolFlag{Name: "debug", Aliases: []string{"d"}},
+		&BoolFlag{Name: "verbose", Aliases: []string{"v"}},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"run", "-vd=notabool"})
+	assert.Error(t, err, "expected error parsing invalid bool")
+}
+
+func TestParseShortOptionIntError(t *testing.T) {
+	cmd := buildMinimalTestCommand()
+	cmd.Flags = []Flag{
+		&IntFlag{Name: "port", Aliases: []string{"p"}},
+		&BoolFlag{Name: "debug", Aliases: []string{"d"}},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"run", "-dp=notanint"})
+	assert.Error(t, err, "expected error parsing invalid int")
+}
+
 func TestParseMultiString(t *testing.T) {
 	_ = (&Command{
 		Flags: []Flag{
@@ -3246,6 +3269,26 @@ func TestZeroValueMutexFlag(t *testing.T) {
 	assert.NoError(t, fl.check(&Command{}))
 }
 
+func TestMutexFlagCategory(t *testing.T) {
+	cmd := buildMinimalTestCommand()
+	cmd.Category = "TestCmd"
+	cmd.MutuallyExclusiveFlags = []MutuallyExclusiveFlags{
+		{
+			Flags: [][]Flag{
+				{
+					&StringFlag{Name: "foo", Category: "Group1"},
+					&IntFlag{Name: "bar", Category: "Group1"},
+				},
+				{
+					&StringFlag{Name: "baz", Category: "Group2"},
+				},
+			},
+		},
+	}
+
+	assert.NoError(t, cmd.Run(buildTestContext(t), []string{"", "--foo", "value"}))
+}
+
 func TestExtFlag(t *testing.T) {
 	var iv intValue[int64]
 	var ipv int64
@@ -3292,6 +3335,17 @@ func TestFileHint(t *testing.T) {
 	assert.Equal(t, " [/tmp/foo.txt]", withFileHint("/tmp/foo.txt", ""))
 	assert.Equal(t, "foo", withFileHint("", "foo"))
 	assert.Equal(t, "bar [/tmp/foo.txt]", withFileHint("/tmp/foo.txt", "bar"))
+}
+
+func TestHasFlags(t *testing.T) {
+	flagToCheck := &StringFlag{Name: "foo"}
+	flags := []Flag{
+		&StringFlag{Name: "bar"},
+		&Int64Flag{Name: "baz"},
+		flagToCheck,
+	}
+
+	assert.True(t, hasFlag(flags, flagToCheck))
 }
 
 func TestFlagsByName(t *testing.T) {
@@ -3432,4 +3486,16 @@ func TestGenericValue(t *testing.T) {
 	assert.NoError(t, g.Set("something"))
 	assert.Nil(t, g.Get())
 	assert.Empty(t, g.String())
+}
+
+func TestEndValue(t *testing.T) {
+	cmd := buildMinimalTestCommand()
+	cmd.UseShortOptionHandling = true
+	cmd.Flags = []Flag{
+		&IntFlag{Name: "debug", Aliases: []string{"d"}},
+		&IntFlag{Name: "count", Aliases: []string{"c"}},
+	}
+
+	assert.Error(t, cmd.Run(buildTestContext(t), []string{"foo", "-cd="}))
+	assert.Error(t, cmd.Run(buildTestContext(t), []string{"foo", "-cd=s"}))
 }

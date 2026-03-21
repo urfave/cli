@@ -814,37 +814,79 @@ func TestCommand_Command(t *testing.T) {
 var defaultCommandTests = []struct {
 	cmdName        string
 	defaultCmd     string
+	args           []string
 	errNotExpected bool
 }{
-	{"foobar", "foobar", true},
-	{"batbaz", "foobar", true},
-	{"b", "", true},
-	{"f", "", true},
-	{"", "foobar", true},
-	// TBD
-	//{"", "", true},
-	//{" ", "", false},
-	{"bat", "batbaz", true},
-	{"nothing", "batbaz", true},
-	{"nothing", "", false},
+	{"foobar", "foobar", nil, true},
+	{"batbaz", "foobar", nil, true},
+	{"b", "", nil, true},
+	{"f", "", nil, true},
+	{"", "foobar", nil, true},
+	{"", "", nil, true},
+	{" ", "", nil, true},
+	{"bat", "batbaz", nil, true},
+	{"nothing", "batbaz", nil, true},
+	{"nothing", "", nil, false},
+	{"foobar", "foobar", []string{"xy", "zdf"}, true},
+	{"", "foobar", []string{"xy", "zdf"}, true},
 }
 
 func TestCommand_RunDefaultCommand(t *testing.T) {
 	for _, test := range defaultCommandTests {
-		testTitle := fmt.Sprintf("command=%[1]s-default=%[2]s", test.cmdName, test.defaultCmd)
+		testTitle := fmt.Sprintf("command=%[1]s-default=%[2]s-args=%[3]v", test.cmdName, test.defaultCmd, test.args)
 		t.Run(testTitle, func(t *testing.T) {
+			fooCount := 0
+			var fooArgs Args
+			barCount := 0
 			cmd := &Command{
 				DefaultCommand: test.defaultCmd,
 				Commands: []*Command{
-					{Name: "foobar", Aliases: []string{"f"}},
-					{Name: "batbaz", Aliases: []string{"b"}},
+					{
+						Name:    "foobar",
+						Aliases: []string{"f"},
+						Action: func(ctx context.Context, c *Command) error {
+							fooCount++
+							fooArgs = c.Args()
+							return nil
+						},
+					},
+					{
+						Name:    "batbaz",
+						Aliases: []string{"b"},
+						Action: func(ctx context.Context, c *Command) error {
+							barCount++
+							return nil
+						},
+					},
 				},
 			}
 
-			err := cmd.Run(buildTestContext(t), []string{"c", test.cmdName})
+			runArgs := []string{"c"}
+			if test.cmdName != "" {
+				runArgs = append(runArgs, test.cmdName)
+			}
+			if test.args != nil {
+				runArgs = append(runArgs, test.args...)
+			}
+			err := cmd.Run(buildTestContext(t), runArgs)
 			if test.errNotExpected {
 				assert.NoError(t, err)
+				if fooCount == 0 && barCount == 0 && test.defaultCmd != "" {
+					t.Errorf("expected one of the commands to run")
+				}
+				if fooCount > 0 {
+					expectedArgs := &stringSliceArgs{v: []string{}}
+					if len(test.args) > 0 && (test.args[0] == "foobar" || test.args[0] == "f") {
+						expectedArgs = &stringSliceArgs{v: test.args[1:]}
+					} else if test.args != nil {
+						expectedArgs = &stringSliceArgs{v: test.args}
+					}
+					assert.Equal(t, expectedArgs, fooArgs)
+				}
 			} else {
+				if fooCount > 0 || barCount > 0 {
+					t.Errorf("expected no commands to run")
+				}
 				assert.Error(t, err)
 			}
 		})
@@ -867,14 +909,14 @@ var defaultCommandSubCommandTests = []struct {
 	{"", "jimbob", "foobar", true},
 	{"", "j", "foobar", true},
 	{"", "carly", "foobar", true},
-	{"", "jimmers", "foobar", true},
-	{"", "jimmers", "", true},
+	{"", "jimmers", "foobar", false},
+	{"", "jimmers", "", false},
 	{" ", "jimmers", "foobar", true},
-	/*{"", "", "", true},
-	{" ", "", "", false},
-	{" ", "j", "", false},*/
-	{"bat", "", "batbaz", true},
-	{"nothing", "", "batbaz", true},
+	{"", "", "", true},
+	{" ", "", "", true},
+	{" ", "j", "", true},
+	{"bat", "", "batbaz", false},
+	{"nothing", "", "batbaz", false},
 	{"nothing", "", "", false},
 	{"nothing", "j", "batbaz", false},
 	{"nothing", "carly", "", false},
@@ -899,7 +941,14 @@ func TestCommand_RunDefaultCommandWithSubCommand(t *testing.T) {
 				},
 			}
 
-			err := cmd.Run(buildTestContext(t), []string{"c", test.cmdName, test.subCmd})
+			runArgs := []string{"c"}
+			if test.cmdName != "" {
+				runArgs = append(runArgs, test.cmdName)
+			}
+			if test.subCmd != "" {
+				runArgs = append(runArgs, test.subCmd)
+			}
+			err := cmd.Run(buildTestContext(t), runArgs)
 			if test.errNotExpected {
 				assert.NoError(t, err)
 			} else {
@@ -932,10 +981,10 @@ var defaultCommandFlagTests = []struct {
 	{"", "", "", true},
 	{" ", "", "", true},
 	{" ", "-j", "", true},
-	{"bat", "", "batbaz", true},
-	{"nothing", "", "batbaz", true},
+	{"bat", "", "batbaz", false},
+	{"nothing", "", "batbaz", false},
 	{"nothing", "", "", false},
-	{"nothing", "--jimbob", "batbaz", true},
+	{"nothing", "--jimbob", "batbaz", false},
 	{"nothing", "--carly", "", false},
 }
 
@@ -1362,6 +1411,33 @@ func TestCommand_UseShortOptionAfterSliceFlag(t *testing.T) {
 	assert.True(t, one)
 	assert.False(t, two)
 	assert.Equal(t, expected, name)
+}
+
+func TestCommand_UseShortOptionWithArg(t *testing.T) {
+	var rootPath string
+	cmd := &Command{
+		UseShortOptionHandling: true,
+		Commands: []*Command{
+			{
+				Name:  "short",
+				Usage: "complete a task on the list",
+				Arguments: []Argument{
+					&StringArg{Name: "root", UsageText: "Root path", Destination: &rootPath},
+				},
+				Flags: []Flag{
+					&BoolFlag{Name: "serve", Aliases: []string{"s"}},
+					&BoolFlag{Name: "option", Aliases: []string{"o"}},
+					&StringFlag{Name: "message", Aliases: []string{"m"}},
+				},
+				Action: func(ctx context.Context, cmd *Command) error {
+					return nil
+				},
+			},
+		},
+	}
+	err := cmd.Run(buildTestContext(t), []string{"app", "short", "-som", "hello", "/path/to/root"})
+	require.NoError(t, err)
+	require.Equal(t, "/path/to/root", rootPath)
 }
 
 func TestCommand_Float64Flag(t *testing.T) {
@@ -2046,7 +2122,7 @@ func TestCommandHelpPrinter(t *testing.T) {
 	}()
 
 	wasCalled := false
-	HelpPrinter = func(io.Writer, string, interface{}) {
+	HelpPrinter = func(io.Writer, string, any) {
 		wasCalled = true
 	}
 
@@ -5501,7 +5577,7 @@ func TestCommand_ExclusiveFlagsWithAfter(t *testing.T) {
 func TestCommand_ParallelRun(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		t.Run(fmt.Sprintf("run_%d", i), func(t *testing.T) {
 			t.Parallel()
 
@@ -5521,6 +5597,104 @@ func TestCommand_ParallelRun(t *testing.T) {
 
 			if err := cmd.Run(context.Background(), nil); err != nil {
 				fmt.Printf("%s\n", err)
+			}
+		})
+	}
+}
+
+func TestCommand_ExclusiveFlagsPersistent(t *testing.T) {
+	exclusiveGroup := func(flags ...string) []MutuallyExclusiveFlags {
+		grp := MutuallyExclusiveFlags{}
+		for _, name := range flags {
+			grp.Flags = append(grp.Flags, []Flag{&StringFlag{Name: name}})
+		}
+		return []MutuallyExclusiveFlags{grp}
+	}
+
+	noop := func(_ context.Context, _ *Command) error { return nil }
+
+	newBaseCmd := func() *Command {
+		return &Command{
+			Name:                   "root",
+			MutuallyExclusiveFlags: exclusiveGroup("alpha", "beta"),
+			Commands:               []*Command{{Name: "sub", Action: noop}},
+		}
+	}
+
+	tests := []struct {
+		name    string
+		setup   func() *Command
+		args    []string
+		wantErr string
+	}{
+		{
+			name:  "single flag propagated to subcommand",
+			setup: newBaseCmd,
+			args:  []string{"root", "sub", "--alpha", "hello"},
+		},
+		{
+			name:    "both exclusive flags on subcommand errors",
+			setup:   newBaseCmd,
+			args:    []string{"root", "sub", "--alpha", "hello", "--beta", "world"},
+			wantErr: "cannot be set along with",
+		},
+		{
+			name:  "neither flag set without required is ok",
+			setup: newBaseCmd,
+			args:  []string{"root", "sub"},
+		},
+		{
+			name: "exclusive flags checked on grandchild",
+			setup: func() *Command {
+				cmd := newBaseCmd()
+				sub := cmd.Commands[0]
+				sub.Name = "mid"
+				sub.Action = nil
+				sub.Commands = []*Command{{Name: "leaf", Action: noop}}
+				return cmd
+			},
+			args:    []string{"root", "mid", "leaf", "--alpha", "hello", "--beta", "world"},
+			wantErr: "cannot be set along with",
+		},
+		{
+			name: "subcommand own group checked alongside parent group",
+			setup: func() *Command {
+				cmd := newBaseCmd()
+				cmd.Commands[0].MutuallyExclusiveFlags = exclusiveGroup("gamma", "delta")
+				return cmd
+			},
+			args:    []string{"root", "sub", "--gamma", "hello", "--delta", "world"},
+			wantErr: "cannot be set along with",
+		},
+		{
+			name: "parent group violation detected when subcommand has own group",
+			setup: func() *Command {
+				cmd := newBaseCmd()
+				cmd.Commands[0].MutuallyExclusiveFlags = exclusiveGroup("gamma", "delta")
+				return cmd
+			},
+			args:    []string{"root", "sub", "--alpha", "hello", "--beta", "world"},
+			wantErr: "cannot be set along with",
+		},
+		{
+			name: "parent and subcommand groups both pass independently",
+			setup: func() *Command {
+				cmd := newBaseCmd()
+				cmd.Commands[0].MutuallyExclusiveFlags = exclusiveGroup("gamma", "delta")
+				return cmd
+			},
+			args: []string{"root", "sub", "--alpha", "hello", "--gamma", "world"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.setup().Run(buildTestContext(t), tt.args)
+			if tt.wantErr != "" {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.wantErr)
+			} else {
+				require.NoError(t, err)
 			}
 		})
 	}

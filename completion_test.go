@@ -20,6 +20,12 @@ func TestCompletionDisable(t *testing.T) {
 func TestCompletionEnable(t *testing.T) {
 	cmd := &Command{
 		EnableShellCompletion: true,
+		Flags: []Flag{
+			&StringFlag{
+				Name:     "goo",
+				Required: true,
+			},
+		},
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName})
@@ -63,7 +69,7 @@ func TestCompletionSubcommand(t *testing.T) {
 		args        []string
 		contains    string
 		msg         string
-		msgArgs     []interface{}
+		msgArgs     []any
 		notContains bool
 	}{
 		{
@@ -71,7 +77,7 @@ func TestCompletionSubcommand(t *testing.T) {
 			args:     []string{"foo", "bar", completionFlag},
 			contains: "xyz",
 			msg:      "Expected output to contain shell name %[1]q",
-			msgArgs: []interface{}{
+			msgArgs: []any{
 				"xyz",
 			},
 		},
@@ -80,7 +86,7 @@ func TestCompletionSubcommand(t *testing.T) {
 			args:     []string{"foo", "bar", "-", completionFlag},
 			contains: "l1",
 			msg:      "Expected output to contain shell name %[1]q",
-			msgArgs: []interface{}{
+			msgArgs: []any{
 				"l1",
 			},
 		},
@@ -89,7 +95,7 @@ func TestCompletionSubcommand(t *testing.T) {
 			args:     []string{"foo", "bar", "--", completionFlag},
 			contains: "l1",
 			msg:      "Expected output to contain shell name %[1]q",
-			msgArgs: []interface{}{
+			msgArgs: []any{
 				"l1",
 			},
 			notContains: true,
@@ -99,7 +105,7 @@ func TestCompletionSubcommand(t *testing.T) {
 			args:     []string{"foo", "bar", "xyz", completionFlag},
 			contains: "-g",
 			msg:      "Expected output to contain flag %[1]q",
-			msgArgs: []interface{}{
+			msgArgs: []any{
 				"-g",
 			},
 			notContains: true,
@@ -109,7 +115,7 @@ func TestCompletionSubcommand(t *testing.T) {
 			args:     []string{"foo", "bar", "xyz", "-", completionFlag},
 			contains: "-g",
 			msg:      "Expected output to contain flag %[1]q",
-			msgArgs: []interface{}{
+			msgArgs: []any{
 				"-g",
 			},
 		},
@@ -118,7 +124,7 @@ func TestCompletionSubcommand(t *testing.T) {
 			args:     []string{"foo", "bar", "xyz", "--", completionFlag},
 			contains: "-g",
 			msg:      "Expected output to contain flag %[1]q",
-			msgArgs: []interface{}{
+			msgArgs: []any{
 				"-g",
 			},
 			notContains: true,
@@ -128,7 +134,7 @@ func TestCompletionSubcommand(t *testing.T) {
 			args:     []string{"foo", "bar", "xyz", "--", "sargs", completionFlag},
 			contains: "-g",
 			msg:      "Expected output to contain flag %[1]q",
-			msgArgs: []interface{}{
+			msgArgs: []any{
 				"-g",
 			},
 			notContains: true,

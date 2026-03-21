@@ -394,7 +394,7 @@ Similar messages would be shown for other funcs.
     ```go
     &cli.StringFlag{
         Name:  "foo",
-        TakesFiles: true,
+        TakesFile: true,
     }
     ```
 
