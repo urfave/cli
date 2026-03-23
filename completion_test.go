@@ -63,6 +63,36 @@ func TestCompletionShell(t *testing.T) {
 	}
 }
 
+func TestCompletionFishFormat(t *testing.T) {
+	// Regression test for https://github.com/urfave/cli/issues/2285
+	// Fish completion was broken due to incorrect format specifiers
+
+	cmd := &Command{
+		Name:                  "myapp",
+		EnableShellCompletion: true,
+	}
+
+	r := require.New(t)
+
+	// Test the fish shell completion renderer directly
+	fishRender := shellCompletions["fish"]
+	r.NotNil(fishRender, "fish completion renderer should exist")
+
+	output, err := fishRender(cmd, "myapp")
+	r.NoError(err)
+
+	// Verify the function name is correctly formatted
+	r.Contains(output, "function __myapp_perform_completion", "function name should contain app name")
+
+	// Verify no format errors (like %! or (string=) which indicate broken fmt.Sprintf)
+	r.NotContains(output, "%!", "output should not contain format errors")
+	r.NotContains(output, "(string=", "output should not contain invalid fish syntax")
+
+	// Verify the complete commands reference the app correctly
+	r.Contains(output, "complete -c myapp", "complete command should reference app name")
+	r.Contains(output, "(__myapp_perform_completion)", "completion function should be registered")
+}
+
 func TestCompletionSubcommand(t *testing.T) {
 	tests := []struct {
 		name        string
