@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"strings"
 	"text/tabwriter"
 	"text/template"
@@ -204,10 +205,8 @@ func cliArgContains(flagName string, args []string) bool {
 			count = 2
 		}
 		flag := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
-		for _, a := range args {
-			if a == flag {
-				return true
-			}
+		if slices.Contains(args, flag) {
+			return true
 		}
 	}
 	return false
@@ -496,13 +495,11 @@ func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
 		return false, arguments
 	}
 
-	for _, arg := range arguments {
-		// If arguments include "--", shell completion is disabled
-		// because after "--" only positional arguments are accepted.
-		// https://unix.stackexchange.com/a/11382
-		if arg == "--" {
-			return false, arguments[:pos]
-		}
+	// If arguments include "--", shell completion is disabled
+	// because after "--" only positional arguments are accepted.
+	// https://unix.stackexchange.com/a/11382
+	if slices.Contains(arguments, "--") {
+		return false, arguments[:pos]
 	}
 
 	return true, arguments[:pos]

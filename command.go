@@ -90,7 +90,7 @@ type Command struct {
 	// default behavior.
 	ExitErrHandler ExitErrHandlerFunc `json:"-"`
 	// Other custom info
-	Metadata map[string]interface{} `json:"metadata"`
+	Metadata map[string]any `json:"metadata"`
 	// Carries a function which returns app specific info.
 	ExtraInfo func() map[string]string `json:"-"`
 	// CustomRootCommandHelpTemplate the text template for app help topic.
@@ -559,7 +559,7 @@ func (cmd *Command) Count(name string) int {
 }
 
 // Value returns the value of the flag corresponding to `name`
-func (cmd *Command) Value(name string) interface{} {
+func (cmd *Command) Value(name string) any {
 	if fs := cmd.lookupFlag(name); fs != nil {
 		tracef("value found for name %[1]q (cmd=%[2]q)", name, cmd.Name)
 		return fs.Get()

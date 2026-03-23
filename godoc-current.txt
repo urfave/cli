@@ -499,7 +499,7 @@ type Command struct {
 	// default behavior.
 	ExitErrHandler ExitErrHandlerFunc `json:"-"`
 	// Other custom info
-	Metadata map[string]interface{} `json:"metadata"`
+	Metadata map[string]any `json:"metadata"`
 	// Carries a function which returns app specific info.
 	ExtraInfo func() map[string]string `json:"-"`
 	// CustomRootCommandHelpTemplate the text template for app help topic.
@@ -777,7 +777,7 @@ func (cmd *Command) UintSlice(name string) []uint
     UintSlice looks up the value of a local UintSliceFlag, returns nil if not
     found
 
-func (cmd *Command) Value(name string) interface{}
+func (cmd *Command) Value(name string) any
     Value returns the value of the flag corresponding to `name`
 
 func (cmd *Command) VisibleCategories() []CommandCategory
@@ -1225,7 +1225,7 @@ func NewMapBase[T any, C any, VC ValueCreator[T, C]](defaults map[string]T) *Map
 
 func (i MapBase[T, C, VC]) Create(val map[string]T, p *map[string]T, c C) Value
 
-func (i *MapBase[T, C, VC]) Get() interface{}
+func (i *MapBase[T, C, VC]) Get() any
     Get returns the mapping of values set by this flag
 
 func (i *MapBase[T, C, VC]) Serialize() string
@@ -1312,7 +1312,7 @@ func NewSliceBase[T any, C any, VC ValueCreator[T, C]](defaults ...T) *SliceBase
 
 func (i SliceBase[T, C, VC]) Create(val []T, p *[]T, c C) Value
 
-func (i *SliceBase[T, C, VC]) Get() interface{}
+func (i *SliceBase[T, C, VC]) Get() any
     Get returns the slice of values set by this flag
 
 func (i *SliceBase[T, C, VC]) Serialize() string
