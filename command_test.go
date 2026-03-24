@@ -3105,6 +3105,39 @@ func TestFlagAction(t *testing.T) {
 	}
 }
 
+func TestLocalSliceFlagAccumulation(t *testing.T) {
+	var got []string
+
+	app := &Command{
+		Name: "app",
+		Commands: []*Command{
+			{
+				Name: "sub",
+				Flags: []Flag{
+					&StringSliceFlag{
+						Name:        "paths",
+						Aliases:     []string{"p"},
+						Local:       true,
+						Destination: &got,
+					},
+				},
+				Action: func(_ context.Context, cmd *Command) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	err := app.Run(context.Background(), []string{"app", "sub", "-p", "/a", "-p", "/b", "-p", "/c"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(got) != 3 {
+		t.Errorf("expected 3 values, got %d: %v", len(got), got)
+	}
+}
+
 func TestLocalFlagError(t *testing.T) {
 	var topInt int64
 
