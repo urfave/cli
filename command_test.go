@@ -2185,6 +2185,54 @@ func TestCommand_OrderOfOperations(t *testing.T) {
 	})
 }
 
+func TestFlagActionOrder(t *testing.T) {
+	tests := []struct {
+		Name string
+		Args []string
+	}{
+		{
+			Name: "abc",
+			Args: []string{"", "--a", "--b", "--c"},
+		},
+		{
+			Name: "bca",
+			Args: []string{"", "--b", "--c", "--a"},
+		},
+		{
+			Name: "cba",
+			Args: []string{"", "--c", "--b", "--a"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.Name, func(t *testing.T) {
+			str := ""
+			action := func(name string) func(context.Context, *Command, bool) error {
+				return func(_ context.Context, _ *Command, _ bool) error {
+					str += name
+					return nil
+				}
+			}
+			cmd := &Command{
+				Flags: []Flag{
+					&BoolFlag{Name: "a", Action: action("a")},
+					&BoolFlag{Name: "b", Action: action("b")},
+					&BoolFlag{Name: "c", Action: action("c")},
+				},
+				Action: func(_ context.Context, cmd *Command) error {
+					return nil
+				},
+			}
+
+			err := cmd.Run(buildTestContext(t), tt.Args)
+			require.NoError(t, err)
+
+			if str != "abc" {
+				t.Errorf("expected 'abc' got '%s'", str)
+			}
+		})
+	}
+}
+
 func TestCommand_Run_CommandWithSubcommandHasHelpTopic(t *testing.T) {
 	subcommandHelpTopics := [][]string{
 		{"foo", "--help"},
