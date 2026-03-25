@@ -5662,8 +5662,9 @@ func TestEmptyPositionalArgs(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, tc.Expected, args)
 		})
+	}
 }
-  
+
 func TestFlagEqualsEmptyValue(t *testing.T) {
 	t.Run("--flag= sets empty string", func(t *testing.T) {
 		var val string
