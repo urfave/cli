@@ -2801,12 +2801,12 @@ func TestFlagAction(t *testing.T) {
 		{
 			name: "flag_string_error",
 			args: []string{"app", "--f_string="},
-			err:  "flag needs an argument: --f_string=",
+			err:  "empty string",
 		},
 		{
 			name: "flag_string_error2",
 			args: []string{"app", "--f_string=", "--f_bool"},
-			err:  "flag needs an argument: --f_string=",
+			err:  "empty string",
 		},
 		{
 			name: "flag_string_slice",
@@ -5574,4 +5574,46 @@ func TestCommand_ExclusiveFlagsPersistent(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestFlagEqualsEmptyValue(t *testing.T) {
+	t.Run("--flag= sets empty string", func(t *testing.T) {
+		var val string
+
+		cmd := &Command{
+			Flags: []Flag{
+				&StringFlag{
+					Name:        "name",
+					Destination: &val,
+				},
+			},
+		}
+
+		err := cmd.Run(buildTestContext(t), []string{"app", "--name="})
+		assert.NoError(t, err)
+		assert.Equal(t, "", val)
+	})
+
+	t.Run("--flag= does not consume next positional arg", func(t *testing.T) {
+		var val string
+		var args []string
+
+		cmd := &Command{
+			Flags: []Flag{
+				&StringFlag{
+					Name:        "name",
+					Destination: &val,
+				},
+			},
+			Action: func(_ context.Context, cmd *Command) error {
+				args = cmd.Args().Slice()
+				return nil
+			},
+		}
+
+		err := cmd.Run(buildTestContext(t), []string{"app", "--name=", "positional"})
+		assert.NoError(t, err)
+		assert.Equal(t, "", val)
+		assert.Equal(t, []string{"positional"}, args)
+	})
 }
