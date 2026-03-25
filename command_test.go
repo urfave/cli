@@ -823,7 +823,7 @@ var defaultCommandTests = []struct {
 	{"f", "", nil, true},
 	{"", "foobar", nil, true},
 	{"", "", nil, true},
-	{" ", "", nil, true},
+	{" ", "", nil, false},
 	{"bat", "batbaz", nil, true},
 	{"nothing", "batbaz", nil, true},
 	{"nothing", "", nil, false},
@@ -911,10 +911,10 @@ var defaultCommandSubCommandTests = []struct {
 	{"", "carly", "foobar", true},
 	{"", "jimmers", "foobar", false},
 	{"", "jimmers", "", false},
-	{" ", "jimmers", "foobar", true},
+	{" ", "jimmers", "foobar", false},
 	{"", "", "", true},
-	{" ", "", "", true},
-	{" ", "j", "", true},
+	{" ", "", "", false},
+	{" ", "j", "", false},
 	{"bat", "", "batbaz", false},
 	{"nothing", "", "batbaz", false},
 	{"nothing", "", "", false},
@@ -977,10 +977,10 @@ var defaultCommandFlagTests = []struct {
 	{"", "--carly=derp", "foobar", true},
 	{"", "-j", "foobar", true},
 	{"", "-j", "", true},
-	{" ", "-j", "foobar", true},
+	{" ", "-j", "foobar", false},
 	{"", "", "", true},
-	{" ", "", "", true},
-	{" ", "-j", "", true},
+	{" ", "", "", false},
+	{" ", "-j", "", false},
 	{"bat", "", "batbaz", false},
 	{"nothing", "", "batbaz", false},
 	{"nothing", "", "", false},
@@ -5572,6 +5572,47 @@ func TestCommand_ExclusiveFlagsPersistent(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 			}
+		})
+	}
+}
+
+func TestEmptyPositionalArgs(t *testing.T) {
+	testCases := []struct {
+		Name     string
+		Args     []string
+		Expected []string
+	}{
+		{
+			Name:     "empty arg between values",
+			Args:     []string{"app", "hello", "", "world"},
+			Expected: []string{"hello", "", "world"},
+		},
+		{
+			Name:     "empty arg at start",
+			Args:     []string{"app", "", "hello"},
+			Expected: []string{"", "hello"},
+		},
+		{
+			Name:     "whitespace-only arg",
+			Args:     []string{"app", "hello", "  ", "world"},
+			Expected: []string{"hello", "  ", "world"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.Name, func(t *testing.T) {
+			var args []string
+
+			cmd := &Command{
+				Action: func(_ context.Context, cmd *Command) error {
+					args = cmd.Args().Slice()
+					return nil
+				},
+			}
+
+			err := cmd.Run(buildTestContext(t), tc.Args)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.Expected, args)
 		})
 	}
 }
