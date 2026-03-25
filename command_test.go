@@ -2185,6 +2185,54 @@ func TestCommand_OrderOfOperations(t *testing.T) {
 	})
 }
 
+func TestFlagActionOrder(t *testing.T) {
+	tests := []struct {
+		Name string
+		Args []string
+	}{
+		{
+			Name: "abc",
+			Args: []string{"", "--a", "--b", "--c"},
+		},
+		{
+			Name: "bca",
+			Args: []string{"", "--b", "--c", "--a"},
+		},
+		{
+			Name: "cba",
+			Args: []string{"", "--c", "--b", "--a"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.Name, func(t *testing.T) {
+			str := ""
+			action := func(name string) func(context.Context, *Command, bool) error {
+				return func(_ context.Context, _ *Command, _ bool) error {
+					str += name
+					return nil
+				}
+			}
+			cmd := &Command{
+				Flags: []Flag{
+					&BoolFlag{Name: "a", Action: action("a")},
+					&BoolFlag{Name: "b", Action: action("b")},
+					&BoolFlag{Name: "c", Action: action("c")},
+				},
+				Action: func(_ context.Context, cmd *Command) error {
+					return nil
+				},
+			}
+
+			err := cmd.Run(buildTestContext(t), tt.Args)
+			require.NoError(t, err)
+
+			if str != "abc" {
+				t.Errorf("expected 'abc' got '%s'", str)
+			}
+		})
+	}
+}
+
 func TestCommand_Run_CommandWithSubcommandHasHelpTopic(t *testing.T) {
 	subcommandHelpTopics := [][]string{
 		{"foo", "--help"},
@@ -2801,12 +2849,12 @@ func TestFlagAction(t *testing.T) {
 		{
 			name: "flag_string_error",
 			args: []string{"app", "--f_string="},
-			err:  "flag needs an argument: --f_string=",
+			err:  "empty string",
 		},
 		{
 			name: "flag_string_error2",
 			args: []string{"app", "--f_string=", "--f_bool"},
-			err:  "flag needs an argument: --f_string=",
+			err:  "empty string",
 		},
 		{
 			name: "flag_string_slice",
@@ -5614,5 +5662,46 @@ func TestEmptyPositionalArgs(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, tc.Expected, args)
 		})
-	}
+}
+  
+func TestFlagEqualsEmptyValue(t *testing.T) {
+	t.Run("--flag= sets empty string", func(t *testing.T) {
+		var val string
+
+		cmd := &Command{
+			Flags: []Flag{
+				&StringFlag{
+					Name:        "name",
+					Destination: &val,
+				},
+			},
+		}
+
+		err := cmd.Run(buildTestContext(t), []string{"app", "--name="})
+		assert.NoError(t, err)
+		assert.Equal(t, "", val)
+	})
+
+	t.Run("--flag= does not consume next positional arg", func(t *testing.T) {
+		var val string
+		var args []string
+
+		cmd := &Command{
+			Flags: []Flag{
+				&StringFlag{
+					Name:        "name",
+					Destination: &val,
+				},
+			},
+			Action: func(_ context.Context, cmd *Command) error {
+				args = cmd.Args().Slice()
+				return nil
+			},
+		}
+
+		err := cmd.Run(buildTestContext(t), []string{"app", "--name=", "positional"})
+		assert.NoError(t, err)
+		assert.Equal(t, "", val)
+		assert.Equal(t, []string{"positional"}, args)
+	})
 }

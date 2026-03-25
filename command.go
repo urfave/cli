@@ -582,19 +582,14 @@ func (cmd *Command) NArg() int {
 
 func (cmd *Command) runFlagActions(ctx context.Context) error {
 	tracef("runFlagActions")
-	for fl := range cmd.setFlags {
-		/*tracef("checking %v:%v", fl.Names(), fl.IsSet())
-		if !fl.IsSet() {
-			continue
-		}*/
-
-		//if pf, ok := fl.(LocalFlag); ok && !pf.IsLocal() {
-		//	continue
-		//}
-
-		if af, ok := fl.(ActionableFlag); ok {
-			if err := af.RunAction(ctx, cmd); err != nil {
-				return err
+	// run the flag actions in the same order that they are defined
+	// to maintain consistency.
+	for _, fl := range cmd.appliedFlags {
+		if _, inSet := cmd.setFlags[fl]; inSet {
+			if af, ok := fl.(ActionableFlag); ok {
+				if err := af.RunAction(ctx, cmd); err != nil {
+					return err
+				}
 			}
 		}
 	}
