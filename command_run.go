@@ -267,13 +267,12 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 		subCmd = cmd.Command(name)
 		if subCmd == nil {
 			hasDefault := cmd.DefaultCommand != ""
-			isFlagName := slices.Contains(cmd.FlagNames(), name)
 
 			if hasDefault {
 				tracef("using default command=%[1]q (cmd=%[2]q)", cmd.DefaultCommand, cmd.Name)
 			}
 
-			if isFlagName || hasDefault {
+			if hasDefault {
 				argsWithDefault := cmd.argsWithDefaultCommand(cmd.parsedArgs)
 				tracef("using default command args=%[1]q (cmd=%[2]q)", argsWithDefault, cmd.Name)
 				subCmd = cmd.Command(argsWithDefault.First())
