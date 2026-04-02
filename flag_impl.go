@@ -185,7 +185,7 @@ func (f *FlagBase[T, C, V]) Set(_ string, val string) error {
 	// lots of units tests prior to persistent flags assumed that the
 	// flag can be applied to different flag sets multiple times while still
 	// keeping the env set.
-	if !f.applied || f.Local {
+	if !f.applied {
 		if err := f.PreParse(); err != nil {
 			return err
 		}

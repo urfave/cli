@@ -80,7 +80,8 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 
 		firstArg := strings.TrimSpace(rargs[0])
 		if len(firstArg) == 0 {
-			break
+			posArgs = append(posArgs, rargs[0])
+			continue
 		}
 
 		// stop parsing once we see a "--"
@@ -163,8 +164,8 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 
 			tracef("processing non bool flag (fName=%[1]q)", flagName)
 			// not a bool flag so need to get the next arg
-			if flagVal == "" {
-				if len(rargs) == 1 || valFromEqual {
+			if flagVal == "" && !valFromEqual {
+				if len(rargs) == 1 {
 					return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", argumentNotProvidedErrMsg, firstArg)
 				}
 				flagVal = rargs[1]
