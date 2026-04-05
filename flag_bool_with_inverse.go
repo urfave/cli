@@ -171,6 +171,9 @@ func (bif *BoolWithInverseFlag) String() string {
 	out := FlagStringer(bif)
 
 	i := strings.Index(out, "\t")
+	if i == -1 {
+		return out
+	}
 
 	prefix := "--"
 
