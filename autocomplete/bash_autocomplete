@@ -26,7 +26,40 @@ __%[1]s_bash_autocomplete() {
       requestComp="${words[*]} --generate-shell-completion"
     fi
     opts=$(eval "${requestComp}" 2>/dev/null)
-    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+
+    # Separate completions and descriptions
+    local completions=()
+    local descriptions=()
+    local longest=0
+    while IFS=$'\n' read -r line; do
+      local comp_part desc_part
+      if [[ "$line" == *:* ]]; then
+        comp_part="${line%%:*}"
+        desc_part="${line#*:}"
+      else
+        comp_part="$line"
+        desc_part=""
+      fi
+      completions+=("$comp_part")
+      descriptions+=("$desc_part")
+      (( ${#comp_part} > longest )) && longest=${#comp_part}
+    done <<< "$opts"
+
+    # Format completions with aligned descriptions
+    for i in "${!completions[@]}"; do
+      local padded_completion="${completions[i]}"
+      local pad_len=$((longest - ${#padded_completion}))
+      if (( pad_len > 0 )); then
+        padded_completion="${padded_completion}$(head -c $pad_len < /dev/zero | tr '\0' ' ')"
+      fi
+      
+      if [[ -n "${descriptions[i]}" ]]; then
+        COMPREPLY+=("${padded_completion}  -- ${descriptions[i]}")
+      else
+        COMPREPLY+=("${padded_completion}")
+      fi
+    done
+
     return 0
   fi
 }

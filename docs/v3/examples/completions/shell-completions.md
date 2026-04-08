@@ -6,7 +6,7 @@ search:
 ---
 
 The urfave/cli v3 library supports programmable completion for apps utilizing its framework. This means
-that the completion is generated dynamically at runtime by invokiong the app itself with a special hidden
+that the completion is generated dynamically at runtime by invoking the app itself with a special hidden
 flag. The urfave/cli searches for this flag and activates a different flow for command paths than regular flow
 The following shells are supported
 
