@@ -182,13 +182,16 @@ func ExampleCommand_Run_commandHelp() {
 	//    greet describeit - use it to see a description
 	//
 	// USAGE:
-	//    greet describeit [arguments...]
+	//    greet describeit [options] [arguments...]
 	//
 	// DESCRIPTION:
 	//    This is how we describe describeit the function
 	//
 	// OPTIONS:
 	//    --help, -h  show help
+	//
+	// GLOBAL OPTIONS:
+	//    --name string  a name to say (default: "pat")
 }
 
 func ExampleCommand_Run_noAction() {
