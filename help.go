@@ -256,11 +256,6 @@ func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 		lastArg = args[argsLen-1]
 	}
 
-	if lastArg == "--" {
-		tracef("No completions due to termination")
-		return
-	}
-
 	if lastArg == completionFlag {
 		lastArg = ""
 	}
@@ -485,10 +480,12 @@ func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
 		return false, arguments
 	}
 
-	// If arguments include "--", shell completion is disabled
-	// because after "--" only positional arguments are accepted.
+	// If arguments include "--" before the token being completed, shell completion
+	// is disabled because after "--" only positional arguments are accepted.
 	// https://unix.stackexchange.com/a/11382
-	if slices.Contains(arguments, "--") {
+	// Note: The token being completed is at position pos-1 (immediately before completionFlag).
+	// We only check arguments before that position, so completing "--" itself still works.
+	if pos >= 1 && slices.Contains(arguments[:pos-1], "--") {
 		return false, arguments[:pos]
 	}
 
