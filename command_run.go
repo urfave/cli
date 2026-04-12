@@ -213,6 +213,7 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 	}
 
 	for _, flag := range cmd.allFlags() {
+		cmd.setMultiValueParsingConfig(flag)
 		isSet := flag.IsSet()
 		if err := flag.PostParse(); err != nil {
 			return ctx, err
