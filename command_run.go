@@ -215,6 +215,10 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 	for _, flag := range cmd.allFlags() {
 		cmd.setMultiValueParsingConfig(flag)
 		isSet := flag.IsSet()
+		// Propagate the command's slice/map separator config before PostParse
+		// so that env-var values are split with the same separator as CLI
+		// values (see https://github.com/urfave/cli/issues/2262).
+		cmd.setMultiValueParsingConfig(flag)
 		if err := flag.PostParse(); err != nil {
 			return ctx, err
 		}
