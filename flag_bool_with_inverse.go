@@ -179,6 +179,14 @@ func (bif *BoolWithInverseFlag) String() string {
 		prefix = "-"
 	}
 
+	// Guard against a FlagStringer that returns a string without a tab (e.g.
+	// a custom stringer or the default stringer when the flag does not
+	// implement DocGenerationFlag). In that case treat the entire output as
+	// the tab-delimited suffix so the slice never goes out of bounds.
+	if i < 0 {
+		i = 0
+	}
+
 	return fmt.Sprintf("%s[%s]%s%s", prefix, bif.inversePrefix(), bif.Name, out[i:])
 }
 

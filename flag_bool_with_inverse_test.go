@@ -520,3 +520,26 @@ func TestBoolWithInverseFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
 
 	_ = f.IsVisible()
 }
+
+// TestBoolWithInverseFlagStringNoPanicWithNoTabStringer is a regression test for
+// https://github.com/urfave/cli/issues/2303.
+// BoolWithInverseFlag.String() panicked with "slice bounds out of range [-1:]"
+// when the FlagStringer returned a string without a tab character.
+func TestBoolWithInverseFlagStringNoPanicWithNoTabStringer(t *testing.T) {
+	orig := FlagStringer
+	defer func() { FlagStringer = orig }()
+
+	FlagStringer = func(f Flag) string {
+		return "no tab here"
+	}
+
+	flag := &BoolWithInverseFlag{
+		Name: "verbose",
+	}
+
+	// Must not panic.
+	got := flag.String()
+	if !strings.Contains(got, "verbose") {
+		t.Errorf("expected String() to contain the flag name, got %q", got)
+	}
+}
