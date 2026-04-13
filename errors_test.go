@@ -232,3 +232,28 @@ func TestErrRequiredFlags_Error(t *testing.T) {
 	expectedMsg = "Required flag \"flag1\" not set"
 	assert.Equal(t, expectedMsg, err.Error())
 }
+
+// TestHandleExitCoder_EmptyMessage is a regression test for
+// https://github.com/urfave/cli/issues/2263.
+// HandleExitCoder must not print an empty line to ErrWriter when the ExitCoder
+// message is empty (e.g. cli.Exit("", code)).
+func TestHandleExitCoder_EmptyMessage(t *testing.T) {
+	called := false
+
+	OsExiter = func(rc int) {
+		if !called {
+			called = true
+		}
+	}
+	ErrWriter = &bytes.Buffer{}
+
+	defer func() {
+		OsExiter = fakeOsExiter
+		ErrWriter = fakeErrWriter
+	}()
+
+	HandleExitCoder(Exit("", 2))
+
+	assert.True(t, called)
+	assert.Empty(t, ErrWriter.(*bytes.Buffer).String(), "expected no output for empty-message exit")
+}
