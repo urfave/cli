@@ -533,13 +533,19 @@ func TestBoolWithInverseFlagStringNoPanicWithNoTabStringer(t *testing.T) {
 		return "no tab here"
 	}
 
-	flag := &BoolWithInverseFlag{
-		Name: "verbose",
-	}
+	t.Run("multi-character name uses -- prefix", func(t *testing.T) {
+		flag := &BoolWithInverseFlag{Name: "verbose"}
+		got := flag.String() // must not panic
+		if !strings.Contains(got, "--[no-]verbose") {
+			t.Errorf("expected String() to contain --[no-]verbose, got %q", got)
+		}
+	})
 
-	// Must not panic.
-	got := flag.String()
-	if !strings.Contains(got, "verbose") {
-		t.Errorf("expected String() to contain the flag name, got %q", got)
-	}
+	t.Run("single-character name uses - prefix", func(t *testing.T) {
+		flag := &BoolWithInverseFlag{Name: "v"}
+		got := flag.String() // must not panic
+		if !strings.Contains(got, "-[no-]v") {
+			t.Errorf("expected String() to contain -[no-]v, got %q", got)
+		}
+	})
 }
