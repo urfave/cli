@@ -257,3 +257,23 @@ func TestHandleExitCoder_EmptyMessage(t *testing.T) {
 	assert.True(t, called)
 	assert.Empty(t, ErrWriter.(*bytes.Buffer).String(), "expected no output for empty-message exit")
 }
+
+// TestHandleExitCoder_ErrorFormatterDirect verifies the ErrorFormatter branch
+// (Fprintf path) is exercised when the ExitCoder is passed to HandleExitCoder
+// directly with a non-empty message. Distinct from
+// TestHandleExitCoder_ErrorFormatter above which routes through a multiError.
+func TestHandleExitCoder_ErrorFormatterDirect(t *testing.T) {
+	called := false
+	OsExiter = func(rc int) { called = true }
+	ErrWriter = &bytes.Buffer{}
+
+	defer func() {
+		OsExiter = fakeOsExiter
+		ErrWriter = fakeErrWriter
+	}()
+
+	HandleExitCoder(&exitFormatter{code: 7})
+
+	assert.True(t, called)
+	assert.Contains(t, ErrWriter.(*bytes.Buffer).String(), "some other special")
+}
