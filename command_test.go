@@ -4590,6 +4590,24 @@ func TestCommandSliceFlagSeparator(t *testing.T) {
 	r.Equal([]string{"ff", "dd", "gg", "t,u"}, cmd.Value("foo"))
 }
 
+func TestCommandSliceFlagSeparatorFromEnvVar(t *testing.T) {
+	t.Setenv("APP_FOO", "0 1 2")
+
+	cmd := &Command{
+		SliceFlagSeparator: " ",
+		Flags: []Flag{
+			&StringSliceFlag{
+				Name:    "foo",
+				Sources: EnvVars("APP_FOO"),
+			},
+		},
+	}
+
+	r := require.New(t)
+	r.NoError(cmd.Run(buildTestContext(t), []string{"app"}))
+	r.Equal([]string{"0", "1", "2"}, cmd.Value("foo"))
+}
+
 func TestCommandMapKeyValueFlagSeparator(t *testing.T) {
 	cmd := &Command{
 		MapFlagKeyValueSeparator: ":",
