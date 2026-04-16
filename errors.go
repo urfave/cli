@@ -150,10 +150,12 @@ func HandleExitCoder(err error) {
 	}
 
 	if exitErr, ok := err.(ExitCoder); ok {
-		if _, ok := exitErr.(ErrorFormatter); ok {
-			_, _ = fmt.Fprintf(ErrWriter, "%+v\n", err)
-		} else {
-			_, _ = fmt.Fprintln(ErrWriter, err)
+		if msg := err.Error(); msg != "" {
+			if _, ok := exitErr.(ErrorFormatter); ok {
+				_, _ = fmt.Fprintf(ErrWriter, "%+v\n", err)
+			} else {
+				_, _ = fmt.Fprintln(ErrWriter, err)
+			}
 		}
 		OsExiter(exitErr.ExitCode())
 		return
