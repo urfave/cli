@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -61,6 +62,27 @@ func TestCompletionShell(t *testing.T) {
 			)
 		})
 	}
+}
+
+func TestCompletionBashNoShebang(t *testing.T) {
+	// Regression test for https://github.com/urfave/cli/issues/2259
+	// Bash completion scripts are sourced, not executed, so they must not
+	// start with a `#!` shebang (flagged by Debian lintian as
+	// `bash-completion-with-hashbang`).
+
+	cmd := &Command{
+		EnableShellCompletion: true,
+	}
+
+	r := require.New(t)
+
+	bashRender := shellCompletions["bash"]
+	r.NotNil(bashRender, "bash completion renderer should exist")
+
+	output, err := bashRender(cmd, "myapp")
+	r.NoError(err)
+	r.NotEmpty(output, "bash completion output should not be empty")
+	r.False(strings.HasPrefix(output, "#!"), "bash completion should not start with a shebang")
 }
 
 func TestCompletionFishFormat(t *testing.T) {
