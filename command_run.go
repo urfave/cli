@@ -333,6 +333,17 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 		}
 	}
 
+	// Handle interactive mode if enabled
+	for _, c := range cmdChain {
+		if c.shouldRunInteractive() {
+			tracef("running interactive mode (cmd=%[1]q)", c.Name)
+			if err := c.handleInteractiveMode(ctx); err != nil {
+				deferErr = c.handleExitCoder(ctx, err)
+				return ctx, deferErr
+			}
+		}
+	}
+
 	if err := cmd.checkAllRequiredFlags(); err != nil {
 		cmd.isInError = true
 		if cmd.OnUsageError != nil {

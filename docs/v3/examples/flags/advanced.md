@@ -532,3 +532,139 @@ Will result in help output like:
 ```
 Flag port value 70000 out of range[0-65535]
 ```
+
+#### Interactive Mode
+
+`urfave/cli` supports an interactive mode that allows users to input missing parameters
+through a series of prompts. This is particularly useful for creating user-friendly
+CLI tools that guide users through the configuration process.
+
+##### Enabling Interactive Mode
+
+To enable interactive mode, add the `--interactive` (or `-i`) flag to your command:
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/urfave/cli/v3"
+)
+
+func main() {
+	cmd := &cli.Command{
+		Name:  "user-config",
+		Usage: "Configure user settings interactively",
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:    "interactive",
+				Aliases: []string{"i"},
+				Usage:   "Enable interactive mode",
+			},
+			&cli.InteractiveStringFlag{
+				StringFlag: cli.StringFlag{
+					Name:  "name",
+					Value: "Guest",
+					Usage: "Your name",
+				},
+				Prompt:   "Enter your name",
+				Required: true,
+			},
+			&cli.InteractiveIntFlag{
+				Int64Flag: cli.Int64Flag{
+					Name:  "age",
+					Value: 18,
+					Usage: "Your age",
+				},
+				Prompt:   "Enter your age",
+				Required: true,
+			},
+			&cli.InteractiveBoolFlag{
+				BoolFlag: cli.BoolFlag{
+					Name:  "subscribe",
+					Value: false,
+					Usage: "Subscribe to newsletter",
+				},
+				Prompt: "Do you want to subscribe to our newsletter",
+			},
+		},
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			fmt.Printf("Name: %s\n", cmd.String("name"))
+			fmt.Printf("Age: %d\n", cmd.Int("age"))
+			fmt.Printf("Subscribed: %v\n", cmd.Bool("subscribe"))
+			return nil
+		},
+	}
+
+	if err := cmd.Run(context.Background(), os.Args); err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
+##### Using Interactive Mode
+
+When you run the command with the `--interactive` or `-i` flag:
+
+```sh-session
+$ user-config --interactive
+Enter your name [Guest]: John
+Enter your age [18]: 25
+Do you want to subscribe to our newsletter [y/N]: y
+
+Name: John
+Age: 25
+Subscribed: true
+```
+
+If you press Enter without typing anything, the default value will be used.
+
+##### Interactive Flag Types
+
+The following interactive flag types are available:
+
+- `InteractiveStringFlag` - For string inputs
+- `InteractiveIntFlag` - For integer inputs
+- `InteractiveBoolFlag` - For yes/no confirmations
+- `InteractiveFloatFlag` - For float inputs
+- `InteractiveDurationFlag` - For duration inputs (e.g., 1s, 2m, 3h)
+
+Each interactive flag has these additional fields:
+
+- `Prompt` - The text to display when prompting the user
+- `Required` - Whether the user must provide a value (cannot use default)
+
+##### Required Fields
+
+When `Required` is set to `true`, the user cannot skip the prompt by pressing Enter:
+
+```go
+&cli.InteractiveStringFlag{
+	StringFlag: cli.StringFlag{
+		Name:  "email",
+		Usage: "Your email address",
+	},
+	Prompt:   "Enter your email",
+	Required: true,
+}
+```
+
+##### Custom Prompter
+
+You can also use the `InteractivePrompter` interface to create custom prompt behavior:
+
+```go
+type InteractivePrompter interface {
+	Prompt(prompt string, defaultValue string) (string, error)
+	PromptRequired(prompt string) (string, error)
+	PromptConfirm(prompt string, defaultValue bool) (bool, error)
+	PromptSelect(prompt string, options []string) (int, string, error)
+}
+```
+
+The `DefaultPrompter` uses standard input/output, but you can implement your own
+prompter for testing or custom UI scenarios.
