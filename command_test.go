@@ -599,8 +599,8 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 		testArgs    *stringSliceArgs
 		expectedOut string
 	}{
-		{testArgs: &stringSliceArgs{v: []string{"--undefined"}}, expectedOut: "found 0 args"},
-		{testArgs: &stringSliceArgs{v: []string{"--number"}}, expectedOut: "found 0 args"},
+		{testArgs: &stringSliceArgs{v: []string{"--undefined"}}, expectedOut: "found 1 args"},
+		{testArgs: &stringSliceArgs{v: []string{"--number"}}, expectedOut: "found 1 args"},
 		{testArgs: &stringSliceArgs{v: []string{"--number", "forty-two"}}, expectedOut: "found 0 args"},
 		{testArgs: &stringSliceArgs{v: []string{"--number", "42"}}, expectedOut: "found 0 args"},
 		{testArgs: &stringSliceArgs{v: []string{"--number", "42", "newArg"}}, expectedOut: "found 1 args"},

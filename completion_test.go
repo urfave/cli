@@ -143,14 +143,13 @@ func TestCompletionSubcommand(t *testing.T) {
 			},
 		},
 		{
-			name:     "subcommand flag no completion",
+			name:     "subcommand double dash shows long flags",
 			args:     []string{"foo", "bar", "--", completionFlag},
-			contains: "l1",
-			msg:      "Expected output to contain shell name %[1]q",
+			contains: "--l1",
+			msg:      "Expected output to contain flag %[1]q",
 			msgArgs: []any{
-				"l1",
+				"--l1",
 			},
-			notContains: true,
 		},
 		{
 			name:     "sub sub command general completion",
@@ -172,14 +171,13 @@ func TestCompletionSubcommand(t *testing.T) {
 			},
 		},
 		{
-			name:     "sub sub command no completion",
+			name:     "sub sub command double dash shows flags",
 			args:     []string{"foo", "bar", "xyz", "--", completionFlag},
-			contains: "-g",
+			contains: "--help",
 			msg:      "Expected output to contain flag %[1]q",
 			msgArgs: []any{
-				"-g",
+				"--help",
 			},
-			notContains: true,
 		},
 		{
 			name:     "sub sub command no completion extra args",
@@ -190,6 +188,24 @@ func TestCompletionSubcommand(t *testing.T) {
 				"-g",
 			},
 			notContains: true,
+		},
+		{
+			name:     "subcommand partial double dash flag completion",
+			args:     []string{"foo", "bar", "--l", completionFlag},
+			contains: "--l1",
+			msg:      "Expected output to contain flag %[1]q",
+			msgArgs: []any{
+				"--l1",
+			},
+		},
+		{
+			name:     "sub sub command partial double dash flag completion",
+			args:     []string{"foo", "bar", "xyz", "--he", completionFlag},
+			contains: "--help",
+			msg:      "Expected output to contain flag %[1]q",
+			msgArgs: []any{
+				"--help",
+			},
 		},
 	}
 

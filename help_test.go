@@ -1325,7 +1325,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			expected: "",
 		},
 		{
-			name: "flag-suggestion-end-args",
+			name: "flag-suggestion-double-dash-shows-all-flags",
 			cmd: &Command{
 				Flags: []Flag{
 					&BoolFlag{Name: "excitement"},
@@ -1344,7 +1344,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			},
 			argv:     []string{"cmd", "--e", "--", completionFlag},
 			env:      map[string]string{"SHELL": "bash"},
-			expected: "",
+			expected: "--excitement\n--hat-shape\n",
 		},
 		{
 			name: "typical-command-suggestion",
@@ -1906,6 +1906,15 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 			},
 			wantShellCompletion: true,
 			wantArgs:            []string{"foo"},
+		},
+		{
+			name:      "double dash is the token being completed",
+			arguments: []string{"foo", "--", completionFlag},
+			cmd: &Command{
+				EnableShellCompletion: true,
+			},
+			wantShellCompletion: true,
+			wantArgs:            []string{"foo", "--"},
 		},
 	}
 
