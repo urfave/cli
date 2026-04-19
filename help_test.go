@@ -164,6 +164,35 @@ GLOBAL OPTIONS:
 		"expected output to include usage text")
 }
 
+// Test_HelpCommand_ParsesFlags is a regression test for #2271: flags
+// declared on a user-supplied command named "help" must still be parsed.
+// Previously in v3.6.2 flag pre-parsing was skipped for any command named
+// "help", causing such flags to be silently dropped.
+func Test_HelpCommand_ParsesFlags(t *testing.T) {
+	var parsed string
+
+	cmd := &Command{
+		Name: "app",
+		Commands: []*Command{
+			{
+				Name: "help",
+				Flags: []Flag{
+					&StringFlag{Name: "topic", Aliases: []string{"t"}},
+				},
+				Action: func(_ context.Context, c *Command) error {
+					parsed = c.String("topic")
+					return nil
+				},
+			},
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"app", "help", "--topic", "foo"})
+	require.NoError(t, err)
+	assert.Equal(t, "foo", parsed,
+		"expected --topic flag on help subcommand to be parsed")
+}
+
 func Test_Help_Custom_Flags(t *testing.T) {
 	oldFlag := HelpFlag
 	defer func() {

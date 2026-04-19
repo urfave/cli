@@ -408,6 +408,12 @@ func (cmd *Command) checkRequiredFlag(f Flag) (bool, string) {
 }
 
 func (cmd *Command) checkAllRequiredFlags() requiredFlagsErr {
+	// The help and completion commands are allowed to run without
+	// enforcement of required flags, since they do not invoke user
+	// actions that depend on those flag values.
+	if cmd.Name == helpName || cmd.isCompletionCommand {
+		return nil
+	}
 	for pCmd := cmd; pCmd != nil; pCmd = pCmd.parent {
 		if err := pCmd.checkRequiredFlags(); err != nil {
 			return err
