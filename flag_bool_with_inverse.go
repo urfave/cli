@@ -167,6 +167,9 @@ func (bif *BoolWithInverseFlag) IsVisible() bool {
 //
 // Example for BoolFlag{Name: "env"}
 // --[no-]env	(default: false)
+//
+// Example for BoolFlag{Name: "env", Aliases: []string{"e"}}
+// --[no-]env, -e	(default: false)
 func (bif *BoolWithInverseFlag) String() string {
 	out := FlagStringer(bif)
 
@@ -187,7 +190,21 @@ func (bif *BoolWithInverseFlag) String() string {
 		i = 0
 	}
 
-	return fmt.Sprintf("%s[%s]%s%s", prefix, bif.inversePrefix(), bif.Name, out[i:])
+	var aliasParts []string
+	for _, alias := range bif.Aliases {
+		aPrefix := "--"
+		if len(alias) == 1 {
+			aPrefix = "-"
+		}
+		aliasParts = append(aliasParts, aPrefix+alias)
+	}
+
+	names := fmt.Sprintf("%s[%s]%s", prefix, bif.inversePrefix(), bif.Name)
+	if len(aliasParts) > 0 {
+		names = names + ", " + strings.Join(aliasParts, ", ")
+	}
+
+	return fmt.Sprintf("%s%s", names, out[i:])
 }
 
 // IsBoolFlag returns whether the flag doesnt need to accept args

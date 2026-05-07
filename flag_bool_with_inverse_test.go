@@ -345,6 +345,7 @@ func TestBoolWithInverseString(t *testing.T) {
 		required      bool
 		usage         string
 		inversePrefix string
+		aliases       []string
 		expected      string
 	}{
 		{
@@ -397,6 +398,27 @@ func TestBoolWithInverseString(t *testing.T) {
 			required: true,
 			expected: "--[no-]env\t",
 		},
+		{
+			testName: "short alias",
+			flagName: "color",
+			required: false,
+			aliases:  []string{"c"},
+			expected: "--[no-]color, -c\t(default: false)",
+		},
+		{
+			testName: "long alias",
+			flagName: "color",
+			required: false,
+			aliases:  []string{"colour"},
+			expected: "--[no-]color, --colour\t(default: false)",
+		},
+		{
+			testName: "multiple aliases",
+			flagName: "color",
+			required: false,
+			aliases:  []string{"c", "colour"},
+			expected: "--[no-]color, -c, --colour\t(default: false)",
+		},
 	}
 
 	for _, tc := range tcs {
@@ -406,6 +428,7 @@ func TestBoolWithInverseString(t *testing.T) {
 				Usage:         tc.usage,
 				Required:      tc.required,
 				InversePrefix: tc.inversePrefix,
+				Aliases:       tc.aliases,
 			}
 
 			require.Equal(t, tc.expected, flag.String())
