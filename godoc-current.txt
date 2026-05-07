@@ -414,6 +414,9 @@ func (bif *BoolWithInverseFlag) String() string
 
     Example for BoolFlag{Name: "env"} --[no-]env (default: false)
 
+    Example for BoolFlag{Name: "env", Aliases: []string{"e"}} --[no-]env,
+    -e (default: false)
+
 func (bif *BoolWithInverseFlag) TakesValue() bool
 
 func (bif *BoolWithInverseFlag) TypeName() string
