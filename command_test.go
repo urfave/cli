@@ -5772,6 +5772,7 @@ func TestFlagEqualsEmptyValue(t *testing.T) {
 	})
 }
 
+
 // TestCommand_NoDefaultCmdArgMatchingFlag tests the argument set
 // of a command which has no default command, and has a flag with
 // the name of the next argument
@@ -5800,4 +5801,47 @@ func TestCommand_NoDefaultCmdArgMatchingFlag(t *testing.T) {
 	err := cmd.Run(buildTestContext(t), []string{"rootCommand", "--flag", "flagvalue", "flag"})
 	require.NoError(t, err)
 	require.Equal(t, &expectedArgs, actualArgs)
+}
+
+func TestDefaultCommandWithSubcommandFlags(t *testing.T) {
+	// Regression test for https://github.com/urfave/cli/issues/2249
+	// When DefaultCommand is set, flags defined on the default subcommand
+	// should work even when the subcommand name is omitted.
+	cmd := &Command{
+		DefaultCommand: "run1",
+		Commands: []*Command{
+			{
+				Name:  "run1",
+				Usage: "run the main application",
+				Action: func(ctx context.Context, cmd *Command) error {
+					if cmd.String("foo") != "bar" {
+						return fmt.Errorf("expected foo=bar, got %s", cmd.String("foo"))
+					}
+					return nil
+				},
+				Flags: []Flag{
+					&StringFlag{
+						Name:     "foo",
+						Required: true,
+					},
+				},
+			},
+			{
+				Name: "run2",
+				Action: func(ctx context.Context, cmd *Command) error {
+					return nil
+				},
+				Flags: []Flag{
+					&StringFlag{
+						Name:     "bar",
+						Required: true,
+					},
+				},
+			},
+		},
+	}
+
+	// Using flag without subcommand name should route to default command
+	err := cmd.Run(buildTestContext(t), []string{"c", "--foo", "bar"})
+	assert.NoError(t, err)
 }
