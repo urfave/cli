@@ -5873,3 +5873,31 @@ func TestDefaultCommandWithShortFlag(t *testing.T) {
 	err := cmd.Run(buildTestContext(t), []string{"c", "-f", "baz"})
 	assert.NoError(t, err)
 }
+
+func TestDefaultCommandWithShortFlagHandling(t *testing.T) {
+	// Covers the shortOptionHandling for-loop path when DefaultCommand is set
+	cmd := &Command{
+		UseShortOptionHandling: true,
+		DefaultCommand:         "run",
+		Commands: []*Command{
+			{
+				Name:  "run",
+				Usage: "run the app",
+				Action: func(ctx context.Context, cmd *Command) error {
+					if cmd.String("foo") != "baz" {
+						return fmt.Errorf("expected foo=baz, got %s", cmd.String("foo"))
+					}
+					return nil
+				},
+				Flags: []Flag{
+					&StringFlag{
+						Name:    "foo",
+						Aliases: []string{"f"},
+					},
+				},
+			},
+		},
+	}
+	err := cmd.Run(buildTestContext(t), []string{"c", "-f", "baz"})
+	assert.NoError(t, err)
+}
