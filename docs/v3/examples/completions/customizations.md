@@ -112,7 +112,7 @@ The default shell completion flag (`--generate-shell-completion`) is defined as
 
 <!-- {
   "args": ["&#45;&#45;generate&#45;shell&#45;completion"],
-  "output": "wat\nhelp\n"
+	"output": "wat\nhelp:Shows a list of commands or help for one command\n"
 } -->
 ```go
 package main

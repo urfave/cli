@@ -182,13 +182,16 @@ func ExampleCommand_Run_commandHelp() {
 	//    greet describeit - use it to see a description
 	//
 	// USAGE:
-	//    greet describeit [arguments...]
+	//    greet describeit [options] [arguments...]
 	//
 	// DESCRIPTION:
 	//    This is how we describe describeit the function
 	//
 	// OPTIONS:
 	//    --help, -h  show help
+	//
+	// GLOBAL OPTIONS:
+	//    --name string  a name to say (default: "pat")
 }
 
 func ExampleCommand_Run_noAction() {
@@ -258,14 +261,13 @@ func ExampleCommand_Run_shellComplete_bash_withShortFlag() {
 	}
 
 	// Simulate a bash environment and command line arguments
-	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "-", "--generate-shell-completion"}
 
 	_ = cmd.Run(context.Background(), os.Args)
 	// Output:
 	// --other
 	// --xyz
-	// --help
+	// --help:show help
 }
 
 func ExampleCommand_Run_shellComplete_bash_withLongFlag() {
@@ -291,7 +293,6 @@ func ExampleCommand_Run_shellComplete_bash_withLongFlag() {
 	}
 
 	// Simulate a bash environment and command line arguments
-	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "--s", "--generate-shell-completion"}
 
 	_ = cmd.Run(context.Background(), os.Args)
@@ -326,7 +327,6 @@ func ExampleCommand_Run_shellComplete_bash_withMultipleLongFlag() {
 	}
 
 	// Simulate a bash environment and command line arguments
-	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "--st", "--generate-shell-completion"}
 
 	_ = cmd.Run(context.Background(), os.Args)
@@ -362,14 +362,13 @@ func ExampleCommand_Run_shellComplete_bash() {
 	}
 
 	// Simulate a bash environment and command line arguments
-	os.Setenv("SHELL", "bash")
 	os.Args = []string{"greet", "--generate-shell-completion"}
 
 	_ = cmd.Run(context.Background(), os.Args)
 	// Output:
-	// describeit
-	// next
-	// help
+	// describeit:use it to see a description
+	// next:next example
+	// help:Shows a list of commands or help for one command
 }
 
 func ExampleCommand_Run_shellComplete_zsh() {
@@ -400,7 +399,6 @@ func ExampleCommand_Run_shellComplete_zsh() {
 
 	// Simulate a zsh environment and command line arguments
 	os.Args = []string{"greet", "--generate-shell-completion"}
-	os.Setenv("SHELL", "/usr/bin/zsh")
 
 	_ = cmd.Run(context.Background(), os.Args)
 	// Output:
@@ -437,7 +435,6 @@ func ExampleCommand_Run_shellComplete_fish() {
 
 	// Simulate a fish environment and command line arguments
 	os.Args = []string{"greet", "--generate-shell-completion"}
-	os.Setenv("SHELL", "/usr/bin/fish")
 
 	_ = cmd.Run(context.Background(), os.Args)
 	// Output:

@@ -36,7 +36,7 @@ func (p *Parser) String() string {
 	return fmt.Sprintf("%s,%s", p[0], p[1])
 }
 
-func (p *Parser) Get() interface{} {
+func (p *Parser) Get() any {
 	return p
 }
 

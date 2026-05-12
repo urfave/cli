@@ -345,6 +345,7 @@ func TestBoolWithInverseString(t *testing.T) {
 		required      bool
 		usage         string
 		inversePrefix string
+		aliases       []string
 		expected      string
 	}{
 		{
@@ -397,6 +398,27 @@ func TestBoolWithInverseString(t *testing.T) {
 			required: true,
 			expected: "--[no-]env\t",
 		},
+		{
+			testName: "short alias",
+			flagName: "color",
+			required: false,
+			aliases:  []string{"c"},
+			expected: "--[no-]color, -c\t(default: false)",
+		},
+		{
+			testName: "long alias",
+			flagName: "color",
+			required: false,
+			aliases:  []string{"colour"},
+			expected: "--[no-]color, --colour\t(default: false)",
+		},
+		{
+			testName: "multiple aliases",
+			flagName: "color",
+			required: false,
+			aliases:  []string{"c", "colour"},
+			expected: "--[no-]color, -c, --colour\t(default: false)",
+		},
 	}
 
 	for _, tc := range tcs {
@@ -406,6 +428,7 @@ func TestBoolWithInverseString(t *testing.T) {
 				Usage:         tc.usage,
 				Required:      tc.required,
 				InversePrefix: tc.inversePrefix,
+				Aliases:       tc.aliases,
 			}
 
 			require.Equal(t, tc.expected, flag.String())
@@ -519,4 +542,27 @@ func TestBoolWithInverseFlag_SatisfiesVisibleFlagInterface(t *testing.T) {
 	var f VisibleFlag = &BoolWithInverseFlag{}
 
 	_ = f.IsVisible()
+}
+
+// TestBoolWithInverseFlagStringNoPanicWithNoTabStringer is a regression test for
+// https://github.com/urfave/cli/issues/2303.
+// BoolWithInverseFlag.String() panicked with "slice bounds out of range [-1:]"
+// when the FlagStringer returned a string without a tab character.
+func TestBoolWithInverseFlagStringNoPanicWithNoTabStringer(t *testing.T) {
+	orig := FlagStringer
+	defer func() { FlagStringer = orig }()
+
+	FlagStringer = func(f Flag) string {
+		return "no tab here"
+	}
+
+	flag := &BoolWithInverseFlag{
+		Name: "verbose",
+	}
+
+	// Must not panic.
+	got := flag.String()
+	if !strings.Contains(got, "verbose") {
+		t.Errorf("expected String() to contain the flag name, got %q", got)
+	}
 }
