@@ -5845,3 +5845,31 @@ func TestDefaultCommandWithSubcommandFlags(t *testing.T) {
 	err := cmd.Run(buildTestContext(t), []string{"c", "--foo", "bar"})
 	assert.NoError(t, err)
 }
+
+func TestDefaultCommandWithShortFlag(t *testing.T) {
+	// Covers the short-flag splitting path in parseFlags when DefaultCommand is set
+	cmd := &Command{
+		DefaultCommand: "run",
+		Commands: []*Command{
+			{
+				Name:  "run",
+				Usage: "run the app",
+				Action: func(ctx context.Context, cmd *Command) error {
+					if cmd.String("foo") != "baz" {
+						return fmt.Errorf("expected foo=baz, got %s", cmd.String("foo"))
+					}
+					return nil
+				},
+				Flags: []Flag{
+					&StringFlag{
+						Name:    "foo",
+						Aliases: []string{"f"},
+					},
+				},
+			},
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"c", "-f", "baz"})
+	assert.NoError(t, err)
+}
