@@ -418,9 +418,6 @@ func (cmd *Command) checkAllRequiredFlags() requiredFlagsErr {
 		return nil
 	}
 	for pCmd := cmd; pCmd != nil; pCmd = pCmd.parent {
-		if pCmd.isCompletionCommand {
-			break
-		}
 		if err := pCmd.checkRequiredFlags(); err != nil {
 			return err
 		}

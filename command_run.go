@@ -141,12 +141,6 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 	var rargs Args = &stringSliceArgs{v: osArgs}
 	var args Args = &stringSliceArgs{rargs.Tail()}
 
-	if cmd.Name == helpName {
-		tracef("special command detected, skipping pre-parse (cmd=%[1]q)", cmd.Name)
-		cmd.parsedArgs = args
-		return ctx, cmd.Action(ctx, cmd)
-	}
-
 	for _, f := range cmd.allFlags() {
 		if err := f.PreParse(); err != nil {
 			return ctx, err
