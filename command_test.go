@@ -5729,18 +5729,18 @@ func TestFlagEqualsEmptyValue(t *testing.T) {
 // of a command which has no default command, and has a flag with
 // the name of the next argument
 func TestCommand_NoDefaultCmdArgMatchingFlag(t *testing.T) {
-	expectedArgs := stringSliceArgs{v: []string{"fooflag"}}
+	expectedArgs := stringSliceArgs{v: []string{"flag"}}
 	var actualArgs Args
 	cmd := &Command{
-		Name: "foo",
+		Name: "rootCommand",
 		Flags: []Flag{
 			&StringFlag{
-				Name: "fooflag",
+				Name: "flag",
 			},
 		},
 		Commands: []*Command{
 			{
-				Name: "bar",
+				Name: "subCommand",
 			},
 		},
 		Action: func(ctx context.Context, c *Command) error {
@@ -5748,7 +5748,9 @@ func TestCommand_NoDefaultCmdArgMatchingFlag(t *testing.T) {
 			return nil
 		},
 	}
-	err := cmd.Run(buildTestContext(t), []string{"foo", "--fooflag", "fooflagvalue", "fooflag"})
+	// the last element - "flag" - is an argument sharing the same name as the flag
+	// "flag" of the rootCommand command
+	err := cmd.Run(buildTestContext(t), []string{"rootCommand", "--flag", "flagvalue", "flag"})
 	require.NoError(t, err)
 	require.Equal(t, &expectedArgs, actualArgs)
 }
