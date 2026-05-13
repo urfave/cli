@@ -5748,6 +5748,7 @@ func TestCommand_NoDefaultCmdArgMatchingFlag(t *testing.T) {
 			return nil
 		},
 	}
-	cmd.Run(buildTestContext(t), []string{"foo", "--fooflag", "fooflagvalue", "fooflag"})
+	err := cmd.Run(buildTestContext(t), []string{"foo", "--fooflag", "fooflagvalue", "fooflag"})
+	require.NoError(t, err)
 	require.Equal(t, &expectedArgs, actualArgs)
 }
