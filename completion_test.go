@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -63,13 +64,64 @@ func TestCompletionShell(t *testing.T) {
 	}
 }
 
+func TestCompletionBashNoShebang(t *testing.T) {
+	// Regression test for https://github.com/urfave/cli/issues/2259
+	// Bash completion scripts are sourced, not executed, so they must not
+	// start with a `#!` shebang (flagged by Debian lintian as
+	// `bash-completion-with-hashbang`).
+
+	cmd := &Command{
+		EnableShellCompletion: true,
+	}
+
+	r := require.New(t)
+
+	bashRender := shellCompletions["bash"]
+	r.NotNil(bashRender, "bash completion renderer should exist")
+
+	output, err := bashRender(cmd, "myapp")
+	r.NoError(err)
+	r.NotEmpty(output, "bash completion output should not be empty")
+	r.False(strings.HasPrefix(output, "#!"), "bash completion should not start with a shebang")
+}
+
+func TestCompletionFishFormat(t *testing.T) {
+	// Regression test for https://github.com/urfave/cli/issues/2285
+	// Fish completion was broken due to incorrect format specifiers
+
+	cmd := &Command{
+		Name:                  "myapp",
+		EnableShellCompletion: true,
+	}
+
+	r := require.New(t)
+
+	// Test the fish shell completion renderer directly
+	fishRender := shellCompletions["fish"]
+	r.NotNil(fishRender, "fish completion renderer should exist")
+
+	output, err := fishRender(cmd, "myapp")
+	r.NoError(err)
+
+	// Verify the function name is correctly formatted
+	r.Contains(output, "function __myapp_perform_completion", "function name should contain app name")
+
+	// Verify no format errors (like %! or (string=) which indicate broken fmt.Sprintf)
+	r.NotContains(output, "%!", "output should not contain format errors")
+	r.NotContains(output, "(string=", "output should not contain invalid fish syntax")
+
+	// Verify the complete commands reference the app correctly
+	r.Contains(output, "complete -c myapp", "complete command should reference app name")
+	r.Contains(output, "(__myapp_perform_completion)", "completion function should be registered")
+}
+
 func TestCompletionSubcommand(t *testing.T) {
 	tests := []struct {
 		name        string
 		args        []string
 		contains    string
 		msg         string
-		msgArgs     []interface{}
+		msgArgs     []any
 		notContains bool
 	}{
 		{
@@ -77,7 +129,7 @@ func TestCompletionSubcommand(t *testing.T) {
 			args:     []string{"foo", "bar", completionFlag},
 			contains: "xyz",
 			msg:      "Expected output to contain shell name %[1]q",
-			msgArgs: []interface{}{
+			msgArgs: []any{
 				"xyz",
 			},
 		},
@@ -86,26 +138,25 @@ func TestCompletionSubcommand(t *testing.T) {
 			args:     []string{"foo", "bar", "-", completionFlag},
 			contains: "l1",
 			msg:      "Expected output to contain shell name %[1]q",
-			msgArgs: []interface{}{
+			msgArgs: []any{
 				"l1",
 			},
 		},
 		{
-			name:     "subcommand flag no completion",
+			name:     "subcommand double dash shows long flags",
 			args:     []string{"foo", "bar", "--", completionFlag},
-			contains: "l1",
-			msg:      "Expected output to contain shell name %[1]q",
-			msgArgs: []interface{}{
-				"l1",
+			contains: "--l1",
+			msg:      "Expected output to contain flag %[1]q",
+			msgArgs: []any{
+				"--l1",
 			},
-			notContains: true,
 		},
 		{
 			name:     "sub sub command general completion",
 			args:     []string{"foo", "bar", "xyz", completionFlag},
 			contains: "-g",
 			msg:      "Expected output to contain flag %[1]q",
-			msgArgs: []interface{}{
+			msgArgs: []any{
 				"-g",
 			},
 			notContains: true,
@@ -115,29 +166,46 @@ func TestCompletionSubcommand(t *testing.T) {
 			args:     []string{"foo", "bar", "xyz", "-", completionFlag},
 			contains: "-g",
 			msg:      "Expected output to contain flag %[1]q",
-			msgArgs: []interface{}{
+			msgArgs: []any{
 				"-g",
 			},
 		},
 		{
-			name:     "sub sub command no completion",
+			name:     "sub sub command double dash shows flags",
 			args:     []string{"foo", "bar", "xyz", "--", completionFlag},
-			contains: "-g",
+			contains: "--help",
 			msg:      "Expected output to contain flag %[1]q",
-			msgArgs: []interface{}{
-				"-g",
+			msgArgs: []any{
+				"--help",
 			},
-			notContains: true,
 		},
 		{
 			name:     "sub sub command no completion extra args",
 			args:     []string{"foo", "bar", "xyz", "--", "sargs", completionFlag},
 			contains: "-g",
 			msg:      "Expected output to contain flag %[1]q",
-			msgArgs: []interface{}{
+			msgArgs: []any{
 				"-g",
 			},
 			notContains: true,
+		},
+		{
+			name:     "subcommand partial double dash flag completion",
+			args:     []string{"foo", "bar", "--l", completionFlag},
+			contains: "--l1",
+			msg:      "Expected output to contain flag %[1]q",
+			msgArgs: []any{
+				"--l1",
+			},
+		},
+		{
+			name:     "sub sub command partial double dash flag completion",
+			args:     []string{"foo", "bar", "xyz", "--he", completionFlag},
+			contains: "--help",
+			msg:      "Expected output to contain flag %[1]q",
+			msgArgs: []any{
+				"--help",
+			},
 		},
 	}
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"strings"
 	"text/tabwriter"
 	"text/template"
@@ -125,16 +126,8 @@ func helpCommandAction(ctx context.Context, cmd *Command) error {
 
 	// Case 3, 5
 	if len(cmd.VisibleCommands()) == 0 {
-
-		tmpl := cmd.CustomHelpTemplate
-		if tmpl == "" {
-			tmpl = CommandHelpTemplate
-		}
-
 		tracef("running HelpPrinter with command %[1]q", cmd.Name)
-		HelpPrinter(cmd.Root().Writer, tmpl, cmd)
-
-		return nil
+		return ShowCommandHelp(ctx, cmd.parent, cmd.Name)
 	}
 
 	tracef("running ShowSubcommandHelp")
@@ -183,12 +176,11 @@ func DefaultRootCommandComplete(ctx context.Context, cmd *Command) {
 var DefaultAppComplete = DefaultRootCommandComplete
 
 func printCommandSuggestions(commands []*Command, writer io.Writer) {
-	shell := os.Getenv("SHELL")
 	for _, command := range commands {
 		if command.Hidden {
 			continue
 		}
-		if (strings.HasSuffix(shell, "zsh") || strings.HasSuffix(shell, "fish")) && len(command.Usage) > 0 {
+		if len(command.Usage) > 0 {
 			_, _ = fmt.Fprintf(writer, "%s:%s\n", command.Name, command.Usage)
 		} else {
 			_, _ = fmt.Fprintf(writer, "%s\n", command.Name)
@@ -204,10 +196,8 @@ func cliArgContains(flagName string, args []string) bool {
 			count = 2
 		}
 		flag := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
-		for _, a := range args {
-			if a == flag {
-				return true
-			}
+		if slices.Contains(args, flag) {
+			return true
 		}
 	}
 	return false
@@ -240,8 +230,7 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 		// match if last argument matches this flag and it is not repeated
 		if strings.HasPrefix(name, cur) && cur != name /* && !cliArgContains(name, os.Args)*/ {
 			flagCompletion := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
-			shell := os.Getenv("SHELL")
-			if usage != "" && (strings.HasSuffix(shell, "zsh") || strings.HasSuffix(shell, "fish")) {
+			if usage != "" {
 				flagCompletion = fmt.Sprintf("%s:%s", flagCompletion, usage)
 			}
 			fmt.Fprintln(writer, flagCompletion)
@@ -265,11 +254,6 @@ func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 		lastArg = args[argsLen-2]
 	} else if argsLen > 0 {
 		lastArg = args[argsLen-1]
-	}
-
-	if lastArg == "--" {
-		tracef("No completions due to termination")
-		return
 	}
 
 	if lastArg == completionFlag {
@@ -304,7 +288,7 @@ func DefaultShowCommandHelp(ctx context.Context, cmd *Command, commandName strin
 
 		tmpl := subCmd.CustomHelpTemplate
 		if tmpl == "" {
-			if len(subCmd.Commands) == 0 {
+			if len(subCmd.VisibleCommands()) == 0 {
 				tracef("using CommandHelpTemplate")
 				tmpl = CommandHelpTemplate
 			} else {
@@ -496,13 +480,13 @@ func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
 		return false, arguments
 	}
 
-	for _, arg := range arguments {
-		// If arguments include "--", shell completion is disabled
-		// because after "--" only positional arguments are accepted.
-		// https://unix.stackexchange.com/a/11382
-		if arg == "--" {
-			return false, arguments[:pos]
-		}
+	// If arguments include "--" before the token being completed, shell completion
+	// is disabled because after "--" only positional arguments are accepted.
+	// https://unix.stackexchange.com/a/11382
+	// Note: The token being completed is at position pos-1 (immediately before completionFlag).
+	// We only check arguments before that position, so completing "--" itself still works.
+	if pos >= 1 && slices.Contains(arguments[:pos-1], "--") {
+		return false, arguments[:pos]
 	}
 
 	return true, arguments[:pos]

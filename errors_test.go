@@ -232,3 +232,29 @@ func TestErrRequiredFlags_Error(t *testing.T) {
 	expectedMsg = "Required flag \"flag1\" not set"
 	assert.Equal(t, expectedMsg, err.Error())
 }
+
+func TestHandleExitCoder_ExitCoderEmptyMessage(t *testing.T) {
+	exitCode := 0
+	called := false
+
+	OsExiter = func(rc int) {
+		if !called {
+			exitCode = rc
+			called = true
+		}
+	}
+
+	defer func() { OsExiter = fakeOsExiter }()
+
+	// Capture stderr output
+	savedErrWriter := ErrWriter
+	var errBuf bytes.Buffer
+	ErrWriter = &errBuf
+	defer func() { ErrWriter = savedErrWriter }()
+
+	HandleExitCoder(Exit("", 42))
+
+	assert.Equal(t, 42, exitCode)
+	assert.True(t, called)
+	assert.Empty(t, errBuf.String(), "expected no output to stderr for empty exit message")
+}

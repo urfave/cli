@@ -90,7 +90,7 @@ type Command struct {
 	// default behavior.
 	ExitErrHandler ExitErrHandlerFunc `json:"-"`
 	// Other custom info
-	Metadata map[string]interface{} `json:"metadata"`
+	Metadata map[string]any `json:"metadata"`
 	// Carries a function which returns app specific info.
 	ExtraInfo func() map[string]string `json:"-"`
 	// CustomRootCommandHelpTemplate the text template for app help topic.
@@ -408,6 +408,12 @@ func (cmd *Command) checkRequiredFlag(f Flag) (bool, string) {
 }
 
 func (cmd *Command) checkAllRequiredFlags() requiredFlagsErr {
+	// The help and completion commands are allowed to run without
+	// enforcement of required flags, since they do not invoke user
+	// actions that depend on those flag values.
+	if cmd.Name == helpName || cmd.isCompletionCommand {
+		return nil
+	}
 	for pCmd := cmd; pCmd != nil; pCmd = pCmd.parent {
 		if err := pCmd.checkRequiredFlags(); err != nil {
 			return err
@@ -559,7 +565,7 @@ func (cmd *Command) Count(name string) int {
 }
 
 // Value returns the value of the flag corresponding to `name`
-func (cmd *Command) Value(name string) interface{} {
+func (cmd *Command) Value(name string) any {
 	if fs := cmd.lookupFlag(name); fs != nil {
 		tracef("value found for name %[1]q (cmd=%[2]q)", name, cmd.Name)
 		return fs.Get()
@@ -582,19 +588,14 @@ func (cmd *Command) NArg() int {
 
 func (cmd *Command) runFlagActions(ctx context.Context) error {
 	tracef("runFlagActions")
-	for fl := range cmd.setFlags {
-		/*tracef("checking %v:%v", fl.Names(), fl.IsSet())
-		if !fl.IsSet() {
-			continue
-		}*/
-
-		//if pf, ok := fl.(LocalFlag); ok && !pf.IsLocal() {
-		//	continue
-		//}
-
-		if af, ok := fl.(ActionableFlag); ok {
-			if err := af.RunAction(ctx, cmd); err != nil {
-				return err
+	// run the flag actions in the same order that they are defined
+	// to maintain consistency.
+	for _, fl := range cmd.appliedFlags {
+		if _, inSet := cmd.setFlags[fl]; inSet {
+			if af, ok := fl.(ActionableFlag); ok {
+				if err := af.RunAction(ctx, cmd); err != nil {
+					return err
+				}
 			}
 		}
 	}
