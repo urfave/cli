@@ -5683,6 +5683,53 @@ func TestEmptyPositionalArgs(t *testing.T) {
 	}
 }
 
+// Regression for #2234: an empty positional arg following a flag used to be
+// dropped along with every arg after it.
+func TestEmptyPositionalArgsAfterFlag(t *testing.T) {
+	testCases := []struct {
+		Name         string
+		Args         []string
+		ExpectedArgs []string
+		ExpectedFlag string
+	}{
+		{
+			Name:         "empty arg after equals-form flag",
+			Args:         []string{"app", "-f=something", "", "arg2", "arg3"},
+			ExpectedArgs: []string{"", "arg2", "arg3"},
+			ExpectedFlag: "something",
+		},
+		{
+			Name:         "empty arg after space-form flag",
+			Args:         []string{"app", "-f", "something", "", "arg2"},
+			ExpectedArgs: []string{"", "arg2"},
+			ExpectedFlag: "something",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.Name, func(t *testing.T) {
+			var args []string
+			var flagVal string
+
+			cmd := &Command{
+				Flags: []Flag{
+					&StringFlag{Name: "f"},
+				},
+				Action: func(_ context.Context, cmd *Command) error {
+					args = cmd.Args().Slice()
+					flagVal = cmd.String("f")
+					return nil
+				},
+			}
+
+			err := cmd.Run(buildTestContext(t), tc.Args)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.ExpectedArgs, args)
+			assert.Equal(t, tc.ExpectedFlag, flagVal)
+		})
+	}
+}
+
 func TestFlagEqualsEmptyValue(t *testing.T) {
 	t.Run("--flag= sets empty string", func(t *testing.T) {
 		var val string
