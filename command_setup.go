@@ -46,18 +46,33 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 	}
 
 	if cmd.Reader == nil {
-		tracef("setting default Reader as os.Stdin (cmd=%[1]q)", cmd.Name)
-		cmd.Reader = os.Stdin
+		if cmd.parent != nil && cmd.parent.Reader != nil {
+			tracef("inheriting Reader from parent (cmd=%[1]q)", cmd.Name)
+			cmd.Reader = cmd.parent.Reader
+		} else {
+			tracef("setting default Reader as os.Stdin (cmd=%[1]q)", cmd.Name)
+			cmd.Reader = os.Stdin
+		}
 	}
 
 	if cmd.Writer == nil {
-		tracef("setting default Writer as os.Stdout (cmd=%[1]q)", cmd.Name)
-		cmd.Writer = os.Stdout
+		if cmd.parent != nil && cmd.parent.Writer != nil {
+			tracef("inheriting Writer from parent (cmd=%[1]q)", cmd.Name)
+			cmd.Writer = cmd.parent.Writer
+		} else {
+			tracef("setting default Writer as os.Stdout (cmd=%[1]q)", cmd.Name)
+			cmd.Writer = os.Stdout
+		}
 	}
 
 	if cmd.ErrWriter == nil {
-		tracef("setting default ErrWriter as os.Stderr (cmd=%[1]q)", cmd.Name)
-		cmd.ErrWriter = os.Stderr
+		if cmd.parent != nil && cmd.parent.ErrWriter != nil {
+			tracef("inheriting ErrWriter from parent (cmd=%[1]q)", cmd.Name)
+			cmd.ErrWriter = cmd.parent.ErrWriter
+		} else {
+			tracef("setting default ErrWriter as os.Stderr (cmd=%[1]q)", cmd.Name)
+			cmd.ErrWriter = os.Stderr
+		}
 	}
 
 	if cmd.AllowExtFlags {
