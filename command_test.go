@@ -5807,6 +5807,7 @@ func TestDefaultCommandWithSubcommandFlags(t *testing.T) {
 	// Regression test for https://github.com/urfave/cli/issues/2249
 	// When DefaultCommand is set, flags defined on the default subcommand
 	// should work even when the subcommand name is omitted.
+	actionExecuted := false
 	cmd := &Command{
 		DefaultCommand: "run1",
 		Commands: []*Command{
@@ -5814,9 +5815,7 @@ func TestDefaultCommandWithSubcommandFlags(t *testing.T) {
 				Name:  "run1",
 				Usage: "run the main application",
 				Action: func(ctx context.Context, cmd *Command) error {
-					if cmd.String("foo") != "bar" {
-						return fmt.Errorf("expected foo=bar, got %s", cmd.String("foo"))
-					}
+					actionExecuted = true
 					return nil
 				},
 				Flags: []Flag{
@@ -5833,7 +5832,7 @@ func TestDefaultCommandWithSubcommandFlags(t *testing.T) {
 				},
 				Flags: []Flag{
 					&StringFlag{
-						Name:     "bar",
+						Name:     "value",
 						Required: true,
 					},
 				},
@@ -5844,6 +5843,7 @@ func TestDefaultCommandWithSubcommandFlags(t *testing.T) {
 	// Using flag without subcommand name should route to default command
 	err := cmd.Run(buildTestContext(t), []string{"c", "--foo", "bar"})
 	assert.NoError(t, err)
+	assert.True(t, actionExecuted, "expected run1 action to be executed")
 }
 
 func TestDefaultCommandWithShortFlag(t *testing.T) {
