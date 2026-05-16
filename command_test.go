@@ -5848,6 +5848,7 @@ func TestDefaultCommandWithSubcommandFlags(t *testing.T) {
 
 func TestDefaultCommandWithShortFlag(t *testing.T) {
 	// Covers the short-flag splitting path in parseFlags when DefaultCommand is set
+	actionRun := false
 	cmd := &Command{
 		DefaultCommand: "run",
 		Commands: []*Command{
@@ -5855,6 +5856,7 @@ func TestDefaultCommandWithShortFlag(t *testing.T) {
 				Name:  "run",
 				Usage: "run the app",
 				Action: func(ctx context.Context, cmd *Command) error {
+					actionRun = true
 					if cmd.String("foo") != "baz" {
 						return fmt.Errorf("expected foo=baz, got %s", cmd.String("foo"))
 					}
@@ -5872,10 +5874,12 @@ func TestDefaultCommandWithShortFlag(t *testing.T) {
 
 	err := cmd.Run(buildTestContext(t), []string{"c", "-f", "baz"})
 	assert.NoError(t, err)
+	assert.True(t, actionRun, "expected run action to be executed")
 }
 
 func TestDefaultCommandWithShortFlagHandling(t *testing.T) {
 	// Covers the shortOptionHandling for-loop path when DefaultCommand is set
+	actionRun := false
 	cmd := &Command{
 		UseShortOptionHandling: true,
 		DefaultCommand:         "run",
@@ -5884,6 +5888,7 @@ func TestDefaultCommandWithShortFlagHandling(t *testing.T) {
 				Name:  "run",
 				Usage: "run the app",
 				Action: func(ctx context.Context, cmd *Command) error {
+					actionRun = true
 					if cmd.String("foo") != "baz" {
 						return fmt.Errorf("expected foo=baz, got %s", cmd.String("foo"))
 					}
@@ -5900,4 +5905,5 @@ func TestDefaultCommandWithShortFlagHandling(t *testing.T) {
 	}
 	err := cmd.Run(buildTestContext(t), []string{"c", "-f", "baz"})
 	assert.NoError(t, err)
+	assert.True(t, actionRun, "expected run action to be executed")
 }
