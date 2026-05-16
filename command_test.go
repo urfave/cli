@@ -5771,3 +5771,33 @@ func TestFlagEqualsEmptyValue(t *testing.T) {
 		assert.Equal(t, []string{"positional"}, args)
 	})
 }
+
+// TestCommand_NoDefaultCmdArgMatchingFlag tests the argument set
+// of a command which has no default command, and has a flag with
+// the name of the next argument
+func TestCommand_NoDefaultCmdArgMatchingFlag(t *testing.T) {
+	expectedArgs := stringSliceArgs{v: []string{"flag"}}
+	var actualArgs Args
+	cmd := &Command{
+		Name: "rootCommand",
+		Flags: []Flag{
+			&StringFlag{
+				Name: "flag",
+			},
+		},
+		Commands: []*Command{
+			{
+				Name: "subCommand",
+			},
+		},
+		Action: func(ctx context.Context, c *Command) error {
+			actualArgs = c.Args()
+			return nil
+		},
+	}
+	// the last element - "flag" - is an argument sharing the same name as the flag
+	// "flag" of the rootCommand command
+	err := cmd.Run(buildTestContext(t), []string{"rootCommand", "--flag", "flagvalue", "flag"})
+	require.NoError(t, err)
+	require.Equal(t, &expectedArgs, actualArgs)
+}
