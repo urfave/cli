@@ -420,3 +420,21 @@ Similar messages would be shown for other funcs.
         },
     }
     ```
+
+## Build tags (smaller binaries)
+
+v2 supported optional [build tags](https://github.com/urfave/cli/pull/1375) to trim features and binary size:
+
+- `urfave_cli_no_docs` — omit built-in help templates
+- `urfave_cli_no_suggest` — disable flag/command suggestions (drops the `smetrics` dependency)
+
+Example:
+
+```console
+go build -tags "urfave_cli_no_docs,urfave_cli_no_suggest" .
+```
+
+**v3 removed these build constraints.** There is no supported equivalent in v3; stay on v2 if you rely on them, or reduce size via linker flags (`-ldflags="-s -w"`) and dependency choices.
+
+The [v2 documentation](https://github.com/urfave/cli/tree/v2.27.5) describes the tags in historical releases.
+
