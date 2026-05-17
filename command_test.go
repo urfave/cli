@@ -5772,7 +5772,6 @@ func TestFlagEqualsEmptyValue(t *testing.T) {
 	})
 }
 
-
 // TestCommand_NoDefaultCmdArgMatchingFlag tests the argument set
 // of a command which has no default command, and has a flag with
 // the name of the next argument
