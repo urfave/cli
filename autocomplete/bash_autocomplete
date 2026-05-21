@@ -104,4 +104,4 @@ __%[1]s_bash_autocomplete() {
   fi
 }
 
-complete -o bashdefault -o default -o nospace -F __%[1]s_bash_autocomplete %[1]s
+complete -o bashdefault -o default -F __%[1]s_bash_autocomplete %[1]s

@@ -137,6 +137,27 @@ func TestCompletionBashNoShebang(t *testing.T) {
 	r.False(strings.HasPrefix(output, "#!"), "bash completion should not start with a shebang")
 }
 
+func TestCompletionBashAppendsSpace(t *testing.T) {
+	// Regression test for https://github.com/urfave/cli/issues/2332
+	// Do not register bash completions with `-o nospace`: after a command or
+	// subcommand completion, Bash should append a space so the next word can be
+	// completed without manually typing one.
+
+	cmd := &Command{
+		EnableShellCompletion: true,
+	}
+
+	r := require.New(t)
+
+	bashRender := shellCompletions["bash"]
+	r.NotNil(bashRender, "bash completion renderer should exist")
+
+	output, err := bashRender(cmd, "myapp")
+	r.NoError(err)
+	r.NotContains(output, "-o nospace", "bash completion should append spaces after completed words")
+	r.Contains(output, "complete -o bashdefault -o default -F __myapp_bash_autocomplete myapp")
+}
+
 func TestCompletionFishFormat(t *testing.T) {
 	// Regression test for https://github.com/urfave/cli/issues/2285
 	// Fish completion was broken due to incorrect format specifiers
