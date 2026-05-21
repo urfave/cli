@@ -158,6 +158,32 @@ func TestCompletionBashAppendsSpace(t *testing.T) {
 	r.Contains(output, "complete -o bashdefault -o default -F __myapp_bash_autocomplete myapp")
 }
 
+func TestCompletionBashGreedyColonParsing(t *testing.T) {
+	// Regression test: the bash completion template uses fmt.Sprintf, so
+	// literal "%" in the template must be escaped as "%%". The token
+	// extraction must use the greedy ${line%%:*} (double %%) to split on
+	// the *first* colon. A single % would use ${line%:*} which splits on
+	// the *last* colon, breaking descriptions that contain colons
+	// (e.g. "export:Export configs such as: compose-config").
+
+	cmd := &Command{
+		EnableShellCompletion: true,
+	}
+
+	r := require.New(t)
+
+	bashRender := shellCompletions["bash"]
+	r.NotNil(bashRender, "bash completion renderer should exist")
+
+	output, err := bashRender(cmd, "myapp")
+	r.NoError(err)
+
+	// After fmt.Sprintf, the rendered script must contain ${line%%:*}
+	// (greedy match) not ${line%:*} (non-greedy match).
+	r.Contains(output, `${line%%:*}`, "token extraction should use greedy %% to match first colon")
+	r.NotContains(output, `${line%:*}`, "token extraction must not use non-greedy single % (splits on last colon)")
+}
+
 func TestCompletionFishFormat(t *testing.T) {
 	// Regression test for https://github.com/urfave/cli/issues/2285
 	// Fish completion was broken due to incorrect format specifiers
