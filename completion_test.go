@@ -167,6 +167,25 @@ func TestCompletionFishFormat(t *testing.T) {
 	r.Contains(output, "(__myapp_perform_completion)", "completion function should be registered")
 }
 
+func TestCompletionFishOmitsPositionalTokenFromDynamicCompletion(t *testing.T) {
+	cmd := &Command{
+		Name:                  "myapp",
+		EnableShellCompletion: true,
+	}
+
+	r := require.New(t)
+
+	fishRender := shellCompletions["fish"]
+	r.NotNil(fishRender, "fish completion renderer should exist")
+
+	output, err := fishRender(cmd, "myapp")
+	r.NoError(err)
+
+	r.Contains(output, `if string match -q -- "-*" $lastArg`)
+	r.Contains(output, "set results ($args[1] $args[2..-1] $lastArg --generate-shell-completion 2> /dev/null)")
+	r.Contains(output, "set results ($args[1] $args[2..-1] --generate-shell-completion 2> /dev/null)")
+}
+
 func TestCompletionSubcommand(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -305,6 +324,33 @@ func TestCompletionSubcommand(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestCompletionSubcommandCustomShellComplete(t *testing.T) {
+	out := &bytes.Buffer{}
+
+	cmd := &Command{
+		EnableShellCompletion: true,
+		Writer:                out,
+		Commands: []*Command{
+			{
+				Name: "index",
+				Commands: []*Command{
+					{
+						Name: "show",
+						ShellComplete: func(ctx context.Context, cmd *Command) {
+							fmt.Fprintln(cmd.Root().Writer, "custom-index")
+						},
+						Action: func(ctx context.Context, cmd *Command) error { return nil },
+					},
+				},
+			},
+		},
+	}
+
+	r := require.New(t)
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "index", "show", completionFlag}))
+	r.Equal("custom-index\n", out.String())
 }
 
 func TestCompletionInvalidShell(t *testing.T) {
