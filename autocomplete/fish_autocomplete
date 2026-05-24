@@ -6,7 +6,11 @@ function __%[1]s_perform_completion
     # Extract the last arg (partial input)
     set -l lastArg (commandline -ct)
     
-    set -l results ($args[1] $args[2..-1] $lastArg --generate-shell-completion 2> /dev/null)
+    if string match -q -- "-*" $lastArg
+        set results ($args[1] $args[2..-1] $lastArg --generate-shell-completion 2> /dev/null)
+    else
+        set results ($args[1] $args[2..-1] --generate-shell-completion 2> /dev/null)
+    end
 
     # Remove trailing empty lines
     for line in $results[-1..1]
