@@ -186,6 +186,25 @@ func TestCompletionFishOmitsPositionalTokenFromDynamicCompletion(t *testing.T) {
 	r.Contains(output, "set results ($args[1] $args[2..-1] --generate-shell-completion 2> /dev/null)")
 }
 
+func TestCompletionBashOmitsPositionalTokenFromDynamicCompletion(t *testing.T) {
+	cmd := &Command{
+		Name:                  "myapp",
+		EnableShellCompletion: true,
+	}
+
+	r := require.New(t)
+
+	bashRender := shellCompletions["bash"]
+	r.NotNil(bashRender, "bash completion renderer should exist")
+
+	output, err := bashRender(cmd, "myapp")
+	r.NoError(err)
+
+	r.Contains(output, `if [[ "${current_word}" == "-"* ]]; then`)
+	r.Contains(output, `printf '%s %s --generate-shell-completion' "${words_before_cursor[*]}" "${current_word}"`)
+	r.Contains(output, `printf '%s --generate-shell-completion' "${words_before_cursor[*]}"`)
+}
+
 func TestCompletionSubcommand(t *testing.T) {
 	tests := []struct {
 		name        string
