@@ -1091,7 +1091,7 @@ func TestCommand_FlagsFromExtPackage(t *testing.T) {
 		},
 	}
 
-	// this should return an error since epflag shouldnt be registered
+	// this should return an error since epflag shouldn't be registered
 	err = cmd.Run(buildTestContext(t), []string{"foo", "-c", "cly", "--epflag", "10"})
 	assert.Error(t, err)
 }

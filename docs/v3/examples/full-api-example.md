@@ -152,7 +152,7 @@ func main() {
 			&cli.StringFlag{Name: "dance-move", Aliases: []string{"d"}, Validator: func(move string) error {
 				moves := []string{"salsa", "tap", "two-step", "lock-step"}
 				if !slices.Contains(moves, move) {
-					return fmt.Errorf("Havent learnt %s move yet", move)
+					return fmt.Errorf("Haven't learnt %s move yet", move)
 				}
 				return nil
 			}},

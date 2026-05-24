@@ -384,7 +384,7 @@ func (bif *BoolWithInverseFlag) GetValue() string
     string if the flag takes no value at all.
 
 func (bif *BoolWithInverseFlag) IsBoolFlag() bool
-    IsBoolFlag returns whether the flag doesnt need to accept args
+    IsBoolFlag returns whether the flag doesn't need to accept args
 
 func (bif *BoolWithInverseFlag) IsDefaultVisible() bool
     IsDefaultVisible returns true if the flag is not hidden, otherwise false
@@ -1000,7 +1000,7 @@ func (f *FlagBase[T, C, V]) GetValue() string
     string if the flag takes no value at all.
 
 func (f *FlagBase[T, C, VC]) IsBoolFlag() bool
-    IsBoolFlag returns whether the flag doesnt need to accept args
+    IsBoolFlag returns whether the flag doesn't need to accept args
 
 func (f *FlagBase[T, C, V]) IsDefaultVisible() bool
     IsDefaultVisible returns true if the flag is not hidden, otherwise false
