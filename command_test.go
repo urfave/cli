@@ -2833,6 +2833,32 @@ func TestSetupInitializesOnlyNilWriters(t *testing.T) {
 	assert.Equal(t, cmd.Writer, os.Stdout, "expected a.Writer to be os.Stdout")
 }
 
+// Regression for #2325. A Writer set on the root command should reach
+// the subcommand's Action via c.Writer, not get silently replaced by
+// os.Stdout the first time the subcommand runs setupDefaults.
+func TestSubcommandInheritsRootWriters(t *testing.T) {
+	var out, errOut bytes.Buffer
+	root := &Command{
+		Name:      "demo",
+		Writer:    &out,
+		ErrWriter: &errOut,
+		Commands: []*Command{
+			{
+				Name: "sub",
+				Action: func(_ context.Context, c *Command) error {
+					_, _ = fmt.Fprintln(c.Writer, "from sub")
+					_, _ = fmt.Fprintln(c.ErrWriter, "errors from sub")
+					return nil
+				},
+			},
+		},
+	}
+
+	assert.NoError(t, root.Run(buildTestContext(t), []string{"demo", "sub"}))
+	assert.Equal(t, "from sub\n", out.String())
+	assert.Equal(t, "errors from sub\n", errOut.String())
+}
+
 func TestFlagAction(t *testing.T) {
 	now := time.Now().UTC().Truncate(time.Minute)
 	testCases := []struct {
