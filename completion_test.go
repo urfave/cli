@@ -323,7 +323,7 @@ func TestCompletionShellRenderError(t *testing.T) {
 	enableError := true
 	shellCompletions[unknownShellName] = func(c *Command, appName string) (string, error) {
 		if enableError {
-			return "", fmt.Errorf("cant do completion")
+			return "", fmt.Errorf("can't do completion")
 		}
 		return "something", nil
 	}
@@ -336,7 +336,7 @@ func TestCompletionShellRenderError(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, unknownShellName})
-	assert.ErrorContains(t, err, "cant do completion")
+	assert.ErrorContains(t, err, "can't do completion")
 }
 
 type mockWriter struct {

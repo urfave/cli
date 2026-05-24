@@ -193,7 +193,7 @@ func (f *FlagBase[T, C, V]) Set(_ string, val string) error {
 	}
 
 	if f.count == 1 && f.OnlyOnce {
-		return fmt.Errorf("cant duplicate this flag")
+		return fmt.Errorf("can't duplicate this flag")
 	}
 
 	f.count++
@@ -301,7 +301,7 @@ func (f *FlagBase[T, C, VC]) IsLocal() bool {
 	return f.Local
 }
 
-// IsBoolFlag returns whether the flag doesnt need to accept args
+// IsBoolFlag returns whether the flag doesn't need to accept args
 func (f *FlagBase[T, C, VC]) IsBoolFlag() bool {
 	bf, ok := f.value.(boolFlag)
 	return ok && bf.IsBoolFlag()
