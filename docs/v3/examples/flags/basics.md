@@ -78,6 +78,9 @@ $ greet --lang=spanish my-friend
 Hola my-friend
 ```
 
+Boolean flags are the exception: passing a boolean flag without a value sets it to
+`true`. Use the `=` form, such as `--flag=false`, to provide an explicit boolean value.
+
 While the value of any flag can be retrieved using ```command.<flagType>``` sometimes
 it is convenient to have the value of the flag automatically stored in a destination
 variable for a flag. If the `Value` is set for the flag, it will be shown as default,
