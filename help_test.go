@@ -1720,6 +1720,7 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 		app                 *App
 		arguments           []string
 		wantShellCompletion bool
+		wantCompletionDetected bool
 		wantArgs            []string
 	}{
 		{
@@ -1727,6 +1728,7 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 			arguments:           []string{"--generate-bash-completion"},
 			app:                 &App{},
 			wantShellCompletion: false,
+			wantCompletionDetected: false,
 			wantArgs:            []string{"--generate-bash-completion"},
 		},
 		{
@@ -1736,6 +1738,7 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 				EnableBashCompletion: true,
 			},
 			wantShellCompletion: false,
+			wantCompletionDetected: false,
 			wantArgs:            []string{"foo"},
 		},
 		{
@@ -1745,7 +1748,8 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 				EnableBashCompletion: true,
 			},
 			wantShellCompletion: false,
-			wantArgs:            []string{"--", "foo", "--generate-bash-completion"},
+			wantCompletionDetected: true,
+			wantArgs:            []string{"--", "foo"},
 		},
 		{
 			name:      "--generate-bash-completion",
@@ -1754,6 +1758,7 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 				EnableBashCompletion: true,
 			},
 			wantShellCompletion: true,
+			wantCompletionDetected: true,
 			wantArgs:            []string{"foo"},
 		},
 	}
@@ -1762,10 +1767,14 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			shellCompletion, args := checkShellCompleteFlag(tt.app, tt.arguments)
+			shellCompletion, completionDetected, args := checkShellCompleteFlag(tt.app, tt.arguments)
 			if tt.wantShellCompletion != shellCompletion {
 				t.Errorf("Unexpected shell completion, got:\n%v\nexpected: %v",
 					shellCompletion, tt.wantShellCompletion)
+			}
+			if tt.wantCompletionDetected != completionDetected {
+				t.Errorf("Unexpected completion detected, got:\n%v\nexpected: %v",
+					completionDetected, tt.wantCompletionDetected)
 			}
 			if !reflect.DeepEqual(tt.wantArgs, args) {
 				t.Errorf("Unexpected arguments, got:\n%v\nexpected: %v",

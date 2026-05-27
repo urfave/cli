@@ -319,7 +319,14 @@ func (a *App) RunContext(ctx context.Context, arguments []string) (err error) {
 	// flag name as the value of the flag before it which is undesirable
 	// note that we can only do this because the shell autocomplete function
 	// always appends the completion flag at the end of the command
-	shellComplete, arguments := checkShellCompleteFlag(a, arguments)
+	shellComplete, completionDetected, arguments := checkShellCompleteFlag(a, arguments)
+
+	// If the completion flag was present but shell completion is disabled
+	// (e.g., because "--" was on the command line), do not execute the
+	// action. The flag has already been stripped from arguments.
+	if completionDetected && !shellComplete {
+		return nil
+	}
 
 	cCtx := NewContext(a, nil, &Context{Context: ctx})
 	cCtx.shellComplete = shellComplete
