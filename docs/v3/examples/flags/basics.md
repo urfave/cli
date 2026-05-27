@@ -7,8 +7,8 @@ search:
 
 Flags, also called options, can be used to control various behaviour of the app
 by turning on/off capabilities or setting some configuration and so on. 
-Setting and querying flags is done using the ```cmd.<FlagType>(<flagName>)```
-function
+Setting and querying flags is done using the `cmd.<FlagType>(<flagName>)`
+function.
 
 Here is an example of using a StringFlag which accepts a string as its option value
 
@@ -56,14 +56,14 @@ func main() {
 }
 ```
 
-This very simple program gives a lot of outputs depending on the value of the flag set.
+This very simple program gives different outputs depending on the value of the flag set.
 ```sh-session
 $ greet
 Hello Nefertiti
 ```
 Note that the Value for the flag is the default value that will be used when the flag
 is not set on the command line. Since in the above invocation no flag was specified the
-value of the "lang" flag was default to "english". Now lets change the language
+value of the "lang" flag defaulted to "english". Now let's change the language
 
 ```sh-session
 $ greet --lang spanish
@@ -130,8 +130,8 @@ func main() {
 }
 ```
 
-Note that most flag can be invoked multiple times but only the last value entered for the flag
-will be provided to the user(with some exceptions. See flags-advanced.md)
+Note that most flags can be invoked multiple times but only the last value entered for the flag
+will be provided to the user (with some exceptions; see [advanced flags](advanced.md)).
 
 The following basic flags are supported
 
@@ -157,8 +157,8 @@ For full list of flags see [`https://pkg.go.dev/github.com/urfave/cli/v3`](https
 
 ### Timestamp Flag ###
 
-Using the timestamp flag is similar to other flags but special attention is need 
-for the format to be provided to the flag . Please refer to
+Using the timestamp flag is similar to other flags but special attention is needed
+for the format to be provided to the flag. Please refer to
 [`time.Parse`](https://golang.org/pkg/time/#example_Parse) to get possible
 formats.
 
