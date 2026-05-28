@@ -130,8 +130,8 @@ func main() {
 }
 ```
 
-Note that most flag can be invoked multiple times but only the last value entered for the flag
-will be provided to the user(with some exceptions. See flags-advanced.md)
+Note that most flags can be invoked multiple times but only the last value entered for the flag
+will be provided to the user (with some exceptions. See flags-advanced.md)
 
 The following basic flags are supported
 
@@ -157,8 +157,8 @@ For full list of flags see [`https://pkg.go.dev/github.com/urfave/cli/v3`](https
 
 ### Timestamp Flag ###
 
-Using the timestamp flag is similar to other flags but special attention is need 
-for the format to be provided to the flag . Please refer to
+Using the timestamp flag is similar to other flags but special attention is needed
+for the format to be provided to the flag. Please refer to
 [`time.Parse`](https://golang.org/pkg/time/#example_Parse) to get possible
 formats.
 
@@ -216,7 +216,7 @@ cmd := &cli.Command{
 			Name: "meeting",
 			Config: cli.TimestampConfig{
 				Timezone: time.Local,
-				AvailableLayouts: []string{"2006-01-02T15:04:05"},
+				Layouts: []string{"2006-01-02T15:04:05"},
 			},
 		},
 	},
