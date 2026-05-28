@@ -82,7 +82,7 @@ var CommandHelpTemplate = `NAME:
 
 USAGE:
    {{template "usageTemplate" .}}
-   
+
 {{- if .AdditionalHelpTopics}}{{ template "additionalHelpTopicsTemplate" .}}{{end}}{{if .Category}}
 
 CATEGORY:
@@ -106,7 +106,7 @@ var SubcommandHelpTemplate = `NAME:
 
 USAGE:
    {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.FullName}}{{if .VisibleCommands}} [command [command options]]{{end}}{{if .ArgsUsage}} {{.ArgsUsage}}{{else}}{{if .Arguments}} [arguments...]{{end}}{{end}}{{end}}
-   
+
 {{- if .AdditionalHelpTopics}}{{ template "additionalHelpTopicsTemplate" .}}{{end}}{{if .Category}}
 
 CATEGORY:
