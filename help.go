@@ -435,28 +435,34 @@ func checkHelp(cCtx *Context) bool {
 	return found
 }
 
-func checkShellCompleteFlag(a *App, arguments []string) (bool, []string) {
+func checkShellCompleteFlag(a *App, arguments []string) (bool, bool, []string) {
 	if !a.EnableBashCompletion {
-		return false, arguments
+		return false, false, arguments
 	}
 
 	pos := len(arguments) - 1
 	lastArg := arguments[pos]
 
 	if lastArg != "--generate-bash-completion" {
-		return false, arguments
+		return false, false, arguments
 	}
+
+	// The completion flag was detected — strip it from arguments regardless
+	// of "--" presence, so that it never leaks into the action's arguments.
+	stripped := make([]string, 0, len(arguments)-1)
+	stripped = append(stripped, arguments[:pos]...)
+	stripped = append(stripped, arguments[pos+1:]...)
 
 	for _, arg := range arguments {
 		// If arguments include "--", shell completion is disabled
 		// because after "--" only positional arguments are accepted.
 		// https://unix.stackexchange.com/a/11382
 		if arg == "--" {
-			return false, arguments
+			return false, true, stripped
 		}
 	}
 
-	return true, arguments[:pos]
+	return true, true, stripped
 }
 
 func checkCompletions(cCtx *Context) bool {

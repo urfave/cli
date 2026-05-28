@@ -1716,18 +1716,20 @@ GLOBAL OPTIONS:
 func Test_checkShellCompleteFlag(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		name                string
-		app                 *App
-		arguments           []string
-		wantShellCompletion bool
-		wantArgs            []string
+		name                   string
+		app                    *App
+		arguments              []string
+		wantShellCompletion    bool
+		wantCompletionDetected bool
+		wantArgs               []string
 	}{
 		{
-			name:                "disable bash completion",
-			arguments:           []string{"--generate-bash-completion"},
-			app:                 &App{},
-			wantShellCompletion: false,
-			wantArgs:            []string{"--generate-bash-completion"},
+			name:                   "disable bash completion",
+			arguments:              []string{"--generate-bash-completion"},
+			app:                    &App{},
+			wantShellCompletion:    false,
+			wantCompletionDetected: false,
+			wantArgs:               []string{"--generate-bash-completion"},
 		},
 		{
 			name:      "--generate-bash-completion isn't used",
@@ -1735,8 +1737,9 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 			app: &App{
 				EnableBashCompletion: true,
 			},
-			wantShellCompletion: false,
-			wantArgs:            []string{"foo"},
+			wantShellCompletion:    false,
+			wantCompletionDetected: false,
+			wantArgs:               []string{"foo"},
 		},
 		{
 			name:      "arguments include double dash",
@@ -1744,8 +1747,9 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 			app: &App{
 				EnableBashCompletion: true,
 			},
-			wantShellCompletion: false,
-			wantArgs:            []string{"--", "foo", "--generate-bash-completion"},
+			wantShellCompletion:    false,
+			wantCompletionDetected: true,
+			wantArgs:               []string{"--", "foo"},
 		},
 		{
 			name:      "--generate-bash-completion",
@@ -1753,8 +1757,9 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 			app: &App{
 				EnableBashCompletion: true,
 			},
-			wantShellCompletion: true,
-			wantArgs:            []string{"foo"},
+			wantShellCompletion:    true,
+			wantCompletionDetected: true,
+			wantArgs:               []string{"foo"},
 		},
 	}
 
@@ -1762,10 +1767,14 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			shellCompletion, args := checkShellCompleteFlag(tt.app, tt.arguments)
+			shellCompletion, completionDetected, args := checkShellCompleteFlag(tt.app, tt.arguments)
 			if tt.wantShellCompletion != shellCompletion {
 				t.Errorf("Unexpected shell completion, got:\n%v\nexpected: %v",
 					shellCompletion, tt.wantShellCompletion)
+			}
+			if tt.wantCompletionDetected != completionDetected {
+				t.Errorf("Unexpected completion detected, got:\n%v\nexpected: %v",
+					completionDetected, tt.wantCompletionDetected)
 			}
 			if !reflect.DeepEqual(tt.wantArgs, args) {
 				t.Errorf("Unexpected arguments, got:\n%v\nexpected: %v",
