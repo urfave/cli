@@ -159,7 +159,8 @@ func TestCompletionBashAppendsSpace(t *testing.T) {
 }
 
 func TestCompletionBashGreedyColonParsing(t *testing.T) {
-	// Regression test: the bash completion template uses fmt.Sprintf, so
+	// Regression test for https://github.com/urfave/cli/issues/2335
+	// The bash completion template uses fmt.Sprintf, so
 	// literal "%" in the template must be escaped as "%%". The token
 	// extraction must use the greedy ${line%%:*} (double %%) to split on
 	// the *first* colon. A single % would use ${line%:*} which splits on
