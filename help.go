@@ -447,6 +447,10 @@ func DefaultPrintHelpCustom(out io.Writer, templ string, data any, customFuncs m
 		handleTemplateError(err)
 	}
 
+	if _, err := t.New("additionalHelpTopicsTemplate").Parse(additionalHelpTopicsTemplate); err != nil {
+		handleTemplateError(err)
+	}
+
 	tracef("executing template")
 	handleTemplateError(t.Execute(w, data))
 

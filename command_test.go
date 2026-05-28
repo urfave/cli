@@ -4923,6 +4923,7 @@ func TestJSONExportCommand(t *testing.T) {
 		"description": "Description of the application.",
 		"defaultCommand": "",
 		"category": "",
+		"additionalHelpTopics": null,
 		"commands": [
 		  {
 			"name": "config",
@@ -4936,6 +4937,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"description": "",
 			"defaultCommand": "",
 			"category": "",
+			"additionalHelpTopics": null,
 			"commands": [
 			  {
 				"name": "sub-config",
@@ -4950,6 +4952,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"description": "",
 				"defaultCommand": "",
 				"category": "",
+				"additionalHelpTopics": null,
 				"commands": null,
 				"flags": [
 				  {
@@ -5091,6 +5094,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"description": "",
 			"defaultCommand": "",
 			"category": "",
+			"additionalHelpTopics": null,
 			"commands": null,
 			"flags": null,
 			"hideHelp": false,
@@ -5123,6 +5127,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"description": "",
 			"defaultCommand": "",
 			"category": "",
+			"additionalHelpTopics": null,
 			"commands": null,
 			"flags": null,
 			"hideHelp": false,
@@ -5155,6 +5160,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"description": "",
 			"defaultCommand": "",
 			"category": "",
+			"additionalHelpTopics": null,
 			"commands": null,
 			"flags": [
 			  {
@@ -5208,6 +5214,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"description": "",
 			"defaultCommand": "",
 			"category": "",
+			"additionalHelpTopics": null,
 			"commands": [
 			  {
 				"name": "sub-usage",
@@ -5221,6 +5228,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"description": "",
 				"defaultCommand": "",
 				"category": "",
+				"additionalHelpTopics": null,
 				"commands": null,
 				"flags": [
 				  {

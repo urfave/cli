@@ -137,7 +137,9 @@ type Command struct {
 	// A value of 0 means all arguments are treated as positional (no flag parsing).
 	// A nil value means normal v3 flag parsing behavior (flags can appear anywhere).
 	StopOnNthArg *int `json:"stopOnNthArg"`
-
+	// Additional topics in the help message. Used to print arbitrary help topics
+	// in addition to the default help topics.
+	AdditionalHelpTopics map[string]string `json:"additionalHelpTopics"`
 	// categories contains the categorized commands and is populated on app startup
 	categories CommandCategories
 	// flagCategories contains the categorized flags and is populated on app startup
