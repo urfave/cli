@@ -65,7 +65,9 @@ var CommandHelpTemplate = `NAME:
    {{template "helpNameTemplate" .}}
 
 USAGE:
-   {{template "usageTemplate" .}}{{if .Category}}
+   {{template "usageTemplate" .}}
+
+{{- if .AdditionalHelpTopics}}{{ template "additionalHelpTopicsTemplate" .}}{{end}}{{if .Category}}
 
 CATEGORY:
    {{.Category}}{{end}}{{if .Description}}
@@ -115,7 +117,9 @@ var RootCommandHelpTemplate = `NAME:
    {{template "helpNameTemplate" .}}
 
 USAGE:
-   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.FullName}} {{if .VisibleFlags}}[global options]{{end}}{{if .VisibleCommands}} [command [command options]]{{end}}{{if .ArgsUsage}} {{.ArgsUsage}}{{else}}{{if .Arguments}} [arguments...]{{end}}{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.FullName}} {{if .VisibleFlags}}[global options]{{end}}{{if .VisibleCommands}} [command [command options]]{{end}}{{if .ArgsUsage}} {{.ArgsUsage}}{{else}}{{if .Arguments}} [arguments...]{{end}}{{end}}{{end}}
+
+{{- if .AdditionalHelpTopics}}{{ template "additionalHelpTopicsTemplate" .}}{{end}}{{ if .Version}}{{if not .HideVersion}}
 
 VERSION:
    {{.Version}}{{end}}{{end}}{{if .Description}}
@@ -158,7 +162,9 @@ var SubcommandHelpTemplate = `NAME:
    {{template "helpNameTemplate" .}}
 
 USAGE:
-   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.FullName}}{{if .VisibleCommands}} [command [command options]]{{end}}{{if .ArgsUsage}} {{.ArgsUsage}}{{else}}{{if .Arguments}} [arguments...]{{end}}{{end}}{{end}}{{if .Category}}
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.FullName}}{{if .VisibleCommands}} [command [command options]]{{end}}{{if .ArgsUsage}} {{.ArgsUsage}}{{else}}{{if .Arguments}} [arguments...]{{end}}{{end}}{{end}}
+
+{{- if .AdditionalHelpTopics}}{{ template "additionalHelpTopicsTemplate" .}}{{end}}{{if .Category}}
 
 CATEGORY:
    {{.Category}}{{end}}{{if .Description}}
@@ -549,6 +555,9 @@ type Command struct {
 	// A value of 0 means all arguments are treated as positional (no flag parsing).
 	// A nil value means normal v3 flag parsing behavior (flags can appear anywhere).
 	StopOnNthArg *int `json:"stopOnNthArg"`
+	// Additional topics in the help message. Used to print arbitrary help topics
+	// in addition to the default help topics.
+	AdditionalHelpTopics map[string]string `json:"additionalHelpTopics"`
 
 	// Has unexported fields.
 }
