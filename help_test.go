@@ -2096,6 +2096,7 @@ func TestPrintHelpCustomTemplateError(t *testing.T) {
 		&visibleFlagCategoryTemplate,
 		&authorsTemplate,
 		&visibleCommandCategoryTemplate,
+		&additionalHelpTopicsTemplate,
 	}
 
 	oldErrWriter := ErrWriter
