@@ -2210,7 +2210,8 @@ OPTIONS:
 	for _, test := range tests {
 		actualOut := &bytes.Buffer{}
 		rootCmd.Writer = actualOut
-		rootCmd.Run(buildTestContext(t), test.command)
+		err := rootCmd.Run(buildTestContext(t), test.command)
+		require.NoError(t, err)
 		assert.Equal(t, test.expectedOut, actualOut.String())
 	}
 }
