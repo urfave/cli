@@ -2144,3 +2144,73 @@ func TestCustomUsageCommandHelp(t *testing.T) {
 	_ = cmd.Run(buildTestContext(t), []string{"app", "help"})
 	assert.Contains(t, out.String(), UsageCommandHelp)
 }
+
+func TestAdditionalHelpTopics(t *testing.T) {
+	expectedRootHelp := `NAME:
+   root - A new cli application
+
+USAGE:
+   root [global options] [command [command options]]
+
+ADDITIONAL-HELP:
+   ADDITIONAL-HELP
+
+COMMANDS:
+   sub      
+   help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --help, -h  show help
+`
+
+	expectedSubHelp := `NAME:
+   root sub
+
+USAGE:
+   root sub [options]
+
+SUB-ADDITIONAL-HELP:
+   SUB-ADDITIONAL-HELP
+
+OPTIONS:
+   --help, -h  show help
+`
+	tests := []struct {
+		name        string
+		expectedOut string
+		command     []string
+	}{
+		{
+			name:        "rootCommandTest",
+			expectedOut: expectedRootHelp,
+			command:     []string{"root", "--help"},
+		},
+		{
+			name:        "subCommandTest",
+			expectedOut: expectedSubHelp,
+			command:     []string{"root", "sub", "--help"},
+		},
+	}
+
+	rootCmd := &Command{
+		Name: "root",
+		Commands: []*Command{
+			{
+				Name: "sub",
+				AdditionalHelpTopics: map[string]string{
+					"SUB-ADDITIONAL-HELP": "SUB-ADDITIONAL-HELP",
+				},
+			},
+		},
+		AdditionalHelpTopics: map[string]string{
+			"ADDITIONAL-HELP": "ADDITIONAL-HELP",
+		},
+	}
+
+	for _, test := range tests {
+		actualOut := &bytes.Buffer{}
+		rootCmd.Writer = actualOut
+		rootCmd.Run(buildTestContext(t), test.command)
+		assert.Equal(t, test.expectedOut, actualOut.String())
+	}
+}
