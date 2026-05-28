@@ -1,6 +1,6 @@
 ## Contributing
 
-Welcome to the `urfave/cli` contributor docs! This goal of this document is to help those
+Welcome to the `urfave/cli` contributor docs! The goal of this document is to help those
 interested in joining the 200+ humans who have contributed to this project over the years.
 
 > As a general guiding principle, the current maintainers may be notified via the

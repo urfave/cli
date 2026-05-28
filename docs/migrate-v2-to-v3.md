@@ -275,7 +275,7 @@ All functions handled previously by `cli.Context` have been incorporated into `c
 
 ## Handler Function Signatures Changes
 
-All handler functions now take at least 2 arguments a `context.Context` and a pointer to `Cli.Command`
+All handler functions now take at least 2 arguments: a `context.Context` and a pointer to `cli.Command`
 in addition to other specific args. This allows handler functions to utilize `context.Context` for
 blocking/time-specific operations and so on.
 
@@ -349,7 +349,7 @@ blocking/time-specific operations and so on.
 
     `type ExitErrHandlerFunc func(context.Context, *cli.Command, err error) error`
 
-Compiler messages you might see(for ActionFunc):
+Compiler messages you might see (for ActionFunc):
 
 ```
 cannot use func literal (type func(*cli.Context) error) as type cli.ActionFunc in field value
