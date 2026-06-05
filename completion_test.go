@@ -393,6 +393,37 @@ func TestCompletionSubcommandCustomShellComplete(t *testing.T) {
 	r.Equal("custom-index\n", out.String())
 }
 
+func TestCompletionRunsBeforeChain(t *testing.T) {
+	type contextKey struct{}
+
+	out := &bytes.Buffer{}
+	cmd := &Command{
+		EnableShellCompletion: true,
+		Writer:                out,
+		Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+			return context.WithValue(ctx, contextKey{}, "ready"), nil
+		},
+		Commands: []*Command{
+			{
+				Name: "index",
+				Commands: []*Command{
+					{
+						Name: "show",
+						ShellComplete: func(ctx context.Context, cmd *Command) {
+							fmt.Fprintln(cmd.Root().Writer, ctx.Value(contextKey{}))
+						},
+						Action: func(ctx context.Context, cmd *Command) error { return nil },
+					},
+				},
+			},
+		},
+	}
+
+	r := require.New(t)
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "index", "show", completionFlag}))
+	r.Equal("ready\n", out.String())
+}
+
 func TestCompletionInvalidShell(t *testing.T) {
 	cmd := &Command{
 		EnableShellCompletion: true,

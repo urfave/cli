@@ -158,7 +158,12 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 
 	tracef("using post-parse arguments %[1]q (cmd=%[2]q)", args, cmd.Name)
 
-	if checkCompletions(ctx, cmd) {
+	if shouldRunCompletion(cmd) {
+		var beforeErr error
+		if ctx, beforeErr = runBefore(ctx, commandChain(cmd)); beforeErr != nil {
+			return ctx, beforeErr
+		}
+		runCompletion(ctx, cmd)
 		return ctx, nil
 	}
 
@@ -297,23 +302,12 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 	// perform the command action.
 	//
 	// First, resolve the chain of nested commands up to the parent.
-	var cmdChain []*Command
-	for p := cmd; p != nil; p = p.parent {
-		cmdChain = append(cmdChain, p)
-	}
-	slices.Reverse(cmdChain)
+	cmdChain := commandChain(cmd)
 
 	// Run Before actions in order.
-	for _, cmd := range cmdChain {
-		if cmd.Before == nil {
-			continue
-		}
-		if bctx, err := cmd.Before(ctx, cmd); err != nil {
-			deferErr = cmd.handleExitCoder(ctx, err)
-			return ctx, deferErr
-		} else if bctx != nil {
-			ctx = bctx
-		}
+	if ctx, err = runBefore(ctx, cmdChain); err != nil {
+		deferErr = err
+		return ctx, deferErr
 	}
 
 	// Run flag actions in order.
@@ -362,4 +356,27 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 
 	tracef("returning deferErr (cmd=%[1]q) %[2]q", cmd.Name, deferErr)
 	return ctx, deferErr
+}
+
+func commandChain(cmd *Command) []*Command {
+	var cmdChain []*Command
+	for p := cmd; p != nil; p = p.parent {
+		cmdChain = append(cmdChain, p)
+	}
+	slices.Reverse(cmdChain)
+	return cmdChain
+}
+
+func runBefore(ctx context.Context, cmdChain []*Command) (context.Context, error) {
+	for _, cmd := range cmdChain {
+		if cmd.Before == nil {
+			continue
+		}
+		if bctx, err := cmd.Before(ctx, cmd); err != nil {
+			return ctx, cmd.handleExitCoder(ctx, err)
+		} else if bctx != nil {
+			ctx = bctx
+		}
+	}
+	return ctx, nil
 }
