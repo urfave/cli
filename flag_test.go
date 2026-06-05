@@ -88,6 +88,56 @@ func TestBoolFlagApply_SetsCount(t *testing.T) {
 	expect(t, count, 3)
 }
 
+func TestAppRunRejectsV1StyleFlagNames(t *testing.T) {
+	tests := []string{
+		"config, cfg",
+		"config cfg",
+	}
+
+	for _, name := range tests {
+		t.Run(name, func(t *testing.T) {
+			app := newTestApp()
+			app.Flags = []Flag{
+				&StringFlag{Name: name},
+			}
+
+			err := app.Run([]string{"app"})
+			if err == nil {
+				t.Fatal("expected invalid flag name error")
+			}
+			if !strings.Contains(err.Error(), "invalid flag name") {
+				t.Fatalf("expected invalid flag name error, got %q", err)
+			}
+			if !strings.Contains(err.Error(), name) {
+				t.Fatalf("expected error to mention %q, got %q", name, err)
+			}
+			if !strings.Contains(err.Error(), "Aliases") {
+				t.Fatalf("expected error to point to Aliases, got %q", err)
+			}
+		})
+	}
+}
+
+func TestCommandRunRejectsV1StyleFlagNames(t *testing.T) {
+	app := newTestApp()
+	app.Commands = []*Command{
+		{
+			Name: "serve",
+			Flags: []Flag{
+				&BoolFlag{Name: "verbose, v"},
+			},
+		},
+	}
+
+	err := app.Run([]string{"app", "serve"})
+	if err == nil {
+		t.Fatal("expected invalid flag name error")
+	}
+	if !strings.Contains(err.Error(), "verbose, v") {
+		t.Fatalf("expected error to mention invalid flag name, got %q", err)
+	}
+}
+
 func TestBoolFlagCountFromContext(t *testing.T) {
 
 	boolCountTests := []struct {

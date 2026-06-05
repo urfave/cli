@@ -73,6 +73,10 @@ func (f *GenericFlag) GetEnvVars() []string {
 // Apply takes the flagset and calls Set on the generic flag with the value
 // provided by the user for parsing by the flag
 func (f *GenericFlag) Apply(set *flag.FlagSet) error {
+	if err := validateFlagName(f.Name); err != nil {
+		return err
+	}
+
 	// set default value so that environment wont be able to overwrite it
 	if f.Value != nil {
 		f.defaultValue = &stringGeneric{value: f.Value.String()}

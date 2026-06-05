@@ -283,7 +283,8 @@ func ExampleApp_Run_bashComplete_withLongFlag() {
 			Aliases: []string{"x"},
 		},
 		&StringFlag{
-			Name: "some-flag,s",
+			Name:    "some-flag",
+			Aliases: []string{"s"},
 		},
 		&StringFlag{
 			Name: "similar-flag",

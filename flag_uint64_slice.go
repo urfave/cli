@@ -143,6 +143,10 @@ func (f *Uint64SliceFlag) IsSliceFlag() bool {
 
 // Apply populates the flag given the flag set and environment
 func (f *Uint64SliceFlag) Apply(set *flag.FlagSet) error {
+	if err := validateFlagName(f.Name); err != nil {
+		return err
+	}
+
 	// apply any default
 	if f.Destination != nil && f.Value != nil {
 		f.Destination.slice = make([]uint64, len(f.Value.slice))

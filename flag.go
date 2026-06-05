@@ -182,6 +182,14 @@ func flagSet(name string, flags []Flag, spec separatorSpec) (*flag.FlagSet, erro
 	return set, nil
 }
 
+func validateFlagName(name string) error {
+	if !commaWhitespace.MatchString(name) {
+		return nil
+	}
+
+	return fmt.Errorf("invalid flag name %q: use Aliases instead of v1-style comma or space separated names", name)
+}
+
 func copyFlag(name string, ff *flag.Flag, set *flag.FlagSet) {
 	switch ff.Value.(type) {
 	case Serializer:

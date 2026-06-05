@@ -150,6 +150,10 @@ func (f *IntSliceFlag) IsSliceFlag() bool {
 
 // Apply populates the flag given the flag set and environment
 func (f *IntSliceFlag) Apply(set *flag.FlagSet) error {
+	if err := validateFlagName(f.Name); err != nil {
+		return err
+	}
+
 	// apply any default
 	if f.Destination != nil && f.Value != nil {
 		f.Destination.slice = make([]int, len(f.Value.slice))
