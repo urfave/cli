@@ -3,7 +3,9 @@ package cli
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"strings"
 	"testing"
 
@@ -422,6 +424,27 @@ func TestCompletionRunsBeforeChain(t *testing.T) {
 	r := require.New(t)
 	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "index", "show", completionFlag}))
 	r.Equal("ready\n", out.String())
+}
+
+func TestCompletionReturnsBeforeError(t *testing.T) {
+	beforeErr := errors.New("load config")
+	completed := false
+
+	cmd := &Command{
+		EnableShellCompletion: true,
+		Writer:                io.Discard,
+		Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+			return nil, beforeErr
+		},
+		ShellComplete: func(ctx context.Context, cmd *Command) {
+			completed = true
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", completionFlag})
+
+	require.ErrorIs(t, err, beforeErr)
+	assert.False(t, completed)
 }
 
 func TestCompletionInvalidShell(t *testing.T) {
