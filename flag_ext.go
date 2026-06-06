@@ -61,3 +61,11 @@ func (e *extFlag) GetDefaultText() string {
 func (e *extFlag) GetEnvVars() []string {
 	return nil
 }
+
+func (e *extFlag) SchemaType() string {
+	return ""
+}
+
+func (e *extFlag) SchemaItemsType() string {
+	return ""
+}
