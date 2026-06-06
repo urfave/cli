@@ -689,6 +689,11 @@ func (cmd *Command) Names() []string
 func (cmd *Command) NumFlags() int
     NumFlags returns the number of flags set
 
+func (cmd *Command) Path() []string
+    Path returns the path of command names from the root to cmd,
+    inclusive. Each element is a Command.Name. FullName() is equivalent to
+    strings.Join(cmd.Path(), " ").
+
 func (cmd *Command) Root() *Command
     Root returns the Command at the root of the graph
 
@@ -800,6 +805,10 @@ func (cmd *Command) VisibleFlags() []Flag
 func (cmd *Command) VisiblePersistentFlags() []Flag
     VisiblePersistentFlags returns a slice of LocalFlag with Persistent=true and
     Hidden=false.
+
+func (cmd *Command) Walk(fn func(*Command) error) error
+    Walk visits cmd and every descendant in pre-order. Returning a non-nil error
+    from fn short-circuits the walk and is returned to the caller.
 
 type CommandCategories interface {
 	// AddCommand adds a command to a category, creating a new category if necessary.
