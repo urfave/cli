@@ -405,6 +405,10 @@ func (bif *BoolWithInverseFlag) PreParse() error
 
 func (bif *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) error
 
+func (bif *BoolWithInverseFlag) SchemaItemsType() string
+
+func (bif *BoolWithInverseFlag) SchemaType() string
+
 func (bif *BoolWithInverseFlag) Set(name, val string) error
 
 func (bif *BoolWithInverseFlag) SetCategory(c string)
@@ -1032,6 +1036,12 @@ func (f *FlagBase[T, C, V]) PreParse() error
 func (f *FlagBase[T, C, V]) RunAction(ctx context.Context, cmd *Command) error
     RunAction executes flag action if set
 
+func (f *FlagBase[T, C, V]) SchemaItemsType() string
+    SchemaItemsType returns the JSON Schema element type for slice flags.
+
+func (f *FlagBase[T, C, V]) SchemaType() string
+    SchemaType returns the JSON Schema type for the flag's value type.
+
 func (f *FlagBase[T, C, V]) Set(_ string, val string) error
     Set applies given value from string
 
@@ -1295,6 +1305,23 @@ type RequiredFlag interface {
     RequiredFlag is an interface that allows us to mark flags as required
     it allows flags required flags to be backwards compatible with the Flag
     interface
+
+type SchemaItemsTyper interface {
+	// SchemaItemsType returns the JSON Schema type of elements for
+	// array-type flags. Returns "" for single-value or object flags.
+	SchemaItemsType() string
+}
+    SchemaItemsTyper is an optional interface for multi-value flags that can
+    report the JSON Schema type of their elements.
+
+type SchemaTyper interface {
+	// SchemaType returns the JSON Schema type name for the value this
+	// flag accepts: "boolean", "integer", "number", "string", "array",
+	// "object". Returns "" if the flag does not map cleanly.
+	SchemaType() string
+}
+    SchemaTyper is an optional interface for flags that can report their JSON
+    Schema type for programmatic introspection.
 
 type Serializer interface {
 	Serialize() string
