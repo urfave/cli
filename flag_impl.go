@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 )
 
 // Value represents a value as used by cli.
@@ -283,6 +284,53 @@ func (f *FlagBase[T, C, V]) RunAction(ctx context.Context, cmd *Command) error {
 	}
 
 	return nil
+}
+
+// SchemaType returns the JSON Schema type for the flag's value type.
+func (f *FlagBase[T, C, V]) SchemaType() string {
+	var zero T
+	switch any(zero).(type) {
+	case bool:
+		return "boolean"
+	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+		return "integer"
+	case float32, float64:
+		return "number"
+	case string:
+		return "string"
+	case time.Duration:
+		return "string"
+	case time.Time:
+		return "string"
+	case []string, []int, []int8, []int16, []int32, []int64,
+		[]uint, []uint8, []uint16, []uint32, []uint64,
+		[]float32, []float64:
+		return "array"
+	case map[string]string:
+		return "object"
+	default:
+		return ""
+	}
+}
+
+// SchemaItemsType returns the JSON Schema element type for slice flags.
+func (f *FlagBase[T, C, V]) SchemaItemsType() string {
+	var zero T
+	t := reflect.TypeOf(zero)
+	if t.Kind() == reflect.Slice {
+		switch t.Elem().Kind() {
+		case reflect.Bool:
+			return "boolean"
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			return "integer"
+		case reflect.Float32, reflect.Float64:
+			return "number"
+		case reflect.String:
+			return "string"
+		}
+	}
+	return ""
 }
 
 // IsMultiValueFlag returns true if the value type T can take multiple

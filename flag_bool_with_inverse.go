@@ -263,3 +263,11 @@ func (bif *BoolWithInverseFlag) IsDefaultVisible() bool {
 func (bif *BoolWithInverseFlag) TypeName() string {
 	return "bool"
 }
+
+func (bif *BoolWithInverseFlag) SchemaType() string {
+	return "boolean"
+}
+
+func (bif *BoolWithInverseFlag) SchemaItemsType() string {
+	return ""
+}

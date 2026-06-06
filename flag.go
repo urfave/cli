@@ -151,6 +151,23 @@ type DocGenerationMultiValueFlag interface {
 	IsMultiValueFlag() bool
 }
 
+// SchemaTyper is an optional interface for flags that can report their
+// JSON Schema type for programmatic introspection.
+type SchemaTyper interface {
+	// SchemaType returns the JSON Schema type name for the value this
+	// flag accepts: "boolean", "integer", "number", "string", "array",
+	// "object". Returns "" if the flag does not map cleanly.
+	SchemaType() string
+}
+
+// SchemaItemsTyper is an optional interface for multi-value flags that
+// can report the JSON Schema type of their elements.
+type SchemaItemsTyper interface {
+	// SchemaItemsType returns the JSON Schema type of elements for
+	// array-type flags. Returns "" for single-value or object flags.
+	SchemaItemsType() string
+}
+
 // Countable is an interface to enable detection of flag values which support
 // repetitive flags
 type Countable interface {
