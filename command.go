@@ -169,13 +169,34 @@ type Command struct {
 // For commands with parents this ensures that the parent commands
 // are part of the command path.
 func (cmd *Command) FullName() string {
-	namePath := []string{}
+	return strings.Join(cmd.Path(), " ")
+}
 
+// Path returns the path of command names from the root to cmd, inclusive.
+// Each element is a Command.Name. FullName() is equivalent to
+// strings.Join(cmd.Path(), " ").
+func (cmd *Command) Path() []string {
 	if cmd.parent != nil {
-		namePath = append(namePath, cmd.parent.FullName())
+		return append(cmd.parent.Path(), cmd.Name)
 	}
+	return []string{cmd.Name}
+}
 
-	return strings.Join(append(namePath, cmd.Name), " ")
+// Walk visits cmd and every descendant in pre-order. Returning a non-nil
+// error from fn short-circuits the walk and is returned to the caller.
+func (cmd *Command) Walk(fn func(*Command) error) error {
+	if fn == nil {
+		return nil
+	}
+	if err := fn(cmd); err != nil {
+		return err
+	}
+	for _, sub := range cmd.Commands {
+		if err := sub.Walk(fn); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (cmd *Command) Command(name string) *Command {
