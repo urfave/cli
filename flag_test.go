@@ -3312,6 +3312,9 @@ func TestExtFlag(t *testing.T) {
 	assert.Equal(t, "11", extF.GetValue())
 	assert.Equal(t, "10", extF.GetDefaultText())
 	assert.Nil(t, extF.GetEnvVars())
+
+	assert.Equal(t, "", extF.SchemaType())
+	assert.Equal(t, "", extF.SchemaItemsType())
 }
 
 func TestSliceValuesNil(t *testing.T) {
