@@ -142,6 +142,9 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 	var args Args = &stringSliceArgs{rargs.Tail()}
 
 	for _, f := range cmd.allFlags() {
+		if cmd.hasPersistentFlagOnAncestor(f) {
+			continue
+		}
 		if err := f.PreParse(); err != nil {
 			return ctx, err
 		}
