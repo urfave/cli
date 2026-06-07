@@ -222,24 +222,6 @@ Shell command to find them all: `fgrep -rl github.com/urfave/cli/v2 *`
     }
     ```
 
-## Build Tags
-
-v2 provided build tags to reduce binary size by stripping optional features:
-
-| Tag | Feature |
-|-----|---------|
-| `urfave_cli_no_docs` | Disabled markdown/man page generation |
-| `urfave_cli_no_suggest` | Disabled "Did you mean?" suggestions |
-
-These tags are **not available in v3** because they are no longer necessary:
-
-- **Doc generation** (`ToMarkdown`, `ToMan`) has been removed from the core library and is available as a separate module, `github.com/urfave/cli-docs/v3`.
-- **Suggestions** now use an inlined Jaro-Winkler algorithm with no external dependency (`xrash/smetrics`).
-- **Shell completion** uses `embed.FS` for its scripts, with no external dependencies.
-- **Altsrc** has been extracted to a separate module, `github.com/urfave/cli-altsrc/v3` (see below).
-
-Binary size in v3 is managed through architectural simplification rather than build tags. v3's minimal dependency tree (only `github.com/stretchr/testify` in tests) means the core library contributes very little to your final binary.
-
 ### Order of precedence of envvars, filepaths, altsrc now depends on the order in which they are defined
 
 === "v2"
