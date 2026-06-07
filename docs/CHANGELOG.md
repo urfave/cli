@@ -25,7 +25,7 @@ These release notes were written for the git hash [d648edd48d89ef3a841b1ec75c2eb
 
 ### Changed
 
-* Improved auto-completion instructions and added example gifs in [urfave/cli/pull/1059](https://github.com/urfave/cli/pull/1059) via [@masonj188](https://github.com/masonj188)
+* Improved auto-completion instructions and added example gifs in [urfave/cli/pull/1059](https://github.com/urfave/cli/pull/1059) via @masonj188
 * Removed the author from generated man pages in [urfave/cli/pull/1041](https://github.com/urfave/cli/pull/1041) via [@saschagrunert](https://github.com/saschagrunert)
 
 ### Added
@@ -33,13 +33,13 @@ These release notes were written for the git hash [d648edd48d89ef3a841b1ec75c2eb
 * Added destination field to `StringSliceFlag` in [urfave/cli/pull/1078](https://github.com/urfave/cli/pull/1078) via [@davidsbond](https://github.com/davidsbond)
 * Added `HideHelpCommand`. While `HideHelp` hides both `help` command and `--help` flag, `HideHelpCommand` only hides `help` command and leave `--help` flag as-is in [urfave/cli/pull/1083](https://github.com/urfave/cli/pull/1083) via [@AkihiroSuda](https://github.com/AkihiroSuda)
 * Added timestampFlag docs in [urfave/cli/pull/997](https://github.com/urfave/cli/pull/997) via [@drov0](https://github.com/drov0)
-* Added required flags documentation in [urfave/cli/pull/1008](https://github.com/urfave/cli/pull/1008) via [@lynncyrin](https://github.com/lynncyrin), [@anberns](https://github.com/anberns)
+* Added required flags documentation in [urfave/cli/pull/1008](https://github.com/urfave/cli/pull/1008) via @lynncyrin, [@anberns](https://github.com/anberns)
 
 ## [2.1.1] - 2019-12-24
 
 ### Fixed
 
-* Fixed a `Context` regression introduced in `v2.1.0` in [urfave/cli/pull/1014](https://github.com/urfave/cli/pull/1014) via [@lynncyrin](https://github.com/lynncyrin)
+* Fixed a `Context` regression introduced in `v2.1.0` in [urfave/cli/pull/1014](https://github.com/urfave/cli/pull/1014) via @lynncyrin
 
 ## [2.1.0] - 2019-12-24
 
@@ -66,7 +66,7 @@ These release notes were written for the git hash [ae84df4cef4a2a6f1a0cb1d41ea0f
 
 The V2 changes were all shipped in [urfave/cli/pull/892](https://github.com/urfave/cli/pull/892), which was created with the effort of over a dozen participants! They are:
 
-[@asahasrabuddhe](https://github.com/asahasrabuddhe), [@meatballhat](https://github.com/meatballhat), [@jszwedko](https://github.com/jszwedko), [@lynncyrin](https://github.com/lynncyrin), [@AudriusButkevicius](https://github.com/AudriusButkevicius), [@saschagrunert](https://github.com/saschagrunert), [@rliebz](https://github.com/rliebz), [@johnweldon](https://github.com/johnweldon), [@nlewo](https://github.com/nlewo), [@grubernaut](https://github.com/grubernaut), [@OneOfOne](https://github.com/OneOfOne), [@VMitov](https://github.com/VMitov), [@cbranch](https://github.com/cbranch), [@marwan-at-work](https://github.com/marwan-at-work), [@uudashr](https://github.com/uudashr), [@bfreis](https://github.com/bfreis)
+[@asahasrabuddhe](https://github.com/asahasrabuddhe), [@meatballhat](https://github.com/meatballhat), [@jszwedko](https://github.com/jszwedko), @lynncyrin, [@AudriusButkevicius](https://github.com/AudriusButkevicius), [@saschagrunert](https://github.com/saschagrunert), [@rliebz](https://github.com/rliebz), [@johnweldon](https://github.com/johnweldon), [@nlewo](https://github.com/nlewo), [@grubernaut](https://github.com/grubernaut), [@OneOfOne](https://github.com/OneOfOne), [@VMitov](https://github.com/VMitov), [@cbranch](https://github.com/cbranch), [@marwan-at-work](https://github.com/marwan-at-work), [@uudashr](https://github.com/uudashr), [@bfreis](https://github.com/bfreis)
 
 ### Added
 
@@ -114,7 +114,7 @@ View [unreleased 1.22.X] series changes.
 
 ### Fixed
 
-- Fix v1.21.0 pass through regression in [urfave/cli/pull/872](https://github.com/urfave/cli/pull/872) via [@lynncyrin](https://github.com/lynncyrin)
+- Fix v1.21.0 pass through regression in [urfave/cli/pull/872](https://github.com/urfave/cli/pull/872) via @lynncyrin
 - Fix infinite loop when parsing invalid flags for apps with short option handling in [urfave/cli/pull/911](https://github.com/urfave/cli/pull/911) via [@rliebz](https://github.com/rliebz)
 - Fix zsh autocomplete in [urfave/cli/pull/906](https://github.com/urfave/cli/pull/906) via [@gnowxilef](https://github.com/gnowxilef)
 - Fix typo in `DocGenerationFlag.TakesValue()` docstring in [urfave/cli/pull/902](https://github.com/urfave/cli/pull/902) via [@benmoose](https://github.com/benmoose)
@@ -129,7 +129,7 @@ View [unreleased 1.22.X] series changes.
 ### Fixed
 
 * Hide output of hidden commands on man pages in [urfave/cli/pull/889](https://github.com/urfave/cli/pull/889) via [@crosbymichael](https://github.com/crosbymichael)
-* Don't generate fish completion for hidden commands [urfave/cli/pull/891](https://github.com/urfave/891) via [@saschagrunert](https://github.com/saschagrunert)
+* Don't generate fish completion for hidden commands [urfave/cli/pull/891](https://github.com/urfave/cli/pull/891) via [@saschagrunert](https://github.com/saschagrunert)
 * Using short flag names for required flags throws an error in [urfave/cli/pull/890](https://github.com/urfave/cli/pull/890) via [@asahasrabuddhe](https://github.com/asahasrabuddhe)
 
 ### Changed
@@ -178,7 +178,7 @@ View [unreleased 1.22.X] series changes.
 
 ### Added
 
-* Added _"required flags"_ support in [urfave/cli/pull/819](https://github.com/urfave/cli/pull/819) via [@lynncyrin](https://github.com/lynncyrin/)
+* Added _"required flags"_ support in [urfave/cli/pull/819](https://github.com/urfave/cli/pull/819) via @lynncyrin
 * Backport JSON `InputSource` to v1 in [urfave/cli/pull/598](https://github.com/urfave/cli/pull/598) via [@jszwedko](https://github.com/jszwedko)
 * Allow more customization of flag help strings in [urfave/cli/pull/661](https://github.com/urfave/cli/pull/661) via [@rliebz](https://github.com/rliebz)
 * Allow custom `ExitError` handler function in [urfave/cli/pull/628](https://github.com/urfave/cli/pull/628) via [@phinnaeus](https://github.com/phinnaeus)
@@ -596,7 +596,7 @@ signature of `func(*cli.Context) error`, as defined by `cli.ActionFunc`.
 [2.1.0]: https://github.com/urfave/cli/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/urfave/cli/compare/v1.22.2...v2.0.0
 
-[unreleased 1.22.X]: https://github.com/urfave/cli/compare/v1.22.4...v1
+[unreleased 1.22.X]: https://github.com/urfave/cli/compare/v1.22.4...v1-maint
 [1.22.4]: https://github.com/urfave/cli/compare/v1.22.3...v1.22.4
 [1.22.3]: https://github.com/urfave/cli/compare/v1.22.2...v1.22.3
 [1.22.2]: https://github.com/urfave/cli/compare/v1.22.1...v1.22.2
