@@ -3387,6 +3387,48 @@ func TestPersistentFlagIsSet(t *testing.T) {
 	require.True(t, resultIsSet)
 }
 
+func TestDuplicatePersistentFlagUsesEnvSource(t *testing.T) {
+	t.Setenv("APP_RESULT", "from-env")
+
+	resultFlag := &StringFlag{
+		Name:     "result",
+		Sources:  EnvVars("APP_RESULT"),
+		Required: true,
+	}
+
+	var beforeResult string
+	var actionResult string
+	app := &Command{
+		Name: "root",
+		Flags: []Flag{
+			resultFlag,
+		},
+		Before: func(_ context.Context, cmd *Command) (context.Context, error) {
+			beforeResult = cmd.String("result")
+			return nil, nil
+		},
+		Commands: []*Command{
+			{
+				Name: "sub",
+				Flags: []Flag{
+					resultFlag,
+				},
+				Action: func(_ context.Context, cmd *Command) error {
+					actionResult = cmd.String("result")
+					return nil
+				},
+			},
+		},
+	}
+
+	err := app.Run(context.Background(), []string{"root", "sub"})
+	require.NoError(t, err)
+	require.Equal(t, "from-env", beforeResult)
+	require.Equal(t, "from-env", actionResult)
+	require.True(t, app.IsSet("result"))
+	require.True(t, app.Command("sub").IsSet("result"))
+}
+
 func TestRequiredFlagDelayed(t *testing.T) {
 	sf := &StringFlag{
 		Name:     "result",
