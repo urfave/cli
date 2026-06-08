@@ -166,8 +166,7 @@ type Command struct {
 }
 
 // FullName returns the full name of the command.
-// For commands with parents this ensures that the parent commands
-// are part of the command path.
+// Includes parent commands separated by space.
 func (cmd *Command) FullName() string {
 	return strings.Join(cmd.Path(), " ")
 }
