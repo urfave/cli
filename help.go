@@ -65,11 +65,11 @@ var ArgsUsageCommandHelp = "[command]"
 
 func buildHelpCommand(withAction bool) *Command {
 	cmd := &Command{
-		Name:       helpName,
-		Aliases:    []string{helpAlias},
-		Usage:      UsageCommandHelp,
-		ArgsUsage:  ArgsUsageCommandHelp,
-		HideHelp:   true,
+		Name:        helpName,
+		Aliases:     []string{helpAlias},
+		Usage:       UsageCommandHelp,
+		ArgsUsage:   ArgsUsageCommandHelp,
+		HideHelp:    true,
 		builtInHelp: true,
 	}
 
