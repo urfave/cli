@@ -2363,6 +2363,76 @@ func TestCommand_OrderOfOperations(t *testing.T) {
 	})
 }
 
+func TestCommand_HelpFlagTakesPrecedenceOverParseErrors(t *testing.T) {
+	t.Run("root command with --help and bad flag", func(t *testing.T) {
+		r := require.New(t)
+		var buf bytes.Buffer
+		var errBuf bytes.Buffer
+
+		cmd := &Command{
+			Writer:    &buf,
+			ErrWriter: &errBuf,
+			Action: func(ctx context.Context, cmd *Command) error {
+				return nil
+			},
+		}
+
+		err := cmd.Run(buildTestContext(t), []string{"command", "--help", "--undefined"})
+		r.NoError(err)
+		r.Contains(buf.String(), "NAME:")
+		r.Contains(buf.String(), "command")
+		r.NotContains(errBuf.String(), "Incorrect Usage")
+	})
+
+	t.Run("root command with -h and bad flag", func(t *testing.T) {
+		r := require.New(t)
+		var buf bytes.Buffer
+		var errBuf bytes.Buffer
+
+		cmd := &Command{
+			Writer:    &buf,
+			ErrWriter: &errBuf,
+			Action: func(ctx context.Context, cmd *Command) error {
+				return nil
+			},
+		}
+
+		err := cmd.Run(buildTestContext(t), []string{"command", "-h", "--undefined"})
+		r.NoError(err)
+		r.Contains(buf.String(), "NAME:")
+		r.Contains(buf.String(), "command")
+		r.NotContains(errBuf.String(), "Incorrect Usage")
+	})
+
+	t.Run("subcommand with --help and bad flag", func(t *testing.T) {
+		r := require.New(t)
+		var buf bytes.Buffer
+		var errBuf bytes.Buffer
+
+		cmd := &Command{
+			Writer:    &buf,
+			ErrWriter: &errBuf,
+			Action: func(ctx context.Context, cmd *Command) error {
+				return nil
+			},
+			Commands: []*Command{
+				{
+					Name: "foo",
+					Action: func(ctx context.Context, cmd *Command) error {
+						return nil
+					},
+				},
+			},
+		}
+
+		err := cmd.Run(buildTestContext(t), []string{"command", "foo", "--help", "--undefined"})
+		r.NoError(err)
+		r.Contains(buf.String(), "NAME:")
+		r.Contains(buf.String(), "foo")
+		r.NotContains(errBuf.String(), "Incorrect Usage")
+	})
+}
+
 func TestFlagActionOrder(t *testing.T) {
 	tests := []struct {
 		Name string
