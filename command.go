@@ -181,8 +181,8 @@ func (cmd *Command) Path() []string {
 	return []string{cmd.Name}
 }
 
-// Walk visits cmd and every descendant in pre-order. Returning a non-nil
-// error from fn short-circuits the walk and is returned to the caller.
+// Walk visits cmd and every descendant. If fn returns a non-nil error, the
+// walk terminates and the error is returned to the caller.
 func (cmd *Command) Walk(fn func(*Command) error) error {
 	if fn == nil {
 		return nil

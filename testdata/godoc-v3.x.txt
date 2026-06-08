@@ -807,8 +807,8 @@ func (cmd *Command) VisiblePersistentFlags() []Flag
     Hidden=false.
 
 func (cmd *Command) Walk(fn func(*Command) error) error
-    Walk visits cmd and every descendant in pre-order. Returning a non-nil error
-    from fn short-circuits the walk and is returned to the caller.
+    Walk visits cmd and every descendant. If fn returns a non-nil error, the
+    walk terminates and the error is returned to the caller.
 
 type CommandCategories interface {
 	// AddCommand adds a command to a category, creating a new category if necessary.
