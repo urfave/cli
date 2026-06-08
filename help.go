@@ -65,11 +65,12 @@ var ArgsUsageCommandHelp = "[command]"
 
 func buildHelpCommand(withAction bool) *Command {
 	cmd := &Command{
-		Name:      helpName,
-		Aliases:   []string{helpAlias},
-		Usage:     UsageCommandHelp,
-		ArgsUsage: ArgsUsageCommandHelp,
-		HideHelp:  true,
+		Name:       helpName,
+		Aliases:    []string{helpAlias},
+		Usage:      UsageCommandHelp,
+		ArgsUsage:  ArgsUsageCommandHelp,
+		HideHelp:   true,
+		builtInHelp: true,
 	}
 
 	if withAction {
@@ -100,7 +101,7 @@ func helpCommandAction(ctx context.Context, cmd *Command) error {
 	//     to
 	// $ app foo
 	// which will then be handled as case 3
-	if cmd.parent != nil && (cmd.HasName(helpName) || cmd.HasName(helpAlias)) {
+	if cmd.parent != nil && cmd.builtInHelp {
 		tracef("setting cmd to cmd.parent")
 		cmd = cmd.parent
 	}

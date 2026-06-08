@@ -163,6 +163,8 @@ type Command struct {
 	globaVersionFlagAdded bool
 	// whether this is a completion command
 	isCompletionCommand bool
+	// whether this is the built-in help command
+	builtInHelp bool
 }
 
 // FullName returns the full name of the command.
@@ -430,7 +432,7 @@ func (cmd *Command) checkAllRequiredFlags() requiredFlagsErr {
 	// The help and completion commands are allowed to run without
 	// enforcement of required flags, since they do not invoke user
 	// actions that depend on those flag values.
-	if cmd.Name == helpName || cmd.isCompletionCommand {
+	if cmd.builtInHelp || cmd.isCompletionCommand {
 		return nil
 	}
 	for pCmd := cmd; pCmd != nil; pCmd = pCmd.parent {

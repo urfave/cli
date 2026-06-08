@@ -189,7 +189,7 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 				}
 			} else {
 				tracef("running ShowCommandHelp with %[1]q", cmd.Name)
-				if err := ShowCommandHelp(ctx, cmd, cmd.Name); err != nil {
+				if err := ShowCommandHelp(ctx, cmd.parent, cmd.Name); err != nil {
 					tracef("SILENTLY IGNORING ERROR running ShowCommandHelp with %[1]q %[2]v", cmd.Name, err)
 				}
 			}
@@ -243,7 +243,14 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 				if cmd.OnUsageError != nil {
 					err = cmd.OnUsageError(ctx, cmd, err, cmd.parent != nil)
 				} else {
-					_ = ShowSubcommandHelp(cmd)
+					fmt.Fprintf(cmd.Root().ErrWriter, "Incorrect Usage: %s\n\n", err.Error())
+					if cmd.parent == nil {
+						_ = ShowRootCommandHelp(cmd)
+					} else {
+						if err := ShowCommandHelp(ctx, cmd.parent, cmd.Name); err != nil {
+							_ = ShowSubcommandHelp(cmd)
+						}
+					}
 				}
 				return ctx, err
 			}
@@ -334,7 +341,14 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 		if cmd.OnUsageError != nil {
 			err = cmd.OnUsageError(ctx, cmd, err, cmd.parent != nil)
 		} else {
-			_ = ShowSubcommandHelp(cmd)
+			fmt.Fprintf(cmd.Root().ErrWriter, "Incorrect Usage: %s\n\n", err.Error())
+			if cmd.parent == nil {
+				_ = ShowRootCommandHelp(cmd)
+			} else {
+				if err := ShowCommandHelp(ctx, cmd.parent, cmd.Name); err != nil {
+					_ = ShowSubcommandHelp(cmd)
+				}
+			}
 		}
 		return ctx, err
 	}
