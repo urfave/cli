@@ -175,7 +175,6 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 		deferErr = err
 
 		cmd.isInError = true
-
 		if cmd.checkHelp() {
 			if cmd.parent == nil {
 				_ = ShowRootCommandHelp(cmd)
@@ -184,7 +183,6 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 			}
 			return ctx, nil
 		}
-
 		if cmd.OnUsageError != nil {
 			err = cmd.OnUsageError(ctx, cmd, err, cmd.parent != nil)
 			err = cmd.handleExitCoder(ctx, err)
