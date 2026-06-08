@@ -2431,6 +2431,34 @@ func TestCommand_HelpFlagTakesPrecedenceOverParseErrors(t *testing.T) {
 		r.Contains(buf.String(), "foo")
 		r.NotContains(errBuf.String(), "Incorrect Usage")
 	})
+
+	t.Run("subcommand with bad flag shows Incorrect Usage and help", func(t *testing.T) {
+		r := require.New(t)
+		var buf bytes.Buffer
+		var errBuf bytes.Buffer
+
+		cmd := &Command{
+			Writer:    &buf,
+			ErrWriter: &errBuf,
+			Action: func(ctx context.Context, cmd *Command) error {
+				return nil
+			},
+			Commands: []*Command{
+				{
+					Name: "foo",
+					Action: func(ctx context.Context, cmd *Command) error {
+						return nil
+					},
+				},
+			},
+		}
+
+		err := cmd.Run(buildTestContext(t), []string{"command", "foo", "--undefined"})
+		r.Error(err)
+		r.Contains(buf.String(), "NAME:")
+		r.Contains(buf.String(), "foo")
+		r.Contains(errBuf.String(), "Incorrect Usage")
+	})
 }
 
 func TestFlagActionOrder(t *testing.T) {
