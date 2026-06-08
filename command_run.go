@@ -9,6 +9,8 @@ import (
 	"unicode"
 )
 
+type helpShownKey struct{}
+
 func (cmd *Command) parseArgsFromStdin() ([]string, error) {
 	type state int
 	const (
@@ -176,6 +178,7 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 
 		cmd.isInError = true
 		if cmd.checkHelp() {
+			ctx = context.WithValue(ctx, helpShownKey{}, true)
 			if cmd.parent == nil {
 				_ = ShowRootCommandHelp(cmd)
 			} else {
@@ -210,6 +213,7 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 	}
 
 	if cmd.checkHelp() {
+		ctx = context.WithValue(ctx, helpShownKey{}, true)
 		return ctx, helpCommandAction(ctx, cmd)
 	} else {
 		tracef("no help is wanted (cmd=%[1]q)", cmd.Name)
@@ -234,6 +238,9 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 
 	if cmd.After != nil && !cmd.Root().shellCompletion {
 		defer func() {
+			if ctx.Value(helpShownKey{}) != nil {
+				return
+			}
 			if err := cmd.After(ctx, cmd); err != nil {
 				err = cmd.handleExitCoder(ctx, err)
 

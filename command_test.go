@@ -1810,6 +1810,50 @@ func TestCommand_AfterFunc(t *testing.T) {
 	assert.Equal(t, 0, counts.SubCommand, "Subcommand not executed when expected")
 }
 
+func TestCommand_AfterNotCalledOnSubcommandHelp(t *testing.T) {
+	var afterCalled bool
+	cmd := &Command{
+		After: func(_ context.Context, _ *Command) error {
+			afterCalled = true
+			return nil
+		},
+		Commands: []*Command{
+			{
+				Name: "sub",
+				Action: func(context.Context, *Command) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"app", "sub", "--help"})
+	require.NoError(t, err)
+	assert.False(t, afterCalled, "After should not be called when --help is passed to subcommand")
+}
+
+func TestCommand_AfterStillCalledOnNormalSubcommand(t *testing.T) {
+	var afterCalled bool
+	cmd := &Command{
+		After: func(_ context.Context, _ *Command) error {
+			afterCalled = true
+			return nil
+		},
+		Commands: []*Command{
+			{
+				Name: "sub",
+				Action: func(context.Context, *Command) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"app", "sub"})
+	require.NoError(t, err)
+	assert.True(t, afterCalled, "After should be called on normal subcommand execution")
+}
+
 func TestCommandNoHelpFlag(t *testing.T) {
 	oldFlag := HelpFlag
 	defer func() {
@@ -2431,7 +2475,6 @@ func TestCommand_HelpFlagTakesPrecedenceOverParseErrors(t *testing.T) {
 		r.Contains(buf.String(), "foo")
 		r.NotContains(errBuf.String(), "Incorrect Usage")
 	})
-<<<<<<< HEAD
 
 	t.Run("subcommand with bad flag shows Incorrect Usage and help", func(t *testing.T) {
 		r := require.New(t)
