@@ -1966,6 +1966,112 @@ func TestRequiredFlagCommandRunBehavior(t *testing.T) {
 	}
 }
 
+func TestCommand_IncorrectUsageOnRequiredFlagsViaRun(t *testing.T) {
+	t.Run("root command missing required flag", func(t *testing.T) {
+		r := require.New(t)
+		var buf bytes.Buffer
+		var errBuf bytes.Buffer
+
+		cmd := &Command{
+			Writer:    &buf,
+			ErrWriter: &errBuf,
+			Flags: []Flag{
+				&StringFlag{Name: "requiredFlag", Required: true},
+			},
+		}
+
+		_ = cmd.Run(buildTestContext(t), []string{"command"})
+		r.Contains(errBuf.String(), "Incorrect Usage")
+		r.Contains(buf.String(), "NAME:")
+		r.Contains(buf.String(), "command")
+	})
+
+	t.Run("subcommand missing required flag", func(t *testing.T) {
+		r := require.New(t)
+		var buf bytes.Buffer
+		var errBuf bytes.Buffer
+
+		cmd := &Command{
+			Writer:    &buf,
+			ErrWriter: &errBuf,
+			Commands: []*Command{
+				{
+					Name: "sub",
+					Flags: []Flag{
+						&StringFlag{Name: "requiredFlag", Required: true},
+					},
+					Action: func(ctx context.Context, cmd *Command) error {
+						return nil
+					},
+				},
+			},
+		}
+
+		_ = cmd.Run(buildTestContext(t), []string{"command", "sub"})
+		r.Contains(errBuf.String(), "Incorrect Usage")
+		r.Contains(buf.String(), "NAME:")
+		r.Contains(buf.String(), "sub")
+	})
+}
+
+func TestCommand_IncorrectUsageOnMutuallyExclusiveFlagsViaRun(t *testing.T) {
+	t.Run("root command with mutex violation", func(t *testing.T) {
+		r := require.New(t)
+		var buf bytes.Buffer
+		var errBuf bytes.Buffer
+
+		cmd := &Command{
+			Writer:    &buf,
+			ErrWriter: &errBuf,
+			MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
+				{
+					Flags: [][]Flag{
+						{&StringFlag{Name: "foo1"}},
+						{&StringFlag{Name: "foo2"}},
+					},
+				},
+			},
+		}
+
+		_ = cmd.Run(buildTestContext(t), []string{"command", "--foo1", "v1", "--foo2", "v2"})
+		r.Contains(errBuf.String(), "Incorrect Usage")
+		r.Contains(buf.String(), "NAME:")
+		r.Contains(buf.String(), "command")
+	})
+
+	t.Run("subcommand with mutex violation", func(t *testing.T) {
+		r := require.New(t)
+		var buf bytes.Buffer
+		var errBuf bytes.Buffer
+
+		cmd := &Command{
+			Writer:    &buf,
+			ErrWriter: &errBuf,
+			Action: func(ctx context.Context, cmd *Command) error {
+				return nil
+			},
+			Commands: []*Command{
+				{
+					Name: "sub",
+					MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
+						{
+							Flags: [][]Flag{
+								{&StringFlag{Name: "foo1"}},
+								{&StringFlag{Name: "foo2"}},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		_ = cmd.Run(buildTestContext(t), []string{"command", "sub", "--foo1", "v1", "--foo2", "v2"})
+		r.Contains(errBuf.String(), "Incorrect Usage")
+		r.Contains(buf.String(), "NAME:")
+		r.Contains(buf.String(), "sub")
+	})
+}
+
 func TestCommandHelpPrinter(t *testing.T) {
 	oldPrinter := HelpPrinter
 	defer func() {
