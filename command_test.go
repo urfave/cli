@@ -2072,6 +2072,77 @@ func TestCommand_IncorrectUsageOnMutuallyExclusiveFlagsViaRun(t *testing.T) {
 	})
 }
 
+func TestCommand_IncorrectUsageOnSubcommandWithFailingShowCommandHelp(t *testing.T) {
+	t.Run("required flags fallback to ShowSubcommandHelp", func(t *testing.T) {
+		oldShowCommandHelp := ShowCommandHelp
+		defer func() { ShowCommandHelp = oldShowCommandHelp }()
+		ShowCommandHelp = func(_ context.Context, _ *Command, _ string) error {
+			return errors.New("forced error")
+		}
+
+		r := require.New(t)
+		var buf bytes.Buffer
+		var errBuf bytes.Buffer
+
+		cmd := &Command{
+			Writer:    &buf,
+			ErrWriter: &errBuf,
+			Commands: []*Command{
+				{
+					Name: "sub",
+					Flags: []Flag{
+						&StringFlag{Name: "requiredFlag", Required: true},
+					},
+					Action: func(ctx context.Context, cmd *Command) error {
+						return nil
+					},
+				},
+			},
+		}
+
+		_ = cmd.Run(buildTestContext(t), []string{"command", "sub"})
+		r.Contains(errBuf.String(), "Incorrect Usage")
+		r.Contains(buf.String(), "sub")
+	})
+
+	t.Run("mutex flags fallback to ShowSubcommandHelp", func(t *testing.T) {
+		oldShowCommandHelp := ShowCommandHelp
+		defer func() { ShowCommandHelp = oldShowCommandHelp }()
+		ShowCommandHelp = func(_ context.Context, _ *Command, _ string) error {
+			return errors.New("forced error")
+		}
+
+		r := require.New(t)
+		var buf bytes.Buffer
+		var errBuf bytes.Buffer
+
+		cmd := &Command{
+			Writer:    &buf,
+			ErrWriter: &errBuf,
+			Action: func(ctx context.Context, cmd *Command) error {
+				return nil
+			},
+			Commands: []*Command{
+				{
+					Name: "sub",
+					MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
+						{
+							Flags: [][]Flag{
+								{&StringFlag{Name: "foo1"}},
+								{&StringFlag{Name: "foo2"}},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		_ = cmd.Run(buildTestContext(t), []string{"command", "sub", "--foo1", "v1", "--foo2", "v2"})
+		r.Contains(errBuf.String(), "Incorrect Usage")
+		r.Contains(buf.String(), "sub")
+	})
+}
+
 func TestCommandHelpPrinter(t *testing.T) {
 	oldPrinter := HelpPrinter
 	defer func() {
