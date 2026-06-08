@@ -2431,6 +2431,7 @@ func TestCommand_HelpFlagTakesPrecedenceOverParseErrors(t *testing.T) {
 		r.Contains(buf.String(), "foo")
 		r.NotContains(errBuf.String(), "Incorrect Usage")
 	})
+<<<<<<< HEAD
 
 	t.Run("subcommand with bad flag shows Incorrect Usage and help", func(t *testing.T) {
 		r := require.New(t)
