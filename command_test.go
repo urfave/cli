@@ -2098,8 +2098,9 @@ func TestCommand_OrderOfOperations(t *testing.T) {
 		r := require.New(t)
 
 		_ = cmd.Run(buildTestContext(t), []string{"command", completionFlag})
-		r.Equal(1, counts.ShellComplete)
-		r.Equal(1, counts.Total)
+		r.Equal(1, counts.Before)
+		r.Equal(2, counts.ShellComplete)
+		r.Equal(2, counts.Total)
 	})
 
 	t.Run("nil on usage error", func(t *testing.T) {
