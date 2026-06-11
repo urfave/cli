@@ -459,13 +459,7 @@ func DefaultPrintHelp(out io.Writer, templ string, data any) {
 }
 
 func checkVersion(cmd *Command) bool {
-	found := false
-	for _, name := range VersionFlag.Names() {
-		if cmd.Bool(name) {
-			found = true
-		}
-	}
-	return found
+	return cmd.versionFlag != nil && cmd.versionFlag.IsSet()
 }
 
 func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {

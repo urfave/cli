@@ -104,8 +104,11 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 				localVersionFlag = VersionFlag
 			}
 
-			cmd.appendFlag(localVersionFlag)
-			cmd.globaVersionFlagAdded = true
+			if !flagNamesInUse(cmd.allFlags(), localVersionFlag.Names()) {
+				cmd.appendFlag(localVersionFlag)
+				cmd.versionFlag = localVersionFlag
+				cmd.globaVersionFlagAdded = true
+			}
 		}
 	}
 
@@ -191,6 +194,20 @@ func (cmd *Command) setupSubcommand() {
 
 	tracef("setting flag categories (cmd=%[1]q)", cmd.Name)
 	cmd.flagCategories = newFlagCategoriesFromFlags(cmd.allFlags())
+}
+
+func flagNamesInUse(flags []Flag, names []string) bool {
+	for _, name := range names {
+		for _, fl := range flags {
+			for _, flagName := range fl.Names() {
+				if flagName == name {
+					return true
+				}
+			}
+		}
+	}
+
+	return false
 }
 
 func (cmd *Command) hideHelp() bool {

@@ -2392,6 +2392,31 @@ func TestCommand_Run_Version(t *testing.T) {
 	}
 }
 
+func TestCommand_Run_CustomFlagCanUseVersionAlias(t *testing.T) {
+	buf := new(bytes.Buffer)
+	called := false
+
+	cmd := &Command{
+		Name:    "boom",
+		Version: "0.1.0",
+		Writer:  buf,
+		Flags: []Flag{
+			&BoolFlag{Name: "verbose", Aliases: []string{"v"}},
+		},
+		Action: func(_ context.Context, cmd *Command) error {
+			called = true
+			assert.True(t, cmd.Bool("verbose"))
+			return nil
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"boom", "-v"})
+
+	assert.NoError(t, err)
+	assert.True(t, called)
+	assert.Empty(t, buf.String())
+}
+
 func TestCommand_Run_Categories(t *testing.T) {
 	buf := new(bytes.Buffer)
 

@@ -161,6 +161,8 @@ type Command struct {
 	globaHelpFlagAdded bool
 	// whether global version flag was added
 	globaVersionFlagAdded bool
+	// generated root version flag
+	versionFlag Flag
 	// whether this is a completion command
 	isCompletionCommand bool
 }
