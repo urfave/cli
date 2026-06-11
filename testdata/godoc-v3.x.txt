@@ -606,8 +606,8 @@ func (cmd *Command) FloatSlice(name string) []float64
     found
 
 func (cmd *Command) FullName() string
-    FullName returns the full name of the command. For commands with parents
-    this ensures that the parent commands are part of the command path.
+    FullName returns the full name of the command. Includes parent commands
+    separated by space.
 
 func (cmd *Command) Generic(name string) Value
     Generic looks up the value of a local GenericFlag, returns nil if not found
@@ -807,8 +807,8 @@ func (cmd *Command) VisiblePersistentFlags() []Flag
     Hidden=false.
 
 func (cmd *Command) Walk(fn func(*Command) error) error
-    Walk visits cmd and every descendant. If fn returns a non-nil error, the
-    walk terminates and the error is returned to the caller.
+    Walk visits cmd and every descendant. If fn returns a non-nil error,
+    the walk terminates and the error is returned to the caller.
 
 type CommandCategories interface {
 	// AddCommand adds a command to a category, creating a new category if necessary.
