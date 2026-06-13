@@ -3,7 +3,9 @@ package cli
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"strings"
 	"testing"
 
@@ -418,6 +420,58 @@ func TestCompletionSubcommandCustomShellComplete(t *testing.T) {
 	r := require.New(t)
 	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "index", "show", completionFlag}))
 	r.Equal("custom-index\n", out.String())
+}
+
+func TestCompletionRunsBeforeChain(t *testing.T) {
+	type contextKey struct{}
+
+	out := &bytes.Buffer{}
+	cmd := &Command{
+		EnableShellCompletion: true,
+		Writer:                out,
+		Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+			return context.WithValue(ctx, contextKey{}, "ready"), nil
+		},
+		Commands: []*Command{
+			{
+				Name: "index",
+				Commands: []*Command{
+					{
+						Name: "show",
+						ShellComplete: func(ctx context.Context, cmd *Command) {
+							fmt.Fprintln(cmd.Root().Writer, ctx.Value(contextKey{}))
+						},
+						Action: func(ctx context.Context, cmd *Command) error { return nil },
+					},
+				},
+			},
+		},
+	}
+
+	r := require.New(t)
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "index", "show", completionFlag}))
+	r.Equal("ready\n", out.String())
+}
+
+func TestCompletionReturnsBeforeError(t *testing.T) {
+	beforeErr := errors.New("load config")
+	completed := false
+
+	cmd := &Command{
+		EnableShellCompletion: true,
+		Writer:                io.Discard,
+		Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+			return nil, beforeErr
+		},
+		ShellComplete: func(ctx context.Context, cmd *Command) {
+			completed = true
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", completionFlag})
+
+	require.ErrorIs(t, err, beforeErr)
+	assert.False(t, completed)
 }
 
 func TestCompletionInvalidShell(t *testing.T) {

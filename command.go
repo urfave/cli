@@ -161,21 +161,10 @@ type Command struct {
 	globaHelpFlagAdded bool
 	// whether global version flag was added
 	globaVersionFlagAdded bool
+	// generated root version flag
+	versionFlag Flag
 	// whether this is a completion command
 	isCompletionCommand bool
-}
-
-// FullName returns the full name of the command.
-// For commands with parents this ensures that the parent commands
-// are part of the command path.
-func (cmd *Command) FullName() string {
-	namePath := []string{}
-
-	if cmd.parent != nil {
-		namePath = append(namePath, cmd.parent.FullName())
-	}
-
-	return strings.Join(append(namePath, cmd.Name), " ")
 }
 
 func (cmd *Command) Command(name string) *Command {
@@ -573,6 +562,39 @@ func (cmd *Command) Lineage() []*Command {
 	}
 
 	return lineage
+}
+
+// FullName returns the full name of the command.
+// Includes parent commands separated by space.
+func (cmd *Command) FullName() string {
+	return strings.Join(cmd.Path(), " ")
+}
+
+// Path returns the path of command names from the root to cmd, inclusive.
+// Each element is a Command.Name. Path traverses upward via parent pointers
+// similar to Lineage. FullName() is equivalent to strings.Join(cmd.Path(), " ").
+func (cmd *Command) Path() []string {
+	if cmd.parent != nil {
+		return append(cmd.parent.Path(), cmd.Name)
+	}
+	return []string{cmd.Name}
+}
+
+// Walk visits cmd and every descendant. If fn returns a non-nil error, the
+// walk terminates and the error is returned to the caller.
+func (cmd *Command) Walk(fn func(*Command) error) error {
+	if fn == nil {
+		return nil
+	}
+	if err := fn(cmd); err != nil {
+		return err
+	}
+	for _, sub := range cmd.Commands {
+		if err := sub.Walk(fn); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Count returns the num of occurrences of this flag

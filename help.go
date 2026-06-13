@@ -459,13 +459,7 @@ func DefaultPrintHelp(out io.Writer, templ string, data any) {
 }
 
 func checkVersion(cmd *Command) bool {
-	found := false
-	for _, name := range VersionFlag.Names() {
-		if cmd.Bool(name) {
-			found = true
-		}
-	}
-	return found
+	return cmd.versionFlag != nil && cmd.versionFlag.IsSet()
 }
 
 func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
@@ -492,7 +486,7 @@ func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
 	return true, arguments[:pos]
 }
 
-func checkCompletions(ctx context.Context, cmd *Command) bool {
+func shouldRunCompletion(cmd *Command) bool {
 	tracef("checking completions on command %[1]q", cmd.Name)
 
 	if !cmd.Root().shellCompletion {
@@ -509,13 +503,14 @@ func checkCompletions(ctx context.Context, cmd *Command) bool {
 	}
 
 	tracef("no subcommand found for completion %[1]q", cmd.Name)
+	return true
+}
 
+func runCompletion(ctx context.Context, cmd *Command) {
 	if cmd.ShellComplete != nil {
 		tracef("running shell completion func for command %[1]q", cmd.Name)
 		cmd.ShellComplete(ctx, cmd)
 	}
-
-	return true
 }
 
 func subtract(a, b int) int {
