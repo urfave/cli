@@ -690,9 +690,10 @@ func (cmd *Command) NumFlags() int
     NumFlags returns the number of flags set
 
 func (cmd *Command) Path() []string
-    Path returns the path of command names from the root to cmd,
-    inclusive. Each element is a Command.Name. FullName() is equivalent to
-    strings.Join(cmd.Path(), " ").
+    Path returns the path of command names from the root to cmd, inclusive.
+    Each element is a Command.Name. Path traverses upward via parent pointers
+    similar to Lineage. FullName() is equivalent to strings.Join(cmd.Path(),
+    " ").
 
 func (cmd *Command) Root() *Command
     Root returns the Command at the root of the graph
