@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"flag"
 	"testing"
 	"time"
 
@@ -124,6 +125,79 @@ func TestFlag_SchemaType_Generic(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "", st.SchemaType())
 }
+
+func TestExtFlag_SchemaType(t *testing.T) {
+	tests := []struct {
+		name       string
+		makeFlag   func() *extFlag
+		schemaType string
+	}{
+		{
+			name: "bool",
+			makeFlag: func() *extFlag {
+				var bv boolValue
+				var p bool
+				return &extFlag{f: &flag.Flag{Value: bv.Create(true, &p, BoolConfig{})}}
+			},
+			schemaType: "boolean",
+		},
+		{
+			name: "string",
+			makeFlag: func() *extFlag {
+				var sv stringValue
+				var p string
+				return &extFlag{f: &flag.Flag{Value: sv.Create("hi", &p, StringConfig{})}}
+			},
+			schemaType: "string",
+		},
+		{
+			name: "float64",
+			makeFlag: func() *extFlag {
+				var fv floatValue[float64]
+				var p float64
+				return &extFlag{f: &flag.Flag{Value: fv.Create(3.14, &p, NoConfig{})}}
+			},
+			schemaType: "number",
+		},
+		{
+			name: "duration",
+			makeFlag: func() *extFlag {
+				var dv durationValue
+				var p time.Duration
+				return &extFlag{f: &flag.Flag{Value: dv.Create(5*time.Second, &p, NoConfig{})}}
+			},
+			schemaType: "duration",
+		},
+		{
+			name: "timestamp",
+			makeFlag: func() *extFlag {
+				var tv timestampValue
+				var p time.Time
+				return &extFlag{f: &flag.Flag{Value: tv.Create(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), &p, TimestampConfig{})}}
+			},
+			schemaType: "date-time",
+		},
+		{
+			name: "unknown",
+			makeFlag: func() *extFlag {
+				return &extFlag{f: &flag.Flag{Value: &customValue{}}}
+			},
+			schemaType: "",
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.schemaType, tc.makeFlag().SchemaType())
+			assert.Equal(t, "", tc.makeFlag().SchemaItemsType())
+		})
+	}
+}
+
+type customValue struct{}
+
+func (c *customValue) String() string   { return "custom" }
+func (c *customValue) Set(string) error { return nil }
+func (c *customValue) Get() any         { return struct{}{} }
 
 func TestFlag_SchemaType_BoolWithInverse(t *testing.T) {
 	f := &BoolWithInverseFlag{}
