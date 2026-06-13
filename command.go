@@ -161,6 +161,8 @@ type Command struct {
 	globaHelpFlagAdded bool
 	// whether global version flag was added
 	globaVersionFlagAdded bool
+	// generated root version flag
+	versionFlag Flag
 	// whether this is a completion command
 	isCompletionCommand bool
 }
@@ -358,6 +360,22 @@ func (cmd *Command) lFlag(name string) Flag {
 		}
 	}
 	return nil
+}
+
+func (cmd *Command) hasPersistentFlagOnAncestor(fl Flag) bool {
+	for pCmd := cmd.parent; pCmd != nil; pCmd = pCmd.parent {
+		for _, pFl := range pCmd.allFlags() {
+			if pFl != fl {
+				continue
+			}
+
+			pfl, ok := pFl.(LocalFlag)
+			if ok && !pfl.IsLocal() {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (cmd *Command) lookupFlag(name string) Flag {

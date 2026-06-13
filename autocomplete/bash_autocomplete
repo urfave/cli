@@ -66,7 +66,7 @@ __%[1]s_bash_autocomplete() {
       local description=""
       
       if [[ "${line}" == *:* ]]; then
-        token="${line%%:*}"
+        token="${line%%%%:*}"
         description="${line#*:}"
       fi
 

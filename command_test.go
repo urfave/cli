@@ -2098,8 +2098,9 @@ func TestCommand_OrderOfOperations(t *testing.T) {
 		r := require.New(t)
 
 		_ = cmd.Run(buildTestContext(t), []string{"command", completionFlag})
-		r.Equal(1, counts.ShellComplete)
-		r.Equal(1, counts.Total)
+		r.Equal(1, counts.Before)
+		r.Equal(2, counts.ShellComplete)
+		r.Equal(2, counts.Total)
 	})
 
 	t.Run("nil on usage error", func(t *testing.T) {
@@ -2390,6 +2391,31 @@ func TestCommand_Run_Version(t *testing.T) {
 			assert.Contains(t, buf.String(), "0.1.0", "want version to contain 0.1.0")
 		})
 	}
+}
+
+func TestCommand_Run_CustomFlagCanUseVersionAlias(t *testing.T) {
+	buf := new(bytes.Buffer)
+	called := false
+
+	cmd := &Command{
+		Name:    "boom",
+		Version: "0.1.0",
+		Writer:  buf,
+		Flags: []Flag{
+			&BoolFlag{Name: "verbose", Aliases: []string{"v"}},
+		},
+		Action: func(_ context.Context, cmd *Command) error {
+			called = true
+			assert.True(t, cmd.Bool("verbose"))
+			return nil
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"boom", "-v"})
+
+	assert.NoError(t, err)
+	assert.True(t, called)
+	assert.Empty(t, buf.String())
 }
 
 func TestCommand_Run_Categories(t *testing.T) {
@@ -3385,6 +3411,48 @@ func TestPersistentFlagIsSet(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "after", result)
 	require.True(t, resultIsSet)
+}
+
+func TestDuplicatePersistentFlagUsesEnvSource(t *testing.T) {
+	t.Setenv("APP_RESULT", "from-env")
+
+	resultFlag := &StringFlag{
+		Name:     "result",
+		Sources:  EnvVars("APP_RESULT"),
+		Required: true,
+	}
+
+	var beforeResult string
+	var actionResult string
+	app := &Command{
+		Name: "root",
+		Flags: []Flag{
+			resultFlag,
+		},
+		Before: func(_ context.Context, cmd *Command) (context.Context, error) {
+			beforeResult = cmd.String("result")
+			return nil, nil
+		},
+		Commands: []*Command{
+			{
+				Name: "sub",
+				Flags: []Flag{
+					resultFlag,
+				},
+				Action: func(_ context.Context, cmd *Command) error {
+					actionResult = cmd.String("result")
+					return nil
+				},
+			},
+		},
+	}
+
+	err := app.Run(context.Background(), []string{"root", "sub"})
+	require.NoError(t, err)
+	require.Equal(t, "from-env", beforeResult)
+	require.Equal(t, "from-env", actionResult)
+	require.True(t, app.IsSet("result"))
+	require.True(t, app.Command("sub").IsSet("result"))
 }
 
 func TestRequiredFlagDelayed(t *testing.T) {
