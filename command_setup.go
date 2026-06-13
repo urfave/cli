@@ -165,11 +165,13 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 func (cmd *Command) setupCommandGraph() {
 	tracef("setting up command graph (cmd=%[1]q)", cmd.Name)
 
-	for _, subCmd := range cmd.Commands {
-		subCmd.parent = cmd
-		subCmd.setupSubcommand()
-		subCmd.setupCommandGraph()
-	}
+	_ = cmd.Walk(func(sub *Command) error {
+		for _, subCmd := range sub.Commands {
+			subCmd.parent = sub
+			subCmd.setupSubcommand()
+		}
+		return nil
+	})
 }
 
 func (cmd *Command) setupSubcommand() {
