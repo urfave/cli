@@ -299,9 +299,9 @@ func (f *FlagBase[T, C, V]) SchemaType() string {
 	case string:
 		return "string"
 	case time.Duration:
-		return "string"
+		return "duration"
 	case time.Time:
-		return "string"
+		return "date-time"
 	case []string, []int, []int8, []int16, []int32, []int64,
 		[]uint, []uint8, []uint16, []uint32, []uint64,
 		[]float32, []float64:

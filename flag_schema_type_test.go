@@ -56,14 +56,14 @@ func TestFlag_SchemaType_Duration(t *testing.T) {
 	f := &DurationFlag{}
 	st, ok := any(f).(SchemaTyper)
 	assert.True(t, ok)
-	assert.Equal(t, "string", st.SchemaType())
+	assert.Equal(t, "duration", st.SchemaType())
 }
 
 func TestFlag_SchemaType_Timestamp(t *testing.T) {
 	f := &TimestampFlag{}
 	st, ok := any(f).(SchemaTyper)
 	assert.True(t, ok)
-	assert.Equal(t, "string", st.SchemaType())
+	assert.Equal(t, "date-time", st.SchemaType())
 }
 
 func TestFlag_SchemaType_Slice(t *testing.T) {
@@ -154,8 +154,8 @@ func TestFlag_SchemaType_NonSliceItemsType(t *testing.T) {
 func TestFlag_SchemaType_PreservesPrecision(t *testing.T) {
 	created := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 	f := &TimestampFlag{Config: TimestampConfig{Layouts: []string{time.RFC3339}}, Value: created}
-	assert.Equal(t, "string", f.SchemaType())
+	assert.Equal(t, "date-time", f.SchemaType())
 
 	f2 := &DurationFlag{Value: 5 * time.Second}
-	assert.Equal(t, "string", f2.SchemaType())
+	assert.Equal(t, "duration", f2.SchemaType())
 }
