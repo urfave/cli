@@ -175,6 +175,14 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 		deferErr = err
 
 		cmd.isInError = true
+		if cmd.checkHelp() {
+			if cmd.parent == nil {
+				_ = ShowRootCommandHelp(cmd)
+			} else {
+				_ = ShowSubcommandHelp(cmd)
+			}
+			return ctx, nil
+		}
 		if cmd.OnUsageError != nil {
 			err = cmd.OnUsageError(ctx, cmd, err, cmd.parent != nil)
 			err = cmd.handleExitCoder(ctx, err)
@@ -193,10 +201,8 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 					tracef("SILENTLY IGNORING ERROR running ShowRootCommandHelp %[1]v (cmd=%[2]q)", err, cmd.Name)
 				}
 			} else {
-				tracef("running ShowCommandHelp with %[1]q", cmd.Name)
-				if err := ShowCommandHelp(ctx, cmd.parent, cmd.Name); err != nil {
-					tracef("SILENTLY IGNORING ERROR running ShowCommandHelp with %[1]q %[2]v", cmd.Name, err)
-				}
+				tracef("running ShowSubcommandHelp for %[1]q", cmd.Name)
+				_ = ShowSubcommandHelp(cmd)
 			}
 		}
 

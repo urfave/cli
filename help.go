@@ -86,14 +86,22 @@ func helpCommandAction(ctx context.Context, cmd *Command) error {
 
 	tracef("doing help for cmd %[1]q with args %[2]q", cmd, args)
 
-	// This action can be triggered by a "default" action of a command
-	// or via cmd.Run when cmd == helpCmd. So we have following possibilities
+	// helpCommandAction is triggered in several ways:
 	//
-	// 1 $ app
-	// 2 $ app help
-	// 3 $ app foo
-	// 4 $ app help foo
-	// 5 $ app foo help
+	//   * the command has no user-defined Action (default action fallback)
+	//   * the --help / -h flag was parsed (via cmd.checkHelp())
+	//   * the "help" subcommand (or "h" alias) was dispatched
+	//
+	// Possible invocations:
+	//
+	//   $ app                  # default action; show root help
+	//   $ app --help / -h      # flag; show root help (ignores subsequent args)
+	//   $ app help / h         # subcommand; show root help
+	//   $ app help / h foo     # subcommand; show help for subcommand "foo"
+	//   $ app --help / -h foo  # flag; show help for subcommand "foo"
+	//   $ app foo --help / -h  # flag on subcommand; show help for "foo"
+	//   $ app foo help / h     # subcommand on subcommand; show help for "foo"
+	//   $ app foo (no action)  # default action on subcommand; show help for "foo"
 
 	// Case 4. when executing a help command set the context to parent
 	// to allow resolution of subsequent args. This will transform
