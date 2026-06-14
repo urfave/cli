@@ -1,6 +1,9 @@
 package cli
 
-import "flag"
+import (
+	"flag"
+	"time"
+)
 
 type extFlag struct {
 	f *flag.Flag
@@ -60,4 +63,27 @@ func (e *extFlag) GetDefaultText() string {
 
 func (e *extFlag) GetEnvVars() []string {
 	return nil
+}
+
+func (e *extFlag) SchemaType() string {
+	switch e.Get().(type) {
+	case bool:
+		return "boolean"
+	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+		return "integer"
+	case float32, float64:
+		return "number"
+	case string:
+		return "string"
+	case time.Duration:
+		return "duration"
+	case time.Time:
+		return "date-time"
+	default:
+		return ""
+	}
+}
+
+func (e *extFlag) SchemaItemsType() string {
+	return ""
 }
