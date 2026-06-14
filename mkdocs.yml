@@ -20,6 +20,8 @@ nav:
   - v3 Manual:
       - Getting Started: v3/getting-started.md
       - Migrating From Older Releases: v3/migrating-from-older-releases.md
+      - Path and Walk: v3/path-and-walk.md
+      - Binary Size: v3/binary-size.md
       - Examples:
           - Greet: v3/examples/greet.md
           - Flags: 

@@ -2375,6 +2375,22 @@ func TestParseMultiBoolT(t *testing.T) {
 	}).Run(buildTestContext(t), []string{"run", "--implode=false"})
 }
 
+func TestStringSliceFlagApply_LocalPreservesRepeatedValues(t *testing.T) {
+	var got []string
+	cmd := &Command{
+		Flags: []Flag{
+			&StringSliceFlag{Name: "values", Local: true},
+		},
+		Action: func(_ context.Context, cmd *Command) error {
+			got = cmd.StringSlice("values")
+			return nil
+		},
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"run", "--values", "a,b,c", "--values", "d", "--values", "e"}))
+	require.Equal(t, []string{"a", "b", "c", "d", "e"}, got)
+}
+
 func TestStringSlice_Serialized_Set(t *testing.T) {
 	sl0 := NewStringSlice("a", "b")
 	ser0 := sl0.Serialize()
@@ -3312,6 +3328,9 @@ func TestExtFlag(t *testing.T) {
 	assert.Equal(t, "11", extF.GetValue())
 	assert.Equal(t, "10", extF.GetDefaultText())
 	assert.Nil(t, extF.GetEnvVars())
+
+	assert.Equal(t, "integer", extF.SchemaType())
+	assert.Equal(t, "", extF.SchemaItemsType())
 }
 
 func TestSliceValuesNil(t *testing.T) {

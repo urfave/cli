@@ -7,7 +7,7 @@ search:
 
 The [Basics] showed how to access arguments for a command. They are all retrieved as strings which is fine
 but it we need to say get integers or timestamps the user would have to convert from string to desired type. 
-To ease the burden on users the `cli` library offers predefined `{Type}Arg` and `{Type}Args` structure to faciliate this.
+To ease the burden on users the `cli` library offers predefined `{Type}Arg` and `{Type}Args` structure to facilitate this.
 The value of the argument can be retrieved using the `command.{Type}Arg()` function. For e.g
 
 <!-- {
@@ -92,7 +92,7 @@ func main() {
 }
 ```
 
-Some of the basic types arguments suported are
+Some of the basic types arguments supported are
 
 - `FloatArg`
 - `IntArg`
@@ -214,7 +214,7 @@ Following multi value arguments are supported
 - `TimestampArgs`
 
 It goes without saying that the chain of arguments set in the Arguments slice need to be consistent. Generally a glob
-argument(`max=-1`) should be set for the argument at the end of the slice. To glob args we arent interested in we coud add
+argument(`max=-1`) should be set for the argument at the end of the slice. To glob args we aren't interested in we could add
 the following to the end of the Arguments slice and retrieve them as a slice
 
 ```

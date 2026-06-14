@@ -438,7 +438,7 @@ func main() {
   }
 
   app.Action = func(c *cli.Context) error {
-    fmt.Println("yaml ist rad")
+    fmt.Println("yaml is rad")
     return nil
   }
 

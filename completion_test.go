@@ -3,7 +3,9 @@ package cli
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"strings"
 	"testing"
 
@@ -137,6 +139,54 @@ func TestCompletionBashNoShebang(t *testing.T) {
 	r.False(strings.HasPrefix(output, "#!"), "bash completion should not start with a shebang")
 }
 
+func TestCompletionBashAppendsSpace(t *testing.T) {
+	// Regression test for https://github.com/urfave/cli/issues/2332
+	// Do not register bash completions with `-o nospace`: after a command or
+	// subcommand completion, Bash should append a space so the next word can be
+	// completed without manually typing one.
+
+	cmd := &Command{
+		EnableShellCompletion: true,
+	}
+
+	r := require.New(t)
+
+	bashRender := shellCompletions["bash"]
+	r.NotNil(bashRender, "bash completion renderer should exist")
+
+	output, err := bashRender(cmd, "myapp")
+	r.NoError(err)
+	r.NotContains(output, "-o nospace", "bash completion should append spaces after completed words")
+	r.Contains(output, "complete -o bashdefault -o default -F __myapp_bash_autocomplete myapp")
+}
+
+func TestCompletionBashGreedyColonParsing(t *testing.T) {
+	// Regression test for https://github.com/urfave/cli/issues/2335
+	// The bash completion template uses fmt.Sprintf, so
+	// literal "%" in the template must be escaped as "%%". The token
+	// extraction must use the greedy ${line%%:*} (double %%) to split on
+	// the *first* colon. A single % would use ${line%:*} which splits on
+	// the *last* colon, breaking descriptions that contain colons
+	// (e.g. "export:Export configs such as: compose-config").
+
+	cmd := &Command{
+		EnableShellCompletion: true,
+	}
+
+	r := require.New(t)
+
+	bashRender := shellCompletions["bash"]
+	r.NotNil(bashRender, "bash completion renderer should exist")
+
+	output, err := bashRender(cmd, "myapp")
+	r.NoError(err)
+
+	// After fmt.Sprintf, the rendered script must contain ${line%%:*}
+	// (greedy match) not ${line%:*} (non-greedy match).
+	r.Contains(output, `${line%%:*}`, "token extraction should use greedy %% to match first colon")
+	r.NotContains(output, `${line%:*}`, "token extraction must not use non-greedy single % (splits on last colon)")
+}
+
 func TestCompletionFishFormat(t *testing.T) {
 	// Regression test for https://github.com/urfave/cli/issues/2285
 	// Fish completion was broken due to incorrect format specifiers
@@ -165,6 +215,44 @@ func TestCompletionFishFormat(t *testing.T) {
 	// Verify the complete commands reference the app correctly
 	r.Contains(output, "complete -c myapp", "complete command should reference app name")
 	r.Contains(output, "(__myapp_perform_completion)", "completion function should be registered")
+}
+
+func TestCompletionFishOmitsPositionalTokenFromDynamicCompletion(t *testing.T) {
+	cmd := &Command{
+		Name:                  "myapp",
+		EnableShellCompletion: true,
+	}
+
+	r := require.New(t)
+
+	fishRender := shellCompletions["fish"]
+	r.NotNil(fishRender, "fish completion renderer should exist")
+
+	output, err := fishRender(cmd, "myapp")
+	r.NoError(err)
+
+	r.Contains(output, `if string match -q -- "-*" $lastArg`)
+	r.Contains(output, "set results ($args[1] $args[2..-1] $lastArg --generate-shell-completion 2> /dev/null)")
+	r.Contains(output, "set results ($args[1] $args[2..-1] --generate-shell-completion 2> /dev/null)")
+}
+
+func TestCompletionBashOmitsPositionalTokenFromDynamicCompletion(t *testing.T) {
+	cmd := &Command{
+		Name:                  "myapp",
+		EnableShellCompletion: true,
+	}
+
+	r := require.New(t)
+
+	bashRender := shellCompletions["bash"]
+	r.NotNil(bashRender, "bash completion renderer should exist")
+
+	output, err := bashRender(cmd, "myapp")
+	r.NoError(err)
+
+	r.Contains(output, `if [[ "${current_word}" == "-"* ]]; then`)
+	r.Contains(output, `printf '%s %s --generate-shell-completion' "${words_before_cursor[*]}" "${current_word}"`)
+	r.Contains(output, `printf '%s --generate-shell-completion' "${words_before_cursor[*]}"`)
 }
 
 func TestCompletionSubcommand(t *testing.T) {
@@ -307,6 +395,85 @@ func TestCompletionSubcommand(t *testing.T) {
 	}
 }
 
+func TestCompletionSubcommandCustomShellComplete(t *testing.T) {
+	out := &bytes.Buffer{}
+
+	cmd := &Command{
+		EnableShellCompletion: true,
+		Writer:                out,
+		Commands: []*Command{
+			{
+				Name: "index",
+				Commands: []*Command{
+					{
+						Name: "show",
+						ShellComplete: func(ctx context.Context, cmd *Command) {
+							fmt.Fprintln(cmd.Root().Writer, "custom-index")
+						},
+						Action: func(ctx context.Context, cmd *Command) error { return nil },
+					},
+				},
+			},
+		},
+	}
+
+	r := require.New(t)
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "index", "show", completionFlag}))
+	r.Equal("custom-index\n", out.String())
+}
+
+func TestCompletionRunsBeforeChain(t *testing.T) {
+	type contextKey struct{}
+
+	out := &bytes.Buffer{}
+	cmd := &Command{
+		EnableShellCompletion: true,
+		Writer:                out,
+		Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+			return context.WithValue(ctx, contextKey{}, "ready"), nil
+		},
+		Commands: []*Command{
+			{
+				Name: "index",
+				Commands: []*Command{
+					{
+						Name: "show",
+						ShellComplete: func(ctx context.Context, cmd *Command) {
+							fmt.Fprintln(cmd.Root().Writer, ctx.Value(contextKey{}))
+						},
+						Action: func(ctx context.Context, cmd *Command) error { return nil },
+					},
+				},
+			},
+		},
+	}
+
+	r := require.New(t)
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "index", "show", completionFlag}))
+	r.Equal("ready\n", out.String())
+}
+
+func TestCompletionReturnsBeforeError(t *testing.T) {
+	beforeErr := errors.New("load config")
+	completed := false
+
+	cmd := &Command{
+		EnableShellCompletion: true,
+		Writer:                io.Discard,
+		Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+			return nil, beforeErr
+		},
+		ShellComplete: func(ctx context.Context, cmd *Command) {
+			completed = true
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", completionFlag})
+
+	require.ErrorIs(t, err, beforeErr)
+	assert.False(t, completed)
+}
+
 func TestCompletionInvalidShell(t *testing.T) {
 	cmd := &Command{
 		EnableShellCompletion: true,
@@ -323,7 +490,7 @@ func TestCompletionShellRenderError(t *testing.T) {
 	enableError := true
 	shellCompletions[unknownShellName] = func(c *Command, appName string) (string, error) {
 		if enableError {
-			return "", fmt.Errorf("cant do completion")
+			return "", fmt.Errorf("can't do completion")
 		}
 		return "something", nil
 	}
@@ -336,7 +503,7 @@ func TestCompletionShellRenderError(t *testing.T) {
 	}
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, unknownShellName})
-	assert.ErrorContains(t, err, "cant do completion")
+	assert.ErrorContains(t, err, "can't do completion")
 }
 
 type mockWriter struct {

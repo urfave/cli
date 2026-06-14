@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 )
 
 // Value represents a value as used by cli.
@@ -193,7 +194,7 @@ func (f *FlagBase[T, C, V]) Set(_ string, val string) error {
 	}
 
 	if f.count == 1 && f.OnlyOnce {
-		return fmt.Errorf("cant duplicate this flag")
+		return fmt.Errorf("can't duplicate this flag")
 	}
 
 	f.count++
@@ -285,6 +286,51 @@ func (f *FlagBase[T, C, V]) RunAction(ctx context.Context, cmd *Command) error {
 	return nil
 }
 
+// SchemaType returns the JSON Schema type for the flag's value type.
+func (f *FlagBase[T, C, V]) SchemaType() string {
+	var zero T
+	switch any(zero).(type) {
+	case bool:
+		return "boolean"
+	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+		return "integer"
+	case float32, float64:
+		return "number"
+	case string:
+		return "string"
+	case time.Duration:
+		return "duration"
+	case time.Time:
+		return "date-time"
+	case []string, []int, []int8, []int16, []int32, []int64,
+		[]uint, []uint8, []uint16, []uint32, []uint64,
+		[]float32, []float64:
+		return "array"
+	case map[string]string:
+		return "object"
+	default:
+		return ""
+	}
+}
+
+// SchemaItemsType returns the JSON Schema element type for slice flags.
+func (f *FlagBase[T, C, V]) SchemaItemsType() string {
+	var zero T
+	t := reflect.TypeOf(zero)
+	if t.Kind() == reflect.Slice {
+		switch t.Elem().Kind() {
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			return "integer"
+		case reflect.Float32, reflect.Float64:
+			return "number"
+		case reflect.String:
+			return "string"
+		}
+	}
+	return ""
+}
+
 // IsMultiValueFlag returns true if the value type T can take multiple
 // values from cmd line. This is true for slice and map type flags
 func (f *FlagBase[T, C, VC]) IsMultiValueFlag() bool {
@@ -301,7 +347,7 @@ func (f *FlagBase[T, C, VC]) IsLocal() bool {
 	return f.Local
 }
 
-// IsBoolFlag returns whether the flag doesnt need to accept args
+// IsBoolFlag returns whether the flag doesn't need to accept args
 func (f *FlagBase[T, C, VC]) IsBoolFlag() bool {
 	bf, ok := f.value.(boolFlag)
 	return ok && bf.IsBoolFlag()

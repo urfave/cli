@@ -170,7 +170,9 @@ COMMANDS:{{template "visibleCommandTemplate" .}}{{end}}{{if .VisibleFlagCategori
 
 OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
 
-OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}
+OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}{{if .VisiblePersistentFlags}}
+
+GLOBAL OPTIONS:{{template "visiblePersistentFlagTemplate" .}}{{end}}
 `
     SubcommandHelpTemplate is the text template for the subcommand help topic.
     cli.go uses text/template to render templates. You can render custom help
@@ -384,7 +386,7 @@ func (bif *BoolWithInverseFlag) GetValue() string
     string if the flag takes no value at all.
 
 func (bif *BoolWithInverseFlag) IsBoolFlag() bool
-    IsBoolFlag returns whether the flag doesnt need to accept args
+    IsBoolFlag returns whether the flag doesn't need to accept args
 
 func (bif *BoolWithInverseFlag) IsDefaultVisible() bool
     IsDefaultVisible returns true if the flag is not hidden, otherwise false
@@ -404,6 +406,10 @@ func (bif *BoolWithInverseFlag) PostParse() error
 func (bif *BoolWithInverseFlag) PreParse() error
 
 func (bif *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) error
+
+func (bif *BoolWithInverseFlag) SchemaItemsType() string
+
+func (bif *BoolWithInverseFlag) SchemaType() string
 
 func (bif *BoolWithInverseFlag) Set(name, val string) error
 
@@ -606,8 +612,8 @@ func (cmd *Command) FloatSlice(name string) []float64
     found
 
 func (cmd *Command) FullName() string
-    FullName returns the full name of the command. For commands with parents
-    this ensures that the parent commands are part of the command path.
+    FullName returns the full name of the command. Includes parent commands
+    separated by space.
 
 func (cmd *Command) Generic(name string) Value
     Generic looks up the value of a local GenericFlag, returns nil if not found
@@ -688,6 +694,12 @@ func (cmd *Command) Names() []string
 
 func (cmd *Command) NumFlags() int
     NumFlags returns the number of flags set
+
+func (cmd *Command) Path() []string
+    Path returns the path of command names from the root to cmd, inclusive.
+    Each element is a Command.Name. Path traverses upward via parent pointers
+    similar to Lineage. FullName() is equivalent to strings.Join(cmd.Path(),
+    " ").
 
 func (cmd *Command) Root() *Command
     Root returns the Command at the root of the graph
@@ -800,6 +812,10 @@ func (cmd *Command) VisibleFlags() []Flag
 func (cmd *Command) VisiblePersistentFlags() []Flag
     VisiblePersistentFlags returns a slice of LocalFlag with Persistent=true and
     Hidden=false.
+
+func (cmd *Command) Walk(fn func(*Command) error) error
+    Walk visits cmd and every descendant. If fn returns a non-nil error,
+    the walk terminates and the error is returned to the caller.
 
 type CommandCategories interface {
 	// AddCommand adds a command to a category, creating a new category if necessary.
@@ -1000,7 +1016,7 @@ func (f *FlagBase[T, C, V]) GetValue() string
     string if the flag takes no value at all.
 
 func (f *FlagBase[T, C, VC]) IsBoolFlag() bool
-    IsBoolFlag returns whether the flag doesnt need to accept args
+    IsBoolFlag returns whether the flag doesn't need to accept args
 
 func (f *FlagBase[T, C, V]) IsDefaultVisible() bool
     IsDefaultVisible returns true if the flag is not hidden, otherwise false
@@ -1031,6 +1047,12 @@ func (f *FlagBase[T, C, V]) PreParse() error
 
 func (f *FlagBase[T, C, V]) RunAction(ctx context.Context, cmd *Command) error
     RunAction executes flag action if set
+
+func (f *FlagBase[T, C, V]) SchemaItemsType() string
+    SchemaItemsType returns the JSON Schema element type for slice flags.
+
+func (f *FlagBase[T, C, V]) SchemaType() string
+    SchemaType returns the JSON Schema type for the flag's value type.
 
 func (f *FlagBase[T, C, V]) Set(_ string, val string) error
     Set applies given value from string
@@ -1295,6 +1317,23 @@ type RequiredFlag interface {
     RequiredFlag is an interface that allows us to mark flags as required
     it allows flags required flags to be backwards compatible with the Flag
     interface
+
+type SchemaItemsTyper interface {
+	// SchemaItemsType returns the JSON Schema type of elements for
+	// array-type flags. Returns "" for single-value or object flags.
+	SchemaItemsType() string
+}
+    SchemaItemsTyper is an optional interface for multi-value flags that can
+    report the JSON Schema type of their elements.
+
+type SchemaTyper interface {
+	// SchemaType returns the JSON Schema type name for the value this
+	// flag accepts: "boolean", "integer", "number", "string", "array",
+	// "object". Returns "" if the flag does not map cleanly.
+	SchemaType() string
+}
+    SchemaTyper is an optional interface for flags that can report their JSON
+    Schema type for programmatic introspection.
 
 type Serializer interface {
 	Serialize() string

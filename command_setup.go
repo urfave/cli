@@ -46,18 +46,33 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 	}
 
 	if cmd.Reader == nil {
-		tracef("setting default Reader as os.Stdin (cmd=%[1]q)", cmd.Name)
-		cmd.Reader = os.Stdin
+		if cmd.parent != nil && cmd.parent.Reader != nil {
+			tracef("inheriting Reader from parent (cmd=%[1]q)", cmd.Name)
+			cmd.Reader = cmd.parent.Reader
+		} else {
+			tracef("setting default Reader as os.Stdin (cmd=%[1]q)", cmd.Name)
+			cmd.Reader = os.Stdin
+		}
 	}
 
 	if cmd.Writer == nil {
-		tracef("setting default Writer as os.Stdout (cmd=%[1]q)", cmd.Name)
-		cmd.Writer = os.Stdout
+		if cmd.parent != nil && cmd.parent.Writer != nil {
+			tracef("inheriting Writer from parent (cmd=%[1]q)", cmd.Name)
+			cmd.Writer = cmd.parent.Writer
+		} else {
+			tracef("setting default Writer as os.Stdout (cmd=%[1]q)", cmd.Name)
+			cmd.Writer = os.Stdout
+		}
 	}
 
 	if cmd.ErrWriter == nil {
-		tracef("setting default ErrWriter as os.Stderr (cmd=%[1]q)", cmd.Name)
-		cmd.ErrWriter = os.Stderr
+		if cmd.parent != nil && cmd.parent.ErrWriter != nil {
+			tracef("inheriting ErrWriter from parent (cmd=%[1]q)", cmd.Name)
+			cmd.ErrWriter = cmd.parent.ErrWriter
+		} else {
+			tracef("setting default ErrWriter as os.Stderr (cmd=%[1]q)", cmd.Name)
+			cmd.ErrWriter = os.Stderr
+		}
 	}
 
 	if cmd.AllowExtFlags {
@@ -89,8 +104,11 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 				localVersionFlag = VersionFlag
 			}
 
-			cmd.appendFlag(localVersionFlag)
-			cmd.globaVersionFlagAdded = true
+			if !flagNamesInUse(cmd.allFlags(), localVersionFlag.Names()) {
+				cmd.appendFlag(localVersionFlag)
+				cmd.versionFlag = localVersionFlag
+				cmd.globaVersionFlagAdded = true
+			}
 		}
 	}
 
@@ -147,11 +165,13 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 func (cmd *Command) setupCommandGraph() {
 	tracef("setting up command graph (cmd=%[1]q)", cmd.Name)
 
-	for _, subCmd := range cmd.Commands {
-		subCmd.parent = cmd
-		subCmd.setupSubcommand()
-		subCmd.setupCommandGraph()
-	}
+	_ = cmd.Walk(func(sub *Command) error {
+		for _, subCmd := range sub.Commands {
+			subCmd.parent = sub
+			subCmd.setupSubcommand()
+		}
+		return nil
+	})
 }
 
 func (cmd *Command) setupSubcommand() {
@@ -176,6 +196,20 @@ func (cmd *Command) setupSubcommand() {
 
 	tracef("setting flag categories (cmd=%[1]q)", cmd.Name)
 	cmd.flagCategories = newFlagCategoriesFromFlags(cmd.allFlags())
+}
+
+func flagNamesInUse(flags []Flag, names []string) bool {
+	for _, name := range names {
+		for _, fl := range flags {
+			for _, flagName := range fl.Names() {
+				if flagName == name {
+					return true
+				}
+			}
+		}
+	}
+
+	return false
 }
 
 func (cmd *Command) hideHelp() bool {
