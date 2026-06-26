@@ -519,6 +519,9 @@ func TestCompletionShellRenderError(t *testing.T) {
 		}
 		return "something", nil
 	}
+	// buildCompletionCommand only turns shells listed in completionShells into
+	// subcommands, so register the injected shell there too (restoring the
+	// original slice afterward) for it to be reachable.
 	defer func(orig []string) { completionShells = orig }(completionShells)
 	completionShells = append(completionShells, unknownShellName)
 	defer func() {
@@ -549,6 +552,9 @@ func TestCompletionShellWriteError(t *testing.T) {
 	shellCompletions[shellName] = func(c *Command, appName string) (string, error) {
 		return "something", nil
 	}
+	// buildCompletionCommand only turns shells listed in completionShells into
+	// subcommands, so register the injected shell there too (restoring the
+	// original slice afterward) for it to be reachable.
 	defer func(orig []string) { completionShells = orig }(completionShells)
 	completionShells = append(completionShells, shellName)
 	defer func() {
