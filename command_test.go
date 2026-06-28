@@ -3019,6 +3019,54 @@ func TestCustomFlagsUsed(t *testing.T) {
 	assert.NoError(t, err, "Run returned unexpected error")
 }
 
+// Regression for #2229. When a user flag claims the -v alias, only that
+// alias is yielded: --version must still print the version.
+func TestVersionFlagWorksWhenAliasYieldedToUserFlag(t *testing.T) {
+	buf := new(bytes.Buffer)
+	called := false
+
+	cmd := &Command{
+		Name:    "boom",
+		Version: "0.1.0",
+		Writer:  buf,
+		Flags: []Flag{
+			&BoolFlag{Name: "verbose", Aliases: []string{"v"}},
+		},
+		Action: func(_ context.Context, _ *Command) error {
+			called = true
+			return nil
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"boom", "--version"})
+
+	assert.NoError(t, err)
+	assert.False(t, called, "version should short-circuit the action")
+	assert.Contains(t, buf.String(), "0.1.0")
+}
+
+func TestDropClashingAliases(t *testing.T) {
+	verbose := &BoolFlag{Name: "verbose", Aliases: []string{"v"}}
+
+	for _, tc := range []struct {
+		name     string
+		aliases  []string
+		flags    []Flag
+		selfName string
+		want     []string
+	}{
+		{name: "no aliases", aliases: nil, flags: []Flag{verbose}, selfName: "version", want: nil},
+		{name: "no flags", aliases: []string{"v"}, flags: nil, selfName: "version", want: []string{"v"}},
+		{name: "drops clashing alias", aliases: []string{"v"}, flags: []Flag{verbose}, selfName: "version", want: []string{}},
+		{name: "keeps free alias", aliases: []string{"V"}, flags: []Flag{verbose}, selfName: "version", want: []string{"V"}},
+		{name: "keeps selfName even if claimed", aliases: []string{"verbose"}, flags: []Flag{verbose}, selfName: "verbose", want: []string{"verbose"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.want, dropClashingAliases(tc.aliases, tc.flags, tc.selfName))
+		})
+	}
+}
+
 func TestCustomHelpVersionFlags(t *testing.T) {
 	cmd := &Command{
 		Writer: io.Discard,

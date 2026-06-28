@@ -26,21 +26,23 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
+	"strings"
 
 	"github.com/urfave/cli/v3"
 )
 
 func main() {
-	subSubCmd := &cli.Command{Name: "bottom", Action: func(context.Context, *cli.Command) error { return nil }}
-	subCmd := &cli.Command{Name: "mid", Subcommands: []*cli.Command{subSubCmd}, Action: func(context.Context, *cli.Command) error { return nil }}
-	cmd := &cli.Command{
-		Name: "top",
-		Subcommands: []*cli.Command{subCmd},
+	subSubCmd := &cli.Command{
+		Name: "bottom",
 		Action: func(ctx context.Context, c *cli.Command) error {
 			fmt.Println(strings.Join(c.Path(), " "))
 			return nil
 		},
+	}
+	subCmd := &cli.Command{Name: "mid", Commands: []*cli.Command{subSubCmd}, Action: func(context.Context, *cli.Command) error { return nil }}
+	cmd := &cli.Command{
+		Name:     "top",
+		Commands: []*cli.Command{subCmd},
 	}
 
 	cmd.Run(context.Background(), []string{"top", "mid", "bottom"})
@@ -66,17 +68,16 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/urfave/cli/v3"
 )
 
 func main() {
 	subSubCmd := &cli.Command{Name: "bottom", Action: func(context.Context, *cli.Command) error { return nil }}
-	subCmd := &cli.Command{Name: "mid", Subcommands: []*cli.Command{subSubCmd}, Action: func(context.Context, *cli.Command) error { return nil }}
+	subCmd := &cli.Command{Name: "mid", Commands: []*cli.Command{subSubCmd}, Action: func(context.Context, *cli.Command) error { return nil }}
 	cmd := &cli.Command{
 		Name: "top",
-		Subcommands: []*cli.Command{subCmd},
+		Commands: []*cli.Command{subCmd},
 		Action: func(ctx context.Context, c *cli.Command) error { return nil },
 	}
 
@@ -105,19 +106,19 @@ Return a non-nil error from the walk function to stop traversal early.
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/urfave/cli/v3"
 )
 
 func main() {
 	subSubCmd := &cli.Command{Name: "bottom", Action: func(context.Context, *cli.Command) error { return nil }}
-	subCmd := &cli.Command{Name: "mid", Subcommands: []*cli.Command{subSubCmd}, Action: func(context.Context, *cli.Command) error { return nil }}
+	subCmd := &cli.Command{Name: "mid", Commands: []*cli.Command{subSubCmd}, Action: func(context.Context, *cli.Command) error { return nil }}
 	cmd := &cli.Command{
 		Name: "top",
-		Subcommands: []*cli.Command{subCmd},
+		Commands: []*cli.Command{subCmd},
 		Action: func(ctx context.Context, c *cli.Command) error { return nil },
 	}
 
