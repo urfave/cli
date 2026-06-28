@@ -118,6 +118,31 @@ func TestCompletionShell(t *testing.T) {
 	}
 }
 
+func TestCompletionSubcommandOrder(t *testing.T) {
+	// The completion subcommands must appear in a deterministic order so that
+	// help output (and docs generated from it) does not change between runs.
+	// Previously they were built by iterating a map, whose order Go randomizes.
+	want := []string{"bash", "zsh", "fish", "pwsh"}
+
+	// Build several times to guard against intra-process variation.
+	for range 10 {
+		cmd := buildCompletionCommand("foo")
+
+		got := make([]string, 0, len(cmd.Commands))
+		for _, sub := range cmd.Commands {
+			got = append(got, sub.Name)
+		}
+
+		assert.Equal(t, want, got)
+	}
+
+	// Every shell in shellCompletions must be represented in the ordered list.
+	assert.Len(t, completionShells, len(shellCompletions))
+	for shell := range shellCompletions {
+		assert.Contains(t, completionShells, shell)
+	}
+}
+
 func TestCompletionBashNoShebang(t *testing.T) {
 	// Regression test for https://github.com/urfave/cli/issues/2259
 	// Bash completion scripts are sourced, not executed, so they must not
@@ -494,6 +519,11 @@ func TestCompletionShellRenderError(t *testing.T) {
 		}
 		return "something", nil
 	}
+	// buildCompletionCommand only turns shells listed in completionShells into
+	// subcommands, so register the injected shell there too (restoring the
+	// original slice afterward) for it to be reachable.
+	defer func(orig []string) { completionShells = orig }(completionShells)
+	completionShells = append(completionShells, unknownShellName)
 	defer func() {
 		delete(shellCompletions, unknownShellName)
 	}()
@@ -522,6 +552,11 @@ func TestCompletionShellWriteError(t *testing.T) {
 	shellCompletions[shellName] = func(c *Command, appName string) (string, error) {
 		return "something", nil
 	}
+	// buildCompletionCommand only turns shells listed in completionShells into
+	// subcommands, so register the injected shell there too (restoring the
+	// original slice afterward) for it to be reachable.
+	defer func(orig []string) { completionShells = orig }(completionShells)
+	completionShells = append(completionShells, shellName)
 	defer func() {
 		delete(shellCompletions, shellName)
 	}()
