@@ -3,7 +3,7 @@
 Go removes unreachable code during compilation, so the first step is to
 measure the binary you ship instead of assuming a specific feature is expensive.
 
-```sh
+```sh-session
 go build -trimpath -o myapp ./cmd/myapp
 ls -lh myapp
 ```
@@ -11,14 +11,14 @@ ls -lh myapp
 For a release-style build, combine reproducible paths with stripped symbol and
 debug information:
 
-```sh
+```sh-session
 go build -trimpath -ldflags="-s -w" -o myapp ./cmd/myapp
 ls -lh myapp
 ```
 
 Use the Go toolchain to inspect what is in the binary:
 
-```sh
+```sh-session
 go version -m myapp
 go tool nm -size myapp | sort -nr | head -40
 ```
