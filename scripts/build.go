@@ -16,6 +16,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"time"
@@ -362,6 +363,9 @@ func GfmrunActionFunc(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	var counter int
+	inGoBlock := false
+	goHasPkgMain := false
+	fenceRe := regexp.MustCompile("^(`{3,}|~{3,})")
 
 	for _, src := range sources {
 		file, err := os.Open(src)
@@ -372,7 +376,33 @@ func GfmrunActionFunc(ctx context.Context, cmd *cli.Command) error {
 
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
-			if strings.Contains(scanner.Text(), "package main") {
+			line := scanner.Text()
+			fenceMatch := fenceRe.FindString(line)
+			if fenceMatch == "" {
+				if inGoBlock && strings.HasPrefix(line, "package main") {
+					goHasPkgMain = true
+				}
+				continue
+			}
+
+			lang := strings.TrimSpace(line[len(fenceMatch):])
+
+			if inGoBlock {
+				if goHasPkgMain {
+					counter++
+				}
+				inGoBlock = false
+				goHasPkgMain = false
+				continue
+			}
+
+			switch lang {
+			case "go":
+				inGoBlock = true
+				goHasPkgMain = false
+			case "sh":
+				counter++
+			case "bash":
 				counter++
 			}
 		}
