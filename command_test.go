@@ -6263,6 +6263,111 @@ func TestCommand_NoDefaultCmdArgMatchingFlag(t *testing.T) {
 	require.Equal(t, &expectedArgs, actualArgs)
 }
 
+func TestDefaultCommandWithSubcommandFlags(t *testing.T) {
+	// Regression test for https://github.com/urfave/cli/issues/2249
+	// When DefaultCommand is set, flags defined on the default subcommand
+	// should work even when the subcommand name is omitted.
+	actionExecuted := false
+	cmd := &Command{
+		DefaultCommand: "run1",
+		Commands: []*Command{
+			{
+				Name:  "run1",
+				Usage: "run the main application",
+				Action: func(ctx context.Context, cmd *Command) error {
+					actionExecuted = true
+					return nil
+				},
+				Flags: []Flag{
+					&StringFlag{
+						Name:     "foo",
+						Required: true,
+					},
+				},
+			},
+			{
+				Name: "run2",
+				Action: func(ctx context.Context, cmd *Command) error {
+					return nil
+				},
+				Flags: []Flag{
+					&StringFlag{
+						Name:     "value",
+						Required: true,
+					},
+				},
+			},
+		},
+	}
+
+	// Using flag without subcommand name should route to default command
+	err := cmd.Run(buildTestContext(t), []string{"c", "--foo", "bar"})
+	assert.NoError(t, err)
+	assert.True(t, actionExecuted, "expected run1 action to be executed")
+}
+
+func TestDefaultCommandWithShortFlag(t *testing.T) {
+	// Covers the short-flag splitting path in parseFlags when DefaultCommand is set
+	actionRun := false
+	cmd := &Command{
+		DefaultCommand: "run",
+		Commands: []*Command{
+			{
+				Name:  "run",
+				Usage: "run the app",
+				Action: func(ctx context.Context, cmd *Command) error {
+					actionRun = true
+					if cmd.String("foo") != "baz" {
+						return fmt.Errorf("expected foo=baz, got %s", cmd.String("foo"))
+					}
+					return nil
+				},
+				Flags: []Flag{
+					&StringFlag{
+						Name:    "foo",
+						Aliases: []string{"f"},
+					},
+				},
+			},
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"c", "-f", "baz"})
+	assert.NoError(t, err)
+	assert.True(t, actionRun, "expected run action to be executed")
+}
+
+func TestDefaultCommandWithShortFlagHandling(t *testing.T) {
+	// Covers the shortOptionHandling for-loop path when DefaultCommand is set
+	actionRun := false
+	cmd := &Command{
+		UseShortOptionHandling: true,
+		DefaultCommand:         "run",
+		Commands: []*Command{
+			{
+				Name:  "run",
+				Usage: "run the app",
+				Action: func(ctx context.Context, cmd *Command) error {
+					actionRun = true
+					if cmd.String("foo") != "baz" {
+						return fmt.Errorf("expected foo=baz, got %s", cmd.String("foo"))
+					}
+					return nil
+				},
+				Flags: []Flag{
+					&StringFlag{
+						Name:    "foo",
+						Aliases: []string{"f"},
+					},
+				},
+			},
+		},
+	}
+	err := cmd.Run(buildTestContext(t), []string{"c", "-f", "baz"})
+	assert.NoError(t, err)
+	assert.True(t, actionRun, "expected run action to be executed")
+}
+
 func TestCommand_Path(t *testing.T) {
 	subCmd := &Command{Name: "bar"}
 	subSubCmd := &Command{Name: "baz"}
