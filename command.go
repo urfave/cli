@@ -582,6 +582,18 @@ func (cmd *Command) Path() []string {
 	return []string{cmd.Name}
 }
 
+// HasHiddenParent returns true if any ancestor of this command has
+// Hidden set to true.
+func (cmd *Command) HasHiddenParent() bool {
+	if cmd.parent == nil {
+		return false
+	}
+	if cmd.parent.Hidden {
+		return true
+	}
+	return cmd.parent.HasHiddenParent()
+}
+
 // Walk visits cmd and every descendant. If fn returns a non-nil error, the
 // walk terminates and the error is returned to the caller.
 func (cmd *Command) Walk(fn func(*Command) error) error {

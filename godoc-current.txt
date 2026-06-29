@@ -618,6 +618,10 @@ func (cmd *Command) FullName() string
 func (cmd *Command) Generic(name string) Value
     Generic looks up the value of a local GenericFlag, returns nil if not found
 
+func (cmd *Command) HasHiddenParent() bool
+    HasHiddenParent returns true if any ancestor of this command has Hidden set
+    to true.
+
 func (cmd *Command) HasName(name string) bool
     HasName returns true if Command.Name matches given name
 
