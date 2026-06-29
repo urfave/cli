@@ -327,6 +327,14 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 	// First, resolve the chain of nested commands up to the parent.
 	cmdChain := commandChain(cmd)
 
+	// Run ArgValidator from the nearest ancestor that sets one.
+	if validator := findArgValidator(cmd); validator != nil {
+		if err := validator(ctx, cmd); err != nil {
+			deferErr = cmd.handleExitCoder(ctx, err)
+			return ctx, deferErr
+		}
+	}
+
 	// Run Before actions in order.
 	if ctx, err = runBefore(ctx, cmdChain); err != nil {
 		deferErr = err
@@ -395,6 +403,15 @@ func commandChain(cmd *Command) []*Command {
 	}
 	slices.Reverse(cmdChain)
 	return cmdChain
+}
+
+func findArgValidator(cmd *Command) ArgValidatorFunc {
+	for c := cmd; c != nil; c = c.parent {
+		if c.ArgValidator != nil {
+			return c.ArgValidator
+		}
+	}
+	return nil
 }
 
 func runBefore(ctx context.Context, cmdChain []*Command) (context.Context, error) {

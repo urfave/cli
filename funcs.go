@@ -17,6 +17,13 @@ type AfterFunc func(context.Context, *Command) error
 // ActionFunc is the action to execute when no subcommands are specified
 type ActionFunc func(context.Context, *Command) error
 
+// ArgValidatorFunc is an action to validate arguments before the command is run.
+// If non-nil, it is called before the command's After and Action functions.
+// Returning a non-nil error short-circuits the command and propagates as
+// the exit error. If the current command does not set ArgValidator, the
+// nearest ancestor that does is used instead.
+type ArgValidatorFunc func(context.Context, *Command) error
+
 // CommandNotFoundFunc is executed if the proper command cannot be found
 type CommandNotFoundFunc func(context.Context, *Command, string)
 

@@ -64,6 +64,11 @@ type Command struct {
 	// An action to execute after any subcommands are run, but after the subcommand has finished
 	// It is run even if Action() panics
 	After AfterFunc `json:"-"`
+	// An action to validate arguments before the command is run. If non-nil, it
+	// is called before Before and Action. If the current command does not set
+	// ArgValidator, the nearest ancestor that does is used instead.
+	// Returning a non-nil error short-circuits the command.
+	ArgValidator ArgValidatorFunc `json:"-"`
 	// The function to call when this command is invoked
 	Action ActionFunc `json:"-"`
 	// Execute this function if the proper command cannot be found
