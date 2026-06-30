@@ -1850,6 +1850,36 @@ func TestApp_OrderOfOperations(t *testing.T) {
 	app.Commands = oldCommands
 }
 
+func TestApp_Run_DoubleDashShellCompletionDoesNotExecuteAction(t *testing.T) {
+	origArgv := os.Args
+	t.Cleanup(func() {
+		os.Args = origArgv
+	})
+
+	var output bytes.Buffer
+	actionCalled := false
+
+	app := &App{
+		EnableBashCompletion: true,
+		HideHelp:             true,
+		Writer:               &output,
+		Flags: []Flag{
+			&BoolFlag{Name: "verbose"},
+		},
+		Action: func(c *Context) error {
+			actionCalled = true
+			return nil
+		},
+	}
+
+	os.Args = []string{"command", "--", "--generate-bash-completion"}
+
+	err := app.Run(os.Args)
+	expect(t, err, nil)
+	expect(t, actionCalled, false)
+	expect(t, output.String(), "--verbose\n")
+}
+
 func TestApp_Run_CommandWithSubcommandHasHelpTopic(t *testing.T) {
 	var subcommandHelpTopics = [][]string{
 		{"command", "foo", "--help"},

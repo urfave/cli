@@ -1745,7 +1745,16 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 				EnableBashCompletion: true,
 			},
 			wantShellCompletion: false,
-			wantArgs:            []string{"--", "foo", "--generate-bash-completion"},
+			wantArgs:            []string{"--", "foo"},
+		},
+		{
+			name:      "double dash is the token being completed",
+			arguments: []string{"foo", "--", "--generate-bash-completion"},
+			app: &App{
+				EnableBashCompletion: true,
+			},
+			wantShellCompletion: true,
+			wantArgs:            []string{"foo", "--"},
 		},
 		{
 			name:      "--generate-bash-completion",
