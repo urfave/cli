@@ -216,6 +216,15 @@ func commandAncestry(command *Command) string {
 	return strings.Join(ancestry, "; and ")
 }
 
+// escapeSingleQuotes escapes a string for use inside a fish single-quoted
+// string, such as a `-d '...'` description. Within single quotes fish only
+// recognizes the escape sequences \\ and \', so the backslash must be escaped
+// as well as the single quote. Escaping the quote without escaping the
+// backslash corrupts any description that contains a backslash, and a trailing
+// backslash even leaves the single-quoted string unterminated.
+// See https://fishshell.com/docs/current/language.html
 func escapeSingleQuotes(input string) string {
-	return strings.ReplaceAll(input, `'`, `\'`)
+	return fishSingleQuoteReplacer.Replace(input)
 }
+
+var fishSingleQuoteReplacer = strings.NewReplacer(`\`, `\\`, `'`, `\'`)
