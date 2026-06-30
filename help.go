@@ -447,12 +447,18 @@ func checkShellCompleteFlag(a *App, arguments []string) (bool, []string) {
 		return false, arguments
 	}
 
-	for _, arg := range arguments {
-		// If arguments include "--", shell completion is disabled
-		// because after "--" only positional arguments are accepted.
-		// https://unix.stackexchange.com/a/11382
+	// If arguments include "--" before the token being completed, shell
+	// completion is disabled because after "--" only positional arguments are
+	// accepted. We only check arguments before the token being completed so
+	// completing "--" itself still works.
+	// https://unix.stackexchange.com/a/11382
+	limit := 0
+	if pos > 1 {
+		limit = pos - 1
+	}
+	for _, arg := range arguments[:limit] {
 		if arg == "--" {
-			return false, arguments
+			return false, arguments[:pos]
 		}
 	}
 
