@@ -9,8 +9,10 @@ import (
 	"unicode"
 )
 
-type helpShownKey struct{}
-type helpFlagKey struct{}
+type (
+	helpShownKey struct{}
+	helpFlagKey  struct{}
+)
 
 func (cmd *Command) parseArgsFromStdin() ([]string, error) {
 	type state int
