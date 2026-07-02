@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"reflect"
 	"regexp"
 	"runtime"
 	"strings"
@@ -25,6 +26,13 @@ var (
 
 	commaWhitespace = regexp.MustCompile("[, ]+.*")
 )
+
+func validateFlagName(name string) error {
+	if name != "" && (strings.Contains(name, ",") || strings.Contains(name, " ")) {
+		return fmt.Errorf("invalid flag name %q: move alternate names to Aliases", name)
+	}
+	return nil
+}
 
 // BashCompletionFlag enables bash-completion for all commands and subcommands
 var BashCompletionFlag Flag = &BoolFlag{
@@ -167,10 +175,46 @@ type Countable interface {
 	Count() int
 }
 
+func rawFlagName(f any) (string, bool) {
+	if f == nil {
+		return "", false
+	}
+
+	rv := reflect.ValueOf(f)
+	for rv.Kind() == reflect.Pointer {
+		if rv.IsNil() {
+			return "", false
+		}
+		rv = rv.Elem()
+	}
+
+	if rv.Kind() != reflect.Struct {
+		return "", false
+	}
+
+	if target := rv.FieldByName("Target"); target.IsValid() {
+		if name, ok := rawFlagName(target.Interface()); ok {
+			return name, true
+		}
+	}
+
+	nameField := rv.FieldByName("Name")
+	if !nameField.IsValid() || nameField.Kind() != reflect.String {
+		return "", false
+	}
+
+	return nameField.String(), true
+}
+
 func flagSet(name string, flags []Flag, spec separatorSpec) (*flag.FlagSet, error) {
 	set := flag.NewFlagSet(name, flag.ContinueOnError)
 
 	for _, f := range flags {
+		if name, ok := rawFlagName(f); ok {
+			if err := validateFlagName(name); err != nil {
+				return nil, err
+			}
+		}
 		if c, ok := f.(customizedSeparator); ok {
 			c.WithSeparatorSpec(spec)
 		}
