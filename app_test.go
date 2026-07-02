@@ -1346,6 +1346,37 @@ func TestApp_BeforeFunc(t *testing.T) {
 	}
 }
 
+func TestApp_OnUsageErrorHandlesBeforeError(t *testing.T) {
+	beforeError := errors.New("before failed")
+	usageError := errors.New("usage handled")
+	var called bool
+	var gotErr error
+	var gotIsSubcommand bool
+
+	app := &App{
+		Before: func(_ *Context) error {
+			return beforeError
+		},
+		OnUsageError: func(_ *Context, err error, isSubcommand bool) error {
+			called = true
+			gotErr = err
+			gotIsSubcommand = isSubcommand
+			return usageError
+		},
+		Action: func(_ *Context) error {
+			t.Fatal("Action should not be called when Before fails")
+			return nil
+		},
+	}
+
+	err := app.Run([]string{"command"})
+
+	expect(t, called, true)
+	expect(t, gotErr, beforeError)
+	expect(t, gotIsSubcommand, false)
+	expect(t, err, usageError)
+}
+
 func TestApp_BeforeAfterFuncShellCompletion(t *testing.T) {
 	counts := &opCounts{}
 	var err error
@@ -1807,10 +1838,10 @@ func TestApp_OrderOfOperations(t *testing.T) {
 
 	app.Before = beforeError
 	_ = app.Run([]string{"command", "bar"})
-	expect(t, counts.OnUsageError, 0)
 	expect(t, counts.Before, 1)
-	expect(t, counts.After, 2)
-	expect(t, counts.Total, 2)
+	expect(t, counts.OnUsageError, 2)
+	expect(t, counts.After, 3)
+	expect(t, counts.Total, 3)
 	app.Before = beforeNoError
 
 	resetCounts()

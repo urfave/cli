@@ -215,6 +215,11 @@ func (c *Command) Run(cCtx *Context, arguments ...string) (err error) {
 	if c.Before != nil && !cCtx.shellComplete {
 		beforeErr := c.Before(cCtx)
 		if beforeErr != nil {
+			if c.OnUsageError != nil {
+				err = c.OnUsageError(cCtx, beforeErr, !c.isRoot)
+				cCtx.App.handleExitCoder(cCtx, err)
+				return err
+			}
 			cCtx.App.handleExitCoder(cCtx, beforeErr)
 			err = beforeErr
 			return err
