@@ -139,10 +139,6 @@ func (f *Int64SliceFlag) IsSliceFlag() bool {
 
 // Apply populates the flag given the flag set and environment
 func (f *Int64SliceFlag) Apply(set *flag.FlagSet) error {
-	if err := validateFlagNames(f.Name, f.Aliases); err != nil {
-		return err
-	}
-
 	// apply any default
 	if f.Destination != nil && f.Value != nil {
 		f.Destination.slice = make([]int64, len(f.Value.slice))

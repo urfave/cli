@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"reflect"
 	"regexp"
 	"runtime"
 	"strings"
@@ -182,10 +183,55 @@ type Countable interface {
 	Count() int
 }
 
+func rawFlagNames(f any) (string, []string, bool) {
+	if f == nil {
+		return "", nil, false
+	}
+
+	rv := reflect.ValueOf(f)
+	for rv.Kind() == reflect.Pointer {
+		if rv.IsNil() {
+			return "", nil, false
+		}
+		rv = rv.Elem()
+	}
+
+	if rv.Kind() != reflect.Struct {
+		return "", nil, false
+	}
+
+	if target := rv.FieldByName("Target"); target.IsValid() {
+		if name, aliases, ok := rawFlagNames(target.Interface()); ok {
+			return name, aliases, true
+		}
+	}
+
+	nameField := rv.FieldByName("Name")
+	if !nameField.IsValid() || nameField.Kind() != reflect.String {
+		return "", nil, false
+	}
+
+	aliasesField := rv.FieldByName("Aliases")
+	var aliases []string
+	if aliasesField.IsValid() && aliasesField.Kind() == reflect.Slice && aliasesField.Type().Elem().Kind() == reflect.String {
+		aliases = make([]string, aliasesField.Len())
+		for i := 0; i < aliasesField.Len(); i++ {
+			aliases[i] = aliasesField.Index(i).String()
+		}
+	}
+
+	return nameField.String(), aliases, true
+}
+
 func flagSet(name string, flags []Flag, spec separatorSpec) (*flag.FlagSet, error) {
 	set := flag.NewFlagSet(name, flag.ContinueOnError)
 
 	for _, f := range flags {
+		if name, aliases, ok := rawFlagNames(f); ok {
+			if err := validateFlagNames(name, aliases); err != nil {
+				return nil, err
+			}
+		}
 		if c, ok := f.(customizedSeparator); ok {
 			c.WithSeparatorSpec(spec)
 		}

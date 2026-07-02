@@ -23,10 +23,6 @@ func (f *Uint64Flag) GetCategory() string {
 
 // Apply populates the flag given the flag set and environment
 func (f *Uint64Flag) Apply(set *flag.FlagSet) error {
-	if err := validateFlagNames(f.Name, f.Aliases); err != nil {
-		return err
-	}
-
 	// set default value so that environment wont be able to overwrite it
 	f.defaultValue = f.Value
 	f.defaultValueSet = true
