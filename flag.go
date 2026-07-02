@@ -27,17 +27,9 @@ var (
 	commaWhitespace = regexp.MustCompile("[, ]+.*")
 )
 
-func validateFlagNames(name string, aliases []string) error {
+func validateFlagName(name string) error {
 	if name != "" && (strings.Contains(name, ",") || strings.Contains(name, " ")) {
-		return fmt.Errorf("invalid flag name %q: use Name for the primary flag and Aliases for alternate names", name)
-	}
-	for _, alias := range aliases {
-		if alias == "" {
-			continue
-		}
-		if strings.Contains(alias, ",") || strings.Contains(alias, " ") {
-			return fmt.Errorf("invalid flag alias %q: aliases must be individual names without commas or spaces", alias)
-		}
+		return fmt.Errorf("invalid flag name %q: move alternate names to Aliases", name)
 	}
 	return nil
 }
@@ -183,52 +175,43 @@ type Countable interface {
 	Count() int
 }
 
-func rawFlagNames(f any) (string, []string, bool) {
+func rawFlagName(f any) (string, bool) {
 	if f == nil {
-		return "", nil, false
+		return "", false
 	}
 
 	rv := reflect.ValueOf(f)
 	for rv.Kind() == reflect.Pointer {
 		if rv.IsNil() {
-			return "", nil, false
+			return "", false
 		}
 		rv = rv.Elem()
 	}
 
 	if rv.Kind() != reflect.Struct {
-		return "", nil, false
+		return "", false
 	}
 
 	if target := rv.FieldByName("Target"); target.IsValid() {
-		if name, aliases, ok := rawFlagNames(target.Interface()); ok {
-			return name, aliases, true
+		if name, ok := rawFlagName(target.Interface()); ok {
+			return name, true
 		}
 	}
 
 	nameField := rv.FieldByName("Name")
 	if !nameField.IsValid() || nameField.Kind() != reflect.String {
-		return "", nil, false
+		return "", false
 	}
 
-	aliasesField := rv.FieldByName("Aliases")
-	var aliases []string
-	if aliasesField.IsValid() && aliasesField.Kind() == reflect.Slice && aliasesField.Type().Elem().Kind() == reflect.String {
-		aliases = make([]string, aliasesField.Len())
-		for i := 0; i < aliasesField.Len(); i++ {
-			aliases[i] = aliasesField.Index(i).String()
-		}
-	}
-
-	return nameField.String(), aliases, true
+	return nameField.String(), true
 }
 
 func flagSet(name string, flags []Flag, spec separatorSpec) (*flag.FlagSet, error) {
 	set := flag.NewFlagSet(name, flag.ContinueOnError)
 
 	for _, f := range flags {
-		if name, aliases, ok := rawFlagNames(f); ok {
-			if err := validateFlagNames(name, aliases); err != nil {
+		if name, ok := rawFlagName(f); ok {
+			if err := validateFlagName(name); err != nil {
 				return nil, err
 			}
 		}
