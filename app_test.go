@@ -283,7 +283,8 @@ func ExampleApp_Run_bashComplete_withLongFlag() {
 			Aliases: []string{"x"},
 		},
 		&StringFlag{
-			Name: "some-flag,s",
+			Name:    "some-flag",
+			Aliases: []string{"s"},
 		},
 		&StringFlag{
 			Name: "similar-flag",
@@ -294,6 +295,29 @@ func ExampleApp_Run_bashComplete_withLongFlag() {
 	// Output:
 	// --some-flag
 	// --similar-flag
+}
+
+func TestApp_Run_ErrorsOnLegacyV1FlagAliasSyntax(t *testing.T) {
+	app := &App{
+		Name: "greet",
+		Flags: []Flag{
+			&StringFlag{
+				Name: "config, cfg",
+			},
+		},
+	}
+
+	err := app.Run([]string{"greet"})
+	if err == nil {
+		t.Fatalf("expected an error for legacy alias syntax, got nil")
+	}
+
+	if !strings.Contains(err.Error(), "invalid flag name") {
+		t.Fatalf("expected invalid flag name error, got %q", err)
+	}
+	if !strings.Contains(err.Error(), "Aliases") {
+		t.Fatalf("expected alias migration hint in error, got %q", err)
+	}
 }
 func ExampleApp_Run_bashComplete_withMultipleLongFlag() {
 	os.Setenv("SHELL", "bash")

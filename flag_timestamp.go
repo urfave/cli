@@ -139,6 +139,10 @@ func (f *TimestampFlag) GetEnvVars() []string {
 
 // Apply populates the flag given the flag set and environment
 func (f *TimestampFlag) Apply(set *flag.FlagSet) error {
+	if err := validateFlagNames(f.Name, f.Aliases); err != nil {
+		return err
+	}
+
 	if f.Layout == "" {
 		return fmt.Errorf("timestamp Layout is required")
 	}

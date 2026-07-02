@@ -26,6 +26,21 @@ var (
 	commaWhitespace = regexp.MustCompile("[, ]+.*")
 )
 
+func validateFlagNames(name string, aliases []string) error {
+	if name != "" && (strings.Contains(name, ",") || strings.Contains(name, " ")) {
+		return fmt.Errorf("invalid flag name %q: use Name for the primary flag and Aliases for alternate names", name)
+	}
+	for _, alias := range aliases {
+		if alias == "" {
+			continue
+		}
+		if strings.Contains(alias, ",") || strings.Contains(alias, " ") {
+			return fmt.Errorf("invalid flag alias %q: aliases must be individual names without commas or spaces", alias)
+		}
+	}
+	return nil
+}
+
 // BashCompletionFlag enables bash-completion for all commands and subcommands
 var BashCompletionFlag Flag = &BoolFlag{
 	Name:   "generate-bash-completion",
