@@ -2687,6 +2687,89 @@ func TestCommand_Run_Help(t *testing.T) {
 	}
 }
 
+func TestCommand_Run_HelpFlagIgnoresNonCommandArguments(t *testing.T) {
+	t.Run("root command ignores positional args after help flag", func(t *testing.T) {
+		r := require.New(t)
+		var buf bytes.Buffer
+		var errBuf bytes.Buffer
+
+		cmd := &Command{
+			Writer:    &buf,
+			ErrWriter: &errBuf,
+			Name:      "myCLI",
+			Usage:     "My Usage",
+			Commands: []*Command{
+				{
+					Name: "command",
+					Arguments: []Argument{
+						&StringArg{
+							Name:      "arg1",
+							UsageText: "ARG1",
+						},
+					},
+					Usage: "Show the version of My CLI",
+					Action: func(context.Context, *Command) error {
+						return nil
+					},
+				},
+			},
+			Action: func(context.Context, *Command) error {
+				return nil
+			},
+		}
+
+		err := cmd.Run(buildTestContext(t), []string{"myCLI", "--help", "ciao"})
+		r.NoError(err)
+		r.Contains(buf.String(), "NAME:")
+		r.Contains(buf.String(), "myCLI - My Usage")
+		r.NotContains(buf.String(), "No help topic for")
+		r.NotContains(errBuf.String(), "Incorrect Usage")
+	})
+
+	for _, argv := range [][]string{
+		{"myCLI", "command", "ciao", "--help"},
+		{"myCLI", "command", "--help", "ciao"},
+	} {
+		t.Run(fmt.Sprintf("subcommand ignores positional args after help flag: %v", argv), func(t *testing.T) {
+			r := require.New(t)
+			var buf bytes.Buffer
+			var errBuf bytes.Buffer
+
+			cmd := &Command{
+				Writer:    &buf,
+				ErrWriter: &errBuf,
+				Name:      "myCLI",
+				Usage:     "My Usage",
+				Commands: []*Command{
+					{
+						Name: "command",
+						Arguments: []Argument{
+							&StringArg{
+								Name:      "arg1",
+								UsageText: "ARG1",
+							},
+						},
+						Usage: "Show the version of My CLI",
+						Action: func(context.Context, *Command) error {
+							return nil
+						},
+					},
+				},
+				Action: func(context.Context, *Command) error {
+					return nil
+				},
+			}
+
+			err := cmd.Run(buildTestContext(t), argv)
+			r.NoError(err)
+			r.Contains(buf.String(), "NAME:")
+			r.Contains(buf.String(), "myCLI command - Show the version of My CLI")
+			r.NotContains(buf.String(), "No help topic for")
+			r.NotContains(errBuf.String(), "Incorrect Usage")
+		})
+	}
+}
+
 func TestCommand_Run_Version(t *testing.T) {
 	versionArguments := [][]string{{"boom", "--version"}, {"boom", "-v"}}
 
