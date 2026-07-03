@@ -59,7 +59,7 @@ source <($COMMAND completion zsh)
 $COMMAND completion fish > ~/.config/fish/completions/$COMMAND.fish
 
 # Powershell
-Output the script to path/to/autocomplete/$COMMAND.ps1 an run it.
+Output the script to path/to/autocomplete/$COMMAND.ps1 and run it.
 `
 
 func buildCompletionCommand(appName string) *Command {
