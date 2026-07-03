@@ -337,6 +337,11 @@ func (cmd *Command) argsWithDefaultCommand(oldArgs Args) Args {
 }
 
 // Root returns the Command at the root of the graph
+// Parent returns the parent command, or nil if this is the root command.
+func (cmd *Command) Parent() *Command {
+	return cmd.parent
+}
+
 func (cmd *Command) Root() *Command {
 	if cmd.parent == nil {
 		return cmd
