@@ -41,6 +41,38 @@ func TestFishCompletion(t *testing.T) {
 	expectFileContent(t, "testdata/expected-fish-full.fish", res)
 }
 
+func TestFishCompletionBackslashEscaping(t *testing.T) {
+	// Inside fish single-quoted strings the only escape sequences are \\ and
+	// \', so a backslash in a description must be emitted as \\. An unescaped
+	// backslash silently corrupts the description, and a trailing one turns the
+	// closing quote into an escaped quote, leaving the string unterminated.
+	// Ref: https://fishshell.com/docs/current/language.html
+	cmd := &Command{
+		Name: "greet",
+		Flags: []Flag{
+			&StringFlag{
+				Name:  "path",
+				Usage: `match \d+ then C:\tmp\`,
+			},
+		},
+		Commands: []*Command{
+			{
+				Name:  "win",
+				Usage: `run under C:\sys\`,
+			},
+		},
+	}
+	cmd.setupCommandGraph()
+
+	res, err := cmd.ToFishCompletion()
+	require.NoError(t, err)
+
+	// Both the flag and the subcommand descriptions must have their backslashes
+	// doubled in the generated `-d '...'` tokens.
+	assert.Contains(t, res, `-d 'match \\d+ then C:\\tmp\\'`)
+	assert.Contains(t, res, `-d 'run under C:\\sys\\'`)
+}
+
 func TestFishCompletionShellComplete(t *testing.T) {
 	cmd := buildExtendedTestCommand()
 	cmd.ShellComplete = func(context.Context, *Command) {}
