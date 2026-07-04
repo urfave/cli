@@ -596,6 +596,17 @@ func (cmd *Command) HasHiddenParent() bool {
 
 // Walk visits cmd and every descendant. If fn returns a non-nil error, the
 // walk terminates and the error is returned to the caller.
+//
+// To skip subcommands of hidden commands in the walk, check both Hidden and
+// HasHiddenParent in the callback:
+//
+//	cmd.Walk(func(c *cli.Command) error {
+//	    if c.Hidden || c.HasHiddenParent() {
+//	        return nil
+//	    }
+//	    // process visible commands only
+//	    return nil
+//	})
 func (cmd *Command) Walk(fn func(*Command) error) error {
 	if fn == nil {
 		return nil
