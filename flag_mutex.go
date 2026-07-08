@@ -17,22 +17,38 @@ type MutuallyExclusiveFlags struct {
 }
 
 func (grp MutuallyExclusiveFlags) check(_ *Command) error {
-	oneSet := false
 	e := &mutuallyExclusiveGroup{}
 
-	for _, grpf := range grp.Flags {
-		for _, f := range grpf {
-			if f.IsSet() {
-				if oneSet {
-					e.flag2Name = f.Names()[0]
-					return e
-				}
-				e.flag1Name = f.Names()[0]
+	// First, find the index of the group were the flag was set
+	// (if it exists.)
+	var i int
+	var oneSet bool
+
+flagGroupLoop:
+	for ; i < len(grp.Flags); i++ {
+		group := grp.Flags[i]
+
+		// For each flag inside this group, check if it's set.
+		for _, flg := range group {
+			if flg.IsSet() {
+				e.flag1Name = flg.Names()[0]
 				oneSet = true
-				break
+				break flagGroupLoop
 			}
-			if oneSet {
-				break
+		}
+	}
+
+	// Next, continue from the flag group just after the one we
+	// stopped at above, to see if another flag is set. If so,
+	// return an error.
+	i++
+	for ; i < len(grp.Flags); i++ {
+		group := grp.Flags[i]
+
+		for _, flg := range group {
+			if flg.IsSet() {
+				e.flag2Name = flg.Names()[0]
+				return e
 			}
 		}
 	}
