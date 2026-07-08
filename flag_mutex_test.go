@@ -30,6 +30,9 @@ func newCommand() *Command {
 							Aliases: []string{"ai"},
 							Sources: EnvVars("T_VAR"),
 						},
+						&BoolFlag{
+							Name: "q",
+						},
 					},
 				},
 			},
@@ -71,6 +74,12 @@ func TestFlagMutuallyExclusiveFlags(t *testing.T) {
 			name:     "required both set",
 			args:     []string{"--i", "11", "--ai", "12"},
 			errStr:   "option i cannot be set along with option ai",
+			required: true,
+		},
+		{
+			name:     "required both set second member",
+			args:     []string{"--i", "11", "--q"},
+			errStr:   "option i cannot be set along with option q",
 			required: true,
 		},
 		{
