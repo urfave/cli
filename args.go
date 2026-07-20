@@ -104,7 +104,10 @@ func (a *ArgumentBase[T, C, VC]) Usage() string {
 		return a.UsageText
 	}
 
-	usageFormat := "%[1]s"
+	usageFormat := "[%[1]s]"
+	if a.Required {
+		usageFormat = "%[1]s"
+	}
 	return fmt.Sprintf(usageFormat, a.Name)
 }
 
