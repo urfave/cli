@@ -552,6 +552,81 @@ func TestSingleOptionalArg(t *testing.T) {
 	}
 }
 
+func TestSingleRequiredArg(t *testing.T) {
+	tests := []struct {
+		name     string
+		args     []string
+		argValue string
+		exp      string
+		expErr   string
+	}{
+		{
+			name:   "no args",
+			args:   []string{"foo"},
+			expErr: `required argument "sa" not set`,
+		},
+		{
+			name:     "no arg with def value",
+			args:     []string{"foo"},
+			argValue: "bar",
+			expErr:   `required argument "sa" not set`,
+		},
+		{
+			name: "one arg",
+			args: []string{"foo", "zbar"},
+			exp:  "zbar",
+		},
+		{
+			name: "empty string arg",
+			args: []string{"foo", ""},
+			exp:  "",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			cmd := buildMinimalTestCommand()
+			var s1 string
+			arg := &StringArg{
+				Name:        "sa",
+				Value:       test.argValue,
+				Destination: &s1,
+				Required:    true,
+			}
+			cmd.Arguments = []Argument{
+				arg,
+			}
+
+			err := cmd.Run(buildTestContext(t), test.args)
+			r := require.New(t)
+			if test.expErr != "" {
+				r.EqualError(err, test.expErr)
+				return
+			}
+			r.NoError(err)
+			r.Equal(test.exp, s1)
+		})
+	}
+}
+
+func TestChainedRequiredArgs(t *testing.T) {
+	cmd := buildMinimalTestCommand()
+	cmd.Arguments = []Argument{
+		&StringArg{
+			Name:     "first",
+			Required: true,
+		},
+		&StringArg{
+			Name:     "second",
+			Required: true,
+		},
+	}
+
+	r := require.New(t)
+	r.EqualError(cmd.Run(buildTestContext(t), []string{"foo", "one"}), `required argument "second" not set`)
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "one", "two"}))
+}
+
 func TestUnboundedArgs(t *testing.T) {
 	arg := &StringArgs{
 		Min: 0,
