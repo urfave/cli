@@ -294,6 +294,7 @@ type ArgumentBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Value       T      `json:"value"`     // the default value of this argument
 	Destination *T     `json:"-"`         // the destination point for this argument
 	UsageText   string `json:"usageText"` // the usage text to show
+	Required    bool   `json:"required"`  // whether the argument is required or not
 	Config      C      `json:"config"`    // config for this argument similar to Flag Config
 
 	// Has unexported fields.
