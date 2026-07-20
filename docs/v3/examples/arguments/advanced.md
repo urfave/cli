@@ -111,6 +111,45 @@ Some of the basic types arguments supported are
 This is ok for single value arguments. Any number of these single value arguments can be concatenated in the `Arguments`
 slice field of `Command`. 
 
+Single value arguments are optional by default. If the argument is not provided the default `Value` is used instead.
+You can mark a single value argument as *required* by setting the `Required` field to `true`. If a user does not
+provide a required argument, they will be shown an error message.
+
+<!-- {
+  "error": "required argument \"someint\" not set"
+} -->
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+	"context"
+
+	"github.com/urfave/cli/v3"
+)
+
+func main() {
+	cmd := &cli.Command{
+		Arguments: []cli.Argument{
+			&cli.IntArg{
+				Name:     "someint",
+				Required: true,
+			},
+		},
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			fmt.Printf("We got %d", cmd.IntArg("someint"))
+			return nil
+		},
+	}
+
+	if err := cmd.Run(context.Background(), os.Args); err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
 The library also support multi value arguments for e.g
 
 <!-- {

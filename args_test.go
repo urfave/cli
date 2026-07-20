@@ -422,10 +422,16 @@ func TestArgUsage(t *testing.T) {
 	tests := []struct {
 		name     string
 		usage    string
+		required bool
 		expected string
 	}{
 		{
 			name:     "default",
+			expected: "[ia]",
+		},
+		{
+			name:     "required",
+			required: true,
 			expected: "ia",
 		},
 		{
@@ -436,7 +442,7 @@ func TestArgUsage(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			arg.UsageText = test.usage
+			arg.UsageText, arg.Required = test.usage, test.required
 			require.Equal(t, test.expected, arg.Usage())
 		})
 	}
