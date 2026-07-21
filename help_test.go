@@ -520,7 +520,7 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 		/*{
 			name:     "standard-command",
 			template: "",
-			printer: func(w io.Writer, templ string, data interface{}) {
+			printer: func(w io.Writer, templ string, data any) {
 				fmt.Fprint(w, "yo")
 			},
 			command:      "my-command",
@@ -530,9 +530,9 @@ func TestShowCommandHelp_HelpPrinter(t *testing.T) {
 		{
 			name:     "custom-template-command",
 			template: "{{doublecho .Name}}",
-			printer: func(w io.Writer, templ string, data interface{}) {
+			printer: func(w io.Writer, templ string, data any) {
 				// Pass a custom function to ensure it gets used
-				fm := map[string]interface{}{"doublecho": doublecho}
+				fm := map[string]any{"doublecho": doublecho}
 				HelpPrinterCustom(w, templ, data, fm)
 			},
 			command:      "my-command",
