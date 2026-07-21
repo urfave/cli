@@ -165,22 +165,23 @@ func TestCommandFlagParsing(t *testing.T) {
 	}{
 		// Test normal "not ignoring flags" flow
 		{testArgs: []string{"test-cmd", "-break", "blah", "blah"}, skipFlagParsing: false, useShortOptionHandling: false, expectedErr: "flag provided but not defined: -break"},
-		{testArgs: []string{"test-cmd", "blah", "blah"}, skipFlagParsing: true, useShortOptionHandling: false},                                        // Test SkipFlagParsing without any args that look like flags
-		{testArgs: []string{"test-cmd", "blah", "-break"}, skipFlagParsing: true, useShortOptionHandling: false},                                      // Test SkipFlagParsing with random flag arg
-		{testArgs: []string{"test-cmd", "blah", "-help"}, skipFlagParsing: true, useShortOptionHandling: false},                                       // Test SkipFlagParsing with "special" help flag arg
-		{testArgs: []string{"test-cmd", "blah", "-h"}, skipFlagParsing: false, useShortOptionHandling: true, expectedErr: "No help topic for 'blah'"}, // Test UseShortOptionHandling
+		{testArgs: []string{"test-cmd", "blah", "blah"}, skipFlagParsing: true, useShortOptionHandling: false},   // Test SkipFlagParsing without any args that look like flags
+		{testArgs: []string{"test-cmd", "blah", "-break"}, skipFlagParsing: true, useShortOptionHandling: false}, // Test SkipFlagParsing with random flag arg
+		{testArgs: []string{"test-cmd", "blah", "-help"}, skipFlagParsing: true, useShortOptionHandling: false},  // Test SkipFlagParsing with "special" help flag arg
+		{testArgs: []string{"test-cmd", "blah", "-h"}, skipFlagParsing: false, useShortOptionHandling: true},     // Test help flag swallowing trailing positional args
 	}
 
 	for _, c := range cases {
 		t.Run(strings.Join(c.testArgs, " "), func(t *testing.T) {
 			cmd := &Command{
-				Writer:          io.Discard,
-				Name:            "test-cmd",
-				Aliases:         []string{"tc"},
-				Usage:           "this is for testing",
-				Description:     "testing",
-				Action:          func(context.Context, *Command) error { return nil },
-				SkipFlagParsing: c.skipFlagParsing,
+				Writer:                 io.Discard,
+				Name:                   "test-cmd",
+				Aliases:                []string{"tc"},
+				Usage:                  "this is for testing",
+				Description:            "testing",
+				Action:                 func(context.Context, *Command) error { return nil },
+				SkipFlagParsing:        c.skipFlagParsing,
+				UseShortOptionHandling: c.useShortOptionHandling,
 			}
 
 			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
@@ -2683,6 +2684,89 @@ func TestCommand_Run_Help(t *testing.T) {
 			output := buf.String()
 
 			assert.Contains(t, output, tt.wantContains, "want help to contain %q, did not: \n%q", "boom - make an explosive entrance", output)
+		})
+	}
+}
+
+func TestCommand_Run_HelpFlagIgnoresNonCommandArguments(t *testing.T) {
+	t.Run("root command ignores positional args after help flag", func(t *testing.T) {
+		r := require.New(t)
+		var buf bytes.Buffer
+		var errBuf bytes.Buffer
+
+		cmd := &Command{
+			Writer:    &buf,
+			ErrWriter: &errBuf,
+			Name:      "myCLI",
+			Usage:     "My Usage",
+			Commands: []*Command{
+				{
+					Name: "command",
+					Arguments: []Argument{
+						&StringArg{
+							Name:      "arg1",
+							UsageText: "ARG1",
+						},
+					},
+					Usage: "Show the version of My CLI",
+					Action: func(context.Context, *Command) error {
+						return nil
+					},
+				},
+			},
+			Action: func(context.Context, *Command) error {
+				return nil
+			},
+		}
+
+		err := cmd.Run(buildTestContext(t), []string{"myCLI", "--help", "ciao"})
+		r.NoError(err)
+		r.Contains(buf.String(), "NAME:")
+		r.Contains(buf.String(), "myCLI - My Usage")
+		r.NotContains(buf.String(), "No help topic for")
+		r.NotContains(errBuf.String(), "Incorrect Usage")
+	})
+
+	for _, argv := range [][]string{
+		{"myCLI", "command", "ciao", "--help"},
+		{"myCLI", "command", "--help", "ciao"},
+	} {
+		t.Run(fmt.Sprintf("subcommand ignores positional args after help flag: %v", argv), func(t *testing.T) {
+			r := require.New(t)
+			var buf bytes.Buffer
+			var errBuf bytes.Buffer
+
+			cmd := &Command{
+				Writer:    &buf,
+				ErrWriter: &errBuf,
+				Name:      "myCLI",
+				Usage:     "My Usage",
+				Commands: []*Command{
+					{
+						Name: "command",
+						Arguments: []Argument{
+							&StringArg{
+								Name:      "arg1",
+								UsageText: "ARG1",
+							},
+						},
+						Usage: "Show the version of My CLI",
+						Action: func(context.Context, *Command) error {
+							return nil
+						},
+					},
+				},
+				Action: func(context.Context, *Command) error {
+					return nil
+				},
+			}
+
+			err := cmd.Run(buildTestContext(t), argv)
+			r.NoError(err)
+			r.Contains(buf.String(), "NAME:")
+			r.Contains(buf.String(), "myCLI command - Show the version of My CLI")
+			r.NotContains(buf.String(), "No help topic for")
+			r.NotContains(errBuf.String(), "Incorrect Usage")
 		})
 	}
 }

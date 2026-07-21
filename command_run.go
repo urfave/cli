@@ -9,7 +9,10 @@ import (
 	"unicode"
 )
 
-type helpShownKey struct{}
+type (
+	helpShownKey struct{}
+	helpFlagKey  struct{}
+)
 
 func (cmd *Command) parseArgsFromStdin() ([]string, error) {
 	type state int
@@ -214,6 +217,7 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 
 	if cmd.checkHelp() {
 		ctx = context.WithValue(ctx, helpShownKey{}, true)
+		ctx = context.WithValue(ctx, helpFlagKey{}, true)
 		return ctx, helpCommandAction(ctx, cmd)
 	} else {
 		tracef("no help is wanted (cmd=%[1]q)", cmd.Name)
