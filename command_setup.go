@@ -19,11 +19,6 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 	isRoot := cmd.parent == nil
 	tracef("isRoot? %[1]v (cmd=%[2]q)", isRoot, cmd.Name)
 
-	if cmd.ShellComplete == nil {
-		tracef("setting default ShellComplete (cmd=%[1]q)", cmd.Name)
-		cmd.ShellComplete = DefaultCompleteWithFlags
-	}
-
 	if cmd.Name == "" && isRoot {
 		name := filepath.Base(osArgs[0])
 		tracef("setting cmd.Name from first arg basename (cmd=%[1]q)", name)
