@@ -6450,3 +6450,56 @@ func TestCommand_Walk_NilFn(t *testing.T) {
 	cmd := &Command{Name: "foo"}
 	assert.Nil(t, cmd.Walk(nil))
 }
+
+func TestCommand_HasHiddenParent(t *testing.T) {
+	t.Run("root command", func(t *testing.T) {
+		cmd := &Command{Name: "root"}
+		assert.False(t, cmd.HasHiddenParent())
+	})
+
+	t.Run("direct hidden parent", func(t *testing.T) {
+		parent := &Command{Name: "parent", Hidden: true}
+		child := &Command{Name: "child"}
+		child.parent = parent
+		assert.True(t, child.HasHiddenParent())
+	})
+
+	t.Run("non-hidden parent", func(t *testing.T) {
+		parent := &Command{Name: "parent"}
+		child := &Command{Name: "child"}
+		child.parent = parent
+		assert.False(t, child.HasHiddenParent())
+	})
+
+	t.Run("grandparent is hidden", func(t *testing.T) {
+		grandparent := &Command{Name: "grandparent", Hidden: true}
+		parent := &Command{Name: "parent"}
+		child := &Command{Name: "child"}
+		parent.parent = grandparent
+		child.parent = parent
+		assert.True(t, child.HasHiddenParent())
+	})
+
+	t.Run("subcommands of hidden command are skipped in walk", func(t *testing.T) {
+		hiddenCmd := &Command{Name: "completion", Hidden: true}
+		subCmd := &Command{Name: "bash"}
+		subCmd.parent = hiddenCmd
+		hiddenCmd.Commands = []*Command{subCmd}
+
+		root := &Command{
+			Name:     "root",
+			Commands: []*Command{hiddenCmd},
+		}
+
+		var visited []string
+		err := root.Walk(func(c *Command) error {
+			if c.Hidden || c.HasHiddenParent() {
+				return nil
+			}
+			visited = append(visited, c.Name)
+			return nil
+		})
+		require.NoError(t, err)
+		assert.Equal(t, []string{"root"}, visited)
+	})
+}

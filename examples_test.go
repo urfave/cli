@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/mail"
 	"os"
+	"strings"
 	"time"
 
 	// Alias the package import to make the examples runnable on pkg.go.dev.
@@ -607,4 +608,26 @@ func ExampleCommand_Suggest_command() {
 	// Incorrect Usage: flag provided but not defined: -sliming
 	//
 	// Did you mean "--smiling"?
+}
+
+func ExampleCommand_Walk() {
+	cmd := &cli.Command{
+		Name: "app",
+		Commands: []*cli.Command{
+			{Name: "serve"},
+			{Name: "migrate"},
+		},
+		Action: func(_ context.Context, _ *cli.Command) error {
+			return nil
+		},
+	}
+
+	var names []string
+	_ = cmd.Walk(func(c *cli.Command) error {
+		names = append(names, c.Name)
+		return nil
+	})
+	fmt.Println(strings.Join(names, ", "))
+	// Output:
+	// app, serve, migrate
 }
