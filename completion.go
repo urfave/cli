@@ -46,7 +46,7 @@ var (
 	}
 )
 
-const completionDescription = `Output shell completion script for bash, zsh, fish, or Powershell.
+const completionDescription = `Output shell completion script for bash, zsh, fish, or PowerShell.
 Source the output to enable completion.
 
 # .bashrc
@@ -58,7 +58,7 @@ source <($COMMAND completion zsh)
 # fish
 $COMMAND completion fish > ~/.config/fish/completions/$COMMAND.fish
 
-# Powershell
+# PowerShell
 Output the script to path/to/autocomplete/$COMMAND.ps1 and run it.
 `
 
@@ -66,7 +66,7 @@ func buildCompletionCommand(appName string) *Command {
 	cmd := &Command{
 		Name:                completionCommandName,
 		Hidden:              true,
-		Usage:               "Output shell completion script for bash, zsh, fish, or Powershell",
+		Usage:               "Output shell completion script for bash, zsh, fish, or PowerShell",
 		Description:         strings.ReplaceAll(completionDescription, "$COMMAND", appName),
 		isCompletionCommand: true,
 	}
