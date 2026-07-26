@@ -1271,8 +1271,11 @@ func TestHideHelpCommand_WithHideHelp(t *testing.T) {
 }
 
 func TestHideHelpCommand_WithSubcommands(t *testing.T) {
+	out := &bytes.Buffer{}
 	cmd := &Command{
 		HideHelpCommand: true,
+		Writer:          out,
+		ErrWriter:       out,
 		Commands: []*Command{
 			{
 				Name: "nully",
@@ -1289,6 +1292,16 @@ func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 
 	r.ErrorContains(cmd.Run(buildTestContext(t), []string{"cli.test", "help"}), "No help topic for 'help'")
 	r.NoError(cmd.Run(buildTestContext(t), []string{"cli.test", "--help"}))
+
+	out.Reset()
+	r.ErrorContains(cmd.Run(buildTestContext(t), []string{"cli.test", "nully", "help"}), "No help topic for 'help'")
+	r.NoError(cmd.Run(buildTestContext(t), []string{"cli.test", "nully", "--help"}))
+	r.NotContains(out.String(), "help, h")
+
+	out.Reset()
+	r.ErrorContains(cmd.Run(buildTestContext(t), []string{"cli.test", "nully", "nully2", "help"}), "No help topic for 'help'")
+	r.NoError(cmd.Run(buildTestContext(t), []string{"cli.test", "nully", "nully2", "--help"}))
+	r.NotContains(out.String(), "help, h")
 }
 
 func TestDefaultCompleteWithFlags(t *testing.T) {
