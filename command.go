@@ -185,6 +185,19 @@ func (cmd *Command) checkHelp() bool {
 	return HelpFlag != nil && slices.ContainsFunc(HelpFlag.Names(), cmd.Bool)
 }
 
+func (cmd *Command) checkDuplicateFlagNames() error {
+	seen := map[string]struct{}{}
+	for _, fl := range cmd.Flags {
+		for _, name := range fl.Names() {
+			if _, ok := seen[name]; ok {
+				return fmt.Errorf("flag %q defined multiple times", name)
+			}
+			seen[name] = struct{}{}
+		}
+	}
+	return nil
+}
+
 func (cmd *Command) allFlags() []Flag {
 	var flags []Flag
 	flags = append(flags, cmd.Flags...)

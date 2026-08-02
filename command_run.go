@@ -99,6 +99,9 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error) {
 func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context, deferErr error) {
 	tracef("running with arguments %[1]q (cmd=%[2]q)", osArgs, cmd.Name)
 	cmd.setupDefaults(osArgs)
+	if err := cmd.checkDuplicateFlagNames(); err != nil {
+		return ctx, err
+	}
 
 	// Validate StopOnNthArg
 	if cmd.StopOnNthArg != nil && *cmd.StopOnNthArg < 0 {
