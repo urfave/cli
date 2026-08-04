@@ -5,12 +5,13 @@ function __%[1]s_perform_completion
     set -l args (commandline -opc)
     # Extract the last arg (partial input)
     set -l lastArg (commandline -ct)
-    
-    if string match -q -- "-*" $lastArg
-        set results ($args[1] $args[2..-1] $lastArg --generate-shell-completion 2> /dev/null)
-    else
-        set results ($args[1] $args[2..-1] --generate-shell-completion 2> /dev/null)
-    end
+
+    # The request names the completion in its first argument, where a "--" typed on
+    # the command line cannot turn it into a positional argument of whatever the
+    # command runs. The word under the cursor is sent as the last argument, quoted so
+    # that an empty one is still an argument, which tells "cmd --<TAB>" from
+    # "cmd -- <TAB>".
+    set results ($args[1] __complete $args[2..-1] "$lastArg" 2> /dev/null)
 
     # Remove trailing empty lines
     for line in $results[-1..1]

@@ -7,7 +7,9 @@ search:
 
 The urfave/cli v3 library supports programmable completion for apps utilizing its framework. This means
 that the completion is generated dynamically at runtime by invoking the app itself with a special hidden
-flag. The urfave/cli searches for this flag and activates a different flow for command paths than regular flow
+first argument, `__complete`, followed by the words typed so far and, as the last argument, the word being
+completed. The urfave/cli searches for that argument and activates a different flow for command paths than
+regular flow.
 The following shells are supported
 
  - bash
@@ -114,6 +116,17 @@ $ source <(greet completion bash)
 The procedure for other shells is similar to bash though the specific paths for each of the 
 shells may vary. Some of the sections below detail the setup need for other shells as
 well as examples in those shells.
+
+#### Regenerate the script after upgrading
+
+Completion scripts generated before urfave/cli asked for completions with `__complete` end their request
+with a `--generate-shell-completion` flag instead. Those scripts keep working, but a command line holding
+a `--` cannot be answered through them: after `--` only positional arguments are accepted, so the flag
+belongs to whatever the app runs rather than to the app itself, and the app runs instead of completing
+(see [#1932](https://github.com/urfave/cli/issues/1932) and
+[#1993](https://github.com/urfave/cli/issues/1993)). Regenerating the script and sourcing it again is what
+resolves that: `__complete` is the first argument, where a `--` typed later on the command line can no
+longer turn it into a positional argument.
 
 #### Default auto-completion
 

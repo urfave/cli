@@ -107,11 +107,12 @@ func main() {
 
 #### Customization
 
-The default shell completion flag (`--generate-shell-completion`) is defined as
-`cli.EnableShellCompletion`, and may be redefined if desired, e.g.:
+Setting `cli.EnableShellCompletion` makes the app answer a completion request, which the
+generated scripts send as a `__complete` first argument followed by the words typed so far and
+the word being completed:
 
 <!-- {
-  "args": ["&#45;&#45;generate&#45;shell&#45;completion"],
+  "args": ["__complete", ""],
 	"output": "wat\nhelp:Shows a list of commands or help for one command\n"
 } -->
 ```go

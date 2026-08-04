@@ -11,15 +11,22 @@ __%[1]s_init_completion() {
   fi
 }
 
+# The request names the completion in its first argument, where a "--" typed on the
+# command line cannot turn it into a positional argument of whatever the command runs.
+# The word under the cursor is sent as the last argument, empty or not, so that
+# "cmd --<TAB>" and "cmd -- <TAB>" can be told apart.
+#
+# It is built as an array rather than as a string to eval, so that a word holding a
+# space or a quote reaches the command as the single word it is.
 __%[1]s_build_completion_request() {
-  local -a words_before_cursor=("${COMP_WORDS[@]:0:${COMP_CWORD}}")
-  local current_word="${COMP_WORDS[COMP_CWORD]}"
+  __cli_completion_request=("${COMP_WORDS[0]}" "__complete")
 
-  if [[ "${current_word}" == "-"* ]]; then
-    printf '%%s %%s --generate-shell-completion' "${words_before_cursor[*]}" "${current_word}"
-  else
-    printf '%%s --generate-shell-completion' "${words_before_cursor[*]}"
-  fi
+  local i
+  for (( i = 1; i < COMP_CWORD; i++ )); do
+    __cli_completion_request+=("${COMP_WORDS[i]}")
+  done
+
+  __cli_completion_request+=("${COMP_WORDS[COMP_CWORD]-}")
 }
 
 # Keep Bash 3 compatibility: associative arrays require Bash 4+, so
@@ -44,15 +51,14 @@ __%[1]s_bash_autocomplete() {
   if [[ "${words[0]}" != "source" ]]; then
     local cur opts
     local cword="${COMP_CWORD}"
-    local request_comp
 
     COMPREPLY=()
     cur="${words[$cword]}"
 
     __%[1]s_init_completion -n "=:" || return
 
-    request_comp="$(__%[1]s_build_completion_request)"
-    opts=$(eval "${request_comp}" 2>/dev/null)
+    __%[1]s_build_completion_request
+    opts=$("${__cli_completion_request[@]}" 2>/dev/null)
 
     # Completion output lines use "token:description" format.
     # Keep token/description in parallel arrays for Bash 3 compatibility.

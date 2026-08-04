@@ -118,20 +118,21 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 				osArgs = append(osArgs, args...)
 			}
 		}
-		// handle the completion flag separately from the flagset since
+		// handle the completion request separately from the flagset since
 		// completion could be attempted after a flag, but before its value was put
 		// on the command line. this causes the flagset to interpret the completion
-		// flag name as the value of the flag before it which is undesirable
+		// request as the value of the flag before it which is undesirable
 		// note that we can only do this because the shell autocomplete function
-		// always appends the completion flag at the end of the command
+		// sends the request in a place the flagset never reaches: the first argument,
+		// or, for a script generated before that change, the last one
 		tracef("checking osArgs %v (cmd=%[2]q)", osArgs, cmd.Name)
-		cmd.shellCompletion, osArgs = checkShellCompleteFlag(cmd, osArgs)
+		cmd.shellCompletion, osArgs = parseShellCompleteRequest(cmd, osArgs)
 
-		tracef("setting cmd.shellCompletion=%[1]v from checkShellCompleteFlag (cmd=%[2]q)", cmd.shellCompletion && cmd.EnableShellCompletion, cmd.Name)
+		tracef("setting cmd.shellCompletion=%[1]v from parseShellCompleteRequest (cmd=%[2]q)", cmd.shellCompletion && cmd.EnableShellCompletion, cmd.Name)
 		cmd.shellCompletion = cmd.EnableShellCompletion && cmd.shellCompletion
 	}
 
-	tracef("using post-checkShellCompleteFlag arguments %[1]q (cmd=%[2]q)", osArgs, cmd.Name)
+	tracef("using post-parseShellCompleteRequest arguments %[1]q (cmd=%[2]q)", osArgs, cmd.Name)
 
 	tracef("setting self as cmd in context (cmd=%[1]q)", cmd.Name)
 	ctx = context.WithValue(ctx, commandContextKey, cmd)

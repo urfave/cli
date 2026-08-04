@@ -157,6 +157,13 @@ type Command struct {
 	didSetupDefaults bool
 	// whether in shell completion mode
 	shellCompletion bool
+	// the word the shell is completing, or nil when the request did not carry it,
+	// which is every request in the deprecated form. Only the root command holds it.
+	completionWord *string
+	// whether a "--" precedes the word being completed, which makes that word a
+	// positional argument of whatever the command runs. Only the root command holds
+	// it.
+	completionTerminated bool
 	// whether global help flag was added
 	globaHelpFlagAdded bool
 	// whether global version flag was added

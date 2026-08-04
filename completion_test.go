@@ -242,7 +242,10 @@ func TestCompletionFishFormat(t *testing.T) {
 	r.Contains(output, "(__myapp_perform_completion)", "completion function should be registered")
 }
 
-func TestCompletionFishOmitsPositionalTokenFromDynamicCompletion(t *testing.T) {
+func TestCompletionFishSendsTokenBeingCompleted(t *testing.T) {
+	// The word under the cursor is part of the request, quoted so that an empty one
+	// is still an argument: without it, "cmd --<TAB>" and "cmd -- <TAB>" would reach
+	// the command as the same request.
 	cmd := &Command{
 		Name:                  "myapp",
 		EnableShellCompletion: true,
@@ -256,12 +259,15 @@ func TestCompletionFishOmitsPositionalTokenFromDynamicCompletion(t *testing.T) {
 	output, err := fishRender(cmd, "myapp")
 	r.NoError(err)
 
-	r.Contains(output, `if string match -q -- "-*" $lastArg`)
-	r.Contains(output, "set results ($args[1] $args[2..-1] $lastArg --generate-shell-completion 2> /dev/null)")
-	r.Contains(output, "set results ($args[1] $args[2..-1] --generate-shell-completion 2> /dev/null)")
+	r.Contains(output, `set results ($args[1] __complete $args[2..-1] "$lastArg" 2> /dev/null)`)
+	r.NotContains(output, completionFlag, "the deprecated request form must not be generated")
 }
 
-func TestCompletionBashOmitsPositionalTokenFromDynamicCompletion(t *testing.T) {
+func TestCompletionBashSendsTokenBeingCompleted(t *testing.T) {
+	// The word under the cursor is part of the request, empty or not: without it,
+	// "cmd --<TAB>" and "cmd -- <TAB>" would reach the command as the same request.
+	// The request is an array rather than a string to eval, so a word holding a space
+	// or a quote reaches the command as the single word it is.
 	cmd := &Command{
 		Name:                  "myapp",
 		EnableShellCompletion: true,
@@ -275,9 +281,47 @@ func TestCompletionBashOmitsPositionalTokenFromDynamicCompletion(t *testing.T) {
 	output, err := bashRender(cmd, "myapp")
 	r.NoError(err)
 
-	r.Contains(output, `if [[ "${current_word}" == "-"* ]]; then`)
-	r.Contains(output, `printf '%s %s --generate-shell-completion' "${words_before_cursor[*]}" "${current_word}"`)
-	r.Contains(output, `printf '%s --generate-shell-completion' "${words_before_cursor[*]}"`)
+	r.Contains(output, `__cli_completion_request=("${COMP_WORDS[0]}" "__complete")`)
+	r.Contains(output, `__cli_completion_request+=("${COMP_WORDS[COMP_CWORD]-}")`)
+	r.Contains(output, `opts=$("${__cli_completion_request[@]}" 2>/dev/null)`)
+	r.NotContains(output, `eval "`, "the request must not go through eval")
+	r.NotContains(output, completionFlag, "the deprecated request form must not be generated")
+}
+
+func TestCompletionZshSendsTokenBeingCompleted(t *testing.T) {
+	cmd := &Command{
+		Name:                  "myapp",
+		EnableShellCompletion: true,
+	}
+
+	r := require.New(t)
+
+	zshRender := shellCompletions["zsh"]
+	r.NotNil(zshRender, "zsh completion renderer should exist")
+
+	output, err := zshRender(cmd, "myapp")
+	r.NoError(err)
+
+	r.Contains(output, `request=("${words[1]}" "__complete" "${(@)words[2,CURRENT-1]}" "${words[CURRENT]}")`)
+	r.NotContains(output, completionFlag, "the deprecated request form must not be generated")
+}
+
+func TestCompletionPowershellSendsTokenBeingCompleted(t *testing.T) {
+	cmd := &Command{
+		Name:                  "myapp",
+		EnableShellCompletion: true,
+	}
+
+	r := require.New(t)
+
+	pwshRender := shellCompletions["pwsh"]
+	r.NotNil(pwshRender, "pwsh completion renderer should exist")
+
+	output, err := pwshRender(cmd, "myapp")
+	r.NoError(err)
+
+	r.Contains(output, `& $command __complete @words $wordToComplete 2>$null`)
+	r.NotContains(output, completionFlag, "the deprecated request form must not be generated")
 }
 
 func TestCompletionSubcommand(t *testing.T) {
@@ -568,4 +612,189 @@ func TestCompletionShellWriteError(t *testing.T) {
 
 	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, shellName})
 	assert.ErrorContains(t, err, "writer error")
+}
+
+// TestCompletionRequestNeverRunsAction is the regression test for
+// https://github.com/urfave/cli/issues/1993: a shell asking for completions must
+// never run the command, whatever the command line holds. A request appended to the
+// end of the command line cannot promise that, because "--" turns it into a
+// positional argument that a wrapper command is entitled to pass on, which is what
+// https://github.com/urfave/cli/issues/1932 asked for.
+func TestCompletionRequestNeverRunsAction(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		args []string
+	}{
+		{
+			name: "plain",
+			args: []string{"foo", completionCommandRequest, "exec", ""},
+		},
+		{
+			name: "after a double dash",
+			args: []string{"foo", completionCommandRequest, "exec", "--", "rm", "-rf"},
+		},
+		{
+			name: "completing the double dash",
+			args: []string{"foo", completionCommandRequest, "exec", "--"},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			ran := false
+			out := &bytes.Buffer{}
+			cmd := &Command{
+				EnableShellCompletion: true,
+				Writer:                out,
+				Commands: []*Command{
+					{
+						Name:            "exec",
+						SkipFlagParsing: true,
+						Action: func(context.Context, *Command) error {
+							ran = true
+							return nil
+						},
+					},
+				},
+			}
+
+			r := require.New(t)
+			r.NoError(cmd.Run(buildTestContext(t), tc.args))
+			r.False(ran, "the action must not run for a completion request")
+		})
+	}
+}
+
+// TestCompletionRequestAfterDoubleDash checks that the words after a "--" get no
+// suggestion: they are positional arguments of whatever the command runs, so this
+// command's flags and subcommands are no answer to them. The "--" being completed is
+// not one of them.
+func TestCompletionRequestAfterDoubleDash(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		args     []string
+		expected string
+	}{
+		{
+			// The completion is for the word after "exec", which has no subcommand of
+			// its own to offer beyond the built-in help.
+			name:     "before the double dash",
+			args:     []string{"foo", completionCommandRequest, "exec", ""},
+			expected: "help:Shows a list of commands or help for one command\n",
+		},
+		{
+			name:     "the double dash itself",
+			args:     []string{"foo", completionCommandRequest, "exec", "--"},
+			expected: "--excitement\n--help:show help\n",
+		},
+		{
+			name:     "after the double dash",
+			args:     []string{"foo", completionCommandRequest, "exec", "--", "git", "pu"},
+			expected: "",
+		},
+		{
+			name:     "a flag after the double dash",
+			args:     []string{"foo", completionCommandRequest, "exec", "--", "git", "--ver"},
+			expected: "",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			out := &bytes.Buffer{}
+			cmd := &Command{
+				EnableShellCompletion: true,
+				Writer:                out,
+				Commands: []*Command{
+					{
+						Name:   "exec",
+						Flags:  []Flag{&BoolFlag{Name: "excitement"}},
+						Action: func(context.Context, *Command) error { return nil },
+					},
+				},
+			}
+
+			r := require.New(t)
+			r.NoError(cmd.Run(buildTestContext(t), tc.args))
+			r.Equal(tc.expected, out.String())
+		})
+	}
+}
+
+// TestCompletionDeprecatedRequestPassedOnAfterDoubleDash is the regression test for
+// https://github.com/urfave/cli/issues/1932: after a "--", the deprecated request
+// form is a positional argument, so a wrapper command passes it on to whatever it
+// runs instead of answering it. That command, run by the wrapper, is the one the
+// shell was asking about.
+func TestCompletionDeprecatedRequestPassedOnAfterDoubleDash(t *testing.T) {
+	var got []string
+	out := &bytes.Buffer{}
+	cmd := &Command{
+		EnableShellCompletion: true,
+		Writer:                out,
+		Commands: []*Command{
+			{
+				Name:            "exec",
+				SkipFlagParsing: true,
+				Action: func(_ context.Context, cmd *Command) error {
+					got = cmd.Args().Slice()
+					return nil
+				},
+			},
+		},
+	}
+
+	r := require.New(t)
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "exec", "--", "child", completionFlag}))
+	r.Equal([]string{"--", "child", completionFlag}, got)
+	r.Empty(out.String(), "the wrapper must not answer a request meant for what it runs")
+}
+
+// TestCompletionRequestKeepsArgsShape checks that a ShellComplete function sees the
+// same cmd.Args() under both request forms: the word being completed is part of them
+// when it starts with "-", and left out otherwise.
+func TestCompletionRequestKeepsArgsShape(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		args     []string
+		expected string
+	}{
+		{
+			name:     "deprecated form completing a flag",
+			args:     []string{"foo", "sub", "arg", "-", completionFlag},
+			expected: "[arg -]\n",
+		},
+		{
+			name:     "request completing a flag",
+			args:     []string{"foo", completionCommandRequest, "sub", "arg", "-"},
+			expected: "[arg -]\n",
+		},
+		{
+			name:     "deprecated form completing a word",
+			args:     []string{"foo", "sub", "arg", completionFlag},
+			expected: "[arg]\n",
+		},
+		{
+			name:     "request completing a word",
+			args:     []string{"foo", completionCommandRequest, "sub", "arg", "wor"},
+			expected: "[arg]\n",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			out := &bytes.Buffer{}
+			cmd := &Command{
+				EnableShellCompletion: true,
+				Writer:                out,
+				Commands: []*Command{
+					{
+						Name: "sub",
+						ShellComplete: func(_ context.Context, cmd *Command) {
+							fmt.Fprintf(cmd.Root().Writer, "%v\n", cmd.Args().Slice())
+						},
+						Action: func(context.Context, *Command) error { return nil },
+					},
+				},
+			}
+
+			r := require.New(t)
+			r.NoError(cmd.Run(buildTestContext(t), tc.args))
+			r.Equal(tc.expected, out.String())
+		})
+	}
 }

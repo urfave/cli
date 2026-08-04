@@ -5,15 +5,13 @@ compdef _%[1]s %[1]s
 
 _%[1]s() {
 	local -a opts # Declare a local array
-	local current
-	current=${words[-1]} # -1 means "the last element"
-	if [[ "$current" == "-"* ]]; then
-		# Current word starts with a hyphen, so complete flags/options
-		opts=("${(@f)$(${words[@]:0:#words[@]-1} ${current} --generate-shell-completion)}")
-	else
-		# Current word does not start with a hyphen, so complete subcommands
-		opts=("${(@f)$(${words[@]:0:#words[@]-1} --generate-shell-completion)}")
-	fi
+	local -a request
+	# The request names the completion in its first argument, where a "--" typed on
+	# the command line cannot turn it into a positional argument of whatever the
+	# command runs. The word under the cursor is sent as the last argument, empty or
+	# not, so that "cmd --<TAB>" and "cmd -- <TAB>" can be told apart.
+	request=("${words[1]}" "__complete" "${(@)words[2,CURRENT-1]}" "${words[CURRENT]}")
+	opts=("${(@f)$("${request[@]}")}")
 
 	if [[ "${opts[1]}" != "" ]]; then
 		_describe 'values' opts

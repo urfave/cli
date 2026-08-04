@@ -255,11 +255,28 @@ func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 	} else {
 		tracef("running default complete with os.Args flags[%v]", args)
 	}
-	argsLen := len(args)
+
+	if cmd == nil {
+		return
+	}
+
+	// Everything after "--" is a positional argument of whatever the command runs, so
+	// this command's flags and subcommands are no answer to it.
+	// https://unix.stackexchange.com/a/11382
+	if cmd.Root().completionTerminated {
+		tracef("not suggesting past a \"--\" on command %[1]q", cmd.Name)
+		return
+	}
+
 	lastArg := ""
-	// parent command will have --generate-shell-completion so we need
-	// to account for that
-	if argsLen > 1 {
+	if word := cmd.Root().completionWord; word != nil {
+		// The request says which word is being completed, so there is nothing to work
+		// out from the position of the arguments.
+		lastArg = *word
+	} else if argsLen := len(args); argsLen > 1 {
+		// A request in the deprecated form leaves the word out unless it starts with
+		// "-", and the parent command still has completionFlag on it, so the word is
+		// looked for one before the end.
 		lastArg = args[argsLen-2]
 	} else if argsLen > 0 {
 		lastArg = args[argsLen-1]
@@ -275,11 +292,8 @@ func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 		return
 	}
 
-	if cmd != nil {
-		tracef("printing command suggestions on command %[1]q", cmd.Name)
-		printCommandSuggestions(cmd.Commands, cmd.Root().Writer)
-		return
-	}
+	tracef("printing command suggestions on command %[1]q", cmd.Name)
+	printCommandSuggestions(cmd.Commands, cmd.Root().Writer)
 }
 
 // ShowCommandHelpAndExit exits with code after showing help via ShowCommandHelp.
@@ -471,9 +485,40 @@ func checkVersion(cmd *Command) bool {
 	return cmd.versionFlag != nil && cmd.versionFlag.IsSet()
 }
 
-func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
+// parseShellCompleteRequest reports whether arguments are a shell completion request
+// and returns the arguments to parse. What the request says about the word being
+// completed is recorded on c, which is the root command.
+//
+// Two request forms are understood. The current one names the request up front:
+//
+//	<cmd> __complete <word>... <word being completed>
+//
+// The completion scripts send every word before the cursor, then the word under the
+// cursor, which is the empty string when the cursor sits on a fresh word. Naming the
+// request in the first argument is what keeps it out of reach of "--": everything
+// after that terminator is a positional argument, so a request appended at the end of
+// the command line cannot be told apart from a positional argument that happens to
+// look like one. See the deprecated form below for what that ambiguity costs.
+//
+// The deprecated form appends completionFlag to the command line. Scripts generated
+// before this change still use it, so it keeps working, with one caveat it cannot
+// escape: a command line holding "--" is answered as an ordinary run rather than as a
+// completion, because after "--" the flag is a positional argument that belongs to
+// whatever the command runs. That is what a wrapper command needs (see
+// https://github.com/urfave/cli/issues/1932), and it is why a shell that appends the
+// flag after a "--" runs the command instead of completing it (see
+// https://github.com/urfave/cli/issues/1993). Regenerating the completion script and
+// sourcing it again resolves that in favor of completing, since the request is then
+// no longer something a command line can imitate.
+func parseShellCompleteRequest(c *Command, arguments []string) (bool, []string) {
 	if (c.parent == nil && !c.EnableShellCompletion) || (c.parent != nil && !c.Root().shellCompletion) {
 		return false, arguments
+	}
+
+	// A command of that name, if the app happens to have one, is what was asked for:
+	// the request form is understood only where it shadows nothing.
+	if len(arguments) > 1 && arguments[1] == completionCommandRequest && c.Command(completionCommandRequest) == nil {
+		return true, c.parseCompletionRequest(arguments)
 	}
 
 	pos := len(arguments) - 1
@@ -483,16 +528,50 @@ func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
 		return false, arguments
 	}
 
-	// If arguments include "--" before the token being completed, shell completion
-	// is disabled because after "--" only positional arguments are accepted.
+	// The word being completed is at position pos-1, immediately before
+	// completionFlag, so only the arguments before that position are checked and
+	// completing "--" itself still works.
 	// https://unix.stackexchange.com/a/11382
-	// Note: The token being completed is at position pos-1 (immediately before completionFlag).
-	// We only check arguments before that position, so completing "--" itself still works.
 	if pos >= 1 && slices.Contains(arguments[:pos-1], "--") {
-		return false, arguments[:pos]
+		// The flag is a positional argument here, so it is left in place for the
+		// command to pass on, and the command runs.
+		return false, arguments
 	}
 
+	// This request form does not say which word is being completed, so nothing is
+	// recorded and DefaultCompleteWithFlags works it out from the arguments.
 	return true, arguments[:pos]
+}
+
+// parseCompletionRequest records what a request naming completionCommandRequest says
+// about the word being completed, and returns the arguments to parse.
+//
+// The word is kept in those arguments when it starts with "-", and dropped from them
+// otherwise, which is the shape the deprecated request form produced. A ShellComplete
+// function reading cmd.Args() therefore sees the same thing under both forms.
+func (cmd *Command) parseCompletionRequest(arguments []string) []string {
+	// arguments[0] is the program, arguments[1] is completionCommandRequest, and the
+	// word being completed is last. A request holding neither, which no script sends,
+	// is read as an empty word on an empty command line.
+	var words []string
+	word := ""
+	if len(arguments) > 2 {
+		words = arguments[2 : len(arguments)-1]
+		word = arguments[len(arguments)-1]
+	}
+	cmd.completionWord = &word
+	// Everything after a "--" is a positional argument of whatever the command runs,
+	// so this command has no suggestion for it. A "--" being completed is not one:
+	// it is the word itself, and flags still answer it.
+	cmd.completionTerminated = slices.Contains(words, "--")
+
+	args := make([]string, 0, len(arguments)-1)
+	args = append(args, arguments[0])
+	args = append(args, words...)
+	if strings.HasPrefix(word, "-") {
+		args = append(args, word)
+	}
+	return args
 }
 
 func shouldRunCompletion(cmd *Command) bool {

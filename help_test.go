@@ -1884,7 +1884,7 @@ GLOBAL OPTIONS:
 `, output.String())
 }
 
-func Test_checkShellCompleteFlag(t *testing.T) {
+func Test_parseShellCompleteRequest(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name                string
@@ -1892,6 +1892,9 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 		arguments           []string
 		wantShellCompletion bool
 		wantArgs            []string
+		wantWord            string
+		wantWordSet         bool
+		wantTerminated      bool
 	}{
 		{
 			name:                "disable-shell-completion",
@@ -1919,13 +1922,15 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 			wantArgs:            []string{"foo"},
 		},
 		{
+			// The flag is a positional argument of whatever the command runs, so it
+			// stays in place and the command runs.
 			name:      "arguments include double dash",
 			arguments: []string{"--", "foo", completionFlag},
 			cmd: &Command{
 				EnableShellCompletion: true,
 			},
 			wantShellCompletion: false,
-			wantArgs:            []string{"--", "foo"},
+			wantArgs:            []string{"--", "foo", completionFlag},
 		},
 		{
 			name:      "shell completion",
@@ -1945,15 +1950,105 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 			wantShellCompletion: true,
 			wantArgs:            []string{"foo", "--"},
 		},
+		{
+			// The deprecated request form says nothing about the word being completed,
+			// which DefaultCompleteWithFlags then works out from the arguments.
+			name:      "deprecated form records no word",
+			arguments: []string{"prog", "sub", "-", completionFlag},
+			cmd: &Command{
+				EnableShellCompletion: true,
+			},
+			wantShellCompletion: true,
+			wantArgs:            []string{"prog", "sub", "-"},
+		},
+		{
+			name:      "request names the completion",
+			arguments: []string{"prog", completionCommandRequest, "sub", ""},
+			cmd: &Command{
+				EnableShellCompletion: true,
+			},
+			wantShellCompletion: true,
+			wantArgs:            []string{"prog", "sub"},
+			wantWordSet:         true,
+		},
+		{
+			// A word starting with "-" stays in the arguments, which is the shape the
+			// deprecated form produced, so a ShellComplete function sees no difference.
+			name:      "request names the completion of a flag",
+			arguments: []string{"prog", completionCommandRequest, "sub", "--fl"},
+			cmd: &Command{
+				EnableShellCompletion: true,
+			},
+			wantShellCompletion: true,
+			wantArgs:            []string{"prog", "sub", "--fl"},
+			wantWord:            "--fl",
+			wantWordSet:         true,
+		},
+		{
+			// The word being completed is a positional argument of whatever the
+			// command runs, which this command has no suggestion for. It must still be
+			// a completion, or the command would run.
+			name:      "request names the completion after a double dash",
+			arguments: []string{"prog", completionCommandRequest, "exec", "--", "git", "pu"},
+			cmd: &Command{
+				EnableShellCompletion: true,
+			},
+			wantShellCompletion: true,
+			wantArgs:            []string{"prog", "exec", "--", "git"},
+			wantWord:            "pu",
+			wantWordSet:         true,
+			wantTerminated:      true,
+		},
+		{
+			// The "--" is the word being completed here, not a terminator, so flags
+			// still answer it.
+			name:      "request names the completion of a double dash",
+			arguments: []string{"prog", completionCommandRequest, "exec", "--"},
+			cmd: &Command{
+				EnableShellCompletion: true,
+			},
+			wantShellCompletion: true,
+			wantArgs:            []string{"prog", "exec", "--"},
+			wantWord:            "--",
+			wantWordSet:         true,
+		},
+		{
+			name:      "request without a word being completed",
+			arguments: []string{"prog", completionCommandRequest},
+			cmd: &Command{
+				EnableShellCompletion: true,
+			},
+			wantShellCompletion: true,
+			wantArgs:            []string{"prog"},
+			wantWordSet:         true,
+		},
+		{
+			// The request form shadows nothing: a command of that name is what was
+			// asked for.
+			name:      "a command of the same name wins",
+			arguments: []string{"prog", completionCommandRequest, "sub", ""},
+			cmd: &Command{
+				EnableShellCompletion: true,
+				Commands:              []*Command{{Name: completionCommandRequest}},
+			},
+			wantShellCompletion: false,
+			wantArgs:            []string{"prog", completionCommandRequest, "sub", ""},
+		},
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			shellCompletion, args := checkShellCompleteFlag(tt.cmd, tt.arguments)
+			shellCompletion, args := parseShellCompleteRequest(tt.cmd, tt.arguments)
 			assert.Equal(t, tt.wantShellCompletion, shellCompletion)
 			assert.Equal(t, tt.wantArgs, args)
+			gotWord := ""
+			if tt.cmd.completionWord != nil {
+				gotWord = *tt.cmd.completionWord
+			}
+			assert.Equal(t, tt.wantWordSet, tt.cmd.completionWord != nil)
+			assert.Equal(t, tt.wantWord, gotWord)
+			assert.Equal(t, tt.wantTerminated, tt.cmd.completionTerminated)
 		})
 	}
 }
