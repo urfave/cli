@@ -260,18 +260,8 @@ func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 		return
 	}
 
-	req := cmd.Root().completion
-
-	// Everything after "--" is a positional argument of whatever the command runs, so
-	// this command's flags and subcommands are no answer to it.
-	// https://unix.stackexchange.com/a/11382
-	if req != nil && req.terminated {
-		tracef("not suggesting past a \"--\" on command %[1]q", cmd.Name)
-		return
-	}
-
 	lastArg := ""
-	if req != nil && req.wordKnown {
+	if req := cmd.Root().completion; req != nil && req.wordKnown {
 		// The request says which word is being completed, so there is nothing to work
 		// out from the position of the arguments.
 		lastArg = req.word
@@ -617,6 +607,17 @@ func shouldRunCompletion(cmd *Command) bool {
 }
 
 func runCompletion(ctx context.Context, cmd *Command) {
+	// Everything after "--" is a positional argument of whatever the command runs, so
+	// this command has no suggestion for it. Answering with nothing here rather than
+	// in the completion func applies that to every command, including one carrying a
+	// ShellComplete of its own, which would otherwise have to know about "--" itself
+	// to keep the promise the terminator makes.
+	// https://unix.stackexchange.com/a/11382
+	if req := cmd.Root().completion; req != nil && req.terminated {
+		tracef("not suggesting past a \"--\" on command %[1]q", cmd.Name)
+		return
+	}
+
 	if cmd.ShellComplete != nil {
 		tracef("running shell completion func for command %[1]q", cmd.Name)
 		cmd.ShellComplete(ctx, cmd)

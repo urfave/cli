@@ -836,3 +836,36 @@ func TestCompletionRequestStateIsPerRun(t *testing.T) {
 	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "exec", "-", completionFlag}))
 	r.Equal("--excitement\n--help:show help\n", out.String())
 }
+
+// TestCompletionCustomShellCompleteNotRunPastDoubleDash checks that a command
+// carrying a ShellComplete of its own suggests nothing past a "--" without having to
+// know about "--": the words there are positional arguments of whatever it runs.
+func TestCompletionCustomShellCompleteNotRunPastDoubleDash(t *testing.T) {
+	ran := false
+	out := &bytes.Buffer{}
+	cmd := &Command{
+		EnableShellCompletion: true,
+		Writer:                out,
+		Commands: []*Command{
+			{
+				Name: "exec",
+				ShellComplete: func(_ context.Context, cmd *Command) {
+					ran = true
+					fmt.Fprintln(cmd.Root().Writer, "custom")
+				},
+				Action: func(context.Context, *Command) error { return nil },
+			},
+		},
+	}
+
+	r := require.New(t)
+
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", completionCommandRequest, "exec", "--", "git", "pu"}))
+	r.False(ran, "the completion func must not run past a double dash")
+	r.Empty(out.String())
+
+	// It is the "--" that stops it, not the command.
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", completionCommandRequest, "exec", "pu"}))
+	r.True(ran)
+	r.Equal("custom\n", out.String())
+}
