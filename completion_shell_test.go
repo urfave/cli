@@ -422,3 +422,57 @@ __app_bash_autocomplete
 	require.NoError(t, err, "the completion did not run the command: %s", out)
 	assert.Equal(t, []string{"__complete", "su"}, strings.Split(strings.TrimSuffix(string(got), "\n"), "\n"))
 }
+
+// TestCompletionScriptsSyntax checks that the generated scripts parse, for an app name
+// holding characters a shell reads specially. A name is free to hold a "-" or a "."
+// — docker-compose, golangci-lint — which a function name may hold and a variable name
+// may not, so a script putting the name in a variable breaks for those apps only, and
+// breaks the whole file: sourcing stops at the syntax error, before the completion is
+// registered at all.
+func TestCompletionScriptsSyntax(t *testing.T) {
+	t.Parallel()
+
+	// The syntax check for each shell, given the file to read.
+	checks := map[string]func(string) []string{
+		"bash": func(p string) []string { return []string{"-n", p} },
+		"zsh":  func(p string) []string { return []string{"-n", p} },
+		"fish": func(p string) []string { return []string{"-n", p} },
+		"pwsh": func(p string) []string {
+			return []string{"-NoProfile", "-Command",
+				"$errors = $null; $null = [System.Management.Automation.Language.Parser]::ParseFile(" +
+					pwshQuote(p) + ", [ref]$null, [ref]$errors); if ($errors) { $errors; exit 1 }"}
+		},
+	}
+
+	// A space is left out: the function names have held the app name since long before
+	// this file, and a name holding a space breaks those in bash and zsh whatever the
+	// variables do.
+	for _, name := range []string{"app", "my-app", "my.app"} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			for _, shell := range []string{"bash", "zsh", "fish", "pwsh"} {
+				t.Run(shell, func(t *testing.T) {
+					t.Parallel()
+
+					interpreter, err := exec.LookPath(shellDrivers[shell].interpreter)
+					if err != nil {
+						skipMissingShell(t, shell, shellDrivers[shell].interpreter+" is not installed")
+					}
+
+					render := shellCompletions[shell]
+					require.NotNil(t, render)
+					script, err := render(&Command{Name: name, EnableShellCompletion: true}, name)
+					require.NoError(t, err)
+
+					dir := t.TempDir()
+					p := filepath.Join(dir, "completion."+shell)
+					require.NoError(t, os.WriteFile(p, []byte(script), 0o644))
+
+					out, err := exec.Command(interpreter, checks[shell](p)...).CombinedOutput()
+					require.NoError(t, err, "the %s script for %q does not parse: %s", shell, name, out)
+				})
+			}
+		})
+	}
+}

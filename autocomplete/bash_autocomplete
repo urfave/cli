@@ -12,7 +12,11 @@ __%[1]s_init_completion() {
 }
 
 # Remove one level of shell quoting from a word, the way the shell does before it
-# hands a word to a command, and leave the result in __%[1]s_dequoted.
+# hands a word to a command, and leave the result in __cli_completion_dequoted.
+#
+# The variables here hold no application name, unlike the functions: a name is free to
+# hold a "-" or a ".", which a function name may and a variable name may not. They are
+# declared local by the entry point below, so two applications never share one.
 #
 # Doing it here rather than with eval is what keeps a command line holding $(...) or
 # `...` from being executed by pressing the tab key.
@@ -48,7 +52,7 @@ __%[1]s_dequote() {
     i=$(( i + 1 ))
   done
 
-  __%[1]s_dequoted="${out}"
+  __cli_completion_dequoted="${out}"
 }
 
 # The request names the completion in its first argument, where a "--" typed on the
@@ -68,7 +72,7 @@ __%[1]s_build_completion_request() {
   local i cmd
 
   __%[1]s_dequote "${words[0]}"
-  cmd="${__%[1]s_dequoted}"
+  cmd="${__cli_completion_dequoted}"
   # A command typed as "~/bin/app" has to be run as the path it stands for. eval used
   # to do that as a side effect of re-parsing the line, along with everything else on
   # it; this is the one expansion worth keeping, and it needs nothing evaluated. The
@@ -76,15 +80,15 @@ __%[1]s_build_completion_request() {
   if [[ "${words[0]}" == "~" || "${words[0]}" == "~/"* ]]; then
     cmd="${HOME}${cmd:1}"
   fi
-  __%[1]s_completion_request=("${cmd}" "__complete")
+  __cli_completion_request=("${cmd}" "__complete")
 
   for (( i = 1; i < cword; i++ )); do
     __%[1]s_dequote "${words[i]}"
-    __%[1]s_completion_request+=("${__%[1]s_dequoted}")
+    __cli_completion_request+=("${__cli_completion_dequoted}")
   done
 
   __%[1]s_dequote "${words[cword]-}"
-  __%[1]s_completion_request+=("${__%[1]s_dequoted}")
+  __cli_completion_request+=("${__cli_completion_dequoted}")
 }
 
 # Keep Bash 3 compatibility: associative arrays require Bash 4+, so
@@ -107,8 +111,12 @@ __%[1]s_bash_autocomplete() {
   local words=("${COMP_WORDS[@]}")
 
   if [[ "${words[0]}" != "source" ]]; then
-    local cur opts
+    local cur prev opts
     local cword="${COMP_CWORD}"
+    local __cli_completion_dequoted=""
+    local -a __cli_completion_request=()
+    local -a __cli_completion_tokens=()
+    local -a __cli_completion_descriptions=()
 
     COMPREPLY=()
     cur="${words[$cword]}"
@@ -116,13 +124,10 @@ __%[1]s_bash_autocomplete() {
     __%[1]s_init_completion -n "=:" || return
 
     __%[1]s_build_completion_request
-    opts=$("${__%[1]s_completion_request[@]}" 2>/dev/null)
+    opts=$("${__cli_completion_request[@]}" 2>/dev/null)
 
     # Completion output lines use "token:description" format.
     # Keep token/description in parallel arrays for Bash 3 compatibility.
-    __cli_completion_tokens=()
-    __cli_completion_descriptions=()
-
     local line
     local longest=0
     while IFS=$'\n' read -r line; do
