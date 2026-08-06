@@ -165,11 +165,17 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 	tracef("using post-parse arguments %[1]q (cmd=%[2]q)", args, cmd.Name)
 
 	if shouldRunCompletion(cmd) {
-		var beforeErr error
-		if ctx, beforeErr = runBefore(ctx, commandChain(cmd)); beforeErr != nil {
-			return ctx, beforeErr
+		// Everything after "--" is a positional argument of whatever the command runs,
+		// so there is no completion to run and nothing to prepare for one: a Before
+		// with a side effect would otherwise fire on every tab key past the
+		// terminator, for an answer that is always empty.
+		if !cmd.Root().completionTerminated() {
+			var beforeErr error
+			if ctx, beforeErr = runBefore(ctx, commandChain(cmd)); beforeErr != nil {
+				return ctx, beforeErr
+			}
+			runCompletion(ctx, cmd)
 		}
-		runCompletion(ctx, cmd)
 		return ctx, nil
 	}
 

@@ -933,3 +933,35 @@ func TestCompletionRequestNestedSubcommand(t *testing.T) {
 	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", completionCommandRequest, "one", "two", "arg", "--de"}))
 	r.Equal("--deep\n", out.String())
 }
+
+// TestCompletionBeforeNotRunPastDoubleDash checks that a Before is not run for a
+// request past a "--": there is no completion to prepare for, since the words there
+// belong to whatever the command runs, and a Before with a side effect would fire on
+// every tab key for an answer that is always empty.
+func TestCompletionBeforeNotRunPastDoubleDash(t *testing.T) {
+	ran := 0
+	out := &bytes.Buffer{}
+	cmd := &Command{
+		EnableShellCompletion: true,
+		Writer:                out,
+		Before: func(ctx context.Context, _ *Command) (context.Context, error) {
+			ran++
+			return ctx, nil
+		},
+		Commands: []*Command{
+			{
+				Name:   "exec",
+				Action: func(context.Context, *Command) error { return nil },
+			},
+		},
+	}
+
+	r := require.New(t)
+
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", completionCommandRequest, "exec", "--", "git", "pu"}))
+	r.Zero(ran, "Before must not run for a request past a double dash")
+	r.Empty(out.String())
+
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", completionCommandRequest, "exec", "pu"}))
+	r.Equal(1, ran, "Before still runs for a request the command answers")
+}
