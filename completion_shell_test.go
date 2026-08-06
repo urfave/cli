@@ -28,60 +28,74 @@ import (
 type completionCase struct {
 	name string
 	line string
-	want []string
+	// bashWords is what bash puts in COMP_WORDS for line, with the cursor at its end.
+	// Bash splits on COMP_WORDBREAKS and keeps the quoting as typed, and a driver that
+	// works the words out for itself tests its own idea of that rather than the
+	// script's: these were measured in bash 5.3 with a completion function that dumps
+	// COMP_WORDS.
+	bashWords []string
+	want      []string
 }
 
 func completionCases() []completionCase {
 	return []completionCase{
 		{
-			name: "a word being typed",
-			line: "app su",
-			want: []string{"__complete", "su"},
+			name:      "a word being typed",
+			line:      "app su",
+			bashWords: []string{"app", "su"},
+			want:      []string{"__complete", "su"},
 		},
 		{
-			name: "a fresh word",
-			line: "app sub ",
-			want: []string{"__complete", "sub", ""},
+			name:      "a fresh word",
+			line:      "app sub ",
+			bashWords: []string{"app", "sub", ""},
+			want:      []string{"__complete", "sub", ""},
 		},
 		{
-			name: "a flag being typed",
-			line: "app sub --fl",
-			want: []string{"__complete", "sub", "--fl"},
+			name:      "a flag being typed",
+			line:      "app sub --fl",
+			bashWords: []string{"app", "sub", "--fl"},
+			want:      []string{"__complete", "sub", "--fl"},
 		},
 		{
 			// COMP_WORDBREAKS holds "=", so bash splits this into three words and has
 			// to put them back together before asking.
-			name: "a flag holding its value",
-			line: "app --opt=va",
-			want: []string{"__complete", "--opt=va"},
+			name:      "a flag holding its value",
+			line:      "app --opt=va",
+			bashWords: []string{"app", "--opt", "=", "va"},
+			want:      []string{"__complete", "--opt=va"},
 		},
 		{
 			// One level of quoting comes off, the way the shell takes it off before
 			// handing a word to a command.
-			name: "a quoted word",
-			line: `app sub "hello world" `,
-			want: []string{"__complete", "sub", "hello world", ""},
+			name:      "a quoted word",
+			line:      `app sub "hello world" `,
+			bashWords: []string{"app", "sub", `"hello world"`, ""},
+			want:      []string{"__complete", "sub", "hello world", ""},
 		},
 		{
 			// The quote is still open, so there is no closing quote to take off with
 			// it. The word is what is being typed, not one starting with a quote.
-			name: "a word whose quote is still open",
-			line: `app sub "hello wo`,
-			want: []string{"__complete", "sub", "hello wo"},
+			name:      "a word whose quote is still open",
+			line:      `app sub "hello wo`,
+			bashWords: []string{"app", "sub", `"hello wo`},
+			want:      []string{"__complete", "sub", "hello wo"},
 		},
 		{
 			// Everything after "--" is a positional argument of whatever the command
 			// runs, and the command is asked about it rather than running it.
-			name: "past a double dash",
-			line: "app exec -- git push ",
-			want: []string{"__complete", "exec", "--", "git", "push", ""},
+			name:      "past a double dash",
+			line:      "app exec -- git push ",
+			bashWords: []string{"app", "exec", "--", "git", "push", ""},
+			want:      []string{"__complete", "exec", "--", "git", "push", ""},
 		},
 		{
 			// Answering a completion must not evaluate the command line. The old
 			// scripts re-parsed it, so a command substitution ran on the tab key.
-			name: "a command substitution",
-			line: "app sub $(touch NOPE) ",
-			want: []string{"__complete", "sub", "$(touch NOPE)", ""},
+			name:      "a command substitution",
+			line:      "app sub $(touch NOPE) ",
+			bashWords: []string{"app", "sub", "$(touch NOPE)", ""},
+			want:      []string{"__complete", "sub", "$(touch NOPE)", ""},
 		},
 	}
 }
@@ -123,7 +137,7 @@ func TestCompletionScriptsRequest(t *testing.T) {
 					writeCompletionTestApp(t, dir)
 
 					prelude := driver.prelude(t, interpreter)
-					program := driver.program(scriptPath, tc.line)
+					program := driver.program(scriptPath, tc)
 
 					cmd := exec.Command(interpreter, driver.args(prelude+program)...)
 					cmd.Dir = dir
@@ -161,7 +175,7 @@ type shellDriver struct {
 	interpreter string
 	args        func(program string) []string
 	prelude     func(t *testing.T, interpreter string) string
-	program     func(scriptPath, line string) string
+	program     func(scriptPath string, tc completionCase) string
 }
 
 var shellDrivers = map[string]shellDriver{
@@ -185,19 +199,25 @@ var shellDrivers = map[string]shellDriver{
 			t.Skip("bash-completion is not installed")
 			return ""
 		},
-		program: func(scriptPath, line string) string {
+		program: func(scriptPath string, tc completionCase) string {
 			// COMP_WORDS and COMP_CWORD are what bash sets before it calls the
-			// completion function, which is what the script reads.
+			// completion function, which is what the script reads. They are written
+			// out as measured rather than worked out here: quoting them apart or
+			// letting eval build them would test this driver's idea of what bash does
+			// with a command line instead of the script's handling of what bash
+			// actually produces, and eval would run a command substitution on the way.
+			words := make([]string, 0, len(tc.bashWords))
+			for _, w := range tc.bashWords {
+				words = append(words, shQuote(w))
+			}
 			return fmt.Sprintf(`
 . %s
-line=%s
-eval "COMP_WORDS=($line)"
-[ "${line: -1}" = " " ] && COMP_WORDS+=("")
-COMP_CWORD=$(( ${#COMP_WORDS[@]} - 1 ))
-COMP_LINE="$line"
-COMP_POINT=${#line}
+COMP_WORDS=(%s)
+COMP_CWORD=%d
+COMP_LINE=%s
+COMP_POINT=%d
 __app_bash_autocomplete
-`, shQuote(scriptPath), shQuote(line))
+`, shQuote(scriptPath), strings.Join(words, " "), len(tc.bashWords)-1, shQuote(tc.line), len(tc.line))
 		},
 	},
 	"zsh": {
@@ -207,7 +227,7 @@ __app_bash_autocomplete
 		// The completion system is not started, so the parts of it the script uses
 		// stand in for it: what is under test is the request the script builds from
 		// words and CURRENT, which zsh fills the same way here.
-		program: func(scriptPath, line string) string {
+		program: func(scriptPath string, tc completionCase) string {
 			return fmt.Sprintf(`
 compdef() { : }
 _describe() { : }
@@ -218,7 +238,7 @@ words=("${(z)line}")
 [[ "$line" == *" " ]] && words+=("")
 CURRENT=$#words
 _app
-`, shQuote(scriptPath), shQuote(line))
+`, shQuote(scriptPath), shQuote(tc.line))
 		},
 	},
 	"fish": {
@@ -227,8 +247,8 @@ _app
 		prelude:     func(*testing.T, string) string { return "" },
 		// complete -C asks for the completions of a command line, which is the entry
 		// point fish itself uses.
-		program: func(scriptPath, line string) string {
-			return fmt.Sprintf("source %s\ncomplete -C %s\n", fishQuote(scriptPath), fishQuote(line))
+		program: func(scriptPath string, tc completionCase) string {
+			return fmt.Sprintf("source %s\ncomplete -C %s\n", fishQuote(scriptPath), fishQuote(tc.line))
 		},
 	},
 	"pwsh": {
@@ -238,7 +258,7 @@ _app
 		// The script registers its completer under the name of the file it is in, so
 		// its body is registered directly here. TabExpansion2 is what PowerShell calls
 		// on the tab key.
-		program: func(scriptPath, line string) string {
+		program: func(scriptPath string, tc completionCase) string {
 			return fmt.Sprintf(`
 $script = Get-Content %s -Raw
 $start = $script.IndexOf('-ScriptBlock {') + '-ScriptBlock {'.Length
@@ -246,7 +266,7 @@ $body = $script.Substring($start, $script.LastIndexOf('}') - $start)
 Register-ArgumentCompleter -Native -CommandName app -ScriptBlock ([scriptblock]::Create($body))
 $line = %s
 $null = TabExpansion2 -inputScript $line -cursorColumn $line.Length
-`, pwshQuote(scriptPath), pwshQuote(line))
+`, pwshQuote(scriptPath), pwshQuote(tc.line))
 		},
 	},
 }
