@@ -37,7 +37,7 @@ type completionCase struct {
 	// bashSkip says why bash is left out of this line, and is empty when it is not.
 	// Leaving bashWords out is not the signal: a case that simply forgot them would
 	// then quietly cover one shell fewer, which is what CLI_SHELL_TESTS_REQUIRED
-	// exists to prevent one directory up.
+	// prevents a level up, for a shell rather than for a case.
 	bashSkip string
 	// pwshLine is line as it would be typed in PowerShell, where it differs. A quoted
 	// command name is only a command there when the call operator says so: "'app' su"
