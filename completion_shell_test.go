@@ -33,11 +33,12 @@ type completionCase struct {
 	// works the words out for itself tests its own idea of that rather than the
 	// script's: these were measured in bash 5.3 with a completion function that dumps
 	// COMP_WORDS.
-	//
-	// It is nil for a line bash never reaches the completion function with, which the
-	// bash run skips: there is no measurement to make, and writing one out by hand is
-	// the guessing this field exists to avoid.
 	bashWords []string
+	// bashSkip says why bash is left out of this line, and is empty when it is not.
+	// Leaving bashWords out is not the signal: a case that simply forgot them would
+	// then quietly cover one shell fewer, which is what CLI_SHELL_TESTS_REQUIRED
+	// exists to prevent one directory up.
+	bashSkip string
 	// pwshLine is line as it would be typed in PowerShell, where it differs. A quoted
 	// command name is only a command there when the call operator says so: "'app' su"
 	// is a string followed by a word, not a command being completed.
@@ -101,14 +102,12 @@ func completionCases() []completionCase {
 			// The command word is a word like any other: one level of quoting comes
 			// off it too, or the request is sent to a command whose name holds the
 			// quotes.
-			//
-			// bash is left out: a command word holding a quote matches no compspec, so
-			// bash completes it as a file name and never calls the function under test
-			// here. Measured the way the words below were, with a completion function
-			// that records having been called.
 			name:     "a quoted command word",
 			line:     "'app' su",
 			pwshLine: "& 'app' su",
+			// Measured the way the words above were, with a completion function that
+			// records having been called: 'app' su and "app" su never reach it.
+			bashSkip: "a command word holding a quote matches no compspec, so bash completes it as a file name",
 			want:     []string{"__complete", "su"},
 		},
 		{
@@ -161,8 +160,8 @@ func TestCompletionScriptsRequest(t *testing.T) {
 				t.Run(tc.name, func(t *testing.T) {
 					t.Parallel()
 
-					if shell == "bash" && tc.bashWords == nil {
-						t.Skip("bash does not reach the completion function for this line")
+					if shell == "bash" && tc.bashSkip != "" {
+						t.Skip(tc.bashSkip)
 					}
 
 					dir := t.TempDir()
