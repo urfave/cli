@@ -89,10 +89,11 @@ func completionCases() []completionCase {
 // TestCompletionScriptsRequest runs the generated scripts in the shells they are
 // written for and checks the request each one builds.
 func TestCompletionScriptsRequest(t *testing.T) {
-	if testing.Short() {
-		t.Skip("driving four shells takes seconds, not milliseconds")
-	}
-
+	// testing.Short is not read here: tests in this package add flags of their own to
+	// the standard flag set, which leaves testing.Short panicking on a flag set that
+	// has not been parsed. The shells run in parallel and each one skips when it is
+	// not installed, so the cost of leaving it in is a few seconds on a machine that
+	// has all four.
 	t.Parallel()
 
 	for _, shell := range []string{"bash", "zsh", "fish", "pwsh"} {
