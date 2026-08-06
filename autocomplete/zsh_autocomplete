@@ -22,7 +22,14 @@ _%[1]s() {
 	if [[ "$current" == "$raw" && "$raw" == [\"\']* ]]; then
 		current="${current#[\"\']}"
 	fi
-	request=("${(@Q)words[1]}" "__complete" "${(@Q)words[2,CURRENT-1]}" "$current")
+	# A command typed as "~/bin/app" has to be run as the path it stands for, which
+	# nothing else here does: the words are taken apart, not evaluated. The raw word
+	# decides, because a quoted "~" is not a home directory to the shell either.
+	local cmd="${(Q)words[1]}"
+	if [[ "${words[1]}" == "~" || "${words[1]}" == "~/"* ]]; then
+		cmd="${HOME}${cmd#\~}"
+	fi
+	request=("$cmd" "__complete" "${(@Q)words[2,CURRENT-1]}" "$current")
 	opts=("${(@f)$("${request[@]}" 2>/dev/null)}")
 
 	if [[ "${opts[1]}" != "" ]]; then

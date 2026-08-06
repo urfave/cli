@@ -37,6 +37,12 @@ Register-ArgumentCompleter -Native -CommandName $name -ScriptBlock {
     # leaves out what follows it, so completing in the middle of a line asks about
     # the line up to that point.
     $command = __cliCompletionText $elements[0]
+    # A command typed as "~/bin/app" has to be run as the path it stands for.
+    # Invoke-Expression expanded it as a side effect of re-parsing the whole line,
+    # which is what this no longer does.
+    if ($command -eq '~' -or $command.StartsWith('~/') -or $command.StartsWith('~')) {
+        $command = $HOME + $command.Substring(1)
+    }
     $words = @()
     $word = ''
     for ($i = 1; $i -lt $elements.Count; $i++) {

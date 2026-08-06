@@ -13,7 +13,16 @@ function __%[1]s_perform_completion
     # command runs. The word under the cursor is sent as the last argument, quoted so
     # that an empty one is still an argument, which tells "cmd --<TAB>" from
     # "cmd -- <TAB>".
-    set results ($args[1] __complete $args[2..-1] "$lastArg" 2> /dev/null)
+    # A command typed as "~/bin/app" has to be run as the path it stands for, which
+    # nothing else here does: the words are taken apart, not evaluated. The word has
+    # been through the tokenizer by now, so a quoted "~" is expanded too, where the
+    # shell would leave it alone.
+    set -l cmd $args[1]
+    if string match -q -- '~' $cmd; or string match -q -- '~/*' $cmd
+        set cmd $HOME(string sub -s 2 -- $cmd)
+    end
+
+    set results ($cmd __complete $args[2..-1] "$lastArg" 2> /dev/null)
 
     # Remove trailing empty lines
     for line in $results[-1..1]
