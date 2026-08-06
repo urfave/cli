@@ -10,8 +10,11 @@ _%[1]s() {
 	# the command line cannot turn it into a positional argument of whatever the
 	# command runs. The word under the cursor is sent as the last argument, empty or
 	# not, so that "cmd --<TAB>" and "cmd -- <TAB>" can be told apart.
-	request=("${words[1]}" "__complete" "${(@)words[2,CURRENT-1]}" "${words[CURRENT]}")
-	opts=("${(@f)$("${request[@]}")}")
+	# (Q) takes one level of quoting off each word, the way the shell would before
+	# handing it to a command, so that a quoted word reaches the command as the word
+	# it is rather than with its quotes.
+	request=("${(@Q)words[1]}" "__complete" "${(@Q)words[2,CURRENT-1]}" "${(@Q)words[CURRENT]}")
+	opts=("${(@f)$("${request[@]}" 2>/dev/null)}")
 
 	if [[ "${opts[1]}" != "" ]]; then
 		_describe 'values' opts
