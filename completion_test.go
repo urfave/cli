@@ -259,6 +259,7 @@ func TestCompletionFishSendsTokenBeingCompleted(t *testing.T) {
 	output, err := fishRender(cmd, "myapp")
 	r.NoError(err)
 
+	r.Contains(output, `set -l lastArg (string unescape -- (commandline -ct))`)
 	r.Contains(output, `set results ($args[1] __complete $args[2..-1] "$lastArg" 2> /dev/null)`)
 	r.NotContains(output, completionFlag, "the deprecated request form must not be generated")
 }

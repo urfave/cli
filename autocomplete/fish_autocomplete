@@ -3,8 +3,10 @@
 function __%[1]s_perform_completion
     # Extract all args except the last one
     set -l args (commandline -opc)
-    # Extract the last arg (partial input)
-    set -l lastArg (commandline -ct)
+    # Extract the last arg (partial input), with one level of quoting taken off the
+    # way the shell would take it off before handing a word to a command. The words
+    # before it come tokenized, which does that already.
+    set -l lastArg (string unescape -- (commandline -ct))
 
     # The request names the completion in its first argument, where a "--" typed on
     # the command line cannot turn it into a positional argument of whatever the
