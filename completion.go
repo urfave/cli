@@ -12,11 +12,11 @@ const (
 
 	// This flag is supposed to only be used by the completion script itself to generate completions on the fly.
 	//
-	// Deprecated: completion scripts name the request with completionCommandRequest
-	// instead. A request appended to the end of the command line is indistinguishable
-	// from a positional argument after "--", which is why it is no longer generated.
-	// It is still understood so that scripts generated before that change keep
-	// working.
+	// What is deprecated is the request form, not this constant: a request appended to
+	// the end of the command line is indistinguishable from a positional argument
+	// after "--", so the scripts name it with completionCommandRequest instead. The
+	// flag is still understood, so that scripts generated before that change keep
+	// working, and this stays as the name they send.
 	completionFlag = "--generate-shell-completion"
 
 	// This argument is supposed to only be used by the completion script itself to
