@@ -117,6 +117,14 @@ The procedure for other shells is similar to bash though the specific paths for 
 shells may vary. Some of the sections below detail the setup need for other shells as
 well as examples in those shells.
 
+#### `__complete` is reserved
+
+Setting `EnableShellCompletion` reserves `__complete` as the first argument of your app: a run
+starting with it is answered as a completion request rather than passed on, and the words after it
+are read as the command line being completed. An app that takes free-form positional arguments
+therefore cannot receive `__complete` as its first one. An app that declares a command of that name
+keeps it, and stops being completable in exchange.
+
 #### Regenerate the script after upgrading
 
 Completion scripts generated before urfave/cli asked for completions with `__complete` end their request
@@ -127,6 +135,10 @@ belongs to whatever the app runs rather than to the app itself, and the app runs
 [#1993](https://github.com/urfave/cli/issues/1993)). Regenerating the script and sourcing it again is what
 resolves that: `__complete` is the first argument, where a `--` typed later on the command line can no
 longer turn it into a positional argument.
+
+Until the script is regenerated, pressing tab on such a line runs the app with the request left on it
+as a positional argument, which usually ends in an `Incorrect Usage` message rather than in the run
+completing quietly.
 
 #### Default auto-completion
 
