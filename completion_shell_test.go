@@ -110,6 +110,8 @@ func TestCompletionScriptsRequest(t *testing.T) {
 	// has all four.
 	t.Parallel()
 
+	checkRequiredShells(t)
+
 	for _, shell := range []string{"bash", "zsh", "fish", "pwsh"} {
 		t.Run(shell, func(t *testing.T) {
 			t.Parallel()
@@ -160,6 +162,22 @@ func TestCompletionScriptsRequest(t *testing.T) {
 	}
 }
 
+// checkRequiredShells fails when CLI_SHELL_TESTS_REQUIRED names a shell this file does
+// not know. The variable is there so that coverage cannot go away quietly, which a
+// typo in it would undo: a name matching nothing requires nothing.
+func checkRequiredShells(t *testing.T) {
+	t.Helper()
+	for _, name := range strings.Split(os.Getenv("CLI_SHELL_TESTS_REQUIRED"), ",") {
+		name = strings.TrimSpace(name)
+		if name == "" {
+			continue
+		}
+		if _, ok := shellDrivers[name]; !ok {
+			t.Fatalf("CLI_SHELL_TESTS_REQUIRED names %q, which is not a shell driven here", name)
+		}
+	}
+}
+
 // skipMissingShell skips a shell that is not installed, unless it is one the
 // environment names as required. A skip is silent, and a machine that has none of the
 // four reports the same green as one where every request is right, so a run that is
@@ -201,7 +219,7 @@ var shellDrivers = map[string]shellDriver{
 		args:        func(p string) []string { return []string{"-c", p} },
 		// The script calls the word-splitting helpers of bash-completion, so without
 		// it there is nothing to drive.
-		prelude: func(t *testing.T, _ string) string {
+		prelude: func(t *testing.T, interpreter string) string {
 			t.Helper()
 			for _, p := range []string{
 				"/usr/share/bash-completion/bash_completion",
@@ -209,9 +227,20 @@ var shellDrivers = map[string]shellDriver{
 				"/opt/homebrew/share/bash-completion/bash_completion",
 				"/usr/local/share/bash-completion/bash_completion",
 			} {
-				if _, err := os.Stat(p); err == nil {
-					return ". " + p + "\n"
+				if _, err := os.Stat(p); err != nil {
+					continue
 				}
+				// Finding the file is not the same as being able to use it:
+				// bash-completion 2.12 and later need bash 4.2, so sourcing it in the
+				// bash macOS ships leaves the helpers undefined and the script with
+				// nothing to call. Ask this bash what it ends up with rather than
+				// assuming that the file is enough.
+				usable := exec.Command(interpreter, "-c", ". "+shQuote(p)+
+					" >/dev/null 2>&1; declare -F _comp_initialize >/dev/null 2>&1 || declare -F _get_comp_words_by_ref >/dev/null 2>&1")
+				if err := usable.Run(); err != nil {
+					skipMissingShell(t, "bash", interpreter+" cannot use the bash-completion in "+p)
+				}
+				return ". " + p + "\n"
 			}
 			skipMissingShell(t, "bash", "bash-completion is not installed")
 			return ""
