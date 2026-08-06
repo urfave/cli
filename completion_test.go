@@ -281,9 +281,11 @@ func TestCompletionBashSendsTokenBeingCompleted(t *testing.T) {
 	output, err := bashRender(cmd, "myapp")
 	r.NoError(err)
 
-	r.Contains(output, `__cli_completion_request=("${COMP_WORDS[0]}" "__complete")`)
-	r.Contains(output, `__cli_completion_request+=("${COMP_WORDS[COMP_CWORD]-}")`)
-	r.Contains(output, `opts=$("${__cli_completion_request[@]}" 2>/dev/null)`)
+	r.Contains(output, `__myapp_completion_request=("${__myapp_dequoted}" "__complete")`)
+	r.Contains(output, `__myapp_dequote "${words[cword]-}"`)
+	r.Contains(output, `opts=$("${__myapp_completion_request[@]}" 2>/dev/null)`)
+	r.Contains(output, `for (( i = 1; i < cword; i++ )); do`,
+		"the request must come from the words __myapp_init_completion reassembled, not from COMP_WORDS")
 	r.NotContains(output, `eval "`, "the request must not go through eval")
 	r.NotContains(output, completionFlag, "the deprecated request form must not be generated")
 }

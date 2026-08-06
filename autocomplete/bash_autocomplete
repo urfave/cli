@@ -11,22 +11,72 @@ __%[1]s_init_completion() {
   fi
 }
 
+# Remove one level of shell quoting from a word, the way the shell does before it
+# hands a word to a command, and leave the result in __%[1]s_dequoted.
+#
+# Doing it here rather than with eval is what keeps a command line holding $(...) or
+# `...` from being executed by pressing the tab key.
+__%[1]s_dequote() {
+  local s="$1" out="" c n quote=""
+  local i=0 len=${#1}
+
+  while (( i < len )); do
+    c="${s:i:1}"
+    if [[ "${quote}" == "'" ]]; then
+      if [[ "${c}" == "'" ]]; then quote=""; else out="${out}${c}"; fi
+    elif [[ "${quote}" == '"' ]]; then
+      if [[ "${c}" == '"' ]]; then
+        quote=""
+      elif [[ "${c}" == "\\" ]]; then
+        i=$(( i + 1 ))
+        n="${s:i:1}"
+        # Inside double quotes a backslash only escapes these.
+        case "${n}" in
+          '"' | "\\" | '$' | '`') out="${out}${n}" ;;
+          *) out="${out}\\${n}" ;;
+        esac
+      else
+        out="${out}${c}"
+      fi
+    else
+      case "${c}" in
+        "'" | '"') quote="${c}" ;;
+        "\\") i=$(( i + 1 )); out="${out}${s:i:1}" ;;
+        *) out="${out}${c}" ;;
+      esac
+    fi
+    i=$(( i + 1 ))
+  done
+
+  __%[1]s_dequoted="${out}"
+}
+
 # The request names the completion in its first argument, where a "--" typed on the
 # command line cannot turn it into a positional argument of whatever the command runs.
 # The word under the cursor is sent as the last argument, empty or not, so that
 # "cmd --<TAB>" and "cmd -- <TAB>" can be told apart.
 #
 # It is built as an array rather than as a string to eval, so that a word holding a
-# space or a quote reaches the command as the single word it is.
+# space reaches the command as the single word it is.
+#
+# The words come from words/cword rather than from COMP_WORDS/COMP_CWORD: bash splits
+# the line on COMP_WORDBREAKS, so "--opt=value" is three words in COMP_WORDS, while
+# __%[1]s_init_completion puts it back together. The candidates are filtered against
+# cur, which comes from there too, so a request built from anything else would ask the
+# command about a different word than the one being completed.
 __%[1]s_build_completion_request() {
-  __cli_completion_request=("${COMP_WORDS[0]}" "__complete")
-
   local i
-  for (( i = 1; i < COMP_CWORD; i++ )); do
-    __cli_completion_request+=("${COMP_WORDS[i]}")
+
+  __%[1]s_dequote "${words[0]}"
+  __%[1]s_completion_request=("${__%[1]s_dequoted}" "__complete")
+
+  for (( i = 1; i < cword; i++ )); do
+    __%[1]s_dequote "${words[i]}"
+    __%[1]s_completion_request+=("${__%[1]s_dequoted}")
   done
 
-  __cli_completion_request+=("${COMP_WORDS[COMP_CWORD]-}")
+  __%[1]s_dequote "${words[cword]-}"
+  __%[1]s_completion_request+=("${__%[1]s_dequoted}")
 }
 
 # Keep Bash 3 compatibility: associative arrays require Bash 4+, so
@@ -58,7 +108,7 @@ __%[1]s_bash_autocomplete() {
     __%[1]s_init_completion -n "=:" || return
 
     __%[1]s_build_completion_request
-    opts=$("${__cli_completion_request[@]}" 2>/dev/null)
+    opts=$("${__%[1]s_completion_request[@]}" 2>/dev/null)
 
     # Completion output lines use "token:description" format.
     # Keep token/description in parallel arrays for Bash 3 compatibility.
