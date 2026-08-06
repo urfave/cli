@@ -36,7 +36,7 @@ Register-ArgumentCompleter -Native -CommandName $name -ScriptBlock {
     # as a word of its own and as the word being completed. Reading the cursor also
     # leaves out what follows it, so completing in the middle of a line asks about
     # the line up to that point.
-    $command = $elements[0].Extent.Text
+    $command = __cliCompletionText $elements[0]
     $words = @()
     $word = ''
     for ($i = 1; $i -lt $elements.Count; $i++) {
