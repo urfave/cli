@@ -324,7 +324,9 @@ func TestCompletionPowershellSendsTokenBeingCompleted(t *testing.T) {
 	output, err := pwshRender(cmd, "myapp")
 	r.NoError(err)
 
-	r.Contains(output, `& $command __complete @words $wordToComplete 2>$null`)
+	r.Contains(output, `& $command __complete @words $word 2>$null`)
+	r.Contains(output, `if ($cursorPosition -gt $extent.StartOffset -and $cursorPosition -le $extent.EndOffset) {`,
+		"the word being completed must come from the cursor, not from a comparison with $wordToComplete")
 	r.NotContains(output, completionFlag, "the deprecated request form must not be generated")
 }
 
