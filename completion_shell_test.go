@@ -34,7 +34,11 @@ type completionCase struct {
 	// script's: these were measured in bash 5.3 with a completion function that dumps
 	// COMP_WORDS.
 	bashWords []string
-	want      []string
+	// pwshLine is line as it would be typed in PowerShell, where it differs. A quoted
+	// command name is only a command there when the call operator says so: "'app' su"
+	// is a string followed by a word, not a command being completed.
+	pwshLine string
+	want     []string
 }
 
 func completionCases() []completionCase {
@@ -90,6 +94,16 @@ func completionCases() []completionCase {
 			want:      []string{"__complete", "exec", "--", "git", "push", ""},
 		},
 		{
+			// The command word is a word like any other: one level of quoting comes
+			// off it too, or the request is sent to a command whose name holds the
+			// quotes.
+			name:      "a quoted command word",
+			line:      "'app' su",
+			bashWords: []string{"'app'", "su"},
+			pwshLine:  "& 'app' su",
+			want:      []string{"__complete", "su"},
+		},
+		{
 			// Answering a completion must not evaluate the command line. The old
 			// scripts re-parsed it, so a command substitution ran on the tab key.
 			name:      "a command substitution",
@@ -98,6 +112,14 @@ func completionCases() []completionCase {
 			want:      []string{"__complete", "sub", "$(touch NOPE)", ""},
 		},
 	}
+}
+
+// pwshCommandLine is the command line to complete in PowerShell.
+func (tc completionCase) pwshCommandLine() string {
+	if tc.pwshLine != "" {
+		return tc.pwshLine
+	}
+	return tc.line
 }
 
 // TestCompletionScriptsRequest runs the generated scripts in the shells they are
@@ -321,7 +343,7 @@ $body = $script.Substring($start, $script.LastIndexOf('}') - $start)
 Register-ArgumentCompleter -Native -CommandName app -ScriptBlock ([scriptblock]::Create($body))
 $line = %s
 $null = TabExpansion2 -inputScript $line -cursorColumn $line.Length
-`, pwshQuote(scriptPath), pwshQuote(tc.line))
+`, pwshQuote(scriptPath), pwshQuote(tc.pwshCommandLine()))
 		},
 	},
 }
