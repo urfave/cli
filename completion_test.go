@@ -259,7 +259,7 @@ func TestCompletionFishSendsTokenBeingCompleted(t *testing.T) {
 	output, err := fishRender(cmd, "myapp")
 	r.NoError(err)
 
-	r.Contains(output, `set -l lastArg (string unescape -- (commandline -ct))`)
+	r.Contains(output, `set -l lastArg (string unescape -- $rawArg; or printf '%s' $rawArg)`)
 	r.Contains(output, `set results ($cmd __complete $args[2..-1] "$lastArg" 2> /dev/null)`)
 	r.NotContains(output, completionFlag, "the deprecated request form must not be generated")
 }
@@ -327,6 +327,8 @@ func TestCompletionPowershellSendsTokenBeingCompleted(t *testing.T) {
 	r.NoError(err)
 
 	r.Contains(output, `& $command __complete @words $word 2>$null`)
+	r.Contains(output, `$PSNativeCommandArgumentPassing = 'Standard'`,
+		"an empty word has to survive the way to the command")
 	r.Contains(output, `if ($cursorPosition -gt $extent.StartOffset -and $cursorPosition -le $extent.EndOffset) {`,
 		"the word being completed must come from the cursor, not from a comparison with $wordToComplete")
 	r.NotContains(output, completionFlag, "the deprecated request form must not be generated")

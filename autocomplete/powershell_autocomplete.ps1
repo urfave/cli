@@ -54,6 +54,15 @@ Register-ArgumentCompleter -Native -CommandName $name -ScriptBlock {
         }
     }
 
+    # The word being completed is the last argument, empty or not, which needs the
+    # argument passing mode PowerShell 7.3 made the default: before it, on Windows, an
+    # empty argument is dropped on the way to a native command and the request arrives
+    # a word short, which reads as a different command line rather than as an error.
+    # Windows PowerShell 5.1 has no such mode and cannot be helped from here.
+    if (Get-Variable -Name PSNativeCommandArgumentPassing -ErrorAction Ignore) {
+        $PSNativeCommandArgumentPassing = 'Standard'
+    }
+
     & $command __complete @words $word 2>$null | ForEach-Object {
         $parts = $_.Split(':', 2)
         if ($parts.Count -eq 2) {

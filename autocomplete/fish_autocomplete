@@ -6,7 +6,11 @@ function __%[1]s_perform_completion
     # Extract the last arg (partial input), with one level of quoting taken off the
     # way the shell would take it off before handing a word to a command. The words
     # before it come tokenized, which does that already.
-    set -l lastArg (string unescape -- (commandline -ct))
+    set -l rawArg (commandline -ct)
+    # string unescape answers with nothing for a word it cannot read, such as one
+    # ending in a lone backslash. The word as typed is a better answer than no word,
+    # which would be read as a fresh one.
+    set -l lastArg (string unescape -- $rawArg; or printf '%%s' $rawArg)
 
     # The request names the completion in its first argument, where a "--" typed on
     # the command line cannot turn it into a positional argument of whatever the

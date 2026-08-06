@@ -133,6 +133,20 @@ that wraps another one therefore cannot hand its completions on: `myapp exec -- 
 nothing rather than what `git` would offer. What it does do is leave your app's action alone, which
 is what a shell asking for completions needs.
 
+#### What the shells cannot answer
+
+Two command lines have no answer, whichever shell you use.
+
+A word after a `--` that a flag took as its value is read as a word after a terminator, so
+`myapp --separator -- <TAB>` offers nothing. Which flags take a value is known once the flags are
+parsed, and the request is read before that.
+
+Windows PowerShell 5.1 drops an empty argument on the way to a native command, and PowerShell 7.0
+to 7.2 does the same on Windows unless `$PSNativeCommandArgumentPassing` is `Standard`, which the
+generated script sets where it can. Without it the word being completed goes missing from the
+request and the command answers as though the line ended a word earlier. PowerShell 7.3 and later
+need nothing.
+
 #### Regenerate the script after upgrading
 
 Completion scripts generated before urfave/cli asked for completions with `__complete` end their request
