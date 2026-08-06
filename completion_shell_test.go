@@ -244,7 +244,7 @@ func TestCompletionScriptsTildeCommand(t *testing.T) {
 			probe := exec.Command(interpreter, shellDrivers[shell].args("exit 0")...)
 			probe.Env = append(os.Environ(), "HOME="+home)
 			if out, err := probe.CombinedOutput(); err != nil {
-				t.Skipf("%s cannot run with HOME moved: %s", shell, out)
+				skipMissingShell(t, shell, fmt.Sprintf("%s cannot run with HOME moved: %s", shell, out))
 			}
 
 			got := completeInShell(t, shell, interpreter, script, tc, t.TempDir(), []string{"HOME=" + home})
