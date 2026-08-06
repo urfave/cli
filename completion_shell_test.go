@@ -117,7 +117,7 @@ func TestCompletionScriptsRequest(t *testing.T) {
 			driver := shellDrivers[shell]
 			interpreter, err := exec.LookPath(driver.interpreter)
 			if err != nil {
-				skipMissingShell(t, driver.interpreter+" is not installed")
+				skipMissingShell(t, shell, driver.interpreter+" is not installed")
 			}
 
 			render := shellCompletions[shell]
@@ -160,13 +160,19 @@ func TestCompletionScriptsRequest(t *testing.T) {
 	}
 }
 
-// skipMissingShell skips a shell that is not installed, unless the environment says
-// these tests are expected to run. A skip is silent, and a machine that has none of
-// the four reports the same green as one where every request is right.
-func skipMissingShell(t *testing.T, reason string) {
+// skipMissingShell skips a shell that is not installed, unless it is one the
+// environment names as required. A skip is silent, and a machine that has none of the
+// four reports the same green as one where every request is right, so a run that is
+// meant to cover a shell says which ones and fails when it cannot.
+//
+// The shells are named rather than required as a group, so that a job requiring what
+// it installs is not broken by a shell disappearing from a runner image.
+func skipMissingShell(t *testing.T, shell, reason string) {
 	t.Helper()
-	if os.Getenv("CLI_SHELL_TESTS_REQUIRED") != "" {
-		t.Fatalf("CLI_SHELL_TESTS_REQUIRED is set: %s", reason)
+	for _, required := range strings.Split(os.Getenv("CLI_SHELL_TESTS_REQUIRED"), ",") {
+		if strings.TrimSpace(required) == shell {
+			t.Fatalf("%s is required by CLI_SHELL_TESTS_REQUIRED: %s", shell, reason)
+		}
 	}
 	t.Skip(reason)
 }
@@ -207,7 +213,7 @@ var shellDrivers = map[string]shellDriver{
 					return ". " + p + "\n"
 				}
 			}
-			skipMissingShell(t, "bash-completion is not installed")
+			skipMissingShell(t, "bash", "bash-completion is not installed")
 			return ""
 		},
 		program: func(scriptPath string, tc completionCase) string {

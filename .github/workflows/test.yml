@@ -35,8 +35,8 @@ jobs:
         run: echo "${GITHUB_WORKSPACE}/.local/bin" >>"${GITHUB_PATH}"
 
       # The completion scripts are run in these to check what they send. Without
-      # them those tests skip, which is silent: CLI_SHELL_TESTS_REQUIRED below turns
-      # a skip into a failure so that the coverage cannot go away unnoticed.
+      # them those tests skip, which is silent: CLI_SHELL_TESTS_REQUIRED below names
+      # them so that a skip is a failure and the coverage cannot go away unnoticed.
       - if: matrix.os == 'ubuntu-24.04'
         run: sudo apt-get update && sudo apt-get install -y bash-completion zsh fish
 
@@ -49,7 +49,10 @@ jobs:
       - run: make vet
       - run: make test
         env:
-          CLI_SHELL_TESTS_REQUIRED: ${{ matrix.os == 'ubuntu-24.04' && '1' || '' }}
+          # The shells installed above, and only those: pwsh comes with the
+          # runner image, so requiring it would turn a change of image into a
+          # failure here.
+          CLI_SHELL_TESTS_REQUIRED: ${{ matrix.os == 'ubuntu-24.04' && 'bash,zsh,fish' || '' }}
       - run: make check-binary-size
 
       - if: matrix.go == 'stable' && matrix.os == 'ubuntu-24.04'
