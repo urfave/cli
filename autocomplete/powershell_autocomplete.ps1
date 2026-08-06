@@ -36,13 +36,10 @@ Register-ArgumentCompleter -Native -CommandName $name -ScriptBlock {
     # as a word of its own and as the word being completed. Reading the cursor also
     # leaves out what follows it, so completing in the middle of a line asks about
     # the line up to that point.
+    # A command typed as "~/bin/app" needs nothing done to it here: PowerShell resolves
+    # the tilde when it looks the command up, where the three other shells pass the
+    # word on as written and never find the command.
     $command = __cliCompletionText $elements[0]
-    # A command typed as "~/bin/app" has to be run as the path it stands for.
-    # Invoke-Expression expanded it as a side effect of re-parsing the whole line,
-    # which is what this no longer does.
-    if ($command -eq '~' -or $command.StartsWith('~/') -or $command.StartsWith('~')) {
-        $command = $HOME + $command.Substring(1)
-    }
     $words = @()
     $word = ''
     for ($i = 1; $i -lt $elements.Count; $i++) {
