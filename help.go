@@ -487,6 +487,12 @@ type completionRequest struct {
 	// terminated says whether a "--" precedes the word, which makes that word a
 	// positional argument of whatever the command runs rather than one this command
 	// has any suggestion for.
+	//
+	// A "--" a flag takes as its value counts here too, and is not one: telling them
+	// apart needs to know which flags take a value, which is known after the flags are
+	// parsed, and this is read before. Completing "app --sep -- s" therefore offers
+	// nothing. Erring this way costs a suggestion; erring the other way runs the
+	// command on the tab key.
 	terminated bool
 }
 

@@ -144,9 +144,11 @@ belongs to whatever the app runs rather than to the app itself, and the app runs
 resolves that: `__complete` is the first argument, where a `--` typed later on the command line can no
 longer turn it into a positional argument.
 
-Until the script is regenerated, pressing tab on such a line runs the app with the request left on it
-as a positional argument, which usually ends in an `Incorrect Usage` message rather than in the run
-completing quietly.
+Until the script is regenerated, pressing tab on such a line runs your app. Nothing rejects the
+request: after a `--` the flag is a positional argument, so it is passed to your action along with
+everything else on the line and the run completes as though you had pressed enter. A command that
+passes its arguments on hands the flag to what it runs, which is what makes it the right reading for
+a wrapper, and the wrong one for a tab key. Regenerating the script is what separates the two.
 
 #### Default auto-completion
 

@@ -276,9 +276,12 @@ __app_bash_autocomplete
 		interpreter: "zsh",
 		args:        func(p string) []string { return []string{"-f", "-c", p} },
 		prelude:     func(*testing.T, string) string { return "" },
-		// The completion system is not started, so the parts of it the script uses
-		// stand in for it: what is under test is the request the script builds from
-		// words and CURRENT, which zsh fills the same way here.
+		// The completion system is not started, since driving it needs a pseudo
+		// terminal, so the parts of it the script uses stand in for it and words and
+		// CURRENT are filled with zsh's own tokenizer. That last part is an assumption
+		// rather than something checked: unlike the bash words, which are written out
+		// as measured, these are what (z) makes of the line, which is close to what
+		// the completion system would pass but not known to be identical.
 		program: func(scriptPath string, tc completionCase) string {
 			return fmt.Sprintf(`
 compdef() { : }
