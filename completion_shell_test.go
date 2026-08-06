@@ -438,9 +438,11 @@ func TestCompletionScriptsSyntax(t *testing.T) {
 		"zsh":  func(p string) []string { return []string{"-n", p} },
 		"fish": func(p string) []string { return []string{"-n", p} },
 		"pwsh": func(p string) []string {
-			return []string{"-NoProfile", "-Command",
+			return []string{
+				"-NoProfile", "-Command",
 				"$errors = $null; $null = [System.Management.Automation.Language.Parser]::ParseFile(" +
-					pwshQuote(p) + ", [ref]$null, [ref]$errors); if ($errors) { $errors; exit 1 }"}
+					pwshQuote(p) + ", [ref]$null, [ref]$errors); if ($errors) { $errors; exit 1 }",
+			}
 		},
 	}
 
