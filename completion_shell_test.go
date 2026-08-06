@@ -33,6 +33,10 @@ type completionCase struct {
 	// works the words out for itself tests its own idea of that rather than the
 	// script's: these were measured in bash 5.3 with a completion function that dumps
 	// COMP_WORDS.
+	//
+	// It is nil for a line bash never reaches the completion function with, which the
+	// bash run skips: there is no measurement to make, and writing one out by hand is
+	// the guessing this field exists to avoid.
 	bashWords []string
 	// pwshLine is line as it would be typed in PowerShell, where it differs. A quoted
 	// command name is only a command there when the call operator says so: "'app' su"
@@ -97,11 +101,15 @@ func completionCases() []completionCase {
 			// The command word is a word like any other: one level of quoting comes
 			// off it too, or the request is sent to a command whose name holds the
 			// quotes.
-			name:      "a quoted command word",
-			line:      "'app' su",
-			bashWords: []string{"'app'", "su"},
-			pwshLine:  "& 'app' su",
-			want:      []string{"__complete", "su"},
+			//
+			// bash is left out: a command word holding a quote matches no compspec, so
+			// bash completes it as a file name and never calls the function under test
+			// here. Measured the way the words below were, with a completion function
+			// that records having been called.
+			name:     "a quoted command word",
+			line:     "'app' su",
+			pwshLine: "& 'app' su",
+			want:     []string{"__complete", "su"},
 		},
 		{
 			// Answering a completion must not evaluate the command line. The old
@@ -152,6 +160,10 @@ func TestCompletionScriptsRequest(t *testing.T) {
 			for _, tc := range completionCases() {
 				t.Run(tc.name, func(t *testing.T) {
 					t.Parallel()
+
+					if shell == "bash" && tc.bashWords == nil {
+						t.Skip("bash does not reach the completion function for this line")
+					}
 
 					dir := t.TempDir()
 					scriptPath := filepath.Join(dir, "completion."+shell)
