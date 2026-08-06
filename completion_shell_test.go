@@ -221,6 +221,7 @@ var shellDrivers = map[string]shellDriver{
 		// it there is nothing to drive.
 		prelude: func(t *testing.T, interpreter string) string {
 			t.Helper()
+			var unusable []string
 			for _, p := range []string{
 				"/usr/share/bash-completion/bash_completion",
 				"/etc/bash_completion",
@@ -234,13 +235,18 @@ var shellDrivers = map[string]shellDriver{
 				// bash-completion 2.12 and later need bash 4.2, so sourcing it in the
 				// bash macOS ships leaves the helpers undefined and the script with
 				// nothing to call. Ask this bash what it ends up with rather than
-				// assuming that the file is enough.
+				// assuming that the file is enough, and go on looking when the answer
+				// is no: an older one further down the list may still work.
 				usable := exec.Command(interpreter, "-c", ". "+shQuote(p)+
 					" >/dev/null 2>&1; declare -F _comp_initialize >/dev/null 2>&1 || declare -F _get_comp_words_by_ref >/dev/null 2>&1")
 				if err := usable.Run(); err != nil {
-					skipMissingShell(t, "bash", interpreter+" cannot use the bash-completion in "+p)
+					unusable = append(unusable, p)
+					continue
 				}
 				return ". " + p + "\n"
+			}
+			if len(unusable) > 0 {
+				skipMissingShell(t, "bash", interpreter+" cannot use the bash-completion in "+strings.Join(unusable, ", "))
 			}
 			skipMissingShell(t, "bash", "bash-completion is not installed")
 			return ""
