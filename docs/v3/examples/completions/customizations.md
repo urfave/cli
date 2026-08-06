@@ -109,8 +109,8 @@ func main() {
 
 Setting `cli.EnableShellCompletion` makes the app answer a completion request, which the
 generated scripts send as a `__complete` first argument followed by the words typed so far and
-the word being completed. That name is fixed: unlike the flag it replaces, an app cannot rename it,
-since the completion script and the app have to agree on it.
+the word being completed. That name is fixed: an app cannot rename it, since the completion script
+and the app have to agree on it.
 
 <!-- {
   "args": ["__complete", ""],
