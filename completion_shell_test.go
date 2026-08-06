@@ -165,32 +165,90 @@ func TestCompletionScriptsRequest(t *testing.T) {
 					}
 
 					dir := t.TempDir()
-					scriptPath := filepath.Join(dir, "completion."+shell)
-					require.NoError(t, os.WriteFile(scriptPath, []byte(script), 0o644))
-
-					argvPath := filepath.Join(dir, "argv")
 					writeCompletionTestApp(t, dir)
 
-					prelude := driver.prelude(t, interpreter)
-					program := driver.program(scriptPath, tc)
-
-					cmd := exec.Command(interpreter, driver.args(prelude+program)...)
-					cmd.Dir = dir
-					cmd.Env = append(os.Environ(),
-						"PATH="+dir+string(os.PathListSeparator)+os.Getenv("PATH"),
-						"ARGV_LOG="+argvPath,
-					)
-					out, err := cmd.CombinedOutput()
-					require.NoError(t, err, "driving %s: %s", shell, out)
-
-					got, err := os.ReadFile(argvPath)
-					require.NoError(t, err, "the completion did not run the command: %s", out)
-					assert.Equal(t, tc.want, strings.Split(strings.TrimSuffix(string(got), "\n"), "\n"))
+					got := completeInShell(t, shell, interpreter, script, tc, dir, []string{
+						"PATH=" + dir + string(os.PathListSeparator) + os.Getenv("PATH"),
+					})
+					assert.Equal(t, tc.want, got)
 
 					assert.NoFileExists(t, filepath.Join(dir, "NOPE"),
 						"the command line must not be evaluated to answer a completion")
 				})
 			}
+		})
+	}
+}
+
+// completeInShell drives one completion in one shell and returns the arguments the
+// command received. dir is where the command line is completed, and env is added to
+// the environment the shell runs in.
+func completeInShell(t *testing.T, shell, interpreter, script string, tc completionCase, dir string, env []string) []string {
+	t.Helper()
+
+	driver := shellDrivers[shell]
+	scriptPath := filepath.Join(dir, "completion."+shell)
+	require.NoError(t, os.WriteFile(scriptPath, []byte(script), 0o644))
+	argvPath := filepath.Join(dir, "argv")
+
+	cmd := exec.Command(interpreter, driver.args(driver.prelude(t, interpreter)+driver.program(scriptPath, tc))...)
+	cmd.Dir = dir
+	cmd.Env = append(append(os.Environ(), "ARGV_LOG="+argvPath), env...)
+	out, err := cmd.CombinedOutput()
+	require.NoError(t, err, "driving %s: %s", shell, out)
+
+	got, err := os.ReadFile(argvPath)
+	require.NoError(t, err, "the completion did not run the command: %s", out)
+	return strings.Split(strings.TrimSuffix(string(got), "\n"), "\n")
+}
+
+// TestCompletionScriptsTildeCommand checks that a command typed as "~/bin/app" is run
+// as the path it stands for. Only PowerShell resolves a tilde while looking a command
+// up; the other three pass the word on as written, and bash used to have it expanded
+// by the eval this no longer does.
+//
+// The command is reachable through the tilde alone: it is not on PATH, so a shell that
+// passes the word on unchanged finds nothing and the request never arrives.
+func TestCompletionScriptsTildeCommand(t *testing.T) {
+	t.Parallel()
+
+	tc := completionCase{
+		line: "~/bin/app su",
+		// Written with a quoted tilde so that the driver does not expand it: what the
+		// script receives has to be the tilde bash puts in COMP_WORDS.
+		bashWords: []string{"~/bin/app", "su"},
+		want:      []string{"__complete", "su"},
+	}
+
+	for _, shell := range []string{"bash", "zsh", "fish", "pwsh"} {
+		t.Run(shell, func(t *testing.T) {
+			t.Parallel()
+
+			interpreter, err := exec.LookPath(shellDrivers[shell].interpreter)
+			if err != nil {
+				skipMissingShell(t, shell, shellDrivers[shell].interpreter+" is not installed")
+			}
+
+			render := shellCompletions[shell]
+			require.NotNil(t, render)
+			script, err := render(&Command{Name: "app", EnableShellCompletion: true}, "app")
+			require.NoError(t, err)
+
+			home := t.TempDir()
+			require.NoError(t, os.MkdirAll(filepath.Join(home, "bin"), 0o755))
+			writeCompletionTestApp(t, filepath.Join(home, "bin"))
+
+			// A machine can get its shells from a tool manager that keeps what it
+			// needs under the real home, where moving HOME takes it away and the
+			// shell never starts. Nothing about the script can be learned then.
+			probe := exec.Command(interpreter, shellDrivers[shell].args("exit 0")...)
+			probe.Env = append(os.Environ(), "HOME="+home)
+			if out, err := probe.CombinedOutput(); err != nil {
+				t.Skipf("%s cannot run with HOME moved: %s", shell, out)
+			}
+
+			got := completeInShell(t, shell, interpreter, script, tc, t.TempDir(), []string{"HOME=" + home})
+			assert.Equal(t, tc.want, got)
 		})
 	}
 }
@@ -372,55 +430,6 @@ func fishQuote(s string) string {
 // pwshQuote quotes s for PowerShell.
 func pwshQuote(s string) string {
 	return "'" + strings.ReplaceAll(s, "'", "''") + "'"
-}
-
-// TestCompletionBashScriptTildeCommand checks that a command typed as "~/bin/app" is
-// run as the path it stands for. eval expanded it as a side effect of re-parsing the
-// command line, and dropping eval dropped that with it, leaving the completion looking
-// for a command whose name starts with a tilde and finding nothing.
-func TestCompletionBashScriptTildeCommand(t *testing.T) {
-	t.Parallel()
-
-	driver := shellDrivers["bash"]
-	interpreter, err := exec.LookPath(driver.interpreter)
-	if err != nil {
-		skipMissingShell(t, "bash", driver.interpreter+" is not installed")
-	}
-
-	render := shellCompletions["bash"]
-	require.NotNil(t, render)
-	script, err := render(&Command{Name: "app", EnableShellCompletion: true}, "app")
-	require.NoError(t, err)
-
-	home := t.TempDir()
-	require.NoError(t, os.MkdirAll(filepath.Join(home, "bin"), 0o755))
-	writeCompletionTestApp(t, filepath.Join(home, "bin"))
-
-	dir := t.TempDir()
-	scriptPath := filepath.Join(dir, "completion.bash")
-	require.NoError(t, os.WriteFile(scriptPath, []byte(script), 0o644))
-	argvPath := filepath.Join(dir, "argv")
-
-	// The word is written with a quoted tilde so that this driver does not expand it:
-	// what the script receives has to be the tilde bash puts in COMP_WORDS.
-	program := fmt.Sprintf(`
-. %s
-COMP_WORDS=('~/bin/app' 'su')
-COMP_CWORD=1
-COMP_LINE='~/bin/app su'
-COMP_POINT=12
-__app_bash_autocomplete
-`, shQuote(scriptPath))
-
-	cmd := exec.Command(interpreter, driver.args(driver.prelude(t, interpreter)+program)...)
-	cmd.Dir = dir
-	cmd.Env = append(os.Environ(), "HOME="+home, "ARGV_LOG="+argvPath)
-	out, err := cmd.CombinedOutput()
-	require.NoError(t, err, "driving bash: %s", out)
-
-	got, err := os.ReadFile(argvPath)
-	require.NoError(t, err, "the completion did not run the command: %s", out)
-	assert.Equal(t, []string{"__complete", "su"}, strings.Split(strings.TrimSuffix(string(got), "\n"), "\n"))
 }
 
 // TestCompletionScriptsSyntax checks that the generated scripts parse, for an app name
