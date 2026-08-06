@@ -876,3 +876,60 @@ func TestCompletionCustomShellCompleteNotRunPastDoubleDash(t *testing.T) {
 	r.True(ran)
 	r.Equal("custom\n", out.String())
 }
+
+// TestCompletionRequestIgnoredWhenDisabled checks that the request form means nothing
+// to an app that has not enabled shell completion: the first argument reaches it as
+// the positional argument it wrote.
+func TestCompletionRequestIgnoredWhenDisabled(t *testing.T) {
+	var got []string
+	out := &bytes.Buffer{}
+	cmd := &Command{
+		Writer: out,
+		Action: func(_ context.Context, cmd *Command) error {
+			got = cmd.Args().Slice()
+			return nil
+		},
+	}
+
+	r := require.New(t)
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", completionCommandRequest, "bar"}))
+	r.Equal([]string{completionCommandRequest, "bar"}, got)
+	r.Empty(out.String())
+}
+
+// TestCompletionRequestNestedSubcommand checks that a request is answered by the
+// command it names however deep that is, rather than by the one above it.
+func TestCompletionRequestNestedSubcommand(t *testing.T) {
+	out := &bytes.Buffer{}
+	cmd := &Command{
+		EnableShellCompletion: true,
+		Writer:                out,
+		Commands: []*Command{
+			{
+				Name: "one",
+				Commands: []*Command{
+					{
+						Name:   "two",
+						Flags:  []Flag{&BoolFlag{Name: "deep"}},
+						Action: func(context.Context, *Command) error { return nil },
+					},
+				},
+			},
+		},
+	}
+
+	r := require.New(t)
+
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", completionCommandRequest, "one", ""}))
+	r.Equal("two\nhelp:Shows a list of commands or help for one command\n", out.String())
+
+	out.Reset()
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", completionCommandRequest, "one", "two", "-"}))
+	r.Equal("--deep\n--help:show help\n", out.String())
+
+	// The word being completed is a flag of the command it follows, even with a
+	// positional argument in between, which the arguments alone could not say.
+	out.Reset()
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", completionCommandRequest, "one", "two", "arg", "--de"}))
+	r.Equal("--deep\n", out.String())
+}
