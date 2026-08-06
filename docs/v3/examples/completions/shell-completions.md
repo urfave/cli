@@ -125,6 +125,14 @@ are read as the command line being completed. An app that takes free-form positi
 therefore cannot receive `__complete` as its first one. An app that declares a command of that name
 keeps it, and stops being completable in exchange.
 
+#### Nothing is completed after a `--`
+
+The words after a `--` are positional arguments of whatever your app runs with them, so urfave/cli
+answers a request for one with no candidates and does not run your `ShellComplete` at all. A command
+that wraps another one therefore cannot hand its completions on: `myapp exec -- git pu<TAB>` offers
+nothing rather than what `git` would offer. What it does do is leave your app's action alone, which
+is what a shell asking for completions needs.
+
 #### Regenerate the script after upgrading
 
 Completion scripts generated before urfave/cli asked for completions with `__complete` end their request
