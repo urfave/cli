@@ -65,10 +65,18 @@ __%[1]s_dequote() {
 # cur, which comes from there too, so a request built from anything else would ask the
 # command about a different word than the one being completed.
 __%[1]s_build_completion_request() {
-  local i
+  local i cmd
 
   __%[1]s_dequote "${words[0]}"
-  __%[1]s_completion_request=("${__%[1]s_dequoted}" "__complete")
+  cmd="${__%[1]s_dequoted}"
+  # A command typed as "~/bin/app" has to be run as the path it stands for. eval used
+  # to do that as a side effect of re-parsing the line, along with everything else on
+  # it; this is the one expansion worth keeping, and it needs nothing evaluated. The
+  # raw word decides, because a quoted "~" is not a home directory to the shell either.
+  if [[ "${words[0]}" == "~" || "${words[0]}" == "~/"* ]]; then
+    cmd="${HOME}${cmd:1}"
+  fi
+  __%[1]s_completion_request=("${cmd}" "__complete")
 
   for (( i = 1; i < cword; i++ )); do
     __%[1]s_dequote "${words[i]}"

@@ -282,7 +282,7 @@ func TestCompletionBashSendsTokenBeingCompleted(t *testing.T) {
 	output, err := bashRender(cmd, "myapp")
 	r.NoError(err)
 
-	r.Contains(output, `__myapp_completion_request=("${__myapp_dequoted}" "__complete")`)
+	r.Contains(output, `__myapp_completion_request=("${cmd}" "__complete")`)
 	r.Contains(output, `__myapp_dequote "${words[cword]-}"`)
 	r.Contains(output, `opts=$("${__myapp_completion_request[@]}" 2>/dev/null)`)
 	r.Contains(output, `for (( i = 1; i < cword; i++ )); do`,

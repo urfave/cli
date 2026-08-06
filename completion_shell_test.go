@@ -337,3 +337,52 @@ func fishQuote(s string) string {
 func pwshQuote(s string) string {
 	return "'" + strings.ReplaceAll(s, "'", "''") + "'"
 }
+
+// TestCompletionBashScriptTildeCommand checks that a command typed as "~/bin/app" is
+// run as the path it stands for. eval expanded it as a side effect of re-parsing the
+// command line, and dropping eval dropped that with it, leaving the completion looking
+// for a command whose name starts with a tilde and finding nothing.
+func TestCompletionBashScriptTildeCommand(t *testing.T) {
+	t.Parallel()
+
+	driver := shellDrivers["bash"]
+	interpreter, err := exec.LookPath(driver.interpreter)
+	if err != nil {
+		skipMissingShell(t, "bash", driver.interpreter+" is not installed")
+	}
+
+	render := shellCompletions["bash"]
+	require.NotNil(t, render)
+	script, err := render(&Command{Name: "app", EnableShellCompletion: true}, "app")
+	require.NoError(t, err)
+
+	home := t.TempDir()
+	require.NoError(t, os.MkdirAll(filepath.Join(home, "bin"), 0o755))
+	writeCompletionTestApp(t, filepath.Join(home, "bin"))
+
+	dir := t.TempDir()
+	scriptPath := filepath.Join(dir, "completion.bash")
+	require.NoError(t, os.WriteFile(scriptPath, []byte(script), 0o644))
+	argvPath := filepath.Join(dir, "argv")
+
+	// The word is written with a quoted tilde so that this driver does not expand it:
+	// what the script receives has to be the tilde bash puts in COMP_WORDS.
+	program := fmt.Sprintf(`
+. %s
+COMP_WORDS=('~/bin/app' 'su')
+COMP_CWORD=1
+COMP_LINE='~/bin/app su'
+COMP_POINT=12
+__app_bash_autocomplete
+`, shQuote(scriptPath))
+
+	cmd := exec.Command(interpreter, driver.args(driver.prelude(t, interpreter)+program)...)
+	cmd.Dir = dir
+	cmd.Env = append(os.Environ(), "HOME="+home, "ARGV_LOG="+argvPath)
+	out, err := cmd.CombinedOutput()
+	require.NoError(t, err, "driving bash: %s", out)
+
+	got, err := os.ReadFile(argvPath)
+	require.NoError(t, err, "the completion did not run the command: %s", out)
+	assert.Equal(t, []string{"__complete", "su"}, strings.Split(strings.TrimSuffix(string(got), "\n"), "\n"))
+}
