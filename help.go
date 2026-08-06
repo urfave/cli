@@ -260,19 +260,21 @@ func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 		return
 	}
 
+	req := cmd.Root().completion
+
 	// Everything after "--" is a positional argument of whatever the command runs, so
 	// this command's flags and subcommands are no answer to it.
 	// https://unix.stackexchange.com/a/11382
-	if cmd.Root().completionTerminated {
+	if req != nil && req.terminated {
 		tracef("not suggesting past a \"--\" on command %[1]q", cmd.Name)
 		return
 	}
 
 	lastArg := ""
-	if word := cmd.Root().completionWord; word != nil {
+	if req != nil && req.wordKnown {
 		// The request says which word is being completed, so there is nothing to work
 		// out from the position of the arguments.
-		lastArg = *word
+		lastArg = req.word
 	} else if argsLen := len(args); argsLen > 1 {
 		// A request in the deprecated form leaves the word out unless it starts with
 		// "-", and the parent command still has completionFlag on it, so the word is
@@ -485,6 +487,19 @@ func checkVersion(cmd *Command) bool {
 	return cmd.versionFlag != nil && cmd.versionFlag.IsSet()
 }
 
+// completionRequest is what a shell completion request says about the word being
+// completed.
+type completionRequest struct {
+	// word is the word the shell is completing. wordKnown says whether the request
+	// carried it: the deprecated request form does not.
+	word      string
+	wordKnown bool
+	// terminated says whether a "--" precedes the word, which makes that word a
+	// positional argument of whatever the command runs rather than one this command
+	// has any suggestion for.
+	terminated bool
+}
+
 // parseShellCompleteRequest reports whether arguments are a shell completion request
 // and returns the arguments to parse. What the request says about the word being
 // completed is recorded on c, which is the root command.
@@ -511,6 +526,9 @@ func checkVersion(cmd *Command) bool {
 // sourcing it again resolves that in favor of completing, since the request is then
 // no longer something a command line can imitate.
 func parseShellCompleteRequest(c *Command, arguments []string) (bool, []string) {
+	// Whatever the previous run of this Command recorded says nothing about this one.
+	c.completion = nil
+
 	if (c.parent == nil && !c.EnableShellCompletion) || (c.parent != nil && !c.Root().shellCompletion) {
 		return false, arguments
 	}
@@ -538,8 +556,9 @@ func parseShellCompleteRequest(c *Command, arguments []string) (bool, []string) 
 		return false, arguments
 	}
 
-	// This request form does not say which word is being completed, so nothing is
-	// recorded and DefaultCompleteWithFlags works it out from the arguments.
+	// This request form does not say which word is being completed, so
+	// DefaultCompleteWithFlags works it out from the arguments.
+	c.completion = &completionRequest{}
 	return true, arguments[:pos]
 }
 
@@ -559,11 +578,14 @@ func (cmd *Command) parseCompletionRequest(arguments []string) []string {
 		words = arguments[2 : len(arguments)-1]
 		word = arguments[len(arguments)-1]
 	}
-	cmd.completionWord = &word
-	// Everything after a "--" is a positional argument of whatever the command runs,
-	// so this command has no suggestion for it. A "--" being completed is not one:
-	// it is the word itself, and flags still answer it.
-	cmd.completionTerminated = slices.Contains(words, "--")
+	cmd.completion = &completionRequest{
+		word:      word,
+		wordKnown: true,
+		// Everything after a "--" is a positional argument of whatever the command
+		// runs. A "--" being completed is not one: it is the word itself, and flags
+		// still answer it.
+		terminated: slices.Contains(words, "--"),
+	}
 
 	args := make([]string, 0, len(arguments)-1)
 	args = append(args, arguments[0])

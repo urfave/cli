@@ -798,3 +798,41 @@ func TestCompletionRequestKeepsArgsShape(t *testing.T) {
 		})
 	}
 }
+
+// TestCompletionRequestStateIsPerRun checks that a Command answering several requests
+// carries no state from one into the next. A shell runs one request per process, but
+// a test, a REPL or an embedded use answers several through the same Command.
+func TestCompletionRequestStateIsPerRun(t *testing.T) {
+	out := &bytes.Buffer{}
+	cmd := &Command{
+		EnableShellCompletion: true,
+		Writer:                out,
+		Commands: []*Command{
+			{
+				Name:   "exec",
+				Flags:  []Flag{&BoolFlag{Name: "excitement"}},
+				Action: func(context.Context, *Command) error { return nil },
+			},
+		},
+	}
+
+	r := require.New(t)
+
+	// A request past a "--" gets no suggestion, and records that.
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", completionCommandRequest, "exec", "--", "git", "pu"}))
+	r.Empty(out.String())
+
+	// The next request is a different one, and is answered on its own terms.
+	out.Reset()
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", completionCommandRequest, "exec", "-"}))
+	r.Equal("--excitement\n--help:show help\n", out.String())
+
+	// The same holds for a request in the deprecated form, which says nothing about
+	// the word being completed and so must not read what an earlier one said.
+	out.Reset()
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", completionCommandRequest, "exec", "--", "git", "pu"}))
+	r.Empty(out.String())
+	out.Reset()
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "exec", "-", completionFlag}))
+	r.Equal("--excitement\n--help:show help\n", out.String())
+}

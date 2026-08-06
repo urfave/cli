@@ -2042,13 +2042,13 @@ func Test_parseShellCompleteRequest(t *testing.T) {
 			shellCompletion, args := parseShellCompleteRequest(tt.cmd, tt.arguments)
 			assert.Equal(t, tt.wantShellCompletion, shellCompletion)
 			assert.Equal(t, tt.wantArgs, args)
-			gotWord := ""
-			if tt.cmd.completionWord != nil {
-				gotWord = *tt.cmd.completionWord
+			gotWord, gotWordSet, gotTerminated := "", false, false
+			if req := tt.cmd.completion; req != nil {
+				gotWord, gotWordSet, gotTerminated = req.word, req.wordKnown, req.terminated
 			}
-			assert.Equal(t, tt.wantWordSet, tt.cmd.completionWord != nil)
+			assert.Equal(t, tt.wantWordSet, gotWordSet)
 			assert.Equal(t, tt.wantWord, gotWord)
-			assert.Equal(t, tt.wantTerminated, tt.cmd.completionTerminated)
+			assert.Equal(t, tt.wantTerminated, gotTerminated)
 		})
 	}
 }
