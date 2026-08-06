@@ -13,7 +13,16 @@ _%[1]s() {
 	# (Q) takes one level of quoting off each word, the way the shell would before
 	# handing it to a command, so that a quoted word reaches the command as the word
 	# it is rather than with its quotes.
-	request=("${(@Q)words[1]}" "__complete" "${(@Q)words[2,CURRENT-1]}" "${(@Q)words[CURRENT]}")
+	local raw="${words[CURRENT]}"
+	local current="${(Q)words[CURRENT]}"
+	# A word whose quote is still open has no closing quote to take off with it, so
+	# (Q) leaves it alone. Dropping the opening quote asks the command about the word
+	# being typed rather than about one starting with a quote character, which is what
+	# bash and PowerShell send for the same line.
+	if [[ "$current" == "$raw" && "$raw" == [\"\']* ]]; then
+		current="${current#[\"\']}"
+	fi
+	request=("${(@Q)words[1]}" "__complete" "${(@Q)words[2,CURRENT-1]}" "$current")
 	opts=("${(@f)$("${request[@]}" 2>/dev/null)}")
 
 	if [[ "${opts[1]}" != "" ]]; then

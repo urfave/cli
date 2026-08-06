@@ -304,7 +304,7 @@ func TestCompletionZshSendsTokenBeingCompleted(t *testing.T) {
 	output, err := zshRender(cmd, "myapp")
 	r.NoError(err)
 
-	r.Contains(output, `request=("${(@Q)words[1]}" "__complete" "${(@Q)words[2,CURRENT-1]}" "${(@Q)words[CURRENT]}")`)
+	r.Contains(output, `request=("${(@Q)words[1]}" "__complete" "${(@Q)words[2,CURRENT-1]}" "$current")`)
 	r.Contains(output, `opts=("${(@f)$("${request[@]}" 2>/dev/null)}")`,
 		"a command writing to stderr must not break the prompt")
 	r.NotContains(output, completionFlag, "the deprecated request form must not be generated")
