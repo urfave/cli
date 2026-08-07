@@ -28,6 +28,21 @@ command line tools in Go featuring:
 See the hosted documentation website at <https://cli.urfave.org>. Contents of
 this website are built from the [`./docs`](./docs) directory.
 
+### Generated API Reference
+
+A machine-generated API reference for the `github.com/urfave/cli/v3` module is
+published at <https://urfave-cli-sourcey-docs.vercel.app>. It is produced with
+[Sourcey](https://sourcey.com) v3.6.5 using the `godoc` adapter against the v3
+source tree (137 types, 24 exported functions, 44 exported variables across 4
+packages), providing a navigable, searchable type-level supplement to the
+hand-written guides on <https://cli.urfave.org>. The generation is fully
+reproducible from a pinned commit via `sourcey godoc` + `sourcey build`, and
+the deploy is a static site with no build step. If the maintainers would
+prefer to host this reference on a `cli.urfave.org` subpath (or fold it into
+the existing MkDocs site), the source snapshot and build config are
+self-contained and easy to port — please leave a comment on the proposing PR
+and I will adjust.
+
 ## Support
 
 Check the [Q&A discussions]. If you don't find answer to your question, [create
