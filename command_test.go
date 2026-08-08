@@ -6446,6 +6446,21 @@ func TestCommand_Walk_Hidden(t *testing.T) {
 	assert.Equal(t, []string{"foo", "bar", "baz"}, visited)
 }
 
+func TestCommand_IsHidden_Recursive(t *testing.T) {
+	fish := &Command{Name: "fish"}
+	completion := &Command{Name: "completion", Hidden: true}
+	root := &Command{Name: "app"}
+	root.appendCommand(completion)
+	completion.appendCommand(fish)
+
+	assert.False(t, root.IsHidden())
+	assert.True(t, completion.IsHidden())
+	assert.True(t, fish.IsHidden(), "child of hidden command should be treated as hidden")
+	assert.Equal(t, completion, fish.Parent())
+	assert.Equal(t, root, completion.Parent())
+	assert.Nil(t, root.Parent())
+}
+
 func TestCommand_Walk_NilFn(t *testing.T) {
 	cmd := &Command{Name: "foo"}
 	assert.Nil(t, cmd.Walk(nil))

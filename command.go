@@ -345,6 +345,23 @@ func (cmd *Command) Root() *Command {
 	return cmd.parent.Root()
 }
 
+// Parent returns the parent Command, or nil for the root command.
+func (cmd *Command) Parent() *Command {
+	return cmd.parent
+}
+
+// IsHidden reports whether this command or any of its ancestors is Hidden.
+// Subcommands of a hidden command are treated as hidden for visibility checks
+// (for example when walking the command tree). See #2372.
+func (cmd *Command) IsHidden() bool {
+	for c := cmd; c != nil; c = c.parent {
+		if c.Hidden {
+			return true
+		}
+	}
+	return false
+}
+
 func (cmd *Command) set(fName string, f Flag, val string) error {
 	cmd.setFlags[f] = struct{}{}
 	cmd.setMultiValueParsingConfig(f)
