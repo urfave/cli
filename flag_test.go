@@ -3518,3 +3518,30 @@ func TestEndValue(t *testing.T) {
 	assert.Error(t, cmd.Run(buildTestContext(t), []string{"foo", "-cd="}))
 	assert.Error(t, cmd.Run(buildTestContext(t), []string{"foo", "-cd=s"}))
 }
+
+// TestFlagBaseInterfaceValueType covers flags whose value type is an interface
+// (GenericFlag), for which reflect.TypeOf on the zero value yields nil.
+func TestFlagBaseInterfaceValueType(t *testing.T) {
+	t.Run("SchemaItemsType", func(t *testing.T) {
+		fl := &GenericFlag{Name: "gen"}
+		assert.Empty(t, fl.SchemaItemsType())
+	})
+
+	t.Run("PostParse with empty source value", func(t *testing.T) {
+		t.Setenv("TEST_GENERIC_EMPTY", "")
+
+		fl := &GenericFlag{Name: "gen", Sources: EnvVars("TEST_GENERIC_EMPTY")}
+		require.NoError(t, fl.PreParse())
+		require.NoError(t, fl.PostParse())
+	})
+
+	t.Run("PostParse with non-empty source value", func(t *testing.T) {
+		t.Setenv("TEST_GENERIC_SET", "abc,def")
+
+		val := &Parser{}
+		fl := &GenericFlag{Name: "gen", Value: val, Sources: EnvVars("TEST_GENERIC_SET")}
+		require.NoError(t, fl.PreParse())
+		require.NoError(t, fl.PostParse())
+		assert.True(t, fl.IsSet())
+	})
+}
