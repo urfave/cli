@@ -476,6 +476,10 @@ func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
 		return false, arguments
 	}
 
+	if len(arguments) == 0 {
+		return false, arguments
+	}
+
 	pos := len(arguments) - 1
 	lastArg := arguments[pos]
 

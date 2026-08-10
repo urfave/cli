@@ -1945,6 +1945,15 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 			wantShellCompletion: true,
 			wantArgs:            []string{"foo", "--"},
 		},
+		{
+			name:      "no arguments at all",
+			arguments: []string{},
+			cmd: &Command{
+				EnableShellCompletion: true,
+			},
+			wantShellCompletion: false,
+			wantArgs:            []string{},
+		},
 	}
 
 	for _, tt := range tests {
