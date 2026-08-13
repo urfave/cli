@@ -219,7 +219,7 @@ func (bif *BoolWithInverseFlag) Count() int {
 
 // GetDefaultText returns the default text for this flag
 func (bif *BoolWithInverseFlag) GetDefaultText() string {
-	if bif.Required {
+	if bif.DefaultText != "" {
 		return bif.DefaultText
 	}
 	return boolValue{}.ToString(bif.Value)
