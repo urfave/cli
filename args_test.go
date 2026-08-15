@@ -1,7 +1,9 @@
 package cli
 
 import (
+	"bytes"
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -569,13 +571,13 @@ func TestSingleRequiredArg(t *testing.T) {
 		{
 			name:   "no args",
 			args:   []string{"foo"},
-			expErr: `required argument "sa" not set`,
+			expErr: `Required argument "sa" not set`,
 		},
 		{
 			name:     "no arg with def value",
 			args:     []string{"foo"},
 			argValue: "bar",
-			expErr:   `required argument "sa" not set`,
+			expErr:   `Required argument "sa" not set`,
 		},
 		{
 			name: "one arg",
@@ -615,6 +617,32 @@ func TestSingleRequiredArg(t *testing.T) {
 	}
 }
 
+func TestMissingRequiredArgDoesNotMutateValue(t *testing.T) {
+	destination := "unchanged"
+	arg := &StringArg{
+		Name:        "sa",
+		Value:       "default",
+		Destination: &destination,
+		Required:    true,
+	}
+	initialValue := arg.Get()
+	writer := &bytes.Buffer{}
+	errWriter := &bytes.Buffer{}
+	cmd := buildMinimalTestCommand()
+	cmd.Writer = writer
+	cmd.ErrWriter = errWriter
+	cmd.Arguments = []Argument{arg}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo"})
+
+	r := require.New(t)
+	r.IsType(&errRequiredArguments{}, err)
+	r.Equal("unchanged", destination)
+	r.Equal(initialValue, arg.Get())
+	r.Contains(errWriter.String(), `Incorrect Usage: Required argument "sa" not set`)
+	r.Contains(writer.String(), "NAME:")
+}
+
 func TestChainedRequiredArgs(t *testing.T) {
 	cmd := buildMinimalTestCommand()
 	cmd.Arguments = []Argument{
@@ -629,8 +657,35 @@ func TestChainedRequiredArgs(t *testing.T) {
 	}
 
 	r := require.New(t)
-	r.EqualError(cmd.Run(buildTestContext(t), []string{"foo", "one"}), `required argument "second" not set`)
+	r.EqualError(cmd.Run(buildTestContext(t), []string{"foo"}), `Required arguments "first, second" not set`)
+	r.EqualError(cmd.Run(buildTestContext(t), []string{"foo", "one"}), `Required argument "second" not set`)
 	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "one", "two"}))
+}
+
+func TestRequiredArgAfterOptionalArg(t *testing.T) {
+	cmd := buildMinimalTestCommand()
+	cmd.Arguments = []Argument{
+		&StringArg{Name: "optional"},
+		&StringArg{Name: "required", Required: true},
+	}
+
+	r := require.New(t)
+	r.EqualError(cmd.Run(buildTestContext(t), []string{"foo", "one"}), `Required argument "required" not set`)
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "one", "two"}))
+}
+
+func TestRequiredArgWithOnUsageError(t *testing.T) {
+	expectedErr := errors.New("OnUsageError")
+	cmd := buildMinimalTestCommand()
+	cmd.Arguments = []Argument{
+		&StringArg{Name: "required", Required: true},
+	}
+	cmd.OnUsageError = func(_ context.Context, _ *Command, err error, _ bool) error {
+		require.IsType(t, &errRequiredArguments{}, err)
+		return expectedErr
+	}
+
+	require.ErrorIs(t, cmd.Run(buildTestContext(t), []string{"foo"}), expectedErr)
 }
 
 func TestUnboundedArgs(t *testing.T) {

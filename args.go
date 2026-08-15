@@ -77,6 +77,11 @@ type Argument interface {
 	Get() any
 }
 
+type requiredArgument interface {
+	name() string
+	required() bool
+}
+
 // AnyArguments to differentiate between no arguments(nil) vs aleast one
 var AnyArguments = []Argument{
 	&StringArgs{
@@ -99,6 +104,14 @@ func (a *ArgumentBase[T, C, VC]) HasName(s string) bool {
 	return s == a.Name
 }
 
+func (a *ArgumentBase[T, C, VC]) name() string {
+	return a.Name
+}
+
+func (a *ArgumentBase[T, C, VC]) required() bool {
+	return a.Required
+}
+
 func (a *ArgumentBase[T, C, VC]) Usage() string {
 	if a.UsageText != "" {
 		return a.UsageText
@@ -115,7 +128,7 @@ func (a *ArgumentBase[T, C, VC]) Parse(s []string) ([]string, error) {
 	tracef("calling arg%[1] parse with args %[2]", a.Name, s)
 
 	if a.Required && len(s) == 0 {
-		return s, fmt.Errorf("required argument %q not set", a.Name)
+		return s, &errRequiredArguments{missingArguments: []string{a.Name}}
 	}
 
 	var vc VC

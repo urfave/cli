@@ -233,6 +233,18 @@ func TestErrRequiredFlags_Error(t *testing.T) {
 	assert.Equal(t, expectedMsg, err.Error())
 }
 
+func TestErrRequiredArguments_Error(t *testing.T) {
+	missingArguments := []string{"first", "second"}
+	err := &errRequiredArguments{missingArguments: missingArguments}
+	expectedMsg := "Required arguments \"first, second\" not set"
+	assert.Equal(t, expectedMsg, err.Error())
+
+	missingArguments = []string{"first"}
+	err = &errRequiredArguments{missingArguments: missingArguments}
+	expectedMsg = "Required argument \"first\" not set"
+	assert.Equal(t, expectedMsg, err.Error())
+}
+
 func TestHandleExitCoder_ExitCoderEmptyMessage(t *testing.T) {
 	exitCode := 0
 	called := false

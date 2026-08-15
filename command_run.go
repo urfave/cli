@@ -343,12 +343,18 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 		}
 	}
 
+	var requiredErr error
 	if err := cmd.checkAllRequiredFlags(); err != nil {
+		requiredErr = err
+	} else if err := cmd.checkRequiredArguments(); err != nil {
+		requiredErr = err
+	}
+	if requiredErr != nil {
 		cmd.isInError = true
 		if cmd.OnUsageError != nil {
-			err = cmd.OnUsageError(ctx, cmd, err, cmd.parent != nil)
+			requiredErr = cmd.OnUsageError(ctx, cmd, requiredErr, cmd.parent != nil)
 		} else {
-			fmt.Fprintf(cmd.Root().ErrWriter, "Incorrect Usage: %s\n\n", err.Error())
+			fmt.Fprintf(cmd.Root().ErrWriter, "Incorrect Usage: %s\n\n", requiredErr.Error())
 			if cmd.parent == nil {
 				_ = ShowRootCommandHelp(cmd)
 			} else {
@@ -357,7 +363,7 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 				}
 			}
 		}
-		return ctx, err
+		return ctx, requiredErr
 	}
 
 	// Run the command action.

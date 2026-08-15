@@ -38,6 +38,38 @@ func Test_ShowRootCommandHelp_NoVersion(t *testing.T) {
 	}
 }
 
+func TestArgumentRequiredUsageInCommandHelp(t *testing.T) {
+	tests := []struct {
+		name     string
+		required bool
+		expected string
+	}{
+		{name: "optional", expected: "test run [options] [sa]"},
+		{name: "required", required: true, expected: "test run [options] sa"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			output := &bytes.Buffer{}
+			cmd := &Command{
+				Name:   "test",
+				Writer: output,
+				Commands: []*Command{
+					{
+						Name: "run",
+						Arguments: []Argument{
+							&StringArg{Name: "sa", Required: test.required},
+						},
+					},
+				},
+			}
+
+			require.NoError(t, cmd.Run(buildTestContext(t), []string{"test", "run", "--help"}))
+			require.Contains(t, output.String(), test.expected)
+		})
+	}
+}
+
 func Test_ShowRootCommandHelp_HideVersion(t *testing.T) {
 	output := new(bytes.Buffer)
 	cmd := &Command{Writer: output}

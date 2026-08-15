@@ -115,17 +115,20 @@ Single value arguments are optional by default. If the argument is not provided 
 You can mark a single value argument as *required* by setting the `Required` field to `true`. If a user does not
 provide a required argument, they will be shown an error message.
 
+Required single-value arguments should be declared before optional or multi-value arguments because arguments are
+consumed in declaration order.
+
 <!-- {
-  "error": "required argument \"someint\" not set"
+  "error": "Required argument \"someint\" not set"
 } -->
 ```go
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
-	"context"
 
 	"github.com/urfave/cli/v3"
 )
