@@ -24,7 +24,7 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 		cmd.ShellComplete = DefaultCompleteWithFlags
 	}
 
-	if cmd.Name == "" && isRoot {
+	if cmd.Name == "" && isRoot && len(osArgs) > 0 {
 		name := filepath.Base(osArgs[0])
 		tracef("setting cmd.Name from first arg basename (cmd=%[1]q)", name)
 		cmd.Name = name
