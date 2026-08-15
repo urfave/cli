@@ -483,6 +483,11 @@ func TestFlagStringifying(t *testing.T) {
 			expected: "--vividly, --no-vividly\t(default: false)",
 		},
 		{
+			name:     "bool-inv-flag-with-default-text",
+			fl:       &BoolWithInverseFlag{Name: "vividly", DefaultText: "auto"},
+			expected: "--vividly, --no-vividly\t(default: auto)",
+		},
+		{
 			name:     "duration-flag",
 			fl:       &DurationFlag{Name: "scream-for"},
 			expected: "--scream-for duration\t(default: 0s)",

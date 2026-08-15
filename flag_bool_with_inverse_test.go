@@ -338,6 +338,12 @@ func TestBoolWithInverseNames(t *testing.T) {
 	require.Equal(t, "bool", d.TypeName())
 }
 
+func TestBoolWithInverseDefaultText(t *testing.T) {
+	require.Equal(t, "false", (&BoolWithInverseFlag{}).GetDefaultText())
+	require.Equal(t, "true", (&BoolWithInverseFlag{Value: true}).GetDefaultText())
+	require.Equal(t, "auto", (&BoolWithInverseFlag{DefaultText: "auto"}).GetDefaultText())
+}
+
 func TestBoolWithInverseString(t *testing.T) {
 	tcs := []struct {
 		testName      string
