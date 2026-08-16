@@ -1432,6 +1432,28 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			expected: "--excitement\n",
 		},
 		{
+			name: "typical-flag-suggestion-hidden-bool-with-inverse",
+			cmd: &Command{
+				Flags: []Flag{
+					&BoolWithInverseFlag{Name: "excellent", Hidden: true},
+					&BoolWithInverseFlag{Name: "excitement"},
+				},
+				parent: &Command{
+					Name: "cmd",
+					Flags: []Flag{
+						&BoolFlag{Name: "happiness"},
+						&Int64Flag{Name: "everybody-jump-on"},
+					},
+					Commands: []*Command{
+						{Name: "putz"},
+					},
+				},
+			},
+			argv:     []string{"cmd", "--e", completionFlag},
+			env:      map[string]string{"SHELL": "bash"},
+			expected: "--excitement\n",
+		},
+		{
 			name: "flag-suggestion-double-dash-shows-all-flags",
 			cmd: &Command{
 				Flags: []Flag{
