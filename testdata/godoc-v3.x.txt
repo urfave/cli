@@ -567,6 +567,9 @@ type Command struct {
 
 func (cmd *Command) Args() Args
     Args returns the command line arguments associated with the command.
+    If the command declares named Arguments, the arguments consumed by them
+    are not included in the returned Args and should be retrieved via the
+    command.{Type}Arg(name) functions instead.
 
 func (cmd *Command) Bool(name string) bool
 
