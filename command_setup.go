@@ -24,7 +24,7 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 		cmd.ShellComplete = DefaultCompleteWithFlags
 	}
 
-	if cmd.Name == "" && isRoot {
+	if cmd.Name == "" && isRoot && len(osArgs) > 0 {
 		name := filepath.Base(osArgs[0])
 		tracef("setting cmd.Name from first arg basename (cmd=%[1]q)", name)
 		cmd.Name = name
@@ -227,6 +227,17 @@ func (cmd *Command) hideHelp() bool {
 	return false
 }
 
+func (cmd *Command) hideHelpCommand() bool {
+	tracef("hide help command (cmd=%[1]q)", cmd.Name)
+	for c := cmd; c != nil; c = c.parent {
+		if c.HideHelpCommand {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (cmd *Command) ensureHelp() {
 	tracef("ensuring help (cmd=%[1]q)", cmd.Name)
 
@@ -234,7 +245,7 @@ func (cmd *Command) ensureHelp() {
 
 	if !cmd.hideHelp() {
 		if cmd.Command(helpCommand.Name) == nil {
-			if !cmd.HideHelpCommand {
+			if !cmd.hideHelpCommand() {
 				tracef("appending helpCommand (cmd=%[1]q)", cmd.Name)
 				cmd.appendCommand(helpCommand)
 			}

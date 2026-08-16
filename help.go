@@ -216,7 +216,7 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 	// Trim to handle both "-short" and "--long" flags.
 	cur := strings.TrimLeft(lastArg, "-")
 	for _, flag := range flags {
-		if bflag, ok := flag.(*BoolFlag); ok && bflag.Hidden {
+		if vf, ok := flag.(VisibleFlag); ok && !vf.IsVisible() {
 			continue
 		}
 
@@ -473,6 +473,10 @@ func checkVersion(cmd *Command) bool {
 
 func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
 	if (c.parent == nil && !c.EnableShellCompletion) || (c.parent != nil && !c.Root().shellCompletion) {
+		return false, arguments
+	}
+
+	if len(arguments) == 0 {
 		return false, arguments
 	}
 

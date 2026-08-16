@@ -46,6 +46,9 @@ type Command struct {
 	Flags []Flag `json:"flags"`
 	// Boolean to hide built-in help command and help flag
 	HideHelp bool `json:"hideHelp"`
+	// Boolean to hide the built-in help command. Applies to this command and
+	// all of its subcommands: as with HideHelp, a true value is inherited and
+	// a subcommand cannot turn it back off.
 	// Ignored if HideHelp is true.
 	HideHelpCommand bool `json:"hideHelpCommand"`
 	// Boolean to hide built-in version flag and the VERSION section of help
