@@ -163,7 +163,7 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 		cmd.Metadata = map[string]any{}
 	}
 
-	cmd.setFlags = map[Flag]struct{}{}
+	cmd.setFlags = map[Flag]string{}
 }
 
 func (cmd *Command) setupCommandGraph() {

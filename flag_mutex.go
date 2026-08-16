@@ -16,19 +16,19 @@ type MutuallyExclusiveFlags struct {
 	Category string
 }
 
-func (grp MutuallyExclusiveFlags) check(_ *Command) error {
+func (grp MutuallyExclusiveFlags) check(cmd *Command) error {
 	e := &mutuallyExclusiveGroup{}
 
 	// Check for the use of a mutually-exclusive flag, starting at
 	// the first group.
-	name, i, ok := grp.findSetFlag(0)
+	name, i, ok := grp.findSetFlag(cmd, 0)
 	if ok {
 		e.flag1Name = name
 		i++
 
 		// Check for the use of a flag in a mutually exclusive
 		// relationship with the one we just found.
-		if name2, _, ok := grp.findSetFlag(i); ok {
+		if name2, _, ok := grp.findSetFlag(cmd, i); ok {
 			e.flag2Name = name2
 			return e
 		}
@@ -46,13 +46,21 @@ func (grp MutuallyExclusiveFlags) check(_ *Command) error {
 // set. If so, return the flag name, position at which it's set, and
 // Boolean true (indicating that a flag was found.) Else, return all
 // zero values.
-func (grp MutuallyExclusiveFlags) findSetFlag(startIdx int) (string, int, bool) {
+func (grp MutuallyExclusiveFlags) findSetFlag(cmd *Command, startIdx int) (string, int, bool) {
 	for i := startIdx; i < len(grp.Flags); i++ {
 		flags := grp.Flags[i]
 
 		for _, flg := range flags {
 			if flg.IsSet() {
-				return flg.Names()[0], i, true
+				// Report the name the user actually typed (e.g. an
+				// alias), falling back to the primary name when the
+				// flag was set by another mechanism such as an
+				// environment variable.
+				name := cmd.setFlags[flg]
+				if name == "" {
+					name = flg.Names()[0]
+				}
+				return name, i, true
 			}
 		}
 	}

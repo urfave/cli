@@ -114,7 +114,7 @@ func TestFlagMutuallyExclusiveFlags(t *testing.T) {
 			switch err.(type) {
 			case (*mutuallyExclusiveGroup), (*mutuallyExclusiveGroupRequiredFlag):
 				if !strings.Contains(err.Error(), test.errStr) {
-					t.Logf("Invalid error string %v", err)
+					t.Errorf("Invalid error string %v", err)
 				}
 			default:
 				t.Errorf("got invalid error type %T", err)

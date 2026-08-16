@@ -232,7 +232,7 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 		}
 		// add env set flags here
 		if !isSet && flag.IsSet() {
-			cmd.setFlags[flag] = struct{}{}
+			cmd.setFlags[flag] = flag.Names()[0]
 		}
 	}
 

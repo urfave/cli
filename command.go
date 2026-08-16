@@ -147,8 +147,8 @@ type Command struct {
 	flagCategories FlagCategories
 	// flags that have been applied in current parse
 	appliedFlags []Flag
-	// flags that have been set
-	setFlags map[Flag]struct{}
+	// flags that have been set, mapped to the name used to set them
+	setFlags map[Flag]string
 	// The parent of this command. This value will be nil for the
 	// command at the root of the graph.
 	parent *Command
@@ -349,7 +349,7 @@ func (cmd *Command) Root() *Command {
 }
 
 func (cmd *Command) set(fName string, f Flag, val string) error {
-	cmd.setFlags[f] = struct{}{}
+	cmd.setFlags[f] = fName
 	cmd.setMultiValueParsingConfig(f)
 	if err := f.Set(fName, val); err != nil {
 		return fmt.Errorf("invalid value %q for flag -%s: %v", val, fName, err)
