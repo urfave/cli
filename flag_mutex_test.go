@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -58,7 +57,12 @@ func TestFlagMutuallyExclusiveFlags(t *testing.T) {
 		{
 			name:   "set both flags",
 			args:   []string{"--i", "11", "--ai", "12"},
-			errStr: "option i cannot be set along with option ai",
+			errStr: "option i cannot be set along with option t",
+		},
+		{
+			name:   "set both flags second member",
+			args:   []string{"--i", "11", "--q"},
+			errStr: "option i cannot be set along with option q",
 		},
 		{
 			name:     "required none set",
@@ -73,13 +77,19 @@ func TestFlagMutuallyExclusiveFlags(t *testing.T) {
 		{
 			name:     "required both set",
 			args:     []string{"--i", "11", "--ai", "12"},
-			errStr:   "option i cannot be set along with option ai",
+			errStr:   "option i cannot be set along with option t",
 			required: true,
 		},
 		{
 			name:     "required both set second member",
 			args:     []string{"--i", "11", "--q"},
 			errStr:   "option i cannot be set along with option q",
+			required: true,
+		},
+		{
+			name:     "required both set second member both groups",
+			args:     []string{"--s", "value", "--q"},
+			errStr:   "option s cannot be set along with option q",
 			required: true,
 		},
 		{
@@ -113,9 +123,7 @@ func TestFlagMutuallyExclusiveFlags(t *testing.T) {
 
 			switch err.(type) {
 			case (*mutuallyExclusiveGroup), (*mutuallyExclusiveGroupRequiredFlag):
-				if !strings.Contains(err.Error(), test.errStr) {
-					t.Logf("Invalid error string %v", err)
-				}
+				assert.Contains(t, err.Error(), test.errStr)
 			default:
 				t.Errorf("got invalid error type %T", err)
 			}
