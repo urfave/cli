@@ -6452,15 +6452,19 @@ func TestCommand_Walk_NilFn(t *testing.T) {
 }
 
 // TestRunWithNoOsArgs checks that Run does not panic when handed an empty
-// argument slice.
+// argument slice. In particular, the combination of an empty Name and
+// EnableShellCompletion exercises both the setupDefaults empty-name guard
+// and the buildCompletionCommand("") append together.
 func TestRunWithNoOsArgs(t *testing.T) {
 	for _, tst := range []struct {
-		name string
-		cmd  *Command
+		name     string
+		cmd      *Command
+		wantName string
 	}{
-		{name: "plain", cmd: &Command{Name: "foo"}},
-		{name: "shell completion enabled", cmd: &Command{Name: "foo", EnableShellCompletion: true}},
+		{name: "plain", cmd: &Command{Name: "foo"}, wantName: "foo"},
+		{name: "shell completion enabled", cmd: &Command{Name: "foo", EnableShellCompletion: true}, wantName: "foo"},
 		{name: "no name", cmd: &Command{}},
+		{name: "no name, shell completion enabled", cmd: &Command{EnableShellCompletion: true}},
 	} {
 		t.Run(tst.name, func(t *testing.T) {
 			called := false
@@ -6473,6 +6477,7 @@ func TestRunWithNoOsArgs(t *testing.T) {
 				require.NoError(t, tst.cmd.Run(buildTestContext(t), []string{}))
 			})
 			assert.True(t, called)
+			assert.Equal(t, tst.wantName, tst.cmd.Name)
 		})
 	}
 }
