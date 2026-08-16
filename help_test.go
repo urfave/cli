@@ -1271,8 +1271,11 @@ func TestHideHelpCommand_WithHideHelp(t *testing.T) {
 }
 
 func TestHideHelpCommand_WithSubcommands(t *testing.T) {
+	out := &bytes.Buffer{}
 	cmd := &Command{
 		HideHelpCommand: true,
+		Writer:          out,
+		ErrWriter:       out,
 		Commands: []*Command{
 			{
 				Name: "nully",
@@ -1289,6 +1292,59 @@ func TestHideHelpCommand_WithSubcommands(t *testing.T) {
 
 	r.ErrorContains(cmd.Run(buildTestContext(t), []string{"cli.test", "help"}), "No help topic for 'help'")
 	r.NoError(cmd.Run(buildTestContext(t), []string{"cli.test", "--help"}))
+
+	out.Reset()
+	r.ErrorContains(cmd.Run(buildTestContext(t), []string{"cli.test", "nully", "help"}), "No help topic for 'help'")
+	r.NoError(cmd.Run(buildTestContext(t), []string{"cli.test", "nully", "--help"}))
+	r.NotContains(out.String(), "help, h")
+
+	out.Reset()
+	r.ErrorContains(cmd.Run(buildTestContext(t), []string{"cli.test", "nully", "nully2", "help"}), "No help topic for 'help'")
+	r.NoError(cmd.Run(buildTestContext(t), []string{"cli.test", "nully", "nully2", "--help"}))
+	r.NotContains(out.String(), "help, h")
+}
+
+// A subcommand cannot re-enable the help command once an ancestor has hidden
+// it. This mirrors HideHelp, which has always been inherited the same way.
+func TestHideHelpCommand_SubcommandCannotOptBackIn(t *testing.T) {
+	out := &bytes.Buffer{}
+	cmd := &Command{
+		HideHelpCommand: true,
+		Writer:          out,
+		ErrWriter:       out,
+		Commands: []*Command{
+			{
+				Name:            "nully",
+				HideHelpCommand: false, // ignored, the root already hid it
+			},
+		},
+	}
+
+	r := require.New(t)
+
+	r.ErrorContains(cmd.Run(buildTestContext(t), []string{"cli.test", "nully", "help"}), "No help topic for 'help'")
+	r.NoError(cmd.Run(buildTestContext(t), []string{"cli.test", "nully", "--help"}))
+	r.NotContains(out.String(), "help, h")
+}
+
+// The same inheritance already applies to HideHelp, so the two fields stay
+// consistent with each other.
+func TestHideHelp_SubcommandCannotOptBackIn(t *testing.T) {
+	cmd := &Command{
+		HideHelp: true,
+		Writer:   io.Discard,
+		Commands: []*Command{
+			{
+				Name:     "nully",
+				HideHelp: false, // ignored, the root already hid it
+			},
+		},
+	}
+
+	r := require.New(t)
+
+	r.ErrorContains(cmd.Run(buildTestContext(t), []string{"cli.test", "nully", "help"}), "No help topic for 'help'")
+	r.ErrorContains(cmd.Run(buildTestContext(t), []string{"cli.test", "nully", "--help"}), providedButNotDefinedErrMsg)
 }
 
 func TestDefaultCompleteWithFlags(t *testing.T) {
