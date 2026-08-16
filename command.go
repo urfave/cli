@@ -627,7 +627,9 @@ func (cmd *Command) Value(name string) any {
 }
 
 // Args returns the command line arguments associated with the
-// command.
+// command. If the command declares named Arguments, the arguments
+// consumed by them are not included in the returned Args and should
+// be retrieved via the command.{Type}Arg(name) functions instead.
 func (cmd *Command) Args() Args {
 	return cmd.parsedArgs
 }
