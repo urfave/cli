@@ -462,6 +462,40 @@ func (cmd *Command) checkRequiredFlags() requiredFlagsErr {
 	return nil
 }
 
+func (cmd *Command) checkRequiredArguments() requiredArgumentsErr {
+	// The help and completion commands are allowed to run without
+	// enforcement of required arguments, since they do not invoke user
+	// actions that depend on those argument values.
+	if cmd.builtInHelp || cmd.isCompletionCommand {
+		return nil
+	}
+
+	tracef("checking for required arguments (cmd=%[1]q)", cmd.Name)
+
+	missingArguments := []string{}
+	// This count-based precheck relies on required single-value arguments
+	// being declared before optional or multi-value arguments, as documented.
+	// Argument.Parse remains the backstop for unsupported orderings.
+	providedArguments := cmd.Args().Len()
+
+	for index, arg := range cmd.Arguments {
+		requiredArg, ok := arg.(requiredArgument)
+		if ok && requiredArg.required() && index >= providedArguments {
+			missingArguments = append(missingArguments, requiredArg.name())
+		}
+	}
+
+	if len(missingArguments) != 0 {
+		tracef("found missing required arguments %[1]q (cmd=%[2]q)", missingArguments, cmd.Name)
+
+		return &errRequiredArguments{missingArguments: missingArguments}
+	}
+
+	tracef("all required arguments set (cmd=%[1]q)", cmd.Name)
+
+	return nil
+}
+
 func (cmd *Command) onInvalidFlag(ctx context.Context, name string) {
 	for cmd != nil {
 		if cmd.InvalidFlagAccessHandler != nil {

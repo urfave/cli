@@ -1,7 +1,9 @@
 package cli
 
 import (
+	"bytes"
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -422,10 +424,16 @@ func TestArgUsage(t *testing.T) {
 	tests := []struct {
 		name     string
 		usage    string
+		required bool
 		expected string
 	}{
 		{
 			name:     "default",
+			expected: "[ia]",
+		},
+		{
+			name:     "required",
+			required: true,
 			expected: "ia",
 		},
 		{
@@ -436,7 +444,7 @@ func TestArgUsage(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			arg.UsageText = test.usage
+			arg.UsageText, arg.Required = test.usage, test.required
 			require.Equal(t, test.expected, arg.Usage())
 		})
 	}
@@ -574,6 +582,180 @@ func TestSingleOptionalArg(t *testing.T) {
 			r.Equal(test.exp, s1)
 		})
 	}
+}
+
+func TestSingleRequiredArg(t *testing.T) {
+	tests := []struct {
+		name     string
+		args     []string
+		argValue string
+		exp      string
+		expErr   string
+	}{
+		{
+			name:   "no args",
+			args:   []string{"foo"},
+			expErr: `Required argument "sa" not set`,
+		},
+		{
+			name:     "no arg with def value",
+			args:     []string{"foo"},
+			argValue: "bar",
+			expErr:   `Required argument "sa" not set`,
+		},
+		{
+			name: "one arg",
+			args: []string{"foo", "zbar"},
+			exp:  "zbar",
+		},
+		{
+			name: "empty string arg",
+			args: []string{"foo", ""},
+			exp:  "",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			cmd := buildMinimalTestCommand()
+			var s1 string
+			arg := &StringArg{
+				Name:        "sa",
+				Value:       test.argValue,
+				Destination: &s1,
+				Required:    true,
+			}
+			cmd.Arguments = []Argument{
+				arg,
+			}
+
+			err := cmd.Run(buildTestContext(t), test.args)
+			r := require.New(t)
+			if test.expErr != "" {
+				r.EqualError(err, test.expErr)
+				return
+			}
+			r.NoError(err)
+			r.Equal(test.exp, s1)
+		})
+	}
+}
+
+func TestMissingRequiredArgDoesNotMutateValue(t *testing.T) {
+	destination := "unchanged"
+	arg := &StringArg{
+		Name:        "sa",
+		Value:       "default",
+		Destination: &destination,
+		Required:    true,
+	}
+	initialValue := arg.Get()
+	writer := &bytes.Buffer{}
+	errWriter := &bytes.Buffer{}
+	cmd := buildMinimalTestCommand()
+	cmd.Writer = writer
+	cmd.ErrWriter = errWriter
+	cmd.Arguments = []Argument{arg}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo"})
+
+	r := require.New(t)
+	r.IsType(&errRequiredArguments{}, err)
+	r.Equal("unchanged", destination)
+	r.Equal(initialValue, arg.Get())
+	r.Contains(errWriter.String(), `Incorrect Usage: Required argument "sa" not set`)
+	r.Contains(writer.String(), "NAME:")
+}
+
+func TestChainedRequiredArgs(t *testing.T) {
+	cmd := buildMinimalTestCommand()
+	cmd.Arguments = []Argument{
+		&StringArg{
+			Name:     "first",
+			Required: true,
+		},
+		&StringArg{
+			Name:     "second",
+			Required: true,
+		},
+	}
+
+	r := require.New(t)
+	r.EqualError(cmd.Run(buildTestContext(t), []string{"foo"}), `Required arguments "first, second" not set`)
+	r.EqualError(cmd.Run(buildTestContext(t), []string{"foo", "one"}), `Required argument "second" not set`)
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "one", "two"}))
+}
+
+func TestRequiredArgAfterOptionalArg(t *testing.T) {
+	cmd := buildMinimalTestCommand()
+	cmd.Arguments = []Argument{
+		&StringArg{Name: "optional"},
+		&StringArg{Name: "required", Required: true},
+	}
+
+	r := require.New(t)
+	r.EqualError(cmd.Run(buildTestContext(t), []string{"foo", "one"}), `Required argument "required" not set`)
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "one", "two"}))
+}
+
+func TestRequiredArgAfterMultiValueArgUsesRequiredErrorHandling(t *testing.T) {
+	writer := &bytes.Buffer{}
+	errWriter := &bytes.Buffer{}
+	cmd := buildMinimalTestCommand()
+	cmd.Writer = writer
+	cmd.ErrWriter = errWriter
+	cmd.Arguments = []Argument{
+		&StringArgs{Name: "rest", Min: 0, Max: -1},
+		&StringArg{Name: "required", Required: true},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", "one", "two"})
+
+	r := require.New(t)
+	r.IsType(&errRequiredArguments{}, err)
+	r.True(cmd.isInError)
+	r.Contains(errWriter.String(), `Incorrect Usage: Required argument "required" not set`)
+	r.Contains(writer.String(), "NAME:")
+}
+
+func TestCheckRequiredArgumentsSkipsHelpAndCompletionCommands(t *testing.T) {
+	tests := []struct {
+		name string
+		cmd  *Command
+	}{
+		{
+			name: "built-in help",
+			cmd:  &Command{builtInHelp: true},
+		},
+		{
+			name: "completion",
+			cmd:  &Command{isCompletionCommand: true},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			test.cmd.Arguments = []Argument{
+				&StringArg{Name: "required", Required: true},
+			}
+
+			require.NoError(t, test.cmd.checkRequiredArguments())
+		})
+	}
+}
+
+func TestRequiredArgWithOnUsageError(t *testing.T) {
+	expectedErr := errors.New("OnUsageError")
+	cmd := buildMinimalTestCommand()
+	cmd.Arguments = []Argument{
+		&StringArg{Name: "required", Required: true},
+	}
+	cmd.OnUsageError = func(_ context.Context, _ *Command, err error, _ bool) error {
+		require.IsType(t, &errRequiredArguments{}, err)
+		return expectedErr
+	}
+
+	require.ErrorIs(t, cmd.Run(buildTestContext(t), []string{"foo"}), expectedErr)
 }
 
 func TestUnboundedArgs(t *testing.T) {
