@@ -17,30 +17,47 @@ type MutuallyExclusiveFlags struct {
 }
 
 func (grp MutuallyExclusiveFlags) check(_ *Command) error {
-	oneSet := false
 	e := &mutuallyExclusiveGroup{}
 
-	for _, grpf := range grp.Flags {
-		for _, f := range grpf {
-			if f.IsSet() {
-				if oneSet {
-					e.flag2Name = f.Names()[0]
-					return e
-				}
-				e.flag1Name = f.Names()[0]
-				oneSet = true
-				break
-			}
-			if oneSet {
-				break
+	// Check for the use of a mutually-exclusive flag, starting at
+	// the first group.
+	name, i, ok := grp.findSetFlag(0)
+	if ok {
+		e.flag1Name = name
+		i++
+
+		// Check for the use of a flag in a mutually exclusive
+		// relationship with the one we just found.
+		if name2, _, ok := grp.findSetFlag(i); ok {
+			e.flag2Name = name2
+			return e
+		}
+	}
+
+	if !ok && grp.Required {
+		return &mutuallyExclusiveGroupRequiredFlag{flags: &grp}
+	}
+
+	return nil
+}
+
+// findSetFlag is used in [MutuallyExclusiveFlags.check] to find
+// whether at least one flag inside a mutually exclusive flag group is
+// set. If so, return the flag name, position at which it's set, and
+// Boolean true (indicating that a flag was found.) Else, return all
+// zero values.
+func (grp MutuallyExclusiveFlags) findSetFlag(startIdx int) (string, int, bool) {
+	for i := startIdx; i < len(grp.Flags); i++ {
+		flags := grp.Flags[i]
+
+		for _, flg := range flags {
+			if flg.IsSet() {
+				return flg.Names()[0], i, true
 			}
 		}
 	}
 
-	if !oneSet && grp.Required {
-		return &mutuallyExclusiveGroupRequiredFlag{flags: &grp}
-	}
-	return nil
+	return "", 0, false
 }
 
 func (grp MutuallyExclusiveFlags) propagateCategory() {

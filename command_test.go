@@ -6450,3 +6450,29 @@ func TestCommand_Walk_NilFn(t *testing.T) {
 	cmd := &Command{Name: "foo"}
 	assert.Nil(t, cmd.Walk(nil))
 }
+
+// TestRunWithNoOsArgs checks that Run does not panic when handed an empty
+// argument slice.
+func TestRunWithNoOsArgs(t *testing.T) {
+	for _, tst := range []struct {
+		name string
+		cmd  *Command
+	}{
+		{name: "plain", cmd: &Command{Name: "foo"}},
+		{name: "shell completion enabled", cmd: &Command{Name: "foo", EnableShellCompletion: true}},
+		{name: "no name", cmd: &Command{}},
+	} {
+		t.Run(tst.name, func(t *testing.T) {
+			called := false
+			tst.cmd.Action = func(context.Context, *Command) error {
+				called = true
+				return nil
+			}
+
+			require.NotPanics(t, func() {
+				require.NoError(t, tst.cmd.Run(buildTestContext(t), []string{}))
+			})
+			assert.True(t, called)
+		})
+	}
+}
