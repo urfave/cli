@@ -91,3 +91,9 @@ $ greet Friend 1 bar 2.0
 Number of args : 4
 Hello Friend 1 bar 2.0
 ```
+
+!!! note
+    If the command declares named arguments via the `Arguments` field, each named argument consumes the positional
+    arguments it needs from the command line and `cmd.Args()` only returns the arguments that were **not** consumed by a
+    named argument. Use `cmd.{Type}Arg(name)` to retrieve the value of a named argument. See the
+    [advanced arguments documentation](advanced.md) for details.

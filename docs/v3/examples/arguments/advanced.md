@@ -222,3 +222,63 @@ the following to the end of the Arguments slice and retrieve them as a slice
 	Max: -1,
 },
 ```
+
+## Mixing named arguments with `cmd.Args()`
+
+When a command declares named arguments in `Arguments`, each named argument consumes the positional arguments it needs
+from the command line. The `cmd.Args()` method returns only the positional arguments that were **not** consumed by a
+named argument. To retrieve the value of a named argument, use the `cmd.{Type}Arg()` function (for e.g `cmd.StringArg()`)
+as described above.
+
+For example
+
+<!-- {
+  "args" : ["boo", "bar"],
+  "output": "first=&#34;boo&#34; leftover=[bar]"
+} -->
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/urfave/cli/v3"
+)
+
+func main() {
+	cmd := &cli.Command{
+		Arguments: []cli.Argument{
+			&cli.StringArg{Name: "first"},
+		},
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			fmt.Printf("first=%q leftover=%v", cmd.StringArg("first"), cmd.Args().Slice())
+			return nil
+		},
+	}
+
+	if err := cmd.Run(context.Background(), os.Args); err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
+```sh-session
+$ greet boo bar
+first="boo" leftover=[bar]
+```
+
+Here `boo` is consumed by the named `StringArg` and `cmd.Args()` contains only the leftover `bar`. To collect every
+remaining positional argument as a slice, add a glob argument at the end of the `Arguments` slice and read it with the
+corresponding `cmd.{Type}Args()` function:
+
+```
+&StringArgs{
+	Name: "rest",
+	Max:  -1,
+},
+```
+
+With the command above, `cmd.StringArgs("rest")` returns `[]string{"bar"}` while `cmd.Args()` is empty.

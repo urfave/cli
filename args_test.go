@@ -507,6 +507,30 @@ func TestArgsUsage(t *testing.T) {
 	}
 }
 
+func TestArgsConsumedByNamedArguments(t *testing.T) {
+	var namedVal string
+	cmd := buildMinimalTestCommand()
+	cmd.Arguments = []Argument{
+		&StringArg{
+			Name:        "first",
+			Destination: &namedVal,
+		},
+	}
+
+	var leftover []string
+	cmd.Action = func(_ context.Context, c *Command) error {
+		leftover = c.Args().Slice()
+		return nil
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", "boo", "bar"})
+	r := require.New(t)
+	r.NoError(err)
+	r.Equal("boo", namedVal)
+	r.Equal("boo", cmd.StringArg("first"))
+	r.Equal([]string{"bar"}, leftover)
+}
+
 func TestSingleOptionalArg(t *testing.T) {
 	tests := []struct {
 		name     string
