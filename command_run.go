@@ -350,20 +350,7 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 		requiredErr = err
 	}
 	if requiredErr != nil {
-		cmd.isInError = true
-		if cmd.OnUsageError != nil {
-			requiredErr = cmd.OnUsageError(ctx, cmd, requiredErr, cmd.parent != nil)
-		} else {
-			fmt.Fprintf(cmd.Root().ErrWriter, "Incorrect Usage: %s\n\n", requiredErr.Error())
-			if cmd.parent == nil {
-				_ = ShowRootCommandHelp(cmd)
-			} else {
-				if err := ShowCommandHelp(ctx, cmd.parent, cmd.Name); err != nil {
-					_ = ShowSubcommandHelp(cmd)
-				}
-			}
-		}
-		return ctx, requiredErr
+		return cmd.handleRequiredError(ctx, requiredErr)
 	}
 
 	// Run the command action.
@@ -375,6 +362,9 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 			rargs, err = arg.Parse(rargs)
 			if err != nil {
 				tracef("calling with %[1]v (cmd=%[2]q)", err, cmd.Name)
+				if _, ok := err.(*errRequiredArguments); ok {
+					return cmd.handleRequiredError(ctx, err)
+				}
 				if cmd.OnUsageError != nil {
 					err = cmd.OnUsageError(ctx, cmd, err, cmd.parent != nil)
 				}
@@ -392,6 +382,21 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 
 	tracef("returning deferErr (cmd=%[1]q) %[2]q", cmd.Name, deferErr)
 	return ctx, deferErr
+}
+
+func (cmd *Command) handleRequiredError(ctx context.Context, err error) (context.Context, error) {
+	cmd.isInError = true
+	if cmd.OnUsageError != nil {
+		err = cmd.OnUsageError(ctx, cmd, err, cmd.parent != nil)
+	} else {
+		fmt.Fprintf(cmd.Root().ErrWriter, "Incorrect Usage: %s\n\n", err.Error())
+		if cmd.parent == nil {
+			_ = ShowRootCommandHelp(cmd)
+		} else if helpErr := ShowCommandHelp(ctx, cmd.parent, cmd.Name); helpErr != nil {
+			_ = ShowSubcommandHelp(cmd)
+		}
+	}
+	return ctx, err
 }
 
 func commandChain(cmd *Command) []*Command {
