@@ -165,6 +165,10 @@ type Command struct {
 	didSetupDefaults bool
 	// whether in shell completion mode
 	shellCompletion bool
+	// whether the shell completion request came after a "--" separator,
+	// after which only positional arguments are accepted and nothing is
+	// suggested. The request is still a completion, never a command run.
+	shellCompletionPastDoubleDash bool
 	// whether global help flag was added
 	globaHelpFlagAdded bool
 	// whether global version flag was added

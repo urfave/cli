@@ -487,13 +487,16 @@ func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
 		return false, arguments
 	}
 
-	// If arguments include "--" before the token being completed, shell completion
-	// is disabled because after "--" only positional arguments are accepted.
+	// If the token being completed is preceded by a "--", only positional
+	// arguments are accepted after it, so nothing will be suggested.
 	// https://unix.stackexchange.com/a/11382
 	// Note: The token being completed is at position pos-1 (immediately before completionFlag).
-	// We only check arguments before that position, so completing "--" itself still works.
+	// A "--" at exactly that position is the token being completed, not a
+	// separator, so completing "--" itself still suggests flags.
+	// The request is still recognized as a completion so that the command
+	// action is never executed (https://github.com/urfave/cli/issues/1993).
 	if pos >= 1 && slices.Contains(arguments[:pos-1], "--") {
-		return false, arguments[:pos]
+		c.shellCompletionPastDoubleDash = true
 	}
 
 	return true, arguments[:pos]
@@ -520,6 +523,13 @@ func shouldRunCompletion(cmd *Command) bool {
 }
 
 func runCompletion(ctx context.Context, cmd *Command) {
+	// Nothing is suggested past a "--": after it, only positional arguments
+	// are accepted. The request is still treated as a completion so that the
+	// command action is never executed (https://github.com/urfave/cli/issues/1993).
+	if cmd.Root().shellCompletionPastDoubleDash {
+		tracef("completion requested past double dash; suggesting nothing (cmd=%[1]q)", cmd.Name)
+		return
+	}
 	if cmd.ShellComplete != nil {
 		tracef("running shell completion func for command %[1]q", cmd.Name)
 		cmd.ShellComplete(ctx, cmd)
