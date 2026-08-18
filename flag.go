@@ -190,6 +190,18 @@ type CategorizableFlag interface {
 	SetCategory(string)
 }
 
+// FlagStringerOverrider is an optional interface that allows an individual
+// flag to be given a per-flag override of [FlagStringer]. FlagBase and
+// BoolWithInverseFlag implement this. It's used by
+// [MutuallyExclusiveFlags.Stringer] to customize how flags within a
+// mutually exclusive group are displayed in help output.
+type FlagStringerOverrider interface {
+	// SetStringer overrides the [FlagStringFunc] used by this flag's
+	// String method. Passing nil restores the default behavior of using
+	// the package-level [FlagStringer].
+	SetStringer(FlagStringFunc)
+}
+
 // LocalFlag is an interface to enable detection of flags which are local
 // to current command
 type LocalFlag interface {
