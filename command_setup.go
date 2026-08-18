@@ -153,6 +153,7 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 	tracef("setting category on mutually exclusive flags (cmd=%[1]q)", cmd.Name)
 	for _, grp := range cmd.MutuallyExclusiveFlags {
 		grp.propagateCategory()
+		grp.propagateStringer()
 	}
 
 	tracef("setting flag categories (cmd=%[1]q)", cmd.Name)
@@ -196,6 +197,7 @@ func (cmd *Command) setupSubcommand() {
 	tracef("setting category on mutually exclusive flags (cmd=%[1]q)", cmd.Name)
 	for _, grp := range cmd.MutuallyExclusiveFlags {
 		grp.propagateCategory()
+		grp.propagateStringer()
 	}
 
 	tracef("setting flag categories (cmd=%[1]q)", cmd.Name)

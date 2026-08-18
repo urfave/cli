@@ -130,3 +130,43 @@ func TestFlagMutuallyExclusiveFlags(t *testing.T) {
 		})
 	}
 }
+
+func TestMutuallyExclusiveFlags_PropagateStringer(t *testing.T) {
+	customStringer := func(f Flag) string {
+		return "custom:" + f.Names()[0]
+	}
+
+	grp := MutuallyExclusiveFlags{
+		Stringer: customStringer,
+		Flags: [][]Flag{
+			{
+				&StringFlag{Name: "foo"},
+				&BoolWithInverseFlag{Name: "bar"},
+			},
+			{
+				&Int64Flag{Name: "baz"},
+			},
+		},
+	}
+
+	grp.propagateStringer()
+
+	assert.Equal(t, "custom:foo", grp.Flags[0][0].String())
+	assert.Contains(t, grp.Flags[0][1].String(), "custom:bar")
+	assert.Equal(t, "custom:baz", grp.Flags[1][0].String())
+}
+
+func TestMutuallyExclusiveFlags_PropagateStringerNil(t *testing.T) {
+	grp := MutuallyExclusiveFlags{
+		Flags: [][]Flag{
+			{
+				&StringFlag{Name: "foo"},
+			},
+		},
+	}
+
+	// should not panic and should leave flags using the default FlagStringer
+	grp.propagateStringer()
+
+	assert.NotEqual(t, "", grp.Flags[0][0].String())
+}

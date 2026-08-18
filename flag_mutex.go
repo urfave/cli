@@ -14,6 +14,10 @@ type MutuallyExclusiveFlags struct {
 
 	// Category to apply to all flags within group
 	Category string
+
+	// Stringer overrides how each flag within this group is displayed in
+	// help output. If nil, flags use [FlagStringer] as usual.
+	Stringer FlagStringFunc `json:"-"`
 }
 
 func (grp MutuallyExclusiveFlags) check(_ *Command) error {
@@ -65,6 +69,22 @@ func (grp MutuallyExclusiveFlags) propagateCategory() {
 		for _, f := range grpf {
 			if cf, ok := f.(CategorizableFlag); ok {
 				cf.SetCategory(grp.Category)
+			}
+		}
+	}
+}
+
+// propagateStringer applies [MutuallyExclusiveFlags.Stringer], if set, to
+// every flag within the group that supports a [FlagStringerOverrider].
+func (grp MutuallyExclusiveFlags) propagateStringer() {
+	if grp.Stringer == nil {
+		return
+	}
+
+	for _, grpf := range grp.Flags {
+		for _, f := range grpf {
+			if sf, ok := f.(FlagStringerOverrider); ok {
+				sf.SetStringer(grp.Stringer)
 			}
 		}
 	}
