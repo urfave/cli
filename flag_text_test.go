@@ -1,12 +1,21 @@
 package cli
 
 import (
+	"errors"
 	"log/slog"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// errText is a TextMarshalUnmarshaler whose MarshalText always fails, used to
+// exercise the error branches of textValue.ToString and textValue.String.
+type errText struct{}
+
+func (errText) MarshalText() ([]byte, error) { return nil, errors.New("marshal boom") }
+
+func (errText) UnmarshalText([]byte) error { return nil }
 
 func TestTextFlagSetFromArg(t *testing.T) {
 	lv := &slog.LevelVar{}
@@ -93,4 +102,57 @@ func TestTextFlagValueFromCommand(t *testing.T) {
 
 	require.NoError(t, cmd.Set("level", "WARN"))
 	require.Equal(t, lv, cmd.Text(f.Name))
+}
+
+func TestTextFlagTextNotAvailable(t *testing.T) {
+	cmd := &Command{
+		Flags: []Flag{
+			&StringFlag{Name: "str"},
+		},
+	}
+
+	// The flag exists but its value is a string, not a
+	// TextMarshalUnmarshaler, so Text returns nil.
+	require.NoError(t, cmd.Set("str", "value"))
+	assert.Nil(t, cmd.Text("str"))
+
+	// An unknown flag name also returns nil.
+	assert.Nil(t, cmd.Text("missing"))
+}
+
+func TestTextValueToString(t *testing.T) {
+	var tv textValue
+
+	// A nil value marshals to the empty string.
+	assert.Equal(t, "", tv.ToString(nil))
+
+	// A MarshalText error is swallowed and yields the empty string.
+	assert.Equal(t, "", tv.ToString(errText{}))
+
+	// A value that marshals cleanly is rendered.
+	lv := &slog.LevelVar{}
+	lv.Set(slog.LevelWarn)
+	assert.Equal(t, "WARN", tv.ToString(lv))
+}
+
+func TestTextValueSetNilDestination(t *testing.T) {
+	// Set is a no-op when there is no destination to unmarshal into.
+	tv := &textValue{}
+	require.NoError(t, tv.Set("anything"))
+}
+
+func TestTextValueString(t *testing.T) {
+	// A nil destination stringifies to the empty string.
+	tv := &textValue{}
+	assert.Equal(t, "", tv.String())
+
+	// A MarshalText error is swallowed and yields the empty string.
+	tvErr := &textValue{destination: errText{}}
+	assert.Equal(t, "", tvErr.String())
+
+	// A destination that marshals cleanly is rendered.
+	lv := &slog.LevelVar{}
+	lv.Set(slog.LevelWarn)
+	tvOK := &textValue{destination: lv}
+	assert.Equal(t, "WARN", tvOK.String())
 }
