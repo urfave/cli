@@ -17,7 +17,7 @@ type MutuallyExclusiveFlags struct {
 
 	// Stringer overrides how each flag within this group is displayed in
 	// help output. If nil, flags use [FlagStringer] as usual.
-	Stringer FlagStringFunc
+	Stringer FlagStringFunc `json:"-"`
 }
 
 func (grp MutuallyExclusiveFlags) check(_ *Command) error {

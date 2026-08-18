@@ -1340,7 +1340,7 @@ type MutuallyExclusiveFlags struct {
 
 	// Stringer overrides how each flag within this group is displayed in
 	// help output. If nil, flags use [FlagStringer] as usual.
-	Stringer FlagStringFunc
+	Stringer FlagStringFunc `json:"-"`
 }
     MutuallyExclusiveFlags defines a mutually exclusive flag group Multiple
     option paths can be provided out of which only one can be defined on cmdline
