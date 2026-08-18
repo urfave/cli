@@ -745,6 +745,9 @@ func (cmd *Command) StringSlice(name string) []string
     StringSlice looks up the value of a local StringSliceFlag, returns nil if
     not found
 
+func (cmd *Command) Text(name string) TextMarshalUnmarshaler
+    Text looks up the value of a local TextFlag, returns nil if not found
+
 func (cmd *Command) Timestamp(name string) time.Time
     Timestamp gets the timestamp from a flag name
 
@@ -1415,6 +1418,17 @@ type StringSliceFlag = FlagBase[[]string, StringConfig, StringSlice]
 type SuggestCommandFunc func(commands []*Command, provided string) string
 
 type SuggestFlagFunc func(flags []Flag, provided string, hideHelp bool) string
+
+type TextFlag = FlagBase[TextMarshalUnmarshaler, StringConfig, textValue]
+
+type TextMarshalUnmarshaler interface {
+	encoding.TextMarshaler
+	encoding.TextUnmarshaler
+}
+    TextMarshalUnmarshaler is the interface implemented by types that can
+    marshal themselves to and from a textual form. It is the value type used by
+    TextFlag, mirroring the standard library's flag.TextVar, and is satisfied by
+    types such as *slog.LevelVar, *net/netip.Addr, and *time.Time.
 
 type TimestampArg = ArgumentBase[time.Time, TimestampConfig, timestampValue]
 
