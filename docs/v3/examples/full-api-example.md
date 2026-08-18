@@ -35,7 +35,7 @@ func init() {
 	cli.HelpFlag = &cli.BoolFlag{Name: "halp"}
 	cli.VersionFlag = &cli.BoolFlag{Name: "print-version", Aliases: []string{"V"}}
 
-	cli.HelpPrinter = func(w io.Writer, templ string, data interface{}) {
+	cli.HelpPrinter = func(w io.Writer, templ string, data any) {
 		fmt.Fprintf(w, "best of luck to you\n")
 	}
 	cli.VersionPrinter = func(cmd *cli.Command) {
@@ -216,7 +216,7 @@ func main() {
 			fmt.Printf("made it!\n")
 			return ec
 		},
-		Metadata: map[string]interface{}{
+		Metadata: map[string]any{
 			"layers":          "many",
 			"explicable":      false,
 			"whatever-values": 19.99,
