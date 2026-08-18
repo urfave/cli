@@ -261,9 +261,11 @@ func (cmd *Command) ensureHelp() {
 					localHelpFlag = HelpFlag
 				}
 
-				tracef("appending HelpFlag (cmd=%[1]q)", cmd.Name)
-				cmd.appendFlag(localHelpFlag)
-				cmd.globaHelpFlagAdded = true
+				if !flagNamesInUse(cmd.allFlags(), localHelpFlag.Names()) {
+					tracef("appending HelpFlag (cmd=%[1]q)", cmd.Name)
+					cmd.appendFlag(localHelpFlag)
+					cmd.globaHelpFlagAdded = true
+				}
 			} else {
 				tracef("HelpFlag already added, skip (cmd=%[1]q)", cmd.Name)
 			}
