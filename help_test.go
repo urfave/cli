@@ -858,6 +858,52 @@ GLOBAL OPTIONS:
 	assert.Contains(t, output.String(), expected, "expected output to include global options")
 }
 
+func TestShowNestedSubcommandHelp_InheritedPersistentFlags(t *testing.T) {
+	cmd := &Command{
+		Flags: []Flag{
+			&StringFlag{
+				Name:  "root-persistent",
+				Local: false,
+			},
+		},
+		Commands: []*Command{
+			{
+				Name: "mid",
+				Flags: []Flag{
+					&StringFlag{
+						Name:  "mid-persistent",
+						Local: false,
+					},
+					&StringFlag{
+						Name: "mid-local",
+						Local: true,
+					},
+				},
+				Commands: []*Command{
+					{
+						Name: "leaf",
+						Flags: []Flag{
+							&StringFlag{Name: "leaf-local"},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	output := &bytes.Buffer{}
+	cmd.Writer = output
+
+	_ = cmd.Run(buildTestContext(t), []string{"root", "mid", "leaf", "--help"})
+
+	assert.Contains(t, output.String(), "GLOBAL OPTIONS:",
+		"expected help to include a global options section")
+	assert.Contains(t, output.String(), "--root-persistent string",
+		"expected help to include the root persistent flag")
+	assert.Contains(t, output.String(), "--mid-persistent string",
+		"expected help to include the intermediate persistent flag")
+}
+
 func TestShowSubcommandHelp_GlobalOptions_HideHelpCommand(t *testing.T) {
 	cmd := &Command{
 		Flags: []Flag{

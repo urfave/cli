@@ -300,18 +300,21 @@ func (cmd *Command) appendFlag(fl Flag) {
 	}
 }
 
-// VisiblePersistentFlags returns a slice of [LocalFlag] with Persistent=true and Hidden=false.
+// VisiblePersistentFlags returns inherited persistent flags with Hidden=false.
 func (cmd *Command) VisiblePersistentFlags() []Flag {
 	if cmd.isCompletionCommand {
 		return nil
 	}
 	var flags []Flag
-	for _, fl := range cmd.Root().Flags {
-		pfl, ok := fl.(LocalFlag)
-		if !ok || pfl.IsLocal() {
-			continue
+	lineage := cmd.Lineage()
+	for i := len(lineage) - 1; i > 0; i-- {
+		for _, fl := range lineage[i].allFlags() {
+			pfl, ok := fl.(LocalFlag)
+			if !ok || pfl.IsLocal() {
+				continue
+			}
+			flags = append(flags, fl)
 		}
-		flags = append(flags, fl)
 	}
 	return visibleFlags(flags)
 }
