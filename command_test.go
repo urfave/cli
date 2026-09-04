@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/mail"
 	"os"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -3985,6 +3986,70 @@ func TestFlagDuplicates(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDuplicateFlagNamesAreRejected(t *testing.T) {
+	tests := []struct {
+		name  string
+		flags []Flag
+	}{
+		{
+			name: "duplicate flag names",
+			flags: []Flag{
+				&BoolFlag{Name: "config"},
+				&StringFlag{Name: "config"},
+			},
+		},
+		{
+			name: "duplicate flag aliases",
+			flags: []Flag{
+				&BoolFlag{Name: "verbose", Aliases: []string{"v"}},
+				&StringFlag{Name: "value", Aliases: []string{"v"}},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			cmd := &Command{
+				Flags: test.flags,
+				Action: func(context.Context, *Command) error {
+					return nil
+				},
+			}
+
+			err := cmd.Run(buildTestContext(t), []string{"foo"})
+			require.Error(t, err)
+			require.Contains(t, err.Error(), "defined multiple times")
+		})
+	}
+}
+
+func TestUserDefinedHelpFlagOverridesBuiltin(t *testing.T) {
+	writer := &bytes.Buffer{}
+	cmd := &Command{
+		Writer: writer,
+		Flags: []Flag{
+			&BoolFlag{Name: "help", Usage: "custom help behavior"},
+		},
+		Action: func(context.Context, *Command) error {
+			return nil
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", "--help"})
+	require.NoError(t, err)
+	require.True(t, cmd.Bool("help"))
+
+	var helpFlags int
+	for _, fl := range cmd.Flags {
+		if slices.Contains(fl.Names(), "help") {
+			helpFlags++
+		}
+	}
+	require.Equal(t, 1, helpFlags)
+	require.Contains(t, writer.String(), "--help  custom help behavior")
+	require.NotContains(t, writer.String(), "--help, -h  show help")
 }
 
 func TestShorthandCommand(t *testing.T) {
