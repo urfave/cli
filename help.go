@@ -83,6 +83,8 @@ func buildHelpCommand(withAction bool) *Command {
 func helpCommandAction(ctx context.Context, cmd *Command) error {
 	args := cmd.Args()
 	firstArg := args.First()
+	explicitHelpCommand := cmd.builtInHelp
+	helpFromFlag := ctx.Value(helpFlagKey{}) != nil
 
 	tracef("doing help for cmd %[1]q with args %[2]q", cmd, args)
 
@@ -98,7 +100,8 @@ func helpCommandAction(ctx context.Context, cmd *Command) error {
 	//   $ app --help / -h      # flag; show root help (ignores subsequent args)
 	//   $ app help / h         # subcommand; show root help
 	//   $ app help / h foo     # subcommand; show help for subcommand "foo"
-	//   $ app --help / -h foo  # flag; show help for subcommand "foo"
+	//   $ app --help / -h foo  # flag; show help for subcommand "foo" if it
+	//                          # matches a child command; otherwise ignore it
 	//   $ app foo --help / -h  # flag on subcommand; show help for "foo"
 	//   $ app foo help / h     # subcommand on subcommand; show help for "foo"
 	//   $ app foo (no action)  # default action on subcommand; show help for "foo"
@@ -117,11 +120,12 @@ func helpCommandAction(ctx context.Context, cmd *Command) error {
 	// Case 4. $ app help foo
 	// foo is the command for which help needs to be shown
 	if firstArg != "" {
-		/*	if firstArg == "--" {
-			return nil
-		}*/
-		tracef("returning ShowCommandHelp with %[1]q", firstArg)
-		return ShowCommandHelp(ctx, cmd, firstArg)
+		if explicitHelpCommand || !helpFromFlag || cmd.Command(firstArg) != nil {
+			tracef("returning ShowCommandHelp with %[1]q", firstArg)
+			return ShowCommandHelp(ctx, cmd, firstArg)
+		}
+
+		tracef("ignoring positional help argument %[1]q that is not a child command", firstArg)
 	}
 
 	// Case 1 & 2
