@@ -110,7 +110,7 @@ func init() {
   cli.BashCompletionFlag = cli.BoolFlag{Name: "compgen", Hidden: true}
   cli.VersionFlag = cli.BoolFlag{Name: "print-version, V"}
 
-  cli.HelpPrinter = func(w io.Writer, templ string, data interface{}) {
+  cli.HelpPrinter = func(w io.Writer, templ string, data any) {
     fmt.Fprintf(w, "best of luck to you\n")
   }
   cli.VersionPrinter = func(c *cli.Context) {
@@ -345,7 +345,7 @@ func main() {
     app.ErrWriter = &hexWriter{}
   }
 
-  app.Metadata = map[string]interface{}{
+  app.Metadata = map[string]any{
     "layers":     "many",
     "explicable": false,
     "whatever-values": 19.99,
