@@ -1156,6 +1156,26 @@ func TestCommand_CommandWithDash(t *testing.T) {
 	require.Equal(t, "-", args.Get(1))
 }
 
+func TestCommand_BareDashKeepsFollowingArgs(t *testing.T) {
+	var args Args
+
+	cmd := &Command{
+		Commands: []*Command{
+			{
+				Name: "cmd",
+				Action: func(_ context.Context, cmd *Command) error {
+					args = cmd.Args()
+					return nil
+				},
+			},
+		},
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"", "cmd", "-", "foo", "bar"}))
+	require.NotNil(t, args)
+	require.Equal(t, []string{"-", "foo", "bar"}, args.Slice())
+}
+
 func TestCommand_CommandWithNoFlagBeforeTerminator(t *testing.T) {
 	var args Args
 

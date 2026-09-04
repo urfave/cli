@@ -122,7 +122,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		// this is same as firstArg == "-"
 		if len(firstArg) == 1 {
 			posArgs = append(posArgs, firstArg)
-			break
+			continue
 		}
 
 		shortOptionHandling := cmd.useShortOptionHandling()
