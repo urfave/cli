@@ -37,6 +37,15 @@ type BoolWithInverseFlag struct {
 	value      Value // value representing this flag's value
 	pset       bool
 	nset       bool
+	stringer   FlagStringFunc // optional per-flag override of FlagStringer
+}
+
+// SetStringer overrides the [FlagStringFunc] used by this flag's String
+// method. Passing nil restores the default behavior of using the
+// package-level [FlagStringer]. This is used e.g. by
+// [MutuallyExclusiveFlags.Stringer].
+func (bif *BoolWithInverseFlag) SetStringer(s FlagStringFunc) {
+	bif.stringer = s
 }
 
 func (bif *BoolWithInverseFlag) IsSet() bool {
@@ -171,7 +180,11 @@ func (bif *BoolWithInverseFlag) IsVisible() bool {
 // Example for BoolFlag{Name: "env", Aliases: []string{"e"}}
 // --[no-]env, -e	(default: false)
 func (bif *BoolWithInverseFlag) String() string {
-	out := FlagStringer(bif)
+	fs := FlagStringer
+	if bif.stringer != nil {
+		fs = bif.stringer
+	}
+	out := fs(bif)
 
 	i := strings.Index(out, "\t")
 

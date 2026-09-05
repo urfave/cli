@@ -423,6 +423,11 @@ func (bif *BoolWithInverseFlag) Set(name, val string) error
 
 func (bif *BoolWithInverseFlag) SetCategory(c string)
 
+func (bif *BoolWithInverseFlag) SetStringer(s FlagStringFunc)
+    SetStringer overrides the FlagStringFunc used by this flag's String method.
+    Passing nil restores the default behavior of using the package-level
+    FlagStringer. This is used e.g. by MutuallyExclusiveFlags.Stringer.
+
 func (bif *BoolWithInverseFlag) String() string
     String implements the standard Stringer interface.
 
@@ -1081,6 +1086,11 @@ func (f *FlagBase[T, C, V]) Set(_ string, val string) error
 
 func (f *FlagBase[T, C, V]) SetCategory(c string)
 
+func (f *FlagBase[T, C, V]) SetStringer(s FlagStringFunc)
+    SetStringer overrides the FlagStringFunc used by this flag's String method.
+    Passing nil restores the default behavior of using the package-level
+    FlagStringer. This is used e.g. by MutuallyExclusiveFlags.Stringer.
+
 func (f *FlagBase[T, C, V]) String() string
     String returns a readable representation of this value (for usage defaults)
 
@@ -1318,6 +1328,10 @@ type MutuallyExclusiveFlags struct {
 
 	// Category to apply to all flags within group
 	Category string
+
+	// Stringer overrides how each flag within this group is displayed in
+	// help output. If nil, flags use [FlagStringer] as usual.
+	Stringer FlagStringFunc `json:"-"`
 }
     MutuallyExclusiveFlags defines a mutually exclusive flag group Multiple
     option paths can be provided out of which only one can be defined on cmdline
@@ -1414,6 +1428,17 @@ type StringMapFlag = FlagBase[map[string]string, StringConfig, StringMap]
 type StringSlice = SliceBase[string, StringConfig, stringValue]
 
 type StringSliceFlag = FlagBase[[]string, StringConfig, StringSlice]
+
+type StringerSetter interface {
+	// SetStringer overrides the [FlagStringFunc] used by this flag's
+	// String method. Passing nil restores the default behavior of using
+	// the package-level [FlagStringer].
+	SetStringer(FlagStringFunc)
+}
+    StringerSetter is an optional interface that allows an individual flag to be
+    given a per-flag override of FlagStringer. FlagBase and BoolWithInverseFlag
+    implement this. It's used by MutuallyExclusiveFlags.Stringer to customize
+    how flags within a mutually exclusive group are displayed in help output.
 
 type SuggestCommandFunc func(commands []*Command, provided string) string
 

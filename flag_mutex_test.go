@@ -130,3 +130,80 @@ func TestFlagMutuallyExclusiveFlags(t *testing.T) {
 		})
 	}
 }
+
+func TestMutuallyExclusiveFlags_PropagateStringer(t *testing.T) {
+	customStringer := func(f Flag) string {
+		return "custom:" + f.Names()[0]
+	}
+
+	grp := MutuallyExclusiveFlags{
+		Stringer: customStringer,
+		Flags: [][]Flag{
+			{
+				&StringFlag{Name: "foo"},
+				&BoolWithInverseFlag{Name: "bar"},
+			},
+			{
+				&Int64Flag{Name: "baz"},
+			},
+		},
+	}
+
+	grp.propagateStringer()
+
+	assert.Equal(t, "custom:foo", grp.Flags[0][0].String())
+	assert.Contains(t, grp.Flags[0][1].String(), "custom:bar")
+	assert.Equal(t, "custom:baz", grp.Flags[1][0].String())
+}
+
+func TestMutuallyExclusiveFlags_PropagateStringerNil(t *testing.T) {
+	grp := MutuallyExclusiveFlags{
+		Flags: [][]Flag{
+			{
+				&StringFlag{Name: "foo"},
+			},
+		},
+	}
+
+	// should not panic and should leave flags using the default FlagStringer
+	grp.propagateStringer()
+
+	assert.NotEqual(t, "", grp.Flags[0][0].String())
+}
+
+// nonStringerSettingFlag is a minimal Flag implementation that deliberately
+// does not implement StringerSetter, so that propagateStringer must skip it
+// via its type assertion rather than panicking or otherwise misbehaving.
+type nonStringerSettingFlag struct {
+	name string
+}
+
+func (f *nonStringerSettingFlag) String() string           { return "plain:" + f.name }
+func (f *nonStringerSettingFlag) Get() any                 { return nil }
+func (f *nonStringerSettingFlag) PreParse() error          { return nil }
+func (f *nonStringerSettingFlag) PostParse() error         { return nil }
+func (f *nonStringerSettingFlag) Set(string, string) error { return nil }
+func (f *nonStringerSettingFlag) Names() []string          { return []string{f.name} }
+func (f *nonStringerSettingFlag) IsSet() bool              { return false }
+
+func TestMutuallyExclusiveFlags_PropagateStringerSkipsNonImplementor(t *testing.T) {
+	customStringer := func(f Flag) string {
+		return "custom:" + f.Names()[0]
+	}
+
+	plain := &nonStringerSettingFlag{name: "plain"}
+
+	grp := MutuallyExclusiveFlags{
+		Stringer: customStringer,
+		Flags: [][]Flag{
+			{plain},
+		},
+	}
+
+	// should not panic
+	grp.propagateStringer()
+
+	// plain does not implement StringerSetter, so it must keep its own
+	// String() implementation rather than picking up the custom stringer.
+	assert.Equal(t, "plain:plain", grp.Flags[0][0].String())
+}
