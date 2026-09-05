@@ -1137,18 +1137,6 @@ var FlagStringer FlagStringFunc = stringifyFlag
     FlagStringer converts a flag definition to a string. This is used by help to
     display a flag.
 
-type FlagStringerOverrider interface {
-	// SetStringer overrides the [FlagStringFunc] used by this flag's
-	// String method. Passing nil restores the default behavior of using
-	// the package-level [FlagStringer].
-	SetStringer(FlagStringFunc)
-}
-    FlagStringerOverrider is an optional interface that allows an
-    individual flag to be given a per-flag override of FlagStringer.
-    FlagBase and BoolWithInverseFlag implement this. It's used by
-    MutuallyExclusiveFlags.Stringer to customize how flags within a mutually
-    exclusive group are displayed in help output.
-
 type FlagsByName []Flag
     FlagsByName is a slice of Flag.
 
@@ -1437,6 +1425,17 @@ type StringMapFlag = FlagBase[map[string]string, StringConfig, StringMap]
 type StringSlice = SliceBase[string, StringConfig, stringValue]
 
 type StringSliceFlag = FlagBase[[]string, StringConfig, StringSlice]
+
+type StringerSetter interface {
+	// SetStringer overrides the [FlagStringFunc] used by this flag's
+	// String method. Passing nil restores the default behavior of using
+	// the package-level [FlagStringer].
+	SetStringer(FlagStringFunc)
+}
+    StringerSetter is an optional interface that allows an individual flag to be
+    given a per-flag override of FlagStringer. FlagBase and BoolWithInverseFlag
+    implement this. It's used by MutuallyExclusiveFlags.Stringer to customize
+    how flags within a mutually exclusive group are displayed in help output.
 
 type SuggestCommandFunc func(commands []*Command, provided string) string
 

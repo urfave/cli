@@ -75,7 +75,7 @@ func (grp MutuallyExclusiveFlags) propagateCategory() {
 }
 
 // propagateStringer applies [MutuallyExclusiveFlags.Stringer], if set, to
-// every flag within the group that supports a [FlagStringerOverrider].
+// every flag within the group that supports a [StringerSetter].
 func (grp MutuallyExclusiveFlags) propagateStringer() {
 	if grp.Stringer == nil {
 		return
@@ -83,7 +83,7 @@ func (grp MutuallyExclusiveFlags) propagateStringer() {
 
 	for _, grpf := range grp.Flags {
 		for _, f := range grpf {
-			if sf, ok := f.(FlagStringerOverrider); ok {
+			if sf, ok := f.(StringerSetter); ok {
 				sf.SetStringer(grp.Stringer)
 			}
 		}
