@@ -125,6 +125,11 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 		// note that we can only do this because the shell autocomplete function
 		// always appends the completion flag at the end of the command
 		tracef("checking osArgs %v (cmd=%[2]q)", osArgs, cmd.Name)
+		// completion request state is per-run: a Command answering several
+		// requests (tests, REPL, embedded use) must not carry one request
+		// into the next
+		cmd.shellCompletion = false
+		cmd.shellCompletionPastDoubleDash = false
 		cmd.shellCompletion, osArgs = checkShellCompleteFlag(cmd, osArgs)
 
 		tracef("setting cmd.shellCompletion=%[1]v from checkShellCompleteFlag (cmd=%[2]q)", cmd.shellCompletion && cmd.EnableShellCompletion, cmd.Name)

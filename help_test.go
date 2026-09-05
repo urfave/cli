@@ -904,6 +904,38 @@ GLOBAL OPTIONS:
 	assert.Contains(t, output.String(), expected, "expected output to include global options")
 }
 
+func TestShowSubcommandHelp_InheritedPersistentOptions(t *testing.T) {
+	cmd := &Command{
+		Flags: []Flag{
+			&StringFlag{Name: "root-persistent"},
+			&StringFlag{Name: "shared", Usage: "from root"},
+		},
+		Commands: []*Command{
+			{
+				Name: "mid",
+				Flags: []Flag{
+					&StringFlag{Name: "mid-persistent"},
+					&StringFlag{Name: "shared", Usage: "from intermediate"},
+				},
+				Commands: []*Command{
+					{
+						Name: "leaf",
+					},
+				},
+			},
+		},
+	}
+
+	output := &bytes.Buffer{}
+	cmd.Writer = output
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"root", "mid", "leaf", "--help"}))
+	assert.Contains(t, output.String(), "--root-persistent string")
+	assert.Contains(t, output.String(), "--mid-persistent string")
+	assert.Contains(t, output.String(), "from intermediate")
+	assert.NotContains(t, output.String(), "from root")
+}
+
 func TestShowSubcommandHelp_SubcommandUsageText(t *testing.T) {
 	cmd := &Command{
 		Commands: []*Command{
@@ -2023,6 +2055,7 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 		cmd                 *Command
 		arguments           []string
 		wantShellCompletion bool
+		wantPastDoubleDash  bool
 		wantArgs            []string
 	}{
 		{
@@ -2051,12 +2084,11 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 			wantArgs:            []string{"foo"},
 		},
 		{
-			name:      "arguments include double dash",
-			arguments: []string{"--", "foo", completionFlag},
-			cmd: &Command{
-				EnableShellCompletion: true,
-			},
-			wantShellCompletion: false,
+			name:                "arguments include double dash",
+			arguments:           []string{"--", "foo", completionFlag},
+			cmd:                 &Command{EnableShellCompletion: true},
+			wantShellCompletion: true,
+			wantPastDoubleDash:  true,
 			wantArgs:            []string{"--", "foo"},
 		},
 		{
@@ -2094,6 +2126,7 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 			t.Parallel()
 			shellCompletion, args := checkShellCompleteFlag(tt.cmd, tt.arguments)
 			assert.Equal(t, tt.wantShellCompletion, shellCompletion)
+			assert.Equal(t, tt.wantPastDoubleDash, tt.cmd.shellCompletionPastDoubleDash)
 			assert.Equal(t, tt.wantArgs, args)
 		})
 	}

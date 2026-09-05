@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 	"testing"
 
@@ -288,6 +289,9 @@ func TestCompletionSubcommand(t *testing.T) {
 		msg         string
 		msgArgs     []any
 		notContains bool
+		// wantNoAction asserts that the command action must not run, even
+		// though shell completion is requested (https://github.com/urfave/cli/issues/1993).
+		wantNoAction bool
 	}{
 		{
 			name:     "subcommand general completion",
@@ -352,7 +356,8 @@ func TestCompletionSubcommand(t *testing.T) {
 			msgArgs: []any{
 				"-g",
 			},
-			notContains: true,
+			notContains:  true,
+			wantNoAction: true,
 		},
 		{
 			name:     "subcommand partial double dash flag completion",
@@ -377,6 +382,7 @@ func TestCompletionSubcommand(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			out := &bytes.Buffer{}
+			actionRan := false
 
 			cmd := &Command{
 				EnableShellCompletion: true,
@@ -389,7 +395,10 @@ func TestCompletionSubcommand(t *testing.T) {
 								Name: "l1",
 							},
 						},
-						Action: func(ctx context.Context, c *Command) error { return nil },
+						Action: func(ctx context.Context, c *Command) error {
+							actionRan = true
+							return nil
+						},
 						Commands: []*Command{
 							{
 								Name: "xyz",
@@ -401,7 +410,10 @@ func TestCompletionSubcommand(t *testing.T) {
 										},
 									},
 								},
-								Action: func(ctx context.Context, c *Command) error { return nil },
+								Action: func(ctx context.Context, c *Command) error {
+									actionRan = true
+									return nil
+								},
 							},
 						},
 					},
@@ -416,8 +428,102 @@ func TestCompletionSubcommand(t *testing.T) {
 			} else {
 				r.Containsf(out.String(), test.contains, test.msg, test.msgArgs...)
 			}
+			if test.wantNoAction {
+				r.False(actionRan, "command action must not run for a completion request")
+			}
 		})
 	}
+}
+
+func TestCompletionAfterDoubleDashNeverRunsAction(t *testing.T) {
+	// Regression test for https://github.com/urfave/cli/issues/1993:
+	// pressing tab on a command line that holds a "--" must never execute
+	// the command action, and nothing is suggested past the "--" because
+	// only positional arguments are accepted after it.
+
+	tests := []struct {
+		name string
+		args []string
+	}{
+		{
+			name: "root command past double dash",
+			args: []string{"foo", "--", "somearg", completionFlag},
+		},
+		{
+			name: "root command past double dash multiple words",
+			args: []string{"foo", "--", "bar", "baz", completionFlag},
+		},
+		{
+			name: "subcommand past double dash",
+			args: []string{"foo", "sub", "--", "somearg", completionFlag},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			out := &bytes.Buffer{}
+			actionRan := false
+
+			cmd := &Command{
+				EnableShellCompletion: true,
+				Writer:                out,
+				Action: func(ctx context.Context, c *Command) error {
+					actionRan = true
+					return nil
+				},
+				Commands: []*Command{
+					{
+						Name: "sub",
+						Action: func(ctx context.Context, c *Command) error {
+							actionRan = true
+							return nil
+						},
+					},
+				},
+			}
+
+			r := require.New(t)
+			r.NoError(cmd.Run(buildTestContext(t), test.args))
+			r.Empty(out.String(), "no suggestions expected past a --")
+			r.False(actionRan, "command action must not run for a completion request")
+		})
+	}
+}
+
+func TestCompletionAfterDoubleDashDoesNotLeakToNextRun(t *testing.T) {
+	// A Command answering several completion requests must answer each one
+	// on its own terms: a request past a "--" must not make the next
+	// request behave as though it were past one too.
+	origArgv := os.Args
+	t.Cleanup(func() { os.Args = origArgv })
+
+	out := &bytes.Buffer{}
+
+	cmd := &Command{
+		EnableShellCompletion: true,
+		Writer:                out,
+		Flags: []Flag{
+			&BoolFlag{
+				Name: "verbose",
+			},
+		},
+		Commands: []*Command{
+			{
+				Name: "sub",
+			},
+		},
+	}
+
+	r := require.New(t)
+
+	os.Args = []string{"foo", "--", "somearg"}
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "--", "somearg", completionFlag}))
+	r.Empty(out.String())
+
+	out.Reset()
+	os.Args = []string{"foo", "-", completionFlag}
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "-", completionFlag}))
+	r.Contains(out.String(), "-verbose")
 }
 
 func TestCompletionSubcommandCustomShellComplete(t *testing.T) {

@@ -1156,6 +1156,22 @@ func TestCommand_CommandWithDash(t *testing.T) {
 	require.Equal(t, "-", args.Get(1))
 }
 
+func TestCommand_PositionalArgsKeepWhitespace(t *testing.T) {
+	var args Args
+
+	cmd := &Command{
+		Name: "prog",
+		Action: func(_ context.Context, cmd *Command) error {
+			args = cmd.Args()
+			return nil
+		},
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"prog", "  padded  ", "\ttabbed\t"}))
+	require.NotNil(t, args)
+	require.Equal(t, []string{"  padded  ", "\ttabbed\t"}, args.Slice())
+}
+
 func TestCommand_CommandWithNoFlagBeforeTerminator(t *testing.T) {
 	var args Args
 

@@ -119,6 +119,7 @@ func (e *envVarValueSource) Key() string {
 }
 
 func (e *envVarValueSource) String() string { return fmt.Sprintf("environment variable %[1]q", e.key) }
+
 func (e *envVarValueSource) GoString() string {
 	return fmt.Sprintf("&envVarValueSource{Key:%[1]q}", e.key)
 }

@@ -114,7 +114,9 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 				return &stringSliceArgs{posArgs}, nil
 			}
 
-			posArgs = append(posArgs, firstArg)
+			// firstArg is a trimmed copy that classifies the argument; the
+			// argument itself is what the action receives, byte for byte.
+			posArgs = append(posArgs, rargs[0])
 			continue
 		}
 
