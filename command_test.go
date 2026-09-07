@@ -1172,6 +1172,91 @@ func TestCommand_PositionalArgsKeepWhitespace(t *testing.T) {
 	require.Equal(t, []string{"  padded  ", "\ttabbed\t"}, args.Slice())
 }
 
+func TestCommand_FlagValuesKeepWhitespace(t *testing.T) {
+	cases := []struct {
+		name      string
+		flag      string
+		value     string
+		trimSpace bool
+	}{
+		{name: "empty", flag: "--text"},
+		{name: "spaces", flag: "--text", value: " hello "},
+		{name: "tab only", flag: "--text", value: "\t"},
+		{name: "newline", flag: "--text", value: "line\n"},
+		{name: "unicode space", flag: "--text", value: "space\u00a0"},
+		{name: "embedded equals", flag: "--text", value: "a=b "},
+		{name: "alias", flag: "-t", value: " hello "},
+		{name: "leading flag whitespace", flag: "\t --text", value: " hello "},
+		{name: "trim enabled", flag: "--text", value: "\t hello \n", trimSpace: true},
+	}
+	for _, kind := range []string{"string", "slice", "map"} {
+		for _, tc := range cases {
+			for _, equals := range []bool{false, true} {
+				t.Run(fmt.Sprintf("%s/%s/equals=%v", kind, tc.name, equals), func(t *testing.T) {
+					config := StringConfig{TrimSpace: tc.trimSpace}
+					want := tc.value
+					if tc.trimSpace {
+						want = strings.TrimSpace(want)
+					}
+					var fl Flag
+					var expected any
+					input := tc.value
+					switch kind {
+					case "string":
+						fl = &StringFlag{Name: "text", Aliases: []string{"t"}, Config: config}
+						expected = want
+					case "slice":
+						fl = &StringSliceFlag{Name: "text", Aliases: []string{"t"}, Config: config}
+						expected = []string{want}
+					case "map":
+						fl = &StringMapFlag{Name: "text", Aliases: []string{"t"}, Config: config}
+						input = "key=" + tc.value
+						expected = map[string]string{"key": want}
+					}
+					args := []string{"app", tc.flag, input, "operand"}
+					if equals {
+						args = []string{"app", tc.flag + "=" + input, "operand"}
+					}
+					cmd := &Command{Flags: []Flag{fl}, Action: func(_ context.Context, cmd *Command) error {
+						assert.Equal(t, expected, cmd.Value("text"))
+						assert.Equal(t, []string{"operand"}, cmd.Args().Slice())
+						return nil
+					}}
+					require.NoError(t, cmd.Run(buildTestContext(t), args))
+				})
+			}
+		}
+	}
+}
+
+func TestCommand_EqualsFlagValueValidation(t *testing.T) {
+	for _, kind := range []string{"int", "bool"} {
+		for _, whitespace := range []string{"", " ", "\t"} {
+			t.Run(fmt.Sprintf("%s/whitespace=%q", kind, whitespace), func(t *testing.T) {
+				var fl Flag = &IntFlag{Name: "value"}
+				value := "42"
+				if kind == "bool" {
+					fl = &BoolFlag{Name: "value"}
+					value = "true"
+				}
+				actionRan := false
+				cmd := &Command{
+					Flags: []Flag{fl}, Writer: io.Discard, ErrWriter: io.Discard,
+					Action: func(_ context.Context, _ *Command) error { actionRan = true; return nil },
+				}
+				err := cmd.Run(buildTestContext(t), []string{"app", "--value=" + value + whitespace})
+				if whitespace == "" {
+					require.NoError(t, err)
+					assert.True(t, actionRan)
+				} else {
+					require.Error(t, err)
+					assert.False(t, actionRan)
+				}
+			})
+		}
+	}
+}
+
 func TestCommand_CommandWithNoFlagBeforeTerminator(t *testing.T) {
 	var args Args
 
