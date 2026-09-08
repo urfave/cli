@@ -1176,6 +1176,56 @@ func TestCommand_BareDashKeepsFollowingArgs(t *testing.T) {
 	require.Equal(t, []string{"-", "foo", "bar"}, args.Slice())
 }
 
+func TestCommand_BareDashThenFlags(t *testing.T) {
+	cases := []struct {
+		name   string
+		argv   []string
+		option string
+		args   []string
+	}{
+		{
+			name:   "flags after a bare dash still parse",
+			argv:   []string{"", "cmd", "-", "--option", "my-option", "foo"},
+			option: "my-option",
+			args:   []string{"-", "foo"},
+		},
+		{
+			name:   "terminator after a bare dash still stops flag parsing",
+			argv:   []string{"", "cmd", "-", "--", "--option", "leftover"},
+			option: "",
+			args:   []string{"-", "--option", "leftover"},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var parsedOption string
+			var args Args
+
+			cmd := &Command{
+				Commands: []*Command{
+					{
+						Name: "cmd",
+						Flags: []Flag{
+							&StringFlag{Name: "option", Value: "", Usage: "some option"},
+						},
+						Action: func(_ context.Context, cmd *Command) error {
+							parsedOption = cmd.String("option")
+							args = cmd.Args()
+							return nil
+						},
+					},
+				},
+			}
+
+			require.NoError(t, cmd.Run(buildTestContext(t), tc.argv))
+			require.Equal(t, tc.option, parsedOption)
+			require.NotNil(t, args)
+			require.Equal(t, tc.args, args.Slice())
+		})
+	}
+}
+
 func TestCommand_CommandWithNoFlagBeforeTerminator(t *testing.T) {
 	var args Args
 
