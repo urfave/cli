@@ -257,12 +257,13 @@ func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 	}
 	argsLen := len(args)
 	lastArg := ""
-	// parent command will have --generate-shell-completion so we need
-	// to account for that
-	if argsLen > 1 {
-		lastArg = args[argsLen-2]
-	} else if argsLen > 0 {
+	// os.Args retains the completion marker, but a child's parsed arguments
+	// have already had it removed.
+	if argsLen > 0 {
 		lastArg = args[argsLen-1]
+		if lastArg == completionFlag && argsLen > 1 {
+			lastArg = args[argsLen-2]
+		}
 	}
 
 	if lastArg == completionFlag {
