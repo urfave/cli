@@ -63,6 +63,7 @@ func (t *timestampValue) Set(value string) error {
 		return errors.New("got nil/empty layouts slice")
 	}
 
+	matchedLayout := ""
 	for _, layout := range t.layouts {
 		var locErr error
 
@@ -78,6 +79,7 @@ func (t *timestampValue) Set(value string) error {
 		}
 
 		err = nil
+		matchedLayout = layout
 		break
 	}
 
@@ -90,7 +92,8 @@ func (t *timestampValue) Set(value string) error {
 	n := time.Now().In(timestamp.Location())
 
 	// If format is missing date (or year only), set it explicitly to current
-	if timestamp.Truncate(time.Hour*24).UnixNano() == defaultTS.Truncate(time.Hour*24).UnixNano() {
+	// A layout that carries a date parses "January 1" to the same instant a date-less layout does, so ask the layout.
+	if !layoutHasDate(matchedLayout) && timestamp.Truncate(time.Hour*24).UnixNano() == defaultTS.Truncate(time.Hour*24).UnixNano() {
 		timestamp = time.Date(
 			n.Year(),
 			n.Month(),
@@ -119,6 +122,14 @@ func (t *timestampValue) Set(value string) error {
 	}
 	t.hasBeenSet = true
 	return nil
+}
+
+// layoutHasDate reports whether layout carries month/day components, probed by
+// round-tripping a reference date that is not January 1.
+func layoutHasDate(layout string) bool {
+	ref := time.Date(2, time.March, 4, 5, 6, 7, 0, time.UTC)
+	p, err := time.Parse(layout, ref.Format(layout))
+	return err == nil && (p.Month() != time.January || p.Day() != 1)
 }
 
 // String returns a readable representation of this value (for usage defaults)
