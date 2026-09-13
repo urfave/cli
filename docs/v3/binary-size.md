@@ -40,19 +40,6 @@ If a specific `urfave/cli` feature appears to keep unexpected code reachable,
 build command, a minimal reproduction, and the `go tool nm -size` output that
 shows the largest symbols.
 
-## Current v3 Build Tags
-
-The v3 module does not currently define build tags such as
-`urfave_cli_no_docs`, `urfave_cli_no_completion`, or `urfave_cli_minimal`.
-Documentation generation lives outside the core module in
-[`urfave/cli-docs`](https://github.com/urfave/cli-docs), so applications that
-only import `github.com/urfave/cli/v3` do not pull in that package.
-
-Shell completion support is part of the core package. Leave
-`EnableShellCompletion` disabled unless the application needs shell completion,
-then measure the result with the commands above.
-
-
 ## Deeper Analysis with go-size-analyzer
  
 The commands above show symbol-level sizes, but they do not clearly show which
@@ -60,7 +47,6 @@ packages contribute most to the binary. [go-size-analyzer](https://github.com/Zx
 provides a package-level breakdown.
  
 Install it with:
- 
  
 ```sh-session
 go install github.com/Zxilly/go-size-analyzer/cmd/gsa@latest
@@ -108,15 +94,15 @@ For a specific dependency:
 go list -m -json github.com/urfave/cli/v3
 ```
  
-Different `go.mod` files do not automatically cause multiple versions of the
-same module to be included in a binary. Go normally selects a single version
-of a module path for a build.
+Go's module resolution (Minimal Version Selection) picks a single version of
+each module path per main module build, so differing `go.mod` files do not by
+themselves cause duplicate versions of the same module in a given binary.
+This mainly matters when comparing binaries built from *different* main
+modules, since each one resolves versions independently — so check the
+actual selected version rather than relying only on the version written in
+`go.mod`. For example, the documentation module uses:
  
-However, when comparing builds across multiple modules, it is important to
-check the actual selected version rather than relying only on the version
-written in `go.mod`. For example, the documentation module uses:
- 
-```go
+```
 replace github.com/urfave/cli/v3 => ../
 ```
  
@@ -124,20 +110,12 @@ so it builds against the local `urfave/cli/v3` checkout.
  
 ## Reflection and Templates
  
-Reflection and runtime type inspection can contribute to binary size because
-additional type information and supporting code may remain reachable.
+Reflection and templates can contribute noticeably to binary size because additional type information and supporting code may remain reachable. In the analyzer output, `reflect` and `text/template` are among the larger contributors.
  
-In the example binary, `go-size-analyzer` reported:
- 
-```
-reflect       315 kB
-text/template 275 kB
-```
- 
-These numbers show their contribution to the analyzed binary, but do not by
-themselves prove that all of this code comes from a single feature.
 `urfave/cli/v3` uses templates for help rendering, making `text/template` one
-of the packages worth investigating when analyzing binary size.
+of the packages worth investigating when analyzing binary size. These numbers
+show their contribution to the analyzed binary, but do not by themselves
+prove that all of this code comes from a single feature.
  
 ## Hiding Built-in Help
  
@@ -172,6 +150,14 @@ remove the help implementation from the compiled binary. If reducing this
 overhead is important, a compile-time approach — such as separate build
 configurations or changes to the library — would be required.
 
+## Current v3 Build Tags
 
+The v3 module does not currently define build tags such as
+`urfave_cli_no_docs`, `urfave_cli_no_completion`, or `urfave_cli_minimal`.
+Documentation generation lives outside the core module in
+[`urfave/cli-docs`](https://github.com/urfave/cli-docs), so applications that
+only import `github.com/urfave/cli/v3` do not pull in that package.
 
-
+Shell completion support is part of the core package. Leave
+`EnableShellCompletion` disabled unless the application needs shell completion,
+then measure the result with the commands above.
