@@ -44,6 +44,12 @@ type BoolWithInverseFlag struct {
 // method. Passing nil restores the default behavior of using the
 // package-level [FlagStringer]. This is used e.g. by
 // [MutuallyExclusiveFlags.Stringer].
+//
+// Note: unlike [FlagBase], BoolWithInverseFlag.String only honors the
+// stringer partially. The names segment (the part before the first tab,
+// e.g. "--[no-]env, -e") is always recomputed from Name/Aliases/InversePrefix
+// and cannot be overridden; only the tab-delimited details after it come
+// from the stringer's output.
 func (bif *BoolWithInverseFlag) SetStringer(s FlagStringFunc) {
 	bif.stringer = s
 }

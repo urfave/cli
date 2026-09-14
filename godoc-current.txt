@@ -428,6 +428,12 @@ func (bif *BoolWithInverseFlag) SetStringer(s FlagStringFunc)
     Passing nil restores the default behavior of using the package-level
     FlagStringer. This is used e.g. by MutuallyExclusiveFlags.Stringer.
 
+    Note: unlike FlagBase, BoolWithInverseFlag.String only honors the
+    stringer partially. The names segment (the part before the first tab, e.g.
+    "--[no-]env, -e") is always recomputed from Name/Aliases/InversePrefix and
+    cannot be overridden; only the tab-delimited details after it come from the
+    stringer's output.
+
 func (bif *BoolWithInverseFlag) String() string
     String implements the standard Stringer interface.
 
@@ -1331,6 +1337,13 @@ type MutuallyExclusiveFlags struct {
 
 	// Stringer overrides how each flag within this group is displayed in
 	// help output. If nil, flags use [FlagStringer] as usual.
+	//
+	// The returned string must be unique per flag within the group (the
+	// default [stringifyFlag] guarantees this by embedding the flag's
+	// name). Help rendering keys flags by their String() output
+	// (flagCategories.AddFlag), so a Stringer that returns identical text
+	// for two or more flags in the same category will cause the later
+	// flag to silently overwrite the earlier one in help output.
 	Stringer FlagStringFunc `json:"-"`
 }
     MutuallyExclusiveFlags defines a mutually exclusive flag group Multiple

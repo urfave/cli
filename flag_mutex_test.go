@@ -171,6 +171,28 @@ func TestMutuallyExclusiveFlags_PropagateStringerNil(t *testing.T) {
 	assert.NotEqual(t, "", grp.Flags[0][0].String())
 }
 
+func TestMutuallyExclusiveFlags_PropagateStringerNilResetsToDefault(t *testing.T) {
+	f := &StringFlag{Name: "foo"}
+	defaultOut := f.String()
+
+	customStringer := func(f Flag) string {
+		return "custom:" + f.Names()[0]
+	}
+
+	grp := MutuallyExclusiveFlags{
+		Stringer: customStringer,
+		Flags:    [][]Flag{{f}},
+	}
+	grp.propagateStringer()
+	assert.Equal(t, "custom:foo", f.String())
+
+	// Resetting the stringer to nil via SetStringer must restore the
+	// default FlagStringer-based behavior.
+	grp.Stringer = nil
+	f.SetStringer(nil)
+	assert.Equal(t, defaultOut, f.String())
+}
+
 // nonStringerSettingFlag is a minimal Flag implementation that deliberately
 // does not implement StringerSetter, so that propagateStringer must skip it
 // via its type assertion rather than panicking or otherwise misbehaving.
