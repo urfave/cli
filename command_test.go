@@ -5410,6 +5410,7 @@ func TestJSONExportCommand(t *testing.T) {
 					"usage": "",
 					"required": false,
 					"hidden": false,
+					"deprecated": "",
 					"hideDefault": false,
 					"local": false,
 					"defaultValue": "",
@@ -5431,6 +5432,7 @@ func TestJSONExportCommand(t *testing.T) {
 					"usage": "some usage text",
 					"required": false,
 					"hidden": false,
+					"deprecated": "",
 					"hideDefault": false,
 					"local": false,
 					"defaultValue": false,
@@ -5449,6 +5451,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"hideHelpCommand": false,
 				"hideVersion": false,
 				"hidden": false,
+				"deprecated": "",
 				"authors": null,
 				"copyright": "",
 				"metadata": null,
@@ -5474,6 +5477,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"usage": "",
 				"required": false,
 				"hidden": false,
+				"deprecated": "",
 				"hideDefault": false,
 				"local": false,
 				"defaultValue": "",
@@ -5495,6 +5499,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"usage": "another usage text",
 				"required": false,
 				"hidden": false,
+				"deprecated": "",
 				"hideDefault": false,
 				"local": false,
 				"defaultValue": false,
@@ -5513,6 +5518,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"hideHelpCommand": false,
 			"hideVersion": false,
 			"hidden": false,
+			"deprecated": "",
 			"authors": null,
 			"copyright": "",
 			"metadata": null,
@@ -5548,6 +5554,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"hideHelpCommand": false,
 			"hideVersion": false,
 			"hidden": false,
+			"deprecated": "",
 			"authors": null,
 			"copyright": "",
 			"metadata": null,
@@ -5580,6 +5587,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"hideHelpCommand": false,
 			"hideVersion": false,
 			"hidden": false,
+			"deprecated": "",
 			"authors": null,
 			"copyright": "",
 			"metadata": null,
@@ -5615,6 +5623,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"usage": "",
 				"required": false,
 				"hidden": false,
+				"deprecated": "",
 				"hideDefault": false,
 				"local": false,
 				"defaultValue": false,
@@ -5631,6 +5640,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"hideHelpCommand": false,
 			"hideVersion": false,
 			"hidden": true,
+			"deprecated": "",
 			"authors": null,
 			"copyright": "",
 			"metadata": null,
@@ -5681,6 +5691,7 @@ func TestJSONExportCommand(t *testing.T) {
 					"usage": "some usage text",
 					"required": false,
 					"hidden": false,
+					"deprecated": "",
 					"hideDefault": false,
 					"local": false,
 					"defaultValue": false,
@@ -5699,6 +5710,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"hideHelpCommand": false,
 				"hideVersion": false,
 				"hidden": false,
+				"deprecated": "",
 				"authors": null,
 				"copyright": "",
 				"metadata": null,
@@ -5724,6 +5736,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"usage": "",
 				"required": false,
 				"hidden": false,
+				"deprecated": "",
 				"hideDefault": false,
 				"local": false,
 				"defaultValue": "",
@@ -5745,6 +5758,7 @@ func TestJSONExportCommand(t *testing.T) {
 				"usage": "another usage text",
 				"required": false,
 				"hidden": false,
+				"deprecated": "",
 				"hideDefault": false,
 				"local": false,
 				"defaultValue": false,
@@ -5763,6 +5777,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"hideHelpCommand": false,
 			"hideVersion": false,
 			"hidden": false,
+			"deprecated": "",
 			"authors": null,
 			"copyright": "",
 			"metadata": null,
@@ -5788,6 +5803,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"usage": "some 'usage' text",
 			"required": false,
 			"hidden": false,
+			"deprecated": "",
 			"hideDefault": false,
 			"local": false,
 			"defaultValue": "value",
@@ -5808,6 +5824,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"usage": "",
 			"required": false,
 			"hidden": false,
+			"deprecated": "",
 			"hideDefault": false,
 			"local": false,
 			"defaultValue": "",
@@ -5829,6 +5846,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"usage": "another usage text",
 			"required": false,
 			"hidden": false,
+			"deprecated": "",
 			"hideDefault": false,
 			"local": false,
 			"defaultValue": false,
@@ -5849,6 +5867,7 @@ func TestJSONExportCommand(t *testing.T) {
 			"usage": "",
 			"required": false,
 			"hidden": true,
+			"deprecated": "",
 			"hideDefault": false,
 			"local": false,
 			"defaultValue": false,
@@ -5865,6 +5884,7 @@ func TestJSONExportCommand(t *testing.T) {
 		"hideHelpCommand": false,
 		"hideVersion": false,
 		"hidden": false,
+		"deprecated": "",
 		"authors": [
 		  "Harrison <harrison@lolwut.example.com>",
 		  {
@@ -6611,4 +6631,144 @@ func TestRunWithNoOsArgs(t *testing.T) {
 			assert.Equal(t, tst.wantName, tst.cmd.Name)
 		})
 	}
+}
+
+func TestCommand_Deprecated(t *testing.T) {
+	newCmd := func() *Command {
+		return &Command{
+			Name: "app",
+			Flags: []Flag{
+				&StringFlag{Name: "old-flag", Aliases: []string{"o"}, Deprecated: "use --new-flag instead"},
+				&StringFlag{Name: "x", Deprecated: "use --new-flag instead"},
+				&StringFlag{Name: "env-flag", Sources: EnvVars("APP_ENV_FLAG"), Deprecated: "use --new-flag instead"},
+				&BoolWithInverseFlag{Name: "color", Deprecated: "it is always on"},
+				&StringFlag{Name: "new-flag"},
+			},
+			Commands: []*Command{
+				{
+					Name:       "old",
+					Deprecated: "use \"new\" instead",
+				},
+				{
+					Name: "new",
+				},
+				{
+					Name:       "group",
+					Deprecated: "use \"new\" instead",
+					Commands: []*Command{
+						{Name: "sub"},
+					},
+				},
+			},
+			Action: func(context.Context, *Command) error { return nil },
+		}
+	}
+
+	tests := []struct {
+		name    string
+		args    []string
+		env     map[string]string
+		wantErr string
+	}{
+		{
+			name: "nothing deprecated used",
+			args: []string{"app", "--new-flag", "v", "new"},
+		},
+		{
+			name:    "deprecated command",
+			args:    []string{"app", "old"},
+			wantErr: "Command \"old\" is deprecated, use \"new\" instead\n",
+		},
+		{
+			name:    "deprecated parent command",
+			args:    []string{"app", "group", "sub"},
+			wantErr: "Command \"group\" is deprecated, use \"new\" instead\n",
+		},
+		{
+			name:    "deprecated flag",
+			args:    []string{"app", "--old-flag", "v"},
+			wantErr: "Flag --old-flag has been deprecated, use --new-flag instead\n",
+		},
+		{
+			name:    "deprecated flag set by alias",
+			args:    []string{"app", "-o", "v"},
+			wantErr: "Flag --old-flag has been deprecated, use --new-flag instead\n",
+		},
+		{
+			name:    "deprecated short flag",
+			args:    []string{"app", "-x", "v"},
+			wantErr: "Flag -x has been deprecated, use --new-flag instead\n",
+		},
+		{
+			name:    "deprecated inverse bool flag",
+			args:    []string{"app", "--no-color"},
+			wantErr: "Flag --color has been deprecated, it is always on\n",
+		},
+		{
+			name:    "deprecated flag set from env",
+			args:    []string{"app"},
+			env:     map[string]string{"APP_ENV_FLAG": "v"},
+			wantErr: "Flag --env-flag has been deprecated, use --new-flag instead\n",
+		},
+		{
+			name:    "deprecated persistent flag set on subcommand",
+			args:    []string{"app", "new", "--old-flag", "v"},
+			wantErr: "Flag --old-flag has been deprecated, use --new-flag instead\n",
+		},
+		{
+			name:    "deprecated persistent flag set on parent and subcommand warns once",
+			args:    []string{"app", "--old-flag", "v", "new", "--old-flag", "w"},
+			wantErr: "Flag --old-flag has been deprecated, use --new-flag instead\n",
+		},
+		{
+			name: "deprecated command and flag",
+			args: []string{"app", "old", "--old-flag", "v"},
+			wantErr: "Command \"old\" is deprecated, use \"new\" instead\n" +
+				"Flag --old-flag has been deprecated, use --new-flag instead\n",
+		},
+		{
+			name: "help for deprecated command",
+			args: []string{"app", "old", "--help"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			for k, v := range test.env {
+				t.Setenv(k, v)
+			}
+
+			var errBuf bytes.Buffer
+			cmd := newCmd()
+			cmd.Writer = io.Discard
+			cmd.ErrWriter = &errBuf
+
+			require.NoError(t, cmd.Run(buildTestContext(t), test.args))
+			assert.Equal(t, test.wantErr, errBuf.String())
+		})
+	}
+}
+
+func TestCommand_DeprecatedStillRuns(t *testing.T) {
+	var got string
+	cmd := &Command{
+		Name:      "app",
+		ErrWriter: io.Discard,
+		Commands: []*Command{
+			{
+				Name:       "old",
+				Deprecated: "use \"new\" instead",
+				Flags: []Flag{
+					&StringFlag{Name: "old-flag", Deprecated: "use --new-flag instead"},
+				},
+				Action: func(_ context.Context, cmd *Command) error {
+					got = cmd.String("old-flag")
+					return nil
+				},
+			},
+		},
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"app", "old", "--old-flag", "v"}))
+	assert.Equal(t, "v", got)
 }

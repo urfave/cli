@@ -82,6 +82,10 @@ type Command struct {
 	InvalidFlagAccessHandler InvalidFlagAccessFunc `json:"-"`
 	// Boolean to hide this command from help or completion
 	Hidden bool `json:"hidden"`
+	// Deprecation message for this command. If non-empty, a warning is
+	// printed to ErrWriter when the command is invoked. Setting it does not
+	// hide the command; set Hidden as well for that.
+	Deprecated string `json:"deprecated"`
 	// List of all authors who contributed (string or fmt.Stringer)
 	// TODO: ~string | fmt.Stringer when interface unions are available
 	Authors []any `json:"authors"`

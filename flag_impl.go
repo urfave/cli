@@ -63,6 +63,7 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Sources          ValueSourceChain                         `json:"-"`                // sources to load flag value from
 	Required         bool                                     `json:"required"`         // whether the flag is required or not
 	Hidden           bool                                     `json:"hidden"`           // whether to hide the flag in help output
+	Deprecated       string                                   `json:"deprecated"`       // deprecation message, if set a warning is printed when the flag is set
 	Local            bool                                     `json:"local"`            // whether the flag needs to be applied to subcommands as well
 	Value            T                                        `json:"defaultValue"`     // default value for this flag if not set by from any source
 	Destination      *T                                       `json:"-"`                // destination pointer for value when set
@@ -253,6 +254,11 @@ func (f *FlagBase[T, C, V]) IsRequired() bool {
 // IsVisible returns true if the flag is not hidden, otherwise false
 func (f *FlagBase[T, C, V]) IsVisible() bool {
 	return !f.Hidden
+}
+
+// GetDeprecated returns the deprecation message of the flag
+func (f *FlagBase[T, C, V]) GetDeprecated() string {
+	return f.Deprecated
 }
 
 // GetCategory returns the category of the flag

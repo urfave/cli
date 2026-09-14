@@ -118,6 +118,13 @@ type RequiredFlag interface {
 	IsRequired() bool
 }
 
+// DeprecatedFlag is an interface that allows us to mark flags as deprecated
+type DeprecatedFlag interface {
+	// GetDeprecated returns the deprecation message, or an empty string
+	// if the flag is not deprecated
+	GetDeprecated() string
+}
+
 // DocGenerationFlag is an interface that allows documentation generation for the flag
 type DocGenerationFlag interface {
 	// TakesValue returns true if the flag takes a value, otherwise false
