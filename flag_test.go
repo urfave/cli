@@ -2718,6 +2718,36 @@ func TestTimestampFlagApply_ShortenedLayouts(t *testing.T) {
 	}
 }
 
+func TestTimestampFlagApply_YearlessLayoutJanuaryFirst(t *testing.T) {
+	year := time.Now().UTC().Year()
+
+	for _, tc := range []struct {
+		layout   string
+		value    string
+		expected time.Time
+	}{
+		{layout: "01-02", value: "01-01", expected: time.Date(year, time.January, 1, 0, 0, 0, 0, time.UTC)},
+		{layout: "01-02", value: "03-04", expected: time.Date(year, time.March, 4, 0, 0, 0, 0, time.UTC)},
+		{layout: "Jan _2 15:04:05", value: "Jan  1 06:07:08", expected: time.Date(year, time.January, 1, 6, 7, 8, 0, time.UTC)},
+	} {
+		t.Run(tc.layout+" "+tc.value, func(t *testing.T) {
+			var got time.Time
+			cmd := &Command{
+				Flags: []Flag{
+					&TimestampFlag{Name: "time", Config: TimestampConfig{Layouts: []string{tc.layout}}},
+				},
+				Action: func(_ context.Context, cmd *Command) error {
+					got = cmd.Timestamp("time")
+					return nil
+				},
+			}
+
+			assert.NoError(t, cmd.Run(buildTestContext(t), []string{"", "--time", tc.value}))
+			assert.Equal(t, tc.expected, got)
+		})
+	}
+}
+
 func TestTimestampFlagApplyValue(t *testing.T) {
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
 	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layouts: []string{time.RFC3339}}, Value: expectedResult}

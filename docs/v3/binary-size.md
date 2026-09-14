@@ -40,6 +40,116 @@ If a specific `urfave/cli` feature appears to keep unexpected code reachable,
 build command, a minimal reproduction, and the `go tool nm -size` output that
 shows the largest symbols.
 
+## Deeper Analysis with go-size-analyzer
+ 
+The commands above show symbol-level sizes, but they do not clearly show which
+packages contribute most to the binary. [go-size-analyzer](https://github.com/Zxilly/go-size-analyzer)
+provides a package-level breakdown.
+ 
+Install it with:
+ 
+```sh-session
+go install github.com/Zxilly/go-size-analyzer/cmd/gsa@latest
+```
+ 
+Then analyze a binary:
+ 
+```sh-session
+gsa myapp
+```
+ 
+For example, a minimal `urfave/cli/v3` binary showed:
+ 
+```
+21.58%  runtime                  1.0 MB
+ 6.57%  reflect                  315 kB
+ 6.25%  .rodata                  300 kB
+ 5.87%  github.com/urfave/cli/v3 282 kB
+ 5.74%  text/template            275 kB
+```
+ 
+This helps identify which packages are worth investigating. Packages such as
+`runtime` are fundamental to a Go binary and are not normally removable.
+For an interactive view, use:
+ 
+```sh-session
+gsa --tui myapp
+```
+ 
+> **Note:** analyze an unstripped binary when possible. Stripping debug
+> information can make package attribution less accurate.
+ 
+## Dependency Versions and Multiple Modules
+ 
+A repository may contain multiple Go modules, each with its own `go.mod`.
+Check the modules and their selected versions with:
+ 
+```sh-session
+go list -m all
+```
+ 
+For a specific dependency:
+ 
+```sh-session
+go list -m -json github.com/urfave/cli/v3
+```
+ 
+Go's module resolution (Minimal Version Selection) picks a single version of
+each module path per main module build, so differing `go.mod` files do not by
+themselves cause duplicate versions of the same module in a given binary.
+This mainly matters when comparing binaries built from *different* main
+modules, since each one resolves versions independently — so check the
+actual selected version rather than relying only on the version written in
+`go.mod`. For example, the documentation module uses:
+ 
+```
+replace github.com/urfave/cli/v3 => ../
+```
+ 
+so it builds against the local `urfave/cli/v3` checkout.
+ 
+## Reflection and Templates
+ 
+Reflection and templates can contribute noticeably to binary size because additional type information and supporting code may remain reachable. In the analyzer output, `reflect` and `text/template` are among the larger contributors.
+ 
+`urfave/cli/v3` uses templates for help rendering, making `text/template` one
+of the packages worth investigating when analyzing binary size. These numbers
+show their contribution to the analyzed binary, but do not by themselves
+prove that all of this code comes from a single feature.
+ 
+## Hiding Built-in Help
+ 
+Disabling built-in help does not currently reduce the binary size.
+ 
+Two otherwise identical binaries were built:
+ 
+```go
+&cli.Command{}
+```
+ 
+and:
+ 
+```go
+&cli.Command{
+    HideHelp:        true,
+    HideHelpCommand: true,
+}
+```
+ 
+Both were approximately 4.6 MB, and `go-size-analyzer` reported the same
+sizes for the relevant packages:
+ 
+| Package                     | Normal | Hidden |
+|------------------------------|--------|--------|
+| `reflect`                    | 315 kB | 315 kB |
+| `text/template`              | 275 kB | 275 kB |
+| `github.com/urfave/cli/v3`   | 282 kB | 282 kB |
+ 
+`HideHelp` and `HideHelpCommand` are runtime options, so hiding help does not
+remove the help implementation from the compiled binary. If reducing this
+overhead is important, a compile-time approach — such as separate build
+configurations or changes to the library — would be required.
+
 ## Current v3 Build Tags
 
 The v3 module does not currently define build tags such as
