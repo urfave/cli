@@ -147,7 +147,9 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		valFromEqual := false
 		tracef("flagName:1 (fName=%[1]q)", flagName)
 		if index := strings.Index(flagName, "="); index != -1 {
-			flagVal = flagName[index+1:]
+			// Classify the flag using the trimmed token, but leave value
+			// whitespace handling to the flag's value parser.
+			_, flagVal, _ = strings.Cut(rargs[0], "=")
 			flagName = flagName[:index]
 			valFromEqual = true
 		}
