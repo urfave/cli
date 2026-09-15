@@ -357,6 +357,7 @@ type BoolWithInverseFlag struct {
 	Sources          ValueSourceChain                            `json:"-"`                // sources to load flag value from
 	Required         bool                                        `json:"required"`         // whether the flag is required or not
 	Hidden           bool                                        `json:"hidden"`           // whether to hide the flag in help output
+	Deprecated       string                                      `json:"deprecated"`       // deprecation message, if set a warning is printed when the flag is set
 	Local            bool                                        `json:"local"`            // whether the flag needs to be applied to subcommands as well
 	Value            bool                                        `json:"defaultValue"`     // default value for this flag if not set by from any source
 	Destination      *bool                                       `json:"-"`                // destination pointer for value when set
@@ -382,6 +383,9 @@ func (bif *BoolWithInverseFlag) GetCategory() string
 
 func (bif *BoolWithInverseFlag) GetDefaultText() string
     GetDefaultText returns the default text for this flag
+
+func (bif *BoolWithInverseFlag) GetDeprecated() string
+    GetDeprecated returns the deprecation message of the flag
 
 func (bif *BoolWithInverseFlag) GetEnvVars() []string
     GetEnvVars returns the env vars for this flag
@@ -519,6 +523,10 @@ type Command struct {
 	InvalidFlagAccessHandler InvalidFlagAccessFunc `json:"-"`
 	// Boolean to hide this command from help or completion
 	Hidden bool `json:"hidden"`
+	// Deprecation message for this command. If non-empty, a warning is
+	// printed to ErrWriter when the command is invoked. Setting it does not
+	// hide the command; set Hidden as well for that.
+	Deprecated string `json:"deprecated"`
 	// List of all authors who contributed (string or fmt.Stringer)
 	// TODO: ~string | fmt.Stringer when interface unions are available
 	Authors []any `json:"authors"`
@@ -879,6 +887,13 @@ type Countable interface {
     Countable is an interface to enable detection of flag values which support
     repetitive flags
 
+type DeprecatedFlag interface {
+	// GetDeprecated returns the deprecation message, or an empty string
+	// if the flag is not deprecated
+	GetDeprecated() string
+}
+    DeprecatedFlag is an interface that allows us to mark flags as deprecated
+
 type DocGenerationFlag interface {
 	// TakesValue returns true if the flag takes a value, otherwise false
 	TakesValue() bool
@@ -1007,6 +1022,7 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Sources          ValueSourceChain                         `json:"-"`                // sources to load flag value from
 	Required         bool                                     `json:"required"`         // whether the flag is required or not
 	Hidden           bool                                     `json:"hidden"`           // whether to hide the flag in help output
+	Deprecated       string                                   `json:"deprecated"`       // deprecation message, if set a warning is printed when the flag is set
 	Local            bool                                     `json:"local"`            // whether the flag needs to be applied to subcommands as well
 	Value            T                                        `json:"defaultValue"`     // default value for this flag if not set by from any source
 	Destination      *T                                       `json:"-"`                // destination pointer for value when set
@@ -1037,6 +1053,9 @@ func (f *FlagBase[T, C, V]) GetCategory() string
 
 func (f *FlagBase[T, C, V]) GetDefaultText() string
     GetDefaultText returns the default text for this flag
+
+func (f *FlagBase[T, C, V]) GetDeprecated() string
+    GetDeprecated returns the deprecation message of the flag
 
 func (f *FlagBase[T, C, V]) GetEnvVars() []string
     GetEnvVars returns the env vars for this flag
