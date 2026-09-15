@@ -13,6 +13,7 @@ type MapBase[T any, C any, VC ValueCreator[T, C]] struct {
 	dict             *map[string]T
 	hasBeenSet       bool
 	value            Value
+	trimKeySpace     bool
 	multiValueConfig multiValueParsingConfig
 }
 
@@ -24,9 +25,16 @@ func (i MapBase[T, C, VC]) Create(val map[string]T, p *map[string]T, c C) Value 
 	var t T
 	np := new(T)
 	var vc VC
+	// The key is always a string, so it answers to StringConfig.TrimSpace just
+	// like the value does.
+	trimKeySpace := false
+	if sc, ok := any(c).(StringConfig); ok {
+		trimKeySpace = sc.TrimSpace
+	}
 	return &MapBase[T, C, VC]{
-		dict:  p,
-		value: vc.Create(t, np, c),
+		dict:         p,
+		value:        vc.Create(t, np, c),
+		trimKeySpace: trimKeySpace,
 	}
 }
 
@@ -80,6 +88,9 @@ func (i *MapBase[T, C, VC]) Set(value string) error {
 		key, value, ok := strings.Cut(item, keyValueSeparator)
 		if !ok {
 			return fmt.Errorf("item %q is missing separator %q", item, keyValueSeparator)
+		}
+		if i.trimKeySpace {
+			key = strings.TrimSpace(key)
 		}
 		if err := i.value.Set(value); err != nil {
 			return err
