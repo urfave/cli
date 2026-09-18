@@ -83,10 +83,6 @@ func (bif *BoolWithInverseFlag) inversePrefix() string {
 }
 
 func (bif *BoolWithInverseFlag) PreParse() error {
-	count := bif.Config.Count
-	if count == nil {
-		count = &bif.count
-	}
 	dest := bif.Destination
 	if dest == nil {
 		dest = new(bool)
@@ -94,7 +90,7 @@ func (bif *BoolWithInverseFlag) PreParse() error {
 	*dest = bif.Value
 	bif.value = &boolValue{
 		destination: dest,
-		count:       count,
+		count:       bif.Config.Count,
 	}
 
 	// Validate the given default or values set from external sources as well
@@ -153,6 +149,7 @@ func (bif *BoolWithInverseFlag) Set(name, val string) error {
 		}
 		bif.nset = true
 	}
+	bif.count++
 
 	if bif.Validator != nil {
 		return bif.Validator(bif.value.Get().(bool))

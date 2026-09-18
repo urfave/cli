@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"fmt"
+	"io"
 	"strings"
 	"testing"
 
@@ -570,5 +571,35 @@ func TestBoolWithInverseFlagStringNoPanicWithNoTabStringer(t *testing.T) {
 	got := flag.String()
 	if !strings.Contains(got, "verbose") {
 		t.Errorf("expected String() to contain the flag name, got %q", got)
+	}
+}
+
+func TestBoolWithInverseFlagCount(t *testing.T) {
+	for _, externalCount := range []bool{false, true} {
+		for _, onlyOnce := range []bool{false, true} {
+			for _, name := range []string{"--env", "--no-env", "-e", "--no-e"} {
+				t.Run(fmt.Sprintf("external=%v/onlyOnce=%v/%s", externalCount, onlyOnce, name), func(t *testing.T) {
+					const initialCount = 7
+					count := initialCount
+					fl := &BoolWithInverseFlag{Name: "env", Aliases: []string{"e"}, OnlyOnce: onlyOnce}
+					if externalCount {
+						fl.Config.Count = &count
+					}
+					cmd := &Command{Flags: []Flag{fl}, Writer: io.Discard, ErrWriter: io.Discard}
+					err := cmd.Run(buildTestContext(t), []string{"prog", name, name})
+					wantCount := 2
+					if onlyOnce {
+						require.ErrorContains(t, err, "can't duplicate this flag")
+						wantCount = 1
+					} else {
+						require.NoError(t, err)
+					}
+					require.Equal(t, wantCount, fl.Count())
+					if externalCount {
+						require.Equal(t, initialCount+wantCount, count)
+					}
+				})
+			}
+		}
 	}
 }
