@@ -1229,6 +1229,27 @@ func TestCommand_FlagValuesKeepWhitespace(t *testing.T) {
 	}
 }
 
+func TestCommand_SingleRuneUnicodeFlag(t *testing.T) {
+	const name = "ש"
+	assert.Equal(t, "-", prefixFor(name))
+
+	var value string
+	var args []string
+	cmd := &Command{
+		Name:  "app",
+		Flags: []Flag{&StringFlag{Name: name}},
+		Action: func(_ context.Context, cmd *Command) error {
+			value = cmd.String(name)
+			args = cmd.Args().Slice()
+			return nil
+		},
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"app", "-" + name, "value", "operand"}))
+	assert.Equal(t, "value", value)
+	assert.Equal(t, []string{"operand"}, args)
+}
+
 func TestCommand_EqualsFlagValueValidation(t *testing.T) {
 	for _, kind := range []string{"int", "bool"} {
 		for _, whitespace := range []string{"", " ", "\t"} {
