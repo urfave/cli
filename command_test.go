@@ -1172,6 +1172,22 @@ func TestCommand_PositionalArgsKeepWhitespace(t *testing.T) {
 	require.Equal(t, []string{"  padded  ", "\ttabbed\t"}, args.Slice())
 }
 
+func TestCommand_BareHyphenPreservesRemainingArgs(t *testing.T) {
+	var args Args
+	var verbose bool
+	cmd := &Command{
+		Flags: []Flag{&BoolFlag{Name: "verbose", Destination: &verbose}},
+		Action: func(_ context.Context, cmd *Command) error {
+			args = cmd.Args()
+			return nil
+		},
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"prog", "-", "foo", "--verbose", "bar"}))
+	require.Equal(t, []string{"-", "foo", "--verbose", "bar"}, args.Slice())
+	require.False(t, verbose)
+}
+
 func TestCommand_FlagValuesKeepWhitespace(t *testing.T) {
 	cases := []struct {
 		name      string
