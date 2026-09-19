@@ -123,8 +123,8 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		numMinuses := 1
 		// this is same as firstArg == "-"
 		if len(firstArg) == 1 {
-			posArgs = append(posArgs, firstArg)
-			break
+			posArgs = append(posArgs, rargs...)
+			return &stringSliceArgs{posArgs}, nil
 		}
 
 		shortOptionHandling := cmd.useShortOptionHandling()
