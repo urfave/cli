@@ -18,6 +18,7 @@ type BoolWithInverseFlag struct {
 	Sources          ValueSourceChain                            `json:"-"`                // sources to load flag value from
 	Required         bool                                        `json:"required"`         // whether the flag is required or not
 	Hidden           bool                                        `json:"hidden"`           // whether to hide the flag in help output
+	Deprecated       string                                      `json:"deprecated"`       // deprecation message, if set a warning is printed when the flag is set
 	Local            bool                                        `json:"local"`            // whether the flag needs to be applied to subcommands as well
 	Value            bool                                        `json:"defaultValue"`     // default value for this flag if not set by from any source
 	Destination      *bool                                       `json:"-"`                // destination pointer for value when set
@@ -239,6 +240,11 @@ func (bif *BoolWithInverseFlag) GetDefaultText() string {
 		return bif.DefaultText
 	}
 	return boolValue{}.ToString(bif.Value)
+}
+
+// GetDeprecated returns the deprecation message of the flag
+func (bif *BoolWithInverseFlag) GetDeprecated() string {
+	return bif.Deprecated
 }
 
 // GetCategory returns the category of the flag

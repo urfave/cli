@@ -334,6 +334,69 @@ If the command is run without the `lang` flag, the user will see the following m
 Required flag "lang" not set
 ```
 
+#### Deprecated Flags
+
+You can mark a flag as *deprecated* by setting the `Deprecated` field to a message
+explaining what to use instead. When a deprecated flag is set, either on the command
+line or from one of its `Sources` such as an environment variable, a warning is
+written to the root command's `ErrWriter` and the command continues to run.
+
+A deprecated flag is still shown in help output. Set `Hidden: true` as well to hide it.
+
+<!-- {
+  "args": ["&#45;&#45;lang", "spanish"],
+  "output": "Hola"
+} -->
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+	"context"
+
+	"github.com/urfave/cli/v3"
+)
+
+func main() {
+	cmd := &cli.Command{
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:       "lang",
+				Value:      "english",
+				Usage:      "language for the greeting",
+				Deprecated: "use --language instead",
+			},
+			&cli.StringFlag{
+				Name:  "language",
+				Value: "english",
+				Usage: "language for the greeting",
+			},
+		},
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			output := "Hello"
+			if cmd.String("lang") == "spanish" || cmd.String("language") == "spanish" {
+				output = "Hola"
+			}
+			fmt.Println(output)
+			return nil
+		},
+	}
+
+	if err := cmd.Run(context.Background(), os.Args); err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
+If the command is run with `--lang spanish`, the user will see the following warning
+before the output
+
+```
+Flag --lang has been deprecated, use --language instead
+```
+
 #### Flag Groups
 
 You can make groups of flags that are mutually exclusive of each other.

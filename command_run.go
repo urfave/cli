@@ -332,6 +332,8 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 	// First, resolve the chain of nested commands up to the parent.
 	cmdChain := commandChain(cmd)
 
+	printDeprecationWarnings(cmdChain)
+
 	// Run ArgValidator from the nearest ancestor that sets one.
 	if validator := findArgValidator(cmd); validator != nil {
 		if err := validator(ctx, cmd); err != nil {
@@ -419,6 +421,32 @@ func commandChain(cmd *Command) []*Command {
 	}
 	slices.Reverse(cmdChain)
 	return cmdChain
+}
+
+// printDeprecationWarnings writes a warning to the root ErrWriter for each
+// deprecated command in the chain and for each deprecated flag that has been
+// set, whether on the command line or from one of its Sources.
+func printDeprecationWarnings(cmdChain []*Command) {
+	w := cmdChain[0].ErrWriter
+	warned := map[Flag]struct{}{}
+	for _, cmd := range cmdChain {
+		if cmd.Deprecated != "" {
+			fmt.Fprintf(w, "Command %q is deprecated, %s\n", cmd.Name, cmd.Deprecated)
+		}
+		for _, fl := range cmd.appliedFlags {
+			if _, inSet := cmd.setFlags[fl]; !inSet {
+				continue
+			}
+			if _, done := warned[fl]; done {
+				continue
+			}
+			if df, ok := fl.(DeprecatedFlag); ok && df.GetDeprecated() != "" {
+				warned[fl] = struct{}{}
+				name := fl.Names()[0]
+				fmt.Fprintf(w, "Flag %s%s has been deprecated, %s\n", prefixFor(name), name, df.GetDeprecated())
+			}
+		}
+	}
 }
 
 func findArgValidator(cmd *Command) ArgValidatorFunc {

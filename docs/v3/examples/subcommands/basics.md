@@ -75,3 +75,63 @@ func main() {
 	}
 }
 ```
+
+#### Deprecated Commands
+
+A command can be marked as *deprecated* by setting the `Deprecated` field to a
+message explaining what to use instead. When the command is invoked, a warning is
+written to the root command's `ErrWriter` and the command continues to run.
+
+A deprecated command is still listed in help output. Set `Hidden: true` as well to
+hide it.
+
+<!-- {
+  "args": ["rm", "task"],
+  "output": "removed task: task"
+} -->
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+	"context"
+
+	"github.com/urfave/cli/v3"
+)
+
+func main() {
+	cmd := &cli.Command{
+		Commands: []*cli.Command{
+			{
+				Name:  "remove",
+				Usage: "remove a task from the list",
+				Action: func(ctx context.Context, cmd *cli.Command) error {
+					fmt.Println("removed task:", cmd.Args().First())
+					return nil
+				},
+			},
+			{
+				Name:       "rm",
+				Usage:      "remove a task from the list",
+				Deprecated: "use \"remove\" instead",
+				Action: func(ctx context.Context, cmd *cli.Command) error {
+					fmt.Println("removed task:", cmd.Args().First())
+					return nil
+				},
+			},
+		},
+	}
+
+	if err := cmd.Run(context.Background(), os.Args); err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
+Running `rm task` prints the following warning before the output
+
+```
+Command "rm" is deprecated, use "remove" instead
+```
