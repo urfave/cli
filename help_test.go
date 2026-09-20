@@ -1671,6 +1671,42 @@ func TestMutuallyExclusiveFlags(t *testing.T) {
 	assert.Contains(t, writer.String(), "--s1", "written help does not include mutex flag")
 }
 
+func TestMutuallyExclusiveFlags_StringerInHelpOutput(t *testing.T) {
+	writer := &bytes.Buffer{}
+	cmd := &Command{
+		Name:   "cmd",
+		Writer: writer,
+		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
+			{
+				Stringer: func(f Flag) string {
+					return "--" + f.Names()[0] + "\tcustom stringer output"
+				},
+				Flags: [][]Flag{
+					{
+						&StringFlag{Name: "s1"},
+					},
+					{
+						&StringFlag{Name: "s2"},
+					},
+				},
+			},
+		},
+	}
+
+	r, w, _ := os.Pipe()
+	cmd.Writer = w
+
+	assert.NoError(t, cmd.Run(buildTestContext(t), []string{"cmd", "--help"}))
+
+	w.Close()
+	buf := make([]byte, 4096)
+	n, _ := r.Read(buf)
+	out := string(buf[:n])
+
+	assert.Contains(t, out, "custom stringer output", "help output does not reflect the group's custom Stringer")
+	assert.NotContains(t, out, "(default:", "help output should not fall back to the default FlagStringer format")
+}
+
 func TestWrap(t *testing.T) {
 	emptywrap := wrap("", 4, 16)
 	assert.Empty(t, emptywrap, "Wrapping empty line should return empty line")

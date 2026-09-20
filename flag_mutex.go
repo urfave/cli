@@ -14,6 +14,17 @@ type MutuallyExclusiveFlags struct {
 
 	// Category to apply to all flags within group
 	Category string
+
+	// Stringer overrides how each flag within this group is displayed in
+	// help output. If nil, flags use [FlagStringer] as usual.
+	//
+	// The returned string must be unique per flag within the group (the
+	// default [stringifyFlag] guarantees this by embedding the flag's
+	// name). Help rendering keys flags by their String() output
+	// (flagCategories.AddFlag), so a Stringer that returns identical text
+	// for two or more flags in the same category will cause the later
+	// flag to silently overwrite the earlier one in help output.
+	Stringer FlagStringFunc `json:"-"`
 }
 
 func (grp MutuallyExclusiveFlags) check(_ *Command) error {
@@ -65,6 +76,25 @@ func (grp MutuallyExclusiveFlags) propagateCategory() {
 		for _, f := range grpf {
 			if cf, ok := f.(CategorizableFlag); ok {
 				cf.SetCategory(grp.Category)
+			}
+		}
+	}
+}
+
+// propagateStringer applies [MutuallyExclusiveFlags.Stringer], if set, to
+// every flag within the group that supports a [StringerSetter]. Like
+// [MutuallyExclusiveFlags.propagateCategory], this only runs during command
+// setup, so mutating Stringer between runs of a reused [Command] will not
+// re-propagate the change.
+func (grp MutuallyExclusiveFlags) propagateStringer() {
+	if grp.Stringer == nil {
+		return
+	}
+
+	for _, grpf := range grp.Flags {
+		for _, f := range grpf {
+			if sf, ok := f.(StringerSetter); ok {
+				sf.SetStringer(grp.Stringer)
 			}
 		}
 	}

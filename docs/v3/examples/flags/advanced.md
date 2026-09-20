@@ -490,6 +490,13 @@ func getUser(ctx context.Context, cmd *cli.Command) (User, error) {
 }
 ```
 
+You can also customize how the flags within a group are rendered in `--help`
+output by setting `MutuallyExclusiveFlags.Stringer` to a `cli.FlagStringFunc`.
+It's applied to every flag in the group that supports overriding its string
+representation (i.e. implements `cli.StringerSetter`, which all `FlagBase`-based
+flags do). The stringer's output must be unique per flag within the group,
+since help rendering keys flags by their string representation.
+
 If the command is run without either the `login` or `id` flag, the user will
 see the following message
 
