@@ -5,10 +5,11 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"unicode/utf8"
 )
 
 func prefixFor(name string) (prefix string) {
-	if len(name) == 1 {
+	if utf8.RuneCountInString(name) == 1 {
 		prefix = "-"
 	} else {
 		prefix = "--"
