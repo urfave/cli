@@ -3580,3 +3580,27 @@ func TestFlagBaseInterfaceValueType(t *testing.T) {
 		assert.True(t, fl.IsSet())
 	})
 }
+
+func TestStringMapFlagTrimsKeyLikeValue(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		trimSpace bool
+		expected  map[string]string
+	}{
+		{name: "trim disabled", expected: map[string]string{"a": "1", " b": " 2 "}},
+		{name: "trim enabled", trimSpace: true, expected: map[string]string{"a": "1", "b": "2"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var got map[string]string
+			cmd := &Command{
+				Flags: []Flag{&StringMapFlag{Name: "m", Config: StringConfig{TrimSpace: tc.trimSpace}}},
+				Action: func(_ context.Context, cmd *Command) error {
+					got = cmd.StringMap("m")
+					return nil
+				},
+			}
+			require.NoError(t, cmd.Run(buildTestContext(t), []string{"app", "--m", "a=1, b= 2 "}))
+			assert.Equal(t, tc.expected, got)
+		})
+	}
+}
