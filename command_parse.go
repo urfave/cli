@@ -213,6 +213,11 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 			return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", providedButNotDefinedErrMsg, flagName)
 		}
 
+		// ranging over flagName yields byte offsets, so the last flag starts
+		// where its rune starts, which is not len-1 for a multi-byte rune
+		_, lastSize := utf8.DecodeLastRuneInString(flagName)
+		lastIndex := len(flagName) - lastSize
+
 		// try to split the flags
 		for index, c := range flagName {
 			tracef("processing flag (fName=%[1]q)", string(c))
@@ -224,7 +229,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 				return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", providedButNotDefinedErrMsg, flagName)
 			} else if fb, ok := sf.(boolFlag); ok && fb.IsBoolFlag() {
 				fv := flagVal
-				if index == (len(flagName)-1) && flagVal == "" {
+				if index == lastIndex && flagVal == "" {
 					fv = "true"
 				}
 				if fv == "" {
@@ -234,7 +239,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 					tracef("processing flag.2 (fName=%[1]q)", string(c))
 					return &stringSliceArgs{posArgs}, err
 				}
-			} else if index == len(flagName)-1 { // last flag can take an arg
+			} else if index == lastIndex { // last flag can take an arg
 				if flagVal == "" {
 					if len(rargs) == 1 {
 						return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", argumentNotProvidedErrMsg, string(c))
