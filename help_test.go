@@ -1439,8 +1439,8 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				parent: &Command{
 					Name: "cmd",
 					Flags: []Flag{
-						&BoolFlag{Name: "happiness"},
-						&Int64Flag{Name: "everybody-jump-on"},
+						&BoolFlag{Name: "happiness", Local: true},
+						&Int64Flag{Name: "everybody-jump-on", Local: true},
 					},
 					Commands: []*Command{
 						{Name: "putz"},
@@ -1461,8 +1461,8 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				parent: &Command{
 					Name: "cmd",
 					Flags: []Flag{
-						&BoolFlag{Name: "happiness"},
-						&Int64Flag{Name: "everybody-jump-on"},
+						&BoolFlag{Name: "happiness", Local: true},
+						&Int64Flag{Name: "everybody-jump-on", Local: true},
 					},
 					Commands: []*Command{
 						{Name: "putz"},
@@ -1483,8 +1483,8 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				parent: &Command{
 					Name: "cmd",
 					Flags: []Flag{
-						&BoolFlag{Name: "happiness"},
-						&Int64Flag{Name: "everybody-jump-on"},
+						&BoolFlag{Name: "happiness", Local: true},
+						&Int64Flag{Name: "everybody-jump-on", Local: true},
 					},
 					Commands: []*Command{
 						{Name: "putz"},
@@ -1505,8 +1505,8 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				parent: &Command{
 					Name: "cmd",
 					Flags: []Flag{
-						&BoolFlag{Name: "happiness"},
-						&Int64Flag{Name: "everybody-jump-on"},
+						&BoolFlag{Name: "happiness", Local: true},
+						&Int64Flag{Name: "everybody-jump-on", Local: true},
 					},
 					Commands: []*Command{
 						{Name: "putz"},
@@ -1527,8 +1527,8 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				parent: &Command{
 					Name: "cmd",
 					Flags: []Flag{
-						&BoolFlag{Name: "happiness"},
-						&Int64Flag{Name: "everybody-jump-on"},
+						&BoolFlag{Name: "happiness", Local: true},
+						&Int64Flag{Name: "everybody-jump-on", Local: true},
 					},
 					Commands: []*Command{
 						{Name: "putz"},
@@ -1553,8 +1553,8 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				parent: &Command{
 					Name: "cmd",
 					Flags: []Flag{
-						&BoolFlag{Name: "happiness"},
-						&Int64Flag{Name: "everybody-jump-on"},
+						&BoolFlag{Name: "happiness", Local: true},
+						&Int64Flag{Name: "everybody-jump-on", Local: true},
 					},
 				},
 			},
@@ -1576,8 +1576,8 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				parent: &Command{
 					Name: "cmd",
 					Flags: []Flag{
-						&BoolFlag{Name: "happiness"},
-						&Int64Flag{Name: "everybody-jump-on"},
+						&BoolFlag{Name: "happiness", Local: true},
+						&Int64Flag{Name: "everybody-jump-on", Local: true},
 					},
 				},
 			},
@@ -1596,8 +1596,8 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				parent: &Command{
 					Name: "cmd",
 					Flags: []Flag{
-						&BoolFlag{Name: "happiness"},
-						&Int64Flag{Name: "everybody-jump-on"},
+						&BoolFlag{Name: "happiness", Local: true},
+						&Int64Flag{Name: "everybody-jump-on", Local: true},
 					},
 				},
 			},
@@ -1616,8 +1616,8 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				parent: &Command{
 					Name: "cmd",
 					Flags: []Flag{
-						&BoolFlag{Name: "happiness"},
-						&Int64Flag{Name: "everybody-jump-on"},
+						&BoolFlag{Name: "happiness", Local: true},
+						&Int64Flag{Name: "everybody-jump-on", Local: true},
 					},
 				},
 			},

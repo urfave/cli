@@ -14,10 +14,10 @@ func partialCompletionCommand(output *bytes.Buffer, ran *bool) *Command {
 		return &Command{
 			Name: name,
 			Flags: []Flag{
-				&StringFlag{Name: "param-" + name + "-one"},
-				&StringFlag{Name: "param-" + name + "-two"},
-				&StringFlag{Name: "param-" + name + "-hidden", Hidden: true},
-				&BoolFlag{Name: "unrelated-" + name},
+				&StringFlag{Name: "param-" + name + "-one", Local: true},
+				&StringFlag{Name: "param-" + name + "-two", Local: true},
+				&StringFlag{Name: "param-" + name + "-hidden", Hidden: true, Local: true},
+				&BoolFlag{Name: "unrelated-" + name, Local: true},
 			},
 			Action: func(context.Context, *Command) error { *ran = true; return nil },
 		}

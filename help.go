@@ -272,7 +272,9 @@ func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 
 	if strings.HasPrefix(lastArg, "-") {
 		tracef("printing flag suggestion for flag[%v] on command %[1]q", lastArg, cmd.Name)
-		printFlagSuggestions(lastArg, cmd.Flags, cmd.Root().Writer)
+		flags := cmd.VisiblePersistentFlags()
+		flags = append(flags, cmd.VisibleFlags()...)
+		printFlagSuggestions(lastArg, flags, cmd.Root().Writer)
 		return
 	}
 
