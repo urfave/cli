@@ -230,7 +230,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 				if fv == "" {
 					fv = "true"
 				}
-				if err := cmd.set(flagName, sf, fv); err != nil {
+				if err := cmd.set(string(c), sf, fv); err != nil {
 					tracef("processing flag.2 (fName=%[1]q)", string(c))
 					return &stringSliceArgs{posArgs}, err
 				}
@@ -243,7 +243,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 					rargs = rargs[1:]
 				}
 				tracef("parseFlags (flagName %[1]q) (flagVal %[2]q)", flagName, flagVal)
-				if err := cmd.set(flagName, sf, flagVal); err != nil {
+				if err := cmd.set(string(c), sf, flagVal); err != nil {
 					tracef("processing flag.4 (fName=%[1]q)", string(c))
 					return &stringSliceArgs{posArgs}, err
 				}

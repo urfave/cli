@@ -603,3 +603,24 @@ func TestBoolWithInverseFlagCount(t *testing.T) {
 		}
 	}
 }
+
+func TestBoolWithInverseFlagShortOptionHandling(t *testing.T) {
+	for _, args := range [][]string{{"-c", "-v"}, {"-cv"}, {"-vc"}} {
+		t.Run(strings.Join(args, " "), func(t *testing.T) {
+			cmd := &Command{
+				Name:                   "app",
+				UseShortOptionHandling: true,
+				Flags: []Flag{
+					&BoolWithInverseFlag{Name: "color", Aliases: []string{"c"}},
+					&BoolFlag{Name: "verbose", Aliases: []string{"v"}},
+				},
+				Writer:    io.Discard,
+				ErrWriter: io.Discard,
+			}
+
+			require.NoError(t, cmd.Run(buildTestContext(t), append([]string{"app"}, args...)))
+			require.True(t, cmd.Bool("color"))
+			require.True(t, cmd.Bool("verbose"))
+		})
+	}
+}
