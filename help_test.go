@@ -651,6 +651,9 @@ func TestShowCommandHelp_HelpPrinterCustom(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			if tc.template != "" {
+				skipIfNoTemplates(t)
+			}
 			r := require.New(t)
 
 			defer func(old HelpPrinterCustomFunc) {
@@ -726,6 +729,8 @@ func TestShowSubcommandHelp_CommandAliases(t *testing.T) {
 }
 
 func TestShowCommandHelp_Customtemplate(t *testing.T) {
+	skipIfNoTemplates(t)
+
 	cmd := &Command{
 		Name: "foo",
 		Commands: []*Command{
@@ -1061,6 +1066,9 @@ func TestShowRootCommandHelp_HelpPrinter(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.template != "" {
+				skipIfNoTemplates(t)
+			}
 			defer func(old HelpPrinterFunc) {
 				HelpPrinter = old
 			}(HelpPrinter)
@@ -1120,6 +1128,9 @@ func TestShowRootCommandHelp_HelpPrinterCustom(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.template != "" {
+				skipIfNoTemplates(t)
+			}
 			defer func(old HelpPrinterCustomFunc) {
 				HelpPrinterCustom = old
 			}(HelpPrinterCustom)
@@ -1144,6 +1155,8 @@ func TestShowRootCommandHelp_HelpPrinterCustom(t *testing.T) {
 }
 
 func TestShowRootCommandHelp_CustomAppTemplate(t *testing.T) {
+	skipIfNoTemplates(t)
+
 	cmd := &Command{
 		Commands: []*Command{
 			{
@@ -2353,4 +2366,11 @@ func TestCustomUsageCommandHelp(t *testing.T) {
 
 	_ = cmd.Run(buildTestContext(t), []string{"app", "help"})
 	assert.Contains(t, out.String(), UsageCommandHelp)
+}
+
+func skipIfNoTemplates(t *testing.T) {
+	t.Helper()
+	if !templatesSupported {
+		t.Skip("custom templates are not supported with urfave_cli_no_template build tag")
+	}
 }

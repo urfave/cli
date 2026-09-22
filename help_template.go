@@ -9,6 +9,9 @@ import (
 	"text/template"
 )
 
+// templatesSupported is true unless built with the urfave_cli_no_template tag.
+const templatesSupported = true
+
 // DefaultPrintHelpCustom is the default implementation of HelpPrinterCustom.
 //
 // The customFuncs map will be combined with a default template.FuncMap to

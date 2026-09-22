@@ -1,5 +1,7 @@
 package cli
 
+//go:generate go run ./internal/genhelp
+
 var (
 	helpNameTemplate    = `{{$v := offset .FullName 6}}{{wrap .FullName 3}}{{if .Usage}} - {{wrap .Usage $v}}{{end}}`
 	argsTemplate        = `{{if .Arguments}}{{range .Arguments}}{{.Usage}} {{end}}{{end}}`

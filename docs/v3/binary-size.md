@@ -116,6 +116,9 @@ Reflection and templates can contribute noticeably to binary size because additi
 of the packages worth investigating when analyzing binary size. These numbers
 show their contribution to the analyzed binary, but do not by themselves
 prove that all of this code comes from a single feature.
+
+See [`urfave_cli_no_template`](#urfave_cli_no_template) for a way to avoid
+linking `text/template`.
  
 ## Hiding Built-in Help
  
@@ -151,6 +154,25 @@ overhead is important, a compile-time approach — such as separate build
 configurations or changes to the library — would be required.
 
 ## Current v3 Build Tags
+
+### `urfave_cli_no_template`
+
+Using `text/template` makes the Go linker disable dead code elimination of
+exported methods for the whole program, since templates can call arbitrary
+methods by name. For larger programs, this can noticeably increase the binary
+size.
+
+With the `urfave_cli_no_template` build tag, the default help and fish
+completion are rendered without `text/template`, producing the same output.
+Custom templates (`CustomRootCommandHelpTemplate`, `CustomHelpTemplate`,
+modified `RootCommandHelpTemplate` etc.) are not supported in this mode, and
+custom template functions other than `wrap` and `wrapAt` are ignored.
+
+```sh-session
+go build -tags urfave_cli_no_template -o myapp ./cmd/myapp
+```
+
+### Other tags
 
 The v3 module does not currently define build tags such as
 `urfave_cli_no_docs`, `urfave_cli_no_completion`, or `urfave_cli_minimal`.
