@@ -270,3 +270,22 @@ func TestHandleExitCoder_ExitCoderEmptyMessage(t *testing.T) {
 	assert.True(t, called)
 	assert.Empty(t, errBuf.String(), "expected no output to stderr for empty exit message")
 }
+
+func TestExit_Unwrap(t *testing.T) {
+	sentinel := errors.New("not found")
+
+	err := Exit(sentinel, 2)
+
+	// The error given to Exit must stay reachable through the standard
+	// wrapping helpers (#1090).
+	assert.ErrorIs(t, err, sentinel)
+	assert.Equal(t, sentinel, errors.Unwrap(err))
+
+	var ec ExitCoder
+	assert.True(t, errors.As(err, &ec))
+	assert.Equal(t, 2, ec.ExitCode())
+
+	// A non-error message is wrapped into a fresh error and still unwraps.
+	err = Exit("boom", 3)
+	assert.EqualError(t, errors.Unwrap(err), "boom")
+}
