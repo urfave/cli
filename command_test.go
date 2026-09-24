@@ -1156,6 +1156,78 @@ func TestCommand_CommandWithDash(t *testing.T) {
 	require.Equal(t, "-", args.Get(1))
 }
 
+func TestCommand_BareDash(t *testing.T) {
+	cases := []struct {
+		name   string
+		argv   []string
+		option string
+		args   []string
+		err    string
+	}{
+		{
+			name: "arguments after a bare dash are kept",
+			argv: []string{"", "cmd", "-", "foo", "bar"},
+			args: []string{"-", "foo", "bar"},
+		},
+		{
+			name:   "flags after a bare dash still parse",
+			argv:   []string{"", "cmd", "-", "--option", "my-option", "foo"},
+			option: "my-option",
+			args:   []string{"-", "foo"},
+		},
+		{
+			name: "terminator after a bare dash still stops flag parsing",
+			argv: []string{"", "cmd", "-", "--", "--option", "leftover"},
+			args: []string{"-", "--option", "leftover"},
+		},
+		{
+			name: "a bare dash with surrounding whitespace is passed through unchanged",
+			argv: []string{"", "cmd", " - ", "foo"},
+			args: []string{" - ", "foo"},
+		},
+		{
+			name: "an undefined flag after a bare dash is an error",
+			argv: []string{"", "cmd", "-", "--undefined"},
+			err:  "flag provided but not defined: -undefined",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var parsedOption string
+			var args Args
+
+			cmd := &Command{
+				Writer:    io.Discard,
+				ErrWriter: io.Discard,
+				Commands: []*Command{
+					{
+						Name: "cmd",
+						Flags: []Flag{
+							&StringFlag{Name: "option", Value: "", Usage: "some option"},
+						},
+						Action: func(_ context.Context, cmd *Command) error {
+							parsedOption = cmd.String("option")
+							args = cmd.Args()
+							return nil
+						},
+					},
+				},
+			}
+
+			err := cmd.Run(buildTestContext(t), tc.argv)
+			if tc.err != "" {
+				require.EqualError(t, err, tc.err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tc.option, parsedOption)
+			require.NotNil(t, args)
+			require.Equal(t, tc.args, args.Slice())
+		})
+	}
+}
+
 func TestCommand_PositionalArgsKeepWhitespace(t *testing.T) {
 	var args Args
 
