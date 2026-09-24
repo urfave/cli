@@ -6971,3 +6971,44 @@ func TestCommand_DeprecatedStillRuns(t *testing.T) {
 	require.NoError(t, cmd.Run(buildTestContext(t), []string{"app", "old", "--old-flag", "v"}))
 	assert.Equal(t, "v", got)
 }
+
+func TestCommand_UseShortOptionHandling_LocalFlagNotInherited(t *testing.T) {
+	// A parent's Local flag must not be accepted by a subcommand, whether it
+	// is given on its own or inside a short option group: the same lookup
+	// that rejects it in long form (see TestLocalFlagError) has to apply.
+	newCmd := func() *Command {
+		return &Command{
+			Name:                   "app",
+			UseShortOptionHandling: true,
+			Flags: []Flag{
+				&BoolFlag{Name: "debug", Aliases: []string{"d"}, Local: true},
+			},
+			Commands: []*Command{
+				{
+					Name: "sub",
+					Flags: []Flag{
+						&BoolFlag{Name: "x"},
+					},
+					Action: func(context.Context, *Command) error { return nil },
+				},
+			},
+		}
+	}
+
+	for _, args := range [][]string{
+		{"app", "sub", "-xd"},
+		{"app", "sub", "-dx"},
+		{"app", "sub", "-d"},
+	} {
+		err := newCmd().Run(buildTestContext(t), args)
+		require.Error(t, err, "args %v", args)
+		assert.Contains(t, err.Error(), providedButNotDefinedErrMsg, "args %v", args)
+	}
+
+	// The subcommand's own short flags keep working in a group.
+	cmd := newCmd()
+	cmd.Commands[0].Flags = append(cmd.Commands[0].Flags, &BoolFlag{Name: "y"})
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"app", "sub", "-xy"}))
+	assert.True(t, cmd.Commands[0].Bool("x"))
+	assert.True(t, cmd.Commands[0].Bool("y"))
+}
