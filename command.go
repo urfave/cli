@@ -82,6 +82,10 @@ type Command struct {
 	InvalidFlagAccessHandler InvalidFlagAccessFunc `json:"-"`
 	// Boolean to hide this command from help or completion
 	Hidden bool `json:"hidden"`
+	// Deprecation message for this command. If non-empty, a warning is
+	// printed to ErrWriter when the command is invoked. Setting it does not
+	// hide the command; set Hidden as well for that.
+	Deprecated string `json:"deprecated"`
 	// List of all authors who contributed (string or fmt.Stringer)
 	// TODO: ~string | fmt.Stringer when interface unions are available
 	Authors []any `json:"authors"`
@@ -165,6 +169,10 @@ type Command struct {
 	didSetupDefaults bool
 	// whether in shell completion mode
 	shellCompletion bool
+	// whether the shell completion request came after a "--" separator,
+	// after which only positional arguments are accepted and nothing is
+	// suggested. The request is still a completion, never a command run.
+	shellCompletionPastDoubleDash bool
 	// whether global help flag was added
 	globaHelpFlagAdded bool
 	// whether global version flag was added
@@ -306,12 +314,25 @@ func (cmd *Command) VisiblePersistentFlags() []Flag {
 		return nil
 	}
 	var flags []Flag
-	for _, fl := range cmd.Root().Flags {
-		pfl, ok := fl.(LocalFlag)
-		if !ok || pfl.IsLocal() {
-			continue
+	lineage := cmd.Lineage()
+	for i := len(lineage) - 1; i > 0; i-- {
+		for _, fl := range lineage[i].allFlags() {
+			pfl, ok := fl.(LocalFlag)
+			if !ok || pfl.IsLocal() {
+				continue
+			}
+			applies := true
+			for _, name := range fl.Names() {
+				if cmd.lookupFlag(name) != fl {
+					applies = false
+					break
+				}
+			}
+			if !applies {
+				continue
+			}
+			flags = append(flags, fl)
 		}
-		flags = append(flags, fl)
 	}
 	return visibleFlags(flags)
 }

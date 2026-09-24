@@ -118,6 +118,13 @@ type RequiredFlag interface {
 	IsRequired() bool
 }
 
+// DeprecatedFlag is an interface that allows us to mark flags as deprecated
+type DeprecatedFlag interface {
+	// GetDeprecated returns the deprecation message, or an empty string
+	// if the flag is not deprecated
+	GetDeprecated() string
+}
+
 // DocGenerationFlag is an interface that allows documentation generation for the flag
 type DocGenerationFlag interface {
 	// TakesValue returns true if the flag takes a value, otherwise false
@@ -188,6 +195,18 @@ type CategorizableFlag interface {
 
 	// Sets the category of the flag
 	SetCategory(string)
+}
+
+// StringerSetter is an optional interface that allows an individual
+// flag to be given a per-flag override of [FlagStringer]. FlagBase and
+// BoolWithInverseFlag implement this. It's used by
+// [MutuallyExclusiveFlags.Stringer] to customize how flags within a
+// mutually exclusive group are displayed in help output.
+type StringerSetter interface {
+	// SetStringer overrides the [FlagStringFunc] used by this flag's
+	// String method. Passing nil restores the default behavior of using
+	// the package-level [FlagStringer].
+	SetStringer(FlagStringFunc)
 }
 
 // LocalFlag is an interface to enable detection of flags which are local

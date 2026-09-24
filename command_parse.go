@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
 const (
@@ -114,7 +115,9 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 				return &stringSliceArgs{posArgs}, nil
 			}
 
-			posArgs = append(posArgs, firstArg)
+			// firstArg is a trimmed copy that classifies the argument; the
+			// argument itself is what the action receives, byte for byte.
+			posArgs = append(posArgs, rargs[0])
 			continue
 		}
 
@@ -131,7 +134,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		if firstArg[1] == '-' {
 			numMinuses++
 			shortOptionHandling = false
-		} else if !unicode.IsLetter(rune(firstArg[1])) {
+		} else if firstRune, _ := utf8.DecodeRuneInString(firstArg[1:]); !unicode.IsLetter(firstRune) {
 			// this is not a flag
 			tracef("parseFlags not a unicode letter. Stop parsing")
 			posArgs = append(posArgs, rargs...)
@@ -145,7 +148,9 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		valFromEqual := false
 		tracef("flagName:1 (fName=%[1]q)", flagName)
 		if index := strings.Index(flagName, "="); index != -1 {
-			flagVal = flagName[index+1:]
+			// Classify the flag using the trimmed token, but leave value
+			// whitespace handling to the flag's value parser.
+			_, flagVal, _ = strings.Cut(rargs[0], "=")
 			flagName = flagName[:index]
 			valFromEqual = true
 		}
@@ -225,7 +230,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 				if fv == "" {
 					fv = "true"
 				}
-				if err := cmd.set(flagName, sf, fv); err != nil {
+				if err := cmd.set(string(c), sf, fv); err != nil {
 					tracef("processing flag.2 (fName=%[1]q)", string(c))
 					return &stringSliceArgs{posArgs}, err
 				}
@@ -238,7 +243,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 					rargs = rargs[1:]
 				}
 				tracef("parseFlags (flagName %[1]q) (flagVal %[2]q)", flagName, flagVal)
-				if err := cmd.set(flagName, sf, flagVal); err != nil {
+				if err := cmd.set(string(c), sf, flagVal); err != nil {
 					tracef("processing flag.4 (fName=%[1]q)", string(c))
 					return &stringSliceArgs{posArgs}, err
 				}

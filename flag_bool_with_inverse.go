@@ -18,6 +18,7 @@ type BoolWithInverseFlag struct {
 	Sources          ValueSourceChain                            `json:"-"`                // sources to load flag value from
 	Required         bool                                        `json:"required"`         // whether the flag is required or not
 	Hidden           bool                                        `json:"hidden"`           // whether to hide the flag in help output
+	Deprecated       string                                      `json:"deprecated"`       // deprecation message, if set a warning is printed when the flag is set
 	Local            bool                                        `json:"local"`            // whether the flag needs to be applied to subcommands as well
 	Value            bool                                        `json:"defaultValue"`     // default value for this flag if not set by from any source
 	Destination      *bool                                       `json:"-"`                // destination pointer for value when set
@@ -37,6 +38,21 @@ type BoolWithInverseFlag struct {
 	value      Value // value representing this flag's value
 	pset       bool
 	nset       bool
+	stringer   FlagStringFunc // optional per-flag override of FlagStringer
+}
+
+// SetStringer overrides the [FlagStringFunc] used by this flag's String
+// method. Passing nil restores the default behavior of using the
+// package-level [FlagStringer]. This is used e.g. by
+// [MutuallyExclusiveFlags.Stringer].
+//
+// Note: unlike [FlagBase], BoolWithInverseFlag.String only honors the
+// stringer partially. The names segment (the part before the first tab,
+// e.g. "--[no-]env, -e") is always recomputed from Name/Aliases/InversePrefix
+// and cannot be overridden; only the tab-delimited details after it come
+// from the stringer's output.
+func (bif *BoolWithInverseFlag) SetStringer(s FlagStringFunc) {
+	bif.stringer = s
 }
 
 func (bif *BoolWithInverseFlag) IsSet() bool {
@@ -68,10 +84,6 @@ func (bif *BoolWithInverseFlag) inversePrefix() string {
 }
 
 func (bif *BoolWithInverseFlag) PreParse() error {
-	count := bif.Config.Count
-	if count == nil {
-		count = &bif.count
-	}
 	dest := bif.Destination
 	if dest == nil {
 		dest = new(bool)
@@ -79,7 +91,7 @@ func (bif *BoolWithInverseFlag) PreParse() error {
 	*dest = bif.Value
 	bif.value = &boolValue{
 		destination: dest,
-		count:       count,
+		count:       bif.Config.Count,
 	}
 
 	// Validate the given default or values set from external sources as well
@@ -138,6 +150,7 @@ func (bif *BoolWithInverseFlag) Set(name, val string) error {
 		}
 		bif.nset = true
 	}
+	bif.count++
 
 	if bif.Validator != nil {
 		return bif.Validator(bif.value.Get().(bool))
@@ -171,7 +184,11 @@ func (bif *BoolWithInverseFlag) IsVisible() bool {
 // Example for BoolFlag{Name: "env", Aliases: []string{"e"}}
 // --[no-]env, -e	(default: false)
 func (bif *BoolWithInverseFlag) String() string {
-	out := FlagStringer(bif)
+	fs := FlagStringer
+	if bif.stringer != nil {
+		fs = bif.stringer
+	}
+	out := fs(bif)
 
 	i := strings.Index(out, "\t")
 
@@ -223,6 +240,11 @@ func (bif *BoolWithInverseFlag) GetDefaultText() string {
 		return bif.DefaultText
 	}
 	return boolValue{}.ToString(bif.Value)
+}
+
+// GetDeprecated returns the deprecation message of the flag
+func (bif *BoolWithInverseFlag) GetDeprecated() string {
+	return bif.Deprecated
 }
 
 // GetCategory returns the category of the flag

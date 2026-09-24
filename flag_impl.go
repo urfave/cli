@@ -63,6 +63,7 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Sources          ValueSourceChain                         `json:"-"`                // sources to load flag value from
 	Required         bool                                     `json:"required"`         // whether the flag is required or not
 	Hidden           bool                                     `json:"hidden"`           // whether to hide the flag in help output
+	Deprecated       string                                   `json:"deprecated"`       // deprecation message, if set a warning is printed when the flag is set
 	Local            bool                                     `json:"local"`            // whether the flag needs to be applied to subcommands as well
 	Value            T                                        `json:"defaultValue"`     // default value for this flag if not set by from any source
 	Destination      *T                                       `json:"-"`                // destination pointer for value when set
@@ -75,11 +76,12 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	ValidateDefaults bool                                     `json:"validateDefaults"` // whether to validate defaults or not
 
 	// unexported fields for internal use
-	count      int   // number of times the flag has been set
-	hasBeenSet bool  // whether the flag has been set from env or file
-	applied    bool  // whether the flag has been applied to a flag set already
-	creator    VC    // value creator for this flag type
-	value      Value // value representing this flag's value
+	count      int            // number of times the flag has been set
+	hasBeenSet bool           // whether the flag has been set from env or file
+	applied    bool           // whether the flag has been applied to a flag set already
+	creator    VC             // value creator for this flag type
+	value      Value          // value representing this flag's value
+	stringer   FlagStringFunc // optional per-flag override of FlagStringer
 }
 
 // GetValue returns the flags value as string representation and an empty
@@ -232,7 +234,18 @@ func (f *FlagBase[T, C, V]) IsDefaultVisible() bool {
 
 // String returns a readable representation of this value (for usage defaults)
 func (f *FlagBase[T, C, V]) String() string {
+	if f.stringer != nil {
+		return f.stringer(f)
+	}
 	return FlagStringer(f)
+}
+
+// SetStringer overrides the [FlagStringFunc] used by this flag's String
+// method. Passing nil restores the default behavior of using the
+// package-level [FlagStringer]. This is used e.g. by
+// [MutuallyExclusiveFlags.Stringer].
+func (f *FlagBase[T, C, V]) SetStringer(s FlagStringFunc) {
+	f.stringer = s
 }
 
 // IsSet returns whether or not the flag has been set through env or file
@@ -253,6 +266,11 @@ func (f *FlagBase[T, C, V]) IsRequired() bool {
 // IsVisible returns true if the flag is not hidden, otherwise false
 func (f *FlagBase[T, C, V]) IsVisible() bool {
 	return !f.Hidden
+}
+
+// GetDeprecated returns the deprecation message of the flag
+func (f *FlagBase[T, C, V]) GetDeprecated() string {
+	return f.Deprecated
 }
 
 // GetCategory returns the category of the flag
