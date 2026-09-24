@@ -1390,6 +1390,27 @@ func TestCommand_UseShortOptionHandling(t *testing.T) {
 	assert.Equal(t, name, expected)
 }
 
+func TestCommand_UseShortOptionHandlingBoolWithInverse(t *testing.T) {
+	for _, args := range [][]string{{"-c", "-v"}, {"-cv"}, {"-vc"}} {
+		t.Run(strings.Join(args, " "), func(t *testing.T) {
+			cmd := &Command{
+				Name:                   "app",
+				UseShortOptionHandling: true,
+				Flags: []Flag{
+					&BoolWithInverseFlag{Name: "color", Aliases: []string{"c"}},
+					&BoolFlag{Name: "verbose", Aliases: []string{"v"}},
+				},
+				Writer:    io.Discard,
+				ErrWriter: io.Discard,
+			}
+
+			require.NoError(t, cmd.Run(buildTestContext(t), append([]string{"app"}, args...)))
+			assert.True(t, cmd.Bool("color"))
+			assert.True(t, cmd.Bool("verbose"))
+		})
+	}
+}
+
 func TestCommand_UseShortOptionHandling_missing_value(t *testing.T) {
 	cmd := buildMinimalTestCommand()
 	cmd.UseShortOptionHandling = true
