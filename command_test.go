@@ -1156,33 +1156,19 @@ func TestCommand_CommandWithDash(t *testing.T) {
 	require.Equal(t, "-", args.Get(1))
 }
 
-func TestCommand_BareDashKeepsFollowingArgs(t *testing.T) {
-	var args Args
-
-	cmd := &Command{
-		Commands: []*Command{
-			{
-				Name: "cmd",
-				Action: func(_ context.Context, cmd *Command) error {
-					args = cmd.Args()
-					return nil
-				},
-			},
-		},
-	}
-
-	require.NoError(t, cmd.Run(buildTestContext(t), []string{"", "cmd", "-", "foo", "bar"}))
-	require.NotNil(t, args)
-	require.Equal(t, []string{"-", "foo", "bar"}, args.Slice())
-}
-
-func TestCommand_BareDashThenFlags(t *testing.T) {
+func TestCommand_BareDash(t *testing.T) {
 	cases := []struct {
 		name   string
 		argv   []string
 		option string
 		args   []string
+		err    string
 	}{
+		{
+			name: "arguments after a bare dash are kept",
+			argv: []string{"", "cmd", "-", "foo", "bar"},
+			args: []string{"-", "foo", "bar"},
+		},
 		{
 			name:   "flags after a bare dash still parse",
 			argv:   []string{"", "cmd", "-", "--option", "my-option", "foo"},
@@ -1190,10 +1176,19 @@ func TestCommand_BareDashThenFlags(t *testing.T) {
 			args:   []string{"-", "foo"},
 		},
 		{
-			name:   "terminator after a bare dash still stops flag parsing",
-			argv:   []string{"", "cmd", "-", "--", "--option", "leftover"},
-			option: "",
-			args:   []string{"-", "--option", "leftover"},
+			name: "terminator after a bare dash still stops flag parsing",
+			argv: []string{"", "cmd", "-", "--", "--option", "leftover"},
+			args: []string{"-", "--option", "leftover"},
+		},
+		{
+			name: "a bare dash with surrounding whitespace is passed through unchanged",
+			argv: []string{"", "cmd", " - ", "foo"},
+			args: []string{" - ", "foo"},
+		},
+		{
+			name: "an undefined flag after a bare dash is an error",
+			argv: []string{"", "cmd", "-", "--undefined"},
+			err:  "flag provided but not defined: -undefined",
 		},
 	}
 
@@ -1203,6 +1198,8 @@ func TestCommand_BareDashThenFlags(t *testing.T) {
 			var args Args
 
 			cmd := &Command{
+				Writer:    io.Discard,
+				ErrWriter: io.Discard,
 				Commands: []*Command{
 					{
 						Name: "cmd",
@@ -1218,7 +1215,12 @@ func TestCommand_BareDashThenFlags(t *testing.T) {
 				},
 			}
 
-			require.NoError(t, cmd.Run(buildTestContext(t), tc.argv))
+			err := cmd.Run(buildTestContext(t), tc.argv)
+			if tc.err != "" {
+				require.EqualError(t, err, tc.err)
+				return
+			}
+			require.NoError(t, err)
 			require.Equal(t, tc.option, parsedOption)
 			require.NotNil(t, args)
 			require.Equal(t, tc.args, args.Slice())

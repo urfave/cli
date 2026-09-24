@@ -122,9 +122,8 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		}
 
 		numMinuses := 1
-		// this is same as firstArg == "-"
-		if len(firstArg) == 1 {
-			posArgs = append(posArgs, firstArg)
+		if firstArg == "-" {
+			posArgs = append(posArgs, rargs[0])
 			continue
 		}
 
