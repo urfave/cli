@@ -1250,40 +1250,6 @@ func TestCommand_SingleRuneUnicodeFlag(t *testing.T) {
 	assert.Equal(t, []string{"operand"}, args)
 }
 
-func TestCommand_SingleRuneUnicodeFlagEndsShortOptionGroup(t *testing.T) {
-	const name = "ש"
-
-	var verbose bool
-	var value string
-	var args []string
-	newCmd := func() *Command {
-		return &Command{
-			Name:                   "app",
-			UseShortOptionHandling: true,
-			Flags: []Flag{
-				&BoolFlag{Name: "v"},
-				&StringFlag{Name: name},
-			},
-			Action: func(_ context.Context, cmd *Command) error {
-				verbose = cmd.Bool("v")
-				value = cmd.String(name)
-				args = cmd.Args().Slice()
-				return nil
-			},
-			Writer:    io.Discard,
-			ErrWriter: io.Discard,
-		}
-	}
-
-	require.NoError(t, newCmd().Run(buildTestContext(t), []string{"app", "-v" + name, "value", "operand"}))
-	assert.True(t, verbose)
-	assert.Equal(t, "value", value)
-	assert.Equal(t, []string{"operand"}, args)
-
-	err := newCmd().Run(buildTestContext(t), []string{"app", "-v" + name})
-	assert.ErrorContains(t, err, "flag needs an argument")
-}
-
 func TestCommand_EqualsFlagValueValidation(t *testing.T) {
 	for _, kind := range []string{"int", "bool"} {
 		for _, whitespace := range []string{"", " ", "\t"} {
@@ -1433,6 +1399,40 @@ func TestCommand_UseShortOptionHandling_missing_value(t *testing.T) {
 
 	err := cmd.Run(buildTestContext(t), []string{"", "-n"})
 	assert.EqualError(t, err, "flag needs an argument: -n")
+}
+
+func TestCommand_UseShortOptionHandlingMultiByteLastFlag(t *testing.T) {
+	const name = "ש"
+
+	var verbose bool
+	var value string
+	var args []string
+	newCmd := func() *Command {
+		return &Command{
+			Name:                   "app",
+			UseShortOptionHandling: true,
+			Flags: []Flag{
+				&BoolFlag{Name: "v"},
+				&StringFlag{Name: name},
+			},
+			Action: func(_ context.Context, cmd *Command) error {
+				verbose = cmd.Bool("v")
+				value = cmd.String(name)
+				args = cmd.Args().Slice()
+				return nil
+			},
+			Writer:    io.Discard,
+			ErrWriter: io.Discard,
+		}
+	}
+
+	require.NoError(t, newCmd().Run(buildTestContext(t), []string{"app", "-v" + name, "value", "operand"}))
+	assert.True(t, verbose)
+	assert.Equal(t, "value", value)
+	assert.Equal(t, []string{"operand"}, args)
+
+	err := newCmd().Run(buildTestContext(t), []string{"app", "-v" + name})
+	assert.EqualError(t, err, "flag needs an argument: "+name)
 }
 
 func TestCommand_UseShortOptionHandlingCommand(t *testing.T) {
