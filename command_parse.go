@@ -213,6 +213,19 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 			return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", providedButNotDefinedErrMsg, flagName)
 		}
 
+		// every flag of the group has to exist before any of them is set,
+		// otherwise a group holding an unknown flag is reported by whichever
+		// of its flags happens to be examined first
+		for index, c := range flagName {
+			if sf := cmd.lookupFlag(string(c)); sf == nil {
+				if index == 0 && cmd.DefaultCommand != "" {
+					posArgs = append(posArgs, rargs...)
+					return &stringSliceArgs{posArgs}, nil
+				}
+				return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", providedButNotDefinedErrMsg, flagName)
+			}
+		}
+
 		// try to split the flags
 		for index, c := range flagName {
 			tracef("processing flag (fName=%[1]q)", string(c))
@@ -247,6 +260,11 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 					tracef("processing flag.4 (fName=%[1]q)", string(c))
 					return &stringSliceArgs{posArgs}, err
 				}
+			} else {
+				// only the last flag of a group can take an argument, so a flag
+				// that needs one has nothing to read it from here
+				tracef("processing flag.5 (fName=%[1]q)", string(c))
+				return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", argumentNotProvidedErrMsg, string(c))
 			}
 		}
 	}
