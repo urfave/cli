@@ -223,6 +223,11 @@ func TestParseAndRunShortOpts(t *testing.T) {
 		{testArgs: &stringSliceArgs{v: []string{"test", "-i", "ivalue"}}, expectedArgs: &stringSliceArgs{v: []string{}}},
 		{testArgs: &stringSliceArgs{v: []string{"test", "-i", "ivalue", "arg1"}}, expectedArgs: &stringSliceArgs{v: []string{"arg1"}}},
 		{testArgs: &stringSliceArgs{v: []string{"test", "-i"}}, expectedErr: "flag needs an argument: -i"},
+		// a flag that takes a value has to be the last one of a group
+		{testArgs: &stringSliceArgs{v: []string{"test", "-ia"}}, expectedErr: "flag needs an argument: i"},
+		{testArgs: &stringSliceArgs{v: []string{"test", "-ia", "ivalue"}}, expectedErr: "flag needs an argument: i"},
+		{testArgs: &stringSliceArgs{v: []string{"test", "-aic"}}, expectedErr: "flag needs an argument: i"},
+		{testArgs: &stringSliceArgs{v: []string{"test", "-ai", "ivalue"}}, expectedArgs: &stringSliceArgs{v: []string{}}},
 	}
 
 	for _, tc := range testCases {
