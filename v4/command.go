@@ -103,12 +103,11 @@ func (c *Command) personality() *Personality {
 }
 
 // Handle reports err through the command's personality and returns the exit
-// code for it. It returns 0 for a nil error. Help and version requests are
-// not reported, since the help renderer has already written its output.
+// code for it. It returns 0 for a nil error.
 func Handle(cmd *Command, err error) int {
 	p := cmd.personality()
 	code := p.ExitCode(err)
-	if err != nil && p.Report != nil && !errors.Is(err, ErrHelp) && !errors.Is(err, ErrVersion) {
+	if err != nil && p.Report != nil {
 		p.Report(cmd.Err(), cmd, err, code)
 	}
 	return code

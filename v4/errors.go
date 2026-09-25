@@ -16,9 +16,9 @@ const (
 	// Usage means the program was invoked wrongly. It exits with the
 	// personality's usage code.
 	Usage
-	// Request means the user asked for help or the version. It exits 0.
-	Request
 )
+
+// Help and version requests are not errors. Run renders them and returns nil.
 
 // Kind identifies what went wrong in an [Error]. Callers match on kinds,
 // catalogues key messages by them, and personalities map them to exit codes.
@@ -67,8 +67,6 @@ var (
 	UnknownCommand = NewKind("unknown_command", Usage)
 	MissingCommand = NewKind("missing_command", Usage)
 	TooManyArgs    = NewKind("too_many_args", Usage)
-	Help           = NewKind("help", Request)
-	Version        = NewKind("version", Request)
 )
 
 // String returns the kind's stable name.
@@ -111,8 +109,6 @@ var (
 	ErrUnknownCommand = &Error{Kind: UnknownCommand}
 	ErrMissingCommand = &Error{Kind: MissingCommand}
 	ErrTooManyArgs    = &Error{Kind: TooManyArgs}
-	ErrHelp           = &Error{Kind: Help}
-	ErrVersion        = &Error{Kind: Version}
 )
 
 // Error renders the message in English. Use [Command.Localize] to render it

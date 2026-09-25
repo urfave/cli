@@ -22,8 +22,6 @@ var Catalog = &cli.Catalog{
 			One:   "unerwartetes Argument „{value}“",
 			Other: "{count} unerwartete Argumente, beginnend mit „{value}“",
 		},
-		"error.help":    {Other: "Hilfe angefordert"},
-		"error.version": {Other: "Version angefordert"},
 
 		"hint.try_help": {Other: "„{command} --help“ gibt weitere Informationen aus."},
 		"hint.see_help": {Other: "Siehe „{command} --help“."},

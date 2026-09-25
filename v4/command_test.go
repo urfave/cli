@@ -104,15 +104,6 @@ func TestRun(t *testing.T) {
 			wantErr:  "app: required flag not set: name\napp: required flag not set: port\nTry 'app --help' for more information.\n",
 			wantCode: 2,
 		},
-		{
-			name: "help exits 0",
-			cmd: func() *cli.Command {
-				return &cli.Command{Name: "app", Action: func(context.Context, *cli.Command) error {
-					return cli.ErrHelp
-				}}
-			},
-			wantCode: 0,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

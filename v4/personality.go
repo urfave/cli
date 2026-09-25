@@ -23,8 +23,8 @@ type Personality struct {
 }
 
 // ExitCode returns the exit code for err. An [ExitCoder] anywhere in the
-// chain chooses its own code. Help and version exit 0, usage errors exit
-// UsageCode, and anything else exits 1.
+// chain chooses its own code. Usage errors exit UsageCode, and anything else
+// exits 1.
 func (p *Personality) ExitCode(err error) int {
 	if err == nil {
 		return 0
@@ -38,10 +38,7 @@ func (p *Personality) ExitCode(err error) int {
 		if code, ok := p.Codes[e.Kind]; ok {
 			return code
 		}
-		switch e.Kind.Class() {
-		case Request:
-			return 0
-		case Usage:
+		if e.Kind.Class() == Usage {
 			return p.UsageCode
 		}
 	}

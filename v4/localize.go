@@ -133,8 +133,6 @@ var English = &Catalog{
 			One:   "unexpected argument \"{value}\"",
 			Other: "{count} unexpected arguments, starting with \"{value}\"",
 		},
-		"error.help":    {Other: "help requested"},
-		"error.version": {Other: "version requested"},
 
 		"hint.try_help": {Other: "Try '{command} --help' for more information."},
 		"hint.see_help": {Other: "See '{command} --help'."},
