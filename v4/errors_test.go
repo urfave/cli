@@ -47,7 +47,7 @@ func TestErrorAs(t *testing.T) {
 }
 
 func TestEveryKindHasAMessage(t *testing.T) {
-	for k := cli.Internal; k <= cli.Version; k++ {
+	for _, k := range cli.Kinds() {
 		msg := (&cli.Error{Kind: k, Err: errors.New("cause")}).Error()
 		if msg == "" || strings.HasPrefix(msg, "error.") {
 			t.Errorf("kind %s has no English message, got %q", k, msg)
@@ -70,5 +70,25 @@ func TestErrorMessage(t *testing.T) {
 		if got := tt.err.Error(); got != tt.want {
 			t.Errorf("%s: got %q, want %q", tt.err.Kind, got, tt.want)
 		}
+	}
+}
+
+func TestNewKindRejectsDuplicates(t *testing.T) {
+	for _, name := range []string{"unknown_flag", "internal", ""} {
+		t.Run(name, func(t *testing.T) {
+			defer func() {
+				if recover() == nil {
+					t.Errorf("NewKind(%q) did not panic", name)
+				}
+			}()
+			cli.NewKind(name, cli.Failure)
+		})
+	}
+}
+
+func TestZeroKindIsInternal(t *testing.T) {
+	var k cli.Kind
+	if k != cli.Internal || k.String() != "internal" || k.Class() != cli.Failure {
+		t.Errorf("zero Kind = %q, class %d", k, k.Class())
 	}
 }

@@ -38,10 +38,10 @@ func (p *Personality) ExitCode(err error) int {
 		if code, ok := p.Codes[e.Kind]; ok {
 			return code
 		}
-		switch {
-		case e.Kind == Help || e.Kind == Version:
+		switch e.Kind.Class() {
+		case Request:
 			return 0
-		case e.Kind.Usage():
+		case Usage:
 			return p.UsageCode
 		}
 	}

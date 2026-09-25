@@ -2,60 +2,88 @@ package cli
 
 import (
 	"errors"
+	"slices"
+	"strconv"
 	"strings"
 )
 
-// Kind identifies the class of an [Error]. Kinds are stable: callers match on
-// them, catalogues key messages by them, and personalities map them to exit
-// codes.
-type Kind uint16
+// Class groups kinds by how a program should treat them.
+type Class uint8
 
 const (
-	Internal Kind = iota
-	UnknownFlag
-	MissingValue
-	InvalidValue
-	RequiredFlag
-	RequiredArg
-	FlagConflict
-	FlagRequires
-	UnknownCommand
-	MissingCommand
-	TooManyArgs
-	Help
-	Version
+	// Failure means something went wrong while running. It exits 1.
+	Failure Class = iota
+	// Usage means the program was invoked wrongly. It exits with the
+	// personality's usage code.
+	Usage
+	// Request means the user asked for help or the version. It exits 0.
+	Request
 )
 
-var kindNames = [...]string{
-	Internal:       "internal",
-	UnknownFlag:    "unknown_flag",
-	MissingValue:   "missing_value",
-	InvalidValue:   "invalid_value",
-	RequiredFlag:   "required_flag",
-	RequiredArg:    "required_arg",
-	FlagConflict:   "flag_conflict",
-	FlagRequires:   "flag_requires",
-	UnknownCommand: "unknown_command",
-	MissingCommand: "missing_command",
-	TooManyArgs:    "too_many_args",
-	Help:           "help",
-	Version:        "version",
+// Kind identifies what went wrong in an [Error]. Callers match on kinds,
+// catalogues key messages by them, and personalities map them to exit codes.
+//
+// A kind carries its own name and class, so each one is defined in a single
+// place. Create kinds with [NewKind] at package level. The zero Kind is
+// [Internal].
+type Kind struct {
+	name  string
+	class Class
 }
 
-// String returns the stable snake_case name of the kind.
-func (k Kind) String() string {
-	if int(k) < len(kindNames) {
-		return kindNames[k]
+var (
+	kinds    = []Kind{Internal}
+	kindSeen = map[string]bool{"internal": true}
+)
+
+// NewKind defines a kind. name is the stable snake_case name used in
+// catalogue keys and JSON output. Applications can define their own kinds for
+// errors they want translated or matched. NewKind panics if name is taken, so
+// call it at package level where a clash shows up at startup.
+func NewKind(name string, class Class) Kind {
+	if name == "" || kindSeen[name] {
+		panic("cli: duplicate or empty error kind " + strconv.Quote(name))
 	}
-	return "unknown"
+	k := Kind{name: name, class: class}
+	kindSeen[name] = true
+	kinds = append(kinds, k)
+	return k
+}
+
+// Kinds returns every defined kind, in definition order.
+func Kinds() []Kind { return slices.Clone(kinds) }
+
+// The kinds the library itself returns.
+var (
+	Internal Kind // an error that fits no other kind
+
+	UnknownFlag    = NewKind("unknown_flag", Usage)
+	MissingValue   = NewKind("missing_value", Usage)
+	InvalidValue   = NewKind("invalid_value", Usage)
+	RequiredFlag   = NewKind("required_flag", Usage)
+	RequiredArg    = NewKind("required_arg", Usage)
+	FlagConflict   = NewKind("flag_conflict", Usage)
+	FlagRequires   = NewKind("flag_requires", Usage)
+	UnknownCommand = NewKind("unknown_command", Usage)
+	MissingCommand = NewKind("missing_command", Usage)
+	TooManyArgs    = NewKind("too_many_args", Usage)
+	Help           = NewKind("help", Request)
+	Version        = NewKind("version", Request)
+)
+
+// String returns the kind's stable name.
+func (k Kind) String() string {
+	if k.name == "" {
+		return "internal"
+	}
+	return k.name
 }
 
 // Key returns the catalogue key for the kind's message.
 func (k Kind) Key() string { return "error." + k.String() }
 
-// Usage reports whether the kind describes a mistake in how the program was
-// invoked, as opposed to a failure while running it.
-func (k Kind) Usage() bool { return k >= UnknownFlag && k <= TooManyArgs }
+// Class reports how a program should treat the kind.
+func (k Kind) Class() Class { return k.class }
 
 // Error is the error type returned for every failure the library itself
 // detects. It carries structured fields instead of a formatted message, so the
@@ -154,7 +182,7 @@ func Split(err error) []error {
 func IsUsage(err error) bool {
 	for _, e := range Split(err) {
 		var ce *Error
-		if errors.As(e, &ce) && ce.Kind.Usage() {
+		if errors.As(e, &ce) && ce.Kind.Class() == Usage {
 			return true
 		}
 	}
