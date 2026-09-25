@@ -1411,6 +1411,18 @@ func TestHideHelp_SubcommandCannotOptBackIn(t *testing.T) {
 	r.ErrorContains(cmd.Run(buildTestContext(t), []string{"cli.test", "nully", "--help"}), providedButNotDefinedErrMsg)
 }
 
+type completionOnlyFlag struct {
+	name string
+}
+
+func (f *completionOnlyFlag) String() string           { return "" }
+func (f *completionOnlyFlag) Get() any                 { return nil }
+func (f *completionOnlyFlag) PreParse() error          { return nil }
+func (f *completionOnlyFlag) PostParse() error         { return nil }
+func (f *completionOnlyFlag) Set(string, string) error { return nil }
+func (f *completionOnlyFlag) Names() []string          { return []string{f.name} }
+func (f *completionOnlyFlag) IsSet() bool              { return false }
+
 func TestDefaultCompleteWithFlags(t *testing.T) {
 	origArgv := os.Args
 	t.Cleanup(func() { os.Args = origArgv })
@@ -1430,6 +1442,24 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			expected: "",
 		},
 		{
+			name: "persistent-flag-after-positional-argument",
+			cmd: &Command{
+				Name: "add",
+				Arguments: []Argument{
+					&StringArg{Name: "arg1"},
+				},
+				parent: &Command{
+					Name: "app",
+					Flags: []Flag{
+						&StringFlag{Name: "config", Usage: "path to config file"},
+					},
+				},
+			},
+			argv:     []string{"app", "add", "value", "--conf", completionFlag},
+			env:      map[string]string{"SHELL": "bash"},
+			expected: "--config:path to config file\n",
+		},
+		{
 			name: "typical-flag-suggestion",
 			cmd: &Command{
 				Flags: []Flag{
@@ -1439,8 +1469,8 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				parent: &Command{
 					Name: "cmd",
 					Flags: []Flag{
-						&BoolFlag{Name: "happiness", Local: true},
-						&Int64Flag{Name: "everybody-jump-on", Local: true},
+						&BoolFlag{Name: "happiness"},
+						&Int64Flag{Name: "everybody-jump-on"},
 					},
 					Commands: []*Command{
 						{Name: "putz"},
@@ -1449,7 +1479,42 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			},
 			argv:     []string{"cmd", "--e", completionFlag},
 			env:      map[string]string{"SHELL": "bash"},
-			expected: "--excitement\n",
+			expected: "--excitement\n--everybody-jump-on\n",
+		},
+		{
+			name: "shared-local-and-persistent-flag-is-suggested-once",
+			cmd: func() *Command {
+				shared := &BoolFlag{Name: "verbose"}
+				return &Command{
+					Flags:  []Flag{shared},
+					parent: &Command{Name: "app", Flags: []Flag{shared}},
+				}
+			}(),
+			argv:     []string{"app", "sub", "--ver", completionFlag},
+			env:      map[string]string{"SHELL": "bash"},
+			expected: "--verbose\n",
+		},
+		{
+			name: "custom-flag-without-visible-flag-is-suggested",
+			cmd: &Command{
+				Flags: []Flag{&completionOnlyFlag{name: "custom"}},
+			},
+			argv:     []string{"app", "--cus", completionFlag},
+			env:      map[string]string{"SHELL": "bash"},
+			expected: "--custom\n",
+		},
+		{
+			name: "skip-flag-parsing-does-not-suggest-parent-flags",
+			cmd: &Command{
+				SkipFlagParsing: true,
+				parent: &Command{
+					Name:  "app",
+					Flags: []Flag{&BoolFlag{Name: "root-flag"}},
+				},
+			},
+			argv:     []string{"app", "sub", "--r", completionFlag},
+			env:      map[string]string{"SHELL": "bash"},
+			expected: "",
 		},
 		{
 			name: "typical-flag-suggestion-hidden-bool",
@@ -1461,8 +1526,8 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				parent: &Command{
 					Name: "cmd",
 					Flags: []Flag{
-						&BoolFlag{Name: "happiness", Local: true},
-						&Int64Flag{Name: "everybody-jump-on", Local: true},
+						&BoolFlag{Name: "happiness"},
+						&Int64Flag{Name: "everybody-jump-on"},
 					},
 					Commands: []*Command{
 						{Name: "putz"},
@@ -1471,7 +1536,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			},
 			argv:     []string{"cmd", "--e", completionFlag},
 			env:      map[string]string{"SHELL": "bash"},
-			expected: "",
+			expected: "--everybody-jump-on\n",
 		},
 		{
 			name: "typical-flag-suggestion-hidden-non-bool",
@@ -1483,8 +1548,8 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				parent: &Command{
 					Name: "cmd",
 					Flags: []Flag{
-						&BoolFlag{Name: "happiness", Local: true},
-						&Int64Flag{Name: "everybody-jump-on", Local: true},
+						&BoolFlag{Name: "happiness"},
+						&Int64Flag{Name: "everybody-jump-on"},
 					},
 					Commands: []*Command{
 						{Name: "putz"},
@@ -1493,7 +1558,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			},
 			argv:     []string{"cmd", "--e", completionFlag},
 			env:      map[string]string{"SHELL": "bash"},
-			expected: "--excitement\n",
+			expected: "--excitement\n--everybody-jump-on\n",
 		},
 		{
 			name: "typical-flag-suggestion-hidden-bool-with-inverse",
@@ -1505,8 +1570,8 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				parent: &Command{
 					Name: "cmd",
 					Flags: []Flag{
-						&BoolFlag{Name: "happiness", Local: true},
-						&Int64Flag{Name: "everybody-jump-on", Local: true},
+						&BoolFlag{Name: "happiness"},
+						&Int64Flag{Name: "everybody-jump-on"},
 					},
 					Commands: []*Command{
 						{Name: "putz"},
@@ -1515,7 +1580,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			},
 			argv:     []string{"cmd", "--e", completionFlag},
 			env:      map[string]string{"SHELL": "bash"},
-			expected: "--excitement\n",
+			expected: "--excitement\n--everybody-jump-on\n",
 		},
 		{
 			name: "flag-suggestion-double-dash-shows-all-flags",
@@ -1527,8 +1592,8 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				parent: &Command{
 					Name: "cmd",
 					Flags: []Flag{
-						&BoolFlag{Name: "happiness", Local: true},
-						&Int64Flag{Name: "everybody-jump-on", Local: true},
+						&BoolFlag{Name: "happiness"},
+						&Int64Flag{Name: "everybody-jump-on"},
 					},
 					Commands: []*Command{
 						{Name: "putz"},
@@ -1537,7 +1602,7 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			},
 			argv:     []string{"cmd", "--e", "--", completionFlag},
 			env:      map[string]string{"SHELL": "bash"},
-			expected: "--excitement\n--hat-shape\n",
+			expected: "--excitement\n--hat-shape\n--happiness\n--everybody-jump-on\n",
 		},
 		{
 			name: "typical-command-suggestion",
@@ -1553,8 +1618,8 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				parent: &Command{
 					Name: "cmd",
 					Flags: []Flag{
-						&BoolFlag{Name: "happiness", Local: true},
-						&Int64Flag{Name: "everybody-jump-on", Local: true},
+						&BoolFlag{Name: "happiness"},
+						&Int64Flag{Name: "everybody-jump-on"},
 					},
 				},
 			},
@@ -1576,8 +1641,8 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				parent: &Command{
 					Name: "cmd",
 					Flags: []Flag{
-						&BoolFlag{Name: "happiness", Local: true},
-						&Int64Flag{Name: "everybody-jump-on", Local: true},
+						&BoolFlag{Name: "happiness"},
+						&Int64Flag{Name: "everybody-jump-on"},
 					},
 				},
 			},
@@ -1596,14 +1661,14 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				parent: &Command{
 					Name: "cmd",
 					Flags: []Flag{
-						&BoolFlag{Name: "happiness", Local: true},
-						&Int64Flag{Name: "everybody-jump-on", Local: true},
+						&BoolFlag{Name: "happiness"},
+						&Int64Flag{Name: "everybody-jump-on"},
 					},
 				},
 			},
 			argv:     []string{"cmd", "putz", "-e", completionFlag},
 			env:      map[string]string{"SHELL": "zsh"},
-			expected: "--excitement:an exciting flag\n",
+			expected: "--excitement:an exciting flag\n--everybody-jump-on\n",
 		},
 		{
 			name: "zsh-autocomplete-with-empty-flag-descriptions",
@@ -1616,14 +1681,14 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 				parent: &Command{
 					Name: "cmd",
 					Flags: []Flag{
-						&BoolFlag{Name: "happiness", Local: true},
-						&Int64Flag{Name: "everybody-jump-on", Local: true},
+						&BoolFlag{Name: "happiness"},
+						&Int64Flag{Name: "everybody-jump-on"},
 					},
 				},
 			},
 			argv:     []string{"cmd", "putz", "-e", completionFlag},
 			env:      map[string]string{"SHELL": "zsh"},
-			expected: "--excitement\n",
+			expected: "--excitement\n--everybody-jump-on\n",
 		},
 	} {
 		t.Run(tc.name, func(ct *testing.T) {

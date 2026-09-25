@@ -14,10 +14,10 @@ func partialCompletionCommand(output *bytes.Buffer, ran *bool) *Command {
 		return &Command{
 			Name: name,
 			Flags: []Flag{
-				&StringFlag{Name: "param-" + name + "-one", Local: true},
-				&StringFlag{Name: "param-" + name + "-two", Local: true},
-				&StringFlag{Name: "param-" + name + "-hidden", Hidden: true, Local: true},
-				&BoolFlag{Name: "unrelated-" + name, Local: true},
+				&StringFlag{Name: "param-" + name + "-one"},
+				&StringFlag{Name: "param-" + name + "-two"},
+				&StringFlag{Name: "param-" + name + "-hidden", Hidden: true},
+				&BoolFlag{Name: "unrelated-" + name},
 			},
 			Action: func(context.Context, *Command) error { *ran = true; return nil },
 		}
@@ -53,9 +53,17 @@ func TestPartialFlagCompletionAfterPositionalArgument(t *testing.T) {
 				if err := cmd.Run(context.Background(), args); err != nil {
 					t.Fatal(err)
 				}
-				want := "--param-" + scope.name + "-one\n--param-" + scope.name + "-two\n"
-				if got := output.String(); got != want {
-					t.Errorf("completion for %q = %q, want %q", args, got, want)
+				wantNames := []string{scope.name}
+				if len(scope.path) > 0 {
+					wantNames = append(wantNames, "app")
+					wantNames = append(wantNames, scope.path[:len(scope.path)-1]...)
+				}
+				var want strings.Builder
+				for _, name := range wantNames {
+					want.WriteString("--param-" + name + "-one\n--param-" + name + "-two\n")
+				}
+				if got := output.String(); got != want.String() {
+					t.Errorf("completion for %q = %q, want %q", args, got, want.String())
 				}
 				if ran {
 					t.Error("completion executed the command action")
