@@ -63,7 +63,7 @@ func TestAgent(t *testing.T) {
 		&cli.Error{Kind: cli.InvalidValue, Command: "tool", Flag: "port", Value: "abc", Err: errors.New("not a number")},
 		errors.New("disk full"),
 	)
-	r := clitest.Run(t.Context(), failing(personality.Agent, err))
+	r := clitest.Run(t.Context(), failing(personality.Agent(cli.POSIX), err))
 	if r.Code != 2 {
 		t.Errorf("code = %d, want 2", r.Code)
 	}
@@ -87,5 +87,58 @@ func TestAgent(t *testing.T) {
 	}
 	if got.Errors[1].Kind != "error" || got.Errors[1].Message != "disk full" {
 		t.Errorf("second error = %+v", got.Errors[1])
+	}
+}
+
+func TestAgentKeepsBaseExitCodes(t *testing.T) {
+	err := &cli.Error{Kind: cli.UnknownFlag, Flag: "x"}
+	for _, base := range []*cli.Personality{cli.POSIX, personality.Git} {
+		t.Run(base.Name, func(t *testing.T) {
+			human := clitest.Run(t.Context(), failing(base, err))
+			agent := clitest.Run(t.Context(), failing(personality.Agent(base), err))
+			if human.Code != agent.Code {
+				t.Errorf("exit code changed: %d for people, %d for agents", human.Code, agent.Code)
+			}
+			if !json.Valid([]byte(agent.Stderr)) {
+				t.Errorf("agent stderr is not JSON: %q", agent.Stderr)
+			}
+		})
+	}
+}
+
+func TestQuiet(t *testing.T) {
+	err := &cli.Error{Kind: cli.UnknownFlag, Flag: "x"}
+	r := clitest.Run(t.Context(), failing(personality.Quiet(personality.Git), err))
+	if r.Stderr != "tool: unknown flag: x\n" {
+		t.Errorf("stderr = %q", r.Stderr)
+	}
+	if r.Code != 129 {
+		t.Errorf("code = %d, want Git's 129", r.Code)
+	}
+}
+
+func TestAuto(t *testing.T) {
+	tests := []struct {
+		value string
+		set   bool
+		agent bool
+	}{
+		{set: false, agent: false},
+		{value: "", set: true, agent: false},
+		{value: "0", set: true, agent: false},
+		{value: "1", set: true, agent: true},
+		{value: "true", set: true, agent: true},
+	}
+	for _, tt := range tests {
+		lookup := func(k string) (string, bool) {
+			if k == personality.AgentEnv && tt.set {
+				return tt.value, true
+			}
+			return "", false
+		}
+		p := personality.Auto(lookup, personality.Git)
+		if got := p != personality.Git; got != tt.agent {
+			t.Errorf("%s=%q (set %v): agent = %v, want %v", personality.AgentEnv, tt.value, tt.set, got, tt.agent)
+		}
 	}
 }
