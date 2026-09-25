@@ -85,7 +85,7 @@ func TestRun(t *testing.T) {
 			name: "action chooses exit code",
 			cmd: func() *cli.Command {
 				return &cli.Command{Name: "app", Action: func(context.Context, *cli.Command) error {
-					return cli.Exit(errors.New("not found"), 4)
+					return cli.Exit("not found", 4)
 				}}
 			},
 			wantErr:  "app: not found\n",

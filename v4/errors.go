@@ -2,6 +2,7 @@ package cli
 
 import (
 	"errors"
+	"fmt"
 	"slices"
 	"strconv"
 	"strings"
@@ -154,11 +155,13 @@ func (e *exitError) Error() string { return e.err.Error() }
 func (e *exitError) Unwrap() error { return e.err }
 func (e *exitError) ExitCode() int { return e.code }
 
-// Exit wraps err so that the program exits with code. The wrapped error stays
-// visible to [errors.Is] and [errors.As].
-func Exit(err error, code int) error {
-	if err == nil {
-		return nil
+// Exit returns an error that makes the program exit with code. message is
+// usually a string or an error; an error stays visible to [errors.Is] and
+// [errors.As]. The signature matches v3, so existing calls compile unchanged.
+func Exit(message any, code int) ExitCoder {
+	err, ok := message.(error)
+	if !ok {
+		err = errors.New(fmt.Sprint(message))
 	}
 	return &exitError{err: err, code: code}
 }
