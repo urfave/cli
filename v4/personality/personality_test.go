@@ -69,6 +69,7 @@ func TestAgent(t *testing.T) {
 	}
 
 	var got struct {
+		Version  int `json:"version"`
 		ExitCode int `json:"exit_code"`
 		Errors   []struct {
 			Kind, Message, Command, Flag, Value string
@@ -77,7 +78,7 @@ func TestAgent(t *testing.T) {
 	if err := json.Unmarshal([]byte(r.Stderr), &got); err != nil {
 		t.Fatalf("stderr is not JSON: %v\n%s", err, r.Stderr)
 	}
-	if got.ExitCode != 2 || len(got.Errors) != 2 {
+	if got.Version != personality.AgentFormatVersion || got.ExitCode != 2 || len(got.Errors) != 2 {
 		t.Fatalf("got %+v", got)
 	}
 	first := got.Errors[0]

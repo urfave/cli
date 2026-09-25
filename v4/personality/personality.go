@@ -43,9 +43,10 @@ var Git = &cli.Personality{
 // program such as a coding agent can act on the failure without parsing
 // prose:
 //
-//	{"exit_code":2,"errors":[{"kind":"too_many_args","message":"...","command":"hello","value":"extra","count":1}]}
+//	{"version":1,"exit_code":2,"errors":[{"kind":"too_many_args","message":"...","command":"hello","value":"extra","count":1}]}
 //
-// Errors the library did not create have kind "error".
+// Errors the library did not create have kind "error". The format is part of
+// the public API; see [AgentFormatVersion].
 func Agent(base *cli.Personality) *cli.Personality {
 	p := *base
 	p.Name = base.Name + "+agent"
@@ -66,6 +67,11 @@ func Quiet(base *cli.Personality) *cli.Personality {
 	return &p
 }
 
+// AgentFormatVersion is the version of the JSON that [Agent] writes. It
+// changes only when a field is removed or changes meaning, so a program can
+// reject a format it doesn't understand. New fields don't change it.
+const AgentFormatVersion = 1
+
 // AgentEnv is the environment variable that asks for [Agent] output. Agents,
 // or the tools that run them, can set it once for every command they run.
 const AgentEnv = "URFAVE_CLI_AGENT"
@@ -85,7 +91,7 @@ func Auto(lookup func(string) (string, bool), base *cli.Personality) *cli.Person
 }
 
 func reportJSON(w io.Writer, cmd *cli.Command, err error, code int) {
-	out := envelope{ExitCode: code}
+	out := envelope{Version: AgentFormatVersion, ExitCode: code}
 	for _, e := range cli.Split(err) {
 		item := entry{Kind: "error", Message: cmd.Localize(e)}
 		var ce *cli.Error
@@ -105,6 +111,7 @@ func reportJSON(w io.Writer, cmd *cli.Command, err error, code int) {
 }
 
 type envelope struct {
+	Version  int     `json:"version"`
 	ExitCode int     `json:"exit_code"`
 	Errors   []entry `json:"errors"`
 }
