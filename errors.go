@@ -152,6 +152,12 @@ func (ee *exitError) ExitCode() int {
 	return ee.exitCode
 }
 
+// Unwrap returns the error given to [Exit], so that [errors.Is] and
+// [errors.As] can inspect it through the ExitCoder wrapper.
+func (ee *exitError) Unwrap() error {
+	return ee.err
+}
+
 // HandleExitCoder handles errors implementing ExitCoder by printing their
 // message and calling OsExiter with the given exit code.
 //
