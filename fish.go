@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"strings"
-	"text/template"
 )
 
 // ToFishCompletion creates a fish completion string for the `*Command`
@@ -25,12 +24,6 @@ type fishCommandCompletionTemplate struct {
 }
 
 func (cmd *Command) writeFishCompletionTemplate(w io.Writer) error {
-	const name = "cli"
-	t, err := template.New(name).Parse(FishCompletionTemplate)
-	if err != nil {
-		return err
-	}
-
 	// Add global flags
 	completions := prepareFishFlags(cmd.Name, cmd)
 
@@ -57,7 +50,7 @@ func (cmd *Command) writeFishCompletionTemplate(w io.Writer) error {
 		toplevelCommandNames = append(toplevelCommandNames, child.Names()...)
 	}
 
-	return t.ExecuteTemplate(w, name, &fishCommandCompletionTemplate{
+	return renderFishCompletion(w, &fishCommandCompletionTemplate{
 		Command:     cmd,
 		Completions: completions,
 		AllCommands: toplevelCommandNames,
