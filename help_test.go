@@ -1504,6 +1504,20 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			expected: "--custom\n",
 		},
 		{
+			name: "mutually-exclusive-flags-are-suggested",
+			cmd: &Command{
+				MutuallyExclusiveFlags: []MutuallyExclusiveFlags{{
+					Flags: [][]Flag{
+						{&BoolFlag{Name: "alpha"}},
+						{&BoolFlag{Name: "also"}},
+					},
+				}},
+			},
+			argv:     []string{"app", "--al", completionFlag},
+			env:      map[string]string{"SHELL": "bash"},
+			expected: "--alpha\n--also\n",
+		},
+		{
 			name: "skip-flag-parsing-does-not-suggest-parent-flags",
 			cmd: &Command{
 				SkipFlagParsing: true,

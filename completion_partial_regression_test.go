@@ -36,10 +36,11 @@ func TestPartialFlagCompletionAfterPositionalArgument(t *testing.T) {
 	for _, scope := range []struct {
 		name string
 		path []string
+		want string
 	}{
-		{"app", nil},
-		{"sub", []string{"sub"}},
-		{"nested", []string{"sub", "nested"}},
+		{"app", nil, "--param-app-one\n--param-app-two\n"},
+		{"sub", []string{"sub"}, "--param-sub-one\n--param-sub-two\n--param-app-one\n--param-app-two\n"},
+		{"nested", []string{"sub", "nested"}, "--param-nested-one\n--param-nested-two\n--param-app-one\n--param-app-two\n--param-sub-one\n--param-sub-two\n"},
 	} {
 		for _, positional := range [][]string{nil, {"value"}, {"first", "second"}} {
 			t.Run(scope.name+"/"+strings.Join(positional, "_"), func(t *testing.T) {
@@ -53,17 +54,8 @@ func TestPartialFlagCompletionAfterPositionalArgument(t *testing.T) {
 				if err := cmd.Run(context.Background(), args); err != nil {
 					t.Fatal(err)
 				}
-				wantNames := []string{scope.name}
-				if len(scope.path) > 0 {
-					wantNames = append(wantNames, "app")
-					wantNames = append(wantNames, scope.path[:len(scope.path)-1]...)
-				}
-				var want strings.Builder
-				for _, name := range wantNames {
-					want.WriteString("--param-" + name + "-one\n--param-" + name + "-two\n")
-				}
-				if got := output.String(); got != want.String() {
-					t.Errorf("completion for %q = %q, want %q", args, got, want.String())
+				if got := output.String(); got != scope.want {
+					t.Errorf("completion for %q = %q, want %q", args, got, scope.want)
 				}
 				if ran {
 					t.Error("completion executed the command action")
