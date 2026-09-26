@@ -28,6 +28,25 @@ command line tools in Go featuring:
 See the hosted documentation website at <https://cli.urfave.org>. Contents of
 this website are built from the [`./docs`](./docs) directory.
 
+## Build tags
+
+You can use the following build tags:
+
+### `urfave_cli_no_template`
+
+When set, the default help and fish completion are rendered without using
+`text/template`, which makes the Go linker disable dead code elimination (see
+[Binary Size](https://cli.urfave.org/v3/binary-size/#urfave_cli_no_template)).
+The output is the same, but help templates can not be customized:
+
+- `RootCommandHelpTemplate`, `CommandHelpTemplate`, `SubcommandHelpTemplate`
+  and `FishCompletionTemplate` are constants;
+- if the default help printer is used with a custom template (such as
+  `CustomRootCommandHelpTemplate` or `CustomHelpTemplate`), it panics;
+- custom template functions other than `wrap` and `wrapAt` are ignored.
+
+Replacing `cli.HelpPrinter` works as usual.
+
 ## Support
 
 Check the [Q&A discussions]. If you don't find answer to your question, [create
