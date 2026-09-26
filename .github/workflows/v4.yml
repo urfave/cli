@@ -1,0 +1,56 @@
+name: v4
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - v4/**
+      - .github/workflows/v4.yml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - v4/**
+      - .github/workflows/v4.yml
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: v4
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, macos-15, windows-2025]
+        go: [stable, oldstable]
+
+    name: ${{ matrix.os }} @ Go ${{ matrix.go }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: ${{ matrix.go }}
+
+      - if: matrix.os == 'ubuntu-24.04'
+        run: test -z "$(gofmt -l .)"
+
+      - run: go vet ./...
+      - run: go test -race ./...
+
+      - name: Report binary size
+        if: matrix.go == 'stable' && matrix.os == 'ubuntu-24.04'
+        run: |
+          go build -ldflags='-s -w' -o hello ./examples/hello
+          go build -ldflags='-s -w' -o hello-i18n ./examples/hello-i18n
+          echo "### Binary size" >>"${GITHUB_STEP_SUMMARY}"
+          for b in hello hello-i18n; do
+            echo "- \`$b\`: $(stat -c %s "$b") bytes" >>"${GITHUB_STEP_SUMMARY}"
+          done
