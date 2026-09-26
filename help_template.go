@@ -9,6 +9,9 @@ import (
 	"text/template"
 )
 
+// templatesSupported is true unless built with the urfave_cli_no_template tag.
+const templatesSupported = true
+
 // RootCommandHelpTemplate is the text template for the Default help topic.
 // cli.go uses text/template to render templates. You can
 // render custom help text by setting this variable.

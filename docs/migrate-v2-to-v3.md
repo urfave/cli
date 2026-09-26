@@ -238,7 +238,7 @@ These tags are **not available in v3** because they are no longer necessary:
 - **Shell completion** uses `embed.FS` for its scripts, with no external dependencies.
 - **Altsrc** has been extracted to a separate module, `github.com/urfave/cli-altsrc/v3` (see below).
 
-Binary size in v3 is managed through architectural simplification rather than build tags. v3's minimal dependency tree (only `github.com/stretchr/testify` in tests) means the core library contributes very little to your final binary.
+Binary size in v3 is managed through architectural simplification rather than build tags (the only exception is the `urfave_cli_no_template` tag, see [Binary Size](v3/binary-size.md#urfave_cli_no_template)). v3's minimal dependency tree (only `github.com/stretchr/testify` in tests) means the core library contributes very little to your final binary.
 
 ### Order of precedence of envvars, filepaths, altsrc now depends on the order in which they are defined
 
