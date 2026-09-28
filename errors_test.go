@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io/fs"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -274,18 +275,45 @@ func TestHandleExitCoder_ExitCoderEmptyMessage(t *testing.T) {
 func TestExit_Unwrap(t *testing.T) {
 	sentinel := errors.New("not found")
 
-	err := Exit(sentinel, 2)
-
 	// The error given to Exit must stay reachable through the standard
 	// wrapping helpers (#1090).
-	assert.ErrorIs(t, err, sentinel)
-	assert.Equal(t, sentinel, errors.Unwrap(err))
+	tests := []struct {
+		name    string
+		message any
+		wantMsg string // message of errors.Unwrap(err)
+		wantIs  error  // target for errors.Is, if any
+		wantAs  any    // target for errors.As, if any
+	}{
+		{
+			name:    "error",
+			message: sentinel,
+			wantMsg: "not found",
+			wantIs:  sentinel,
+		},
+		{
+			name:    "error chain",
+			message: &fs.PathError{Op: "open", Path: "x", Err: fs.ErrNotExist},
+			wantMsg: "open x: file does not exist",
+			wantIs:  fs.ErrNotExist,
+			wantAs:  new(*fs.PathError),
+		},
+		{
+			name:    "non-error message",
+			message: "boom",
+			wantMsg: "boom",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := Exit(tt.message, 2)
 
-	var ec ExitCoder
-	assert.True(t, errors.As(err, &ec))
-	assert.Equal(t, 2, ec.ExitCode())
-
-	// A non-error message is wrapped into a fresh error and still unwraps.
-	err = Exit("boom", 3)
-	assert.EqualError(t, errors.Unwrap(err), "boom")
+			assert.EqualError(t, errors.Unwrap(err), tt.wantMsg)
+			if tt.wantIs != nil {
+				assert.ErrorIs(t, err, tt.wantIs)
+			}
+			if tt.wantAs != nil {
+				assert.ErrorAs(t, err, tt.wantAs)
+			}
+		})
+	}
 }
