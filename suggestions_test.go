@@ -3,6 +3,7 @@ package cli
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -54,6 +55,60 @@ func TestSuggestFlag(t *testing.T) {
 		// Then
 		assert.Equal(t, testCase.expected, res)
 	}
+}
+
+// TestSuggestFlagMultibyteRunePrefix ensures the "-"/"--" prefix chosen for a
+// suggested flag name is derived from the rune count, exactly like the prefix
+// used when the very same flag is rendered in help output by prefixFor. A
+// single (non-ASCII) rune flag such as "é" is a short flag and must be
+// suggested as "-é", not "--é".
+func TestSuggestFlagMultibyteRunePrefix(t *testing.T) {
+	for _, testCase := range []struct {
+		name, provided, expected string
+	}{
+		// Single ASCII rune: short flag.
+		{"single-rune-ascii", "ss", "-s"},
+		// Single multi-byte rune: still a short flag.
+		{"single-rune-multibyte", "éé", "-é"},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			fl := &BoolFlag{Name: "é"}
+			if testCase.name == "single-rune-ascii" {
+				fl = &BoolFlag{Name: "s"}
+			}
+
+			// The suggestion must agree with how the flag is advertised in
+			// help output, which is driven by prefixFor.
+			assert.Equal(t, "-"+fl.Names()[0], flagStringForTest(fl))
+
+			assert.Equal(t, testCase.expected, suggestFlag([]Flag{fl}, testCase.provided, true))
+		})
+	}
+}
+
+// TestSuggestFlagMultibyteRuneFromError covers the user-visible output: the
+// "Did you mean ...?" hint must name the short flag exactly as help output
+// does.
+func TestSuggestFlagMultibyteRuneFromError(t *testing.T) {
+	cmd := &Command{Flags: []Flag{&BoolFlag{Name: "é"}}}
+
+	res, err := cmd.suggestFlagFromError(
+		errors.New(providedButNotDefinedErrMsg+"éé"),
+		"",
+	)
+	assert.NoError(t, err)
+	assert.Equal(t, fmt.Sprintf(SuggestDidYouMeanTemplate+"\n\n", "-é"), res)
+	assert.Equal(t, "Did you mean \"-é\"?\n\n", res)
+}
+
+// flagStringForTest returns the leading flag-name portion of a flag's help
+// rendering, e.g. "-é" or "--verbose".
+func flagStringForTest(fl Flag) string {
+	s := stringifyFlag(fl)
+	if i := strings.IndexByte(s, '\t'); i >= 0 {
+		return strings.TrimSpace(s[:i])
+	}
+	return strings.TrimSpace(s)
 }
 
 func TestSuggestFlagHideHelp(t *testing.T) {
