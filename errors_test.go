@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io/fs"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -269,4 +270,50 @@ func TestHandleExitCoder_ExitCoderEmptyMessage(t *testing.T) {
 	assert.Equal(t, 42, exitCode)
 	assert.True(t, called)
 	assert.Empty(t, errBuf.String(), "expected no output to stderr for empty exit message")
+}
+
+func TestExit_Unwrap(t *testing.T) {
+	sentinel := errors.New("not found")
+
+	// The error given to Exit must stay reachable through the standard
+	// wrapping helpers (#1090).
+	tests := []struct {
+		name    string
+		message any
+		wantMsg string // message of errors.Unwrap(err)
+		wantIs  error  // target for errors.Is, if any
+		wantAs  any    // target for errors.As, if any
+	}{
+		{
+			name:    "error",
+			message: sentinel,
+			wantMsg: "not found",
+			wantIs:  sentinel,
+		},
+		{
+			name:    "error chain",
+			message: &fs.PathError{Op: "open", Path: "x", Err: fs.ErrNotExist},
+			wantMsg: "open x: file does not exist",
+			wantIs:  fs.ErrNotExist,
+			wantAs:  new(*fs.PathError),
+		},
+		{
+			name:    "non-error message",
+			message: "boom",
+			wantMsg: "boom",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := Exit(tt.message, 2)
+
+			assert.EqualError(t, errors.Unwrap(err), tt.wantMsg)
+			if tt.wantIs != nil {
+				assert.ErrorIs(t, err, tt.wantIs)
+			}
+			if tt.wantAs != nil {
+				assert.ErrorAs(t, err, tt.wantAs)
+			}
+		})
+	}
 }
