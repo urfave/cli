@@ -1631,6 +1631,53 @@ func TestCommand_UseShortOptionHandlingSubCommand_missing_value(t *testing.T) {
 	assert.EqualError(t, err, "flag needs an argument: -n")
 }
 
+func TestCommand_UseShortOptionHandlingLocalFlagNotInherited(t *testing.T) {
+	// A parent's Local flag is not applied to its subcommands, so it must be
+	// rejected inside a short option group too, as in long form (see
+	// TestLocalFlagError).
+	tests := []struct {
+		arg     string
+		wantErr string
+	}{
+		{arg: "-d", wantErr: "flag provided but not defined: -d"},
+		{arg: "-xd", wantErr: "flag provided but not defined: -xd"},
+		{arg: "-dx", wantErr: "flag provided but not defined: -dx"},
+		{arg: "-xy"}, // the subcommand's own flags still work
+	}
+	for _, tt := range tests {
+		t.Run(tt.arg, func(t *testing.T) {
+			var x, y bool
+			cmd := &Command{
+				Name:                   "app",
+				UseShortOptionHandling: true,
+				Flags: []Flag{
+					&BoolFlag{Name: "debug", Aliases: []string{"d"}, Local: true},
+				},
+				Commands: []*Command{
+					{
+						Name: "sub",
+						Flags: []Flag{
+							&BoolFlag{Name: "x", Destination: &x},
+							&BoolFlag{Name: "y", Destination: &y},
+						},
+					},
+				},
+				Writer:    io.Discard,
+				ErrWriter: io.Discard,
+			}
+
+			err := cmd.Run(buildTestContext(t), []string{"app", "sub", tt.arg})
+			if tt.wantErr != "" {
+				assert.EqualError(t, err, tt.wantErr)
+				return
+			}
+			require.NoError(t, err)
+			assert.True(t, x)
+			assert.True(t, y)
+		})
+	}
+}
+
 func TestCommand_UseShortOptionAfterSliceFlag(t *testing.T) {
 	var one, two bool
 	var name string

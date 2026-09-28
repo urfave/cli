@@ -220,7 +220,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		// try to split the flags
 		for index, c := range flagName {
 			tracef("processing flag (fName=%[1]q)", string(c))
-			if sf := cmd.lookupFlag(string(c)); sf == nil {
+			if sf := cmd.lookupAppliedFlag(string(c)); sf == nil {
 				if index == 0 && cmd.DefaultCommand != "" {
 					posArgs = append(posArgs, rargs...)
 					return &stringSliceArgs{posArgs}, nil
