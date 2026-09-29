@@ -38,6 +38,7 @@ func TestJaroWinkler(t *testing.T) {
 func TestSuggestFlag(t *testing.T) {
 	// Given
 	app := buildExtendedTestCommand()
+	app.Flags = append(app.Flags, &BoolFlag{Name: "é"})
 
 	for _, testCase := range []struct {
 		provided, expected string
@@ -47,6 +48,7 @@ func TestSuggestFlag(t *testing.T) {
 		{"hlp", "--help"},
 		{"k", ""},
 		{"s", "-s"},
+		{"éé", "-é"},
 	} {
 		// When
 		res := suggestFlag(app.Flags, testCase.provided, false)

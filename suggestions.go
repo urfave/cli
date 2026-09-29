@@ -120,13 +120,14 @@ func suggestFlag(flags []Flag, provided string, hideHelp bool) string {
 		}
 	}
 
-	if len(suggestion) == 1 {
-		suggestion = "-" + suggestion
-	} else if len(suggestion) > 1 {
-		suggestion = "--" + suggestion
+	if len(suggestion) == 0 {
+		return ""
 	}
 
-	return suggestion
+	// Use the same rune-counting rule that drives the help output
+	// (prefixFor) so that a single-rune name is suggested as a short flag
+	// regardless of how many bytes that rune is encoded in.
+	return prefixFor(suggestion) + suggestion
 }
 
 // suggestCommand takes a list of commands and a provided string to suggest a
