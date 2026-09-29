@@ -1647,6 +1647,8 @@ func TestCommand_UseShortOptionHandlingLocalFlagNotInherited(t *testing.T) {
 		{arg: "-d", wantErr: "flag provided but not defined: -d"},
 		{arg: "-xd", wantErr: "flag provided but not defined: -xd"},
 		{arg: "-dx", wantErr: "flag provided but not defined: -dx"},
+		// reported before -s, which needs an argument but is not last
+		{arg: "-sd", wantErr: "flag provided but not defined: -sd"},
 		{arg: "-xy"}, // the subcommand's own flags still work
 	}
 	for _, tt := range tests {
@@ -1664,6 +1666,7 @@ func TestCommand_UseShortOptionHandlingLocalFlagNotInherited(t *testing.T) {
 						Flags: []Flag{
 							&BoolFlag{Name: "x", Destination: &x},
 							&BoolFlag{Name: "y", Destination: &y},
+							&StringFlag{Name: "s"},
 						},
 					},
 				},

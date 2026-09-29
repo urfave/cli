@@ -233,13 +233,9 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		// try to split the flags
 		for index, c := range flagName {
 			tracef("processing flag (fName=%[1]q)", string(c))
-			if sf := cmd.lookupAppliedFlag(string(c)); sf == nil {
-				if index == 0 && cmd.DefaultCommand != "" {
-					posArgs = append(posArgs, rargs...)
-					return &stringSliceArgs{posArgs}, nil
-				}
-				return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", providedButNotDefinedErrMsg, flagName)
-			} else if fb, ok := sf.(boolFlag); ok && fb.IsBoolFlag() {
+			// the check above has already found every flag of the group
+			sf := cmd.lookupAppliedFlag(string(c))
+			if fb, ok := sf.(boolFlag); ok && fb.IsBoolFlag() {
 				fv := flagVal
 				if index == lastIndex && flagVal == "" {
 					fv = "true"
