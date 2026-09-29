@@ -223,6 +223,11 @@ func TestParseAndRunShortOpts(t *testing.T) {
 		{testArgs: &stringSliceArgs{v: []string{"test", "-i", "ivalue"}}, expectedArgs: &stringSliceArgs{v: []string{}}},
 		{testArgs: &stringSliceArgs{v: []string{"test", "-i", "ivalue", "arg1"}}, expectedArgs: &stringSliceArgs{v: []string{"arg1"}}},
 		{testArgs: &stringSliceArgs{v: []string{"test", "-i"}}, expectedErr: "flag needs an argument: -i"},
+		// a flag that takes a value has to be the last one of a group
+		{testArgs: &stringSliceArgs{v: []string{"test", "-ia"}}, expectedErr: "flag needs an argument: i"},
+		{testArgs: &stringSliceArgs{v: []string{"test", "-ia", "ivalue"}}, expectedErr: "flag needs an argument: i"},
+		{testArgs: &stringSliceArgs{v: []string{"test", "-aic"}}, expectedErr: "flag needs an argument: i"},
+		{testArgs: &stringSliceArgs{v: []string{"test", "-ai", "ivalue"}}, expectedArgs: &stringSliceArgs{v: []string{}}},
 	}
 
 	for _, tc := range testCases {
@@ -1642,6 +1647,8 @@ func TestCommand_UseShortOptionHandlingLocalFlagNotInherited(t *testing.T) {
 		{arg: "-d", wantErr: "flag provided but not defined: -d"},
 		{arg: "-xd", wantErr: "flag provided but not defined: -xd"},
 		{arg: "-dx", wantErr: "flag provided but not defined: -dx"},
+		// reported before -s, which needs an argument but is not last
+		{arg: "-sd", wantErr: "flag provided but not defined: -sd"},
 		{arg: "-xy"}, // the subcommand's own flags still work
 	}
 	for _, tt := range tests {
@@ -1659,6 +1666,7 @@ func TestCommand_UseShortOptionHandlingLocalFlagNotInherited(t *testing.T) {
 						Flags: []Flag{
 							&BoolFlag{Name: "x", Destination: &x},
 							&BoolFlag{Name: "y", Destination: &y},
+							&StringFlag{Name: "s"},
 						},
 					},
 				},
