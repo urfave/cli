@@ -187,7 +187,7 @@ func (cmd *Command) checkHelp() bool {
 
 func (cmd *Command) checkDuplicateFlagNames() error {
 	seen := map[string]struct{}{}
-	for _, fl := range cmd.Flags {
+	for _, fl := range cmd.allFlags() {
 		for _, name := range fl.Names() {
 			if _, ok := seen[name]; ok {
 				return fmt.Errorf("flag %q defined multiple times", name)

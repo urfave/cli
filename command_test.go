@@ -3990,8 +3990,9 @@ func TestFlagDuplicates(t *testing.T) {
 
 func TestDuplicateFlagNamesAreRejected(t *testing.T) {
 	tests := []struct {
-		name  string
-		flags []Flag
+		name                   string
+		flags                  []Flag
+		mutuallyExclusiveFlags []MutuallyExclusiveFlags
 	}{
 		{
 			name: "duplicate flag names",
@@ -4007,12 +4008,34 @@ func TestDuplicateFlagNamesAreRejected(t *testing.T) {
 				&StringFlag{Name: "value", Aliases: []string{"v"}},
 			},
 		},
+		{
+			name: "flag and mutually exclusive flag",
+			flags: []Flag{
+				&StringFlag{Name: "config"},
+			},
+			mutuallyExclusiveFlags: []MutuallyExclusiveFlags{{
+				Flags: [][]Flag{
+					{&BoolFlag{Name: "config"}},
+					{&BoolFlag{Name: "other"}},
+				},
+			}},
+		},
+		{
+			name: "mutually exclusive flags",
+			mutuallyExclusiveFlags: []MutuallyExclusiveFlags{{
+				Flags: [][]Flag{
+					{&BoolFlag{Name: "config"}},
+					{&StringFlag{Name: "config"}},
+				},
+			}},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			cmd := &Command{
-				Flags: test.flags,
+				Flags:                  test.flags,
+				MutuallyExclusiveFlags: test.mutuallyExclusiveFlags,
 				Action: func(context.Context, *Command) error {
 					return nil
 				},
