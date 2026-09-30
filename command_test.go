@@ -4048,6 +4048,31 @@ func TestDuplicateFlagNamesAreRejected(t *testing.T) {
 	}
 }
 
+// A Go flag that another package registers on flag.CommandLine, such as
+// glog's -v, can't be renamed by the user, so it is not reported as a
+// duplicate. The user flag wins, as before.
+func TestDuplicateFlagNamesSkipExtFlags(t *testing.T) {
+	origCommandLine := flag.CommandLine
+	t.Cleanup(func() { flag.CommandLine = origCommandLine })
+	flag.CommandLine = flag.NewFlagSet("foo", flag.ContinueOnError)
+	ext := flag.Bool("v", false, "ext package flag usage")
+
+	cmd := &Command{
+		AllowExtFlags: true,
+		Flags: []Flag{
+			&BoolFlag{Name: "verbose", Aliases: []string{"v"}},
+		},
+		Action: func(context.Context, *Command) error {
+			return nil
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", "-v"})
+	require.NoError(t, err)
+	require.True(t, cmd.Bool("verbose"))
+	require.False(t, *ext)
+}
+
 func TestUserDefinedHelpFlagOverridesBuiltin(t *testing.T) {
 	writer := &bytes.Buffer{}
 	cmd := &Command{

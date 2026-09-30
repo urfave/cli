@@ -188,6 +188,11 @@ func (cmd *Command) checkHelp() bool {
 func (cmd *Command) checkDuplicateFlagNames() error {
 	seen := map[string]struct{}{}
 	for _, fl := range cmd.allFlags() {
+		// Go flags from other packages (AllowExtFlags) can't be renamed
+		// by the user, so a user flag with the same name wins instead.
+		if _, ok := fl.(*extFlag); ok {
+			continue
+		}
 		for _, name := range fl.Names() {
 			if _, ok := seen[name]; ok {
 				return fmt.Errorf("flag %q defined multiple times", name)
