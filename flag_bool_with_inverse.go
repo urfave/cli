@@ -34,6 +34,7 @@ type BoolWithInverseFlag struct {
 	// unexported fields for internal use
 	count      int   // number of times the flag has been set
 	hasBeenSet bool  // whether the flag has been set from env or file
+	fromSource bool  // whether the current value came from Sources
 	applied    bool  // whether the flag has been applied to a flag set already
 	value      Value // value representing this flag's value
 	pset       bool
@@ -120,6 +121,7 @@ func (bif *BoolWithInverseFlag) PostParse() error {
 			}
 
 			bif.hasBeenSet = true
+			bif.fromSource = true
 		}
 	}
 
@@ -127,6 +129,15 @@ func (bif *BoolWithInverseFlag) PostParse() error {
 }
 
 func (bif *BoolWithInverseFlag) Set(name, val string) error {
+	// A value from Sources is only a fallback, so a value set afterwards
+	// replaces it (see FlagBase.Set).
+	if bif.fromSource {
+		bif.fromSource = false
+		bif.count = 0
+		bif.pset = false
+		bif.nset = false
+	}
+
 	if bif.count > 0 && bif.OnlyOnce {
 		return fmt.Errorf("can't duplicate this flag")
 	}
