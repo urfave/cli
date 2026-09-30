@@ -4052,6 +4052,55 @@ func TestUserDefinedHelpFlagOverridesBuiltin(t *testing.T) {
 	require.NotContains(t, writer.String(), "--help, -h  show help")
 }
 
+// When a user flag claims the -h alias, only that alias is yielded: -h
+// goes to the user flag and --help must still show help.
+func TestHelpFlagWorksWhenAliasYieldedToUserFlag(t *testing.T) {
+	tests := []struct {
+		name       string
+		args       []string
+		wantCalled bool
+		wantHost   string
+	}{
+		{
+			name: "long help",
+			args: []string{"foo", "--help"},
+		},
+		{
+			name:       "user short flag",
+			args:       []string{"foo", "-h", "example.com"},
+			wantCalled: true,
+			wantHost:   "example.com",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			writer := &bytes.Buffer{}
+			called := false
+
+			cmd := &Command{
+				Writer: writer,
+				Flags: []Flag{
+					&StringFlag{Name: "h", Usage: "host"},
+				},
+				Action: func(context.Context, *Command) error {
+					called = true
+					return nil
+				},
+			}
+
+			err := cmd.Run(buildTestContext(t), test.args)
+			require.NoError(t, err)
+			require.Equal(t, test.wantCalled, called)
+			require.Equal(t, test.wantHost, cmd.String("h"))
+			if !test.wantCalled {
+				require.Contains(t, writer.String(), "show help")
+				require.NotContains(t, writer.String(), "--help, -h")
+			}
+		})
+	}
+}
+
 func TestShorthandCommand(t *testing.T) {
 	af := func(p *int) ActionFunc {
 		return func(context.Context, *Command) error {
