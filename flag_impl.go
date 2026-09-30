@@ -172,14 +172,16 @@ func (f *FlagBase[T, C, V]) setMultiValueParsingConfig(c multiValueParsingConfig
 	}
 }
 
-func (f *FlagBase[T, C, V]) PreParse() error {
-	newVal := f.Value
-
+// newValue creates the flag's value holding the default Value.
+func (f *FlagBase[T, C, V]) newValue() Value {
 	if f.Destination == nil {
-		f.value = f.creator.Create(newVal, new(T), f.Config)
-	} else {
-		f.value = f.creator.Create(newVal, f.Destination, f.Config)
+		return f.creator.Create(f.Value, new(T), f.Config)
 	}
+	return f.creator.Create(f.Value, f.Destination, f.Config)
+}
+
+func (f *FlagBase[T, C, V]) PreParse() error {
+	f.value = f.newValue()
 
 	// Validate the given default or values set from external sources as well
 	if f.Validator != nil && f.ValidateDefaults {
@@ -215,9 +217,7 @@ func (f *FlagBase[T, C, V]) Set(_ string, val string) error {
 	if f.fromSource {
 		f.fromSource = false
 		f.count = 0
-		if err := f.PreParse(); err != nil {
-			return err
-		}
+		f.value = f.newValue()
 		if f.multiValueConfig != nil {
 			f.setMultiValueParsingConfig(*f.multiValueConfig)
 		}
