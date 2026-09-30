@@ -163,6 +163,8 @@ type Command struct {
 	globaVersionFlagAdded bool
 	// generated root version flag
 	versionFlag Flag
+	// generated help flag
+	helpFlag Flag
 	// whether this is a completion command
 	isCompletionCommand bool
 	// whether this is the built-in help command
@@ -182,7 +184,13 @@ func (cmd *Command) Command(name string) *Command {
 func (cmd *Command) checkHelp() bool {
 	tracef("checking if help is wanted (cmd=%[1]q)", cmd.Name)
 
-	return HelpFlag != nil && slices.ContainsFunc(HelpFlag.Names(), cmd.Bool)
+	helpFlag := cmd.helpFlag
+	if helpFlag == nil && HelpFlag != nil {
+		// A user flag that took the name of the help flag, such as
+		// HelpFlag itself listed in Flags, still shows help.
+		helpFlag = cmd.lFlag(HelpFlag.Names()[0])
+	}
+	return helpFlag != nil && slices.ContainsFunc(helpFlag.Names(), cmd.Bool)
 }
 
 func (cmd *Command) checkDuplicateFlagNames() error {

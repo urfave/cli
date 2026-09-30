@@ -4140,19 +4140,30 @@ func TestUserDefinedHelpFlagOverridesBuiltin(t *testing.T) {
 func TestHelpFlagWorksWhenAliasYieldedToUserFlag(t *testing.T) {
 	tests := []struct {
 		name       string
+		flag       Flag
 		args       []string
 		wantCalled bool
-		wantHost   string
+		wantValue  any
 	}{
 		{
-			name: "long help",
-			args: []string{"foo", "--help"},
+			name:      "long help",
+			flag:      &StringFlag{Name: "h", Usage: "host"},
+			args:      []string{"foo", "--help"},
+			wantValue: "",
 		},
 		{
 			name:       "user short flag",
+			flag:       &StringFlag{Name: "h", Usage: "host"},
 			args:       []string{"foo", "-h", "example.com"},
 			wantCalled: true,
-			wantHost:   "example.com",
+			wantValue:  "example.com",
+		},
+		{
+			name:       "user short bool flag",
+			flag:       &BoolFlag{Name: "h", Usage: "human readable"},
+			args:       []string{"foo", "-h"},
+			wantCalled: true,
+			wantValue:  true,
 		},
 	}
 
@@ -4163,9 +4174,7 @@ func TestHelpFlagWorksWhenAliasYieldedToUserFlag(t *testing.T) {
 
 			cmd := &Command{
 				Writer: writer,
-				Flags: []Flag{
-					&StringFlag{Name: "h", Usage: "host"},
-				},
+				Flags:  []Flag{test.flag},
 				Action: func(context.Context, *Command) error {
 					called = true
 					return nil
@@ -4175,11 +4184,79 @@ func TestHelpFlagWorksWhenAliasYieldedToUserFlag(t *testing.T) {
 			err := cmd.Run(buildTestContext(t), test.args)
 			require.NoError(t, err)
 			require.Equal(t, test.wantCalled, called)
-			require.Equal(t, test.wantHost, cmd.String("h"))
+			require.Equal(t, test.wantValue, cmd.Value("h"))
 			if !test.wantCalled {
 				require.Contains(t, writer.String(), "show help")
 				require.NotContains(t, writer.String(), "--help, -h")
 			}
+		})
+	}
+}
+
+// A user flag that takes the name of the help flag, such as HelpFlag
+// itself listed in Flags, still shows help instead of running the action.
+func TestHelpFlagNameTakenByUserFlag(t *testing.T) {
+	origHelpFlag := HelpFlag
+	t.Cleanup(func() { HelpFlag = origHelpFlag })
+	helpFlag := *origHelpFlag.(*BoolFlag)
+	HelpFlag = &helpFlag
+
+	tests := []struct {
+		name     string
+		hideHelp bool
+		flag     Flag
+		args     []string
+	}{
+		{
+			name: "HelpFlag listed",
+			flag: HelpFlag,
+			args: []string{"foo", "--help"},
+		},
+		{
+			name: "HelpFlag listed in subcommand",
+			flag: HelpFlag,
+			args: []string{"foo", "sub", "--help"},
+		},
+		{
+			name: "HelpFlag listed in subcommand, short",
+			flag: HelpFlag,
+			args: []string{"foo", "sub", "-h"},
+		},
+		{
+			name:     "HideHelp and user help flag",
+			hideHelp: true,
+			flag:     &BoolFlag{Name: "help"},
+			args:     []string{"foo", "--help"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			writer := &bytes.Buffer{}
+			called := false
+			action := func(context.Context, *Command) error {
+				called = true
+				return nil
+			}
+
+			cmd := &Command{
+				Writer:   writer,
+				HideHelp: test.hideHelp,
+				Flags:    []Flag{test.flag},
+				Action:   action,
+				Commands: []*Command{
+					{
+						Name:   "sub",
+						Flags:  []Flag{test.flag},
+						Action: action,
+					},
+				},
+			}
+
+			err := cmd.Run(buildTestContext(t), test.args)
+			require.NoError(t, err)
+			require.False(t, called, "help should short-circuit the action")
+			require.Contains(t, writer.String(), "USAGE:")
 		})
 	}
 }
