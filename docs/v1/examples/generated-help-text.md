@@ -63,7 +63,7 @@ VERSION:
 `
 
   // EXAMPLE: Replace the `HelpPrinter` func
-  cli.HelpPrinter = func(w io.Writer, templ string, data interface{}) {
+  cli.HelpPrinter = func(w io.Writer, templ string, data any) {
     fmt.Println("Ha HA.  I pwnd the help!!1")
   }
 
