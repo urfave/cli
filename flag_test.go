@@ -2718,6 +2718,36 @@ func TestTimestampFlagApply_ShortenedLayouts(t *testing.T) {
 	}
 }
 
+func TestTimestampFlagApply_TimeOnlyLayoutTimezoned(t *testing.T) {
+	for _, loc := range []*time.Location{
+		time.FixedZone("UTC-5", -5*60*60),
+		time.FixedZone("UTC+2", 2*60*60),
+	} {
+		for _, value := range []string{"01:00", "12:00", "20:00"} {
+			t.Run(loc.String()+" "+value, func(t *testing.T) {
+				var got time.Time
+				cmd := &Command{
+					Flags: []Flag{
+						&TimestampFlag{Name: "time", Config: TimestampConfig{Layouts: []string{"15:04"}, Timezone: loc}},
+					},
+					Action: func(_ context.Context, cmd *Command) error {
+						got = cmd.Timestamp("time")
+						return nil
+					},
+				}
+
+				assert.NoError(t, cmd.Run(buildTestContext(t), []string{"", "--time", value}))
+
+				clock, err := time.Parse("15:04", value)
+				assert.NoError(t, err)
+				now := time.Now().In(loc)
+				expected := time.Date(now.Year(), now.Month(), now.Day(), clock.Hour(), clock.Minute(), 0, 0, loc)
+				assert.Equal(t, expected, got)
+			})
+		}
+	}
+}
+
 func TestTimestampFlagApply_YearlessLayoutJanuaryFirst(t *testing.T) {
 	year := time.Now().UTC().Year()
 
