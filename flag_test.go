@@ -2748,6 +2748,25 @@ func TestTimestampFlagApply_TimeOnlyLayoutTimezoned(t *testing.T) {
 	}
 }
 
+func TestTimestampFlagApply_TimeOnlyLayoutWithOffset(t *testing.T) {
+	var got time.Time
+	cmd := &Command{
+		Flags: []Flag{
+			&TimestampFlag{Name: "time", Config: TimestampConfig{Layouts: []string{"15:04 -0700"}}},
+		},
+		Action: func(_ context.Context, cmd *Command) error {
+			got = cmd.Timestamp("time")
+			return nil
+		},
+	}
+
+	assert.NoError(t, cmd.Run(buildTestContext(t), []string{"", "--time", "20:00 -0500"}))
+
+	loc := time.FixedZone("", -5*60*60)
+	now := time.Now().In(loc)
+	assert.Equal(t, time.Date(now.Year(), now.Month(), now.Day(), 20, 0, 0, 0, loc), got)
+}
+
 func TestTimestampFlagApply_YearlessLayoutJanuaryFirst(t *testing.T) {
 	year := time.Now().UTC().Year()
 
