@@ -4048,6 +4048,41 @@ func TestDuplicateFlagNamesAreRejected(t *testing.T) {
 	}
 }
 
+// Duplicates in a subcommand are reported on any run, not only when that
+// subcommand runs.
+func TestDuplicateFlagNamesInSubcommandAreRejected(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+	}{
+		{name: "root", args: []string{"foo"}},
+		{name: "root help flag", args: []string{"foo", "--help"}},
+		{name: "subcommand", args: []string{"foo", "sub"}},
+		{name: "subcommand help flag", args: []string{"foo", "sub", "--help"}},
+		{name: "help command", args: []string{"foo", "help", "sub"}},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			cmd := &Command{
+				Writer: io.Discard,
+				Commands: []*Command{
+					{
+						Name: "sub",
+						Flags: []Flag{
+							&BoolFlag{Name: "help"},
+							&BoolFlag{Name: "help"},
+						},
+					},
+				},
+			}
+
+			err := cmd.Run(buildTestContext(t), test.args)
+			require.EqualError(t, err, `flag "help" defined multiple times in command "foo sub"`)
+		})
+	}
+}
+
 // A Go flag that another package registers on flag.CommandLine, such as
 // glog's -v, can't be renamed by the user, so it is not reported as a
 // duplicate. The user flag wins, as before.

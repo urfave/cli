@@ -195,7 +195,7 @@ func (cmd *Command) checkDuplicateFlagNames() error {
 		}
 		for _, name := range fl.Names() {
 			if _, ok := seen[name]; ok {
-				return fmt.Errorf("flag %q defined multiple times", name)
+				return fmt.Errorf("flag %q defined multiple times in command %q", name, cmd.FullName())
 			}
 			seen[name] = struct{}{}
 		}
