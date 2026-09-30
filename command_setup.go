@@ -258,14 +258,21 @@ func (cmd *Command) ensureHelp() {
 				var localHelpFlag Flag
 				if globalHelpFlag, ok := HelpFlag.(*BoolFlag); ok {
 					flag := *globalHelpFlag
+					// Drop any alias a user flag already claims (e.g. -h
+					// for --host) so the user flag wins but --help still
+					// works, as for the version flag.
+					flag.Aliases = dropClashingAliases(flag.Aliases, cmd.allFlags(), flag.Name)
 					localHelpFlag = &flag
 				} else {
 					localHelpFlag = HelpFlag
 				}
 
-				tracef("appending HelpFlag (cmd=%[1]q)", cmd.Name)
-				cmd.appendFlag(localHelpFlag)
-				cmd.globaHelpFlagAdded = true
+				if !flagNamesInUse(cmd.allFlags(), localHelpFlag.Names()) {
+					tracef("appending HelpFlag (cmd=%[1]q)", cmd.Name)
+					cmd.appendFlag(localHelpFlag)
+					cmd.helpFlag = localHelpFlag
+					cmd.globaHelpFlagAdded = true
+				}
 			} else {
 				tracef("HelpFlag already added, skip (cmd=%[1]q)", cmd.Name)
 			}

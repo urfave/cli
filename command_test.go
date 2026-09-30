@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/mail"
 	"os"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -4287,6 +4288,279 @@ func TestFlagDuplicates(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 			}
+		})
+	}
+}
+
+func TestDuplicateFlagNamesAreRejected(t *testing.T) {
+	tests := []struct {
+		name                   string
+		flags                  []Flag
+		mutuallyExclusiveFlags []MutuallyExclusiveFlags
+	}{
+		{
+			name: "duplicate flag names",
+			flags: []Flag{
+				&BoolFlag{Name: "config"},
+				&StringFlag{Name: "config"},
+			},
+		},
+		{
+			name: "duplicate flag aliases",
+			flags: []Flag{
+				&BoolFlag{Name: "verbose", Aliases: []string{"v"}},
+				&StringFlag{Name: "value", Aliases: []string{"v"}},
+			},
+		},
+		{
+			name: "flag and mutually exclusive flag",
+			flags: []Flag{
+				&StringFlag{Name: "config"},
+			},
+			mutuallyExclusiveFlags: []MutuallyExclusiveFlags{{
+				Flags: [][]Flag{
+					{&BoolFlag{Name: "config"}},
+					{&BoolFlag{Name: "other"}},
+				},
+			}},
+		},
+		{
+			name: "mutually exclusive flags",
+			mutuallyExclusiveFlags: []MutuallyExclusiveFlags{{
+				Flags: [][]Flag{
+					{&BoolFlag{Name: "config"}},
+					{&StringFlag{Name: "config"}},
+				},
+			}},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			cmd := &Command{
+				Flags:                  test.flags,
+				MutuallyExclusiveFlags: test.mutuallyExclusiveFlags,
+				Action: func(context.Context, *Command) error {
+					return nil
+				},
+			}
+
+			err := cmd.Run(buildTestContext(t), []string{"foo"})
+			require.Error(t, err)
+			require.Contains(t, err.Error(), "defined multiple times")
+		})
+	}
+}
+
+// Duplicates in a subcommand are reported on any run, not only when that
+// subcommand runs.
+func TestDuplicateFlagNamesInSubcommandAreRejected(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+	}{
+		{name: "root", args: []string{"foo"}},
+		{name: "root help flag", args: []string{"foo", "--help"}},
+		{name: "subcommand", args: []string{"foo", "sub"}},
+		{name: "subcommand help flag", args: []string{"foo", "sub", "--help"}},
+		{name: "help command", args: []string{"foo", "help", "sub"}},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			cmd := &Command{
+				Writer: io.Discard,
+				Commands: []*Command{
+					{
+						Name: "sub",
+						Flags: []Flag{
+							&BoolFlag{Name: "help"},
+							&BoolFlag{Name: "help"},
+						},
+					},
+				},
+			}
+
+			err := cmd.Run(buildTestContext(t), test.args)
+			require.EqualError(t, err, `flag "help" defined multiple times in command "foo sub"`)
+		})
+	}
+}
+
+// A Go flag that another package registers on flag.CommandLine, such as
+// glog's -v, can't be renamed by the user, so it is not reported as a
+// duplicate. The user flag wins, as before.
+func TestDuplicateFlagNamesSkipExtFlags(t *testing.T) {
+	origCommandLine := flag.CommandLine
+	t.Cleanup(func() { flag.CommandLine = origCommandLine })
+	flag.CommandLine = flag.NewFlagSet("foo", flag.ContinueOnError)
+	ext := flag.Bool("v", false, "ext package flag usage")
+
+	cmd := &Command{
+		AllowExtFlags: true,
+		Flags: []Flag{
+			&BoolFlag{Name: "verbose", Aliases: []string{"v"}},
+		},
+		Action: func(context.Context, *Command) error {
+			return nil
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", "-v"})
+	require.NoError(t, err)
+	require.True(t, cmd.Bool("verbose"))
+	require.False(t, *ext)
+}
+
+func TestUserDefinedHelpFlagOverridesBuiltin(t *testing.T) {
+	writer := &bytes.Buffer{}
+	cmd := &Command{
+		Writer: writer,
+		Flags: []Flag{
+			&BoolFlag{Name: "help", Usage: "custom help behavior"},
+		},
+		Action: func(context.Context, *Command) error {
+			return nil
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", "--help"})
+	require.NoError(t, err)
+	require.True(t, cmd.Bool("help"))
+
+	var helpFlags int
+	for _, fl := range cmd.Flags {
+		if slices.Contains(fl.Names(), "help") {
+			helpFlags++
+		}
+	}
+	require.Equal(t, 1, helpFlags)
+	require.Contains(t, writer.String(), "--help  custom help behavior")
+	require.NotContains(t, writer.String(), "--help, -h  show help")
+}
+
+// When a user flag claims the -h alias, only that alias is yielded: -h
+// goes to the user flag and --help must still show help.
+func TestHelpFlagWorksWhenAliasYieldedToUserFlag(t *testing.T) {
+	tests := []struct {
+		name       string
+		flag       Flag
+		args       []string
+		wantCalled bool
+		wantValue  any
+	}{
+		{
+			name:      "long help",
+			flag:      &StringFlag{Name: "h", Usage: "host"},
+			args:      []string{"foo", "--help"},
+			wantValue: "",
+		},
+		{
+			name:       "user short flag",
+			flag:       &StringFlag{Name: "h", Usage: "host"},
+			args:       []string{"foo", "-h", "example.com"},
+			wantCalled: true,
+			wantValue:  "example.com",
+		},
+		{
+			name:       "user short bool flag",
+			flag:       &BoolFlag{Name: "h", Usage: "human readable"},
+			args:       []string{"foo", "-h"},
+			wantCalled: true,
+			wantValue:  true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			writer := &bytes.Buffer{}
+			called := false
+
+			cmd := &Command{
+				Writer: writer,
+				Flags:  []Flag{test.flag},
+				Action: func(context.Context, *Command) error {
+					called = true
+					return nil
+				},
+			}
+
+			err := cmd.Run(buildTestContext(t), test.args)
+			require.NoError(t, err)
+			require.Equal(t, test.wantCalled, called)
+			require.Equal(t, test.wantValue, cmd.Value("h"))
+			if !test.wantCalled {
+				require.Contains(t, writer.String(), "show help")
+				require.NotContains(t, writer.String(), "--help, -h")
+			}
+		})
+	}
+}
+
+// A user flag that takes the name of the help flag, such as HelpFlag
+// itself listed in Flags, still shows help instead of running the action.
+func TestHelpFlagNameTakenByUserFlag(t *testing.T) {
+	origHelpFlag := HelpFlag
+	t.Cleanup(func() { HelpFlag = origHelpFlag })
+	helpFlag := *origHelpFlag.(*BoolFlag)
+	HelpFlag = &helpFlag
+
+	tests := []struct {
+		name     string
+		hideHelp bool
+		flag     Flag
+		args     []string
+	}{
+		{
+			name: "HelpFlag listed",
+			flag: HelpFlag,
+			args: []string{"foo", "--help"},
+		},
+		{
+			name: "HelpFlag listed in subcommand",
+			flag: HelpFlag,
+			args: []string{"foo", "sub", "--help"},
+		},
+		{
+			name: "HelpFlag listed in subcommand, short",
+			flag: HelpFlag,
+			args: []string{"foo", "sub", "-h"},
+		},
+		{
+			name:     "HideHelp and user help flag",
+			hideHelp: true,
+			flag:     &BoolFlag{Name: "help"},
+			args:     []string{"foo", "--help"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			writer := &bytes.Buffer{}
+			called := false
+			action := func(context.Context, *Command) error {
+				called = true
+				return nil
+			}
+
+			cmd := &Command{
+				Writer:   writer,
+				HideHelp: test.hideHelp,
+				Flags:    []Flag{test.flag},
+				Action:   action,
+				Commands: []*Command{
+					{
+						Name:   "sub",
+						Flags:  []Flag{test.flag},
+						Action: action,
+					},
+				},
+			}
+
+			err := cmd.Run(buildTestContext(t), test.args)
+			require.NoError(t, err)
+			require.False(t, called, "help should short-circuit the action")
+			require.Contains(t, writer.String(), "USAGE:")
 		})
 	}
 }

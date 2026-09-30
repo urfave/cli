@@ -143,6 +143,9 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 
 	if cmd.parent == nil {
 		cmd.setupCommandGraph()
+		if err := cmd.Walk((*Command).checkDuplicateFlagNames); err != nil {
+			return ctx, err
+		}
 	}
 
 	var rargs Args = &stringSliceArgs{v: osArgs}
