@@ -87,13 +87,14 @@ func (t *timestampValue) Set(value string) error {
 		return err
 	}
 
-	defaultTS, _ := time.ParseInLocation(time.TimeOnly, time.TimeOnly, timestamp.Location())
-
 	n := time.Now().In(timestamp.Location())
 
 	// If format is missing date (or year only), set it explicitly to current
 	// A layout that carries a date parses "January 1" to the same instant a date-less layout does, so ask the layout.
-	if !layoutHasDate(matchedLayout) && timestamp.Truncate(time.Hour*24).UnixNano() == defaultTS.Truncate(time.Hour*24).UnixNano() {
+	// The date is compared in the timestamp's own location: truncating the
+	// instant to a day works in UTC and misses January 1 of year 0 for part
+	// of the day whenever Timezone is not UTC.
+	if !layoutHasDate(matchedLayout) && timestamp.Year() == 0 && timestamp.YearDay() == 1 {
 		timestamp = time.Date(
 			n.Year(),
 			n.Month(),
