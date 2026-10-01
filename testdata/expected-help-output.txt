@@ -1,0 +1,479 @@
+=== root: --help
+NAME:
+   app - a test application
+         with a multi-line usage
+
+USAGE:
+   app [global options] [command [command options]] [arguments...]
+
+VERSION:
+   1.2.3
+
+DESCRIPTION:
+   This is a long description of the application,
+   spanning multiple lines.
+
+   And paragraphs.
+
+AUTHORS:
+   Alice <alice@example.com>
+   {Bob bob@example.com}
+   {Carol carol@example.com}
+   Dave (stringer)
+   <no value>
+
+COMMANDS:
+   exec         execute a thing
+   list, ls     list things
+   config, cfg  manage configuration
+   help, h      Shows a list of commands or help for one command
+
+   Extensions:
+     plugin  manage plugins
+
+   Lifecycle:
+     create, cr, new  create a thing
+     delete           delete a thing
+
+GLOBAL OPTIONS:
+   --help, -h     show help
+   --level int    some level (default: 3)
+   --version, -v  print the version
+
+   Configuration
+
+   --config FILE, -c FILE  config FILE
+
+   Logging
+
+   --debug       enable debug output
+   --log string  log file
+with a multi-line usage
+
+
+COPYRIGHT:
+   (c) 2026 Somebody
+   All rights reserved.
+=== root help command: help
+NAME:
+   app - a test application
+         with a multi-line usage
+
+USAGE:
+   app [global options] [command [command options]] [arguments...]
+
+VERSION:
+   1.2.3
+
+DESCRIPTION:
+   This is a long description of the application,
+   spanning multiple lines.
+
+   And paragraphs.
+
+AUTHORS:
+   Alice <alice@example.com>
+   {Bob bob@example.com}
+   {Carol carol@example.com}
+   Dave (stringer)
+   <no value>
+
+COMMANDS:
+   exec         execute a thing
+   list, ls     list things
+   config, cfg  manage configuration
+   help, h      Shows a list of commands or help for one command
+
+   Extensions:
+     plugin  manage plugins
+
+   Lifecycle:
+     create, cr, new  create a thing
+     delete           delete a thing
+
+GLOBAL OPTIONS:
+   --help, -h     show help
+   --level int    some level (default: 3)
+   --version, -v  print the version
+
+   Configuration
+
+   --config FILE, -c FILE  config FILE
+
+   Logging
+
+   --debug       enable debug output
+   --log string  log file
+with a multi-line usage
+
+
+COPYRIGHT:
+   (c) 2026 Somebody
+   All rights reserved.
+=== command: create --help
+NAME:
+   app create - create a thing
+
+USAGE:
+   app create [options] id [bundle] [extra...] 
+
+CATEGORY:
+   Lifecycle
+
+DESCRIPTION:
+   Creates a thing.
+   With a multi-line description.
+
+OPTIONS:
+   --help, -h       show help
+   --pid-file FILE  write pid to FILE
+
+   Run options
+
+   --detach, -d  detach
+
+
+GLOBAL OPTIONS:
+   --config FILE, -c FILE  config FILE
+   --debug                 enable debug output
+   --log string            log file
+      with a multi-line usage
+   --level int  some level (default: 3)
+=== help command: help create
+NAME:
+   app create - create a thing
+
+USAGE:
+   app create [options] id [bundle] [extra...] 
+
+CATEGORY:
+   Lifecycle
+
+DESCRIPTION:
+   Creates a thing.
+   With a multi-line description.
+
+OPTIONS:
+   --help, -h       show help
+   --pid-file FILE  write pid to FILE
+
+   Run options
+
+   --detach, -d  detach
+
+
+GLOBAL OPTIONS:
+   --config FILE, -c FILE  config FILE
+   --debug                 enable debug output
+   --log string            log file
+      with a multi-line usage
+   --level int  some level (default: 3)
+=== command no categories: delete --help
+NAME:
+   app delete - delete a thing
+
+USAGE:
+   app delete [options]
+
+CATEGORY:
+   Lifecycle
+
+OPTIONS:
+   --force, -f  force deletion
+   --help, -h   show help
+
+GLOBAL OPTIONS:
+   --config FILE, -c FILE  config FILE
+   --debug                 enable debug output
+   --log string            log file
+      with a multi-line usage
+   --level int  some level (default: 3)
+=== command args usage: exec --help
+NAME:
+   app exec - execute a thing
+
+USAGE:
+   app exec [options] <id> <command> [args...]
+
+OPTIONS:
+   --help, -h  show help
+
+GLOBAL OPTIONS:
+   --config FILE, -c FILE  config FILE
+   --debug                 enable debug output
+   --log string            log file
+      with a multi-line usage
+   --level int  some level (default: 3)
+=== command usage text: list --help
+NAME:
+   app list - list things
+
+USAGE:
+   app list [options]
+
+   app ls
+
+OPTIONS:
+   --help, -h  show help
+
+GLOBAL OPTIONS:
+   --config FILE, -c FILE  config FILE
+   --debug                 enable debug output
+   --log string            log file
+      with a multi-line usage
+   --level int  some level (default: 3)
+=== subcommand: config --help
+NAME:
+   app config - manage configuration
+
+USAGE:
+   app config [command [command options]]
+
+COMMANDS:
+   show, s                    show configuration
+   set-a-very-long-name, set  set
+                              configuration
+
+OPTIONS:
+   --help, -h  show help
+
+GLOBAL OPTIONS:
+   --config FILE, -c FILE  config FILE
+   --debug                 enable debug output
+   --log string            log file
+      with a multi-line usage
+   --level int  some level (default: 3)
+=== help subcommand: help config
+NAME:
+   app config - manage configuration
+
+USAGE:
+   app config [command [command options]]
+
+COMMANDS:
+   show, s                    show configuration
+   set-a-very-long-name, set  set
+                              configuration
+
+OPTIONS:
+   --help, -h  show help
+
+GLOBAL OPTIONS:
+   --config FILE, -c FILE  config FILE
+   --debug                 enable debug output
+   --log string            log file
+      with a multi-line usage
+   --level int  some level (default: 3)
+=== subcommand usage text and category: plugin --help
+NAME:
+   app plugin - manage plugins
+
+USAGE:
+   app plugin <command>
+
+   app plugin help
+
+CATEGORY:
+   Extensions
+
+COMMANDS:
+   install  install a plugin
+
+OPTIONS:
+   --help, -h  show help
+
+GLOBAL OPTIONS:
+   --config FILE, -c FILE  config FILE
+   --debug                 enable debug output
+   --log string            log file
+      with a multi-line usage
+   --level int  some level (default: 3)
+=== sub-subcommand: config set --help
+NAME:
+   app config set-a-very-long-name - set
+                                     configuration
+
+USAGE:
+   app config set-a-very-long-name [options]
+
+OPTIONS:
+   --global, -g  set globally
+   --help, -h    show help
+
+GLOBAL OPTIONS:
+   --config FILE, -c FILE  config FILE
+   --debug                 enable debug output
+   --log string            log file
+      with a multi-line usage
+   --level int  some level (default: 3)
+=== root wrapped: --help
+NAME:
+   app - a test application
+         with a multi-line usage
+
+USAGE:
+   app [global options] [command [command options]] [arguments...]
+
+VERSION:
+   1.2.3
+
+DESCRIPTION:
+   This is a long description of the
+   application,
+   spanning multiple lines.
+
+   And paragraphs.
+
+AUTHORS:
+   Alice <alice@example.com>
+   {Bob bob@example.com}
+   {Carol carol@example.com}
+   Dave (stringer)
+   <no value>
+
+COMMANDS:
+   exec         execute a thing
+   list, ls     list things
+   config, cfg  manage configuration
+   help, h      Shows a list of commands
+                or help for one command
+
+   Extensions:
+     plugin  manage plugins
+
+   Lifecycle:
+     create, cr, new  create a thing
+     delete           delete a thing
+
+GLOBAL OPTIONS:
+   --help, -h     show help
+   --level int    some level (default: 3)
+   --version, -v  print the version
+
+   Configuration
+
+   --config FILE, -c FILE  config FILE
+
+   Logging
+
+   --debug       enable debug output
+   --log string  log file
+with a multi-line usage
+
+
+COPYRIGHT:
+   (c) 2026 Somebody
+   All rights reserved.
+=== command wrapped: create --help
+NAME:
+   app create - create a thing
+
+USAGE:
+   app create [options] id [bundle] [extra...] 
+
+CATEGORY:
+   Lifecycle
+
+DESCRIPTION:
+   Creates a thing.
+   With a multi-line description.
+
+OPTIONS:
+   --help, -h       show help
+   --pid-file FILE  write pid to FILE
+
+   Run options
+
+   --detach, -d  detach
+
+
+GLOBAL OPTIONS:
+   --config FILE, -c FILE  config FILE
+   --debug                 enable debug output
+   --log string            log file
+      with a multi-line usage
+   --level int some level (default:
+      3)
+=== subcommand wrapped: config --help
+NAME:
+   app config - manage
+                configuration
+
+USAGE:
+   app config [command [command options]]
+
+COMMANDS:
+   show, s                    show configuration
+   set-a-very-long-name, set  set
+                              configuration
+
+OPTIONS:
+   --help, -h  show help
+
+GLOBAL OPTIONS:
+   --config FILE, -c FILE
+      config FILE
+   --debug enable debug
+      output
+   --log string  log file
+      with a multi-line usage
+   --level int some level
+      (default: 3)
+=== minimal: 
+NAME:
+   mini
+
+USAGE:
+   mini 
+
+AUTHOR:
+   Single Author
+=== usage text: --help
+NAME:
+   ut - A new cli application
+
+USAGE:
+   ut [options] <thing>
+
+   ut other-form
+
+GLOBAL OPTIONS:
+   --yes, -y   assume yes
+   --help, -h  show help
+=== args usage: 
+NAME:
+   au
+
+USAGE:
+   au  <source> <destination>
+=== fish completion
+# app fish shell completion
+
+function __fish_app_no_subcommand --description 'Test if there has been any subcommand yet'
+    for i in (commandline -opc)
+        if contains -- $i create cr new delete exec list ls hidden-command plugin config cfg
+            return 1
+        end
+    end
+    return 0
+end
+
+complete -c app -n '__fish_app_no_subcommand' -f -l config -s c -r -d 'config `FILE`'
+complete -c app -n '__fish_app_no_subcommand' -f -l debug -d 'enable debug output'
+complete -c app -n '__fish_app_no_subcommand' -f -l log -r -d 'log file
+with a multi-line usage'
+complete -c app -n '__fish_app_no_subcommand' -f -l level -r -d 'some level'
+complete -x -c app -n '__fish_app_no_subcommand' -a 'create' -d 'create a thing'
+complete -c app -n '__fish_app_no_subcommand' -f -l pid-file -r -d 'write pid to `FILE`'
+complete -c app -n '__fish_app_no_subcommand' -f -l detach -s d -d 'detach'
+complete -x -c app -n '__fish_app_no_subcommand' -a 'delete' -d 'delete a thing'
+complete -c app -n '__fish_app_no_subcommand' -f -l force -s f -d 'force deletion'
+complete -x -c app -n '__fish_app_no_subcommand' -a 'exec' -d 'execute a thing'
+complete -x -c app -n '__fish_app_no_subcommand' -a 'list' -d 'list things'
+complete -x -c app -n '__fish_app_no_subcommand' -a 'plugin' -d 'manage plugins'
+complete -x -c app -n '__fish_app_no_subcommand' -a 'install' -d 'install a plugin'
+complete -x -c app -n '__fish_app_no_subcommand' -a 'config' -d 'manage configuration'
+complete -x -c app -n '__fish_app_no_subcommand' -a 'show' -d 'show configuration'
+complete -x -c app -n '__fish_app_no_subcommand' -a 'set-a-very-long-name' -d 'set
+configuration'
+complete -c app -n '__fish_app_no_subcommand' -f -l global -s g -d 'set globally'

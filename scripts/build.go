@@ -438,10 +438,6 @@ func GfmrunActionFunc(ctx context.Context, cmd *cli.Command) error {
 // of https://github.com/urfave/cli/issues/1057
 func checkBinarySizeActionFunc(ctx context.Context, cmd *cli.Command) (err error) {
 	const (
-		cliSourceFilePath    = "./examples/example-cli/example-cli.go"
-		cliBuiltFilePath     = "./examples/example-cli/built-example"
-		helloSourceFilePath  = "./examples/example-hello-world/example-hello-world.go"
-		helloBuiltFilePath   = "./examples/example-hello-world/built-example"
 		desiredMaxBinarySize = 2.2
 		desiredMinBinarySize = 1.49
 		mbStringFormatter    = "%.1fMB"
@@ -449,29 +445,24 @@ func checkBinarySizeActionFunc(ctx context.Context, cmd *cli.Command) (err error
 
 	tags := cmd.String("tags")
 
-	// get cli example size
-	cliSize, err := getSize(ctx, cliSourceFilePath, cliBuiltFilePath, tags)
+	cliSizeDiff, err := getCLISize(ctx, tags)
 	if err != nil {
 		return err
 	}
 
-	// get hello world size
-	helloSize, err := getSize(ctx, helloSourceFilePath, helloBuiltFilePath, tags)
+	// Also get the size with urfave_cli_no_template build tag,
+	// for informational purposes.
+	noTmplTags := "urfave_cli_no_template"
+	if tags != "" {
+		noTmplTags = tags + "," + noTmplTags
+	}
+	noTmplSizeDiff, err := getCLISize(ctx, noTmplTags)
 	if err != nil {
 		return err
 	}
 
-	// The CLI size diff is the number we are interested in.
-	// This tells us how much our CLI package contributes to the binary size.
-	cliSizeDiff := cliSize - helloSize
-
-	// get human readable size, in MB with one decimal place.
-	// example output is: 35.2MB. (note: this simply an example)
-	// that output is much easier to reason about than the `35223432`
-	// that you would see output without the rounding
-	fileSizeInMB := float64(cliSizeDiff) / float64(1000000)
-	roundedFileSize := math.Round(fileSizeInMB*10) / 10
-	roundedFileSizeString := fmt.Sprintf(mbStringFormatter, roundedFileSize)
+	roundedFileSize := roundToMB(cliSizeDiff)
+	roundedFileSizeString := roundToMBString(cliSizeDiff)
 
 	// check against bounds
 	isLessThanDesiredMin := roundedFileSize < desiredMinBinarySize
@@ -481,6 +472,7 @@ func checkBinarySizeActionFunc(ctx context.Context, cmd *cli.Command) (err error
 
 	// show guidance
 	fmt.Printf("\n%s is the current binary size\n", roundedFileSizeString)
+	fmt.Printf("%s is the current binary size with urfave_cli_no_template build tag\n", roundToMBString(noTmplSizeDiff))
 	// show guidance for min size
 	if isLessThanDesiredMin {
 		fmt.Printf("  %s %s is the target min size\n", goodNewsEmoji, desiredMinSizeString)
@@ -678,6 +670,44 @@ func V3Diff(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	return err
+}
+
+// getCLISize returns how much the cli package contributes to the binary size,
+// by comparing the sizes of the cli example and the hello world example.
+func getCLISize(ctx context.Context, tags string) (int64, error) {
+	const (
+		cliSourceFilePath   = "./examples/example-cli/example-cli.go"
+		cliBuiltFilePath    = "./examples/example-cli/built-example"
+		helloSourceFilePath = "./examples/example-hello-world/example-hello-world.go"
+		helloBuiltFilePath  = "./examples/example-hello-world/built-example"
+	)
+
+	// get cli example size
+	cliSize, err := getSize(ctx, cliSourceFilePath, cliBuiltFilePath, tags)
+	if err != nil {
+		return 0, err
+	}
+
+	// get hello world size
+	helloSize, err := getSize(ctx, helloSourceFilePath, helloBuiltFilePath, tags)
+	if err != nil {
+		return 0, err
+	}
+
+	// The CLI size diff is the number we are interested in.
+	// This tells us how much our CLI package contributes to the binary size.
+	return cliSize - helloSize, nil
+}
+
+// roundToMB returns size in MB, rounded to one decimal place.
+func roundToMB(size int64) float64 {
+	return math.Round(float64(size)/1e6*10) / 10
+}
+
+// roundToMBString returns size in MB, in a human readable form,
+// such as 35.2MB. This is much easier to reason about than 35223432.
+func roundToMBString(size int64) string {
+	return fmt.Sprintf("%.1fMB", roundToMB(size))
 }
 
 func getSize(ctx context.Context, sourcePath, builtPath, tags string) (int64, error) {
