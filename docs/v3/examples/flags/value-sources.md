@@ -62,11 +62,6 @@ func main() {
 If `cli.EnvVars` contains more than one string, the first environment variable that
 resolves is used.
 
-An environment variable that is set but empty only counts as a value for string and
-bool flags, where it means an empty string and `false`. For other flags it is skipped,
-so it does not satisfy `Required`, does not make `IsSet` true, and does not hide a
-later variable in the list.
-
 <!-- {
   "args": ["&#45;&#45;help"],
   "output": "language for the greeting.*LEGACY_COMPAT_LANG.*APP_LANG.*LANG"
@@ -140,6 +135,11 @@ func main() {
 
 Note that default values are set in the same order as they are defined in the
 `Sources` param. This allows the user to choose order of priority
+
+An empty value from any source, such as an environment variable that is set but empty
+or an empty file, only counts as a value for string and bool flags, where it means an
+empty string and `false`. For any other flag it is skipped, so it does not satisfy
+`Required`, does not make `IsSet` true, and does not hide a later source.
 
 #### Values from alternate input sources (YAML, TOML, and others)
 
