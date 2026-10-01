@@ -62,6 +62,11 @@ func main() {
 If `cli.EnvVars` contains more than one string, the first environment variable that
 resolves is used.
 
+An environment variable that is set but empty only counts as a value for string and
+bool flags, where it means an empty string and `false`. For other flags it is skipped,
+so it does not satisfy `Required`, does not make `IsSet` true, and does not hide a
+later variable in the list.
+
 <!-- {
   "args": ["&#45;&#45;help"],
   "output": "language for the greeting.*LEGACY_COMPAT_LANG.*APP_LANG.*LANG"
