@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"runtime"
@@ -764,6 +765,20 @@ func TestFlagsFromEmptyEnv(t *testing.T) {
 			assert.Equal(t, tc.wantIsSet, gotIsSet)
 		})
 	}
+}
+
+// The skip applies to every source in the chain, not only to environment
+// variables, so an empty file is treated the same way as an empty variable.
+func TestFlagFromEmptyFileSource(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "port")
+	require.NoError(t, os.WriteFile(path, nil, 0o600))
+
+	cmd := &Command{
+		Flags: []Flag{&IntFlag{Name: "port", Required: true, Sources: Files(path)}},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"run"})
+	require.ErrorContains(t, err, `Required flag "port" not set`)
 }
 
 func TestStringFlagWithEnvVarHelpOutput(t *testing.T) {
