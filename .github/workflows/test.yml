@@ -41,6 +41,7 @@ jobs:
         run: make lint
 
       - run: make vet
+      - run: make test GFLAGS='--tags urfave_cli_no_template'
       - run: make test
       - run: make check-binary-size
 

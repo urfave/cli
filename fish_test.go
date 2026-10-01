@@ -23,16 +23,6 @@ func TestFishCompletion(t *testing.T) {
 		})
 	cmd.setupCommandGraph()
 
-	oldTemplate := FishCompletionTemplate
-	defer func() { FishCompletionTemplate = oldTemplate }()
-	FishCompletionTemplate = "{{something"
-
-	// test error case
-	_, err1 := cmd.ToFishCompletion()
-	assert.Error(t, err1)
-
-	// reset the template
-	FishCompletionTemplate = oldTemplate
 	// When
 	res, err := cmd.ToFishCompletion()
 

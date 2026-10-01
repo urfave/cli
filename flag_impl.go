@@ -78,10 +78,13 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	// unexported fields for internal use
 	count      int            // number of times the flag has been set
 	hasBeenSet bool           // whether the flag has been set from env or file
+	fromSource bool           // whether the current value came from Sources
 	applied    bool           // whether the flag has been applied to a flag set already
 	creator    VC             // value creator for this flag type
 	value      Value          // value representing this flag's value
 	stringer   FlagStringFunc // optional per-flag override of FlagStringer
+
+	multiValueConfig *multiValueParsingConfig // last parsing config passed to value
 }
 
 // GetValue returns the flags value as string representation and an empty
@@ -164,6 +167,7 @@ func (f *FlagBase[T, C, V]) PostParse() error {
 			}
 
 			f.hasBeenSet = true
+			f.fromSource = true
 			break
 		}
 	}
@@ -174,19 +178,22 @@ func (f *FlagBase[T, C, V]) PostParse() error {
 // pass configuration of parsing to value
 func (f *FlagBase[T, C, V]) setMultiValueParsingConfig(c multiValueParsingConfig) {
 	tracef("setMultiValueParsingConfig %T, %+v", f.value, f.value)
+	f.multiValueConfig = &c
 	if cf, ok := f.value.(multiValueParsingConfigSetter); ok {
 		cf.setMultiValueParsingConfig(c)
 	}
 }
 
-func (f *FlagBase[T, C, V]) PreParse() error {
-	newVal := f.Value
-
+// newValue creates the flag's value holding the default Value.
+func (f *FlagBase[T, C, V]) newValue() Value {
 	if f.Destination == nil {
-		f.value = f.creator.Create(newVal, new(T), f.Config)
-	} else {
-		f.value = f.creator.Create(newVal, f.Destination, f.Config)
+		return f.creator.Create(f.Value, new(T), f.Config)
 	}
+	return f.creator.Create(f.Value, f.Destination, f.Config)
+}
+
+func (f *FlagBase[T, C, V]) PreParse() error {
+	f.value = f.newValue()
 
 	// Validate the given default or values set from external sources as well
 	if f.Validator != nil && f.ValidateDefaults {
@@ -213,6 +220,19 @@ func (f *FlagBase[T, C, V]) Set(_ string, val string) error {
 			return err
 		}
 		f.applied = true
+	}
+
+	// A value from Sources is only a fallback, so a value set afterwards
+	// replaces it rather than being added to it or counted as a duplicate.
+	// This happens for a persistent flag: its command reads the Sources
+	// before a subcommand parses the flag from the command line.
+	if f.fromSource {
+		f.fromSource = false
+		f.count = 0
+		f.value = f.newValue()
+		if f.multiValueConfig != nil {
+			f.setMultiValueParsingConfig(*f.multiValueConfig)
+		}
 	}
 
 	if f.count == 1 && f.OnlyOnce {
