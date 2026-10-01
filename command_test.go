@@ -4127,6 +4127,105 @@ func TestDuplicatePersistentFlagUsesEnvSource(t *testing.T) {
 	require.True(t, app.Command("sub").IsSet("result"))
 }
 
+func TestPersistentFlagCommandLineOverridesSourceInSubcommand(t *testing.T) {
+	tests := []struct {
+		name  string
+		env   string
+		flag  func() Flag
+		args  []string
+		value func(*Command) any
+		want  any
+	}{
+		{
+			name:  "string slice",
+			env:   "a,b",
+			flag:  func() Flag { return &StringSliceFlag{Name: "tags", Sources: EnvVars("APP_VALUE")} },
+			args:  []string{"--tags", "c"},
+			value: func(cmd *Command) any { return cmd.StringSlice("tags") },
+			want:  []string{"c"},
+		},
+		{
+			name:  "string map",
+			env:   "a=1",
+			flag:  func() Flag { return &StringMapFlag{Name: "labels", Sources: EnvVars("APP_VALUE")} },
+			args:  []string{"--labels", "b=2"},
+			value: func(cmd *Command) any { return cmd.StringMap("labels") },
+			want:  map[string]string{"b": "2"},
+		},
+		{
+			name:  "only once",
+			env:   "from-env",
+			flag:  func() Flag { return &StringFlag{Name: "name", Sources: EnvVars("APP_VALUE"), OnlyOnce: true} },
+			args:  []string{"--name", "from-cli"},
+			value: func(cmd *Command) any { return cmd.String("name") },
+			want:  "from-cli",
+		},
+		{
+			name:  "bool with inverse",
+			env:   "true",
+			flag:  func() Flag { return &BoolWithInverseFlag{Name: "color", Sources: EnvVars("APP_VALUE")} },
+			args:  []string{"--no-color"},
+			value: func(cmd *Command) any { return cmd.Bool("color") },
+			want:  false,
+		},
+	}
+
+	for _, test := range tests {
+		for _, where := range []string{"root", "sub"} {
+			t.Run(test.name+" on "+where, func(t *testing.T) {
+				t.Setenv("APP_VALUE", test.env)
+
+				var got any
+				cmd := &Command{
+					Name:  "root",
+					Flags: []Flag{test.flag()},
+					Commands: []*Command{
+						{
+							Name: "sub",
+							Action: func(_ context.Context, cmd *Command) error {
+								got = test.value(cmd)
+								return nil
+							},
+						},
+					},
+				}
+
+				args := append([]string{"root"}, test.args...)
+				args = append(args, "sub")
+				if where == "sub" {
+					args = append([]string{"root", "sub"}, test.args...)
+				}
+
+				require.NoError(t, cmd.Run(buildTestContext(t), args))
+				assert.Equal(t, test.want, got)
+			})
+		}
+	}
+}
+
+func TestPersistentFlagSourceResetKeepsSliceSeparator(t *testing.T) {
+	t.Setenv("APP_VALUE", "a;b")
+
+	var got []string
+	cmd := &Command{
+		Name:  "root",
+		Flags: []Flag{&StringSliceFlag{Name: "tags", Sources: EnvVars("APP_VALUE")}},
+		Commands: []*Command{
+			{
+				Name:               "sub",
+				SliceFlagSeparator: ";",
+				Action: func(_ context.Context, cmd *Command) error {
+					got = cmd.StringSlice("tags")
+					return nil
+				},
+			},
+		},
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"root", "sub", "--tags", "c;d"}))
+	assert.Equal(t, []string{"c", "d"}, got)
+}
+
 func TestRequiredFlagDelayed(t *testing.T) {
 	sf := &StringFlag{
 		Name:     "result",
@@ -5053,6 +5152,26 @@ func TestCommand_Set(t *testing.T) {
 	r.NoError(cmd.Set("int", "1"))
 	r.Equal(int64(1), cmd.Int64("int"))
 	r.True(cmd.IsSet("int"))
+}
+
+func TestCommand_Set_ReplacesSourceValue(t *testing.T) {
+	t.Setenv("APP_VALUE", "a,b")
+
+	var got []string
+	cmd := &Command{
+		Name:  "root",
+		Flags: []Flag{&StringSliceFlag{Name: "tags", Sources: EnvVars("APP_VALUE")}},
+		Before: func(ctx context.Context, cmd *Command) (context.Context, error) {
+			return ctx, cmd.Set("tags", "c")
+		},
+		Action: func(_ context.Context, cmd *Command) error {
+			got = cmd.StringSlice("tags")
+			return nil
+		},
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"root"}))
+	assert.Equal(t, []string{"c"}, got)
 }
 
 func TestCommand_Set_InvalidFlagAccessHandler(t *testing.T) {
