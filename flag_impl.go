@@ -135,13 +135,24 @@ func (f *FlagBase[T, C, V]) PostParse() error {
 	tracef("postparse (flag=%[1]q)", f.Name)
 
 	if !f.hasBeenSet {
-		if val, source, found := f.Sources.LookupWithSource(); found {
-			// reflect.TypeOf yields nil when T is an interface type (e.g.
-			// GenericFlag) and the value is nil, so the kind has to be
-			// derived defensively.
-			kind := reflect.Invalid
-			if ty := reflect.TypeOf(f.Value); ty != nil {
-				kind = ty.Kind()
+		// reflect.TypeOf yields nil when T is an interface type (e.g.
+		// GenericFlag) and the value is nil, so the kind has to be
+		// derived defensively.
+		kind := reflect.Invalid
+		if ty := reflect.TypeOf(f.Value); ty != nil {
+			kind = ty.Kind()
+		}
+
+		// An empty value is a value only for a string, and reads as false
+		// for a bool. Any other kind has nothing to parse from it, so an
+		// empty source is skipped: it neither marks the flag as set nor
+		// hides a later source in the chain.
+		emptyIsValue := kind == reflect.String || kind == reflect.Bool
+
+		for _, source := range f.Sources.Chain {
+			val, found := source.Lookup()
+			if !found || (val == "" && !emptyIsValue) {
+				continue
 			}
 
 			if val != "" || kind == reflect.String {
@@ -151,12 +162,13 @@ func (f *FlagBase[T, C, V]) PostParse() error {
 						val, f.Value, source, f.Name, err,
 					)
 				}
-			} else if val == "" && kind == reflect.Bool {
+			} else {
 				_ = f.Set(f.Name, "false")
 			}
 
 			f.hasBeenSet = true
 			f.fromSource = true
+			break
 		}
 	}
 

@@ -136,6 +136,11 @@ func main() {
 Note that default values are set in the same order as they are defined in the
 `Sources` param. This allows the user to choose order of priority
 
+An empty value from any source, such as an environment variable that is set but empty
+or an empty file, only counts as a value for string and bool flags, where it means an
+empty string and `false`. For any other flag it is skipped, so it does not satisfy
+`Required`, does not make `IsSet` true, and does not hide a later source.
+
 #### Values from alternate input sources (YAML, TOML, and others)
 
 There is a separate package [altsrc](https://github.com/urfave/cli-altsrc) that adds support for getting flag values
