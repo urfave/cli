@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"unicode/utf8"
 )
 
 // ToFishCompletion creates a fish completion string for the `*Command`
@@ -125,15 +126,15 @@ func prepareFishFlags(binary string, owner *Command) []string {
 
 		fishAddFileFlag(f, completion)
 
-		for idx, opt := range f.Names() {
-			if idx == 0 {
-				fmt.Fprintf(completion,
-					" -l %s", strings.TrimSpace(opt),
-				)
+		for _, opt := range f.Names() {
+			opt = strings.TrimSpace(opt)
+			// fish's -s takes a single character and a longer string is read as
+			// a group of one-character options, so only a one-character name
+			// is a short option. Any other name is a long option.
+			if utf8.RuneCountInString(opt) == 1 {
+				fmt.Fprintf(completion, " -s %s", opt)
 			} else {
-				fmt.Fprintf(completion,
-					" -s %s", strings.TrimSpace(opt),
-				)
+				fmt.Fprintf(completion, " -l %s", opt)
 			}
 		}
 
