@@ -155,15 +155,14 @@ func (f *FlagBase[T, C, V]) PostParse() error {
 				continue
 			}
 
-			if val != "" || kind == reflect.String {
-				if err := f.Set(f.Name, val); err != nil {
-					return fmt.Errorf(
-						"could not parse %[1]q as %[2]T value from %[3]s for flag %[4]s: %[5]s",
-						val, f.Value, source, f.Name, err,
-					)
-				}
-			} else {
-				_ = f.Set(f.Name, "false")
+			if val == "" && kind == reflect.Bool {
+				val = "false"
+			}
+			if err := f.Set(f.Name, val); err != nil {
+				return fmt.Errorf(
+					"could not parse %[1]q as %[2]T value from %[3]s for flag %[4]s: %[5]s",
+					val, f.Value, source, f.Name, err,
+				)
 			}
 
 			f.hasBeenSet = true
