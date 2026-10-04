@@ -248,7 +248,9 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 					return &stringSliceArgs{posArgs}, err
 				}
 			} else if index == lastIndex { // last flag can take an arg
-				if flagVal == "" {
+				// as with a single flag, an explicit "=" with nothing after
+				// it is an empty value, not a request to read the next arg
+				if flagVal == "" && !valFromEqual {
 					if len(rargs) == 1 {
 						return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", argumentNotProvidedErrMsg, string(c))
 					}

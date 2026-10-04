@@ -6948,6 +6948,48 @@ func TestFlagEqualsEmptyValue(t *testing.T) {
 		assert.Equal(t, "", val)
 		assert.Equal(t, []string{"positional"}, args)
 	})
+
+	t.Run("-vn= in a short option group sets empty string", func(t *testing.T) {
+		var val string
+		var verbose bool
+		var args []string
+
+		cmd := &Command{
+			UseShortOptionHandling: true,
+			Flags: []Flag{
+				&BoolFlag{Name: "v", Destination: &verbose},
+				&StringFlag{Name: "n", Destination: &val, Value: "default"},
+			},
+			Action: func(_ context.Context, cmd *Command) error {
+				args = cmd.Args().Slice()
+				return nil
+			},
+		}
+
+		err := cmd.Run(buildTestContext(t), []string{"app", "-vn=", "positional"})
+		assert.NoError(t, err)
+		assert.True(t, verbose)
+		assert.Equal(t, "", val)
+		assert.Equal(t, []string{"positional"}, args)
+	})
+
+	t.Run("-vn= at the end of a short option group sets empty string", func(t *testing.T) {
+		var val string
+		var verbose bool
+
+		cmd := &Command{
+			UseShortOptionHandling: true,
+			Flags: []Flag{
+				&BoolFlag{Name: "v", Destination: &verbose},
+				&StringFlag{Name: "n", Destination: &val, Value: "default"},
+			},
+		}
+
+		err := cmd.Run(buildTestContext(t), []string{"app", "-vn="})
+		assert.NoError(t, err)
+		assert.True(t, verbose)
+		assert.Equal(t, "", val)
+	})
 }
 
 // TestCommand_NoDefaultCmdArgMatchingFlag tests the argument set
