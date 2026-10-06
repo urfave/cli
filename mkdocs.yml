@@ -48,6 +48,7 @@ nav:
       - Getting Started: v2/getting-started.md
       - Migrating to v3: v2/migrating-to-v3.md
       - Migrating From Older Releases: v2/migrating-from-older-releases.md
+      - Binary Size: v2/binary-size.md
       - Examples:
           - Greet: v2/examples/greet.md
           - Arguments: v2/examples/arguments.md
