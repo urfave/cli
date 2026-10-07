@@ -203,12 +203,8 @@ func (bif *BoolWithInverseFlag) String() string {
 
 	i := strings.Index(out, "\t")
 
-	prefix := "--"
-
 	// single character flags are prefixed with `-` instead of `--`
-	if len(bif.Name) == 1 {
-		prefix = "-"
-	}
+	prefix := prefixFor(bif.Name)
 
 	// Guard against a FlagStringer that returns a string without a tab (e.g.
 	// a custom stringer or the default stringer when the flag does not
@@ -220,11 +216,7 @@ func (bif *BoolWithInverseFlag) String() string {
 
 	var aliasParts []string
 	for _, alias := range bif.Aliases {
-		aPrefix := "--"
-		if len(alias) == 1 {
-			aPrefix = "-"
-		}
-		aliasParts = append(aliasParts, aPrefix+alias)
+		aliasParts = append(aliasParts, prefixFor(alias)+alias)
 	}
 
 	names := fmt.Sprintf("%s[%s]%s", prefix, bif.inversePrefix(), bif.Name)

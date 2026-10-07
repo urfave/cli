@@ -368,6 +368,12 @@ func TestBoolWithInverseString(t *testing.T) {
 			expected: "-[no-]e\t",
 		},
 		{
+			testName: "single-char multibyte flag name",
+			flagName: "ü",
+			required: true,
+			expected: "-[no-]ü\t",
+		},
+		{
 			testName: "multi-char flag name",
 			flagName: "env",
 			required: true,
@@ -411,6 +417,13 @@ func TestBoolWithInverseString(t *testing.T) {
 			required: false,
 			aliases:  []string{"c"},
 			expected: "--[no-]color, -c\t(default: false)",
+		},
+		{
+			testName: "short multibyte alias",
+			flagName: "color",
+			required: false,
+			aliases:  []string{"ü"},
+			expected: "--[no-]color, -ü\t(default: false)",
 		},
 		{
 			testName: "long alias",
