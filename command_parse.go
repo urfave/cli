@@ -236,19 +236,20 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 			// the check above has already found every flag of the group
 			sf := cmd.lookupAppliedFlag(string(c))
 			if fb, ok := sf.(boolFlag); ok && fb.IsBoolFlag() {
-				fv := flagVal
-				if index == lastIndex && flagVal == "" {
-					fv = "true"
-				}
-				if fv == "" {
-					fv = "true"
+				// the value after "=" belongs to the last flag of the group,
+				// so a bool flag before it is just set
+				fv := "true"
+				if index == lastIndex && flagVal != "" {
+					fv = flagVal
 				}
 				if err := cmd.set(string(c), sf, fv); err != nil {
 					tracef("processing flag.2 (fName=%[1]q)", string(c))
 					return &stringSliceArgs{posArgs}, err
 				}
 			} else if index == lastIndex { // last flag can take an arg
-				if flagVal == "" {
+				// as with a single flag, an explicit "=" with nothing after
+				// it is an empty value, not a request to read the next arg
+				if flagVal == "" && !valFromEqual {
 					if len(rargs) == 1 {
 						return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", argumentNotProvidedErrMsg, string(c))
 					}

@@ -1534,6 +1534,41 @@ func TestCommand_UseShortOptionHandlingMultiByteLastFlag(t *testing.T) {
 	assert.EqualError(t, err, "flag needs an argument: "+name)
 }
 
+func TestCommand_UseShortOptionHandlingValueForLastFlag(t *testing.T) {
+	var verbose, extra bool
+	var value string
+	var args []string
+	newCmd := func() *Command {
+		return &Command{
+			Name:                   "app",
+			UseShortOptionHandling: true,
+			Flags: []Flag{
+				&BoolFlag{Name: "v"},
+				&BoolFlag{Name: "x"},
+				&StringFlag{Name: "n"},
+			},
+			Action: func(_ context.Context, cmd *Command) error {
+				verbose = cmd.Bool("v")
+				extra = cmd.Bool("x")
+				value = cmd.String("n")
+				args = cmd.Args().Slice()
+				return nil
+			},
+			Writer:    io.Discard,
+			ErrWriter: io.Discard,
+		}
+	}
+
+	require.NoError(t, newCmd().Run(buildTestContext(t), []string{"app", "-vn=value", "operand"}))
+	assert.True(t, verbose)
+	assert.Equal(t, "value", value)
+	assert.Equal(t, []string{"operand"}, args)
+
+	require.NoError(t, newCmd().Run(buildTestContext(t), []string{"app", "-vx=false"}))
+	assert.True(t, verbose)
+	assert.False(t, extra)
+}
+
 func TestCommand_UseShortOptionHandlingCommand(t *testing.T) {
 	var (
 		one, two bool
@@ -6947,6 +6982,48 @@ func TestFlagEqualsEmptyValue(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, "", val)
 		assert.Equal(t, []string{"positional"}, args)
+	})
+
+	t.Run("-vn= in a short option group sets empty string", func(t *testing.T) {
+		var val string
+		var verbose bool
+		var args []string
+
+		cmd := &Command{
+			UseShortOptionHandling: true,
+			Flags: []Flag{
+				&BoolFlag{Name: "v", Destination: &verbose},
+				&StringFlag{Name: "n", Destination: &val, Value: "default"},
+			},
+			Action: func(_ context.Context, cmd *Command) error {
+				args = cmd.Args().Slice()
+				return nil
+			},
+		}
+
+		err := cmd.Run(buildTestContext(t), []string{"app", "-vn=", "positional"})
+		assert.NoError(t, err)
+		assert.True(t, verbose)
+		assert.Equal(t, "", val)
+		assert.Equal(t, []string{"positional"}, args)
+	})
+
+	t.Run("-vn= at the end of a short option group sets empty string", func(t *testing.T) {
+		var val string
+		var verbose bool
+
+		cmd := &Command{
+			UseShortOptionHandling: true,
+			Flags: []Flag{
+				&BoolFlag{Name: "v", Destination: &verbose},
+				&StringFlag{Name: "n", Destination: &val, Value: "default"},
+			},
+		}
+
+		err := cmd.Run(buildTestContext(t), []string{"app", "-vn="})
+		assert.NoError(t, err)
+		assert.True(t, verbose)
+		assert.Equal(t, "", val)
 	})
 }
 
