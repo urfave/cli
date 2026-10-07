@@ -734,6 +734,17 @@ func TestFlagsFromEmptyEnv(t *testing.T) {
 			wantValue: false,
 			wantIsSet: true,
 		},
+		{
+			name: "an empty bool still runs the validator",
+			env:  map[string]string{"DEBUG": ""},
+			fl: &BoolFlag{Name: "debug", Value: true, Sources: EnvVars("DEBUG"), Validator: func(b bool) error {
+				if !b {
+					return errors.New("debug must be true")
+				}
+				return nil
+			}},
+			errContains: "debug must be true",
+		},
 	}
 
 	for _, tc := range testCases {
