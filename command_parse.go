@@ -79,6 +79,15 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 	for rargs := args.Slice(); len(rargs) > 0; rargs = rargs[1:] {
 		tracef("rearrange:1 (cmd=%[1]q) %[2]q", cmd.Name, rargs)
 
+		// Check if we've reached the Nth argument and should stop flag parsing.
+		// This comes before the empty arg and "--" checks below, so that an
+		// empty arg or "--" after the Nth argument is passed through as is.
+		if cmd.StopOnNthArg != nil && len(posArgs) == *cmd.StopOnNthArg {
+			// Append current arg and all remaining args without parsing
+			posArgs = append(posArgs, rargs[0:]...)
+			return &stringSliceArgs{posArgs}, nil
+		}
+
 		firstArg := strings.TrimSpace(rargs[0])
 		if len(firstArg) == 0 {
 			posArgs = append(posArgs, rargs[0])
@@ -93,13 +102,6 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 				posArgs = append(posArgs, firstArg)
 			}
 			posArgs = append(posArgs, rargs[1:]...)
-			return &stringSliceArgs{posArgs}, nil
-		}
-
-		// Check if we've reached the Nth argument and should stop flag parsing
-		if cmd.StopOnNthArg != nil && len(posArgs) == *cmd.StopOnNthArg {
-			// Append current arg and all remaining args without parsing
-			posArgs = append(posArgs, rargs[0:]...)
 			return &stringSliceArgs{posArgs}, nil
 		}
 
