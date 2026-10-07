@@ -1534,6 +1534,41 @@ func TestCommand_UseShortOptionHandlingMultiByteLastFlag(t *testing.T) {
 	assert.EqualError(t, err, "flag needs an argument: "+name)
 }
 
+func TestCommand_UseShortOptionHandlingValueForLastFlag(t *testing.T) {
+	var verbose, extra bool
+	var value string
+	var args []string
+	newCmd := func() *Command {
+		return &Command{
+			Name:                   "app",
+			UseShortOptionHandling: true,
+			Flags: []Flag{
+				&BoolFlag{Name: "v"},
+				&BoolFlag{Name: "x"},
+				&StringFlag{Name: "n"},
+			},
+			Action: func(_ context.Context, cmd *Command) error {
+				verbose = cmd.Bool("v")
+				extra = cmd.Bool("x")
+				value = cmd.String("n")
+				args = cmd.Args().Slice()
+				return nil
+			},
+			Writer:    io.Discard,
+			ErrWriter: io.Discard,
+		}
+	}
+
+	require.NoError(t, newCmd().Run(buildTestContext(t), []string{"app", "-vn=value", "operand"}))
+	assert.True(t, verbose)
+	assert.Equal(t, "value", value)
+	assert.Equal(t, []string{"operand"}, args)
+
+	require.NoError(t, newCmd().Run(buildTestContext(t), []string{"app", "-vx=false"}))
+	assert.True(t, verbose)
+	assert.False(t, extra)
+}
+
 func TestCommand_UseShortOptionHandlingCommand(t *testing.T) {
 	var (
 		one, two bool
