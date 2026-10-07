@@ -31,6 +31,30 @@ func TestFishCompletion(t *testing.T) {
 	expectFileContent(t, "testdata/expected-fish-full.fish", res)
 }
 
+func TestFishCompletionShortAndLongNames(t *testing.T) {
+	// fish reads the argument of -s as a group of one-character options, so a
+	// name that is longer than one character must be given with -l, and a
+	// one-character name must be given with -s, wherever it appears in the
+	// flag's list of names.
+	cmd := &Command{
+		Name: "greet",
+		Flags: []Flag{
+			&BoolFlag{Name: "verbose", Aliases: []string{"loud", "v"}},
+			&StringFlag{Name: "o", Aliases: []string{"output", "out"}},
+		},
+	}
+	cmd.setupCommandGraph()
+
+	res, err := cmd.ToFishCompletion()
+	require.NoError(t, err)
+
+	assert.Contains(t, res, "complete -c greet -n '__fish_greet_no_subcommand' -f -l verbose -l loud -s v")
+	assert.Contains(t, res, "complete -c greet -n '__fish_greet_no_subcommand' -f -s o -l output -l out -r")
+	assert.NotContains(t, res, " -s loud")
+	assert.NotContains(t, res, " -s output")
+	assert.NotContains(t, res, " -l o ")
+}
+
 func TestFishCompletionBackslashEscaping(t *testing.T) {
 	// Inside fish single-quoted strings the only escape sequences are \\ and
 	// \', so a backslash in a description must be emitted as \\. An unescaped
