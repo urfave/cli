@@ -2921,6 +2921,27 @@ func TestTimestampFlagApply_YearlessLayoutJanuaryFirst(t *testing.T) {
 	}
 }
 
+func TestTimestampFlagApply_ExplicitYearZero(t *testing.T) {
+	for _, tc := range []struct{ layout, value string }{
+		{time.RFC3339, "0000-02-29T12:34:56Z"},
+		{time.DateOnly, "0000-01-01"},
+		{"2006 15:04", "0000 12:34"},
+	} {
+		t.Run(tc.layout, func(t *testing.T) {
+			want, err := time.Parse(tc.layout, tc.value)
+			require.NoError(t, err)
+			cmd := &Command{
+				Flags: []Flag{&TimestampFlag{Name: "time", Config: TimestampConfig{Layouts: []string{tc.layout}}}},
+				Action: func(_ context.Context, cmd *Command) error {
+					assert.Equal(t, want, cmd.Timestamp("time"))
+					return nil
+				},
+			}
+			assert.NoError(t, cmd.Run(buildTestContext(t), []string{"app", "--time", tc.value}))
+		})
+	}
+}
+
 func TestTimestampFlagApplyValue(t *testing.T) {
 	expectedResult, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
 	fl := TimestampFlag{Name: "time", Aliases: []string{"t"}, Config: TimestampConfig{Layouts: []string{time.RFC3339}}, Value: expectedResult}

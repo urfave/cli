@@ -94,7 +94,9 @@ func (t *timestampValue) Set(value string) error {
 	// The date is compared in the timestamp's own location: truncating the
 	// instant to a day works in UTC and misses January 1 of year 0 for part
 	// of the day whenever Timezone is not UTC.
-	if !layoutHasDate(matchedLayout) && timestamp.Year() == 0 && timestamp.YearDay() == 1 {
+	hasYear, hasDate := layoutFields(matchedLayout)
+	yearMissing := timestamp.Year() == 0 && !hasYear
+	if !hasDate && yearMissing && timestamp.YearDay() == 1 {
 		timestamp = time.Date(
 			n.Year(),
 			n.Month(),
@@ -105,7 +107,7 @@ func (t *timestampValue) Set(value string) error {
 			timestamp.Nanosecond(),
 			timestamp.Location(),
 		)
-	} else if timestamp.Year() == 0 {
+	} else if yearMissing {
 		timestamp = time.Date(
 			n.Year(),
 			timestamp.Month(),
@@ -125,12 +127,15 @@ func (t *timestampValue) Set(value string) error {
 	return nil
 }
 
-// layoutHasDate reports whether layout carries month/day components, probed by
-// round-tripping a reference date that is not January 1.
-func layoutHasDate(layout string) bool {
+// layoutFields reports whether layout carries a year and month/day components,
+// probed by round-tripping a reference date that is not January 1 of year 0.
+func layoutFields(layout string) (hasYear, hasDate bool) {
 	ref := time.Date(2, time.March, 4, 5, 6, 7, 0, time.UTC)
-	p, err := time.Parse(layout, ref.Format(layout))
-	return err == nil && (p.Month() != time.January || p.Day() != 1)
+	if p, err := time.Parse(layout, ref.Format(layout)); err == nil {
+		hasYear = p.Year() != 0
+		hasDate = p.Month() != time.January || p.Day() != 1
+	}
+	return hasYear, hasDate
 }
 
 // String returns a readable representation of this value (for usage defaults)
