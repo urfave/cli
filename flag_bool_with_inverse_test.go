@@ -292,6 +292,34 @@ func TestBoolWithInverseWithPrefix(t *testing.T) {
 	}
 }
 
+func TestBoolWithInverseSingleCharName(t *testing.T) {
+	for _, name := range []string{"e", "ü"} {
+		flagMethod := func() *BoolWithInverseFlag {
+			return &BoolWithInverseFlag{
+				Name: name,
+			}
+		}
+
+		errBothSet := fmt.Errorf("cannot set both flags `-%s` and `--no-%s`", name, name)
+		testCases := []*boolWithInverseTestCase{
+			{
+				args: []string{"-" + name, "--no-" + name},
+				err:  errBothSet,
+			},
+			{
+				args: []string{"--no-" + name, "-" + name},
+				err:  errBothSet,
+			},
+		}
+
+		err := runBoolWithInverseFlagTests(t, flagMethod, testCases)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	}
+}
+
 func TestBoolWithInverseRequired(t *testing.T) {
 	flagMethod := func() *BoolWithInverseFlag {
 		return &BoolWithInverseFlag{
