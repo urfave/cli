@@ -146,7 +146,7 @@ func (bif *BoolWithInverseFlag) Set(name, val string) error {
 
 	if slices.Contains(append([]string{bif.Name}, bif.Aliases...), name) {
 		if bif.nset {
-			return fmt.Errorf("cannot set both flags `--%s` and `--%s`", bif.Name, bif.inversePrefix()+bif.Name)
+			return bif.errBothSet()
 		}
 		if err := bif.value.Set(val); err != nil {
 			return err
@@ -154,7 +154,7 @@ func (bif *BoolWithInverseFlag) Set(name, val string) error {
 		bif.pset = true
 	} else {
 		if bif.pset {
-			return fmt.Errorf("cannot set both flags `--%s` and `--%s`", bif.Name, bif.inversePrefix()+bif.Name)
+			return bif.errBothSet()
 		}
 		if err := bif.value.Set("false"); err != nil {
 			return err
@@ -167,6 +167,13 @@ func (bif *BoolWithInverseFlag) Set(name, val string) error {
 		return bif.Validator(bif.value.Get().(bool))
 	}
 	return nil
+}
+
+// errBothSet reports that both the flag and its inverse were set, with the
+// same `-` or `--` prefix the help output uses.
+func (bif *BoolWithInverseFlag) errBothSet() error {
+	inverse := bif.inversePrefix() + bif.Name
+	return fmt.Errorf("cannot set both flags `%s%s` and `%s%s`", prefixFor(bif.Name), bif.Name, prefixFor(inverse), inverse)
 }
 
 func (bif *BoolWithInverseFlag) Names() []string {
@@ -203,12 +210,8 @@ func (bif *BoolWithInverseFlag) String() string {
 
 	i := strings.Index(out, "\t")
 
-	prefix := "--"
-
 	// single character flags are prefixed with `-` instead of `--`
-	if len(bif.Name) == 1 {
-		prefix = "-"
-	}
+	prefix := prefixFor(bif.Name)
 
 	// Guard against a FlagStringer that returns a string without a tab (e.g.
 	// a custom stringer or the default stringer when the flag does not
@@ -220,11 +223,7 @@ func (bif *BoolWithInverseFlag) String() string {
 
 	var aliasParts []string
 	for _, alias := range bif.Aliases {
-		aPrefix := "--"
-		if len(alias) == 1 {
-			aPrefix = "-"
-		}
-		aliasParts = append(aliasParts, aPrefix+alias)
+		aliasParts = append(aliasParts, prefixFor(alias)+alias)
 	}
 
 	names := fmt.Sprintf("%s[%s]%s", prefix, bif.inversePrefix(), bif.Name)

@@ -292,6 +292,34 @@ func TestBoolWithInverseWithPrefix(t *testing.T) {
 	}
 }
 
+func TestBoolWithInverseSingleCharName(t *testing.T) {
+	for _, name := range []string{"e", "ü"} {
+		flagMethod := func() *BoolWithInverseFlag {
+			return &BoolWithInverseFlag{
+				Name: name,
+			}
+		}
+
+		errBothSet := fmt.Errorf("cannot set both flags `-%s` and `--no-%s`", name, name)
+		testCases := []*boolWithInverseTestCase{
+			{
+				args: []string{"-" + name, "--no-" + name},
+				err:  errBothSet,
+			},
+			{
+				args: []string{"--no-" + name, "-" + name},
+				err:  errBothSet,
+			},
+		}
+
+		err := runBoolWithInverseFlagTests(t, flagMethod, testCases)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	}
+}
+
 func TestBoolWithInverseRequired(t *testing.T) {
 	flagMethod := func() *BoolWithInverseFlag {
 		return &BoolWithInverseFlag{
@@ -368,6 +396,12 @@ func TestBoolWithInverseString(t *testing.T) {
 			expected: "-[no-]e\t",
 		},
 		{
+			testName: "single-char multibyte flag name",
+			flagName: "ü",
+			required: true,
+			expected: "-[no-]ü\t",
+		},
+		{
 			testName: "multi-char flag name",
 			flagName: "env",
 			required: true,
@@ -411,6 +445,13 @@ func TestBoolWithInverseString(t *testing.T) {
 			required: false,
 			aliases:  []string{"c"},
 			expected: "--[no-]color, -c\t(default: false)",
+		},
+		{
+			testName: "short multibyte alias",
+			flagName: "color",
+			required: false,
+			aliases:  []string{"ü"},
+			expected: "--[no-]color, -ü\t(default: false)",
 		},
 		{
 			testName: "long alias",
