@@ -191,12 +191,28 @@ func (f *FlagBase[T, C, V]) newValue() Value {
 	return f.creator.Create(f.Value, f.Destination, f.Config)
 }
 
+func (f *FlagBase[T, C, V]) getTypedValue() T {
+	value := f.value.Get()
+	if typed, ok := value.(T); ok {
+		return typed
+	}
+	// A GenericFlag's Getter may expose a payload rather than a cli.Value.
+	if generic, ok := f.value.(*genericValue); ok {
+		var typed T
+		if generic.val != nil {
+			typed = any(generic.val).(T)
+		}
+		return typed
+	}
+	return value.(T)
+}
+
 func (f *FlagBase[T, C, V]) PreParse() error {
 	f.value = f.newValue()
 
 	// Validate the given default or values set from external sources as well
 	if f.Validator != nil && f.ValidateDefaults {
-		if err := f.Validator(f.value.Get().(T)); err != nil {
+		if err := f.Validator(f.getTypedValue()); err != nil {
 			return err
 		}
 	}
@@ -244,7 +260,7 @@ func (f *FlagBase[T, C, V]) Set(_ string, val string) error {
 	}
 	f.hasBeenSet = true
 	if f.Validator != nil {
-		if err := f.Validator(f.value.Get().(T)); err != nil {
+		if err := f.Validator(f.getTypedValue()); err != nil {
 			return err
 		}
 	}
@@ -337,7 +353,7 @@ func (f *FlagBase[T, C, V]) GetDefaultText() string {
 // RunAction executes flag action if set
 func (f *FlagBase[T, C, V]) RunAction(ctx context.Context, cmd *Command) error {
 	if f.Action != nil {
-		return f.Action(ctx, cmd, f.value.Get().(T))
+		return f.Action(ctx, cmd, f.getTypedValue())
 	}
 
 	return nil
