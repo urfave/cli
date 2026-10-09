@@ -289,6 +289,9 @@ func (cmd *Command) HasName(name string) bool {
 // VisibleCategories returns a slice of categories and commands that are
 // Hidden=false
 func (cmd *Command) VisibleCategories() []CommandCategory {
+	if cmd.isHidden() {
+		return nil
+	}
 	ret := []CommandCategory{}
 	for _, category := range cmd.categories.Categories() {
 		if visible := func() CommandCategory {
@@ -305,9 +308,15 @@ func (cmd *Command) VisibleCategories() []CommandCategory {
 
 // VisibleCommands returns a slice of the Commands with Hidden=false
 func (cmd *Command) VisibleCommands() []*Command {
+	if cmd.isHidden() {
+		return nil
+	}
 	var ret []*Command
 	for _, command := range cmd.Commands {
-		if command.Hidden || command.Name == helpName {
+		if command.parent == nil {
+			command.parent = cmd
+		}
+		if command.isHidden() || command.Name == helpName {
 			continue
 		}
 		ret = append(ret, command)
@@ -361,6 +370,18 @@ func (cmd *Command) VisiblePersistentFlags() []Flag {
 		}
 	}
 	return visibleFlags(flags)
+}
+
+func (cmd *Command) isHidden() bool {
+	if cmd == nil || cmd.builtInHelp {
+		return false
+	}
+	for c := cmd; c != nil; c = c.parent {
+		if c.Hidden {
+			return true
+		}
+	}
+	return false
 }
 
 func (cmd *Command) appendCommand(aCmd *Command) {
@@ -681,6 +702,12 @@ func (cmd *Command) Walk(fn func(*Command) error) error {
 		return err
 	}
 	for _, sub := range cmd.Commands {
+		if sub.parent == nil {
+			sub.parent = cmd
+		}
+		if cmd.isHidden() && !sub.builtInHelp {
+			sub.Hidden = true
+		}
 		if err := sub.Walk(fn); err != nil {
 			return err
 		}

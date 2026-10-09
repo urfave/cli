@@ -7240,6 +7240,86 @@ func TestCommand_Walk_Hidden(t *testing.T) {
 	assert.Equal(t, []string{"foo", "bar", "baz"}, visited)
 }
 
+func TestCommand_Hidden_Recursive(t *testing.T) {
+	grandchild := &Command{Name: "grandchild"}
+	child := &Command{
+		Name:     "child",
+		Commands: []*Command{grandchild},
+	}
+	hiddenParent := &Command{
+		Name:     "hidden-parent",
+		Hidden:   true,
+		Commands: []*Command{child},
+	}
+	visibleSibling := &Command{Name: "visible-sibling"}
+	root := &Command{
+		Name:     "root",
+		Commands: []*Command{hiddenParent, visibleSibling},
+	}
+
+	t.Run("VisibleCommands excludes hidden branch", func(t *testing.T) {
+		assert.Equal(t, []*Command{visibleSibling}, root.VisibleCommands())
+		assert.Empty(t, hiddenParent.VisibleCommands())
+		assert.Empty(t, hiddenParent.VisibleCategories())
+	})
+
+	t.Run("Walk propagates hidden visibility recursively", func(t *testing.T) {
+		gc := &Command{Name: "gc"}
+		c := &Command{Name: "c", Commands: []*Command{gc}}
+		hp := &Command{Name: "hp", Hidden: true, Commands: []*Command{c}}
+		vis := &Command{Name: "vis"}
+		r := &Command{Name: "r", Commands: []*Command{hp, vis}}
+
+		var visitedNames []string
+		var hiddenNames []string
+		err := r.Walk(func(cmd *Command) error {
+			visitedNames = append(visitedNames, cmd.Name)
+			if cmd.Hidden {
+				hiddenNames = append(hiddenNames, cmd.Name)
+			}
+			return nil
+		})
+		require.NoError(t, err)
+		assert.Equal(t, []string{"r", "hp", "c", "gc", "vis"}, visitedNames)
+		assert.Equal(t, []string{"hp", "c", "gc"}, hiddenNames)
+	})
+
+	t.Run("Walk allows skipping hidden commands and their subcommands", func(t *testing.T) {
+		gc := &Command{Name: "gc"}
+		c := &Command{Name: "c", Commands: []*Command{gc}}
+		hp := &Command{Name: "hp", Hidden: true, Commands: []*Command{c}}
+		vis := &Command{Name: "vis"}
+		r := &Command{Name: "r", Commands: []*Command{hp, vis}}
+
+		var visibleOnly []string
+		err := r.Walk(func(cmd *Command) error {
+			if cmd.Hidden {
+				return nil
+			}
+			visibleOnly = append(visibleOnly, cmd.Name)
+			return nil
+		})
+		require.NoError(t, err)
+		assert.Equal(t, []string{"r", "vis"}, visibleOnly)
+	})
+
+	t.Run("setupDefaults and setupCommandGraph propagate hidden visibility", func(t *testing.T) {
+		gc := &Command{Name: "gc"}
+		c := &Command{Name: "c", Commands: []*Command{gc}}
+		hp := &Command{Name: "hp", Hidden: true, Commands: []*Command{c}}
+		r := &Command{Name: "r", Commands: []*Command{hp}}
+
+		r.setupDefaults([]string{"r"})
+		r.setupCommandGraph()
+
+		assert.True(t, hp.Hidden)
+		assert.True(t, c.Hidden)
+		assert.True(t, gc.Hidden)
+		assert.Empty(t, hp.VisibleCommands())
+		assert.Empty(t, c.VisibleCommands())
+	})
+}
+
 func TestCommand_Walk_NilFn(t *testing.T) {
 	cmd := &Command{Name: "foo"}
 	assert.Nil(t, cmd.Walk(nil))

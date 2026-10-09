@@ -1030,6 +1030,69 @@ func TestShowRootCommandHelp_HiddenCommand(t *testing.T) {
 		"expected output to include \"frobbly\"")
 }
 
+func TestShowCommandHelp_HiddenCommand_SubcommandsHidden(t *testing.T) {
+	cmd := &Command{
+		Name: "app",
+		Commands: []*Command{
+			{
+				Name: "visible",
+				Action: func(context.Context, *Command) error {
+					return nil
+				},
+			},
+			{
+				Name:   "secret",
+				Hidden: true,
+				Commands: []*Command{
+					{
+						Name:  "subsecret",
+						Usage: "classified operation",
+						Action: func(context.Context, *Command) error {
+							return nil
+						},
+						Commands: []*Command{
+							{
+								Name:  "deepsecret",
+								Usage: "deep classified operation",
+								Action: func(context.Context, *Command) error {
+									return nil
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	t.Run("root help omits hidden command and its subcommands", func(t *testing.T) {
+		output := &bytes.Buffer{}
+		cmd.Writer = output
+
+		err := cmd.Run(buildTestContext(t), []string{"app", "--help"})
+		require.NoError(t, err)
+
+		out := output.String()
+		assert.Contains(t, out, "visible")
+		assert.NotContains(t, out, "secret")
+		assert.NotContains(t, out, "subsecret")
+		assert.NotContains(t, out, "deepsecret")
+	})
+
+	t.Run("subcommand help on hidden command omits its subcommands", func(t *testing.T) {
+		output := &bytes.Buffer{}
+		cmd.Writer = output
+
+		err := cmd.Run(buildTestContext(t), []string{"app", "secret", "--help"})
+		require.NoError(t, err)
+
+		out := output.String()
+		assert.NotContains(t, out, "COMMANDS:")
+		assert.NotContains(t, out, "subsecret")
+		assert.NotContains(t, out, "deepsecret")
+	})
+}
+
 func TestShowRootCommandHelp_HelpPrinter(t *testing.T) {
 	doublecho := func(text string) string {
 		return text + " " + text

@@ -184,7 +184,7 @@ var DefaultAppComplete = DefaultRootCommandComplete
 
 func printCommandSuggestions(commands []*Command, writer io.Writer) {
 	for _, command := range commands {
-		if command.Hidden {
+		if command.isHidden() {
 			continue
 		}
 		if len(command.Usage) > 0 {
