@@ -4631,6 +4631,53 @@ func TestHelpFlagWorksWhenAliasYieldedToUserFlag(t *testing.T) {
 	}
 }
 
+// When a user command claims the h alias, only that alias is yielded: h runs
+// the user command, help still shows help, and the help listing no longer
+// advertises h for the help command.
+func TestHelpCommandYieldsAliasToUserCommand(t *testing.T) {
+	tests := []struct {
+		name        string
+		args        []string
+		wantHistory bool
+	}{
+		{name: "user alias", args: []string{"app", "h"}, wantHistory: true},
+		{name: "help command", args: []string{"app", "help"}},
+		{name: "help flag", args: []string{"app", "--help"}},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			out := &bytes.Buffer{}
+			ranHistory := false
+
+			cmd := &Command{
+				Name:   "app",
+				Writer: out,
+				Commands: []*Command{
+					{
+						Name:    "history",
+						Aliases: []string{"h"},
+						Usage:   "show history",
+						Action: func(context.Context, *Command) error {
+							ranHistory = true
+							return nil
+						},
+					},
+				},
+			}
+
+			err := cmd.Run(buildTestContext(t), test.args)
+			require.NoError(t, err)
+			assert.Equal(t, test.wantHistory, ranHistory)
+			if !test.wantHistory {
+				assert.Contains(t, out.String(), "history, h")
+				assert.Regexp(t, `(?m)^\s+help\s+Shows a list of commands`, out.String())
+				assert.NotContains(t, out.String(), "help, h")
+			}
+		})
+	}
+}
+
 // A user flag that takes the name of the help flag, such as HelpFlag
 // itself listed in Flags, still shows help instead of running the action.
 func TestHelpFlagNameTakenByUserFlag(t *testing.T) {

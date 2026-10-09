@@ -4,6 +4,7 @@ import (
 	"flag"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -248,6 +249,12 @@ func (cmd *Command) ensureHelp() {
 	if !cmd.hideHelp() {
 		if cmd.Command(helpCommand.Name) == nil {
 			if !cmd.hideHelpCommand() {
+				// Drop any alias a user command already claims (e.g. h
+				// for history) so the user command wins and help does not
+				// list it, as for the help and version flags.
+				helpCommand.Aliases = slices.DeleteFunc(helpCommand.Aliases, func(alias string) bool {
+					return cmd.Command(alias) != nil
+				})
 				tracef("appending helpCommand (cmd=%[1]q)", cmd.Name)
 				cmd.appendCommand(helpCommand)
 			}
