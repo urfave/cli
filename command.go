@@ -287,7 +287,6 @@ func (cmd *Command) HasName(name string) bool {
 }
 
 // VisibleCategories returns a slice of categories and commands that are
-// VisibleCategories returns a slice containing all the visible categories with the commands they contain
 // Hidden=false
 func (cmd *Command) VisibleCategories() []CommandCategory {
 	if cmd.isHidden() {
