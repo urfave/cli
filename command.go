@@ -287,8 +287,12 @@ func (cmd *Command) HasName(name string) bool {
 }
 
 // VisibleCategories returns a slice of categories and commands that are
+// VisibleCategories returns a slice containing all the visible categories with the commands they contain
 // Hidden=false
 func (cmd *Command) VisibleCategories() []CommandCategory {
+	if cmd.isHidden() {
+		return nil
+	}
 	ret := []CommandCategory{}
 	for _, category := range cmd.categories.Categories() {
 		if visible := func() CommandCategory {
@@ -305,9 +309,33 @@ func (cmd *Command) VisibleCategories() []CommandCategory {
 
 // VisibleCommands returns a slice of the Commands with Hidden=false
 func (cmd *Command) VisibleCommands() []*Command {
+	if cmd.isHidden() {
+		_ = cmd.Walk(func(c *Command) error {
+			if !c.builtInHelp {
+				c.Hidden = true
+			}
+			return nil
+		})
+		return nil
+	}
 	var ret []*Command
 	for _, command := range cmd.Commands {
-		if command.Hidden || command.Name == helpName {
+		if command.parent == nil {
+			command.parent = cmd
+		}
+		if cmd.isHidden() && !command.builtInHelp {
+			command.Hidden = true
+		}
+		if command.isHidden() {
+			_ = command.Walk(func(c *Command) error {
+				if !c.builtInHelp {
+					c.Hidden = true
+				}
+				return nil
+			})
+			continue
+		}
+		if command.Name == helpName {
 			continue
 		}
 		ret = append(ret, command)
@@ -363,9 +391,30 @@ func (cmd *Command) VisiblePersistentFlags() []Flag {
 	return visibleFlags(flags)
 }
 
+func (cmd *Command) isHidden() bool {
+	if cmd == nil || cmd.builtInHelp {
+		return false
+	}
+	for c := cmd; c != nil; c = c.parent {
+		if c.Hidden {
+			return true
+		}
+	}
+	return false
+}
+
 func (cmd *Command) appendCommand(aCmd *Command) {
 	if !slices.Contains(cmd.Commands, aCmd) {
 		aCmd.parent = cmd
+		if cmd.isHidden() && !aCmd.builtInHelp {
+			aCmd.Hidden = true
+			_ = aCmd.Walk(func(c *Command) error {
+				if !c.builtInHelp {
+					c.Hidden = true
+				}
+				return nil
+			})
+		}
 		cmd.Commands = append(cmd.Commands, aCmd)
 	}
 }
@@ -681,6 +730,12 @@ func (cmd *Command) Walk(fn func(*Command) error) error {
 		return err
 	}
 	for _, sub := range cmd.Commands {
+		if sub.parent == nil {
+			sub.parent = cmd
+		}
+		if cmd.isHidden() && !sub.builtInHelp {
+			sub.Hidden = true
+		}
 		if err := sub.Walk(fn); err != nil {
 			return err
 		}

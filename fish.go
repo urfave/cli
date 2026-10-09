@@ -62,7 +62,7 @@ func prepareFishCommands(binary string, parent *Command) []string {
 	commands := parent.Commands
 	completions := []string{}
 	for _, command := range commands {
-		if !command.Hidden {
+		if !command.isHidden() {
 			var completion strings.Builder
 			fmt.Fprintf(&completion,
 				"complete -x -c %s -n '%s' -a '%s'",

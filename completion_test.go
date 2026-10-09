@@ -675,3 +675,98 @@ func TestCompletionShellWriteError(t *testing.T) {
 	err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, shellName})
 	assert.ErrorContains(t, err, "writer error")
 }
+
+func TestCompletion_HiddenCommand_SubcommandsOmitted(t *testing.T) {
+	cmd := &Command{
+		Name:                  "foo",
+		EnableShellCompletion: true,
+		Commands: []*Command{
+			{
+				Name: "public",
+				Action: func(context.Context, *Command) error {
+					return nil
+				},
+			},
+			{
+				Name:   "secret",
+				Hidden: true,
+				Commands: []*Command{
+					{
+						Name:  "subsecret",
+						Usage: "classified operation",
+						Action: func(context.Context, *Command) error {
+							return nil
+						},
+						Commands: []*Command{
+							{
+								Name:  "deepsecret",
+								Usage: "deep operation",
+								Action: func(context.Context, *Command) error {
+									return nil
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	t.Run("root completion omits hidden command", func(t *testing.T) {
+		origArgs := os.Args
+		defer func() { os.Args = origArgs }()
+		os.Args = []string{"foo", completionFlag}
+
+		out := &bytes.Buffer{}
+		cmd.Writer = out
+
+		err := cmd.Run(buildTestContext(t), []string{"foo", completionFlag})
+		require.NoError(t, err)
+
+		assert.Contains(t, out.String(), "public")
+		assert.NotContains(t, out.String(), "secret")
+		assert.NotContains(t, out.String(), "subsecret")
+	})
+
+	t.Run("hidden subcommand completion omits its subcommands", func(t *testing.T) {
+		out := &bytes.Buffer{}
+		cmd.Writer = out
+
+		err := cmd.Run(buildTestContext(t), []string{"foo", "secret", completionFlag})
+		require.NoError(t, err)
+
+		assert.NotContains(t, out.String(), "subsecret")
+		assert.NotContains(t, out.String(), "deepsecret")
+	})
+
+	t.Run("built-in completion command omits subcommands when hidden", func(t *testing.T) {
+		out := &bytes.Buffer{}
+		cmd.Writer = out
+
+		err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, completionFlag})
+		require.NoError(t, err)
+
+		for _, shell := range completionShells {
+			assert.NotContains(t, out.String(), shell)
+		}
+	})
+
+	t.Run("built-in completion command suggests subcommands when unhidden", func(t *testing.T) {
+		out := &bytes.Buffer{}
+		unhiddenCmd := &Command{
+			Name:                  "foo",
+			EnableShellCompletion: true,
+			Writer:                out,
+			ConfigureShellCompletionCommand: func(c *Command) {
+				c.Hidden = false
+			},
+		}
+
+		err := unhiddenCmd.Run(buildTestContext(t), []string{"foo", completionCommandName, completionFlag})
+		require.NoError(t, err)
+
+		for _, shell := range completionShells {
+			assert.Contains(t, out.String(), shell)
+		}
+	})
+}
