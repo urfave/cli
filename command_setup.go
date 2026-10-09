@@ -140,13 +140,6 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 		cmd.appendCommand(completionCommand)
 		if cmd.ConfigureShellCompletionCommand != nil {
 			cmd.ConfigureShellCompletionCommand(completionCommand)
-			if !completionCommand.Hidden {
-				for _, subCmd := range completionCommand.Commands {
-					if subCmd.isCompletionCommand {
-						subCmd.Hidden = false
-					}
-				}
-			}
 		}
 	}
 

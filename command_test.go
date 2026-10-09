@@ -7257,12 +7257,10 @@ func TestCommand_Hidden_Recursive(t *testing.T) {
 		Commands: []*Command{hiddenParent, visibleSibling},
 	}
 
-	t.Run("VisibleCommands propagates hidden visibility and excludes hidden branch", func(t *testing.T) {
+	t.Run("VisibleCommands excludes hidden branch", func(t *testing.T) {
 		assert.Equal(t, []*Command{visibleSibling}, root.VisibleCommands())
 		assert.Empty(t, hiddenParent.VisibleCommands())
-		assert.Empty(t, child.VisibleCommands())
-		assert.True(t, child.Hidden)
-		assert.True(t, grandchild.Hidden)
+		assert.Empty(t, hiddenParent.VisibleCategories())
 	})
 
 	t.Run("Walk propagates hidden visibility recursively", func(t *testing.T) {

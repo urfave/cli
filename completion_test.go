@@ -769,4 +769,61 @@ func TestCompletion_HiddenCommand_SubcommandsOmitted(t *testing.T) {
 			assert.Contains(t, out.String(), shell)
 		}
 	})
+
+	t.Run("built-in completion command help omits subcommands when hidden", func(t *testing.T) {
+		out := &bytes.Buffer{}
+		cmd.Writer = out
+
+		err := cmd.Run(buildTestContext(t), []string{"foo", completionCommandName, "--help"})
+		require.NoError(t, err)
+
+		assert.NotContains(t, out.String(), "COMMANDS:")
+		for _, shell := range completionShells {
+			assert.NotContains(t, out.String(), fmt.Sprintf("Output %s completion script", shell))
+		}
+	})
+
+	t.Run("built-in completion command help includes subcommands when unhidden", func(t *testing.T) {
+		out := &bytes.Buffer{}
+		unhiddenCmd := &Command{
+			Name:                  "foo",
+			EnableShellCompletion: true,
+			Writer:                out,
+			ConfigureShellCompletionCommand: func(c *Command) {
+				c.Hidden = false
+			},
+		}
+
+		err := unhiddenCmd.Run(buildTestContext(t), []string{"foo", completionCommandName, "--help"})
+		require.NoError(t, err)
+
+		assert.Contains(t, out.String(), "COMMANDS:")
+		for _, shell := range completionShells {
+			assert.Contains(t, out.String(), shell)
+			assert.Contains(t, out.String(), fmt.Sprintf("Output %s completion script", shell))
+		}
+	})
+}
+
+func TestCompletion_DynamicHiddenInheritance(t *testing.T) {
+	compCmd := buildCompletionCommand("myapp")
+	assert.True(t, compCmd.Hidden)
+	assert.True(t, compCmd.isHidden())
+
+	// Subcommands are visible by default, but isHidden() inherits true from parent
+	for _, sub := range compCmd.Commands {
+		assert.False(t, sub.Hidden, "shell subcommand should not be individually hidden")
+		assert.True(t, sub.isHidden(), "shell subcommand should inherit hidden status from parent")
+	}
+	assert.Empty(t, compCmd.VisibleCommands())
+
+	// Making completion command public dynamically reveals all subcommands
+	compCmd.Hidden = false
+	assert.False(t, compCmd.isHidden())
+	for _, sub := range compCmd.Commands {
+		assert.False(t, sub.Hidden)
+		assert.False(t, sub.isHidden())
+	}
+	visible := compCmd.VisibleCommands()
+	assert.Len(t, visible, len(completionShells))
 }

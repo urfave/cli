@@ -73,7 +73,6 @@ func buildCompletionCommand(appName string) *Command {
 
 	for _, shell := range completionShells {
 		subCmd := buildShellCompletionSubcommand(shell, shellCompletions[shell], appName)
-		subCmd.Hidden = true
 		subCmd.parent = cmd
 		cmd.Commands = append(cmd.Commands, subCmd)
 	}
