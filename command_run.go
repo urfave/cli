@@ -31,7 +31,7 @@ outer:
 		if err == io.EOF {
 			switch st {
 			case stateSearchForToken:
-				if token != "--" {
+				if token != "" && token != "--" {
 					args = append(args, token)
 				}
 			case stateSearchForString:

@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"testing/iotest"
 	"time"
 
 	"github.com/stretchr/testify/assert"
@@ -5597,6 +5598,67 @@ func TestCommandStringDashOption(t *testing.T) {
 			assert.NoError(t, err)
 
 			assert.Equal(t, "-", cmd.String("b"))
+		})
+	}
+}
+
+func TestCommandReadArgsFromStdinPositionalArgs(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		args  []string
+		want  []string
+	}{
+		{name: "empty", want: []string{}},
+		{name: "whitespace", input: " \t\r\n\u2003", want: []string{}},
+		{name: "token at EOF", input: "file.txt", want: []string{"file.txt"}},
+		{name: "trailing newline", input: "file.txt\n", want: []string{"file.txt"}},
+		{name: "trailing whitespace", input: "file.txt \t\r\n\u2003", want: []string{"file.txt"}},
+		{name: "multiple lines", input: "first.txt\nsecond.txt\n", want: []string{"first.txt", "second.txt"}},
+		{name: "quoted token", input: `"file name.txt"`, want: []string{"file name.txt"}},
+		{name: "quoted whitespace", input: `" "`, want: []string{" "}},
+		// Empty quoted stdin strings are currently ignored by the tokenizer.
+		{name: "empty quotes before token", input: `"" file.txt`, want: []string{"file.txt"}},
+		{name: "stdin terminator at EOF", input: "file.txt --", want: []string{"file.txt"}},
+		{name: "stdin terminator", input: "file.txt --\nignored.txt\n", want: []string{"file.txt"}},
+		{name: "empty command line argument", input: "file.txt\n", args: []string{"", "last.txt"}, want: []string{"", "last.txt", "file.txt"}},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			actionCalled := false
+			cmd := &Command{
+				Name:              "app",
+				Reader:            strings.NewReader(test.input),
+				ReadArgsFromStdin: true,
+				Action: func(_ context.Context, c *Command) error {
+					actionCalled = true
+					require.Equal(t, test.want, c.Args().Slice())
+					return nil
+				},
+			}
+			require.NoError(t, cmd.Run(context.Background(), append([]string{"app"}, test.args...)))
+			require.True(t, actionCalled)
+		})
+	}
+}
+
+func TestCommandReadArgsFromStdinReadError(t *testing.T) {
+	readErr := errors.New("stdin read failed")
+	for _, input := range []string{"", "file.txt", "file.txt\n"} {
+		t.Run(input, func(t *testing.T) {
+			actionCalled := false
+			cmd := &Command{
+				Name:              "app",
+				Reader:            io.MultiReader(strings.NewReader(input), iotest.ErrReader(readErr)),
+				ReadArgsFromStdin: true,
+				Action: func(_ context.Context, _ *Command) error {
+					actionCalled = true
+					return nil
+				},
+			}
+			require.ErrorIs(t, cmd.Run(context.Background(), []string{"app"}), readErr)
+			require.False(t, actionCalled)
 		})
 	}
 }
