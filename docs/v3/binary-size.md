@@ -16,11 +16,13 @@ go build -trimpath -ldflags="-s -w" -o myapp ./cmd/myapp
 ls -lh myapp
 ```
 
-Use the Go toolchain to inspect what is in the binary:
+Use the Go toolchain to inspect what is in the binary. Note that `go tool nm`
+needs the symbol table, so run it on a binary built without `-ldflags="-s -w"`:
 
 ```sh-session
+go build -trimpath -o myapp ./cmd/myapp
 go version -m myapp
-go tool nm -size myapp | sort -nr | head -40
+go tool nm -size -sort size myapp | head -40
 ```
 
 ## Practical Checks
