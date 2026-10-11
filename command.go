@@ -109,9 +109,14 @@ type Command struct {
 	// cli.go uses text/template to render templates. You can
 	// render custom help text by setting this variable.
 	CustomRootCommandHelpTemplate string `json:"-"`
-	// SliceFlagSeparator is used to customize the separator for SliceFlag, the default is ","
+	// SliceFlagSeparator is used to customize the separator for slice and map flags, the default is ",".
+	// A value is split by the command that parses it. If that command leaves this empty, the
+	// separator of its nearest ancestor that sets one is used, so a separator set on the root
+	// applies to every subcommand. A subcommand can set "," to use the default again.
 	SliceFlagSeparator string `json:"sliceFlagSeparator"`
-	// DisableSliceFlagSeparator is used to disable SliceFlagSeparator, the default is false
+	// DisableSliceFlagSeparator is used to disable SliceFlagSeparator, the default is false.
+	// It only applies to values parsed by this command, including an ancestor's flags given
+	// after this command's name. Subcommands do not inherit it.
 	DisableSliceFlagSeparator bool `json:"disableSliceFlagSeparator"`
 	// MapFlagKeyValueSeparator is used to customize the separator for MapFlag, the default is "="
 	MapFlagKeyValueSeparator string `json:"mapFlagKeyValueSeparator"`
@@ -565,11 +570,23 @@ func (cmd *Command) NumFlags() int {
 	return count // cmd.flagSet.NFlag()
 }
 
+// sliceFlagSeparator returns the SliceFlagSeparator of the nearest command in
+// the lineage, starting at cmd, that sets one.
+func (cmd *Command) sliceFlagSeparator() string {
+	for c := cmd; c != nil; c = c.parent {
+		if c.SliceFlagSeparator != "" {
+			return c.SliceFlagSeparator
+		}
+	}
+
+	return ""
+}
+
 func (cmd *Command) setMultiValueParsingConfig(f Flag) {
 	tracef("setMultiValueParsingConfig %T, %+v", f, f)
 	if cf, ok := f.(multiValueParsingConfigSetter); ok {
 		cf.setMultiValueParsingConfig(multiValueParsingConfig{
-			SliceFlagSeparator:        cmd.SliceFlagSeparator,
+			SliceFlagSeparator:        cmd.sliceFlagSeparator(),
 			DisableSliceFlagSeparator: cmd.DisableSliceFlagSeparator,
 			MapFlagKeyValueSeparator:  cmd.MapFlagKeyValueSeparator,
 		})
