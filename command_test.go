@@ -5848,6 +5848,298 @@ func TestCommandSliceFlagSeparatorFromEnvVar(t *testing.T) {
 	r.Equal([]string{"0", "1", "2"}, cmd.Value("foo"))
 }
 
+// A command that does not set SliceFlagSeparator uses the separator of its
+// nearest ancestor that sets one, wherever --foo is defined and wherever its
+// value comes from. DisableSliceFlagSeparator is not inherited.
+func TestCommandSliceFlagSeparatorInheritance(t *testing.T) {
+	tests := []struct {
+		name        string
+		rootSep     string
+		rootDisable bool
+		subSep      string
+		subDisable  bool
+		flagOn      string      // command that defines --foo: root, sub or leaf
+		flag        func() Flag // --foo, a StringSliceFlag if nil
+		env         string      // value of APP_FOO
+		set         string      // value the Action passes to cmd.Set
+		args        []string
+		want        any
+	}{
+		{
+			name:    "sub flag",
+			rootSep: ";",
+			flagOn:  "sub",
+			args:    []string{"root", "sub", "--foo", "a;b,c"},
+			want:    []string{"a", "b,c"},
+		},
+		{
+			name:    "sub int slice flag",
+			rootSep: ";",
+			flagOn:  "sub",
+			flag:    func() Flag { return &IntSliceFlag{Name: "foo"} },
+			args:    []string{"root", "sub", "--foo", "1;2"},
+			want:    []int{1, 2},
+		},
+		{
+			name:    "sub map flag",
+			rootSep: ";",
+			flagOn:  "sub",
+			flag:    func() Flag { return &StringMapFlag{Name: "foo"} },
+			args:    []string{"root", "sub", "--foo", "a=1,2;b=3"},
+			want:    map[string]string{"a": "1,2", "b": "3"},
+		},
+		{
+			name:    "root flag before sub",
+			rootSep: ";",
+			flagOn:  "root",
+			args:    []string{"root", "--foo", "a;b,c", "sub"},
+			want:    []string{"a", "b,c"},
+		},
+		{
+			name:    "root flag after sub",
+			rootSep: ";",
+			flagOn:  "root",
+			args:    []string{"root", "sub", "--foo", "a;b,c"},
+			want:    []string{"a", "b,c"},
+		},
+		{
+			name:    "leaf flag",
+			rootSep: ";",
+			flagOn:  "leaf",
+			args:    []string{"root", "sub", "leaf", "--foo", "a;b,c"},
+			want:    []string{"a", "b,c"},
+		},
+		{
+			name:    "sub flag from env",
+			rootSep: ";",
+			flagOn:  "sub",
+			flag:    func() Flag { return &StringSliceFlag{Name: "foo", Sources: EnvVars("APP_FOO")} },
+			env:     "a;b,c",
+			args:    []string{"root", "sub"},
+			want:    []string{"a", "b,c"},
+		},
+		{
+			name:    "sub flag from cmd.Set",
+			rootSep: ";",
+			flagOn:  "sub",
+			set:     "a;b,c",
+			args:    []string{"root", "sub"},
+			want:    []string{"a", "b,c"},
+		},
+		{
+			name:    "sub separator wins",
+			rootSep: ";",
+			subSep:  "|",
+			flagOn:  "sub",
+			args:    []string{"root", "sub", "--foo", "a|b;c"},
+			want:    []string{"a", "b;c"},
+		},
+		{
+			name:    "nearest ancestor wins",
+			rootSep: ";",
+			subSep:  "|",
+			flagOn:  "leaf",
+			args:    []string{"root", "sub", "leaf", "--foo", "a|b;c"},
+			want:    []string{"a", "b;c"},
+		},
+		{
+			name:    "sub sets the default back",
+			rootSep: ";",
+			subSep:  ",",
+			flagOn:  "sub",
+			args:    []string{"root", "sub", "--foo", "a;b,c"},
+			want:    []string{"a;b", "c"},
+		},
+		// DisableSliceFlagSeparator stays per command (#1856). These rows pin
+		// today's behaviour: it applies to the values its command parses,
+		// including an ancestor's flag given after its name, and subcommands
+		// do not inherit it.
+		{
+			name:       "sub disable",
+			rootSep:    ";",
+			subDisable: true,
+			flagOn:     "sub",
+			args:       []string{"root", "sub", "--foo", "a;b,c"},
+			want:       []string{"a;b,c"},
+		},
+		{
+			name:       "sub disable, root flag after sub",
+			rootSep:    ";",
+			subDisable: true,
+			flagOn:     "root",
+			args:       []string{"root", "sub", "--foo", "a;b,c"},
+			want:       []string{"a;b,c"},
+		},
+		{
+			name:        "root disable, root flag before sub",
+			rootDisable: true,
+			flagOn:      "root",
+			args:        []string{"root", "--foo", "a,b", "sub"},
+			want:        []string{"a,b"},
+		},
+		{
+			name:        "root disable, root flag after sub",
+			rootDisable: true,
+			flagOn:      "root",
+			args:        []string{"root", "sub", "--foo", "a,b"},
+			want:        []string{"a", "b"},
+		},
+		// Disable is not inherited, but the separator still is, as in v3.5.0.
+		{
+			name:       "sub disable, leaf flag",
+			rootSep:    ";",
+			subDisable: true,
+			flagOn:     "leaf",
+			args:       []string{"root", "sub", "leaf", "--foo", "a;b,c"},
+			want:       []string{"a", "b,c"},
+		},
+		{
+			name:        "root disable and separator, sub flag",
+			rootSep:     ";",
+			rootDisable: true,
+			flagOn:      "sub",
+			args:        []string{"root", "sub", "--foo", "a;b,c"},
+			want:        []string{"a", "b,c"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if test.env != "" {
+				t.Setenv("APP_FOO", test.env)
+			}
+
+			var got any
+			action := func(_ context.Context, cmd *Command) error {
+				if test.set != "" {
+					if err := cmd.Set("foo", test.set); err != nil {
+						return err
+					}
+				}
+				got = cmd.Value("foo")
+				return nil
+			}
+
+			leaf := &Command{Name: "leaf", Action: action}
+			sub := &Command{
+				Name:                      "sub",
+				SliceFlagSeparator:        test.subSep,
+				DisableSliceFlagSeparator: test.subDisable,
+				Commands:                  []*Command{leaf},
+				Action:                    action,
+			}
+			root := &Command{
+				Name:                      "root",
+				SliceFlagSeparator:        test.rootSep,
+				DisableSliceFlagSeparator: test.rootDisable,
+				Commands:                  []*Command{sub},
+			}
+
+			var foo Flag = &StringSliceFlag{Name: "foo"}
+			if test.flag != nil {
+				foo = test.flag()
+			}
+			owner := map[string]*Command{"root": root, "sub": sub, "leaf": leaf}[test.flagOn]
+			owner.Flags = []Flag{foo}
+
+			r := require.New(t)
+			r.NoError(root.Run(buildTestContext(t), test.args))
+			r.Equal(test.want, got)
+		})
+	}
+}
+
+// A command that does not set MapFlagKeyValueSeparator uses the separator of
+// its nearest ancestor that sets one, as with SliceFlagSeparator.
+func TestCommandMapFlagKeyValueSeparatorInheritance(t *testing.T) {
+	tests := []struct {
+		name         string
+		rootSliceSep string
+		rootSep      string
+		subSep       string
+		flagOn       string // command that defines --foo: root, sub or leaf
+		args         []string
+		want         map[string]string
+	}{
+		{
+			name:    "sub flag",
+			rootSep: ":",
+			flagOn:  "sub",
+			args:    []string{"root", "sub", "--foo", "a:1=2"},
+			want:    map[string]string{"a": "1=2"},
+		},
+		{
+			name:    "root flag after sub",
+			rootSep: ":",
+			flagOn:  "root",
+			args:    []string{"root", "sub", "--foo", "a:1=2"},
+			want:    map[string]string{"a": "1=2"},
+		},
+		{
+			name:    "leaf flag",
+			rootSep: ":",
+			flagOn:  "leaf",
+			args:    []string{"root", "sub", "leaf", "--foo", "a:1=2"},
+			want:    map[string]string{"a": "1=2"},
+		},
+		{
+			name:    "nearest ancestor wins",
+			rootSep: ":",
+			subSep:  "@",
+			flagOn:  "leaf",
+			args:    []string{"root", "sub", "leaf", "--foo", "a@1:2"},
+			want:    map[string]string{"a": "1:2"},
+		},
+		{
+			name:    "sub sets the default back",
+			rootSep: ":",
+			subSep:  "=",
+			flagOn:  "sub",
+			args:    []string{"root", "sub", "--foo", "a=1:2"},
+			want:    map[string]string{"a": "1:2"},
+		},
+		{
+			name:         "with root SliceFlagSeparator",
+			rootSliceSep: ";",
+			rootSep:      ":",
+			flagOn:       "sub",
+			args:         []string{"root", "sub", "--foo", "a:1;b:2"},
+			want:         map[string]string{"a": "1", "b": "2"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			var got any
+			action := func(_ context.Context, cmd *Command) error {
+				got = cmd.Value("foo")
+				return nil
+			}
+
+			leaf := &Command{Name: "leaf", Action: action}
+			sub := &Command{
+				Name:                     "sub",
+				MapFlagKeyValueSeparator: test.subSep,
+				Commands:                 []*Command{leaf},
+				Action:                   action,
+			}
+			root := &Command{
+				Name:                     "root",
+				SliceFlagSeparator:       test.rootSliceSep,
+				MapFlagKeyValueSeparator: test.rootSep,
+				Commands:                 []*Command{sub},
+			}
+
+			owner := map[string]*Command{"root": root, "sub": sub, "leaf": leaf}[test.flagOn]
+			owner.Flags = []Flag{&StringMapFlag{Name: "foo"}}
+
+			r := require.New(t)
+			r.NoError(root.Run(buildTestContext(t), test.args))
+			r.Equal(test.want, got)
+		})
+	}
+}
+
 func TestCommandMapKeyValueFlagSeparator(t *testing.T) {
 	cmd := &Command{
 		MapFlagKeyValueSeparator: ":",
