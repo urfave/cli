@@ -7346,6 +7346,56 @@ func TestEmptyPositionalArgsAfterFlag(t *testing.T) {
 	}
 }
 
+func TestCommand_BooleanEqualsValue(t *testing.T) {
+	tests := []struct {
+		name    string
+		args    []string
+		inverse bool
+		wantErr bool
+		want    bool
+	}{
+		{name: "empty long value", args: []string{"--enabled="}, wantErr: true},
+		{name: "empty short value", args: []string{"-e="}, wantErr: true},
+		{name: "empty grouped value", args: []string{"-ve="}, wantErr: true},
+		{name: "empty inverse-capable positive value", args: []string{"--enabled="}, inverse: true, wantErr: true},
+		{name: "bare long flag", args: []string{"--enabled"}, want: true},
+		{name: "explicit false", args: []string{"--enabled=false"}},
+		{name: "grouped false", args: []string{"-ve=false"}},
+		{name: "bare grouped flags", args: []string{"-ve"}, want: true},
+		{name: "bare inverse flag", args: []string{"--no-enabled"}, inverse: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var called bool
+			var enabled bool
+			var flag Flag = &BoolFlag{Name: "enabled", Aliases: []string{"e"}}
+			if tt.inverse {
+				flag = &BoolWithInverseFlag{Name: "enabled", Aliases: []string{"e"}, Value: true}
+			}
+			cmd := &Command{
+				UseShortOptionHandling: true,
+				Writer:                 io.Discard,
+				ErrWriter:              io.Discard,
+				Flags:                  []Flag{&BoolFlag{Name: "v"}, flag},
+				Action: func(_ context.Context, cmd *Command) error {
+					called = true
+					enabled = cmd.Bool("enabled")
+					return nil
+				},
+			}
+			err := cmd.Run(buildTestContext(t), append([]string{"app"}, tt.args...))
+			if tt.wantErr {
+				require.ErrorContains(t, err, "parse error")
+				assert.False(t, called)
+				return
+			}
+			require.NoError(t, err)
+			assert.True(t, called)
+			assert.Equal(t, tt.want, enabled)
+		})
+	}
+}
+
 func TestFlagEqualsEmptyValue(t *testing.T) {
 	t.Run("--flag= sets empty string", func(t *testing.T) {
 		var val string
