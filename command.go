@@ -118,7 +118,9 @@ type Command struct {
 	// It only applies to values parsed by this command, including an ancestor's flags given
 	// after this command's name. Subcommands do not inherit it.
 	DisableSliceFlagSeparator bool `json:"disableSliceFlagSeparator"`
-	// MapFlagKeyValueSeparator is used to customize the separator for MapFlag, the default is "="
+	// MapFlagKeyValueSeparator is used to customize the separator for MapFlag, the default is "=".
+	// Like SliceFlagSeparator, it is inherited from the nearest ancestor that sets one, and a
+	// subcommand can set "=" to use the default again.
 	MapFlagKeyValueSeparator string `json:"mapFlagKeyValueSeparator"`
 	// Boolean to enable short-option handling so user can combine several
 	// single-character bool arguments into one
@@ -582,13 +584,25 @@ func (cmd *Command) sliceFlagSeparator() string {
 	return ""
 }
 
+// mapFlagKeyValueSeparator returns the MapFlagKeyValueSeparator of the nearest
+// command in the lineage, starting at cmd, that sets one.
+func (cmd *Command) mapFlagKeyValueSeparator() string {
+	for c := cmd; c != nil; c = c.parent {
+		if c.MapFlagKeyValueSeparator != "" {
+			return c.MapFlagKeyValueSeparator
+		}
+	}
+
+	return ""
+}
+
 func (cmd *Command) setMultiValueParsingConfig(f Flag) {
 	tracef("setMultiValueParsingConfig %T, %+v", f, f)
 	if cf, ok := f.(multiValueParsingConfigSetter); ok {
 		cf.setMultiValueParsingConfig(multiValueParsingConfig{
 			SliceFlagSeparator:        cmd.sliceFlagSeparator(),
 			DisableSliceFlagSeparator: cmd.DisableSliceFlagSeparator,
-			MapFlagKeyValueSeparator:  cmd.MapFlagKeyValueSeparator,
+			MapFlagKeyValueSeparator:  cmd.mapFlagKeyValueSeparator(),
 		})
 	}
 }

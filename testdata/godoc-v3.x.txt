@@ -559,7 +559,9 @@ type Command struct {
 	// It only applies to values parsed by this command, including an ancestor's flags given
 	// after this command's name. Subcommands do not inherit it.
 	DisableSliceFlagSeparator bool `json:"disableSliceFlagSeparator"`
-	// MapFlagKeyValueSeparator is used to customize the separator for MapFlag, the default is "="
+	// MapFlagKeyValueSeparator is used to customize the separator for MapFlag, the default is "=".
+	// Like SliceFlagSeparator, it is inherited from the nearest ancestor that sets one, and a
+	// subcommand can set "=" to use the default again.
 	MapFlagKeyValueSeparator string `json:"mapFlagKeyValueSeparator"`
 	// Boolean to enable short-option handling so user can combine several
 	// single-character bool arguments into one
