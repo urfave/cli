@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"slices"
+	"strings"
 	"unicode"
 )
 
@@ -31,15 +32,13 @@ outer:
 		if err == io.EOF {
 			switch st {
 			case stateSearchForToken:
-				if token != "--" {
+				if token != "" && token != "--" {
 					args = append(args, token)
 				}
 			case stateSearchForString:
 				// make sure string is not empty
-				for _, t := range token {
-					if !unicode.IsSpace(t) {
-						args = append(args, token)
-					}
+				if strings.TrimSpace(token) != "" {
+					args = append(args, token)
 				}
 			}
 			break outer
