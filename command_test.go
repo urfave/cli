@@ -5617,6 +5617,8 @@ func TestCommandReadArgsFromStdinPositionalArgs(t *testing.T) {
 		{name: "multiple lines", input: "first.txt\nsecond.txt\n", want: []string{"first.txt", "second.txt"}},
 		{name: "quoted token", input: `"file name.txt"`, want: []string{"file name.txt"}},
 		{name: "quoted whitespace", input: `" "`, want: []string{" "}},
+		{name: "unclosed quote", input: `"file name.txt`, want: []string{"file name.txt"}},
+		{name: "unclosed quoted whitespace", input: `" `, want: []string{}},
 		// Empty quoted stdin strings are currently ignored by the tokenizer.
 		{name: "empty quotes before token", input: `"" file.txt`, want: []string{"file.txt"}},
 		{name: "stdin terminator at EOF", input: "file.txt --", want: []string{"file.txt"}},

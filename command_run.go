@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"slices"
+	"strings"
 	"unicode"
 )
 
@@ -36,10 +37,8 @@ outer:
 				}
 			case stateSearchForString:
 				// make sure string is not empty
-				for _, t := range token {
-					if !unicode.IsSpace(t) {
-						args = append(args, token)
-					}
+				if strings.TrimSpace(token) != "" {
+					args = append(args, token)
 				}
 			}
 			break outer
