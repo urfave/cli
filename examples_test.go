@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/mail"
 	"os"
+	"strings"
 	"time"
 
 	// Alias the package import to make the examples runnable on pkg.go.dev.
@@ -579,4 +580,53 @@ func ExampleCommand_Suggest_command() {
 	// Incorrect Usage: flag provided but not defined: -sliming
 	//
 	// Did you mean "--smiling"?
+}
+
+func ExampleCommand_Walk_visibleTree() {
+	cmd := &cli.Command{
+		Name:     "tool",
+		HideHelp: true,
+		Commands: []*cli.Command{
+			{Name: "status"},
+			{
+				Name: "project",
+				Commands: []*cli.Command{
+					{Name: "list"},
+					{
+						Name: "internal", Hidden: true,
+						Commands: []*cli.Command{{Name: "inspect"}},
+					},
+				},
+			},
+			{
+				Name: "debug", Hidden: true,
+				Commands: []*cli.Command{{Name: "trace"}},
+			},
+			{Name: "version"},
+		},
+		Action: func(_ context.Context, root *cli.Command) error {
+			// Run has initialized the parent links used by Lineage and Path.
+			return root.Walk(func(cmd *cli.Command) error {
+				// Walk still visits descendants of hidden commands. Check the
+				// whole lineage so they are omitted from the output too.
+				for _, ancestor := range cmd.Lineage() {
+					if ancestor.Hidden {
+						return nil
+					}
+				}
+				indent := strings.Repeat("  ", len(cmd.Path())-1)
+				_, err := fmt.Printf("%s%s\n", indent, cmd.Name)
+				return err
+			})
+		},
+	}
+	if err := cmd.Run(context.Background(), []string{"tool"}); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+	// Output:
+	// tool
+	//   status
+	//   project
+	//     list
+	//   version
 }
