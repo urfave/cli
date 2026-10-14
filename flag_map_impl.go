@@ -64,9 +64,9 @@ func (i *MapBase[T, C, VC]) Set(value string) error {
 		i.hasBeenSet = true
 	}
 
-	if strings.HasPrefix(value, slPfx()) {
+	if s, ok := strings.CutPrefix(value, slPfx()); ok {
 		// Deserializing assumes overwrite
-		_ = json.Unmarshal([]byte(strings.Replace(value, slPfx(), "", 1)), &i.dict)
+		_ = json.Unmarshal([]byte(s), &i.dict)
 		i.hasBeenSet = true
 		return nil
 	}
