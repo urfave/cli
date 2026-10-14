@@ -2524,7 +2524,7 @@ func TestStringSlice_Serialized_Set(t *testing.T) {
 	sl0 := NewStringSlice("a", "b")
 	ser0 := sl0.Serialize()
 
-	require.GreaterOrEqual(t, len(ser0), len(slPfx), "serialized shorter than expected")
+	require.GreaterOrEqual(t, len(ser0), len(slPfx()), "serialized shorter than expected")
 
 	sl1 := NewStringSlice("c", "d")
 	_ = sl1.Set(ser0)
@@ -2536,7 +2536,7 @@ func TestIntSlice_Serialized_Set(t *testing.T) {
 	sl0 := NewInt64Slice(1, 2)
 	ser0 := sl0.Serialize()
 
-	require.GreaterOrEqual(t, len(ser0), len(slPfx), "serialized shorter than expected")
+	require.GreaterOrEqual(t, len(ser0), len(slPfx()), "serialized shorter than expected")
 
 	sl1 := NewInt64Slice(3, 4)
 	_ = sl1.Set(ser0)
@@ -2548,7 +2548,7 @@ func TestUintSlice_Serialized_Set(t *testing.T) {
 	sl0 := NewUint64Slice(1, 2)
 	ser0 := sl0.Serialize()
 
-	require.GreaterOrEqual(t, len(ser0), len(slPfx), "serialized shorter than expected")
+	require.GreaterOrEqual(t, len(ser0), len(slPfx()), "serialized shorter than expected")
 
 	sl1 := NewUint64Slice(3, 4)
 	_ = sl1.Set(ser0)
@@ -2560,7 +2560,7 @@ func TestUint64Slice_Serialized_Set(t *testing.T) {
 	sl0 := NewUint64Slice(1, 2)
 	ser0 := sl0.Serialize()
 
-	require.GreaterOrEqual(t, len(ser0), len(slPfx), "serialized shorter than expected")
+	require.GreaterOrEqual(t, len(ser0), len(slPfx()), "serialized shorter than expected")
 
 	sl1 := NewUint64Slice(3, 4)
 	_ = sl1.Set(ser0)
@@ -2572,7 +2572,7 @@ func TestStringMap_Serialized_Set(t *testing.T) {
 	m0 := NewStringMap(map[string]string{"a": "b"})
 	ser0 := m0.Serialize()
 
-	require.GreaterOrEqual(t, len(ser0), len(slPfx), "serialized shorter than expected")
+	require.GreaterOrEqual(t, len(ser0), len(slPfx()), "serialized shorter than expected")
 
 	m1 := NewStringMap(map[string]string{"c": "d"})
 	_ = m1.Set(ser0)

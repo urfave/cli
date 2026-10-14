@@ -64,9 +64,9 @@ func (i *MapBase[T, C, VC]) Set(value string) error {
 		i.hasBeenSet = true
 	}
 
-	if strings.HasPrefix(value, slPfx) {
+	if strings.HasPrefix(value, slPfx()) {
 		// Deserializing assumes overwrite
-		_ = json.Unmarshal([]byte(strings.Replace(value, slPfx, "", 1)), &i.dict)
+		_ = json.Unmarshal([]byte(strings.Replace(value, slPfx(), "", 1)), &i.dict)
 		i.hasBeenSet = true
 		return nil
 	}
@@ -114,7 +114,7 @@ func (i *MapBase[T, C, VC]) String() string {
 // Serialize allows MapBase to fulfill Serializer
 func (i *MapBase[T, C, VC]) Serialize() string {
 	jsonBytes, _ := json.Marshal(i.dict)
-	return fmt.Sprintf("%s%s", slPfx, string(jsonBytes))
+	return fmt.Sprintf("%s%s", slPfx(), string(jsonBytes))
 }
 
 // Value returns the mapping of values set by this flag

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -16,7 +17,9 @@ const (
 	disableSliceFlagSeparator       = false
 )
 
-var slPfx = fmt.Sprintf("sl:::%d:::", time.Now().UTC().UnixNano())
+var slPfx = sync.OnceValue(func() string {
+	return fmt.Sprintf("sl:::%d:::", time.Now().UTC().UnixNano())
+})
 
 // GenerateShellCompletionFlag enables shell completion
 var GenerateShellCompletionFlag Flag = &BoolFlag{
