@@ -8,16 +8,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"math"
-	"net/http"
-	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 	"time"
 
@@ -193,43 +189,6 @@ func runCmd(ctx context.Context, arg string, args ...string) error {
 
 	fmt.Fprintf(os.Stderr, "# ---> %s\n", cmd)
 	return cmd.Run()
-}
-
-func downloadFile(src, dest string, dirPerm, perm os.FileMode) error {
-	req, err := http.NewRequest(http.MethodGet, src, nil)
-	if err != nil {
-		return err
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 300 {
-		return fmt.Errorf("download file from %[2]s into %[3]s: response %[1]v", resp.StatusCode, src, dest)
-	}
-
-	if err := os.MkdirAll(filepath.Dir(dest), dirPerm); err != nil {
-		return err
-	}
-
-	out, err := os.Create(dest)
-	if err != nil {
-		return err
-	}
-
-	if _, err := io.Copy(out, resp.Body); err != nil {
-		return err
-	}
-
-	if err := out.Close(); err != nil {
-		return err
-	}
-
-	return os.Chmod(dest, perm)
 }
 
 func VetActionFunc(ctx context.Context, cmd *cli.Command) error {
@@ -569,17 +528,13 @@ func EnsureGfmrunActionFunc(ctx context.Context, cmd *cli.Command) error {
 		return nil
 	}
 
-	gfmrunURL, err := url.Parse(
-		fmt.Sprintf(
-			"https://github.com/urfave/gfmrun/releases/download/%[1]s/gfmrun-%[2]s-%[3]s-%[1]s",
-			gfmrunVersion, runtime.GOOS, runtime.GOARCH,
-		),
-	)
-	if err != nil {
+	if err := os.Setenv("GOBIN", filepath.Dir(gfmrunExe)); err != nil {
 		return err
 	}
-
-	return downloadFile(gfmrunURL.String(), gfmrunExe, 0o755, 0o755)
+	return runCmd(ctx, "go", "install",
+		"-ldflags=-X github.com/urfave/gfmrun.VersionString="+gfmrunVersion,
+		"github.com/urfave/gfmrun/cmd/gfmrun@"+gfmrunVersion,
+	)
 }
 
 func EnsureMkdocsActionFunc(ctx context.Context, cmd *cli.Command) error {
