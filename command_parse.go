@@ -15,9 +15,8 @@ const (
 // flagFromError tries to parse a provided flag from an error message. If the
 // parsing fails, it returns the input error and an empty string
 func flagFromError(err error) (string, error) {
-	errStr := err.Error()
-	trimmed := strings.TrimPrefix(errStr, providedButNotDefinedErrMsg)
-	if errStr == trimmed {
+	trimmed, ok := strings.CutPrefix(err.Error(), providedButNotDefinedErrMsg)
+	if !ok {
 		return "", err
 	}
 	return trimmed, nil
@@ -146,14 +145,12 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 
 		flagName := firstArg[numMinuses:]
 		flagVal := ""
-		valFromEqual := false
 		tracef("flagName:1 (fName=%[1]q)", flagName)
-		if index := strings.Index(flagName, "="); index != -1 {
+		flagName, _, valFromEqual := strings.Cut(flagName, "=")
+		if valFromEqual {
 			// Classify the flag using the trimmed token, but leave value
 			// whitespace handling to the flag's value parser.
 			_, flagVal, _ = strings.Cut(rargs[0], "=")
-			flagName = flagName[:index]
-			valFromEqual = true
 		}
 
 		tracef("flagName:2 (fName=%[1]q) (fVal=%[2]q)", flagName, flagVal)
