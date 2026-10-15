@@ -517,7 +517,10 @@ func EnsureGoimportsActionFunc(ctx context.Context, cmd *cli.Command) error {
 }
 
 func EnsureGfmrunActionFunc(ctx context.Context, cmd *cli.Command) error {
-	topDir := cmd.String("top-dir")
+	topDir, err := filepath.Abs(cmd.String("top-dir"))
+	if err != nil {
+		return err
+	}
 	gfmrunExe := filepath.Join(topDir, ".local/bin/gfmrun")
 
 	if err := os.Chdir(topDir); err != nil {
