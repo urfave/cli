@@ -41,12 +41,12 @@ func TestTracing(t *testing.T) {
 	os.Stderr = file
 
 	// Note we can't really set the env since the isTracingOn
-	// is read at module startup so any changes mid code
-	// won't take effect
-	isTracingOn = false
+	// result is cached after the first call so any changes
+	// mid code won't take effect
+	isTracingOn = func() bool { return false }
 	tracef("something")
 
-	isTracingOn = true
+	isTracingOn = func() bool { return true }
 	tracef("foothing")
 
 	assert.NoError(t, file.Close())

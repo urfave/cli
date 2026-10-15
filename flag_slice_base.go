@@ -49,9 +49,9 @@ func (i *SliceBase[T, C, VC]) Set(value string) error {
 		i.hasBeenSet = true
 	}
 
-	if strings.HasPrefix(value, slPfx) {
+	if s, ok := strings.CutPrefix(value, slPfx()); ok {
 		// Deserializing assumes overwrite
-		_ = json.Unmarshal([]byte(strings.Replace(value, slPfx, "", 1)), &i.slice)
+		_ = json.Unmarshal([]byte(s), &i.slice)
 		i.hasBeenSet = true
 		return nil
 	}
@@ -93,7 +93,7 @@ func (i *SliceBase[T, C, VC]) String() string {
 // Serialize allows SliceBase to fulfill Serializer
 func (i *SliceBase[T, C, VC]) Serialize() string {
 	jsonBytes, _ := json.Marshal(i.slice)
-	return fmt.Sprintf("%s%s", slPfx, string(jsonBytes))
+	return fmt.Sprintf("%s%s", slPfx(), string(jsonBytes))
 }
 
 // Value returns the slice of values set by this flag

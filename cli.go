@@ -27,12 +27,15 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"sync"
 )
 
-var isTracingOn = os.Getenv("URFAVE_CLI_TRACING") == "on"
+var isTracingOn = sync.OnceValue(func() bool {
+	return os.Getenv("URFAVE_CLI_TRACING") == "on"
+})
 
 func tracef(format string, a ...any) {
-	if !isTracingOn {
+	if !isTracingOn() {
 		return
 	}
 
