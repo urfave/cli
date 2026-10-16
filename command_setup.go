@@ -90,6 +90,9 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 	for _, subCmd := range cmd.Commands {
 		tracef("setting sub-command (cmd=%[1]q) parent as self (cmd=%[2]q)", subCmd.Name, cmd.Name)
 		subCmd.parent = cmd
+		if cmd.isHidden() && !subCmd.builtInHelp {
+			subCmd.Hidden = true
+		}
 	}
 
 	cmd.ensureHelp()
@@ -174,6 +177,9 @@ func (cmd *Command) setupCommandGraph() {
 	_ = cmd.Walk(func(sub *Command) error {
 		for _, subCmd := range sub.Commands {
 			subCmd.parent = sub
+			if sub.isHidden() && !subCmd.builtInHelp {
+				subCmd.Hidden = true
+			}
 			subCmd.setupSubcommand()
 		}
 		return nil
@@ -184,6 +190,14 @@ func (cmd *Command) setupSubcommand() {
 	tracef("setting up self as sub-command (cmd=%[1]q)", cmd.Name)
 
 	cmd.ensureHelp()
+
+	if cmd.isHidden() {
+		for _, subCmd := range cmd.Commands {
+			if !subCmd.builtInHelp {
+				subCmd.Hidden = true
+			}
+		}
+	}
 
 	tracef("setting command categories (cmd=%[1]q)", cmd.Name)
 	cmd.categories = newCommandCategories()
