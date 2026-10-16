@@ -26,7 +26,7 @@ type stringSliceArgs struct {
 }
 
 func (a *stringSliceArgs) Get(n int) string {
-	if len(a.v) > n {
+	if n >= 0 && n < len(a.v) {
 		return a.v[n]
 	}
 	return ""

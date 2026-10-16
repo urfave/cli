@@ -10,6 +10,27 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestArgsGetBounds(t *testing.T) {
+	for _, test := range []struct {
+		name  string
+		args  []string
+		index int
+		want  string
+	}{
+		{name: "negative_empty", index: -1},
+		{name: "negative_nonempty", args: []string{"first", "last"}, index: -1},
+		{name: "empty", index: 0},
+		{name: "first", args: []string{"first", "last"}, index: 0, want: "first"},
+		{name: "last", args: []string{"first", "last"}, index: 1, want: "last"},
+		{name: "past_end", args: []string{"first", "last"}, index: 2},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			args := &stringSliceArgs{v: test.args}
+			require.Equal(t, test.want, args.Get(test.index))
+		})
+	}
+}
+
 func TestArgNotSet(t *testing.T) {
 	arg := &StringArg{
 		Name:  "sa",
