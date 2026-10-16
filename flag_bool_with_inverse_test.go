@@ -97,6 +97,24 @@ func TestBoolWithInverseBasic(t *testing.T) {
 			args: []string{"--env", "--no-env"},
 			err:  errBothEnvFlagsAreSet,
 		},
+		{
+			args:    []string{"--no-env=true"},
+			toBeSet: true,
+			value:   false,
+		},
+		{
+			args:    []string{"--no-env=false"},
+			toBeSet: true,
+			value:   true,
+		},
+		{
+			args: []string{"--no-env="},
+			err:  fmt.Errorf(`invalid value "" for flag -no-env: parse error`),
+		},
+		{
+			args: []string{"--no-env=foo"},
+			err:  fmt.Errorf(`invalid value "foo" for flag -no-env: parse error`),
+		},
 	}
 
 	err := runBoolWithInverseFlagTests(t, flagMethod, testCases)

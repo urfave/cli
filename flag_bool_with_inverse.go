@@ -2,8 +2,10 @@ package cli
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -156,7 +158,13 @@ func (bif *BoolWithInverseFlag) Set(name, val string) error {
 		if bif.pset {
 			return bif.errBothSet()
 		}
-		if err := bif.value.Set("false"); err != nil {
+		// the inverse name sets the opposite of its value, so
+		// --no-env=false is the same as --env=true
+		v, err := strconv.ParseBool(val)
+		if err != nil {
+			return errors.New("parse error")
+		}
+		if err := bif.value.Set(strconv.FormatBool(!v)); err != nil {
 			return err
 		}
 		bif.nset = true
