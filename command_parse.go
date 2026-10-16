@@ -160,7 +160,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		if f != nil {
 			tracef("Trying flag type (fName=%[1]q) (type=%[2]T)", flagName, f)
 			if fb, ok := f.(boolFlag); ok && fb.IsBoolFlag() {
-				if flagVal == "" {
+				if flagVal == "" && !valFromEqual {
 					flagVal = "true"
 				}
 				tracef("parse Apply bool flag (fName=%[1]q) (fVal=%[2]q)", flagName, flagVal)
@@ -238,7 +238,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 				// the value after "=" belongs to the last flag of the group,
 				// so a bool flag before it is just set
 				fv := "true"
-				if index == lastIndex && flagVal != "" {
+				if index == lastIndex && valFromEqual {
 					fv = flagVal
 				}
 				if err := cmd.set(string(c), sf, fv); err != nil {
