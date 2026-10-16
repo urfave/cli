@@ -29,7 +29,7 @@ const (
 	goodNewsEmoji     = "✨"
 	checksPassedEmoji = "✅"
 
-	gfmrunVersion = "v1.3.0"
+	gfmrunVersion = "v1.3.3"
 
 	v3diffWarning = `
 # The unified diff above indicates that the public API surface area
