@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"os"
@@ -333,6 +334,87 @@ func TestMapValueSource(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMapValueSourceStringMap(t *testing.T) {
+	// Regression test for https://github.com/urfave/cli/issues/1634:
+	// map-sourced values must round-trip through StringMap parsing
+	// instead of Go-syntax "%+v" which MapBase.Set rejects.
+	tests := []struct {
+		name  string
+		m     map[any]any
+		key   string
+		want  map[string]string
+		found bool
+	}{
+		{
+			name: "map any any",
+			m: map[any]any{
+				"labels": map[any]any{"env": "prod", "team": "platform"},
+			},
+			key:   "labels",
+			want:  map[string]string{"env": "prod", "team": "platform"},
+			found: true,
+		},
+		{
+			name: "map string any",
+			m: map[any]any{
+				"labels": map[string]any{"env": "prod", "team": "platform"},
+			},
+			key:   "labels",
+			want:  map[string]string{"env": "prod", "team": "platform"},
+			found: true,
+		},
+		{
+			name: "map string string",
+			m: map[any]any{
+				"labels": map[string]string{"env": "prod", "team": "platform"},
+			},
+			key:   "labels",
+			want:  map[string]string{"env": "prod", "team": "platform"},
+			found: true,
+		},
+		{
+			name: "missing key",
+			m: map[any]any{
+				"labels": map[any]any{"env": "prod"},
+			},
+			key:   "other",
+			found: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ms := NewMapSource("test", test.m)
+			m := NewMapValueSource(test.key, ms)
+			val, ok := m.Lookup()
+			if !test.found {
+				assert.False(t, ok)
+				return
+			}
+			require.True(t, ok)
+			sm := NewStringMap(nil)
+			require.NoError(t, sm.Set(val))
+			assert.Equal(t, test.want, sm.Value())
+		})
+	}
+}
+
+func TestStringMapFlagFromMapSource(t *testing.T) {
+	ms := NewMapSource("test", map[any]any{
+		"labels": map[any]any{"env": "prod", "team": "platform"},
+	})
+	cmd := &Command{
+		Flags: []Flag{
+			&StringMapFlag{Name: "labels", Sources: NewValueSourceChain(NewMapValueSource("labels", ms))},
+		},
+		Action: func(_ context.Context, cmd *Command) error {
+			assert.Equal(t, map[string]string{"env": "prod", "team": "platform"}, cmd.StringMap("labels"))
+			return nil
+		},
+	}
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"app"}))
 }
 
 func TestMapValueSourceStringer(t *testing.T) {

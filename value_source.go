@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"os"
+	"reflect"
 	"strings"
 )
 
@@ -253,6 +254,22 @@ func (mvs *mapValueSource) Lookup() (string, bool) {
 	if v, ok := mvs.ms.Lookup(mvs.key); !ok {
 		return "", false
 	} else {
-		return fmt.Sprintf("%+v", v), true
+		return mapValueSourceString(v), true
 	}
+}
+
+// mapValueSourceString converts a looked-up value to the string form
+// consumed by flag values. Map values are serialized through the same
+// path as StringMap Serialize so they round-trip via MapBase.Set,
+// while scalars and slices keep their historical formatting.
+func mapValueSourceString(v any) string {
+	if val := reflect.ValueOf(v); val.IsValid() && val.Kind() == reflect.Map {
+		stringMap := make(map[string]string, val.Len())
+		iter := val.MapRange()
+		for iter.Next() {
+			stringMap[fmt.Sprintf("%v", iter.Key().Interface())] = fmt.Sprintf("%v", iter.Value().Interface())
+		}
+		return NewStringMap(stringMap).Serialize()
+	}
+	return fmt.Sprintf("%+v", v)
 }
