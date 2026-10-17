@@ -187,12 +187,22 @@ func printCommandSuggestions(commands []*Command, writer io.Writer) {
 		if command.Hidden {
 			continue
 		}
-		if len(command.Usage) > 0 {
-			_, _ = fmt.Fprintf(writer, "%s:%s\n", command.Name, command.Usage)
+		if usage := completionUsage(command.Usage); len(usage) > 0 {
+			_, _ = fmt.Fprintf(writer, "%s:%s\n", command.Name, usage)
 		} else {
 			_, _ = fmt.Fprintf(writer, "%s\n", command.Name)
 		}
 	}
+}
+
+// completionUsage returns the first line of usage. The shell completion
+// scripts read one suggestion per line, so any further lines of a multiline
+// usage would be offered as suggestions of their own.
+func completionUsage(usage string) string {
+	if i := strings.IndexAny(usage, "\r\n"); i >= 0 {
+		return usage[:i]
+	}
+	return usage
 }
 
 func cliArgContains(flagName string, args []string) bool {
@@ -220,7 +230,7 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 
 		usage := ""
 		if docFlag, ok := flag.(DocGenerationFlag); ok {
-			usage = docFlag.GetUsage()
+			usage = completionUsage(docFlag.GetUsage())
 		}
 
 		name := strings.TrimSpace(flag.Names()[0])

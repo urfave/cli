@@ -553,6 +553,53 @@ func TestCompletionSubcommandCustomShellComplete(t *testing.T) {
 	r.Equal("custom-index\n", out.String())
 }
 
+func TestCompletionMultilineUsage(t *testing.T) {
+	tests := []struct {
+		name     string
+		args     []string
+		expected string
+	}{
+		{
+			name:     "command usage",
+			args:     []string{"foo", "bar", completionFlag},
+			expected: "baz:runs baz\nqux:runs qux\n",
+		},
+		{
+			name:     "flag usage",
+			args:     []string{"foo", "bar", "--", completionFlag},
+			expected: "--level:sets the level\n--name:sets the name\n",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			out := &bytes.Buffer{}
+			cmd := &Command{
+				EnableShellCompletion: true,
+				Writer:                out,
+				Commands: []*Command{
+					{
+						Name:     "bar",
+						HideHelp: true,
+						Flags: []Flag{
+							&StringFlag{Name: "level", Usage: "sets the level\nto one of low or high"},
+							&StringFlag{Name: "name", Usage: "sets the name\r\non Windows"},
+						},
+						Commands: []*Command{
+							{Name: "baz", Usage: "runs baz\n\nand then stops"},
+							{Name: "qux", Usage: "runs qux\r\non Windows"},
+						},
+					},
+				},
+			}
+
+			r := require.New(t)
+			r.NoError(cmd.Run(buildTestContext(t), test.args))
+			r.Equal(test.expected, out.String())
+		})
+	}
+}
+
 func TestCompletionRunsBeforeChain(t *testing.T) {
 	type contextKey struct{}
 
