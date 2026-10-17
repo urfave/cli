@@ -134,8 +134,9 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 		if firstArg[1] == '-' {
 			numMinuses++
 			shortOptionHandling = false
-		} else if firstRune, _ := utf8.DecodeRuneInString(firstArg[1:]); !unicode.IsLetter(firstRune) {
-			// this is not a flag
+		} else if firstRune, _ := utf8.DecodeRuneInString(firstArg[1:]); !unicode.IsLetter(firstRune) &&
+			!cmd.startsWithAppliedFlag(firstArg[1:], firstRune, shortOptionHandling) {
+			// this is not a flag, e.g. a negative number
 			tracef("parseFlags not a unicode letter. Stop parsing")
 			posArgs = append(posArgs, rargs...)
 			return &stringSliceArgs{posArgs}, nil
@@ -271,4 +272,16 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 
 	tracef("returning-2 (cmd=%[1]q) args %[2]q", cmd.Name, posArgs)
 	return &stringSliceArgs{posArgs}, nil
+}
+
+// startsWithAppliedFlag reports whether a single-dash argument, given without
+// its dash, names a flag even though it does not start with a letter, as
+// "-4" does when a flag is named "4". With short option handling, a group
+// such as "-46" names a flag when its first flag does.
+func (cmd *Command) startsWithAppliedFlag(arg string, firstRune rune, shortOptionHandling bool) bool {
+	name, _, _ := strings.Cut(arg, "=")
+	if cmd.lookupAppliedFlag(name) != nil {
+		return true
+	}
+	return shortOptionHandling && cmd.lookupAppliedFlag(string(firstRune)) != nil
 }
