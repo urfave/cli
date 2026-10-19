@@ -1405,6 +1405,24 @@ func TestCommand_DigitFlag(t *testing.T) {
 	}
 }
 
+func TestCommand_NegativeNumberArg_InvalidFlagAccessHandler(t *testing.T) {
+	for _, shortOptions := range []bool{false, true} {
+		t.Run(fmt.Sprintf("shortOptions=%v", shortOptions), func(t *testing.T) {
+			var invalid []string
+			cmd := &Command{
+				UseShortOptionHandling: shortOptions,
+				InvalidFlagAccessHandler: func(_ context.Context, _ *Command, name string) {
+					invalid = append(invalid, name)
+				},
+				Action: func(context.Context, *Command) error { return nil },
+			}
+
+			require.NoError(t, cmd.Run(buildTestContext(t), []string{"app", "-5"}))
+			assert.Empty(t, invalid)
+		})
+	}
+}
+
 func TestCommand_EqualsFlagValueValidation(t *testing.T) {
 	for _, kind := range []string{"int", "bool"} {
 		for _, whitespace := range []string{"", " ", "\t"} {

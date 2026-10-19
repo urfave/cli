@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -280,8 +281,14 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 // such as "-46" names a flag when its first flag does.
 func (cmd *Command) startsWithAppliedFlag(arg string, firstRune rune, shortOptionHandling bool) bool {
 	name, _, _ := strings.Cut(arg, "=")
-	if cmd.lookupAppliedFlag(name) != nil {
-		return true
+	// lookupAppliedFlag would call InvalidFlagAccessHandler for an
+	// argument that names no flag, such as the negative number "-5"
+	for _, f := range cmd.appliedFlags {
+		names := f.Names()
+		if slices.Contains(names, name) ||
+			(shortOptionHandling && slices.Contains(names, string(firstRune))) {
+			return true
+		}
 	}
-	return shortOptionHandling && cmd.lookupAppliedFlag(string(firstRune)) != nil
+	return false
 }
