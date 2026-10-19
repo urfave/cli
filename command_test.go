@@ -1328,6 +1328,100 @@ func TestCommand_SingleRuneUnicodeFlag(t *testing.T) {
 	assert.Equal(t, []string{"operand"}, args)
 }
 
+func TestCommand_DigitFlag(t *testing.T) {
+	tests := []struct {
+		name          string
+		shortOptions  bool
+		args          []string
+		expectedFour  bool
+		expectedSix   bool
+		expectedLevel string
+		expectedArgs  []string
+	}{
+		{
+			name:         "single digit flag",
+			args:         []string{"app", "-4", "operand"},
+			expectedFour: true,
+			expectedArgs: []string{"operand"},
+		},
+		{
+			name:          "digit flags followed by another flag",
+			args:          []string{"app", "-4", "-6", "-level", "high", "operand"},
+			expectedFour:  true,
+			expectedSix:   true,
+			expectedLevel: "high",
+			expectedArgs:  []string{"operand"},
+		},
+		{
+			name:          "flag name starting with a digit",
+			args:          []string{"app", "-2fa=on", "operand"},
+			expectedLevel: "on",
+			expectedArgs:  []string{"operand"},
+		},
+		{
+			name:         "digit flags in a short option group",
+			shortOptions: true,
+			args:         []string{"app", "-46", "operand"},
+			expectedFour: true,
+			expectedSix:  true,
+			expectedArgs: []string{"operand"},
+		},
+		{
+			name:         "undefined digit flag is still a positional argument",
+			args:         []string{"app", "-5", "-4"},
+			expectedArgs: []string{"-5", "-4"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			var four, six bool
+			var level string
+			var args []string
+			cmd := &Command{
+				Name:                   "app",
+				UseShortOptionHandling: test.shortOptions,
+				Flags: []Flag{
+					&BoolFlag{Name: "4"},
+					&BoolFlag{Name: "6"},
+					&StringFlag{Name: "level", Aliases: []string{"2fa"}},
+				},
+				Action: func(_ context.Context, cmd *Command) error {
+					four = cmd.Bool("4")
+					six = cmd.Bool("6")
+					level = cmd.String("level")
+					args = cmd.Args().Slice()
+					return nil
+				},
+			}
+
+			require.NoError(t, cmd.Run(buildTestContext(t), test.args))
+			assert.Equal(t, test.expectedFour, four)
+			assert.Equal(t, test.expectedSix, six)
+			assert.Equal(t, test.expectedLevel, level)
+			assert.Equal(t, test.expectedArgs, args)
+		})
+	}
+}
+
+func TestCommand_NegativeNumberArg_InvalidFlagAccessHandler(t *testing.T) {
+	for _, shortOptions := range []bool{false, true} {
+		t.Run(fmt.Sprintf("shortOptions=%v", shortOptions), func(t *testing.T) {
+			var invalid []string
+			cmd := &Command{
+				UseShortOptionHandling: shortOptions,
+				InvalidFlagAccessHandler: func(_ context.Context, _ *Command, name string) {
+					invalid = append(invalid, name)
+				},
+				Action: func(context.Context, *Command) error { return nil },
+			}
+
+			require.NoError(t, cmd.Run(buildTestContext(t), []string{"app", "-5"}))
+			assert.Empty(t, invalid)
+		})
+	}
+}
+
 func TestCommand_EqualsFlagValueValidation(t *testing.T) {
 	for _, kind := range []string{"int", "bool"} {
 		for _, whitespace := range []string{"", " ", "\t"} {
