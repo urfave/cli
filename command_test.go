@@ -167,10 +167,9 @@ func TestCommandFlagParsing(t *testing.T) {
 	}{
 		// Test normal "not ignoring flags" flow
 		{testArgs: []string{"test-cmd", "-break", "blah", "blah"}, skipFlagParsing: false, useShortOptionHandling: false, expectedErr: "flag provided but not defined: -break"},
-		{testArgs: []string{"test-cmd", "blah", "blah"}, skipFlagParsing: true, useShortOptionHandling: false},                                        // Test SkipFlagParsing without any args that look like flags
-		{testArgs: []string{"test-cmd", "blah", "-break"}, skipFlagParsing: true, useShortOptionHandling: false},                                      // Test SkipFlagParsing with random flag arg
-		{testArgs: []string{"test-cmd", "blah", "-help"}, skipFlagParsing: true, useShortOptionHandling: false},                                       // Test SkipFlagParsing with "special" help flag arg
-		{testArgs: []string{"test-cmd", "blah", "-h"}, skipFlagParsing: false, useShortOptionHandling: true, expectedErr: "No help topic for 'blah'"}, // Test UseShortOptionHandling
+		{testArgs: []string{"test-cmd", "blah", "blah"}, skipFlagParsing: true, useShortOptionHandling: false},   // Test SkipFlagParsing without any args that look like flags
+		{testArgs: []string{"test-cmd", "blah", "-break"}, skipFlagParsing: true, useShortOptionHandling: false}, // Test SkipFlagParsing with random flag arg
+		{testArgs: []string{"test-cmd", "blah", "-help"}, skipFlagParsing: true, useShortOptionHandling: false},  // Test SkipFlagParsing with "special" help flag arg
 	}
 
 	for _, c := range cases {
@@ -3024,6 +3023,64 @@ func TestCommand_Run_Help(t *testing.T) {
 			output := buf.String()
 
 			assert.Contains(t, output, tt.wantContains, "want help to contain %q, did not: \n%q", "boom - make an explosive entrance", output)
+		})
+	}
+}
+
+func TestCommand_Run_HelpFlagIgnoresNonCommandArguments(t *testing.T) {
+	tests := []struct {
+		args         []string
+		wantContains string
+	}{
+		{
+			args:         []string{"myCLI", "--help", "ciao"},
+			wantContains: "myCLI - My Usage",
+		},
+		{
+			args:         []string{"myCLI", "ciao", "-h"},
+			wantContains: "myCLI - My Usage",
+		},
+		{
+			args:         []string{"myCLI", "command", "ciao", "--help"},
+			wantContains: "myCLI command - Show the version of My CLI",
+		},
+		{
+			args:         []string{"myCLI", "command", "--help", "ciao"},
+			wantContains: "myCLI command - Show the version of My CLI",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(strings.Join(tt.args, " "), func(t *testing.T) {
+			var buf bytes.Buffer
+
+			cmd := &Command{
+				Writer: &buf,
+				Name:   "myCLI",
+				Usage:  "My Usage",
+				Commands: []*Command{
+					{
+						Name: "command",
+						Arguments: []Argument{
+							&StringArg{
+								Name:      "arg1",
+								UsageText: "ARG1",
+							},
+						},
+						Usage: "Show the version of My CLI",
+						Action: func(context.Context, *Command) error {
+							return nil
+						},
+					},
+				},
+				Action: func(context.Context, *Command) error {
+					return nil
+				},
+			}
+
+			err := cmd.Run(buildTestContext(t), tt.args)
+			require.NoError(t, err)
+			require.Contains(t, buf.String(), tt.wantContains)
 		})
 	}
 }
