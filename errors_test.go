@@ -90,6 +90,56 @@ func TestHandleExitCoder_MultiErrorWithExitCoder(t *testing.T) {
 	assert.True(t, called)
 }
 
+// captureExit runs HandleExitCoder with OsExiter and ErrWriter replaced and
+// reports the exit code it saw and what was written to ErrWriter.
+func captureExit(err error) (int, bool, string) {
+	exitCode := 0
+	called := false
+
+	OsExiter = func(rc int) {
+		if !called {
+			exitCode = rc
+			called = true
+		}
+	}
+
+	oldWriter, oldExiter := ErrWriter, fakeOsExiter
+	var buf bytes.Buffer
+	ErrWriter = &buf
+	HandleExitCoder(err)
+	ErrWriter, OsExiter = oldWriter, oldExiter
+
+	return exitCode, called, buf.String()
+}
+
+// An ExitCoder keeps its exit code and message when it is wrapped with
+// fmt.Errorf("%w"): [Exit] documents that the underlying error stays reachable
+// through the standard wrapping helpers, and callers add context to an Action
+// error all the time.
+//
+// The test is not parallel because captureExit replaces the package level
+// OsExiter and ErrWriter, like the rest of this file.
+func TestHandleExitCoder_WrappedExitCoder(t *testing.T) {
+	t.Run("direct", func(t *testing.T) {
+		code, called, out := captureExit(fmt.Errorf("deploy failed: %w", Exit("galactic perimeter breach", 9)))
+
+		assert.True(t, called, "OsExiter was not called for a wrapped ExitCoder")
+		assert.Equal(t, 9, code)
+		assert.Contains(t, out, "galactic perimeter breach")
+	})
+
+	t.Run("in multi error", func(t *testing.T) {
+		err := newMultiError(
+			errors.New("wowsa"),
+			fmt.Errorf("deploy failed: %w", Exit("last ExitCoder", 11)),
+		)
+		code, called, _ := captureExit(err)
+
+		assert.True(t, called, "OsExiter was not called for a wrapped ExitCoder")
+		assert.Equal(t, 11, code)
+	})
+}
+
 type exitFormatter struct {
 	code int
 }

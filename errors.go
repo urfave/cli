@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -165,13 +166,17 @@ func (ee *exitError) Unwrap() error {
 // for the ExitCoder interface, and OsExiter will be called with the last exit
 // code found, or exit code 1 if no ExitCoder is found.
 //
+// An ExitCoder that is wrapped with fmt.Errorf("%w") is handled the same way,
+// so adding context to an error does not lose its exit code.
+//
 // This function is the default error-handling behavior for a Command.
 func HandleExitCoder(err error) {
 	if err == nil {
 		return
 	}
 
-	if exitErr, ok := err.(ExitCoder); ok {
+	var exitErr ExitCoder
+	if errors.As(err, &exitErr) {
 		if msg := err.Error(); msg != "" {
 			if _, ok := exitErr.(ErrorFormatter); ok {
 				_, _ = fmt.Fprintf(ErrWriter, "%+v\n", err)
@@ -183,7 +188,8 @@ func HandleExitCoder(err error) {
 		return
 	}
 
-	if multiErr, ok := err.(MultiError); ok {
+	var multiErr MultiError
+	if errors.As(err, &multiErr) {
 		code := handleMultiError(multiErr)
 		OsExiter(code)
 		return
@@ -193,11 +199,13 @@ func HandleExitCoder(err error) {
 func handleMultiError(multiErr MultiError) int {
 	code := 1
 	for _, merr := range multiErr.Errors() {
-		if multiErr2, ok := merr.(MultiError); ok {
-			code = handleMultiError(multiErr2)
+		var nested MultiError
+		if errors.As(merr, &nested) {
+			code = handleMultiError(nested)
 		} else if merr != nil {
 			fmt.Fprintln(ErrWriter, merr)
-			if exitErr, ok := merr.(ExitCoder); ok {
+			var exitErr ExitCoder
+			if errors.As(merr, &exitErr) {
 				code = exitErr.ExitCode()
 			}
 		}
