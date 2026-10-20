@@ -32,7 +32,7 @@ func jaroDistance(a, b string) float64 {
 	maxDistance := max(0, max(len(a), len(b))/2-1)
 
 	var matches float64
-	for i := 0; i < len(a); i++ {
+	for i := range len(a) {
 		start := max(0, i-maxDistance)
 		end := min(len(b)-1, i+maxDistance)
 
@@ -54,7 +54,7 @@ func jaroDistance(a, b string) float64 {
 
 	var transpositions float64
 	var j int
-	for i := 0; i < len(a); i++ {
+	for i := range len(a) {
 		if !hashA[i] {
 			continue
 		}
