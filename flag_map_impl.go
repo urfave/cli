@@ -3,6 +3,7 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"reflect"
 	"sort"
 	"strings"
@@ -19,9 +20,7 @@ type MapBase[T any, C any, VC ValueCreator[T, C]] struct {
 
 func (i MapBase[T, C, VC]) Create(val map[string]T, p *map[string]T, c C) Value {
 	*p = map[string]T{}
-	for k, v := range val {
-		(*p)[k] = v
-	}
+	maps.Copy(*p, val)
 	var t T
 	np := new(T)
 	var vc VC
