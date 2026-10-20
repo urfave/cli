@@ -513,19 +513,20 @@ func wrapLine(input string, offset int, wrapAt int, padding string) string {
 		return input
 	}
 
-	wrapped := words[0]
-	spaceLeft := lineWidth - len(wrapped)
+	var wrapped strings.Builder
+	wrapped.WriteString(words[0])
+	spaceLeft := lineWidth - len(words[0])
 	for _, word := range words[1:] {
 		if len(word)+1 > spaceLeft {
-			wrapped += "\n" + padding + word
+			wrapped.WriteString("\n" + padding + word)
 			spaceLeft = lineWidth - len(word)
 		} else {
-			wrapped += " " + word
+			wrapped.WriteString(" " + word)
 			spaceLeft -= 1 + len(word)
 		}
 	}
 
-	return wrapped
+	return wrapped.String()
 }
 
 func offset(input string, fixed int) int {
