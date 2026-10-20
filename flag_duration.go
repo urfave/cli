@@ -1,9 +1,6 @@
 package cli
 
-import (
-	"fmt"
-	"time"
-)
+import "time"
 
 type DurationFlag = FlagBase[time.Duration, NoConfig, durationValue]
 
@@ -36,7 +33,7 @@ func (d *durationValue) Set(s string) error {
 func (d *durationValue) Get() any { return time.Duration(*d) }
 
 func (d *durationValue) String() string {
-	return fmt.Sprintf("%v", time.Duration(*d))
+	return time.Duration(*d).String()
 }
 
 func (cmd *Command) Duration(name string) time.Duration {
