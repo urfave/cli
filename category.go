@@ -1,6 +1,6 @@
 package cli
 
-import "sort"
+import "slices"
 
 // CommandCategories interface allows for category manipulation
 type CommandCategories interface {
@@ -147,7 +147,7 @@ func (f *defaultFlagCategories) VisibleCategories() []VisibleFlagCategory {
 		catNames = append(catNames, name)
 	}
 
-	sort.Strings(catNames)
+	slices.Sort(catNames)
 
 	ret := make([]VisibleFlagCategory, len(catNames))
 	for i, name := range catNames {
@@ -184,7 +184,7 @@ func (fc *defaultVisibleFlagCategory) Flags() []Flag {
 		}
 	}
 
-	sort.Strings(vfNames)
+	slices.Sort(vfNames)
 
 	ret := make([]Flag, len(vfNames))
 	for i, flName := range vfNames {

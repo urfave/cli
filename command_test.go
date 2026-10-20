@@ -5353,12 +5353,12 @@ func TestCommand_NumFlags(t *testing.T) {
 	_ = rootCmd.Run(t.Context(), []string{"", "--myflagGlobal"})
 	require.Equal(t, 2, cmd.NumFlags())
 	actualFlags := cmd.LocalFlagNames()
-	sort.Strings(actualFlags)
+	slices.Sort(actualFlags)
 
 	require.Equal(t, []string{"myflag", "otherflag"}, actualFlags)
 
 	actualFlags = cmd.FlagNames()
-	sort.Strings(actualFlags)
+	slices.Sort(actualFlags)
 
 	require.Equal(t, []string{"myflag", "otherflag"}, actualFlags)
 
