@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -67,6 +69,43 @@ func TestSuggestFlagHideHelp(t *testing.T) {
 
 	// Then
 	assert.Equal(t, "--fl", res)
+}
+
+func TestSuggestFlagHiddenFlag(t *testing.T) {
+	// Given
+	flags := []Flag{
+		&BoolFlag{Name: "internal-debug", Hidden: true},
+		&BoolFlag{Name: "verbose"},
+	}
+
+	// When
+	res := suggestFlag(flags, "internal-debu", true)
+
+	// Then
+	assert.Equal(t, "--verbose", res)
+}
+
+func TestSuggestFlagHiddenFlagFromRun(t *testing.T) {
+	// Given
+	var out bytes.Buffer
+	cmd := &Command{
+		Name:      "app",
+		Suggest:   true,
+		Writer:    &out,
+		ErrWriter: &out,
+		Flags: []Flag{
+			&BoolFlag{Name: "internal-debug", Hidden: true},
+			&BoolFlag{Name: "verbose"},
+		},
+		Action: func(context.Context, *Command) error { return nil },
+	}
+
+	// When
+	err := cmd.Run(buildTestContext(t), []string{"app", "--internal-debu"})
+
+	// Then
+	assert.Error(t, err)
+	assert.NotContains(t, out.String(), "internal-debug")
 }
 
 func TestSuggestFlagFromError(t *testing.T) {
