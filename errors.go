@@ -175,8 +175,16 @@ func HandleExitCoder(err error) {
 		return
 	}
 
-	var exitErr ExitCoder
-	if errors.As(err, &exitErr) {
+	exitErr, isExitCoder := err.(ExitCoder)
+	// A MultiError is handled as a whole: letting errors.As walk into it would
+	// find its first ExitCoder and lose the documented "last exit code wins".
+	if multiErr, ok := err.(MultiError); ok && !isExitCoder {
+		code := handleMultiError(multiErr)
+		OsExiter(code)
+		return
+	}
+
+	if isExitCoder || errors.As(err, &exitErr) {
 		if msg := err.Error(); msg != "" {
 			if _, ok := exitErr.(ErrorFormatter); ok {
 				_, _ = fmt.Fprintf(ErrWriter, "%+v\n", err)
@@ -187,21 +195,13 @@ func HandleExitCoder(err error) {
 		OsExiter(exitErr.ExitCode())
 		return
 	}
-
-	var multiErr MultiError
-	if errors.As(err, &multiErr) {
-		code := handleMultiError(multiErr)
-		OsExiter(code)
-		return
-	}
 }
 
 func handleMultiError(multiErr MultiError) int {
 	code := 1
 	for _, merr := range multiErr.Errors() {
-		var nested MultiError
-		if errors.As(merr, &nested) {
-			code = handleMultiError(nested)
+		if multiErr2, ok := merr.(MultiError); ok {
+			code = handleMultiError(multiErr2)
 		} else if merr != nil {
 			fmt.Fprintln(ErrWriter, merr)
 			var exitErr ExitCoder

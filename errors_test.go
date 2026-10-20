@@ -103,19 +103,22 @@ func captureExit(err error) (int, bool, string) {
 		}
 	}
 
-	oldWriter, oldExiter := ErrWriter, fakeOsExiter
+	defer func() { OsExiter = fakeOsExiter }()
+
+	oldWriter := ErrWriter
+	defer func() { ErrWriter = oldWriter }()
+
 	var buf bytes.Buffer
 	ErrWriter = &buf
 	HandleExitCoder(err)
-	ErrWriter, OsExiter = oldWriter, oldExiter
 
 	return exitCode, called, buf.String()
 }
 
 // An ExitCoder keeps its exit code and message when it is wrapped with
-// fmt.Errorf("%w"): [Exit] documents that the underlying error stays reachable
-// through the standard wrapping helpers, and callers add context to an Action
-// error all the time.
+// fmt.Errorf("%w"): callers add context to an Action error all the time, and
+// [exitError.Unwrap] already lets [errors.Is] and [errors.As] see through the
+// ExitCoder, so the other direction should work too.
 //
 // The test is not parallel because captureExit replaces the package level
 // OsExiter and ErrWriter, like the rest of this file.
@@ -366,4 +369,44 @@ func TestExit_Unwrap(t *testing.T) {
 			}
 		})
 	}
+}
+
+// unwrapMultiError is a MultiError that also implements Unwrap() []error, like
+// go.uber.org/multierr's combined errors. HandleExitCoder must treat it as a
+// MultiError (last exit code wins) instead of walking into it with errors.As,
+// which would find the first ExitCoder.
+type unwrapMultiError []error
+
+func (m unwrapMultiError) Error() string   { return errors.Join(m...).Error() }
+func (m unwrapMultiError) Errors() []error { return m }
+func (m unwrapMultiError) Unwrap() []error { return m }
+
+func TestHandleExitCoder_MultiErrorWithUnwrap(t *testing.T) {
+	code, called, _ := captureExit(unwrapMultiError{Exit("first", 2), Exit("second", 3)})
+
+	assert.True(t, called)
+	assert.Equal(t, 3, code, "the last ExitCoder in a MultiError must win")
+}
+
+// A nested MultiError that is the message of an ExitCoder is still an ExitCoder:
+// its code must not be replaced by the code of the errors inside it.
+func TestHandleExitCoder_NestedExitCoderKeepsCode(t *testing.T) {
+	err := newMultiError(
+		errors.New("x"),
+		Exit(newMultiError(errors.New("a"), errors.New("b")), 5),
+	)
+	code, called, _ := captureExit(err)
+
+	assert.True(t, called)
+	assert.Equal(t, 5, code)
+}
+
+// Inside a MultiError a wrapped MultiError is printed as the wrapper message,
+// not unwrapped into the bare messages of its elements.
+func TestHandleExitCoder_MultiErrorKeepsWrapperMessage(t *testing.T) {
+	err := newMultiError(fmt.Errorf("after: %w", newMultiError(errors.New("a"), errors.New("b"))))
+	_, called, out := captureExit(err)
+
+	assert.True(t, called)
+	assert.Contains(t, out, "after: a")
 }
