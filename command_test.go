@@ -3959,7 +3959,7 @@ func TestFlagAction(t *testing.T) {
 							if v == 0 {
 								return fmt.Errorf("empty duration")
 							}
-							_, err := fmt.Fprintf(cmd.Root().Writer, v.String()+" ")
+							_, err := fmt.Fprintf(cmd.Root().Writer, "%v ", v)
 							return err
 						},
 					},
@@ -3970,7 +3970,7 @@ func TestFlagAction(t *testing.T) {
 							if v < 0 {
 								return fmt.Errorf("negative float64")
 							}
-							_, err := fmt.Fprintf(cmd.Root().Writer, strconv.FormatFloat(v, 'f', -1, 64)+" ")
+							_, err := fmt.Fprintf(cmd.Root().Writer, "%s ", strconv.FormatFloat(v, 'f', -1, 64))
 							return err
 						},
 					},
