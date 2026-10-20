@@ -196,8 +196,8 @@ func runCmd(ctx context.Context, arg string, args ...string) error {
 	return cmd.Run()
 }
 
-func downloadFile(src, dest string, dirPerm, perm os.FileMode) error {
-	req, err := http.NewRequest(http.MethodGet, src, nil)
+func downloadFile(ctx context.Context, src, dest string, dirPerm, perm os.FileMode) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, src, http.NoBody)
 	if err != nil {
 		return err
 	}
@@ -577,7 +577,7 @@ func EnsureGfmrunActionFunc(ctx context.Context, cmd *cli.Command) error {
 		return err
 	}
 
-	return downloadFile(gfmrunURL.String(), gfmrunExe, 0o755, 0o755)
+	return downloadFile(ctx, gfmrunURL.String(), gfmrunExe, 0o755, 0o755)
 }
 
 func EnsureMkdocsActionFunc(ctx context.Context, cmd *cli.Command) error {
