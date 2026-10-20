@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"math/rand"
 	"os"
 	"path/filepath"
 	"testing"
@@ -80,14 +79,12 @@ func TestFileValueSource(t *testing.T) {
 		r.Implements((*ValueSource)(nil), &fileValueSource{})
 
 		t.Run("not found", func(t *testing.T) {
-			src := File(fmt.Sprintf("junk_file_name-%[1]v", rand.Int()))
+			src := File(filepath.Join(t.TempDir(), "junk_file_name"))
 			_, ok := src.Lookup()
 			r.False(ok)
 		})
 
-		fileName := filepath.Join(os.TempDir(), fmt.Sprintf("urfave-cli-testing-existing_file-%[1]v", rand.Int()))
-		t.Cleanup(func() { _ = os.Remove(fileName) })
-
+		fileName := filepath.Join(t.TempDir(), "existing_file")
 		r.Nil(os.WriteFile(fileName, []byte("pita"), 0o644))
 
 		t.Run("found", func(t *testing.T) {
@@ -118,9 +115,7 @@ func TestFileValueSource(t *testing.T) {
 func TestFilePaths(t *testing.T) {
 	r := require.New(t)
 
-	fileName := filepath.Join(os.TempDir(), fmt.Sprintf("urfave-cli-tests-some_file_name_%[1]v", rand.Int()))
-	t.Cleanup(func() { _ = os.Remove(fileName) })
-
+	fileName := filepath.Join(t.TempDir(), "some_file_name")
 	r.Nil(os.WriteFile(fileName, []byte("Hello"), 0o644))
 
 	sources := Files("junk_file_name", fileName)

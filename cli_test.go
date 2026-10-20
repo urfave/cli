@@ -36,7 +36,7 @@ func TestTracing(t *testing.T) {
 		isTracingOn = oldtracing
 	}()
 
-	file, err := os.CreateTemp(os.TempDir(), "cli*")
+	file, err := os.CreateTemp(t.TempDir(), "cli*")
 	assert.NoError(t, err)
 	os.Stderr = file
 
