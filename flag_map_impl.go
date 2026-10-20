@@ -63,14 +63,14 @@ func (i *MapBase[T, C, VC]) setMultiValueParsingConfig(c multiValueParsingConfig
 
 // Set parses the value and appends it to the list of values
 func (i *MapBase[T, C, VC]) Set(value string) error {
-	if !i.hasBeenSet {
+	if !i.hasBeenSet || *i.dict == nil {
 		*i.dict = map[string]T{}
 		i.hasBeenSet = true
 	}
 
 	if s, ok := strings.CutPrefix(value, slPfx()); ok {
 		// Deserializing assumes overwrite
-		_ = json.Unmarshal([]byte(s), &i.dict)
+		_ = json.Unmarshal([]byte(s), i.dict)
 		i.hasBeenSet = true
 		return nil
 	}
