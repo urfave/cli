@@ -27,7 +27,7 @@ func TestCommand_StopOnNthArg(t *testing.T) {
 		},
 		{
 			name:         "stop after 0 args - all become args",
-			stopOnNthArg: intPtr(0),
+			stopOnNthArg: new(0),
 			testArgs:     []string{"cmd", "--flag", "value", "arg1", "--bool", "arg2"},
 			expectedArgs: []string{"--flag", "value", "arg1", "--bool", "arg2"},
 			expectedFlag: "",
@@ -35,7 +35,7 @@ func TestCommand_StopOnNthArg(t *testing.T) {
 		},
 		{
 			name:         "stop after 1 arg",
-			stopOnNthArg: intPtr(1),
+			stopOnNthArg: new(1),
 			testArgs:     []string{"cmd", "--flag", "value", "arg1", "--bool", "arg2"},
 			expectedArgs: []string{"arg1", "--bool", "arg2"},
 			expectedFlag: "value",
@@ -43,7 +43,7 @@ func TestCommand_StopOnNthArg(t *testing.T) {
 		},
 		{
 			name:         "stop after 2 args",
-			stopOnNthArg: intPtr(2),
+			stopOnNthArg: new(2),
 			testArgs:     []string{"cmd", "--flag", "value", "arg1", "arg2", "--bool", "arg3"},
 			expectedArgs: []string{"arg1", "arg2", "--bool", "arg3"},
 			expectedFlag: "value",
@@ -51,7 +51,7 @@ func TestCommand_StopOnNthArg(t *testing.T) {
 		},
 		{
 			name:         "mixed flags and args - stop after 1",
-			stopOnNthArg: intPtr(1),
+			stopOnNthArg: new(1),
 			testArgs:     []string{"cmd", "--flag", "value", "--bool", "arg1", "--flag2", "value2"},
 			expectedArgs: []string{"arg1", "--flag2", "value2"},
 			expectedFlag: "value",
@@ -59,7 +59,7 @@ func TestCommand_StopOnNthArg(t *testing.T) {
 		},
 		{
 			name:         "args before flags - stop after 1",
-			stopOnNthArg: intPtr(1),
+			stopOnNthArg: new(1),
 			testArgs:     []string{"cmd", "arg1", "--flag", "value", "--bool"},
 			expectedArgs: []string{"arg1", "--flag", "value", "--bool"},
 			expectedFlag: "",
@@ -67,7 +67,7 @@ func TestCommand_StopOnNthArg(t *testing.T) {
 		},
 		{
 			name:         "ssh command example",
-			stopOnNthArg: intPtr(1),
+			stopOnNthArg: new(1),
 			testArgs:     []string{"ssh", "machine-name", "ls", "-la"},
 			expectedArgs: []string{"machine-name", "ls", "-la"},
 			expectedFlag: "",
@@ -75,7 +75,7 @@ func TestCommand_StopOnNthArg(t *testing.T) {
 		},
 		{
 			name:         "with double dash terminator",
-			stopOnNthArg: intPtr(1),
+			stopOnNthArg: new(1),
 			testArgs:     []string{"cmd", "--flag", "value", "--", "arg1", "--not-a-flag"},
 			expectedArgs: []string{"arg1", "--not-a-flag"},
 			expectedFlag: "value",
@@ -83,7 +83,7 @@ func TestCommand_StopOnNthArg(t *testing.T) {
 		},
 		{
 			name:         "stop after 1 arg - followed by empty arg",
-			stopOnNthArg: intPtr(1),
+			stopOnNthArg: new(1),
 			testArgs:     []string{"cmd", "arg1", "", "--bool", "arg2"},
 			expectedArgs: []string{"arg1", "", "--bool", "arg2"},
 			expectedFlag: "",
@@ -91,7 +91,7 @@ func TestCommand_StopOnNthArg(t *testing.T) {
 		},
 		{
 			name:         "stop after 1 arg - followed by double dash",
-			stopOnNthArg: intPtr(1),
+			stopOnNthArg: new(1),
 			testArgs:     []string{"cmd", "arg1", "--", "--bool", "arg2"},
 			expectedArgs: []string{"arg1", "--", "--bool", "arg2"},
 			expectedFlag: "",
@@ -99,7 +99,7 @@ func TestCommand_StopOnNthArg(t *testing.T) {
 		},
 		{
 			name:         "stop after 0 args - leading empty arg",
-			stopOnNthArg: intPtr(0),
+			stopOnNthArg: new(0),
 			testArgs:     []string{"cmd", "", "--bool", "arg1"},
 			expectedArgs: []string{"", "--bool", "arg1"},
 			expectedFlag: "",
@@ -107,7 +107,7 @@ func TestCommand_StopOnNthArg(t *testing.T) {
 		},
 		{
 			name:         "stop after 0 args - leading double dash",
-			stopOnNthArg: intPtr(0),
+			stopOnNthArg: new(0),
 			testArgs:     []string{"cmd", "--", "--bool", "arg1"},
 			expectedArgs: []string{"--", "--bool", "arg1"},
 			expectedFlag: "",
@@ -115,7 +115,7 @@ func TestCommand_StopOnNthArg(t *testing.T) {
 		},
 		{
 			name:         "stop after large number of args",
-			stopOnNthArg: intPtr(100),
+			stopOnNthArg: new(100),
 			testArgs:     []string{"cmd", "--flag", "value", "arg1", "arg2", "--bool"},
 			expectedArgs: []string{"arg1", "arg2"},
 			expectedFlag: "value",
@@ -164,7 +164,7 @@ func TestCommand_StopOnNthArg_WithSubcommands(t *testing.T) {
 		{
 			name:               "parent normal, subcommand stops after 0",
 			parentStopOnNthArg: nil,
-			subStopOnNthArg:    intPtr(0),
+			subStopOnNthArg:    new(0),
 			testArgs:           []string{"parent", "sub", "--subflag", "value", "subarg", "--not-parsed"},
 			expectedParentArgs: []string{},
 			expectedSubArgs:    []string{"--subflag", "value", "subarg", "--not-parsed"},
@@ -173,7 +173,7 @@ func TestCommand_StopOnNthArg_WithSubcommands(t *testing.T) {
 		{
 			name:               "parent normal, subcommand stops after 1",
 			parentStopOnNthArg: nil,
-			subStopOnNthArg:    intPtr(1),
+			subStopOnNthArg:    new(1),
 			testArgs:           []string{"parent", "sub", "--subflag", "value", "subarg", "--not-parsed"},
 			expectedParentArgs: []string{},
 			expectedSubArgs:    []string{"subarg", "--not-parsed"},
@@ -182,7 +182,7 @@ func TestCommand_StopOnNthArg_WithSubcommands(t *testing.T) {
 		{
 			name:               "parent normal, subcommand stops after 2",
 			parentStopOnNthArg: nil,
-			subStopOnNthArg:    intPtr(2),
+			subStopOnNthArg:    new(2),
 			testArgs:           []string{"parent", "sub", "--subflag", "value", "subarg1", "subarg2", "--not-parsed"},
 			expectedParentArgs: []string{},
 			expectedSubArgs:    []string{"subarg1", "subarg2", "--not-parsed"},
@@ -191,7 +191,7 @@ func TestCommand_StopOnNthArg_WithSubcommands(t *testing.T) {
 		{
 			name:               "parent normal, subcommand never stops (high StopOnNthArg)",
 			parentStopOnNthArg: nil,
-			subStopOnNthArg:    intPtr(100),
+			subStopOnNthArg:    new(100),
 			testArgs:           []string{"parent", "sub", "--subflag", "value1", "arg1", "arg2", "--subflag", "value2"},
 			expectedParentArgs: []string{},
 			expectedSubArgs:    []string{"arg1", "arg2"},
@@ -200,8 +200,8 @@ func TestCommand_StopOnNthArg_WithSubcommands(t *testing.T) {
 		{
 			// Meaningless, but okay.
 			name:               "parent stops after 1, subcommand stops after 1",
-			parentStopOnNthArg: intPtr(1),
-			subStopOnNthArg:    intPtr(1),
+			parentStopOnNthArg: new(1),
+			subStopOnNthArg:    new(1),
 			testArgs:           []string{"parent", "sub", "--subflag", "value", "subarg", "--not-parsed"},
 			expectedParentArgs: []string{},
 			expectedSubArgs:    []string{"subarg", "--not-parsed"},
@@ -269,7 +269,7 @@ func TestCommand_StopOnNthArg_EdgeCases(t *testing.T) {
 	t.Run("negative StopOnNthArg returns error", func(t *testing.T) {
 		cmd := &Command{
 			Name:         "test",
-			StopOnNthArg: intPtr(-1),
+			StopOnNthArg: new(-1),
 			Action: func(_ context.Context, cmd *Command) error {
 				return nil
 			},
@@ -286,7 +286,7 @@ func TestCommand_StopOnNthArg_EdgeCases(t *testing.T) {
 		var flagValue string
 		cmd := &Command{
 			Name:         "test",
-			StopOnNthArg: intPtr(0),
+			StopOnNthArg: new(0),
 			Flags: []Flag{
 				&StringFlag{Name: "flag", Destination: &flagValue},
 			},
@@ -308,7 +308,7 @@ func TestCommand_StopOnNthArg_EdgeCases(t *testing.T) {
 		var boolValue bool
 		cmd := &Command{
 			Name:         "test",
-			StopOnNthArg: intPtr(1),
+			StopOnNthArg: new(1),
 			Flags: []Flag{
 				&StringFlag{Name: "flag", Destination: &flagValue},
 				&BoolFlag{Name: "bool", Destination: &boolValue},
@@ -325,9 +325,4 @@ func TestCommand_StopOnNthArg_EdgeCases(t *testing.T) {
 		assert.Equal(t, "value", flagValue)
 		assert.True(t, boolValue)
 	})
-}
-
-// Helper function to create int pointer
-func intPtr(i int) *int {
-	return &i
 }
