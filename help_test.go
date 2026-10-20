@@ -2379,6 +2379,26 @@ func TestCommandHelpSuggest(t *testing.T) {
 	assert.ErrorContains(t, err, "No help topic for 'put'. putz")
 }
 
+func TestCommandHelpSuggestHiddenCommand(t *testing.T) {
+	cmd := &Command{
+		Suggest: true,
+		Commands: []*Command{
+			{
+				Name:   "putz",
+				Hidden: true,
+			},
+			{
+				Name: "pull",
+			},
+		},
+	}
+
+	cmd.setupDefaults([]string{"foo"})
+
+	err := ShowCommandHelp(context.Background(), cmd, "put")
+	assert.EqualError(t, err, "No help topic for 'put'. pull")
+}
+
 func TestWrapLine(t *testing.T) {
 	assert.Equal(t, "    ", wrapLine("    ", 0, 3, " "))
 }
