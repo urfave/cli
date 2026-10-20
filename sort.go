@@ -7,10 +7,7 @@ func lexicographicLess(i, j string) bool {
 	iRunes := []rune(i)
 	jRunes := []rune(j)
 
-	lenShared := len(iRunes)
-	if lenShared > len(jRunes) {
-		lenShared = len(jRunes)
-	}
+	lenShared := min(len(iRunes), len(jRunes))
 
 	for index := 0; index < lenShared; index++ {
 		ir := iRunes[index]
