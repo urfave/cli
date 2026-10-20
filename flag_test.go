@@ -2608,6 +2608,30 @@ func TestStringMap_Serialized_Set(t *testing.T) {
 	require.Equal(t, m0.String(), m1.String(), "pre and post serialization do not match")
 }
 
+func TestSliceAndMap_SerializedNull_Set(t *testing.T) {
+	t.Run("slice", func(t *testing.T) {
+		var dest []string
+		v := StringSlice{}.Create([]string{"old"}, &dest, StringConfig{})
+		require.NoError(t, v.Set(NewStringSlice().Serialize()))
+		require.Nil(t, v.Get())
+		require.Nil(t, dest)
+
+		require.NoError(t, v.Set("new"))
+		require.Equal(t, []string{"new"}, dest)
+	})
+
+	t.Run("map", func(t *testing.T) {
+		var dest map[string]string
+		v := StringMap{}.Create(map[string]string{"old": "v"}, &dest, StringConfig{})
+		require.NoError(t, v.Set(NewStringMap(nil).Serialize()))
+		require.Nil(t, v.Get())
+		require.Nil(t, dest)
+
+		require.NoError(t, v.Set("new=v"))
+		require.Equal(t, map[string]string{"new": "v"}, dest)
+	})
+}
+
 func TestSliceAndMapConstructorsSet(t *testing.T) {
 	tests := []struct {
 		name  string
