@@ -108,6 +108,10 @@ func suggestFlag(flags []Flag, provided string, hideHelp bool) string {
 
 	for _, flag := range flags {
 		flagNames := flag.Names()
+		// Hidden flags must not be suggested; help is still offered.
+		if vf, ok := flag.(VisibleFlag); ok && !vf.IsVisible() {
+			flagNames = nil
+		}
 		if !hideHelp && HelpFlag != nil {
 			flagNames = append(flagNames, HelpFlag.Names()...)
 		}

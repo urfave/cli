@@ -339,7 +339,14 @@ func DefaultShowCommandHelp(ctx context.Context, cmd *Command, commandName strin
 		errMsg := fmt.Sprintf("No help topic for '%v'", commandName)
 
 		if cmd.Suggest {
-			if suggestion := SuggestCommand(cmd.Commands, commandName); suggestion != "" {
+			// Hidden commands must not be suggested, as in shell completion.
+			var commands []*Command
+			for _, subCmd := range cmd.Commands {
+				if !subCmd.Hidden {
+					commands = append(commands, subCmd)
+				}
+			}
+			if suggestion := SuggestCommand(commands, commandName); suggestion != "" {
 				errMsg += ". " + suggestion
 			}
 		}
