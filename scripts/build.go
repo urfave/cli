@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"math"
 	"net/http"
@@ -337,12 +338,12 @@ func GfmrunActionFunc(ctx context.Context, cmd *cli.Command) error {
 
 	if walk {
 		// Walk the directory and find all markdown files.
-		err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
+		err := filepath.WalkDir(dirPath, func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return err
 			}
 
-			if info.IsDir() {
+			if d.IsDir() {
 				return nil
 			}
 
