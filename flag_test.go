@@ -2580,6 +2580,27 @@ func TestStringMap_Serialized_Set(t *testing.T) {
 	require.Equal(t, m0.String(), m1.String(), "pre and post serialization do not match")
 }
 
+func TestSliceAndMapConstructorsSet(t *testing.T) {
+	tests := []struct {
+		name  string
+		value Value
+		input string
+		want  any
+	}{
+		{"string slice", NewStringSlice("old"), "a,b", []string{"a", "b"}},
+		{"int slice", NewIntSlice(1), "2,3", []int{2, 3}},
+		{"uint slice", NewUintSlice(1), "2,3", []uint{2, 3}},
+		{"float slice", NewFloatSlice(1), "2.5,3.5", []float64{2.5, 3.5}},
+		{"string map", NewStringMap(map[string]string{"old": "v"}), "k=v", map[string]string{"k": "v"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.NoError(t, tt.value.Set(tt.input))
+			require.Equal(t, tt.want, tt.value.Get())
+		})
+	}
+}
+
 var timestampFlagTests = []struct {
 	name     string
 	aliases  []string

@@ -30,8 +30,12 @@ func (i SliceBase[T, C, VC]) Create(val []T, p *[]T, c C) Value {
 
 // NewSliceBase makes a *SliceBase with default values
 func NewSliceBase[T any, C any, VC ValueCreator[T, C]](defaults ...T) *SliceBase[T, C, VC] {
+	var t T
+	var c C
+	var vc VC
 	return &SliceBase[T, C, VC]{
 		slice: &defaults,
+		value: vc.Create(t, new(T), c),
 	}
 }
 

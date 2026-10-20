@@ -40,8 +40,12 @@ func (i MapBase[T, C, VC]) Create(val map[string]T, p *map[string]T, c C) Value 
 
 // NewMapBase makes a *MapBase with default values
 func NewMapBase[T any, C any, VC ValueCreator[T, C]](defaults map[string]T) *MapBase[T, C, VC] {
+	var t T
+	var c C
+	var vc VC
 	return &MapBase[T, C, VC]{
-		dict: &defaults,
+		dict:  &defaults,
+		value: vc.Create(t, new(T), c),
 	}
 }
 
