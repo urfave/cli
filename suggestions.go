@@ -1,9 +1,5 @@
 package cli
 
-import (
-	"math"
-)
-
 const suggestDidYouMeanTemplate = "Did you mean %q?"
 
 var (
@@ -33,12 +29,12 @@ func jaroDistance(a, b string) float64 {
 	lenB := float64(len(b))
 	hashA := make([]bool, len(a))
 	hashB := make([]bool, len(b))
-	maxDistance := int(math.Max(0, math.Floor(math.Max(lenA, lenB)/2.0)-1))
+	maxDistance := max(0, max(len(a), len(b))/2-1)
 
 	var matches float64
 	for i := 0; i < len(a); i++ {
-		start := int(math.Max(0, float64(i-maxDistance)))
-		end := int(math.Min(lenB-1, float64(i+maxDistance)))
+		start := max(0, i-maxDistance)
+		end := min(len(b)-1, i+maxDistance)
 
 		for j := start; j <= end; j++ {
 			if hashB[j] {
@@ -89,7 +85,7 @@ func jaroWinkler(a, b string) float64 {
 		return jaroDist
 	}
 
-	prefix := int(math.Min(float64(len(a)), math.Min(float64(prefixSize), float64(len(b)))))
+	prefix := min(len(a), prefixSize, len(b))
 
 	var prefixMatch float64
 	for i := range prefix {
