@@ -5,6 +5,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -329,10 +330,7 @@ func GfmrunActionFunc(ctx context.Context, cmd *cli.Command) error {
 		return err
 	}
 
-	dirPath := cmd.Args().Get(0)
-	if dirPath == "" {
-		dirPath = "README.md"
-	}
+	dirPath := cmp.Or(cmd.Args().Get(0), "README.md")
 
 	walk := cmd.Bool("walk")
 	sources := []string{}
