@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -127,6 +128,52 @@ func TestSuggestFlagFromError(t *testing.T) {
 
 		// Then
 		assert.Equal(t, fmt.Sprintf(SuggestDidYouMeanTemplate+"\n\n", testCase.expected), res)
+	}
+}
+
+func TestSuggestFlagFromErrorAppliedFlags(t *testing.T) {
+	for _, testCase := range []struct {
+		name, provided, expected, unexpected string
+	}{
+		{name: "persistent flag of parent", provided: "--confg", expected: "--config"},
+		{name: "mutually exclusive flag", provided: "--jsn", expected: "--json"},
+		{name: "local flag of parent", provided: "--local-onli", unexpected: "--local-only"},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			// Given
+			var errOut bytes.Buffer
+			cmd := &Command{
+				Name:      "app",
+				Writer:    io.Discard,
+				ErrWriter: &errOut,
+				Flags: []Flag{
+					&StringFlag{Name: "config"},
+					&StringFlag{Name: "local-only", Local: true},
+				},
+				Commands: []*Command{
+					{
+						Name:    "build",
+						Suggest: true,
+						MutuallyExclusiveFlags: []MutuallyExclusiveFlags{
+							{Flags: [][]Flag{{&BoolFlag{Name: "json"}}, {&BoolFlag{Name: "yaml"}}}},
+						},
+						Action: func(context.Context, *Command) error { return nil },
+					},
+				},
+			}
+
+			// When
+			err := cmd.Run(buildTestContext(t), []string{"app", "build", testCase.provided})
+
+			// Then
+			assert.Error(t, err)
+			if testCase.expected != "" {
+				assert.Contains(t, errOut.String(), fmt.Sprintf(SuggestDidYouMeanTemplate, testCase.expected))
+			}
+			if testCase.unexpected != "" {
+				assert.NotContains(t, errOut.String(), fmt.Sprintf(SuggestDidYouMeanTemplate, testCase.unexpected))
+			}
+		})
 	}
 }
 
