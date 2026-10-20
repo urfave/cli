@@ -5937,16 +5937,9 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 		t.Run(tst.name, func(t *testing.T) {
 			r := require.New(t)
 
-			fp, err := os.CreateTemp("", "readargs")
-			r.NoError(err)
-			_, err = fp.Write([]byte(tst.input))
-			r.NoError(err)
-			fp.Close()
-
 			cmd := buildMinimalTestCommand()
 			cmd.ReadArgsFromStdin = true
-			cmd.Reader, err = os.Open(fp.Name())
-			r.NoError(err)
+			cmd.Reader = strings.NewReader(tst.input)
 			cmd.Flags = []Flag{
 				&Int64Flag{
 					Name: "if",
@@ -5971,7 +5964,7 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 				return nil
 			}
 
-			err = cmd.Run(t.Context(), tst.args)
+			err := cmd.Run(t.Context(), tst.args)
 			if !tst.expectError {
 				r.NoError(err)
 				r.True(actionCalled)
