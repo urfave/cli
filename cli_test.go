@@ -22,7 +22,7 @@ func expectFileContent(t *testing.T, file, got string) {
 }
 
 func buildTestContext(t *testing.T) context.Context {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	ctx, cancel := context.WithTimeout(t.Context(), 100*time.Millisecond)
 	t.Cleanup(cancel)
 
 	return ctx

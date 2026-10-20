@@ -819,7 +819,7 @@ func TestUnboundedArgs(t *testing.T) {
 			cmd := buildMinimalTestCommand()
 			cmd.Arguments = []Argument{arg}
 			arg.Destination = &test.values
-			require.NoError(t, cmd.Run(context.Background(), test.args))
+			require.NoError(t, cmd.Run(t.Context(), test.args))
 			require.Equal(t, test.expected, *arg.Destination)
 		})
 	}
