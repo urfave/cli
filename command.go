@@ -263,7 +263,12 @@ func (cmd *Command) suggestFlagFromError(err error, commandName string) (string,
 		return "", err
 	}
 
-	flags := cmd.Flags
+	// suggest from the flags the parser accepted, which include flags in
+	// mutually exclusive groups and persistent flags of ancestors
+	flags := cmd.appliedFlags
+	if flags == nil {
+		flags = cmd.allFlags()
+	}
 	hideHelp := cmd.hideHelp()
 
 	if commandName != "" {
