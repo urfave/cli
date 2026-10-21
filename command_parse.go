@@ -281,8 +281,6 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 // such as "-46" names a flag when its first flag does.
 func (cmd *Command) startsWithAppliedFlag(arg string, firstRune rune, shortOptionHandling bool) bool {
 	name, _, _ := strings.Cut(arg, "=")
-	// lookupAppliedFlag would call InvalidFlagAccessHandler for an
-	// argument that names no flag, such as the negative number "-5"
 	for _, f := range cmd.appliedFlags {
 		names := f.Names()
 		if slices.Contains(names, name) ||

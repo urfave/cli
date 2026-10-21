@@ -470,7 +470,6 @@ func (cmd *Command) lookupAppliedFlag(name string) Flag {
 	}
 
 	tracef("lookupAppliedflag NOT found for name %[1]q (cmd=%[2]q)", name, cmd.Name)
-	cmd.onInvalidFlag(context.TODO(), name)
 	return nil
 }
 
