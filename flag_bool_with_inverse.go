@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -112,9 +113,7 @@ func (bif *BoolWithInverseFlag) PostParse() error {
 
 	if !bif.hasBeenSet {
 		if val, source, found := bif.Sources.LookupWithSource(); found {
-			if val == "" {
-				val = "false"
-			}
+			val = cmp.Or(val, "false")
 			if err := bif.Set(bif.Name, val); err != nil {
 				return fmt.Errorf(
 					"could not parse %[1]q as %[2]T value from %[3]s for flag %[4]s: %[5]s",

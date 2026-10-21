@@ -2,7 +2,6 @@ package cli
 
 import (
 	"bytes"
-	"context"
 	"io"
 	"os"
 	"strings"
@@ -203,7 +202,7 @@ func TestHelpOutput(t *testing.T) {
 			if tc.direct {
 				require.NoError(t, ShowRootCommandHelp(cmd))
 			} else {
-				require.NoError(t, cmd.Run(context.Background(), append([]string{cmd.Name}, tc.args...)))
+				require.NoError(t, cmd.Run(t.Context(), append([]string{cmd.Name}, tc.args...)))
 			}
 
 			got.WriteString("=== " + tc.name + ": " + strings.Join(tc.args, " ") + "\n")

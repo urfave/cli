@@ -208,10 +208,8 @@ func (cmd *Command) setupSubcommand() {
 func flagNamesInUse(flags []Flag, names []string) bool {
 	for _, name := range names {
 		for _, fl := range flags {
-			for _, flagName := range fl.Names() {
-				if flagName == name {
-					return true
-				}
+			if slices.Contains(fl.Names(), name) {
+				return true
 			}
 		}
 	}

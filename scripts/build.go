@@ -5,10 +5,12 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"math"
 	"net/http"
@@ -195,8 +197,8 @@ func runCmd(ctx context.Context, arg string, args ...string) error {
 	return cmd.Run()
 }
 
-func downloadFile(src, dest string, dirPerm, perm os.FileMode) error {
-	req, err := http.NewRequest(http.MethodGet, src, nil)
+func downloadFile(ctx context.Context, src, dest string, dirPerm, perm os.FileMode) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, src, http.NoBody)
 	if err != nil {
 		return err
 	}
@@ -329,22 +331,19 @@ func GfmrunActionFunc(ctx context.Context, cmd *cli.Command) error {
 		return err
 	}
 
-	dirPath := cmd.Args().Get(0)
-	if dirPath == "" {
-		dirPath = "README.md"
-	}
+	dirPath := cmp.Or(cmd.Args().Get(0), "README.md")
 
 	walk := cmd.Bool("walk")
 	sources := []string{}
 
 	if walk {
 		// Walk the directory and find all markdown files.
-		err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
+		err := filepath.WalkDir(dirPath, func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return err
 			}
 
-			if info.IsDir() {
+			if d.IsDir() {
 				return nil
 			}
 
@@ -579,7 +578,7 @@ func EnsureGfmrunActionFunc(ctx context.Context, cmd *cli.Command) error {
 		return err
 	}
 
-	return downloadFile(gfmrunURL.String(), gfmrunExe, 0o755, 0o755)
+	return downloadFile(ctx, gfmrunURL.String(), gfmrunExe, 0o755, 0o755)
 }
 
 func EnsureMkdocsActionFunc(ctx context.Context, cmd *cli.Command) error {

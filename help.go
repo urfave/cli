@@ -209,12 +209,9 @@ func completionUsage(usage string) string {
 }
 
 func cliArgContains(flagName string, args []string) bool {
-	for _, name := range strings.Split(flagName, ",") {
+	for name := range strings.SplitSeq(flagName, ",") {
 		name = strings.TrimSpace(name)
-		count := utf8.RuneCountInString(name)
-		if count > 2 {
-			count = 2
-		}
+		count := min(utf8.RuneCountInString(name), 2)
 		flag := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
 		if slices.Contains(args, flag) {
 			return true
@@ -238,10 +235,8 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 
 		name := strings.TrimSpace(flag.Names()[0])
 		// this will get total count utf8 letters in flag name
-		count := utf8.RuneCountInString(name)
-		if count > 2 {
-			count = 2 // reuse this count to generate single - or -- in flag completion
-		}
+		// reuse this count to generate single - or -- in flag completion
+		count := min(utf8.RuneCountInString(name), 2)
 		// if flag name has more than one utf8 letter and last argument in cli has -- prefix then
 		// skip flag completion for short flags example -v or -x
 		if strings.HasPrefix(lastArg, "--") && count == 1 {
@@ -518,19 +513,20 @@ func wrapLine(input string, offset int, wrapAt int, padding string) string {
 		return input
 	}
 
-	wrapped := words[0]
-	spaceLeft := lineWidth - len(wrapped)
+	var wrapped strings.Builder
+	wrapped.WriteString(words[0])
+	spaceLeft := lineWidth - len(words[0])
 	for _, word := range words[1:] {
 		if len(word)+1 > spaceLeft {
-			wrapped += "\n" + padding + word
+			wrapped.WriteString("\n" + padding + word)
 			spaceLeft = lineWidth - len(word)
 		} else {
-			wrapped += " " + word
+			wrapped.WriteString(" " + word)
 			spaceLeft -= 1 + len(word)
 		}
 	}
 
-	return wrapped
+	return wrapped.String()
 }
 
 func offset(input string, fixed int) int {

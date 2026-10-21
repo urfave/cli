@@ -109,7 +109,7 @@ func TestShowCommandHelpAndExit(t *testing.T) {
 		Writer: output,
 	}
 
-	ShowCommandHelpAndExit(context.Background(), cmd, "ok", 42)
+	ShowCommandHelpAndExit(t.Context(), cmd, "ok", 42)
 
 	require.Equal(t, 42, lastExitCode)
 }
@@ -303,9 +303,9 @@ func Test_Version_Custom_Flags(t *testing.T) {
 func Test_helpCommand_Action_ErrorIfNoTopic(t *testing.T) {
 	cmd := &Command{}
 
-	_ = cmd.Run(context.Background(), []string{"foo", "bar"})
+	_ = cmd.Run(t.Context(), []string{"foo", "bar"})
 
-	err := helpCommandAction(context.Background(), cmd)
+	err := helpCommandAction(t.Context(), cmd)
 	require.Error(t, err, "expected error from helpCommandAction()")
 
 	exitErr, ok := err.(*exitError)
@@ -422,9 +422,9 @@ func Test_helpCommand_HideHelpFlag(t *testing.T) {
 
 func Test_helpSubcommand_Action_ErrorIfNoTopic(t *testing.T) {
 	cmd := &Command{}
-	_ = cmd.Run(context.Background(), []string{"foo", "bar"})
+	_ = cmd.Run(t.Context(), []string{"foo", "bar"})
 
-	err := helpCommandAction(context.Background(), cmd)
+	err := helpCommandAction(t.Context(), cmd)
 	require.Error(t, err, "expected error from helpCommandAction(), but got nil")
 
 	exitErr, ok := err.(*exitError)
@@ -1930,7 +1930,7 @@ func TestWrappedCommandHelp(t *testing.T) {
 
 	r := require.New(t)
 
-	r.NoError(ShowCommandHelp(context.Background(), cmd, "add"))
+	r.NoError(ShowCommandHelp(t.Context(), cmd, "add"))
 	r.Equal(`NAME:
    cli.test add - add a task
                   to the list
@@ -2249,7 +2249,6 @@ func Test_checkShellCompleteFlag(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			shellCompletion, args := checkShellCompleteFlag(tt.cmd, tt.arguments)
@@ -2375,7 +2374,7 @@ func TestCommandHelpSuggest(t *testing.T) {
 
 	cmd.setupDefaults([]string{"foo"})
 
-	err := ShowCommandHelp(context.Background(), cmd, "put")
+	err := ShowCommandHelp(t.Context(), cmd, "put")
 	assert.ErrorContains(t, err, "No help topic for 'put'. putz")
 }
 
@@ -2395,7 +2394,7 @@ func TestCommandHelpSuggestHiddenCommand(t *testing.T) {
 
 	cmd.setupDefaults([]string{"foo"})
 
-	err := ShowCommandHelp(context.Background(), cmd, "put")
+	err := ShowCommandHelp(t.Context(), cmd, "put")
 	assert.EqualError(t, err, "No help topic for 'put'. pull")
 }
 

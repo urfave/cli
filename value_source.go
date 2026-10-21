@@ -107,7 +107,7 @@ type envVarValueSource struct {
 }
 
 func (e *envVarValueSource) Lookup() (string, bool) {
-	return os.LookupEnv(strings.TrimSpace(string(e.key)))
+	return os.LookupEnv(strings.TrimSpace(e.key))
 }
 
 func (e *envVarValueSource) IsFromEnv() bool {

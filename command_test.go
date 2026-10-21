@@ -184,7 +184,7 @@ func TestCommandFlagParsing(t *testing.T) {
 				SkipFlagParsing: c.skipFlagParsing,
 			}
 
-			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+			ctx, cancel := context.WithTimeout(t.Context(), 100*time.Millisecond)
 			t.Cleanup(cancel)
 
 			r := require.New(t)
@@ -3579,7 +3579,7 @@ func TestCustomHelpVersionFlags(t *testing.T) {
 
 func TestHandleExitCoder_Default(t *testing.T) {
 	app := buildMinimalTestCommand()
-	_ = app.handleExitCoder(context.Background(), Exit("Default Behavior Error", 42))
+	_ = app.handleExitCoder(t.Context(), Exit("Default Behavior Error", 42))
 
 	output := fakeErrWriter.String()
 	assert.Contains(t, output, "Default", "Expected Default Behavior from Error Handler")
@@ -3592,7 +3592,7 @@ func TestHandleExitCoder_Custom(t *testing.T) {
 		_, _ = fmt.Fprintln(ErrWriter, "I'm a Custom error handler, I print what I want!")
 	}
 
-	_ = cmd.handleExitCoder(context.Background(), Exit("Default Behavior Error", 42))
+	_ = cmd.handleExitCoder(t.Context(), Exit("Default Behavior Error", 42))
 
 	output := fakeErrWriter.String()
 	assert.Contains(t, output, "Custom", "Expected Custom Behavior from Error Handler")
@@ -3959,7 +3959,7 @@ func TestFlagAction(t *testing.T) {
 							if v == 0 {
 								return fmt.Errorf("empty duration")
 							}
-							_, err := fmt.Fprintf(cmd.Root().Writer, v.String()+" ")
+							_, err := fmt.Fprintf(cmd.Root().Writer, "%v ", v)
 							return err
 						},
 					},
@@ -3970,7 +3970,7 @@ func TestFlagAction(t *testing.T) {
 							if v < 0 {
 								return fmt.Errorf("negative float64")
 							}
-							_, err := fmt.Fprintf(cmd.Root().Writer, strconv.FormatFloat(v, 'f', -1, 64)+" ")
+							_, err := fmt.Fprintf(cmd.Root().Writer, "%s ", strconv.FormatFloat(v, 'f', -1, 64))
 							return err
 						},
 					},
@@ -4087,7 +4087,7 @@ func TestLocalSliceFlagAccumulation(t *testing.T) {
 		},
 	}
 
-	err := app.Run(context.Background(), []string{"app", "sub", "-p", "/a", "-p", "/b", "-p", "/c"})
+	err := app.Run(t.Context(), []string{"app", "sub", "-p", "/a", "-p", "/b", "-p", "/c"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -4261,12 +4261,12 @@ func TestPersistentFlagIsSet(t *testing.T) {
 		},
 	}
 
-	err := app.Run(context.Background(), []string{"root", "--result", "before", "sub"})
+	err := app.Run(t.Context(), []string{"root", "--result", "before", "sub"})
 	require.NoError(t, err)
 	require.Equal(t, "before", result)
 	require.True(t, resultIsSet)
 
-	err = app.Run(context.Background(), []string{"root", "sub", "--result", "after"})
+	err = app.Run(t.Context(), []string{"root", "sub", "--result", "after"})
 	require.NoError(t, err)
 	require.Equal(t, "after", result)
 	require.True(t, resultIsSet)
@@ -4306,7 +4306,7 @@ func TestDuplicatePersistentFlagUsesEnvSource(t *testing.T) {
 		},
 	}
 
-	err := app.Run(context.Background(), []string{"root", "sub"})
+	err := app.Run(t.Context(), []string{"root", "sub"})
 	require.NoError(t, err)
 	require.Equal(t, "from-env", beforeResult)
 	require.Equal(t, "from-env", actionResult)
@@ -4473,7 +4473,7 @@ func TestRequiredFlagDelayed(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := app.Run(context.Background(), test.args)
+			err := app.Run(t.Context(), test.args)
 			if test.errExpected == nil {
 				require.NoError(t, err)
 			} else {
@@ -4502,10 +4502,10 @@ func TestRequiredPersistentFlag(t *testing.T) {
 		},
 	}
 
-	err := app.Run(context.Background(), []string{"root", "sub"})
+	err := app.Run(t.Context(), []string{"root", "sub"})
 	require.Error(t, err)
 
-	err = app.Run(context.Background(), []string{"root", "sub", "--result", "after"})
+	err = app.Run(t.Context(), []string{"root", "sub", "--result", "after"})
 	require.NoError(t, err)
 }
 
@@ -5080,7 +5080,7 @@ func TestCommand_Timestamp(t *testing.T) {
 		},
 	}
 
-	err := pCmd.Run(context.Background(), []string{"foo", "hello"})
+	err := pCmd.Run(t.Context(), []string{"foo", "hello"})
 	assert.NoError(t, err)
 
 	r := require.New(t)
@@ -5230,7 +5230,7 @@ func TestCommand_Args(t *testing.T) {
 			},
 		},
 	}
-	_ = cmd.Run(context.Background(), []string{"", "--myflag", "bat", "baz"})
+	_ = cmd.Run(t.Context(), []string{"", "--myflag", "bat", "baz"})
 
 	r := require.New(t)
 	r.Equal(2, cmd.Args().Len())
@@ -5269,7 +5269,7 @@ func TestCommand_IsSet(t *testing.T) {
 
 	r := require.New(t)
 
-	r.NoError(pCmd.Run(context.Background(), []string{"foo", "frob", "--one-flag", "--top-flag", "--two-flag", "--three-flag", "dds"}))
+	r.NoError(pCmd.Run(t.Context(), []string{"foo", "frob", "--one-flag", "--top-flag", "--two-flag", "--three-flag", "dds"}))
 
 	r.True(cmd.IsSet("one-flag"))
 	r.True(cmd.IsSet("two-flag"))
@@ -5349,16 +5349,16 @@ func TestCommand_NumFlags(t *testing.T) {
 		},
 	}
 
-	_ = cmd.Run(context.Background(), []string{"", "--myflag", "--otherflag=foo"})
-	_ = rootCmd.Run(context.Background(), []string{"", "--myflagGlobal"})
+	_ = cmd.Run(t.Context(), []string{"", "--myflag", "--otherflag=foo"})
+	_ = rootCmd.Run(t.Context(), []string{"", "--myflagGlobal"})
 	require.Equal(t, 2, cmd.NumFlags())
 	actualFlags := cmd.LocalFlagNames()
-	sort.Strings(actualFlags)
+	slices.Sort(actualFlags)
 
 	require.Equal(t, []string{"myflag", "otherflag"}, actualFlags)
 
 	actualFlags = cmd.FlagNames()
-	sort.Strings(actualFlags)
+	slices.Sort(actualFlags)
 
 	require.Equal(t, []string{"myflag", "otherflag"}, actualFlags)
 
@@ -5438,9 +5438,9 @@ func TestCommand_lookupFlag(t *testing.T) {
 			},
 		},
 	}
-	_ = cmd.Run(context.Background(), []string{"--local-flag"})
+	_ = cmd.Run(t.Context(), []string{"--local-flag"})
 	pCmd.Commands = []*Command{cmd}
-	_ = pCmd.Run(context.Background(), []string{"--top-flag"})
+	_ = pCmd.Run(t.Context(), []string{"--top-flag"})
 
 	r := require.New(t)
 
@@ -5659,7 +5659,7 @@ func TestCheckRequiredFlags(t *testing.T) {
 			}
 			args := []string{"foo"}
 			args = append(args, test.parseInput...)
-			_ = cmd.Run(context.Background(), args)
+			_ = cmd.Run(t.Context(), args)
 
 			err := cmd.checkAllRequiredFlags()
 
@@ -5790,7 +5790,7 @@ func TestCommandReadArgsFromStdinPositionalArgs(t *testing.T) {
 					return nil
 				},
 			}
-			require.NoError(t, cmd.Run(context.Background(), append([]string{"app"}, test.args...)))
+			require.NoError(t, cmd.Run(t.Context(), append([]string{"app"}, test.args...)))
 			require.True(t, actionCalled)
 		})
 	}
@@ -5810,7 +5810,7 @@ func TestCommandReadArgsFromStdinReadError(t *testing.T) {
 					return nil
 				},
 			}
-			require.ErrorIs(t, cmd.Run(context.Background(), []string{"app"}), readErr)
+			require.ErrorIs(t, cmd.Run(t.Context(), []string{"app"}), readErr)
 			require.False(t, actionCalled)
 		})
 	}
@@ -5937,16 +5937,9 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 		t.Run(tst.name, func(t *testing.T) {
 			r := require.New(t)
 
-			fp, err := os.CreateTemp("", "readargs")
-			r.NoError(err)
-			_, err = fp.Write([]byte(tst.input))
-			r.NoError(err)
-			fp.Close()
-
 			cmd := buildMinimalTestCommand()
 			cmd.ReadArgsFromStdin = true
-			cmd.Reader, err = os.Open(fp.Name())
-			r.NoError(err)
+			cmd.Reader = strings.NewReader(tst.input)
 			cmd.Flags = []Flag{
 				&Int64Flag{
 					Name: "if",
@@ -5971,7 +5964,7 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 				return nil
 			}
 
-			err = cmd.Run(context.Background(), tst.args)
+			err := cmd.Run(t.Context(), tst.args)
 			if !tst.expectError {
 				r.NoError(err)
 				r.True(actionCalled)
@@ -5984,7 +5977,7 @@ func TestCommandReadArgsFromStdIn(t *testing.T) {
 
 func TestZeroValueCommand(t *testing.T) {
 	var cmd Command
-	assert.NoError(t, cmd.Run(context.Background(), []string{"foo"}))
+	assert.NoError(t, cmd.Run(t.Context(), []string{"foo"}))
 }
 
 func TestCommandInvalidName(t *testing.T) {
@@ -6444,7 +6437,7 @@ func TestStringFlagTerminator(t *testing.T) {
 				},
 			}
 
-			err := cmd.Run(context.Background(), tc.input)
+			err := cmd.Run(t.Context(), tc.input)
 			if tc.expectErr {
 				assert.Error(t, err)
 				if err != nil {
@@ -6522,7 +6515,7 @@ func TestBoolFlagTerminator(t *testing.T) {
 				},
 			}
 
-			err := cmd.Run(context.Background(), tc.input)
+			err := cmd.Run(t.Context(), tc.input)
 			if tc.expectErr {
 				assert.Error(t, err)
 				if err != nil {
@@ -6609,7 +6602,7 @@ func TestSliceStringFlagParsing(t *testing.T) {
 		sliceVal = nil
 
 		t.Run(tc.name, func(t *testing.T) {
-			err := tc.cmd.Run(context.Background(), tc.input)
+			err := tc.cmd.Run(t.Context(), tc.input)
 			if tc.expectErr {
 				assert.Error(t, err)
 				if err != nil {
@@ -7304,7 +7297,7 @@ func TestCommand_ParallelRun(t *testing.T) {
 				},
 			}
 
-			if err := cmd.Run(context.Background(), nil); err != nil {
+			if err := cmd.Run(t.Context(), nil); err != nil {
 				fmt.Printf("%s\n", err)
 			}
 		})

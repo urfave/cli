@@ -51,7 +51,7 @@ func TestPartialFlagCompletionAfterPositionalArgument(t *testing.T) {
 				args = append(args, positional...)
 				args = append(args, "--pa", completionFlag)
 				os.Args = args
-				if err := cmd.Run(context.Background(), args); err != nil {
+				if err := cmd.Run(t.Context(), args); err != nil {
 					t.Fatal(err)
 				}
 				if got := output.String(); got != scope.want {
@@ -76,7 +76,7 @@ func TestPartialFlagCompletionAfterDoubleDash(t *testing.T) {
 			args := append([]string{"app"}, path...)
 			args = append(args, "--", "--pa", completionFlag)
 			os.Args = args
-			if err := cmd.Run(context.Background(), args); err != nil {
+			if err := cmd.Run(t.Context(), args); err != nil {
 				t.Fatal(err)
 			}
 			if output.Len() != 0 || ran {
@@ -95,7 +95,7 @@ func TestPartialFlagCustomCompletionArgs(t *testing.T) {
 		got = append([]string(nil), cmd.Args().Slice()...)
 	}
 	args := []string{"app", "sub", "value", "--pa", completionFlag}
-	if err := cmd.Run(context.Background(), args); err != nil {
+	if err := cmd.Run(t.Context(), args); err != nil {
 		t.Fatal(err)
 	}
 	if want := []string{"value", "--pa"}; !reflect.DeepEqual(got, want) {
@@ -112,7 +112,7 @@ func TestPartialFlagCompletionDisabled(t *testing.T) {
 	cmd := partialCompletionCommand(&output, &ran)
 	cmd.EnableShellCompletion = false
 	args := []string{"app", "sub", "value", "--pa", completionFlag}
-	if err := cmd.Run(context.Background(), args); err == nil {
+	if err := cmd.Run(t.Context(), args); err == nil {
 		t.Fatal("disabled completion accepted an undefined flag")
 	}
 	if ran || strings.Contains(output.String(), "--param-sub-one\n--param-sub-two\n") {

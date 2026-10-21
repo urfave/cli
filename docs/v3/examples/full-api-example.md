@@ -19,7 +19,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"time"
 	"slices"
@@ -35,7 +34,7 @@ func init() {
 	cli.HelpFlag = &cli.BoolFlag{Name: "halp"}
 	cli.VersionFlag = &cli.BoolFlag{Name: "print-version", Aliases: []string{"V"}}
 
-	cli.HelpPrinter = func(w io.Writer, templ string, data interface{}) {
+	cli.HelpPrinter = func(w io.Writer, templ string, data any) {
 		fmt.Fprintf(w, "best of luck to you\n")
 	}
 	cli.VersionPrinter = func(cmd *cli.Command) {
@@ -44,7 +43,7 @@ func init() {
 	cli.OsExiter = func(cmd int) {
 		fmt.Fprintf(cli.ErrWriter, "refusing to exit %d\n", cmd)
 	}
-	cli.ErrWriter = ioutil.Discard
+	cli.ErrWriter = io.Discard
 	cli.FlagStringer = func(fl cli.Flag) string {
 		return fmt.Sprintf("\t\t%s", fl.Names()[0])
 	}
@@ -216,7 +215,7 @@ func main() {
 			fmt.Printf("made it!\n")
 			return ec
 		},
-		Metadata: map[string]interface{}{
+		Metadata: map[string]any{
 			"layers":          "many",
 			"explicable":      false,
 			"whatever-values": 19.99,

@@ -2702,7 +2702,7 @@ func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
 					return errors.New("got nil err")
 				}
 
-				found := regexp.MustCompile(`(cannot parse ".+" as ".*")|(extra text: ".+")`).Match([]byte(err.Error()))
+				found := regexp.MustCompile(`(cannot parse ".+" as ".*")|(extra text: ".+")`).MatchString(err.Error())
 				if !found {
 					return fmt.Errorf("given error does not satisfy pattern: %w", err)
 				}
@@ -2720,7 +2720,7 @@ func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
 					return errors.New("got nil err")
 				}
 
-				found := regexp.MustCompile(`extra text: ".+"`).Match([]byte(err.Error()))
+				found := regexp.MustCompile(`extra text: ".+"`).MatchString(err.Error())
 				if !found {
 					return fmt.Errorf("given error does not satisfy pattern: %w", err)
 				}
@@ -2735,7 +2735,7 @@ func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
 					return errors.New("got nil err")
 				}
 
-				found := regexp.MustCompile(`got nil/empty layouts slice`).Match([]byte(err.Error()))
+				found := regexp.MustCompile(`got nil/empty layouts slice`).MatchString(err.Error())
 				if !found {
 					return fmt.Errorf("given error does not satisfy pattern: %w", err)
 				}
@@ -2751,7 +2751,7 @@ func TestTimestampFlagApply_MultipleFormats(t *testing.T) {
 					return errors.New("got nil err")
 				}
 
-				found := regexp.MustCompile(`got nil/empty layouts slice`).Match([]byte(err.Error()))
+				found := regexp.MustCompile(`got nil/empty layouts slice`).MatchString(err.Error())
 				if !found {
 					return fmt.Errorf("given error does not satisfy pattern: %w", err)
 				}

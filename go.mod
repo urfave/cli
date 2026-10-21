@@ -1,6 +1,6 @@
 module github.com/urfave/cli/v3
 
-go 1.22
+go 1.26
 
 require github.com/stretchr/testify v1.12.1
 
