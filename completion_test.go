@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 	"testing"
 
@@ -494,9 +493,6 @@ func TestCompletionAfterDoubleDashDoesNotLeakToNextRun(t *testing.T) {
 	// A Command answering several completion requests must answer each one
 	// on its own terms: a request past a "--" must not make the next
 	// request behave as though it were past one too.
-	origArgv := os.Args
-	t.Cleanup(func() { os.Args = origArgv })
-
 	out := &bytes.Buffer{}
 
 	cmd := &Command{
@@ -516,12 +512,10 @@ func TestCompletionAfterDoubleDashDoesNotLeakToNextRun(t *testing.T) {
 
 	r := require.New(t)
 
-	os.Args = []string{"foo", "--", "somearg"}
 	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "--", "somearg", completionFlag}))
 	r.Empty(out.String())
 
 	out.Reset()
-	os.Args = []string{"foo", "-", completionFlag}
 	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "-", completionFlag}))
 	r.Contains(out.String(), "-verbose")
 }
