@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"time"
@@ -140,6 +141,12 @@ func layoutFields(layout string) (hasYear, hasDate bool) {
 
 // String returns a readable representation of this value (for usage defaults)
 func (t *timestampValue) String() string {
+	// Format with the first layout, in the location Set parses in, so that
+	// the text can be passed back to the flag
+	if t.timestamp != nil && len(t.layouts) > 0 {
+		location := cmp.Or(t.location, time.UTC)
+		return t.timestamp.In(location).Format(t.layouts[0])
+	}
 	return fmt.Sprintf("%v", t.timestamp)
 }
 
