@@ -13,6 +13,7 @@ import (
 type (
 	helpShownKey struct{}
 	helpFlagKey  struct{}
+	runArgsKey   struct{}
 )
 
 func (cmd *Command) parseArgsFromStdin() ([]string, error) {
@@ -132,6 +133,7 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 		// into the next
 		cmd.shellCompletion = false
 		cmd.shellCompletionPastDoubleDash = false
+		ctx = context.WithValue(ctx, runArgsKey{}, osArgs)
 		cmd.shellCompletion, osArgs = checkShellCompleteFlag(cmd, osArgs)
 
 		tracef("setting cmd.shellCompletion=%[1]v from checkShellCompleteFlag (cmd=%[2]q)", cmd.shellCompletion && cmd.EnableShellCompletion, cmd.Name)

@@ -542,6 +542,40 @@ func TestCompletionAfterDoubleDashDoesNotLeakToNextRun(t *testing.T) {
 	r.Contains(out.String(), "-verbose")
 }
 
+func TestCompletionUsesRunArguments(t *testing.T) {
+	// Completion must use the arguments passed to Run, not os.Args, which
+	// holds the go test flags here
+	// (https://github.com/urfave/cli/issues/2486).
+	out := &bytes.Buffer{}
+
+	cmd := &Command{
+		EnableShellCompletion: true,
+		Writer:                out,
+		Commands: []*Command{
+			{
+				Name: "sub",
+				Flags: []Flag{
+					&BoolFlag{
+						Name: "verbose",
+					},
+				},
+				// a custom completer may pass a Command without a parent
+				ShellComplete: func(ctx context.Context, cmd *Command) {
+					DefaultCompleteWithFlags(ctx, &Command{Flags: cmd.Flags, Writer: cmd.Root().Writer})
+				},
+			},
+		},
+	}
+
+	r := require.New(t)
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", completionFlag}))
+	r.Contains(out.String(), "sub")
+
+	out.Reset()
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "sub", "--v", completionFlag}))
+	r.Equal("--verbose\n", out.String())
+}
+
 func TestCompletionSubcommandCustomShellComplete(t *testing.T) {
 	out := &bytes.Buffer{}
 
