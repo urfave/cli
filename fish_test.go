@@ -21,7 +21,6 @@ func TestFishCompletion(t *testing.T) {
 			Name:      "foofile",
 			TakesFile: true,
 		})
-	cmd.setupCommandGraph()
 
 	// When
 	res, err := cmd.ToFishCompletion()
@@ -29,6 +28,11 @@ func TestFishCompletion(t *testing.T) {
 	// Then
 	require.NoError(t, err)
 	expectFileContent(t, "testdata/expected-fish-full.fish", res)
+
+	// calling it again gives the same completions
+	res2, err := cmd.ToFishCompletion()
+	require.NoError(t, err)
+	require.Equal(t, res, res2)
 }
 
 func TestFishCompletionShortAndLongNames(t *testing.T) {
@@ -43,7 +47,6 @@ func TestFishCompletionShortAndLongNames(t *testing.T) {
 			&StringFlag{Name: "o", Aliases: []string{"output", "out"}},
 		},
 	}
-	cmd.setupCommandGraph()
 
 	res, err := cmd.ToFishCompletion()
 	require.NoError(t, err)
@@ -76,7 +79,6 @@ func TestFishCompletionBackslashEscaping(t *testing.T) {
 			},
 		},
 	}
-	cmd.setupCommandGraph()
 
 	res, err := cmd.ToFishCompletion()
 	require.NoError(t, err)
@@ -96,8 +98,6 @@ func TestFishCompletionShellComplete(t *testing.T) {
 
 	subConfigCmd := configCmd.Command("sub-config")
 	subConfigCmd.ShellComplete = func(context.Context, *Command) {}
-
-	cmd.setupCommandGraph()
 
 	res, err := cmd.ToFishCompletion()
 	require.NoError(t, err)
