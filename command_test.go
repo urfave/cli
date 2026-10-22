@@ -610,20 +610,27 @@ func TestCommand_Run_CustomShellCompleteAcceptsMalformedFlags(t *testing.T) {
 		{testArgs: &stringSliceArgs{v: []string{"--number", "forty-two"}}, expectedOut: "found 0 args"},
 		{testArgs: &stringSliceArgs{v: []string{"--number", "42"}}, expectedOut: "found 0 args"},
 		{testArgs: &stringSliceArgs{v: []string{"--number", "42", "newArg"}}, expectedOut: "found 1 args"},
+		{testArgs: &stringSliceArgs{v: []string{"-an"}}, expectedOut: "found 1 args"},
+		{testArgs: &stringSliceArgs{v: []string{"-ax"}}, expectedOut: "found 1 args"},
+		{testArgs: &stringSliceArgs{v: []string{"-na"}}, expectedOut: "found 1 args"},
+		{testArgs: &stringSliceArgs{v: []string{"-an", "42"}}, expectedOut: "found 0 args"},
 	}
 
 	for _, c := range cases {
 		t.Run(strings.Join(c.testArgs.Slice(), " "), func(t *testing.T) {
 			out := &bytes.Buffer{}
 			cmd := &Command{
-				Writer:                out,
-				EnableShellCompletion: true,
-				Name:                  "bar",
-				Usage:                 "this is for testing",
+				Writer:                 out,
+				EnableShellCompletion:  true,
+				UseShortOptionHandling: true,
+				Name:                   "bar",
+				Usage:                  "this is for testing",
 				Flags: []Flag{
+					&BoolFlag{Name: "a"},
 					&Int64Flag{
-						Name:  "number",
-						Usage: "A number to parse",
+						Name:    "number",
+						Aliases: []string{"n"},
+						Usage:   "A number to parse",
 					},
 				},
 				ShellComplete: func(_ context.Context, cmd *Command) {
