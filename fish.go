@@ -11,6 +11,10 @@ import (
 // ToFishCompletion creates a fish completion string for the `*Command`
 // The function errors if either parsing or writing of the string fails.
 func (cmd *Command) ToFishCompletion() (string, error) {
+	// The completions of a subcommand are scoped by its lineage, which needs
+	// the parent links that are otherwise only set up by Run
+	cmd.setupCommandGraph()
+
 	var w bytes.Buffer
 	if err := cmd.writeFishCompletionTemplate(&w); err != nil {
 		return "", err
