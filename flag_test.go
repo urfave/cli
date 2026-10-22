@@ -2646,6 +2646,31 @@ func TestTimestampFlagHelpOutput(t *testing.T) {
 	}
 }
 
+func TestTimestampFlagHelpOutputUsesLayout(t *testing.T) {
+	value := time.Date(2024, time.March, 15, 12, 0, 0, 0, time.UTC)
+	tests := []struct {
+		name     string
+		config   TimestampConfig
+		expected string
+	}{
+		{"layout", TimestampConfig{Layouts: []string{"2006-01-02 15:04"}}, "--since time\t(default: 2024-03-15 12:00)"},
+		{"first layout", TimestampConfig{Layouts: []string{time.RFC3339, "2006-01-02"}}, "--since time\t(default: 2024-03-15T12:00:00Z)"},
+		{"timezone", TimestampConfig{Layouts: []string{"2006-01-02 15:04"}, Timezone: time.FixedZone("UTC-4", -4*60*60)}, "--since time\t(default: 2024-03-15 08:00)"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			fl := &TimestampFlag{Name: "since", Value: value, Config: test.config}
+			assert.Equal(t, test.expected, fl.String())
+
+			// the default shown in the help output parses back to the default value
+			cmd := &Command{Flags: []Flag{&TimestampFlag{Name: "since", Config: test.config}}}
+			require.NoError(t, cmd.Run(buildTestContext(t), []string{"", "--since", fl.GetValue()}))
+			assert.True(t, value.Equal(cmd.Timestamp("since")), "got %v", cmd.Timestamp("since"))
+		})
+	}
+}
+
 func TestTimestamp_set(t *testing.T) {
 	ts := timestampValue{
 		timestamp:  nil,
@@ -3264,7 +3289,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "timestamp",
 			flag:    &TimestampFlag{Name: "flag", Value: ts, Config: TimestampConfig{Layouts: []string{time.RFC3339}}, Sources: EnvVars("tflag")},
 			toParse: []string{"--flag", "2006-11-02T15:04:05Z"},
-			expect:  `--flag time	(default: 2005-01-02 15:04:05 +0000 UTC)` + withEnvHint([]string{"tflag"}, ""),
+			expect:  `--flag time	(default: 2005-01-02T15:04:05Z)` + withEnvHint([]string{"tflag"}, ""),
 			environ: map[string]string{
 				"tflag": "2010-01-02T15:04:05Z",
 			},
