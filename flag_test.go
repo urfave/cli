@@ -1199,6 +1199,31 @@ func TestIntSliceFlagHelpOutput(t *testing.T) {
 	}
 }
 
+func TestIntegerFlagHelpOutputHonorsBase(t *testing.T) {
+	tests := []struct {
+		name     string
+		flag     Flag
+		expected string
+	}{
+		{"int", &Int64Flag{Name: "n", Value: 255, Config: IntegerConfig{Base: 16}}, "-n int\t(default: ff)"},
+		{"uint", &Uint64Flag{Name: "n", Value: 5, Config: IntegerConfig{Base: 2}}, "-n uint\t(default: 101)"},
+		{"int slice", &Int64SliceFlag{Name: "n", Value: []int64{255, 16}, Config: IntegerConfig{Base: 16}}, "-n int [ -n int ]\t(default: ff, 10)"},
+		{"uint slice", &Uint64SliceFlag{Name: "n", Value: []uint64{255}, Config: IntegerConfig{Base: 16}}, "-n uint [ -n uint ]\t(default: ff)"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			assert.Equal(t, test.expected, test.flag.String())
+		})
+	}
+
+	// the default shown in the help output parses back to the default value
+	fl := &Int64Flag{Name: "n", Value: 255, Config: IntegerConfig{Base: 16}}
+	cmd := &Command{Flags: []Flag{fl}}
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"", "--n", fl.GetValue()}))
+	assert.Equal(t, int64(255), cmd.Int64("n"))
+}
+
 func TestIntSliceFlagWithEnvVarHelpOutput(t *testing.T) {
 	t.Setenv("APP_SMURF", "42,3")
 

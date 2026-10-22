@@ -91,6 +91,11 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 // string if the flag takes no value at all.
 func (f *FlagBase[T, C, V]) GetValue() string {
 	var v V
+	// Format through a value created with the flag's Config, so that e.g.
+	// IntegerConfig.Base is honored
+	if cv, ok := v.Create(f.Value, new(T), f.Config).(interface{ ToString(T) string }); ok {
+		return cv.ToString(f.Value)
+	}
 	return v.ToString(f.Value)
 }
 

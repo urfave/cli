@@ -88,8 +88,13 @@ func (i *SliceBase[T, C, VC]) Set(value string) error {
 func (i *SliceBase[T, C, VC]) String() string {
 	var defaultVals []string
 	var v VC
+	toString := v.ToString
+	// The element value was created with the flag's Config (e.g. IntegerConfig.Base)
+	if cv, ok := i.value.(interface{ ToString(T) string }); ok {
+		toString = cv.ToString
+	}
 	for _, s := range *i.slice {
-		defaultVals = append(defaultVals, v.ToString(s))
+		defaultVals = append(defaultVals, toString(s))
 	}
 	return strings.Join(defaultVals, ", ")
 }
