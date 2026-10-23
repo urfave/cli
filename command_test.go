@@ -1422,6 +1422,83 @@ func TestCommand_NegativeNumberArg_InvalidFlagAccessHandler(t *testing.T) {
 	}
 }
 
+func TestCommand_ParseFlags_InvalidFlagAccessHandler(t *testing.T) {
+	tests := []struct {
+		name string
+		cmd  *Command
+		args []string
+		err  string
+	}{
+		{
+			name: "short option group",
+			cmd: &Command{
+				UseShortOptionHandling: true,
+				Flags:                  []Flag{&BoolFlag{Name: "a"}, &BoolFlag{Name: "b"}},
+				Action:                 func(context.Context, *Command) error { return nil },
+			},
+			args: []string{"app", "-ab"},
+		},
+		{
+			name: "short option group with an undefined flag",
+			cmd: &Command{
+				UseShortOptionHandling: true,
+				Flags:                  []Flag{&BoolFlag{Name: "a"}, &BoolFlag{Name: "b"}},
+				Action:                 func(context.Context, *Command) error { return nil },
+			},
+			args: []string{"app", "-ax"},
+			err:  "flag provided but not defined: -ax",
+		},
+		{
+			name: "flag of the default command",
+			cmd: &Command{
+				DefaultCommand: "run",
+				Commands: []*Command{
+					{
+						Name:   "run",
+						Flags:  []Flag{&BoolFlag{Name: "verbose"}},
+						Action: func(context.Context, *Command) error { return nil },
+					},
+				},
+			},
+			args: []string{"app", "--verbose"},
+		},
+		{
+			name: "partial flag in shell completion",
+			cmd: &Command{
+				EnableShellCompletion: true,
+				Flags:                 []Flag{&BoolFlag{Name: "verbose"}},
+				Action:                func(context.Context, *Command) error { return nil },
+			},
+			args: []string{"app", "--ver", "--generate-shell-completion"},
+		},
+		{
+			name: "undefined flag",
+			cmd:  &Command{Action: func(context.Context, *Command) error { return nil }},
+			args: []string{"app", "--undefined"},
+			err:  "flag provided but not defined: -undefined",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			var invalid []string
+			test.cmd.Writer = io.Discard
+			test.cmd.ErrWriter = io.Discard
+			test.cmd.InvalidFlagAccessHandler = func(_ context.Context, _ *Command, name string) {
+				invalid = append(invalid, name)
+			}
+
+			err := test.cmd.Run(buildTestContext(t), test.args)
+			if test.err != "" {
+				require.EqualError(t, err, test.err)
+			} else {
+				require.NoError(t, err)
+			}
+			assert.Empty(t, invalid)
+		})
+	}
+}
+
 func TestCommand_EqualsFlagValueValidation(t *testing.T) {
 	for _, kind := range []string{"int", "bool"} {
 		for _, whitespace := range []string{"", " ", "\t"} {
