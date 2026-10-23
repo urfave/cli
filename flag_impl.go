@@ -154,8 +154,18 @@ func (f *FlagBase[T, C, V]) PostParse() error {
 		// hides a later source in the chain.
 		emptyIsValue := kind == reflect.String || kind == reflect.Bool
 
+		// No bool, number, duration or timestamp can contain surrounding
+		// whitespace, such as the newline a file usually ends in, so it is
+		// dropped from a source's value for those. Strings, slices and maps
+		// keep it and have their own TrimSpace option.
+		_, isTime := any(f.Value).(time.Time)
+		trimSpace := (kind >= reflect.Bool && kind <= reflect.Float64) || isTime
+
 		for _, source := range f.Sources.Chain {
 			val, found := source.Lookup()
+			if trimSpace {
+				val = strings.TrimSpace(val)
+			}
 			if !found || (val == "" && !emptyIsValue) {
 				continue
 			}
