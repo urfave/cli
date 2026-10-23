@@ -2474,3 +2474,29 @@ func skipIfNoTemplates(t *testing.T) {
 		t.Skip("custom templates are not supported with urfave_cli_no_template build tag")
 	}
 }
+
+func TestCommandListAlignsNonASCIINames(t *testing.T) {
+	out := &bytes.Buffer{}
+	cmd := &Command{
+		Name:            "app",
+		Writer:          out,
+		HideHelpCommand: true,
+		Commands: []*Command{
+			{Name: "café", Usage: "order a coffee"},
+			{Name: "tea", Usage: "order a tea"},
+			{Name: "naïve", Usage: "skip the checks\nand the prompts", Category: "modes"},
+			{Name: "fast", Usage: "go fast", Category: "modes"},
+		},
+	}
+
+	require.NoError(t, cmd.Run(t.Context(), []string{"app", "--help"}))
+	require.Contains(t, out.String(), `COMMANDS:
+   café  order a coffee
+   tea   order a tea
+
+   modes:
+     naïve  skip the checks
+            and the prompts
+     fast   go fast
+`)
+}

@@ -34,6 +34,7 @@ COMMANDS:
    Lifecycle:
      create, cr, new  create a thing
      delete           delete a thing
+                      with a multi-line usage
 
 GLOBAL OPTIONS:
    --help, -h     show help
@@ -90,6 +91,7 @@ COMMANDS:
    Lifecycle:
      create, cr, new  create a thing
      delete           delete a thing
+                      with a multi-line usage
 
 GLOBAL OPTIONS:
    --help, -h     show help
@@ -171,6 +173,7 @@ GLOBAL OPTIONS:
 === command no categories: delete --help
 NAME:
    app delete - delete a thing
+                with a multi-line usage
 
 USAGE:
    app delete [options]
@@ -344,6 +347,8 @@ COMMANDS:
    Lifecycle:
      create, cr, new  create a thing
      delete           delete a thing
+                      with a multi-line
+                      usage
 
 GLOBAL OPTIONS:
    --help, -h     show help
@@ -468,7 +473,8 @@ complete -c app -n '__fish_seen_subcommand_from create cr new' -f -l pid-file -r
 complete -c app -n '__fish_seen_subcommand_from create cr new' -f -l detach -s d -d 'detach'
 complete -c app -n '__fish_seen_subcommand_from create cr new' -f -l help -s h -d 'show help'
 complete -x -c app -n '__fish_seen_subcommand_from create cr new; and not __fish_seen_subcommand_from help h' -a 'help' -d 'Shows a list of commands or help for one command'
-complete -x -c app -n '__fish_app_no_subcommand' -a 'delete' -d 'delete a thing'
+complete -x -c app -n '__fish_app_no_subcommand' -a 'delete' -d 'delete a thing
+with a multi-line usage'
 complete -c app -n '__fish_seen_subcommand_from delete' -f -l force -s f -d 'force deletion'
 complete -c app -n '__fish_seen_subcommand_from delete' -f -l help -s h -d 'show help'
 complete -x -c app -n '__fish_seen_subcommand_from delete; and not __fish_seen_subcommand_from help h' -a 'help' -d 'Shows a list of commands or help for one command'

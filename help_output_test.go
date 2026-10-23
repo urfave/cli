@@ -67,7 +67,7 @@ func buildHelpOutputTestCommand() *Command {
 			},
 			{
 				Name:     "delete",
-				Usage:    "delete a thing",
+				Usage:    "delete a thing\nwith a multi-line usage",
 				Category: "Lifecycle",
 				Flags: []Flag{
 					&BoolFlag{Name: "force", Aliases: []string{"f"}, Usage: "force deletion", Local: true},

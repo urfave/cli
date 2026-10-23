@@ -15,8 +15,8 @@ var visibleCommandTemplate = `{{ $cv := offsetCommands .VisibleCommands 5}}{{ran
 
 var visibleCommandCategoryTemplate = `{{range .VisibleCategories}}{{if .Name}}
 
-   {{.Name}}:{{range .VisibleCommands}}
-     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{template "visibleCommandTemplate" .}}{{end}}{{end}}`
+   {{.Name}}:{{ $cv := offsetCommands .VisibleCommands 7}}{{range .VisibleCommands}}
+     {{$s := join .Names ", "}}{{$s}}{{ $sp := subtract $cv (offset $s 5) }}{{ indent $sp ""}}{{wrap .Usage $cv}}{{end}}{{else}}{{template "visibleCommandTemplate" .}}{{end}}{{end}}`
 
 var visibleFlagCategoryTemplate = `{{range .VisibleFlagCategories}}
    {{if .Name}}{{.Name}}
