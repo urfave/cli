@@ -156,8 +156,9 @@ func (f *FlagBase[T, C, V]) PostParse() error {
 
 		// No bool, number, duration or timestamp can contain surrounding
 		// whitespace, such as the newline a file usually ends in, so it is
-		// dropped from a source's value for those. Strings, slices and maps
-		// keep it and have their own TrimSpace option.
+		// dropped from a source's value for those. Strings keep it unless
+		// StringConfig.TrimSpace is set, and slices already trim each
+		// non-string element.
 		_, isTime := any(f.Value).(time.Time)
 		trimSpace := (kind >= reflect.Bool && kind <= reflect.Float64) || isTime
 
