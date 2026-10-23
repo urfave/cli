@@ -141,6 +141,10 @@ or an empty file, only counts as a value for string and bool flags, where it mea
 empty string and `false`. For any other flag it is skipped, so it does not satisfy
 `Required`, does not make `IsSet` true, and does not hide a later source.
 
+Surrounding whitespace, such as the newline at the end of a file, is dropped for bool,
+number, duration and timestamp flags, so a value of only whitespace counts as empty. A
+string flag keeps it unless `StringConfig.TrimSpace` is set.
+
 #### Values from alternate input sources (YAML, TOML, and others)
 
 There is a separate package [altsrc](https://github.com/urfave/cli-altsrc) that adds support for getting flag values

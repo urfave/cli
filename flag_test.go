@@ -792,6 +792,40 @@ func TestFlagFromEmptyFileSource(t *testing.T) {
 	require.ErrorContains(t, err, `Required flag "port" not set`)
 }
 
+// A file usually ends in a newline. It can't be part of a bool, number,
+// duration or timestamp, so it is dropped for those, while a string keeps it
+// unless StringConfig.TrimSpace is set.
+func TestFlagFromFileSourceWithTrailingNewline(t *testing.T) {
+	tests := []struct {
+		name     string
+		flag     func(src ValueSourceChain) Flag
+		content  string
+		expected any
+	}{
+		{"int", func(src ValueSourceChain) Flag { return &IntFlag{Name: "x", Sources: src} }, "8080\n", 8080},
+		{"uint", func(src ValueSourceChain) Flag { return &UintFlag{Name: "x", Sources: src} }, "8080\r\n", uint(8080)},
+		{"float", func(src ValueSourceChain) Flag { return &FloatFlag{Name: "x", Sources: src} }, "1.5\n", 1.5},
+		{"bool", func(src ValueSourceChain) Flag { return &BoolFlag{Name: "x", Sources: src} }, "true\n", true},
+		{"bool with inverse", func(src ValueSourceChain) Flag { return &BoolWithInverseFlag{Name: "x", Sources: src} }, "true\n", true},
+		{"duration", func(src ValueSourceChain) Flag { return &DurationFlag{Name: "x", Sources: src} }, "5s\n", 5 * time.Second},
+		{"timestamp", func(src ValueSourceChain) Flag {
+			return &TimestampFlag{Name: "x", Sources: src, Config: TimestampConfig{Layouts: []string{time.DateOnly}}}
+		}, "2024-03-15\n", time.Date(2024, time.March, 15, 0, 0, 0, 0, time.UTC)},
+		{"string", func(src ValueSourceChain) Flag { return &StringFlag{Name: "x", Sources: src} }, "secret\n", "secret\n"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "value")
+			require.NoError(t, os.WriteFile(path, []byte(test.content), 0o600))
+
+			cmd := &Command{Flags: []Flag{test.flag(Files(path))}}
+			require.NoError(t, cmd.Run(buildTestContext(t), []string{"run"}))
+			assert.Equal(t, test.expected, cmd.Value("x"))
+		})
+	}
+}
+
 func TestStringFlagWithEnvVarHelpOutput(t *testing.T) {
 	t.Setenv("APP_FOO", "derp")
 
