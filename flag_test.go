@@ -3657,11 +3657,15 @@ func TestExtFlag(t *testing.T) {
 	assert.Equal(t, []string{"bar"}, extF.Names())
 	assert.True(t, extF.IsVisible())
 	assert.False(t, extF.IsSet())
-	assert.False(t, extF.TakesValue())
+	assert.True(t, extF.TakesValue())
 	assert.Equal(t, "bar usage", extF.GetUsage())
 	assert.Equal(t, "11", extF.GetValue())
 	assert.Equal(t, "10", extF.GetDefaultText())
 	assert.Nil(t, extF.GetEnvVars())
+
+	assert.Equal(t, "", extF.GetCategory())
+	extF.SetCategory("ext")
+	assert.Equal(t, "ext", extF.GetCategory())
 
 	assert.Equal(t, "integer", extF.SchemaType())
 	assert.Equal(t, "", extF.SchemaItemsType())

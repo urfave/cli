@@ -80,9 +80,10 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 		tracef("visiting all flags given AllowExtFlags=true (cmd=%[1]q)", cmd.Name)
 		// add global flags added by other packages
 		flag.VisitAll(func(f *flag.Flag) {
-			// skip test flags
-			if !strings.HasPrefix(f.Name, ignoreFlagPrefix) {
-				cmd.Flags = append(cmd.Flags, &extFlag{f})
+			// skip test flags, and flags whose name a flag of this command
+			// already has, as that flag wins
+			if !strings.HasPrefix(f.Name, ignoreFlagPrefix) && !flagNamesInUse(cmd.Flags, []string{f.Name}) {
+				cmd.Flags = append(cmd.Flags, &extFlag{f: f})
 			}
 		})
 	}
