@@ -262,6 +262,22 @@ func TestCompletionFishOmitsPositionalTokenFromDynamicCompletion(t *testing.T) {
 	r.Contains(output, "set results ($args[1] $args[2..-1] --generate-shell-completion 2> /dev/null)")
 }
 
+func TestCompletionFishKeepsSuggestionsStartingWithAppName(t *testing.T) {
+	cmd := &Command{
+		Name:                  "app",
+		EnableShellCompletion: true,
+	}
+
+	r := require.New(t)
+
+	output, err := shellCompletions["fish"](cmd, "app")
+	r.NoError(err)
+
+	// A subcommand like "apply" for an app named "app" has to reach fish too
+	r.NotContains(output, `string match -q -- "app*"`)
+	r.Contains(output, `set -l parts (string split -m 1 ":" -- "$line")`)
+}
+
 func TestCompletionBashOmitsPositionalTokenFromDynamicCompletion(t *testing.T) {
 	cmd := &Command{
 		Name:                  "myapp",
