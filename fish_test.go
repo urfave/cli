@@ -106,3 +106,28 @@ func TestFishCompletionShellComplete(t *testing.T) {
 	assert.Contains(t, res, fmt.Sprintf("complete -c greet -n '__fish_seen_subcommand_from config c' -xa '(greet config %s 2>/dev/null)'", completionFlag))
 	assert.Contains(t, res, fmt.Sprintf("complete -c greet -n '__fish_seen_subcommand_from config c; and __fish_seen_subcommand_from sub-config s ss' -xa '(greet config sub-config %s 2>/dev/null)'", completionFlag))
 }
+
+func TestFishCompletionUsesFirstLineOfUsage(t *testing.T) {
+	cmd := &Command{
+		Name: "greet",
+		Flags: []Flag{
+			&StringFlag{Name: "out", Usage: "write to FILE\r\nor - for stdout"},
+		},
+		Commands: []*Command{
+			{Name: "build", Usage: "build the project\nand its dependencies"},
+			{Name: "clean", Usage: "\nremove build output"},
+		},
+	}
+
+	res, err := cmd.ToFishCompletion()
+	require.NoError(t, err)
+
+	// fish reads one candidate per line, so the next lines of a usage would be listed on their own
+	assert.Contains(t, res, "-l out -r -d 'write to FILE'")
+	assert.Contains(t, res, "-a 'build' -d 'build the project'")
+	assert.Contains(t, res, "-a 'clean'")
+	assert.NotContains(t, res, "-a 'clean' -d")
+	assert.NotContains(t, res, "dependencies")
+	assert.NotContains(t, res, "stdout")
+	assert.NotContains(t, res, "remove build output")
+}
