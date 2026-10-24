@@ -73,7 +73,7 @@ func (c *commandCategory) VisibleCommands() []*Command {
 
 	var ret []*Command
 	for _, command := range c.commands {
-		if !command.Hidden {
+		if !command.isHidden() {
 			ret = append(ret, command)
 		}
 	}
