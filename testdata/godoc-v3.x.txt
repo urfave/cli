@@ -1152,12 +1152,12 @@ var FlagEnvHinter FlagEnvHintFunc = withEnvHint
     details. This is used by the default FlagStringer.
 
 type FlagFileHintFunc func(filePath, str string) string
-    FlagFileHintFunc is used by the default FlagStringFunc to annotate flag help
-    with the file path details.
+    FlagFileHintFunc annotates flag help with the file path details. It is not
+    used by the default FlagStringFunc.
 
 var FlagFileHinter FlagFileHintFunc = withFileHint
-    FlagFileHinter annotates flag help message with the environment variable
-    details. This is used by the default FlagStringer.
+    FlagFileHinter annotates flag help message with the file path details.
+    It is not used by the default FlagStringer.
 
 type FlagNamePrefixFunc func(fullName []string, placeholder string) string
     FlagNamePrefixFunc is used by the default FlagStringFunc to create prefix

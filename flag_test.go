@@ -840,34 +840,6 @@ func TestStringFlagWithEnvVarHelpOutput(t *testing.T) {
 	}
 }
 
-var _ = []struct {
-	name     string
-	aliases  []string
-	usage    string
-	value    string
-	prefixer FlagNamePrefixFunc
-	expected string
-}{
-	{name: "foo", usage: "", value: "", prefixer: func(a []string, b string) string {
-		return fmt.Sprintf("name: %s, ph: %s", a, b)
-	}, expected: "name: foo, ph: value\t"},
-	{name: "f", usage: "", value: "", prefixer: func(a []string, b string) string {
-		return fmt.Sprintf("name: %s, ph: %s", a, b)
-	}, expected: "name: f, ph: value\t"},
-	{name: "f", usage: "The total `foo` desired", value: "all", prefixer: func(a []string, b string) string {
-		return fmt.Sprintf("name: %s, ph: %s", a, b)
-	}, expected: "name: f, ph: foo\tThe total foo desired (default: \"all\")"},
-	{name: "test", usage: "", value: "Something", prefixer: func(a []string, b string) string {
-		return fmt.Sprintf("name: %s, ph: %s", a, b)
-	}, expected: "name: test, ph: value\t(default: \"Something\")"},
-	{name: "config", aliases: []string{"c"}, usage: "Load configuration from `FILE`", value: "", prefixer: func(a []string, b string) string {
-		return fmt.Sprintf("name: %s, ph: %s", a, b)
-	}, expected: "name: config,c, ph: FILE\tLoad configuration from FILE"},
-	{name: "config", aliases: []string{"c"}, usage: "Load configuration from `CONFIG`", value: "config.json", prefixer: func(a []string, b string) string {
-		return fmt.Sprintf("name: %s, ph: %s", a, b)
-	}, expected: "name: config,c, ph: CONFIG\tLoad configuration from CONFIG (default: \"config.json\")"},
-}
-
 func TestStringFlagApply_SetsAllNames(t *testing.T) {
 	v := "mmm"
 	cmd := &Command{
@@ -892,40 +864,37 @@ func TestStringFlagValueFromCommand(t *testing.T) {
 	require.Equal(t, "foobar", cmd.String(f.Name))
 }
 
-var _ = []struct {
-	name     string
-	env      string
-	hinter   FlagEnvHintFunc
-	expected string
-}{
-	{"foo", "", func(a []string, b string) string {
-		return fmt.Sprintf("env: %s, str: %s", a, b)
-	}, "env: , str: --foo value\t"},
-	{"f", "", func(a []string, b string) string {
-		return fmt.Sprintf("env: %s, str: %s", a, b)
-	}, "env: , str: -f value\t"},
-	{"foo", "ENV_VAR", func(a []string, b string) string {
-		return fmt.Sprintf("env: %s, str: %s", a, b)
-	}, "env: ENV_VAR, str: --foo value\t"},
-	{"f", "ENV_VAR", func(a []string, b string) string {
-		return fmt.Sprintf("env: %s, str: %s", a, b)
-	}, "env: ENV_VAR, str: -f value\t"},
+func TestFlagEnvHinter(t *testing.T) {
+	defer func(old FlagEnvHintFunc) { FlagEnvHinter = old }(FlagEnvHinter)
+	FlagEnvHinter = func(envVars []string, str string) string {
+		return fmt.Sprintf("env: %s, str: %s", envVars, str)
+	}
+
+	tests := []struct {
+		name     string
+		sources  ValueSourceChain
+		expected string
+	}{
+		{"foo", ValueSourceChain{}, "env: [], str: --foo string\t"},
+		{"f", ValueSourceChain{}, "env: [], str: -f string\t"},
+		{"foo", EnvVars("ENV_VAR"), "env: [ENV_VAR], str: --foo string\t"},
+		{"f", EnvVars("ENV_VAR", "OTHER"), "env: [ENV_VAR OTHER], str: -f string\t"},
+	}
+	for _, test := range tests {
+		fl := &StringFlag{Name: test.name, Sources: test.sources}
+		assert.Equal(t, test.expected, fl.String())
+	}
 }
 
-// func TestFlagEnvHinter(t *testing.T) {
-//	defer func() {
-//		FlagEnvHinter = withEnvHint
-//	}()
-//
-//	for _, test := range envHintFlagTests {
-//		FlagEnvHinter = test.hinter
-//		fl := StringFlag{Name: test.name, Sources: ValueSources{test.env}}
-//		output := fl.String()
-//		if output != test.expected {
-//			t.Errorf("%q does not match %q", output, test.expected)
-//		}
-//	}
-// }
+func TestFlagNamePrefixer(t *testing.T) {
+	defer func(old FlagNamePrefixFunc) { FlagNamePrefixer = old }(FlagNamePrefixer)
+	FlagNamePrefixer = func(names []string, placeholder string) string {
+		return fmt.Sprintf("names: %s, placeholder: %s", names, placeholder)
+	}
+
+	fl := &StringFlag{Name: "foo", Aliases: []string{"f"}, Usage: "use `FILE`"}
+	assert.Equal(t, "names: [foo f], placeholder: FILE\tuse FILE", fl.String())
+}
 
 var stringSliceFlagTests = []struct {
 	name     string

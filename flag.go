@@ -64,8 +64,8 @@ var FlagNamePrefixer FlagNamePrefixFunc = prefixedNames
 // details. This is used by the default FlagStringer.
 var FlagEnvHinter FlagEnvHintFunc = withEnvHint
 
-// FlagFileHinter annotates flag help message with the environment variable
-// details. This is used by the default FlagStringer.
+// FlagFileHinter annotates flag help message with the file path details. It
+// is not used by the default FlagStringer.
 var FlagFileHinter FlagFileHintFunc = withFileHint
 
 // FlagsByName is a slice of Flag.
