@@ -529,8 +529,10 @@ func wrapLine(input string, offset int, wrapAt int, padding string) string {
 	return wrapped.String()
 }
 
+// offset counts runes, not bytes, the same way the tabwriter that aligns
+// the help output does.
 func offset(input string, fixed int) int {
-	return len(input) + fixed
+	return utf8.RuneCountInString(input) + fixed
 }
 
 // this function tries to find the max width of the names column
@@ -550,9 +552,8 @@ func offset(input string, fixed int) int {
 func offsetCommands(cmds []*Command, fixed int) int {
 	max := 0
 	for _, cmd := range cmds {
-		s := strings.Join(cmd.Names(), ", ")
-		if len(s) > max {
-			max = len(s)
+		if n := utf8.RuneCountInString(strings.Join(cmd.Names(), ", ")); n > max {
+			max = n
 		}
 	}
 	return max + fixed

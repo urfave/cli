@@ -239,8 +239,11 @@ func (h *helpRenderer) visibleCommandCategories() {
 			continue
 		}
 		h.WriteString("\n\n   " + cat.Name() + ":")
-		for _, cmd := range cat.VisibleCommands() {
-			h.WriteString("\n     " + strings.Join(cmd.Names(), ", ") + "\t" + cmd.Usage)
+		cmds := cat.VisibleCommands()
+		cv := offsetCommands(cmds, 7)
+		for _, cmd := range cmds {
+			s := strings.Join(cmd.Names(), ", ")
+			h.WriteString("\n     " + s + indent(subtract(cv, offset(s, 5)), "") + h.wrap(cmd.Usage, cv))
 		}
 	}
 }
