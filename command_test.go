@@ -8204,3 +8204,63 @@ func TestCommand_DeprecatedStillRuns(t *testing.T) {
 	require.NoError(t, cmd.Run(buildTestContext(t), []string{"app", "old", "--old-flag", "v"}))
 	assert.Equal(t, "v", got)
 }
+
+func TestCommand_RunAgainParsesFlagsFromScratch(t *testing.T) {
+	// A Command that is run again must not carry the flags of one run
+	// into the next: no duplicate or conflicting flag, no stale count.
+	var (
+		name    string
+		env     bool
+		verbose int
+	)
+	cmd := &Command{
+		Name: "app",
+		Flags: []Flag{
+			&StringFlag{Name: "name", OnlyOnce: true},
+			&BoolWithInverseFlag{Name: "env"},
+			&BoolFlag{Name: "verbose", Aliases: []string{"v"}},
+		},
+		Action: func(_ context.Context, cmd *Command) error {
+			name = cmd.String("name")
+			env = cmd.Bool("env")
+			verbose = cmd.Count("verbose")
+			return nil
+		},
+	}
+
+	r := require.New(t)
+
+	r.NoError(cmd.Run(buildTestContext(t), []string{"app", "--name", "a", "--env", "-v", "-v"}))
+	r.Equal("a", name)
+	r.True(env)
+	r.Equal(2, verbose)
+
+	r.NoError(cmd.Run(buildTestContext(t), []string{"app", "--name", "b", "--no-env", "-v"}))
+	r.Equal("b", name)
+	r.False(env)
+	r.Equal(1, verbose)
+}
+
+func TestCommand_RunAgainChecksRequiredFlagsAndSources(t *testing.T) {
+	cmd := &Command{
+		Name:      "app",
+		Writer:    io.Discard,
+		ErrWriter: io.Discard,
+		Flags: []Flag{
+			&StringFlag{Name: "name", Required: true, Sources: EnvVars("APP_NAME")},
+		},
+		Action: func(context.Context, *Command) error { return nil },
+	}
+
+	r := require.New(t)
+
+	r.NoError(cmd.Run(buildTestContext(t), []string{"app", "--name", "a"}))
+	r.True(cmd.IsSet("name"))
+
+	r.EqualError(cmd.Run(buildTestContext(t), []string{"app"}), `Required flag "name" not set`)
+	r.False(cmd.IsSet("name"))
+
+	t.Setenv("APP_NAME", "from-env")
+	r.NoError(cmd.Run(buildTestContext(t), []string{"app"}))
+	r.Equal("from-env", cmd.String("name"))
+}

@@ -93,6 +93,12 @@ func (bif *BoolWithInverseFlag) PreParse() error {
 		dest = new(bool)
 	}
 	*dest = bif.Value
+	// flag state is per-run, see FlagBase.PreParse
+	bif.count = 0
+	bif.hasBeenSet = false
+	bif.fromSource = false
+	bif.pset = false
+	bif.nset = false
 	bif.value = &boolValue{
 		destination: dest,
 		count:       bif.Config.Count,

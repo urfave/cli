@@ -225,6 +225,11 @@ func (f *FlagBase[T, C, V]) getTypedValue() T {
 
 func (f *FlagBase[T, C, V]) PreParse() error {
 	f.value = f.newValue()
+	// flag state is per-run: a Command that is run again (tests, REPL,
+	// embedded use) must not carry one run's flags into the next
+	f.count = 0
+	f.hasBeenSet = false
+	f.fromSource = false
 
 	// Validate the given default or values set from external sources as well
 	if f.Validator != nil && f.ValidateDefaults {
