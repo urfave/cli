@@ -264,28 +264,6 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 		}()
 	}
 
-	// Walk the parent chain to check mutually exclusive flag groups
-	// defined on ancestor commands, since persistent flags are inherited.
-	for pCmd := cmd; pCmd != nil; pCmd = pCmd.parent {
-		for _, grp := range pCmd.MutuallyExclusiveFlags {
-			if err := grp.check(cmd); err != nil {
-				if cmd.OnUsageError != nil {
-					err = cmd.OnUsageError(ctx, cmd, err, cmd.parent != nil)
-				} else {
-					fmt.Fprintf(cmd.Root().ErrWriter, "Incorrect Usage: %s\n\n", err.Error())
-					if cmd.parent == nil {
-						_ = ShowRootCommandHelp(cmd)
-					} else {
-						if err := ShowCommandHelp(ctx, cmd.parent, cmd.Name); err != nil {
-							_ = ShowSubcommandHelp(cmd)
-						}
-					}
-				}
-				return ctx, err
-			}
-		}
-	}
-
 	var subCmd *Command
 	if cmd.parsedArgs.Present() {
 		tracef("checking positional args %[1]q (cmd=%[2]q)", cmd.parsedArgs, cmd.Name)
@@ -330,6 +308,34 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 		// from the sub command.
 		ctx, err = subCmd.run(ctx, cmd.Args().Slice())
 		return ctx, err
+	}
+
+	// Walk the parent chain to check mutually exclusive flag groups
+	// defined on ancestor commands, since persistent flags are inherited.
+	// Only the command that is actually executed checks them: a subcommand
+	// parses the inherited flags that follow its name, so an ancestor that
+	// checked its group before dispatching would not see them.
+	// The help and completion commands skip this, as they skip required flags.
+	if !cmd.builtInHelp && !cmd.isCompletionCommand {
+		for pCmd := cmd; pCmd != nil; pCmd = pCmd.parent {
+			for _, grp := range pCmd.MutuallyExclusiveFlags {
+				if err := grp.check(cmd); err != nil {
+					if cmd.OnUsageError != nil {
+						err = cmd.OnUsageError(ctx, cmd, err, cmd.parent != nil)
+					} else {
+						fmt.Fprintf(cmd.Root().ErrWriter, "Incorrect Usage: %s\n\n", err.Error())
+						if cmd.parent == nil {
+							_ = ShowRootCommandHelp(cmd)
+						} else {
+							if err := ShowCommandHelp(ctx, cmd.parent, cmd.Name); err != nil {
+								_ = ShowSubcommandHelp(cmd)
+							}
+						}
+					}
+					return ctx, err
+				}
+			}
+		}
 	}
 
 	// This code path is the innermost command execution. Here we actually
