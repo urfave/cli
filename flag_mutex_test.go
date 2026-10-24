@@ -1,9 +1,11 @@
 package cli
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func newCommand() *Command {
@@ -228,4 +230,44 @@ func TestMutuallyExclusiveFlags_PropagateStringerSkipsNonImplementor(t *testing.
 	// plain does not implement StringerSetter, so it must keep its own
 	// String() implementation rather than picking up the custom stringer.
 	assert.Equal(t, "plain:plain", grp.Flags[0][0].String())
+}
+
+func TestMutuallyExclusiveFlags_RequiredPersistentFlagAfterSubcommand(t *testing.T) {
+	newRoot := func() (*Command, *int) {
+		runs := 0
+		return &Command{
+			Name: "root",
+			MutuallyExclusiveFlags: []MutuallyExclusiveFlags{{
+				Required: true,
+				Flags:    [][]Flag{{&StringFlag{Name: "alpha"}}},
+			}},
+			Commands: []*Command{{
+				Name: "sub",
+				Action: func(context.Context, *Command) error {
+					runs++
+					return nil
+				},
+			}},
+		}, &runs
+	}
+
+	t.Run("after the subcommand name", func(t *testing.T) {
+		cmd, runs := newRoot()
+		require.NoError(t, cmd.Run(buildTestContext(t), []string{"root", "sub", "--alpha", "hello"}))
+		assert.Equal(t, 1, *runs)
+	})
+
+	t.Run("before the subcommand name", func(t *testing.T) {
+		cmd, runs := newRoot()
+		require.NoError(t, cmd.Run(buildTestContext(t), []string{"root", "--alpha", "hello", "sub"}))
+		assert.Equal(t, 1, *runs)
+	})
+
+	t.Run("missing", func(t *testing.T) {
+		cmd, runs := newRoot()
+		err := cmd.Run(buildTestContext(t), []string{"root", "sub"})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "one of these flags needs to be provided")
+		assert.Zero(t, *runs)
+	})
 }
