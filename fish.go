@@ -161,15 +161,9 @@ func prepareFishFlags(binary string, owner *Command) []string {
 }
 
 func fishAddFileFlag(flag Flag, completion *strings.Builder) {
-	switch f := flag.(type) {
-	case *StringFlag:
-		if f.TakesFile {
-			return
-		}
-	case *StringSliceFlag:
-		if f.TakesFile {
-			return
-		}
+	// TakesFile is a field of every flag type, not only StringFlag and StringSliceFlag
+	if f, ok := flag.(interface{ takesFile() bool }); ok && f.takesFile() {
+		return
 	}
 	completion.WriteString(" -f")
 }

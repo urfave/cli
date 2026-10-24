@@ -366,6 +366,11 @@ func (f *FlagBase[T, C, V]) TakesValue() bool {
 	return reflect.TypeOf(t) == nil || reflect.TypeOf(t).Kind() != reflect.Bool
 }
 
+// takesFile returns true if the flag's value is a file path, for shell completion
+func (f *FlagBase[T, C, V]) takesFile() bool {
+	return f.TakesFile && f.TakesValue()
+}
+
 // GetDefaultText returns the default text for this flag
 func (f *FlagBase[T, C, V]) GetDefaultText() string {
 	return f.DefaultText

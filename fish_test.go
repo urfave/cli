@@ -106,3 +106,26 @@ func TestFishCompletionShellComplete(t *testing.T) {
 	assert.Contains(t, res, fmt.Sprintf("complete -c greet -n '__fish_seen_subcommand_from config c' -xa '(greet config %s 2>/dev/null)'", completionFlag))
 	assert.Contains(t, res, fmt.Sprintf("complete -c greet -n '__fish_seen_subcommand_from config c; and __fish_seen_subcommand_from sub-config s ss' -xa '(greet config sub-config %s 2>/dev/null)'", completionFlag))
 }
+
+func TestFishCompletionTakesFileForAllFlagTypes(t *testing.T) {
+	cmd := &Command{
+		Name: "greet",
+		Flags: []Flag{
+			&StringFlag{Name: "config", TakesFile: true},
+			&GenericFlag{Name: "input", Value: &Parser{}, TakesFile: true},
+			&StringMapFlag{Name: "env-file", TakesFile: true},
+			&StringFlag{Name: "name"},
+			// a boolean takes no value, so there is no file to complete
+			&BoolFlag{Name: "dry-run", TakesFile: true},
+		},
+	}
+
+	res, err := cmd.ToFishCompletion()
+	require.NoError(t, err)
+
+	assert.Contains(t, res, "'__fish_greet_no_subcommand' -l config -r")
+	assert.Contains(t, res, "'__fish_greet_no_subcommand' -l input -r")
+	assert.Contains(t, res, "'__fish_greet_no_subcommand' -l env-file -r")
+	assert.Contains(t, res, "'__fish_greet_no_subcommand' -f -l name -r")
+	assert.Contains(t, res, "'__fish_greet_no_subcommand' -f -l dry-run")
+}
