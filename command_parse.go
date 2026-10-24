@@ -262,7 +262,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 							posArgs = append(posArgs, rargs...)
 							return &stringSliceArgs{posArgs}, nil
 						}
-						return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", argumentNotProvidedErrMsg, string(c))
+						return &stringSliceArgs{posArgs}, fmt.Errorf("%s-%c", argumentNotProvidedErrMsg, c)
 					}
 					flagVal = rargs[1]
 					rargs = rargs[1:]
@@ -280,7 +280,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 					posArgs = append(posArgs, rargs...)
 					return &stringSliceArgs{posArgs}, nil
 				}
-				return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", argumentNotProvidedErrMsg, string(c))
+				return &stringSliceArgs{posArgs}, fmt.Errorf("%s-%c", argumentNotProvidedErrMsg, c)
 			}
 		}
 	}
