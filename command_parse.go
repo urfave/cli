@@ -252,7 +252,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 				// it is an empty value, not a request to read the next arg
 				if flagVal == "" && !valFromEqual {
 					if len(rargs) == 1 {
-						return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", argumentNotProvidedErrMsg, string(c))
+						return &stringSliceArgs{posArgs}, fmt.Errorf("%s-%c", argumentNotProvidedErrMsg, c)
 					}
 					flagVal = rargs[1]
 					rargs = rargs[1:]
@@ -266,7 +266,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 				// only the last flag of a group can take an argument, so a flag
 				// that needs one has nothing to read it from here
 				tracef("processing flag.5 (fName=%[1]q)", string(c))
-				return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", argumentNotProvidedErrMsg, string(c))
+				return &stringSliceArgs{posArgs}, fmt.Errorf("%s-%c", argumentNotProvidedErrMsg, c)
 			}
 		}
 	}
