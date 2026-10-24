@@ -258,13 +258,16 @@ func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 	if cmd != nil && cmd.parent != nil {
 		args = cmd.Args().Slice()
 		tracef("running default complete with flags[%v] on command %[2]q", args, cmd.Name)
+	} else if runArgs, ok := ctx.Value(runArgsKey{}).([]string); ok {
+		args = runArgs
+		tracef("running default complete with Run arguments[%v]", args)
 	} else {
 		tracef("running default complete with os.Args flags[%v]", args)
 	}
 	argsLen := len(args)
 	lastArg := ""
-	// os.Args retains the completion marker, but a child's parsed arguments
-	// have already had it removed.
+	// os.Args and the arguments passed to Run retain the completion marker,
+	// but a child's parsed arguments have already had it removed.
 	if argsLen > 0 {
 		lastArg = args[argsLen-1]
 		if lastArg == completionFlag && argsLen > 1 {
