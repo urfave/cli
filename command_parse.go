@@ -227,6 +227,12 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 					posArgs = append(posArgs, rargs...)
 					return &stringSliceArgs{posArgs}, nil
 				}
+				// Preserve an incomplete group for the completion callback,
+				// just as an unknown single flag is preserved above.
+				if cmd.Root().shellCompletion {
+					posArgs = append(posArgs, rargs...)
+					return &stringSliceArgs{posArgs}, nil
+				}
 				return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", providedButNotDefinedErrMsg, flagName)
 			}
 		}
@@ -252,6 +258,10 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 				// it is an empty value, not a request to read the next arg
 				if flagVal == "" && !valFromEqual {
 					if len(rargs) == 1 {
+						if cmd.Root().shellCompletion {
+							posArgs = append(posArgs, rargs...)
+							return &stringSliceArgs{posArgs}, nil
+						}
 						return &stringSliceArgs{posArgs}, fmt.Errorf("%s%s", argumentNotProvidedErrMsg, string(c))
 					}
 					flagVal = rargs[1]
