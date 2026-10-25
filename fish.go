@@ -75,10 +75,10 @@ func prepareFishCommands(binary string, parent *Command) []string {
 				command.Name,
 			)
 
-			if command.Usage != "" {
+			if usage := completionUsage(command.Usage); usage != "" {
 				fmt.Fprintf(&completion,
 					" -d '%s'",
-					escapeSingleQuotes(command.Usage))
+					escapeSingleQuotes(usage))
 			}
 			completions = append(completions, completion.String())
 		}
@@ -147,10 +147,10 @@ func prepareFishFlags(binary string, owner *Command) []string {
 				completion.WriteString(" -r")
 			}
 
-			if flag.GetUsage() != "" {
+			if usage := completionUsage(flag.GetUsage()); usage != "" {
 				fmt.Fprintf(completion,
 					" -d '%s'",
-					escapeSingleQuotes(flag.GetUsage()))
+					escapeSingleQuotes(usage))
 			}
 		}
 

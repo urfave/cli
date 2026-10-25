@@ -465,16 +465,14 @@ end
 
 complete -c app -n '__fish_app_no_subcommand' -f -l config -s c -r -d 'config `FILE`'
 complete -c app -n '__fish_app_no_subcommand' -f -l debug -d 'enable debug output'
-complete -c app -n '__fish_app_no_subcommand' -f -l log -r -d 'log file
-with a multi-line usage'
+complete -c app -n '__fish_app_no_subcommand' -f -l log -r -d 'log file'
 complete -c app -n '__fish_app_no_subcommand' -f -l level -r -d 'some level'
 complete -x -c app -n '__fish_app_no_subcommand' -a 'create' -d 'create a thing'
 complete -c app -n '__fish_seen_subcommand_from create cr new' -f -l pid-file -r -d 'write pid to `FILE`'
 complete -c app -n '__fish_seen_subcommand_from create cr new' -f -l detach -s d -d 'detach'
 complete -c app -n '__fish_seen_subcommand_from create cr new' -f -l help -s h -d 'show help'
 complete -x -c app -n '__fish_seen_subcommand_from create cr new; and not __fish_seen_subcommand_from help h' -a 'help' -d 'Shows a list of commands or help for one command'
-complete -x -c app -n '__fish_app_no_subcommand' -a 'delete' -d 'delete a thing
-with a multi-line usage'
+complete -x -c app -n '__fish_app_no_subcommand' -a 'delete' -d 'delete a thing'
 complete -c app -n '__fish_seen_subcommand_from delete' -f -l force -s f -d 'force deletion'
 complete -c app -n '__fish_seen_subcommand_from delete' -f -l help -s h -d 'show help'
 complete -x -c app -n '__fish_seen_subcommand_from delete; and not __fish_seen_subcommand_from help h' -a 'help' -d 'Shows a list of commands or help for one command'
@@ -497,8 +495,7 @@ complete -c app -n '__fish_seen_subcommand_from config cfg' -f -l help -s h -d '
 complete -x -c app -n '__fish_seen_subcommand_from config cfg; and not __fish_seen_subcommand_from show s set-a-very-long-name set help h' -a 'show' -d 'show configuration'
 complete -c app -n '__fish_seen_subcommand_from config cfg; and __fish_seen_subcommand_from show s' -f -l help -s h -d 'show help'
 complete -x -c app -n '__fish_seen_subcommand_from config cfg; and __fish_seen_subcommand_from show s; and not __fish_seen_subcommand_from help h' -a 'help' -d 'Shows a list of commands or help for one command'
-complete -x -c app -n '__fish_seen_subcommand_from config cfg; and not __fish_seen_subcommand_from show s set-a-very-long-name set help h' -a 'set-a-very-long-name' -d 'set
-configuration'
+complete -x -c app -n '__fish_seen_subcommand_from config cfg; and not __fish_seen_subcommand_from show s set-a-very-long-name set help h' -a 'set-a-very-long-name' -d 'set'
 complete -c app -n '__fish_seen_subcommand_from config cfg; and __fish_seen_subcommand_from set-a-very-long-name set' -f -l global -s g -d 'set globally'
 complete -c app -n '__fish_seen_subcommand_from config cfg; and __fish_seen_subcommand_from set-a-very-long-name set' -f -l help -s h -d 'show help'
 complete -x -c app -n '__fish_seen_subcommand_from config cfg; and __fish_seen_subcommand_from set-a-very-long-name set; and not __fish_seen_subcommand_from help h' -a 'help' -d 'Shows a list of commands or help for one command'
