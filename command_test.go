@@ -225,9 +225,9 @@ func TestParseAndRunShortOpts(t *testing.T) {
 		{testArgs: &stringSliceArgs{v: []string{"test", "-i", "ivalue", "arg1"}}, expectedArgs: &stringSliceArgs{v: []string{"arg1"}}},
 		{testArgs: &stringSliceArgs{v: []string{"test", "-i"}}, expectedErr: "flag needs an argument: -i"},
 		// a flag that takes a value has to be the last one of a group
-		{testArgs: &stringSliceArgs{v: []string{"test", "-ia"}}, expectedErr: "flag needs an argument: i"},
-		{testArgs: &stringSliceArgs{v: []string{"test", "-ia", "ivalue"}}, expectedErr: "flag needs an argument: i"},
-		{testArgs: &stringSliceArgs{v: []string{"test", "-aic"}}, expectedErr: "flag needs an argument: i"},
+		{testArgs: &stringSliceArgs{v: []string{"test", "-ia"}}, expectedErr: "flag needs an argument: -i"},
+		{testArgs: &stringSliceArgs{v: []string{"test", "-ia", "ivalue"}}, expectedErr: "flag needs an argument: -i"},
+		{testArgs: &stringSliceArgs{v: []string{"test", "-aic"}}, expectedErr: "flag needs an argument: -i"},
 		{testArgs: &stringSliceArgs{v: []string{"test", "-ai", "ivalue"}}, expectedArgs: &stringSliceArgs{v: []string{}}},
 	}
 
@@ -1709,7 +1709,7 @@ func TestCommand_UseShortOptionHandlingMultiByteLastFlag(t *testing.T) {
 	assert.Equal(t, []string{"operand"}, args)
 
 	err := newCmd().Run(buildTestContext(t), []string{"app", "-v" + name})
-	assert.EqualError(t, err, "flag needs an argument: "+name)
+	assert.EqualError(t, err, "flag needs an argument: -"+name)
 }
 
 func TestCommand_UseShortOptionHandlingValueForLastFlag(t *testing.T) {
