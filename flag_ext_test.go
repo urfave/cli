@@ -2,9 +2,11 @@ package cli
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"errors"
 	"flag"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -21,12 +23,16 @@ func newTestCommandLine(t *testing.T) {
 
 // traceLocation does not accept its own default text, like klog's
 // -log_backtrace_at.
-type traceLocation struct{}
+type traceLocation struct{ loc string }
 
-func (*traceLocation) String() string { return ":0" }
+func (l *traceLocation) String() string { return cmp.Or(l.loc, ":0") }
 
-func (*traceLocation) Set(string) error {
-	return errors.New("syntax error: expect file.go:234")
+func (l *traceLocation) Set(s string) error {
+	if !strings.Contains(s, ".go:") {
+		return errors.New("syntax error: expect file.go:234")
+	}
+	l.loc = s
+	return nil
 }
 
 func TestExtFlagDefaultNotAccepted(t *testing.T) {
@@ -39,22 +45,49 @@ func TestExtFlagDefaultNotAccepted(t *testing.T) {
 	}
 
 	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo"}))
+
+	// a rerun can't restore ":0" either, and must not fail
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo", "--log_backtrace_at", "main.go:1"}))
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo"}))
 }
 
 func TestExtFlagResetOnRerun(t *testing.T) {
 	newTestCommandLine(t)
 	ext := flag.Int("ext", 2, "")
+	extString := flag.String("ext-string", "", "")
 
 	cmd := &Command{
 		AllowExtFlags: true,
 		Action:        func(context.Context, *Command) error { return nil },
 	}
 
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo", "--ext", "5", "--ext-string", "bob"}))
+	require.Equal(t, 5, *ext)
+	require.Equal(t, "bob", *extString)
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo"}))
+	require.Equal(t, 2, *ext)
+	require.Empty(t, *extString)
+}
+
+func TestExtFlagKeepsProgramValue(t *testing.T) {
+	newTestCommandLine(t)
+	ext := flag.Int("ext", 2, "")
+	require.NoError(t, flag.Set("ext", "7"))
+
+	cmd := &Command{
+		AllowExtFlags: true,
+		Action:        func(context.Context, *Command) error { return nil },
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo"}))
+	require.Equal(t, 7, *ext)
+
 	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo", "--ext", "5"}))
 	require.Equal(t, 5, *ext)
 
 	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo"}))
-	require.Equal(t, 2, *ext)
+	require.Equal(t, 7, *ext)
 }
 
 func TestExtFlagBoolWithoutValue(t *testing.T) {
@@ -84,6 +117,27 @@ func TestExtFlagFromSubcommand(t *testing.T) {
 
 	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo", "sub", "--ext", "5"}))
 	require.Equal(t, 5, *ext)
+}
+
+func TestExtFlagRootAndSubcommand(t *testing.T) {
+	newTestCommandLine(t)
+	ext := flag.Int("ext", 2, "")
+
+	var got int
+	cmd := &Command{
+		AllowExtFlags: true,
+		Commands: []*Command{{
+			Name:          "sub",
+			AllowExtFlags: true,
+			Action: func(context.Context, *Command) error {
+				got = *ext
+				return nil
+			},
+		}},
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo", "--ext", "5", "sub"}))
+	require.Equal(t, 5, got)
 }
 
 func TestExtFlagHelp(t *testing.T) {
@@ -127,4 +181,7 @@ func TestExtFlagIsSet(t *testing.T) {
 	require.True(t, cmd.IsSet("ext"))
 	require.Equal(t, 1, cmd.NumFlags())
 	require.Equal(t, []string{"ext"}, cmd.LocalFlagNames())
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo"}))
+	require.False(t, cmd.IsSet("ext"))
 }

@@ -6,19 +6,21 @@ import (
 )
 
 type extFlag struct {
-	f          *flag.Flag
-	category   string
+	f        *flag.Flag
+	category string
+	// whether this run set the flag, and its value before that
 	hasBeenSet bool
+	orig       string
 }
 
 func (e *extFlag) PreParse() error {
-	e.hasBeenSet = false
-	// The flag package sets DefValue to the value's String(), so only reset
-	// a value that has changed since, e.g. in a previous run. Some flags
-	// don't accept their own DefValue, such as klog's -log_backtrace_at
-	// (":0"), and setting it unchanged would fail.
-	if e.f.DefValue != "" && e.f.Value.String() != e.f.DefValue {
-		return e.f.Value.Set(e.f.DefValue)
+	// A Go flag belongs to another package, so only undo what the previous
+	// run set, and keep a value the program set itself, e.g. with flag.Set.
+	// Restoring sets the old text again, so a value that rejects it, such
+	// as klog's -log_backtrace_at (":0"), keeps the value that run set.
+	if e.hasBeenSet {
+		e.hasBeenSet = false
+		_ = e.f.Value.Set(e.orig)
 	}
 
 	return nil
@@ -29,10 +31,14 @@ func (e *extFlag) PostParse() error {
 }
 
 func (e *extFlag) Set(_ string, val string) error {
+	orig := e.f.Value.String()
 	if err := e.f.Value.Set(val); err != nil {
 		return err
 	}
-	e.hasBeenSet = true
+	if !e.hasBeenSet {
+		e.hasBeenSet = true
+		e.orig = orig
+	}
 	return nil
 }
 

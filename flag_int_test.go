@@ -333,15 +333,6 @@ func TestIntFlagExt(t *testing.T) {
 			expectedValue: "39447",
 		},
 		{
-			name: "valid hex default",
-			flag: &flag.Flag{
-				Name:     "number",
-				DefValue: "FFFF",
-			},
-			config:        IntegerConfig{Base: 16},
-			expectedValue: "ffff",
-		},
-		{
 			name: "invalid",
 			flag: &flag.Flag{
 				Name: "number",
