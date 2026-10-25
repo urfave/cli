@@ -6,7 +6,11 @@ import (
 )
 
 type extFlag struct {
-	f        *flag.Flag
+	f *flag.Flag
+	// Set of the FlagSet f is in, so that its Visit sees f as set. Not the
+	// *flag.FlagSet itself: text/template's method lookup would then keep
+	// all its methods, such as Parse, adding ~40 KB to every binary.
+	set      func(name, value string) error
 	category string
 	// whether this run set the flag, and its value before that
 	hasBeenSet bool
@@ -32,7 +36,7 @@ func (e *extFlag) PostParse() error {
 
 func (e *extFlag) Set(_ string, val string) error {
 	orig := e.f.Value.String()
-	if err := e.f.Value.Set(val); err != nil {
+	if err := e.set(e.f.Name, val); err != nil {
 		return err
 	}
 	if !e.hasBeenSet {

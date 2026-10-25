@@ -341,9 +341,9 @@ func TestUintFlagExt(t *testing.T) {
 			var uValue uintValue[uint]
 			var u uint
 
-			f := &extFlag{f: tt.flag}
-
-			tt.flag.Value = uValue.Create(u, &u, tt.config)
+			fs := flag.NewFlagSet("mock", flag.ContinueOnError)
+			fs.Var(uValue.Create(u, &u, tt.config), tt.flag.Name, "")
+			f := &extFlag{f: fs.Lookup(tt.flag.Name), set: fs.Set}
 
 			cmd := &Command{
 				Name:      "mock",

@@ -86,7 +86,7 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 			if !strings.HasPrefix(f.Name, ignoreFlagPrefix) &&
 				!flagNamesInUse(cmd.allFlags(), []string{f.Name}) &&
 				!cmd.hasPersistentFlagNameOnAncestor(f.Name) {
-				cmd.Flags = append(cmd.Flags, &extFlag{f: f})
+				cmd.Flags = append(cmd.Flags, &extFlag{f: f, set: flag.CommandLine.Set})
 			}
 		})
 	}

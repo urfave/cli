@@ -255,3 +255,20 @@ func TestExtFlagWithoutGet(t *testing.T) {
 	require.Implements(t, (*flag.Value)(nil), cmd.Value("ext"))
 	require.Empty(t, cmd.String("ext"))
 }
+
+func TestExtFlagVisit(t *testing.T) {
+	newTestCommandLine(t)
+	flag.Int("ext", 2, "")
+	flag.Int("ext-other", 2, "")
+
+	cmd := &Command{
+		AllowExtFlags: true,
+		Action:        func(context.Context, *Command) error { return nil },
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo", "--ext", "5"}))
+
+	var names []string
+	flag.Visit(func(f *flag.Flag) { names = append(names, f.Name) })
+	require.Equal(t, []string{"ext"}, names)
+}
