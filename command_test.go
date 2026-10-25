@@ -7325,6 +7325,41 @@ func TestCommand_ExclusiveFlagsWithOnUsageError(t *testing.T) {
 	require.ErrorIs(t, actualErr, expectedErr)
 }
 
+func TestCommand_ExclusiveFlagsPersistentWithOnUsageError(t *testing.T) {
+	// The command that runs reports a parent group error, as it does for a
+	// missing required flag, wherever the flags are on the command line.
+	for _, args := range [][]string{
+		{"root", "sub"},
+		{"root", "--alpha", "a", "--beta", "b", "sub"},
+		{"root", "sub", "--alpha", "a", "--beta", "b"},
+	} {
+		t.Run(strings.Join(args, " "), func(t *testing.T) {
+			var calls []string
+			onUsageError := func(_ context.Context, cmd *Command, err error, _ bool) error {
+				calls = append(calls, cmd.Name)
+				return err
+			}
+			cmd := &Command{
+				Name:      "root",
+				ErrWriter: io.Discard,
+				MutuallyExclusiveFlags: []MutuallyExclusiveFlags{{
+					Required: true,
+					Flags:    [][]Flag{{&StringFlag{Name: "alpha"}}, {&StringFlag{Name: "beta"}}},
+				}},
+				OnUsageError: onUsageError,
+				Commands: []*Command{{
+					Name:         "sub",
+					OnUsageError: onUsageError,
+					Action:       func(context.Context, *Command) error { return nil },
+				}},
+			}
+
+			require.Error(t, cmd.Run(buildTestContext(t), args))
+			assert.Equal(t, []string{"sub"}, calls)
+		})
+	}
+}
+
 func TestCommand_ExclusiveFlagsWithAfter(t *testing.T) {
 	var called bool
 	cmd := &Command{
@@ -7407,6 +7442,12 @@ func TestCommand_ExclusiveFlagsPersistent(t *testing.T) {
 		}
 	}
 
+	newRequiredCmd := func() *Command {
+		cmd := newBaseCmd()
+		cmd.MutuallyExclusiveFlags[0].Required = true
+		return cmd
+	}
+
 	tests := []struct {
 		name    string
 		setup   func() *Command
@@ -7470,6 +7511,27 @@ func TestCommand_ExclusiveFlagsPersistent(t *testing.T) {
 				return cmd
 			},
 			args: []string{"root", "sub", "--alpha", "hello", "--gamma", "world"},
+		},
+		{
+			name:  "required flag after subcommand name",
+			setup: newRequiredCmd,
+			args:  []string{"root", "sub", "--alpha", "hello"},
+		},
+		{
+			name:  "required flag before subcommand name",
+			setup: newRequiredCmd,
+			args:  []string{"root", "--alpha", "hello", "sub"},
+		},
+		{
+			name:    "required flag missing errors",
+			setup:   newRequiredCmd,
+			args:    []string{"root", "sub"},
+			wantErr: "one of these flags needs to be provided",
+		},
+		{
+			name:  "required flag missing is ok for help",
+			setup: newRequiredCmd,
+			args:  []string{"root", "help", "sub"},
 		},
 	}
 
