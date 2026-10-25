@@ -119,6 +119,13 @@ func prepareFishCommands(binary string, parent *Command) []string {
 
 func prepareFishFlags(binary string, owner *Command) []string {
 	flags := owner.VisibleFlags()
+	// a subcommand also accepts the persistent flags of its ancestors, which
+	// its help lists as global options
+	for _, fl := range owner.VisiblePersistentFlags() {
+		if !hasFlag(flags, fl) {
+			flags = append(flags, fl)
+		}
+	}
 	completions := []string{}
 	for _, f := range flags {
 		completion := &strings.Builder{}
