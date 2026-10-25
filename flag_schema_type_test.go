@@ -184,6 +184,15 @@ func TestExtFlag_SchemaType(t *testing.T) {
 			},
 			schemaType: "",
 		},
+		{
+			name: "without Get",
+			makeFlag: func() *extFlag {
+				fs := flag.NewFlagSet("", flag.ContinueOnError)
+				fs.Func("fn", "", func(string) error { return nil })
+				return &extFlag{f: fs.Lookup("fn")}
+			},
+			schemaType: "",
+		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {

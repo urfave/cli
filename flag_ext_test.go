@@ -236,3 +236,22 @@ func TestExtFlagIsSet(t *testing.T) {
 	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo"}))
 	require.False(t, cmd.IsSet("ext"))
 }
+
+func TestExtFlagWithoutGet(t *testing.T) {
+	newTestCommandLine(t)
+	var got string
+	flag.Func("ext", "", func(s string) error {
+		got = s
+		return nil
+	})
+
+	cmd := &Command{
+		AllowExtFlags: true,
+		Action:        func(context.Context, *Command) error { return nil },
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo", "--ext", "bob"}))
+	require.Equal(t, "bob", got)
+	require.Implements(t, (*flag.Value)(nil), cmd.Value("ext"))
+	require.Empty(t, cmd.String("ext"))
+}

@@ -43,7 +43,11 @@ func (e *extFlag) Set(_ string, val string) error {
 }
 
 func (e *extFlag) Get() any {
-	return e.f.Value.(flag.Getter).Get()
+	// a Value without Get, such as flag.Func's, is returned as is
+	if g, ok := e.f.Value.(flag.Getter); ok {
+		return g.Get()
+	}
+	return e.f.Value
 }
 
 func (e *extFlag) Names() []string {
