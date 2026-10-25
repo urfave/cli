@@ -81,9 +81,12 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 		// add global flags added by other packages
 		flag.VisitAll(func(f *flag.Flag) {
 			// skip test flags, and flags whose name a flag of this command
-			// already has, as that flag wins
-			if !strings.HasPrefix(f.Name, ignoreFlagPrefix) && !flagNamesInUse(cmd.Flags, []string{f.Name}) {
-				cmd.Flags = append(cmd.Flags, &extFlag{f: f})
+			// or a persistent flag of an ancestor already has, as that flag
+			// wins. An ancestor's Go flags are persistent too.
+			if !strings.HasPrefix(f.Name, ignoreFlagPrefix) &&
+				!flagNamesInUse(cmd.allFlags(), []string{f.Name}) &&
+				!cmd.hasPersistentFlagNameOnAncestor(f.Name) {
+				cmd.Flags = append(cmd.Flags, &extFlag{f: f, set: flag.CommandLine.Set})
 			}
 		})
 	}

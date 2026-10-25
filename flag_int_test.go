@@ -333,15 +333,6 @@ func TestIntFlagExt(t *testing.T) {
 			expectedValue: "39447",
 		},
 		{
-			name: "valid hex default",
-			flag: &flag.Flag{
-				Name:     "number",
-				DefValue: "FFFF",
-			},
-			config:        IntegerConfig{Base: 16},
-			expectedValue: "ffff",
-		},
-		{
 			name: "invalid",
 			flag: &flag.Flag{
 				Name: "number",
@@ -356,9 +347,9 @@ func TestIntFlagExt(t *testing.T) {
 			var uValue intValue[int]
 			var u int
 
-			f := &extFlag{f: tt.flag}
-
-			tt.flag.Value = uValue.Create(u, &u, tt.config)
+			fs := flag.NewFlagSet("mock", flag.ContinueOnError)
+			fs.Var(uValue.Create(u, &u, tt.config), tt.flag.Name, "")
+			f := &extFlag{f: fs.Lookup(tt.flag.Name), set: fs.Set}
 
 			if tt.config.Base != 0 && tt.config.Base != 10 {
 				t.Skipf("skipping %q with base %d, only base 10 is supported", tt.name, tt.config.Base)

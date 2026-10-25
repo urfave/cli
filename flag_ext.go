@@ -6,17 +6,25 @@ import (
 )
 
 type extFlag struct {
-	f        *flag.Flag
+	f *flag.Flag
+	// Set of the FlagSet f is in, so that its Visit sees f as set. Not the
+	// *flag.FlagSet itself: text/template's method lookup would then keep
+	// all its methods, such as Parse, adding ~40 KB to every binary.
+	set      func(name, value string) error
 	category string
+	// whether this run set the flag, and its value before that
+	hasBeenSet bool
+	orig       string
 }
 
 func (e *extFlag) PreParse() error {
-	// The flag package sets DefValue to the value's String(), so only reset
-	// a value that has changed since, e.g. in a previous run. Some flags
-	// don't accept their own DefValue, such as klog's -log_backtrace_at
-	// (":0"), and setting it unchanged would fail.
-	if e.f.DefValue != "" && e.f.Value.String() != e.f.DefValue {
-		return e.Set("", e.f.DefValue)
+	// A Go flag belongs to another package, so only undo what the previous
+	// run set, and keep a value the program set itself, e.g. with flag.Set.
+	// Restoring sets the old text again, so a value that rejects it, such
+	// as klog's -log_backtrace_at (":0"), keeps the value that run set.
+	if e.hasBeenSet {
+		e.hasBeenSet = false
+		_ = e.f.Value.Set(e.orig)
 	}
 
 	return nil
@@ -27,11 +35,23 @@ func (e *extFlag) PostParse() error {
 }
 
 func (e *extFlag) Set(_ string, val string) error {
-	return e.f.Value.Set(val)
+	orig := e.f.Value.String()
+	if err := e.set(e.f.Name, val); err != nil {
+		return err
+	}
+	if !e.hasBeenSet {
+		e.hasBeenSet = true
+		e.orig = orig
+	}
+	return nil
 }
 
 func (e *extFlag) Get() any {
-	return e.f.Value.(flag.Getter).Get()
+	// a Value without Get, such as flag.Func's, is returned as is
+	if g, ok := e.f.Value.(flag.Getter); ok {
+		return g.Get()
+	}
+	return e.f.Value
 }
 
 func (e *extFlag) Names() []string {
@@ -39,7 +59,7 @@ func (e *extFlag) Names() []string {
 }
 
 func (e *extFlag) IsSet() bool {
-	return false
+	return e.hasBeenSet
 }
 
 func (e *extFlag) String() string {

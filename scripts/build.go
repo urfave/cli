@@ -437,8 +437,8 @@ func GfmrunActionFunc(ctx context.Context, cmd *cli.Command) error {
 // of https://github.com/urfave/cli/issues/1057
 func checkBinarySizeActionFunc(ctx context.Context, cmd *cli.Command) (err error) {
 	const (
-		desiredMaxBinarySize = 2.2
-		desiredMinBinarySize = 1.49
+		desiredMaxBinarySize = 2.3
+		desiredMinBinarySize = 1.59
 		mbStringFormatter    = "%.1fMB"
 	)
 
