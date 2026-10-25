@@ -597,6 +597,45 @@ func TestCompletionSubcommandCustomShellComplete(t *testing.T) {
 	r.Equal("custom-index\n", out.String())
 }
 
+func TestCompletionAfterShortFlag(t *testing.T) {
+	// "-c" is the short flag itself, so it must not suggest the long flags
+	// whose names start with "c". With a space after it, the shells would
+	// offer "--config" as the value of "-c".
+
+	tests := []struct {
+		name string
+		args []string
+		want []string
+	}{
+		{name: "short flag", args: []string{"foo", "-c"}, want: []string{}},
+		{name: "short flag on a subcommand", args: []string{"foo", "sub", "-c"}, want: []string{}},
+		{name: "start of long flags", args: []string{"foo", "-co"}, want: []string{"--config", "--count"}},
+		{name: "start of long flags after two dashes", args: []string{"foo", "--c"}, want: []string{"--config", "--count"}},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			out := &bytes.Buffer{}
+			cmd := &Command{
+				EnableShellCompletion: true,
+				HideHelp:              true,
+				Writer:                out,
+				Flags: []Flag{
+					&StringFlag{Name: "config", Aliases: []string{"c"}},
+					&IntFlag{Name: "count"},
+				},
+				Commands: []*Command{
+					{Name: "sub"},
+				},
+			}
+
+			r := require.New(t)
+			r.NoError(cmd.Run(buildTestContext(t), append(test.args, completionFlag)))
+			r.Equal(test.want, strings.Fields(out.String()))
+		})
+	}
+}
+
 func TestCompletionMultilineUsage(t *testing.T) {
 	tests := []struct {
 		name     string

@@ -223,6 +223,15 @@ func cliArgContains(flagName string, args []string) bool {
 func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 	// Trim to handle both "-short" and "--long" flags.
 	cur := strings.TrimLeft(lastArg, "-")
+	// A short flag written out in full, such as "-c", is that flag and not
+	// the start of a long one, so there is nothing to suggest.
+	if lastArg == "-"+cur && utf8.RuneCountInString(cur) == 1 {
+		for _, flag := range flags {
+			if slices.Contains(flag.Names(), cur) {
+				return
+			}
+		}
+	}
 	for _, flag := range flags {
 		if vf, ok := flag.(VisibleFlag); ok && !vf.IsVisible() {
 			continue
