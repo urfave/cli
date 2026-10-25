@@ -6,17 +6,19 @@ import (
 )
 
 type extFlag struct {
-	f        *flag.Flag
-	category string
+	f          *flag.Flag
+	category   string
+	hasBeenSet bool
 }
 
 func (e *extFlag) PreParse() error {
+	e.hasBeenSet = false
 	// The flag package sets DefValue to the value's String(), so only reset
 	// a value that has changed since, e.g. in a previous run. Some flags
 	// don't accept their own DefValue, such as klog's -log_backtrace_at
 	// (":0"), and setting it unchanged would fail.
 	if e.f.DefValue != "" && e.f.Value.String() != e.f.DefValue {
-		return e.Set("", e.f.DefValue)
+		return e.f.Value.Set(e.f.DefValue)
 	}
 
 	return nil
@@ -27,7 +29,11 @@ func (e *extFlag) PostParse() error {
 }
 
 func (e *extFlag) Set(_ string, val string) error {
-	return e.f.Value.Set(val)
+	if err := e.f.Value.Set(val); err != nil {
+		return err
+	}
+	e.hasBeenSet = true
+	return nil
 }
 
 func (e *extFlag) Get() any {
@@ -39,7 +45,7 @@ func (e *extFlag) Names() []string {
 }
 
 func (e *extFlag) IsSet() bool {
-	return false
+	return e.hasBeenSet
 }
 
 func (e *extFlag) String() string {

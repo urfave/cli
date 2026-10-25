@@ -109,3 +109,22 @@ func TestExtFlagHelp(t *testing.T) {
 	assert.Contains(t, out.String(), "--ext-string string  ext string usage\n")
 	assert.NotContains(t, out.String(), "ext v usage")
 }
+
+// An external flag set on the command line must report IsSet, NumFlags and
+// LocalFlagNames like any other flag: Command.IsSet documents that it
+// determines if the flag was actually set, and v2 reported external flags
+// through the command's flag.FlagSet.Visit.
+func TestExtFlagIsSet(t *testing.T) {
+	newTestCommandLine(t)
+	flag.Int("ext", 2, "")
+
+	cmd := &Command{
+		AllowExtFlags: true,
+		Action:        func(context.Context, *Command) error { return nil },
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo", "--ext", "5"}))
+	require.True(t, cmd.IsSet("ext"))
+	require.Equal(t, 1, cmd.NumFlags())
+	require.Equal(t, []string{"ext"}, cmd.LocalFlagNames())
+}
