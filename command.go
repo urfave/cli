@@ -346,7 +346,7 @@ func (cmd *Command) appendFlag(fl Flag) {
 	}
 }
 
-// VisiblePersistentFlags returns a slice of [LocalFlag] with Persistent=true and Hidden=false.
+// VisiblePersistentFlags returns a slice of [LocalFlag] with Local=false and Hidden=false.
 func (cmd *Command) VisiblePersistentFlags() []Flag {
 	if cmd.isCompletionCommand {
 		return nil
