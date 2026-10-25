@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -253,6 +254,23 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 	}
 }
 
+// isCompleteFlag reports whether arg is a flag that needs nothing more: one
+// that takes no value, or one given its value after "=".
+func isCompleteFlag(arg string, flags []Flag) bool {
+	name, _, hasValue := strings.Cut(strings.TrimLeft(arg, "-"), "=")
+	for _, flag := range flags {
+		if !slices.Contains(flag.Names(), name) {
+			continue
+		}
+		if hasValue {
+			return true
+		}
+		docFlag, ok := flag.(DocGenerationFlag)
+		return ok && !docFlag.TakesValue()
+	}
+	return false
+}
+
 func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 	args := os.Args
 	if cmd != nil && cmd.parent != nil {
@@ -289,8 +307,14 @@ func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 				}
 			}
 		}
-		printFlagSuggestions(lastArg, flags, cmd.Root().Writer)
-		return
+		// A flag that needs no value, or has its value after "=", is complete,
+		// so suggest what can follow it unless it starts a longer flag name.
+		var suggestions bytes.Buffer
+		printFlagSuggestions(lastArg, flags, &suggestions)
+		if suggestions.Len() > 0 || !isCompleteFlag(lastArg, flags) {
+			_, _ = cmd.Root().Writer.Write(suggestions.Bytes())
+			return
+		}
 	}
 
 	if cmd != nil {

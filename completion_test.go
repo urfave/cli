@@ -450,6 +450,50 @@ func TestCompletionSubcommand(t *testing.T) {
 	}
 }
 
+func TestCompletionAfterCompleteRootFlag(t *testing.T) {
+	// The root command completes the arguments passed to Run, which still
+	// hold the flags, so a flag that needs nothing more must lead to the
+	// subcommands rather than to an empty list of flag suggestions.
+
+	tests := []struct {
+		name string
+		arg  string
+		want []string
+	}{
+		{name: "bool flag", arg: "--verbose", want: []string{"sub"}},
+		{name: "inverse bool flag", arg: "--no-color", want: []string{"sub"}},
+		{name: "value after equals", arg: "--format=json", want: []string{"sub"}},
+		{name: "flag waiting for a value", arg: "--format", want: []string{}},
+		{name: "start of a longer flag", arg: "--debug", want: []string{"--debug-level"}},
+		{name: "partial flag", arg: "--verb", want: []string{"--verbose"}},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			out := &bytes.Buffer{}
+			cmd := &Command{
+				EnableShellCompletion: true,
+				HideHelp:              true,
+				Writer:                out,
+				Flags: []Flag{
+					&BoolFlag{Name: "verbose"},
+					&BoolWithInverseFlag{Name: "color"},
+					&StringFlag{Name: "format"},
+					&BoolFlag{Name: "debug"},
+					&StringFlag{Name: "debug-level"},
+				},
+				Commands: []*Command{
+					{Name: "sub"},
+				},
+			}
+
+			r := require.New(t)
+			r.NoError(cmd.Run(buildTestContext(t), []string{"foo", test.arg, completionFlag}))
+			r.Equal(test.want, strings.Fields(out.String()))
+		})
+	}
+}
+
 func TestCompletionAfterDoubleDashNeverRunsAction(t *testing.T) {
 	// Regression test for https://github.com/urfave/cli/issues/1993:
 	// pressing tab on a command line that holds a "--" must never execute
