@@ -447,6 +447,18 @@ func (cmd *Command) hasPersistentFlagOnAncestor(fl Flag) bool {
 	return false
 }
 
+func (cmd *Command) hasPersistentFlagNameOnAncestor(name string) bool {
+	for pCmd := cmd.parent; pCmd != nil; pCmd = pCmd.parent {
+		for _, pFl := range pCmd.allFlags() {
+			pfl, ok := pFl.(LocalFlag)
+			if ok && !pfl.IsLocal() && slices.Contains(pFl.Names(), name) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func (cmd *Command) lookupFlag(name string) Flag {
 	for _, pCmd := range cmd.Lineage() {
 		if f := pCmd.lFlag(name); f != nil {

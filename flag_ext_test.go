@@ -124,13 +124,15 @@ func TestExtFlagRootAndSubcommand(t *testing.T) {
 	ext := flag.Int("ext", 2, "")
 
 	var got int
+	var isSet bool
 	cmd := &Command{
 		AllowExtFlags: true,
 		Commands: []*Command{{
 			Name:          "sub",
 			AllowExtFlags: true,
-			Action: func(context.Context, *Command) error {
+			Action: func(_ context.Context, cmd *Command) error {
 				got = *ext
+				isSet = cmd.IsSet("ext")
 				return nil
 			},
 		}},
@@ -138,6 +140,55 @@ func TestExtFlagRootAndSubcommand(t *testing.T) {
 
 	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo", "--ext", "5", "sub"}))
 	require.Equal(t, 5, got)
+	require.True(t, isSet)
+}
+
+func TestExtFlagParentFlagWins(t *testing.T) {
+	for _, arg := range []string{"--verbose", "-v"} {
+		t.Run(arg, func(t *testing.T) {
+			newTestCommandLine(t)
+			ext := flag.Bool("v", false, "")
+
+			var verbose bool
+			cmd := &Command{
+				Flags: []Flag{
+					&BoolFlag{Name: "verbose", Aliases: []string{"v"}},
+				},
+				Commands: []*Command{{
+					Name:          "sub",
+					AllowExtFlags: true,
+					Action: func(_ context.Context, cmd *Command) error {
+						verbose = cmd.Bool("verbose")
+						return nil
+					},
+				}},
+			}
+
+			require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo", "sub", arg}))
+			require.True(t, verbose)
+			require.False(t, *ext)
+		})
+	}
+}
+
+func TestExtFlagMutuallyExclusiveFlagWins(t *testing.T) {
+	newTestCommandLine(t)
+	ext := flag.Bool("v", false, "")
+
+	cmd := &Command{
+		AllowExtFlags: true,
+		MutuallyExclusiveFlags: []MutuallyExclusiveFlags{{
+			Flags: [][]Flag{
+				{&BoolFlag{Name: "verbose", Aliases: []string{"v"}}},
+				{&BoolFlag{Name: "quiet"}},
+			},
+		}},
+		Action: func(context.Context, *Command) error { return nil },
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"foo", "-v"}))
+	require.True(t, cmd.Bool("verbose"))
+	require.False(t, *ext)
 }
 
 func TestExtFlagHelp(t *testing.T) {
