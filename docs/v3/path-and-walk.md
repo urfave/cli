@@ -95,6 +95,19 @@ mid
 bottom
 ```
 
+### Printing a visible command tree
+
+`Walk()` visits hidden commands and their descendants. Returning `nil` from the
+callback skips any work for that command, but does not skip its subtree. To omit
+a hidden command and everything below it from a tree listing, check whether any
+command returned by `Lineage()` has `Hidden` set. Use `len(cmd.Path()) - 1` as the
+indentation depth.
+
+Run this traversal inside an `Action` (or after `Run` has initialized the command
+graph), since `Path()` and `Lineage()` rely on parent links set up by `Run`.
+See the [runnable visible-tree example](https://pkg.go.dev/github.com/urfave/cli/v3#example-Command.Walk-VisibleTree),
+which also shows that visible siblings after a hidden subtree are still printed.
+
 ### Short-circuiting
 
 Return a non-nil error from the walk function to stop traversal early.
