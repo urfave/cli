@@ -42,7 +42,7 @@ func main() {
 Running this program with an argument gives the following output
 
 ```sh-session
-$ greet friend
+$ greet Friend
 Hello "Friend"
 ```
 

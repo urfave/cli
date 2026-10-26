@@ -45,7 +45,7 @@ SUPPORT: support@awesometown.example.com
 	cli.RootCommandHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 USAGE:
-   {{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}
+   {{.FullName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}
    {{if len .Authors}}
 AUTHOR:
    {{range .Authors}}{{ . }}{{end}}

@@ -276,8 +276,8 @@ func main() {
 Will result in help output like:
 
 ```
---config FILE, -c FILE  Load configuration from FILE
---lang value, -l value  Language for the greeting (default: "english")
+--config FILE, -c FILE    Load configuration from FILE
+--lang string, -l string  Language for the greeting (default: "english")
 ```
 
 #### Required Flags
@@ -549,7 +549,7 @@ func main() {
 Will result in help output like:
 
 ```
---port value  Use a randomized port (default: random)
+--port int  Use a randomized port (default: random)
 ```
 
 #### Flag Actions

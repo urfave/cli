@@ -331,41 +331,41 @@ blocking/time-specific operations and so on.
 
 === "v2"
 
-    `type CommandNotFoundFunc func(*Context, string) error`
+    `type CommandNotFoundFunc func(*Context, string)`
 
 === "v3"
 
-    `type CommandNotFoundFunc func(context.Context, *cli.Command, string) error`
+    `type CommandNotFoundFunc func(context.Context, *cli.Command, string)`
 
 ### OnUsageErrorFunc
 
 === "v2"
 
-    `type OnUsageErrorFunc func(*Context, err error, isSubcommand bool) error`
+    `type OnUsageErrorFunc func(cCtx *Context, err error, isSubcommand bool) error`
 
 === "v3"
 
-    `type OnUsageErrorFunc func(context.Context, *cli.Command, err error, isSubcommand bool) error`
+    `type OnUsageErrorFunc func(ctx context.Context, cmd *cli.Command, err error, isSubcommand bool) error`
 
-### InvalidAccessFunc
+### InvalidFlagAccessFunc
 
 === "v2"
 
-    `type InvalidAccessFunc func(*Context, string) error`
+    `type InvalidFlagAccessFunc func(*Context, string)`
 
 === "v3"
 
-    `type InvalidAccessFunc func(context.Context, *cli.Command, string) error`
+    `type InvalidFlagAccessFunc func(context.Context, *cli.Command, string)`
 
 ### ExitErrHandlerFunc
 
 === "v2"
 
-    `type ExitErrHandlerFunc func(*Context, err error) error`
+    `type ExitErrHandlerFunc func(cCtx *Context, err error)`
 
 === "v3"
 
-    `type ExitErrHandlerFunc func(context.Context, *cli.Command, err error) error`
+    `type ExitErrHandlerFunc func(context.Context, *cli.Command, error)`
 
 Compiler messages you might see(for ActionFunc):
 

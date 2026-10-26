@@ -47,9 +47,10 @@ Will include:
 
 ```
 COMMANDS:
-  noop
+   noop
+   help, h  Shows a list of commands or help for one command
 
-  template:
-    add
-    remove
+   template:
+     add
+     remove
 ```
