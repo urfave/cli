@@ -43,9 +43,9 @@ func main() {
 }
 ```
 
-That flag can then be set with `--lang spanish` or `-l spanish`. Note that
-giving two different forms of the same flag in the same command invocation is an
-error.
+That flag can then be set with `--lang spanish` or `-l spanish`. If both forms
+are given in the same command invocation, the last value is used. Set
+`OnlyOnce: true` on the flag to make giving it more than once an error.
 
 #### Multiple Values per Single Flag
 
