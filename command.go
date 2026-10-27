@@ -427,6 +427,19 @@ type multiValueFlag interface {
 	IsMultiValueFlag() bool
 	setValue(string) error
 	validate() error
+	flagBase() Flag
+}
+
+// deferValidation reports whether f is a built-in multi-value flag whose
+// Validator should run once parsing is done. A type that embeds a built-in
+// flag gets these methods promoted to it, so flagBase is compared with f to
+// make sure such a type still has its own Set called.
+func deferValidation(f Flag) (multiValueFlag, bool) {
+	mf, ok := f.(multiValueFlag)
+	if !ok || mf.flagBase() != f || !mf.IsMultiValueFlag() {
+		return nil, false
+	}
+	return mf, true
 }
 
 func (cmd *Command) set(fName string, f Flag, val string) error {
@@ -434,7 +447,7 @@ func (cmd *Command) set(fName string, f Flag, val string) error {
 	cmd.setMultiValueParsingConfig(f)
 	// The Validator of a multi-value flag has to see the whole value, not
 	// the part given so far, so it runs in validateMultiValueFlags instead.
-	if mf, ok := f.(multiValueFlag); ok && mf.IsMultiValueFlag() {
+	if mf, ok := deferValidation(f); ok {
 		args := cmd.multiValueArgs[f]
 		if args == nil {
 			args = &flagArgs{}

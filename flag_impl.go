@@ -249,6 +249,12 @@ func (f *FlagBase[T, C, V]) Set(_ string, val string) error {
 	return f.validate()
 }
 
+// flagBase returns f itself, so a type embedding FlagBase can be told apart
+// from FlagBase
+func (f *FlagBase[T, C, V]) flagBase() Flag {
+	return f
+}
+
 // validate runs the Validator, if any, on the current value
 func (f *FlagBase[T, C, V]) validate() error {
 	if f.Validator != nil {
