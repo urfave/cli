@@ -169,6 +169,9 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 		cmd.parsedArgs = args
 	} else {
 		cmd.parsedArgs, err = cmd.parseFlags(args)
+		if err == nil {
+			err = cmd.validateMultiValueFlags()
+		}
 	}
 
 	tracef("using post-parse arguments %[1]q (cmd=%[2]q)", args, cmd.Name)

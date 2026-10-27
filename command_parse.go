@@ -27,6 +27,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 	tracef("parsing flags from arguments %[1]q (cmd=%[2]q)", args, cmd.Name)
 
 	cmd.setFlags = map[Flag]struct{}{}
+	cmd.multiValueArgs = map[Flag]*flagArgs{}
 	cmd.appliedFlags = cmd.allFlags()
 
 	tracef("walking command lineage for persistent flags (cmd=%[1]q)", cmd.Name)
