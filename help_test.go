@@ -2402,6 +2402,12 @@ func TestWrapLine(t *testing.T) {
 	assert.Equal(t, "    ", wrapLine("    ", 0, 3, " "))
 }
 
+func TestWrapLineCountsRunes(t *testing.T) {
+	// "é" is one column but two bytes.
+	assert.Equal(t, "ab  éé", wrapLine("ab  éé", 0, 6, ""))
+	assert.Equal(t, "éé éé éé\néé éé éé\néé", wrapLine("éé éé éé éé éé éé éé", 0, 8, ""))
+}
+
 func TestPrintHelpCustomTemplateError(t *testing.T) {
 	skipIfNoTemplates(t)
 
