@@ -99,6 +99,10 @@ func TestCompletionEnableDiffCommandName(t *testing.T) {
 	r := require.New(t)
 	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "junky"}))
 	r.Contains(out.String(), "USAGE")
+	// the setup instructions must use the renamed command
+	r.Contains(out.String(), "source <(foo junky bash)")
+	r.Contains(out.String(), "foo junky fish > ~/.config/fish/completions/foo.fish")
+	r.NotContains(out.String(), "foo completion")
 }
 
 func TestCompletionShell(t *testing.T) {
@@ -127,7 +131,7 @@ func TestCompletionSubcommandOrder(t *testing.T) {
 
 	// Build several times to guard against intra-process variation.
 	for range 10 {
-		cmd := buildCompletionCommand("foo")
+		cmd := buildCompletionCommand("foo", completionCommandName)
 
 		got := make([]string, 0, len(cmd.Commands))
 		for _, sub := range cmd.Commands {

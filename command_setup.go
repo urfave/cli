@@ -127,16 +127,17 @@ func (cmd *Command) setupDefaults(osArgs []string) {
 	}
 
 	if isRoot && cmd.EnableShellCompletion || cmd.ConfigureShellCompletionCommand != nil {
-		completionCommand := buildCompletionCommand(cmd.Name)
-
+		name := completionCommandName
 		if cmd.ShellCompletionCommandName != "" {
 			tracef(
 				"setting completion command name (%[1]q) from "+
 					"cmd.ShellCompletionCommandName (cmd=%[2]q)",
 				cmd.ShellCompletionCommandName, cmd.Name,
 			)
-			completionCommand.Name = cmd.ShellCompletionCommandName
+			name = cmd.ShellCompletionCommandName
 		}
+
+		completionCommand := buildCompletionCommand(cmd.Name, name)
 
 		tracef("appending completionCommand (cmd=%[1]q)", cmd.Name)
 		cmd.appendCommand(completionCommand)
