@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -128,6 +129,36 @@ func TestFishCompletionTakesFileForAllFlagTypes(t *testing.T) {
 	assert.Contains(t, res, "'__fish_greet_no_subcommand' -l env-file -r")
 	assert.Contains(t, res, "'__fish_greet_no_subcommand' -f -l name -r")
 	assert.Contains(t, res, "'__fish_greet_no_subcommand' -f -l dry-run")
+}
+
+func TestFishCompletionPersistentFlags(t *testing.T) {
+	cmd := &Command{
+		Name: "greet",
+		Flags: []Flag{
+			&BoolFlag{Name: "verbose"},
+			&StringFlag{Name: "name"},
+			&BoolFlag{Name: "dry-run", Local: true},
+		},
+		Commands: []*Command{
+			{
+				Name: "sub",
+				// redefines the root's name, so only its own applies
+				Flags:    []Flag{&IntFlag{Name: "name", Usage: "sub name"}},
+				Commands: []*Command{{Name: "deep"}},
+			},
+		},
+	}
+
+	res, err := cmd.ToFishCompletion()
+	require.NoError(t, err)
+
+	// a subcommand accepts the persistent flags of its ancestors
+	assert.Contains(t, res, "complete -c greet -n '__fish_seen_subcommand_from sub' -f -l verbose\n")
+	assert.Contains(t, res, "complete -c greet -n '__fish_seen_subcommand_from sub; and __fish_seen_subcommand_from deep' -f -l verbose\n")
+	assert.Contains(t, res, "complete -c greet -n '__fish_seen_subcommand_from sub; and __fish_seen_subcommand_from deep' -f -l name -r -d 'sub name'\n")
+	// but not a local flag, or the root's flag that the subcommand redefines
+	assert.NotContains(t, res, "__fish_seen_subcommand_from sub' -f -l dry-run")
+	assert.Equal(t, 1, strings.Count(res, "__fish_seen_subcommand_from sub' -f -l name"))
 }
 
 func TestFishCompletionUsesFirstLineOfUsage(t *testing.T) {
