@@ -50,24 +50,24 @@ const completionDescription = `Output shell completion script for bash, zsh, fis
 Source the output to enable completion.
 
 # .bashrc
-source <($COMMAND completion bash)
+source <($COMMAND $COMPLETION bash)
 
 # .zshrc
-source <($COMMAND completion zsh)
+source <($COMMAND $COMPLETION zsh)
 
 # fish
-$COMMAND completion fish > ~/.config/fish/completions/$COMMAND.fish
+$COMMAND $COMPLETION fish > ~/.config/fish/completions/$COMMAND.fish
 
 # Powershell
 Output the script to path/to/autocomplete/$COMMAND.ps1 and run it.
 `
 
-func buildCompletionCommand(appName string) *Command {
+func buildCompletionCommand(appName, name string) *Command {
 	cmd := &Command{
-		Name:                completionCommandName,
+		Name:                name,
 		Hidden:              true,
 		Usage:               "Output shell completion script for bash, zsh, fish, or Powershell",
-		Description:         strings.ReplaceAll(completionDescription, "$COMMAND", appName),
+		Description:         strings.NewReplacer("$COMMAND", appName, "$COMPLETION", name).Replace(completionDescription),
 		isCompletionCommand: true,
 	}
 
