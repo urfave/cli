@@ -3,7 +3,6 @@ package cli
 import (
 	"bytes"
 	"context"
-	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -31,8 +30,6 @@ func partialCompletionCommand(output *bytes.Buffer, ran *bool) *Command {
 }
 
 func TestPartialFlagCompletionAfterPositionalArgument(t *testing.T) {
-	originalArgs := os.Args
-	t.Cleanup(func() { os.Args = originalArgs })
 	for _, scope := range []struct {
 		name string
 		path []string
@@ -50,7 +47,6 @@ func TestPartialFlagCompletionAfterPositionalArgument(t *testing.T) {
 				args := append([]string{"app"}, scope.path...)
 				args = append(args, positional...)
 				args = append(args, "--pa", completionFlag)
-				os.Args = args
 				if err := cmd.Run(t.Context(), args); err != nil {
 					t.Fatal(err)
 				}
@@ -66,8 +62,6 @@ func TestPartialFlagCompletionAfterPositionalArgument(t *testing.T) {
 }
 
 func TestPartialFlagCompletionAfterDoubleDash(t *testing.T) {
-	originalArgs := os.Args
-	t.Cleanup(func() { os.Args = originalArgs })
 	for _, path := range [][]string{nil, {"sub"}, {"sub", "nested"}} {
 		t.Run(strings.Join(path, "/"), func(t *testing.T) {
 			var output bytes.Buffer
@@ -75,7 +69,6 @@ func TestPartialFlagCompletionAfterDoubleDash(t *testing.T) {
 			cmd := partialCompletionCommand(&output, &ran)
 			args := append([]string{"app"}, path...)
 			args = append(args, "--", "--pa", completionFlag)
-			os.Args = args
 			if err := cmd.Run(t.Context(), args); err != nil {
 				t.Fatal(err)
 			}

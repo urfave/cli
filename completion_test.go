@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 	"testing"
 
@@ -510,9 +509,6 @@ func TestCompletionAfterDoubleDashDoesNotLeakToNextRun(t *testing.T) {
 	// A Command answering several completion requests must answer each one
 	// on its own terms: a request past a "--" must not make the next
 	// request behave as though it were past one too.
-	origArgv := os.Args
-	t.Cleanup(func() { os.Args = origArgv })
-
 	out := &bytes.Buffer{}
 
 	cmd := &Command{
@@ -532,14 +528,46 @@ func TestCompletionAfterDoubleDashDoesNotLeakToNextRun(t *testing.T) {
 
 	r := require.New(t)
 
-	os.Args = []string{"foo", "--", "somearg"}
 	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "--", "somearg", completionFlag}))
 	r.Empty(out.String())
 
 	out.Reset()
-	os.Args = []string{"foo", "-", completionFlag}
 	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "-", completionFlag}))
 	r.Contains(out.String(), "-verbose")
+}
+
+func TestCompletionUsesRunArguments(t *testing.T) {
+	// Completion must use the arguments passed to Run, not os.Args, which
+	// holds the go test flags here
+	// (https://github.com/urfave/cli/issues/2486).
+	out := &bytes.Buffer{}
+
+	cmd := &Command{
+		EnableShellCompletion: true,
+		Writer:                out,
+		Commands: []*Command{
+			{
+				Name: "sub",
+				Flags: []Flag{
+					&BoolFlag{
+						Name: "verbose",
+					},
+				},
+				// a custom completer may pass a Command without a parent
+				ShellComplete: func(ctx context.Context, cmd *Command) {
+					DefaultCompleteWithFlags(ctx, &Command{Flags: cmd.Flags, Writer: cmd.Root().Writer})
+				},
+			},
+		},
+	}
+
+	r := require.New(t)
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", completionFlag}))
+	r.Contains(out.String(), "sub")
+
+	out.Reset()
+	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "sub", "--v", completionFlag}))
+	r.Equal("--verbose\n", out.String())
 }
 
 func TestCompletionSubcommandCustomShellComplete(t *testing.T) {

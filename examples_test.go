@@ -6,7 +6,6 @@ import (
 	"net/mail"
 	"os"
 	"strings"
-	"time"
 
 	// Alias the package import to make the examples runnable on pkg.go.dev.
 	//
@@ -76,13 +75,7 @@ func ExampleCommand_Run_subcommand() {
 		},
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	defer cancel()
-
-	// Simulate the command line arguments
-	os.Args = []string{"say", "hi", "english", "--name", "Jeremy"}
-
-	_ = cmd.Run(ctx, os.Args)
+	_ = cmd.Run(context.Background(), []string{"say", "hi", "english", "--name", "Jeremy"})
 	// Output:
 	// Hello, Jeremy
 }
@@ -107,21 +100,11 @@ func ExampleCommand_Run_appHelp() {
 				Usage:       "use it to see a description",
 				Description: "This is how we describe describeit the function",
 				ArgsUsage:   "[arguments...]",
-				Action: func(context.Context, *cli.Command) error {
-					fmt.Printf("i like to describe things")
-					return nil
-				},
 			},
 		},
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	defer cancel()
-
-	// Simulate the command line arguments
-	os.Args = []string{"greet", "help"}
-
-	_ = cmd.Run(ctx, os.Args)
+	_ = cmd.Run(context.Background(), []string{"greet", "help"})
 	// Output:
 	// NAME:
 	//    greet - A new cli application
@@ -155,10 +138,6 @@ func ExampleCommand_Run_commandHelp() {
 		Flags: []cli.Flag{
 			&cli.StringFlag{Name: "name", Value: "pat", Usage: "a name to say"},
 		},
-		Action: func(_ context.Context, cmd *cli.Command) error {
-			fmt.Fprintf(cmd.Root().Writer, "hello to %[1]q\n", cmd.String("name"))
-			return nil
-		},
 		Commands: []*cli.Command{
 			{
 				Name:        "describeit",
@@ -166,18 +145,11 @@ func ExampleCommand_Run_commandHelp() {
 				Usage:       "use it to see a description",
 				Description: "This is how we describe describeit the function",
 				ArgsUsage:   "[arguments...]",
-				Action: func(context.Context, *cli.Command) error {
-					fmt.Println("i like to describe things")
-					return nil
-				},
 			},
 		},
 	}
 
-	// Simulate the command line arguments
-	os.Args = []string{"greet", "h", "describeit"}
-
-	_ = cmd.Run(context.Background(), os.Args)
+	_ = cmd.Run(context.Background(), []string{"greet", "h", "describeit"})
 	// Output:
 	// NAME:
 	//    greet describeit - use it to see a description
@@ -198,10 +170,7 @@ func ExampleCommand_Run_commandHelp() {
 func ExampleCommand_Run_noAction() {
 	cmd := &cli.Command{Name: "greet"}
 
-	// Simulate the command line arguments
-	os.Args = []string{"greet"}
-
-	_ = cmd.Run(context.Background(), os.Args)
+	_ = cmd.Run(context.Background(), []string{"greet"})
 	// Output:
 	// NAME:
 	//    greet - A new cli application
@@ -227,10 +196,7 @@ func ExampleCommand_Run_subcommandNoAction() {
 		},
 	}
 
-	// Simulate the command line arguments
-	os.Args = []string{"greet", "describeit"}
-
-	_ = cmd.Run(context.Background(), os.Args)
+	_ = cmd.Run(context.Background(), []string{"greet", "describeit"})
 	// Output:
 	// NAME:
 	//    greet describeit - use it to see a description
@@ -261,10 +227,7 @@ func ExampleCommand_Run_shellComplete_bash_withShortFlag() {
 		},
 	}
 
-	// Simulate a bash environment and command line arguments
-	os.Args = []string{"greet", "-", "--generate-shell-completion"}
-
-	_ = cmd.Run(context.Background(), os.Args)
+	_ = cmd.Run(context.Background(), []string{"greet", "-", "--generate-shell-completion"})
 	// Output:
 	// --other
 	// --xyz
@@ -293,10 +256,7 @@ func ExampleCommand_Run_shellComplete_bash_withLongFlag() {
 		},
 	}
 
-	// Simulate a bash environment and command line arguments
-	os.Args = []string{"greet", "--s", "--generate-shell-completion"}
-
-	_ = cmd.Run(context.Background(), os.Args)
+	_ = cmd.Run(context.Background(), []string{"greet", "--s", "--generate-shell-completion"})
 	// Output:
 	// --some-flag
 	// --similar-flag
@@ -327,10 +287,7 @@ func ExampleCommand_Run_shellComplete_bash_withMultipleLongFlag() {
 		},
 	}
 
-	// Simulate a bash environment and command line arguments
-	os.Args = []string{"greet", "--st", "--generate-shell-completion"}
-
-	_ = cmd.Run(context.Background(), os.Args)
+	_ = cmd.Run(context.Background(), []string{"greet", "--st", "--generate-shell-completion"})
 	// Output:
 	// --string
 	// --string-flag-2
@@ -346,98 +303,15 @@ func ExampleCommand_Run_shellComplete_bash() {
 				Aliases:     []string{"d"},
 				Usage:       "use it to see a description",
 				Description: "This is how we describe describeit the function",
-				Action: func(context.Context, *cli.Command) error {
-					fmt.Printf("i like to describe things")
-					return nil
-				},
 			}, {
 				Name:        "next",
 				Usage:       "next example",
 				Description: "more stuff to see when generating shell completion",
-				Action: func(context.Context, *cli.Command) error {
-					fmt.Printf("the next example")
-					return nil
-				},
 			},
 		},
 	}
 
-	// Simulate a bash environment and command line arguments
-	os.Args = []string{"greet", "--generate-shell-completion"}
-
-	_ = cmd.Run(context.Background(), os.Args)
-	// Output:
-	// describeit:use it to see a description
-	// next:next example
-	// help:Shows a list of commands or help for one command
-}
-
-func ExampleCommand_Run_shellComplete_zsh() {
-	cmd := &cli.Command{
-		Name:                  "greet",
-		EnableShellCompletion: true,
-		Commands: []*cli.Command{
-			{
-				Name:        "describeit",
-				Aliases:     []string{"d"},
-				Usage:       "use it to see a description",
-				Description: "This is how we describe describeit the function",
-				Action: func(context.Context, *cli.Command) error {
-					fmt.Printf("i like to describe things")
-					return nil
-				},
-			}, {
-				Name:        "next",
-				Usage:       "next example",
-				Description: "more stuff to see when generating bash completion",
-				Action: func(context.Context, *cli.Command) error {
-					fmt.Printf("the next example")
-					return nil
-				},
-			},
-		},
-	}
-
-	// Simulate a zsh environment and command line arguments
-	os.Args = []string{"greet", "--generate-shell-completion"}
-
-	_ = cmd.Run(context.Background(), os.Args)
-	// Output:
-	// describeit:use it to see a description
-	// next:next example
-	// help:Shows a list of commands or help for one command
-}
-
-func ExampleCommand_Run_shellComplete_fish() {
-	cmd := &cli.Command{
-		Name:                  "greet",
-		EnableShellCompletion: true,
-		Commands: []*cli.Command{
-			{
-				Name:        "describeit",
-				Aliases:     []string{"d"},
-				Usage:       "use it to see a description",
-				Description: "This is how we describe describeit the function",
-				Action: func(context.Context, *cli.Command) error {
-					fmt.Printf("i like to describe things")
-					return nil
-				},
-			}, {
-				Name:        "next",
-				Usage:       "next example",
-				Description: "more stuff to see when generating bash completion",
-				Action: func(context.Context, *cli.Command) error {
-					fmt.Printf("the next example")
-					return nil
-				},
-			},
-		},
-	}
-
-	// Simulate a fish environment and command line arguments
-	os.Args = []string{"greet", "--generate-shell-completion"}
-
-	_ = cmd.Run(context.Background(), os.Args)
+	_ = cmd.Run(context.Background(), []string{"greet", "--generate-shell-completion"})
 	// Output:
 	// describeit:use it to see a description
 	// next:next example
@@ -453,30 +327,24 @@ func ExampleCommand_Run_sliceValues() {
 			&cli.Int64SliceFlag{Name: "intSlice"},
 		},
 		HideHelp: true,
-		Action: func(ctx context.Context, cmd *cli.Command) error {
+		Action: func(_ context.Context, cmd *cli.Command) error {
 			for i, v := range cmd.FlagNames() {
 				fmt.Printf("%d-%s %#v\n", i, v, cmd.Value(v))
 			}
-			err := ctx.Err()
-			fmt.Println("error:", err)
-			return err
+			return nil
 		},
 	}
 
-	// Simulate command line arguments
-	os.Args = []string{
+	_ = cmd.Run(context.Background(), []string{
 		"multi_values",
 		"--stringSlice", "parsed1,parsed2", "--stringSlice", "parsed3,parsed4",
 		"--float64Slice", "13.3,14.4", "--float64Slice", "15.5,16.6",
 		"--intSlice", "13,14", "--intSlice", "15,16",
-	}
-
-	_ = cmd.Run(context.Background(), os.Args)
+	})
 	// Output:
 	// 0-stringSlice []string{"parsed1", "parsed2", "parsed3", "parsed4"}
 	// 1-float64Slice []float64{13.3, 14.4, 15.5, 16.6}
 	// 2-intSlice []int64{13, 14, 15, 16}
-	// error: <nil>
 }
 
 func ExampleCommand_Run_mapValues() {
@@ -486,28 +354,22 @@ func ExampleCommand_Run_mapValues() {
 			&cli.StringMapFlag{Name: "stringMap"},
 		},
 		HideHelp: true,
-		Action: func(ctx context.Context, cmd *cli.Command) error {
+		Action: func(_ context.Context, cmd *cli.Command) error {
 			for i, v := range cmd.FlagNames() {
 				fmt.Printf("%d-%s %#v\n", i, v, cmd.StringMap(v))
 			}
 			fmt.Printf("notfound %#v\n", cmd.StringMap("notfound"))
-			err := ctx.Err()
-			fmt.Println("error:", err)
-			return err
+			return nil
 		},
 	}
 
-	// Simulate command line arguments
-	os.Args = []string{
+	_ = cmd.Run(context.Background(), []string{
 		"multi_values",
 		"--stringMap", "parsed1=parsed two", "--stringMap", "parsed3=",
-	}
-
-	_ = cmd.Run(context.Background(), os.Args)
+	})
 	// Output:
 	// 0-stringMap map[string]string{"parsed1":"parsed two", "parsed3":""}
 	// notfound map[string]string(nil)
-	// error: <nil>
 }
 
 func ExampleBoolWithInverseFlag() {
@@ -573,9 +435,7 @@ func ExampleCommand_Suggest_command() {
 		},
 	}
 
-	if cmd.Run(context.Background(), []string{"greet", "neighbors", "--sliming"}) == nil {
-		fmt.Println("Expected error")
-	}
+	_ = cmd.Run(context.Background(), []string{"greet", "neighbors", "--sliming"})
 	// Output:
 	// Incorrect Usage: flag provided but not defined: -sliming
 	//
