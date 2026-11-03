@@ -354,8 +354,10 @@ func DefaultShowCommandHelp(ctx context.Context, cmd *Command, commandName strin
 					commands = append(commands, subCmd)
 				}
 			}
+			// SuggestCommand returns a bare command name, so word the hint
+			// the same way suggestFlagFromError does for flags.
 			if suggestion := SuggestCommand(commands, commandName); suggestion != "" {
-				errMsg += ". " + suggestion
+				errMsg += ". " + fmt.Sprintf(SuggestDidYouMeanTemplate, suggestion)
 			}
 		}
 
