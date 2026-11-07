@@ -2148,6 +2148,25 @@ OPTIONS:
 	)
 }
 
+func TestCategorizedFlagsBeforeGlobalOptions(t *testing.T) {
+	output := new(bytes.Buffer)
+	cmd := &Command{
+		Name:   "app",
+		Writer: output,
+		Flags:  []Flag{&BoolFlag{Name: "verbose", Usage: "more output"}},
+		Commands: []*Command{
+			{
+				Name:   "deploy",
+				Flags:  []Flag{&BoolFlag{Name: "force", Usage: "force it", Category: "Danger"}},
+				Action: func(context.Context, *Command) error { return nil },
+			},
+		},
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"app", "deploy", "--help"}))
+	assert.Contains(t, output.String(), "   --force  force it\n\nGLOBAL OPTIONS:\n")
+}
+
 func TestCategorizedHelp(t *testing.T) {
 	// Reset HelpPrinter after this test.
 	defer func(old HelpPrinterFunc) {
@@ -2228,7 +2247,6 @@ GLOBAL OPTIONS:
 
    --intd int, --altd1 int, --altd2 int  (default: 0)
    --m1 string                           
-
 `, output.String())
 }
 

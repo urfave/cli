@@ -18,12 +18,12 @@ var visibleCommandCategoryTemplate = `{{range .VisibleCategories}}{{if .Name}}
    {{.Name}}:{{ $cv := offsetCommands .VisibleCommands 7}}{{range .VisibleCommands}}
      {{$s := join .Names ", "}}{{$s}}{{ $sp := subtract $cv (offset $s 5) }}{{ indent $sp ""}}{{wrap .Usage $cv}}{{end}}{{else}}{{template "visibleCommandTemplate" .}}{{end}}{{end}}`
 
-var visibleFlagCategoryTemplate = `{{range .VisibleFlagCategories}}
+var visibleFlagCategoryTemplate = `{{range $ci, $c := .VisibleFlagCategories}}{{if $ci}}
+{{end}}
    {{if .Name}}{{.Name}}
 
-   {{end}}{{$flglen := len .Flags}}{{range $i, $e := .Flags}}{{if eq (subtract $flglen $i) 1}}{{$e}}
-{{else}}{{$e}}
-   {{end}}{{end}}{{end}}`
+   {{end}}{{range $i, $e := .Flags}}{{if $i}}
+   {{end}}{{$e}}{{end}}{{end}}`
 
 var visibleFlagTemplate = `{{range $i, $e := .VisibleFlags}}
    {{wrap $e.String 6}}{{end}}`
