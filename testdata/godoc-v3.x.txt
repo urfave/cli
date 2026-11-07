@@ -314,12 +314,19 @@ type ArgumentBase[T any, C any, VC ValueCreator[T, C]] struct {
     ArgumentBase is a base type for an argument that accepts a single value.
 
 func (a *ArgumentBase[T, C, VC]) Get() any
+    Get returns the parsed value of this argument, or its default value if Parse
+    has not been called.
 
 func (a *ArgumentBase[T, C, VC]) HasName(s string) bool
+    HasName returns true if s matches this argument's Name.
 
 func (a *ArgumentBase[T, C, VC]) Parse(s []string) ([]string, error)
+    Parse parses this argument's value from s, returning the unconsumed
+    arguments and any error encountered.
 
 func (a *ArgumentBase[T, C, VC]) Usage() string
+    Usage returns the usage text for this argument, falling back to a default
+    derived from Name and Required when UsageText is unset.
 
 type ArgumentsBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Name        string `json:"name"`      // the name of this argument
@@ -335,12 +342,19 @@ type ArgumentsBase[T any, C any, VC ValueCreator[T, C]] struct {
     ArgumentsBase is a base type for slice arguments
 
 func (a *ArgumentsBase[T, C, VC]) Get() any
+    Get returns the parsed values of this argument, or an empty slice if Parse
+    has not been called.
 
 func (a *ArgumentsBase[T, C, VC]) HasName(s string) bool
+    HasName returns true if s matches this argument's Name.
 
 func (a *ArgumentsBase[T, C, VC]) Parse(s []string) ([]string, error)
+    Parse parses this argument's values from s, enforcing Min/Max occurrences,
+    and returns the unconsumed arguments and any error.
 
 func (a *ArgumentsBase[T, C, VC]) Usage() string
+    Usage returns the usage text for this argument, falling back to a default
+    derived from Name, Min, and Max when UsageText is unset.
 
 type BeforeFunc func(context.Context, *Command) (context.Context, error)
     BeforeFunc is an action that executes prior to any subcommands being run

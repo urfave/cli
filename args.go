@@ -103,6 +103,7 @@ type ArgumentBase[T any, C any, VC ValueCreator[T, C]] struct {
 	value *T
 }
 
+// HasName returns true if s matches this argument's Name.
 func (a *ArgumentBase[T, C, VC]) HasName(s string) bool {
 	return s == a.Name
 }
@@ -115,6 +116,8 @@ func (a *ArgumentBase[T, C, VC]) required() bool {
 	return a.Required
 }
 
+// Usage returns the usage text for this argument, falling back to a
+// default derived from Name and Required when UsageText is unset.
 func (a *ArgumentBase[T, C, VC]) Usage() string {
 	if a.UsageText != "" {
 		return a.UsageText
@@ -127,6 +130,8 @@ func (a *ArgumentBase[T, C, VC]) Usage() string {
 	return fmt.Sprintf(usageFormat, a.Name)
 }
 
+// Parse parses this argument's value from s, returning the unconsumed
+// arguments and any error encountered.
 func (a *ArgumentBase[T, C, VC]) Parse(s []string) ([]string, error) {
 	tracef("calling arg%[1] parse with args %[2]", a.Name, s)
 
@@ -159,6 +164,8 @@ func (a *ArgumentBase[T, C, VC]) Parse(s []string) ([]string, error) {
 	return s, nil
 }
 
+// Get returns the parsed value of this argument, or its default value
+// if Parse has not been called.
 func (a *ArgumentBase[T, C, VC]) Get() any {
 	if a.value != nil {
 		return *a.value
@@ -179,10 +186,13 @@ type ArgumentsBase[T any, C any, VC ValueCreator[T, C]] struct {
 	values []T
 }
 
+// HasName returns true if s matches this argument's Name.
 func (a *ArgumentsBase[T, C, VC]) HasName(s string) bool {
 	return s == a.Name
 }
 
+// Usage returns the usage text for this argument, falling back to a
+// default derived from Name, Min, and Max when UsageText is unset.
 func (a *ArgumentsBase[T, C, VC]) Usage() string {
 	if a.UsageText != "" {
 		return a.UsageText
@@ -201,6 +211,8 @@ func (a *ArgumentsBase[T, C, VC]) Usage() string {
 	return fmt.Sprintf(usageFormat, a.Name)
 }
 
+// Parse parses this argument's values from s, enforcing Min/Max
+// occurrences, and returns the unconsumed arguments and any error.
 func (a *ArgumentsBase[T, C, VC]) Parse(s []string) ([]string, error) {
 	tracef("calling arg%[1] parse with args %[2]", &a.Name, s)
 	if a.Max == 0 {
@@ -240,6 +252,8 @@ func (a *ArgumentsBase[T, C, VC]) Parse(s []string) ([]string, error) {
 	return s[count:], nil
 }
 
+// Get returns the parsed values of this argument, or an empty slice
+// if Parse has not been called.
 func (a *ArgumentsBase[T, C, VC]) Get() any {
 	if a.values != nil {
 		return a.values
