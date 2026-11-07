@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+// Args represents the command line arguments remaining after flags and any
+// recognized commands have been parsed.
 type Args interface {
 	// Get returns the nth argument, or else a blank string
 	Get(n int) string
@@ -89,6 +91,7 @@ var AnyArguments = []Argument{
 	},
 }
 
+// ArgumentBase is a base type for an argument that accepts a single value.
 type ArgumentBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Name        string `json:"name"`      // the name of this argument
 	Value       T      `json:"value"`     // the default value of this argument
@@ -245,38 +248,69 @@ func (a *ArgumentsBase[T, C, VC]) Get() any {
 }
 
 type (
-	FloatArg      = ArgumentBase[float64, NoConfig, floatValue[float64]]
-	Float32Arg    = ArgumentBase[float32, NoConfig, floatValue[float32]]
-	Float64Arg    = ArgumentBase[float64, NoConfig, floatValue[float64]]
-	IntArg        = ArgumentBase[int, IntegerConfig, intValue[int]]
-	Int8Arg       = ArgumentBase[int8, IntegerConfig, intValue[int8]]
-	Int16Arg      = ArgumentBase[int16, IntegerConfig, intValue[int16]]
-	Int32Arg      = ArgumentBase[int32, IntegerConfig, intValue[int32]]
-	Int64Arg      = ArgumentBase[int64, IntegerConfig, intValue[int64]]
-	StringArg     = ArgumentBase[string, StringConfig, stringValue]
+	// FloatArg is a float64 positional argument.
+	FloatArg = ArgumentBase[float64, NoConfig, floatValue[float64]]
+	// Float32Arg is a float32 positional argument.
+	Float32Arg = ArgumentBase[float32, NoConfig, floatValue[float32]]
+	// Float64Arg is a float64 positional argument.
+	Float64Arg = ArgumentBase[float64, NoConfig, floatValue[float64]]
+	// IntArg is an int positional argument.
+	IntArg = ArgumentBase[int, IntegerConfig, intValue[int]]
+	// Int8Arg is an int8 positional argument.
+	Int8Arg = ArgumentBase[int8, IntegerConfig, intValue[int8]]
+	// Int16Arg is an int16 positional argument.
+	Int16Arg = ArgumentBase[int16, IntegerConfig, intValue[int16]]
+	// Int32Arg is an int32 positional argument.
+	Int32Arg = ArgumentBase[int32, IntegerConfig, intValue[int32]]
+	// Int64Arg is an int64 positional argument.
+	Int64Arg = ArgumentBase[int64, IntegerConfig, intValue[int64]]
+	// StringArg is a string positional argument.
+	StringArg = ArgumentBase[string, StringConfig, stringValue]
+	// StringMapArgs is a positional argument that accepts a map of string key/value pairs.
 	StringMapArgs = ArgumentBase[map[string]string, StringConfig, StringMap]
-	TimestampArg  = ArgumentBase[time.Time, TimestampConfig, timestampValue]
-	UintArg       = ArgumentBase[uint, IntegerConfig, uintValue[uint]]
-	Uint8Arg      = ArgumentBase[uint8, IntegerConfig, uintValue[uint8]]
-	Uint16Arg     = ArgumentBase[uint16, IntegerConfig, uintValue[uint16]]
-	Uint32Arg     = ArgumentBase[uint32, IntegerConfig, uintValue[uint32]]
-	Uint64Arg     = ArgumentBase[uint64, IntegerConfig, uintValue[uint64]]
+	// TimestampArg is a time.Time positional argument.
+	TimestampArg = ArgumentBase[time.Time, TimestampConfig, timestampValue]
+	// UintArg is a uint positional argument.
+	UintArg = ArgumentBase[uint, IntegerConfig, uintValue[uint]]
+	// Uint8Arg is a uint8 positional argument.
+	Uint8Arg = ArgumentBase[uint8, IntegerConfig, uintValue[uint8]]
+	// Uint16Arg is a uint16 positional argument.
+	Uint16Arg = ArgumentBase[uint16, IntegerConfig, uintValue[uint16]]
+	// Uint32Arg is a uint32 positional argument.
+	Uint32Arg = ArgumentBase[uint32, IntegerConfig, uintValue[uint32]]
+	// Uint64Arg is a uint64 positional argument.
+	Uint64Arg = ArgumentBase[uint64, IntegerConfig, uintValue[uint64]]
 
-	FloatArgs     = ArgumentsBase[float64, NoConfig, floatValue[float64]]
-	Float32Args   = ArgumentsBase[float32, NoConfig, floatValue[float32]]
-	Float64Args   = ArgumentsBase[float64, NoConfig, floatValue[float64]]
-	IntArgs       = ArgumentsBase[int, IntegerConfig, intValue[int]]
-	Int8Args      = ArgumentsBase[int8, IntegerConfig, intValue[int8]]
-	Int16Args     = ArgumentsBase[int16, IntegerConfig, intValue[int16]]
-	Int32Args     = ArgumentsBase[int32, IntegerConfig, intValue[int32]]
-	Int64Args     = ArgumentsBase[int64, IntegerConfig, intValue[int64]]
-	StringArgs    = ArgumentsBase[string, StringConfig, stringValue]
+	// FloatArgs is a positional argument that accepts one or more float64 values.
+	FloatArgs = ArgumentsBase[float64, NoConfig, floatValue[float64]]
+	// Float32Args is a positional argument that accepts one or more float32 values.
+	Float32Args = ArgumentsBase[float32, NoConfig, floatValue[float32]]
+	// Float64Args is a positional argument that accepts one or more float64 values.
+	Float64Args = ArgumentsBase[float64, NoConfig, floatValue[float64]]
+	// IntArgs is a positional argument that accepts one or more int values.
+	IntArgs = ArgumentsBase[int, IntegerConfig, intValue[int]]
+	// Int8Args is a positional argument that accepts one or more int8 values.
+	Int8Args = ArgumentsBase[int8, IntegerConfig, intValue[int8]]
+	// Int16Args is a positional argument that accepts one or more int16 values.
+	Int16Args = ArgumentsBase[int16, IntegerConfig, intValue[int16]]
+	// Int32Args is a positional argument that accepts one or more int32 values.
+	Int32Args = ArgumentsBase[int32, IntegerConfig, intValue[int32]]
+	// Int64Args is a positional argument that accepts one or more int64 values.
+	Int64Args = ArgumentsBase[int64, IntegerConfig, intValue[int64]]
+	// StringArgs is a positional argument that accepts one or more string values.
+	StringArgs = ArgumentsBase[string, StringConfig, stringValue]
+	// TimestampArgs is a positional argument that accepts one or more time.Time values.
 	TimestampArgs = ArgumentsBase[time.Time, TimestampConfig, timestampValue]
-	UintArgs      = ArgumentsBase[uint, IntegerConfig, uintValue[uint]]
-	Uint8Args     = ArgumentsBase[uint8, IntegerConfig, uintValue[uint8]]
-	Uint16Args    = ArgumentsBase[uint16, IntegerConfig, uintValue[uint16]]
-	Uint32Args    = ArgumentsBase[uint32, IntegerConfig, uintValue[uint32]]
-	Uint64Args    = ArgumentsBase[uint64, IntegerConfig, uintValue[uint64]]
+	// UintArgs is a positional argument that accepts one or more uint values.
+	UintArgs = ArgumentsBase[uint, IntegerConfig, uintValue[uint]]
+	// Uint8Args is a positional argument that accepts one or more uint8 values.
+	Uint8Args = ArgumentsBase[uint8, IntegerConfig, uintValue[uint8]]
+	// Uint16Args is a positional argument that accepts one or more uint16 values.
+	Uint16Args = ArgumentsBase[uint16, IntegerConfig, uintValue[uint16]]
+	// Uint32Args is a positional argument that accepts one or more uint32 values.
+	Uint32Args = ArgumentsBase[uint32, IntegerConfig, uintValue[uint32]]
+	// Uint64Args is a positional argument that accepts one or more uint64 values.
+	Uint64Args = ArgumentsBase[uint64, IntegerConfig, uintValue[uint64]]
 )
 
 func (c *Command) getArgValue(name string) any {
@@ -300,122 +334,152 @@ func arg[T any](name string, c *Command) T {
 	return zero
 }
 
+// StringArg returns the string value of the positional argument with the given name.
 func (c *Command) StringArg(name string) string {
 	return arg[string](name, c)
 }
 
+// StringArgs returns the string slice value of the positional argument with the given name.
 func (c *Command) StringArgs(name string) []string {
 	return arg[[]string](name, c)
 }
 
+// FloatArg returns the float64 value of the positional argument with the given name.
 func (c *Command) FloatArg(name string) float64 {
 	return arg[float64](name, c)
 }
 
+// FloatArgs returns the float64 slice value of the positional argument with the given name.
 func (c *Command) FloatArgs(name string) []float64 {
 	return arg[[]float64](name, c)
 }
 
+// Float32Arg returns the float32 value of the positional argument with the given name.
 func (c *Command) Float32Arg(name string) float32 {
 	return arg[float32](name, c)
 }
 
+// Float32Args returns the float32 slice value of the positional argument with the given name.
 func (c *Command) Float32Args(name string) []float32 {
 	return arg[[]float32](name, c)
 }
 
+// Float64Arg returns the float64 value of the positional argument with the given name.
 func (c *Command) Float64Arg(name string) float64 {
 	return arg[float64](name, c)
 }
 
+// Float64Args returns the float64 slice value of the positional argument with the given name.
 func (c *Command) Float64Args(name string) []float64 {
 	return arg[[]float64](name, c)
 }
 
+// IntArg returns the int value of the positional argument with the given name.
 func (c *Command) IntArg(name string) int {
 	return arg[int](name, c)
 }
 
+// IntArgs returns the int slice value of the positional argument with the given name.
 func (c *Command) IntArgs(name string) []int {
 	return arg[[]int](name, c)
 }
 
+// Int8Arg returns the int8 value of the positional argument with the given name.
 func (c *Command) Int8Arg(name string) int8 {
 	return arg[int8](name, c)
 }
 
+// Int8Args returns the int8 slice value of the positional argument with the given name.
 func (c *Command) Int8Args(name string) []int8 {
 	return arg[[]int8](name, c)
 }
 
+// Int16Arg returns the int16 value of the positional argument with the given name.
 func (c *Command) Int16Arg(name string) int16 {
 	return arg[int16](name, c)
 }
 
+// Int16Args returns the int16 slice value of the positional argument with the given name.
 func (c *Command) Int16Args(name string) []int16 {
 	return arg[[]int16](name, c)
 }
 
+// Int32Arg returns the int32 value of the positional argument with the given name.
 func (c *Command) Int32Arg(name string) int32 {
 	return arg[int32](name, c)
 }
 
+// Int32Args returns the int32 slice value of the positional argument with the given name.
 func (c *Command) Int32Args(name string) []int32 {
 	return arg[[]int32](name, c)
 }
 
+// Int64Arg returns the int64 value of the positional argument with the given name.
 func (c *Command) Int64Arg(name string) int64 {
 	return arg[int64](name, c)
 }
 
+// Int64Args returns the int64 slice value of the positional argument with the given name.
 func (c *Command) Int64Args(name string) []int64 {
 	return arg[[]int64](name, c)
 }
 
+// UintArg returns the uint value of the positional argument with the given name.
 func (c *Command) UintArg(name string) uint {
 	return arg[uint](name, c)
 }
 
+// Uint8Arg returns the uint8 value of the positional argument with the given name.
 func (c *Command) Uint8Arg(name string) uint8 {
 	return arg[uint8](name, c)
 }
 
+// Uint16Arg returns the uint16 value of the positional argument with the given name.
 func (c *Command) Uint16Arg(name string) uint16 {
 	return arg[uint16](name, c)
 }
 
+// Uint32Arg returns the uint32 value of the positional argument with the given name.
 func (c *Command) Uint32Arg(name string) uint32 {
 	return arg[uint32](name, c)
 }
 
+// Uint64Arg returns the uint64 value of the positional argument with the given name.
 func (c *Command) Uint64Arg(name string) uint64 {
 	return arg[uint64](name, c)
 }
 
+// UintArgs returns the uint slice value of the positional argument with the given name.
 func (c *Command) UintArgs(name string) []uint {
 	return arg[[]uint](name, c)
 }
 
+// Uint8Args returns the uint8 slice value of the positional argument with the given name.
 func (c *Command) Uint8Args(name string) []uint8 {
 	return arg[[]uint8](name, c)
 }
 
+// Uint16Args returns the uint16 slice value of the positional argument with the given name.
 func (c *Command) Uint16Args(name string) []uint16 {
 	return arg[[]uint16](name, c)
 }
 
+// Uint32Args returns the uint32 slice value of the positional argument with the given name.
 func (c *Command) Uint32Args(name string) []uint32 {
 	return arg[[]uint32](name, c)
 }
 
+// Uint64Args returns the uint64 slice value of the positional argument with the given name.
 func (c *Command) Uint64Args(name string) []uint64 {
 	return arg[[]uint64](name, c)
 }
 
+// TimestampArg returns the time.Time value of the positional argument with the given name.
 func (c *Command) TimestampArg(name string) time.Time {
 	return arg[time.Time](name, c)
 }
 
+// TimestampArgs returns the time.Time slice value of the positional argument with the given name.
 func (c *Command) TimestampArgs(name string) []time.Time {
 	return arg[[]time.Time](name, c)
 }

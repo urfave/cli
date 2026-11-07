@@ -283,6 +283,8 @@ type Args interface {
 	// Slice returns a copy of the internal slice
 	Slice() []string
 }
+    Args represents the command line arguments remaining after flags and any
+    recognized commands have been parsed.
 
 type Argument interface {
 	// which this argument can be accessed using the given name
@@ -309,6 +311,7 @@ type ArgumentBase[T any, C any, VC ValueCreator[T, C]] struct {
 
 	// Has unexported fields.
 }
+    ArgumentBase is a base type for an argument that accepts a single value.
 
 func (a *ArgumentBase[T, C, VC]) Get() any
 
@@ -633,8 +636,12 @@ func (cmd *Command) Float32(name string) float32
     Float32 looks up the value of a local Float32Flag, returns 0 if not found
 
 func (c *Command) Float32Arg(name string) float32
+    Float32Arg returns the float32 value of the positional argument with the
+    given name.
 
 func (c *Command) Float32Args(name string) []float32
+    Float32Args returns the float32 slice value of the positional argument with
+    the given name.
 
 func (cmd *Command) Float32Slice(name string) []float32
     Float32Slice looks up the value of a local Float32Slice, returns nil if not
@@ -644,16 +651,24 @@ func (cmd *Command) Float64(name string) float64
     Float64 looks up the value of a local Float64Flag, returns 0 if not found
 
 func (c *Command) Float64Arg(name string) float64
+    Float64Arg returns the float64 value of the positional argument with the
+    given name.
 
 func (c *Command) Float64Args(name string) []float64
+    Float64Args returns the float64 slice value of the positional argument with
+    the given name.
 
 func (cmd *Command) Float64Slice(name string) []float64
     Float64Slice looks up the value of a local Float64SliceFlag, returns nil if
     not found
 
 func (c *Command) FloatArg(name string) float64
+    FloatArg returns the float64 value of the positional argument with the given
+    name.
 
 func (c *Command) FloatArgs(name string) []float64
+    FloatArgs returns the float64 slice value of the positional argument with
+    the given name.
 
 func (cmd *Command) FloatSlice(name string) []float64
     FloatSlice looks up the value of a local FloatSliceFlag, returns nil if not
@@ -676,8 +691,12 @@ func (cmd *Command) Int16(name string) int16
     Int16 looks up the value of a local Int16Flag, returns 0 if not found
 
 func (c *Command) Int16Arg(name string) int16
+    Int16Arg returns the int16 value of the positional argument with the given
+    name.
 
 func (c *Command) Int16Args(name string) []int16
+    Int16Args returns the int16 slice value of the positional argument with the
+    given name.
 
 func (cmd *Command) Int16Slice(name string) []int16
     Int16Slice looks up the value of a local Int16SliceFlag, returns nil if not
@@ -687,8 +706,12 @@ func (cmd *Command) Int32(name string) int32
     Int32 looks up the value of a local Int32Flag, returns 0 if not found
 
 func (c *Command) Int32Arg(name string) int32
+    Int32Arg returns the int32 value of the positional argument with the given
+    name.
 
 func (c *Command) Int32Args(name string) []int32
+    Int32Args returns the int32 slice value of the positional argument with the
+    given name.
 
 func (cmd *Command) Int32Slice(name string) []int32
     Int32Slice looks up the value of a local Int32SliceFlag, returns nil if not
@@ -698,8 +721,12 @@ func (cmd *Command) Int64(name string) int64
     Int64 looks up the value of a local Int64Flag, returns 0 if not found
 
 func (c *Command) Int64Arg(name string) int64
+    Int64Arg returns the int64 value of the positional argument with the given
+    name.
 
 func (c *Command) Int64Args(name string) []int64
+    Int64Args returns the int64 slice value of the positional argument with the
+    given name.
 
 func (cmd *Command) Int64Slice(name string) []int64
     Int64Slice looks up the value of a local Int64SliceFlag, returns nil if not
@@ -709,16 +736,23 @@ func (cmd *Command) Int8(name string) int8
     Int8 looks up the value of a local Int8Flag, returns 0 if not found
 
 func (c *Command) Int8Arg(name string) int8
+    Int8Arg returns the int8 value of the positional argument with the given
+    name.
 
 func (c *Command) Int8Args(name string) []int8
+    Int8Args returns the int8 slice value of the positional argument with the
+    given name.
 
 func (cmd *Command) Int8Slice(name string) []int8
     Int8Slice looks up the value of a local Int8SliceFlag, returns nil if not
     found
 
 func (c *Command) IntArg(name string) int
+    IntArg returns the int value of the positional argument with the given name.
 
 func (c *Command) IntArgs(name string) []int
+    IntArgs returns the int slice value of the positional argument with the
+    given name.
 
 func (cmd *Command) IntSlice(name string) []int
     IntSlice looks up the value of a local IntSliceFlag, returns nil if not
@@ -763,8 +797,12 @@ func (cmd *Command) Set(name, value string) error
 func (cmd *Command) String(name string) string
 
 func (c *Command) StringArg(name string) string
+    StringArg returns the string value of the positional argument with the given
+    name.
 
 func (c *Command) StringArgs(name string) []string
+    StringArgs returns the string slice value of the positional argument with
+    the given name.
 
 func (cmd *Command) StringMap(name string) map[string]string
     StringMap looks up the value of a local StringMapFlag, returns nil if not
@@ -781,8 +819,12 @@ func (cmd *Command) Timestamp(name string) time.Time
     Timestamp gets the timestamp from a flag name
 
 func (c *Command) TimestampArg(name string) time.Time
+    TimestampArg returns the time.Time value of the positional argument with the
+    given name.
 
 func (c *Command) TimestampArgs(name string) []time.Time
+    TimestampArgs returns the time.Time slice value of the positional argument
+    with the given name.
 
 func (cmd *Command) ToFishCompletion() (string, error)
     ToFishCompletion creates a fish completion string for the `*Command` The
@@ -795,8 +837,12 @@ func (cmd *Command) Uint16(name string) uint16
     Uint16 looks up the value of a local Uint16Flag, returns 0 if not found
 
 func (c *Command) Uint16Arg(name string) uint16
+    Uint16Arg returns the uint16 value of the positional argument with the given
+    name.
 
 func (c *Command) Uint16Args(name string) []uint16
+    Uint16Args returns the uint16 slice value of the positional argument with
+    the given name.
 
 func (cmd *Command) Uint16Slice(name string) []uint16
     Uint16Slice looks up the value of a local Uint16SliceFlag, returns nil if
@@ -806,8 +852,12 @@ func (cmd *Command) Uint32(name string) uint32
     Uint32 looks up the value of a local Uint32Flag, returns 0 if not found
 
 func (c *Command) Uint32Arg(name string) uint32
+    Uint32Arg returns the uint32 value of the positional argument with the given
+    name.
 
 func (c *Command) Uint32Args(name string) []uint32
+    Uint32Args returns the uint32 slice value of the positional argument with
+    the given name.
 
 func (cmd *Command) Uint32Slice(name string) []uint32
     Uint32Slice looks up the value of a local Uint32SliceFlag, returns nil if
@@ -817,8 +867,12 @@ func (cmd *Command) Uint64(name string) uint64
     Uint64 looks up the value of a local Uint64Flag, returns 0 if not found
 
 func (c *Command) Uint64Arg(name string) uint64
+    Uint64Arg returns the uint64 value of the positional argument with the given
+    name.
 
 func (c *Command) Uint64Args(name string) []uint64
+    Uint64Args returns the uint64 slice value of the positional argument with
+    the given name.
 
 func (cmd *Command) Uint64Slice(name string) []uint64
     Uint64Slice looks up the value of a local Uint64SliceFlag, returns nil if
@@ -828,16 +882,24 @@ func (cmd *Command) Uint8(name string) uint8
     Uint8 looks up the value of a local Uint8Flag, returns 0 if not found
 
 func (c *Command) Uint8Arg(name string) uint8
+    Uint8Arg returns the uint8 value of the positional argument with the given
+    name.
 
 func (c *Command) Uint8Args(name string) []uint8
+    Uint8Args returns the uint8 slice value of the positional argument with the
+    given name.
 
 func (cmd *Command) Uint8Slice(name string) []uint8
     Uint8Slice looks up the value of a local Uint8SliceFlag, returns nil if not
     found
 
 func (c *Command) UintArg(name string) uint
+    UintArg returns the uint value of the positional argument with the given
+    name.
 
 func (c *Command) UintArgs(name string) []uint
+    UintArgs returns the uint slice value of the positional argument with the
+    given name.
 
 func (cmd *Command) UintSlice(name string) []uint
     UintSlice looks up the value of a local UintSliceFlag, returns nil if not
@@ -1185,8 +1247,11 @@ func (f FlagsByName) Less(i, j int) bool
 func (f FlagsByName) Swap(i, j int)
 
 type Float32Arg = ArgumentBase[float32, NoConfig, floatValue[float32]]
+    Float32Arg is a float32 positional argument.
 
 type Float32Args = ArgumentsBase[float32, NoConfig, floatValue[float32]]
+    Float32Args is a positional argument that accepts one or more float32
+    values.
 
 type Float32Flag = FlagBase[float32, NoConfig, floatValue[float32]]
 
@@ -1195,8 +1260,11 @@ type Float32Slice = SliceBase[float32, NoConfig, floatValue[float32]]
 type Float32SliceFlag = FlagBase[[]float32, NoConfig, Float32Slice]
 
 type Float64Arg = ArgumentBase[float64, NoConfig, floatValue[float64]]
+    Float64Arg is a float64 positional argument.
 
 type Float64Args = ArgumentsBase[float64, NoConfig, floatValue[float64]]
+    Float64Args is a positional argument that accepts one or more float64
+    values.
 
 type Float64Flag = FlagBase[float64, NoConfig, floatValue[float64]]
 
@@ -1205,8 +1273,10 @@ type Float64Slice = SliceBase[float64, NoConfig, floatValue[float64]]
 type Float64SliceFlag = FlagBase[[]float64, NoConfig, Float64Slice]
 
 type FloatArg = ArgumentBase[float64, NoConfig, floatValue[float64]]
+    FloatArg is a float64 positional argument.
 
 type FloatArgs = ArgumentsBase[float64, NoConfig, floatValue[float64]]
+    FloatArgs is a positional argument that accepts one or more float64 values.
 
 type FloatFlag = FlagBase[float64, NoConfig, floatValue[float64]]
 
@@ -1243,8 +1313,10 @@ var HelpPrinter HelpPrinterFunc = DefaultPrintHelp
     to capture the extra information.
 
 type Int16Arg = ArgumentBase[int16, IntegerConfig, intValue[int16]]
+    Int16Arg is an int16 positional argument.
 
 type Int16Args = ArgumentsBase[int16, IntegerConfig, intValue[int16]]
+    Int16Args is a positional argument that accepts one or more int16 values.
 
 type Int16Flag = FlagBase[int16, IntegerConfig, intValue[int16]]
 
@@ -1253,8 +1325,10 @@ type Int16Slice = SliceBase[int16, IntegerConfig, intValue[int16]]
 type Int16SliceFlag = FlagBase[[]int16, IntegerConfig, Int16Slice]
 
 type Int32Arg = ArgumentBase[int32, IntegerConfig, intValue[int32]]
+    Int32Arg is an int32 positional argument.
 
 type Int32Args = ArgumentsBase[int32, IntegerConfig, intValue[int32]]
+    Int32Args is a positional argument that accepts one or more int32 values.
 
 type Int32Flag = FlagBase[int32, IntegerConfig, intValue[int32]]
 
@@ -1263,8 +1337,10 @@ type Int32Slice = SliceBase[int32, IntegerConfig, intValue[int32]]
 type Int32SliceFlag = FlagBase[[]int32, IntegerConfig, Int32Slice]
 
 type Int64Arg = ArgumentBase[int64, IntegerConfig, intValue[int64]]
+    Int64Arg is an int64 positional argument.
 
 type Int64Args = ArgumentsBase[int64, IntegerConfig, intValue[int64]]
+    Int64Args is a positional argument that accepts one or more int64 values.
 
 type Int64Flag = FlagBase[int64, IntegerConfig, intValue[int64]]
 
@@ -1273,8 +1349,10 @@ type Int64Slice = SliceBase[int64, IntegerConfig, intValue[int64]]
 type Int64SliceFlag = FlagBase[[]int64, IntegerConfig, Int64Slice]
 
 type Int8Arg = ArgumentBase[int8, IntegerConfig, intValue[int8]]
+    Int8Arg is an int8 positional argument.
 
 type Int8Args = ArgumentsBase[int8, IntegerConfig, intValue[int8]]
+    Int8Args is a positional argument that accepts one or more int8 values.
 
 type Int8Flag = FlagBase[int8, IntegerConfig, intValue[int8]]
 
@@ -1283,8 +1361,10 @@ type Int8Slice = SliceBase[int8, IntegerConfig, intValue[int8]]
 type Int8SliceFlag = FlagBase[[]int8, IntegerConfig, Int8Slice]
 
 type IntArg = ArgumentBase[int, IntegerConfig, intValue[int]]
+    IntArg is an int positional argument.
 
 type IntArgs = ArgumentsBase[int, IntegerConfig, intValue[int]]
+    IntArgs is a positional argument that accepts one or more int values.
 
 type IntFlag = FlagBase[int, IntegerConfig, intValue[int]]
 
@@ -1450,8 +1530,10 @@ func (i *SliceBase[T, C, VC]) Value() []T
     Value returns the slice of values set by this flag
 
 type StringArg = ArgumentBase[string, StringConfig, stringValue]
+    StringArg is a string positional argument.
 
 type StringArgs = ArgumentsBase[string, StringConfig, stringValue]
+    StringArgs is a positional argument that accepts one or more string values.
 
 type StringConfig struct {
 	// Whether to trim whitespace of parsed value
@@ -1464,6 +1546,8 @@ type StringFlag = FlagBase[string, StringConfig, stringValue]
 type StringMap = MapBase[string, StringConfig, stringValue]
 
 type StringMapArgs = ArgumentBase[map[string]string, StringConfig, StringMap]
+    StringMapArgs is a positional argument that accepts a map of string
+    key/value pairs.
 
 type StringMapFlag = FlagBase[map[string]string, StringConfig, StringMap]
 
@@ -1498,8 +1582,11 @@ type TextMarshalUnmarshaler interface {
     types such as *slog.LevelVar, *net/netip.Addr, and *time.Time.
 
 type TimestampArg = ArgumentBase[time.Time, TimestampConfig, timestampValue]
+    TimestampArg is a time.Time positional argument.
 
 type TimestampArgs = ArgumentsBase[time.Time, TimestampConfig, timestampValue]
+    TimestampArgs is a positional argument that accepts one or more time.Time
+    values.
 
 type TimestampConfig struct {
 	Timezone *time.Location
@@ -1515,8 +1602,10 @@ type TimestampConfig struct {
 type TimestampFlag = FlagBase[time.Time, TimestampConfig, timestampValue]
 
 type Uint16Arg = ArgumentBase[uint16, IntegerConfig, uintValue[uint16]]
+    Uint16Arg is a uint16 positional argument.
 
 type Uint16Args = ArgumentsBase[uint16, IntegerConfig, uintValue[uint16]]
+    Uint16Args is a positional argument that accepts one or more uint16 values.
 
 type Uint16Flag = FlagBase[uint16, IntegerConfig, uintValue[uint16]]
 
@@ -1525,8 +1614,10 @@ type Uint16Slice = SliceBase[uint16, IntegerConfig, uintValue[uint16]]
 type Uint16SliceFlag = FlagBase[[]uint16, IntegerConfig, Uint16Slice]
 
 type Uint32Arg = ArgumentBase[uint32, IntegerConfig, uintValue[uint32]]
+    Uint32Arg is a uint32 positional argument.
 
 type Uint32Args = ArgumentsBase[uint32, IntegerConfig, uintValue[uint32]]
+    Uint32Args is a positional argument that accepts one or more uint32 values.
 
 type Uint32Flag = FlagBase[uint32, IntegerConfig, uintValue[uint32]]
 
@@ -1535,8 +1626,10 @@ type Uint32Slice = SliceBase[uint32, IntegerConfig, uintValue[uint32]]
 type Uint32SliceFlag = FlagBase[[]uint32, IntegerConfig, Uint32Slice]
 
 type Uint64Arg = ArgumentBase[uint64, IntegerConfig, uintValue[uint64]]
+    Uint64Arg is a uint64 positional argument.
 
 type Uint64Args = ArgumentsBase[uint64, IntegerConfig, uintValue[uint64]]
+    Uint64Args is a positional argument that accepts one or more uint64 values.
 
 type Uint64Flag = FlagBase[uint64, IntegerConfig, uintValue[uint64]]
 
@@ -1545,8 +1638,10 @@ type Uint64Slice = SliceBase[uint64, IntegerConfig, uintValue[uint64]]
 type Uint64SliceFlag = FlagBase[[]uint64, IntegerConfig, Uint64Slice]
 
 type Uint8Arg = ArgumentBase[uint8, IntegerConfig, uintValue[uint8]]
+    Uint8Arg is a uint8 positional argument.
 
 type Uint8Args = ArgumentsBase[uint8, IntegerConfig, uintValue[uint8]]
+    Uint8Args is a positional argument that accepts one or more uint8 values.
 
 type Uint8Flag = FlagBase[uint8, IntegerConfig, uintValue[uint8]]
 
@@ -1555,8 +1650,10 @@ type Uint8Slice = SliceBase[uint8, IntegerConfig, uintValue[uint8]]
 type Uint8SliceFlag = FlagBase[[]uint8, IntegerConfig, Uint8Slice]
 
 type UintArg = ArgumentBase[uint, IntegerConfig, uintValue[uint]]
+    UintArg is a uint positional argument.
 
 type UintArgs = ArgumentsBase[uint, IntegerConfig, uintValue[uint]]
+    UintArgs is a positional argument that accepts one or more uint values.
 
 type UintFlag = FlagBase[uint, IntegerConfig, uintValue[uint]]
 
