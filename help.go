@@ -252,24 +252,51 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 			usage = completionUsage(docFlag.GetUsage())
 		}
 
-		name := strings.TrimSpace(flag.Names()[0])
-		// this will get total count utf8 letters in flag name
-		// reuse this count to generate single - or -- in flag completion
-		count := min(utf8.RuneCountInString(name), 2)
-		// if flag name has more than one utf8 letter and last argument in cli has -- prefix then
-		// skip flag completion for short flags example -v or -x
-		if strings.HasPrefix(lastArg, "--") && count == 1 {
-			continue
-		}
-		// match if last argument matches this flag and it is not repeated
-		if strings.HasPrefix(name, cur) && cur != name /* && !cliArgContains(name, os.Args)*/ {
-			flagCompletion := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
-			if usage != "" {
-				flagCompletion = fmt.Sprintf("%s:%s", flagCompletion, usage)
+		for _, name := range completionNames(flag, lastArg) {
+			// this will get total count utf8 letters in flag name
+			// reuse this count to generate single - or -- in flag completion
+			count := min(utf8.RuneCountInString(name), 2)
+			// match if last argument matches this flag and it is not repeated
+			if strings.HasPrefix(name, cur) && cur != name /* && !cliArgContains(name, os.Args)*/ {
+				flagCompletion := fmt.Sprintf("%s%s", strings.Repeat("-", count), name)
+				if usage != "" {
+					flagCompletion = fmt.Sprintf("%s:%s", flagCompletion, usage)
+				}
+				fmt.Fprintln(writer, flagCompletion)
 			}
-			fmt.Fprintln(writer, flagCompletion)
 		}
 	}
+}
+
+// completionNames returns the names to suggest for flag: its first name, or
+// after "--" its first long name, since "--v" is not a flag, and for a
+// BoolWithInverseFlag also the inverse of that name. These are the long names
+// the fish completion offers too.
+func completionNames(flag Flag, lastArg string) []string {
+	names := flag.Names()
+	bif, isInverse := flag.(*BoolWithInverseFlag)
+	if isInverse {
+		names = append([]string{bif.Name}, bif.Aliases...)
+	}
+
+	name := strings.TrimSpace(names[0])
+	if strings.HasPrefix(lastArg, "--") && utf8.RuneCountInString(name) == 1 {
+		name = ""
+		for _, alias := range names[1:] {
+			if alias = strings.TrimSpace(alias); utf8.RuneCountInString(alias) > 1 {
+				name = alias
+				break
+			}
+		}
+		if name == "" {
+			return nil
+		}
+	}
+
+	if isInverse {
+		return []string{name, bif.inversePrefix() + name}
+	}
+	return []string{name}
 }
 
 // isCompleteFlag reports whether arg is a flag that needs nothing more: one

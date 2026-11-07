@@ -1666,6 +1666,57 @@ func TestDefaultCompleteWithFlags(t *testing.T) {
 			expected: "--excitement\n--everybody-jump-on\n",
 		},
 		{
+			name: "flag-suggestion-long-alias-of-short-flag",
+			cmd: &Command{
+				Flags: []Flag{
+					&BoolFlag{Name: "v", Aliases: []string{"verbose"}},
+					&BoolFlag{Name: "x"},
+				},
+				parent: &Command{Name: "cmd"},
+			},
+			argv:     []string{"cmd", "--", completionFlag},
+			env:      map[string]string{"SHELL": "bash"},
+			expected: "--verbose\n",
+		},
+		{
+			name: "flag-suggestion-short-flag-after-single-dash",
+			cmd: &Command{
+				Flags: []Flag{
+					&BoolFlag{Name: "v", Aliases: []string{"verbose"}},
+				},
+				parent: &Command{Name: "cmd"},
+			},
+			argv:     []string{"cmd", "-", completionFlag},
+			env:      map[string]string{"SHELL": "bash"},
+			expected: "-v\n",
+		},
+		{
+			name: "flag-suggestion-bool-with-inverse",
+			cmd: &Command{
+				Flags: []Flag{
+					&BoolWithInverseFlag{Name: "color"},
+					&BoolWithInverseFlag{Name: "d", Aliases: []string{"dry-run"}},
+					&BoolWithInverseFlag{Name: "keep", InversePrefix: "dont-"},
+				},
+				parent: &Command{Name: "cmd"},
+			},
+			argv:     []string{"cmd", "--no", completionFlag},
+			env:      map[string]string{"SHELL": "bash"},
+			expected: "--no-color\n--no-dry-run\n",
+		},
+		{
+			name: "flag-suggestion-bool-with-inverse-custom-prefix",
+			cmd: &Command{
+				Flags: []Flag{
+					&BoolWithInverseFlag{Name: "keep", InversePrefix: "dont-"},
+				},
+				parent: &Command{Name: "cmd"},
+			},
+			argv:     []string{"cmd", "--", completionFlag},
+			env:      map[string]string{"SHELL": "bash"},
+			expected: "--keep\n--dont-keep\n",
+		},
+		{
 			name: "flag-suggestion-double-dash-shows-all-flags",
 			cmd: &Command{
 				Flags: []Flag{
