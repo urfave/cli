@@ -28,6 +28,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 
 	cmd.setFlags = map[Flag]struct{}{}
 	cmd.appliedFlags = cmd.allFlags()
+	cmd.parsedArgsAfterDoubleDash = false
 
 	tracef("walking command lineage for persistent flags (cmd=%[1]q)", cmd.Name)
 
@@ -101,6 +102,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 			if cmd.Root().shellCompletion {
 				posArgs = append(posArgs, firstArg)
 			}
+			cmd.parsedArgsAfterDoubleDash = len(posArgs) == 0
 			posArgs = append(posArgs, rargs[1:]...)
 			return &stringSliceArgs{posArgs}, nil
 		}

@@ -274,11 +274,15 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 
 		tracef("using first positional argument as sub-command name=%[1]q (cmd=%[2]q)", name, cmd.Name)
 
-		if cmd.SuggestCommandFunc != nil && name != "--" {
-			name = cmd.SuggestCommandFunc(cmd.Commands, name)
-			tracef("suggested command name=%1[q] (cmd=%[2]q)", name, cmd.Name)
+		// After a "--" only arguments follow, so a command name there is
+		// an argument of this command rather than a subcommand to run.
+		if !cmd.parsedArgsAfterDoubleDash {
+			if cmd.SuggestCommandFunc != nil && name != "--" {
+				name = cmd.SuggestCommandFunc(cmd.Commands, name)
+				tracef("suggested command name=%1[q] (cmd=%[2]q)", name, cmd.Name)
+			}
+			subCmd = cmd.Command(name)
 		}
-		subCmd = cmd.Command(name)
 		if subCmd == nil {
 			hasDefault := cmd.DefaultCommand != ""
 

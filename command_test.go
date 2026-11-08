@@ -1556,6 +1556,53 @@ func TestCommand_CommandWithNoFlagBeforeTerminator(t *testing.T) {
 	require.Equal(t, "notAFlagAtAll", args.Get(1))
 }
 
+func TestCommand_CommandNameAfterTerminatorIsAnArgument(t *testing.T) {
+	tests := []struct {
+		name         string
+		argv         []string
+		expectedArgs []string
+	}{
+		{
+			name:         "on the root command",
+			argv:         []string{"", "--", "cmd", "--notAFlag"},
+			expectedArgs: []string{"cmd", "--notAFlag"},
+		},
+		{
+			name:         "after a flag",
+			argv:         []string{"", "--opt", "v", "--", "cmd"},
+			expectedArgs: []string{"cmd"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			var args []string
+			subcommandRan := false
+
+			cmd := &Command{
+				Flags: []Flag{&StringFlag{Name: "opt"}},
+				Action: func(_ context.Context, cmd *Command) error {
+					args = cmd.Args().Slice()
+					return nil
+				},
+				Commands: []*Command{
+					{
+						Name: "cmd",
+						Action: func(context.Context, *Command) error {
+							subcommandRan = true
+							return nil
+						},
+					},
+				},
+			}
+
+			require.NoError(t, cmd.Run(buildTestContext(t), test.argv))
+			assert.False(t, subcommandRan, "the subcommand must not run when its name follows \"--\"")
+			assert.Equal(t, test.expectedArgs, args)
+		})
+	}
+}
+
 func TestCommand_SkipFlagParsing(t *testing.T) {
 	var args Args
 
