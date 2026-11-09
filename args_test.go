@@ -68,6 +68,24 @@ func TestArgsMinGtMax(t *testing.T) {
 	require.ErrorContains(t, err, "args sa has min[2] > max[1], not parsing argument")
 }
 
+func TestArgsStringMapType(t *testing.T) {
+	cmd := buildMinimalTestCommand()
+	var mval map[string]string
+	cmd.Arguments = []Argument{
+		&StringMapArgs{
+			Name:        "ma",
+			Destination: &mval,
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"foo", "a=1,b=2"})
+	r := require.New(t)
+	r.NoError(err)
+	r.Equal(map[string]string{"a": "1", "b": "2"}, mval)
+	r.Equal(map[string]string{"a": "1", "b": "2"}, cmd.StringMapArgs("ma"))
+	r.Nil(cmd.StringMapArgs("missing"))
+}
+
 func TestArgsFloatTypes(t *testing.T) {
 	cmd := buildMinimalTestCommand()
 	var fval float64

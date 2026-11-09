@@ -308,6 +308,10 @@ func (c *Command) StringArgs(name string) []string {
 	return arg[[]string](name, c)
 }
 
+func (c *Command) StringMapArgs(name string) map[string]string {
+	return arg[map[string]string](name, c)
+}
+
 func (c *Command) FloatArg(name string) float64 {
 	return arg[float64](name, c)
 }
