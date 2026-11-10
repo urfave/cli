@@ -2431,7 +2431,35 @@ func TestCommandHelpSuggest(t *testing.T) {
 	cmd.setupDefaults([]string{"foo"})
 
 	err := ShowCommandHelp(t.Context(), cmd, "put")
-	assert.ErrorContains(t, err, "No help topic for 'put'. putz")
+	assert.EqualError(t, err, `No help topic for 'put'. Did you mean "putz"?`)
+}
+
+func TestCommandHelpSuggestFromRun(t *testing.T) {
+	for _, args := range [][]string{
+		{"app", "instal"},
+		{"app", "help", "instal"},
+	} {
+		t.Run(strings.Join(args[1:], " "), func(t *testing.T) {
+			cmd := &Command{
+				Name:    "app",
+				Suggest: true,
+				Writer:  io.Discard,
+				Commands: []*Command{
+					{
+						Name:   "install",
+						Action: func(context.Context, *Command) error { return nil },
+					},
+				},
+			}
+
+			err := cmd.Run(buildTestContext(t), args)
+
+			assert.EqualError(t, err, `No help topic for 'instal'. Did you mean "install"?`)
+			var exitErr ExitCoder
+			require.ErrorAs(t, err, &exitErr)
+			assert.Equal(t, 3, exitErr.ExitCode())
+		})
+	}
 }
 
 func TestCommandHelpSuggestHiddenCommand(t *testing.T) {
@@ -2451,7 +2479,7 @@ func TestCommandHelpSuggestHiddenCommand(t *testing.T) {
 	cmd.setupDefaults([]string{"foo"})
 
 	err := ShowCommandHelp(t.Context(), cmd, "put")
-	assert.EqualError(t, err, "No help topic for 'put'. pull")
+	assert.EqualError(t, err, `No help topic for 'put'. Did you mean "pull"?`)
 }
 
 func TestWrapLine(t *testing.T) {
