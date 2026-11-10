@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -310,7 +311,7 @@ func TestMapValueSource(t *testing.T) {
 					},
 				},
 			},
-			val:   "[10]",
+			val:   slPfx() + "[10]",
 			found: true,
 		},
 	}
@@ -340,4 +341,260 @@ func TestMapValueSourceStringer(t *testing.T) {
 
 	assert.Equal(t, `&mapValueSource{key:"bar", src:&mapSource{name:"test"}}`, mvs.GoString())
 	assert.Equal(t, `key "bar" from map source "test"`, mvs.String())
+}
+
+func TestMapValueSourceLists(t *testing.T) {
+	ms := NewMapSource("config", map[any]any{
+		"ports": []any{80, 443},
+		"hosts": []string{"a.example", "b.example"},
+		"empty": []any{},
+	})
+
+	var ports []int
+	var hosts []string
+	cmd := &Command{
+		Flags: []Flag{
+			&IntSliceFlag{Name: "ports", Sources: NewValueSourceChain(NewMapValueSource("ports", ms))},
+			&StringSliceFlag{Name: "hosts", Sources: NewValueSourceChain(NewMapValueSource("hosts", ms))},
+		},
+		Action: func(_ context.Context, cmd *Command) error {
+			ports = cmd.IntSlice("ports")
+			hosts = cmd.StringSlice("hosts")
+			return nil
+		},
+	}
+
+	if err := cmd.Run(context.Background(), []string{"app"}); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	assert.Equal(t, []int{80, 443}, ports)
+	assert.Equal(t, []string{"a.example", "b.example"}, hosts)
+
+	var empty []string
+	cmd = &Command{
+		Flags: []Flag{
+			&StringSliceFlag{Name: "empty", Sources: NewValueSourceChain(NewMapValueSource("empty", ms))},
+		},
+		Action: func(_ context.Context, cmd *Command) error {
+			empty = cmd.StringSlice("empty")
+			return nil
+		},
+	}
+	if err := cmd.Run(context.Background(), []string{"app"}); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	assert.Empty(t, empty)
+}
+
+// A value must survive the separator it is not split on: an element that
+// contains a comma, and a command that changes or disables the separator.
+func TestMapValueSourceListSeparators(t *testing.T) {
+	ms := NewMapSource("config", map[any]any{
+		"hosts": []string{"a,b.example", "c.example"},
+		"ports": []any{80, 443},
+	})
+
+	tests := []struct {
+		name  string
+		cmd   *Command
+		check func(t *testing.T, cmd *Command)
+	}{
+		{
+			name: "element with a comma",
+			cmd: &Command{
+				Flags: []Flag{
+					&StringSliceFlag{Name: "hosts", Sources: NewValueSourceChain(NewMapValueSource("hosts", ms))},
+				},
+			},
+			check: func(t *testing.T, cmd *Command) {
+				assert.Equal(t, []string{"a,b.example", "c.example"}, cmd.StringSlice("hosts"))
+			},
+		},
+		{
+			name: "custom separator",
+			cmd: &Command{
+				SliceFlagSeparator: ";",
+				Flags: []Flag{
+					&IntSliceFlag{Name: "ports", Sources: NewValueSourceChain(NewMapValueSource("ports", ms))},
+				},
+			},
+			check: func(t *testing.T, cmd *Command) {
+				assert.Equal(t, []int{80, 443}, cmd.IntSlice("ports"))
+			},
+		},
+		{
+			name: "separator disabled",
+			cmd: &Command{
+				DisableSliceFlagSeparator: true,
+				Flags: []Flag{
+					&IntSliceFlag{Name: "ports", Sources: NewValueSourceChain(NewMapValueSource("ports", ms))},
+				},
+			},
+			check: func(t *testing.T, cmd *Command) {
+				assert.Equal(t, []int{80, 443}, cmd.IntSlice("ports"))
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			test.cmd.Action = func(_ context.Context, cmd *Command) error {
+				test.check(t, cmd)
+				return nil
+			}
+			if err := test.cmd.Run(context.Background(), []string{"app"}); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+		})
+	}
+}
+
+// A list from a map source must reach the flag through its own element parser,
+// not through a JSON decode that silently produces zero values, and a scalar
+// flag must never see the internal serialization prefix.
+func TestMapValueSourceListsWithMismatchedTypes(t *testing.T) {
+	ms := NewMapSource("config", map[any]any{
+		"anyints":  []any{80, 443},
+		"strings":  []string{"80", "443"},
+		"mixed":    []any{"a", 2, true},
+		"negative": []any{-1},
+		"plain":    []string{"x", "y"},
+	})
+
+	for _, tc := range []struct {
+		name    string
+		flag    Flag
+		want    any
+		wantErr bool
+	}{
+		{
+			name: "ints in a string slice read as their digits",
+			flag: &StringSliceFlag{Name: "anyints", Sources: NewValueSourceChain(NewMapValueSource("anyints", ms))},
+			want: []string{"80", "443"},
+		},
+		{
+			name: "strings in an int slice are parsed",
+			flag: &IntSliceFlag{Name: "strings", Sources: NewValueSourceChain(NewMapValueSource("strings", ms))},
+			want: []int{80, 443},
+		},
+		{
+			name: "mixed elements all arrive",
+			flag: &StringSliceFlag{Name: "mixed", Sources: NewValueSourceChain(NewMapValueSource("mixed", ms))},
+			want: []string{"a", "2", "true"},
+		},
+		{
+			name:    "a negative into an unsigned slice is an error, not a zero",
+			flag:    &UintSliceFlag{Name: "negative", Sources: NewValueSourceChain(NewMapValueSource("negative", ms))},
+			wantErr: true,
+		},
+		{
+			name: "a list into a scalar flag never carries the prefix",
+			flag: &StringFlag{Name: "plain", Sources: NewValueSourceChain(NewMapValueSource("plain", ms))},
+			want: "x,y",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var got any
+			cmd := &Command{
+				Flags: []Flag{tc.flag},
+				Action: func(_ context.Context, cmd *Command) error {
+					switch f := tc.flag.(type) {
+					case *StringSliceFlag:
+						got = cmd.StringSlice(f.Name)
+					case *IntSliceFlag:
+						got = cmd.IntSlice(f.Name)
+					case *UintSliceFlag:
+						got = cmd.UintSlice(f.Name)
+					case *StringFlag:
+						got = cmd.String(f.Name)
+					}
+					return nil
+				},
+			}
+			err := cmd.Run(context.Background(), []string{"app"})
+			if tc.wantErr {
+				if err == nil {
+					t.Fatalf("expected an error, got %v", got)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+// The serialized form is scanned without a JSON decoder, so the elements that
+// a decoder would unescape have to arrive intact: the separator inside a
+// value, quotes, backslashes, a newline, empty strings and brackets.
+func TestMapValueSourceListElementsSurviveTheSerializedForm(t *testing.T) {
+	want := []string{
+		"a,b",
+		`he said "hi"`,
+		`back\slash`,
+		"emoji 🎉",
+		"",
+		"[brackets]",
+		"line\nbreak",
+		"tab\there",
+	}
+	ms := NewMapSource("tricky", map[any]any{"tricky": want})
+
+	var got []string
+	cmd := &Command{
+		Flags: []Flag{
+			&StringSliceFlag{Name: "tricky", Sources: NewValueSourceChain(NewMapValueSource("tricky", ms))},
+		},
+		Action: func(_ context.Context, cmd *Command) error {
+			got = cmd.StringSlice("tricky")
+			return nil
+		},
+	}
+	require.NoError(t, cmd.Run(context.Background(), []string{"app"}))
+	assert.Equal(t, want, got)
+}
+
+// The serialized scanner is hand-written, so its refusals are pinned here: a
+// value that is not the flat array Serialize writes must come back as an
+// error, never as a silently truncated list.
+func TestSerializedListElements(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		in      string
+		want    []string
+		wantErr bool
+	}{
+		{name: "strings", in: `["a","b"]`, want: []string{"a", "b"}},
+		{name: "empty array", in: `[]`, want: []string{}},
+		{name: "null", in: `null`},
+		{name: "numbers and bools", in: `[80,-1,true]`, want: []string{"80", "-1", "true"}},
+		{name: "escapes", in: `["a,b","he said \"hi\"","back\\slash",""]`, want: []string{"a,b", `he said "hi"`, `back\slash`, ""}},
+		{name: "object", in: `{"a":1}`, wantErr: true},
+		{name: "unterminated string", in: `["abc]`, wantErr: true},
+		{name: "bad escape", in: `["\q"]`, wantErr: true},
+		{name: "nested value", in: `[{"a":1}]`, wantErr: true},
+		{name: "missing comma", in: `["a" "b"]`, wantErr: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := serializedListElements(tc.in)
+			if tc.wantErr {
+				require.Error(t, err, "got %q", got)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+// A malformed serialized value reaches the caller as an error, not as an empty
+// list.
+func TestSliceBaseRejectsAMalformedSerializedValue(t *testing.T) {
+	var dest []string
+	v := StringSlice{}.Create([]string{"old"}, &dest, StringConfig{})
+	require.NoError(t, v.Set("a,b"))
+	require.Error(t, v.Set(slPfx()+`["c"`))
+	assert.Equal(t, []string{"a", "b"}, dest)
 }

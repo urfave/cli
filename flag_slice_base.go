@@ -54,8 +54,27 @@ func (i *SliceBase[T, C, VC]) Set(value string) error {
 	}
 
 	if s, ok := strings.CutPrefix(value, slPfx()); ok {
-		// Deserializing assumes overwrite
-		_ = json.Unmarshal([]byte(s), i.slice)
+		elems, err := serializedListElements(s)
+		if err != nil {
+			return err
+		}
+		if elems == nil {
+			*i.slice = nil
+			i.hasBeenSet = true
+			return nil
+		}
+		// Deserializing assumes overwrite, as it always has.
+		*i.slice = make([]T, 0, len(elems))
+		for _, elem := range elems {
+			// Each element goes through the same parser as the split path, so
+			// a JSON number in a string flag reads as its digits and a JSON
+			// string in an int flag is parsed or reported rather than silently
+			// becoming the zero value.
+			if err := i.value.Set(elem); err != nil {
+				return err
+			}
+			*i.slice = append(*i.slice, i.value.Get().(T))
+		}
 		i.hasBeenSet = true
 		return nil
 	}

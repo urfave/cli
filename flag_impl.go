@@ -164,6 +164,16 @@ func (f *FlagBase[T, C, V]) PostParse() error {
 
 		for _, source := range f.Sources.Chain {
 			val, found := source.Lookup()
+			// A list from a map or struct value source arrives in the
+			// serialized form only a slice flag can decode. A scalar flag
+			// gets the elements comma-joined, never the internal prefix.
+			if kind != reflect.Slice && kind != reflect.Array {
+				if s, ok := strings.CutPrefix(val, slPfx()); ok {
+					if elems, err := serializedListElements(s); err == nil {
+						val = strings.Join(elems, defaultSliceFlagSeparator)
+					}
+				}
+			}
 			if trimSpace {
 				val = strings.TrimSpace(val)
 			}

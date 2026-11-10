@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -20,6 +21,61 @@ const (
 var slPfx = sync.OnceValue(func() string {
 	return fmt.Sprintf("sl:::%d:::", time.Now().UTC().UnixNano())
 })
+
+// serializedListElements splits the JSON array `SliceBase.Serialize` writes
+// into one string per element. It scans rather than decodes: a decode into a
+// concrete Go type links the whole encoding/json decoder, and `make
+// check-binary-size` refuses the result. Every element of a serialized slice
+// is a JSON string, number, bool or null, since the slice holds scalars.
+func serializedListElements(s string) ([]string, error) {
+	if s == "null" {
+		// A nil slice serializes to JSON null; keep that distinction.
+		return nil, nil
+	}
+	if len(s) < 2 || s[0] != '[' || s[len(s)-1] != ']' {
+		return nil, fmt.Errorf("could not decode serialized list: %q is not a JSON array", s)
+	}
+	rest := s[1 : len(s)-1]
+	elems := make([]string, 0, strings.Count(rest, ",")+1)
+	for rest != "" {
+		var elem string
+		if rest[0] == '"' {
+			end := 1
+			for end < len(rest) && rest[end] != '"' {
+				if rest[end] == '\\' {
+					end++
+				}
+				end++
+			}
+			if end >= len(rest) {
+				return nil, fmt.Errorf("could not decode serialized list: unterminated string in %q", s)
+			}
+			unquoted, err := strconv.Unquote(rest[:end+1])
+			if err != nil {
+				return nil, fmt.Errorf("could not decode serialized list: %w", err)
+			}
+			elem, rest = unquoted, rest[end+1:]
+		} else {
+			end := strings.IndexByte(rest, ',')
+			if end < 0 {
+				end = len(rest)
+			}
+			elem, rest = rest[:end], rest[end:]
+			if strings.ContainsAny(elem, "[{") {
+				return nil, fmt.Errorf("could not decode serialized list: %q is not a scalar", elem)
+			}
+		}
+		elems = append(elems, elem)
+		if rest == "" {
+			break
+		}
+		if rest[0] != ',' {
+			return nil, fmt.Errorf("could not decode serialized list: %q is not a JSON array", s)
+		}
+		rest = rest[1:]
+	}
+	return elems, nil
+}
 
 // GenerateShellCompletionFlag enables shell completion
 var GenerateShellCompletionFlag Flag = &BoolFlag{
