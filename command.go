@@ -170,6 +170,9 @@ type Command struct {
 	parent *Command
 	// parsed args
 	parsedArgs Args
+	// whether the parsed args start after a "--" separator, in which
+	// case the first of them is an argument and never a command name
+	parsedArgsAfterDoubleDash bool
 	// track state of error handling
 	isInError bool
 	// track state of defaults
