@@ -162,6 +162,9 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 		if err := f.PreParse(); err != nil {
 			return ctx, err
 		}
+		// help can be shown before the flags are post-parsed, and a map
+		// flag's help shows the key-value separator
+		cmd.setMultiValueParsingConfig(f)
 	}
 
 	var err error

@@ -366,6 +366,11 @@ func DefaultShowCommandHelp(ctx context.Context, cmd *Command, commandName strin
 			}
 		}
 
+		// subCmd is not run, so set the config its map flags show in help
+		for _, f := range subCmd.Flags {
+			subCmd.setMultiValueParsingConfig(f)
+		}
+
 		tracef("running HelpPrinter")
 		HelpPrinter(cmd.Root().Writer, tmpl, subCmd)
 

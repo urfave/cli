@@ -6432,6 +6432,36 @@ func TestCommandMapFlagKeyValueSeparatorInheritance(t *testing.T) {
 	}
 }
 
+// Help shows a map flag with the separator it is parsed with, including the
+// help printed after a usage error.
+func TestCommandMapKeyValueFlagSeparatorHelp(t *testing.T) {
+	for _, args := range [][]string{
+		{"app", "--help"},
+		{"app", "sub", "--help"},
+		{"app", "help", "sub"},
+		{"app", "--labels", "env=prod"},
+	} {
+		t.Run(strings.Join(args[1:], " "), func(t *testing.T) {
+			var out bytes.Buffer
+			labels := func() Flag {
+				return &StringMapFlag{Name: "labels", Value: map[string]string{"env": "prod"}}
+			}
+			cmd := &Command{
+				Name:                     "app",
+				Writer:                   &out,
+				ErrWriter:                io.Discard,
+				MapFlagKeyValueSeparator: ":",
+				Flags:                    []Flag{labels()},
+				Commands:                 []*Command{{Name: "sub", Flags: []Flag{labels()}}},
+			}
+
+			_ = cmd.Run(buildTestContext(t), args)
+			assert.Contains(t, out.String(), "--labels string:string")
+			assert.Contains(t, out.String(), `(default: env:"prod")`)
+		})
+	}
+}
+
 func TestCommandMapKeyValueFlagSeparator(t *testing.T) {
 	cmd := &Command{
 		MapFlagKeyValueSeparator: ":",

@@ -29,6 +29,14 @@ type multiValueParsingConfig struct {
 	MapFlagKeyValueSeparator string
 }
 
+// mapKeyValueSeparator returns the separator between a map flag's keys and values
+func (c multiValueParsingConfig) mapKeyValueSeparator() string {
+	if c.MapFlagKeyValueSeparator == "" {
+		return defaultMapFlagKeyValueSeparator
+	}
+	return c.MapFlagKeyValueSeparator
+}
+
 type multiValueParsingConfigSetter interface {
 	// configuration of parsing
 	setMultiValueParsingConfig(c multiValueParsingConfig)
@@ -92,9 +100,14 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 func (f *FlagBase[T, C, V]) GetValue() string {
 	var v V
 	// Format through a value created with the flag's Config, so that e.g.
-	// IntegerConfig.Base is honored
-	if cv, ok := v.Create(f.Value, new(T), f.Config).(interface{ ToString(T) string }); ok {
-		return cv.ToString(f.Value)
+	// IntegerConfig.Base is honored, and given its parsing config, so that a
+	// map flag's default shows the command's key-value separator
+	cv := v.Create(f.Value, new(T), f.Config)
+	if cs, ok := cv.(multiValueParsingConfigSetter); ok && f.multiValueConfig != nil {
+		cs.setMultiValueParsingConfig(*f.multiValueConfig)
+	}
+	if tv, ok := cv.(interface{ ToString(T) string }); ok {
+		return tv.ToString(f.Value)
 	}
 	return v.ToString(f.Value)
 }
@@ -129,7 +142,11 @@ func (f *FlagBase[T, C, V]) TypeName() string {
 	case reflect.Map:
 		keyType := ty.Key()
 		valueType := ty.Elem()
-		return fmt.Sprintf("%s=%s", convertToGenericType(keyType.Name()), convertToGenericType(valueType.Name()))
+		var mvc multiValueParsingConfig
+		if f.multiValueConfig != nil {
+			mvc = *f.multiValueConfig
+		}
+		return convertToGenericType(keyType.Name()) + mvc.mapKeyValueSeparator() + convertToGenericType(valueType.Name())
 	default:
 		return convertToGenericType(ty.Name())
 	}
