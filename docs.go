@@ -71,6 +71,11 @@ func withEnvHint(envVars []string, str string) string {
 	} else {
 		envText = envFormat(envVars, "%", "%, %", "%")
 	}
+	// A flag with no usage text: the hint starts the usage column, so it
+	// must not add a space in front of it.
+	if strings.HasSuffix(str, "\t") {
+		envText = strings.TrimPrefix(envText, " ")
+	}
 	return str + envText
 }
 

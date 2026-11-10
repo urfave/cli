@@ -833,7 +833,7 @@ func TestStringFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := &StringFlag{Name: test.name, Aliases: test.aliases, Value: test.value, Sources: EnvVars("APP_FOO")}
 		output := fl.String()
 
-		expectedSuffix := withEnvHint([]string{"APP_FOO"}, "")
+		expectedSuffix := strings.TrimPrefix(withEnvHint([]string{"APP_FOO"}, ""), " ")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
@@ -886,6 +886,24 @@ func TestFlagEnvHinter(t *testing.T) {
 	}
 }
 
+func TestFlagEnvHintWithoutUsage(t *testing.T) {
+	tests := []struct {
+		flag  Flag
+		names string
+	}{
+		{&StringFlag{Name: "token", Sources: EnvVars("APP_TOKEN")}, "--token string"},
+		{&BoolFlag{Name: "quiet", Sources: EnvVars("APP_QUIET", "APP_SILENT")}, "--quiet"},
+	}
+	for _, test := range tests {
+		t.Run(test.names, func(t *testing.T) {
+			// the hint starts the usage column, so there is no space before it
+			envVars := test.flag.(DocGenerationFlag).GetEnvVars()
+			hint := strings.TrimPrefix(withEnvHint(envVars, ""), " ")
+			assert.Equal(t, test.names+"\t"+hint, test.flag.String())
+		})
+	}
+}
+
 func TestFlagNamePrefixer(t *testing.T) {
 	defer func(old FlagNamePrefixFunc) { FlagNamePrefixer = old }(FlagNamePrefixer)
 	FlagNamePrefixer = func(names []string, placeholder string) string {
@@ -923,7 +941,7 @@ func TestStringSliceFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := &StringSliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value, Sources: EnvVars("APP_QWWX")}
 		output := fl.String()
 
-		expectedSuffix := withEnvHint([]string{"APP_QWWX"}, "")
+		expectedSuffix := strings.TrimPrefix(withEnvHint([]string{"APP_QWWX"}, ""), " ")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%q does not end with"+expectedSuffix, output)
 		}
@@ -1022,7 +1040,7 @@ func TestIntFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := &Int64Flag{Name: test.name, Sources: EnvVars("APP_BAR")}
 		output := fl.String()
 
-		expectedSuffix := withEnvHint([]string{"APP_BAR"}, "")
+		expectedSuffix := strings.TrimPrefix(withEnvHint([]string{"APP_BAR"}, ""), " ")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
@@ -1074,7 +1092,7 @@ func TestUintFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := &Uint64Flag{Name: test.name, Sources: EnvVars("APP_BAR")}
 		output := fl.String()
 
-		expectedSuffix := withEnvHint([]string{"APP_BAR"}, "")
+		expectedSuffix := strings.TrimPrefix(withEnvHint([]string{"APP_BAR"}, ""), " ")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
@@ -1114,7 +1132,7 @@ func TestUint64FlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := &Uint64Flag{Name: test.name, Sources: EnvVars("APP_BAR")}
 		output := fl.String()
 
-		expectedSuffix := withEnvHint([]string{"APP_BAR"}, "")
+		expectedSuffix := strings.TrimPrefix(withEnvHint([]string{"APP_BAR"}, ""), " ")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
@@ -1154,7 +1172,7 @@ func TestDurationFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := &DurationFlag{Name: test.name, Sources: EnvVars("APP_BAR")}
 		output := fl.String()
 
-		expectedSuffix := withEnvHint([]string{"APP_BAR"}, "")
+		expectedSuffix := strings.TrimPrefix(withEnvHint([]string{"APP_BAR"}, ""), " ")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
@@ -1234,7 +1252,7 @@ func TestIntSliceFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := &Int64SliceFlag{Name: test.name, Aliases: test.aliases, Value: test.value, Sources: EnvVars("APP_SMURF")}
 		output := fl.String()
 
-		expectedSuffix := withEnvHint([]string{"APP_SMURF"}, "")
+		expectedSuffix := strings.TrimPrefix(withEnvHint([]string{"APP_SMURF"}, ""), " ")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%q does not end with"+expectedSuffix, output)
 		}
@@ -1374,7 +1392,7 @@ func TestUintSliceFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := &Uint64SliceFlag{Name: test.name, Value: test.value, Sources: EnvVars("APP_SMURF")}
 		output := fl.String()
 
-		expectedSuffix := withEnvHint([]string{"APP_SMURF"}, "")
+		expectedSuffix := strings.TrimPrefix(withEnvHint([]string{"APP_SMURF"}, ""), " ")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%q does not end with"+expectedSuffix, output)
 		}
@@ -1522,7 +1540,7 @@ func TestUint64SliceFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := Uint64SliceFlag{Name: test.name, Value: test.value, Sources: EnvVars("APP_SMURF")}
 		output := fl.String()
 
-		expectedSuffix := withEnvHint([]string{"APP_SMURF"}, "")
+		expectedSuffix := strings.TrimPrefix(withEnvHint([]string{"APP_SMURF"}, ""), " ")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%q does not end with"+expectedSuffix, output)
 		}
@@ -1656,7 +1674,7 @@ func TestFloat64FlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := &FloatFlag{Name: test.name, Sources: EnvVars("APP_BAZ")}
 		output := fl.String()
 
-		expectedSuffix := withEnvHint([]string{"APP_BAZ"}, "")
+		expectedSuffix := strings.TrimPrefix(withEnvHint([]string{"APP_BAZ"}, ""), " ")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
@@ -1716,7 +1734,7 @@ func TestFloat64SliceFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := FloatSliceFlag{Name: test.name, Value: test.value, Sources: EnvVars("APP_SMURF")}
 		output := fl.String()
 
-		expectedSuffix := withEnvHint([]string{"APP_SMURF"}, "")
+		expectedSuffix := strings.TrimPrefix(withEnvHint([]string{"APP_SMURF"}, ""), " ")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%q does not end with"+expectedSuffix, output)
 		}
@@ -1829,7 +1847,7 @@ func TestGenericFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := &GenericFlag{Name: test.name, Sources: EnvVars("APP_ZAP")}
 		output := fl.String()
 
-		expectedSuffix := withEnvHint([]string{"APP_ZAP"}, "")
+		expectedSuffix := strings.TrimPrefix(withEnvHint([]string{"APP_ZAP"}, ""), " ")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%s does not end with"+expectedSuffix, output)
 		}
@@ -3254,7 +3272,7 @@ func TestFlagDefaultValueWithEnv(t *testing.T) {
 			name:    "bool",
 			flag:    &BoolFlag{Name: "flag", Value: true, Sources: EnvVars("uflag")},
 			toParse: []string{"--flag=false"},
-			expect:  `--flag	` + withEnvHint([]string{"uflag"}, ""),
+			expect:  withEnvHint([]string{"uflag"}, "--flag\t"),
 			environ: map[string]string{
 				"uflag": "false",
 			},
@@ -3520,7 +3538,7 @@ func TestStringMapFlagWithEnvVarHelpOutput(t *testing.T) {
 		fl := &StringMapFlag{Name: test.name, Aliases: test.aliases, Value: test.value, Sources: EnvVars("APP_QWWX")}
 		output := fl.String()
 
-		expectedSuffix := withEnvHint([]string{"APP_QWWX"}, "")
+		expectedSuffix := strings.TrimPrefix(withEnvHint([]string{"APP_QWWX"}, ""), " ")
 		if !strings.HasSuffix(output, expectedSuffix) {
 			t.Errorf("%q does not end with"+expectedSuffix, output)
 		}
