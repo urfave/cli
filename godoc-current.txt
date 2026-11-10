@@ -770,6 +770,8 @@ func (cmd *Command) StringMap(name string) map[string]string
     StringMap looks up the value of a local StringMapFlag, returns nil if not
     found
 
+func (c *Command) StringMapArgs(name string) map[string]string
+
 func (cmd *Command) StringSlice(name string) []string
     StringSlice looks up the value of a local StringSliceFlag, returns nil if
     not found
