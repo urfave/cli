@@ -12,6 +12,62 @@ import (
 
 var errBothEnvFlagsAreSet = fmt.Errorf("cannot set both flags `--env` and `--no-env`")
 
+func TestBoolWithInverseGetBeforeParse(t *testing.T) {
+	for _, value := range []bool{false, true} {
+		t.Run(fmt.Sprint(value), func(t *testing.T) {
+			destination := !value
+			flag := &BoolWithInverseFlag{Name: "env", Value: value, Destination: &destination}
+			cmd := &Command{Flags: []Flag{flag}}
+
+			require.Equal(t, value, flag.Get())
+			require.Equal(t, value, cmd.Bool("env"))
+			require.False(t, flag.IsSet())
+			require.Zero(t, flag.Count())
+			require.Equal(t, !value, destination)
+		})
+	}
+}
+
+func TestBoolWithInverseSetBeforeParseValidatesDefault(t *testing.T) {
+	wantErr := fmt.Errorf("invalid default")
+	flag := &BoolWithInverseFlag{
+		Name:             "env",
+		ValidateDefaults: true,
+		Validator:        func(bool) error { return wantErr },
+	}
+	cmd := &Command{Flags: []Flag{flag}}
+
+	require.ErrorIs(t, cmd.Set("env", "true"), wantErr)
+	require.False(t, flag.IsSet())
+	require.Zero(t, flag.Count())
+}
+
+func TestBoolWithInverseSetBeforeParse(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		value string
+		want  bool
+	}{
+		{name: "env", value: "true", want: true},
+		{name: "env", value: "false", want: false},
+		{name: "e", value: "true", want: true},
+		{name: "no-env", value: "true", want: false},
+		{name: "no-env", value: "false", want: true},
+	} {
+		t.Run(tc.name+"="+tc.value, func(t *testing.T) {
+			var destination bool
+			flag := &BoolWithInverseFlag{Name: "env", Aliases: []string{"e"}, Destination: &destination}
+			cmd := &Command{Flags: []Flag{flag}}
+
+			require.NoError(t, cmd.Set(tc.name, tc.value))
+			require.Equal(t, tc.want, cmd.Bool("env"))
+			require.Equal(t, tc.want, destination)
+			require.True(t, flag.IsSet())
+			require.Equal(t, 1, flag.Count())
+		})
+	}
+}
+
 type boolWithInverseTestCase struct {
 	args    []string
 	toBeSet bool

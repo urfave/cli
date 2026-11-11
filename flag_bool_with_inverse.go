@@ -64,7 +64,10 @@ func (bif *BoolWithInverseFlag) IsSet() bool {
 }
 
 func (bif *BoolWithInverseFlag) Get() any {
-	return bif.value.Get()
+	if bif.value != nil {
+		return bif.value.Get()
+	}
+	return bif.Value
 }
 
 func (bif *BoolWithInverseFlag) RunAction(ctx context.Context, cmd *Command) error {
@@ -136,6 +139,12 @@ func (bif *BoolWithInverseFlag) PostParse() error {
 }
 
 func (bif *BoolWithInverseFlag) Set(name, val string) error {
+	if !bif.applied {
+		if err := bif.PreParse(); err != nil {
+			return err
+		}
+	}
+
 	// A value from Sources is only a fallback, so a value set afterwards
 	// replaces it (see FlagBase.Set).
 	if bif.fromSource {
