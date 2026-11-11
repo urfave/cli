@@ -51,7 +51,6 @@ GLOBAL OPTIONS:
    --log string  log file
 with a multi-line usage
 
-
 COPYRIGHT:
    (c) 2026 Somebody
    All rights reserved.
@@ -108,7 +107,6 @@ GLOBAL OPTIONS:
    --log string  log file
 with a multi-line usage
 
-
 COPYRIGHT:
    (c) 2026 Somebody
    All rights reserved.
@@ -133,7 +131,6 @@ OPTIONS:
    Run options
 
    --detach, -d  detach
-
 
 GLOBAL OPTIONS:
    --config FILE, -c FILE  config FILE
@@ -162,7 +159,6 @@ OPTIONS:
    Run options
 
    --detach, -d  detach
-
 
 GLOBAL OPTIONS:
    --config FILE, -c FILE  config FILE
@@ -365,7 +361,6 @@ GLOBAL OPTIONS:
    --log string  log file
 with a multi-line usage
 
-
 COPYRIGHT:
    (c) 2026 Somebody
    All rights reserved.
@@ -390,7 +385,6 @@ OPTIONS:
    Run options
 
    --detach, -d  detach
-
 
 GLOBAL OPTIONS:
    --config FILE, -c FILE  config FILE

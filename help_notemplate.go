@@ -262,19 +262,19 @@ func (h *helpRenderer) visibleCommands(cmds []*Command) {
 func (h *helpRenderer) flags(title string) {
 	if cats := h.cmd.VisibleFlagCategories(); len(cats) > 0 {
 		h.WriteString("\n\n" + title)
-		for _, cat := range cats {
+		for ci, cat := range cats {
+			if ci > 0 {
+				h.WriteString("\n")
+			}
 			h.WriteString("\n   ")
 			if cat.Name() != "" {
 				h.WriteString(cat.Name() + "\n\n   ")
 			}
-			flags := cat.Flags()
-			for i, f := range flags {
-				h.WriteString(printableValue(f))
-				if i == len(flags)-1 {
-					h.WriteString("\n")
-				} else {
+			for i, f := range cat.Flags() {
+				if i > 0 {
 					h.WriteString("\n   ")
 				}
+				h.WriteString(printableValue(f))
 			}
 		}
 	} else if flags := h.cmd.VisibleFlags(); len(flags) > 0 {
