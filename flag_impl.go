@@ -243,6 +243,28 @@ func (f *FlagBase[T, C, V]) PreParse() error {
 
 // Set applies given value from string
 func (f *FlagBase[T, C, V]) Set(_ string, val string) error {
+	if err := f.setValue(val); err != nil {
+		return err
+	}
+	return f.validate()
+}
+
+// flagBase returns f itself, so a type embedding FlagBase can be told apart
+// from FlagBase
+func (f *FlagBase[T, C, V]) flagBase() Flag {
+	return f
+}
+
+// validate runs the Validator, if any, on the current value
+func (f *FlagBase[T, C, V]) validate() error {
+	if f.Validator != nil {
+		return f.Validator(f.getTypedValue())
+	}
+	return nil
+}
+
+// setValue applies given value from string without running the Validator
+func (f *FlagBase[T, C, V]) setValue(val string) error {
 	tracef("apply (flag=%[1]q)", f.Name)
 
 	// TODO move this phase into a separate flag initialization function
@@ -280,11 +302,6 @@ func (f *FlagBase[T, C, V]) Set(_ string, val string) error {
 		return err
 	}
 	f.hasBeenSet = true
-	if f.Validator != nil {
-		if err := f.Validator(f.getTypedValue()); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
