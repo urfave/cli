@@ -4322,6 +4322,57 @@ func TestPersistentFlag(t *testing.T) {
 	assert.Equal(t, int64(2), persistentFlagActionCount, "Expected persistent flag action to be called 2 times")
 }
 
+func TestPersistentFlagOverrideInDescendants(t *testing.T) {
+	tests := []struct {
+		name      string
+		args      []string
+		wantError bool
+	}{
+		{name: "alias on overriding command", args: []string{"deploy", "-c", "prod"}, wantError: true},
+		{name: "alias on child", args: []string{"deploy", "service", "-c", "prod"}, wantError: true},
+		{name: "alias on grandchild", args: []string{"deploy", "service", "restart", "-c", "prod"}, wantError: true},
+		{name: "override on child", args: []string{"deploy", "service", "--config", "prod"}},
+		{name: "override on grandchild", args: []string{"deploy", "service", "restart", "--config", "prod"}},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			rootConfig := &StringFlag{Name: "config", Aliases: []string{"c"}}
+			deployConfig := &StringFlag{Name: "config"}
+			actionRan := false
+			action := func(_ context.Context, cmd *Command) error {
+				actionRan = true
+				assert.Equal(t, "prod", cmd.String("config"))
+				return nil
+			}
+			cmd := &Command{
+				Name:      "app",
+				Writer:    io.Discard,
+				ErrWriter: io.Discard,
+				Flags:     []Flag{rootConfig},
+				Commands: []*Command{{
+					Name:   "deploy",
+					Flags:  []Flag{deployConfig},
+					Action: action,
+					Commands: []*Command{{
+						Name:     "service",
+						Action:   action,
+						Commands: []*Command{{Name: "restart", Action: action}},
+					}},
+				}},
+			}
+			err := cmd.Run(buildTestContext(t), append([]string{"app"}, test.args...))
+			if test.wantError {
+				require.ErrorContains(t, err, "flag provided but not defined: -c")
+				assert.False(t, actionRan)
+			} else {
+				require.NoError(t, err)
+				assert.True(t, actionRan)
+			}
+			assert.Equal(t, "", rootConfig.Get())
+		})
+	}
+}
+
 func TestPersistentFlagIsSet(t *testing.T) {
 	result := ""
 	resultIsSet := false
