@@ -54,7 +54,7 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 			applyPersistentFlag := true
 
 			for _, name := range flNames {
-				if cmd.lFlag(name) != nil {
+				if cmd.lookupAppliedFlag(name) != nil {
 					applyPersistentFlag = false
 					break
 				}
