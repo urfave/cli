@@ -192,6 +192,8 @@ func (a *ArgumentsBase[T, C, VC]) Usage() string {
 		} else {
 			usageFormat = "[%[1]s ...]"
 		}
+	} else if a.Min == 1 && a.Max == 1 {
+		usageFormat = "%[1]s"
 	} else {
 		usageFormat = "%[1]s [%[1]s ...]"
 	}
