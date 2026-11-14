@@ -191,6 +191,37 @@ func TestHandleExitCoder_ErrorFormatter(t *testing.T) {
 	assert.Contains(t, buf.String(), "some other special")
 }
 
+// TestHandleExitCoder_DirectErrorFormatter covers the case where an
+// ErrorFormatter/ExitCoder is passed to HandleExitCoder directly, rather than
+// nested inside a MultiError. handleMultiError always prints with
+// fmt.Fprintln, so this is the only path that exercises the
+// fmt.Fprintf("%+v\n", err) branch.
+func TestHandleExitCoder_DirectErrorFormatter(t *testing.T) {
+	exitCode := 0
+	called := false
+
+	OsExiter = func(rc int) {
+		if !called {
+			exitCode = rc
+			called = true
+		}
+	}
+
+	oldWriter := ErrWriter
+	var buf bytes.Buffer
+	ErrWriter = &buf
+	defer func() {
+		OsExiter = fakeOsExiter
+		ErrWriter = oldWriter
+	}()
+
+	HandleExitCoder(&exitFormatter{code: 7})
+
+	assert.Equal(t, 7, exitCode)
+	assert.True(t, called)
+	assert.Contains(t, buf.String(), "some other special")
+}
+
 func TestHandleExitCoder_MultiErrorWithoutExitCoder(t *testing.T) {
 	exitCode := 0
 	called := false

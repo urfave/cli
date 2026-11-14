@@ -5455,6 +5455,42 @@ func TestCommand_NumFlags(t *testing.T) {
 	r.Equal(rootCmd, lineage[1])
 }
 
+func TestCommand_FlagNames_IncludesParentFlagNames(t *testing.T) {
+	rootCmd := &Command{
+		Flags: []Flag{
+			&BoolFlag{Name: "myflagGlobal"},
+		},
+		Writer: io.Discard,
+	}
+	cmd := &Command{
+		Flags: []Flag{
+			&BoolFlag{Name: "myflag"},
+		},
+		Writer: io.Discard,
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"", "--myflag"}))
+	require.NoError(t, rootCmd.Run(buildTestContext(t), []string{"", "--myflagGlobal"}))
+	cmd.parent = rootCmd
+
+	actualFlags := cmd.FlagNames()
+	slices.Sort(actualFlags)
+
+	require.Equal(t, []string{"myflag", "myflagGlobal"}, actualFlags)
+}
+
+func TestCommand_Count_UnknownFlagReturnsZero(t *testing.T) {
+	cmd := &Command{
+		Flags: []Flag{
+			&BoolFlag{Name: "verbose", Aliases: []string{"v"}},
+		},
+		Writer: io.Discard,
+	}
+
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"app", "-v"}))
+	require.Equal(t, 0, cmd.Count("does-not-exist"))
+}
+
 func TestCommand_Set(t *testing.T) {
 	cmd := &Command{
 		Flags: []Flag{
