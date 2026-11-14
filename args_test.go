@@ -507,7 +507,7 @@ func TestArgsUsage(t *testing.T) {
 			name:     "one",
 			min:      1,
 			max:      1,
-			expected: "ia [ia ...]",
+			expected: "ia",
 		},
 		{
 			name:     "many",
