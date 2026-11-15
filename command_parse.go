@@ -110,9 +110,9 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 			// positional argument probably
 			tracef("rearrange-3 (cmd=%[1]q) check %[2]q", cmd.Name, firstArg)
 
-			// if there is a command by that name let the command handle the
-			// rest of the parsing
-			if cmd.Command(firstArg) != nil {
+			// Only the first positional argument can select a child command.
+			// Let that command handle the rest of the parsing.
+			if len(posArgs) == 0 && cmd.Command(firstArg) != nil {
 				posArgs = append(posArgs, rargs...)
 				return &stringSliceArgs{posArgs}, nil
 			}
