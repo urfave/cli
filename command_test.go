@@ -8333,3 +8333,39 @@ func TestCommand_RunAgainChecksRequiredFlagsAndSources(t *testing.T) {
 	r.NoError(cmd.Run(buildTestContext(t), []string{"app"}))
 	r.Equal("from-env", cmd.String("name"))
 }
+
+func TestCommand_ChildNameAfterPositionalArgument(t *testing.T) {
+	for _, test := range []struct {
+		name      string
+		args      []string
+		wantArgs  []string
+		wantChild bool
+	}{
+		{name: "command name", args: []string{"file", "deploy", "--verbose"}, wantArgs: []string{"file", "deploy"}},
+		{name: "command alias", args: []string{"file", "d", "-v"}, wantArgs: []string{"file", "d"}},
+		{name: "empty first argument", args: []string{"", "deploy", "--verbose"}, wantArgs: []string{"", "deploy"}},
+		{name: "ordinary argument", args: []string{"file", "other", "--verbose"}, wantArgs: []string{"file", "other"}},
+		{name: "padded first argument", args: []string{" deploy ", "--verbose"}, wantArgs: []string{" deploy "}},
+		{name: "first command name", args: []string{"deploy", "--verbose"}, wantArgs: []string{}, wantChild: true},
+		{name: "first command alias", args: []string{"d", "--verbose"}, wantArgs: []string{}, wantChild: true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			var ran bool
+			action := func(_ context.Context, cmd *Command) error {
+				ran = true
+				require.Equal(t, test.wantChild, cmd.Name == "deploy")
+				require.True(t, cmd.Bool("verbose"))
+				require.Equal(t, test.wantArgs, cmd.Args().Slice())
+				return nil
+			}
+			cmd := &Command{
+				Name:     "app",
+				Flags:    []Flag{&BoolFlag{Name: "verbose", Aliases: []string{"v"}}},
+				Action:   action,
+				Commands: []*Command{{Name: "deploy", Aliases: []string{"d"}, Action: action}},
+			}
+			require.NoError(t, cmd.Run(t.Context(), append([]string{"app"}, test.args...)))
+			require.True(t, ran)
+		})
+	}
+}
