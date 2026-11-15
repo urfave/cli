@@ -23,7 +23,7 @@ func flagFromError(err error) (string, error) {
 	return trimmed, nil
 }
 
-func (cmd *Command) parseFlags(args Args) (Args, error) {
+func (cmd *Command) parseFlags(args Args, suggestName func(string) string) (Args, error) {
 	tracef("parsing flags from arguments %[1]q (cmd=%[2]q)", args, cmd.Name)
 
 	cmd.setFlags = map[Flag]struct{}{}
@@ -112,7 +112,13 @@ func (cmd *Command) parseFlags(args Args) (Args, error) {
 
 			// if there is a command by that name let the command handle the
 			// rest of the parsing
-			if cmd.Command(firstArg) != nil {
+			commandName := firstArg
+			if len(posArgs) == 0 && cmd.SuggestCommandFunc != nil && !cmd.Root().shellCompletion {
+				// Resolve shorthand before parsing the child's flags. Reuse this
+				// result at dispatch so custom matchers are only called once.
+				commandName = suggestName(rargs[0])
+			}
+			if cmd.Command(commandName) != nil {
 				posArgs = append(posArgs, rargs...)
 				return &stringSliceArgs{posArgs}, nil
 			}

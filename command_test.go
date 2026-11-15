@@ -5041,6 +5041,99 @@ func TestShorthandCommand(t *testing.T) {
 	assert.True(t, cmd1 == 0 && cmd2 == 1, "Expected command1 to be triggered once")
 }
 
+func TestShorthandCommandWithFlags(t *testing.T) {
+	for _, name := range []string{"deploy", "ship", "depl"} {
+		for _, flag := range []string{"--region", "-r"} {
+			t.Run(name+"/"+flag, func(t *testing.T) {
+				called := false
+				cmd := &Command{
+					Name:                "app",
+					PrefixMatchCommands: true,
+					Writer:              io.Discard,
+					ErrWriter:           io.Discard,
+					Commands: []*Command{{
+						Name:    "deploy",
+						Aliases: []string{"ship"},
+						Flags:   []Flag{&StringFlag{Name: "region", Aliases: []string{"r"}}},
+						Action: func(_ context.Context, c *Command) error {
+							called = true
+							require.Equal(t, "west", c.String("region"))
+							return nil
+						},
+					}},
+				}
+				require.NoError(t, cmd.Run(t.Context(), []string{"app", name, flag, "west"}))
+				require.True(t, called)
+			})
+		}
+	}
+}
+
+func TestShorthandCommandCompletionDoesNotMatch(t *testing.T) {
+	completed := false
+	cmd := &Command{
+		Name:                  "app",
+		EnableShellCompletion: true,
+		Writer:                io.Discard,
+		ErrWriter:             io.Discard,
+		SuggestCommandFunc: func(_ []*Command, _ string) string {
+			t.Fatal("completion must not invoke the command matcher")
+			return "deploy"
+		},
+		Commands: []*Command{{Name: "deploy"}},
+		ShellComplete: func(_ context.Context, c *Command) {
+			completed = true
+			require.Equal(t, []string{"depl"}, c.Args().Slice())
+		},
+	}
+	require.NoError(t, cmd.Run(t.Context(), []string{"app", "depl", completionFlag}))
+	require.True(t, completed)
+}
+
+func TestCustomCommandMatcherWithFlags(t *testing.T) {
+	for _, matched := range []bool{false, true} {
+		t.Run(fmt.Sprint(matched), func(t *testing.T) {
+			calls := 0
+			var seen []string
+			cmd := &Command{
+				Name:      "app",
+				Writer:    io.Discard,
+				ErrWriter: io.Discard,
+				Flags:     []Flag{&StringFlag{Name: "region", Value: "root"}},
+				SuggestCommandFunc: func(_ []*Command, name string) string {
+					calls++
+					require.Equal(t, "ship", name)
+					if matched {
+						return "deploy"
+					}
+					return name
+				},
+				Action: func(_ context.Context, c *Command) error {
+					require.False(t, matched)
+					require.Equal(t, []string{"ship", "cargo"}, c.Args().Slice())
+					seen = append(seen, c.String("region"))
+					return nil
+				},
+				Commands: []*Command{{
+					Name:  "deploy",
+					Flags: []Flag{&StringFlag{Name: "region", Value: "child"}},
+					Action: func(_ context.Context, c *Command) error {
+						require.True(t, matched)
+						require.Equal(t, []string{"cargo"}, c.Args().Slice())
+						seen = append(seen, c.String("region"))
+						return nil
+					},
+				}},
+			}
+			for _, region := range []string{"west", "east"} {
+				require.NoError(t, cmd.Run(t.Context(), []string{"app", "ship", "--region", region, "cargo"}))
+			}
+			require.Equal(t, 2, calls)
+			require.Equal(t, []string{"west", "east"}, seen)
+		})
+	}
+}
+
 func TestCommand_Int(t *testing.T) {
 	pCmd := &Command{
 		Flags: []Flag{

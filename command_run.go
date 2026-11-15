@@ -165,12 +165,23 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 	}
 
 	var err error
+	// Parsing and dispatch share one match for the first positional argument.
+	// Keep it local to this run so reused commands resolve each invocation.
+	var suggestedName string
+	commandSuggested := false
+	suggestName := func(name string) string {
+		if !commandSuggested {
+			suggestedName = cmd.SuggestCommandFunc(cmd.Commands, name)
+			commandSuggested = true
+		}
+		return suggestedName
+	}
 
 	if cmd.SkipFlagParsing {
 		tracef("skipping flag parsing (cmd=%[1]q)", cmd.Name)
 		cmd.parsedArgs = args
 	} else {
-		cmd.parsedArgs, err = cmd.parseFlags(args)
+		cmd.parsedArgs, err = cmd.parseFlags(args, suggestName)
 	}
 
 	tracef("using post-parse arguments %[1]q (cmd=%[2]q)", args, cmd.Name)
@@ -275,7 +286,7 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 		tracef("using first positional argument as sub-command name=%[1]q (cmd=%[2]q)", name, cmd.Name)
 
 		if cmd.SuggestCommandFunc != nil && name != "--" {
-			name = cmd.SuggestCommandFunc(cmd.Commands, name)
+			name = suggestName(name)
 			tracef("suggested command name=%1[q] (cmd=%[2]q)", name, cmd.Name)
 		}
 		subCmd = cmd.Command(name)
