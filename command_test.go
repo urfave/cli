@@ -8345,6 +8345,7 @@ func TestCommand_ChildNameAfterPositionalArgument(t *testing.T) {
 		{name: "command alias", args: []string{"file", "d", "-v"}, wantArgs: []string{"file", "d"}},
 		{name: "empty first argument", args: []string{"", "deploy", "--verbose"}, wantArgs: []string{"", "deploy"}},
 		{name: "ordinary argument", args: []string{"file", "other", "--verbose"}, wantArgs: []string{"file", "other"}},
+		{name: "padded first argument", args: []string{" deploy ", "--verbose"}, wantArgs: []string{" deploy "}},
 		{name: "first command name", args: []string{"deploy", "--verbose"}, wantArgs: []string{}, wantChild: true},
 		{name: "first command alias", args: []string{"d", "--verbose"}, wantArgs: []string{}, wantChild: true},
 	} {
