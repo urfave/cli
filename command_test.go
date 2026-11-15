@@ -5472,6 +5472,53 @@ func TestCommand_Set(t *testing.T) {
 	r.True(cmd.IsSet("int"))
 }
 
+func TestCommand_SetRunsFlagAction(t *testing.T) {
+	for _, test := range []struct {
+		name  string
+		env   string
+		args  []string
+		child bool
+	}{
+		{name: "unset", args: []string{"app"}},
+		{name: "environment", env: "east", args: []string{"app"}},
+		{name: "command line", args: []string{"app", "--region", "east"}},
+		{name: "inherited flag", args: []string{"app", "deploy"}, child: true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Setenv("CLI_TEST_REGION", test.env)
+			if test.env == "" {
+				require.NoError(t, os.Unsetenv("CLI_TEST_REGION"))
+			}
+			var actionValues []string
+			cmd := &Command{
+				Name: "app",
+				Flags: []Flag{&StringFlag{
+					Name: "region", Aliases: []string{"r"}, Sources: EnvVars("CLI_TEST_REGION"),
+					Action: func(_ context.Context, _ *Command, value string) error {
+						actionValues = append(actionValues, value)
+						return nil
+					},
+				}},
+			}
+			target := cmd
+			if test.child {
+				target = &Command{Name: "deploy"}
+				cmd.Commands = []*Command{target}
+			}
+			target.Before = func(ctx context.Context, c *Command) (context.Context, error) {
+				return ctx, c.Set("r", "west")
+			}
+			target.Action = func(_ context.Context, c *Command) error {
+				require.True(t, c.IsSet("region"))
+				require.Equal(t, "west", c.String("region"))
+				return nil
+			}
+			require.NoError(t, cmd.Run(t.Context(), test.args))
+			require.Equal(t, []string{"west"}, actionValues)
+		})
+	}
+}
+
 func TestCommand_Set_ReplacesSourceValue(t *testing.T) {
 	t.Setenv("APP_VALUE", "a,b")
 

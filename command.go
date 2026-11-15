@@ -627,7 +627,14 @@ func (cmd *Command) setMultiValueParsingConfig(f Flag) {
 func (cmd *Command) Set(name, value string) error {
 	if f := cmd.lookupFlag(name); f != nil {
 		cmd.setMultiValueParsingConfig(f)
-		return f.Set(name, value)
+		if err := f.Set(name, value); err != nil {
+			return err
+		}
+		if cmd.setFlags == nil {
+			cmd.setFlags = map[Flag]struct{}{}
+		}
+		cmd.setFlags[f] = struct{}{}
+		return nil
 	}
 
 	return fmt.Errorf("no such flag -%s", name)
