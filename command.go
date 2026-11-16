@@ -416,7 +416,7 @@ func (cmd *Command) set(fName string, f Flag, val string) error {
 	cmd.setFlags[f] = struct{}{}
 	cmd.setMultiValueParsingConfig(f)
 	if err := f.Set(fName, val); err != nil {
-		return fmt.Errorf("invalid value %q for flag -%s: %v", val, fName, err)
+		return fmt.Errorf("invalid value %q for flag -%s: %v", redactValue(f, val, val), fName, redactValue(f, err.Error(), val))
 	}
 	return nil
 }
@@ -688,6 +688,43 @@ func (cmd *Command) FlagNames() []string {
 	}
 
 	return names
+}
+
+// SensitiveValues returns the current values of all flags marked as
+// sensitive (see [SensitiveFlag]) in this command and all of its parent
+// commands, so that they can be removed from logs or other output.
+// The value of a flag that was not set is its default value. Empty values
+// are left out, and only values that are text (strings, string slices,
+// string map values and [fmt.Stringer] values) are returned. The values
+// are sorted longest first, so that replacing them in that order also
+// works when one value contains another.
+func (cmd *Command) SensitiveValues() []string {
+	seenFlags := map[Flag]struct{}{}
+	seenVals := map[string]struct{}{}
+	vals := []string{}
+
+	for _, c := range cmd.Lineage() {
+		for _, f := range c.allFlags() {
+			if _, ok := seenFlags[f]; ok || !isSensitive(f) {
+				continue
+			}
+			seenFlags[f] = struct{}{}
+
+			for _, val := range sensitiveStrings(f.Get()) {
+				if _, ok := seenVals[val]; ok || val == "" {
+					continue
+				}
+				seenVals[val] = struct{}{}
+				vals = append(vals, val)
+			}
+		}
+	}
+
+	slices.SortStableFunc(vals, func(a, b string) int {
+		return len(b) - len(a)
+	})
+
+	return vals
 }
 
 // Lineage returns *this* command and all of its ancestor commands

@@ -128,6 +128,15 @@ type DeprecatedFlag interface {
 	GetDeprecated() string
 }
 
+// SensitiveFlag is an interface that allows us to mark flags whose values
+// are secrets, such as passwords or tokens. The value of a sensitive flag
+// is not shown in help output, JSON output or error messages, and is returned by
+// [Command.SensitiveValues] so that it can be removed from other output.
+type SensitiveFlag interface {
+	// IsSensitive returns true if the flag's value must be kept secret
+	IsSensitive() bool
+}
+
 // DocGenerationFlag is an interface that allows documentation generation for the flag
 type DocGenerationFlag interface {
 	// TakesValue returns true if the flag takes a value, otherwise false
@@ -216,6 +225,67 @@ type StringerSetter interface {
 // to current command
 type LocalFlag interface {
 	IsLocal() bool
+}
+
+// redactedText replaces the value of a sensitive flag in output
+const redactedText = "REDACTED"
+
+func isSensitive(f Flag) bool {
+	sf, ok := f.(SensitiveFlag)
+	return ok && sf.IsSensitive()
+}
+
+// sensitivePartser is implemented by flags that can split a raw value into
+// the parts that an error message may quote, such as the items of a slice
+// or the values of a map
+type sensitivePartser interface {
+	sensitiveParts(val string) []string
+}
+
+// redactValue replaces each occurrence of val, and of each part of val that
+// an error message may quote on its own, in s if f is sensitive
+func redactValue(f Flag, s, val string) string {
+	if !isSensitive(f) || val == "" {
+		return s
+	}
+
+	parts := []string{val}
+	if p, ok := f.(sensitivePartser); ok {
+		parts = p.sensitiveParts(val)
+	}
+
+	// Replace longer parts first, so that a part that contains another is
+	// replaced as a whole
+	parts = slices.DeleteFunc(slices.Clone(parts), func(p string) bool { return p == "" })
+	slices.SortStableFunc(parts, func(a, b string) int { return len(b) - len(a) })
+	parts = slices.Compact(parts)
+
+	oldnew := make([]string, 0, 2*len(parts))
+	for _, p := range parts {
+		oldnew = append(oldnew, p, redactedText)
+	}
+	return strings.NewReplacer(oldnew...).Replace(s)
+}
+
+// sensitiveStrings returns the string forms of a sensitive flag's value.
+// Only values that are text are returned, as replacing e.g. a number
+// everywhere in a log line would hide much more than the secret.
+func sensitiveStrings(v any) []string {
+	switch v := v.(type) {
+	case string:
+		return []string{v}
+	case []string:
+		return v
+	case map[string]string:
+		vals := make([]string, 0, len(v))
+		for _, val := range v {
+			vals = append(vals, val)
+		}
+		return vals
+	case fmt.Stringer:
+		return []string{v.String()}
+	}
+	return nil
 }
 
 func visibleFlags(fl []Flag) []Flag {

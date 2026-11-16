@@ -757,6 +757,15 @@ func (cmd *Command) Run(ctx context.Context, osArgs []string) (deferErr error)
     parsed according to the Flag and Command definitions and the matching Action
     functions are run.
 
+func (cmd *Command) SensitiveValues() []string
+    SensitiveValues returns the current values of all flags marked as sensitive
+    (see SensitiveFlag) in this command and all of its parent commands, so that
+    they can be removed from logs or other output. The value of a flag that was
+    not set is its default value. Empty values are left out, and only values
+    that are text (strings, string slices, string map values and fmt.Stringer
+    values) are returned. The values are sorted longest first, so that replacing
+    them in that order also works when one value contains another.
+
 func (cmd *Command) Set(name, value string) error
     Set sets a context flag to a value.
 
@@ -1032,6 +1041,7 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Sources          ValueSourceChain                         `json:"-"`                // sources to load flag value from
 	Required         bool                                     `json:"required"`         // whether the flag is required or not
 	Hidden           bool                                     `json:"hidden"`           // whether to hide the flag in help output
+	Sensitive        bool                                     `json:"sensitive"`        // whether the value is a secret that must not be shown in help output, JSON or errors
 	Deprecated       string                                   `json:"deprecated"`       // deprecation message, if set a warning is printed when the flag is set
 	Local            bool                                     `json:"local"`            // whether the flag is only for this command and not accepted by subcommands
 	Value            T                                        `json:"defaultValue"`     // default value for this flag if not set by from any source
@@ -1093,11 +1103,18 @@ func (f *FlagBase[T, C, VC]) IsMultiValueFlag() bool
 func (f *FlagBase[T, C, V]) IsRequired() bool
     IsRequired returns whether or not the flag is required
 
+func (f *FlagBase[T, C, V]) IsSensitive() bool
+    IsSensitive returns whether or not the flag's value is a secret
+
 func (f *FlagBase[T, C, V]) IsSet() bool
     IsSet returns whether or not the flag has been set through env or file
 
 func (f *FlagBase[T, C, V]) IsVisible() bool
     IsVisible returns true if the flag is not hidden, otherwise false
+
+func (f *FlagBase[T, C, V]) MarshalJSON() ([]byte, error)
+    MarshalJSON encodes the flag as JSON. The default value of a sensitive flag
+    is left out, so that a secret default does not end up in exported help.
 
 func (f *FlagBase[T, C, V]) Names() []string
     Names returns the names of the flag
@@ -1412,6 +1429,15 @@ type SchemaTyper interface {
 }
     SchemaTyper is an optional interface for flags that can report their JSON
     Schema type for programmatic introspection.
+
+type SensitiveFlag interface {
+	// IsSensitive returns true if the flag's value must be kept secret
+	IsSensitive() bool
+}
+    SensitiveFlag is an interface that allows us to mark flags whose values
+    are secrets, such as passwords or tokens. The value of a sensitive flag is
+    not shown in help output, JSON output or error messages, and is returned by
+    Command.SensitiveValues so that it can be removed from other output.
 
 type Serializer interface {
 	Serialize() string

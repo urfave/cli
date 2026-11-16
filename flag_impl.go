@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"reflect"
@@ -63,6 +64,7 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Sources          ValueSourceChain                         `json:"-"`                // sources to load flag value from
 	Required         bool                                     `json:"required"`         // whether the flag is required or not
 	Hidden           bool                                     `json:"hidden"`           // whether to hide the flag in help output
+	Sensitive        bool                                     `json:"sensitive"`        // whether the value is a secret that must not be shown in help output, JSON or errors
 	Deprecated       string                                   `json:"deprecated"`       // deprecation message, if set a warning is printed when the flag is set
 	Local            bool                                     `json:"local"`            // whether the flag is only for this command and not accepted by subcommands
 	Value            T                                        `json:"defaultValue"`     // default value for this flag if not set by from any source
@@ -177,7 +179,7 @@ func (f *FlagBase[T, C, V]) PostParse() error {
 			if err := f.Set(f.Name, val); err != nil {
 				return fmt.Errorf(
 					"could not parse %[1]q as %[2]T value from %[3]s for flag %[4]s: %[5]s",
-					val, f.Value, source, f.Name, err,
+					redactValue(f, val, val), f.Value, source, f.Name, redactValue(f, err.Error(), val),
 				)
 			}
 
@@ -329,6 +331,59 @@ func (f *FlagBase[T, C, V]) Names() []string {
 // IsRequired returns whether or not the flag is required
 func (f *FlagBase[T, C, V]) IsRequired() bool {
 	return f.Required
+}
+
+// IsSensitive returns whether or not the flag's value is a secret
+func (f *FlagBase[T, C, V]) IsSensitive() bool {
+	return f.Sensitive
+}
+
+// flagBaseJSON has the fields of FlagBase but not its methods, so that
+// MarshalJSON can encode it without calling itself
+type flagBaseJSON[T any, C any, VC ValueCreator[T, C]] FlagBase[T, C, VC]
+
+// MarshalJSON encodes the flag as JSON. The default value of a sensitive
+// flag is left out, so that a secret default does not end up in exported
+// help.
+func (f *FlagBase[T, C, V]) MarshalJSON() ([]byte, error) {
+	c := *f
+	if c.Sensitive {
+		var zero T
+		c.Value = zero
+	}
+	return json.Marshal((*flagBaseJSON[T, C, V])(&c))
+}
+
+// sensitiveParts returns val and, for slice and map flags, each item of val
+// and each map value, as an error message may quote any of them on its own
+func (f *FlagBase[T, C, V]) sensitiveParts(val string) []string {
+	parts := []string{val}
+
+	kind := reflect.TypeFor[T]().Kind()
+	if kind != reflect.Slice && kind != reflect.Map {
+		return parts
+	}
+
+	var cfg multiValueParsingConfig
+	if f.multiValueConfig != nil {
+		cfg = *f.multiValueConfig
+	}
+	kvSep := cfg.MapFlagKeyValueSeparator
+	if kvSep == "" {
+		kvSep = defaultMapFlagKeyValueSeparator
+	}
+
+	for _, item := range flagSplitMultiValues(val, cfg.SliceFlagSeparator, cfg.DisableSliceFlagSeparator) {
+		parts = append(parts, item, strings.TrimSpace(item))
+		if kind != reflect.Map {
+			continue
+		}
+		if _, v, ok := strings.Cut(item, kvSep); ok {
+			parts = append(parts, v, strings.TrimSpace(v))
+		}
+	}
+
+	return parts
 }
 
 // IsVisible returns true if the flag is not hidden, otherwise false
