@@ -700,6 +700,10 @@ type commandJSON Command
 // default does not end up in exported help. Subcommands are encoded the
 // same way. Encoding a flag on its own, outside a command, does not leave
 // out its default value.
+//
+// A type that embeds a Command gets this method too, so encoding that type
+// gives only the Command's fields. Give such a type its own MarshalJSON to
+// include its other fields.
 func (cmd *Command) MarshalJSON() ([]byte, error) {
 	c := *cmd
 	c.Flags = redactFlagsForJSON(c.Flags)

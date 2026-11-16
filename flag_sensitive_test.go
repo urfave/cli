@@ -127,6 +127,22 @@ func TestSensitiveFlagAloneJSON(t *testing.T) {
 	assert.NotContains(t, string(b), "arg-s3cret")
 }
 
+// Known break: Command.MarshalJSON is promoted to a type that embeds a
+// Command, so encoding that type leaves out its own fields. Before sensitive
+// flags were added they were included. If this test fails, the break is gone
+// and the note on Command.MarshalJSON should be removed.
+func TestSensitiveFlagEmbeddedCommandJSON(t *testing.T) {
+	type myCommand struct {
+		Command
+		Extra string `json:"extra"`
+	}
+
+	b, err := json.Marshal(&myCommand{Command: Command{Name: "app"}, Extra: "dropped"})
+	require.NoError(t, err)
+	assert.Contains(t, string(b), `"name":"app"`)
+	assert.NotContains(t, string(b), "extra")
+}
+
 // A type that embeds a flag must keep its own fields when encoded, as it
 // did before sensitive flags were added
 func TestSensitiveFlagEmbeddedFlagJSON(t *testing.T) {
