@@ -114,6 +114,19 @@ func TestSensitiveFlagCommandJSON(t *testing.T) {
 	assert.Equal(t, "s3cret-root", token.Value)
 }
 
+// Masking is done by Command.MarshalJSON, so a sensitive flag encoded on its
+// own still shows its default value, but never the value it was set to
+func TestSensitiveFlagAloneJSON(t *testing.T) {
+	f := &StringFlag{Name: "token", Value: "default-s3cret", Sensitive: true}
+	cmd := &Command{Name: "app", Flags: []Flag{f}}
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"app", "--token", "arg-s3cret"}))
+
+	b, err := json.Marshal(f)
+	require.NoError(t, err)
+	assert.Contains(t, string(b), `"defaultValue":"default-s3cret"`)
+	assert.NotContains(t, string(b), "arg-s3cret")
+}
+
 // A type that embeds a flag must keep its own fields when encoded, as it
 // did before sensitive flags were added
 func TestSensitiveFlagEmbeddedFlagJSON(t *testing.T) {
