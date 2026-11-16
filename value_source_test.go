@@ -458,6 +458,7 @@ func TestMapValueSourceListsWithMismatchedTypes(t *testing.T) {
 		"strings":  []string{"80", "443"},
 		"mixed":    []any{"a", 2, true},
 		"negative": []any{-1},
+		"withnil":  []any{80, nil},
 		"plain":    []string{"x", "y"},
 	})
 
@@ -485,6 +486,11 @@ func TestMapValueSourceListsWithMismatchedTypes(t *testing.T) {
 		{
 			name:    "a negative into an unsigned slice is an error, not a zero",
 			flag:    &UintSliceFlag{Name: "negative", Sources: NewValueSourceChain(NewMapValueSource("negative", ms))},
+			wantErr: true,
+		},
+		{
+			name:    "a null element is an error, not a zero",
+			flag:    &IntSliceFlag{Name: "withnil", Sources: NewValueSourceChain(NewMapValueSource("withnil", ms))},
 			wantErr: true,
 		},
 		{
@@ -566,11 +572,13 @@ func TestSerializedListElements(t *testing.T) {
 		want    []string
 		wantErr bool
 	}{
-		{name: "strings", in: `["a","b"]`, want: []string{"a", "b"}},
+		{name: "strings", in: `["a","b"]`, want: []string{`"a"`, `"b"`}},
 		{name: "empty array", in: `[]`, want: []string{}},
 		{name: "null", in: `null`},
 		{name: "numbers and bools", in: `[80,-1,true]`, want: []string{"80", "-1", "true"}},
-		{name: "escapes", in: `["a,b","he said \"hi\"","back\\slash",""]`, want: []string{"a,b", `he said "hi"`, `back\slash`, ""}},
+		{name: "null element", in: `[80,null]`, wantErr: true},
+		{name: "empty element", in: `[1,,2]`, wantErr: true},
+		{name: "escapes", in: `["a,b","he said \"hi\"","back\\slash",""]`, want: []string{`"a,b"`, `"he said \"hi\""`, `"back\\slash"`, `""`}},
 		{name: "object", in: `{"a":1}`, wantErr: true},
 		{name: "unterminated string", in: `["abc]`, wantErr: true},
 		{name: "bad escape", in: `["\q"]`, wantErr: true},

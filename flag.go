@@ -23,10 +23,10 @@ var slPfx = sync.OnceValue(func() string {
 })
 
 // serializedListElements splits the JSON array `SliceBase.Serialize` writes
-// into one string per element. It scans rather than decodes: a decode into a
-// concrete Go type links the whole encoding/json decoder, and `make
-// check-binary-size` refuses the result. Every element of a serialized slice
-// is a JSON string, number, bool or null, since the slice holds scalars.
+// into one token per element, keeping each token in its JSON form. It scans
+// rather than decodes so a broken list is reported with the token that broke
+// it, and so an element that is not a scalar value is refused: every element of
+// a serialized slice is a JSON string, number or bool.
 func serializedListElements(s string) ([]string, error) {
 	if s == "null" {
 		// A nil slice serializes to JSON null; keep that distinction.
@@ -50,18 +50,25 @@ func serializedListElements(s string) ([]string, error) {
 			if end >= len(rest) {
 				return nil, fmt.Errorf("could not decode serialized list: unterminated string in %q", s)
 			}
-			unquoted, err := strconv.Unquote(rest[:end+1])
-			if err != nil {
+			if _, err := strconv.Unquote(rest[:end+1]); err != nil {
 				return nil, fmt.Errorf("could not decode serialized list: %w", err)
 			}
-			elem, rest = unquoted, rest[end+1:]
+			elem, rest = rest[:end+1], rest[end+1:]
 		} else {
 			end := strings.IndexByte(rest, ',')
 			if end < 0 {
 				end = len(rest)
 			}
 			elem, rest = rest[:end], rest[end:]
-			if strings.ContainsAny(elem, "[{") {
+			switch {
+			case elem == "":
+				return nil, fmt.Errorf("could not decode serialized list: empty element in %q", s)
+			case elem == "null":
+				// json.Unmarshal turns a null into the zero value of any type
+				// without an error, which is the silent zero this path exists to
+				// avoid.
+				return nil, fmt.Errorf("could not decode serialized list: null element in %q", s)
+			case strings.ContainsAny(elem, "[{"):
 				return nil, fmt.Errorf("could not decode serialized list: %q is not a scalar", elem)
 			}
 		}
@@ -75,6 +82,17 @@ func serializedListElements(s string) ([]string, error) {
 		rest = rest[1:]
 	}
 	return elems, nil
+}
+
+// listTokenText returns the text a serialized token stands for: a JSON string
+// is unquoted, and a bare number or bool is already text. The escapes are
+// validated by serializedListElements, so the unquote cannot fail here.
+func listTokenText(tok string) string {
+	if tok == "" || tok[0] != '"' {
+		return tok
+	}
+	text, _ := strconv.Unquote(tok)
+	return text
 }
 
 // GenerateShellCompletionFlag enables shell completion

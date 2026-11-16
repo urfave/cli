@@ -170,6 +170,9 @@ func (f *FlagBase[T, C, V]) PostParse() error {
 			if kind != reflect.Slice && kind != reflect.Array {
 				if s, ok := strings.CutPrefix(val, slPfx()); ok {
 					if elems, err := serializedListElements(s); err == nil {
+						for i, tok := range elems {
+							elems[i] = listTokenText(tok)
+						}
 						val = strings.Join(elems, defaultSliceFlagSeparator)
 					}
 				}
