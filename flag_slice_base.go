@@ -54,8 +54,34 @@ func (i *SliceBase[T, C, VC]) Set(value string) error {
 	}
 
 	if s, ok := strings.CutPrefix(value, slPfx()); ok {
-		// Deserializing assumes overwrite
-		_ = json.Unmarshal([]byte(s), i.slice)
+		elems, err := serializedListElements(s)
+		if err != nil {
+			return err
+		}
+		if elems == nil {
+			*i.slice = nil
+			i.hasBeenSet = true
+			return nil
+		}
+		// Deserializing assumes overwrite, as it always has. The elements are
+		// built aside so a rejected one leaves the current list untouched.
+		parsed := make([]T, 0, len(elems))
+		for _, tok := range elems {
+			// A JSON string is text input for the flag's parser. A bare number or
+			// bool is a value, decoded in T, so the flag's input config (e.g.
+			// IntegerConfig.Base) cannot re-read a decimal token in another base.
+			var elem T
+			if tok[0] != '"' && json.Unmarshal([]byte(tok), &elem) == nil {
+				parsed = append(parsed, elem)
+
+				continue
+			}
+			if err := i.value.Set(listTokenText(tok)); err != nil {
+				return err
+			}
+			parsed = append(parsed, i.value.Get().(T))
+		}
+		*i.slice = parsed
 		i.hasBeenSet = true
 		return nil
 	}

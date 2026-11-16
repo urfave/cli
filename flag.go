@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -20,6 +21,79 @@ const (
 var slPfx = sync.OnceValue(func() string {
 	return fmt.Sprintf("sl:::%d:::", time.Now().UTC().UnixNano())
 })
+
+// serializedListElements splits the JSON array `SliceBase.Serialize` writes
+// into one token per element, keeping each token in its JSON form. It scans
+// rather than decodes so a broken list is reported with the token that broke
+// it, and so an element that is not a scalar value is refused: every element of
+// a serialized slice is a JSON string, number or bool.
+func serializedListElements(s string) ([]string, error) {
+	if s == "null" {
+		// A nil slice serializes to JSON null; keep that distinction.
+		return nil, nil
+	}
+	if len(s) < 2 || s[0] != '[' || s[len(s)-1] != ']' {
+		return nil, fmt.Errorf("could not decode serialized list: %q is not a JSON array", s)
+	}
+	rest := s[1 : len(s)-1]
+	elems := make([]string, 0, strings.Count(rest, ",")+1)
+	for rest != "" {
+		var elem string
+		if rest[0] == '"' {
+			end := 1
+			for end < len(rest) && rest[end] != '"' {
+				if rest[end] == '\\' {
+					end++
+				}
+				end++
+			}
+			if end >= len(rest) {
+				return nil, fmt.Errorf("could not decode serialized list: unterminated string in %q", s)
+			}
+			if _, err := strconv.Unquote(rest[:end+1]); err != nil {
+				return nil, fmt.Errorf("could not decode serialized list: %w", err)
+			}
+			elem, rest = rest[:end+1], rest[end+1:]
+		} else {
+			end := strings.IndexByte(rest, ',')
+			if end < 0 {
+				end = len(rest)
+			}
+			elem, rest = rest[:end], rest[end:]
+			switch {
+			case elem == "":
+				return nil, fmt.Errorf("could not decode serialized list: empty element in %q", s)
+			case elem == "null":
+				// json.Unmarshal turns a null into the zero value of any type
+				// without an error, which is the silent zero this path exists to
+				// avoid.
+				return nil, fmt.Errorf("could not decode serialized list: null element in %q", s)
+			case strings.ContainsAny(elem, "[{"):
+				return nil, fmt.Errorf("could not decode serialized list: %q is not a scalar", elem)
+			}
+		}
+		elems = append(elems, elem)
+		if rest == "" {
+			break
+		}
+		if rest[0] != ',' {
+			return nil, fmt.Errorf("could not decode serialized list: %q is not a JSON array", s)
+		}
+		rest = rest[1:]
+	}
+	return elems, nil
+}
+
+// listTokenText returns the text a serialized token stands for: a JSON string
+// is unquoted, and a bare number or bool is already text. The escapes are
+// validated by serializedListElements, so the unquote cannot fail here.
+func listTokenText(tok string) string {
+	if tok == "" || tok[0] != '"' {
+		return tok
+	}
+	text, _ := strconv.Unquote(tok)
+	return text
+}
 
 // GenerateShellCompletionFlag enables shell completion
 var GenerateShellCompletionFlag Flag = &BoolFlag{

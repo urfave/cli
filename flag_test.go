@@ -2572,6 +2572,41 @@ func TestIntSlice_Serialized_Set(t *testing.T) {
 	require.Equal(t, sl0.String(), sl1.String(), "pre and post serialization do not match")
 }
 
+// Serialize writes canonical JSON, so a decimal token must not be re-read in
+// the flag's text-input base on the way back in.
+func TestIntSlice_Serialized_Set_NonDecimalBase(t *testing.T) {
+	for _, tc := range []struct{ base, ten int }{{2, 2}, {16, 16}} {
+		base := tc.base
+		t.Run(fmt.Sprintf("base %d", base), func(t *testing.T) {
+			cfg := IntegerConfig{Base: base}
+
+			var original, restored []int
+			value := IntSlice{}.Create([]int{16}, &original, cfg)
+			encoded := value.(Serializer).Serialize()
+
+			receiver := IntSlice{}.Create(nil, &restored, cfg)
+			require.NoError(t, receiver.Set(encoded))
+			require.Equal(t, []int{16}, restored)
+
+			// Text input still goes through the flag's parser, base included.
+			var fromText []int
+			require.NoError(t, IntSlice{}.Create(nil, &fromText, cfg).Set("10"))
+			require.Equal(t, []int{tc.ten}, fromText)
+		})
+	}
+}
+
+func TestUintSlice_Serialized_Set_NonDecimalBase(t *testing.T) {
+	cfg := IntegerConfig{Base: 16}
+
+	var original, restored []uint
+	value := UintSlice{}.Create([]uint{16}, &original, cfg)
+	encoded := value.(Serializer).Serialize()
+
+	require.NoError(t, UintSlice{}.Create(nil, &restored, cfg).Set(encoded))
+	require.Equal(t, []uint{16}, restored)
+}
+
 func TestUintSlice_Serialized_Set(t *testing.T) {
 	sl0 := NewUint64Slice(1, 2)
 	ser0 := sl0.Serialize()

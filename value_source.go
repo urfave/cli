@@ -1,8 +1,10 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
+	"reflect"
 	"strings"
 )
 
@@ -250,9 +252,20 @@ func (mvs *mapValueSource) GoString() string {
 }
 
 func (mvs *mapValueSource) Lookup() (string, bool) {
-	if v, ok := mvs.ms.Lookup(mvs.key); !ok {
+	v, ok := mvs.ms.Lookup(mvs.key)
+	if !ok {
 		return "", false
-	} else {
-		return fmt.Sprintf("%+v", v), true
 	}
+
+	// A slice flag parses a serialized list without splitting it, so the value
+	// keeps its own separators (a comma inside an element, or a custom
+	// SliceFlagSeparator) instead of arriving as Go's "[a b]" formatting.
+	rv := reflect.ValueOf(v)
+	if rv.Kind() == reflect.Slice || rv.Kind() == reflect.Array {
+		if b, err := json.Marshal(v); err == nil {
+			return slPfx() + string(b), true
+		}
+	}
+
+	return fmt.Sprintf("%+v", v), true
 }
