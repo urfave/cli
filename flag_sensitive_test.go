@@ -85,18 +85,47 @@ func TestSensitiveFlagRedactsItemsInErrors(t *testing.T) {
 	}
 }
 
-func TestSensitiveFlagJSON(t *testing.T) {
-	b, err := json.Marshal(&StringFlag{Name: "token", Value: "s3cret", Sensitive: true})
-	require.NoError(t, err)
-	assert.NotContains(t, string(b), "s3cret")
-	assert.Contains(t, string(b), `"sensitive":true`)
-	assert.Contains(t, string(b), `"name":"token"`)
+func TestSensitiveFlagCommandJSON(t *testing.T) {
+	token := &StringFlag{Name: "token", Value: "s3cret-root", Sensitive: true}
+	user := &StringFlag{Name: "user", Value: "bob"}
+	cmd := &Command{
+		Name:  "app",
+		Flags: []Flag{token, user},
+		Commands: []*Command{{
+			Name:  "sub",
+			Flags: []Flag{&IntFlag{Name: "pin", Value: 4242, Sensitive: true}},
+			MutuallyExclusiveFlags: []MutuallyExclusiveFlags{{
+				Flags: [][]Flag{{&StringFlag{Name: "key", Value: "s3cret-group", Sensitive: true}}},
+			}},
+		}},
+	}
 
-	f := &StringFlag{Name: "user", Value: "bob"}
-	b, err = json.Marshal(f)
+	b, err := json.Marshal(cmd)
 	require.NoError(t, err)
-	assert.Contains(t, string(b), `"defaultValue":"bob"`)
-	assert.Equal(t, "bob", f.Value)
+	out := string(b)
+	assert.NotContains(t, out, "s3cret-root")
+	assert.NotContains(t, out, "4242")
+	assert.NotContains(t, out, "s3cret-group")
+	assert.Contains(t, out, `"sensitive":true`)
+	assert.Contains(t, out, `"defaultValue":"bob"`)
+
+	// encoding must not change the command's own flags
+	assert.Same(t, token, cmd.Flags[0])
+	assert.Equal(t, "s3cret-root", token.Value)
+}
+
+// A type that embeds a flag must keep its own fields when encoded, as it
+// did before sensitive flags were added
+func TestSensitiveFlagEmbeddedFlagJSON(t *testing.T) {
+	type myFlag struct {
+		StringFlag
+		Extra string `json:"extra"`
+	}
+
+	b, err := json.Marshal(&myFlag{StringFlag: StringFlag{Name: "n"}, Extra: "kept"})
+	require.NoError(t, err)
+	assert.Contains(t, string(b), `"extra":"kept"`)
+	assert.Contains(t, string(b), `"name":"n"`)
 }
 
 func TestSensitiveValues(t *testing.T) {

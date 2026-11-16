@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"reflect"
@@ -338,20 +337,13 @@ func (f *FlagBase[T, C, V]) IsSensitive() bool {
 	return f.Sensitive
 }
 
-// flagBaseJSON has the fields of FlagBase but not its methods, so that
-// MarshalJSON can encode it without calling itself
-type flagBaseJSON[T any, C any, VC ValueCreator[T, C]] FlagBase[T, C, VC]
-
-// MarshalJSON encodes the flag as JSON. The default value of a sensitive
-// flag is left out, so that a secret default does not end up in exported
-// help.
-func (f *FlagBase[T, C, V]) MarshalJSON() ([]byte, error) {
+// redactedForJSON returns a copy of the flag without its default value, for
+// Command.MarshalJSON to encode in place of a sensitive flag
+func (f *FlagBase[T, C, V]) redactedForJSON() Flag {
 	c := *f
-	if c.Sensitive {
-		var zero T
-		c.Value = zero
-	}
-	return json.Marshal((*flagBaseJSON[T, C, V])(&c))
+	var zero T
+	c.Value = zero
+	return &c
 }
 
 // sensitiveParts returns val and, for slice and map flags, each item of val

@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"slices"
@@ -688,6 +689,35 @@ func (cmd *Command) FlagNames() []string {
 	}
 
 	return names
+}
+
+// commandJSON has the fields of Command but not its methods, so that
+// MarshalJSON can encode it without calling itself
+type commandJSON Command
+
+// MarshalJSON encodes the command as JSON. The default value of each flag
+// marked as sensitive (see [SensitiveFlag]) is left out, so that a secret
+// default does not end up in exported help. Subcommands are encoded the
+// same way. Encoding a flag on its own, outside a command, does not leave
+// out its default value.
+func (cmd *Command) MarshalJSON() ([]byte, error) {
+	c := *cmd
+	c.Flags = redactFlagsForJSON(c.Flags)
+
+	if len(c.MutuallyExclusiveFlags) > 0 {
+		groups := make([]MutuallyExclusiveFlags, len(c.MutuallyExclusiveFlags))
+		for i, g := range c.MutuallyExclusiveFlags {
+			opts := make([][]Flag, len(g.Flags))
+			for j, opt := range g.Flags {
+				opts[j] = redactFlagsForJSON(opt)
+			}
+			g.Flags = opts
+			groups[i] = g
+		}
+		c.MutuallyExclusiveFlags = groups
+	}
+
+	return json.Marshal((*commandJSON)(&c))
 }
 
 // SensitiveValues returns the current values of all flags marked as

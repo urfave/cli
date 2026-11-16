@@ -734,6 +734,13 @@ func (cmd *Command) Lineage() []*Command
 func (cmd *Command) LocalFlagNames() []string
     LocalFlagNames returns a slice of flag names used in this command.
 
+func (cmd *Command) MarshalJSON() ([]byte, error)
+    MarshalJSON encodes the command as JSON. The default value of each flag
+    marked as sensitive (see SensitiveFlag) is left out, so that a secret
+    default does not end up in exported help. Subcommands are encoded the same
+    way. Encoding a flag on its own, outside a command, does not leave out its
+    default value.
+
 func (cmd *Command) NArg() int
     NArg returns the number of the command line arguments.
 
@@ -1112,10 +1119,6 @@ func (f *FlagBase[T, C, V]) IsSet() bool
 func (f *FlagBase[T, C, V]) IsVisible() bool
     IsVisible returns true if the flag is not hidden, otherwise false
 
-func (f *FlagBase[T, C, V]) MarshalJSON() ([]byte, error)
-    MarshalJSON encodes the flag as JSON. The default value of a sensitive flag
-    is left out, so that a secret default does not end up in exported help.
-
 func (f *FlagBase[T, C, V]) Names() []string
     Names returns the names of the flag
 
@@ -1434,10 +1437,11 @@ type SensitiveFlag interface {
 	// IsSensitive returns true if the flag's value must be kept secret
 	IsSensitive() bool
 }
-    SensitiveFlag is an interface that allows us to mark flags whose values
-    are secrets, such as passwords or tokens. The value of a sensitive flag is
-    not shown in help output, JSON output or error messages, and is returned by
-    Command.SensitiveValues so that it can be removed from other output.
+    SensitiveFlag is an interface that allows us to mark flags whose values are
+    secrets, such as passwords or tokens. The value of a sensitive flag is not
+    shown in help output, a command's JSON (see Command.MarshalJSON) or error
+    messages, and is returned by Command.SensitiveValues so that it can be
+    removed from other output.
 
 type Serializer interface {
 	Serialize() string
