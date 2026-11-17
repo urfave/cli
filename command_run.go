@@ -290,7 +290,9 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 				argsWithDefault := cmd.argsWithDefaultCommand(cmd.parsedArgs)
 				tracef("using default command args=%[1]q (cmd=%[2]q)", argsWithDefault, cmd.Name)
 				subCmd = cmd.Command(argsWithDefault.First())
-				cmd.parsedArgs = argsWithDefault
+				if subCmd != nil {
+					cmd.parsedArgs = argsWithDefault
+				}
 			}
 		}
 	} else if cmd.DefaultCommand != "" {
