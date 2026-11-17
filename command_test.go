@@ -906,6 +906,34 @@ func TestCommand_RunDefaultCommand(t *testing.T) {
 	}
 }
 
+func TestCommand_FlagNamesIncludesParentFlags(t *testing.T) {
+	var got []string
+	parent := &Command{
+		Name:  "parent",
+		Flags: []Flag{&StringFlag{Name: "parent-flag"}},
+		Commands: []*Command{
+			{
+				Name:  "child",
+				Flags: []Flag{&StringFlag{Name: "child-flag"}},
+				Action: func(_ context.Context, c *Command) error {
+					got = c.FlagNames()
+					return nil
+				},
+			},
+		},
+	}
+
+	err := parent.Run(buildTestContext(t), []string{"parent", "--parent-flag", "p", "child", "--child-flag", "c"})
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"parent-flag", "child-flag"}, got)
+}
+
+func TestCommand_CountUnknownFlag(t *testing.T) {
+	cmd := &Command{Name: "app"}
+
+	assert.Equal(t, 0, cmd.Count("missing"))
+}
+
 var defaultCommandSubCommandTests = []struct {
 	cmdName        string
 	subCmd         string

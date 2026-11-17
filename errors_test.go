@@ -122,6 +122,25 @@ func captureExit(err error) (int, bool, string) {
 //
 // The test is not parallel because captureExit replaces the package level
 // OsExiter and ErrWriter, like the rest of this file.
+type formattedExitError struct {
+	msg  string
+	code int
+}
+
+func (e formattedExitError) Error() string { return e.msg }
+func (e formattedExitError) ExitCode() int { return e.code }
+func (e formattedExitError) Format(s fmt.State, _ rune) {
+	_, _ = fmt.Fprintf(s, "formatted(%s)", e.msg)
+}
+
+func TestHandleExitCoder_DirectErrorFormatter(t *testing.T) {
+	code, called, out := captureExit(formattedExitError{msg: "boom", code: 7})
+
+	assert.True(t, called, "OsExiter was not called for a direct ErrorFormatter")
+	assert.Equal(t, 7, code)
+	assert.Equal(t, "formatted(boom)\n", out)
+}
+
 func TestHandleExitCoder_WrappedExitCoder(t *testing.T) {
 	t.Run("direct", func(t *testing.T) {
 		code, called, out := captureExit(fmt.Errorf("deploy failed: %w", Exit("galactic perimeter breach", 9)))
