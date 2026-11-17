@@ -3,6 +3,8 @@ package cli_test
 import (
 	"context"
 	"fmt"
+	"io"
+	"log/slog"
 	"net/mail"
 	"os"
 	"strings"
@@ -489,4 +491,57 @@ func ExampleCommand_Walk_visibleTree() {
 	//   project
 	//     list
 	//   version
+}
+
+// redactingWriter replaces secrets in everything written to w. Any logger
+// that writes to an io.Writer can use it, such as log, log/slog or zap.
+type redactingWriter struct {
+	w io.Writer
+	r *strings.Replacer
+}
+
+func newRedactingWriter(w io.Writer, cmd *cli.Command) *redactingWriter {
+	// SensitiveValues sorts longest first, so a secret that contains
+	// another is replaced as a whole
+	var oldnew []string
+	for _, v := range cmd.SensitiveValues() {
+		oldnew = append(oldnew, v, "[REDACTED]")
+	}
+	return &redactingWriter{w: w, r: strings.NewReplacer(oldnew...)}
+}
+
+func (rw *redactingWriter) Write(p []byte) (int, error) {
+	if _, err := io.WriteString(rw.w, rw.r.Replace(string(p))); err != nil {
+		return 0, err
+	}
+	return len(p), nil
+}
+
+func ExampleCommand_SensitiveValues() {
+	cmd := &cli.Command{
+		Name: "deploy",
+		Flags: []cli.Flag{
+			&cli.StringFlag{Name: "token", Sensitive: true},
+			&cli.StringFlag{Name: "region"},
+		},
+		Action: func(_ context.Context, cmd *cli.Command) error {
+			// Build the logger after parsing, once the values are known
+			logger := slog.New(slog.NewTextHandler(newRedactingWriter(os.Stdout, cmd), &slog.HandlerOptions{
+				// leave out the time so the output below is stable
+				ReplaceAttr: func(_ []string, a slog.Attr) slog.Attr {
+					if a.Key == slog.TimeKey {
+						return slog.Attr{}
+					}
+					return a
+				},
+			}))
+
+			logger.Info("deploying", "region", cmd.String("region"), "auth", "Bearer "+cmd.String("token"))
+			return nil
+		},
+	}
+
+	_ = cmd.Run(context.Background(), []string{"deploy", "--token", "s3cret", "--region", "eu-west-1"})
+	// Output:
+	// level=INFO msg=deploying region=eu-west-1 auth="Bearer [REDACTED]"
 }

@@ -63,6 +63,7 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Sources          ValueSourceChain                         `json:"-"`                // sources to load flag value from
 	Required         bool                                     `json:"required"`         // whether the flag is required or not
 	Hidden           bool                                     `json:"hidden"`           // whether to hide the flag in help output
+	Sensitive        bool                                     `json:"sensitive"`        // whether the value is a secret that must not be shown in help output or errors
 	Deprecated       string                                   `json:"deprecated"`       // deprecation message, if set a warning is printed when the flag is set
 	Local            bool                                     `json:"local"`            // whether the flag is only for this command and not accepted by subcommands
 	Value            T                                        `json:"defaultValue"`     // default value for this flag if not set by from any source
@@ -177,7 +178,7 @@ func (f *FlagBase[T, C, V]) PostParse() error {
 			if err := f.Set(f.Name, val); err != nil {
 				return fmt.Errorf(
 					"could not parse %[1]q as %[2]T value from %[3]s for flag %[4]s: %[5]s",
-					val, f.Value, source, f.Name, err,
+					redactValue(f, val, val), f.Value, source, f.Name, redactValue(f, err.Error(), val),
 				)
 			}
 
@@ -201,10 +202,58 @@ func (f *FlagBase[T, C, V]) setMultiValueParsingConfig(c multiValueParsingConfig
 
 // newValue creates the flag's value holding the default Value.
 func (f *FlagBase[T, C, V]) newValue() Value {
-	if f.Destination == nil {
-		return f.creator.Create(f.Value, new(T), f.Config)
+	val := f.Value
+	if f.Sensitive {
+		val = cloneDefault(val)
 	}
-	return f.creator.Create(f.Value, f.Destination, f.Config)
+	if f.Destination == nil {
+		return f.creator.Create(val, new(T), f.Config)
+	}
+	return f.creator.Create(val, f.Destination, f.Config)
+}
+
+// cloneDefault returns a copy of v when T is an interface type holding a
+// non-nil pointer, as for GenericFlag and TextFlag. Parsing writes through
+// that pointer, so without a copy the flag's Value field would be changed
+// to the parsed value, and encoding the flag would show it.
+//
+// A value that can marshal itself to and from text, such as the value of a
+// TextFlag, is copied deeply by unmarshaling its text form into a new zero
+// value, so that the copy shares no maps, slices or pointers with v. Any
+// other value, or one whose text form cannot be read back, is copied
+// shallowly.
+func cloneDefault[T any](v T) T {
+	if reflect.TypeFor[T]().Kind() != reflect.Interface {
+		return v
+	}
+	rv := reflect.ValueOf(v)
+	if !rv.IsValid() || rv.Kind() != reflect.Pointer || rv.IsNil() {
+		return v
+	}
+	c := reflect.New(rv.Type().Elem())
+	if !copyText(rv, c) {
+		c.Elem().Set(rv.Elem())
+	}
+	out, ok := c.Interface().(T)
+	if !ok {
+		return v
+	}
+	return out
+}
+
+// copyText unmarshals the text form of src into dst, a new zero value of
+// the same type, and reports whether it succeeded
+func copyText(src, dst reflect.Value) bool {
+	m, ok := src.Interface().(TextMarshalUnmarshaler)
+	if !ok {
+		return false
+	}
+	text, err := m.MarshalText()
+	if err != nil {
+		return false
+	}
+	u, ok := dst.Interface().(TextMarshalUnmarshaler)
+	return ok && u.UnmarshalText(text) == nil
 }
 
 func (f *FlagBase[T, C, V]) getTypedValue() T {
@@ -329,6 +378,43 @@ func (f *FlagBase[T, C, V]) Names() []string {
 // IsRequired returns whether or not the flag is required
 func (f *FlagBase[T, C, V]) IsRequired() bool {
 	return f.Required
+}
+
+// IsSensitive returns whether or not the flag's value is a secret
+func (f *FlagBase[T, C, V]) IsSensitive() bool {
+	return f.Sensitive
+}
+
+// sensitiveParts returns val and, for slice and map flags, each item of val
+// and each map value, as an error message may quote any of them on its own
+func (f *FlagBase[T, C, V]) sensitiveParts(val string) []string {
+	parts := []string{val}
+
+	kind := reflect.TypeFor[T]().Kind()
+	if kind != reflect.Slice && kind != reflect.Map {
+		return parts
+	}
+
+	var cfg multiValueParsingConfig
+	if f.multiValueConfig != nil {
+		cfg = *f.multiValueConfig
+	}
+	kvSep := cfg.MapFlagKeyValueSeparator
+	if kvSep == "" {
+		kvSep = defaultMapFlagKeyValueSeparator
+	}
+
+	for _, item := range flagSplitMultiValues(val, cfg.SliceFlagSeparator, cfg.DisableSliceFlagSeparator) {
+		parts = append(parts, item, strings.TrimSpace(item))
+		if kind != reflect.Map {
+			continue
+		}
+		if _, v, ok := strings.Cut(item, kvSep); ok {
+			parts = append(parts, v, strings.TrimSpace(v))
+		}
+	}
+
+	return parts
 }
 
 // IsVisible returns true if the flag is not hidden, otherwise false

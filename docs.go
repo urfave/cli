@@ -111,7 +111,7 @@ func stringifyFlag(f Flag) string {
 		if df.IsDefaultVisible() {
 			if s := df.GetDefaultText(); s != "" {
 				defaultValueString = fmt.Sprintf(formatDefault("%s"), s)
-			} else if df.TakesValue() && df.GetValue() != "" {
+			} else if df.TakesValue() && df.GetValue() != "" && !isSensitive(f) {
 				defaultValueString = fmt.Sprintf(formatDefault("%s"), df.GetValue())
 			}
 		}
