@@ -233,6 +233,15 @@ func cliArgContains(flagName string, args []string) bool {
 func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 	// Trim to handle both "-short" and "--long" flags.
 	cur := strings.TrimLeft(lastArg, "-")
+	// A short flag written out in full, such as "-c", is that flag and not
+	// the start of a long one, so there is nothing to suggest.
+	if lastArg == "-"+cur && utf8.RuneCountInString(cur) == 1 {
+		for _, flag := range flags {
+			if slices.Contains(flag.Names(), cur) {
+				return
+			}
+		}
+	}
 	for _, flag := range flags {
 		if vf, ok := flag.(VisibleFlag); ok && !vf.IsVisible() {
 			continue
@@ -261,6 +270,23 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 			fmt.Fprintln(writer, flagCompletion)
 		}
 	}
+}
+
+// isCompleteFlag reports whether arg is a flag that needs nothing more: one
+// that takes no value, or one given its value after "=".
+func isCompleteFlag(arg string, flags []Flag) bool {
+	name, _, hasValue := strings.Cut(strings.TrimLeft(arg, "-"), "=")
+	for _, flag := range flags {
+		if !slices.Contains(flag.Names(), name) {
+			continue
+		}
+		if hasValue {
+			return true
+		}
+		docFlag, ok := flag.(DocGenerationFlag)
+		return ok && !docFlag.TakesValue()
+	}
+	return false
 }
 
 func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
@@ -300,7 +326,13 @@ func DefaultCompleteWithFlags(ctx context.Context, cmd *Command) {
 			}
 		}
 		printFlagSuggestions(lastArg, flags, cmd.Root().Writer)
-		return
+		// The last argument may be the flag being typed, as in "app --debug<TAB>",
+		// or one before the cursor, as in "app --debug <TAB>". The bash, zsh and
+		// fish scripts keep only the suggestions that match the word being typed,
+		// so after a complete flag, suggest the subcommands too.
+		if !isCompleteFlag(lastArg, flags) {
+			return
+		}
 	}
 
 	if cmd != nil {
@@ -521,11 +553,13 @@ func wrap(input string, offset int, wrapAt int) string {
 }
 
 func wrapLine(input string, offset int, wrapAt int, padding string) string {
-	if wrapAt <= offset || len(input) <= wrapAt-offset {
+	lineWidth := wrapAt - offset
+
+	// Like offset, count runes rather than bytes.
+	if lineWidth <= 0 || utf8.RuneCountInString(input) <= lineWidth {
 		return input
 	}
 
-	lineWidth := wrapAt - offset
 	words := strings.Fields(input)
 	if len(words) == 0 {
 		return input
@@ -533,14 +567,15 @@ func wrapLine(input string, offset int, wrapAt int, padding string) string {
 
 	var wrapped strings.Builder
 	wrapped.WriteString(words[0])
-	spaceLeft := lineWidth - len(words[0])
+	spaceLeft := lineWidth - utf8.RuneCountInString(words[0])
 	for _, word := range words[1:] {
-		if len(word)+1 > spaceLeft {
+		width := utf8.RuneCountInString(word)
+		if width+1 > spaceLeft {
 			wrapped.WriteString("\n" + padding + word)
-			spaceLeft = lineWidth - len(word)
+			spaceLeft = lineWidth - width
 		} else {
 			wrapped.WriteString(" " + word)
-			spaceLeft -= 1 + len(word)
+			spaceLeft -= 1 + width
 		}
 	}
 

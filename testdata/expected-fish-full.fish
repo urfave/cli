@@ -18,27 +18,92 @@ complete -x -c greet -n '__fish_greet_no_subcommand' -a 'config' -d 'another usa
 complete -c greet -n '__fish_seen_subcommand_from config c' -l flag -l fl -s f -r
 complete -c greet -n '__fish_seen_subcommand_from config c' -f -l another-flag -s b -d 'another usage text'
 complete -c greet -n '__fish_seen_subcommand_from config c' -f -l help -s h -d 'show help'
+complete -c greet -n '__fish_seen_subcommand_from config c' -l socket -s s -r -d 'some \'usage\' text'
+complete -c greet -n '__fish_seen_subcommand_from config c' -l logfile -r
+complete -c greet -n '__fish_seen_subcommand_from config c' -l foofile -r
 complete -x -c greet -n '__fish_seen_subcommand_from config c; and not __fish_seen_subcommand_from sub-config s ss help h' -a 'sub-config' -d 'another usage test'
 complete -c greet -n '__fish_seen_subcommand_from config c; and __fish_seen_subcommand_from sub-config s ss' -f -l sub-flag -l sub-fl -s s -r
 complete -c greet -n '__fish_seen_subcommand_from config c; and __fish_seen_subcommand_from sub-config s ss' -f -l sub-command-flag -s s -d 'some usage text'
 complete -c greet -n '__fish_seen_subcommand_from config c; and __fish_seen_subcommand_from sub-config s ss' -f -l help -s h -d 'show help'
+complete -c greet -n '__fish_seen_subcommand_from config c; and __fish_seen_subcommand_from sub-config s ss' -l logfile -r
+complete -c greet -n '__fish_seen_subcommand_from config c; and __fish_seen_subcommand_from sub-config s ss' -l foofile -r
+complete -c greet -n '__fish_seen_subcommand_from config c; and __fish_seen_subcommand_from sub-config s ss' -l flag -l fl -s f -r
+complete -c greet -n '__fish_seen_subcommand_from config c; and __fish_seen_subcommand_from sub-config s ss' -f -l another-flag -s b -d 'another usage text'
 complete -x -c greet -n '__fish_seen_subcommand_from config c; and __fish_seen_subcommand_from sub-config s ss; and not __fish_seen_subcommand_from help h' -a 'help' -d 'Shows a list of commands or help for one command'
+complete -c greet -n '__fish_seen_subcommand_from config c; and __fish_seen_subcommand_from sub-config s ss; and __fish_seen_subcommand_from help h' -l logfile -r
+complete -c greet -n '__fish_seen_subcommand_from config c; and __fish_seen_subcommand_from sub-config s ss; and __fish_seen_subcommand_from help h' -l foofile -r
+complete -c greet -n '__fish_seen_subcommand_from config c; and __fish_seen_subcommand_from sub-config s ss; and __fish_seen_subcommand_from help h' -l flag -l fl -s f -r
+complete -c greet -n '__fish_seen_subcommand_from config c; and __fish_seen_subcommand_from sub-config s ss; and __fish_seen_subcommand_from help h' -f -l another-flag -s b -d 'another usage text'
+complete -c greet -n '__fish_seen_subcommand_from config c; and __fish_seen_subcommand_from sub-config s ss; and __fish_seen_subcommand_from help h' -f -l sub-flag -l sub-fl -s s -r
 complete -x -c greet -n '__fish_seen_subcommand_from config c; and not __fish_seen_subcommand_from sub-config s ss help h' -a 'help' -d 'Shows a list of commands or help for one command'
+complete -c greet -n '__fish_seen_subcommand_from config c; and __fish_seen_subcommand_from help h' -l socket -s s -r -d 'some \'usage\' text'
+complete -c greet -n '__fish_seen_subcommand_from config c; and __fish_seen_subcommand_from help h' -l logfile -r
+complete -c greet -n '__fish_seen_subcommand_from config c; and __fish_seen_subcommand_from help h' -l foofile -r
+complete -c greet -n '__fish_seen_subcommand_from config c; and __fish_seen_subcommand_from help h' -l flag -l fl -s f -r
+complete -c greet -n '__fish_seen_subcommand_from config c; and __fish_seen_subcommand_from help h' -f -l another-flag -s b -d 'another usage text'
 complete -x -c greet -n '__fish_greet_no_subcommand' -a 'info' -d 'retrieve generic information'
 complete -c greet -n '__fish_seen_subcommand_from info i in' -f -l help -s h -d 'show help'
+complete -c greet -n '__fish_seen_subcommand_from info i in' -l socket -s s -r -d 'some \'usage\' text'
+complete -c greet -n '__fish_seen_subcommand_from info i in' -f -l flag -l fl -s f -r
+complete -c greet -n '__fish_seen_subcommand_from info i in' -f -l another-flag -s b -d 'another usage text'
+complete -c greet -n '__fish_seen_subcommand_from info i in' -l logfile -r
+complete -c greet -n '__fish_seen_subcommand_from info i in' -l foofile -r
 complete -x -c greet -n '__fish_seen_subcommand_from info i in; and not __fish_seen_subcommand_from help h' -a 'help' -d 'Shows a list of commands or help for one command'
+complete -c greet -n '__fish_seen_subcommand_from info i in; and __fish_seen_subcommand_from help h' -l socket -s s -r -d 'some \'usage\' text'
+complete -c greet -n '__fish_seen_subcommand_from info i in; and __fish_seen_subcommand_from help h' -f -l flag -l fl -s f -r
+complete -c greet -n '__fish_seen_subcommand_from info i in; and __fish_seen_subcommand_from help h' -f -l another-flag -s b -d 'another usage text'
+complete -c greet -n '__fish_seen_subcommand_from info i in; and __fish_seen_subcommand_from help h' -l logfile -r
+complete -c greet -n '__fish_seen_subcommand_from info i in; and __fish_seen_subcommand_from help h' -l foofile -r
 complete -x -c greet -n '__fish_greet_no_subcommand' -a 'some-command'
 complete -c greet -n '__fish_seen_subcommand_from some-command' -f -l help -s h -d 'show help'
+complete -c greet -n '__fish_seen_subcommand_from some-command' -l socket -s s -r -d 'some \'usage\' text'
+complete -c greet -n '__fish_seen_subcommand_from some-command' -f -l flag -l fl -s f -r
+complete -c greet -n '__fish_seen_subcommand_from some-command' -f -l another-flag -s b -d 'another usage text'
+complete -c greet -n '__fish_seen_subcommand_from some-command' -l logfile -r
+complete -c greet -n '__fish_seen_subcommand_from some-command' -l foofile -r
 complete -x -c greet -n '__fish_seen_subcommand_from some-command; and not __fish_seen_subcommand_from help h' -a 'help' -d 'Shows a list of commands or help for one command'
+complete -c greet -n '__fish_seen_subcommand_from some-command; and __fish_seen_subcommand_from help h' -l socket -s s -r -d 'some \'usage\' text'
+complete -c greet -n '__fish_seen_subcommand_from some-command; and __fish_seen_subcommand_from help h' -f -l flag -l fl -s f -r
+complete -c greet -n '__fish_seen_subcommand_from some-command; and __fish_seen_subcommand_from help h' -f -l another-flag -s b -d 'another usage text'
+complete -c greet -n '__fish_seen_subcommand_from some-command; and __fish_seen_subcommand_from help h' -l logfile -r
+complete -c greet -n '__fish_seen_subcommand_from some-command; and __fish_seen_subcommand_from help h' -l foofile -r
 complete -c greet -n '__fish_seen_subcommand_from hidden-command' -f -l completable
 complete -c greet -n '__fish_seen_subcommand_from hidden-command' -f -l help -s h -d 'show help'
+complete -c greet -n '__fish_seen_subcommand_from hidden-command' -l socket -s s -r -d 'some \'usage\' text'
+complete -c greet -n '__fish_seen_subcommand_from hidden-command' -f -l flag -l fl -s f -r
+complete -c greet -n '__fish_seen_subcommand_from hidden-command' -f -l another-flag -s b -d 'another usage text'
+complete -c greet -n '__fish_seen_subcommand_from hidden-command' -l logfile -r
+complete -c greet -n '__fish_seen_subcommand_from hidden-command' -l foofile -r
 complete -x -c greet -n '__fish_seen_subcommand_from hidden-command; and not __fish_seen_subcommand_from help h' -a 'help' -d 'Shows a list of commands or help for one command'
+complete -c greet -n '__fish_seen_subcommand_from hidden-command; and __fish_seen_subcommand_from help h' -l socket -s s -r -d 'some \'usage\' text'
+complete -c greet -n '__fish_seen_subcommand_from hidden-command; and __fish_seen_subcommand_from help h' -f -l flag -l fl -s f -r
+complete -c greet -n '__fish_seen_subcommand_from hidden-command; and __fish_seen_subcommand_from help h' -f -l another-flag -s b -d 'another usage text'
+complete -c greet -n '__fish_seen_subcommand_from hidden-command; and __fish_seen_subcommand_from help h' -l logfile -r
+complete -c greet -n '__fish_seen_subcommand_from hidden-command; and __fish_seen_subcommand_from help h' -l foofile -r
+complete -c greet -n '__fish_seen_subcommand_from hidden-command; and __fish_seen_subcommand_from help h' -f -l completable
 complete -x -c greet -n '__fish_greet_no_subcommand' -a 'usage' -d 'standard usage text'
 complete -c greet -n '__fish_seen_subcommand_from usage u' -l flag -l fl -s f -r
 complete -c greet -n '__fish_seen_subcommand_from usage u' -f -l another-flag -s b -d 'another usage text'
 complete -c greet -n '__fish_seen_subcommand_from usage u' -f -l help -s h -d 'show help'
+complete -c greet -n '__fish_seen_subcommand_from usage u' -l socket -s s -r -d 'some \'usage\' text'
+complete -c greet -n '__fish_seen_subcommand_from usage u' -l logfile -r
+complete -c greet -n '__fish_seen_subcommand_from usage u' -l foofile -r
 complete -x -c greet -n '__fish_seen_subcommand_from usage u; and not __fish_seen_subcommand_from sub-usage su help h' -a 'sub-usage' -d 'standard usage text'
 complete -c greet -n '__fish_seen_subcommand_from usage u; and __fish_seen_subcommand_from sub-usage su' -f -l sub-command-flag -s s -d 'some usage text'
 complete -c greet -n '__fish_seen_subcommand_from usage u; and __fish_seen_subcommand_from sub-usage su' -f -l help -s h -d 'show help'
+complete -c greet -n '__fish_seen_subcommand_from usage u; and __fish_seen_subcommand_from sub-usage su' -l logfile -r
+complete -c greet -n '__fish_seen_subcommand_from usage u; and __fish_seen_subcommand_from sub-usage su' -l foofile -r
+complete -c greet -n '__fish_seen_subcommand_from usage u; and __fish_seen_subcommand_from sub-usage su' -l flag -l fl -s f -r
+complete -c greet -n '__fish_seen_subcommand_from usage u; and __fish_seen_subcommand_from sub-usage su' -f -l another-flag -s b -d 'another usage text'
 complete -x -c greet -n '__fish_seen_subcommand_from usage u; and __fish_seen_subcommand_from sub-usage su; and not __fish_seen_subcommand_from help h' -a 'help' -d 'Shows a list of commands or help for one command'
+complete -c greet -n '__fish_seen_subcommand_from usage u; and __fish_seen_subcommand_from sub-usage su; and __fish_seen_subcommand_from help h' -l logfile -r
+complete -c greet -n '__fish_seen_subcommand_from usage u; and __fish_seen_subcommand_from sub-usage su; and __fish_seen_subcommand_from help h' -l foofile -r
+complete -c greet -n '__fish_seen_subcommand_from usage u; and __fish_seen_subcommand_from sub-usage su; and __fish_seen_subcommand_from help h' -l flag -l fl -s f -r
+complete -c greet -n '__fish_seen_subcommand_from usage u; and __fish_seen_subcommand_from sub-usage su; and __fish_seen_subcommand_from help h' -f -l another-flag -s b -d 'another usage text'
+complete -c greet -n '__fish_seen_subcommand_from usage u; and __fish_seen_subcommand_from sub-usage su; and __fish_seen_subcommand_from help h' -f -l sub-command-flag -s s -d 'some usage text'
 complete -x -c greet -n '__fish_seen_subcommand_from usage u; and not __fish_seen_subcommand_from sub-usage su help h' -a 'help' -d 'Shows a list of commands or help for one command'
+complete -c greet -n '__fish_seen_subcommand_from usage u; and __fish_seen_subcommand_from help h' -l socket -s s -r -d 'some \'usage\' text'
+complete -c greet -n '__fish_seen_subcommand_from usage u; and __fish_seen_subcommand_from help h' -l logfile -r
+complete -c greet -n '__fish_seen_subcommand_from usage u; and __fish_seen_subcommand_from help h' -l foofile -r
+complete -c greet -n '__fish_seen_subcommand_from usage u; and __fish_seen_subcommand_from help h' -l flag -l fl -s f -r
+complete -c greet -n '__fish_seen_subcommand_from usage u; and __fish_seen_subcommand_from help h' -f -l another-flag -s b -d 'another usage text'

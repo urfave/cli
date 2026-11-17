@@ -6,6 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os/exec"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -98,6 +101,10 @@ func TestCompletionEnableDiffCommandName(t *testing.T) {
 	r := require.New(t)
 	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "junky"}))
 	r.Contains(out.String(), "USAGE")
+	// the setup instructions must use the renamed command
+	r.Contains(out.String(), "source <(foo junky bash)")
+	r.Contains(out.String(), "foo junky fish > ~/.config/fish/completions/foo.fish")
+	r.NotContains(out.String(), "foo completion")
 }
 
 func TestCompletionShell(t *testing.T) {
@@ -126,7 +133,7 @@ func TestCompletionSubcommandOrder(t *testing.T) {
 
 	// Build several times to guard against intra-process variation.
 	for range 10 {
-		cmd := buildCompletionCommand("foo")
+		cmd := buildCompletionCommand("foo", completionCommandName)
 
 		got := make([]string, 0, len(cmd.Commands))
 		for _, sub := range cmd.Commands {
@@ -296,6 +303,41 @@ func TestCompletionBashOmitsPositionalTokenFromDynamicCompletion(t *testing.T) {
 	r.Contains(output, `printf '%s --generate-shell-completion' "${words_before_cursor[*]}"`)
 }
 
+func TestCompletionBashDoesNotExpandCandidates(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("bash completion is not tested on Windows")
+	}
+	bash, err := exec.LookPath("bash")
+	if err != nil {
+		t.Skip("bash not found")
+	}
+
+	r := require.New(t)
+
+	script, err := shellCompletions["bash"](&Command{}, "app")
+	r.NoError(err)
+
+	// The fake app prints a candidate that runs touch if bash expands it.
+	cmd := exec.Command(bash, "-c", `
+app() { echo build; echo '$(touch${IFS}expanded)'; }
+# Stub for bash-completion's _comp_initialize.
+_comp_initialize() { cur=${COMP_WORDS[COMP_CWORD]}; words=("${COMP_WORDS[@]}"); cword=$COMP_CWORD; }
+eval "$1"
+# COMP_TYPE 9 is the first TAB, 63 the second (the listing).
+COMP_WORDS=(app '') COMP_CWORD=1
+for COMP_TYPE in 9 63; do
+	__app_bash_autocomplete
+	printf '%s\n' "${COMPREPLY[@]}"
+done
+`, "bash", script)
+	cmd.Dir = t.TempDir()
+
+	out, err := cmd.Output()
+	r.NoError(err)
+	r.Equal(strings.Repeat("build\n$(touch${IFS}expanded)\n", 2), string(out))
+	r.NoFileExists(filepath.Join(cmd.Dir, "expanded"))
+}
+
 func TestCompletionSubcommand(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -450,6 +492,52 @@ func TestCompletionSubcommand(t *testing.T) {
 	}
 }
 
+func TestCompletionAfterCompleteRootFlag(t *testing.T) {
+	// The root command completes the arguments passed to Run, which still
+	// hold the flags. Flag suggestions are printed for the last argument,
+	// and a flag that needs nothing more also lists the subcommands. The
+	// shell keeps only the suggestions that match the word being typed.
+
+	tests := []struct {
+		name string
+		arg  string
+		want []string
+	}{
+		{name: "bool flag", arg: "--verbose", want: []string{"sub"}},
+		{name: "inverse bool flag", arg: "--no-color", want: []string{"sub"}},
+		{name: "value after equals", arg: "--format=json", want: []string{"sub"}},
+		{name: "flag waiting for a value", arg: "--format", want: []string{}},
+		{name: "start of a longer flag", arg: "--debug", want: []string{"--debug-level", "sub"}},
+		{name: "partial flag", arg: "--verb", want: []string{"--verbose"}},
+		{name: "short alias", arg: "-v", want: []string{"sub"}},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			out := &bytes.Buffer{}
+			cmd := &Command{
+				EnableShellCompletion: true,
+				HideHelp:              true,
+				Writer:                out,
+				Flags: []Flag{
+					&BoolFlag{Name: "verbose", Aliases: []string{"v"}},
+					&BoolWithInverseFlag{Name: "color"},
+					&StringFlag{Name: "format"},
+					&BoolFlag{Name: "debug"},
+					&StringFlag{Name: "debug-level"},
+				},
+				Commands: []*Command{
+					{Name: "sub"},
+				},
+			}
+
+			r := require.New(t)
+			r.NoError(cmd.Run(buildTestContext(t), []string{"foo", test.arg, completionFlag}))
+			r.Equal(test.want, strings.Fields(out.String()))
+		})
+	}
+}
+
 func TestCompletionAfterDoubleDashNeverRunsAction(t *testing.T) {
 	// Regression test for https://github.com/urfave/cli/issues/1993:
 	// pressing tab on a command line that holds a "--" must never execute
@@ -595,6 +683,45 @@ func TestCompletionSubcommandCustomShellComplete(t *testing.T) {
 	r := require.New(t)
 	r.NoError(cmd.Run(buildTestContext(t), []string{"foo", "index", "show", completionFlag}))
 	r.Equal("custom-index\n", out.String())
+}
+
+func TestCompletionAfterShortFlag(t *testing.T) {
+	// "-c" is the short flag itself, so it must not suggest the long flags
+	// whose names start with "c". With a space after it, the shells would
+	// offer "--config" as the value of "-c".
+
+	tests := []struct {
+		name string
+		args []string
+		want []string
+	}{
+		{name: "short flag", args: []string{"foo", "-c"}, want: []string{}},
+		{name: "short flag on a subcommand", args: []string{"foo", "sub", "-c"}, want: []string{}},
+		{name: "start of long flags", args: []string{"foo", "-co"}, want: []string{"--config", "--count"}},
+		{name: "start of long flags after two dashes", args: []string{"foo", "--c"}, want: []string{"--config", "--count"}},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			out := &bytes.Buffer{}
+			cmd := &Command{
+				EnableShellCompletion: true,
+				HideHelp:              true,
+				Writer:                out,
+				Flags: []Flag{
+					&StringFlag{Name: "config", Aliases: []string{"c"}},
+					&IntFlag{Name: "count"},
+				},
+				Commands: []*Command{
+					{Name: "sub"},
+				},
+			}
+
+			r := require.New(t)
+			r.NoError(cmd.Run(buildTestContext(t), append(test.args, completionFlag)))
+			r.Equal(test.want, strings.Fields(out.String()))
+		})
+	}
 }
 
 func TestCompletionMultilineUsage(t *testing.T) {
