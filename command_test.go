@@ -906,6 +906,22 @@ func TestCommand_RunDefaultCommand(t *testing.T) {
 	}
 }
 
+func TestCommand_RunDefaultCommandUnknownNameDoesNotRewriteArgs(t *testing.T) {
+	var gotArgs Args
+	cmd := &Command{
+		Name:           "greet",
+		DefaultCommand: "helo",
+		Action: func(_ context.Context, c *Command) error {
+			gotArgs = c.Args()
+			return nil
+		},
+	}
+
+	err := cmd.Run(buildTestContext(t), []string{"greet", "world"})
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"world"}, gotArgs.Slice())
+}
+
 var defaultCommandSubCommandTests = []struct {
 	cmdName        string
 	subCmd         string
