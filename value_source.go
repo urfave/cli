@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"os"
+	"reflect"
 	"strings"
 )
 
@@ -250,9 +251,19 @@ func (mvs *mapValueSource) GoString() string {
 }
 
 func (mvs *mapValueSource) Lookup() (string, bool) {
-	if v, ok := mvs.ms.Lookup(mvs.key); !ok {
+	v, ok := mvs.ms.Lookup(mvs.key)
+	if !ok {
 		return "", false
-	} else {
-		return fmt.Sprintf("%+v", v), true
 	}
+
+	rv := reflect.ValueOf(v)
+	if rv.IsValid() && (rv.Kind() == reflect.Slice || rv.Kind() == reflect.Array) {
+		parts := make([]string, rv.Len())
+		for i := range parts {
+			parts[i] = fmt.Sprintf("%+v", rv.Index(i).Interface())
+		}
+		return strings.Join(parts, ","), true
+	}
+
+	return fmt.Sprintf("%+v", v), true
 }
