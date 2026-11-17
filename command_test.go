@@ -8333,3 +8333,37 @@ func TestCommand_RunAgainChecksRequiredFlagsAndSources(t *testing.T) {
 	r.NoError(cmd.Run(buildTestContext(t), []string{"app"}))
 	r.Equal("from-env", cmd.String("name"))
 }
+
+func TestMapSourceSliceUsesCommandSeparator(t *testing.T) {
+	ms := NewMapSource("config", map[any]any{"ports": []any{"alpha,beta", "gamma"}})
+
+	inner := NewValueSourceChain(NewMapValueSource("ports", ms))
+	testCases := []struct {
+		name    string
+		sources ValueSourceChain
+	}{
+		{name: "direct", sources: NewValueSourceChain(NewMapValueSource("ports", ms))},
+		{name: "nested chain", sources: NewValueSourceChain(&inner)},
+	}
+
+	for _, testCase := range testCases {
+		name, sources := testCase.name, testCase.sources
+		t.Run(name, func(t *testing.T) {
+			var got []string
+			cmd := &Command{
+				Name:               "root",
+				SliceFlagSeparator: ";",
+				Flags: []Flag{
+					&StringSliceFlag{Name: "ports", Sources: sources},
+				},
+				Action: func(_ context.Context, cmd *Command) error {
+					got = cmd.StringSlice("ports")
+					return nil
+				},
+			}
+
+			require.NoError(t, cmd.Run(buildTestContext(t), []string{"root"}))
+			assert.Equal(t, []string{"alpha,beta", "gamma"}, got)
+		})
+	}
+}

@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"os"
+	"reflect"
 	"strings"
 )
 
@@ -89,6 +90,14 @@ func (vsc *ValueSourceChain) GoString() string {
 func (vsc *ValueSourceChain) Lookup() (string, bool) {
 	s, _, ok := vsc.LookupWithSource()
 	return s, ok
+}
+
+func (vsc *ValueSourceChain) setSliceSeparator(separator string) {
+	for _, source := range vsc.Chain {
+		if setter, ok := source.(interface{ setSliceSeparator(string) }); ok {
+			setter.setSliceSeparator(separator)
+		}
+	}
 }
 
 func (vsc *ValueSourceChain) LookupWithSource() (string, ValueSource, bool) {
@@ -230,8 +239,13 @@ func (ms *mapSource) Lookup(name string) (any, bool) {
 }
 
 type mapValueSource struct {
-	key string
-	ms  MapSource
+	key            string
+	ms             MapSource
+	sliceSeparator string
+}
+
+func (mvs *mapValueSource) setSliceSeparator(separator string) {
+	mvs.sliceSeparator = separator
 }
 
 func NewMapValueSource(key string, ms MapSource) ValueSource {
@@ -250,9 +264,26 @@ func (mvs *mapValueSource) GoString() string {
 }
 
 func (mvs *mapValueSource) Lookup() (string, bool) {
-	if v, ok := mvs.ms.Lookup(mvs.key); !ok {
+	v, ok := mvs.ms.Lookup(mvs.key)
+	if !ok {
 		return "", false
-	} else {
-		return fmt.Sprintf("%+v", v), true
 	}
+
+	rv := reflect.ValueOf(v)
+	if rv.IsValid() && (rv.Kind() == reflect.Slice || rv.Kind() == reflect.Array) {
+		// Slice and array values use the command-line separator syntax. An
+		// element containing the configured separator is still split; choose
+		// a separator that does not appear in the elements.
+		separator := mvs.sliceSeparator
+		if separator == "" {
+			separator = defaultSliceFlagSeparator
+		}
+		parts := make([]string, rv.Len())
+		for i := range parts {
+			parts[i] = fmt.Sprintf("%+v", rv.Index(i).Interface())
+		}
+		return strings.Join(parts, separator), true
+	}
+
+	return fmt.Sprintf("%+v", v), true
 }

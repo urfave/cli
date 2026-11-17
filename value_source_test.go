@@ -310,7 +310,7 @@ func TestMapValueSource(t *testing.T) {
 					},
 				},
 			},
-			val:   "[10]",
+			val:   "10",
 			found: true,
 		},
 	}
@@ -340,4 +340,20 @@ func TestMapValueSourceStringer(t *testing.T) {
 
 	assert.Equal(t, `&mapValueSource{key:"bar", src:&mapSource{name:"test"}}`, mvs.GoString())
 	assert.Equal(t, `key "bar" from map source "test"`, mvs.String())
+}
+
+func TestMapValueSourceJoinsSliceValues(t *testing.T) {
+	ms := NewMapSource("config", map[any]any{"ports": []any{80, 443}})
+	val, ok := NewMapValueSource("ports", ms).Lookup()
+	if !ok || val != "80,443" {
+		t.Fatalf("expected %q, got %q (found=%v)", "80,443", val, ok)
+	}
+}
+
+func TestMapValueSourceJoinsSliceValuesWithComma(t *testing.T) {
+	ms := NewMapSource("config", map[any]any{"ports": []any{"alpha,beta", "gamma"}})
+	val, ok := NewMapValueSource("ports", ms).Lookup()
+	if !ok || val != "alpha,beta,gamma" {
+		t.Fatalf("expected %q, got %q (found=%v)", "alpha,beta,gamma", val, ok)
+	}
 }
