@@ -177,6 +177,11 @@ func (cmd *Command) setupCommandGraph() {
 	tracef("setting up command graph (cmd=%[1]q)", cmd.Name)
 
 	_ = cmd.Walk(func(sub *Command) error {
+		// help can show a command's flags before it runs, or without running
+		// it, and a map flag's help shows the key-value separator
+		for _, f := range sub.allFlags() {
+			sub.setMultiValueParsingConfig(f)
+		}
 		for _, subCmd := range sub.Commands {
 			subCmd.parent = sub
 			subCmd.setupSubcommand()

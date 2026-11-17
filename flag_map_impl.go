@@ -75,10 +75,7 @@ func (i *MapBase[T, C, VC]) Set(value string) error {
 	}
 
 	mvc := &i.multiValueConfig
-	keyValueSeparator := mvc.MapFlagKeyValueSeparator
-	if len(keyValueSeparator) == 0 {
-		keyValueSeparator = defaultMapFlagKeyValueSeparator
-	}
+	keyValueSeparator := mvc.mapKeyValueSeparator()
 
 	tracef(
 		"splitting map value '%s', keyValueSeparator '%s', slice separator '%s', disable separator:%v",
@@ -137,7 +134,7 @@ func (i MapBase[T, C, VC]) ToString(t map[string]T) string {
 	var defaultVals []string
 	var vc VC
 	for _, k := range sortedKeys(t) {
-		defaultVals = append(defaultVals, k+defaultMapFlagKeyValueSeparator+vc.ToString(t[k]))
+		defaultVals = append(defaultVals, k+i.multiValueConfig.mapKeyValueSeparator()+vc.ToString(t[k]))
 	}
 	return strings.Join(defaultVals, ", ")
 }
