@@ -6439,6 +6439,7 @@ func TestCommandMapKeyValueFlagSeparatorHelp(t *testing.T) {
 		{"app", "--help"},
 		{"app", "sub", "--help"},
 		{"app", "help", "sub"},
+		{"app", "help", "sub", "deep"},
 		{"app", "--labels", "env=prod"},
 	} {
 		t.Run(strings.Join(args[1:], " "), func(t *testing.T) {
@@ -6452,7 +6453,7 @@ func TestCommandMapKeyValueFlagSeparatorHelp(t *testing.T) {
 				ErrWriter:                io.Discard,
 				MapFlagKeyValueSeparator: ":",
 				Flags:                    []Flag{labels()},
-				Commands:                 []*Command{{Name: "sub", Flags: []Flag{labels()}}},
+				Commands:                 []*Command{{Name: "sub", Flags: []Flag{labels()}, Commands: []*Command{{Name: "deep"}}}},
 			}
 
 			_ = cmd.Run(buildTestContext(t), args)
