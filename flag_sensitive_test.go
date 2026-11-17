@@ -85,63 +85,106 @@ func TestSensitiveFlagRedactsItemsInErrors(t *testing.T) {
 	}
 }
 
-func TestSensitiveFlagCommandJSON(t *testing.T) {
-	token := &StringFlag{Name: "token", Value: "s3cret-root", Sensitive: true}
-	user := &StringFlag{Name: "user", Value: "bob"}
+// Encoding as JSON shows the default value of a sensitive flag, which is in
+// the source or binary anyway, but never the value it was set to
+func TestSensitiveFlagJSONHasNoSetValue(t *testing.T) {
+	gen := &sensitiveGeneric{s: "default-gen"}
 	cmd := &Command{
-		Name:  "app",
-		Flags: []Flag{token, user},
-		Commands: []*Command{{
-			Name:  "sub",
-			Flags: []Flag{&IntFlag{Name: "pin", Value: 4242, Sensitive: true}},
-			MutuallyExclusiveFlags: []MutuallyExclusiveFlags{{
-				Flags: [][]Flag{{&StringFlag{Name: "key", Value: "s3cret-group", Sensitive: true}}},
-			}},
-		}},
+		Name: "app",
+		Flags: []Flag{
+			&StringFlag{Name: "str", Value: "default-str", Sensitive: true},
+			&StringSliceFlag{Name: "sl", Value: []string{"default-sl"}, Sensitive: true},
+			&StringMapFlag{Name: "map", Value: map[string]string{"k": "default-map"}, Sensitive: true},
+			&GenericFlag{Name: "gen", Value: gen, Sensitive: true},
+			&TextFlag{Name: "txt", Value: &sensitiveText{s: "default-txt"}, Sensitive: true},
+		},
 	}
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{
+		"app",
+		"--str", "set-s3cret-str",
+		"--sl", "set-s3cret-sl",
+		"--map", "k=set-s3cret-map",
+		"--gen", "set-s3cret-gen",
+		"--txt", "set-s3cret-txt",
+	}))
 
 	b, err := json.Marshal(cmd)
 	require.NoError(t, err)
 	out := string(b)
-	assert.NotContains(t, out, "s3cret-root")
-	assert.NotContains(t, out, "4242")
-	assert.NotContains(t, out, "s3cret-group")
-	assert.Contains(t, out, `"sensitive":true`)
-	assert.Contains(t, out, `"defaultValue":"bob"`)
+	assert.NotContains(t, out, "set-s3cret")
+	for _, def := range []string{"default-str", "default-sl", "default-map", "default-gen", "default-txt"} {
+		assert.Contains(t, out, def)
+	}
 
-	// encoding must not change the command's own flags
-	assert.Same(t, token, cmd.Flags[0])
-	assert.Equal(t, "s3cret-root", token.Value)
+	for _, f := range cmd.Flags {
+		b, err := json.Marshal(f)
+		require.NoError(t, err)
+		assert.NotContains(t, string(b), "set-s3cret")
+	}
 }
 
-// Masking is done by Command.MarshalJSON, so a sensitive flag encoded on its
-// own still shows its default value, but never the value it was set to
-func TestSensitiveFlagAloneJSON(t *testing.T) {
-	f := &StringFlag{Name: "token", Value: "default-s3cret", Sensitive: true}
-	cmd := &Command{Name: "app", Flags: []Flag{f}}
-	require.NoError(t, cmd.Run(buildTestContext(t), []string{"app", "--token", "arg-s3cret"}))
+// A sensitive GenericFlag or TextFlag parses into a copy of its default
+// value, so the parsed value is read from the command or Destination and
+// the caller's default object is left as it was
+func TestSensitiveFlagPointerValueIsCopied(t *testing.T) {
+	gen := &sensitiveGeneric{s: "default-gen"}
+	txt := &sensitiveText{s: "default-txt"}
+	var dest TextMarshalUnmarshaler
 
-	b, err := json.Marshal(f)
-	require.NoError(t, err)
-	assert.Contains(t, string(b), `"defaultValue":"default-s3cret"`)
-	assert.NotContains(t, string(b), "arg-s3cret")
+	cmd := &Command{
+		Name: "app",
+		Flags: []Flag{
+			&GenericFlag{Name: "gen", Value: gen, Sensitive: true},
+			&TextFlag{Name: "txt", Value: txt, Destination: &dest, Sensitive: true},
+		},
+	}
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"app", "--gen", "set-gen", "--txt", "set-txt"}))
+
+	assert.Equal(t, "default-gen", gen.s)
+	assert.Equal(t, "default-txt", txt.s)
+	assert.Equal(t, "set-gen", cmd.Generic("gen").String())
+	assert.Equal(t, &sensitiveText{s: "set-txt"}, cmd.Text("txt"))
+	assert.Equal(t, &sensitiveText{s: "set-txt"}, dest)
+	assert.Contains(t, cmd.SensitiveValues(), "set-gen")
 }
 
-// Known break: Command.MarshalJSON is promoted to a type that embeds a
-// Command, so encoding that type leaves out its own fields. Before sensitive
-// flags were added they were included. If this test fails, the break is gone
-// and the note on Command.MarshalJSON should be removed.
+// A flag that is not sensitive still parses into its default value object
+func TestNotSensitiveFlagPointerValueIsShared(t *testing.T) {
+	gen := &sensitiveGeneric{s: "default-gen"}
+	cmd := &Command{
+		Name:  "app",
+		Flags: []Flag{&GenericFlag{Name: "gen", Value: gen}},
+	}
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"app", "--gen", "set-gen"}))
+	assert.Equal(t, "set-gen", gen.s)
+}
+
+// A type that embeds a Command must keep its own fields when encoded
 func TestSensitiveFlagEmbeddedCommandJSON(t *testing.T) {
 	type myCommand struct {
 		Command
 		Extra string `json:"extra"`
 	}
 
-	b, err := json.Marshal(&myCommand{Command: Command{Name: "app"}, Extra: "dropped"})
+	b, err := json.Marshal(&myCommand{Command: Command{Name: "app"}, Extra: "kept"})
 	require.NoError(t, err)
 	assert.Contains(t, string(b), `"name":"app"`)
-	assert.NotContains(t, string(b), "extra")
+	assert.Contains(t, string(b), `"extra":"kept"`)
 }
+
+type sensitiveGeneric struct{ s string }
+
+func (g *sensitiveGeneric) Set(s string) error { g.s = s; return nil }
+func (g *sensitiveGeneric) String() string     { return g.s }
+func (g *sensitiveGeneric) Get() any           { return g }
+func (g *sensitiveGeneric) MarshalJSON() ([]byte, error) {
+	return json.Marshal(g.s)
+}
+
+type sensitiveText struct{ s string }
+
+func (x *sensitiveText) MarshalText() ([]byte, error) { return []byte(x.s), nil }
+func (x *sensitiveText) UnmarshalText(b []byte) error { x.s = string(b); return nil }
 
 // A type that embeds a flag must keep its own fields when encoded, as it
 // did before sensitive flags were added

@@ -63,7 +63,7 @@ type FlagBase[T any, C any, VC ValueCreator[T, C]] struct {
 	Sources          ValueSourceChain                         `json:"-"`                // sources to load flag value from
 	Required         bool                                     `json:"required"`         // whether the flag is required or not
 	Hidden           bool                                     `json:"hidden"`           // whether to hide the flag in help output
-	Sensitive        bool                                     `json:"sensitive"`        // whether the value is a secret that must not be shown in help output, JSON or errors
+	Sensitive        bool                                     `json:"sensitive"`        // whether the value is a secret that must not be shown in help output or errors
 	Deprecated       string                                   `json:"deprecated"`       // deprecation message, if set a warning is printed when the flag is set
 	Local            bool                                     `json:"local"`            // whether the flag is only for this command and not accepted by subcommands
 	Value            T                                        `json:"defaultValue"`     // default value for this flag if not set by from any source
@@ -202,10 +202,35 @@ func (f *FlagBase[T, C, V]) setMultiValueParsingConfig(c multiValueParsingConfig
 
 // newValue creates the flag's value holding the default Value.
 func (f *FlagBase[T, C, V]) newValue() Value {
-	if f.Destination == nil {
-		return f.creator.Create(f.Value, new(T), f.Config)
+	val := f.Value
+	if f.Sensitive {
+		val = cloneDefault(val)
 	}
-	return f.creator.Create(f.Value, f.Destination, f.Config)
+	if f.Destination == nil {
+		return f.creator.Create(val, new(T), f.Config)
+	}
+	return f.creator.Create(val, f.Destination, f.Config)
+}
+
+// cloneDefault returns a shallow copy of v when T is an interface type
+// holding a non-nil pointer, as for GenericFlag and TextFlag. Parsing writes
+// through that pointer, so without a copy the flag's Value field would be
+// changed to the parsed value, and encoding the flag would show it.
+func cloneDefault[T any](v T) T {
+	if reflect.TypeFor[T]().Kind() != reflect.Interface {
+		return v
+	}
+	rv := reflect.ValueOf(v)
+	if !rv.IsValid() || rv.Kind() != reflect.Pointer || rv.IsNil() {
+		return v
+	}
+	c := reflect.New(rv.Type().Elem())
+	c.Elem().Set(rv.Elem())
+	out, ok := c.Interface().(T)
+	if !ok {
+		return v
+	}
+	return out
 }
 
 func (f *FlagBase[T, C, V]) getTypedValue() T {
@@ -335,15 +360,6 @@ func (f *FlagBase[T, C, V]) IsRequired() bool {
 // IsSensitive returns whether or not the flag's value is a secret
 func (f *FlagBase[T, C, V]) IsSensitive() bool {
 	return f.Sensitive
-}
-
-// redactedForJSON returns a copy of the flag without its default value, for
-// Command.MarshalJSON to encode in place of a sensitive flag
-func (f *FlagBase[T, C, V]) redactedForJSON() Flag {
-	c := *f
-	var zero T
-	c.Value = zero
-	return &c
 }
 
 // sensitiveParts returns val and, for slice and map flags, each item of val

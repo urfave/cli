@@ -130,9 +130,18 @@ type DeprecatedFlag interface {
 
 // SensitiveFlag is an interface that allows us to mark flags whose values
 // are secrets, such as passwords or tokens. The value of a sensitive flag
-// is not shown in help output, a command's JSON (see [Command.MarshalJSON])
-// or error messages, and is returned by
+// is not shown in help output or error messages, and is returned by
 // [Command.SensitiveValues] so that it can be removed from other output.
+//
+// Encoding a command or a flag as JSON includes the default value of a
+// sensitive flag, but never the value it was set to. To keep this so for
+// flag types whose value is a pointer, such as [GenericFlag] and [TextFlag],
+// a sensitive flag parses into a shallow copy of its default value rather
+// than into the default value itself, so the object given as the default
+// value keeps its default. Read the parsed value with methods such as
+// [Command.Generic] and [Command.Text], or through Destination. As the copy
+// is shallow, a value whose Set method writes into a map, slice or pointer
+// that it shares with the default value also changes the default value.
 type SensitiveFlag interface {
 	// IsSensitive returns true if the flag's value must be kept secret
 	IsSensitive() bool
@@ -241,33 +250,6 @@ func isSensitive(f Flag) bool {
 // or the values of a map
 type sensitivePartser interface {
 	sensitiveParts(val string) []string
-}
-
-// jsonRedacter is implemented by flags that can return a copy of themselves
-// without their default value, for encoding a sensitive flag as JSON
-type jsonRedacter interface {
-	redactedForJSON() Flag
-}
-
-// redactFlagsForJSON returns flags with each sensitive flag replaced by a
-// copy without its default value. flags is returned as is if no flag
-// needs replacing.
-func redactFlagsForJSON(flags []Flag) []Flag {
-	var out []Flag
-	for i, f := range flags {
-		r, ok := f.(jsonRedacter)
-		if !ok || !isSensitive(f) {
-			continue
-		}
-		if out == nil {
-			out = slices.Clone(flags)
-		}
-		out[i] = r.redactedForJSON()
-	}
-	if out == nil {
-		return flags
-	}
-	return out
 }
 
 // redactValue replaces each occurrence of val, and of each part of val that
