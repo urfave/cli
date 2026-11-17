@@ -212,10 +212,16 @@ func (f *FlagBase[T, C, V]) newValue() Value {
 	return f.creator.Create(val, f.Destination, f.Config)
 }
 
-// cloneDefault returns a shallow copy of v when T is an interface type
-// holding a non-nil pointer, as for GenericFlag and TextFlag. Parsing writes
-// through that pointer, so without a copy the flag's Value field would be
-// changed to the parsed value, and encoding the flag would show it.
+// cloneDefault returns a copy of v when T is an interface type holding a
+// non-nil pointer, as for GenericFlag and TextFlag. Parsing writes through
+// that pointer, so without a copy the flag's Value field would be changed
+// to the parsed value, and encoding the flag would show it.
+//
+// A value that can marshal itself to and from text, such as the value of a
+// TextFlag, is copied deeply by unmarshaling its text form into a new zero
+// value, so that the copy shares no maps, slices or pointers with v. Any
+// other value, or one whose text form cannot be read back, is copied
+// shallowly.
 func cloneDefault[T any](v T) T {
 	if reflect.TypeFor[T]().Kind() != reflect.Interface {
 		return v
@@ -225,12 +231,29 @@ func cloneDefault[T any](v T) T {
 		return v
 	}
 	c := reflect.New(rv.Type().Elem())
-	c.Elem().Set(rv.Elem())
+	if !copyText(rv, c) {
+		c.Elem().Set(rv.Elem())
+	}
 	out, ok := c.Interface().(T)
 	if !ok {
 		return v
 	}
 	return out
+}
+
+// copyText unmarshals the text form of src into dst, a new zero value of
+// the same type, and reports whether it succeeded
+func copyText(src, dst reflect.Value) bool {
+	m, ok := src.Interface().(TextMarshalUnmarshaler)
+	if !ok {
+		return false
+	}
+	text, err := m.MarshalText()
+	if err != nil {
+		return false
+	}
+	u, ok := dst.Interface().(TextMarshalUnmarshaler)
+	return ok && u.UnmarshalText(text) == nil
 }
 
 func (f *FlagBase[T, C, V]) getTypedValue() T {

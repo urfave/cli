@@ -139,9 +139,14 @@ type DeprecatedFlag interface {
 // a sensitive flag parses into a shallow copy of its default value rather
 // than into the default value itself, so the object given as the default
 // value keeps its default. Read the parsed value with methods such as
-// [Command.Generic] and [Command.Text], or through Destination. As the copy
-// is shallow, a value whose Set method writes into a map, slice or pointer
-// that it shares with the default value also changes the default value.
+// [Command.Generic] and [Command.Text], or through Destination.
+//
+// A value that implements [encoding.TextMarshaler] and
+// [encoding.TextUnmarshaler], as every TextFlag value does, is copied
+// deeply: its text form is unmarshaled into a new zero value. Any other
+// value is copied shallowly, so a value whose Set method writes into a map,
+// slice or pointer that it shares with the default value also changes the
+// default value.
 type SensitiveFlag interface {
 	// IsSensitive returns true if the flag's value must be kept secret
 	IsSensitive() bool

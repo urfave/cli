@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -148,6 +149,38 @@ func TestSensitiveFlagPointerValueIsCopied(t *testing.T) {
 	assert.Contains(t, cmd.SensitiveValues(), "set-gen")
 }
 
+// A sensitive TextFlag is copied through its text form, so a value that
+// keeps its state in a map does not share that map with the default value
+func TestSensitiveTextFlagIsCopiedDeeply(t *testing.T) {
+	def := &sensitiveMapText{m: map[string]string{"v": "default-txt"}}
+	cmd := &Command{
+		Name:  "app",
+		Flags: []Flag{&TextFlag{Name: "txt", Value: def, Sensitive: true}},
+	}
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"app", "--txt", "set-s3cret"}))
+
+	assert.Equal(t, "default-txt", def.m["v"])
+	assert.Equal(t, &sensitiveMapText{m: map[string]string{"v": "set-s3cret"}}, cmd.Text("txt"))
+
+	b, err := json.Marshal(cmd)
+	require.NoError(t, err)
+	assert.NotContains(t, string(b), "set-s3cret")
+}
+
+// A value whose text form cannot be read back is still copied, shallowly
+func TestSensitiveTextFlagFallsBackToShallowCopy(t *testing.T) {
+	def := &sensitiveText{s: "unreadable-default"}
+	cmd := &Command{
+		Name:  "app",
+		Flags: []Flag{&TextFlag{Name: "txt", Value: def, Sensitive: true}},
+	}
+	require.NoError(t, cmd.Run(buildTestContext(t), []string{"app"}))
+
+	got := cmd.Text("txt")
+	assert.NotSame(t, def, got)
+	assert.Equal(t, "unreadable-default", got.(*sensitiveText).s)
+}
+
 // A flag that is not sensitive still parses into its default value object
 func TestNotSensitiveFlagPointerValueIsShared(t *testing.T) {
 	gen := &sensitiveGeneric{s: "default-gen"}
@@ -184,7 +217,25 @@ func (g *sensitiveGeneric) MarshalJSON() ([]byte, error) {
 type sensitiveText struct{ s string }
 
 func (x *sensitiveText) MarshalText() ([]byte, error) { return []byte(x.s), nil }
-func (x *sensitiveText) UnmarshalText(b []byte) error { x.s = string(b); return nil }
+func (x *sensitiveText) UnmarshalText(b []byte) error {
+	if strings.HasPrefix(string(b), "unreadable") {
+		return fmt.Errorf("cannot read %q", b)
+	}
+	x.s = string(b)
+	return nil
+}
+
+// sensitiveMapText keeps its text in a map, which a shallow copy would share
+type sensitiveMapText struct{ m map[string]string }
+
+func (x *sensitiveMapText) MarshalText() ([]byte, error) { return []byte(x.m["v"]), nil }
+func (x *sensitiveMapText) UnmarshalText(b []byte) error {
+	if x.m == nil {
+		x.m = map[string]string{}
+	}
+	x.m["v"] = string(b)
+	return nil
+}
 
 // A type that embeds a flag must keep its own fields when encoded, as it
 // did before sensitive flags were added
