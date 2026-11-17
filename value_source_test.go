@@ -349,3 +349,11 @@ func TestMapValueSourceJoinsSliceValues(t *testing.T) {
 		t.Fatalf("expected %q, got %q (found=%v)", "80,443", val, ok)
 	}
 }
+
+func TestMapValueSourceJoinsSliceValuesWithComma(t *testing.T) {
+	ms := NewMapSource("config", map[any]any{"ports": []any{"alpha,beta", "gamma"}})
+	val, ok := NewMapValueSource("ports", ms).Lookup()
+	if !ok || val != "alpha,beta,gamma" {
+		t.Fatalf("expected %q, got %q (found=%v)", "alpha,beta,gamma", val, ok)
+	}
+}

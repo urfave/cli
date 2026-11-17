@@ -197,6 +197,11 @@ func (f *FlagBase[T, C, V]) setMultiValueParsingConfig(c multiValueParsingConfig
 	if cf, ok := f.value.(multiValueParsingConfigSetter); ok {
 		cf.setMultiValueParsingConfig(c)
 	}
+	for _, source := range f.Sources.Chain {
+		if setter, ok := source.(interface{ setSliceSeparator(string) }); ok {
+			setter.setSliceSeparator(c.SliceFlagSeparator)
+		}
+	}
 }
 
 // newValue creates the flag's value holding the default Value.
