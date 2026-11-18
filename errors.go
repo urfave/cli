@@ -131,10 +131,11 @@ func Exit(message any, exitCode int) ExitCoder {
 	var err error
 
 	switch e := message.(type) {
-	case ErrorFormatter:
-		err = fmt.Errorf("%+v", message)
 	case error:
 		err = e
+		if _, ok := e.(ErrorFormatter); ok {
+			err = fmt.Errorf("%+w", e)
+		}
 	default:
 		err = fmt.Errorf("%+v", message)
 	}
@@ -153,8 +154,8 @@ func (ee *exitError) ExitCode() int {
 	return ee.exitCode
 }
 
-// Unwrap returns the error given to [Exit], so that [errors.Is] and
-// [errors.As] can inspect it through the ExitCoder wrapper.
+// Unwrap exposes the error passed to [Exit] to [errors.Is] and [errors.As],
+// including when the error is wrapped to preserve its formatted message.
 func (ee *exitError) Unwrap() error {
 	return ee.err
 }
