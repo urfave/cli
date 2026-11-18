@@ -327,6 +327,7 @@ func TestHandleExitCoder_ExitCoderEmptyMessage(t *testing.T) {
 
 func TestExit_Unwrap(t *testing.T) {
 	sentinel := errors.New("not found")
+	formatted := &exitFormatter{code: 9}
 
 	// The error given to Exit must stay reachable through the standard
 	// wrapping helpers (#1090).
@@ -349,6 +350,13 @@ func TestExit_Unwrap(t *testing.T) {
 			wantMsg: "open x: file does not exist",
 			wantIs:  fs.ErrNotExist,
 			wantAs:  new(*fs.PathError),
+		},
+		{
+			name:    "formatted error",
+			message: formatted,
+			wantMsg: "some other special",
+			wantIs:  formatted,
+			wantAs:  new(*exitFormatter),
 		},
 		{
 			name:    "non-error message",
