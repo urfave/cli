@@ -131,11 +131,12 @@ func suggestFlag(flags []Flag, provided string, hideHelp bool) string {
 }
 
 // suggestCommand takes a list of commands and a provided string to suggest a
-// command name
+// command name. The help command is one of the commands unless it is hidden,
+// and then it must not be suggested, as it does not exist.
 func suggestCommand(commands []*Command, provided string) (suggestion string) {
 	distance := 0.0
 	for _, command := range commands {
-		for _, name := range append(command.Names(), helpName, helpAlias) {
+		for _, name := range command.Names() {
 			newDistance := jaroWinkler(name, provided)
 			if newDistance > distance {
 				distance = newDistance
