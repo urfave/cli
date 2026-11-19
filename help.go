@@ -442,7 +442,13 @@ func DefaultPrintHelp(out io.Writer, templ string, data any) {
 }
 
 func checkVersion(cmd *Command) bool {
-	return cmd.versionFlag != nil && cmd.versionFlag.IsSet()
+	if cmd.versionFlag == nil || !cmd.versionFlag.IsSet() {
+		return false
+	}
+	// --version=false does not ask for the version, as --help=false does
+	// not ask for help. A custom VersionFlag need not be a bool flag.
+	v, isBool := cmd.versionFlag.Get().(bool)
+	return !isBool || v
 }
 
 func checkShellCompleteFlag(c *Command, arguments []string) (bool, []string) {
