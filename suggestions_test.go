@@ -238,3 +238,38 @@ func TestSuggestCommand(t *testing.T) {
 		assert.Equal(t, testCase.expected, res)
 	}
 }
+
+func TestSuggestCommandWithoutHelpCommand(t *testing.T) {
+	// The help command is not suggested by itself: it is in the list of
+	// commands unless it is hidden.
+	commands := []*Command{{Name: "hello"}}
+
+	assert.Equal(t, "hello", suggestCommand(commands, "hel"))
+	assert.Equal(t, "hello", suggestCommand(commands, "h"))
+}
+
+func TestPrefixMatchCommandsWithHiddenHelpCommand(t *testing.T) {
+	for _, arg := range []string{"h", "he", "hel", "hell"} {
+		t.Run(arg, func(t *testing.T) {
+			ran := false
+			cmd := &Command{
+				Name:                "app",
+				PrefixMatchCommands: true,
+				HideHelpCommand:     true,
+				Writer:              io.Discard,
+				Commands: []*Command{
+					{
+						Name: "hello",
+						Action: func(context.Context, *Command) error {
+							ran = true
+							return nil
+						},
+					},
+				},
+			}
+
+			assert.NoError(t, cmd.Run(buildTestContext(t), []string{"app", arg}))
+			assert.True(t, ran, "expected the hello command to run")
+		})
+	}
+}
