@@ -229,21 +229,24 @@ func visibleFlags(fl []Flag) []Flag {
 }
 
 func FlagNames(name string, aliases []string) []string {
-	var ret []string
-
-	for _, part := range append([]string{name}, aliases...) {
-		// v1 -> v2 migration warning zone:
-		// Strip off anything after the first found comma or space, which
-		// *hopefully* makes it a tiny bit more obvious that unexpected behavior is
-		// caused by using the v1 form of stringly typed "Name".
-		if i := strings.IndexAny(part, ", "); i >= 0 {
-			ret = append(ret, part[:i])
-		} else {
-			ret = append(ret, part)
-		}
+	ret := make([]string, 0, len(aliases)+1)
+	ret = append(ret, stripV1Name(name))
+	for _, part := range aliases {
+		ret = append(ret, stripV1Name(part))
 	}
 
 	return ret
+}
+
+// stripV1Name is the v1 -> v2 migration warning zone:
+// Strip off anything after the first found comma or space, which
+// *hopefully* makes it a tiny bit more obvious that unexpected behavior is
+// caused by using the v1 form of stringly typed "Name".
+func stripV1Name(part string) string {
+	if i := strings.IndexAny(part, ", "); i >= 0 {
+		return part[:i]
+	}
+	return part
 }
 
 func hasFlag(flags []Flag, fl Flag) bool {
