@@ -338,6 +338,37 @@ done
 	r.NoFileExists(filepath.Join(cmd.Dir, "expanded"))
 }
 
+func TestCompletionBashWithoutBashCompletion(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("bash completion is not tested on Windows")
+	}
+	bash, err := exec.LookPath("bash")
+	if err != nil {
+		t.Skip("bash not found")
+	}
+
+	r := require.New(t)
+
+	script, err := shellCompletions["bash"](&Command{}, "app")
+	r.NoError(err)
+
+	// A plain bash has none of bash-completion's helpers, so the script must
+	// not depend on them to produce completions.
+	cmd := exec.Command(bash, "--noprofile", "--norc", "-c", `
+unset -f _init_completion _comp_initialize _get_comp_words_by_ref 2>/dev/null || true
+app() { printf -- '--verbose:verbose mode\nhelp:show help\n'; }
+eval "$1"
+COMP_WORDS=(app '--verb') COMP_CWORD=1
+__app_bash_autocomplete
+printf '%s\n' "${COMPREPLY[@]}"
+`, "bash", script)
+
+	out, err := cmd.CombinedOutput()
+	r.NoError(err)
+	r.NotContains(string(out), "command not found")
+	r.Contains(strings.TrimSpace(string(out)), "--verbose")
+}
+
 func TestCompletionSubcommand(t *testing.T) {
 	tests := []struct {
 		name        string
