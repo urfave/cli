@@ -21,6 +21,8 @@ __%[1]s_bash_autocomplete() {
 
     COMPREPLY=()
     cur="${words[$cword]}"
+    # Match bash-completion's -n "=:" filtering without depending on it.
+    cur="${cur##*[=:]}"
 
     request_comp="$(__%[1]s_build_completion_request)"
     opts=$(eval "${request_comp}" 2>/dev/null)

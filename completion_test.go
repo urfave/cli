@@ -356,9 +356,12 @@ func TestCompletionBashWithoutBashCompletion(t *testing.T) {
 	// not depend on them to produce completions.
 	cmd := exec.Command(bash, "--noprofile", "--norc", "-c", `
 unset -f _init_completion _comp_initialize _get_comp_words_by_ref 2>/dev/null || true
-app() { printf -- '--verbose:verbose mode\nhelp:show help\n'; }
+app() { printf -- '--verbose:verbose mode\nport:port\nhelp:show help\n'; }
 eval "$1"
 COMP_WORDS=(app '--verb') COMP_CWORD=1
+__app_bash_autocomplete
+printf '%s\n' "${COMPREPLY[@]}"
+COMP_WORDS=(app '--format=po') COMP_CWORD=1
 __app_bash_autocomplete
 printf '%s\n' "${COMPREPLY[@]}"
 `, "bash", script)
@@ -367,6 +370,7 @@ printf '%s\n' "${COMPREPLY[@]}"
 	r.NoError(err)
 	r.NotContains(string(out), "command not found")
 	r.Contains(strings.TrimSpace(string(out)), "--verbose")
+	r.Contains(strings.TrimSpace(string(out)), "port")
 }
 
 func TestCompletionSubcommand(t *testing.T) {
