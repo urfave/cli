@@ -3288,6 +3288,29 @@ func TestCommand_Run_Version(t *testing.T) {
 	}
 }
 
+func TestCommand_Run_VersionFalse(t *testing.T) {
+	for _, args := range [][]string{{"boom", "--version=false"}, {"boom", "-v=false"}} {
+		t.Run(fmt.Sprintf("checking with arguments %v", args), func(t *testing.T) {
+			buf := new(bytes.Buffer)
+
+			cmd := &Command{
+				Name:    "boom",
+				Usage:   "make an explosive entrance",
+				Version: "0.1.0",
+				Writer:  buf,
+				Action: func(context.Context, *Command) error {
+					buf.WriteString("boom I say!")
+					return nil
+				},
+			}
+
+			err := cmd.Run(buildTestContext(t), args)
+			assert.NoError(t, err)
+			assert.Equal(t, "boom I say!", buf.String())
+		})
+	}
+}
+
 func TestCommand_Run_CustomFlagCanUseVersionAlias(t *testing.T) {
 	buf := new(bytes.Buffer)
 	called := false
