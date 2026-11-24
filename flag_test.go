@@ -2608,6 +2608,48 @@ func TestStringMap_Serialized_Set(t *testing.T) {
 	require.Equal(t, m0.String(), m1.String(), "pre and post serialization do not match")
 }
 
+func TestStringMap_Serialized_SetReplaces(t *testing.T) {
+	t.Run("second serialized set replaces contents", func(t *testing.T) {
+		var dest map[string]string
+		v := StringMap{}.Create(nil, &dest, StringConfig{})
+
+		require.NoError(t, v.Set(NewStringMap(map[string]string{"old": "one"}).Serialize()))
+		require.Equal(t, map[string]string{"old": "one"}, dest)
+
+		require.NoError(t, v.Set(NewStringMap(map[string]string{"new": "two"}).Serialize()))
+		require.Equal(t, map[string]string{"new": "two"}, dest, "keys absent from the restored map should not remain")
+	})
+
+	t.Run("serialized empty object clears contents", func(t *testing.T) {
+		var dest map[string]string
+		v := StringMap{}.Create(nil, &dest, StringConfig{})
+
+		require.NoError(t, v.Set(NewStringMap(map[string]string{"old": "one"}).Serialize()))
+		require.Equal(t, map[string]string{"old": "one"}, dest)
+
+		require.NoError(t, v.Set(NewStringMap(map[string]string{}).Serialize()))
+		require.Empty(t, dest)
+	})
+
+	t.Run("malformed serialized value errors", func(t *testing.T) {
+		var dest map[string]string
+		v := StringMap{}.Create(nil, &dest, StringConfig{})
+
+		require.NoError(t, v.Set(NewStringMap(map[string]string{"old": "one"}).Serialize()))
+		require.Error(t, v.Set(slPfx()+"{not json"))
+		require.Equal(t, map[string]string{"old": "one"}, dest, "failed restore should not modify the map")
+	})
+
+	t.Run("wrong value type errors", func(t *testing.T) {
+		var dest map[string]string
+		v := StringMap{}.Create(nil, &dest, StringConfig{})
+
+		require.NoError(t, v.Set(NewStringMap(map[string]string{"old": "one"}).Serialize()))
+		require.Error(t, v.Set(slPfx()+`{"bad":42}`))
+		require.Equal(t, map[string]string{"old": "one"}, dest, "failed restore should not modify the map")
+	})
+}
+
 func TestSliceAndMap_SerializedNull_Set(t *testing.T) {
 	t.Run("slice", func(t *testing.T) {
 		var dest []string
