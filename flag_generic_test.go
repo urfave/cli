@@ -246,3 +246,62 @@ func TestGenericFlagPayloadCommandRun(t *testing.T) {
 		})
 	}
 }
+
+func TestGenericFlagDestination(t *testing.T) {
+	for _, source := range []string{"default", "argument", "environment"} {
+		t.Run(source, func(t *testing.T) {
+			fs := flag.NewFlagSet("destination", flag.ContinueOnError)
+			fs.String("value", "before", "")
+			value := fs.Lookup("value").Value.(Value)
+			destination := value
+			fl := &GenericFlag{Name: "value", Aliases: []string{"v"}, Destination: &destination}
+			args := []string{"app"}
+			want := "before"
+			switch source {
+			case "argument":
+				args = append(args, "-v", "after")
+				want = "after"
+			case "environment":
+				t.Setenv("GENERIC_DESTINATION", "after")
+				fl.Sources = EnvVars("GENERIC_DESTINATION")
+				want = "after"
+			}
+			called := false
+			cmd := &Command{
+				Flags: []Flag{fl},
+				Action: func(_ context.Context, cmd *Command) error {
+					called = true
+					require.Same(t, value, destination)
+					require.Same(t, value, cmd.Generic("v"))
+					require.Equal(t, want, cmd.Value("value"))
+					require.Equal(t, want, value.Get())
+					return nil
+				},
+			}
+			require.NoError(t, cmd.Run(buildTestContext(t), args))
+			require.True(t, called)
+		})
+	}
+}
+
+func TestGenericFlagDestinationDefaultPrecedence(t *testing.T) {
+	original := &genericPayloadValue{text: "original"}
+	value := &genericPayloadValue{text: "default"}
+	var destination Value = original
+	fl := &GenericFlag{Name: "value", Value: value, Destination: &destination}
+	require.NoError(t, fl.PreParse())
+	require.Same(t, value, destination)
+	require.NoError(t, fl.Set("value", "parsed"))
+	require.Equal(t, "parsed", value.text)
+	require.Equal(t, "original", original.text)
+}
+
+func TestGenericFlagDestinationError(t *testing.T) {
+	failure := errors.New("invalid destination value")
+	value := &genericPayloadValue{setError: failure}
+	var destination Value = value
+	fl := &GenericFlag{Name: "value", Destination: &destination}
+	require.NoError(t, fl.PreParse())
+	require.ErrorIs(t, fl.Set("value", "invalid"), failure)
+	require.Same(t, value, destination)
+}
