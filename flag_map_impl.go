@@ -68,8 +68,14 @@ func (i *MapBase[T, C, VC]) Set(value string) error {
 	}
 
 	if s, ok := strings.CutPrefix(value, slPfx()); ok {
-		// Deserializing assumes overwrite
-		_ = json.Unmarshal([]byte(s), i.dict)
+		// Deserializing assumes overwrite: decode into a temporary map so
+		// malformed input is rejected and keys absent from the serialized
+		// value do not linger, then assign through the destination pointer.
+		var tmp map[string]T
+		if err := json.Unmarshal([]byte(s), &tmp); err != nil {
+			return fmt.Errorf("could not parse serialized map value %q: %w", s, err)
+		}
+		*i.dict = tmp
 		i.hasBeenSet = true
 		return nil
 	}
