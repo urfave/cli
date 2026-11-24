@@ -257,10 +257,11 @@ func TestGenericFlagDestination(t *testing.T) {
 			fl := &GenericFlag{Name: "value", Aliases: []string{"v"}, Destination: &destination}
 			args := []string{"app"}
 			want := "before"
-			if source == "argument" {
+			switch source {
+			case "argument":
 				args = append(args, "-v", "after")
 				want = "after"
-			} else if source == "environment" {
+			case "environment":
 				t.Setenv("GENERIC_DESTINATION", "after")
 				fl.Sources = EnvVars("GENERIC_DESTINATION")
 				want = "after"
