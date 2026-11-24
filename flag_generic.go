@@ -10,7 +10,11 @@ type genericValue struct {
 // Below functions are to satisfy the ValueCreator interface
 
 func (f genericValue) Create(val Value, p *Value, c NoConfig) Value {
-	*p = val
+	// Preserve an existing destination when no default was provided: unlike
+	// concrete values, the nil interface cannot be used to parse input.
+	if val != nil {
+		*p = val
+	}
 	return &genericValue{
 		val: *p,
 	}
