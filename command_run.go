@@ -324,6 +324,7 @@ func (cmd *Command) run(ctx context.Context, osArgs []string) (_ context.Context
 				if err := grp.check(cmd); err != nil {
 					if cmd.OnUsageError != nil {
 						err = cmd.OnUsageError(ctx, cmd, err, cmd.parent != nil)
+						err = cmd.handleExitCoder(ctx, err)
 					} else {
 						fmt.Fprintf(cmd.Root().ErrWriter, "Incorrect Usage: %s\n\n", err.Error())
 						if cmd.parent == nil {
@@ -417,6 +418,7 @@ func (cmd *Command) handleRequiredError(ctx context.Context, err error) (context
 	cmd.isInError = true
 	if cmd.OnUsageError != nil {
 		err = cmd.OnUsageError(ctx, cmd, err, cmd.parent != nil)
+		err = cmd.handleExitCoder(ctx, err)
 	} else {
 		fmt.Fprintf(cmd.Root().ErrWriter, "Incorrect Usage: %s\n\n", err.Error())
 		if cmd.parent == nil {
