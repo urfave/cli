@@ -546,6 +546,45 @@ func TestCommand_OnUsageError_WithSubcommand(t *testing.T) {
 		"intercepted: invalid value \"wrong\" for flag -flag: strconv.ParseInt: parsing \"wrong\": invalid syntax")
 }
 
+func TestCommand_OnUsageError_ExitCoder(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+	}{
+		{name: "unknown flag", args: []string{"app", "--unknown"}},
+		{name: "invalid argument", args: []string{"app", "--name", "x", "nan"}},
+		{name: "missing required flag", args: []string{"app", "1"}},
+		{name: "missing required argument", args: []string{"app", "--name", "x"}},
+		{name: "mutually exclusive flags", args: []string{"app", "--name", "x", "--json", "--yaml", "1"}},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			usageErr := Exit("usage error", 2)
+			var handled []error
+			cmd := &Command{
+				Name:  "app",
+				Flags: []Flag{&StringFlag{Name: "name", Required: true}},
+				MutuallyExclusiveFlags: []MutuallyExclusiveFlags{{
+					Flags: [][]Flag{{&BoolFlag{Name: "json"}}, {&BoolFlag{Name: "yaml"}}},
+				}},
+				Arguments: []Argument{&IntArg{Name: "count", Required: true}},
+				OnUsageError: func(context.Context, *Command, error, bool) error {
+					return usageErr
+				},
+				ExitErrHandler: func(_ context.Context, _ *Command, err error) {
+					handled = append(handled, err)
+				},
+				Action: func(context.Context, *Command) error { return nil },
+			}
+
+			err := cmd.Run(buildTestContext(t), test.args)
+			require.ErrorIs(t, err, usageErr)
+			assert.Equal(t, []error{usageErr}, handled)
+		})
+	}
+}
+
 func TestCommand_Run_SubcommandsCanUseErrWriter(t *testing.T) {
 	cmd := &Command{
 		ErrWriter: io.Discard,
